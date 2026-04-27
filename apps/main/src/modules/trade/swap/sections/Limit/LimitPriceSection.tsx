@@ -20,6 +20,11 @@ import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import {
+  computeDerived,
+  getDerived,
+  updateLastTwoOnTouch,
+} from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { formatCalcValue } from "@/modules/trade/swap/sections/Limit/limitUtils"
 import {
   EXPIRY_OPTIONS,
@@ -176,8 +181,8 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     }
   })()
 
-  // ── "Best" price display value (same formatting as price field) ──
-  const bestDisplayValue = (() => {
+  // ── "Market" price display value (same formatting as price field) ──
+  const marketDisplayValue = (() => {
     if (!marketPrice) return null
     try {
       const raw = isInverted
@@ -191,54 +196,42 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
   })()
 
   /**
-   * Recalculate the non-anchored amount from the new price.
-   * Anchor rule:
-   *   - Lock ON → always sell-sacred: keep sell, recalc buy (buy = sell × price)
-   *   - Lock OFF, anchor = "sell" → keep sell, recalc buy
-   *   - Lock OFF, anchor = "buy"  → keep buy, recalc sell (sell = buy / price)
-   * Degenerate cases: if only one amount is filled, treat it as the anchor.
+   * Apply a price change through the cascade: mark "price" as the
+   * most-recent touch, then recompute whichever field falls out of
+   * the kept pair (the new derived field).
    */
-  const recalcFromPrice = useCallback(
-    (price: string) => {
-      if (!price) {
+  const applyPriceTouch = useCallback(
+    (newLimitPrice: string, nextPriceAnchor: "user" | "market") => {
+      const values = getValues()
+      const lastTwo = updateLastTwoOnTouch(
+        values.lastTwo,
+        "price",
+        values.isLocked,
+      )
+      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo)
+      setValue("priceAnchor", nextPriceAnchor)
+      setValue("limitPrice", newLimitPrice)
+
+      const derived = getDerived(lastTwo)
+      if (derived === "price") {
+        // Price is now derived — shouldn't happen since we just touched
+        // it. Defensive no-op.
         trigger()
         return
       }
-      try {
-        const p = new Big(price)
-        if (p.lte(0)) {
-          trigger()
-          return
-        }
-
-        const values = getValues()
-        const hasSell = !!values.sellAmount
-        const hasBuy = !!values.buyAmount
-
-        const keepBuy =
-          !values.isLocked &&
-          (values.amountAnchor === "buy" || (!hasSell && hasBuy))
-
-        if (keepBuy && values.buyAmount) {
-          // buy-anchored → sell = buy / price
-          const newSell = new Big(values.buyAmount).div(p)
-          setValue("sellAmount", formatCalcValue(newSell))
-        } else if (values.sellAmount) {
-          // sell-anchored (default / locked) → buy = sell × price
-          const newBuy = new Big(values.sellAmount).times(p)
-          setValue("buyAmount", formatCalcValue(newBuy))
-        }
-      } catch {
-        // ignore invalid Big parses
-      }
+      const computed = computeDerived(derived, {
+        sell: values.sellAmount ?? "",
+        buy: values.buyAmount ?? "",
+        price: newLimitPrice,
+      })
+      if (derived === "buy") setValue("buyAmount", computed ?? "")
+      else if (derived === "sell") setValue("sellAmount", computed ?? "")
       trigger()
     },
     [getValues, setValue, trigger],
   )
-  // Alias kept for callers below that still use the old name.
-  const recalcBuy = recalcFromPrice
 
-  // ── Price change handler ──
+  // ── Price input change handler ──
   const handlePriceChange = useCallback(
     (displayValue: string) => {
       let newLimitPrice: string
@@ -249,57 +242,41 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
           const p = new Big(displayValue)
           if (p.lte(0)) return
           // Store at full precision so flipping back round-trips cleanly.
-          // The non-inverted display path formats the value via
-          // formatCalcValue so the raw ~20-digit string never reaches
-          // the user.
           newLimitPrice = Big(1).div(p).toString()
         } catch {
           return
         }
       }
 
-      // Remember exactly what the user typed so the input shows it back
-      // unchanged (the canonical limitPrice may have been transformed).
-      // canonical lets us detect external changes to limitPrice and
-      // invalidate this cache without a stale-render.
       userInputRef.current = {
         value: displayValue,
         inverted: isInverted,
         canonical: newLimitPrice,
       }
-      // User typed a custom price — stop auto-mirroring market.
-      setValue("priceAnchor", "user")
-      setValue("limitPrice", newLimitPrice)
       // Typing the price directly invalidates any remembered pill %.
       setUserPct(null)
-      // Both modes: price changed → recalc buy
-      recalcBuy(newLimitPrice)
+      applyPriceTouch(newLimitPrice, "user")
     },
-    [isInverted, setValue, recalcBuy],
+    [isInverted, applyPriceTouch],
   )
 
-  // ── Set limit price to live market (best) price ──
-  const handleSetBestPrice = useCallback(() => {
+  // ── "Market" reset button ──
+  const handleSetMarketPrice = useCallback(() => {
     if (!marketPrice) return
     userInputRef.current = null
-    // Resume mirroring market live (next block will confirm via the
-    // market-mirroring effect in LimitFields, keeping them in sync).
-    setValue("priceAnchor", "market")
-    setValue("limitPrice", marketPrice)
-    recalcBuy(marketPrice)
-    // Explicit reset wipes any remembered % — next edit starts clean.
     setLastPillValue("")
     setUserPct(null)
-  }, [marketPrice, setValue, recalcBuy])
+    applyPriceTouch(marketPrice, "market")
+  }, [marketPrice, applyPriceTouch])
 
   const handlePillDeviationReset = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation()
       event.preventDefault()
       setIsEditingPill(false)
-      handleSetBestPrice()
+      handleSetMarketPrice()
     },
-    [handleSetBestPrice],
+    [handleSetMarketPrice],
   )
 
   // ── Inline editing mode for custom pill ──
@@ -332,9 +309,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
       if (!trimmed) {
         userInputRef.current = null
         setUserPct(null)
-        setValue("priceAnchor", "market")
-        setValue("limitPrice", marketPrice)
-        recalcBuy(marketPrice)
+        applyPriceTouch(marketPrice, "market")
         return
       }
       try {
@@ -346,14 +321,12 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
         const newPrice = formatCalcValue(newRaw)
         userInputRef.current = null
         setUserPct(pct.toNumber())
-        setValue("priceAnchor", "user")
-        setValue("limitPrice", newPrice)
-        recalcBuy(newPrice)
+        applyPriceTouch(newPrice, "user")
       } catch {
         // ignore — partial input like "5." or "-" is not yet valid
       }
     },
-    [marketPrice, setValue, recalcBuy],
+    [marketPrice, applyPriceTouch],
   )
 
   const handlePillEditCommit = useCallback(
@@ -558,16 +531,16 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
           </Flex>
         </Flex>
 
-        {/* "Best" reset — extra top margin vs fiat so it's clearly separated from the $ line */}
-        {bestDisplayValue && (
+        {/* "Market" reset — extra top margin vs fiat so it's clearly separated from the $ line */}
+        {marketDisplayValue && (
           <Flex justify="flex-end" mt="m">
-            <SBestButton type="button" onClick={handleSetBestPrice}>
+            <SMarketButton type="button" onClick={handleSetMarketPrice}>
               <Trans
-                i18nKey="trade:limit.best"
-                values={{ value: bestDisplayValue }}
-                components={{ bestPrice: <SBestPrice /> }}
+                i18nKey="trade:limit.market"
+                values={{ value: marketDisplayValue }}
+                components={{ marketPrice: <SMarketPrice /> }}
               />
-            </SBestButton>
+            </SMarketButton>
           </Flex>
         )}
       </Flex>
@@ -885,12 +858,12 @@ const SPillInlineInput = styled.input(
   `,
 )
 
-const SBestPrice = styled.span`
+const SMarketPrice = styled.span`
   text-decoration: underline dotted;
   text-underline-offset: 0.15em;
 `
 
-const SBestButton = styled.button(
+const SMarketButton = styled.button(
   ({ theme }) => css`
     all: unset;
     cursor: pointer;

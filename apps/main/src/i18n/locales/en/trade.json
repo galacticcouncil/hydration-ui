@@ -183,7 +183,7 @@
   "limit.deviation.resetAria": "Reset deviation to market price",
   "limit.priceLabel": "When 1 {{ symbol }} price is",
   "limit.priceUnit": "1 {{ symbol }} =",
-  "limit.best": "Best: <bestPrice>{{ value }}</bestPrice>",
+  "limit.market": "Market: <marketPrice>{{ value }}</marketPrice>",
   "limit.expiry": "Expires in",
   "limit.expiry.15min": "15 MIN",
   "limit.expiry.30min": "30 MIN",

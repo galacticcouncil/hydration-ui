@@ -3,7 +3,18 @@ import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
 import { useFormContext } from "react-hook-form"
 
+import {
+  FieldName,
+  LastTwo,
+} from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
+
+/** Swap "sell" ↔ "buy" in a LastTwo tuple, leaving "price" untouched. */
+const flipAmountSidesInLastTwo = (lastTwo: LastTwo): LastTwo => {
+  const flip = (f: FieldName): FieldName =>
+    f === "sell" ? "buy" : f === "buy" ? "sell" : "price"
+  return [flip(lastTwo[0]), flip(lastTwo[1])]
+}
 
 export const useSwitchAssets = () => {
   const navigate = useNavigate()
@@ -18,7 +29,7 @@ export const useSwitchAssets = () => {
         sellAmount,
         buyAmount,
         limitPrice,
-        amountAnchor,
+        lastTwo,
       } = values
 
       // Invert the limit price. Store at full precision so the display
@@ -42,9 +53,9 @@ export const useSwitchAssets = () => {
       const newSellAmount = buyAmount
       const newBuyAmount = sellAmount
 
-      // Anchor follows the user's last-touched amount through the swap:
-      // the value that WAS in sell is now in buy and vice versa.
-      const newAnchor: "sell" | "buy" = amountAnchor === "sell" ? "buy" : "sell"
+      // Touch recency follows through the swap: the kept-pair entry
+      // for "sell" becomes "buy" and vice versa; "price" stays put.
+      const newLastTwo = flipAmountSidesInLastTwo(lastTwo)
 
       reset({
         ...values,
@@ -53,7 +64,7 @@ export const useSwitchAssets = () => {
         sellAmount: newSellAmount,
         buyAmount: newBuyAmount,
         limitPrice: newPrice,
-        amountAnchor: newAnchor,
+        lastTwo: newLastTwo,
       })
 
       trigger()

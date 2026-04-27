@@ -1,18 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { maxIntentDurationQuery } from "@/api/intents"
-import { bestSellQuery } from "@/api/trade"
-import { calculateSlippage } from "@/api/utils/slippage"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { isErc20AToken, TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman } from "@/utils/formatting"
+import { scale } from "@/utils/formatting"
 
 // The Intent pallet works with native asset IDs. ERC20 wrapper tokens
 // (e.g. HUSDT 1111) must be mapped to their underlying asset (USDT 111).
@@ -46,22 +42,12 @@ const EXPIRY_MS: Record<string, number> = {
  */
 const DEADLINE_SAFETY_MARGIN_MS = 60 * 1000
 
-// When limit price is within this tolerance of the router quote rate we treat
-// the order as "at market" and apply slippage buffer.
-const MARKET_PRICE_TOLERANCE = 0.001
-
 export const useSubmitLimitOrder = () => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
 
   const rpc = useRpcProvider()
   const { papiClient } = rpc
-
-  const {
-    swap: {
-      single: { swapSlippage },
-    },
-  } = useTradeSettings()
 
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const queryClient = useQueryClient()
@@ -73,7 +59,6 @@ export const useSubmitLimitOrder = () => {
         sellAmount,
         buyAsset,
         buyAmount,
-        limitPrice,
         expiry,
         partiallyFillable,
       } = values
@@ -105,38 +90,11 @@ export const useSubmitLimitOrder = () => {
         deadline = BigInt(Date.now() + effectiveMs)
       }
 
-      // Determine amount_out:
-      //   - Market mode (limitPrice ~ router quote rate): apply slippage buffer
-      //   - Custom price: send exact buyAmount
-      let amountOutRaw = BigInt(scale(buyAmount || "0", buyAsset.decimals))
-
-      try {
-        const bestSell = await queryClient.fetchQuery(
-          bestSellQuery(rpc, {
-            assetIn: sellAsset.id,
-            assetOut: buyAsset.id,
-            amountIn: sellAmount || "0",
-          }),
-        )
-        if (bestSell && sellAmount && limitPrice) {
-          const marketRate = Big(
-            scaleHuman(bestSell.amountOut, buyAsset.decimals) || "0",
-          ).div(sellAmount)
-          if (marketRate.gt(0)) {
-            const drift = marketRate
-              .minus(Big(limitPrice))
-              .abs()
-              .div(marketRate)
-            if (drift.lt(MARKET_PRICE_TOLERANCE)) {
-              amountOutRaw =
-                bestSell.amountOut -
-                calculateSlippage(bestSell.amountOut, swapSlippage)
-            }
-          }
-        }
-      } catch {
-        // Fall back to raw buyAmount if quote unavailable
-      }
+      // amount_out is exactly what the user typed in "Receive at least".
+      // Limit orders are limit orders — we never silently apply user
+      // slippage to lower the floor. If the user wants market-like
+      // behaviour they should use the Market tab.
+      const amountOutRaw = BigInt(scale(buyAmount || "0", buyAsset.decimals))
 
       const unsafeApi = papiClient.getUnsafeApi() as any
       const tx = unsafeApi.tx.Intent.submit_intent({

@@ -25,22 +25,31 @@ const schemaBase = z.object({
   limitPrice: positiveOptional,
   expiry: z.enum(EXPIRY_OPTIONS),
   partiallyFillable: z.boolean(),
-  /** Lock toggle: false = price-sacred (default), true = sell-sacred */
+  /**
+   * Lock toggle. When true, sell is forced to stay in `lastTwo`
+   * regardless of touch recency — buy/price edits derive each other
+   * around a fixed sell value.
+   */
   isLocked: z.boolean(),
   /**
-   * Which amount was last touched by the user. On price change we
-   * recalculate the OTHER amount so the user's last explicit input
-   * is preserved. Lock ON overrides this and always forces 'sell'.
+   * The two most-recently-touched fields, ordered most-recent first.
+   * The third field (not in this pair) is the one that derives via
+   * `buy = sell × price`. Updated on every user touch via the cascade
+   * logic in cascadeLogic.ts.
+   *
+   * Initial value `["price", "sell"]` makes `buy` the derived field
+   * on form mount: as soon as the user types into sell, buy fills
+   * from `sell × marketPrice`. Typing buy first instead flips it.
    */
-  amountAnchor: z.enum(["sell", "buy"]),
+  lastTwo: z.tuple([
+    z.enum(["sell", "buy", "price"]),
+    z.enum(["sell", "buy", "price"]),
+  ]),
   /**
-   * "market" → limitPrice mirrors the live market price every block
-   *            (amount-aware: includes fees + impact at user's size,
-   *            falls back to fee-adjusted spot at probe size when
-   *            sellAmount is empty).
-   * "user"   → user has typed / edited a custom price or deviation %,
-   *            so we stop auto-syncing. Reset to "market" by clicking
-   *            the "Best" button or by changing assets.
+   * Only relevant when `price` is in `lastTwo` (i.e. price is one of
+   * the two kept fields). "market" → mirror live market price every
+   * block; "user" → frozen at user-typed value (or pill % preset).
+   * When price is the derived field, this flag is unused.
    */
   priceAnchor: z.enum(["market", "user"]),
 })
@@ -79,7 +88,7 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     expiry: "open",
     partiallyFillable: true,
     isLocked: false,
-    amountAnchor: "sell",
+    lastTwo: ["price", "sell"],
     priceAnchor: "market",
   }
 

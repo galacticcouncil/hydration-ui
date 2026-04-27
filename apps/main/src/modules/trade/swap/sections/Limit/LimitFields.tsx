@@ -19,6 +19,13 @@ import { useTranslation } from "react-i18next"
 
 import { bestSellQuery } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import {
+  computeDerived,
+  FieldName,
+  getDerived,
+  lockSellIntoLastTwo,
+  updateLastTwoOnTouch,
+} from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { LimitPriceSection } from "@/modules/trade/swap/sections/Limit/LimitPriceSection"
 import { LimitSwitcher } from "@/modules/trade/swap/sections/Limit/LimitSwitcher"
 import { formatCalcValue } from "@/modules/trade/swap/sections/Limit/limitUtils"
@@ -71,18 +78,20 @@ export const LimitFields: FC = () => {
     (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
   )
 
-  // Market reference price (Option C):
+  // Market reference price — exactly the same router quote the Market
+  // (swap) tab uses for "you get":
   //   - User typed sellAmount → execution rate = amountOut / amountIn.
-  //     Fees + price impact at the user's size. Same rate the Market
-  //     (swap) tab shows as "you get".
+  //     Fees + price impact at the user's size. `displayed_rate ×
+  //     sellAmount` equals what the swap tab would show as "you get"
+  //     for the same sell amount.
   //   - sellAmount empty → probe the router with 1 whole unit. At that
   //     tiny size impact is negligible, so the resulting rate is
   //     effectively fee-adjusted spot (≈ spot × (1 − tradeFeePct)).
   //     This gives the user a stable "top of book with fees" reference
   //     before they commit to an amount; transitioning to execution
   //     rate as they type reveals only the impact component.
-  // User slippage buffer is never included here — that's applied
-  // only at submit (see useSubmitLimitOrder).
+  // User slippage buffer is never included anywhere in the limit
+  // flow — limit orders submit `amount_out` exactly as displayed.
   const sellAmountForQuote =
     sellAmount && Big(sellAmount || "0").gt(0) ? sellAmount : "1"
 
@@ -110,237 +119,136 @@ export const LimitFields: FC = () => {
     }
   })()
 
-  // ── Recalculation helpers ──
-
-  /** Given sell + price → buy */
-  const calcBuyFromSellAndPrice = useCallback(
-    (sell: string, price: string): string => {
-      try {
-        if (!sell || !price) return ""
-        return formatCalcValue(new Big(sell).times(price))
-      } catch {
-        return ""
-      }
-    },
-    [],
-  )
-
-  /** Given buy + price → sell */
-  const calcSellFromBuyAndPrice = useCallback(
-    (buy: string, price: string): string => {
-      try {
-        if (!buy || !price) return ""
-        const p = new Big(price)
-        if (p.lte(0)) return ""
-        return formatCalcValue(new Big(buy).div(p))
-      } catch {
-        return ""
-      }
-    },
-    [],
-  )
-
-  /** Given sell + buy → price */
-  const calcPriceFromAmounts = useCallback(
-    (sell: string, buy: string): string => {
-      try {
-        if (!sell || !buy) return ""
-        const s = new Big(sell)
-        if (s.lte(0)) return ""
-        return formatCalcValue(new Big(buy).div(s))
-      } catch {
-        return ""
-      }
-    },
-    [],
-  )
-
-  // ── Keep limit price mirrored to market until the user touches it ──
-  // As long as `priceAnchor === "market"` we re-sync `limitPrice` to
-  // the latest `marketPrice` every time the quote refetches (on every
-  // new block via QUERY_KEY_BLOCK_PREFIX, and additionally whenever
-  // the user's sellAmount changes because the price is now amount-
-  // aware). Once the user types a custom price or % deviation,
-  // LimitPriceSection flips `priceAnchor` to "user" and this effect
-  // becomes a no-op — their typed value is preserved.
-  //
-  // Cascade semantics:
-  //   1. Always update `limitPrice` to the fresh market rate.
-  //   2. Cascade between amounts ONLY if both amounts are already
-  //      populated. This keeps two amounts consistent when the market
-  //      moves under their feet, but doesn't auto-fill a field the
-  //      user has intentionally cleared. Initial "type one, auto-fill
-  //      the other" is handled by the edit handlers, not here.
-  //   3. When cascading, respect `amountAnchor` so we don't overwrite
-  //      the user's sacred field: anchor=buy → recalc sell,
-  //      anchor=sell → recalc buy.
-  useEffect(() => {
-    if (!marketPrice) return
-    const values = getValues()
-    if (values.priceAnchor !== "market") return
-    if (values.limitPrice === marketPrice) return
-
-    setValue("limitPrice", marketPrice)
-
-    // Update-only cascade — skip when either amount is empty so a
-    // cleared field stays cleared.
-    if (!values.sellAmount || !values.buyAmount) return
-
-    if (values.amountAnchor === "buy") {
-      setValue(
-        "sellAmount",
-        calcSellFromBuyAndPrice(values.buyAmount, marketPrice),
-      )
-    } else {
-      setValue(
-        "buyAmount",
-        calcBuyFromSellAndPrice(values.sellAmount, marketPrice),
-      )
-    }
-  }, [
-    marketPrice,
-    getValues,
-    setValue,
-    calcBuyFromSellAndPrice,
-    calcSellFromBuyAndPrice,
-  ])
-
-  // ── Field change handlers (Matcha anchor model) ──
+  // ── Cascade plumbing ──────────────────────────────────────────────
+  // The cascade rule lives in cascadeLogic.ts. This file just wires it
+  // into the form: every user touch updates `lastTwo`, then we
+  // recompute the derived field from the kept pair.
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   const debounced = useCallback((fn: () => void) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(fn, RECALCULATE_DEBOUNCE_MS)
   }, [])
 
-  // ── Sticky-anchor rule ───────────────────────────────────────────────
-  // `amountAnchor` tracks the field the user is currently "driving"
-  // from. It only moves when the user starts typing into a *different*
-  // empty-counterpart field — subsequent edits to the non-anchor field
-  // keep the anchor sacred and derive a new price instead.
-  //
-  // The user's typical flow:
-  //   1. Type buy=1000 → anchor flips to buy (sell was empty), sell
-  //      auto-fills from price.
-  //   2. Explore by editing sell repeatedly → price adjusts each time,
-  //      buy=1000 stays untouched. This is the whole point.
-  //
-  // Lock pill is the escape hatch if the user wants to fix the sell
-  // side instead (forces sell-sacred, price derives on buy edits).
+  /**
+   * After a touch, recompute the derived field's value from the kept
+   * pair. Honours `priceAnchor` when price is part of the kept pair:
+   *   - priceAnchor === "market" + price kept → use live `marketPrice`
+   *     for the kept "price" value (caller should also write that
+   *     back into the limitPrice field via the market-mirror effect).
+   *   - priceAnchor === "user" + price kept → use whatever's currently
+   *     in form.limitPrice.
+   */
+  const recomputeDerivedField = useCallback(() => {
+    const values = getValues()
+    const derived = getDerived(values.lastTwo)
+    const priceForCompute =
+      values.priceAnchor === "market" && values.lastTwo.includes("price")
+        ? (marketPrice ?? values.limitPrice ?? "")
+        : (values.limitPrice ?? "")
+    const computed = computeDerived(derived, {
+      sell: values.sellAmount ?? "",
+      buy: values.buyAmount ?? "",
+      price: priceForCompute,
+    })
+    if (derived === "buy") {
+      setValue("buyAmount", computed ?? "")
+    } else if (derived === "sell") {
+      setValue("sellAmount", computed ?? "")
+    } else {
+      setValue("limitPrice", computed ?? "")
+    }
+  }, [getValues, setValue, marketPrice])
 
-  /** User edits sell amount */
+  /**
+   * Generic touch handler — used by sell/buy amount changes here, and
+   * exposed via callbacks for the price input + pill in
+   * LimitPriceSection. Updates `lastTwo`, then debounces a derived
+   * recompute so we don't thrash on every keystroke.
+   */
+  const onFieldTouch = useCallback(
+    (field: FieldName) => {
+      const values = getValues()
+      const next = updateLastTwoOnTouch(values.lastTwo, field, values.isLocked)
+      if (next !== values.lastTwo) setValue("lastTwo", next)
+      debounced(() => {
+        recomputeDerivedField()
+        trigger()
+      })
+    },
+    [debounced, getValues, recomputeDerivedField, setValue, trigger],
+  )
+
   const handleSellAmountChange = useCallback(
-    (newSellAmount: string) => {
-      const values = getValues()
-      const canKeepBuy =
-        !values.isLocked && values.amountAnchor === "buy" && !!values.buyAmount
-
-      // Only re-anchor when we're about to overwrite buy. If buy is
-      // sacred (we'll derive price) the anchor stays "buy" so a later
-      // sell edit continues to preserve buy.
-      if (!canKeepBuy) setValue("amountAnchor", "sell")
-
-      debounced(() => {
-        const values = getValues()
-        if (canKeepBuy && values.buyAmount) {
-          // Buy is sacred → derive price from both amounts.
-          const newPrice = calcPriceFromAmounts(newSellAmount, values.buyAmount)
-          if (newPrice) {
-            setValue("limitPrice", newPrice)
-            // Derived price → stop auto-mirroring market.
-            setValue("priceAnchor", "user")
-          }
-        } else if (values.limitPrice) {
-          // Price is sacred → recalc buy.
-          setValue(
-            "buyAmount",
-            calcBuyFromSellAndPrice(newSellAmount, values.limitPrice),
-          )
-        }
-        trigger()
-      })
-    },
-    [
-      debounced,
-      getValues,
-      setValue,
-      calcBuyFromSellAndPrice,
-      calcPriceFromAmounts,
-      trigger,
-    ],
+    (_newSellAmount: string) => onFieldTouch("sell"),
+    [onFieldTouch],
   )
-
-  /** User edits buy amount */
   const handleBuyAmountChange = useCallback(
-    (newBuyAmount: string) => {
-      const values = getValues()
-      const isLocked = values.isLocked
-      const canKeepSell =
-        !isLocked && values.amountAnchor === "sell" && !!values.sellAmount
-
-      // Locked always forces sell-sacred (anchor stays "sell").
-      // Otherwise: only re-anchor when we're about to overwrite sell.
-      if (!isLocked && !canKeepSell) setValue("amountAnchor", "buy")
-
-      debounced(() => {
-        const values = getValues()
-        if (isLocked || canKeepSell) {
-          // Sell is sacred → derive price from both amounts.
-          if (values.sellAmount) {
-            const newPrice = calcPriceFromAmounts(
-              values.sellAmount,
-              newBuyAmount,
-            )
-            if (newPrice) {
-              setValue("limitPrice", newPrice)
-              setValue("priceAnchor", "user")
-            }
-          }
-        } else if (values.limitPrice) {
-          // Price is sacred → recalc sell.
-          setValue(
-            "sellAmount",
-            calcSellFromBuyAndPrice(newBuyAmount, values.limitPrice),
-          )
-        }
-        trigger()
-      })
-    },
-    [
-      debounced,
-      getValues,
-      setValue,
-      calcSellFromBuyAndPrice,
-      calcPriceFromAmounts,
-      trigger,
-    ],
+    (_newBuyAmount: string) => onFieldTouch("buy"),
+    [onFieldTouch],
   )
+
+  // ── Market-price mirror ───────────────────────────────────────────
+  // When `price` is in the kept pair AND priceAnchor === "market", we
+  // sync `limitPrice` to the latest `marketPrice` (which refetches
+  // every block) and recompute the derived field. When price is the
+  // derived field, this effect is a no-op — the cascade already sets
+  // limitPrice from the two kept amounts.
+  useEffect(() => {
+    if (!marketPrice) return
+    const values = getValues()
+    if (values.priceAnchor !== "market") return
+    if (!values.lastTwo.includes("price")) return
+    if (values.limitPrice === marketPrice) return
+
+    setValue("limitPrice", marketPrice)
+
+    const derived = getDerived(values.lastTwo)
+    if (derived === "price") return
+
+    const computed = computeDerived(derived, {
+      sell: values.sellAmount ?? "",
+      buy: values.buyAmount ?? "",
+      price: marketPrice,
+    })
+    // null = inputs missing → leave the derived field as-is rather
+    // than auto-filling something the user hasn't asked for.
+    if (computed === null) return
+    if (derived === "buy") setValue("buyAmount", computed)
+    else if (derived === "sell") setValue("sellAmount", computed)
+  }, [marketPrice, getValues, setValue])
 
   // ── Lock toggle ──
   const handleLockToggle = useCallback(() => {
     const values = getValues()
     const nextLocked = !values.isLocked
     setValue("isLocked", nextLocked)
-    // Turning the lock ON forces sell-sacred mode, so the anchor
-    // needs to match — otherwise a subsequent price edit would try
-    // to honor a buy anchor that contradicts the lock.
-    if (nextLocked) setValue("amountAnchor", "sell")
-  }, [getValues, setValue])
+    if (nextLocked) {
+      // Force sell into the kept pair if it isn't already, so the
+      // first buy/price edit derives the third (non-sell) field.
+      const next = lockSellIntoLastTwo(values.lastTwo)
+      if (next !== values.lastTwo) setValue("lastTwo", next)
+      // If the act of locking displaced a kept field into derived,
+      // recompute it.
+      debounced(() => {
+        recomputeDerivedField()
+        trigger()
+      })
+    }
+  }, [getValues, setValue, debounced, recomputeDerivedField, trigger])
 
   // ── Asset change handlers ──
 
   const handleSellAssetChange = useCallback(
     (newSellAsset: TAsset) => {
       const values = getValues()
-      // Reset price — will be re-populated from marketPrice by the
-      // market-mirroring effect (priceAnchor stays "market" after reset).
       reset({
         ...values,
         sellAsset: newSellAsset,
         limitPrice: "",
         buyAmount: "",
-        amountAnchor: "sell",
+        // Reset to "price kept, sell will fill on first sell touch".
+        lastTwo: ["price", "sell"],
         priceAnchor: "market",
       })
       trigger()
@@ -356,7 +264,7 @@ export const LimitFields: FC = () => {
         buyAsset: newBuyAsset,
         limitPrice: "",
         buyAmount: "",
-        amountAnchor: "sell",
+        lastTwo: ["price", "sell"],
         priceAnchor: "market",
       })
       trigger()
