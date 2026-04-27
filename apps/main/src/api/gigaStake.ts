@@ -11,12 +11,14 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const [minStake] = await Promise.all([
+      const [minStake, cooldownPeriod] = await Promise.all([
         unsafeApi.constants.GigaHdx.MinStake(),
+        unsafeApi.constants.GigaHdx.CooldownPeriod(),
       ])
 
       return {
         minStake,
+        cooldownPeriod,
       }
     },
     staleTime: millisecondsInHour,

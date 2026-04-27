@@ -7,6 +7,7 @@ import { Stack, Text, ValueStats } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { secondsToHours } from "date-fns"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -16,6 +17,7 @@ import {
   useFacilitatorBucket,
 } from "@/api/borrow"
 import { useBorrowPoolDataContract } from "@/api/borrow/contracts"
+import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
@@ -26,6 +28,10 @@ export const GigaStakeTotalsHeader: FC = () => {
   const hdxAsset = getAssetWithFallback(HDX_ERC20_ASSET_ID)
   const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
+  const { data: constants, isLoading: isConstantsLoading } = useQuery(
+    gigaStakeConstantsQuery(rpc),
+  )
+  const cooldownPeriod = secondsToHours(constants?.cooldownPeriod ?? 0) / 24
   const { data: gigaPoolReserves, isLoading: isGigaPoolReservesLoading } =
     useQuery(
       borrowReservesQuery(
@@ -82,9 +88,9 @@ export const GigaStakeTotalsHeader: FC = () => {
         wrap
         size="medium"
         label={t("staking:gigaStake.header.minimumLockPeriod")}
-        isLoading={false}
+        isLoading={isConstantsLoading}
         value={t("staking:gigaStake.header.valueDays", {
-          value: 25,
+          value: cooldownPeriod,
         })}
       />
       <ValueStats
