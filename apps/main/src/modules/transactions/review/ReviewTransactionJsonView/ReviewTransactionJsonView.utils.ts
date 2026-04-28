@@ -5,7 +5,6 @@ import {
   safeParse,
   safeStringify,
 } from "@galacticcouncil/utils"
-import { CompatibilityToken } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
@@ -84,12 +83,9 @@ export const decodeTx = (
   return {}
 }
 
-export const getTxCallHash = (
-  tx: AnyTransaction,
-  papiCompatibilityToken: CompatibilityToken,
-): string => {
+export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
   if (isPapiTransaction(tx)) {
-    return getPapiTransactionCallData(tx, papiCompatibilityToken)
+    return getPapiTransactionCallData(tx)
   }
 
   if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {

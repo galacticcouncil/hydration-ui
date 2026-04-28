@@ -37,9 +37,9 @@ export const useProcessBasejumpScanJourneys = (address: string) => {
     const journeysToProcess = journeys.filter(isValidForProcessing)
     if (journeysToProcess.length === 0) return
 
-    const sub = papi.query.System.Events.watchValue("best")
+    const sub = papi.query.System.Events.watchValue({ at: "best" })
       .pipe(
-        map(mapTransferExecutedLogs),
+        map(({ value }) => mapTransferExecutedLogs(value)),
         filter((events) => events.length > 0),
       )
       .subscribe((events) => {
