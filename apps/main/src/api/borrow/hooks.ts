@@ -1,30 +1,41 @@
-import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
+import {
+  SquidSdk,
+  stablepoolYieldMetricsQuery,
+} from "@galacticcouncil/indexer/squid"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
 import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
   getAssetIdFromAddress,
-  useStableArray,
 } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
+import {
+  QueryClient,
+  queryOptions,
+  useQueries,
+  useQueryClient,
+} from "@tanstack/react-query"
 import Big from "big.js"
-import { useMemo } from "react"
 
 import {
+  borrowReservesQuery,
   ExternalApyType,
-  useBorrowReserves,
-  useExternalApys,
   useUserBorrowSummary,
 } from "@/api/borrow/queries"
+import { useBlockTimestamp } from "@/api/chain"
+import {
+  ASSET_ID_TO_DEFILLAMA_ID,
+  defillamaLatestApyQuery,
+} from "@/api/external/defillama"
+import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { useSquidClient } from "@/api/provider"
-import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
-import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
+import { stablepoolReservesQuery, type TReserve } from "@/api/stableswap"
 import {
   isStableSwap,
   TAssetsContext,
   useAssets,
 } from "@/providers/assetsProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 type UnderlyingAssetApy = {
   id: string
@@ -36,7 +47,6 @@ type UnderlyingAssetApy = {
 export type ApyType = "supply" | "borrow"
 export type BorrowAssetApyData = {
   assetId: string
-  vDotApy?: number
   lpAPY?: number
   incentivesNetAPR: number
   incentives: ReserveIncentiveResponse[]
@@ -47,128 +57,219 @@ export type BorrowAssetApyData = {
   totalBorrowApy: number
   supplyMMApy: number
   borrowMMApy: number
-  stablepoolData: TStablepoolDetails | undefined
 }
 
-export const useBorrowAssetsApy = (assetIds: string[]) => {
-  const squidClient = useSquidClient()
-  const { getAsset, getErc20AToken, getRelatedAToken } = useAssets()
-  const { data: borrowReserves, isLoading: isLoadingBorrowReserves } =
-    useBorrowReserves()
+const getExternalIncentives = async (
+  queryClient: QueryClient,
+  assetsIds: string[],
+  reserves?: TReserve[],
+) => {
+  const externalApysQueries: [
+    string,
+    { apyType: ExternalApyType; apy: number },
+  ][] = []
 
-  const { data: stablepoolsReserves, isLoading: isLoadingStablepoolsReserves } =
-    useStablepoolsReserves(assetIds)
+  for (const assetId of assetsIds) {
+    const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
+    if (defillamaId) {
+      const apy = await queryClient.ensureQueryData(
+        defillamaLatestApyQuery(defillamaId),
+      )
 
-  const stablepoolsMap = useMemo<Map<string, TStablepoolDetails>>(() => {
-    return new Map(
-      stablepoolsReserves.map((item) => [item.pool.id.toString(), item]),
-    )
-  }, [stablepoolsReserves])
+      if (apy) {
+        externalApysQueries.push([
+          assetId,
+          {
+            apyType: ExternalApyType.stake,
+            apy,
+          },
+        ])
+      }
+    }
+    const kaminoId = ASSET_ID_TO_KAMINO_ID[assetId]
+    if (kaminoId) {
+      const apy = await queryClient.ensureQueryData(kaminoApyQuery(kaminoId))
 
-  const assetIdsMemo = useStableArray(assetIds)
+      if (apy) {
+        externalApysQueries.push([
+          assetId,
+          {
+            apyType: ExternalApyType.nativeYield,
+            apy,
+          },
+        ])
+      }
+    }
+  }
 
-  const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
-    stablepoolYieldMetricsQuery(squidClient),
-  )
+  const data = await Promise.all(externalApysQueries)
 
-  const yieldsMap = useMemo<Map<string, number>>(() => {
-    return new Map(
-      yieldMetrics?.map((item) => [
-        item.poolId,
-        Number(item.projectedApyPerc),
-      ]) ?? [],
-    )
-  }, [yieldMetrics])
+  return data.map(([id, { apyType, apy }]) => {
+    const proportion =
+      reserves?.find((reserve) => reserve.asset_id.toString() === id)
+        ?.proportion || 1 / assetsIds.length
 
-  const reserves = useMemo(
-    () => borrowReserves?.formattedReserves ?? [],
-    [borrowReserves],
-  )
+    return {
+      id,
+      apyType,
+      supplyApy: Big(apy).times(proportion).toNumber(),
+      borrowApy: Big(apy).times(proportion).toNumber(),
+    }
+  })
+}
 
-  const allAssetIds = useMemo(() => {
-    const ids = assetIdsMemo.flatMap((assetId) => {
-      const asset = getAsset(assetId)
-      return asset && isStableSwap(asset) && asset.underlyingAssetId
-        ? asset.underlyingAssetId
-        : [assetId]
-    })
-    return [...new Set(ids)]
-  }, [assetIdsMemo, getAsset])
+export const borrowAssetApyQuery = (
+  rpc: TProviderContext,
+  queryClient: QueryClient,
+  squidClient: SquidSdk,
+  assetId: string,
+  getAssetWithFallback: TAssetsContext["getAssetWithFallback"],
+  getErc20AToken: TAssetsContext["getErc20AToken"],
+  getRelatedAToken: TAssetsContext["getRelatedAToken"],
+  timestamp: bigint | undefined,
+) => {
+  return queryOptions<BorrowAssetApyData | undefined>({
+    queryKey: ["borrowAssetApy", assetId],
+    enabled: !!timestamp,
+    queryFn: async () => {
+      if (!timestamp) throw new Error("Invalid timestamp")
 
-  const { data: externalApys, isLoading: isLoadingExternalApys } =
-    useExternalApys(allAssetIds)
+      const borrowReserves = await queryClient.ensureQueryData(
+        borrowReservesQuery(rpc),
+      )
 
-  const isLoading =
-    isLoadingBorrowReserves ||
-    isLoadingStablepoolsReserves ||
-    isYieldMetricsLoading ||
-    isLoadingExternalApys
-
-  const data = useMemo<BorrowAssetApyData[]>(() => {
-    if (isLoading) return []
-    return assetIdsMemo.map((assetId) => {
-      const asset = getAsset(assetId)
-      const assetReserve = reserves.find(
+      const assetReserve = borrowReserves?.formattedReserves.find(
         ({ underlyingAsset }) =>
           underlyingAsset === getAddressFromAssetId(assetId),
       )
 
-      const incentives = (assetReserve?.aIncentivesData ?? []).filter(
-        ({ incentiveAPR }) => Big(incentiveAPR).gt(0),
-      )
+      if (!assetReserve) return undefined
 
-      const stableSwapAssetIds =
-        asset && isStableSwap(asset) && asset.underlyingAssetId
-          ? asset.underlyingAssetId
-          : [assetId]
+      const meta = getAssetWithFallback(assetId)
+      const incentives =
+        assetReserve.aIncentivesData?.filter(({ incentiveAPR }) =>
+          Big(incentiveAPR).gt(0),
+        ) ?? []
 
-      const underlyingAssetIds = stableSwapAssetIds.map((assetId) => {
-        return getErc20AToken(assetId)?.underlyingAssetId ?? assetId
-      })
+      if (isStableSwap(meta)) {
+        const stableSwapUnderlyingAssetIds: string[] =
+          meta.underlyingAssetId ?? []
 
-      const underlyingReserves = reserves.filter((reserve) => {
-        return underlyingAssetIds
-          .map(getAddressFromAssetId)
-          .includes(reserve.underlyingAsset)
-      })
+        const underlyingAssetIds = stableSwapUnderlyingAssetIds.map(
+          (assetId) => getErc20AToken(assetId)?.underlyingAssetId ?? assetId,
+        )
 
-      const stablepoolData = stablepoolsMap.get(assetId)
-      const lpAPY = yieldsMap.get(assetId)
+        const underlyingReserves = borrowReserves?.formattedReserves.filter(
+          (reserve) => {
+            return underlyingAssetIds
+              .map(getAddressFromAssetId)
+              .includes(reserve.underlyingAsset)
+          },
+        )
 
-      const calculatedData = calculateAssetApyTotals(
-        stableSwapAssetIds,
-        underlyingReserves,
-        assetReserve?.aIncentivesData ?? [],
-        new Map(externalApys),
-        stablepoolData,
-        lpAPY ?? 0,
-        getRelatedAToken,
-      )
+        const yieldMetrics = await queryClient.ensureQueryData(
+          stablepoolYieldMetricsQuery(squidClient),
+        )
 
-      return {
+        const stableswapApy = Number(
+          yieldMetrics?.find((metric) => metric.poolId === assetId)
+            ?.projectedApyPerc ?? 0,
+        )
+
+        const stablepoolData = await queryClient.ensureQueryData(
+          stablepoolReservesQuery(
+            rpc,
+            queryClient,
+            assetId,
+            getAssetWithFallback,
+          ),
+        )
+
+        if (!stablepoolData) {
+          throw new Error("Stablepool reserves not found")
+        }
+
+        const externalIncentives = await getExternalIncentives(
+          queryClient,
+          stableSwapUnderlyingAssetIds,
+          stablepoolData.reserves,
+        )
+
+        const calculatedData = calculateAssetApyTotals({
+          underlyingReserves,
+          incentives: assetReserve?.aIncentivesData ?? [],
+          getRelatedAToken,
+          externalIncentives,
+          stableswapYield: stableswapApy,
+          stableswapReserves: stablepoolData.reserves,
+        })
+
+        return {
+          assetId,
+          incentives,
+          lpAPY: stableswapApy,
+          ...calculatedData,
+        } satisfies BorrowAssetApyData
+      } else {
+        const underlyingAssetIds = [assetId]
+        const underlyingReserves = borrowReserves?.formattedReserves.filter(
+          (reserve) => {
+            return underlyingAssetIds
+              .map(getAddressFromAssetId)
+              .includes(reserve.underlyingAsset)
+          },
+        )
+        const externalIncentives = await getExternalIncentives(queryClient, [
+          assetId,
+        ])
+
+        const calculatedData = calculateAssetApyTotals({
+          underlyingReserves,
+          incentives: assetReserve?.aIncentivesData ?? [],
+          getRelatedAToken,
+          externalIncentives,
+        })
+
+        return {
+          assetId,
+          incentives,
+          ...calculatedData,
+        } satisfies BorrowAssetApyData
+      }
+    },
+  })
+}
+
+export const useBorrowAssetsApy = (assetIds: string[]) => {
+  const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
+  const squidClient = useSquidClient()
+
+  const { data: timestamp } = useBlockTimestamp()
+
+  return useQueries({
+    queries: assetIds.map((assetId) => ({
+      ...borrowAssetApyQuery(
+        rpc,
+        queryClient,
+        squidClient,
         assetId,
-        incentives,
-        lpAPY,
-        stablepoolData,
-        ...calculatedData,
-      } satisfies BorrowAssetApyData
-    })
-  }, [
-    getRelatedAToken,
-    assetIdsMemo,
-    stablepoolsMap,
-    externalApys,
-    getAsset,
-    getErc20AToken,
-    isLoading,
-    reserves,
-    yieldsMap,
-  ])
+        getAssetWithFallback,
+        getErc20AToken,
+        getRelatedAToken,
+        timestamp,
+      ),
+    })),
+    combine: (results) => {
+      const data: BorrowAssetApyData[] = results
+        .map((result) => result.data)
+        .filter((result) => !!result)
+      const isLoading = results.some((result) => result.isLoading)
 
-  return {
-    data,
-    isLoading,
-  }
+      return { data, isLoading }
+    },
+  })
 }
 
 const calculateIncentivesNetAPR = (incentives: ReserveIncentiveResponse[]) => {
@@ -193,8 +294,7 @@ const calculateIncentivesNetAPR = (incentives: ReserveIncentiveResponse[]) => {
 const calculateTotalSupplyAndBorrowApy = (
   underlyingAssetsApyData: UnderlyingAssetApy[],
   incentivesNetAPR: number,
-  lpAPY: number,
-  farmsAPR: number,
+  stableswapYield?: number,
 ) => {
   const underlyingSupplyApy = underlyingAssetsApyData.reduce(
     (total, asset) => total + asset.supplyApy,
@@ -208,8 +308,8 @@ const calculateTotalSupplyAndBorrowApy = (
 
   const supplyMMApy = underlyingSupplyApy + incentivesNetAPR
   const borrowMMApy = underlyingBorrowApy + incentivesNetAPR
-  const totalSupplyApy = supplyMMApy + lpAPY + farmsAPR
-  const totalBorrowApy = borrowMMApy + lpAPY
+  const totalSupplyApy = supplyMMApy + (stableswapYield ?? 0)
+  const totalBorrowApy = borrowMMApy + (stableswapYield ?? 0)
 
   return {
     underlyingSupplyApy,
@@ -233,85 +333,6 @@ type CalculatedAssetApyTotals = Pick<
   | "borrowMMApy"
 >
 
-const calculateAssetProportionInStablepool = (
-  assetId: string,
-  stablepoolData: TStablepoolDetails | undefined,
-) => {
-  const allReserves = stablepoolData?.reserves ?? []
-  const reserve = allReserves.find(
-    (reserve) => reserve.asset_id.toString() === assetId,
-  )
-  const totalAmount = stablepoolData?.totalDisplayAmount
-  const reserveAmount = reserve?.displayAmount
-
-  if (totalAmount && reserveAmount) {
-    return Big(reserveAmount).div(totalAmount).toNumber()
-  }
-}
-const calculateAssetApyTotals = (
-  stableSwapAssetIds: string[],
-  underlyingReserves: ComputedReserveData[],
-  incentives: ReserveIncentiveResponse[],
-  externalApysMap: Map<string, { apyType: ExternalApyType; apy?: number }>,
-  stablepoolData: TStablepoolDetails | undefined,
-  lpAPY: number,
-  getRelatedAToken: TAssetsContext["getRelatedAToken"],
-): CalculatedAssetApyTotals => {
-  const assetCount = stableSwapAssetIds.length
-  const incentivesNetAPR = calculateIncentivesNetAPR(incentives)
-
-  const underlyingAssetsApyData = underlyingReserves.map<UnderlyingAssetApy>(
-    (reserve) => {
-      const id = getAssetIdFromAddress(reserve.underlyingAsset)
-      const supplyAPY = Big(reserve.supplyAPY)
-      const borrowAPY = Big(reserve.variableBorrowAPY)
-
-      const balanceId = getRelatedAToken(id)?.id ?? id
-      const proportion =
-        calculateAssetProportionInStablepool(balanceId, stablepoolData) ||
-        1 / assetCount
-
-      return {
-        id,
-        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
-        borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
-      }
-    },
-  )
-
-  for (const id of stableSwapAssetIds) {
-    const externalApy = externalApysMap.get(id)
-
-    if (externalApy?.apy) {
-      const proportion =
-        calculateAssetProportionInStablepool(id, stablepoolData) ||
-        1 / assetCount
-
-      underlyingAssetsApyData.push({
-        id,
-        apyType: externalApy.apyType,
-        supplyApy: Big(externalApy.apy).times(proportion).toNumber(),
-        borrowApy: Big(externalApy.apy).times(proportion).toNumber(),
-      })
-    }
-  }
-
-  const farmsAPR = 0 // @TODO farmsAPR
-
-  const apySums = calculateTotalSupplyAndBorrowApy(
-    underlyingAssetsApyData,
-    incentivesNetAPR,
-    lpAPY,
-    farmsAPR,
-  )
-
-  return {
-    ...apySums,
-    underlyingAssetsApyData,
-    incentivesNetAPR,
-  }
-}
-
 export const useBorrowClaimableRewards = () => {
   const { data: userBorrowSummary, isLoading } = useUserBorrowSummary()
   const rewards = userBorrowSummary
@@ -321,5 +342,58 @@ export const useBorrowClaimableRewards = () => {
   return {
     data: rewards,
     isLoading,
+  }
+}
+
+export const calculateAssetApyTotals = ({
+  underlyingReserves,
+  incentives,
+  getRelatedAToken,
+  externalIncentives,
+  stableswapYield,
+  stableswapReserves,
+}: {
+  underlyingReserves: ComputedReserveData[]
+  incentives: ReserveIncentiveResponse[]
+  getRelatedAToken: TAssetsContext["getRelatedAToken"]
+  externalIncentives: UnderlyingAssetApy[]
+  stableswapYield?: number
+  stableswapReserves?: TReserve[]
+}): CalculatedAssetApyTotals => {
+  const incentivesNetAPR = calculateIncentivesNetAPR(incentives)
+
+  const underlyingAssetsApyData = underlyingReserves.map<UnderlyingAssetApy>(
+    (reserve) => {
+      const id = getAssetIdFromAddress(reserve.underlyingAsset)
+      const supplyAPY = Big(reserve.supplyAPY)
+      const borrowAPY = Big(reserve.variableBorrowAPY)
+
+      const balanceId = getRelatedAToken(id)?.id ?? id
+      const proportion = stableswapReserves
+        ? stableswapReserves.find(
+            (reserve) => reserve.asset_id.toString() === balanceId,
+          )?.proportion || 1 / stableswapReserves.length
+        : 1
+
+      return {
+        id,
+        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
+        borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
+      }
+    },
+  )
+
+  underlyingAssetsApyData.push(...externalIncentives)
+
+  const apySums = calculateTotalSupplyAndBorrowApy(
+    underlyingAssetsApyData,
+    incentivesNetAPR,
+    stableswapYield,
+  )
+
+  return {
+    ...apySums,
+    underlyingAssetsApyData,
+    incentivesNetAPR,
   }
 }

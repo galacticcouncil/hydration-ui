@@ -16,6 +16,7 @@ const LOGO_OVERLAP = {
   small: 4,
   medium: 6,
   large: 8,
+  "extra-large": 10,
 } as const
 
 const DECOR_THICKNESS = {
@@ -23,6 +24,7 @@ const DECOR_THICKNESS = {
   small: 1.5,
   medium: 1.75,
   large: 2.5,
+  "extra-large": 3,
 } as const
 
 const DECOR_PADDING = {
@@ -30,6 +32,7 @@ const DECOR_PADDING = {
   small: 1.5,
   medium: 1.5,
   large: 2,
+  "extra-large": 2.5,
 } as const
 
 const getATokenDecorationStyles = (
