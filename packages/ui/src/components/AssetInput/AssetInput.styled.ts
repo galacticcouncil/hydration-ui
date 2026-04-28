@@ -10,8 +10,10 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
     box-sizing: border-box;
 
     display: flex;
-    gap: 6px;
+    gap: ${theme.space.s};
     align-items: center;
+
+    height: 2rem;
 
     transition: ${theme.transitions.colors};
 
@@ -19,7 +21,7 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
     padding-right: ${theme.space.m};
     min-width: fit-content;
 
-    border-radius: 30px;
+    border-radius: ${theme.radii.full};
     border: 1px solid
       ${isError
         ? theme.accents.danger.dimBg
@@ -40,7 +42,7 @@ export const SAssetButtonEmpty = styled(Button)(
   ({ theme }) => css`
     padding-block: ${theme.space.s};
     padding-inline: ${theme.space.l};
-    height: 2.375rem;
+    height: 2rem;
     box-sizing: border-box;
   `,
 )
