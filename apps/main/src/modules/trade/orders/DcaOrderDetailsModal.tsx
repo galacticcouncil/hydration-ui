@@ -4,14 +4,13 @@ import {
   Amount,
   Button,
   Flex,
+  Grid,
   Icon,
   ModalBody,
   ModalContentDivider,
   ModalHeader,
   Separator,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -31,14 +30,36 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
 
+  const spentOrBudgetLabel = details.isOpenBudget
+    ? t("spent")
+    : `${t("remaining")} / ${t("budget")}`
+
+  const spentOrBudgetValue = details.isOpenBudget
+    ? `${t("number", {
+        value: details.fromAmountExecuted,
+      })} ${details.from.symbol}`
+    : `${t("number", {
+        value:
+          details.status === DcaScheduleStatus.Completed
+            ? "0"
+            : (details.fromAmountRemaining ?? details.fromAmountBudget),
+      })}/${t("number", {
+        value: details.fromAmountBudget,
+      })} ${details.from.symbol}`
+
+  const receivedValue = t("currency", {
+    value: details.toAmountExecuted ?? "0",
+    symbol: details.to.symbol,
+  })
+
   return (
     <>
       <ModalHeader
         title={t("trade:trade.orders.dcaDetail.title")}
         align="center"
       />
-      <ModalBody>
-        <Flex justify="space-between" align="center" pb="xxl">
+      <ModalBody scrollable={false}>
+        <Flex justify="space-between" align="center" pb="xl">
           <SwapAmount
             fromAmount={
               details.isOpenBudget
@@ -55,47 +76,13 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
           {details.status && <DcaOrderStatus status={details.status} />}
         </Flex>
         <ModalContentDivider />
-        <Flex justify="space-between" py="xxl">
-          <Flex direction="column" gap="s">
-            <Text fs="p4" lh={1} color={getToken("text.low")}>
-              {details.isOpenBudget
-                ? t("spent")
-                : `${t("remaining")} / ${t("budget")}`}
-            </Text>
-            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-              {t("number", {
-                value: details.isOpenBudget
-                  ? details.fromAmountExecuted
-                  : details.status === DcaScheduleStatus.Completed
-                    ? "0"
-                    : (details.fromAmountRemaining ?? details.fromAmountBudget),
-              })}
-              {!details.isOpenBudget && (
-                <>
-                  /
-                  {t("number", {
-                    value: details.fromAmountBudget,
-                  })}
-                </>
-              )}{" "}
-              {details.from.symbol}
-            </Text>
-          </Flex>
+        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
+          <Amount label={spentOrBudgetLabel} value={spentOrBudgetValue} />
           <Separator orientation="vertical" />
-          <Flex direction="column" gap="s" sx={{ justifySelf: "end" }}>
-            <Text fs="p4" lh={1} color={getToken("text.low")}>
-              {t("received")}
-            </Text>
-            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-              {t("currency", {
-                value: details.toAmountExecuted ?? "0",
-                symbol: details.to.symbol,
-              })}
-            </Text>
-          </Flex>
-        </Flex>
+          <Amount label={t("received")} value={receivedValue} />
+        </Grid>
         <ModalContentDivider />
-        <Flex justify="space-between" py="xxl">
+        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
           {blocksPeriod && (
             <>
               <Amount
@@ -117,10 +104,10 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
               symbol: details.from.symbol,
             })}
           />
-        </Flex>
+        </Grid>
         <ModalContentDivider />
         {details.status === DcaScheduleStatus.Created && onTerminate && (
-          <Flex justify="flex-end" pt="l" pb="xxl">
+          <Flex justify="flex-end" pt="l" pb="xl">
             <Button variant="danger" outline onClick={onTerminate}>
               <Icon component={Trash} size="s" />
               {t("trade:trade.cancelOrder.cta")}
@@ -131,7 +118,6 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
           scheduleId={details.scheduleId}
           sx={{ marginInline: "var(--modal-content-inset)" }}
         />
-        <ModalContentDivider />
       </ModalBody>
     </>
   )
