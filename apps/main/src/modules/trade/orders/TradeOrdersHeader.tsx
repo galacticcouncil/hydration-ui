@@ -12,10 +12,12 @@ import { useLocation, useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { intentsByAccountQuery } from "@/api/intents"
 import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
 export const tradeOrderTabs = [
@@ -39,6 +41,7 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
   })
 
   const squidClient = useSquidClient()
+  const rpc = useRpcProvider()
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
   const address = safeConvertSS58toPublicKey(accountAddress)
@@ -51,7 +54,11 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
     ),
   )
 
-  const openOrdersCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
+  const { data: intents } = useQuery(intentsByAccountQuery(rpc, accountAddress))
+
+  const dcaCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
+  const intentCount = intents?.length ?? 0
+  const openOrdersCount = dcaCount + intentCount
 
   const navigate = useNavigate()
 

@@ -6,7 +6,7 @@ import { FC, useState } from "react"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
-  OrderData,
+  DcaOrderData,
   useOrdersData,
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
@@ -22,7 +22,7 @@ export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
     from: "/trade/_history",
   })
 
-  const [isDetailOpen, setIsDetailOpen] = useState<OrderData | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState<DcaOrderData | null>(null)
 
   const { orders, totalCount, isLoading } = useOrdersData(
     [DcaScheduleStatus.Completed, DcaScheduleStatus.Terminated],
