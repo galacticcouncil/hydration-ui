@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { LINKS } from "@/config/navigation"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 type Props = {
   readonly asset: MyAsset
@@ -18,7 +19,7 @@ export const AssetDetailStaking: FC<Props> = ({ asset }) => {
 
   return (
     <Button type="button" variant="emphasis" outline asChild>
-      <Link to="/staking">
+      <Link to={LINKS.stakingOverview}>
         <StylizedAdd />
         {t("myAssets.actions.staking", {
           symbol: asset.symbol,

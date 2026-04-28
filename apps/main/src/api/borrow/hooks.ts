@@ -1,7 +1,10 @@
 import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
-import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
+import {
+  getUserClaimableRewards,
+  Pool,
+} from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
   getAssetIdFromAddress,
@@ -9,9 +12,11 @@ import {
 } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useMemo } from "react"
+import { constants, Contract } from "ethers"
+import { useCallback, useMemo } from "react"
 
 import {
+  convertEvmTxRawToPapiTx,
   ExternalApyType,
   useBorrowReserves,
   useExternalApys,
@@ -25,6 +30,7 @@ import {
   TAssetsContext,
   useAssets,
 } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type UnderlyingAssetApy = {
   id: string
@@ -322,4 +328,73 @@ export const useBorrowClaimableRewards = () => {
     data: rewards,
     isLoading,
   }
+}
+
+const ERC20_APPROVE_ABI = [
+  "function approve(address spender,uint256 amount) returns (bool)",
+] as const
+
+export const useApproveErc20 = () => {
+  const provider = useRpcProvider()
+
+  return useCallback(
+    async (pool: Pool, tokenAddress: string, evmAddress: string) => {
+      const spender = pool.poolAddress as `0x${string}`
+      const poolInstance = pool.getContractInstance(pool.poolAddress)
+
+      const erc20Contract = new Contract(
+        tokenAddress,
+        ERC20_APPROVE_ABI,
+        poolInstance.provider,
+      )
+
+      const populateApproveTx = erc20Contract.populateTransaction["approve"]
+
+      if (!populateApproveTx) {
+        throw new Error("Token approve method is unavailable")
+      }
+
+      const approveTxRaw = await populateApproveTx(
+        spender,
+        constants.MaxUint256.toString(),
+      )
+
+      const approveEvmCall = await convertEvmTxRawToPapiTx(
+        provider,
+        approveTxRaw,
+        evmAddress,
+      )
+      return approveEvmCall
+    },
+    [provider],
+  )
+}
+
+const ERC20_ALLOWANCE_ABI = [
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const
+
+export const useErc20Allowance = () => {
+  const provider = useRpcProvider()
+
+  return useCallback(
+    async (tokenAddress: string, evmAddress: string, spender: string) => {
+      return await provider.evm.readContract({
+        abi: ERC20_ALLOWANCE_ABI,
+        address: tokenAddress as `0x${string}`,
+        functionName: "allowance",
+        args: [evmAddress as `0x${string}`, spender as `0x${string}`],
+      })
+    },
+    [provider],
+  )
 }

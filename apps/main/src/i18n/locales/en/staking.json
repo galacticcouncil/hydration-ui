@@ -1,4 +1,45 @@
 {
+  "gigaStake.header.totalStaked": "Total {{ symbol }} staked",
+  "gigaStake.header.shareOfSupply": "Share of liquid supply",
+  "gigaStake.header.lockdownPeriod": "Lockdown period",
+  "gigaStake.header.valueDays": "{{ value, number }} days",
+  "gigaStake.header.minimumLockPeriod": "Minimum lock period",
+  "gigaStake.header.currentBorrowLimits": "Current borrow limits",
+  "gigaStake.header.currentBorrowLimits.value": "{{ value, number(maximumFractionDigits: 4) }}<0>/{{max, number(notation: 'compact')}}</0> {{ symbol }}",
+  "gigaStake.header.totalStake": "Total GIGA Stake",
+  "gigaStake.section.gigaStakingDashboard": "GIGA staking dashboard",
+  "gigaStakingMigration.title": "GIGA staking migration",
+  "gigaStakingMigration.lead": "You have <0>{{amount}} HDX</0> staked in Legacy Staking, you can maximize your staking rewards with GIGA HDX.",
+  "gigaStakingMigration.followUp": "With one click of a button you can migrate Legacy HDX and start earning those rewards.",
+  "gigaStakingMigration.cta": "Migrate to GIGA Staking",
+  "gigaStaking.unstakingPositions.title": "Unstaking positions",
+  "gigaStaking.unstakingPositions.description": "During the unlock period, you can claim them once it's over.",
+  "gigaStaking.gigaStake.title": "GIGA Stake",
+  "gigaStaking.gigaStake.input.label": "Amount to stake",
+  "gigaStaking.gigaStake.minStake.label": "Minimum stake",
+  "gigaStaking.gigaStake.cta": "Giga Stake",
+  "gigaStaking.banner.title": "Maximize APR with GIGA HDX",
+  "gigaStaking.banner.description": "Migrate your HDX Staking position to amplify your gains through borrowing with Hollar.",
+  "gigaStaking.banner.cta": "Migrate to GIGHDX Staking",
+  "gigaStaking.position.title": "My GIGA Stake",
+  "gigaStaking.hf.label": "Your health factor",
+  "gigaStaking.rewards.desc": "Participate in governance to speed up the rate at which you can claim your staking rewards.",
+  "gigaStaking.borrow.label": "Available to borrow",
+  "gigaStaking.borrowed.label": "Borrowed",
+  "gigaHdxDescription.points": [
+    [
+      "What's giga HDX?",
+      "What's giga HDX?"
+    ],
+    [
+      "How can I benefit from it?",
+      "Choose how many HDX you wish to stake - these can be unstaked at any time."
+    ],
+    [
+      "Participate in referenda",
+      "Participate in governance to speed up the rate at which you can claim rewards."
+    ]
+  ],
   "dashboard.title": "Staking dashboard",
   "dashboard.allocated.desktop": "Your allocated rewards:",
   "dashboard.allocated.mobile": ["Your allocated", "rewards:"],

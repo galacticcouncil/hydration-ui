@@ -9,6 +9,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { LINKS } from "@/config/navigation"
 import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.claim"
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
@@ -76,7 +77,7 @@ export const WalletRewardsSection: FC = () => {
           isLoading={staking.loading}
         />
         {staking.isEmpty && !staking.loading && (
-          <WalletRewardsSectionEmpty link="/staking">
+          <WalletRewardsSectionEmpty link={LINKS.stakingOverview}>
             {t("rewards.allocated.empty")}
           </WalletRewardsSectionEmpty>
         )}

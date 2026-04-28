@@ -19,7 +19,7 @@ export const PaginationPageButton: FC<PaginationPageButtonProps> = ({
       variant={isActive ? "secondary" : "tertiary"}
       outline={!isActive}
       onClick={onClick}
-      sx={{ px: "base", minWidth: "1.5rem" }}
+      sx={{ px: "base", minWidth: "1.875rem" }}
     >
       {pageNumber}
     </Button>
