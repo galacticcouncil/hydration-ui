@@ -4,7 +4,10 @@ import {
   transactionType,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
-import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
+import {
+  ComputedUserReserveData,
+  ExtendedFormattedUser,
+} from "@galacticcouncil/money-market/hooks"
 import {
   AaveV3GIGAHDXPool,
   AaveV3HydrationMainnet,
@@ -592,6 +595,13 @@ export const useFacilitatorBucket = (aTokenAddress: string) => {
   )
 }
 
+export type UserGigaBorrowSummary = {
+  userSummary: ExtendedFormattedUser
+  borrowableHollar: GigaBorrowableHollar
+  hdxReserve: ComputedUserReserveData
+  hollarReserve: ComputedUserReserveData
+}
+
 export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
@@ -603,7 +613,7 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
 
   return useQuery({
     queryKey: userGigaBorrowSummaryQueryKey(address),
-    queryFn: async () => {
+    queryFn: async (): Promise<UserGigaBorrowSummary> => {
       if (!poolDataContract || !ghoServiceContract)
         throw new Error("Invalid poolDataContract or ghoServiceContract")
 

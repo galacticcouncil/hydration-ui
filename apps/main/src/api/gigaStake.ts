@@ -19,6 +19,9 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
       return {
         minStake,
         cooldownPeriod,
+      } as {
+        minStake: bigint
+        cooldownPeriod: number
       }
     },
     staleTime: millisecondsInHour,
