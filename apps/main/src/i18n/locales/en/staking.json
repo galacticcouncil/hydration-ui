@@ -121,6 +121,8 @@
   "referenda.state.confirming": "Confirming",
   "referenda.item.voted": "Voted",
   "referenda.item.cta": "Vote",
+  "referenda.item.vote": "Vote",
+  "referenda.item.openOnSubSquare": "Open on SubSquare",
   "referenda.item.supportTooltip": "Support: {{ percentage }}",
 
   "claim.header": "Are you sure you want to claim rewards?",
