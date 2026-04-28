@@ -1,4 +1,5 @@
-import { Box, BoxProps } from "@/components/Box"
+import { BoxProps } from "@/components/Box"
+import { Flex } from "@/components/Flex"
 
 type IconProps = BoxProps & {
   component: React.ComponentType
@@ -10,8 +11,12 @@ export const Icon: React.FC<IconProps> = ({
   color = "currentColor",
   ...props
 }) => (
-  <Box
+  <Flex
     color={color}
+    as="span"
+    inline
+    align="center"
+    justify="center"
     size={size}
     sx={{ flexShrink: 0 }}
     css={{
@@ -20,5 +25,5 @@ export const Icon: React.FC<IconProps> = ({
     {...props}
   >
     <SvgComponent />
-  </Box>
+  </Flex>
 )

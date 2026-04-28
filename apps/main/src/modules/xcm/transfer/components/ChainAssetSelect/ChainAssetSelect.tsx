@@ -32,6 +32,7 @@ export type ChainAssetPair = {
   chain: AnyChain
   assets: Asset[]
   routes: AssetRoute[]
+  isTagSelect: boolean
 }
 
 export type ChainAssetSelection = {

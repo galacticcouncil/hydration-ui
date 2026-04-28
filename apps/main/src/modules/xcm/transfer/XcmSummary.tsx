@@ -27,14 +27,21 @@ export const XcmSummary = () => {
 
   const { source, destination } = transfer || {}
 
-  const [srcAsset, destAsset, srcChain, destChain] = watch([
+  const [srcAsset, destAsset, srcChain, destChain, bridgeProvider] = watch([
     "srcAsset",
     "destAsset",
     "srcChain",
     "destChain",
+    "bridgeProvider",
   ])
 
-  const config = useXcmTransferConfigs(srcAsset, srcChain, destChain, destAsset)
+  const config = useXcmTransferConfigs(
+    srcAsset,
+    srcChain,
+    destChain,
+    destAsset,
+    bridgeProvider,
+  )
   const { origin } = config ?? {}
 
   const sourceFeeValue = (() => {

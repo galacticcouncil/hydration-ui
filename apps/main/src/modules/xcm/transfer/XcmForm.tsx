@@ -20,6 +20,7 @@ import {
   insertOptimisticJourney,
   removeOptimisticJourney,
 } from "@/modules/xcm/history/utils/optimistic"
+import { BridgeSelector } from "@/modules/xcm/transfer/components/BridgeSelector"
 import { ChainAssetSelectModalSelectionChange } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { ChainSwitch } from "@/modules/xcm/transfer/components/ChainSwitch"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
@@ -51,6 +52,7 @@ export const XcmForm = () => {
     dryRunError,
     sourceChainAssetPairs,
     destChainAssetPairs,
+    availableBridgeRoutes,
     isLoading,
     isLoadingCall,
     isLoadingTransfer,
@@ -92,6 +94,7 @@ export const XcmForm = () => {
           transfer,
         )
       }
+
       resetAmounts()
     },
     onTransferError: (txHash) => {
@@ -298,6 +301,14 @@ export const XcmForm = () => {
               />
             </Flex>
           </Stack>
+          {availableBridgeRoutes.length > 1 && (
+            <>
+              <Separator />
+              <Stack px={["l", "xl"]} py="m">
+                <BridgeSelector routes={availableBridgeRoutes} />
+              </Stack>
+            </>
+          )}
           <XcmSummary />
           <Separator />
           <Box p={["l", "xl"]}>
