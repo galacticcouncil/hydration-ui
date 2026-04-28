@@ -23,6 +23,7 @@ export type AssetSelectProps = AssetInputProps & {
   selectedAsset: TSelectedAsset | undefined | null
   maxBalanceFallback?: string
   setSelectedAsset?: (asset: TAssetData) => void
+  onLockToggle?: () => void
 }
 
 export const AssetSelect = ({

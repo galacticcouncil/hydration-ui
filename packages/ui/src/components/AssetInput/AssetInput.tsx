@@ -1,9 +1,9 @@
 import { formatNumber } from "@galacticcouncil/utils"
 import Big from "big.js"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import { Button, Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken, pxToRem } from "@/utils"
 
@@ -30,6 +30,8 @@ export type AssetInputProps = {
   amountError?: string
   disabled?: boolean
   disabledInput?: boolean
+  isLocked?: boolean
+  onLock?: () => void
   hideInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
@@ -61,6 +63,8 @@ export const AssetInput = ({
   modalDisabled,
   loading,
   onAsssetBtnClick,
+  onLock,
+  isLocked,
   className,
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
@@ -138,7 +142,7 @@ export const AssetInput = ({
           sx={{ overflowX: "hidden" }}
           align="center"
           justify="space-between"
-          gap="m"
+          gap="s"
         >
           <AssetButton
             sx={{ ...(hideInput && { flex: 1 }) }}
@@ -149,6 +153,19 @@ export const AssetInput = ({
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
+          {onLock && (
+            <Button
+              variant={isLocked ? "accent" : "tertiary"}
+              outline
+              onClick={onLock}
+              sx={{ p: 0, size: "2rem" }}
+            >
+              <Icon
+                component={isLocked ? LockKeyhole : LockKeyholeOpen}
+                size="s"
+              />
+            </Button>
+          )}
           {!hideInput && (
             <Flex
               direction="column"

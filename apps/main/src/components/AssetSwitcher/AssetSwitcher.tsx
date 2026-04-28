@@ -23,6 +23,7 @@ type AssetSwitcherProps = {
   readonly priceOut?: string | undefined | null
   readonly disabled?: boolean
   readonly switcherDisabled?: boolean
+  readonly priceDisabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean
   readonly onSwitchAssets?: () => void
@@ -36,6 +37,7 @@ export const AssetSwitcher = ({
   priceOut,
   disabled,
   switcherDisabled,
+  priceDisabled,
   fallbackPrice,
   isFallbackPriceLoading,
   onSwitchAssets,
@@ -73,7 +75,7 @@ export const AssetSwitcher = ({
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
   return (
-    <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
+    <SAssetSwitcher sx={{ alignItems: "center", mx: "-xl" }}>
       <Separator />
       {onSwitchAssets && (
         <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
@@ -84,27 +86,30 @@ export const AssetSwitcher = ({
           />
         </SSwitchContainer>
       )}
-      <>
-        <Separator />
-        <SPriceContainer
-          disabled={isPriceDisabled}
-          onClick={() =>
-            setView((view) => (view === "default" ? "reversed" : "default"))
-          }
-        >
-          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
-            {!isPriceReady && <Skeleton width={120} />}
-            {isPriceReady &&
-              (isPriceDisabled
-                ? t("unknownExchangeRate")
-                : `1 ${shownAssetIn.symbol} = ${t("currency", {
-                    value: shownPrice,
-                    symbol: shownAssetOut.symbol,
-                  })}`)}
-          </Text>
-        </SPriceContainer>
-      </>
-      <Separator />
+      {!priceDisabled && (
+        <>
+          <Separator />
+          <SPriceContainer
+            disabled={isPriceDisabled}
+            onClick={() =>
+              setView((view) => (view === "default" ? "reversed" : "default"))
+            }
+          >
+            <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+              {!isPriceReady && <Skeleton width={120} />}
+              {isPriceReady &&
+                (isPriceDisabled
+                  ? t("unknownExchangeRate")
+                  : `1 ${shownAssetIn.symbol} = ${t("currency", {
+                      value: shownPrice,
+                      symbol: shownAssetOut.symbol,
+                    })}`)}
+            </Text>
+          </SPriceContainer>
+        </>
+      )}
+
+      <Separator sx={{ flex: priceDisabled ? 1 : "auto" }} />
     </SAssetSwitcher>
   )
 }
