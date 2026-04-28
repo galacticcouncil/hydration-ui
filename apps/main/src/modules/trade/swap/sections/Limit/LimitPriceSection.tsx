@@ -470,7 +470,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
             <Flex
               align="center"
               width="100%"
-              gap="xs"
+              gap="s"
               minWidth={0}
               justify="flex-end"
               pt="base"
@@ -490,7 +490,6 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
               <Text
                 fw={600}
                 fs="p2"
-                lh="s"
                 color={getToken("text.medium")}
                 whiteSpace="nowrap"
               >
@@ -502,18 +501,14 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
             {showPriceFiatRow && (
               <Text
                 fs="p6"
-                lh="s"
+                lh={1}
                 fw={400}
                 color={getToken("text.low")}
                 truncate
-                mt="-s"
+                mt="-xs"
               >
                 {priceFiatLoading ? (
-                  <Skeleton
-                    width={72}
-                    height={12}
-                    sx={{ display: "inline-block" }}
-                  />
+                  <Skeleton sx={{ width: "2xl" }} />
                 ) : (
                   priceFiatDisplay
                 )}
@@ -522,7 +517,6 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
           </Flex>
         </Flex>
 
-        {/* "Market" reset — extra top margin vs fiat so it's clearly separated from the $ line */}
         {marketDisplayValue && (
           <Flex justify="flex-end" mt="m">
             <SMarketButton type="button" onClick={handleSetMarketPrice}>
