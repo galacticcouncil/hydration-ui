@@ -81,11 +81,13 @@ const logWsStatusChange = (status: StatusChange) => {
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
   const { assets } = useAssetRegistry()
-  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
+  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode, legacyProvider } =
+    useProviderRpcUrlStore()
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
       priorityRpcUrl: !autoMode ? rpcUrl : undefined,
+      legacyProvider,
       probeConfig: {
         enabled: false,
       },

@@ -87,6 +87,7 @@ type ProviderRpcUrlStoreState = {
   rpcUrlList: string[]
   updatedAt: number
   autoMode: boolean
+  legacyProvider: boolean
 }
 
 type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
@@ -105,6 +106,7 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
+      legacyProvider: false,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setSquidUrl: (squidUrl) => set({ squidUrl }),
       setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
