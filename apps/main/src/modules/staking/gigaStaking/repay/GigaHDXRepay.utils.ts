@@ -6,6 +6,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
@@ -29,11 +30,13 @@ import { positive } from "@/utils/validators"
 export type GigaHDXRepayFormValues = {
   amount: string
   asset: TAssetData
+  isMaxSelected: boolean
 }
 
 export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(["common", "borrow", "staking"])
   const { getAssetWithFallback } = useAssets()
+
   const hollarAsset = getAssetWithFallback(HOLLAR_ASSET_ID)
   const { account } = useAccount()
   const provider = useRpcProvider()
@@ -57,6 +60,7 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     defaultValues: {
       amount: "",
       asset: hollarAsset,
+      isMaxSelected: false,
     },
     resolver: standardSchemaResolver(
       z.object({
@@ -67,16 +71,22 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
           },
         ),
         asset: z.custom<TAssetData>(),
+        isMaxSelected: z.boolean(),
       }),
     ),
   })
-  const amount = form.watch("amount")
+  const [amount, isMaxSelected] = form.watch(["amount", "isMaxSelected"])
   const repayAmount = Big.min(amount || "0", maxRepayAmountString)
   const remainingDebt = Big.max(Big(debtAmount || "0").minus(repayAmount), 0)
   const remainingDebtUsd = remainingDebt.mul(
     hollarReserve?.reserve.priceInUSD || "0",
   )
 
+  useEffect(() => {
+    if (isMaxSelected) {
+      form.setValue("amount", maxRepayAmountString)
+    }
+  }, [isMaxSelected, form, maxRepayAmountString])
   const repayAmountUsd = Big(amount || "0").mul(
     hollarReserve?.reserve.priceInUSD || "0",
   )

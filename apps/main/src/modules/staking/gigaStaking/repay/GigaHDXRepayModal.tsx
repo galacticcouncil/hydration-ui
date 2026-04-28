@@ -62,6 +62,8 @@ const GigaHDXRepayForm = ({ onClose }: GigaHDXRepayModalProps) => {
             disabledAssetSelector
             maxBalance={walletBalance}
             maxButtonBalance={maxRepayAmountString}
+            onAmountChange={() => form.setValue("isMaxSelected", false)}
+            onMaxButtonClick={() => form.setValue("isMaxSelected", true)}
           />
 
           <ModalContentDivider />
