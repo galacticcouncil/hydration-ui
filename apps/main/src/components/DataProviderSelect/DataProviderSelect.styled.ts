@@ -15,9 +15,11 @@ export const SContainer = styled.div<{ readonly bottomPinned?: boolean }>(
   ({ theme, bottomPinned }) => css`
     display: flex;
 
-    gap: ${theme.space.base};
-    padding: ${theme.space.base};
+    /* 8px gap + 20px vertical padding (design tokens); horizontal stays base. */
+    gap: ${theme.sizes["2xs"]};
+    padding-top: ${theme.sizes.l};
     padding-bottom: ${pxToRem(80)};
+    padding-inline: ${theme.space.base};
 
     ${bottomPinned
       ? bottomPinnedStyle(theme)

@@ -28,4 +28,4 @@ yarn-error.log*
 *.gen.*
 *storybook.log
 .cursor
-.claude
+.claude.mcp.json

@@ -203,6 +203,7 @@
   "navigation.trade.title": "Trade",
   "navigation.swapMarket.title": "Market",
   "navigation.swapDca.title": "DCA",
+  "navigation.swapLimit.title": "Limit order",
   "navigation.wallet.title": "Wallet",
   "navigation.walletAssets.title": "Overview",
   "navigation.walletTransactions.title": "Transactions",

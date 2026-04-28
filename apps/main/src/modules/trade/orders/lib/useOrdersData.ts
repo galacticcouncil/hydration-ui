@@ -16,6 +16,7 @@ import { scaleHuman } from "@/utils/formatting"
 export enum OrderKind {
   Dca = "dca",
   DcaRolling = "dcaRolling",
+  Limit = "limit",
 }
 
 export type OrderData = {
@@ -31,6 +32,9 @@ export type OrderData = {
   readonly status: DcaScheduleStatus | null
   readonly blocksPeriod: string | null
   readonly isOpenBudget: boolean
+  // Intent/Limit order fields
+  readonly intentId?: bigint
+  readonly deadline?: bigint
 }
 
 export const useOrdersData = (

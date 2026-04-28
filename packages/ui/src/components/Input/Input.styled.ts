@@ -69,6 +69,13 @@ export const SInputContainer = styled.div<
 >(({ theme, customSize = "medium", variant = "standalone" }) => [
   sizes(customSize),
   variants(variant),
+  ...(customSize === "medium" && variant === "embedded"
+    ? [
+        css`
+          padding-right: 0;
+        `,
+      ]
+    : []),
   css`
     display: flex;
     gap: ${theme.space.s};
