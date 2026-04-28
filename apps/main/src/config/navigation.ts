@@ -51,6 +51,7 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
+  hdclVault: "/hdcl-vault",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -150,6 +151,11 @@ export const NAVIGATION: NavigationItem[] = [
       // { key: "statsAmm", to: LINKS.statsAmm },
       { key: "statsFees", to: LINKS.statsFees },
     ],
+  },
+  {
+    key: "hdclVault",
+    to: LINKS.hdclVault,
+    icon: CoinsIcon,
   },
   {
     key: "staking",
@@ -300,6 +306,10 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
+    hdclVault: {
+      title: "HDCL Vault",
+      description: "Invest in the Hydrated Decentral yield vault",
+    },
     // memepad: {
     //   title: t("navigation.memepad.title"),
     //   description: "",
@@ -339,6 +349,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "hdclVault",
   "liquidity",
   "wallet",
   "crossChain",
