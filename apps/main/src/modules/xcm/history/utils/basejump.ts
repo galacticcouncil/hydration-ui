@@ -2,6 +2,7 @@ import { HYDRATION_CHAIN_KEY, stringEquals } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
+import { toHex } from "polkadot-api/utils"
 import { isNonNullish, isNumber } from "remeda"
 import { Hex, parseAbiItem, toEventSelector } from "viem"
 import z from "zod"
@@ -186,11 +187,10 @@ export function mapTransferExecutedLogs(events: SystemEvents) {
       if (
         event.type === "EVM" &&
         event.value.type === "Log" &&
-        event.value.value.log.address.asHex() === BASEJUMP_LANDING_CONTRACT
+        stringEquals(event.value.value.log.address, BASEJUMP_LANDING_CONTRACT)
       ) {
-        const [signatureTopic, ...topics] = event.value.value.log.topics.map(
-          (topic) => topic.asHex(),
-        ) as Hex[]
+        const [signatureTopic, ...topics] = event.value.value.log
+          .topics as Hex[]
 
         const isTransferExecutedTopic =
           !!signatureTopic &&
@@ -198,7 +198,7 @@ export function mapTransferExecutedLogs(events: SystemEvents) {
 
         return isTransferExecutedTopic
           ? {
-              data: event.value.value.log.data.asHex(),
+              data: toHex(event.value.value.log.data) as Hex,
               signatureTopic,
               topics,
             }
