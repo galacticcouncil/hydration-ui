@@ -29,7 +29,7 @@ type PapiObservableArgs<K extends PapiObservableKey> = Parameters<
 
 type PapiObservableReturn<K extends PapiObservableKey> = ObservedValueOf<
   ReturnType<PapiObservable<K>["watchValue"]>
->
+>["value"]
 
 export type UsePapiObservableQueryOptions<T, TData = T> = Omit<
   UseObservableQueryOptions<T, TData>,
@@ -57,15 +57,15 @@ export function usePapiValue<
       const observable = PAPI_OBSERVER_MAP[key](papi.query)
 
       // @ts-expect-error Args are union here
-      const watcher = observable.watchValue(...args) as Observable<
-        PapiObservableReturn<K>
-      >
+      const watcher = observable.watchValue(...args) as Observable<{
+        value: PapiObservableReturn<K>
+      }>
 
       return watcher.pipe(
         // Share a single subscription and replay the last value to new consumers
         shareReplay({ bufferSize: 1, refCount: true }),
         // react-query doesn't like undefined values, so we map them to null
-        map((value) => (value === undefined ? null : value)),
+        map(({ value }) => (value === undefined ? null : value)),
       )
     },
   })

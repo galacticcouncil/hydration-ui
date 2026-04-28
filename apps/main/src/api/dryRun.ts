@@ -1,13 +1,12 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+import { QUERY_KEY_BLOCK_PREFIX, safeStringify } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import { AnyPapiTx } from "@/modules/transactions/types"
-import { getPapiTransactionCallData } from "@/modules/transactions/utils/tx"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const papiDryRunErrorQuery = (
-  { papi, dryRunErrorDecoder, papiCompatibilityToken }: TProviderContext,
+  { papi, dryRunErrorDecoder }: TProviderContext,
   address: string,
   tx: AnyPapiTx,
   debug?: boolean,
@@ -18,7 +17,7 @@ export const papiDryRunErrorQuery = (
       "dryRun",
       "papi",
       address,
-      getPapiTransactionCallData(tx, papiCompatibilityToken),
+      safeStringify(tx.decodedCall),
     ],
     queryFn: async () => {
       try {

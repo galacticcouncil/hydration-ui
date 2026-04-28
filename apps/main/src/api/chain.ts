@@ -53,7 +53,7 @@ export const useInvalidateOnBlock = () => {
 
   const observable = useMemo(() => {
     if (!isApiLoaded) return
-    return papi.query.System.Number.watchValue("best")
+    return papi.query.System.Number.watchValue({ at: "best" })
   }, [isApiLoaded, papi])
 
   useObservable(observable, {
@@ -87,7 +87,8 @@ export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
   return timestamp + periodMs
 }
 
-export const useBlockTimestamp = () => usePapiValue("Timestamp.Now", ["best"])
+export const useBlockTimestamp = () =>
+  usePapiValue("Timestamp.Now", [{ at: "best" }])
 
 export const chainSpecDataQuery = (context: TProviderContext) => {
   const { papi, papiClient, isApiLoaded } = context

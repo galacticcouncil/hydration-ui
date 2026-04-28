@@ -1,6 +1,6 @@
 import { hydration, HydrationQueries } from "@galacticcouncil/descriptors"
 import { queryOptions } from "@tanstack/react-query"
-import { FixedSizeBinary, TypedApi } from "polkadot-api"
+import { Binary, TypedApi } from "polkadot-api"
 import { mapValues, pick, pipe } from "remeda"
 
 type IdentityRaw = HydrationQueries["Identity"]["IdentityOf"]["Value"]
@@ -31,8 +31,8 @@ const parseIdentityInfo = (identity: IdentityRaw): IdentityInfo =>
     pick(IDENTITY_INFO_FIELDS),
     mapValues((data) => {
       if (!data?.value) return ""
-      if (data.value instanceof FixedSizeBinary) {
-        return data.value.asText()
+      if (typeof data.value === "string" && data.value.startsWith("0x")) {
+        return Binary.toText(Binary.fromHex(data.value))
       }
       return data.value.toString()
     }),

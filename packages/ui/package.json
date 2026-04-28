@@ -55,7 +55,7 @@
     "react-loading-skeleton": "^3.5.0",
     "react-number-format": "^5.4.4",
     "react18-json-view": "^0.2.9-canary.9",
-    "recharts": "^3.1.2",
+    "recharts": "3.1.2",
     "vaul": "^1.1.2"
   },
   "devDependencies": {

@@ -3,7 +3,6 @@ import { safeStringify } from "@galacticcouncil/utils"
 import { MultisigPendingTx, useAccount } from "@galacticcouncil/web3-connect"
 import { getExtrinsicDecoder } from "@polkadot-api/tx-utils"
 import { useQuery } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
 
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -60,9 +59,7 @@ export const useDecodedMultisigTx = (tx: MultisigPendingTx) => {
 
       const decodedExtrinsic = decoder(extrinsic)
       return {
-        tx: await papi.txFromCallData(
-          Binary.fromBytes(decodedExtrinsic.callData),
-        ),
+        tx: await papi.txFromCallData(decodedExtrinsic.callData),
         timestamp: Number(timestamp),
       }
     },
