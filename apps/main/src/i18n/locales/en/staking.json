@@ -122,6 +122,7 @@
   "referenda.item.voted": "Voted",
   "referenda.item.cta": "Vote",
   "referenda.item.vote": "Vote",
+  "referenda.item.removeVote": "Remove vote",
   "referenda.item.openOnSubSquare": "Open on SubSquare",
   "referenda.item.supportTooltip": "Support: {{ percentage }}",
 

@@ -24,7 +24,9 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalance } from "@/states/account"
+import { useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
 import { toDecimal } from "@/utils/formatting"
 
@@ -97,10 +99,12 @@ const VoteValueField: FC<{
   </Stack>
 )
 
-export const VoteModal: FC<Props> = ({ open, onClose }) => {
+export const VoteModal: FC<Props> = ({ referendumId, open, onClose }) => {
   const { t } = useTranslation("common")
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
+  const { papi, dataEnv } = useRpcProvider()
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
   const hdxBalance = useAccountBalance(NATIVE_ASSET_ID)
   const rawHdx = hdxBalance?.total?.toString() ?? "0"
@@ -144,6 +148,73 @@ export const VoteModal: FC<Props> = ({ open, onClose }) => {
     setNayGigaValue(v)
     if (v !== rawGigaHdx) setNayValue("")
   }
+
+  const buildAccountVote = () => {
+    if (voteType === "aye" || voteType === "nay") {
+      const isAye = voteType === "aye"
+      const giga = voteType === "aye" ? ayeGigaValue : nayGigaValue
+      const hdx = voteType === "aye" ? ayeValue : nayValue
+      const balance = BigInt(giga || "0") + BigInt(hdx || "0")
+      return {
+        type: "Standard" as const,
+        value: {
+          vote: (isAye ? 0x80 : 0x00) | (multiplier & 0x7f),
+          balance,
+        },
+      }
+    }
+    if (voteType === "split") {
+      return {
+        type: "Split" as const,
+        value: {
+          aye: BigInt(ayeValue || "0"),
+          nay: BigInt(nayValue || "0"),
+        },
+      }
+    }
+    return {
+      type: "SplitAbstain" as const,
+      value: {
+        aye: BigInt(ayeValue || "0"),
+        nay: BigInt(nayValue || "0"),
+        abstain: BigInt(abstainValue || "0"),
+      },
+    }
+  }
+
+  const handleSubmit = () => {
+    const tx = papi.tx.ConvictionVoting.vote({
+      poll_index: referendumId,
+      vote: buildAccountVote(),
+    })
+
+    createTransaction(
+      {
+        tx,
+        invalidateQueries: [
+          ["accountOpenGovVotes", account?.address ?? ""],
+          ["openGovReferenda", dataEnv],
+        ],
+      },
+      { onSuccess: onClose },
+    )
+  }
+
+  const isSubmitDisabled = (() => {
+    if (voteType === "aye" || voteType === "nay") {
+      const giga = voteType === "aye" ? ayeGigaValue : nayGigaValue
+      const hdx = voteType === "aye" ? ayeValue : nayValue
+      return BigInt(giga || "0") + BigInt(hdx || "0") === 0n
+    }
+    if (voteType === "split") {
+      return BigInt(ayeValue || "0") === 0n && BigInt(nayValue || "0") === 0n
+    }
+    return (
+      BigInt(ayeValue || "0") === 0n &&
+      BigInt(nayValue || "0") === 0n &&
+      BigInt(abstainValue || "0") === 0n
+    )
+  })()
 
   const totalVoteValue =
     voteType === "aye"
@@ -346,7 +417,8 @@ export const VoteModal: FC<Props> = ({ open, onClose }) => {
                       Total Vote Value
                     </Text>
                     <Text fs="p5" fw={500}>
-                      {formatWithSpaces(totalVoteValue.toString())} (GIGAHDX+HDX)
+                      {formatWithSpaces(totalVoteValue.toString())}{" "}
+                      (GIGAHDX+HDX)
                     </Text>
                   </Flex>
                   <Flex justify="space-between" align="center">
@@ -373,9 +445,8 @@ export const VoteModal: FC<Props> = ({ open, onClose }) => {
         <Button
           size="large"
           width="100%"
-          onClick={() => {
-            // TODO: submit vote
-          }}
+          disabled={!account?.address || isSubmitDisabled}
+          onClick={handleSubmit}
         >
           Submit
         </Button>
