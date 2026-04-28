@@ -27,11 +27,11 @@ import {
 } from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
+  QUERY_KEY_BLOCK_PREFIX,
   safeConvertAnyToH160,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
-import { millisecondsInMinute } from "date-fns/constants"
 import { PopulatedTransaction } from "ethers"
 import { Binary, FixedSizeArray } from "polkadot-api"
 import { useCallback } from "react"
@@ -550,6 +550,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 }
 
 export const userGigaBorrowSummaryQueryKey = (evmAddress: string) => [
+  QUERY_KEY_BLOCK_PREFIX,
   "gigaBorrow",
   "userSummary",
   evmAddress,
@@ -601,8 +602,6 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery({
-    staleTime: millisecondsInMinute,
-    gcTime: millisecondsInMinute,
     queryKey: userGigaBorrowSummaryQueryKey(address),
     queryFn: async () => {
       if (!poolDataContract || !ghoServiceContract)
