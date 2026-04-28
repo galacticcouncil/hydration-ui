@@ -1,4 +1,5 @@
 import {
+  AccountTile,
   Box,
   Button,
   Flex,
@@ -16,7 +17,13 @@ import {
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { useAccountBalance } from "@/states/account"
+import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
+import { toDecimal } from "@/utils/formatting"
 
 type Props = {
   referendumId: number
@@ -30,18 +37,43 @@ const MULTIPLIER_LABELS = ["0x", "1x", "2x", "3x", "4x", "5x", "6x"]
 
 const LOCK_DURATION_DAYS = [0, 7, 14, 27, 56, 112, 224]
 
-const VoteValueField: FC<{ label: string }> = ({ label }) => (
+const VoteValueField: FC<{
+  label: string
+  value: string
+  onChange: (v: string) => void
+}> = ({ label, value, onChange }) => (
   <Stack direction="column" gap="s">
     <Text fs="p5" fw={500}>
       {label}
     </Text>
-    <Input value="0" unit="HDX" readOnly />
+    <Input
+      value={value}
+      unit="HDX"
+      placeholder="0"
+      inputMode="decimal"
+      autoComplete="off"
+      onChange={(e) => {
+        const raw = e.target.value.replace(/\s+/g, "").replace(/,/g, ".")
+        if (raw === "" || !isNaN(Number(raw))) {
+          onChange(raw)
+        }
+      }}
+    />
   </Stack>
 )
 
 export const VoteModal: FC<Props> = ({ open, onClose }) => {
+  const { t } = useTranslation("common")
+  const { account } = useAccount()
+  const hdxBalance = useAccountBalance(NATIVE_ASSET_ID)
+  const humanHdx = toDecimal(hdxBalance?.total ?? "0", NATIVE_ASSET_DECIMALS)
+  const formattedHdx = t("currency", { value: humanHdx, symbol: "HDX" })
+
   const [voteType, setVoteType] = useState<VoteType>("aye")
   const [multiplier, setMultiplier] = useState(0)
+  const [ayeValue, setAyeValue] = useState("")
+  const [nayValue, setNayValue] = useState("")
+  const [abstainValue, setAbstainValue] = useState("")
   const lockDays = LOCK_DURATION_DAYS[multiplier] ?? 0
 
   const showMultiplierAndSummary = voteType === "aye" || voteType === "nay"
@@ -61,42 +93,15 @@ export const VoteModal: FC<Props> = ({ open, onClose }) => {
                   Voting Balance
                 </Text>
                 <Text fs="p5" fw={500}>
-                  0 HDX
+                  {formattedHdx}
                 </Text>
               </Flex>
             </Flex>
 
-            <Box
-              p="m"
-              sx={{
-                background: getToken("surfaces.containers.dim.dimOnBg"),
-                borderRadius: "containersPrimary",
-              }}
-            >
-              <Flex align="center" justify="space-between" gap="m">
-                <Flex align="center" gap="s">
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "9999px",
-                      background: getToken("surfaces.containers.mid.primary"),
-                    }}
-                  />
-                  <Stack direction="column" gap="3xs">
-                    <Text fs="p5" fw={500}>
-                      Account
-                    </Text>
-                    <Text fs="p6" color={getToken("text.medium")}>
-                      7Jw…NHr6Sp5
-                    </Text>
-                  </Stack>
-                </Flex>
-                <Button size="small" variant="secondary" outline>
-                  Switch
-                </Button>
-              </Flex>
-            </Box>
+            <AccountTile
+              name={account?.name ?? ""}
+              address={account?.address ?? ""}
+            />
           </Stack>
 
           <ModalContentDivider />
@@ -115,19 +120,51 @@ export const VoteModal: FC<Props> = ({ open, onClose }) => {
 
           <ModalContentDivider />
 
-          {voteType === "aye" && <VoteValueField label="Aye Vote Value" />}
-          {voteType === "nay" && <VoteValueField label="Nay Vote Value" />}
+          {voteType === "aye" && (
+            <VoteValueField
+              label="Aye Vote Value"
+              value={ayeValue}
+              onChange={setAyeValue}
+            />
+          )}
+          {voteType === "nay" && (
+            <VoteValueField
+              label="Nay Vote Value"
+              value={nayValue}
+              onChange={setNayValue}
+            />
+          )}
           {voteType === "split" && (
             <Stack direction="column" gap="m">
-              <VoteValueField label="Aye Vote Value" />
-              <VoteValueField label="Nay Vote Value" />
+              <VoteValueField
+                label="Aye Vote Value"
+                value={ayeValue}
+                onChange={setAyeValue}
+              />
+              <VoteValueField
+                label="Nay Vote Value"
+                value={nayValue}
+                onChange={setNayValue}
+              />
             </Stack>
           )}
           {voteType === "abstain" && (
             <Stack direction="column" gap="m">
-              <VoteValueField label="Abstain Vote Value" />
-              <VoteValueField label="Aye Vote Value" />
-              <VoteValueField label="Nay Vote Value" />
+              <VoteValueField
+                label="Abstain Vote Value"
+                value={abstainValue}
+                onChange={setAbstainValue}
+              />
+              <VoteValueField
+                label="Aye Vote Value"
+                value={ayeValue}
+                onChange={setAyeValue}
+              />
+              <VoteValueField
+                label="Nay Vote Value"
+                value={nayValue}
+                onChange={setNayValue}
+              />
             </Stack>
           )}
 
