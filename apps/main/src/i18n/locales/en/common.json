@@ -199,6 +199,8 @@
   "navigation.stakingGigaStake.title": "Giga Stake",
   "navigation.stakingOverview.title": "Staking",
   "navigation.stakingGovernance.title": "Governance",
+  "navigation.governance.title": "Governance",
+  "navigation.governance.description": "Vote on Hydration OpenGov referenda.",
   "navigation.stats.description": "",
   "navigation.stats.title": "Stats",
   "navigation.submitTransaction.title": "Submit Transaction",
