@@ -196,8 +196,8 @@ export const VoteModal: FC<Props> = ({ referendumId, open, onClose }) => {
           ["openGovReferenda", dataEnv],
         ],
       },
-      { onSuccess: onClose },
-    )
+      { onSubmitted: onClose },
+    ).catch(() => {})
   }
 
   const isSubmitDisabled = (() => {
