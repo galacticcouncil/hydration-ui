@@ -64,12 +64,13 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     },
     resolver: standardSchemaResolver(
       z.object({
-        amount: positive.refine(
-          (value) => new Big(value || "0").lte(maxRepayAmountString),
-          {
-            error: t("error.maxBalance", { ns: "common" }),
-          },
-        ),
+        amount: positive
+          .refine((value) => new Big(value || "0").lte(walletBalance || "0"), {
+            error: t("error.maxBalance"),
+          })
+          .refine((value) => new Big(value || "0").lte(debtAmount || "0"), {
+            error: t("staking:gigaStaking.repay.error.repayLimit"),
+          }),
         asset: z.custom<TAssetData>(),
         isMaxSelected: z.boolean(),
       }),
@@ -114,7 +115,10 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
         throw new Error("Giga borrow pool contract not found")
       if (!account?.address || !hollarReserve?.underlyingAsset) return
 
-      const amountWei = toBigInt(amount, hollarAsset.decimals)
+      const amountWei = toBigInt(
+        Big(amount).mul(1.0025).toString(),
+        hollarAsset.decimals,
+      )
 
       if (amountWei <= 0n) return
 
