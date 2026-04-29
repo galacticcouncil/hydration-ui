@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
+import { Binary } from "polkadot-api"
 
 import { ENV } from "@/config/env"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
@@ -29,7 +30,7 @@ export const nativeTokenLocksQuery = (
 
       return locks
         .map((lock) => {
-          const type = lock.id.asText()
+          const type = Binary.toText(Binary.fromHex(lock.id))
 
           if (!isKnownTokenLockType(type)) {
             return null

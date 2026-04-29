@@ -21,7 +21,7 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
   const { t } = useTranslation()
   const { rpcList, removeRpc } = useRpcListStore()
   const { setRpcUrl, rpcUrl } = useProviderRpcUrlStore()
-  const { ws } = useRpcProvider()
+  const { papiClient } = useRpcProvider()
 
   const providerList = useMemo(() => {
     const list = [
@@ -48,9 +48,9 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
   })
 
   const handleSwitchRpc = (url: string) => {
-    if (isFunction(ws.switch)) {
+    if (isFunction(papiClient.switch)) {
       unsubscribeAllTxs()
-      ws.switch(url)
+      papiClient.switch(url)
     } else {
       setRpcUrl(url)
       window.location.reload()

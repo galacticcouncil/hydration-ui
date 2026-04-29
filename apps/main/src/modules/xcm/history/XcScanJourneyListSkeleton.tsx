@@ -49,7 +49,13 @@ const JourneyCardSkeleton = () => {
 
 export const XcScanJourneyListSkeleton = () => {
   return (
-    <Stack gap="base" maxWidth="6xl" width="100%" mx="auto">
+    <Stack
+      gap="base"
+      maxWidth="6xl"
+      width="100%"
+      mx="auto"
+      justify="flex-start"
+    >
       {Array.from({ length: 4 }, (_, i) => (
         <JourneyCardSkeleton key={i} />
       ))}

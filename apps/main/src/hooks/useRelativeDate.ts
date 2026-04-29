@@ -4,15 +4,24 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useHarmonicIntervalFn } from "react-use"
 
-export function useRelativeDate(date: Date) {
+type UseRelativeDateOptions = {
+  shortFormat?: boolean
+}
+
+export function useRelativeDate(
+  date: Date,
+  { shortFormat = false }: UseRelativeDateOptions = {},
+) {
   const { t } = useTranslation("common")
 
   const [dateString, setDateString] = useState(() =>
-    t("date.relative", { value: date }),
+    t(shortFormat ? "date.relative.short" : "date.relative", { value: date }),
   )
 
   useHarmonicIntervalFn(() => {
-    setDateString(t("date.relative", { value: date }))
+    setDateString(
+      t(shortFormat ? "date.relative.short" : "date.relative", { value: date }),
+    )
   }, getUpdateInterval(date))
 
   return dateString

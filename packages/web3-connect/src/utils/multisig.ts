@@ -24,7 +24,7 @@ export function normalizeMultisigEntry(
 ): MultisigPendingTx {
   return {
     multisigAddress: entry.keyArgs[0],
-    callHash: entry.keyArgs[1].asHex(),
+    callHash: entry.keyArgs[1],
     when: entry.value.when,
     deposit: entry.value.deposit,
     depositor: entry.value.depositor,

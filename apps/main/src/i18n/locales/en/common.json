@@ -266,7 +266,7 @@
   "date.relative.short": "{{ value, relative(format: 'short') }}",
   "date.time": "{{ value, date(format: 'HH:mm') }}",
   "date.datetime": "{{ value, date(format: 'dd/MM/yyyy HH:mm:ss') }}",
-  "date.datetime.short": "{{ value, date(format: 'dd/MM/yyyy HH:mm') }}",
+  "date.datetime.short": "{{ value, date(format: 'dd/MM/yy HH:mm') }}",
   "date.long": "{{ value, date(format: 'MMMM do, yyyy') }}",
   "date.day": "{{ value, date(format: 'MMM dd') }}",
   "date.daytime": "{{ value, date(format: 'MMM dd yyyy, HH:mm') }}",
