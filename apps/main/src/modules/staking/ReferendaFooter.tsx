@@ -6,7 +6,6 @@ import {
   Icon,
 } from "@galacticcouncil/ui/components"
 import { REFERENDA_URL } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -22,18 +21,14 @@ type Props = {
 
 export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
   const { t } = useTranslation("staking")
-  const { papi, dataEnv } = useRpcProvider()
-  const { account } = useAccount()
+  const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const [voteOpen, setVoteOpen] = useState(false)
 
   const handleRemoveVote = () => {
     createTransaction({
       tx: papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
-      invalidateQueries: [
-        ["accountOpenGovVotes", account?.address ?? ""],
-        ["openGovReferenda", dataEnv],
-      ],
+      invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
     })
   }
 
