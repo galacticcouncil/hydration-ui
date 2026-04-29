@@ -307,7 +307,8 @@ export const useMultiplyApp = ({
             } else {
               const newProxyAddress = rpc.papi.event.Proxy.PureCreated.filter(
                 blockResults.events,
-              ).find((event) => event.who === accountAddress)?.pure
+              ).find(({ payload }) => payload.who === accountAddress)?.payload
+                ?.pure
 
               if (newProxyAddress) {
                 proxyAddress = newProxyAddress
