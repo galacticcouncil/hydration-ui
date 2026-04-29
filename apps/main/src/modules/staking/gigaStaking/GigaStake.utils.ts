@@ -1,35 +1,40 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
-import { gigaStakeConstantsQuery } from "@/api/gigaStake"
-import i18n from "@/i18n"
+import { GigaStakeProps } from "@/modules/staking/gigaStaking/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { toBigInt, toDecimal } from "@/utils/formatting"
-import { useValidateFormMaxBalance } from "@/utils/validators"
+import { positive, useValidateFormMaxBalance } from "@/utils/validators"
 
 type GigaStakeFormValues = {
   amount: string
   asset: TAssetData
 }
 
-export const useGigaStake = () => {
+export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   const { native } = useAssets()
+  const { t } = useTranslation(["common", "staking"])
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const address = account?.address ?? ""
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const refineMaxBalance = useValidateFormMaxBalance()
-  const { data: constants } = useQuery(gigaStakeConstantsQuery(rpc))
-  const minStake = toDecimal(constants?.minStake ?? 0n, native.decimals)
+
+  const minStakeHuman = toDecimal(minStake, native.decimals)
+  //@TODO: convert to HDX value when spot price is available
+  const availableReserveCap = Big(hdxReserve.supplyCap)
+    .minus(hdxReserve.totalLiquidity)
+    .toString()
 
   const form = useForm<GigaStakeFormValues>({
     mode: "onChange",
@@ -37,30 +42,41 @@ export const useGigaStake = () => {
       amount: "",
       asset: native,
     },
-    //@TODO: add validation for max supply cap
-    resolver: constants
-      ? standardSchemaResolver(
-          z
-            .object({ amount: z.string(), asset: z.custom<TAssetData>() })
-            .check(
-              z.refine<GigaStakeFormValues>(
-                ({ amount }) => amount === "" || Big(amount).gte(minStake),
-                {
-                  error: i18n.t("staking:stake.stake.minStakeError", {
-                    amount: i18n.t("currency", {
-                      value: minStake,
-                      symbol: native.symbol,
-                    }),
-                  }),
-                  path: ["amount"],
-                },
-              ),
-            )
-            .check(
-              refineMaxBalance("amount", (form) => [form.asset, form.amount]),
-            ),
+
+    resolver: standardSchemaResolver(
+      z
+        .object({ amount: positive, asset: z.custom<TAssetData>() })
+        .check(
+          z.refine<GigaStakeFormValues>(
+            ({ amount }) => amount === "" || Big(amount).gte(minStakeHuman),
+            {
+              error: t("staking:stake.stake.minStakeError", {
+                amount: t("currency", {
+                  value: minStake,
+                  symbol: native.symbol,
+                }),
+              }),
+              path: ["amount"],
+            },
+          ),
         )
-      : undefined,
+        .check(
+          z.refine<GigaStakeFormValues>(
+            ({ amount }) =>
+              amount === "" || Big(amount).lte(availableReserveCap),
+            {
+              error: t("staking:stake.stake.reserveCapError", {
+                amount: t("currency", {
+                  value: availableReserveCap,
+                  symbol: native.symbol,
+                }),
+              }),
+              path: ["amount"],
+            },
+          ),
+        )
+        .check(refineMaxBalance("amount", (form) => [form.asset, form.amount])),
+    ),
   })
 
   const mutation = useMutation({
@@ -108,7 +124,7 @@ export const useGigaStake = () => {
   return {
     form,
     meta: native,
-    minStake,
+    minStakeHuman,
     onSubmit,
   }
 }

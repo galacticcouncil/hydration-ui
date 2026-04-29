@@ -73,7 +73,10 @@ export const GigaStakeTotalsHeader: FC = () => {
         size="medium"
         label={t("staking:gigaStake.header.totalStake")}
         isLoading={isGigaPoolReservesLoading}
-        value={t("currency", { value: totalSupplied, symbol: hdxAsset.symbol })}
+        value={t("currency.compact", {
+          value: totalSupplied,
+          symbol: hdxAsset.symbol,
+        })}
         bottomLabel={t("currency", { value: totalSuppliedUsd })}
       />
       <ValueStats

@@ -3,15 +3,19 @@ import { calculateHealthFactorFromBalancesBigUnits } from "@aave/math-utils"
 import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { HOLLAR_ASSET_ID, safeConvertAnyToH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import {
   convertEvmTxRawToPapiTx,
   useApproveErc20,
   useErc20Allowance,
+  useFacilitatorBucket,
   useGigaBorrowPoolContract,
   userGigaBorrowSummaryQueryKey,
   useUserGigaBorrowSummary,
@@ -19,7 +23,8 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-import { toBigInt } from "@/utils/formatting"
+import { toBigInt, toDecimal } from "@/utils/formatting"
+import { positive } from "@/utils/validators"
 
 type GigaHDXBorrowFormValues = {
   amount: string
@@ -27,6 +32,7 @@ type GigaHDXBorrowFormValues = {
 }
 
 export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
+  const { t } = useTranslation(["common", "staking"])
   const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
   const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
@@ -39,17 +45,39 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
   const { borrowableHollar, userSummary, hollarReserve } =
     gigaBorrowSummary ?? {}
   const hollarAsset = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { data: facilitatorBucketData, isSuccess: isFacilitatorBucketSuccess } =
+    useFacilitatorBucket(hollarReserve?.reserve.aTokenAddress ?? "")
 
-  const borrowableAmount = borrowableHollar?.borrowableHollar ?? "0"
-  const maxBorrowableWei = BigInt(borrowableHollar?.borrowableHollarWei ?? "0")
+  const bucketCapacity = facilitatorBucketData?.facilitatorBucketCapacity ?? 0n
+  const bucketLevel = facilitatorBucketData?.facilitatorBucketLevel ?? 0n
+  const availableFromBucketWei =
+    bucketCapacity > bucketLevel ? bucketCapacity - bucketLevel : 0n
+  const userBorrowableWei = BigInt(borrowableHollar?.borrowableHollarWei ?? "0")
+  const maxBorrowableWei =
+    userBorrowableWei < availableFromBucketWei
+      ? userBorrowableWei
+      : availableFromBucketWei
+  const maxBorrowableAmount = toDecimal(maxBorrowableWei, hollarAsset.decimals)
 
-  //@TODO: add validation for max borrowable amount
   const form = useForm<GigaHDXBorrowFormValues>({
     mode: "onChange",
     defaultValues: {
       amount: "",
       asset: hollarAsset,
     },
+    resolver: !isFacilitatorBucketSuccess
+      ? undefined
+      : standardSchemaResolver(
+          z.object({
+            amount: positive.refine(
+              (value) => new Big(value || "0").lte(maxBorrowableAmount || "0"),
+              {
+                error: t("staking:gigaStaking.borrow.error.borrowLimit"),
+              },
+            ),
+            asset: z.custom<TAssetData>(),
+          }),
+        ),
   })
 
   const amount = form.watch("amount")
@@ -155,7 +183,7 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
     onSubmit,
     mutation,
     maxBorrowableWei,
-    borrowableAmount,
+    borrowableAmount: maxBorrowableAmount,
     variableBorrowApy: hollarReserve?.reserve.variableBorrowAPY ?? "0",
   }
 }
