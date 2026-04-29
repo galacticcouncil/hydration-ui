@@ -804,8 +804,8 @@ export const convertEvmTxRawToPapiTx = async (
     })
 
   const evmCall = provider.papi.tx.EVM.call({
-    source: Binary.fromHex(tx.from),
-    target: Binary.fromHex(tx.to),
+    source: tx.from as SizedHex<20>,
+    target: tx.to as SizedHex<20>,
     input: Binary.fromHex(tx.data),
     value: [0n, 0n, 0n, 0n],
     gas_limit: gasLimit,
