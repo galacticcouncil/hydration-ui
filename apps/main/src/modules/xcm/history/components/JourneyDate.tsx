@@ -24,7 +24,7 @@ export const JourneyDate: React.FC<JourneyDateProps> = ({
   if (isWithin24Hours) {
     return (
       <Tooltip text={t("date.datetime", { value: date })} side="left">
-        <RelativeDateText date={date} {...props} />
+        <RelativeDateText shortFormat date={date} {...props} />
       </Tooltip>
     )
   }

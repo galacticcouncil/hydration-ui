@@ -3,6 +3,7 @@ import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
+import { ComponentType } from "react"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
 
@@ -15,7 +16,11 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
-export const XCM_BRIDGE_TAGS: XcmTags = [XcmTag.Wormhole, XcmTag.Snowbridge]
+export const BRIDGE_PROVIDER_TAGS: XcmTags = [
+  XcmTag.Basejump,
+  XcmTag.Wormhole,
+  XcmTag.Snowbridge,
+]
 
 export enum TransactionType {
   Onchain = "Onchain",
@@ -58,6 +63,7 @@ export type MultiTransactionConfig = (
   | SingleTransactionInputDynamic
 ) & {
   stepTitle: string
+  pendingComponent?: ComponentType
   //@TODO consider separate all transaction actions per tx
   onSubmitted?: (txHash: string) => void
 }
@@ -176,7 +182,7 @@ export const isSubstrateTxResult = (
 export const isBridgeTransaction = (meta: TransactionMeta) => {
   return (
     meta.type === TransactionType.Xcm &&
-    meta.tags.some((tag) => XCM_BRIDGE_TAGS.includes(tag))
+    meta.tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
   )
 }
 

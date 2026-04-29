@@ -11,17 +11,21 @@ import {
   TransferStatusToPolkadotQuery,
 } from "@galacticcouncil/indexer/snowbridge"
 import {
+  basejumpscan,
   HexString,
   HYDRATION_CHAIN_KEY,
   snowbridgescan,
+  stringEquals,
   wormholescan,
 } from "@galacticcouncil/utils"
 import { CallType } from "@galacticcouncil/xc-core"
+import { XcJourney } from "@galacticcouncil/xc-scan"
 import { QueryClient } from "@tanstack/react-query"
 import { first } from "remeda"
 import { PublicClient } from "viem"
 
 import { getWormholeHashByExtrinsicIndex } from "@/modules/transactions/utils/wormhole"
+import { createBasejumpScanQueryKey } from "@/modules/xcm/history/useBasejumpScan"
 import { ToastData } from "@/states/toasts"
 
 type ToastStatus = {
@@ -286,10 +290,39 @@ const snowbridge =
     }
   }
 
+const basejump =
+  (address: string, queryClient: QueryClient): ToastProcessorFn =>
+  async (toast) => {
+    const bjScanJourneys = queryClient.getQueryData<XcJourney[]>(
+      createBasejumpScanQueryKey(address),
+    )
+    const completedJourney = bjScanJourneys?.find(
+      (journey) =>
+        stringEquals(journey.originTxPrimary ?? "", toast.meta.txHash) &&
+        journey.status === "received",
+    )
+    if (completedJourney) {
+      return {
+        status: "success",
+        link: basejumpscan.tx(completedJourney.correlationId),
+        processed: true,
+        dateUpdated: completedJourney.recvAt
+          ? new Date(completedJourney.recvAt).toISOString()
+          : new Date().toISOString(),
+      }
+    }
+    return {
+      status: "unknown",
+      processed: false,
+      dateUpdated: new Date().toISOString(),
+    }
+  }
+
 export const processors = {
   evm,
   substrate,
   wormhole,
   snowbridge,
+  basejump,
   invalid,
 } as const

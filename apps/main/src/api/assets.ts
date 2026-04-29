@@ -195,7 +195,7 @@ function assetToTokenType(
   if (ethereumNetworkEntry) {
     const accountKey20 = getAccountKey20(asset)
     const parachainId = ethereumNetworkEntry?.value?.chain_id?.toString()
-    const address = accountKey20?.key ? accountKey20.key.asHex() : ""
+    const address = accountKey20?.key ?? ""
     const ecosystem = ChainEcosystem.Ethereum
 
     return {

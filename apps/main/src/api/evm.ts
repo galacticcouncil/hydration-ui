@@ -20,7 +20,7 @@ import {
 } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
-import { Binary } from "polkadot-api"
+import type { SizedHex } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
 import { formatEther, getContract, Hex } from "viem"
@@ -60,7 +60,7 @@ export const evmAccountBindingQuery = (
       const evmAddress = safeConvertSS58toH160(address)
 
       const res = await papi.apis.EvmAccountsApi.bound_account_id(
-        Binary.fromHex(evmAddress),
+        evmAddress as SizedHex<20>,
         {
           at: "best",
         },

@@ -3,6 +3,7 @@ import {
   formatSourceChainAddress,
   HexString,
   isEvmChain,
+  isValidBigSource,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -16,8 +17,13 @@ import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { XCM_BRIDGE_TAGS, XcmTags } from "@/states/transactions"
+import { BRIDGE_PROVIDER_TAGS, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+export const getPrimaryBridgeTag = (route: AssetRoute): string | null => {
+  const tags = (route.tags ?? []) as string[]
+  return BRIDGE_PROVIDER_TAGS.find((tag) => tags.includes(tag)) ?? null
+}
 
 export enum XcmTransferStatus {
   Default = "DEFAULT",
@@ -42,6 +48,7 @@ export const getTransferStatus = (
     case !!transfer && transfer.source.min.amount >= transfer.source.max.amount:
       return XcmTransferStatus.InsufficientBalance
     case !values.srcAmount:
+    case !values.destAmount:
       return XcmTransferStatus.AmountMissing
     case alerts.length > 0:
       return XcmTransferStatus.TransferInvalid
@@ -60,6 +67,7 @@ export const calculateTransferDestAmount = (
   transfer: Transfer,
 ): string => {
   const { destinationFee } = transfer.source
+  if (!isValidBigSource(amount)) return ""
   if (asset.isEqual(destinationFee)) {
     const destFee = toDecimal(destinationFee.amount, destinationFee.decimals)
     const amountMinusFee = Big(amount || "0").minus(destFee)
@@ -71,14 +79,21 @@ export const calculateTransferDestAmount = (
 
 export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
   const tags = (route?.tags ?? []) as XcmTags
-  return tags.some((tag) => XCM_BRIDGE_TAGS.includes(tag))
+  return tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
 }
 
 export const getXcmTransferArgs = (
   account: Account | null,
   values: XcmFormValues,
 ): XcmTransferArgs => {
-  const { srcChain, srcAsset, destChain, destAsset, destAddress } = values
+  const {
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+    destAddress,
+    bridgeProvider,
+  } = values
   const isValidPair =
     srcChain && srcAsset
       ? srcChain.assetsData.values().some((a) => a.asset.key === srcAsset.key)
@@ -98,6 +113,7 @@ export const getXcmTransferArgs = (
       : "",
     destAsset: isValidAsset ? destAsset.key : "",
     destChain: destChain?.key ?? "",
+    bridgeTag: bridgeProvider ?? undefined,
   }
 }
 

@@ -7,6 +7,7 @@ import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import { isH160Address } from "@galacticcouncil/utils"
 import { XcJourney } from "@galacticcouncil/xc-scan"
+import { isNonNullish, sortBy } from "remeda"
 
 export type TJourneyStatus = XcJourney["status"]
 
@@ -92,5 +93,25 @@ export function getFormattedAddresses(journey: XcJourney) {
     : journey.fromFormatted || ""
   const to = isH160Address(journey.to) ? journey.to : journey.toFormatted || ""
 
-  return { from: from.toLowerCase(), to: to.toLowerCase() }
+  return { from, to }
+}
+
+const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
+
+export function mergeJourneys(
+  existing: XcJourney[],
+  incoming: XcJourney[],
+): XcJourney[] {
+  const seen = new Set(
+    existing.map((j) => j.originTxPrimary).filter(isNonNullish),
+  )
+  const filtered = incoming.filter(
+    (j) => !j.originTxPrimary || !seen.has(j.originTxPrimary),
+  )
+
+  if (filtered.length === 0) {
+    return existing
+  }
+
+  return sortBy([...existing, ...filtered], [journeyDate, "desc"])
 }

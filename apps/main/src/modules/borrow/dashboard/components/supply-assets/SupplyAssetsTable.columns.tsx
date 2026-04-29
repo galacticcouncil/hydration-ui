@@ -23,6 +23,7 @@ import {
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -241,46 +242,59 @@ export const useSupplyAssetsTableColumns = (
         const isDisabled = getIsSupplyDisabled(row.original) || !isConnected
 
         return (
-          <Button
-            disabled={isDisabled}
-            variant="tertiary"
-            size="large"
-            width="100%"
-            onClick={(e) => {
-              e.stopPropagation()
+          <Flex gap="l" width="100%">
+            <Button
+              disabled={isDisabled}
+              size="large"
+              width="100%"
+              onClick={(e) => {
+                e.stopPropagation()
 
-              const assetId = getAssetIdFromAddress(underlyingAsset)
-              const aTokenId = getRelatedAToken(assetId)?.id
+                const assetId = getAssetIdFromAddress(underlyingAsset)
+                const aTokenId = getRelatedAToken(assetId)?.id
 
-              if (
-                assetId &&
-                MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
-                aTokenId &&
-                onSupplyClick
-              ) {
-                onSupplyClick({
-                  id: assetId,
-                  erc20Id: aTokenId,
-                  stableswapId: assetId,
-                })
-              } else {
-                openSupply(underlyingAsset, symbol)
-              }
-            }}
-          >
-            {t("borrow:supply")}
-          </Button>
+                if (
+                  assetId &&
+                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                  aTokenId &&
+                  onSupplyClick
+                ) {
+                  onSupplyClick({
+                    id: assetId,
+                    erc20Id: aTokenId,
+                    stableswapId: assetId,
+                  })
+                } else {
+                  openSupply(underlyingAsset, symbol)
+                }
+              }}
+            >
+              {t("borrow:supply")}
+            </Button>
+            <Button variant="tertiary" size="large" width="100%" asChild>
+              <Link
+                to="/borrow/markets/$address"
+                params={{ address: underlyingAsset }}
+              >
+                {t("details")}
+              </Link>
+            </Button>
+          </Flex>
         )
       },
     })
 
     return [
       assetColumn,
-      isBaseAssetType ? balanceColumn : balancePlaceholderColumn,
+      isBaseAssetType
+        ? balanceColumn
+        : isMobile
+          ? null
+          : balancePlaceholderColumn,
       apyColumn,
       collateralColunn,
       isMobile ? actionsColumnMobile : actionsColumn,
-    ].filter(Boolean)
+    ].filter((column) => column !== null)
   }, [
     isMobile,
     getAsset,

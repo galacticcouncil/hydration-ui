@@ -20,6 +20,7 @@ import {
   getAssetIdFromAddress,
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
+import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -209,23 +210,32 @@ export const useSuppliedAssetsTableColumns = ({
         const isDisabled = !isActive || isPaused
 
         return (
-          <Button
-            disabled={isDisabled}
-            variant="tertiary"
-            size="large"
-            width="100%"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleWithdrawClick(
-                underlyingAsset,
-                getRelatedAToken,
-                onRemove,
-                openWithdraw,
-              )
-            }}
-          >
-            {t("borrow:withdraw")}
-          </Button>
+          <Flex gap="l" width="100%">
+            <Button
+              disabled={isDisabled}
+              size="large"
+              width="100%"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleWithdrawClick(
+                  underlyingAsset,
+                  getRelatedAToken,
+                  onRemove,
+                  openWithdraw,
+                )
+              }}
+            >
+              {t("borrow:withdraw")}
+            </Button>
+            <Button variant="tertiary" size="large" width="100%" asChild>
+              <Link
+                to="/borrow/markets/$address"
+                params={{ address: underlyingAsset }}
+              >
+                {t("details")}
+              </Link>
+            </Button>
+          </Flex>
         )
       },
     })

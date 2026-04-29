@@ -39,7 +39,13 @@ const XcmSectionSkeleton = () => {
 export const XcmTransferSkeleton = () => {
   const { t } = useTranslation("xcm")
   return (
-    <Stack gap="s" maxWidth="32rem" mx="auto" sx={{ pointerEvents: "none" }}>
+    <Stack
+      gap="s"
+      maxWidth="6xl"
+      width="100%"
+      mx="auto"
+      sx={{ pointerEvents: "none" }}
+    >
       <Paper>
         <Box p="xl">
           <Text fs="h7" fw={500} align="center" font="primary">

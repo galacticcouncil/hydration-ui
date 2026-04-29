@@ -32,6 +32,7 @@ export const useXcmForm = (transfer: Transfer | null) => {
 
       destAddress: defaults.destAddress ?? "",
       destAccount: defaults.destAccount ?? null,
+      bridgeProvider: null,
     },
   })
 

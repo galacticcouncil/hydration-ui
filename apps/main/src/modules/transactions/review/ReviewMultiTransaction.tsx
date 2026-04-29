@@ -1,10 +1,11 @@
 import {
   Modal,
+  ModalBody,
   ModalFooter,
   ModalHeader,
   Stepper,
 } from "@galacticcouncil/ui/components"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { isFunction, omit } from "remeda"
 
@@ -41,6 +42,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   const [resolvedTx, setResolvedTx] = useState<AnyTransaction | null>(null)
   const [resolvedConfig, setResolvedConfig] =
     useState<TransactionCommon | null>(null)
+  const [isPendingResolution, setIsPendingResolution] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isLastSubmitted, setIsLastSubmitted] = useState(false)
   const [hasUserClosedModal, setHasUserClosedModal] = useState(false)
@@ -63,12 +65,15 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     const tx = currentBaseConfig.tx
 
     if (isFunction(tx)) {
+      setIsPendingResolution(true)
       const previousResults = transactionResults.slice(0, currentIndex)
       Promise.resolve(tx(previousResults)).then((resolved) => {
+        setIsPendingResolution(false)
         setResolvedTx(resolved.tx)
         setResolvedConfig(omit(resolved, ["tx"]))
       })
     } else {
+      setIsPendingResolution(false)
       setResolvedTx(tx)
       setResolvedConfig(null)
     }
@@ -138,6 +143,9 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
 
   const { title, description } = currentConfig
 
+  const PendingComponent =
+    isPendingResolution && currentBaseConfig?.pendingComponent
+
   return (
     <TransactionProvider key={currentConfig.id} transaction={currentConfig}>
       <Modal
@@ -169,7 +177,13 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
           title={title ?? t("transaction.title")}
           description={description ?? t("transaction.description")}
         />
-        <ReviewTransactionContent />
+        {PendingComponent ? (
+          <ModalBody>
+            <PendingComponent />
+          </ModalBody>
+        ) : (
+          <ReviewTransactionContent />
+        )}
         <ModalFooter justify="space-between">
           <ReviewTransactionFooter closable={isClosable} />
         </ModalFooter>

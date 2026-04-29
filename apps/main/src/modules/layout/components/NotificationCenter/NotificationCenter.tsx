@@ -11,7 +11,6 @@ import {
   Stack,
 } from "@galacticcouncil/ui/components"
 import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,25 +20,17 @@ import { MultisigNotification } from "@/modules/layout/components/NotificationCe
 import { NotificationBadge } from "@/modules/layout/components/NotificationCenter/NotificationBadge"
 import { NotificationGroup } from "@/modules/layout/components/NotificationCenter/NotificationGroup"
 import { NotificationToast } from "@/modules/layout/components/NotificationCenter/NotificationToast"
-import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
-import { useXcScan } from "@/modules/xcm/history/useXcScan"
+import { useClaimableTransactions } from "@/modules/xcm/history/hooks/useClaimableTransactions"
 import { useMultisigContext } from "@/providers/MultisigProvider"
 import { useToasts } from "@/states/toasts"
 
 export const NotificationCenter: FC = () => {
   const { t } = useTranslation()
-  const { account } = useAccount()
 
   const { totalPendingTxCount, multisigs, pendingTxsByMultisig } =
     useMultisigContext()
   const { toasts } = useToasts()
-  const { data: claimable } = useXcScan(account?.address ?? "", {
-    claimableOnly: true,
-  })
-  const { pendingCorrelationIds } = usePendingClaimsStore()
-  const visibleClaimable = claimable.filter(
-    ({ correlationId }) => !pendingCorrelationIds.includes(correlationId),
-  )
+  const visibleClaimable = useClaimableTransactions()
 
   const groups = Object.groupBy(toasts, (toast) =>
     toast.variant === "pending" ? "pending" : "completed",

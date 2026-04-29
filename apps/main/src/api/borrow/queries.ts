@@ -36,7 +36,7 @@ import {
 } from "@tanstack/react-query"
 import Big from "big.js"
 import { produce } from "immer"
-import { Binary, FixedSizeArray } from "polkadot-api"
+import { Binary, FixedSizeArray, SizedHex } from "polkadot-api"
 import { useCallback, useMemo } from "react"
 
 import {
@@ -463,8 +463,8 @@ export const getClaimAllBorrowRewardsTx = async (
     })
 
   const evmCall = rpc.papi.tx.EVM.call({
-    source: Binary.fromHex(tx.from),
-    target: Binary.fromHex(tx.to),
+    source: tx.from as SizedHex<20>,
+    target: tx.to as SizedHex<20>,
     input: Binary.fromHex(tx.data),
     value: [0n, 0n, 0n, 0n],
     gas_limit: gasLimit,
@@ -576,8 +576,8 @@ export const useBorrowDisableCollateralTxs = () => {
           })
 
         const evmCall = papi.tx.EVM.call({
-          source: Binary.fromHex(tx.from),
-          target: Binary.fromHex(tx.to),
+          source: tx.from as SizedHex<20>,
+          target: tx.to as SizedHex<20>,
           input: Binary.fromHex(tx.data),
           value: [0n, 0n, 0n, 0n],
           gas_limit: gasLimit,
@@ -630,8 +630,8 @@ export const useSetUsageAsCollateralTx = () => {
         })
 
       const evmCall = papi.tx.EVM.call({
-        source: Binary.fromHex(tx.from),
-        target: Binary.fromHex(tx.to),
+        source: tx.from as SizedHex<20>,
+        target: tx.to as SizedHex<20>,
         input: Binary.fromHex(tx.data),
         value: [0n, 0n, 0n, 0n],
         gas_limit: gasLimit,
@@ -680,8 +680,8 @@ export const useSetUserEModeTx = () => {
         })
 
       const evmCall = papi.tx.EVM.call({
-        source: Binary.fromHex(tx.from),
-        target: Binary.fromHex(tx.to),
+        source: tx.from as SizedHex<20>,
+        target: tx.to as SizedHex<20>,
         input: Binary.fromHex(tx.data),
         value: [0n, 0n, 0n, 0n],
         gas_limit: gasLimit,
