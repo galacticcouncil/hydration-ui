@@ -10,11 +10,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
-import {
-  StatusChange,
-  WsEvent,
-  WsJsonRpcProvider,
-} from "polkadot-api/ws-provider"
+import { StatusChange, WsEvent } from "polkadot-api/ws"
 import { createContext, ReactNode, useContext, useEffect } from "react"
 
 import {
@@ -38,13 +34,10 @@ export type TProviderContext = TProviderData & {
 
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
-  ws: {} as WsJsonRpcProvider,
   rpcUrlList: [],
   slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiNext: {} as TProviderData["papiNext"],
-  isNext: false,
-  papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
@@ -108,8 +101,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   }, [data?.sdk])
 
   const isLoaded = assets.length > 0
-  const isApiLoaded =
-    Object.keys(data.papi).length > 0 && Object.keys(data.ws).length > 0
+  const isApiLoaded = Object.keys(data.papi).length > 0
 
   return (
     <ProviderContext.Provider

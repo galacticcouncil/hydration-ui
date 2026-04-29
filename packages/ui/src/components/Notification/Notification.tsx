@@ -17,7 +17,7 @@ import {
   ExternalLink,
   Flex,
   Icon,
-  Spinner,
+  SpinnerIcon,
   Stack,
   Text,
   Tooltip,
@@ -66,7 +66,7 @@ function renderBold(text: string) {
 }
 
 const notificationIcons: Record<ToastVariant, React.ComponentType> = {
-  pending: Spinner,
+  pending: SpinnerIcon,
   success: CircleCheck,
   error: CircleAlert,
   info: Info,

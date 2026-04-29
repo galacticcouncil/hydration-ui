@@ -2,9 +2,9 @@ import { createRequire } from "node:module";
 import { join, dirname } from "path"
 import type { StorybookConfig } from "@storybook/react-vite"
 import react from "@vitejs/plugin-react"
-import tsconfigPaths from "vite-tsconfig-paths"
 import svgr from "vite-plugin-svgr"
 import wasm from "vite-plugin-wasm"
+import babel from "@rolldown/plugin-babel"
 
 const require = createRequire(import.meta.url);
 
@@ -27,36 +27,33 @@ const config: StorybookConfig = {
     getAbsolutePath("@storybook/addon-docs"),
     getAbsolutePath("@storybook/addon-mcp"),
   ],
-  framework: {
-    name: getAbsolutePath("@storybook/react-vite"),
-    options: {},
+  framework: getAbsolutePath("@storybook/react-vite"),
+  core: {
+    builder: '@storybook/builder-vite',
   },
   async viteFinal(config) {
-    config.build = {
-      ...config.build,
-      target: "esnext",
-    }
-    config.esbuild = {
-      ...config.esbuild,
-      jsxFactory: "jsx",
-    }
-    config.plugins = [
-      react({
-        jsxImportSource: "@galacticcouncil/ui/jsx",
-        babel: {
+    const { mergeConfig } = await import('vite');
+    return mergeConfig(config, {
+      resolve: {
+        tsconfigPaths: true,
+      },
+      plugins: [
+        react({
+          jsxImportSource: "@galacticcouncil/ui/jsx",
+        }),
+        babel({
+          include: /\.[jt]sx?$/,
+          exclude: /node_modules/,
           plugins: ["@emotion/babel-plugin"],
-        },
-      }),
-      wasm(),
-      svgr({
-        svgrOptions: {
-          svgo: true,
-        },
-      }),
-      tsconfigPaths(),
-      ...(config.plugins || []),
-    ]
-    return config
+        }),
+        wasm(),
+        svgr({
+          svgrOptions: {
+            svgo: true,
+          },
+        })
+      ]
+    })
   },
 }
 export default config

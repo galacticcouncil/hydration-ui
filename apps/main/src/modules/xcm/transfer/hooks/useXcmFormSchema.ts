@@ -70,6 +70,7 @@ const createSchema = (transfer: Transfer | null) => {
     destAmount: z.string(),
     destAddress: required,
     destAccount: z.custom<Account>((val) => isObjectType(val)).nullable(),
+    bridgeProvider: z.string().nullable(),
   })
 }
 

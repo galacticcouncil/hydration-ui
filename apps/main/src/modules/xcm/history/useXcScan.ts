@@ -1,10 +1,15 @@
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
-import { isOptimisticJourneyForTxHash } from "@/modules/xcm/history/utils/optimistic"
+import { mergeJourneys } from "@/modules/xcm/history/utils/journey"
+import {
+  isOptimisticJourneyForTxHash,
+  shouldIgnoreNewJourney,
+} from "@/modules/xcm/history/utils/optimistic"
 
+import { useBasejumpScan } from "./useBasejumpScan"
 import { xcStore } from "./xcScanStore"
 
 export const createXcScanQueryKey = (address: string) => ["xcscan", address]
@@ -16,7 +21,7 @@ type XcScanOptions = {
 export const useXcScan = (address: string, options: XcScanOptions = {}) => {
   const { claimableOnly } = options
 
-  return useQuery<XcJourney[]>({
+  const xcscan = useQuery<XcJourney[]>({
     queryKey: createXcScanQueryKey(address),
     enabled: !!address,
     staleTime: Infinity,
@@ -26,6 +31,31 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
     select: claimableOnly ? getClaimableJourneys : undefined,
     queryFn: () => [],
   })
+
+  const bjscan = useBasejumpScan(address)
+
+  const isLoadingXcScan = xcscan.dataUpdatedAt === 0
+  const isLoading = claimableOnly
+    ? isLoadingXcScan
+    : isLoadingXcScan || bjscan.isLoading
+
+  const data = useMemo(() => {
+    if (claimableOnly) return xcscan.data
+    if (bjscan.isSuccess && xcscan.isSuccess)
+      return mergeJourneys(bjscan.data, xcscan.data)
+    return xcscan.data
+  }, [
+    bjscan.data,
+    bjscan.isSuccess,
+    claimableOnly,
+    xcscan.data,
+    xcscan.isSuccess,
+  ])
+
+  return {
+    isLoading,
+    data,
+  }
 }
 
 export const useXcScanSubscription = (address: string) => {
@@ -56,6 +86,10 @@ export const useXcScanSubscription = (address: string) => {
           queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
             if (!old) {
               return [journey]
+            }
+
+            if (shouldIgnoreNewJourney(old, journey)) {
+              return old
             }
             const prev = old.filter((item) => {
               const isOptimisticPrimary = isOptimisticJourneyForTxHash(

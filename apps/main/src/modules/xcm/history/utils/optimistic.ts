@@ -11,6 +11,7 @@ import type { QueryClient } from "@tanstack/react-query"
 
 import { createXcScanQueryKey } from "@/modules/xcm/history/useXcScan"
 import type { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { XcmTag } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
 const OPTIMISTIC_JOURNEY_PREFIX = "optimistic:"
@@ -33,6 +34,26 @@ export function isOptimisticJourneyForTxHash(
   )
 }
 
+export function shouldIgnoreNewJourney(
+  previous: XcJourney[],
+  incoming: XcJourney,
+): boolean {
+  return previous.some((journey) => {
+    const isOptimisticPrimary = isOptimisticJourneyForTxHash(
+      journey,
+      incoming.originTxPrimary ?? "",
+    )
+    const isOptimisticSecondary = isOptimisticJourneyForTxHash(
+      journey,
+      incoming.originTxSecondary ?? "",
+    )
+    return (
+      journey.originProtocol === "basejump" &&
+      (isOptimisticPrimary || isOptimisticSecondary)
+    )
+  })
+}
+
 export function chainToUrn(chain: AnyChain): string {
   const ecosystem = chain.ecosystem
   if (!ecosystem) return ""
@@ -45,7 +66,7 @@ export function convertXcmFormValuesToOptimisticJourney(
   txHash: string,
   fromAddress: string,
 ): XcJourney | undefined {
-  const { srcChain, destChain, srcAsset, srcAmount, destAddress } = values
+  const { srcChain, destChain, srcAsset, destAmount, destAddress } = values
   const decimals = transfer.source.balance.decimals
   const now = Date.now()
 
@@ -59,13 +80,16 @@ export function convertXcmFormValuesToOptimisticJourney(
     ? safeConvertSS58toH160(fromAddress)
     : fromAddress
 
+  const protocol =
+    values.bridgeProvider === XcmTag.Basejump ? "basejump" : "xcm"
+
   return {
     id: 0,
     correlationId: getOptimisticJourneyId(txHash),
     status: "pending",
     type: "transfer",
-    originProtocol: "xcm",
-    destinationProtocol: "xcm",
+    originProtocol: protocol,
+    destinationProtocol: protocol,
     origin: originUrn,
     destination: destinationUrn,
     from,
@@ -83,7 +107,7 @@ export function convertXcmFormValuesToOptimisticJourney(
       {
         asset: `${originUrn}|${assetId}`,
         symbol: srcAsset?.originSymbol ?? "",
-        amount: scale(srcAmount, decimals),
+        amount: scale(destAmount, decimals),
         decimals,
         role: "transfer",
       },
