@@ -361,5 +361,7 @@
   "multisig.modal.approveOnMultix": "Approve on Multix",
   "multisig.modal.viewOnMultix": "View on Multix",
   "multisig.toast.named.title": "Multisig operation **{{ method }}** has been created and is ready for signing",
-  "multisig.toast.unnamed.title": "Multisig operation was created and ready to sign"
+  "multisig.toast.unnamed.title": "Multisig operation was created and ready to sign",
+  "banners.newFarms.title": "New Farms for {{ assetSymbols }}",
+  "banners.newFarms.cta": "More Info"
 }
