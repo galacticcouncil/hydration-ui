@@ -64,7 +64,6 @@ const LoopedStrategyPosition = ({
     repayAmount: position.debtBalance,
     supplyReserve: position.suppliedReserve,
     borrowReserve: position.debtReserve,
-    isParityPair: strategy.isParityPair,
     enterWithAssetId: strategy.enterWithAssetId,
   })
 

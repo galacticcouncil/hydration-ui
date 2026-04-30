@@ -28,7 +28,10 @@ import {
 import { blockWeightsQuery } from "@/api/chain"
 import { createProxyCall, getAccountProxies } from "@/api/proxy"
 import { bestSellWithTxQuery } from "@/api/trade"
-import { useCreateMultiplyEvmTx } from "@/modules/borrow/hooks/useCreateMultiplyEvmTx"
+import {
+  MULTIPLY_FLOW_GAS_LIMIT,
+  useCreateMultiplyEvmTx,
+} from "@/modules/borrow/hooks/useCreateMultiplyEvmTx"
 import { LEVERAGE_DEFAULT } from "@/modules/borrow/multiply/config/constants"
 import {
   LoopStep,
@@ -41,6 +44,7 @@ import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiqu
 import {
   calculateChunkSize,
   getChunkByIndex,
+  useCreateBatchTx,
 } from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
@@ -58,6 +62,9 @@ import {
   useValidateFormMaxBalance,
   validateMaxBalance,
 } from "@/utils/validators"
+
+// Used for testing and debugging without proxy flow
+const SKIP_PROXY_FLOW = false
 
 const schema = z.object({
   amount: required,
@@ -101,6 +108,7 @@ export const useMultiplyApp = ({
   const getMinimumTradeAmount = useMinimumTradeAmount()
   const queryClient = useQueryClient()
   const { createTransaction } = useTransactionsStore()
+  const createBatchTx = useCreateBatchTx()
   const poolBundleContract = useBorrowPoolBundleContract()
 
   const getSetUsageAsCollateralTx = useSetUsageAsCollateralTx()
@@ -108,8 +116,7 @@ export const useMultiplyApp = ({
   const createEvmTx = useCreateMultiplyEvmTx()
 
   const assetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
-  const { eModeCategory, isParityPair, collateralAssetId, debtAssetId } =
-    strategy
+  const { eModeCategory, collateralAssetId, debtAssetId } = strategy
 
   const collateralAsset = getAssetWithFallback(collateralAssetId)
   const borrowAsset = getAssetWithFallback(debtAssetId)
@@ -186,7 +193,6 @@ export const useMultiplyApp = ({
     borrowAssetId: debtAssetId,
     assetInId: borrowAsset.id,
     assetOutId: supplyAToken?.id ?? "",
-    isParityPair,
     eModeCategory,
   })
 
@@ -242,10 +248,37 @@ export const useMultiplyApp = ({
       if (!blockWeightsData)
         throw new Error("Missing required parameters for batch transaction")
 
+      const loopingTxs = await getLoopingSteps(steps, accountAddress)
+
+      if (SKIP_PROXY_FLOW) {
+        if (!trade?.tx) throw new Error("Trade TX not found")
+        const moneyMarketTxs = []
+
+        if (collateralReserve.isIsolated) {
+          const enableCollateralTx = await getSetUsageAsCollateralTx(
+            collateralReserve.underlyingAsset,
+            true,
+            accountAddress,
+            MULTIPLY_FLOW_GAS_LIMIT,
+          )
+          moneyMarketTxs.push(enableCollateralTx)
+        }
+
+        if (eModeCategory !== EModeCategory.NONE) {
+          const eModeTx = await getSetUserEModeTx(eModeCategory, accountAddress)
+
+          moneyMarketTxs.push(eModeTx)
+        }
+
+        return createBatchTx({
+          txs: [trade.tx, ...moneyMarketTxs, ...loopingTxs],
+        })
+      }
+
       const { chunkSize, batchCount } = await calculateChunkSize(
         rpc.papi,
         accountAddress,
-        await getLoopingSteps(steps, accountAddress),
+        loopingTxs,
         blockWeightsData,
       )
 
@@ -356,6 +389,7 @@ export const useMultiplyApp = ({
                 collateralReserve.underlyingAsset,
                 true,
                 proxyAddress,
+                MULTIPLY_FLOW_GAS_LIMIT,
               )
 
               txs.push(

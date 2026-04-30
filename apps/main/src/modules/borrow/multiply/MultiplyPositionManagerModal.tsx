@@ -94,7 +94,6 @@ export const MultiplyPositionManagerModal = ({
         borrowAssetId: position?.pair.debtAssetId ?? "",
         assetInId: position?.pair.debtAssetId ?? "",
         assetOutId: position?.pair.collateralAssetId ?? "",
-        isParityPair: position?.pair.isParityPair ?? false,
         enterWithAssetId: position?.pair.enterWithAssetId,
       },
       {

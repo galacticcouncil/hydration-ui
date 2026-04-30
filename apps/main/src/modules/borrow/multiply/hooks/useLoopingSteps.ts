@@ -7,7 +7,6 @@ import { last } from "remeda"
 
 import { useBorrowReserves } from "@/api/borrow/queries"
 import { PoolError } from "@/api/pools"
-import { spotPriceQuery } from "@/api/spotPrice"
 import { Trade } from "@/api/trade"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { MultiplyLoopConfig } from "@/modules/borrow/multiply/types"
@@ -20,7 +19,6 @@ import {
   MAX_STEPS,
   printFormattedSteps,
 } from "@/modules/borrow/multiply/utils/steps"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 
@@ -57,12 +55,10 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
     borrowAssetId,
     assetInId,
     assetOutId,
-    isParityPair,
   } = options
   const rpc = useRpcProvider()
   const { data: reserves } = useBorrowReserves()
   const { apyMap } = useApyContext()
-  const { getAsset } = useAssets()
 
   const supplyReserve = reserves?.formattedReserves.find((r) =>
     stringEquals(r.underlyingAsset, getReserveAddressByAssetId(supplyAssetId)),
@@ -72,34 +68,26 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
     stringEquals(r.underlyingAsset, getReserveAddressByAssetId(borrowAssetId)),
   )
 
-  const assetOut = getAsset(assetOutId)
   const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
 
-  const { data: spot } = useQuery(spotPriceQuery(rpc, assetInId, assetOutId))
-
   return useQuery({
-    enabled:
-      !!supplyReserve &&
-      !!borrowReserve &&
-      !!assetOut &&
-      !!amount &&
-      !!spot &&
-      multiplier >= 1,
+    enabled: !!supplyReserve && !!borrowReserve && !!amount && multiplier >= 1,
     initialData: INITIAL_DATA,
     placeholderData: keepPreviousData,
     queryKey: ["borrow", "looping", "steps", slippage, options],
     queryFn: async () => {
       const amountBig = new Big(amount || "0")
 
-      if (
-        amountBig.lte(0) ||
-        !supplyReserve ||
-        !borrowReserve ||
-        !assetOut ||
-        !spot?.spotPrice
-      ) {
+      if (amountBig.lte(0) || !supplyReserve || !borrowReserve) {
         return INITIAL_DATA
       }
+
+      const supplyOraclePrice = new Big(
+        supplyReserve.formattedPriceInMarketReferenceCurrency,
+      )
+      const borrowOraclePrice = new Big(
+        borrowReserve.formattedPriceInMarketReferenceCurrency,
+      )
 
       const ltv = getReservePairLtv(supplyReserve, borrowReserve)
       const ltvBig = new Big(ltv || "0")
@@ -118,12 +106,11 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
         : new Big(borrowReserve.variableBorrowAPY || "0")
       const slippageFactor = new Big(1).minus(new Big(slippage).div(100))
 
-      const priceDivisor = isParityPair ? new Big(1) : new Big(spot.spotPrice)
+      const initialCollateral = amountBig.times(supplyOraclePrice)
+      const targetCollateral = initialCollateral.times(multiplier)
+      const targetDebt = targetCollateral.minus(initialCollateral)
 
-      const targetCollateral = amountBig.times(multiplier)
-      const targetDebt = targetCollateral.minus(amountBig)
-
-      let collateral = amountBig
+      let collateral = initialCollateral
       let debt = new Big(0)
       const result: LoopStep[] = []
       let i = 0
@@ -137,7 +124,7 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
           : remaining
 
         if (borrowAmount.lt(EPSILON)) break
-        const borrowInDebt = borrowAmount.div(priceDivisor).toString()
+        const borrowInDebt = borrowAmount.div(borrowOraclePrice)
         const swap = borrowAmount.times(slippageFactor)
 
         collateral = collateral.plus(swap)
@@ -146,19 +133,22 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
         const trade = await rpc.sdk.api.router.getBestSell(
           Number(assetInId),
           Number(assetOutId),
-          borrowInDebt,
+          borrowInDebt.toString(),
         )
 
         const swapErrors = trade.swaps.flatMap((swap) => swap.errors)
 
         result.push({
           step: i + 1,
-          borrow: borrowInDebt,
-          swap: swap.toString(),
+          borrow: borrowInDebt.toString(),
+          swap: swap.div(supplyOraclePrice).toString(),
           trade,
           swapErrors,
-          collateralAfter: collateral.minus(amountBig).toString(),
-          debtAfter: debt.div(priceDivisor).toString(),
+          collateralAfter: collateral
+            .minus(initialCollateral)
+            .div(supplyOraclePrice)
+            .toString(),
+          debtAfter: debt.div(borrowOraclePrice).toString(),
         })
         i++
       }
@@ -177,28 +167,27 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
       const totalCollateral = finalCollateral
         ? new Big(finalCollateral).plus(amountBig)
         : amountBig
-
-      const totalCollateralUsd = totalCollateral.times(supplyReserve.priceInUSD)
-      const targetDebtShifted = targetDebt.div(priceDivisor)
-      const totalDebtUsd = targetDebtShifted.times(borrowReserve.priceInUSD)
-      const futureHF = targetDebtShifted.lte(0)
+      const totalCollateralMarketReferenceCurrency =
+        totalCollateral.times(supplyOraclePrice)
+      const targetDebtShifted = targetDebt.div(borrowOraclePrice)
+      const futureHF = targetDebt.lte(0)
         ? "-1"
-        : totalCollateralUsd
+        : totalCollateralMarketReferenceCurrency
             .times(liquidationLtvBig)
-            .div(totalDebtUsd)
+            .div(targetDebt)
             .toString()
-      const netWorth = totalCollateralUsd.minus(totalDebtUsd)
+      const netWorth = totalCollateralMarketReferenceCurrency.minus(targetDebt)
       const netApy = netWorth.lte(0)
         ? "0"
-        : totalCollateralUsd
+        : totalCollateralMarketReferenceCurrency
             .times(supplyApyBig)
-            .minus(totalDebtUsd.times(borrowApyBig))
+            .minus(targetDebt.times(borrowApyBig))
             .div(netWorth)
             .toString()
 
       return {
         steps: result,
-        targetCollateral: targetCollateral.toString(),
+        targetCollateral: targetCollateral.div(supplyOraclePrice).toString(),
         targetDebt: targetDebtShifted.toString(),
         totalCollateral: totalCollateral.toString(),
         futureHF,

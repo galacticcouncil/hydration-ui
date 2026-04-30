@@ -5,7 +5,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { last } from "remeda"
 
-import { spotPriceQuery } from "@/api/spotPrice"
 import { Trade } from "@/api/trade"
 import { getReservePairLtv } from "@/modules/borrow/multiply/utils/leverage"
 import {
@@ -44,7 +43,6 @@ type useUnloopingProxyStepsProps = {
   repayAmount: string
   supplyReserve: ComputedReserveData
   borrowReserve: ComputedReserveData
-  isParityPair: boolean
   enterWithAssetId?: string
 }
 
@@ -54,11 +52,10 @@ export function useUnloopingProxySteps({
   repayAmount,
   supplyReserve,
   borrowReserve,
-  isParityPair,
   enterWithAssetId,
 }: useUnloopingProxyStepsProps) {
   const rpc = useRpcProvider()
-  const { getAsset, getRelatedAToken } = useAssets()
+  const { getRelatedAToken } = useAssets()
 
   const supplyAssetId = getReserveAssetIdByAddress(
     supplyReserve.underlyingAsset,
@@ -68,16 +65,12 @@ export function useUnloopingProxySteps({
   )
 
   const assetInId = borrowAssetId
-  const assetOutId = supplyAssetId
   const collateralAsset = getRelatedAToken(supplyAssetId)
 
-  const assetOut = getAsset(assetOutId)
   const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
 
-  const { data: spot } = useQuery(spotPriceQuery(rpc, assetInId, assetOutId))
-
   return useQuery({
-    enabled: !!assetOut && !!repayAmount && !!spot,
+    enabled: !!repayAmount && !!collateralAsset,
     initialData: INITIAL_DATA,
     placeholderData: keepPreviousData,
     queryKey: [
@@ -96,25 +89,32 @@ export function useUnloopingProxySteps({
 
       const collateralBig = new Big(supplied || "0")
       const debtBig = new Big(borrowed || "0")
-      const targetRepay = new Big(repayAmount || "0")
+      const targetRepayBig = new Big(repayAmount || "0")
 
       if (
-        targetRepay.lte(0) ||
+        targetRepayBig.lte(0) ||
         collateralBig.lte(0) ||
         debtBig.lte(0) ||
-        !assetOut ||
-        !spot?.spotPrice
+        !supplyReserve ||
+        !borrowReserve
       ) {
         return INITIAL_DATA
       }
+
+      const supplyOraclePrice = new Big(
+        supplyReserve.formattedPriceInMarketReferenceCurrency,
+      )
+      const borrowOraclePrice = new Big(
+        borrowReserve.formattedPriceInMarketReferenceCurrency,
+      )
 
       const ltv = getReservePairLtv(supplyReserve, borrowReserve)
       const ltvBig = new Big(ltv || "0")
       const slippageFactor = new Big(1).minus(new Big(slippage).div(100))
 
-      const priceDivisor = isParityPair ? new Big(1) : new Big(spot.spotPrice)
-      let collateral = collateralBig
-      let debt = debtBig
+      const targetRepay = targetRepayBig.times(borrowOraclePrice)
+      let collateral = collateralBig.times(supplyOraclePrice)
+      let debt = debtBig.times(borrowOraclePrice)
       let totalRepaid = new Big(0)
       const result: UnloopStep[] = []
       let i = 0
@@ -139,7 +139,7 @@ export function useUnloopingProxySteps({
 
         const swapOutput = withdrawAmount.times(slippageFactor)
         const repayThisStep = swapOutput
-        const withdraw = withdrawAmount.div(priceDivisor).toString()
+        const withdraw = withdrawAmount.div(supplyOraclePrice).toString()
 
         collateral = collateral.minus(withdrawAmount)
         debt = debt.minus(repayThisStep)
@@ -162,10 +162,10 @@ export function useUnloopingProxySteps({
           withdraw,
           trade,
           swapErrors,
-          swap: swapOutput.toString(),
-          repay: repayThisStep.div(priceDivisor).toString(),
-          collateralAfter: collateral.toString(),
-          debtAfter: debt.div(priceDivisor).toString(),
+          swap: swapOutput.div(borrowOraclePrice).toString(),
+          repay: repayThisStep.div(borrowOraclePrice).toString(),
+          collateralAfter: collateral.div(supplyOraclePrice).toString(),
+          debtAfter: debt.div(borrowOraclePrice).toString(),
         })
         i++
       }
@@ -202,7 +202,9 @@ export function useUnloopingProxySteps({
             ? remainingAfterIterative.toString()
             : "0"
         } else {
-          const targetWithdrawNeeded = targetRepay.div(slippageFactor)
+          const targetWithdrawNeeded = targetRepay
+            .div(slippageFactor)
+            .div(supplyOraclePrice)
           const excess = totalWithdrawn.minus(targetWithdrawNeeded)
           finalSwapAmount = excess.gt(0) ? excess.toString() : "0"
         }
@@ -211,13 +213,13 @@ export function useUnloopingProxySteps({
       return {
         steps: result,
         totalWithdrawn: isFullClose ? supplied : totalWithdrawn.toString(),
-        totalRepaid: totalRepaid.toString(),
+        totalRepaid: totalRepaid.div(borrowOraclePrice).toString(),
         remainingCollateral: isFullClose
           ? "0"
           : new Big(supplied).minus(totalWithdrawn).toString(),
         remainingDebt: isFullClose
           ? "0"
-          : (lastStep?.debtAfter ?? debt.div(priceDivisor).toString()),
+          : (lastStep?.debtAfter ?? debt.div(borrowOraclePrice).toString()),
         isFullClose,
         finalSwapAmount,
       }

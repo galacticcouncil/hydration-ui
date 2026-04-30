@@ -50,50 +50,42 @@ export const MULTIPLY_ASSETS_CONFIG: MultiplyAssetPairConfig[] = [
     collateralAssetId: PRIME_ASSET_ID,
     debtAssetId: HOLLAR_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.GDOT_DOT, {
     collateralAssetId: GDOT_ASSET_ID,
     debtAssetId: DOT_ASSET_ID,
     enterWithAssetId: DOT_ASSET_ID,
     eModeCategory: EModeCategory.DOT_CORRELATED,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.TBTC_HOLLAR, {
     collateralAssetId: TBTC_ASSET_ID,
     debtAssetId: HOLLAR_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.WBTC_HOLLAR, {
     collateralAssetId: WBTC_ASSET_ID,
     debtAssetId: HOLLAR_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.USDT_TBTC, {
     collateralAssetId: USDT_ASSET_ID,
     debtAssetId: TBTC_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.USDT_WBTC, {
     collateralAssetId: USDT_ASSET_ID,
     debtAssetId: WBTC_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.USDC_TBTC, {
     collateralAssetId: USDC_ASSET_ID,
     debtAssetId: TBTC_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
   createPair(PAIR_IDS.USDC_WBTC, {
     collateralAssetId: USDC_ASSET_ID,
     debtAssetId: WBTC_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: false,
   }),
 ]
 
