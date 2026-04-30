@@ -24,7 +24,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const borrowableHollar = userBorrowSummary.borrowableHollar
 
   const suppliedHdx = Big(hdxReserve.underlyingBalance)
-  const availableBorrowUsd = Big(borrowableHollar.borrowableHollar)
+  const availableBorrowUsd = Big(borrowableHollar)
   const currentLoanToValue = Big(
     userBorrowSummary.userSummary.currentLoanToValue,
   )
