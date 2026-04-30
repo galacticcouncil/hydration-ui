@@ -52,7 +52,11 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
   const bucketLevel = facilitatorBucketData?.facilitatorBucketLevel ?? 0n
   const availableFromBucketWei =
     bucketCapacity > bucketLevel ? bucketCapacity - bucketLevel : 0n
-  const userBorrowableWei = BigInt(borrowableHollar?.borrowableHollarWei ?? "0")
+
+  const userBorrowableWei = toBigInt(
+    borrowableHollar || "0",
+    hollarAsset.decimals,
+  )
   const maxBorrowableWei =
     userBorrowableWei < availableFromBucketWei
       ? userBorrowableWei

@@ -21,6 +21,7 @@ import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
   getGhoBorrowApyRange,
+  getMaxGhoMintAmount,
   getUserApyValues,
   GhoService,
   IncentivesControllerV2,
@@ -59,31 +60,6 @@ export const lendingPoolAddressProvider =
 export const gigaLendingPoolAddressProvider =
   AaveV3GIGAHDXPool.POOL_ADDRESSES_PROVIDER
 
-const GIGA_MM2_POOL_ABI = [
-  {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "getUserAccountData",
-    outputs: [
-      { internalType: "uint256", name: "totalCollateralBase", type: "uint256" },
-      { internalType: "uint256", name: "totalDebtBase", type: "uint256" },
-      {
-        internalType: "uint256",
-        name: "availableBorrowsBase",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "currentLiquidationThreshold",
-        type: "uint256",
-      },
-      { internalType: "uint256", name: "ltv", type: "uint256" },
-      { internalType: "uint256", name: "healthFactor", type: "uint256" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const
-
 const GHO_TOKEN_FACILITATOR_ABI = [
   {
     inputs: [{ internalType: "address", name: "facilitator", type: "address" }],
@@ -97,9 +73,6 @@ const GHO_TOKEN_FACILITATOR_ABI = [
   },
 ] as const
 
-const AAVE_BASE_CURRENCY_DECIMALS = 8n
-const HOLLAR_DECIMALS = 18n
-
 export type GigaBorrowableHollar = {
   borrowableHollarWei: string
   borrowableHollar: string
@@ -107,47 +80,6 @@ export type GigaBorrowableHollar = {
   totalCollateralBase: string
   totalDebtBase: string
 }
-
-export const gigaBorrowableHollarQuery = (
-  evmAddress: string,
-  rpc: TProviderContext,
-) =>
-  queryOptions({
-    queryKey: ["borrow", "giga", "borrowableHollar", evmAddress],
-    queryFn: async (): Promise<GigaBorrowableHollar> => {
-      const accountData = await rpc.evm.readContract({
-        abi: GIGA_MM2_POOL_ABI,
-        address: AaveV3GIGAHDXPool.POOL as `0x${string}`,
-        functionName: "getUserAccountData",
-        args: [evmAddress as `0x${string}`],
-      })
-
-      const [totalCollateralBase, totalDebtBase, availableBorrowsBase] =
-        accountData
-
-      const borrowableHollarWei =
-        availableBorrowsBase *
-        10n ** (HOLLAR_DECIMALS - AAVE_BASE_CURRENCY_DECIMALS)
-
-      const whole = borrowableHollarWei / 10n ** HOLLAR_DECIMALS
-      const fraction = (borrowableHollarWei % 10n ** HOLLAR_DECIMALS)
-        .toString()
-        .padStart(Number(HOLLAR_DECIMALS), "0")
-        .replace(/0+$/, "")
-
-      return {
-        borrowableHollarWei: borrowableHollarWei.toString(),
-        borrowableHollar: fraction
-          ? `${whole.toString()}.${fraction}`
-          : whole.toString(),
-        availableBorrowsBase: availableBorrowsBase.toString(),
-        totalCollateralBase: totalCollateralBase.toString(),
-        totalDebtBase: totalDebtBase.toString(),
-      }
-    },
-    retry: false,
-    enabled: !!evmAddress && rpc.isApiLoaded,
-  })
 
 export const borrowIncentivesQuery = (
   lendingPoolAddressProvider: string,
@@ -597,7 +529,7 @@ export const useFacilitatorBucket = (aTokenAddress: string) => {
 
 export type UserGigaBorrowSummary = {
   userSummary: ExtendedFormattedUser
-  borrowableHollar: GigaBorrowableHollar
+  borrowableHollar: string
   hdxReserve: ComputedUserReserveData
   hollarReserve: ComputedUserReserveData
 }
@@ -623,7 +555,7 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
       const timestamp = bestNumber.timestamp
       if (!timestamp || timestamp <= 0) throw new Error("Invalid timestamp")
 
-      const [user, reserves, gho, borrowableHollar] = await Promise.all([
+      const [user, reserves, gho] = await Promise.all([
         poolDataContract.getUserReservesHumanized({
           lendingPoolAddressProvider: gigaLendingPoolAddressProvider,
           user: evmAddress,
@@ -639,8 +571,6 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
         rpc.queryClient.ensureQueryData(
           ghoUserDataQuery(evmAddress, rpc, ghoServiceContract),
         ),
-
-        rpc.queryClient.fetchQuery(gigaBorrowableHollarQuery(evmAddress, rpc)),
       ])
 
       const { userEmodeCategoryId, userReserves } = user
@@ -684,9 +614,14 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
 
       if (!hdxReserve || !hollarReserve) throw new Error("Reserves not found")
 
+      const maxAmountToBorrow = getMaxGhoMintAmount(
+        extendedUser,
+        hollarReserve.reserve,
+      )
+
       return {
         userSummary: extendedUser,
-        borrowableHollar,
+        borrowableHollar: maxAmountToBorrow,
         hdxReserve,
         hollarReserve,
       }
