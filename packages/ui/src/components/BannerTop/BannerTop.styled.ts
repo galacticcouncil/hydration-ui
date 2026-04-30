@@ -5,8 +5,8 @@ export const SClose = styled.button`
   right: ${({ theme }) => theme.space.s};
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
+  width: ${({ theme }) => theme.sizes.l};
+  height: ${({ theme }) => theme.sizes.l};
   cursor: pointer;
   display: flex;
   align-items: center;

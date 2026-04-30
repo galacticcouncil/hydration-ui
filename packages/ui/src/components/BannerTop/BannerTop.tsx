@@ -34,7 +34,7 @@ export const BannerTop = ({
         <Flex align="center" gap="xs" pr={["m", 0]}>
           <Icon
             component={StylizedAdd}
-            size={10}
+            size="xs"
             color={getToken("buttons.primary.medium.onButton")}
           />
           <Text
@@ -78,7 +78,7 @@ export const BannerTop = ({
         <SClose onClick={onClose} aria-label="Close banner">
           <Icon
             component={Close}
-            size={10}
+            size="xs"
             color={getToken("buttons.primary.medium.onButton")}
           />
         </SClose>
