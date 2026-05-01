@@ -164,6 +164,14 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
           { onSubmitted: onClose },
         )
       } else {
+        await createTransaction(
+          {
+            tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
+              call: evmCall.decodedCall,
+            }),
+          },
+          { onSubmitted: onClose },
+        )
       }
     },
   })
