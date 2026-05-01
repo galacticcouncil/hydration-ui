@@ -92,6 +92,17 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         evmAccountBindingQuery(rpc, address),
       )
 
+      const toasts = {
+        submitted: t("staking:gigaStaking.stake.toasts.submitted", {
+          value: amount,
+          symbol: native.symbol,
+        }),
+        success: t("staking:gigaStaking.stake.toasts.success", {
+          value: amount,
+          symbol: native.symbol,
+        }),
+      }
+
       if (!isBound) {
         return createTransaction(
           {
@@ -102,6 +113,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
               ],
             }),
             invalidateQueries: [userGigaBorrowSummaryQueryKey(address)],
+            toasts,
           },
           { onSuccess: () => form.reset() },
         )
@@ -111,6 +123,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         {
           tx: stakeTx,
           invalidateQueries: [userGigaBorrowSummaryQueryKey(address)],
+          toasts,
         },
         { onSuccess: () => form.reset() },
       )

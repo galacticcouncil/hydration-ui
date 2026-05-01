@@ -13,7 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
@@ -52,6 +52,40 @@ export const GigaHDXPosition = () => {
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(
     userSummary?.healthFactor || "-1",
   )
+
+  /** HOLLAR per 1 HDX at HF = 1 (single collateral / single debt Giga pool). */
+  const liquidationPriceHollarPerHdx = useMemo(() => {
+    if (!userSummary || !hdxReserve || !hollarReserve) return null
+
+    const debtMrc = Big(
+      hollarReserve.totalBorrowsMarketReferenceCurrency || "0",
+    )
+    if (debtMrc.lte(0)) return null
+
+    const qtyCollateral = Big(hdxReserve.underlyingBalance || "0")
+    if (qtyCollateral.lte(0)) return null
+
+    const reserve = hdxReserve.reserve
+    if (reserve.reserveLiquidationThreshold === "0") return null
+
+    const lt =
+      userSummary.isInEmode &&
+      userSummary.userEmodeCategoryId === reserve.eModeCategoryId
+        ? reserve.formattedEModeLiquidationThreshold
+        : reserve.formattedReserveLiquidationThreshold
+
+    const ltNum = Big(lt || "0")
+    if (ltNum.lte(0)) return null
+
+    const liqPxMrc = debtMrc.div(qtyCollateral.times(ltNum))
+
+    const hollarMrc = Big(
+      hollarReserve.reserve.formattedPriceInMarketReferenceCurrency || "0",
+    )
+    if (hollarMrc.lte(0)) return null
+
+    return liqPxMrc.div(hollarMrc)
+  }, [userSummary, hdxReserve, hollarReserve])
 
   return (
     <>
@@ -116,13 +150,19 @@ export const GigaHDXPosition = () => {
           />
           <ValueStats
             size="small"
-            label="Liqudation price"
+            label="Liquidation price"
             wrap={[false, true]}
             isLoading={isLoading}
-            value={t("common:currency", {
-              value: 0.00001,
-              symbol: "HOLLAR/HDX",
-            })}
+            value={
+              liquidationPriceHollarPerHdx
+                ? t("common:currency", {
+                    value: liquidationPriceHollarPerHdx
+                      .round(18, Big.roundHalfUp)
+                      .toFixed(),
+                    symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
+                  })
+                : "-"
+            }
           />
           <ValueStats
             size="small"
