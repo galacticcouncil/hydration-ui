@@ -35,6 +35,10 @@ export const UnstakingPositions: FC = () => {
     currentPage * MAX_ITEMS_PER_PAGE,
   )
 
+  if (unstakingPositions.length === 0) {
+    return null
+  }
+
   return (
     <Paper asChild>
       <Flex direction="column" py="l">
