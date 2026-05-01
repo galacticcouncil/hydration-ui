@@ -104,6 +104,7 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     currentLiquidationThreshold:
       userSummary?.currentLiquidationThreshold || "0",
   })
+
   const healthFactor = formatHealthFactorResult({
     currentHF: userSummary?.healthFactor || "-1",
     futureHF: futureHealthFactorRaw.toString(),
@@ -116,7 +117,7 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
       if (!account?.address || !hollarReserve?.underlyingAsset) return
 
       const amountWei = toBigInt(
-        Big(amount).mul(1.0025).toString(),
+        Big(amount).mul(1.001).toString(),
         hollarAsset.decimals,
       )
 
@@ -141,11 +142,23 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
         ProtocolAction.repay,
       )
 
+      const toasts = {
+        submitted: t("staking:gigaStaking.repay.toasts.submitted", {
+          value: amount,
+          symbol: hollarAsset.symbol,
+        }),
+        success: t("staking:gigaStaking.repay.toasts.success", {
+          value: amount,
+          symbol: hollarAsset.symbol,
+        }),
+      }
+
       await createTransaction(
         {
           tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
             call: evmCall.decodedCall,
           }),
+          toasts,
           invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
         },
         { onSubmitted: onClose },

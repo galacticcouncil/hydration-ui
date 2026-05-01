@@ -36,6 +36,7 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { PopulatedTransaction } from "ethers"
 import { Binary, FixedSizeArray, SizedHex } from "polkadot-api"
 import { useCallback } from "react"
@@ -54,6 +55,7 @@ import {
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { TProviderData } from "@/api/provider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
@@ -530,6 +532,7 @@ export const useFacilitatorBucket = (aTokenAddress: string) => {
 export type UserGigaBorrowSummary = {
   userSummary: ExtendedFormattedUser
   borrowableHollar: string
+  maxBorrowableHollar: string
   hdxReserve: ComputedUserReserveData
   hollarReserve: ComputedUserReserveData
 }
@@ -614,14 +617,34 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
 
       if (!hdxReserve || !hollarReserve) throw new Error("Reserves not found")
 
-      const maxAmountToBorrow = getMaxGhoMintAmount(
+      const maxUserAmountToBorrow = getMaxGhoMintAmount(
         extendedUser,
         hollarReserve.reserve,
       )
 
+      const facilitatorBucketData = await rpc.queryClient.fetchQuery(
+        facilitatorBucketQuery(
+          rpc,
+          hollarReserve.reserve.aTokenAddress,
+          ghoServiceContract,
+        ),
+      )
+
+      const bucketCapacity = facilitatorBucketData.facilitatorBucketCapacity
+      const bucketLevel = facilitatorBucketData?.facilitatorBucketLevel
+
+      const availableFromBucketWei =
+        bucketCapacity > bucketLevel ? bucketCapacity - bucketLevel : 0n
+
+      const maxBorrowableHollar = Big.min(
+        maxUserAmountToBorrow,
+        scaleHuman(availableFromBucketWei, hollarReserve.reserve.decimals),
+      ).toString()
+
       return {
         userSummary: extendedUser,
-        borrowableHollar: maxAmountToBorrow,
+        borrowableHollar: maxUserAmountToBorrow,
+        maxBorrowableHollar,
         hdxReserve,
         hollarReserve,
       }

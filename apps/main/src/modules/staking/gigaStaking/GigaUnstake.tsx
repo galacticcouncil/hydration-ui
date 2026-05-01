@@ -25,6 +25,7 @@ export const GigaUnstake: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
             assets={[]}
             disabledAssetSelector
             maxBalance={maxUnstake}
+            balanceLabel={t("common:available")}
           />
         </Box>
 

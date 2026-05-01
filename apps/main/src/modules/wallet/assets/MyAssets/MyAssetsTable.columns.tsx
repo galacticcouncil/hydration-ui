@@ -20,6 +20,7 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
+import { useAssets } from "@/providers/assetsProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { naturally, numericallyStr, sortBy } from "@/utils/sort"
 
@@ -48,6 +49,7 @@ export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
 export const useMyAssetsColumns = (isEmpty: boolean) => {
   const { t } = useTranslation(["wallet", "common"])
+  const { native } = useAssets()
   const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
@@ -114,7 +116,9 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
     const stakingColumn = columnHelper.display({
       id: MyAssetsTableColumn.Staking,
       cell: ({ row }) => {
-        return <AssetDetailStaking asset={row.original} />
+        return row.original.id === native.id ? (
+          <AssetDetailStaking asset={row.original} />
+        ) : null
       },
     })
 
@@ -224,5 +228,5 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
           stakingColumn,
           actionsColumn,
         ] as Array<ColumnDef<MyAsset>>)
-  }, [isMobile, isEmpty, t])
+  }, [isMobile, isEmpty, t, native.id])
 }

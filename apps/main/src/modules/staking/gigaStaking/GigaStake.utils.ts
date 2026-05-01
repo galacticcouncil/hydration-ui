@@ -13,7 +13,7 @@ import { GigaStakeProps } from "@/modules/staking/gigaStaking/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-import { toBigInt, toDecimal } from "@/utils/formatting"
+import { scaleHuman, toBigInt, toDecimal } from "@/utils/formatting"
 import { positive, useValidateFormMaxBalance } from "@/utils/validators"
 
 type GigaStakeFormValues = {
@@ -52,7 +52,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
             {
               error: t("staking:stake.stake.minStakeError", {
                 amount: t("currency", {
-                  value: minStake,
+                  value: scaleHuman(minStake, native.decimals),
                   symbol: native.symbol,
                 }),
               }),

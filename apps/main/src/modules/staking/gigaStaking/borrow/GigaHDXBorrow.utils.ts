@@ -15,7 +15,6 @@ import {
   convertEvmTxRawToPapiTx,
   useApproveErc20,
   useErc20Allowance,
-  useFacilitatorBucket,
   useGigaBorrowPoolContract,
   userGigaBorrowSummaryQueryKey,
   useUserGigaBorrowSummary,
@@ -42,25 +41,15 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
   const approveErc20 = useApproveErc20()
   const getErc20Allowance = useErc20Allowance()
 
-  const { borrowableHollar, userSummary, hollarReserve } =
+  const { maxBorrowableHollar, userSummary, hollarReserve } =
     gigaBorrowSummary ?? {}
   const hollarAsset = getAssetWithFallback(HOLLAR_ASSET_ID)
-  const { data: facilitatorBucketData, isSuccess: isFacilitatorBucketSuccess } =
-    useFacilitatorBucket(hollarReserve?.reserve.aTokenAddress ?? "")
 
-  const bucketCapacity = facilitatorBucketData?.facilitatorBucketCapacity ?? 0n
-  const bucketLevel = facilitatorBucketData?.facilitatorBucketLevel ?? 0n
-  const availableFromBucketWei =
-    bucketCapacity > bucketLevel ? bucketCapacity - bucketLevel : 0n
-
-  const userBorrowableWei = toBigInt(
-    borrowableHollar || "0",
+  const maxBorrowableWei = toBigInt(
+    maxBorrowableHollar || "0",
     hollarAsset.decimals,
   )
-  const maxBorrowableWei =
-    userBorrowableWei < availableFromBucketWei
-      ? userBorrowableWei
-      : availableFromBucketWei
+
   const maxBorrowableAmount = toDecimal(maxBorrowableWei, hollarAsset.decimals)
 
   const form = useForm<GigaHDXBorrowFormValues>({
@@ -69,19 +58,17 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
       amount: "",
       asset: hollarAsset,
     },
-    resolver: !isFacilitatorBucketSuccess
-      ? undefined
-      : standardSchemaResolver(
-          z.object({
-            amount: positive.refine(
-              (value) => new Big(value || "0").lte(maxBorrowableAmount || "0"),
-              {
-                error: t("staking:gigaStaking.borrow.error.borrowLimit"),
-              },
-            ),
-            asset: z.custom<TAssetData>(),
-          }),
+    resolver: standardSchemaResolver(
+      z.object({
+        amount: positive.refine(
+          (value) => new Big(value || "0").lte(maxBorrowableAmount || "0"),
+          {
+            error: t("staking:gigaStaking.borrow.error.borrowLimit"),
+          },
         ),
+        asset: z.custom<TAssetData>(),
+      }),
+    ),
   })
 
   const amount = form.watch("amount")
@@ -140,6 +127,17 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
         ProtocolAction.borrow,
       )
 
+      const toasts = {
+        submitted: t("staking:gigaStaking.borrow.toasts.submitted", {
+          value: amount,
+          symbol: hollarAsset.symbol,
+        }),
+        success: t("staking:gigaStaking.borrow.toasts.success", {
+          value: amount,
+          symbol: hollarAsset.symbol,
+        }),
+      }
+
       if (allowance === 0n) {
         const approveEvmCall = await approveErc20(
           gigaBorrowPoolContract,
@@ -160,6 +158,7 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
               ],
             }),
             invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
+            toasts,
           },
           { onSubmitted: onClose },
         )
@@ -169,6 +168,7 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
             tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
               call: evmCall.decodedCall,
             }),
+            toasts,
           },
           { onSubmitted: onClose },
         )

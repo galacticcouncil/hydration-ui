@@ -37,8 +37,13 @@ export const GigaHDXPosition = () => {
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
 
   const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
-  const { borrowableHollar, userSummary, hdxReserve, hollarReserve } =
-    gigaBorrowSummary ?? {}
+  const {
+    borrowableHollar,
+    maxBorrowableHollar,
+    userSummary,
+    hdxReserve,
+    hollarReserve,
+  } = gigaBorrowSummary ?? {}
   const totalBorrowCapacity = Big(hollarReserve?.totalBorrows || "0").plus(
     borrowableHollar || "0",
   )
@@ -281,13 +286,13 @@ export const GigaHDXPosition = () => {
                       color={getToken("text.high")}
                     >
                       {t("common:currency", {
-                        value: borrowableHollar || "0",
+                        value: maxBorrowableHollar || "0",
                         symbol: hollarReserve?.reserve.symbol,
                       })}
                     </Text>
                   }
                   displayValue={t("common:currency", {
-                    value: Big(borrowableHollar || "0")
+                    value: Big(maxBorrowableHollar || "0")
                       .times(hollarReserve?.reserve.priceInUSD || "0")
                       .toString(),
                   })}
