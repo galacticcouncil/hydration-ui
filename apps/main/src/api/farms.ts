@@ -1,10 +1,18 @@
+import { IndexerSdk, newFarmsQuery } from "@galacticcouncil/indexer/indexer"
 import { farm, SdkCtx } from "@galacticcouncil/sdk-next"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
+import Big from "big.js"
+import { millisecondsToSeconds } from "date-fns"
+import { millisecondsInHour, secondsInDay } from "date-fns/constants"
+import { z } from "zod"
 
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIndexerClient } from "@/api/provider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { isXykDepositPosition } from "@/states/account"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { OmnipoolDepositFull, XykDeposit } from "./account"
+import { bestNumberQuery } from "./chain"
 
 export type Farm = farm.Farm
 export type FarmDepositReward = farm.FarmDepositReward
@@ -17,6 +25,21 @@ export type FarmRewards = {
   rewards: FarmDepositReward
   isXyk: boolean
 }
+
+export const NEW_YIELD_FARMS_DAYS = 4
+const NEW_YIELD_FARMS_TIME = secondsInDay * NEW_YIELD_FARMS_DAYS
+const NEW_YIELD_FARMS_BLOCKS =
+  NEW_YIELD_FARMS_TIME / millisecondsToSeconds(PARACHAIN_BLOCK_TIME) // 2 days in blocks
+
+const newFarmsDataSchema = z.object({
+  events: z.array(
+    z.object({
+      args: z.object({
+        assetId: z.number(),
+      }),
+    }),
+  ),
+})
 
 export const useOmnipoolFarms = () => {
   const { isApiLoaded, sdk } = useRpcProvider()
@@ -147,3 +170,44 @@ export const useFarmRewards = (
 
   return { data, isLoading, isPending, refetch }
 }
+
+export const useNewFarms = () => {
+  const rpcProvider = useRpcProvider()
+  const indexerSdk = useIndexerClient()
+
+  return useQuery(newCreatedFarmsQuery(rpcProvider, indexerSdk))
+}
+
+const newCreatedFarmsQuery = (
+  rpcProvider: TProviderContext,
+  indexerSdk: IndexerSdk,
+) =>
+  queryOptions({
+    queryKey: ["newCreatedFarms"],
+    queryFn: async () => {
+      const { parachainBlockNumber } =
+        await rpcProvider.queryClient.ensureQueryData(
+          bestNumberQuery(rpcProvider),
+        )
+
+      const latestBlockNumber = Big(parachainBlockNumber)
+        .minus(NEW_YIELD_FARMS_BLOCKS)
+        .toNumber()
+
+      const data = await rpcProvider.queryClient.fetchQuery(
+        newFarmsQuery(indexerSdk, latestBlockNumber),
+      )
+
+      const parsedData = newFarmsDataSchema.safeParse(data)
+
+      if (!parsedData.success) return []
+
+      return [
+        ...new Set(
+          parsedData.data.events.map(({ args: { assetId } }) => assetId),
+        ).values(),
+      ]
+    },
+    staleTime: millisecondsInHour,
+    gcTime: millisecondsInHour,
+  })

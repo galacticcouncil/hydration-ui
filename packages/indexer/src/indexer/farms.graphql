@@ -1,0 +1,8 @@
+query YieldFarmCreated($blockNumber: Int!) {
+    events(
+        where: { name_eq: "OmnipoolLiquidityMining.YieldFarmCreated", block: { height_gte: $blockNumber } }
+        orderBy: [block_height_ASC]
+    ) {
+        args
+    }
+}

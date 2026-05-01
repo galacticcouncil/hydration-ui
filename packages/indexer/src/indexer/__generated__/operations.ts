@@ -17,6 +17,13 @@ export type ExtrinsicByBlockAndIndexQueryVariables = Types.Exact<{
 
 export type ExtrinsicByBlockAndIndexQuery = { __typename?: 'Query', extrinsics: Array<{ __typename?: 'Extrinsic', hash: string, indexInBlock: number, success: boolean, error?: any | null, block: { __typename?: 'Block', height: number, timestamp: string } }> };
 
+export type YieldFarmCreatedQueryVariables = Types.Exact<{
+  blockNumber: Types.Scalars['Int']['input'];
+}>;
+
+
+export type YieldFarmCreatedQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null }> };
+
 export type OtcOrderStatusQueryVariables = Types.Exact<{
   orderId: Types.Scalars['Int']['input'];
 }>;
