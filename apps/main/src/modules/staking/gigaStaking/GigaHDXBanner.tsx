@@ -13,9 +13,14 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SGigaHDXBanner } from "@/modules/staking/gigaStaking/GigaStaking.styled"
+import { useBannersStore } from "@/states/banners"
 
 export const GigaHDXBanner: FC = () => {
   const { t } = useTranslation("staking")
+  const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
+  const banner = useBannersStore((state) => state.banners["giga-stake"])
+
+  if (banner.visible === false) return null
 
   return (
     <SGigaHDXBanner direction={["row-reverse", "row-reverse", "row"]}>
@@ -65,7 +70,12 @@ export const GigaHDXBanner: FC = () => {
           background: getToken("icons.onSurface"),
         }}
       >
-        <Icon component={Close} size={12} color={getToken("text.high")} />
+        <Icon
+          component={Close}
+          size={12}
+          color={getToken("text.high")}
+          onClick={() => setBannerVisible("giga-stake", false, Date.now())}
+        />
       </ButtonIcon>
     </SGigaHDXBanner>
   )

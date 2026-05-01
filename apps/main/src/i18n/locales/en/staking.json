@@ -52,6 +52,10 @@
       "Participate in governance to speed up the rate at which you can claim rewards."
     ]
   ],
+  "gigaStaking.repay.toasts.submitted": "Repaying {{ value, currency }}",
+  "gigaStaking.repay.toasts.success": "Repaid {{ value, currency }}",
+  "gigaStaking.borrow.toasts.submitted": "Borrowing {{ value, currency }}",
+  "gigaStaking.borrow.toasts.success": "Borrowed {{ value, currency }}",
   "gigaStaking.stake.toasts.submitted": "Giga staking {{ value, currency }}",
   "gigaStaking.stake.toasts.success": "Giga staked {{ value, currency }}",
   "gigaStaking.unstake.toasts.submitted": "Giga unstaking {{ value, currency }}",

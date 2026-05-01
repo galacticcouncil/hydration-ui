@@ -9,6 +9,7 @@ import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
+import { gigaUnstakePositionsQuery } from "@/api/gigaStake"
 import { GigaUnstakeProps } from "@/modules/staking/gigaStaking/GigaUnstake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -29,18 +30,18 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const { t } = useTranslation(["common", "staking"])
   const meta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
 
-  const hdxReserve = userBorrowSummary.hdxReserve
-  const borrowableHollar = userBorrowSummary.borrowableHollar
+  const { hdxReserve, hollarReserve, borrowableHollar, userSummary } =
+    userBorrowSummary
 
   const suppliedHdx = Big(hdxReserve.underlyingBalance)
   const availableBorrowUsd = Big(borrowableHollar)
-  const currentLoanToValue = Big(
-    userBorrowSummary.userSummary.currentLoanToValue,
-  )
+  const currentLoanToValue = Big(userSummary.currentLoanToValue)
 
   const hdxPriceUsd = Big(hdxReserve.reserve.priceInUSD)
   const debtConstrainedMaxUnstake =
-    currentLoanToValue.gt(0) && hdxPriceUsd.gt(0)
+    currentLoanToValue.gt(0) &&
+    hdxPriceUsd.gt(0) &&
+    Big(hollarReserve.totalBorrows).gt(0)
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
   const maxUnstake = Big.min(suppliedHdx, debtConstrainedMaxUnstake).toString()
@@ -86,7 +87,10 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       return createTransaction(
         {
           tx: stakeTx,
-          invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
+          invalidateQueries: [
+            userGigaBorrowSummaryQueryKey(account.address),
+            gigaUnstakePositionsQuery(rpc, account.address).queryKey,
+          ],
           toasts,
         },
         { onSuccess: () => form.reset() },

@@ -63,7 +63,10 @@ export const GigaStakeTotalsHeader: FC = () => {
     hollarReserve?.decimals ?? 18,
   )
 
-  const borrowedHollar = hollarReserve?.totalDebt ?? "0"
+  const borrowedHollar = toDecimal(
+    facilitatorBucketData?.facilitatorBucketLevel ?? "0",
+    hollarReserve?.decimals ?? 18,
+  )
   const hollarSymbol = hollarReserve?.symbol
 
   return (

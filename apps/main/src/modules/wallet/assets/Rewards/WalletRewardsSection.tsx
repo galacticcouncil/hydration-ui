@@ -1,3 +1,4 @@
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Flex,
   LoadingButton,
@@ -14,9 +15,12 @@ import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/Wallet
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 import { WalletRewardsSectionEmpty } from "@/modules/wallet/assets/Rewards/WalletRewardsSectionEmpty"
+import { useAccountBalances } from "@/states/account"
 
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
+  const { getBalance } = useAccountBalances()
+  const balance = getBalance(HDX_ERC20_ASSET_ID)?.free ?? 0n
 
   const { incentives, farming, staking, referral, isEmpty, isLoading } =
     useWalletRewardsSectionData()
@@ -76,8 +80,8 @@ export const WalletRewardsSection: FC = () => {
           })}
           isLoading={staking.loading}
         />
-        {staking.isEmpty && !staking.loading && (
-          <WalletRewardsSectionEmpty link={LINKS.stakingOverview}>
+        {balance === 0n && (
+          <WalletRewardsSectionEmpty link={LINKS.stakingGigaStake}>
             {t("rewards.allocated.empty")}
           </WalletRewardsSectionEmpty>
         )}
