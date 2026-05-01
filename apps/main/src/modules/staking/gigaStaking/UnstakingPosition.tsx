@@ -2,8 +2,11 @@ import {
   Amount,
   Button,
   Flex,
+  Text,
+  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { durationInDaysAndHoursFromNow } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useMemo } from "react"
@@ -36,10 +39,10 @@ export const UnstakingPosition: FC<UnstakingPositionProps> = ({
   const amountShifted = scaleHuman(amount, native.decimals)
   const [displayValue] = useDisplayAssetPrice(native.id, amountShifted)
 
-  const { parachainBlockNumber: currentBlock, timestamp: nowMs } = best ?? {}
+  const { parachainBlockNumber: currentBlock } = best ?? {}
 
   const unlockStats = useMemo(() => {
-    if (!currentBlock || !nowMs) {
+    if (!currentBlock) {
       return null
     }
 
@@ -51,12 +54,14 @@ export const UnstakingPosition: FC<UnstakingPositionProps> = ({
 
     const msRemaining = blocksRemaining * rpc.slotDurationMs
     const endDate = durationInDaysAndHoursFromNow(msRemaining)
+    const unlockDate = new Date(Date.now() + msRemaining)
 
     return {
       claimableNow: false,
       label: endDate ? `~${endDate}` : "--",
+      tooltip: t("date.long", { value: unlockDate }),
     }
-  }, [currentBlock, nowMs, rpc.slotDurationMs, unlock_at])
+  }, [currentBlock, rpc.slotDurationMs, t, unlock_at])
 
   return (
     <SUnstakingPosition align="center" justify="space-between">
@@ -86,7 +91,16 @@ export const UnstakingPosition: FC<UnstakingPositionProps> = ({
       ) : (
         <ValueStats
           label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-          value={unlockStats.label}
+          customValue={
+            <Flex align="center" gap="s">
+              <Text fs="p2" lh={1} fw={500} color={getToken("text.high")}>
+                {unlockStats.label}
+              </Text>
+              {unlockStats.tooltip && (
+                <Tooltip asChild text={unlockStats.tooltip} />
+              )}
+            </Flex>
+          }
           wrap
           size="small"
           sx={{
