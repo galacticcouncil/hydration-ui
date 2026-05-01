@@ -35,7 +35,7 @@ export const GigaUnstake: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
             type="submit"
             size="large"
             width="100%"
-            disabled={!form.formState.isValid || true}
+            disabled={!form.formState.isValid}
           >
             {t("gigaStaking.gigaUnstake.cta")}
           </Button>

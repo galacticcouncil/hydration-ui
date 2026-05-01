@@ -14,6 +14,8 @@
   "gigaStakingMigration.cta": "Migrate to GIGA Staking",
   "gigaStaking.unstakingPositions.title": "Unstaking positions",
   "gigaStaking.unstakingPositions.description": "During the unlock period, you can claim them once it's over.",
+  "gigaStaking.unstakingPositions.claimableIn": "Claimable in",
+  "gigaStaking.unstakingPositions.claimCta": "Claim",
   "gigaStaking.gigaStake.title": "GIGA Stake",
   "gigaStaking.gigaStake.input.label": "Amount to stake",
   "gigaStaking.gigaStake.minStake.label": "Minimum stake",
@@ -50,6 +52,10 @@
       "Participate in governance to speed up the rate at which you can claim rewards."
     ]
   ],
+  "gigaStaking.stake.toasts.submitted": "Giga staking {{ value, currency }}",
+  "gigaStaking.stake.toasts.success": "Giga staked {{ value, currency }}",
+  "gigaStaking.unstake.toasts.submitted": "Giga unstaking {{ value, currency }}",
+  "gigaStaking.unstake.toasts.success": "Giga unstaked {{ value, currency }}",
   "gigaStaking.tabs.stake": "Giga Stake",
   "gigaStaking.tabs.unstake": "Giga Unstake",
   "dashboard.title": "Staking dashboard",
