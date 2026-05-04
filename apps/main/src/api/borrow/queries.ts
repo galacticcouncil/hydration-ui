@@ -792,7 +792,7 @@ export const useStrategyPositions = () => {
       enabled: !!accountAddress && !!timestamp,
       queryFn: async () => {
         const accountProxies = await queryClient.ensureQueryData(
-          getAccountProxies(rpc, queryClient, accountAddress),
+          getAccountProxies(rpc, accountAddress),
         )
 
         const bestNumber = await queryClient.ensureQueryData(
