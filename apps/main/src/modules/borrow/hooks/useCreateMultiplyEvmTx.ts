@@ -7,7 +7,7 @@ import { evmGasPriceQuery } from "@/api/evm"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-const MULTIPLY_GAS_LIMIT = 1000000n
+export const MULTIPLY_FLOW_GAS_LIMIT = 300_000n
 
 export const useCreateMultiplyEvmTx = () => {
   const rpc = useRpcProvider()
@@ -22,7 +22,7 @@ export const useCreateMultiplyEvmTx = () => {
         from: tx.from,
         to: tx.to as HexString,
         data: tx.data,
-        gasLimit: MULTIPLY_GAS_LIMIT,
+        gasLimit: MULTIPLY_FLOW_GAS_LIMIT,
         maxFeePerGas: gasPrice ?? 0n,
         maxPriorityFeePerGas: gasPrice ?? 0n,
         dryRun: async () => Promise.resolve(undefined),

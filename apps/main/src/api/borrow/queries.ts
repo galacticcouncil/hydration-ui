@@ -600,7 +600,12 @@ export const useSetUsageAsCollateralTx = () => {
   const { account } = useAccount()
 
   return useCallback(
-    async (reserve: string, usageAsCollateral: boolean, address?: string) => {
+    async (
+      reserve: string,
+      usageAsCollateral: boolean,
+      address?: string,
+      gasLimitOverride?: bigint,
+    ) => {
       const evmAddress = safeConvertAnyToH160(address || account?.address || "")
 
       if (!evmAddress) throw new Error("Invalid EVM address")
@@ -634,7 +639,7 @@ export const useSetUsageAsCollateralTx = () => {
         target: tx.to as SizedHex<20>,
         input: Binary.fromHex(tx.data),
         value: [0n, 0n, 0n, 0n],
-        gas_limit: gasLimit,
+        gas_limit: gasLimitOverride || gasLimit,
         max_fee_per_gas: maxFeePerGas,
         max_priority_fee_per_gas: maxPriorityFeePerGas,
         access_list: [],

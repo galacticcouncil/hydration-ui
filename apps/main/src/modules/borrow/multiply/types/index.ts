@@ -6,7 +6,6 @@ export type MultiplyLoopConfig = {
   borrowAssetId: string
   assetInId: string
   assetOutId: string
-  isParityPair: boolean
   enterWithAssetId?: string
 }
 
@@ -15,7 +14,6 @@ export type MultiplyAssetPairConfig = {
   collateralAssetId: string
   debtAssetId: string
   enterWithAssetId?: string
-  isParityPair: boolean
   eModeCategory: EModeCategory
   name?: string
   icon?: ComponentType
