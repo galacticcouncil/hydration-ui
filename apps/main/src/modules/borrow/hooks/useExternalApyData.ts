@@ -24,23 +24,18 @@ export const useExternalApyData = (): ExternalApyData => {
 
   return useMemo(() => {
     if (!apy) return new Map()
-    const entries = apy.map(
-      ({ assetId, underlyingSupplyApy, underlyingBorrowApy, lpAPY }) => {
-        const supplyApy = Big(underlyingSupplyApy)
-          .plus(lpAPY ?? 0)
-          .div(100)
-        const borrowApy = Big(underlyingBorrowApy)
-          .plus(lpAPY ?? 0)
-          .div(100)
-        return [
-          assetId,
-          {
-            supplyApy: supplyApy.toString(),
-            borrowApy: borrowApy.toString(),
-          },
-        ] as const
-      },
-    )
+    const entries = apy.map(({ assetId, totalSupplyApy, totalBorrowApy }) => {
+      const supplyApy = Big(totalSupplyApy).div(100)
+      const borrowApy = Big(totalBorrowApy).div(100)
+
+      return [
+        assetId,
+        {
+          supplyApy: supplyApy.toString(),
+          borrowApy: borrowApy.toString(),
+        },
+      ] as const
+    })
 
     return new Map(entries)
   }, [apy])

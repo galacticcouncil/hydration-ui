@@ -73,12 +73,9 @@ export const borrowIncentivesQuery = (rpc: TProviderContext) =>
       )
       if (!incentivesContract) throw new Error("Invalid incentivesContract")
 
-      const incentives =
-        await incentivesContract.getReservesIncentivesDataHumanized({
-          lendingPoolAddressProvider,
-        })
-
-      return formatReserveIncentives(incentives)
+      return incentivesContract.getReservesIncentivesDataHumanized({
+        lendingPoolAddressProvider,
+      })
     },
     retry: false,
     enabled: !!lendingPoolAddressProvider,
@@ -129,6 +126,9 @@ export const borrowReservesQuery = (rpc: TProviderContext) =>
       const timestamp = bestNumber.timestamp
       const { baseCurrencyData, reservesData } = reserves
       const currentTimestamp = Number(timestamp) / 1000
+      const formattedReserveIncentives = formatReserveIncentives(
+        reserveIncentives ?? [],
+      )
 
       const formattedReserves = formatReservesAndIncentives({
         currentTimestamp,
@@ -137,7 +137,7 @@ export const borrowReservesQuery = (rpc: TProviderContext) =>
           baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
           baseCurrencyData.marketReferenceCurrencyDecimals,
-        reserveIncentives: reserveIncentives ?? [],
+        reserveIncentives: formattedReserveIncentives,
       }).map((r) => ({
         ...r,
         iconSymbol: r.symbol,

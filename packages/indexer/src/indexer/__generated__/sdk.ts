@@ -29,6 +29,16 @@ export const ExtrinsicByBlockAndIndexDocument = gql`
   }
 }
     ${ExtrinsicFragmentDoc}`;
+export const YieldFarmCreatedDocument = gql`
+    query YieldFarmCreated($blockNumber: Int!) {
+  events(
+    where: {name_eq: "OmnipoolLiquidityMining.YieldFarmCreated", block: {height_gte: $blockNumber}}
+    orderBy: [block_height_ASC]
+  ) {
+    args
+  }
+}
+    `;
 export const OtcOrderStatusDocument = gql`
     query OtcOrderStatus($orderId: Int!) {
   events(
@@ -89,6 +99,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     ExtrinsicByBlockAndIndex(variables: Types.ExtrinsicByBlockAndIndexQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.ExtrinsicByBlockAndIndexQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.ExtrinsicByBlockAndIndexQuery>({ document: ExtrinsicByBlockAndIndexDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'ExtrinsicByBlockAndIndex', 'query', variables);
+    },
+    YieldFarmCreated(variables: Types.YieldFarmCreatedQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.YieldFarmCreatedQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.YieldFarmCreatedQuery>({ document: YieldFarmCreatedDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'YieldFarmCreated', 'query', variables);
     },
     OtcOrderStatus(variables: Types.OtcOrderStatusQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.OtcOrderStatusQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.OtcOrderStatusQuery>({ document: OtcOrderStatusDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'OtcOrderStatus', 'query', variables);
