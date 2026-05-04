@@ -12,33 +12,31 @@ import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalance, useAccountBalances } from "@/states/account"
-import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
+import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
-type Props = {
+type GovernanceTotalsHeaderProps = {
   votesCount: number
   isVotesLoading: boolean
 }
 
-export const GovernanceTotalsHeader: FC<Props> = ({
+export const GovernanceTotalsHeader: FC<GovernanceTotalsHeaderProps> = ({
   votesCount,
   isVotesLoading,
 }) => {
-  const { t } = useTranslation("common")
-  const { getAssetWithFallback } = useAssets()
-  const { isBalanceLoading } = useAccountBalances()
+  const { t } = useTranslation(["common", "staking"])
+  const { getAssetWithFallback, native } = useAssets()
+  const { isBalanceLoading, getBalance } = useAccountBalances()
 
-  const hdxAsset = getAssetWithFallback(NATIVE_ASSET_ID)
-  const hdxBalance = useAccountBalance(NATIVE_ASSET_ID)
-  const humanHdx = toDecimal(hdxBalance?.total ?? "0", NATIVE_ASSET_DECIMALS)
+  const hdxBalance = getBalance(native.id)
+  const humanHdx = toDecimal(hdxBalance?.total ?? "0", native.decimals) // @TODO: should be total or transferable?
   const [hdxUsdDisplay, { isLoading: isHdxUsdLoading }] = useDisplayAssetPrice(
-    NATIVE_ASSET_ID,
+    native.id,
     humanHdx,
   )
 
   const gigaHdxAsset = getAssetWithFallback(HDX_ERC20_ASSET_ID)
-  const gigaHdxBalance = useAccountBalance(HDX_ERC20_ASSET_ID)
+  const gigaHdxBalance = getBalance(HDX_ERC20_ASSET_ID)
   const humanGigaHdx = toDecimal(
     gigaHdxBalance?.total ?? "0",
     gigaHdxAsset.decimals,
@@ -49,10 +47,13 @@ export const GovernanceTotalsHeader: FC<Props> = ({
   return (
     <Flex direction="column" gap="m">
       <Flex direction="column" gap="xs">
-        <SectionHeader title="Your voting power" hasDescription noTopPadding />
+        <SectionHeader
+          title={t("staking:governance.title")}
+          hasDescription
+          noTopPadding
+        />
         <Text fs="p6" lh="s" color={getToken("text.medium")}>
-          Vote with GIGAHDX or GIGAHDX+HDX. Not possible to vote with only HDX
-          if you have GIGAHDX.
+          {t("staking:governance.description")}
         </Text>
       </Flex>
       <Stack
@@ -63,15 +64,15 @@ export const GovernanceTotalsHeader: FC<Props> = ({
         <ValueStats
           wrap
           size="medium"
-          label="HDX balance"
+          label={t("staking:governance.balance.hdx")}
           isLoading={isBalanceLoading}
-          value={t("currency", { value: humanHdx, symbol: hdxAsset.symbol })}
+          value={t("currency", { value: humanHdx, symbol: native.symbol })}
           bottomLabel={isHdxUsdLoading ? undefined : hdxUsdDisplay}
         />
         <ValueStats
           wrap
           size="medium"
-          label="GIGAHDX balance"
+          label={t("staking:governance.balance.gigaHdx")}
           isLoading={isBalanceLoading}
           value={t("currency", {
             value: humanGigaHdx,
@@ -82,7 +83,7 @@ export const GovernanceTotalsHeader: FC<Props> = ({
         <ValueStats
           wrap
           size="medium"
-          label="Total votes"
+          label={t("staking:governance.balance.totalVotes")}
           isLoading={isVotesLoading}
           value={votesCount.toString()}
         />

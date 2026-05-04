@@ -9,9 +9,10 @@ import z from "zod/v4"
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
-import { GigaStakeProps } from "@/modules/staking/gigaStaking/GigaStake"
+import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt, toDecimal } from "@/utils/formatting"
 import { positive, useValidateFormMaxBalance } from "@/utils/validators"
@@ -29,7 +30,9 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   const address = account?.address ?? ""
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const refineMaxBalance = useValidateFormMaxBalance()
-
+  const { getBalance } = useAccountBalances()
+  const nativeBalance = getBalance(native.id)
+  console.log(nativeBalance)
   const minStakeHuman = toDecimal(minStake, native.decimals)
   //@TODO: convert to HDX value when spot price is available
   const availableReserveCap = Big(hdxReserve.supplyCap)

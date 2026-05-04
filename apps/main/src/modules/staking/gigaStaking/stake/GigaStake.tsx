@@ -1,4 +1,5 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
+import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Box,
   Button,
@@ -6,19 +7,58 @@ import {
   Summary,
   Text,
 } from "@galacticcouncil/ui/components"
+import { getAddressFromAssetId } from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import {
+  borrowReservesQuery,
+  gigaLendingPoolAddressProvider,
+  useBorrowPoolDataContract,
+} from "@/api/borrow"
+import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { useGigaStake } from "@/modules/staking/gigaStaking/GigaStake.utils"
+import { useGigaStake } from "@/modules/staking/gigaStaking/stake/GigaStake.utils"
+import { GigaStakeSkeleton } from "@/modules/staking/gigaStaking/stake/GigaStakeSkeleton"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalances } from "@/states/account"
 
 export type GigaStakeProps = {
   minStake: bigint
   hdxReserve: ComputedReserveData
 }
 
-export const GigaStake: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
+export const GigaStake = ({ loading }: { loading?: boolean }) => {
+  const rpc = useRpcProvider()
+  const { data: constants } = useQuery(gigaStakeConstantsQuery(rpc))
+  const { isBalanceLoading } = useAccountBalances()
+
+  const { data: gigaPoolReserves } = useQuery(
+    borrowReservesQuery(
+      rpc,
+      gigaLendingPoolAddressProvider,
+      useBorrowPoolDataContract(),
+      null,
+    ),
+  )
+
+  const hdxReserve = gigaPoolReserves?.formattedReserves.find(
+    (reserve) =>
+      reserve.underlyingAsset === getAddressFromAssetId(STHDX_ASSET_ID),
+  )
+
+  if (isBalanceLoading || loading || !constants || !hdxReserve) {
+    return <GigaStakeSkeleton />
+  }
+
+  const minStake = constants.minStake
+
+  return <GigaStakeForm minStake={minStake} hdxReserve={hdxReserve} />
+}
+
+const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
   const { t } = useTranslation(["staking", "common"])
   const { form, minStakeHuman, meta, onSubmit } = useGigaStake({
     minStake,

@@ -3,15 +3,29 @@ import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { UserGigaBorrowSummary } from "@/api/borrow/queries"
+import {
+  UserGigaBorrowSummary,
+  useUserGigaBorrowSummary,
+} from "@/api/borrow/queries"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { useGigaUnstake } from "@/modules/staking/gigaStaking/GigaUnstake.utils"
+import { useGigaUnstake } from "@/modules/staking/gigaStaking/unstake/GigaUnstake.utils"
+import { GigaUnstakeSkeleton } from "@/modules/staking/gigaStaking/unstake/GigaUnstakeSkeleton"
 
 export type GigaUnstakeProps = {
   userBorrowSummary: UserGigaBorrowSummary
 }
 
-export const GigaUnstake: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
+export const GigaUnstake = ({ loading }: { loading?: boolean }) => {
+  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
+
+  if (loading || !gigaBorrowSummary) {
+    return <GigaUnstakeSkeleton />
+  }
+
+  return <GigaUnstakeForm userBorrowSummary={gigaBorrowSummary} />
+}
+
+const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   const { t } = useTranslation(["staking", "common"])
   const { form, onSubmit, maxUnstake } = useGigaUnstake({ userBorrowSummary })
   return (
