@@ -331,7 +331,7 @@ export const useMultiplyApp = ({
 
             if (!blockResults || !isSubstrateTxResult(blockResults)) {
               const newAccountProxies = await queryClient.fetchQuery(
-                getAccountProxies(rpc, queryClient, accountAddress),
+                getAccountProxies(rpc, accountAddress),
               )
 
               proxyAddress = newAccountProxies.find(
@@ -348,11 +348,7 @@ export const useMultiplyApp = ({
 
                 queryClient.setQueriesData<string[]>(
                   {
-                    queryKey: getAccountProxies(
-                      rpc,
-                      queryClient,
-                      accountAddress,
-                    ).queryKey,
+                    queryKey: getAccountProxies(rpc, accountAddress).queryKey,
                   },
                   (previousProxies) => [
                     ...(previousProxies ?? []),

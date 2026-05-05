@@ -1,60 +1,35 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
-import {
-  QueryClient,
-  queryOptions,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { millisecondsInMinute } from "date-fns/constants"
 import { Enum, TxCallData } from "polkadot-api"
 
-import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-
-export type TProxy = Awaited<
-  ReturnType<Papi["query"]["Proxy"]["Proxies"]["getEntries"]>
->[number]
-
-export const filterAccountProxies = (
-  allProxies: Array<TProxy>,
-  accountAddress: string,
-) => {
-  return allProxies.filter((data) => {
-    const { value } = data
-    const [delegates] = value
-    return delegates.some(
-      (delegate) => delegate.delegate.toString() === accountAddress,
-    )
-  })
-}
-
-export const getAllProxies = ({ papi, isApiLoaded }: TProviderContext) =>
-  queryOptions({
-    queryKey: ["allProxies"],
-    queryFn: async () => {
-      return await papi.query.Proxy.Proxies.getEntries({ at: "best" })
-    },
-    enabled: isApiLoaded,
-  })
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const getAccountProxiesQueryKey = (accountAddress: string) => [
   "accountProxies",
   accountAddress,
 ]
 export const getAccountProxies = (
-  context: TProviderContext,
-  queryClient: QueryClient,
+  { papiClient, isApiLoaded }: TProviderContext,
   accountAddress: string,
 ) =>
   queryOptions({
     queryKey: getAccountProxiesQueryKey(accountAddress),
     queryFn: async () => {
-      const allProxies = await queryClient.fetchQuery(getAllProxies(context))
+      try {
+        // @TODO: Update descriptors when RT upgrade is released
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const unsafeApi = papiClient.getUnsafeApi() as any
+        const proxies = (await unsafeApi.apis.ProxyApi.proxies_for_delegate(
+          accountAddress,
+        )) as [string, string, number][]
 
-      return filterAccountProxies(allProxies, accountAddress).map((data) =>
-        data.keyArgs[0].toString(),
-      )
+        return proxies.map(([address]) => address)
+      } catch {
+        return []
+      }
     },
-    enabled: context.isApiLoaded && !!accountAddress,
+    enabled: isApiLoaded && !!accountAddress,
     gcTime: millisecondsInMinute,
     staleTime: millisecondsInMinute,
   })
@@ -62,11 +37,8 @@ export const getAccountProxies = (
 export const useAccountProxies = () => {
   const context = useRpcProvider()
   const { account } = useAccount()
-  const queryClient = useQueryClient()
 
-  return useQuery(
-    getAccountProxies(context, queryClient, account?.address ?? ""),
-  )
+  return useQuery(getAccountProxies(context, account?.address ?? ""))
 }
 
 export const createProxyFeesQuery = ({ papi, isApiLoaded }: TProviderContext) =>
