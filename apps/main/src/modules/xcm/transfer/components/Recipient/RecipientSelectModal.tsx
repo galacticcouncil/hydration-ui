@@ -1,8 +1,10 @@
 import {
+  Box,
   CollapsibleContent,
   CollapsibleRoot,
   Modal,
   ModalBody,
+  ModalContentDivider,
   ModalHeader,
   Stack,
   Text,
@@ -53,7 +55,12 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
 
   return (
     <>
-      <Modal variant="popup" open={open} onOpenChange={onClose}>
+      <Modal
+        variant="popup"
+        open={open}
+        onOpenChange={onClose}
+        disableInteractOutside
+      >
         <ModalHeader title={t("recipient.modal.title")} align="center" />
         <ModalBody sx={{ py: 0 }} scrollable={false}>
           <CollapsibleRoot open={!isUsingCustomAddress}>
@@ -71,8 +78,6 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
                   />
                 ) : (
                   <ConnectChainTile
-                    p="xl"
-                    sx={{ bg: getToken("controls.dim.base") }}
                     chain={destChain}
                     onConnect={() => setIsConnectModalOpen(true)}
                   />
@@ -80,16 +85,19 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
               </Stack>
             </CollapsibleContent>
           </CollapsibleRoot>
+          {destChain && (
+            <Box pb="var(--modal-content-padding)">
+              <ModalContentDivider />
+              <RecipientCustomAddressForm
+                destChain={destChain}
+                onSubmit={(address) => handleCustomAddressSubmit(address)}
+                onChange={(address) =>
+                  setIsUsingCustomAddress(!!address.trim())
+                }
+              />
+            </Box>
+          )}
         </ModalBody>
-        {destChain && (
-          <ModalBody sx={{ pt: 0 }}>
-            <RecipientCustomAddressForm
-              destChain={destChain}
-              onSubmit={(address) => handleCustomAddressSubmit(address)}
-              onChange={(address) => setIsUsingCustomAddress(!!address.trim())}
-            />
-          </ModalBody>
-        )}
       </Modal>
       <RecipientConnectModal
         open={isConnectModalOpen}

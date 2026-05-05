@@ -7,14 +7,11 @@ import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/Summ
 import { MarketSummarySwap } from "@/modules/trade/swap/sections/Market/Summary/MarketSummarySwap"
 import { MarketSummaryTwap } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryTwap"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { AnyTransaction } from "@/modules/transactions/types"
 
 type Props = {
   readonly swapType: TradeType
   readonly swap: Trade | undefined
-  readonly swapTx: AnyTransaction | null
   readonly twap: TradeOrder | undefined
-  readonly twapTx: AnyTransaction | null
   readonly healthFactor: HealthFactorResult | undefined
   readonly isLoading: boolean
 }
@@ -22,9 +19,7 @@ type Props = {
 export const MarketSummary = ({
   swapType,
   swap,
-  swapTx,
   twap,
-  twapTx,
   healthFactor,
   isLoading,
 }: Props) => {
@@ -40,20 +35,14 @@ export const MarketSummary = ({
   }
 
   if (isSingleTrade) {
-    return (
-      <MarketSummarySwap
-        swap={swap}
-        swapTx={swapTx}
-        healthFactor={healthFactor}
-      />
-    )
+    return <MarketSummarySwap swap={swap} healthFactor={healthFactor} />
   }
 
   if (twap) {
     return (
       <>
         <SwapSectionSeparator />
-        <MarketSummaryTwap swap={swap} twap={twap} twapTx={twapTx} />
+        <MarketSummaryTwap swap={swap} twap={twap} />
       </>
     )
   }

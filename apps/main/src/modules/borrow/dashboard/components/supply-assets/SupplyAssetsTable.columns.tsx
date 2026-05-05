@@ -187,7 +187,7 @@ export const useSupplyAssetsTableColumns = (
         },
       },
       cell: ({ row }) => {
-        const { underlyingAsset, isIsolated } = row.original
+        const { underlyingAsset, isIsolated, symbol } = row.original
         const isDisabled =
           (!isIsolated && getIsSupplyDisabled(row.original)) || !isConnected
 
@@ -217,7 +217,7 @@ export const useSupplyAssetsTableColumns = (
                     isIsolated,
                   })
                 } else {
-                  openSupply(underlyingAsset)
+                  openSupply(underlyingAsset, symbol)
                 }
               }}
             >
@@ -237,7 +237,7 @@ export const useSupplyAssetsTableColumns = (
     const actionsColumnMobile = columnHelper.display({
       id: "actions",
       cell: ({ row }) => {
-        const { underlyingAsset } = row.original
+        const { underlyingAsset, symbol } = row.original
         const isDisabled = getIsSupplyDisabled(row.original) || !isConnected
 
         return (
@@ -264,7 +264,7 @@ export const useSupplyAssetsTableColumns = (
                   stableswapId: assetId,
                 })
               } else {
-                openSupply(underlyingAsset)
+                openSupply(underlyingAsset, symbol)
               }
             }}
           >

@@ -51,11 +51,7 @@ import {
   useAccountPositions,
 } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
-import {
-  setOmnipoolAssets,
-  setXYKPools,
-  useOmnipoolStablepoolAssets,
-} from "@/states/liquidity"
+import { setOmnipoolAssets, setXYKPools } from "@/states/liquidity"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -744,30 +740,6 @@ export const useStablepoolsReserves = (poolIds?: string[]) => {
   })
 
   return { data, isLoading: isPoolsLoading || isPriceLoading }
-}
-
-export const useOmnipoolShare = (id: string) => {
-  const {
-    data: omnipoolAssets = [],
-    getOmnipoolAsset,
-    isLoading: isOmnipoolAssetsLoading,
-  } = useOmnipoolStablepoolAssets()
-
-  const balance = getOmnipoolAsset(id)?.tvlDisplay
-
-  const omnipoolShare = balance
-    ? Big(balance)
-        .div(
-          omnipoolAssets.reduce(
-            (acc, asset) => acc.plus(asset.tvlDisplay ?? 0),
-            Big(0),
-          ),
-        )
-        .times(100)
-        .toString()
-    : undefined
-
-  return { omnipoolShare, isLoading: isOmnipoolAssetsLoading }
 }
 
 export const isValidStablepoolToken = (token: PoolToken) => {

@@ -5,6 +5,7 @@ import { EmptyIdenticon } from "@/components/AccountAvatar/identicons/EmptyIdent
 import { SolanaIdenticon } from "@/components/AccountAvatar/identicons/SolanaIdenticon"
 import { SuiIdenticon } from "@/components/AccountAvatar/identicons/SuiIdenticon"
 import { Box, BoxProps } from "@/components/Box"
+import { useUiScale } from "@/styles/media"
 import { getToken } from "@/utils"
 
 const PolkadotIdenticon = lazy(async () => ({
@@ -43,28 +44,34 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
   theme = "auto",
   ...props
 }) => {
+  const uiScale = useUiScale()
+  const scaledSize = size * uiScale
   const chosenTheme = theme === "auto" ? getAutoTheme(props.address) : theme
 
   return (
     <Suspense
       fallback={
         <Box
-          size={size}
+          size={scaledSize}
           borderRadius="full"
           bg={getToken("surfaces.containers.dim.dimOnHigh")}
         />
       }
     >
-      {chosenTheme === null && <EmptyIdenticon size={size} />}
-      {chosenTheme === "evm" && <EthereumIdenticon size={size} {...props} />}
+      {chosenTheme === null && <EmptyIdenticon size={scaledSize} />}
+      {chosenTheme === "evm" && (
+        <EthereumIdenticon size={scaledSize} {...props} />
+      )}
       {chosenTheme === "talisman" && (
-        <TalismanIdenticon size={size} {...props} />
+        <TalismanIdenticon size={scaledSize} {...props} />
       )}
       {chosenTheme === "polkadot" && (
-        <PolkadotIdenticon size={size} {...props} />
+        <PolkadotIdenticon size={scaledSize} {...props} />
       )}
-      {chosenTheme === "solana" && <SolanaIdenticon size={size} {...props} />}
-      {chosenTheme === "sui" && <SuiIdenticon size={size} {...props} />}
+      {chosenTheme === "solana" && (
+        <SolanaIdenticon size={scaledSize} {...props} />
+      )}
+      {chosenTheme === "sui" && <SuiIdenticon size={scaledSize} {...props} />}
     </Suspense>
   )
 }

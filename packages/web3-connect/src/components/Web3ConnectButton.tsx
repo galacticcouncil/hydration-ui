@@ -7,7 +7,7 @@ import {
   Icon,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
 import { FC, Ref } from "react"
 import { useTranslation } from "react-i18next"
@@ -64,7 +64,7 @@ export const Web3ConnectButton: FC<
         onClick={() => toggle(mode)}
         {...props}
         variant="tertiary"
-        sx={{ px: 10, gap: "base" }}
+        sx={{ px: "base", gap: "base" }}
       >
         <AccountAvatar
           size={24}
@@ -72,7 +72,7 @@ export const Web3ConnectButton: FC<
           theme={getAccountAvatarTheme(account)}
         />
         <Flex direction="column">
-          <Text fs="p3" lh={1.2} truncate={140}>
+          <Text fs="p3" lh={1.2} truncate={pxToRem(140)}>
             {account.name}
           </Text>
           {!stringEquals(account.name, shortDisplayAddr) && (

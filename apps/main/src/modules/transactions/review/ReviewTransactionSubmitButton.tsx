@@ -15,7 +15,13 @@ import {
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { TransactionType } from "@/states/transactions"
 
-export const ReviewTransactionSubmitButton = () => {
+type ReviewTransactionSubmitButtonProps = {
+  disabled?: boolean
+}
+
+export const ReviewTransactionSubmitButton = ({
+  disabled,
+}: ReviewTransactionSubmitButtonProps) => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
@@ -69,7 +75,7 @@ export const ReviewTransactionSubmitButton = () => {
 
   const isLoading =
     isSigning || isLoadingFeeEstimate || isChangingFeePaymentAsset
-  const isDisabled = isSigningBlocked || hasAlerts || isLoading
+  const isDisabled = disabled || isSigningBlocked || hasAlerts || isLoading
 
   return (
     <LoadingButton

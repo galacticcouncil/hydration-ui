@@ -7,7 +7,6 @@ import { lazy } from "react"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
-import { HollarBanner } from "@/modules/borrow/hollar/HollarBanner"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
@@ -79,7 +78,6 @@ export const WalletAssetsPage = () => {
 
   return (
     <Flex direction="column">
-      <HollarBanner />
       <Grid
         sx={{
           overflowX: "auto",

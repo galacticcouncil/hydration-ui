@@ -5,6 +5,7 @@ import {
   isEvmParachain,
   isSolanaChain,
   isSuiChain,
+  safeParse,
 } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
@@ -16,11 +17,7 @@ import {
   SolanaChain,
   SuiChain,
 } from "@galacticcouncil/xc-core"
-import type {
-  XcJourney,
-  XcJourneyStop,
-  XcJourneyWhStop,
-} from "@galacticcouncil/xc-scan"
+import type { XcJourney } from "@galacticcouncil/xc-scan"
 import {
   EvmCall,
   EvmClaim,
@@ -32,11 +29,16 @@ import {
   SuiClaim,
 } from "@galacticcouncil/xc-sdk"
 import { minutesToMilliseconds } from "date-fns"
+import { isString } from "remeda"
 
 import {
   getTransferAsset,
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
+import {
+  XcJourneyStop,
+  XcJourneyWhStop,
+} from "@/modules/xcm/history/utils/journey"
 
 const CLAIM_THRESHOLD = minutesToMilliseconds(5)
 
@@ -64,14 +66,16 @@ export function getClaimableJourneys(journeys: XcJourney[]) {
   return journeys.filter(isJourneyClaimable)
 }
 
-function isWormholeStop(
-  stop: XcJourneyStop | XcJourneyWhStop,
-): stop is XcJourneyWhStop {
+function isWormholeStop(stop: XcJourneyStop): stop is XcJourneyWhStop {
   return stop.type === "wormhole"
 }
 
 function findWormholeStop(journey: XcJourney): XcJourneyWhStop | undefined {
-  const stops = journey?.stops ?? []
+  const stops = isString(journey.stops)
+    ? safeParse<XcJourneyStop>(journey.stops)
+    : undefined
+
+  if (!Array.isArray(stops)) return undefined
   return stops.find(isWormholeStop)
 }
 

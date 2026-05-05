@@ -38,7 +38,7 @@ export const Omnipool = () => {
     <>
       <ValueStats
         label={t("liquidity:header.totalLiquidity")}
-        value={t("common:currency", {
+        value={t("common:currency.compact", {
           value: totals.totalLiquidity.toString(),
         })}
         size="medium"
@@ -47,8 +47,16 @@ export const Omnipool = () => {
       />
       <PoolsHeaderSeparator />
       <ValueStats
+        label={t("liquidity:header.volume")}
+        value={t("common:currency.compact", { value: totals.volume })}
+        isLoading={isLoadingPlatformTotal}
+        size="medium"
+        wrap
+      />
+      <PoolsHeaderSeparator />
+      <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
-        value={t("common:currency", { value: totals.liquidity })}
+        value={t("common:currency.compact", { value: totals.liquidity })}
         size="medium"
         isLoading={isLoadingPlatformTotal}
         wrap
@@ -56,17 +64,9 @@ export const Omnipool = () => {
       <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInStablepool")}
-        value={t("common:currency", { value: totals.stablepool })}
+        value={t("common:currency.compact", { value: totals.stablepool })}
         size="medium"
         isLoading={isLoadingPlatformTotal}
-        wrap
-      />
-      <PoolsHeaderSeparator />
-      <ValueStats
-        label={t("liquidity:header.volume")}
-        value={t("common:currency", { value: totals.volume })}
-        isLoading={isLoadingPlatformTotal}
-        size="medium"
         wrap
       />
     </>

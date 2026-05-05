@@ -449,7 +449,6 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 )}
               </>
             )}
-            <Separator />
           </ModalBody>
           <ModalFooter>
             <Button

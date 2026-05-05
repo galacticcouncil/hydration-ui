@@ -1,4 +1,9 @@
-import { safeParse, safeStringify } from "@galacticcouncil/utils"
+import {
+  formatTypeValueJson,
+  JsonValue,
+  safeParse,
+  safeStringify,
+} from "@galacticcouncil/utils"
 import { CompatibilityToken } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
@@ -46,9 +51,14 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
   }
 }
 
-export const decodeTx = (tx: AnyTransaction): object => {
+export const decodeTx = (tx: AnyTransaction): object | JsonValue => {
   if (isPapiTransaction(tx)) {
-    return safeParse(safeStringify(tx.decodedCall))
+    const txJson = safeStringify(tx.decodedCall)
+    try {
+      return formatTypeValueJson(safeParse(txJson))
+    } catch {
+      return safeParse(txJson)
+    }
   }
 
   if (isEvmCall(tx)) {
