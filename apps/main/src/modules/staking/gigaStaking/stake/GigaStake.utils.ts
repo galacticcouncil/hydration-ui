@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
@@ -32,7 +33,21 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   const refineMaxBalance = useValidateFormMaxBalance()
   const { getBalance } = useAccountBalances()
   const nativeBalance = getBalance(native.id)
-  console.log(nativeBalance)
+  const { data: locksData } = useNativeTokenLocks()
+
+  const vested = locksData?.get(TokenLockType.Vesting) ?? 0n
+  const staked = locksData?.get(TokenLockType.Staking) ?? 0n
+  const gigaStaked = locksData?.get(TokenLockType.GigaStaking) ?? 0n
+
+  const maxStake = Big.max(
+    0,
+    Big(nativeBalance?.free.toString() || "0")
+      .minus(vested.toString())
+      .minus(staked.toString())
+      .minus(gigaStaked.toString())
+      .toString(),
+  )
+  const maxStakeHuman = toDecimal(maxStake, native.decimals)
   const minStakeHuman = toDecimal(minStake, native.decimals)
   //@TODO: convert to HDX value when spot price is available
   const availableReserveCap = Big(hdxReserve.supplyCap)
@@ -141,6 +156,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     form,
     meta: native,
     minStakeHuman,
+    maxStakeHuman,
     onSubmit,
   }
 }
