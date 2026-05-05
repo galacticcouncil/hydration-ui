@@ -8,6 +8,7 @@ import {
   GemIcon,
   Grid2X2Icon,
   HistoryIcon,
+  LandmarkIcon,
   Repeat2Icon,
   WalletCardsIcon,
   WavesIcon,
@@ -36,7 +37,9 @@ export const LINKS = {
   trade: "/trade",
   otc: "/trade/otc",
   staking: "/staking",
-  // stakingDashboard: "/staking/dashboard",
+  stakingOverview: "/staking/overview",
+  stakingGigaStake: "/staking/giga-stake",
+  governance: "/governance",
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
@@ -154,7 +157,17 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "staking",
     to: LINKS.staking,
+    defaultChild: LINKS.stakingOverview,
     icon: GemIcon,
+    children: [
+      { key: "stakingOverview", to: LINKS.stakingOverview, icon: ChartPieIcon },
+      { key: "stakingGigaStake", to: LINKS.stakingGigaStake, icon: GemIcon },
+    ],
+  },
+  {
+    key: "governance",
+    to: LINKS.governance,
+    icon: LandmarkIcon,
   },
   // {
   //   key: "referrals",
@@ -244,10 +257,18 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.staking.title"),
       description: t("navigation.staking.description"),
     },
-    // stakingDashboard: {
-    //   title: t("navigation.stakingDashboard.title"),
-    //   description: "",
-    // },
+    stakingOverview: {
+      title: t("navigation.stakingOverview.title"),
+      description: t("navigation.staking.description"),
+    },
+    stakingGigaStake: {
+      title: t("navigation.stakingGigaStake.title"),
+      description: t("navigation.staking.description"),
+    },
+    governance: {
+      title: t("navigation.governance.title"),
+      description: t("navigation.governance.description"),
+    },
     // stakingGovernance: {
     //   title: t("navigation.stakingGovernance.title"),
     //   description: "",
@@ -344,6 +365,7 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
+  "governance",
   // "referrals",
   // "memepad",
 ]
@@ -355,6 +377,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
+  "governance",
   // "referrals",
   // "memepad",
 ]

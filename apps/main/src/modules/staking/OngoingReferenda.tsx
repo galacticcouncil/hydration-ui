@@ -55,8 +55,6 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
   const isLoading =
     referendaLoading || tracksLoading || isVotesLoading || totalIssuanceLoading
 
-  // TODO use open gov referenda here
-
   return (
     <CollapsibleRoot open={!isCollapsed}>
       <Flex direction="column" gap="m">

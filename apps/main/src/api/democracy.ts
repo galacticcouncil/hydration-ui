@@ -102,14 +102,16 @@ export type OpenGovReferendum = Extract<
 export const openGovReferendaQuery = ({
   papi,
   isApiLoaded,
-  dataEnv,
+  endpoint,
 }: TProviderContext) =>
   queryOptions({
-    queryKey: ["openGovReferenda", dataEnv],
+    queryKey: ["openGovReferenda", endpoint],
     enabled: isApiLoaded,
     queryFn: async () => {
       const newReferendums =
-        await papi.query.Referenda.ReferendumInfoFor.getEntries()
+        await papi.query.Referenda.ReferendumInfoFor.getEntries({
+          at: "best",
+        })
 
       return newReferendums.reduce<Array<OpenGovReferendum>>(
         (acc, { keyArgs, value }) => {
@@ -139,14 +141,16 @@ type TAccountOpenGovVotesAccumulator = {
 }
 
 export const accountOpenGovVotesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isApiLoaded, endpoint }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
-    queryKey: ["accountOpenGovVotes", address],
+    queryKey: ["accountOpenGovVotes", endpoint, address],
     queryFn: async () => {
       const voteEntries =
-        await papi.query.ConvictionVoting.VotingFor.getEntries(address)
+        await papi.query.ConvictionVoting.VotingFor.getEntries(address, {
+          at: "best",
+        })
 
       const { votes, classIds } =
         voteEntries.reduce<TAccountOpenGovVotesAccumulator>(
@@ -219,7 +223,7 @@ export const openGovUnlockedTokensQuery = (
   indexerUrl: string,
 ) =>
   queryOptions({
-    queryKey: ["openGovUnlockedTokens", address],
+    queryKey: ["openGovUnlockedTokens", rpc.endpoint, address],
     queryFn: async () => {
       const [accountVotes, bestNumber, subsquareAccountVotes] =
         await Promise.all([

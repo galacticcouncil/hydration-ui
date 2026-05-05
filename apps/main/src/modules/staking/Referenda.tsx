@@ -99,7 +99,7 @@ export const Referenda: FC<Props> = ({
         voted={voted}
       />
       <ReferendaSeparator voted={voted} />
-      <ReferendaFooter id={id} voted={voted} />
+      <ReferendaFooter id={id} classId={item.track} voted={voted} />
     </SReferenda>
   )
 }

@@ -6,14 +6,14 @@ import { Binary } from "polkadot-api"
 
 import { ENV } from "@/config/env"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
-import { scaleHuman } from "@/utils/formatting"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export enum TokenLockType {
   Vesting = "ormlvest",
   Democracy = "democrac",
   OpenGov = "pyconvot",
   Staking = "stk_stks",
+  GigaStaking = "gigaulok",
 }
 
 export enum TokenReserveType {
@@ -36,21 +36,30 @@ export const nativeTokenLocksQuery = (
       const locks = await papi.query.Balances.Locks.getValue(address)
 
       return locks
-        .map((lock) => {
-          const type = Binary.toText(Binary.fromHex(lock.id))
+        .map(({ id, amount }) => {
+          const type = Binary.toText(Binary.fromHex(id))
 
           if (!isKnownTokenLockType(type)) {
             return null
           }
 
           return {
-            type: type,
-            amount: scaleHuman(lock.amount, NATIVE_ASSET_DECIMALS),
-          } as const
+            type,
+            amount,
+          }
         })
         .filter((lock) => lock !== null)
     },
     enabled: isApiLoaded && !!address,
+  })
+}
+
+export const useNativeTokenLocks = () => {
+  const { account } = useAccount()
+
+  return useQuery({
+    ...nativeTokenLocksQuery(useRpcProvider(), account?.address ?? ""),
+    select: (locks) => new Map(locks.map((l) => [l.type, l.amount])),
   })
 }
 
@@ -67,12 +76,12 @@ export const tokenReservesQuery = (
           ? await papi.query.Balances.Reserves.getValue(address)
           : await papi.query.Tokens.Reserves.getValue(address, Number(tokenId))
 
-      return reserves.map((reserve) => {
-        const type = Binary.toText(Binary.fromHex(reserve.id))
+      return reserves.map(({ id, amount }) => {
+        const type = Binary.toText(Binary.fromHex(id))
 
         return {
           type,
-          amount: reserve.amount,
+          amount,
         }
       })
     },

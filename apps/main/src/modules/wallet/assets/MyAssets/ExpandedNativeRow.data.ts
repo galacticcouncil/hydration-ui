@@ -2,60 +2,64 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
-import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { openGovUnlockedTokensQuery } from "@/api/democracy"
 import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_ID, PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { useAssetPrice } from "@/states/displayAsset"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useNativeAssetLocks = () => {
-  const { account } = useAccount()
+  const { native } = useAssets()
 
-  const { data, isLoading } = useQuery(
-    nativeTokenLocksQuery(useRpcProvider(), account?.address ?? ""),
+  const { data: locks, isLoading } = useNativeTokenLocks()
+  const { price } = useAssetPrice(native.id)
+
+  const lockedInGigaStaking = scaleHuman(
+    locks?.get(TokenLockType.GigaStaking) ?? "0",
+    native.decimals,
+  )
+  const lockedInVesting = scaleHuman(
+    locks?.get(TokenLockType.Vesting) ?? "0",
+    native.decimals,
+  )
+  const lockedInDemocracy = scaleHuman(
+    locks?.get(TokenLockType.Democracy) ?? "0",
+    native.decimals,
+  )
+  const lockedInOpenGov = scaleHuman(
+    locks?.get(TokenLockType.OpenGov) ?? "0",
+    native.decimals,
+  )
+  const lockedInStaking = scaleHuman(
+    locks?.get(TokenLockType.Staking) ?? "0",
+    native.decimals,
   )
 
-  const lockedInVesting =
-    data?.find((lock) => lock.type === TokenLockType.Vesting)?.amount || "0"
-  const lockedInDemocracy =
-    data?.find((lock) => lock.type === TokenLockType.Democracy)?.amount || "0"
-  const lockedInOpenGov =
-    data?.find((lock) => lock.type === TokenLockType.OpenGov)?.amount || "0"
-  const lockedInStaking =
-    data?.find((lock) => lock.type === TokenLockType.Staking)?.amount || "0"
-
-  const [lockedInStakingDisplayPrice] = useDisplayAssetPrice(
-    NATIVE_ASSET_ID,
-    lockedInStaking,
-  )
-
-  const [lockedInDemocracyDisplayPrice] = useDisplayAssetPrice(
-    NATIVE_ASSET_ID,
-    lockedInDemocracy,
-  )
-
-  const [lockedInVestingDisplayPrice] = useDisplayAssetPrice(
-    NATIVE_ASSET_ID,
-    lockedInVesting,
-  )
-
-  const [lockedInOpenGovDisplayPrice] = useDisplayAssetPrice(
-    NATIVE_ASSET_ID,
-    lockedInOpenGov,
-  )
+  const lockedInGigaStakingDisplay = Big(lockedInGigaStaking)
+    .times(price)
+    .toString()
+  const lockedInVestingDisplay = Big(lockedInVesting).times(price).toString()
+  const lockedInDemocracyDisplay = Big(lockedInDemocracy)
+    .times(price)
+    .toString()
+  const lockedInOpenGovDisplay = Big(lockedInOpenGov).times(price).toString()
+  const lockedInStakingDisplay = Big(lockedInStaking).times(price).toString()
 
   return {
+    lockedInGigaStaking,
+    lockedInGigaStakingDisplay,
     lockedInVesting,
-    lockedInVestingDisplayPrice,
+    lockedInVestingDisplay,
     lockedInDemocracy,
-    lockedInDemocracyDisplayPrice,
+    lockedInDemocracyDisplay,
     lockedInOpenGov,
-    lockedInOpenGovDisplayPrice,
+    lockedInOpenGovDisplay,
     lockedInStaking,
-    lockedInStakingDisplayPrice,
+    lockedInStakingDisplay,
     isLoading,
   }
 }

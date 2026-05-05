@@ -1,5 +1,5 @@
 import { mq } from "@galacticcouncil/ui/theme"
-import { css, styled } from "@galacticcouncil/ui/utils"
+import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 export const SReferendaList = styled.div(
   ({ theme }) => css`
@@ -12,7 +12,7 @@ export const SReferendaList = styled.div(
       grid-template-columns: 1fr 1fr;
     }
 
-    @media (min-width: 1164px) {
+    @media (min-width: ${pxToRem(1300)}) {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
     }

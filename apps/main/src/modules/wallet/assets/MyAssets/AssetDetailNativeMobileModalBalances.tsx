@@ -106,8 +106,25 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
         value={t("common:number", {
           value: locks.lockedInStaking,
         })}
-        displayValue={locks.lockedInStakingDisplayPrice}
+        displayValue={t("common:currency", {
+          value: locks.lockedInStakingDisplay,
+        })}
       />
+      {new Big(locks.lockedInGigaStaking).gt(0) && (
+        <>
+          <SAssetDetailMobileSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInGigaStaking")}
+            value={t("common:number", {
+              value: locks.lockedInGigaStaking,
+            })}
+            displayValue={t("common:currency", {
+              value: locks.lockedInGigaStakingDisplay,
+            })}
+          />
+        </>
+      )}
       {new Big(locks.lockedInDemocracy).gt(0) && (
         <>
           <SAssetDetailMobileSeparator />
@@ -118,7 +135,9 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInDemocracy,
             })}
-            displayValue={locks.lockedInDemocracyDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInDemocracyDisplay,
+            })}
             descriptionCustom={
               unlockable.lockedSeconds > 0 && (
                 <FullExpiration
@@ -140,7 +159,9 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInOpenGov,
             })}
-            displayValue={locks.lockedInOpenGovDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInOpenGovDisplay,
+            })}
           />
         </>
       )}
@@ -179,7 +200,9 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInVesting,
             })}
-            displayValue={locks.lockedInVestingDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInVestingDisplay,
+            })}
           />
         </>
       )}
