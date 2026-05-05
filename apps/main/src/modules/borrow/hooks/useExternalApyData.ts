@@ -11,7 +11,7 @@ import { useMemo } from "react"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
 
-const EXTERNAL_APY_ASSET_IDS = [
+export const EXTERNAL_APY_ASSET_IDS = [
   USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
   PRIME_ASSET_ID,

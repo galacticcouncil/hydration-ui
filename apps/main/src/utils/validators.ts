@@ -80,7 +80,7 @@ export const validateFieldMaxBalance = (balance: string | number) =>
   })
 
 export const useValidateFormMaxBalance = () => {
-  const { getBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
 
   return <TFormValues extends FieldValues>(
     path: Path<NoInfer<TFormValues>>,
@@ -94,7 +94,7 @@ export const useValidateFormMaxBalance = () => {
           return true
         }
 
-        const balance = getBalance(asset.id)?.transferable.toString() || "0"
+        const balance = getTransferableBalance(asset.id)
         const balanceHuman = scaleHuman(balance, asset.decimals)
 
         return validateMaxBalance(balanceHuman, amount)

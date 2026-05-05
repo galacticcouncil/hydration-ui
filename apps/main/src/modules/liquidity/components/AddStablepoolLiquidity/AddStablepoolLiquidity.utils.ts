@@ -13,6 +13,7 @@ import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
 import { useBorrowReserves } from "@/api/borrow"
 import { StableSwapBase, useOmnipoolIds } from "@/api/pools"
+import type { TReserve, TStablepoolDetails } from "@/api/stableswap"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import i18n from "@/i18n"
 import {
@@ -21,8 +22,6 @@ import {
 } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import {
   calculatePoolFee,
-  TReserve,
-  TStablepoolDetails,
   useAddableStablepoolTokens,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
