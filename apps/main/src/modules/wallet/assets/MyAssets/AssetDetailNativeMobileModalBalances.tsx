@@ -1,5 +1,6 @@
 import {
   CoinsIcon,
+  Hourglass,
   Landmark,
   Layers,
   LockOpen,
@@ -34,9 +35,10 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const { data: reserves } = useAccountTokenReserves(asset.id)
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
   const dcaAmountHuman = scaleHuman(dca, asset.decimals)
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
-
+  const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
   const { price: assetPrice } = useAssetPrice(asset.id)
 
   return (
@@ -75,6 +77,23 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             })}
             displayValue={t("common:currency", {
               value: Big(otcAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
+      {xcm > 0n && (
+        <>
+          <SAssetDetailMobileSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInXCM")}
+            description={t("myAssets.expandedNative.lockedInXCM.description")}
+            labelIcon={Hourglass}
+            value={t("common:number", {
+              value: xcmAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(xcmAmountHuman).times(assetPrice).toString(),
             })}
           />
         </>

@@ -18,7 +18,7 @@ export enum TokenLockType {
 
 export enum TokenReserveType {
   DCA = "dcaorder",
-  Deposit = "depositc",
+  XCM = "depositc",
   OTC = "otcorder",
 }
 

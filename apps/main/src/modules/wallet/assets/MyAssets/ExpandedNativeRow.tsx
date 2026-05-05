@@ -1,5 +1,6 @@
 import {
   CoinsIcon,
+  Hourglass,
   Landmark,
   Layers,
   LockOpen,
@@ -31,10 +32,12 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const locks = useNativeAssetLocks()
   const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
   const { data: reserves } = useAccountTokenReserves(asset.id)
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
   const { price: assetPrice } = useAssetPrice(asset.id)
 
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
+  const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
   const dcaAmountHuman = scaleHuman(dca, asset.decimals)
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
 
@@ -63,6 +66,22 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             })}
             displayValue={t("common:currency", {
               value: Big(otcAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
+      {xcm > 0n && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInXCM")}
+            labelIcon={Hourglass}
+            value={t("common:number", {
+              value: xcmAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(xcmAmountHuman).times(assetPrice).toString(),
             })}
           />
         </>

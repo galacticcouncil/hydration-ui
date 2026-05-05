@@ -1,4 +1,8 @@
-import { CoinsIcon, Landmark } from "@galacticcouncil/ui/assets/icons"
+import {
+  CoinsIcon,
+  Hourglass,
+  Landmark,
+} from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
@@ -21,14 +25,12 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const { data: reserves } = useAccountTokenReserves(asset.id)
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
   const dcaAmountHuman = scaleHuman(dca, asset.decimals)
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
+  const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
 
   const { price: assetPrice } = useAssetPrice(asset.id)
-
-  // TODO integrate
-  // const xcm = "-1"
-  // const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
 
   return (
     <Flex direction="column" gap="xl">
@@ -65,23 +67,23 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
           />
         </>
       )}
-      {/* {xcm !== "-1" && (
+      {xcm > 0n && (
         <>
           <ExpandedRowSeparator />
           <Amount
             variant="horizontalLabel"
             label={t("myAssets.expandedNative.lockedInXCM")}
             labelIcon={Hourglass}
-            description={t("myAssets.expandedNative.lockedInXCM.description", {
-              returnObjects: true,
-            })}
+            description={t("myAssets.expandedNative.lockedInXCM.description")}
             value={t("common:number", {
-              value: xcm,
+              value: xcmAmountHuman,
             })}
-            displayValue={xcmDisplay}
+            displayValue={t("common:currency", {
+              value: Big(xcmAmountHuman).times(assetPrice).toString(),
+            })}
           />
         </>
-      )} */}
+      )}
     </Flex>
   )
 }
