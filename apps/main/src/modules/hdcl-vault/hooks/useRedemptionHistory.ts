@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex, parseAbiItem } from "viem"
 
 import {
+  getVaultEvmClient,
   VAULT_ADDRESS,
   VAULT_DEPLOY_BLOCK,
-  vaultEvmClient,
 } from "@/modules/hdcl-vault/constants"
 
 // The vault contract emits these events but the on-chain `getRedemptionRequest`
@@ -83,22 +83,25 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
       // so we fetch all cancellations and intersect with requestIds we own.
       const [requestedLogs, fulfilledLogs, partialLogs, cancelledLogs] =
         await Promise.all([
-          vaultEvmClient.getLogs({
+          getVaultEvmClient().getLogs({
             ...baseFilter,
             event: REQUESTED_EVENT,
             args: { user: evmAddress },
           }),
-          vaultEvmClient.getLogs({
+          getVaultEvmClient().getLogs({
             ...baseFilter,
             event: FULFILLED_EVENT,
             args: { user: evmAddress },
           }),
-          vaultEvmClient.getLogs({
+          getVaultEvmClient().getLogs({
             ...baseFilter,
             event: PARTIALLY_FULFILLED_EVENT,
             args: { user: evmAddress },
           }),
-          vaultEvmClient.getLogs({ ...baseFilter, event: CANCELLED_EVENT }),
+          getVaultEvmClient().getLogs({
+            ...baseFilter,
+            event: CANCELLED_EVENT,
+          }),
         ])
 
       const userRequestIds = new Set(
@@ -123,7 +126,7 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
       ]
       const blocks = await Promise.all(
         uniqueBlockHashes.map((blockHash) =>
-          vaultEvmClient.getBlock({ blockHash }),
+          getVaultEvmClient().getBlock({ blockHash }),
         ),
       )
       const tsByBlock = new Map<Hex, Date>()

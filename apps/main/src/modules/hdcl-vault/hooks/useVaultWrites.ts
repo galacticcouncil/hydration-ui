@@ -9,6 +9,7 @@ import { evmAccountBindingQuery } from "@/api/evm"
 import {
   ERC20_ABI,
   EVM_CALL_GAS,
+  getVaultEvmClient,
   HDCL_DEPOSIT_ZAP_ABI,
   HDCL_DEPOSIT_ZAP_ADDRESS,
   HDCL_POOL_ABI,
@@ -17,7 +18,6 @@ import {
   HOLLAR_ADDRESS,
   VAULT_ABI,
   VAULT_ADDRESS,
-  vaultEvmClient,
 } from "@/modules/hdcl-vault/constants"
 import { formatNumber } from "@/modules/hdcl-vault/utils/format"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
@@ -49,7 +49,7 @@ function useVaultEvmCall() {
       abi: Abi,
       toasts: { submitted: string; success: string },
     ) => {
-      const gasPrice = await vaultEvmClient.getGasPrice()
+      const gasPrice = await getVaultEvmClient().getGasPrice()
       const gasPricePlus = gasPrice + gasPrice / 100n
 
       const evmCall = {
@@ -116,7 +116,7 @@ function useVaultEvmCall() {
         throw new Error("submitBatch called with no calls")
       }
 
-      const gasPrice = await vaultEvmClient.getGasPrice()
+      const gasPrice = await getVaultEvmClient().getGasPrice()
       const gasPricePlus = gasPrice + gasPrice / 100n
 
       const evmCalls = calls.map(({ to, data, abi }) => ({
@@ -207,7 +207,7 @@ export function useDeposit() {
 
       const hollarBig = parseUnits(hollarAmount.toString(), 18)
 
-      const hollarAllowance = await vaultEvmClient.readContract({
+      const hollarAllowance = await getVaultEvmClient().readContract({
         address: HOLLAR_ADDRESS,
         abi: ERC20_ABI,
         functionName: "allowance",
@@ -327,7 +327,7 @@ export function useSupplyRawHdcl() {
 
   return useMutation({
     mutationFn: async (hdclAmountHint: number) => {
-      const hdclBig = await vaultEvmClient.readContract({
+      const hdclBig = await getVaultEvmClient().readContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
         functionName: "balanceOf",
@@ -409,7 +409,7 @@ export function useCancelRedeem() {
       // state the cancelRedeem will see (modulo concurrent fulfillments,
       // which would revert the whole batch).
       const [, hdclAmount, hdclFulfilled, active] =
-        await vaultEvmClient.readContract({
+        await getVaultEvmClient().readContract({
           address: VAULT_ADDRESS,
           abi: VAULT_ABI,
           functionName: "getRedemptionRequest",

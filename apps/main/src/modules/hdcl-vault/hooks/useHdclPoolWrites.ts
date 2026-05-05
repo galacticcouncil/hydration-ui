@@ -9,10 +9,10 @@ import { evmAccountBindingQuery } from "@/api/evm"
 import {
   AAVE_INTEREST_RATE_MODE_VARIABLE,
   EVM_CALL_GAS,
+  getVaultEvmClient,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
   HOLLAR_ADDRESS,
-  vaultEvmClient,
 } from "@/modules/hdcl-vault/constants"
 import { formatNumber } from "@/modules/hdcl-vault/utils/format"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
@@ -21,7 +21,7 @@ import { useTransactionsStore } from "@/states/transactions"
 
 /**
  * Internal helper. Submits a single EVM call against the HDCL Aave pool
- * (or any other contract reachable via `vaultEvmClient`) through the
+ * (or any other contract reachable via `getVaultEvmClient()`) through the
  * project's `useTransactionsStore`. Mirrors the pattern in `useVaultWrites`
  * but invalidates the pool-position query keys on success rather than the
  * vault keys.
@@ -43,7 +43,7 @@ function useHdclPoolEvmCall() {
 
   const submitTx = useCallback(
     async (data: Hex, toasts: { submitted: string; success: string }) => {
-      const gasPrice = await vaultEvmClient.getGasPrice()
+      const gasPrice = await getVaultEvmClient().getGasPrice()
       const gasPricePlus = gasPrice + gasPrice / 100n
 
       const evmCall = {

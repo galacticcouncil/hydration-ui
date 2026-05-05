@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
 import {
+  getVaultEvmClient,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
   HDCL_PRECOMPILE_ADDRESS,
-  vaultEvmClient,
 } from "@/modules/hdcl-vault/constants"
 
 export interface HdclPoolPosition {
@@ -65,7 +65,7 @@ export function useHdclPoolPosition(evmAddress: Hex | undefined) {
       const pool = getContract({
         address: HDCL_POOL_ADDRESS,
         abi: HDCL_POOL_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
 
       const [
@@ -124,7 +124,7 @@ export function useHdclReserveConfig() {
       const pool = getContract({
         address: HDCL_POOL_ADDRESS,
         abi: HDCL_POOL_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
       const config = await pool.read.getConfiguration([HDCL_PRECOMPILE_ADDRESS])
       const data = config.data
