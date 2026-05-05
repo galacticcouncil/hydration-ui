@@ -16,15 +16,19 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
 
-import { STokenPill } from "../HdclVault.styled"
-import { useInstantQuote } from "../hooks/useStableswap"
-import { usePreviewRedeem } from "../hooks/useVaultReads"
-import { formatInputDisplay, formatNumber } from "../utils/format"
+import { STokenPill } from "@/modules/hdcl-vault/HdclVault.styled"
+import { useInstantQuote } from "@/modules/hdcl-vault/hooks/useStableswap"
+import { usePreviewRedeem } from "@/modules/hdcl-vault/hooks/useVaultReads"
+import {
+  formatInputDisplay,
+  formatNumber,
+} from "@/modules/hdcl-vault/utils/format"
+
 import { HdclLogo } from "./HdclLogo"
 import {
   projectRate,
-  WithdrawMethodPicker,
   type WithdrawMethod,
+  WithdrawMethodPicker,
 } from "./WithdrawMethodPicker"
 
 interface VaultStats {
@@ -180,7 +184,7 @@ export const WithdrawModal = ({
                 value={formatInputDisplay(amount)}
                 onChange={handleAmountChange}
                 placeholder="0"
-                css={(theme: any) => ({
+                css={{
                   background: "none",
                   border: "none",
                   outline: "none",
@@ -188,10 +192,10 @@ export const WithdrawModal = ({
                   fontSize: "1.5rem",
                   fontWeight: 500,
                   fontFamily: "inherit",
-                  color: theme.text?.high || "#fff",
+                  color: "#fff",
                   width: "100%",
                   padding: 0,
-                })}
+                }}
               />
               {inputNum > 0 && (
                 <Text fs="p6" color={getToken("text.low")}>
@@ -206,7 +210,12 @@ export const WithdrawModal = ({
 
         {/* Method picker */}
         <Box px="xl" py="l">
-          <Text fs="p5" fw={500} color={getToken("text.medium")} sx={{ mb: "m" }}>
+          <Text
+            fs="p5"
+            fw={500}
+            color={getToken("text.medium")}
+            sx={{ mb: "m" }}
+          >
             {t("withdraw.method")}
           </Text>
           <WithdrawMethodPicker

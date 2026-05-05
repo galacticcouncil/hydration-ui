@@ -1,4 +1,4 @@
-import DecentralLogoSvg from "../assets/decentral-logo.svg?react"
+import DecentralLogoSvg from "@/modules/hdcl-vault/assets/decentral-logo.svg?react"
 
 interface Props {
   size?: number

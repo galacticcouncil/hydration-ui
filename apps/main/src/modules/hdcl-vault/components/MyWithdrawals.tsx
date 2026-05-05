@@ -10,10 +10,15 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { formatDate, formatNumber } from "../utils/format"
+import { formatDate, formatNumber } from "@/modules/hdcl-vault/utils/format"
+
 import { HdclLogo } from "./HdclLogo"
 
-export type WithdrawalRowState = "pending" | "partial" | "fulfilled" | "cancelled"
+export type WithdrawalRowState =
+  | "pending"
+  | "partial"
+  | "fulfilled"
+  | "cancelled"
 
 export interface WithdrawalRow {
   id: number
@@ -132,10 +137,18 @@ export const MyWithdrawals = ({
               borderColor: "details.separators",
             }}
           >
-            <Text fs="p5" fw={500} color={getToken("text.low")}>{t("withdrawals.col.amount")}</Text>
-            <Text fs="p5" fw={500} color={getToken("text.low")}>{t("withdrawals.col.estValue")}</Text>
-            <Text fs="p5" fw={500} color={getToken("text.low")}>{t("withdrawals.col.date")}</Text>
-            <Text fs="p5" fw={500} color={getToken("text.low")}>{t("withdrawals.col.timeRemaining")}</Text>
+            <Text fs="p5" fw={500} color={getToken("text.low")}>
+              {t("withdrawals.col.amount")}
+            </Text>
+            <Text fs="p5" fw={500} color={getToken("text.low")}>
+              {t("withdrawals.col.estValue")}
+            </Text>
+            <Text fs="p5" fw={500} color={getToken("text.low")}>
+              {t("withdrawals.col.date")}
+            </Text>
+            <Text fs="p5" fw={500} color={getToken("text.low")}>
+              {t("withdrawals.col.timeRemaining")}
+            </Text>
             <span />
           </Box>
 
@@ -169,7 +182,9 @@ export const MyWithdrawals = ({
                   <Text fs="p4" fw={500} color={getToken("text.high")}>
                     {formatNumber(row.amountHdcl, 0)}
                   </Text>
-                  <Text fs="p6" color={getToken("text.low")}>HDCL</Text>
+                  <Text fs="p6" color={getToken("text.low")}>
+                    HDCL
+                  </Text>
                 </Flex>
               </Flex>
 
@@ -179,7 +194,9 @@ export const MyWithdrawals = ({
                   <Text fs="p4" fw={500} color={getToken("text.high")}>
                     {formatNumber(row.estHollar, 0)}
                   </Text>
-                  <Text fs="p6" color={getToken("text.low")}>HOLLAR</Text>
+                  <Text fs="p6" color={getToken("text.low")}>
+                    HOLLAR
+                  </Text>
                 </Flex>
                 <Text fs="p6" color={getToken("text.low")}>
                   ${formatNumber(row.estHollar, 2)}

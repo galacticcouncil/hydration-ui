@@ -1,11 +1,18 @@
 import { Zap } from "@galacticcouncil/ui/assets/icons"
-import { Chip, Flex, Paper, Separator, Text } from "@galacticcouncil/ui/components"
+import {
+  Chip,
+  Flex,
+  Paper,
+  Separator,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import type { ComponentType, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 
-import { formatNumber } from "../utils/format"
-import { WithdrawTimeline, type TimelineStop } from "./WithdrawTimeline"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
+
+import { type TimelineStop, WithdrawTimeline } from "./WithdrawTimeline"
 
 export type WithdrawMethod = "queue" | "instant"
 
@@ -281,4 +288,3 @@ const DetailRow = ({
     </Text>
   </Flex>
 )
-

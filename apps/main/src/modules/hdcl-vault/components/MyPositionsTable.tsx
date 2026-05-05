@@ -2,7 +2,8 @@ import { Box, Button, Flex, Paper, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { formatNumber } from "../utils/format"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
+
 import { DecentralLogo } from "./DecentralLogo"
 
 interface Props {
@@ -83,7 +84,9 @@ export const MyPositionsTable = ({
         </Text>
         {onToggleCollapse && (
           <Button variant="muted" size="small" onClick={onToggleCollapse}>
-            {collapsed ? `${t("positions.show")} ⌄` : `${t("positions.hide")} ⌃`}
+            {collapsed
+              ? `${t("positions.show")} ⌄`
+              : `${t("positions.hide")} ⌃`}
           </Button>
         )}
       </Flex>
@@ -128,7 +131,11 @@ export const MyPositionsTable = ({
               usdValue={hdclSupplied * exchangeRate}
               apyPercent={apyPercent}
               actions={
-                <Button variant="muted" size="small" onClick={onWithdrawSupplied}>
+                <Button
+                  variant="muted"
+                  size="small"
+                  onClick={onWithdrawSupplied}
+                >
                   {t("positions.action.withdraw")}
                 </Button>
               }
@@ -137,7 +144,9 @@ export const MyPositionsTable = ({
 
           {hasRaw && (
             <PositionRow
-              label={t("positions.uncollateralised", { label: collateralLabel })}
+              label={t("positions.uncollateralised", {
+                label: collateralLabel,
+              })}
               amount={hdclRaw}
               usdValue={hdclRaw * exchangeRate}
               apyPercent={apyPercent}

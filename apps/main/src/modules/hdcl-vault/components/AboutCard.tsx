@@ -1,4 +1,10 @@
-import { Button, Flex, Paper, Separator, Text } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Paper,
+  Separator,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -50,7 +56,11 @@ export const AboutCard = () => {
           <Text font="primary" fs="h7" fw={500} color={getToken("text.high")}>
             {t("about.risk.heading")}
           </Text>
-          <Text fs="p4" color={getToken("text.medium")} css={{ lineHeight: 1.5 }}>
+          <Text
+            fs="p4"
+            color={getToken("text.medium")}
+            css={{ lineHeight: 1.5 }}
+          >
             {t("about.risk.body")}
           </Text>
         </Flex>

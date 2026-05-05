@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
-import { VAULT_ADDRESS, VAULT_ABI, vaultEvmClient } from "../constants"
+import {
+  VAULT_ABI,
+  VAULT_ADDRESS,
+  vaultEvmClient,
+} from "@/modules/hdcl-vault/constants"
 
 export interface QueueEntry {
   requestId: number
@@ -26,7 +30,11 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
   return useQuery({
     queryKey: ["hdcl-vault-queue", evmAddress],
     queryFn: async () => {
-      const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: vaultEvmClient,
+      })
 
       const [length, head, totalQueued] = await Promise.all([
         vault.read.getRedemptionQueueLength(),

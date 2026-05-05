@@ -3,14 +3,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useDebounce } from "use-debounce"
 
 import { bestSellQuery } from "@/api/trade"
+import type { InstantQuote } from "@/modules/hdcl-vault/components/WithdrawMethodPicker"
+import {
+  HOLLAR_ASSET_ID,
+  STABLESWAP_HDCL_ASSET_ID,
+} from "@/modules/hdcl-vault/constants"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
-
-import { HOLLAR_ASSET_ID, STABLESWAP_HDCL_ASSET_ID } from "../constants"
-import type { InstantQuote } from "../components/WithdrawMethodPicker"
-import { formatNumber } from "../utils/format"
 
 /**
  * Live instant-redeem quote — swap `hdclAmount` aHDCL → HOLLAR via the
