@@ -38,8 +38,6 @@ export type MyAsset = TAssetData & {
   readonly totalDisplay: string
   readonly transferable: string
   readonly transferableDisplay: string
-  readonly reserved: string
-  readonly reservedDca: string | undefined
   readonly canStake: boolean
 }
 

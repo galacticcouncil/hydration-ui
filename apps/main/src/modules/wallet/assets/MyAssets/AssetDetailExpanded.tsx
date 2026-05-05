@@ -1,12 +1,19 @@
-import { Hourglass, Landmark } from "@galacticcouncil/ui/assets/icons"
+import {
+  CoinsIcon,
+  Hourglass,
+  Landmark,
+} from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
 import { AssetOrigin } from "@/modules/wallet/assets/MyAssets/AssetOrigin"
 import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useAssetPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly asset: MyAsset
@@ -15,11 +22,15 @@ type Props = {
 export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
+  const { data: reserves } = useAccountTokenReserves(asset.id)
+  const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
+  const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
+  const dcaAmountHuman = scaleHuman(dca, asset.decimals)
+  const otcAmountHuman = scaleHuman(otc, asset.decimals)
+  const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
 
-  // TODO integrate
-  const xcm = "-1"
-  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
+  const { price: assetPrice } = useAssetPrice(asset.id)
 
   return (
     <Flex direction="column" gap="xl">
@@ -34,24 +45,42 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
         label={t("myAssets.expandedNative.lockedInDCA")}
         labelIcon={Landmark}
         value={t("common:number", {
-          value: asset.reserved,
+          value: dcaAmountHuman,
         })}
-        displayValue={reservedDisplayPrice}
+        displayValue={t("common:currency", {
+          value: Big(dcaAmountHuman).times(assetPrice).toString(),
+        })}
       />
-      {xcm !== "-1" && (
+      {otc > 0n && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInOTC")}
+            labelIcon={CoinsIcon}
+            value={t("common:number", {
+              value: otcAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(otcAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
+      {xcm > 0n && (
         <>
           <ExpandedRowSeparator />
           <Amount
             variant="horizontalLabel"
             label={t("myAssets.expandedNative.lockedInXCM")}
             labelIcon={Hourglass}
-            description={t("myAssets.expandedNative.lockedInXCM.description", {
-              returnObjects: true,
-            })}
+            description={t("myAssets.expandedNative.lockedInXCM.description")}
             value={t("common:number", {
-              value: xcm,
+              value: xcmAmountHuman,
             })}
-            displayValue={xcmDisplay}
+            displayValue={t("common:currency", {
+              value: Big(xcmAmountHuman).times(assetPrice).toString(),
+            })}
           />
         </>
       )}
