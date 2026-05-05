@@ -34,12 +34,6 @@ export const fetchKaminoApy = async (address: string, indexerUrl: string) => {
   const now = new Date()
   const start = subHours(now, 2)
 
-  console.log(
-    `${getKaminoEndpoint(address, indexerUrl)}${createQueryString({
-      start: start.toISOString(),
-      end: now.toISOString(),
-    })}`,
-  )
   const response = await fetch(
     `${getKaminoEndpoint(address, indexerUrl)}${createQueryString({
       start: start.toISOString(),
