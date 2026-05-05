@@ -69,9 +69,25 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
           id: e.requestId,
           amountHdcl: e.hdclRemaining,
           estHollar: e.hdclRemaining,
-          requestedDate: new Date(),
+          // Sentinel value (epoch). The real `requestedAt` comes from the
+          // `RedemptionRequested` event log and is merged in at page level
+          // via useRedemptionHistory — the on-chain queue struct doesn't
+          // expose request timestamps.
+          requestedDate: new Date(0),
           maxTimeRemainingDays: e.estTimeRemainingDays,
         }))
+
+      if (import.meta.env.DEV) {
+        console.log("[hdcl-vault] queue scan", {
+          evmAddress,
+          queueLength,
+          queueHead,
+          totalQueuedHdcl,
+          entriesCount: entries.length,
+          mineCount: myWithdrawals.length,
+          allUsers: entries.map((e) => e.user),
+        })
+      }
 
       return {
         queue: entries,
