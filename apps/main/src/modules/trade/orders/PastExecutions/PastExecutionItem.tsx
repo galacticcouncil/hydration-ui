@@ -43,7 +43,6 @@ export const PastExecutionItem: FC<Props> = ({
 
   return (
     <TransactionItemMobile
-      sx={{ px: 0 }}
       timestamp={execution.timestamp}
       link={execution.link}
       message={
