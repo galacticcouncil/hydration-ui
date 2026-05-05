@@ -68,7 +68,7 @@ export const useUnlockNativeLocks = (
         transaction: {
           toasts,
           invalidateQueries: [
-            nativeTokenLocksQuery(rpcProvider, account?.address ?? ""),
+            nativeTokenLocksQuery(rpcProvider, account?.address ?? "").queryKey,
           ],
         },
       })

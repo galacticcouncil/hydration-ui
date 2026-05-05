@@ -6,7 +6,7 @@ import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { stakingPositionsQuery } from "@/api/staking"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -51,20 +51,14 @@ export const StakingDashboard: FC = () => {
 
   const { getBalance } = useAccountBalances()
 
-  const { data: locksData = [], isLoading: locksLoading } = useQuery(
-    nativeTokenLocksQuery(rpc, address),
-  )
+  const { data: locksData, isLoading: locksLoading } = useNativeTokenLocks()
 
-  const vested = locksData
-    .reduce(
-      (acc, lock) =>
-        lock.type === TokenLockType.Vesting ? acc.plus(lock.amount) : acc,
-      Big(0),
-    )
-    .toString()
+  const vested = locksData?.get(TokenLockType.Vesting) ?? 0n
+  const gigaStaked = locksData?.get(TokenLockType.GigaStaking) ?? 0n
 
   const rawAvailableBalance = Big(getBalance(native.id)?.free.toString() || "0")
-    .minus(vested)
+    .minus(vested.toString())
+    .minus(gigaStaked.toString())
     .minus(stakingPositionsData?.stake?.toString() || "0")
     .minus(stakingPositionsData?.accumulated_locked_rewards?.toString() || "0")
 
