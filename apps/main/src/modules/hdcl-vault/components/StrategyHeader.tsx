@@ -28,7 +28,12 @@ export const StrategyHeader = ({ backHref = "/borrow" }: Props) => {
       <Flex align="center" gap={8}>
         {breadcrumb.map((label, i) => (
           <Flex key={label} align="center" gap={8}>
-            <Text fs="p6" fw={500} color={getToken("text.low")} transform="uppercase">
+            <Text
+              fs="p6"
+              fw={500}
+              color={getToken("text.low")}
+              transform="uppercase"
+            >
               {label}
             </Text>
             {i < breadcrumb.length - 1 && (
@@ -44,7 +49,11 @@ export const StrategyHeader = ({ backHref = "/borrow" }: Props) => {
       <Flex justify="space-between" align="center" gap={12}>
         <Flex align="center" gap={12}>
           <Link to={backHref} aria-label="Back">
-            <Text fs="p3" color={getToken("text.medium")} css={{ cursor: "pointer" }}>
+            <Text
+              fs="p3"
+              color={getToken("text.medium")}
+              css={{ cursor: "pointer" }}
+            >
               ←
             </Text>
           </Link>

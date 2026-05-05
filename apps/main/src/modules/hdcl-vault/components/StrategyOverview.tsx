@@ -1,13 +1,19 @@
-import { Box, Flex, Paper, Separator, Text } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  Paper,
+  Separator,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { STRATEGY, VAULT_ADDRESS } from "@/modules/hdcl-vault/constants"
+import { useHdclReserveConfig } from "@/modules/hdcl-vault/hooks/useHdclPoolPosition"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
 
-import { STRATEGY, VAULT_ADDRESS } from "../constants"
-import { useHdclReserveConfig } from "../hooks/useHdclPoolPosition"
-import { formatNumber } from "../utils/format"
 import { DecentralLogo } from "./DecentralLogo"
 
 interface VaultStats {
@@ -25,7 +31,8 @@ const truncateAddress = (addr: string) =>
 
 const formatTvl = (hollarAmount: number) => {
   // HOLLAR is dollar-pegged so total HOLLAR ≈ TVL in USD.
-  if (hollarAmount >= 1_000_000) return `$${formatNumber(hollarAmount / 1_000_000, 2)}m`
+  if (hollarAmount >= 1_000_000)
+    return `$${formatNumber(hollarAmount / 1_000_000, 2)}m`
   if (hollarAmount >= 1_000) return `$${formatNumber(hollarAmount / 1_000, 1)}k`
   return `$${formatNumber(hollarAmount, 0)}`
 }
@@ -61,7 +68,12 @@ export const StrategyOverview = ({ vaultStats }: Props) => {
       {/* Top stats row */}
       <Flex justify="space-between" align="flex-end" gap={20} sx={{ mt: "l" }}>
         <Flex direction="column" gap={4}>
-          <Text fs="p5" fw={600} color={getToken("text.low")} transform="uppercase">
+          <Text
+            fs="p5"
+            fw={600}
+            color={getToken("text.low")}
+            transform="uppercase"
+          >
             {t("overview.tvl")}
           </Text>
           <Flex align="center" gap={8}>
@@ -72,7 +84,12 @@ export const StrategyOverview = ({ vaultStats }: Props) => {
           </Flex>
         </Flex>
         <Flex direction="column" gap={4} align="flex-end">
-          <Text fs="p5" fw={600} color={getToken("text.low")} transform="uppercase">
+          <Text
+            fs="p5"
+            fw={600}
+            color={getToken("text.low")}
+            transform="uppercase"
+          >
             {t("overview.maxNetApy")}
           </Text>
           <Text
@@ -120,10 +137,10 @@ export const StrategyOverview = ({ vaultStats }: Props) => {
                 href={STRATEGY.explorerUrl}
                 target="_blank"
                 rel="noreferrer"
-                css={(theme: any) => ({
-                  color: theme.text?.tint?.secondary || theme.text?.high,
+                css={{
+                  color: "#fff",
                   textDecoration: "none",
-                })}
+                }}
               >
                 {truncateAddress(VAULT_ADDRESS)} ↗
               </a>

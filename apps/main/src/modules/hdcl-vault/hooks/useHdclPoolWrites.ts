@@ -3,13 +3,9 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
-import { encodeFunctionData, parseUnits, type Hex } from "viem"
+import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
-import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
-
 import {
   AAVE_INTEREST_RATE_MODE_VARIABLE,
   EVM_CALL_GAS,
@@ -17,8 +13,11 @@ import {
   HDCL_POOL_ADDRESS,
   HOLLAR_ADDRESS,
   vaultEvmClient,
-} from "../constants"
-import { formatNumber } from "../utils/format"
+} from "@/modules/hdcl-vault/constants"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
+import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTransactionsStore } from "@/states/transactions"
 
 /**
  * Internal helper. Submits a single EVM call against the HDCL Aave pool
@@ -43,10 +42,7 @@ function useHdclPoolEvmCall() {
   const { data: isBound } = useQuery(evmAccountBindingQuery(rpc, address))
 
   const submitTx = useCallback(
-    async (
-      data: Hex,
-      toasts: { submitted: string; success: string },
-    ) => {
+    async (data: Hex, toasts: { submitted: string; success: string }) => {
       const gasPrice = await vaultEvmClient.getGasPrice()
       const gasPricePlus = gasPrice + gasPrice / 100n
 
@@ -79,7 +75,9 @@ function useHdclPoolEvmCall() {
           {
             onSuccess: () => {
               onSuccess()
-              queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+              queryClient.invalidateQueries(
+                evmAccountBindingQuery(rpc, address),
+              )
             },
           },
         )

@@ -25,7 +25,9 @@ const Dot = ({ status }: { status: TimelineStopStatus }) => (
       borderColor:
         status === "active" ? "accents.success.emphasis" : "details.separators",
       bg:
-        status === "active" ? "accents.success.emphasis" : "surfaces.containers.high.primary",
+        status === "active"
+          ? "accents.success.emphasis"
+          : "surfaces.containers.high.primary",
       flexShrink: 0,
     }}
   />
@@ -54,7 +56,11 @@ export const WithdrawTimeline = ({ stops }: Props) => {
         }}
       />
 
-      <Flex justify="space-between" align="center" sx={{ position: "relative" }}>
+      <Flex
+        justify="space-between"
+        align="center"
+        sx={{ position: "relative" }}
+      >
         {stops.map((stop, i) => (
           <Flex
             key={i}
@@ -75,7 +81,9 @@ export const WithdrawTimeline = ({ stops }: Props) => {
             <Text
               fs="p6"
               color={
-                stop.status === "active" ? "accents.success.emphasis" : "text.low"
+                stop.status === "active"
+                  ? "accents.success.emphasis"
+                  : "text.low"
               }
               sx={{ textAlign: "center" }}
             >

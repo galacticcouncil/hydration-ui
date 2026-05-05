@@ -1,4 +1,4 @@
-import { createPublicClient, http, type Hex } from "viem"
+import { createPublicClient, type Hex, http } from "viem"
 
 export const VAULT_ADDRESS: Hex = "0xB82cF8A62EB1b51a2f2A9d71C120E2fB8ae548D8"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
@@ -8,7 +8,8 @@ export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 // facilitator. ProviderId 22222255.
 //   0.lark Pool-Proxy: 0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8
 //   mainnet: TODO update on launch (Phase 9)
-export const HDCL_POOL_ADDRESS: Hex = "0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8"
+export const HDCL_POOL_ADDRESS: Hex =
+  "0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8"
 
 // Atomic helper that bundles HOLLAR.transferFrom + vault.deposit +
 // pool.supply into one EVM call. Replaces the previous off-chain
@@ -31,7 +32,8 @@ export const HDCL_DEPOSIT_ZAP_ADDRESS: Hex =
 // balance — VAULT_ADDRESS becomes the underlying reserve asset.
 //   0.lark AToken-HDCL proxy: 0x9cd4410c27977CD5e400e43B7B1aB5ADD845ada2
 //   mainnet: TODO update on launch (Phase 9)
-export const HDCL_ATOKEN_ADDRESS: Hex = "0x9cd4410c27977CD5e400e43B7B1aB5ADD845ada2"
+export const HDCL_ATOKEN_ADDRESS: Hex =
+  "0x9cd4410c27977CD5e400e43B7B1aB5ADD845ada2"
 
 // Substrate-asset precompile that the HDCL Aave reserve is registered under.
 // Hydration treats EVM tokens that are also substrate-side assets as having a
@@ -48,7 +50,8 @@ export const HDCL_ATOKEN_ADDRESS: Hex = "0x9cd4410c27977CD5e400e43B7B1aB5ADD845a
 // `vault.balanceOf(user)` and `precompile.balanceOf(user)` return the same
 // number (they're aliases for the same substrate balance), so balance
 // reads on the vault contract still work for the "raw HDCL" display.
-export const HDCL_PRECOMPILE_ADDRESS: Hex = "0x0000000000000000000000000000000100000037"
+export const HDCL_PRECOMPILE_ADDRESS: Hex =
+  "0x0000000000000000000000000000000100000037"
 
 // Aave V3 interestRateMode for borrows: 1=stable (deprecated), 2=variable.
 // The HOLLAR borrow on this pool flows through the GhoAToken facilitator
@@ -86,8 +89,11 @@ export const EVM_CALL_GAS = 5_000_000n
 // Dedicated HTTP viem client for vault EVM reads.
 // The app's papi custom transport (WebSocket) returns empty data for eth_call
 // to contracts deployed on the Lark fork, so we use a direct HTTP transport.
-const rpcUrl = import.meta.env.VITE_PROVIDER_URL?.replace("wss://", "https://").replace("ws://", "http://")
-  || "https://0.lark.hydration.cloud"
+const rpcUrl =
+  import.meta.env.VITE_PROVIDER_URL?.replace("wss://", "https://").replace(
+    "ws://",
+    "http://",
+  ) || "https://0.lark.hydration.cloud"
 
 export const vaultEvmClient = createPublicClient({
   transport: http(rpcUrl),
@@ -95,25 +101,122 @@ export const vaultEvmClient = createPublicClient({
 
 export const VAULT_ABI = [
   // Read functions
-  { type: "function", name: "totalAssets", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "totalSupply", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "exchangeRate", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "balanceOf", inputs: [{ name: "account", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "withdrawalDelay", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "decentralPool", inputs: [], outputs: [{ name: "", type: "address" }], stateMutability: "view" },
-  { type: "function", name: "minRedeemAmount", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getAPYWad", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getRedemptionQueuePending", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "queueTail", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "tvlCap", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "paused", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
-  { type: "function", name: "depositsPaused", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
-  { type: "function", name: "minReinvestAmount", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  // Positions
-  { type: "function", name: "getPositionCount", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getPositionHead", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   {
-    type: "function", name: "getPosition",
+    type: "function",
+    name: "totalAssets",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalSupply",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "exchangeRate",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "withdrawalDelay",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "decentralPool",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "minRedeemAmount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getAPYWad",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getRedemptionQueuePending",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "queueTail",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "tvlCap",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "paused",
+    inputs: [],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "depositsPaused",
+    inputs: [],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "minReinvestAmount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Positions
+  {
+    type: "function",
+    name: "getPositionCount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getPositionHead",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getPosition",
     inputs: [{ name: "positionIndex", type: "uint256" }],
     outputs: [
       { name: "tokenId", type: "uint256" },
@@ -126,10 +229,23 @@ export const VAULT_ABI = [
     stateMutability: "view",
   },
   // Redemption queue
-  { type: "function", name: "getRedemptionQueueLength", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getQueueHead", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   {
-    type: "function", name: "getRedemptionRequest",
+    type: "function",
+    name: "getRedemptionQueueLength",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getQueueHead",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getRedemptionRequest",
     inputs: [{ name: "requestId", type: "uint256" }],
     outputs: [
       { name: "user", type: "address" },
@@ -139,28 +255,85 @@ export const VAULT_ABI = [
     ],
     stateMutability: "view",
   },
-  { type: "function", name: "getTotalQueuedHdcl", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getIdleHollar", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   {
-    type: "function", name: "getEstimatedWaitTime",
+    type: "function",
+    name: "getTotalQueuedHdcl",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getIdleHollar",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getEstimatedWaitTime",
     inputs: [{ name: "requestId", type: "uint256" }],
     outputs: [{ name: "estimatedSeconds", type: "uint256" }],
     stateMutability: "view",
   },
   // Preview
-  { type: "function", name: "previewDeposit", inputs: [{ name: "hollarAmount", type: "uint256" }], outputs: [{ name: "hdclAmount", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "previewRedeem", inputs: [{ name: "hdclAmount", type: "uint256" }], outputs: [{ name: "hollarAmount", type: "uint256" }], stateMutability: "view" },
+  {
+    type: "function",
+    name: "previewDeposit",
+    inputs: [{ name: "hollarAmount", type: "uint256" }],
+    outputs: [{ name: "hdclAmount", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "previewRedeem",
+    inputs: [{ name: "hdclAmount", type: "uint256" }],
+    outputs: [{ name: "hollarAmount", type: "uint256" }],
+    stateMutability: "view",
+  },
   // APY
-  { type: "function", name: "getActiveAPYCount", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "getActiveAPY", inputs: [{ name: "index", type: "uint256" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  {
+    type: "function",
+    name: "getActiveAPYCount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getActiveAPY",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
   // Write functions
-  { type: "function", name: "deposit", inputs: [{ name: "hollarAmount", type: "uint256" }], outputs: [{ name: "hdclMinted", type: "uint256" }], stateMutability: "nonpayable" },
-  { type: "function", name: "requestRedeem", inputs: [{ name: "hdclAmount", type: "uint256" }], outputs: [{ name: "requestId", type: "uint256" }], stateMutability: "nonpayable" },
-  { type: "function", name: "cancelRedeem", inputs: [{ name: "requestId", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
+  {
+    type: "function",
+    name: "deposit",
+    inputs: [{ name: "hollarAmount", type: "uint256" }],
+    outputs: [{ name: "hdclMinted", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "requestRedeem",
+    inputs: [{ name: "hdclAmount", type: "uint256" }],
+    outputs: [{ name: "requestId", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "cancelRedeem",
+    inputs: [{ name: "requestId", type: "uint256" }],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
   // Events — needed for redemption history (request timestamps, fulfilled/cancelled states).
   // Logs filtered by indexed `user`; block timestamps fetched per log.
   {
-    type: "event", name: "RedemptionRequested", anonymous: false,
+    type: "event",
+    name: "RedemptionRequested",
+    anonymous: false,
     inputs: [
       { name: "requestId", type: "uint256", indexed: true },
       { name: "user", type: "address", indexed: true },
@@ -168,7 +341,9 @@ export const VAULT_ABI = [
     ],
   },
   {
-    type: "event", name: "RedemptionFulfilled", anonymous: false,
+    type: "event",
+    name: "RedemptionFulfilled",
+    anonymous: false,
     inputs: [
       { name: "requestId", type: "uint256", indexed: true },
       { name: "user", type: "address", indexed: true },
@@ -177,7 +352,9 @@ export const VAULT_ABI = [
     ],
   },
   {
-    type: "event", name: "RedemptionPartiallyFulfilled", anonymous: false,
+    type: "event",
+    name: "RedemptionPartiallyFulfilled",
+    anonymous: false,
     inputs: [
       { name: "requestId", type: "uint256", indexed: true },
       { name: "user", type: "address", indexed: true },
@@ -186,7 +363,9 @@ export const VAULT_ABI = [
     ],
   },
   {
-    type: "event", name: "RedemptionCancelled", anonymous: false,
+    type: "event",
+    name: "RedemptionCancelled",
+    anonymous: false,
     inputs: [
       { name: "requestId", type: "uint256", indexed: true },
       { name: "hdclReturned", type: "uint256", indexed: false },
@@ -221,7 +400,8 @@ export const HDCL_POOL_ABI = [
   // All "Base" fields are USD denominated with 1e8 decimals (Aave convention).
   // healthFactor is 1e18.
   {
-    type: "function", name: "getUserAccountData",
+    type: "function",
+    name: "getUserAccountData",
     inputs: [{ name: "user", type: "address" }],
     outputs: [
       { name: "totalCollateralBase", type: "uint256" },
@@ -236,7 +416,8 @@ export const HDCL_POOL_ABI = [
   // Borrow against supplied collateral. interestRateMode must be 2 (variable)
   // for the HOLLAR / GhoAToken facilitator path on this pool.
   {
-    type: "function", name: "borrow",
+    type: "function",
+    name: "borrow",
     inputs: [
       { name: "asset", type: "address" },
       { name: "amount", type: "uint256" },
@@ -253,7 +434,8 @@ export const HDCL_POOL_ABI = [
   // supply() requires an exact amount (uint256.max is NOT a sweep here —
   // that's repay's behaviour, not supply's).
   {
-    type: "function", name: "supply",
+    type: "function",
+    name: "supply",
     inputs: [
       { name: "asset", type: "address" },
       { name: "amount", type: "uint256" },
@@ -268,7 +450,8 @@ export const HDCL_POOL_ABI = [
   // pool.withdraw → user has raw HDCL → vault.requestRedeem queues it for
   // HOLLAR redemption. Aave V3 returns the actual amount withdrawn.
   {
-    type: "function", name: "withdraw",
+    type: "function",
+    name: "withdraw",
     inputs: [
       { name: "asset", type: "address" },
       { name: "amount", type: "uint256" },
@@ -283,7 +466,8 @@ export const HDCL_POOL_ABI = [
   // Used to display the live Max LTV / Liquidation LTV in the strategy
   // overview, instead of static `STRATEGY` config (which can drift from chain).
   {
-    type: "function", name: "getConfiguration",
+    type: "function",
+    name: "getConfiguration",
     inputs: [{ name: "asset", type: "address" }],
     outputs: [
       {
@@ -322,7 +506,31 @@ export const DECENTRAL_POOL_ABI = [
 ] as const
 
 export const ERC20_ABI = [
-  { type: "function", name: "balanceOf", inputs: [{ name: "account", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "allowance", inputs: [{ name: "owner", type: "address" }, { name: "spender", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "approve", inputs: [{ name: "spender", type: "address" }, { name: "value", type: "uint256" }], outputs: [{ name: "", type: "bool" }], stateMutability: "nonpayable" },
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "allowance",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "approve",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "value", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+  },
 ] as const

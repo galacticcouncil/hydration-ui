@@ -1,4 +1,4 @@
-import HdclLogoSvg from "../assets/hdcl-logo.svg?react"
+import HdclLogoSvg from "@/modules/hdcl-vault/assets/hdcl-logo.svg?react"
 
 interface Props {
   size?: number

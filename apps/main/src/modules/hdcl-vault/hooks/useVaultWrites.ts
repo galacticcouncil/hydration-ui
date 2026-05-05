@@ -3,13 +3,9 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
-import { type Abi, encodeFunctionData, parseUnits, type Hex } from "viem"
+import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
-import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
-
 import {
   ERC20_ABI,
   EVM_CALL_GAS,
@@ -22,8 +18,11 @@ import {
   VAULT_ABI,
   VAULT_ADDRESS,
   vaultEvmClient,
-} from "../constants"
-import { formatNumber } from "../utils/format"
+} from "@/modules/hdcl-vault/constants"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
+import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTransactionsStore } from "@/states/transactions"
 
 /** A single EVM call to be wrapped + bundled into a substrate batch. */
 interface BatchEvmCall {
@@ -44,7 +43,12 @@ function useVaultEvmCall() {
   const { data: isBound } = useQuery(evmAccountBindingQuery(rpc, address))
 
   const submitTx = useCallback(
-    async (to: Hex, data: Hex, abi: Abi, toasts: { submitted: string; success: string }) => {
+    async (
+      to: Hex,
+      data: Hex,
+      abi: Abi,
+      toasts: { submitted: string; success: string },
+    ) => {
       const gasPrice = await vaultEvmClient.getGasPrice()
       const gasPricePlus = gasPrice + gasPrice / 100n
 
@@ -73,7 +77,9 @@ function useVaultEvmCall() {
           {
             onSuccess: () => {
               queryClient.invalidateQueries({ queryKey: ["hdcl-vault"] })
-              queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+              queryClient.invalidateQueries(
+                evmAccountBindingQuery(rpc, address),
+              )
             },
           },
         )
@@ -131,7 +137,10 @@ function useVaultEvmCall() {
 
       const batchInner =
         isBound === false
-          ? [rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall, ...papiCalls]
+          ? [
+              rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
+              ...papiCalls,
+            ]
           : papiCalls
 
       const batchTx = rpc.papi.tx.Utility.batch_all({ calls: batchInner })
@@ -144,7 +153,9 @@ function useVaultEvmCall() {
               queryClient.invalidateQueries({ queryKey: k })
             }
             if (isBound === false) {
-              queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+              queryClient.invalidateQueries(
+                evmAccountBindingQuery(rpc, address),
+              )
             }
           },
         },
@@ -397,12 +408,13 @@ export function useCancelRedeem() {
       // 2-4 sit in the same atomic batch so the state read here is the
       // state the cancelRedeem will see (modulo concurrent fulfillments,
       // which would revert the whole batch).
-      const [, hdclAmount, hdclFulfilled, active] = await vaultEvmClient.readContract({
-        address: VAULT_ADDRESS,
-        abi: VAULT_ABI,
-        functionName: "getRedemptionRequest",
-        args: [BigInt(requestId)],
-      })
+      const [, hdclAmount, hdclFulfilled, active] =
+        await vaultEvmClient.readContract({
+          address: VAULT_ADDRESS,
+          abi: VAULT_ABI,
+          functionName: "getRedemptionRequest",
+          args: [BigInt(requestId)],
+        })
 
       if (!active) {
         throw new Error(

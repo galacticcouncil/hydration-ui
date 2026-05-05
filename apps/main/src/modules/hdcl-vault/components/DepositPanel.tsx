@@ -15,10 +15,13 @@ import { useDebounce } from "use-debounce"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { STokenPill } from "@/modules/hdcl-vault/HdclVault.styled"
+import { usePreviewDeposit } from "@/modules/hdcl-vault/hooks/useVaultReads"
+import {
+  formatInputDisplay,
+  formatNumber,
+} from "@/modules/hdcl-vault/utils/format"
 
-import { STokenPill } from "../HdclVault.styled"
-import { usePreviewDeposit } from "../hooks/useVaultReads"
-import { formatInputDisplay, formatNumber } from "../utils/format"
 import { HdclLogo } from "./HdclLogo"
 
 interface VaultStats {
@@ -68,7 +71,8 @@ export const DepositPanel = ({
   const [amount, setAmount] = useState("")
 
   const inputNum = parseFloat(amount) || 0
-  const outputHdcl = vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
+  const outputHdcl =
+    vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
   const isBelowMin = inputNum > 0 && inputNum < vaultStats.minDeposit
 
   // Fee = input HOLLAR − value of minted HDCL at current rate. HOLLAR is
@@ -85,7 +89,13 @@ export const DepositPanel = ({
   // HDCL→POOL allowances are checked + emitted as needed). The user signs
   // a single substrate batch — no separate Approve step in the UI.
   const handleSubmit = () => {
-    if (!isConnected || inputNum <= 0 || isBelowMin || vaultStats.depositsPaused) return
+    if (
+      !isConnected ||
+      inputNum <= 0 ||
+      isBelowMin ||
+      vaultStats.depositsPaused
+    )
+      return
     onDeposit(inputNum)
   }
 
@@ -115,7 +125,9 @@ export const DepositPanel = ({
             </Text>
             <Flex align="center" gap={6}>
               <Text fs="p5" color={getToken("text.low")}>
-                {t("deposit.balance", { value: formatNumber(balances.hollar, 2) })}
+                {t("deposit.balance", {
+                  value: formatNumber(balances.hollar, 2),
+                })}
               </Text>
               <MicroButton
                 onClick={() => setAmount(balances.hollar.toString())}
@@ -140,7 +152,7 @@ export const DepositPanel = ({
               value={formatInputDisplay(amount)}
               onChange={handleAmountChange}
               placeholder="0"
-              css={(theme: any) => ({
+              css={{
                 background: "none",
                 border: "none",
                 outline: "none",
@@ -148,10 +160,10 @@ export const DepositPanel = ({
                 fontSize: "1.5rem",
                 fontWeight: 500,
                 fontFamily: "inherit",
-                color: theme.text?.high || "#fff",
+                color: "#fff",
                 width: "100%",
                 padding: 0,
-              })}
+              }}
             />
           </Flex>
         </Flex>
@@ -180,7 +192,9 @@ export const DepositPanel = ({
             <Text
               fs="h6"
               fw={500}
-              color={inputNum > 0 ? getToken("text.high") : getToken("text.low")}
+              color={
+                inputNum > 0 ? getToken("text.high") : getToken("text.low")
+              }
               css={{ textAlign: "right" }}
             >
               {inputNum > 0 ? formatNumber(outputHdcl, 4) : "0"}
@@ -213,8 +227,14 @@ export const DepositPanel = ({
                 {t("deposit.option.queue")}
               </Text>
             </Flex>
-            <Text fs="p6" color={getToken("text.low")} css={{ textAlign: "right" }}>
-              {t("deposit.option.queueValue", { days: vaultStats.maxLockupDays })}
+            <Text
+              fs="p6"
+              color={getToken("text.low")}
+              css={{ textAlign: "right" }}
+            >
+              {t("deposit.option.queueValue", {
+                days: vaultStats.maxLockupDays,
+              })}
             </Text>
           </Flex>
           <Flex justify="space-between" align="center" gap={8}>
@@ -224,7 +244,11 @@ export const DepositPanel = ({
                 {t("deposit.option.instant")}
               </Text>
             </Flex>
-            <Text fs="p6" color={getToken("text.low")} css={{ textAlign: "right" }}>
+            <Text
+              fs="p6"
+              color={getToken("text.low")}
+              css={{ textAlign: "right" }}
+            >
               {t("deposit.option.instantValue")}
             </Text>
           </Flex>

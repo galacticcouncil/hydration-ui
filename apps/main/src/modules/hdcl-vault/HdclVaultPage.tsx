@@ -4,32 +4,35 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { type Hex } from "viem"
 
-import { AboutCard } from "./components/AboutCard"
-import { AvailableToBorrowCard } from "./components/AvailableToBorrowCard"
-import { BorrowHollarModal } from "./components/BorrowHollarModal"
-import { DepositPanel } from "./components/DepositPanel"
+import { AboutCard } from "@/modules/hdcl-vault/components/AboutCard"
+import { AvailableToBorrowCard } from "@/modules/hdcl-vault/components/AvailableToBorrowCard"
+import { BorrowHollarModal } from "@/modules/hdcl-vault/components/BorrowHollarModal"
+import { DepositPanel } from "@/modules/hdcl-vault/components/DepositPanel"
+import { MyPositionsTable } from "@/modules/hdcl-vault/components/MyPositionsTable"
 import {
   MyWithdrawals,
   type WithdrawalRow,
   type WithdrawalRowState,
-} from "./components/MyWithdrawals"
-import { MyPositionsTable } from "./components/MyPositionsTable"
-import { StrategyHeader } from "./components/StrategyHeader"
-import { StrategyOverview } from "./components/StrategyOverview"
-import { WithdrawModal } from "./components/WithdrawModal"
-import { useHdclPoolPosition } from "./hooks/useHdclPoolPosition"
-import { useBorrowHollar } from "./hooks/useHdclPoolWrites"
-import { useInstantRedeem } from "./hooks/useStableswap"
-import { useUserBalances, useVaultStats } from "./hooks/useVaultReads"
+} from "@/modules/hdcl-vault/components/MyWithdrawals"
+import { StrategyHeader } from "@/modules/hdcl-vault/components/StrategyHeader"
+import { StrategyOverview } from "@/modules/hdcl-vault/components/StrategyOverview"
+import { WithdrawModal } from "@/modules/hdcl-vault/components/WithdrawModal"
+import { useHdclPoolPosition } from "@/modules/hdcl-vault/hooks/useHdclPoolPosition"
+import { useBorrowHollar } from "@/modules/hdcl-vault/hooks/useHdclPoolWrites"
+import { useRedemptionHistory } from "@/modules/hdcl-vault/hooks/useRedemptionHistory"
+import { useRedemptionQueue } from "@/modules/hdcl-vault/hooks/useRedemptionQueue"
+import { useInstantRedeem } from "@/modules/hdcl-vault/hooks/useStableswap"
+import {
+  useUserBalances,
+  useVaultStats,
+} from "@/modules/hdcl-vault/hooks/useVaultReads"
 import {
   useCancelRedeem,
   useDeposit,
   useRequestRedeem,
   useRequestRedeemRaw,
   useSupplyRawHdcl,
-} from "./hooks/useVaultWrites"
-import { useRedemptionHistory } from "./hooks/useRedemptionHistory"
-import { useRedemptionQueue } from "./hooks/useRedemptionQueue"
+} from "@/modules/hdcl-vault/hooks/useVaultWrites"
 
 export const HdclVaultPage = () => {
   const { account } = useAccount()
@@ -41,11 +44,15 @@ export const HdclVaultPage = () => {
   const [showBorrow, setShowBorrow] = useState(false)
   // Which HDCL form the open Withdraw modal is operating on. Selected by
   // which row's Withdraw button got clicked (aHDCL = canonical, raw = legacy).
-  const [withdrawSource, setWithdrawSource] = useState<"supplied" | "raw">("supplied")
+  const [withdrawSource, setWithdrawSource] = useState<"supplied" | "raw">(
+    "supplied",
+  )
 
   // Derive EVM address from Substrate account
   const address = account?.address ?? ""
-  const evmAddress = address ? (safeConvertSS58toH160(address) as Hex) : undefined
+  const evmAddress = address
+    ? (safeConvertSS58toH160(address) as Hex)
+    : undefined
 
   // Contract reads
   const { data: vaultStats } = useVaultStats()
@@ -57,9 +64,9 @@ export const HdclVaultPage = () => {
   // Contract writes — `useDeposit` is now a batched approve+deposit+approve+supply,
   // so the page doesn't track HOLLAR allowance separately anymore.
   const depositMutation = useDeposit()
-  const redeemMutation = useRequestRedeem()         // batched: pool.withdraw + vault.requestRedeem
-  const redeemRawMutation = useRequestRedeemRaw()   // single-call vault.requestRedeem (legacy raw)
-  const supplyRawMutation = useSupplyRawHdcl()      // recovery: approve + pool.supply for raw HDCL
+  const redeemMutation = useRequestRedeem() // batched: pool.withdraw + vault.requestRedeem
+  const redeemRawMutation = useRequestRedeemRaw() // single-call vault.requestRedeem (legacy raw)
+  const supplyRawMutation = useSupplyRawHdcl() // recovery: approve + pool.supply for raw HDCL
   const cancelMutation = useCancelRedeem()
   const borrowMutation = useBorrowHollar()
   // Instant-redeem flow — swaps the user's LIQUID aHDCL balance via the
@@ -96,7 +103,12 @@ export const HdclVaultPage = () => {
     apr: 18,
   }
 
-  const userBalances = balances ?? { hollar: 0, hdcl: 0, hdclRaw: 0, hdclSupplied: 0 }
+  const userBalances = balances ?? {
+    hollar: 0,
+    hdcl: 0,
+    hdclRaw: 0,
+    hdclSupplied: 0,
+  }
   const queue = queueData?.queue ?? []
 
   // Build the unified withdrawal-rows model for MyWithdrawals.
@@ -157,8 +169,7 @@ export const HdclVaultPage = () => {
     )
     .map((h) => ({
       id: h.requestId,
-      amountHdcl:
-        h.state === "fulfilled" ? h.hdclFulfilled : h.hdclRequested,
+      amountHdcl: h.state === "fulfilled" ? h.hdclFulfilled : h.hdclRequested,
       estHollar:
         h.state === "fulfilled"
           ? h.hollarReceived

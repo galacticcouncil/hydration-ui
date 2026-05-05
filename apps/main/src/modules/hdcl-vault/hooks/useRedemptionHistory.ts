@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
-import { formatUnits, parseAbiItem, type Hex } from "viem"
+import { formatUnits, type Hex, parseAbiItem } from "viem"
 
-import { VAULT_ADDRESS, VAULT_DEPLOY_BLOCK, vaultEvmClient } from "../constants"
+import {
+  VAULT_ADDRESS,
+  VAULT_DEPLOY_BLOCK,
+  vaultEvmClient,
+} from "@/modules/hdcl-vault/constants"
 
 // The vault contract emits these events but the on-chain `getRedemptionRequest`
 // view doesn't return a request timestamp. Reconstructing per-request history
@@ -77,31 +81,59 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
 
       // RedemptionCancelled does NOT have `user` indexed (only `requestId`),
       // so we fetch all cancellations and intersect with requestIds we own.
-      const [requestedLogs, fulfilledLogs, partialLogs, cancelledLogs] = await Promise.all([
-        vaultEvmClient.getLogs({ ...baseFilter, event: REQUESTED_EVENT, args: { user: evmAddress } }),
-        vaultEvmClient.getLogs({ ...baseFilter, event: FULFILLED_EVENT, args: { user: evmAddress } }),
-        vaultEvmClient.getLogs({ ...baseFilter, event: PARTIALLY_FULFILLED_EVENT, args: { user: evmAddress } }),
-        vaultEvmClient.getLogs({ ...baseFilter, event: CANCELLED_EVENT }),
-      ])
+      const [requestedLogs, fulfilledLogs, partialLogs, cancelledLogs] =
+        await Promise.all([
+          vaultEvmClient.getLogs({
+            ...baseFilter,
+            event: REQUESTED_EVENT,
+            args: { user: evmAddress },
+          }),
+          vaultEvmClient.getLogs({
+            ...baseFilter,
+            event: FULFILLED_EVENT,
+            args: { user: evmAddress },
+          }),
+          vaultEvmClient.getLogs({
+            ...baseFilter,
+            event: PARTIALLY_FULFILLED_EVENT,
+            args: { user: evmAddress },
+          }),
+          vaultEvmClient.getLogs({ ...baseFilter, event: CANCELLED_EVENT }),
+        ])
 
-      const userRequestIds = new Set(requestedLogs.map((l) => l.args.requestId!))
-      const myCancelledLogs = cancelledLogs.filter((l) => userRequestIds.has(l.args.requestId!))
+      const userRequestIds = new Set(
+        requestedLogs.map((l) => l.args.requestId!),
+      )
+      const myCancelledLogs = cancelledLogs.filter((l) =>
+        userRequestIds.has(l.args.requestId!),
+      )
 
       // Resolve block timestamps once per unique blockHash (logs from the same
       // block reuse the same timestamp).
-      const allUserLogs = [...requestedLogs, ...fulfilledLogs, ...partialLogs, ...myCancelledLogs]
+      const allUserLogs = [
+        ...requestedLogs,
+        ...fulfilledLogs,
+        ...partialLogs,
+        ...myCancelledLogs,
+      ]
       const uniqueBlockHashes = [
-        ...new Set(allUserLogs.map((l) => l.blockHash).filter((h): h is Hex => !!h)),
+        ...new Set(
+          allUserLogs.map((l) => l.blockHash).filter((h): h is Hex => !!h),
+        ),
       ]
       const blocks = await Promise.all(
-        uniqueBlockHashes.map((blockHash) => vaultEvmClient.getBlock({ blockHash })),
+        uniqueBlockHashes.map((blockHash) =>
+          vaultEvmClient.getBlock({ blockHash }),
+        ),
       )
       const tsByBlock = new Map<Hex, Date>()
       for (const b of blocks) {
         if (b.hash) tsByBlock.set(b.hash, new Date(Number(b.timestamp) * 1000))
       }
       const tsOf = (log: { blockHash: Hex | null }) =>
-        log.blockHash ? tsByBlock.get(log.blockHash) ?? new Date(0) : new Date(0)
+        log.blockHash
+          ? (tsByBlock.get(log.blockHash) ?? new Date(0))
+          : new Date(0)
 
       // Build per-request entries from RedemptionRequested logs first, then
       // overlay fulfillments and cancellations.
@@ -187,5 +219,7 @@ export function selectActiveHistory(entries: RedemptionHistoryEntry[]) {
 
 /** Convenience selector — fully completed or cancelled (for "Show Redeemed" toggle). */
 export function selectCompletedHistory(entries: RedemptionHistoryEntry[]) {
-  return entries.filter((e) => e.state === "fulfilled" || e.state === "cancelled")
+  return entries.filter(
+    (e) => e.state === "fulfilled" || e.state === "cancelled",
+  )
 }

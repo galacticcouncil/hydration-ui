@@ -18,10 +18,12 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-
-import { STokenPill } from "../HdclVault.styled"
-import { formatInputDisplay, formatNumber } from "../utils/format"
-import type { HdclPoolPosition } from "../hooks/useHdclPoolPosition"
+import { STokenPill } from "@/modules/hdcl-vault/HdclVault.styled"
+import type { HdclPoolPosition } from "@/modules/hdcl-vault/hooks/useHdclPoolPosition"
+import {
+  formatInputDisplay,
+  formatNumber,
+} from "@/modules/hdcl-vault/utils/format"
 
 interface Props {
   open: boolean
@@ -142,7 +144,9 @@ export const BorrowHollarModal = ({
             </Text>
             <Flex align="center" gap={6}>
               <Text fs="p5" color={getToken("text.low")}>
-                {t("borrow.available", { value: formatNumber(availableUsd, 2) })}
+                {t("borrow.available", {
+                  value: formatNumber(availableUsd, 2),
+                })}
               </Text>
               <MicroButton
                 onClick={() => setAmount(availableUsd.toString())}
@@ -169,7 +173,7 @@ export const BorrowHollarModal = ({
                 value={formatInputDisplay(amount)}
                 onChange={handleAmountChange}
                 placeholder="0"
-                css={(theme: any) => ({
+                css={{
                   background: "none",
                   border: "none",
                   outline: "none",
@@ -177,10 +181,10 @@ export const BorrowHollarModal = ({
                   fontSize: "1.5rem",
                   fontWeight: 500,
                   fontFamily: "inherit",
-                  color: theme.text?.high || "#fff",
+                  color: "#fff",
                   width: "100%",
                   padding: 0,
-                })}
+                }}
               />
               {inputNum > 0 && (
                 <Text fs="p6" color={getToken("text.low")}>

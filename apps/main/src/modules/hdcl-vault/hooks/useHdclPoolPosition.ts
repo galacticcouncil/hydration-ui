@@ -6,7 +6,7 @@ import {
   HDCL_POOL_ADDRESS,
   HDCL_PRECOMPILE_ADDRESS,
   vaultEvmClient,
-} from "../constants"
+} from "@/modules/hdcl-vault/constants"
 
 export interface HdclPoolPosition {
   /** Sum of supplied collateral, in USD. */

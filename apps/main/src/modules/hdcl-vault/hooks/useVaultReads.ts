@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { formatUnits, getContract, parseUnits, type Hex } from "viem"
+import { formatUnits, getContract, type Hex, parseUnits } from "viem"
 
 import {
   DECENTRAL_POOL_ABI,
@@ -9,15 +9,34 @@ import {
   VAULT_ABI,
   VAULT_ADDRESS,
   vaultEvmClient,
-} from "../constants"
+} from "@/modules/hdcl-vault/constants"
 
 export function useVaultStats() {
   return useQuery({
     queryKey: ["hdcl-vault-stats"],
     queryFn: async () => {
-      const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: vaultEvmClient,
+      })
 
-      const [totalAssets, totalSupply, exchangeRateWad, withdrawalDelay, tvlCap, paused, depositsPaused, minReinvest, minRedeem, apyWad, queueLength, idleHollar, positionCount, positionHead] = await Promise.all([
+      const [
+        totalAssets,
+        totalSupply,
+        exchangeRateWad,
+        withdrawalDelay,
+        tvlCap,
+        paused,
+        depositsPaused,
+        minReinvest,
+        minRedeem,
+        apyWad,
+        queueLength,
+        idleHollar,
+        positionCount,
+        positionHead,
+      ] = await Promise.all([
         vault.read.totalAssets(),
         vault.read.totalSupply(),
         vault.read.exchangeRate(),
@@ -49,14 +68,18 @@ export function useVaultStats() {
       const now = BigInt(Math.floor(Date.now() / 1000))
 
       if (positionCount > positionHead) {
-        const [, , , , maturityTime] = await vault.read.getPosition([positionHead])
+        const [, , , , maturityTime] = await vault.read.getPosition([
+          positionHead,
+        ])
         if (maturityTime > now) {
           nextMaturitySec = maturityTime - now
         }
       }
 
       if (queueLength > 0n) {
-        const queueWait = await vault.read.getEstimatedWaitTime([queueLength - 1n])
+        const queueWait = await vault.read.getEstimatedWaitTime([
+          queueLength - 1n,
+        ])
         worstCaseWaitSec = queueWait + withdrawalDelay
       } else if (idleHollar === 0n && nextMaturitySec > 0n) {
         worstCaseWaitSec = nextMaturitySec + withdrawalDelay
@@ -118,16 +141,31 @@ export function useUserBalances(evmAddress: Hex | undefined) {
     queryFn: async () => {
       if (!evmAddress) return { hollar: 0, hdcl: 0 }
 
-      const hollarToken = getContract({ address: HOLLAR_ADDRESS, abi: ERC20_ABI, client: vaultEvmClient })
-      const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
-      const aToken = getContract({ address: HDCL_ATOKEN_ADDRESS, abi: ERC20_ABI, client: vaultEvmClient })
+      const hollarToken = getContract({
+        address: HOLLAR_ADDRESS,
+        abi: ERC20_ABI,
+        client: vaultEvmClient,
+      })
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: vaultEvmClient,
+      })
+      const aToken = getContract({
+        address: HDCL_ATOKEN_ADDRESS,
+        abi: ERC20_ABI,
+        client: vaultEvmClient,
+      })
 
       // Each balance read is wrapped independently — on partial-deploy
       // environments any one of these contracts (HOLLAR token, vault,
       // aToken) might not be reachable, and a single revert in a Promise.all
       // would otherwise wipe the whole query and make the UI render 0 HDCL.
       // Each failure is logged so the cause is visible in dev.
-      const safeBalance = async (label: string, read: () => Promise<bigint>) => {
+      const safeBalance = async (
+        label: string,
+        read: () => Promise<bigint>,
+      ) => {
         try {
           return await read()
         } catch (err) {
@@ -218,8 +256,15 @@ export function useHollarAllowance(evmAddress: Hex | undefined) {
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return 0
-      const hollarToken = getContract({ address: HOLLAR_ADDRESS, abi: ERC20_ABI, client: vaultEvmClient })
-      const allowance = await hollarToken.read.allowance([evmAddress, VAULT_ADDRESS])
+      const hollarToken = getContract({
+        address: HOLLAR_ADDRESS,
+        abi: ERC20_ABI,
+        client: vaultEvmClient,
+      })
+      const allowance = await hollarToken.read.allowance([
+        evmAddress,
+        VAULT_ADDRESS,
+      ])
       return Number(formatUnits(allowance, 18))
     },
     refetchInterval: 15_000,

@@ -2,7 +2,7 @@ import { Button, Flex, Paper, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { formatNumber } from "../utils/format"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
 
 interface Props {
   /** Amount of HOLLAR the user can still borrow against their HDCL collateral. */
