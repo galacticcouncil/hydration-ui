@@ -29,16 +29,21 @@ export const AboutCard = () => {
 
       {open && (
         <Flex direction="column" gap={16} sx={{ mt: "l" }}>
-          {t("about.body").split("\n\n").map((para, i) => (
-            <Text
-              key={i}
-              fs="p4"
-              color={getToken("text.medium")}
-              css={{ lineHeight: 1.5 }}
-            >
-              {para}
-            </Text>
-          ))}
+          {/* `t()` is strictly typed and may resolve to `never` for some
+              key paths in this project's i18next config — coerce to
+              string before splitting on the paragraph separator. */}
+          {String(t("about.body"))
+            .split("\n\n")
+            .map((para: string, i: number) => (
+              <Text
+                key={i}
+                fs="p4"
+                color={getToken("text.medium")}
+                css={{ lineHeight: 1.5 }}
+              >
+                {para}
+              </Text>
+            ))}
 
           <Separator />
 

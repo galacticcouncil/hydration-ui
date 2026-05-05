@@ -181,6 +181,8 @@
   "navigation.crossChain.title": "Cross-Chain",
   "navigation.crossChainHistory.title": "Cross-Chain History",
   "navigation.crossChainHistory.description": "A history of your cross-chain transfers",
+  "navigation.hdclVault.title": "Decentral",
+  "navigation.hdclVault.description": "Earn yield on real-world invoices",
   "navigation.home.title": "Hydration",
   "navigation.liquidity.title": "Liquidity",
   "navigation.memepad.title": "Memepad",
