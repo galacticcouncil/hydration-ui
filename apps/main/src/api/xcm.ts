@@ -1,7 +1,12 @@
-import { formatSourceChainAddress } from "@galacticcouncil/utils"
+import {
+  formatSourceChainAddress,
+  HYDRATION_CHAIN_KEY,
+  isEvmParachain,
+  QUERY_KEY_BLOCK_PREFIX,
+} from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
+import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
+import { AnyChain, Asset, AssetAmount } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
@@ -12,7 +17,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { secondsToMilliseconds } from "date-fns"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
@@ -243,3 +248,34 @@ export const xcmTransferCallQuery = (
       return { call, dryRunError }
     },
   })
+
+const useHydrationClient = (chain: AnyChain | null) => {
+  return useMemo(() => {
+    if (chain?.key === HYDRATION_CHAIN_KEY && isEvmParachain(chain)) {
+      return new clients.HydrationClient(chain)
+    }
+  }, [chain])
+}
+
+export const useCrossChainDepositLimit = (
+  asset: Asset | null,
+  chain: AnyChain | null,
+) => {
+  const client = useHydrationClient(chain)
+
+  return useQuery({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "xcm",
+      "depositLimit",
+      asset?.key,
+      chain?.key,
+    ],
+    queryFn: () => {
+      if (!asset) throw new Error("Asset is required")
+      if (!client) throw new Error("HydrationClient is required")
+      return client.getAssetDepositLimit(asset)
+    },
+    enabled: !!client && !!asset,
+  })
+}
