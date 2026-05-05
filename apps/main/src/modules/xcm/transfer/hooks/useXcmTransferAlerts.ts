@@ -1,7 +1,11 @@
 import { TransferValidationReport } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
+import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useHydrationDepositLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationDepositLimitAlerts"
+import { useHydrationGlobalWithdrawLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationGlobalWithdrawLimitAlerts"
+import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 
 const REPORT_ERROR_KEYS = [
@@ -18,24 +22,35 @@ const isReportErrorKey = (error: string): error is ReportErrorKey => {
 }
 
 export const useXcmTransferAlerts = (
+  form: UseFormReturn<XcmFormValues>,
   transferReport: TransferValidationReport[] | null,
 ): XcmAlert[] => {
   const { t } = useTranslation(["xcm"])
-  return useMemo(() => {
-    if (!transferReport) return []
-    const alerts: XcmAlert[] = []
-    for (const e of transferReport) {
-      if (isReportErrorKey(e.error)) {
-        alerts.push({
-          key: e.error,
-          message: t(`report.${e.error}`, {
-            amount: e.amount,
-            symbol: e.asset,
-            chain: e.chain,
-          }),
-        })
+
+  const depositLimitAlerts = useHydrationDepositLimitAlerts(form)
+  const globalWithdrawLimitAlerts = useHydrationGlobalWithdrawLimitAlerts(form)
+
+  return useMemo<XcmAlert[]>(() => {
+    const transferReportAlerts: XcmAlert[] = []
+    if (transferReport) {
+      for (const e of transferReport) {
+        if (isReportErrorKey(e.error)) {
+          transferReportAlerts.push({
+            key: e.error,
+            message: t(`report.${e.error}`, {
+              amount: e.amount,
+              symbol: e.asset,
+              chain: e.chain,
+            }),
+            severity: "error",
+          })
+        }
       }
     }
-    return alerts
-  }, [t, transferReport])
+    return [
+      ...transferReportAlerts,
+      ...depositLimitAlerts,
+      ...globalWithdrawLimitAlerts,
+    ]
+  }, [t, transferReport, depositLimitAlerts, globalWithdrawLimitAlerts])
 }
