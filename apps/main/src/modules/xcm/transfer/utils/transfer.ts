@@ -50,11 +50,11 @@ export const getTransferStatus = (
     case !values.srcAmount:
     case !values.destAmount:
       return XcmTransferStatus.AmountMissing
-    case alerts.length > 0:
+    case alerts.some((a) => a.severity === "error"):
       return XcmTransferStatus.TransferInvalid
     case !!call && isEvmApproveCall(call):
       return XcmTransferStatus.ApproveAndTransferValid
-    case !!transfer && !!call && alerts.length === 0:
+    case !!transfer && !!call:
       return XcmTransferStatus.TransferValid
     default:
       return XcmTransferStatus.Default

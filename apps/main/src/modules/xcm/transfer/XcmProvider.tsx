@@ -181,7 +181,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     report,
   } = useXcmTransfer(form)
 
-  const alerts = useXcmTransferAlerts(report)
+  const alerts = useXcmTransferAlerts(form, report)
 
   useEffect(() => {
     setTransfer(xcmTransfer)

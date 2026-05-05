@@ -356,10 +356,14 @@ export const formatInterval = (
   }
 
   const isShort = options.format === "short"
+  const largest =
+    isString(options.largest) && isNumber(parseInt(options.largest))
+      ? parseInt(options.largest)
+      : 2
 
   return humanizer.humanize(value, {
     round: true,
-    largest: 2,
+    largest,
     ...(isShort && { language: "shortEn", conjunction: " ", spacer: "" }),
   })
 }
