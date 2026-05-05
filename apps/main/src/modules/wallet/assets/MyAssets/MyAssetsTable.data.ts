@@ -61,10 +61,6 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           balance?.transferable.toString() ?? "0",
           -meta.decimals,
         )
-        const reserved = bigShift(
-          balance?.reserved.toString() ?? "0",
-          -meta.decimals,
-        )
 
         const totalDisplay = price ? total.times(price).toString() : "0"
         const transferableDisplay = price
@@ -78,8 +74,6 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           totalDisplay,
           transferable: transferable.toString(),
           transferableDisplay,
-          reserved: reserved.toString(),
-          reservedDca: undefined,
           canStake: meta.id === native.id,
           rugCheckData: undefined,
         }

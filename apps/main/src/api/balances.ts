@@ -1,10 +1,11 @@
-import { queryOptions } from "@tanstack/react-query"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
 
 import { ENV } from "@/config/env"
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -13,6 +14,12 @@ export enum TokenLockType {
   Democracy = "democrac",
   OpenGov = "pyconvot",
   Staking = "stk_stks",
+}
+
+export enum TokenReserveType {
+  DCA = "dcaorder",
+  Deposit = "depositc",
+  OTC = "otcorder",
 }
 
 const isKnownTokenLockType = (type: string): type is TokenLockType => {
@@ -44,6 +51,41 @@ export const nativeTokenLocksQuery = (
         .filter((lock) => lock !== null)
     },
     enabled: isApiLoaded && !!address,
+  })
+}
+
+export const tokenReservesQuery = (
+  { papi, isApiLoaded }: TProviderContext,
+  address: string,
+  tokenId: string,
+) => {
+  return queryOptions({
+    queryKey: ["reserves", address, tokenId],
+    queryFn: async () => {
+      const reserves =
+        tokenId === NATIVE_ASSET_ID
+          ? await papi.query.Balances.Reserves.getValue(address)
+          : await papi.query.Tokens.Reserves.getValue(address, Number(tokenId))
+
+      return reserves.map((reserve) => {
+        const type = Binary.toText(Binary.fromHex(reserve.id))
+
+        return {
+          type,
+          amount: reserve.amount,
+        }
+      })
+    },
+    enabled: isApiLoaded && !!address,
+  })
+}
+
+export const useAccountTokenReserves = (tokenId: string) => {
+  const { account } = useAccount()
+
+  return useQuery({
+    ...tokenReservesQuery(useRpcProvider(), account?.address ?? "", tokenId),
+    select: (reserves) => new Map(reserves.map((r) => [r.type, r.amount])),
   })
 }
 
