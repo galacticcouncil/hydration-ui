@@ -1,4 +1,6 @@
-import { createPublicClient, type Hex, http } from "viem"
+import { createPublicClient, type Hex, http, type PublicClient } from "viem"
+
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 export const VAULT_ADDRESS: Hex = "0xB82cF8A62EB1b51a2f2A9d71C120E2fB8ae548D8"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
@@ -87,17 +89,33 @@ export const HOLLAR_ASSET_ID = 222n
 export const EVM_CALL_GAS = 5_000_000n
 
 // Dedicated HTTP viem client for vault EVM reads.
+//
 // The app's papi custom transport (WebSocket) returns empty data for eth_call
 // to contracts deployed on the Lark fork, so we use a direct HTTP transport.
-const rpcUrl =
-  import.meta.env.VITE_PROVIDER_URL?.replace("wss://", "https://").replace(
-    "ws://",
-    "http://",
-  ) || "https://0.lark.hydration.cloud"
+//
+// **The transport URL must follow the user's active substrate RPC** — not the
+// build-time `VITE_PROVIDER_URL`. Otherwise a deploy-preview built with
+// production env (mainnet RPC) but pointed at lark via the in-app switcher
+// will silently read against mainnet and report empty contract state for
+// every lark-only address. We read the active URL from
+// `useProviderRpcUrlStore` (zustand, persisted) at call time, with a tiny
+// memo so we don't churn a new client on every read.
+let cachedClient: PublicClient | undefined
+let cachedHttpUrl: string | undefined
 
-export const vaultEvmClient = createPublicClient({
-  transport: http(rpcUrl),
-})
+export function getVaultEvmClient(): PublicClient {
+  const wsUrl =
+    useProviderRpcUrlStore.getState().rpcUrl ??
+    import.meta.env.VITE_PROVIDER_URL ??
+    "wss://0.lark.hydration.cloud"
+  const httpUrl = wsUrl
+    .replace("wss://", "https://")
+    .replace("ws://", "http://")
+  if (cachedClient && cachedHttpUrl === httpUrl) return cachedClient
+  cachedHttpUrl = httpUrl
+  cachedClient = createPublicClient({ transport: http(httpUrl) })
+  return cachedClient
+}
 
 export const VAULT_ABI = [
   // Read functions

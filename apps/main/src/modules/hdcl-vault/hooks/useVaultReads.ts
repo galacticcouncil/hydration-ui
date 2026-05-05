@@ -4,11 +4,11 @@ import { formatUnits, getContract, type Hex, parseUnits } from "viem"
 import {
   DECENTRAL_POOL_ABI,
   ERC20_ABI,
+  getVaultEvmClient,
   HDCL_ATOKEN_ADDRESS,
   HOLLAR_ADDRESS,
   VAULT_ABI,
   VAULT_ADDRESS,
-  vaultEvmClient,
 } from "@/modules/hdcl-vault/constants"
 
 export function useVaultStats() {
@@ -18,7 +18,7 @@ export function useVaultStats() {
       const vault = getContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
 
       const [
@@ -99,7 +99,7 @@ export function useVaultStats() {
       let maxLockupSec = worstCaseWaitSec
       try {
         const decentralPoolAddr = await vault.read.decentralPool()
-        const investmentPeriodSec = await vaultEvmClient.readContract({
+        const investmentPeriodSec = await getVaultEvmClient().readContract({
           address: decentralPoolAddr,
           abi: DECENTRAL_POOL_ABI,
           functionName: "minimumInvestmentPeriodSeconds",
@@ -144,17 +144,17 @@ export function useUserBalances(evmAddress: Hex | undefined) {
       const hollarToken = getContract({
         address: HOLLAR_ADDRESS,
         abi: ERC20_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
       const vault = getContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
       const aToken = getContract({
         address: HDCL_ATOKEN_ADDRESS,
         abi: ERC20_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
 
       // Each balance read is wrapped independently — on partial-deploy
@@ -213,7 +213,7 @@ export function usePreviewDeposit(hollarAmount: number) {
       const vault = getContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
       const result = await vault.read.previewDeposit([
         parseUnits(hollarAmount.toString(), 18),
@@ -238,7 +238,7 @@ export function usePreviewRedeem(hdclAmount: number) {
       const vault = getContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
       const result = await vault.read.previewRedeem([
         parseUnits(hdclAmount.toString(), 18),
@@ -259,7 +259,7 @@ export function useHollarAllowance(evmAddress: Hex | undefined) {
       const hollarToken = getContract({
         address: HOLLAR_ADDRESS,
         abi: ERC20_ABI,
-        client: vaultEvmClient,
+        client: getVaultEvmClient(),
       })
       const allowance = await hollarToken.read.allowance([
         evmAddress,
