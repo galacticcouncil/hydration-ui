@@ -15,6 +15,7 @@ const schema = z.object({
   VITE_DISPLAY_ASSET_ID: z.string().regex(/^\d+$/),
   VITE_HSM_ENABLED: coerceToBoolean,
   VITE_DRY_RUN_ENABLED: coerceToBoolean,
+  VITE_DEPOSIT_WITHDRAW_ENABLED: coerceToBoolean,
 })
 
 export const ENV = schema.parse(import.meta.env)
