@@ -1,3 +1,5 @@
+import { isString } from "remeda"
+
 import {
   CircleAlert,
   CircleCheck,
@@ -15,7 +17,7 @@ import {
   ExternalLink,
   Flex,
   Icon,
-  Spinner,
+  SpinnerIcon,
   Stack,
   Text,
   Tooltip,
@@ -48,15 +50,23 @@ type CustomToastProps = {
   onClose?: () => void
   autoClose?: boolean
   autoCloseTimeSC?: number
-  dateString?: string
+  description?: string | React.ReactNode
   link?: string
   hint?: string
   fullWidth?: boolean
   actions?: React.ReactNode
 }
 
+function renderBold(text: string) {
+  const parts = text.split(/\*\*(.*?)\*\*/g)
+
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
+  )
+}
+
 const notificationIcons: Record<ToastVariant, React.ComponentType> = {
-  pending: Spinner,
+  pending: SpinnerIcon,
   success: CircleCheck,
   error: CircleAlert,
   info: Info,
@@ -72,7 +82,7 @@ export const Notification = ({
   autoClose = true,
   autoCloseTimeSC = DEFAULT_AUTO_CLOSE_TIME,
   onClose,
-  dateString,
+  description,
   link,
   hint,
   fullWidth = false,
@@ -88,12 +98,14 @@ export const Notification = ({
         />
         <Stack gap="xs">
           <Text fw={500} fs="p5">
-            {content}
+            {renderBold(content)}
           </Text>
-          {dateString && (
+          {isString(description) ? (
             <Text fs="p6" fw={500} color={getToken("text.medium")}>
-              {dateString}
+              {description}
             </Text>
+          ) : (
+            description
           )}
         </Stack>
         <Flex ml="auto" mb="auto">

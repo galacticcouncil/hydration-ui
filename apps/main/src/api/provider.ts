@@ -16,8 +16,7 @@ import {
   DryRunErrorDecoder,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
-import { CompatibilityLevel, PolkadotClient } from "polkadot-api"
-import { WsJsonRpcProvider } from "polkadot-api/ws-provider"
+import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -29,15 +28,14 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = object
 
+export type WsPolkadotClient = ReturnType<typeof createWsClient>
+
 export type TProviderData = {
   queryClient: QueryClient
-  ws: WsJsonRpcProvider
   papi: Papi
   papiNext: PapiNext
-  isNext: boolean
   sdk: SdkCtx
-  papiClient: PolkadotClient
-  papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
+  papiClient: WsPolkadotClient
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
@@ -99,28 +97,20 @@ const getProviderData = async (
     ? unique([priorityRpcUrl, ...rpcUrlList])
     : rpcUrlList
 
-  const papiClient = apis.api(urls, apiOptions)
-  const ws = apis.getWs(urls)
-  if (!ws) throw new Error("WsJsonRpcProvider is not available")
+  const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 
   const papi = papiClient.getTypedApi(hydration)
   const papiNext = papiClient.getTypedApi(hydrationNext)
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, papiCompatibilityToken, isNext] = await Promise.all(
-    [
-      createSdkContext(papiClient),
-      papi.constants.Aura.SlotDuration(),
-      papi.compatibilityToken,
-      papiNext.constants.System.Version.isCompatible(
-        CompatibilityLevel.Partial,
-      ),
-      metadata.fetchAssets(),
-      metadata.fetchChains(),
-      metadata.fetchMetadata(),
-    ],
-  )
+  const [sdk, slotDuration] = await Promise.all([
+    createSdkContext(papiClient),
+    papi.constants.Aura.SlotDuration(),
+    metadata.fetchAssets(),
+    metadata.fetchChains(),
+    metadata.fetchMetadata(),
+  ])
 
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
@@ -135,12 +125,9 @@ const getProviderData = async (
 
   return {
     queryClient,
-    ws,
     papi,
     papiNext,
     papiClient,
-    isNext,
-    papiCompatibilityToken,
     evm,
     sdk,
     rpcUrlList,

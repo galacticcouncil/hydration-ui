@@ -55,7 +55,7 @@
     "react-loading-skeleton": "^3.5.0",
     "react-number-format": "^5.4.4",
     "react18-json-view": "^0.2.9-canary.9",
-    "recharts": "^3.1.2",
+    "recharts": "3.1.2",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
@@ -71,12 +71,11 @@
     "@types/md5": "^2.3.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^4.3.3",
+    "@vitejs/plugin-react": "^6.0.1",
     "eslint-plugin-storybook": "^10.3.5",
     "http-server": "^14.1.1",
     "storybook": "^10.3.5",
     "style-dictionary": "^4.1.4",
-    "vite-plugin-wasm": "^3.3.0",
-    "vite-tsconfig-paths": "^5.0.1"
+    "vite-plugin-wasm": "^3.6.0"
   }
 }

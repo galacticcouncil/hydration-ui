@@ -1,4 +1,4 @@
-import { TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"

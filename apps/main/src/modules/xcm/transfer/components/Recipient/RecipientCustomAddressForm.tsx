@@ -92,7 +92,7 @@ export const RecipientCustomAddressForm: React.FC<
       addAddressToAddressBook({
         address,
         publicKey: safeConvertSS58toPublicKey(address),
-        name: "My Account",
+        name: "",
         provider: walletProvider,
         isCustom: true,
       })

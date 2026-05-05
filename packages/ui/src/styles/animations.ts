@@ -301,4 +301,20 @@ export const animations = {
       opacity: 0;
     }
   `,
+  expand: keyframes`
+    from {
+      grid-template-rows: 0fr;
+    }
+    to {
+      grid-template-rows: 1fr;
+    }
+  `,
+  collapse: keyframes`
+    from {
+      grid-template-rows: 1fr;
+    }
+    to {
+      grid-template-rows: 0fr;
+    }
+  `,
 }

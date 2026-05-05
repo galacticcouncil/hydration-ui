@@ -6,6 +6,7 @@ import {
   useWallet,
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
+import { Binary } from "polkadot-api"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Subscription } from "rxjs"
@@ -78,7 +79,7 @@ export const useSignAndSubmit = (
 
       if (isValidPapiTxForPermit(tx, txOptions) && isEthereumSigner(signer)) {
         const data = await tx.getEncodedData()
-        const permit = await signer.getPermit(data.asHex(), txOptions)
+        const permit = await signer.getPermit(Binary.toHex(data), txOptions)
         const permitTx = transformPermitToPapiTx(papi, permit)
         return submitUnsignedPolkadotTx(permitTx, papiClient, txOptions)
       }

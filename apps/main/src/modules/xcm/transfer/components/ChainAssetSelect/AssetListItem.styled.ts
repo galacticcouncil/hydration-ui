@@ -1,7 +1,11 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SAssetListItem = styled(Flex)<{ isSelected: boolean }>(
+export const SAssetListItem = styled(Flex, {
+  shouldForwardProp: (prop: string) => prop !== "isSelected",
+})<{
+  isSelected: boolean
+}>(
   ({ theme, isSelected }) => css`
     justify-content: space-between;
     align-items: center;
