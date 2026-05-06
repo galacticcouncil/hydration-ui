@@ -42,8 +42,8 @@ export const gigaUnstakePositionsQuery = (
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
       const positions =
-        await unsafeApi.query.GigaHdx.UnstakePositions.getValue(address)
+        await unsafeApi.query.GigaHdx.PendingUnstakes.getValue(address)
 
-      return positions as Array<{ amount: bigint; unlock_at: number }>
+      return [positions] as Array<{ amount: bigint; unlock_at: number }>
     },
   })

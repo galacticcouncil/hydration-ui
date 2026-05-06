@@ -10,6 +10,7 @@ import { TAssetData } from "@/api/assets"
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
+import { gigaUnstakePositionsQuery } from "@/api/gigaStake"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -103,7 +104,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
       const stakeTx = unsafeApi.tx.GigaHdx.giga_stake({
-        hdx_amount: toBigInt(amount, native.decimals),
+        amount: toBigInt(amount, native.decimals),
       })
 
       const isBound = await rpc.queryClient.ensureQueryData(
@@ -130,7 +131,10 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
                 stakeTx.decodedCall,
               ],
             }),
-            invalidateQueries: [userGigaBorrowSummaryQueryKey(address)],
+            invalidateQueries: [
+              userGigaBorrowSummaryQueryKey(address),
+              gigaUnstakePositionsQuery(rpc, address).queryKey,
+            ],
             toasts,
           },
           { onSuccess: () => form.reset() },
@@ -140,7 +144,10 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
       return createTransaction(
         {
           tx: stakeTx,
-          invalidateQueries: [userGigaBorrowSummaryQueryKey(address)],
+          invalidateQueries: [
+            userGigaBorrowSummaryQueryKey(address),
+            gigaUnstakePositionsQuery(rpc, address).queryKey,
+          ],
           toasts,
         },
         { onSuccess: () => form.reset() },

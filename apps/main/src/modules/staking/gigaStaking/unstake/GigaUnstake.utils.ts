@@ -70,7 +70,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
       const stakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
-        gigahdx_amount: toBigInt(amount, meta.decimals),
+        st_amount: toBigInt(amount, meta.decimals),
       })
 
       const toasts = {
