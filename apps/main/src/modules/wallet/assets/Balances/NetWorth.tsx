@@ -54,7 +54,7 @@ export const NetWorth: FC<Props> = ({
   isCurrentLoading,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { isLaptop } = useBreakpoints()
+
   const [interval, setInterval] = useState<NetWorthTimeFrameType | "all">("all")
   const [crosshair, setCrosshair] = useState<NetWorthData | null>(null)
 
@@ -72,27 +72,15 @@ export const NetWorth: FC<Props> = ({
   const lastDataPoint = last(balances)
   const value = (crosshair ?? lastDataPoint)?.netWorth ?? 0
 
-  const [_, { price }] = useDisplayAssetPrice(assetId ?? USDT_ASSET_ID, value)
-
   const isEmpty = isSuccess && !balances.length
 
   return (
     <Grid minWidth={pxToRem(320)} rowTemplate="auto 1fr" align="center">
-      <ValueStats
-        wrap={isLaptop}
-        size="medium"
-        label={t("balances.header.netWorth")}
-        customValue={
-          !isEmpty &&
-          !isError && (
-            <SValueStatsValue size="medium">
-              <AnimatedValue
-                value={Number(price)}
-                format={(value) => t("common:currency", { value })}
-              />
-            </SValueStatsValue>
-          )
-        }
+      <NetWorthValue
+        assetId={assetId}
+        value={value}
+        isEmpty={isEmpty}
+        isError={isError}
       />
       <Flex
         align="center"
@@ -132,5 +120,40 @@ export const NetWorth: FC<Props> = ({
         onSelect={(option) => setInterval(option.key)}
       />
     </Grid>
+  )
+}
+
+const NetWorthValue = ({
+  assetId,
+  value,
+  isEmpty,
+  isError,
+}: {
+  assetId?: string
+  value: number
+  isEmpty: boolean
+  isError: boolean
+}) => {
+  const { t } = useTranslation(["wallet", "common"])
+  const { isLaptop } = useBreakpoints()
+  const [_, { price }] = useDisplayAssetPrice(assetId ?? USDT_ASSET_ID, value)
+
+  return (
+    <ValueStats
+      wrap={isLaptop}
+      size="medium"
+      label={t("balances.header.netWorth")}
+      customValue={
+        !isEmpty &&
+        !isError && (
+          <SValueStatsValue size="medium">
+            <AnimatedValue
+              value={Number(price)}
+              format={(value) => t("common:currency", { value })}
+            />
+          </SValueStatsValue>
+        )
+      }
+    />
   )
 }
