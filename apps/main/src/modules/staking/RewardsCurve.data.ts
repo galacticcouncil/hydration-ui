@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { bestNumberQuery } from "@/api/chain"
-import { stakingConstsQuery, uniquesIds } from "@/api/constants"
+import { stakingConstsQuery } from "@/api/constants"
 import { openGovReferendaQuery } from "@/api/democracy"
 import { stakingPositionsQuery, stakingRewardsQuery } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
@@ -29,7 +29,7 @@ export type RewardsCurvePoint = {
   readonly currentSecondary: boolean | undefined
   readonly currentThird: boolean | undefined
 }
-
+//@TODO: Improve this shit
 export const useRewardsCurveData = () => {
   const rpc = useRpcProvider()
 
@@ -40,13 +40,8 @@ export const useRewardsCurveData = () => {
     stakingConstsQuery(rpc),
   )
 
-  const { data: uniquesData, isLoading: uniquesLoading } = useQuery(
-    uniquesIds(rpc),
-  )
-  const stakingId = uniquesData?.stakingId ?? 0n
-
   const { data: stakingPosition, isLoading: isStakingPositionLoading } =
-    useQuery(stakingPositionsQuery(rpc, address, stakingId))
+    useQuery(stakingPositionsQuery(rpc, address))
 
   const { data: openGovReferendas, isLoading: openGovReferendasLoading } =
     useQuery(openGovReferendaQuery(rpc))
@@ -72,7 +67,6 @@ export const useRewardsCurveData = () => {
     stakingConstsLoading ||
     stakingRewardsLoading ||
     isStakingPositionLoading ||
-    uniquesLoading ||
     openGovReferendasLoading
 
   let currentPointDays: number | undefined

@@ -1,13 +1,18 @@
 import { Web3Provider } from "@ethersproject/providers"
-import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
+import {
+  AaveV3GIGAHDXPool,
+  AaveV3HydrationMainnet,
+} from "@galacticcouncil/money-market/ui-config"
 import {
   GhoService,
   Pool,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
+import { TProviderData } from "@/api/provider"
 import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -57,4 +62,24 @@ export const useBorrowPoolContract = () => {
       POOL: AaveV3HydrationMainnet.POOL,
     })
   }, [evm])
+}
+
+export const gigaBorrowPoolContractQuery = (
+  evm: TProviderData["evm"],
+  enabled: boolean,
+) => {
+  return queryOptions({
+    queryKey: ["gigaBorrowPoolContract"],
+    enabled,
+    queryFn: () => {
+      return new Pool(new Web3Provider(evm.transport), {
+        POOL: AaveV3GIGAHDXPool.POOL,
+      })
+    },
+  })
+}
+export const useGigaBorrowPoolContract = () => {
+  const { evm, isLoaded } = useRpcProvider()
+
+  return useQuery(gigaBorrowPoolContractQuery(evm, isLoaded))
 }

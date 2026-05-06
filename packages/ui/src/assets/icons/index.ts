@@ -1,6 +1,8 @@
+export { default as ArrowMigration } from "./ArrowMigration.svg?react"
 export { default as ArrowRightLong } from "./ArrowRightLong.svg?react"
 export { default as Basejumper } from "./Basejumper.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
+export { default as ChartLegendItemIcon } from "./ChartLegendItemIcon.svg?react"
 export { default as CircleAlert } from "./CircleAlert.svg?react"
 export { default as CircleCheck } from "./CircleCheck.svg?react"
 export { default as CircleClose } from "./CircleClose.svg?react"

@@ -7,7 +7,6 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
-import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { stakingPositionsQuery } from "@/api/staking"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -15,6 +14,7 @@ import { ActiveDashboard } from "@/modules/staking/ActiveDashboard"
 import { ActiveDashboardSkeleton } from "@/modules/staking/ActiveDashboardSkeleton"
 import { DashboardStats } from "@/modules/staking/DashboardStats"
 import { DashboardStatsSkeleton } from "@/modules/staking/DashboardStatsSkeleton"
+import { GigaHDXBanner } from "@/modules/staking/gigaStaking/GigaHDXBanner"
 import { HowToStake } from "@/modules/staking/HowToStake"
 import { OngoingReferenda } from "@/modules/staking/OngoingReferenda"
 import { Stake } from "@/modules/staking/Stake"
@@ -31,13 +31,8 @@ export const StakingDashboard: FC = () => {
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const { data: uniquesData, isLoading: uniquesLoading } = useQuery(
-    uniquesIds(rpc),
-  )
-  const stakingId = uniquesData?.stakingId ?? 0n
-
   const { data: stakingPositionsData, isPending: stakingPositionsPending } =
-    useQuery(stakingPositionsQuery(rpc, address, stakingId))
+    useQuery(stakingPositionsQuery(rpc, address))
 
   const {
     data: accountVotes,
@@ -85,6 +80,7 @@ export const StakingDashboard: FC = () => {
   if (isMobile || isTablet) {
     return (
       <Flex direction="column" gap="base">
+        {hasPosition && <GigaHDXBanner />}
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap="xl">
           <Box>
@@ -96,9 +92,7 @@ export const StakingDashboard: FC = () => {
               positionId={stakingPositionsData?.stakePositionId ?? 0n}
               votesSuccess={votesIsSuccess}
               balance={availableBalance}
-              isLoading={
-                votesIsLoading || isLoading || uniquesLoading || locksLoading
-              }
+              isLoading={votesIsLoading || isLoading || locksLoading}
             />
           </Box>
           <Paper px="m" py="xxl">
@@ -133,6 +127,7 @@ export const StakingDashboard: FC = () => {
 
   return (
     <Flex direction="column" gap="xl">
+      {hasPosition && <GigaHDXBanner />}
       <TwoColumnGrid template="sidebar">
         <SectionHeader
           noTopPadding
@@ -171,9 +166,7 @@ export const StakingDashboard: FC = () => {
           positionId={positionId}
           votesSuccess={votesIsSuccess}
           balance={availableBalance}
-          isLoading={
-            votesIsLoading || isLoading || uniquesLoading || locksLoading
-          }
+          isLoading={votesIsLoading || isLoading || locksLoading}
         />
       </TwoColumnGrid>
       <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
