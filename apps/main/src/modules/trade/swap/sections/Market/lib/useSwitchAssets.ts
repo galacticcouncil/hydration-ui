@@ -13,17 +13,12 @@ export const useSwitchAssets = () => {
   return useCallback(() => {
     const { buyAmount, sellAmount, sellAsset, buyAsset, type } = getValues()
 
-    if (!sellAsset || !buyAsset) {
-      return
-    }
-
     const newSellAsset = buyAsset
     const newBuyAsset = sellAsset
 
-    const [newType, newSellAmount, newBuyAmount] =
-      type === TradeType.Sell
-        ? [TradeType.Buy, buyAmount, sellAmount]
-        : [TradeType.Sell, buyAmount, sellAmount]
+    const newType = type === TradeType.Sell ? TradeType.Buy : TradeType.Sell
+    const newSellAmount = buyAmount
+    const newBuyAmount = sellAmount
 
     const newFormValues: MarketFormValues = {
       sellAsset: newSellAsset,
