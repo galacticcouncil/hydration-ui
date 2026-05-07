@@ -36,14 +36,13 @@ export const gigaUnstakePositionsQuery = (
   queryOptions({
     queryKey: ["gigaUnstakePositions", address],
     enabled: !!address && rpc.isApiLoaded,
-    initialData: [],
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const positions =
+      const position =
         await unsafeApi.query.GigaHdx.PendingUnstakes.getValue(address)
 
-      return [positions] as Array<{ amount: bigint; unlock_at: number }>
+      return position as { amount: bigint; expires_at: number }
     },
   })

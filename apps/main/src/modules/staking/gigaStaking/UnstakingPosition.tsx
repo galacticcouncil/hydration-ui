@@ -22,12 +22,12 @@ import { scaleHuman } from "@/utils/formatting"
 
 type UnstakingPositionProps = {
   amount: bigint
-  unlock_at: number
+  expires_at: number
 }
 
 export const UnstakingPosition: FC<UnstakingPositionProps> = ({
   amount,
-  unlock_at,
+  expires_at,
 }) => {
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
@@ -46,7 +46,7 @@ export const UnstakingPosition: FC<UnstakingPositionProps> = ({
       return null
     }
 
-    const blocksRemaining = Math.max(0, unlock_at - Number(currentBlock))
+    const blocksRemaining = Math.max(0, expires_at - Number(currentBlock))
 
     if (blocksRemaining === 0) {
       return { claimableNow: true, label: "" }
@@ -61,7 +61,7 @@ export const UnstakingPosition: FC<UnstakingPositionProps> = ({
       label: endDate ? `~${endDate}` : "--",
       tooltip: t("date.long", { value: unlockDate }),
     }
-  }, [currentBlock, rpc.slotDurationMs, t, unlock_at])
+  }, [currentBlock, rpc.slotDurationMs, t, expires_at])
 
   return (
     <SUnstakingPosition align="center" justify="space-between">
