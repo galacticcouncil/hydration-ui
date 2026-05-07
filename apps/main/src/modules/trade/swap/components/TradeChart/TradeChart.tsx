@@ -1,9 +1,12 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   ChartValues,
   Flex,
+  Icon,
   Paper,
+  Separator,
   TradingViewChart,
   TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
@@ -22,6 +25,7 @@ import {
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
+import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
 import { useAssets } from "@/providers/assetsProvider"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
@@ -45,14 +49,18 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const chartRef = useRef<TradingViewChartRef>(null)
+  const [isInverted, setIsInverted] = useState(false)
   const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
     "week",
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
+  const assetA = isInverted ? assetOut : assetIn
+  const assetB = isInverted ? assetIn : assetOut
+
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
-    assetInId: assetIn,
-    assetOutId: assetOut,
+    assetInId: assetA,
+    assetOutId: assetB,
     timeFrame: interval === "all" ? null : interval,
   })
 
@@ -63,18 +71,21 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
   const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(assetIn, value, { maximumFractionDigits: null })
+    useDisplayAssetPrice(assetA, value, { maximumFractionDigits: null })
 
   const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
     useDisplayAssetPrice(USDT_ASSET_ID, volume)
 
   const { getAssetWithFallback } = useAssets()
 
+  const assetAMeta = getAssetWithFallback(assetA)
+  const assetBMeta = getAssetWithFallback(assetB)
+
   const chartValue =
     !isEmpty && !isError
       ? t("currency", {
           value,
-          symbol: getAssetWithFallback(assetIn).symbol,
+          symbol: assetAMeta.symbol,
         })
       : ""
 
@@ -92,20 +103,41 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   return (
     <Paper p="xl">
-      <Flex align="center" justify="space-between">
+      <Flex align="flex-start" gap="base" justify="space-between">
         <ChartValues
           value={chartValue}
           displayValue={chartDisplayValue}
           isLoading={isLoading || isAssetPriceLoading || isVolumePriceLoading}
         />
-        <ChartTimeRange
-          options={intervalOptions}
-          selectedOption={interval}
-          onSelect={(option) => {
-            setInterval(option.key)
-            chartRef.current?.resetZoom()
-          }}
-        />
+        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
+          <SChartInvertButton
+            size="small"
+            variant="tertiary"
+            outline
+            onClick={() => setIsInverted((prev) => !prev)}
+          >
+            <Icon component={ArrowLeftRight} size="m" />
+            {assetBMeta.symbol}/{assetAMeta.symbol}
+          </SChartInvertButton>
+          <Separator
+            orientation="vertical"
+            mx="base"
+            sx={{
+              height: "l",
+              mt: "xs",
+              display: ["none", null, null, null, "block"],
+            }}
+          />
+          <ChartTimeRange
+            sx={{ ml: "auto" }}
+            options={intervalOptions}
+            selectedOption={interval}
+            onSelect={(option) => {
+              setInterval(option.key)
+              chartRef.current?.resetZoom()
+            }}
+          />
+        </Flex>
       </Flex>
       <ChartState
         sx={{ height }}

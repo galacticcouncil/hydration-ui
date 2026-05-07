@@ -31,6 +31,7 @@ export const ChartTimeRangeOption: FC<Props> = ({
       <Text
         fs="p6"
         lh={1.4}
+        align="center"
         color={
           isSelected
             ? getToken("buttons.primary.low.onButton")
