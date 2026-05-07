@@ -1,6 +1,7 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
+import { useDebounce } from "use-debounce"
 
 import { healthFactorQuery } from "@/api/aave"
 import { bestBuyQuery, bestBuyTwapQuery } from "@/api/trade"
@@ -23,6 +24,9 @@ export const useMarketBuyData = (
     "buyAmount",
   ])
 
+  const [debouncedSellAmount] = useDebounce(sellAmount, 300)
+  const [debouncedBuyAmount] = useDebounce(buyAmount, 300)
+
   const [
     { data: swap, isLoading: isSwapLoading },
     { data: healthFactorData, isLoading: isHealthFactorLoading },
@@ -31,14 +35,14 @@ export const useMarketBuyData = (
       bestBuyQuery(rpc, {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
-        amountOut: buyAmount,
+        amountOut: debouncedBuyAmount,
         debug: true,
       }),
       healthFactorQuery(rpc, {
         fromAsset: sellAsset,
-        fromAmount: sellAmount,
+        fromAmount: debouncedSellAmount,
         toAsset: buyAsset,
-        toAmount: buyAmount,
+        toAmount: debouncedBuyAmount,
         address,
       }),
     ],
@@ -50,7 +54,7 @@ export const useMarketBuyData = (
       {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
-        amountOut: buyAmount,
+        amountOut: debouncedBuyAmount,
       },
       isTwapEnabled(swap),
     ),
