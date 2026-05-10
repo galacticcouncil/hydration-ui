@@ -1,0 +1,31 @@
+services:
+  web:
+    image: galacticcouncil/hydration-ui:latest
+    isolation: default
+    networks:
+      - default
+      - gateway
+    logging:
+      driver: json-file
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        parallelism: 1
+        failure_action: rollback
+      restart_policy:
+        condition: any
+      labels:
+        traefik.enable: "true"
+        traefik.docker.network: gateway
+        traefik.http.routers.hydration-ui.rule: Host(`app.play.hydration.cloud`)
+        traefik.http.routers.hydration-ui.tls: "true"
+        traefik.http.routers.hydration-ui.tls.certresolver: myresolver
+        traefik.http.services.hydration-ui.loadbalancer.server.port: "3000"
+        swarmpit.service.deployment.autoredeploy: "true"
+
+networks:
+  default:
+    driver: overlay
+  gateway:
+    external: true
