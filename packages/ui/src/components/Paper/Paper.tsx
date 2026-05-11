@@ -6,6 +6,7 @@ import { SPaper } from "@/components/Paper/Paper.styled"
 export type PaperProps = BoxProps & {
   variant?: "plain" | "bordered"
   shadow?: boolean
+  hoverable?: boolean
 }
 
 export const Paper: FC<PaperProps & { ref?: Ref<HTMLElement> }> = ({

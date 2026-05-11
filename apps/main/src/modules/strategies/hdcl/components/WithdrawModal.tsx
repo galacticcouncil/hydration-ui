@@ -1,0 +1,195 @@
+import {
+  AssetInput,
+  Box,
+  Button,
+  Checkbox,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalContentDivider,
+  ModalFooter,
+  ModalHeader,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { HdclLogo } from "@/modules/strategies/hdcl/components/HdclLogo"
+import { useInstantQuote } from "@/modules/strategies/hdcl/hooks/useStableswap"
+
+import {
+  projectRate,
+  type WithdrawMethod,
+  WithdrawMethodPicker,
+} from "./WithdrawMethodPicker"
+
+interface VaultStats {
+  exchangeRate: number
+  worstCaseWaitDays: number
+  nextMaturityDays: number
+  minRedeem: number
+  apr: number
+}
+
+interface Props {
+  open: boolean
+  onClose: () => void
+  vaultStats: VaultStats
+  hdclBalance: number
+  onRequestRedeem: (amount: number) => void
+  onInstantRedeem?: (amount: number) => void
+  instantAvailable: boolean
+  isPending: boolean
+}
+
+export const WithdrawModal = ({
+  open,
+  onClose,
+  vaultStats,
+  hdclBalance,
+  onRequestRedeem,
+  onInstantRedeem,
+  instantAvailable,
+  isPending,
+}: Props) => {
+  const { t } = useTranslation(["hdcl", "common"])
+  const [amount, setAmount] = useState("")
+  const [method, setMethod] = useState<WithdrawMethod>("queue")
+  const [acknowledged, setAcknowledged] = useState(false)
+
+  useEffect(() => {
+    if (!open) {
+      setAmount("")
+      setMethod("queue")
+      setAcknowledged(false)
+    }
+  }, [open])
+
+  const inputNum = parseFloat(amount) || 0
+  const usdValue = inputNum * vaultStats.exchangeRate
+  const isBelowMin = inputNum > 0 && inputNum < vaultStats.minRedeem
+  const overBalance = inputNum > hdclBalance
+
+  const projectedQueueRate = projectRate(
+    vaultStats.exchangeRate,
+    vaultStats.apr,
+    vaultStats.worstCaseWaitDays,
+  )
+  const queueHollarOut = inputNum * projectedQueueRate
+  const { quote: instantQuote } = useInstantQuote(inputNum, queueHollarOut)
+
+  const canSubmit =
+    inputNum > 0 &&
+    !isBelowMin &&
+    !overBalance &&
+    acknowledged &&
+    !isPending &&
+    (method === "queue" || (instantAvailable && !!onInstantRedeem))
+
+  const ctaLabel = (() => {
+    if (isPending) return t("withdraw.cta.pending")
+    if (overBalance) return t("withdraw.cta.insufficient")
+    if (isBelowMin)
+      return t("withdraw.cta.belowMin", {
+        symbol: "HDCL",
+        value: vaultStats.minRedeem,
+      })
+    if (method === "instant" && !instantAvailable)
+      return t("withdraw.cta.unavailable")
+    return t("withdraw.cta.withdraw")
+  })()
+
+  const amountError = overBalance
+    ? t("withdraw.cta.insufficient")
+    : isBelowMin
+      ? t("withdraw.cta.belowMin", {
+          symbol: "HDCL",
+          value: vaultStats.minRedeem,
+        })
+      : undefined
+
+  const handleSubmit = () => {
+    if (!canSubmit) return
+    if (method === "queue") onRequestRedeem(inputNum)
+    else onInstantRedeem?.(inputNum)
+  }
+
+  return (
+    <Modal
+      variant="popup"
+      open={open}
+      onOpenChange={onClose}
+      disableInteractOutside
+    >
+      <ModalHeader title={t("withdraw.title")} />
+      <ModalBody noPadding>
+        <Box px="xl">
+          <AssetInput
+            label={t("withdraw.amount")}
+            symbol="HDCL"
+            selectedAssetIcon={<HdclLogo size={24} />}
+            modalDisabled
+            value={amount}
+            onChange={setAmount}
+            displayValue={
+              inputNum > 0
+                ? t("common:currency", { value: usdValue })
+                : t("common:currency", { value: 0 })
+            }
+            maxBalance={hdclBalance.toString()}
+            maxButtonBalance={hdclBalance.toString()}
+            amountError={amountError}
+          />
+        </Box>
+
+        <ModalContentDivider />
+
+        <Box px="xl" py="l">
+          <Text fs="p5" fw={500} color={getToken("text.medium")} mb="m">
+            {t("withdraw.method")}
+          </Text>
+          <WithdrawMethodPicker
+            selected={method}
+            onSelect={setMethod}
+            amountHdcl={inputNum}
+            exchangeRate={vaultStats.exchangeRate}
+            aprPercent={vaultStats.apr}
+            worstCaseWaitDays={vaultStats.worstCaseWaitDays}
+            nextMaturityDays={vaultStats.nextMaturityDays}
+            instantQuote={instantQuote}
+            instantAvailable={instantAvailable}
+          />
+        </Box>
+
+        <ModalContentDivider />
+
+        <Box px="xl" py="l">
+          <Flex align="center" gap="base">
+            <Checkbox
+              name="withdraw-ack"
+              checked={acknowledged}
+              onCheckedChange={(c) => setAcknowledged(!!c)}
+            />
+            <Text fs="p5" onClick={() => setAcknowledged((v) => !v)}>
+              {method === "instant"
+                ? t("withdraw.ackInstant")
+                : t("withdraw.ack")}
+            </Text>
+          </Flex>
+        </Box>
+      </ModalBody>
+
+      <ModalFooter>
+        <Button
+          size="large"
+          width="100%"
+          disabled={!canSubmit}
+          onClick={handleSubmit}
+        >
+          {ctaLabel}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  )
+}
