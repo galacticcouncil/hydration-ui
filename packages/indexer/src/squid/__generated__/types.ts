@@ -13594,6 +13594,8 @@ export type DcaScheduleFilter = {
   eventId?: InputMaybe<StringFilter>;
   /** Filter by the object’s `id` field. */
   id?: InputMaybe<StringFilter>;
+  /** Filter by the object’s `involvedAtParaBlock` field. */
+  involvedAtParaBlock?: InputMaybe<IntFilter>;
   /** Filter by the object’s `maxAmountIn` field. */
   maxAmountIn?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `maxRetries` field. */
@@ -13657,9 +13659,14 @@ export enum DcaScheduleGroupBy {
   TraceIds = 'TRACE_IDS'
 }
 
+export type DcaScheduleHavingAverageDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
+};
+
 export type DcaScheduleHavingAverageInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingAverageDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13673,9 +13680,14 @@ export type DcaScheduleHavingAverageInput = {
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
+export type DcaScheduleHavingDistinctCountDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
+};
+
 export type DcaScheduleHavingDistinctCountInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingDistinctCountDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13704,9 +13716,14 @@ export type DcaScheduleHavingInput = {
   varianceSample?: InputMaybe<DcaScheduleHavingVarianceSampleInput>;
 };
 
+export type DcaScheduleHavingMaxDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
+};
+
 export type DcaScheduleHavingMaxInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingMaxDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13718,11 +13735,16 @@ export type DcaScheduleHavingMaxInput = {
   totalAmount?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountIn?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type DcaScheduleHavingMinDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
 };
 
 export type DcaScheduleHavingMinInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingMinDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13734,11 +13756,16 @@ export type DcaScheduleHavingMinInput = {
   totalAmount?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountIn?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type DcaScheduleHavingStddevPopulationDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
 };
 
 export type DcaScheduleHavingStddevPopulationInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingStddevPopulationDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13750,11 +13777,16 @@ export type DcaScheduleHavingStddevPopulationInput = {
   totalAmount?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountIn?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type DcaScheduleHavingStddevSampleDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
 };
 
 export type DcaScheduleHavingStddevSampleInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingStddevSampleDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13766,11 +13798,16 @@ export type DcaScheduleHavingStddevSampleInput = {
   totalAmount?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountIn?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type DcaScheduleHavingSumDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
 };
 
 export type DcaScheduleHavingSumInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingSumDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13782,11 +13819,16 @@ export type DcaScheduleHavingSumInput = {
   totalAmount?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountIn?: InputMaybe<HavingBigfloatFilter>;
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type DcaScheduleHavingVariancePopulationDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
 };
 
 export type DcaScheduleHavingVariancePopulationInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingVariancePopulationDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -13800,9 +13842,14 @@ export type DcaScheduleHavingVariancePopulationInput = {
   totalExecutedAmountOut?: InputMaybe<HavingBigfloatFilter>;
 };
 
+export type DcaScheduleHavingVarianceSampleDcaScheduleInvolvedAtParaBlockInput = {
+  filter?: InputMaybe<HavingIntFilter>;
+};
+
 export type DcaScheduleHavingVarianceSampleInput = {
   amountIn?: InputMaybe<HavingBigfloatFilter>;
   amountOut?: InputMaybe<HavingBigfloatFilter>;
+  involvedAtParaBlock?: InputMaybe<DcaScheduleHavingVarianceSampleDcaScheduleInvolvedAtParaBlockInput>;
   maxAmountIn?: InputMaybe<HavingBigfloatFilter>;
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
@@ -40293,120 +40340,6 @@ export enum TimeSeriesBucketTimeRange {
   '30M' = '_30M_',
   None = '_NONE_'
 }
-
-/** Grouping methods for `TokenMetadatum` for usage during aggregation. */
-export enum TokenMetadataGroupBy {
-  Decimals = 'DECIMALS',
-  Id = 'ID',
-  Symbol = 'SYMBOL',
-  Type = 'TYPE'
-}
-
-export type TokenMetadataHavingAverageInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingDistinctCountInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-/** Conditions for `TokenMetadatum` aggregates. */
-export type TokenMetadataHavingInput = {
-  AND?: InputMaybe<Array<TokenMetadataHavingInput>>;
-  OR?: InputMaybe<Array<TokenMetadataHavingInput>>;
-  average?: InputMaybe<TokenMetadataHavingAverageInput>;
-  distinctCount?: InputMaybe<TokenMetadataHavingDistinctCountInput>;
-  max?: InputMaybe<TokenMetadataHavingMaxInput>;
-  min?: InputMaybe<TokenMetadataHavingMinInput>;
-  stddevPopulation?: InputMaybe<TokenMetadataHavingStddevPopulationInput>;
-  stddevSample?: InputMaybe<TokenMetadataHavingStddevSampleInput>;
-  sum?: InputMaybe<TokenMetadataHavingSumInput>;
-  variancePopulation?: InputMaybe<TokenMetadataHavingVariancePopulationInput>;
-  varianceSample?: InputMaybe<TokenMetadataHavingVarianceSampleInput>;
-};
-
-export type TokenMetadataHavingMaxInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingMinInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingStddevPopulationInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingStddevSampleInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingSumInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingVariancePopulationInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-export type TokenMetadataHavingVarianceSampleInput = {
-  decimals?: InputMaybe<HavingIntFilter>;
-  id?: InputMaybe<HavingIntFilter>;
-};
-
-/** Methods to use when ordering `TokenMetadatum`. */
-export enum TokenMetadataOrderBy {
-  DecimalsAsc = 'DECIMALS_ASC',
-  DecimalsDesc = 'DECIMALS_DESC',
-  IdAsc = 'ID_ASC',
-  IdDesc = 'ID_DESC',
-  Natural = 'NATURAL',
-  SymbolAsc = 'SYMBOL_ASC',
-  SymbolDesc = 'SYMBOL_DESC',
-  TypeAsc = 'TYPE_ASC',
-  TypeDesc = 'TYPE_DESC'
-}
-
-/**
- * A condition to be used against `TokenMetadatum` object types. All fields are
- * tested for equality and combined with a logical ‘and.’
- */
-export type TokenMetadatumCondition = {
-  /** Checks for equality with the object’s `decimals` field. */
-  decimals?: InputMaybe<Scalars['Int']['input']>;
-  /** Checks for equality with the object’s `id` field. */
-  id?: InputMaybe<Scalars['Int']['input']>;
-  /** Checks for equality with the object’s `symbol` field. */
-  symbol?: InputMaybe<Scalars['String']['input']>;
-  /** Checks for equality with the object’s `type` field. */
-  type?: InputMaybe<Scalars['String']['input']>;
-};
-
-/** A filter to be used against `TokenMetadatum` object types. All fields are combined with a logical ‘and.’ */
-export type TokenMetadatumFilter = {
-  /** Checks for all expressions in this list. */
-  and?: InputMaybe<Array<TokenMetadatumFilter>>;
-  /** Filter by the object’s `decimals` field. */
-  decimals?: InputMaybe<IntFilter>;
-  /** Filter by the object’s `id` field. */
-  id?: InputMaybe<IntFilter>;
-  /** Negates the expression. */
-  not?: InputMaybe<TokenMetadatumFilter>;
-  /** Checks for any expressions in this list. */
-  or?: InputMaybe<Array<TokenMetadatumFilter>>;
-  /** Filter by the object’s `symbol` field. */
-  symbol?: InputMaybe<StringFilter>;
-  /** Filter by the object’s `type` field. */
-  type?: InputMaybe<StringFilter>;
-};
 
 /** Grouping methods for `TransactionPaymentHistoricalDatum` for usage during aggregation. */
 export enum TransactionPaymentHistoricalDataGroupBy {

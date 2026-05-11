@@ -20851,6 +20851,7 @@ type DcaSchedule {
   event: Event
   eventId: String
   id: String!
+  involvedAtParaBlock: Int
   maxAmountIn: BigFloat
   maxRetries: Int
   minAmountOut: BigFloat
@@ -20914,6 +20915,8 @@ type DcaScheduleAverageAggregates {
   amountIn: BigFloat
   """Mean average of amountOut across the matching connection"""
   amountOut: BigFloat
+  """Mean average of this field across the matching connection."""
+  involvedAtParaBlock: BigFloat
   """Mean average of maxAmountIn across the matching connection"""
   maxAmountIn: BigFloat
   """Mean average of maxRetries across the matching connection"""
@@ -21002,6 +21005,8 @@ type DcaScheduleDistinctCountAggregates {
   eventId: BigInt
   """Distinct count of id across the matching connection"""
   id: BigInt
+  """Distinct count of this field across the matching connection."""
+  involvedAtParaBlock: BigInt
   """Distinct count of maxAmountIn across the matching connection"""
   maxAmountIn: BigInt
   """Distinct count of maxRetries across the matching connection"""
@@ -22384,6 +22389,8 @@ input DcaScheduleFilter {
   eventId: StringFilter
   """Filter by the object’s `id` field."""
   id: StringFilter
+  """Filter by the object’s `involvedAtParaBlock` field."""
+  involvedAtParaBlock: IntFilter
   """Filter by the object’s `maxAmountIn` field."""
   maxAmountIn: BigFloatFilter
   """Filter by the object’s `maxRetries` field."""
@@ -22447,9 +22454,14 @@ enum DcaScheduleGroupBy {
   TRACE_IDS
 }
 
+input DcaScheduleHavingAverageDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
+}
+
 input DcaScheduleHavingAverageInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingAverageDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22463,9 +22475,14 @@ input DcaScheduleHavingAverageInput {
   totalExecutedAmountOut: HavingBigfloatFilter
 }
 
+input DcaScheduleHavingDistinctCountDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
+}
+
 input DcaScheduleHavingDistinctCountInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingDistinctCountDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22494,9 +22511,14 @@ input DcaScheduleHavingInput {
   varianceSample: DcaScheduleHavingVarianceSampleInput
 }
 
+input DcaScheduleHavingMaxDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
+}
+
 input DcaScheduleHavingMaxInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingMaxDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22508,11 +22530,16 @@ input DcaScheduleHavingMaxInput {
   totalAmount: HavingBigfloatFilter
   totalExecutedAmountIn: HavingBigfloatFilter
   totalExecutedAmountOut: HavingBigfloatFilter
+}
+
+input DcaScheduleHavingMinDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
 }
 
 input DcaScheduleHavingMinInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingMinDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22524,11 +22551,16 @@ input DcaScheduleHavingMinInput {
   totalAmount: HavingBigfloatFilter
   totalExecutedAmountIn: HavingBigfloatFilter
   totalExecutedAmountOut: HavingBigfloatFilter
+}
+
+input DcaScheduleHavingStddevPopulationDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
 }
 
 input DcaScheduleHavingStddevPopulationInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingStddevPopulationDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22540,11 +22572,16 @@ input DcaScheduleHavingStddevPopulationInput {
   totalAmount: HavingBigfloatFilter
   totalExecutedAmountIn: HavingBigfloatFilter
   totalExecutedAmountOut: HavingBigfloatFilter
+}
+
+input DcaScheduleHavingStddevSampleDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
 }
 
 input DcaScheduleHavingStddevSampleInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingStddevSampleDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22556,11 +22593,16 @@ input DcaScheduleHavingStddevSampleInput {
   totalAmount: HavingBigfloatFilter
   totalExecutedAmountIn: HavingBigfloatFilter
   totalExecutedAmountOut: HavingBigfloatFilter
+}
+
+input DcaScheduleHavingSumDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
 }
 
 input DcaScheduleHavingSumInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingSumDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22572,11 +22614,16 @@ input DcaScheduleHavingSumInput {
   totalAmount: HavingBigfloatFilter
   totalExecutedAmountIn: HavingBigfloatFilter
   totalExecutedAmountOut: HavingBigfloatFilter
+}
+
+input DcaScheduleHavingVariancePopulationDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
 }
 
 input DcaScheduleHavingVariancePopulationInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingVariancePopulationDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22590,9 +22637,14 @@ input DcaScheduleHavingVariancePopulationInput {
   totalExecutedAmountOut: HavingBigfloatFilter
 }
 
+input DcaScheduleHavingVarianceSampleDcaScheduleInvolvedAtParaBlockInput {
+  filter: HavingIntFilter
+}
+
 input DcaScheduleHavingVarianceSampleInput {
   amountIn: HavingBigfloatFilter
   amountOut: HavingBigfloatFilter
+  involvedAtParaBlock: DcaScheduleHavingVarianceSampleDcaScheduleInvolvedAtParaBlockInput
   maxAmountIn: HavingBigfloatFilter
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
@@ -22611,6 +22663,8 @@ type DcaScheduleMaxAggregates {
   amountIn: BigFloat
   """Maximum of amountOut across the matching connection"""
   amountOut: BigFloat
+  """Maximum of this field across the matching connection."""
+  involvedAtParaBlock: Int
   """Maximum of maxAmountIn across the matching connection"""
   maxAmountIn: BigFloat
   """Maximum of maxRetries across the matching connection"""
@@ -22640,6 +22694,8 @@ type DcaScheduleMinAggregates {
   amountIn: BigFloat
   """Minimum of amountOut across the matching connection"""
   amountOut: BigFloat
+  """Minimum of this field across the matching connection."""
+  involvedAtParaBlock: Int
   """Minimum of maxAmountIn across the matching connection"""
   maxAmountIn: BigFloat
   """Minimum of maxRetries across the matching connection"""
@@ -22818,6 +22874,10 @@ type DcaScheduleStddevPopulationAggregates {
   """
   amountOut: BigFloat
   """
+  Population standard deviation of this field across the matching connection.
+  """
+  involvedAtParaBlock: BigFloat
+  """
   Population standard deviation of maxAmountIn across the matching connection
   """
   maxAmountIn: BigFloat
@@ -22867,6 +22927,10 @@ type DcaScheduleStddevSampleAggregates {
   """Sample standard deviation of amountOut across the matching connection"""
   amountOut: BigFloat
   """
+  Sample standard deviation of this field across the matching connection.
+  """
+  involvedAtParaBlock: BigFloat
+  """
   Sample standard deviation of maxAmountIn across the matching connection
   """
   maxAmountIn: BigFloat
@@ -22911,6 +22975,8 @@ type DcaScheduleSumAggregates {
   amountIn: BigFloat!
   """Sum of amountOut across the matching connection"""
   amountOut: BigFloat!
+  """Sum of this field across the matching connection."""
+  involvedAtParaBlock: BigInt
   """Sum of maxAmountIn across the matching connection"""
   maxAmountIn: BigFloat!
   """Sum of maxRetries across the matching connection"""
@@ -22940,6 +23006,8 @@ type DcaScheduleVariancePopulationAggregates {
   amountIn: BigFloat
   """Population variance of amountOut across the matching connection"""
   amountOut: BigFloat
+  """Population variance of this field across the matching connection."""
+  involvedAtParaBlock: BigFloat
   """Population variance of maxAmountIn across the matching connection"""
   maxAmountIn: BigFloat
   """Population variance of maxRetries across the matching connection"""
@@ -22977,6 +23045,8 @@ type DcaScheduleVarianceSampleAggregates {
   amountIn: BigFloat
   """Sample variance of amountOut across the matching connection"""
   amountOut: BigFloat
+  """Sample variance of this field across the matching connection."""
+  involvedAtParaBlock: BigFloat
   """Sample variance of maxAmountIn across the matching connection"""
   maxAmountIn: BigFloat
   """Sample variance of maxRetries across the matching connection"""
@@ -59272,32 +59342,6 @@ type Query {
     """The method to use when ordering `Swap`."""
     orderBy: [SwapsOrderBy!] = [PRIMARY_KEY_ASC]
   ): SwapsConnection
-  """Reads and enables pagination through a set of `TokenMetadatum`."""
-  tokenMetadata(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: TokenMetadatumCondition
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: TokenMetadatumFilter
-    """Only read the first `n` values of the set."""
-    first: Int
-    """Only read the last `n` values of the set."""
-    last: Int
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-    """The method to use when ordering `TokenMetadatum`."""
-    orderBy: [TokenMetadataOrderBy!] = [NATURAL]
-  ): TokenMetadataConnection
   """
   Reads and enables pagination through a set of `TransactionPaymentHistoricalDatum`.
   """
@@ -69138,273 +69182,6 @@ enum TimeSeriesBucketTimeRange {
   _30D_
   _30M_
   _NONE_
-}
-
-"""A connection to a list of `TokenMetadatum` values."""
-type TokenMetadataConnection {
-  """
-  Aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  aggregates: TokenMetadatumAggregates
-  """
-  A list of edges which contains the `TokenMetadatum` and cursor to aid in pagination.
-  """
-  edges: [TokenMetadataEdge!]!
-  """
-  Grouped aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  groupedAggregates(
-    """The method to use when grouping `TokenMetadatum` for these aggregates."""
-    groupBy: [TokenMetadataGroupBy!]!
-    """Conditions on the grouped aggregates."""
-    having: TokenMetadataHavingInput
-  ): [TokenMetadatumAggregates!]
-  """A list of `TokenMetadatum` objects."""
-  nodes: [TokenMetadatum]!
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
-  """The count of *all* `TokenMetadatum` you could get from the connection."""
-  totalCount: Int!
-}
-
-"""A `TokenMetadatum` edge in the connection."""
-type TokenMetadataEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-  """The `TokenMetadatum` at the end of the edge."""
-  node: TokenMetadatum
-}
-
-"""Grouping methods for `TokenMetadatum` for usage during aggregation."""
-enum TokenMetadataGroupBy {
-  DECIMALS
-  ID
-  SYMBOL
-  TYPE
-}
-
-input TokenMetadataHavingAverageInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingDistinctCountInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-"""Conditions for `TokenMetadatum` aggregates."""
-input TokenMetadataHavingInput {
-  AND: [TokenMetadataHavingInput!]
-  OR: [TokenMetadataHavingInput!]
-  average: TokenMetadataHavingAverageInput
-  distinctCount: TokenMetadataHavingDistinctCountInput
-  max: TokenMetadataHavingMaxInput
-  min: TokenMetadataHavingMinInput
-  stddevPopulation: TokenMetadataHavingStddevPopulationInput
-  stddevSample: TokenMetadataHavingStddevSampleInput
-  sum: TokenMetadataHavingSumInput
-  variancePopulation: TokenMetadataHavingVariancePopulationInput
-  varianceSample: TokenMetadataHavingVarianceSampleInput
-}
-
-input TokenMetadataHavingMaxInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingMinInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingStddevPopulationInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingStddevSampleInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingSumInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingVariancePopulationInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-input TokenMetadataHavingVarianceSampleInput {
-  decimals: HavingIntFilter
-  id: HavingIntFilter
-}
-
-"""Methods to use when ordering `TokenMetadatum`."""
-enum TokenMetadataOrderBy {
-  DECIMALS_ASC
-  DECIMALS_DESC
-  ID_ASC
-  ID_DESC
-  NATURAL
-  SYMBOL_ASC
-  SYMBOL_DESC
-  TYPE_ASC
-  TYPE_DESC
-}
-
-type TokenMetadatum {
-  decimals: Int!
-  id: Int!
-  symbol: String!
-  type: String!
-}
-
-type TokenMetadatumAggregates {
-  """
-  Mean average aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  average: TokenMetadatumAverageAggregates
-  """
-  Distinct count aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  distinctCount: TokenMetadatumDistinctCountAggregates
-  keys: [String!]
-  """
-  Maximum aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  max: TokenMetadatumMaxAggregates
-  """
-  Minimum aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  min: TokenMetadatumMinAggregates
-  """
-  Population standard deviation aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  stddevPopulation: TokenMetadatumStddevPopulationAggregates
-  """
-  Sample standard deviation aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  stddevSample: TokenMetadatumStddevSampleAggregates
-  """
-  Sum aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  sum: TokenMetadatumSumAggregates
-  """
-  Population variance aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  variancePopulation: TokenMetadatumVariancePopulationAggregates
-  """
-  Sample variance aggregates across the matching connection (ignoring before/after/first/last/offset)
-  """
-  varianceSample: TokenMetadatumVarianceSampleAggregates
-}
-
-type TokenMetadatumAverageAggregates {
-  """Mean average of decimals across the matching connection"""
-  decimals: BigFloat
-  """Mean average of id across the matching connection"""
-  id: BigFloat
-}
-
-"""
-A condition to be used against `TokenMetadatum` object types. All fields are
-tested for equality and combined with a logical ‘and.’
-"""
-input TokenMetadatumCondition {
-  """Checks for equality with the object’s `decimals` field."""
-  decimals: Int
-  """Checks for equality with the object’s `id` field."""
-  id: Int
-  """Checks for equality with the object’s `symbol` field."""
-  symbol: String
-  """Checks for equality with the object’s `type` field."""
-  type: String
-}
-
-type TokenMetadatumDistinctCountAggregates {
-  """Distinct count of decimals across the matching connection"""
-  decimals: BigInt
-  """Distinct count of id across the matching connection"""
-  id: BigInt
-  """Distinct count of symbol across the matching connection"""
-  symbol: BigInt
-  """Distinct count of type across the matching connection"""
-  type: BigInt
-}
-
-"""
-A filter to be used against `TokenMetadatum` object types. All fields are combined with a logical ‘and.’
-"""
-input TokenMetadatumFilter {
-  """Checks for all expressions in this list."""
-  and: [TokenMetadatumFilter!]
-  """Filter by the object’s `decimals` field."""
-  decimals: IntFilter
-  """Filter by the object’s `id` field."""
-  id: IntFilter
-  """Negates the expression."""
-  not: TokenMetadatumFilter
-  """Checks for any expressions in this list."""
-  or: [TokenMetadatumFilter!]
-  """Filter by the object’s `symbol` field."""
-  symbol: StringFilter
-  """Filter by the object’s `type` field."""
-  type: StringFilter
-}
-
-type TokenMetadatumMaxAggregates {
-  """Maximum of decimals across the matching connection"""
-  decimals: Int
-  """Maximum of id across the matching connection"""
-  id: Int
-}
-
-type TokenMetadatumMinAggregates {
-  """Minimum of decimals across the matching connection"""
-  decimals: Int
-  """Minimum of id across the matching connection"""
-  id: Int
-}
-
-type TokenMetadatumStddevPopulationAggregates {
-  """
-  Population standard deviation of decimals across the matching connection
-  """
-  decimals: BigFloat
-  """Population standard deviation of id across the matching connection"""
-  id: BigFloat
-}
-
-type TokenMetadatumStddevSampleAggregates {
-  """Sample standard deviation of decimals across the matching connection"""
-  decimals: BigFloat
-  """Sample standard deviation of id across the matching connection"""
-  id: BigFloat
-}
-
-type TokenMetadatumSumAggregates {
-  """Sum of decimals across the matching connection"""
-  decimals: BigInt!
-  """Sum of id across the matching connection"""
-  id: BigInt!
-}
-
-type TokenMetadatumVariancePopulationAggregates {
-  """Population variance of decimals across the matching connection"""
-  decimals: BigFloat
-  """Population variance of id across the matching connection"""
-  id: BigFloat
-}
-
-type TokenMetadatumVarianceSampleAggregates {
-  """Sample variance of decimals across the matching connection"""
-  decimals: BigFloat
-  """Sample variance of id across the matching connection"""
-  id: BigFloat
 }
 
 """A connection to a list of `TransactionPaymentHistoricalDatum` values."""

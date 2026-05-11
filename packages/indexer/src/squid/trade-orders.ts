@@ -42,6 +42,13 @@ export const getDcaScheduleStatus = (
   return schedule.status
 }
 
+export const getDcaScheduleStatusParaBlockHeight = (
+  schedule: DcaScheduleStatusFragment,
+): number | null =>
+  schedule.dcaScheduleEventsByScheduleId.nodes.at(0)?.paraBlockHeight ??
+  schedule.paraBlockHeight ??
+  null
+
 export enum DcaScheduleExecutionStatus {
   Planned = "Planned",
   Executed = "Executed",
