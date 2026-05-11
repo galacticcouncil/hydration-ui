@@ -87,7 +87,7 @@ export const Market: FC = () => {
             : twap && submitTwap.mutate([values, twap]),
         )}
       >
-        <MarketFields swap={swap} />
+        <MarketFields swap={swap} twap={twap} />
         {isExpanded && (
           <Box pt="base" pb="m">
             <MarketTradeOptions
