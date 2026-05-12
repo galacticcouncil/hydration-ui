@@ -20,12 +20,14 @@ type BridgeOption = {
 
 const BRIDGE_PRIORITY: Record<string, number> = {
   [XcmTag.Basejump]: 0,
-  [XcmTag.Wormhole]: 1,
-  [XcmTag.Snowbridge]: 2,
+  [XcmTag.Across_Snowbridge]: 1,
+  [XcmTag.Wormhole]: 2,
+  [XcmTag.Snowbridge]: 3,
 }
 
 const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
   [XcmTag.Basejump]: "~22 sec",
+  [XcmTag.Across_Snowbridge]: "~25 min",
   [XcmTag.Wormhole]: "~30 min",
   [XcmTag.Snowbridge]: "~25 min",
 }

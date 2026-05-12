@@ -81,7 +81,11 @@ export function convertXcmFormValuesToOptimisticJourney(
     : fromAddress
 
   const protocol =
-    values.bridgeProvider === XcmTag.Basejump ? "basejump" : "xcm"
+    values.bridgeProvider === XcmTag.Basejump
+      ? "basejump"
+      : values.bridgeProvider === XcmTag.Across_Snowbridge
+        ? "across"
+        : "xcm"
 
   return {
     id: 0,
