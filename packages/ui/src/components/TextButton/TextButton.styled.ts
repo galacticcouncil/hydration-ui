@@ -33,9 +33,6 @@ export const STextButton = styled.button<CustomTextButtonProps>(
 
     &:hover {
       color: ${theme.textButtons.small.hover};
-      border-bottom: ${variant === "underline"
-        ? `1px solid ${theme.textButtons.small.hover}`
-        : "transparent"};
     }
   `,
 )

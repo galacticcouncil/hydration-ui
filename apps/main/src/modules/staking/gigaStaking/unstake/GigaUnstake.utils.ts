@@ -9,7 +9,10 @@ import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
-import { gigaUnstakePositionsQuery } from "@/api/gigaStake"
+import {
+  gigaTotalLockedQuery,
+  gigaUnstakePositionsQuery,
+} from "@/api/gigaStake"
 import { GigaUnstakeProps } from "@/modules/staking/gigaStaking/unstake/GigaUnstake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -90,6 +93,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(account.address),
             gigaUnstakePositionsQuery(rpc, account.address).queryKey,
+            gigaTotalLockedQuery(rpc).queryKey,
           ],
           toasts,
         },

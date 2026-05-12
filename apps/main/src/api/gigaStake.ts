@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
-import { millisecondsInHour } from "date-fns/constants"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME } from "@/utils/consts"
@@ -44,5 +44,21 @@ export const gigaUnstakePositionsQuery = (
         await unsafeApi.query.GigaHdx.PendingUnstakes.getValue(address)
 
       return position as { amount: bigint; expires_at: number }
+    },
+  })
+
+export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    queryKey: ["gigaTotalLocked"],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInMinute,
+    gcTime: millisecondsInMinute,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+
+      const totalLocked = await unsafeApi.query.GigaHdx.TotalLocked.getValue()
+
+      return totalLocked as bigint
     },
   })

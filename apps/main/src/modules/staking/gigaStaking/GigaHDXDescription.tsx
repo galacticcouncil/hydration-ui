@@ -3,11 +3,13 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
 import {
   SChartContainer,
   SChartLegendContainer,
 } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { GigaStakingChart } from "@/modules/staking/gigaStaking/GigaStakingChart"
+import { GigaHDXSupplyInfo } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 
 type Points = ReadonlyArray<readonly [title: string, description: string]>
 
@@ -18,8 +20,8 @@ export const GigaHDXDescription: FC = () => {
   }) as Points
 
   return (
-    <Paper p="xl">
-      <Stack separated gap="l">
+    <Paper>
+      <Stack separated gap="l" px="xl" pt="xl">
         {points.map(([title, description], index) => (
           <Points
             key={index}
@@ -32,7 +34,7 @@ export const GigaHDXDescription: FC = () => {
         ))}
       </Stack>
 
-      <SChartContainer sx={{ mt: "xxl" }}>
+      <SChartContainer mt="xxl" mx="xl">
         <GigaStakingChart />
 
         <SChartLegendContainer asChild>
@@ -41,6 +43,10 @@ export const GigaHDXDescription: FC = () => {
           </Text>
         </SChartLegendContainer>
       </SChartContainer>
+
+      <GigaHDXSupplyInfo />
+
+      <GigaHDXDocLink />
     </Paper>
   )
 }

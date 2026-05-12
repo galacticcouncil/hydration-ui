@@ -19,19 +19,23 @@ import { useTranslation } from "react-i18next"
 import { useUserGigaBorrowSummary } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
+import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
 import {
   SChartContainer,
   SChartLegendContainer,
 } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { GigaStakingChart } from "@/modules/staking/gigaStaking/GigaStakingChart"
 import { GigaHDXRepayModal } from "@/modules/staking/gigaStaking/repay/GigaHDXRepayModal"
+import { GigaHDXSupplyInfo } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 import { useAssets } from "@/providers/assetsProvider"
+
+const REWARDS_TO_CLAIM = 23444
 
 export const GigaHDXPosition = () => {
   const { t } = useTranslation(["staking", "common", "borrow"])
   const [borrowModalOpen, setBorrowModalOpen] = useState(false)
 
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, native } = useAssets()
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
@@ -44,14 +48,11 @@ export const GigaHDXPosition = () => {
     hdxReserve,
     hollarReserve,
   } = gigaBorrowSummary ?? {}
-  const totalBorrowCapacity = Big(hollarReserve?.totalBorrows || "0").plus(
-    borrowableHollar || "0",
-  )
+
+  const debt = hollarReserve?.totalBorrows || "0"
+  const totalBorrowCapacity = Big(debt).plus(borrowableHollar || "0")
   const usedBorrowingPower = totalBorrowCapacity.gt(0)
-    ? Big(hollarReserve?.totalBorrows || "0")
-        .div(totalBorrowCapacity)
-        .times(100)
-        .toNumber()
+    ? Big(debt).div(totalBorrowCapacity).times(100).toNumber()
     : 0
 
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(
@@ -92,27 +93,35 @@ export const GigaHDXPosition = () => {
     return liqPxMrc.div(hollarMrc)
   }, [userSummary, hdxReserve, hollarReserve])
 
+  const hasDebt = Big(debt).gt(0)
+
   return (
     <>
       <Paper>
-        <Flex align="center" p="xl" gap="base">
+        <Flex align="center" p="xl" pb="l" gap="base">
           <AssetLogo id={ghdxMeta.id} />
 
-          <Text
-            font="primary"
-            fw={500}
-            fs="h7"
-            lh={1}
-            color={getToken("text.high")}
-          >
-            {t("gigaStaking.position.title")}
-          </Text>
+          <Flex direction="column" justify="space-between">
+            <Text
+              font="primary"
+              fw={500}
+              fs="base"
+              lh={1}
+              color={getToken("text.high")}
+            >
+              {t("gigaStaking.position.title")}
+            </Text>
+            <Text fs="p6" color={getToken("text.medium")}>
+              {t("gigaStaking.position.desc")}
+            </Text>
+          </Flex>
 
           <Amount
             value={
               <Text
                 font="primary"
                 fs="h6"
+                lh={1}
                 fw={500}
                 color={getToken("text.tint.secondary")}
               >
@@ -128,149 +137,141 @@ export const GigaHDXPosition = () => {
             sx={{ ml: "auto", textAlign: "right" }}
           />
         </Flex>
+
+        {hasDebt && (
+          <>
+            <Separator />
+            <Stack
+              direction={["column", "column", "column", "row"]}
+              gap={["xxl", null]}
+              justify="start"
+              py="l"
+              px="xl"
+              separated
+            >
+              <ValueStats
+                size="small"
+                label={t("borrow:healthFactor")}
+                wrap={[false, true]}
+                isLoading={isLoading}
+                customValue={
+                  <Text
+                    font="primary"
+                    fw={500}
+                    fs="h7"
+                    lh={1}
+                    sx={{ color: healthFactorColor }}
+                  >
+                    {healthFactor !== "-1" ? healthFactor : "-"}
+                  </Text>
+                }
+              />
+              <ValueStats
+                size="small"
+                label="Liquidation price"
+                wrap={[false, true]}
+                isLoading={isLoading}
+                value={
+                  liquidationPriceHollarPerHdx
+                    ? t("common:currency", {
+                        value: liquidationPriceHollarPerHdx
+                          .round(18, Big.roundHalfUp)
+                          .toFixed(),
+                        symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
+                      })
+                    : "-"
+                }
+              />
+            </Stack>
+          </>
+        )}
+
         <Separator />
-        <Stack
-          direction={["column", "column", "column", "row"]}
-          gap={["base", null]}
-          py="l"
-          px="xl"
-          separated
+
+        <Box
+          m="xl"
+          p="xl"
+          minWidth="300px"
+          bg={getToken("surfaces.containers.dim.dimOnBg")}
+          borderRadius="xl"
+          flex={1}
+          asChild
         >
-          <ValueStats
-            size="small"
-            label={t("borrow:healthFactor")}
-            wrap={[false, true]}
-            isLoading={isLoading}
-            customValue={
+          <Flex direction="column" gap="l">
+            <Flex justify="space-between" align="center">
               <Text
                 font="primary"
                 fw={500}
-                fs="h7"
+                fs="base"
                 lh={1}
-                sx={{ color: healthFactorColor }}
+                color={getToken("text.high")}
               >
-                {healthFactor !== "-1" ? healthFactor : "-"}
+                {t("gigaStaking.position.borrows.title")}
               </Text>
-            }
-          />
-          <ValueStats
-            size="small"
-            label="Liquidation price"
-            wrap={[false, true]}
-            isLoading={isLoading}
-            value={
-              liquidationPriceHollarPerHdx
-                ? t("common:currency", {
-                    value: liquidationPriceHollarPerHdx
-                      .round(18, Big.roundHalfUp)
-                      .toFixed(),
-                    symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
-                  })
-                : "-"
-            }
-          />
-          <ValueStats
-            size="small"
-            label="Current borrow % APR"
-            wrap={[false, true]}
-            isLoading={isLoading}
-            value={t("common:percent", { value: 10 })}
-          />
-        </Stack>
-        <Separator />
-        <Box p="xl">
-          <Flex align="stretch" gap="base" justify="space-between" wrap>
-            <PositionCard label={t("gigaStaking.position.supplies.title")}>
-              <Amount
-                value={
-                  <Text
-                    font="primary"
-                    fs="h6"
-                    fw={500}
-                    lh={1}
-                    color={getToken("text.tint.secondary")}
-                  >
-                    {t("common:currency", {
-                      value: hdxReserve?.underlyingBalance || "0",
-                      symbol: ghdxMeta.symbol,
-                    })}
-                  </Text>
-                }
-                displayValue={t("common:currency", {
-                  value: hdxReserve?.underlyingBalanceUSD || "0",
-                })}
-              />
-              <Separator />
-              <Amount
-                label={
-                  <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                    {t("gigaStaking.position.supplies.underlying")}
-                  </Text>
-                }
-                value={
-                  <Text
-                    font="primary"
-                    fs="base"
-                    lh={1}
-                    fw={500}
-                    color={getToken("text.high")}
-                  >
-                    {t("common:currency", {
-                      value: hdxReserve?.underlyingBalance || "0",
-                      symbol: ghdxMeta.symbol,
-                    })}
-                  </Text>
-                }
-                displayValue="1 GHDX = 1.0192 HDX" //@TODO: calculate it
-                sx={{ gap: 0 }}
-              />
-            </PositionCard>
-            <PositionCard
-              label={t("gigaStaking.position.borrows.title")}
-              headerValue={
-                <Text fs="p6" lh={1} color={getToken("text.high")} fw={400}>
-                  {t("gigaStaking.position.borrows.power", {
-                    value: usedBorrowingPower,
-                  })}
-                </Text>
-              }
+
+              <Text
+                font="primary"
+                fw={500}
+                fs="p6"
+                lh={1}
+                color={getToken("text.tint.secondary")}
+                transform="uppercase"
+              >
+                4.5% borrow apy
+              </Text>
+            </Flex>
+
+            <Separator />
+
+            <Stack
+              direction={["column", "column", "column", "column", "row"]}
+              gap={["xl", null]}
+              justify="space-between"
+              separated
             >
-              <Flex justify="space-between" align="center">
-                <Amount
-                  label={
-                    <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                      {t("borrow:debt")}
-                    </Text>
-                  }
-                  value={
-                    <Text
-                      font="primary"
-                      fs="base"
-                      lh={1}
-                      fw={500}
-                      color={getToken("text.high")}
-                    >
-                      {t("common:currency", {
-                        value: hollarReserve?.totalBorrows || "0",
-                        symbol: hollarReserve?.reserve.symbol,
-                      })}
-                    </Text>
-                  }
-                  displayValue={t("common:currency", {
-                    value: hollarReserve?.totalBorrowsUSD || "0",
-                  })}
-                />
+              <Flex justify="space-between" align="center" gap="base" flex={1}>
+                <Flex direction="column">
+                  <Amount
+                    label={
+                      <Text fs="p6" lh={1} color={getToken("text.medium")}>
+                        {t("borrow:debt")}
+                      </Text>
+                    }
+                    value={
+                      <Text
+                        font="primary"
+                        fs="base"
+                        lh={1}
+                        fw={500}
+                        color={getToken("text.high")}
+                      >
+                        {t("common:currency", {
+                          value: debt,
+                          symbol: hollarReserve?.reserve.symbol,
+                        })}
+                      </Text>
+                    }
+                    displayValue={t("common:currency", {
+                      value: hollarReserve?.totalBorrowsUSD || "0",
+                    })}
+                  />
+                  <Text fs="p6" fw={400} color={getToken("text.high")}>
+                    {t("gigaStaking.position.borrows.power", {
+                      value: usedBorrowingPower,
+                    })}
+                  </Text>
+                </Flex>
+
                 <Button
-                  variant="accent"
-                  disabled={hollarReserve?.totalBorrows === "0"}
-                  outline
+                  variant="secondary"
+                  disabled={!hasDebt}
                   onClick={() => setRepayModalOpen(true)}
                 >
                   {t("common:repay")}
                 </Button>
               </Flex>
-              <Separator />
-              <Flex justify="space-between" align="center">
+
+              <Flex justify="space-between" align="center" gap="base" flex={1}>
                 <Amount
                   label={
                     <Text fs="p6" lh={1} color={getToken("text.medium")}>
@@ -301,7 +302,7 @@ export const GigaHDXPosition = () => {
                   {t("common:borrow")}
                 </Button>
               </Flex>
-            </PositionCard>
+            </Stack>
           </Flex>
         </Box>
 
@@ -312,12 +313,44 @@ export const GigaHDXPosition = () => {
             <GigaStakingChart />
 
             <SChartLegendContainer asChild>
-              <Text fs="p2" lh="m" color={getToken("text.medium")}>
-                {t("staking:gigaStaking.rewards.desc")}
-              </Text>
+              <Flex direction="column" gap="l">
+                <Flex justify="space-between" align="center">
+                  <Amount
+                    label={t("gigaStaking.claim.label")}
+                    value={
+                      <Text
+                        font="primary"
+                        fs="h5"
+                        fw={500}
+                        lh={1}
+                        color={getToken("text.tint.primary")}
+                      >
+                        {t("common:currency", {
+                          value: REWARDS_TO_CLAIM,
+                          symbol: native.symbol,
+                        })}
+                      </Text>
+                    }
+                  />
+
+                  <Button variant="secondary" size="large">
+                    {t("gigaStaking.claim.cta")}
+                  </Button>
+                </Flex>
+
+                <Separator />
+
+                <Text fs="p2" lh="m" color={getToken("text.medium")}>
+                  {t("staking:gigaStaking.rewards.desc")}
+                </Text>
+              </Flex>
             </SChartLegendContainer>
           </SChartContainer>
         </Box>
+
+        <GigaHDXSupplyInfo />
+
+        <GigaHDXDocLink />
       </Paper>
 
       <GigaHDXRepayModal
@@ -330,54 +363,5 @@ export const GigaHDXPosition = () => {
         onClose={() => setBorrowModalOpen(false)}
       />
     </>
-  )
-}
-
-const PositionCard = ({
-  label,
-  headerValue,
-  children,
-}: {
-  label: string
-  headerValue?: React.ReactNode
-  children: React.ReactNode
-}) => {
-  const Title = (
-    <Text
-      font="primary"
-      fw={500}
-      fs="base"
-      lh={1}
-      color={getToken("text.high")}
-    >
-      {label}
-    </Text>
-  )
-
-  return (
-    <Box
-      p="xl"
-      minWidth="300px"
-      bg={getToken("surfaces.containers.dim.dimOnBg")}
-      borderRadius="xl"
-      flex={1}
-      asChild
-    >
-      <Flex direction="column" gap="base">
-        {headerValue ? (
-          <Flex justify="space-between" align="center">
-            {Title}
-            {headerValue}
-          </Flex>
-        ) : (
-          Title
-        )}
-        <Separator />
-
-        <Flex direction="column" gap="base" justify="space-between">
-          {children}
-        </Flex>
-      </Flex>
-    </Box>
   )
 }
