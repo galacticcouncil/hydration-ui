@@ -151,6 +151,8 @@
 
   "referenda.item.aye": "Aye",
   "referenda.item.nay": "Nay",
+  "referenda.item.abstain": "Abstain",
+  "referenda.item.split": "Split",
   "referenda.item.threshold": "Threshold",
   "referenda.item.root": "Root",
   "referenda.state.preparing": "Preparing",
@@ -162,6 +164,16 @@
   "referenda.item.removeVote": "Remove vote",
   "referenda.item.openOnSubSquare": "Open on SubSquare",
   "referenda.item.supportTooltip": "Support: {{ percentage }}",
+
+
+  "referenda.vote.modal.title": "Referendum vote",
+  "referenda.vote.modal.description": "Accept Moonbeam HRMP & on-chain remark",
+  "referenda.vote.modal.multiplier": "Voting Power Multiplier",
+  "referenda.vote.modal.totalVotes": "Total votes",
+  "referenda.vote.modal.lockDuration": "Lock duration",
+  "referenda.vote.modal.lockDuration.value": "≈{{ value }} Days",
+  "referenda.vote.modal.lockDuration.description": "Your HDX/GIGAHDX will stay locked for entire voting period. After the vote ends, it remains locked for additional period based on your selected multiplier",
+  "referenda.vote.modal.multiplier.tooltip": "Conviction multiplier — increases your vote weight in exchange for locking your tokens longer after the vote concludes. 0.1x means no lock but the vote only counts at 10% weight.",
 
   "claim.header": "Are you sure you want to claim rewards?",
   "claim.cta": "Sign Transaction",

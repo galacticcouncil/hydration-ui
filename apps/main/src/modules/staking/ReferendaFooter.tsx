@@ -9,8 +9,9 @@ import { REFERENDA_URL } from "@galacticcouncil/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { VoteModal } from "@/modules/staking/VoteModal"
+import { VoteModal } from "@/modules/staking/components/VoteModal/VoteModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
 export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
   const { t } = useTranslation("staking")
   const { papi } = useRpcProvider()
+  const { isBalanceLoading } = useAccountBalances()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const [voteOpen, setVoteOpen] = useState(false)
 
@@ -50,6 +52,7 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
             variant="primary"
             sx={{ flex: 1 }}
             onClick={() => setVoteOpen(true)}
+            disabled={isBalanceLoading}
           >
             {t("referenda.item.vote")}
           </Button>

@@ -43,7 +43,10 @@ const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   locked6x: 3225600,
 }
 
-const CONVICTIONS_BLOCKS_BY_INDEX: { [key: string]: number } = {
+export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
+export type Conviction = (typeof CONVICTIONS)[number]
+
+export const CONVICTIONS_BLOCKS_BY_INDEX: { [key in Conviction]: number } = {
   0: 0,
   1: 100800,
   2: 201600,
@@ -288,6 +291,7 @@ export const openGovUnlockedTokensQuery = (
           const referendumInfo =
             await rpc.papi.query.Referenda.ReferendumInfoFor.getValue(
               accountVote.id,
+              { at: "best" },
             )
 
           if (!referendumInfo) {
