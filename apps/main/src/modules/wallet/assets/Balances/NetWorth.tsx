@@ -7,7 +7,6 @@ import {
   SValueStatsValue,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
@@ -135,12 +134,11 @@ const NetWorthValue = ({
   isError: boolean
 }) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { isLaptop } = useBreakpoints()
   const [_, { price }] = useDisplayAssetPrice(assetId ?? USDT_ASSET_ID, value)
 
   return (
     <ValueStats
-      wrap={isLaptop}
+      wrap={[false, false, true]}
       size="medium"
       label={t("balances.header.netWorth")}
       customValue={
