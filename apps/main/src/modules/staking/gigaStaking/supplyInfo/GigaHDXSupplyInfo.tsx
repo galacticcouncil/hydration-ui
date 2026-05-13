@@ -55,7 +55,7 @@ export const GigaHDXSupplyInfo = () => {
     {
       name: "Legacy",
       value: Number(supplyStakedPercent),
-      fill: themeProps.text.tint.secondary,
+      fill: themeProps.controls.solid.activeHover,
     },
     {
       name: "GIGAHDX",
@@ -76,8 +76,8 @@ export const GigaHDXSupplyInfo = () => {
   return (
     <Flex gap="xl" align="center" p="xl">
       <Flex
-        height={pxToRem(115)}
-        width={pxToRem(115)}
+        height={115}
+        width={115}
         p="m"
         bg={getToken("details.separatorsOnDim")}
         borderRadius="full"
@@ -111,7 +111,7 @@ export const GigaHDXSupplyInfo = () => {
         >
           <Flex direction="column" gap="xs">
             <LegendItem
-              color={getToken("text.tint.secondary")}
+              color={getToken("controls.solid.activeHover")}
               label={t("gigaStaking.supply.legacy.label")}
             />
 

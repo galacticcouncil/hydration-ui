@@ -67,12 +67,11 @@ export const DashboardStats: FC<Props> = ({
             justify="center"
             align="center"
           >
-            <PieChart height={90} width={90}>
+            <PieChart height={90} width={90} sx={{ pointerEvents: "none" }}>
               <Pie
                 data={[{ value: 1 }]}
                 innerRadius={15}
                 outerRadius={45}
-                cornerRadius={5}
                 startAngle={PIE_START_ANGLE}
                 endAngle={
                   PIE_START_ANGLE - (360 * Number(supplyStakedPercent)) / 100
