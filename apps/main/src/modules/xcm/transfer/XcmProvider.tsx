@@ -69,13 +69,22 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     [configService],
   )
 
+  // The SDK throws on chains/assets/destinations without registered routes
+  // (Chain route for X not found, AssetRoute for asset Y and destination Z
+  // not found). Surfacing those throws during render takes down the entire
+  // /cross-chain page via the error boundary and loops on remount. Returning
+  // a safe default for the failing combo lets the page recover.
   const sourceChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     return XCM_CHAINS.map((chain) => {
       const assets = [...chain.assetsData.values()]
         .map(({ asset }) => asset)
         .filter((asset) => {
-          const assetSource = config.asset(asset).source(chain)
-          return assetSource.destinationChains.length > 0
+          try {
+            const assetSource = config.asset(asset).source(chain)
+            return assetSource.destinationChains.length > 0
+          } catch {
+            return false
+          }
         })
       return { chain, routes: [], assets, isTagSelect: false }
     })
@@ -100,13 +109,16 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       )
       .map((a) => a.destination.chain)
 
-    return unique(destChains).map((chain) => {
-      const { routes, destinationAssets, isTagSelect } = config
-        .asset(srcAsset)
-        .source(srcChain)
-        .destination(chain)
-
-      return { chain, routes, assets: destinationAssets, isTagSelect }
+    return unique(destChains).flatMap((chain) => {
+      try {
+        const { routes, destinationAssets, isTagSelect } = config
+          .asset(srcAsset)
+          .source(srcChain)
+          .destination(chain)
+        return [{ chain, routes, assets: destinationAssets, isTagSelect }]
+      } catch {
+        return []
+      }
     })
   }, [config, srcAsset, srcChain, configService])
 

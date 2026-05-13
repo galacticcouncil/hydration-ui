@@ -167,24 +167,36 @@ export const xcmTransferQuery = (
       bridgeTag,
     ],
     queryFn: async () => {
-      const builder = TransferBuilder(wallet)
-        .withAsset(srcAsset)
-        .withSource(srcChain)
-        .withDestination(destChain)
+      try {
+        const builder = TransferBuilder(wallet)
+          .withAsset(srcAsset)
+          .withSource(srcChain)
+          .withDestination(destChain)
 
-      // Do not pass invalid/stale dest asset
-      const validDstAsset = builder.routes.some(
-        (r) => r.destination.asset.key === destAsset,
-      )
-        ? destAsset
-        : undefined
+        // Do not pass invalid/stale dest asset
+        const validDstAsset = builder.routes.some(
+          (r) => r.destination.asset.key === destAsset,
+        )
+          ? destAsset
+          : undefined
 
-      return builder.build({
-        srcAddress,
-        dstAddress: destAddress,
-        dstAsset: validDstAsset,
-        tag: bridgeTag,
-      })
+        return await builder.build({
+          srcAddress,
+          dstAddress: destAddress,
+          dstAsset: validDstAsset,
+          tag: bridgeTag,
+        })
+      } catch (err) {
+        // Stale form state can ask for combos with no AssetRoute. Returning
+        // null instead of throwing keeps react-query in a healthy state
+        // (no retries, no error-boundary loop) — the consumer reads
+        // `transfer ?? null` already.
+        console.warn(
+          `[xcm] transfer build failed for ${srcChain}/${srcAsset} → ${destChain}/${destAsset}:`,
+          err,
+        )
+        return null as unknown as Transfer
+      }
     },
     enabled:
       !!srcAddress &&
