@@ -40,10 +40,17 @@ export const gigaUnstakePositionsQuery = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const position =
-        await unsafeApi.query.GigaHdx.PendingUnstakes.getValue(address)
+      const entries = await unsafeApi.query.GigaHdx.PendingUnstakes.getEntries(
+        address,
+        { at: "best" },
+      )
 
-      return position as { amount: bigint; expires_at: number }
+      return entries.map(
+        ({ keyArgs, value }: { keyArgs: [string, number]; value: bigint }) => ({
+          amount: value,
+          voteAtBlock: keyArgs[1],
+        }),
+      ) as Array<{ amount: bigint; voteAtBlock: number }>
     },
   })
 
@@ -57,7 +64,9 @@ export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const totalLocked = await unsafeApi.query.GigaHdx.TotalLocked.getValue()
+      const totalLocked = await unsafeApi.query.GigaHdx.TotalLocked.getValue({
+        at: "best",
+      })
 
       return totalLocked as bigint
     },

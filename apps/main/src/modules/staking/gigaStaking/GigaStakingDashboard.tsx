@@ -6,7 +6,7 @@ import { GigaAction } from "@/modules/staking/gigaStaking/GigaAction"
 import { GigaHDXDescription } from "@/modules/staking/gigaStaking/GigaHDXDescription"
 import { GigaHDXPosition } from "@/modules/staking/gigaStaking/GigaHDXPosition"
 import { GigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration"
-import { UnstakingPositions } from "@/modules/staking/gigaStaking/UnstakingPositions"
+import { PendingPositions } from "@/modules/staking/gigaStaking/pendingPositions/PendingPositions"
 import { useAccountBalances } from "@/states/account"
 
 export const GigaStakingDashboard = () => {
@@ -20,7 +20,7 @@ export const GigaStakingDashboard = () => {
       <Flex direction="column" gap="xl">
         <GigaStakingMigration />
         <GigaAction />
-        <UnstakingPositions />
+        <PendingPositions />
       </Flex>
     </TwoColumnGrid>
   )

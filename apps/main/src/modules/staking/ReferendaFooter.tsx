@@ -28,9 +28,18 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
   const [voteOpen, setVoteOpen] = useState(false)
 
   const handleRemoveVote = () => {
+    const toasts = {
+      submitted: t("referenda.remove.toasts.submitted", {
+        referendumId: id,
+      }),
+      success: t("referenda.remove.toasts.success", {
+        referendumId: id,
+      }),
+    }
     createTransaction({
       tx: papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
       invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
+      toasts,
     })
   }
 

@@ -40,8 +40,11 @@ export type VoteModalFormValues = {
   asset: TAssetData
 }
 
-export const useVoteModal = (referendumId: number) => {
-  const { t } = useTranslation("common")
+export const useVoteModal = (
+  referendumId: number,
+  onSubmitted?: () => void,
+) => {
+  const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const { papi, slotDurationMs } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -254,10 +257,23 @@ export const useVoteModal = (referendumId: number) => {
         vote: buildAccountVote(),
       })
 
-      return createTransaction({
-        tx,
-        invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
-      })
+      const toasts = {
+        submitted: t("staking:referenda.vote.modal.toasts.submitted", {
+          referendumId,
+        }),
+        success: t("staking:referenda.vote.modal.toasts.success", {
+          referendumId,
+        }),
+      }
+
+      return createTransaction(
+        {
+          tx,
+          invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 

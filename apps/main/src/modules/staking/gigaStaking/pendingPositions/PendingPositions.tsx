@@ -1,6 +1,6 @@
 import {
-  Box,
   Flex,
+  Pagination,
   Paper,
   Separator,
   Text,
@@ -8,23 +8,36 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { gigaUnstakePositionsQuery } from "@/api/gigaStake"
-import { UnstakingPosition } from "@/modules/staking/gigaStaking/UnstakingPosition"
+import { PendingPosition } from "@/modules/staking/gigaStaking/pendingPositions/PendingPosition"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-export const UnstakingPositions: FC = () => {
+const MAX_ITEMS_PER_PAGE = 3
+
+export const PendingPositions: FC = () => {
   const { t } = useTranslation("staking")
   const { account } = useAccount()
   const rpc = useRpcProvider()
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const { data: pendingPosition } = useQuery(
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const { data: pendingPositions = [] } = useQuery(
     gigaUnstakePositionsQuery(rpc, account?.address ?? ""),
   )
 
-  if (!pendingPosition) {
+  const visiblePositions =
+    pendingPositions.slice(
+      (currentPage - 1) * MAX_ITEMS_PER_PAGE,
+      currentPage * MAX_ITEMS_PER_PAGE,
+    ) ?? []
+
+  if (!pendingPositions.length) {
     return null
   }
 
@@ -48,9 +61,22 @@ export const UnstakingPositions: FC = () => {
 
         <Separator />
 
-        <Box px="l">
-          <UnstakingPosition {...pendingPosition} />
-        </Box>
+        <Flex direction="column" gap="m" px="l">
+          {visiblePositions.map((position, index) => (
+            <PendingPosition
+              key={`${position.voteAtBlock}-${index}`}
+              {...position}
+            />
+          ))}
+        </Flex>
+
+        {pendingPositions.length > MAX_ITEMS_PER_PAGE && (
+          <Pagination
+            totalPages={Math.ceil(pendingPositions.length / MAX_ITEMS_PER_PAGE)}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        )}
       </Flex>
     </Paper>
   )

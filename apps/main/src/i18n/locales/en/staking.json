@@ -69,6 +69,10 @@
   "gigaStaking.stake.toasts.success": "Giga staked {{ value, currency }}",
   "gigaStaking.unstake.toasts.submitted": "Giga unstaking {{ value, currency }}",
   "gigaStaking.unstake.toasts.success": "Giga unstaked {{ value, currency }}",
+  "gigaStaking.cancelPendingPosition.toasts.submitted": "Cancelling pending position {{ value, currency }}",
+  "gigaStaking.cancelPendingPosition.toasts.success": "Cancelled pending position {{ value, currency }}",
+  "gigaStaking.claimPendingPosition.toasts.submitted": "Claiming pending position {{ value, currency }}",
+  "gigaStaking.claimPendingPosition.toasts.success": "Claimed pending position {{ value, currency }}",
   "gigaStaking.tabs.stake": "Giga Stake",
   "gigaStaking.tabs.unstake": "Giga Unstake",
   "governance.title": "Your voting power",
@@ -164,6 +168,12 @@
   "referenda.item.removeVote": "Remove vote",
   "referenda.item.openOnSubSquare": "Open on SubSquare",
   "referenda.item.supportTooltip": "Support: {{ percentage }}",
+
+
+  "referenda.vote.modal.toasts.submitted": "Voting for referendum {{ referendumId }}",
+  "referenda.vote.modal.toasts.success": "Voted for referendum {{ referendumId }}",
+  "referenda.remove.toasts.submitted": "Removing vote for referendum {{ referendumId }}",
+  "referenda.remove.toasts.success": "Removed vote for referendum {{ referendumId }}",
 
 
   "referenda.vote.modal.title": "Referendum vote",

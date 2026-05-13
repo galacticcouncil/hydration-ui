@@ -45,16 +45,19 @@ export const VoteModal = ({ open, onClose, referendumId }: VoteFormProps) => {
         description={t("referenda.vote.modal.description")}
         align="center"
       />
-      <VoteForm referendumId={referendumId} />
+      <VoteForm referendumId={referendumId} onClose={onClose} />
     </Modal>
   )
 }
 
-const VoteForm = ({ referendumId }: Pick<VoteFormProps, "referendumId">) => {
+const VoteForm = ({
+  referendumId,
+  onClose,
+}: Pick<VoteFormProps, "referendumId" | "onClose">) => {
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const { form, totalHdxBalanceHuman, lockedDays, totaVotes, onSubmit } =
-    useVoteModal(referendumId)
+    useVoteModal(referendumId, onClose)
 
   const [voteType, multiplier] = form.watch(["voteType", "multiplier"])
   const showConvictionSlider = voteType === "aye" || voteType === "nay"
