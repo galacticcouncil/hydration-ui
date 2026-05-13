@@ -53,6 +53,7 @@ export type TradingViewChartProps = ChartTypeProps & {
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
+  timeframe?: string
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
@@ -67,6 +68,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
+  const elementsAmountRef = useRef<number | null>(null)
 
   useImperativeHandle(ref, () => ({
     resetZoom: () => {
@@ -128,15 +130,26 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       },
     )
 
-    chart.timeScale().fitContent()
-
-    const previousVisibleRange = chartRef.current?.timeScale().getVisibleRange()
+    const previousTimeScale = chartRef.current?.timeScale()
+    const previousVisibleRange = previousTimeScale?.getVisibleRange()
+    const shouldStickToRealtime = previousTimeScale
+      ? previousTimeScale.scrollPosition() <= 1
+      : true
 
     if (previousVisibleRange) {
       chart.timeScale().setVisibleRange(previousVisibleRange)
+      if (shouldStickToRealtime && elementsAmountRef.current !== data.length) {
+        chart.timeScale().scrollToRealTime()
+      }
+    } else if (elementsAmountRef.current !== data.length) {
+      chart.timeScale().fitContent()
+      chart.timeScale().scrollToRealTime()
+    } else {
+      chart.timeScale().fitContent()
     }
 
     chartRef.current = chart
+    elementsAmountRef.current = data.length
 
     if (
       crosshairRef.current &&

@@ -1,4 +1,4 @@
-import { EvmParachain } from "@galacticcouncil/xc-core"
+import { AssetRoute, EvmParachain } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { createContext, useContext } from "react"
 
@@ -20,6 +20,7 @@ type XcmContextValue = {
   readonly alerts: XcmAlert[]
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
+  readonly availableBridgeRoutes: AssetRoute[]
   readonly registryChain: EvmParachain
   readonly status: XcmTransferStatus
 }
@@ -34,6 +35,7 @@ export const XcmContext = createContext<XcmContextValue>({
   alerts: [],
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],
+  availableBridgeRoutes: [],
   registryChain: {} as EvmParachain,
   status: XcmTransferStatus.Default,
 })

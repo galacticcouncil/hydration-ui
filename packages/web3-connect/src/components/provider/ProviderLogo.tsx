@@ -9,7 +9,7 @@ type Props = {
   readonly size?: ThemeUICSSProperties["size"]
 }
 
-export const ProviderLogo = ({ wallet, className, size = 32 }: Props) => {
+export const ProviderLogo = ({ wallet, className, size = "xl" }: Props) => {
   return (
     <Image
       className={className}

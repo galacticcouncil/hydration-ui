@@ -70,12 +70,12 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
     >
       <Flex ml="auto" align="center" gap="s">
         {isLoading ? (
-          <Text fs="p6">
-            <Skeleton width={80} />
+          <Text fs="p6" lh={1.6}>
+            <Skeleton sx={{ width: "2xl" }} />
           </Text>
         ) : (
           <>
-            <Text fs="p6" color={getToken("text.low")}>
+            <Text fs="p6" lh={1.6} color={getToken("text.low")}>
               {t("balance")}:{" "}
               {balance
                 ? t("number", {
@@ -99,10 +99,10 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
           </>
         )}
       </Flex>
-      {isLoading ? (
-        <Skeleton width={100} height="100%" sx={{ ml: "auto" }} />
-      ) : (
-        <Stack>
+      <Stack height="2xl">
+        {isLoading ? (
+          <Skeleton height="100%" sx={{ ml: "auto", width: "3xl" }} />
+        ) : (
           <Box position="relative">
             <SNumberInput
               value={field.value}
@@ -125,8 +125,8 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
               </SNumberInputAddon>
             )}
           </Box>
-        </Stack>
-      )}
+        )}
+      </Stack>
     </Flex>
   )
 }

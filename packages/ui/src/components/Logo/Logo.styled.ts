@@ -34,6 +34,7 @@ export const SLogo = styled(Image, {
   sizes(size),
   css`
     position: relative;
+    flex-shrink: 0;
     border-radius: ${theme.radii.full};
   `,
 ])

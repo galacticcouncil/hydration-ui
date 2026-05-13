@@ -48,6 +48,10 @@ const defaulStyles = createStyles(
 
     transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
 
+    &:is(:link) {
+      text-decoration: none;
+    }
+
     & > svg {
       width: 1em;
       height: 1em;

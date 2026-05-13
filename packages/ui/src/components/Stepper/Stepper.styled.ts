@@ -10,9 +10,6 @@ import { mq } from "@/theme"
 export const SStepperContainer = styled(Box)`
   margin: 0 auto;
   width: 100%;
-  ${mq("sm")} {
-    padding-bottom: ${({ theme }) => theme.space.xl};
-  }
 `
 
 export const SStepContainer = styled(Box)`
@@ -38,19 +35,14 @@ export const SStepLabel = styled(Text)(
   `,
 )
 
-export const SDesktopContainer = styled(Box)(
-  ({ maxWidth }) => css`
+export const SExpandedStepperLayout = styled(Box)(
+  ({ theme, maxWidth }) => css`
+    display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
 
     margin: 0 auto;
-
-    display: none;
-
-    ${mq("sm")} {
-      display: flex;
-    }
 
     & > div {
       position: relative;
@@ -63,13 +55,24 @@ export const SDesktopContainer = styled(Box)(
     & > div:last-of-type > p {
       right: ${!maxWidth || maxWidth === "100%" ? "0" : "auto"};
     }
+
+    ${mq("sm")} {
+      padding-bottom: ${theme.space.xl};
+    }
   `,
 )
 
+export const SCompactStepperLayout = styled(Flex)`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.space.base};
+`
+
 export const SCircle = styled(Box)<{ state: StepState }>(
   ({ theme, state }) => css`
-    width: 24px;
-    height: 24px;
+    width: ${theme.sizes.xl};
+    height: ${theme.sizes.xl};
 
     font-size: ${theme.fontSizes.p4};
     font-family: ${theme.fontFamilies1.primary};
@@ -105,18 +108,6 @@ export const SStepperLine = styled(Box)(
     height: 1px;
     flex-grow: 1;
     background: ${theme.details.separators};
-    margin: 0 8px;
+    margin: 0 ${theme.space.base};
   `,
 )
-
-export const SMobileContainer = styled(Flex)`
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-
-  display: flex;
-
-  ${mq("sm")} {
-    display: none;
-  }
-`

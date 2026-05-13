@@ -2,6 +2,10 @@ import { ThemeToken } from "@galacticcouncil/ui/theme"
 
 const XC_SCAN_PROTOCOLS: Record<string, { label: string; color: ThemeToken }> =
   {
+    basejump: {
+      label: "Basejump",
+      color: "colors.skyBlue.600",
+    },
     xcm: {
       label: "XCM",
       color: "colors.coral.400",

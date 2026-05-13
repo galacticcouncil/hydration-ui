@@ -80,7 +80,10 @@ export const useWeb3EagerEnable = (enabled = true) => {
           await enable(wallet.provider)
 
           if (isSubstrate && account) {
-            wallet.setSigner(account.address)
+            const signerAddress = account.isMultisig
+              ? (account.multisigSignerAddress ?? account.address)
+              : account.address
+            wallet.setSigner(signerAddress)
           }
         }
       }

@@ -49,9 +49,9 @@ type ModalOverlayProps = React.ComponentPropsWithoutRef<
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Overlay>>
 }
 
-const ModalOverlay: FC<ModalOverlayProps & { animationDurationMs?: number }> = (
-  props,
-) => <SModalOverlay ref={props.ref} {...props} />
+const ModalOverlay: FC<
+  ModalOverlayProps & { animationDurationMs?: number; isBlurred?: boolean }
+> = (props) => <SModalOverlay ref={props.ref} {...props} />
 
 type ModalContentProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
@@ -70,7 +70,10 @@ const ModalContent: FC<ModalContentProps> = ({
   ...props
 }) => (
   <ModalPortal forceMount={forceMount}>
-    <ModalOverlay animationDurationMs={animationDurationMs} />
+    <ModalOverlay
+      animationDurationMs={animationDurationMs}
+      isBlurred={!!topContent}
+    />
     <SModalWrapper
       onClick={(e) => e.stopPropagation()}
       animationDurationMs={animationDurationMs}

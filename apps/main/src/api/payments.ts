@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { AccountId, compactNumber } from "@polkadot-api/substrate-bindings"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { FixedSizeBinary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -91,7 +91,7 @@ export const useAccountFeePaymentAssetId = (
 
   return usePapiValue(
     "MultiTransactionPayment.AccountCurrencyMap",
-    [address, "best"],
+    [address, { at: "best" }],
     {
       select: (assetId) => assetId || Number(NATIVE_ASSET_ID),
       ...options,
@@ -160,10 +160,10 @@ export function getEvmAccountClaimMessage(
   assetId: string,
 ): Uint8Array {
   const prefixU8a = new TextEncoder().encode(EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX)
-  const compactPrefix = mergeUint8(
+  const compactPrefix = mergeUint8([
     compactNumber.enc(prefixU8a.length),
     prefixU8a,
-  )
+  ])
 
   const publicKey = AccountId().enc(address)
 
@@ -171,7 +171,7 @@ export function getEvmAccountClaimMessage(
   new DataView(assetIdBuffer).setUint32(0, Number(assetId), true)
   const assetIdU8a = new Uint8Array(assetIdBuffer)
 
-  return mergeUint8(compactPrefix, publicKey, assetIdU8a)
+  return mergeUint8([compactPrefix, publicKey, assetIdU8a])
 }
 
 export const useSetFeePaymentAsset = (options: TransactionOptions) => {
@@ -204,7 +204,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
           return papi.tx.EVMAccounts.claim_account({
             account: account.address,
             asset_id: Number(assetId),
-            signature: MultiSignature.Sr25519(new FixedSizeBinary(signature)),
+            signature: MultiSignature.Sr25519(Binary.toHex(signature)),
           })
         }
 

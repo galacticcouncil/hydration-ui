@@ -1,5 +1,5 @@
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"

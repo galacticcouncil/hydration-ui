@@ -1,4 +1,4 @@
-import { QueryClient, queryOptions } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { number, string, z } from "zod/v4"
@@ -215,17 +215,21 @@ export const referendumInfoQuery = (referendumIndex: number) =>
 
 export const openGovUnlockedTokensQuery = (
   rpc: TProviderContext,
-  queryClient: QueryClient,
   address: string,
+  indexerUrl: string,
 ) =>
   queryOptions({
     queryKey: ["openGovUnlockedTokens", address],
     queryFn: async () => {
       const [accountVotes, bestNumber, subsquareAccountVotes] =
         await Promise.all([
-          queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
-          queryClient.ensureQueryData(bestNumberQuery(rpc)),
-          queryClient.ensureQueryData(accountVotesQuery(address)),
+          rpc.queryClient.ensureQueryData(
+            accountOpenGovVotesQuery(rpc, address),
+          ),
+          rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
+          rpc.queryClient.ensureQueryData(
+            accountVotesQuery(address, indexerUrl),
+          ),
         ])
       if (!bestNumber) {
         throw new Error("Best number not found")

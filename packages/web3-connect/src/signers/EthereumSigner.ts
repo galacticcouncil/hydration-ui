@@ -83,7 +83,8 @@ export class EthereumSigner {
   }
 
   formatError = (err: unknown): string => {
-    if (err instanceof BaseError) return err.name
+    if (err instanceof BaseError)
+      return `${err.name}: ${err.details || err.shortMessage}`
     if (err instanceof Error) return err.message
     return "Unknown error"
   }

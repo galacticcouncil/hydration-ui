@@ -24,6 +24,10 @@ const normalize = css`
     color: unset;
   }
 
+  strong {
+    font-weight: 600;
+  }
+
   img,
   picture,
   video,

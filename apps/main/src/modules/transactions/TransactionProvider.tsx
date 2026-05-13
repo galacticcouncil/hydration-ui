@@ -1,4 +1,5 @@
 import { DryRunError, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useReducer } from "react"
@@ -80,6 +81,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
+  const { account } = useAccount()
 
   const transaction = useWrapTransaction(config)
 
@@ -162,6 +164,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
       nonce:
+        !account?.isMultisig &&
         transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
           ? nonce
           : undefined,

@@ -12,6 +12,7 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
+    "@galacticcouncil/indexer": "*",
     "@galacticcouncil/ui": "*",
     "@galacticcouncil/utils": "*",
     "@mysten/wallet-standard": "^0.19.9",

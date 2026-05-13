@@ -27,13 +27,12 @@ export const XcScanJourneyList = ({ data, pageSize = 10 }: Props) => {
         {paginatedData.map((journey) => (
           <XcJourneyCard key={journey.correlationId} {...journey} />
         ))}
+        <Pagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
       </Stack>
-
-      <Pagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-      />
     </Stack>
   )
 }

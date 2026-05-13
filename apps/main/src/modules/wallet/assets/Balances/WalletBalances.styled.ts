@@ -8,7 +8,7 @@ export const SWalletBalances = styled.div(
 
     min-height: 18.25rem;
     padding: ${theme.containers.paddings.secondary};
-    border-radius: 16px;
+    border-radius: ${theme.radii.xl};
     border: 1px solid ${theme.details.borders};
 
     background: ${theme.surfaces.containers.high.primary};

@@ -1,3 +1,4 @@
+import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { isNonNullish, reverse } from "remeda"
 
@@ -15,9 +16,9 @@ export type ProviderIconsProps = {
 
 const DISPLAY_THRESHOLD = 4
 
-const getImgSize = (count: number) => {
-  if (count >= 4) return 28
-  return 32
+const getImgSize = (count: number): ThemeUICSSProperties["size"] => {
+  if (count >= 4) return "l"
+  return "xl"
 }
 
 const getFilteredWallets = (providers: WalletProviderType[]) => {

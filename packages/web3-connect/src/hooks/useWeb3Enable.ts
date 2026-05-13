@@ -20,6 +20,11 @@ type UseWeb3EnableOptions = {
   disconnectOnError?: boolean
 }
 
+const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
+  WalletProviderType.ExternalWallet,
+  WalletProviderType.WalletConnect,
+]
+
 export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
   const { setStatus, setError, disconnect, setAccounts } = useWeb3Connect(
     useShallow(pick(["setStatus", "setError", "disconnect", "setAccounts"])),
@@ -52,7 +57,7 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
           }),
         )
         .filter(
-          ({ provider }) => provider !== WalletProviderType.ExternalWallet,
+          ({ provider }) => !ADDRESS_BOOK_PROVIDER_BLACKLIST.includes(provider),
         )
 
       addToAddressBook(addresses)

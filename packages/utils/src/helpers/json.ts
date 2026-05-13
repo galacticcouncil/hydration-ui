@@ -12,6 +12,11 @@ export interface TypeValueNode extends JsonObject {
   value: JsonValue
 }
 
+export interface TypeNode extends JsonObject {
+  type: string
+  value: never
+}
+
 function isTypeValueNode(value: JsonValue): value is TypeValueNode {
   return (
     isObjectType(value) &&
@@ -19,6 +24,10 @@ function isTypeValueNode(value: JsonValue): value is TypeValueNode {
     typeof value.type === "string" &&
     "value" in value
   )
+}
+
+function isTypeNode(value: JsonValue): value is TypeNode {
+  return isObjectType(value) && "type" in value && !("value" in value)
 }
 
 function collapseBigIntArray(
@@ -61,6 +70,12 @@ export function formatTypeValueJson(input: JsonValue): JsonValue {
         [`${input.type}.${nestedValue.type}`]: formatTypeValueJson(
           nestedValue.value,
         ),
+      }
+    }
+
+    if (isTypeNode(nestedValue)) {
+      return {
+        [`${input.type}.${nestedValue.type}`]: {},
       }
     }
 

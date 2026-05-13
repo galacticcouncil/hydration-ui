@@ -54,16 +54,23 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   const registryId = registryChain.getBalanceAssetId(asset)
   const registryAsset = getAsset(registryId.toString())
 
+  const meta = registryAsset
+    ? {
+        symbol: registryAsset.symbol,
+        name: registryAsset.name,
+      }
+    : {
+        symbol: asset.originSymbol,
+        name: asset.originSymbol,
+      }
+
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
       <Flex align="start" gap="base">
         {chain && <XAssetLogo asset={asset} chain={chain} />}
 
         <Text truncate as="div">
-          <AssetLabel
-            symbol={registryAsset?.symbol || asset.originSymbol}
-            name={registryAsset?.name}
-          />
+          <AssetLabel symbol={meta.symbol} name={meta.name} />
           {route && isBridgeAssetRoute(route) && (
             <AssetBridgeTags route={route} />
           )}
@@ -72,6 +79,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
       <Text
         fs="p4"
         fw={500}
+        as="div"
         color={
           isBigInt(balance?.amount) && balance.amount > 0n
             ? getToken("text.high")

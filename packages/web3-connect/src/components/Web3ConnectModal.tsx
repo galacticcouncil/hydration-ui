@@ -1,5 +1,7 @@
+import { hydration } from "@galacticcouncil/descriptors"
 import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { Modal } from "@galacticcouncil/ui/components"
+import { TypedApi } from "polkadot-api"
 import { FC, useMemo } from "react"
 import { I18nextProvider } from "react-i18next"
 import { pick } from "remeda"
@@ -8,6 +10,9 @@ import { useShallow } from "zustand/shallow"
 import { AccountSelectContent } from "@/components/content/AccountSelectContent"
 import { ErrorContent } from "@/components/content/ErrorContent"
 import { ExternalWalletContent } from "@/components/content/ExternalWalletContent"
+import { MultisigConfigSelectContent } from "@/components/content/MultisigConfigSelectContent"
+import { MultisigSetupContent } from "@/components/content/MultisigSetupContent"
+import { MultisigSignerSelectContent } from "@/components/content/MultisigSignerSelectContent"
 import { ProviderSelectContent } from "@/components/content/ProviderSelectContent"
 import { AccountActionsFooter } from "@/components/footer/AccountActionsFooter"
 import { Web3ConnectModalPage } from "@/config/modal"
@@ -27,10 +32,14 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
   [Web3ConnectModalPage.ExternalWallet]: <ExternalWalletContent />,
   [Web3ConnectModalPage.AccountSelect]: <AccountSelectContent />,
   [Web3ConnectModalPage.Error]: <ErrorContent />,
+  [Web3ConnectModalPage.MultisigSetup]: <MultisigSetupContent />,
+  [Web3ConnectModalPage.MultisigConfigSelect]: <MultisigConfigSelectContent />,
+  [Web3ConnectModalPage.MultisigSignerSelect]: <MultisigSignerSelectContent />,
 }
 
 type ControlledProps = {
   readonly squidSdk: SquidSdk
+  readonly papi: TypedApi<typeof hydration>
   readonly open: boolean
   readonly mode: WalletMode
   readonly onOpenChange: (open: boolean) => void
@@ -39,12 +48,13 @@ type ControlledProps = {
 
 type UncontrolledProps = {
   readonly squidSdk: SquidSdk
+  readonly papi: TypedApi<typeof hydration>
 }
 
 type Props = ControlledProps | UncontrolledProps
 
 const Web3ConnectModalContent: FC<Props> = (props) => {
-  const { squidSdk } = props
+  const { squidSdk, papi } = props
 
   const isControlled =
     "open" in props &&
@@ -69,15 +79,21 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
       page,
       setPage,
       squidSdk,
+      papi,
       onAccountSelect,
       mode,
     }),
-    [page, setPage, squidSdk, onAccountSelect, isControlled, mode],
+    [page, setPage, squidSdk, onAccountSelect, isControlled, mode, papi],
   )
   return (
     <Web3ConnectProvider value={context}>
       {contentMap[page]}
-      {page !== Web3ConnectModalPage.ProviderSelect && <AccountActionsFooter />}
+      {![
+        Web3ConnectModalPage.ProviderSelect,
+        Web3ConnectModalPage.MultisigSetup,
+        Web3ConnectModalPage.MultisigConfigSelect,
+        Web3ConnectModalPage.MultisigSignerSelect,
+      ].includes(page) && <AccountActionsFooter />}
     </Web3ConnectProvider>
   )
 }

@@ -53,21 +53,12 @@ export const useAddressStore = create<AddressStore>()(
       ...defaultState,
 
       add: (address) =>
-        set((state) => {
-          const addresses = Array.isArray(address) ? address : [address]
-          const addressesSet = new Set(state.addresses.map((a) => a.publicKey))
-          const uniqueAddresses = addresses.filter(
-            (a) => !addressesSet.has(a.publicKey),
-          )
-
-          if (!uniqueAddresses.length) {
-            return { addresses: state.addresses }
-          }
-
-          return {
-            addresses: state.addresses.concat(uniqueAddresses),
-          }
-        }),
+        set((state) => ({
+          addresses: mergeAddresses(
+            state.addresses,
+            Array.isArray(address) ? address : [address],
+          ),
+        })),
 
       edit: (address) =>
         set((state) => ({
@@ -97,6 +88,29 @@ export const useAddressStore = create<AddressStore>()(
     }),
   ),
 )
+
+function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
+  const incomingByKey = new Map(incoming.map((a) => [a.publicKey, a]))
+  const existingKeys = new Set(existing.map((a) => a.publicKey))
+
+  const updated = existing.map((entry) => {
+    const match = incomingByKey.get(entry.publicKey)
+    const shouldUpdateName =
+      match && !entry.isCustom && entry.name !== match.name
+
+    if (shouldUpdateName) return { ...entry, name: match.name }
+    return entry
+  })
+
+  const added = [...incomingByKey.values()].filter(
+    (a) => !existingKeys.has(a.publicKey),
+  )
+
+  const hasChanges =
+    added.length > 0 || updated.some((a, i) => a !== existing[i])
+
+  return hasChanges ? [...updated, ...added] : existing
+}
 
 function migrateLegacyAddressBookV2(persistedState: unknown): State {
   const parsed = stateSchemaV2.safeParse(persistedState)

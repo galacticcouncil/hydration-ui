@@ -13,13 +13,15 @@
     "lint:fix": "eslint src --fix",
     "codegen:indexer": "graphql-codegen --config src/indexer/codegen.ts",
     "codegen:squid": "graphql-codegen --config src/squid/codegen.ts",
-    "codegen:snowbridge": "graphql-codegen --config src/snowbridge/codegen.ts"
+    "codegen:snowbridge": "graphql-codegen --config src/snowbridge/codegen.ts",
+    "codegen:multix": "graphql-codegen --config src/multix/codegen.ts"
   },
   "exports": {
     "./indexer": "./src/indexer/index.ts",
     "./squid": "./src/squid/index.ts",
     "./squid/lib/*": "./src/squid/lib/*.ts",
-    "./snowbridge": "./src/snowbridge/index.ts"
+    "./snowbridge": "./src/snowbridge/index.ts",
+    "./multix": "./src/multix/index.ts"
   },
   "dependencies": {
     "graphql": "^16.11.0",

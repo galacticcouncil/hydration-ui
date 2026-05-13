@@ -1,6 +1,7 @@
 import Big, { BigSource } from "big.js"
 import {
   differenceInSeconds,
+  Duration,
   format as formatDateFns,
   FormatDistanceToken,
   formatDuration,
@@ -323,11 +324,23 @@ export const formatRelativeTime = (
     return "Now"
   }
 
+  const format: (keyof Duration)[] = (() => {
+    switch (true) {
+      case diffInSec < 60:
+        return ["seconds"]
+      case diffInSec < 24 * 60 * 60:
+        return ["hours", "minutes"]
+      case !!duration.years:
+        return ["years"]
+      case !!duration.months:
+        return ["months"]
+      default:
+        return ["days"]
+    }
+  })()
+
   const formatted = formatDuration(duration, {
-    format:
-      diffInSec < 60
-        ? ["seconds"]
-        : ["years", "months", "days", "hours", "minutes"],
+    format,
     locale: options?.format === "short" ? shortEnLocale : undefined,
   })
 

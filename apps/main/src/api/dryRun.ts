@@ -1,25 +1,20 @@
+import { safeStringify } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import { Enum } from "polkadot-api"
 
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
-import { getPapiTransactionCallData } from "@/modules/transactions/utils/tx"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const papiDryRunErrorQuery = (
-  { papi, dryRunErrorDecoder, papiCompatibilityToken }: TProviderContext,
+  { papi, dryRunErrorDecoder }: TProviderContext,
   address: string,
   tx: AnyTransaction,
   debug?: boolean,
 ) =>
   queryOptions({
-    queryKey: [
-      "dryRun",
-      "papi",
-      address,
-      getPapiTransactionCallData(tx, papiCompatibilityToken),
-    ],
+    queryKey: ["dryRun", "papi", address, safeStringify(tx.decodedCall)],
     queryFn: async () => {
       try {
         if (!isPapiTransaction(tx)) {

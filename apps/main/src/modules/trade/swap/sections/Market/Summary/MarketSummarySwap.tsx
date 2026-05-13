@@ -1,6 +1,6 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
+import { Trade } from "@galacticcouncil/sdk-next/sor"
 import {
   Box,
   CollapsibleContent,

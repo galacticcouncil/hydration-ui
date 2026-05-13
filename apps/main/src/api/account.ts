@@ -62,7 +62,7 @@ export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
   const { isConnected, account } = useAccount()
   const address = isConnected ? account.address : ""
 
-  return usePapiValue("System.Account", [address, "best"], options)
+  return usePapiValue("System.Account", [address, { at: "best" }], options)
 }
 
 export const omnipoolPositionsKey = (address: string) => [

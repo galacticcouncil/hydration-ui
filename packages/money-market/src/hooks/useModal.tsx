@@ -36,6 +36,7 @@ export enum ModalType {
 
 export interface ModalArgsType {
   underlyingAsset?: string
+  symbol?: string
   support?: boolean
   power?: string
   icon?: string
@@ -54,7 +55,7 @@ export type TxStateType = {
 }
 
 export interface ModalContextType<T extends ModalArgsType> {
-  openSupply: (underlyingAsset: string) => void
+  openSupply: (underlyingAsset: string, symbol: string) => void
   openWithdraw: (underlyingAsset: string) => void
   openBorrow: (underlyingAsset: string) => void
   openRepay: (
@@ -104,9 +105,9 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
   return (
     <ModalContext.Provider
       value={{
-        openSupply: (underlyingAsset) => {
+        openSupply: (underlyingAsset, symbol) => {
           setType(ModalType.Supply)
-          setArgs({ underlyingAsset })
+          setArgs({ underlyingAsset, symbol })
         },
         openWithdraw: (underlyingAsset) => {
           setType(ModalType.Withdraw)

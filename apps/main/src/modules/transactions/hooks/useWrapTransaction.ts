@@ -1,6 +1,18 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  safeConvertAddressSS58,
+  safeConvertPublicKeyToSS58,
+} from "@galacticcouncil/utils"
+import {
+  useAccount,
+  useActiveMultisigConfig,
+} from "@galacticcouncil/web3-connect"
+import {
+  AccountId,
+  sortMultisigSignatories,
+} from "@polkadot-api/substrate-bindings"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { toHex } from "polkadot-api/utils"
+import { useCallback, useMemo } from "react"
 import { isBigInt } from "remeda"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
@@ -15,7 +27,7 @@ import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"
 
-export const useWrapTransaction = (
+export const useWrapEvmTransaction = (
   transaction: SingleTransaction,
 ): SingleTransaction => {
   const rpc = useRpcProvider()
@@ -63,4 +75,72 @@ export const useWrapTransaction = (
 
     return transaction
   }, [transaction, isEvmAccountBound, papi])
+}
+
+const useWrapMultisigTransaction = () => {
+  const { papi } = useRpcProvider()
+  const config = useActiveMultisigConfig()
+
+  const wrapInMultisig = useCallback(
+    (
+      transaction: SingleTransaction,
+      multisigSignerAddress: string,
+    ): SingleTransaction => {
+      if (!config) {
+        return transaction
+      }
+
+      const tx = isPapiTransaction(transaction.tx)
+        ? transaction.tx
+        : isEvmCall(transaction.tx)
+          ? transformEvmCallToPapiTx(papi, transaction.tx)
+          : null
+
+      if (!tx) {
+        return transaction
+      }
+
+      const otherSignatories = config.signers.filter(
+        (s) =>
+          safeConvertAddressSS58(s) !==
+          safeConvertAddressSS58(multisigSignerAddress),
+      )
+
+      const sortedOtherSignatories = sortMultisigSignatories(
+        otherSignatories.map((s) => AccountId().enc(s)),
+      )
+
+      return {
+        ...transaction,
+        tx: papi.tx.Multisig.as_multi({
+          threshold: config.threshold,
+          other_signatories: sortedOtherSignatories.map((s) =>
+            safeConvertPublicKeyToSS58(toHex(s)),
+          ),
+          maybe_timepoint: undefined,
+          call: tx.decodedCall,
+          max_weight: {
+            ref_time: 0n,
+            proof_size: 0n,
+          },
+        }),
+      }
+    },
+    [config, papi],
+  )
+
+  return { wrapInMultisig }
+}
+
+export const useWrapTransaction = (
+  transaction: SingleTransaction,
+): SingleTransaction => {
+  const { account } = useAccount()
+  const { wrapInMultisig } = useWrapMultisigTransaction()
+
+  const tx = useWrapEvmTransaction(transaction)
+
+  return account?.isMultisig && account.multisigSignerAddress
+    ? wrapInMultisig(tx, account.multisigSignerAddress)
+    : tx
 }

@@ -7,12 +7,14 @@ import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
 import { getStepState, StepState } from "@/components/Stepper/Stepper.utils"
 import { Text } from "@/components/Text"
+import { Tooltip } from "@/components/Tooltip"
+import { useBreakpoints } from "@/theme"
 import { getToken } from "@/utils"
 
 import {
   SCircle,
-  SDesktopContainer,
-  SMobileContainer,
+  SCompactStepperLayout,
+  SExpandedStepperLayout,
   SStepContainer,
   SStepLabel,
   SStepperContainer,
@@ -22,16 +24,19 @@ import {
 export type StepperProps = Omit<BoxProps, "width"> & {
   steps: Array<string>
   activeStepIndex: number
+  compact?: "auto" | boolean
 }
 
-type StepProps = {
+type StepProps = BoxProps & {
   label: string
   state: StepState
   number: number
 }
 
-const Step: React.FC<StepProps> = ({ label, state, number }) => (
-  <SStepContainer>
+const AUTO_COMPACT_STEP_THRESHOLD = 5
+
+const Step: React.FC<StepProps> = ({ label, state, number, ...props }) => (
+  <SStepContainer {...props}>
     <SCircle state={state}>
       {state === StepState.Done ? (
         <Icon component={CheckIcon} size="s" />
@@ -54,48 +59,59 @@ const Step: React.FC<StepProps> = ({ label, state, number }) => (
 export const Stepper: React.FC<StepperProps> = ({
   steps,
   activeStepIndex,
+  compact = "auto",
   maxWidth,
   className,
   ...props
 }) => {
+  const { isMobile } = useBreakpoints()
   const totalSteps = steps.length
+
+  const isCompact =
+    compact === "auto"
+      ? isMobile || totalSteps >= AUTO_COMPACT_STEP_THRESHOLD
+      : compact
 
   const currentIndex = clamp(activeStepIndex, {
     min: 0,
-    max: totalSteps - 1,
+    max: Math.max(totalSteps - 1, 0),
   })
 
-  const currentLabel = steps[currentIndex]
+  const currentLabel = steps[currentIndex] ?? ""
 
   return (
     <SStepperContainer className={className} {...props}>
-      <SDesktopContainer maxWidth={maxWidth}>
-        {steps.map((label, index) => (
-          <Fragment key={index}>
-            <Step
-              label={label}
-              number={index + 1}
-              state={getStepState(index, activeStepIndex)}
-            />
-            {index < steps.length - 1 && <SStepperLine />}
-          </Fragment>
-        ))}
-      </SDesktopContainer>
-      <SMobileContainer>
-        <Text color={getToken("text.high")} fs="p5" fw={500} truncate>
-          {currentLabel}
-        </Text>
-        <Flex gap="s">
+      {isCompact ? (
+        <SCompactStepperLayout>
+          <Text color={getToken("text.high")} fs="p5" fw={500} truncate>
+            {currentIndex + 1}. {currentLabel}
+          </Text>
+          <Flex gap="s">
+            {steps.map((label, index) => (
+              <Tooltip key={index} text={label} side="top" asChild>
+                <Step
+                  label={label}
+                  number={index + 1}
+                  state={getStepState(index, activeStepIndex)}
+                />
+              </Tooltip>
+            ))}
+          </Flex>
+        </SCompactStepperLayout>
+      ) : (
+        <SExpandedStepperLayout maxWidth={maxWidth}>
           {steps.map((label, index) => (
-            <Step
-              key={index}
-              label={label}
-              number={index + 1}
-              state={getStepState(index, activeStepIndex)}
-            />
+            <Fragment key={index}>
+              <Step
+                label={label}
+                number={index + 1}
+                state={getStepState(index, activeStepIndex)}
+              />
+              {index < steps.length - 1 && <SStepperLine />}
+            </Fragment>
           ))}
-        </Flex>
-      </SMobileContainer>
+        </SExpandedStepperLayout>
+      )}
     </SStepperContainer>
   )
 }

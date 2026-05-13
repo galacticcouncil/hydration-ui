@@ -135,6 +135,7 @@ export type XcmTransferArgs = {
   readonly destAddress: string
   readonly destAsset: string
   readonly destChain: string
+  readonly bridgeTag?: string
 }
 
 export const xcmTransferQuery = (
@@ -146,6 +147,7 @@ export const xcmTransferQuery = (
     destAddress,
     destChain,
     destAsset,
+    bridgeTag,
   }: XcmTransferArgs,
   options?: UseQueryOptions<Transfer>,
 ) => {
@@ -162,17 +164,28 @@ export const xcmTransferQuery = (
       destAsset,
       srcChain,
       destChain,
+      bridgeTag,
     ],
-    queryFn: () =>
-      TransferBuilder(wallet)
+    queryFn: async () => {
+      const builder = TransferBuilder(wallet)
         .withAsset(srcAsset)
         .withSource(srcChain)
         .withDestination(destChain)
-        .build({
-          srcAddress: srcAddress,
-          dstAddress: destAddress,
-          dstAsset: destAsset,
-        }),
+
+      // Do not pass invalid/stale dest asset
+      const validDstAsset = builder.routes.some(
+        (r) => r.destination.asset.key === destAsset,
+      )
+        ? destAsset
+        : undefined
+
+      return builder.build({
+        srcAddress,
+        dstAddress: destAddress,
+        dstAsset: validDstAsset,
+        tag: bridgeTag,
+      })
+    },
     enabled:
       !!srcAddress &&
       !!destAddress &&

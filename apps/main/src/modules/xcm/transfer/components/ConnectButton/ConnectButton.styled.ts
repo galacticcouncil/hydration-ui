@@ -12,6 +12,7 @@ export const SConnectButton = styled(Button)(
     line-height: 1;
     white-space: nowrap;
     height: auto;
+    width: max-content;
 
     ${mq("sm")} {
       font-size: ${theme.fontSizes.p5};

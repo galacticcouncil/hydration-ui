@@ -1,6 +1,7 @@
 import {
   Box,
   Flex,
+  FlexProps,
   Skeleton,
   Text,
   TextProps,
@@ -19,6 +20,7 @@ export type SummaryRowProps = {
   className?: string
   loading?: boolean
   onClick?: MouseEventHandler
+  align?: FlexProps["align"]
 }
 
 export const SummaryRow = ({
@@ -29,6 +31,7 @@ export const SummaryRow = ({
   className,
   loading,
   onClick,
+  align = "center",
 }: SummaryRowProps) => {
   const { isMobile } = useBreakpoints()
 
@@ -59,7 +62,7 @@ export const SummaryRow = ({
   const row = (
     <Flex
       sx={{ ...(onClick && { cursor: "pointer" }) }}
-      align="center"
+      align={align}
       justify="space-between"
       my="base"
       className={className}

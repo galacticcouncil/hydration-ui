@@ -4,13 +4,13 @@ import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SWalletRewardsSection = styled(Stack)(
   ({ theme }) => css`
-    padding-inline: 20px;
-    padding-block: 16px;
-    border-radius: 16px;
+    padding-inline: ${theme.containers.paddings.primary};
+    padding-block: ${theme.containers.paddings.secondary};
+    border-radius: ${theme.radii.xl};
     border: 1px solid ${theme.details.separators};
 
     ${mq("sm")} {
-      padding-block: 20px;
+      padding-block: ${theme.containers.paddings.primary};
     }
   `,
 )

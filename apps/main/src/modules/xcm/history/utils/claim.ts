@@ -28,7 +28,13 @@ import {
   SuiCall,
   SuiClaim,
 } from "@galacticcouncil/xc-sdk"
-import { minutesToMilliseconds } from "date-fns"
+import {
+  addMilliseconds,
+  fromUnixTime,
+  hoursToMilliseconds,
+  isWithinInterval,
+  minutesToMilliseconds,
+} from "date-fns"
 import { isString } from "remeda"
 
 import {
@@ -40,13 +46,16 @@ import {
   XcJourneyWhStop,
 } from "@/modules/xcm/history/utils/journey"
 
-const CLAIM_THRESHOLD = minutesToMilliseconds(5)
+const CLAIM_MIN_AGE_MS = minutesToMilliseconds(5) // 5 minutes
+const CLAIM_MAX_AGE_MS = hoursToMilliseconds(24) * 7 * 2 // 2 weeks
 
-function hasExceededClaimThreshold(emittedAt: number) {
-  const now = Date.now()
-  const emittedAtMs = emittedAt * 1000
-  const deadline = emittedAtMs + CLAIM_THRESHOLD
-  return now >= deadline
+function isWithinClaimWindow(emittedAtSeconds: number) {
+  const emittedAt = fromUnixTime(emittedAtSeconds)
+
+  return isWithinInterval(new Date(), {
+    start: addMilliseconds(emittedAt, CLAIM_MIN_AGE_MS),
+    end: addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS),
+  })
 }
 
 export function isJourneyClaimable(journey: XcJourney): boolean {
@@ -59,7 +68,7 @@ export function isJourneyClaimable(journey: XcJourney): boolean {
   const asset = getTransferAsset(journey)
   if (!asset) return false
 
-  return hasExceededClaimThreshold(vaaHeader.timestamp)
+  return isWithinClaimWindow(vaaHeader.timestamp)
 }
 
 export function getClaimableJourneys(journeys: XcJourney[]) {

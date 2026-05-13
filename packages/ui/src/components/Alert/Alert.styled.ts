@@ -1,7 +1,7 @@
 import { Icon } from "@/components/Icon"
 import { createVariants, css, styled } from "@/utils"
 
-export type AlertVariant = "info" | "error" | "warning"
+export type AlertVariant = "info" | "error" | "success" | "warning"
 
 const containerVariants = createVariants<AlertVariant>((theme) => ({
   info: css`
@@ -9,6 +9,9 @@ const containerVariants = createVariants<AlertVariant>((theme) => ({
   `,
   error: css`
     background: ${theme.accents.danger.dimBg};
+  `,
+  success: css`
+    background: ${theme.accents.success.dim};
   `,
   warning: css`
     background: ${theme.accents.alert.dimBg};
@@ -41,6 +44,9 @@ const textColorVariants = createVariants<AlertVariant>((theme) => ({
   `,
   error: css`
     color: ${theme.accents.danger.secondary};
+  `,
+  success: css`
+    color: ${theme.accents.success.emphasis};
   `,
   warning: css`
     color: ${theme.accents.alertAlt.primary};

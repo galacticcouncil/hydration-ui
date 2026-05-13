@@ -1,5 +1,6 @@
 export * from "./address"
 export * from "./array"
+export * from "./basejumpscan"
 export * from "./big"
 export * from "./device"
 export * from "./evm"

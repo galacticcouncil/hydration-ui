@@ -11,8 +11,8 @@ import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 
 const QUERY_MAP = {
-  "Uniques.Account": (query) => query.Uniques.Account,
   "OTC.Orders": (query) => query.OTC.Orders,
+  "Uniques.Account": (query) => query.Uniques.Account,
 } as const satisfies Record<string, (query: Papi["query"]) => unknown>
 
 type QueryKey = keyof typeof QUERY_MAP

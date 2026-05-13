@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { useMemo } from "react"
 
@@ -6,6 +7,7 @@ import { createToastProcessorFn } from "@/modules/transactions/utils/toasts"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useTransactionToastProcessorFn = () => {
+  const { account } = useAccount()
   const queryClient = useQueryClient()
   const indexerClient = useIndexerClient()
   const snowbridgeClient = useSnowbridgeClient()
@@ -13,7 +15,13 @@ export const useTransactionToastProcessorFn = () => {
 
   return useMemo(
     () =>
-      createToastProcessorFn(queryClient, indexerClient, snowbridgeClient, evm),
-    [queryClient, indexerClient, snowbridgeClient, evm],
+      createToastProcessorFn(
+        account?.address ?? "",
+        queryClient,
+        indexerClient,
+        snowbridgeClient,
+        evm,
+      ),
+    [account?.address, queryClient, indexerClient, snowbridgeClient, evm],
   )
 }

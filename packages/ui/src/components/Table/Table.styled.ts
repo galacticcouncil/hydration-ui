@@ -79,6 +79,7 @@ const borderStyles = createStyles(
 export const TableContainer = styled(Box)`
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   position: relative;
 `
 

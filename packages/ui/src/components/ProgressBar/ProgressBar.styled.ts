@@ -8,13 +8,9 @@ import { createVariants, css } from "@/utils"
 const containerSizes = createVariants<ProgressBarSize>(
   ({ containers, space, lineHeights }) => ({
     small: css`
-      gap: ${space.m};
-
-      padding-block: ${space.s};
+      padding-block: ${space.xs};
     `,
     medium: css`
-      gap: ${space.base};
-
       padding-block: ${space.s};
 
       & ${SProgressBar} {
@@ -27,8 +23,6 @@ const containerSizes = createVariants<ProgressBarSize>(
       }
     `,
     large: css`
-      gap: ${containers.paddings.quart};
-
       padding-block: ${containers.paddings.quart};
 
       & ${SProgressBar} {
@@ -95,6 +89,8 @@ export const SProgressBarLabel = styled.span(
     font-weight: 500;
     font-size: ${theme.fontSizes.p4};
     line-height: 1;
+
+    margin-left: ${theme.space.m};
 
     color: ${theme.text.tint.secondary};
   `,
