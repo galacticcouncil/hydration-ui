@@ -29,7 +29,7 @@ export const MultiplyErrors: React.FC<MultiplyErrorsProps> = ({ errors }) => {
 
   return (
     <Stack gap="base">
-      {errors.map((error) => (
+      {[...new Set(errors)].map((error) => (
         <Alert key={error} variant="error" title={getMessage(error)} />
       ))}
     </Stack>

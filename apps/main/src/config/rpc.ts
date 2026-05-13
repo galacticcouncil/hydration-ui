@@ -37,32 +37,12 @@ export const createProvider = (
 
 export const SQUID_URLS_CONFIG = [
   {
-    name: "Orca Prod",
-    url: "https://orca-main-aggr-indx.indexer.hydration.cloud",
+    name: "Orca",
+    url: "https://orca-prod-pool-01.orca.hydration.cloud",
   },
   {
-    name: "Orca Prod 01 indx",
-    url: "https://orca-prod-pool-01-aggr-indx.indexer.hydration.cloud",
-  },
-  {
-    name: "Orca Prod 02 indx",
-    url: "https://orca-prod-pool-02-aggr-indx.indexer.hydration.cloud",
-  },
-  {
-    name: "Orca Prod 03 indx",
-    url: "https://orca-prod-pool-03-aggr-indx.indexer.hydration.cloud",
-  },
-  {
-    name: "Orca Prod 01 indexer",
-    url: "https://orca-prod-pool-01.aggr-indexer-hydration.shadow-senate.com",
-  },
-  {
-    name: "Orca Prod 02 indexer",
-    url: "https://orca-prod-pool-02.aggr-indexer-hydration.shadow-senate.com",
-  },
-  {
-    name: "Orca Prod 03 indexer",
-    url: "https://orca-prod-pool-03.aggr-indexer-hydration.shadow-senate.com",
+    name: "Catfish",
+    url: "https://orca-prod-pool-02.catfish.hydration.cloud",
   },
 ]
 

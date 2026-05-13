@@ -1,9 +1,10 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
 import { openGovUnlockedTokensQuery } from "@/api/democracy"
+import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -62,11 +63,16 @@ export const useNativeAssetLocks = () => {
 export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
-  const queryClient = useQueryClient()
   const { native } = useAssets()
+  const indexerUrl = useProxyUrl()
 
   const { data: unlockedTokens, isLoading: unlockedTokensLoading } = useQuery(
-    openGovUnlockedTokensQuery(rpc, queryClient, account?.address ?? ""),
+    openGovUnlockedTokensQuery(
+      rpc,
+
+      account?.address ?? "",
+      indexerUrl,
+    ),
   )
 
   const lockedInReferendaBig = new Big(lockedInReferenda)

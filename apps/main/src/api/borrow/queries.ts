@@ -53,7 +53,12 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { TProviderData, useIndexerClient, useSquidClient } from "@/api/provider"
+import {
+  TProviderData,
+  useIndexerClient,
+  useProxyUrl,
+  useSquidClient,
+} from "@/api/provider"
 import { getAccountProxies } from "@/api/proxy"
 import { EXTERNAL_APY_ASSET_IDS } from "@/modules/borrow/hooks/useExternalApyData"
 import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
@@ -709,6 +714,8 @@ export enum ExternalApyType {
 }
 
 export const useExternalApys = (assetIds: string[]) => {
+  const url = useProxyUrl()
+
   const queryConfigs = assetIds
     .map((assetId) => {
       const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
@@ -717,7 +724,7 @@ export const useExternalApys = (assetIds: string[]) => {
           assetId,
           type: ExternalApyType.stake,
           query: {
-            ...defillamaLatestApyQuery(defillamaId),
+            ...defillamaLatestApyQuery(defillamaId, url),
             enabled: !!defillamaId,
           },
         }
@@ -729,7 +736,7 @@ export const useExternalApys = (assetIds: string[]) => {
           assetId,
           type: ExternalApyType.nativeYield,
           query: {
-            ...kaminoApyQuery(kaminoId),
+            ...kaminoApyQuery(kaminoId, url),
             enabled: !!kaminoId,
           },
         }

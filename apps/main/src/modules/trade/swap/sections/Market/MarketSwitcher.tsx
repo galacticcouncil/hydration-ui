@@ -43,11 +43,8 @@ export const MarketSwitcher: FC<Props> = ({ swap }) => {
       assetInId={sellAsset?.id ?? ""}
       assetOutId={buyAsset?.id ?? ""}
       price={price}
-      disabled={
-        switchAssets.isPending ||
-        (!!sellAsset && SELL_ONLY_ASSETS.includes(sellAsset.id))
-      }
-      onSwitch={() => switchAssets.mutate()}
+      disabled={!!sellAsset && SELL_ONLY_ASSETS.includes(sellAsset.id)}
+      onSwitch={switchAssets}
     />
   )
 }
