@@ -2,6 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
+import { nativeTokenLocksQuery } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import {
   gigaTotalLockedQuery,
@@ -99,6 +100,7 @@ export const useClaimPendingPosition = () => {
         tx,
         invalidateQueries: [
           gigaUnstakePositionsQuery(rpc, accountAddress).queryKey,
+          nativeTokenLocksQuery(rpc, accountAddress).queryKey,
         ],
         toasts,
       })

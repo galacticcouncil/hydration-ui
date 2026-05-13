@@ -13,7 +13,7 @@ export enum TokenLockType {
   Democracy = "democrac",
   OpenGov = "pyconvot",
   Staking = "stk_stks",
-  GigaStaking = "gigaulok",
+  GigaStaking = "ghdxlock",
 }
 
 export enum TokenReserveType {

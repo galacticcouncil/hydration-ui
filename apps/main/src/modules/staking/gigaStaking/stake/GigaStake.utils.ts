@@ -45,11 +45,13 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
 
   const maxStake = Big.max(
     0,
-    Big(nativeBalance?.free.toString() || "0")
-      .minus(vested.toString())
-      .minus(staked.toString())
-      .minus(gigaStaked.toString())
-      .toString(),
+    nativeBalance
+      ? Big(nativeBalance.free.toString())
+          .minus(vested.toString())
+          .minus(staked.toString())
+          .minus(gigaStaked.toString())
+          .toString()
+      : 0,
   )
   const maxStakeHuman = toDecimal(maxStake, native.decimals)
   const minStakeHuman = toDecimal(minStake, native.decimals)
