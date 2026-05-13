@@ -6,6 +6,10 @@ const XC_SCAN_PROTOCOLS: Record<string, { label: string; color: ThemeToken }> =
       label: "Basejump",
       color: "colors.skyBlue.600",
     },
+    across: {
+      label: "Across",
+      color: "colors.successGreen.300",
+    },
     xcm: {
       label: "XCM",
       color: "colors.coral.400",

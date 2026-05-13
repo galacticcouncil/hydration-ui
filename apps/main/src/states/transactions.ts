@@ -18,6 +18,7 @@ export type XcmTags = Array<keyof typeof XcmTag>
 
 export const BRIDGE_PROVIDER_TAGS: XcmTags = [
   XcmTag.Basejump,
+  XcmTag.Across_Snowbridge,
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
 ]
