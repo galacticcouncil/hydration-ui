@@ -110,6 +110,13 @@ export const MoneyMarketEventFragmentDoc = `
 export const DcaScheduleStatusFragmentDoc = `
     fragment DcaScheduleStatus on DcaSchedule {
   status
+  paraBlockHeight
+  dcaScheduleEventsByScheduleId(first: 1, orderBy: PARA_BLOCK_HEIGHT_DESC) {
+    nodes {
+      eventName
+      paraBlockHeight
+    }
+  }
   dcaScheduleExecutionsByScheduleId(first: 1, orderBy: ID_DESC) {
     nodes {
       dcaScheduleExecutionEventsByScheduleExecutionId(
@@ -295,7 +302,7 @@ export const UserOrdersDocument = `
     filter: {status: {in: $status}, assetInId: $assetInId, assetOutId: $assetOutId}
     offset: $offset
     first: $pageSize
-    orderBy: PARA_BLOCK_HEIGHT_DESC
+    orderBy: DCA_SCHEDULE_EVENTS_BY_SCHEDULE_ID_MAX_PARA_BLOCK_HEIGHT_DESC
   ) {
     totalCount
     nodes {

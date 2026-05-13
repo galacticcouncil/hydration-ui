@@ -1,13 +1,5 @@
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { ReactNode, useCallback, useId, useMemo, useState } from "react"
 import {
   Area,
   AreaChart as AreaChartPrimitive,
@@ -105,17 +97,13 @@ export function AreaChart<TData extends TChartData>({
 
   const [activePointValue, setActivePointValue] = useState<number | null>(null)
 
-  const latestData = useRef(data)
-  useEffect(() => {
-    latestData.current = data
-  }, [data])
-
   const { call: onMouseMove } = useMemo(() => {
     if (withoutReferenceLine && !onCrosshairMove) {
       return {
         call: undefined,
       }
     }
+
     return funnel(
       (chartState: Parameters<CategoricalChartFunc>[0]) => {
         const index = Number(chartState?.activeTooltipIndex)
@@ -124,7 +112,7 @@ export function AreaChart<TData extends TChartData>({
           return onCrosshairMove?.(null)
         }
 
-        const activeData = latestData.current[index]
+        const activeData = data[index]
 
         if (
           isString(primarySeriesKey) &&
@@ -135,12 +123,12 @@ export function AreaChart<TData extends TChartData>({
         }
       },
       {
-        minGapMs: 100,
+        minGapMs: 200,
         triggerAt: "start",
         reducer: (_, next: Parameters<CategoricalChartFunc>[0]) => next,
       },
     )
-  }, [withoutReferenceLine, onCrosshairMove, primarySeriesKey])
+  }, [withoutReferenceLine, onCrosshairMove, primarySeriesKey, data])
 
   const onMouseLeave = useCallback(() => {
     if (withoutReferenceLine && !onCrosshairMove) return
@@ -163,7 +151,7 @@ export function AreaChart<TData extends TChartData>({
     <ChartContainer config={config} height={height} aspectRatio={aspectRatio}>
       <AreaChartPrimitive
         accessibilityLayer
-        data={latestData.current}
+        data={data}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
         margin={margin}
