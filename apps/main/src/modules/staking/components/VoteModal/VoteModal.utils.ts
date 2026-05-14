@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { Conviction, CONVICTIONS_BLOCKS_BY_INDEX } from "@/api/democracy"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
@@ -49,7 +50,16 @@ export const useVoteModal = (
   const { papi, slotDurationMs } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getBalance } = useAccountBalances()
+  const { data: locks } = useNativeTokenLocks()
   const hdxBalance = getBalance(native.id)
+
+  const governanceLocks = locks?.get(TokenLockType.OpenGov) ?? 0n
+  const governanceLocksHuman = scaleHuman(governanceLocks, native.decimals)
+  const allLocks = Big.max(
+    locks?.get(TokenLockType.Staking)?.toString() ?? 0,
+    governanceLocks.toString(),
+  )
+  const allLocksHuman = scaleHuman(allLocks.toString(), native.decimals)
 
   //@TODO: can I use total balance or should substrate locked balance from OTC or DCA for example?
   const totalHdxBalance = hdxBalance?.total?.toString() ?? "0"
@@ -288,5 +298,7 @@ export const useVoteModal = (
     lockedDays,
     totaVotes,
     onSubmit,
+    governanceLocksHuman,
+    allLocksHuman,
   }
 }

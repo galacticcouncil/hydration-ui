@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Flex,
   Modal,
@@ -15,9 +16,10 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Controller, FormProvider } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { SLockedBalanceButton } from "@/modules/staking/components/VoteModal/VoteModal.styled"
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
@@ -56,11 +58,18 @@ const VoteForm = ({
 }: Pick<VoteFormProps, "referendumId" | "onClose">) => {
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
-  const { form, totalHdxBalanceHuman, lockedDays, totaVotes, onSubmit } =
-    useVoteModal(referendumId, onClose)
+  const {
+    form,
+    totalHdxBalanceHuman,
+    lockedDays,
+    totaVotes,
+    onSubmit,
+    governanceLocksHuman,
+    allLocksHuman,
+  } = useVoteModal(referendumId, onClose)
 
   const [voteType, multiplier] = form.watch(["voteType", "multiplier"])
-  const showConvictionSlider = voteType === "aye" || voteType === "nay"
+  const isSingleInputField = voteType === "aye" || voteType === "nay"
 
   return (
     <FormProvider {...form}>
@@ -83,14 +92,87 @@ const VoteForm = ({
 
             <ModalContentDivider />
 
+            {!isSingleInputField && (
+              <Box>
+                <Flex justify="space-between" align="center">
+                  <Text fs="p5" fw={500} color={getToken("text.medium")}>
+                    {t("staking:referenda.vote.modal.totalBalance")}
+                  </Text>
+                  <Text fs="p5" fw={500} color={getToken("text.low")}>
+                    {t("currency", {
+                      value: totalHdxBalanceHuman,
+                      symbol: native.symbol,
+                    })}
+                  </Text>
+                </Flex>
+                <ModalContentDivider />
+              </Box>
+            )}
+
             <AmountFields
               voteType={voteType}
               totalHdxBalanceHuman={totalHdxBalanceHuman}
             />
 
-            {showConvictionSlider && (
+            {isSingleInputField && (
               <>
-                <ModalContentDivider />
+                <Box>
+                  <ModalContentDivider />
+                  <Flex gap="base" justify="end" py="base">
+                    <SLockedBalanceButton
+                      variant="muted"
+                      onClick={() =>
+                        form.setValue("amount", governanceLocksHuman, {
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      <Text fs="p6" fw={400} color={getToken("text.medium")}>
+                        <Trans
+                          t={t}
+                          i18nKey="staking:referenda.vote.modal.reuseGovernanceLock"
+                          values={{
+                            value: governanceLocksHuman,
+                            currency: native.symbol,
+                          }}
+                        >
+                          <Text
+                            as="span"
+                            fw={500}
+                            color={getToken("text.high")}
+                          />
+                        </Trans>
+                      </Text>
+                    </SLockedBalanceButton>
+                    <SLockedBalanceButton
+                      variant="muted"
+                      onClick={() =>
+                        form.setValue("amount", allLocksHuman, {
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      <Text fs="p6" fw={400} color={getToken("text.medium")}>
+                        <Trans
+                          t={t}
+                          i18nKey="staking:referenda.vote.modal.reuseAllLocks"
+                          values={{
+                            value: allLocksHuman,
+                            currency: native.symbol,
+                          }}
+                        >
+                          <Text
+                            as="span"
+                            fw={500}
+                            color={getToken("text.high")}
+                          />
+                        </Trans>
+                      </Text>
+                    </SLockedBalanceButton>
+                  </Flex>
+                  <ModalContentDivider />
+                </Box>
+
                 <Controller
                   control={form.control}
                   name="multiplier"
@@ -142,33 +224,33 @@ const VoteForm = ({
                     </Stack>
                   )}
                 />
-                <ModalContentDivider />
-                <Summary
-                  separator={<ModalContentDivider />}
-                  rows={[
-                    {
-                      label: t("staking:referenda.vote.modal.totalVotes"),
-                      content: t("currency", {
-                        value: totaVotes,
-                        symbol: native.symbol,
-                      }),
-                    },
-                    {
-                      label: t("staking:referenda.vote.modal.lockDuration"),
-                      description: t(
-                        "staking:referenda.vote.modal.lockDuration.description",
-                      ),
-                      content: t(
-                        "staking:referenda.vote.modal.lockDuration.value",
-                        {
-                          value: lockedDays,
-                        },
-                      ),
-                    },
-                  ]}
-                />
               </>
             )}
+            <ModalContentDivider />
+            <Summary
+              separator={<ModalContentDivider />}
+              rows={[
+                {
+                  label: t("staking:referenda.vote.modal.totalVotes"),
+                  content: t("currency", {
+                    value: totaVotes,
+                    symbol: native.symbol,
+                  }),
+                },
+                {
+                  label: t("staking:referenda.vote.modal.lockDuration"),
+                  description: t(
+                    "staking:referenda.vote.modal.lockDuration.description",
+                  ),
+                  content: t(
+                    "staking:referenda.vote.modal.lockDuration.value",
+                    {
+                      value: isSingleInputField ? lockedDays : 0,
+                    },
+                  ),
+                },
+              ]}
+            />
           </Stack>
         </ModalBody>
 
@@ -212,7 +294,8 @@ const AmountFields = ({
           label={t("referenda.item.aye")}
           assets={[]}
           disabledAssetSelector
-          maxBalance={totalHdxBalanceHuman}
+          ignoreBalance
+          hideMaxBalanceAction
           sx={{ p: 0 }}
         />
         <AssetSelectFormField<VoteModalFormValues>
@@ -221,7 +304,8 @@ const AmountFields = ({
           label={t("referenda.item.nay")}
           assets={[]}
           disabledAssetSelector
-          maxBalance={totalHdxBalanceHuman}
+          ignoreBalance
+          hideMaxBalanceAction
           sx={{ p: 0 }}
         />
       </Stack>
@@ -242,7 +326,8 @@ const AmountFields = ({
           label={t("referenda.item.aye")}
           assets={[]}
           disabledAssetSelector
-          maxBalance={totalHdxBalanceHuman}
+          ignoreBalance
+          hideMaxBalanceAction
           sx={{ p: 0 }}
         />
         <AssetSelectFormField<VoteModalFormValues>
@@ -251,7 +336,8 @@ const AmountFields = ({
           label={t("referenda.item.nay")}
           assets={[]}
           disabledAssetSelector
-          maxBalance={totalHdxBalanceHuman}
+          ignoreBalance
+          hideMaxBalanceAction
           sx={{ p: 0 }}
         />
         <AssetSelectFormField<VoteModalFormValues>
@@ -260,7 +346,8 @@ const AmountFields = ({
           label={t("referenda.item.abstain")}
           assets={[]}
           disabledAssetSelector
-          maxBalance={totalHdxBalanceHuman}
+          ignoreBalance
+          hideMaxBalanceAction
           sx={{ p: 0 }}
         />
       </Stack>
