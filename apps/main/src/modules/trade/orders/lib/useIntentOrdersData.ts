@@ -4,11 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import {
-  AccountIntent,
-  intentsByAccountQuery,
-  IntentSwapData,
-} from "@/api/intents"
+import { AccountIntentEntry, intentsByAccountQuery } from "@/api/intents"
 import {
   LimitOrderData,
   OrderData,
@@ -19,14 +15,14 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 import { numericallyDesc } from "@/utils/sort"
 
-const entryToOrder = (
-  entry: AccountIntent,
+const intentEntryToOrder = (
+  entry: AccountIntentEntry,
   getAssetWithFallback: ReturnType<typeof useAssets>["getAssetWithFallback"],
 ): OrderData | null => {
   const { data } = entry.intent
 
   if (data.type === "Swap") {
-    const swap: IntentSwapData = data.value
+    const swap = data.value
     const from = getAssetWithFallback(String(swap.asset_in))
     const to = getAssetWithFallback(String(swap.asset_out))
     const isPartiallyFillable = swap.partial.type === "Yes"
@@ -67,7 +63,7 @@ export const useIntentOrdersData = (assetIds: string[]) => {
   const orders = useMemo<OrderData[]>(() => {
     if (!intents) return []
 
-    const filterByAsset = (entry: AccountIntent) => {
+    const filterByAsset = (entry: AccountIntentEntry) => {
       if (assetIds.length === 0) return true
       const { data } = entry.intent
       const assetIn = data.value.asset_in
@@ -81,7 +77,7 @@ export const useIntentOrdersData = (assetIds: string[]) => {
 
     return intents
       .filter(filterByAsset)
-      .map((entry) => entryToOrder(entry, getAssetWithFallback))
+      .map((entry) => intentEntryToOrder(entry, getAssetWithFallback))
       .filter(isNonNullish)
       .sort((a, b) => numericallyDesc(a.timestamp ?? 0, b.timestamp ?? 0))
   }, [intents, assetIds, getAssetWithFallback])
