@@ -1,11 +1,10 @@
-// Phase 5a — verifies the RAILGUN engine package imports cleanly and exposes
-// the configured Hydration chain to children. Full `RailgunEngine.initForWallet`
-// boot moves to Phase 5b once an idb-backed leveldown adapter is in place
-// (engine requires an `AbstractLevelDOWN` it does not ship a browser adapter for).
+// Phase 5b — boots the RAILGUN engine for real:
+//   - level-js IndexedDB store
+//   - PollingJsonRpcProvider over lark RPC
+//   - loadNetwork against the Phase 0 proxy
+//   - exposes UTXO merkletree scan progress for the UI
 //
-// What 5a proves: package resolution, ethers v6 coexistence, provider can be
-// reached from anywhere under the existing AppProviders tree.
-// What 5b adds: real engine init + Subsquid quickSync + IndexedDB store.
+// Stays scan-only (no proof artifacts) — that lands with Phase 5c shield.
 
 import {
   createContext,
@@ -13,20 +12,35 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
-import { RailgunEngine } from "@railgun-community/engine"
+import {
+  EngineEvent,
+  MerkletreeHistoryScanEventData,
+  MerkletreeScanStatus,
+  RailgunEngine,
+} from "@railgun-community/engine"
+
 import { ACTIVE_RAILGUN_CHAIN } from "sections/privacy/utils/networks"
+import { bootRailgunEngine } from "sections/privacy/utils/engine"
 
 type RailgunChain = { type: 0; id: number } // ChainType.EVM = 0
 
 type ConnectionState =
   | { status: "idle" }
-  | { status: "ready" }
+  | { status: "booting" }
+  | { status: "ready"; engine: RailgunEngine }
   | { status: "error"; error: Error }
+
+type ScanState = {
+  status: MerkletreeScanStatus | "Idle"
+  progress: number // 0..1
+}
 
 type RailgunContextValue = {
   state: ConnectionState
+  scan: ScanState
   chain: RailgunChain
   config: typeof ACTIVE_RAILGUN_CHAIN
 }
@@ -50,28 +64,61 @@ export const RailgunProvider = ({ children }: { children: ReactNode }) => {
     [config.chainId],
   )
   const [state, setState] = useState<ConnectionState>({ status: "idle" })
+  const [scan, setScan] = useState<ScanState>({ status: "Idle", progress: 0 })
+  const bootedRef = useRef(false)
 
   useEffect(() => {
-    // Smoke-check: confirm the engine module resolves and exposes its
-    // factory. Actual init is deferred to 5b.
-    try {
-      if (typeof RailgunEngine.initForWallet !== "function") {
-        throw new Error(
-          "RailgunEngine.initForWallet is not a function — engine package resolution may have failed",
+    if (bootedRef.current) return
+    bootedRef.current = true
+
+    let engineRef: RailgunEngine | null = null
+    let cancelled = false
+
+    setState({ status: "booting" })
+    bootRailgunEngine(config)
+      .then(({ engine }) => {
+        if (cancelled) return
+        engineRef = engine
+
+        engine.on(
+          EngineEvent.UTXOMerkletreeHistoryScanUpdate,
+          (data: MerkletreeHistoryScanEventData) => {
+            setScan({
+              status: data.scanStatus,
+              progress: data.progress ?? 0,
+            })
+          },
         )
+
+        setState({ status: "ready", engine })
+
+        // Kick off the initial scan. No wallet filter yet — wallets get
+        // injected from `useRailgunWallet` and the engine picks them up
+        // automatically on the next scanContractHistory pass.
+        engine.scanContractHistory(chain, undefined).catch((e) => {
+          // eslint-disable-next-line no-console
+          console.error("[RailgunProvider] initial scan failed:", e)
+        })
+      })
+      .catch((e) => {
+        if (cancelled) return
+        const err = e instanceof Error ? e : new Error(String(e))
+        // eslint-disable-next-line no-console
+        console.error("[RailgunProvider] engine boot failed:", err)
+        setState({ status: "error", error: err })
+      })
+
+    return () => {
+      cancelled = true
+      if (engineRef) {
+        engineRef.unload().catch(() => undefined)
       }
-      setState({ status: "ready" })
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error(String(e))
-      // eslint-disable-next-line no-console
-      console.error("[RailgunProvider] smoke-check failed:", err)
-      setState({ status: "error", error: err })
     }
-  }, [])
+  }, [config, chain])
 
   const value: RailgunContextValue = useMemo(
-    () => ({ state, chain, config }),
-    [state, chain, config],
+    () => ({ state, scan, chain, config }),
+    [state, scan, chain, config],
   )
 
   return (
