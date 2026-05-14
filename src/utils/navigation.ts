@@ -7,6 +7,7 @@ import IconOTC from "assets/icons/navigation/IconOTC.svg?react"
 import IconSwap from "assets/icons/navigation/IconSwap.svg?react"
 import StatsIcon from "assets/icons/ChartIcon.svg?react"
 import StakingIcon from "assets/icons/StakingIcon.svg?react"
+import PrivacyIcon from "assets/icons/SkullIcon.svg?react"
 import IconBonds from "assets/icons/Bonds.svg?react"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import RocketIcon from "assets/icons/RocketIcon.svg?react"
@@ -295,6 +296,18 @@ export const MENU_ITEMS = [
     mobVisible: false,
     tabVisible: true,
     mobOrder: 6,
+    asyncEnabled: false,
+  },
+  {
+    key: "privacy",
+    href: LINKS.privacy,
+    Icon: PrivacyIcon,
+    subItems: undefined,
+    enabled: import.meta.env.VITE_ENV === "development",
+    external: false,
+    mobVisible: false,
+    tabVisible: true,
+    mobOrder: 9,
     asyncEnabled: false,
   },
   {

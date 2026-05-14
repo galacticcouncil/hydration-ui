@@ -197,6 +197,7 @@
   "header.referrals": "Referrals",
   "header.borrow": "Borrow",
   "header.memepad": "Memepad",
+  "header.privacy": "Privacy",
   "header.documentation.tooltip": "Documentation",
   "header.notification.pending.tooltip": "{{number}} Pending Transactions",
   "header.notification.tooltip": "Notifications",
