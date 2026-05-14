@@ -4,8 +4,7 @@
   "gigaStake.header.lockdownPeriod": "Lockdown period",
   "gigaStake.header.valueDays": "{{ value, number }} days",
   "gigaStake.header.minimumLockPeriod": "Minimum lock period",
-  "gigaStake.header.currentBorrowLimits": "Current borrow limits",
-  "gigaStake.header.currentBorrowLimits.value": "{{ value, number(notation: 'compact') }}<0>/{{max, number(notation: 'compact')}}</0> {{ symbol }}",
+  "gigaStake.header.availableToBorrow": "Available to borrow",
   "gigaStake.header.totalStake": "Total GIGA Stake",
   "gigaStake.section.gigaStakingDashboard": "GIGA staking dashboard",
   "gigaStakingMigration.title": "GIGA staking migration",
@@ -61,6 +60,7 @@
       "Participate in governance to speed up the rate at which you can claim rewards."
     ]
   ],
+  "gigaStaking.stake.gigaStakes": "You have GIGAHDX staked, you can't stake more HDX.",
   "gigaStaking.repay.toasts.submitted": "Repaying {{ value, currency }}",
   "gigaStaking.repay.toasts.success": "Repaid {{ value, currency }}",
   "gigaStaking.borrow.toasts.submitted": "Borrowing {{ value, currency }}",
@@ -69,6 +69,8 @@
   "gigaStaking.stake.toasts.success": "Giga staked {{ value, currency }}",
   "gigaStaking.unstake.toasts.submitted": "Giga unstaking {{ value, currency }}",
   "gigaStaking.unstake.toasts.success": "Giga unstaked {{ value, currency }}",
+  "gigaStaking.migrate.toasts.submitted": "Migrating {{ value, currency }} to GIGA HDX",
+  "gigaStaking.migrate.toasts.success": "Migrated {{ value, currency }} to GIGA HDX",
   "gigaStaking.cancelPendingPosition.toasts.submitted": "Cancelling pending position {{ value, currency }}",
   "gigaStaking.cancelPendingPosition.toasts.success": "Cancelled pending position {{ value, currency }}",
   "gigaStaking.claimPendingPosition.toasts.submitted": "Claiming pending position {{ value, currency }}",

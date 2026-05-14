@@ -29,12 +29,14 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
     gcTime: GC_TIME,
   })
 
+export const gigaQueryKey = (address: string) => ["gigaStake", address]
+
 export const gigaUnstakePositionsQuery = (
   rpc: TProviderContext,
   address: string,
 ) =>
   queryOptions({
-    queryKey: ["gigaUnstakePositions", address],
+    queryKey: [...gigaQueryKey(address), "pendingPositions"],
     enabled: !!address && rpc.isApiLoaded,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,6 +53,31 @@ export const gigaUnstakePositionsQuery = (
           voteAtBlock: keyArgs[1],
         }),
       ) as Array<{ amount: bigint; voteAtBlock: number }>
+    },
+  })
+
+export const gigaAccountStakesQuery = (
+  rpc: TProviderContext,
+  address: string,
+) =>
+  queryOptions({
+    queryKey: [...gigaQueryKey(address), "stakes"],
+    enabled: !!address && rpc.isApiLoaded,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+
+      const stakes = await unsafeApi.query.GigaHdx.Stakes.getValue(address, {
+        at: "best",
+      })
+
+      return stakes as {
+        hdx: bigint
+        gigahdx: bigint
+        frozen: bigint
+        unstaking: bigint
+        unstakingCount: number
+      }
     },
   })
 

@@ -33,6 +33,8 @@ export type GigaHDXRepayFormValues = {
   isMaxSelected: boolean
 }
 
+const MAX_REPPAY_DUST_FACTOR = 1.001
+
 export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation(["common", "borrow", "staking"])
   const { getAssetWithFallback } = useAssets()
@@ -46,14 +48,13 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
   const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
   const { userSummary, hollarReserve } = gigaBorrowSummary ?? {}
 
-  const debtAmount = hollarReserve?.variableBorrows || "0"
+  const debtAmount = Big(hollarReserve?.variableBorrows || "0")
+    .mul(MAX_REPPAY_DUST_FACTOR)
+    .toString()
   const walletBalance = scaleHuman(
     getTransferableBalance(HOLLAR_ASSET_ID),
     hollarAsset.decimals,
   )
-  const maxRepayAmount = Big.min(debtAmount || "0", walletBalance || "0")
-  const maxRepayAmountString = maxRepayAmount.toString()
-  const maxRepayWei = toBigInt(maxRepayAmountString, hollarAsset.decimals)
 
   const form = useForm<GigaHDXRepayFormValues>({
     mode: "onChange",
@@ -65,10 +66,10 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     resolver: standardSchemaResolver(
       z.object({
         amount: positive
-          .refine((value) => new Big(value || "0").lte(walletBalance || "0"), {
+          .refine((value) => new Big(value || "0").lte(walletBalance), {
             error: t("error.maxBalance"),
           })
-          .refine((value) => new Big(value || "0").lte(debtAmount || "0"), {
+          .refine((value) => new Big(value || "0").lte(debtAmount), {
             error: t("staking:gigaStaking.repay.error.repayLimit"),
           }),
         asset: z.custom<TAssetData>(),
@@ -77,8 +78,11 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     ),
   })
   const [amount, isMaxSelected] = form.watch(["amount", "isMaxSelected"])
+
+  const maxRepayAmount = Big.min(debtAmount, walletBalance)
+  const maxRepayAmountString = maxRepayAmount.toString()
   const repayAmount = Big.min(amount || "0", maxRepayAmountString)
-  const remainingDebt = Big.max(Big(debtAmount || "0").minus(repayAmount), 0)
+  const remainingDebt = Big.max(Big(debtAmount).minus(repayAmount), 0)
   const remainingDebtUsd = remainingDebt.mul(
     hollarReserve?.reserve.priceInUSD || "0",
   )
@@ -116,10 +120,7 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
         throw new Error("Giga borrow pool contract not found")
       if (!account?.address || !hollarReserve?.underlyingAsset) return
 
-      const amountWei = toBigInt(
-        Big(amount).mul(1.001).toString(),
-        hollarAsset.decimals,
-      )
+      const amountWei = toBigInt(amount, hollarAsset.decimals)
 
       if (amountWei <= 0n) return
 
@@ -176,7 +177,6 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     onSubmit,
     mutation,
     maxRepayAmountString,
-    maxRepayWei,
     walletBalance,
     remainingDebt,
     remainingDebtUsd,

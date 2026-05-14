@@ -28,6 +28,7 @@ export const GigaUnstake = ({ loading }: { loading?: boolean }) => {
 const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   const { t } = useTranslation(["staking", "common"])
   const { form, onSubmit, maxUnstake } = useGigaUnstake({ userBorrowSummary })
+
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>

@@ -10,10 +10,7 @@ import { TAssetData } from "@/api/assets"
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
-import {
-  gigaTotalLockedQuery,
-  gigaUnstakePositionsQuery,
-} from "@/api/gigaStake"
+import { gigaQueryKey, gigaTotalLockedQuery } from "@/api/gigaStake"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -138,7 +135,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
             }),
             invalidateQueries: [
               userGigaBorrowSummaryQueryKey(address),
-              gigaUnstakePositionsQuery(rpc, address).queryKey,
+              gigaQueryKey(address),
             ],
             toasts,
           },
@@ -151,7 +148,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
           tx: stakeTx,
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(address),
-            gigaUnstakePositionsQuery(rpc, address).queryKey,
+            gigaQueryKey(address),
             gigaTotalLockedQuery(rpc).queryKey,
           ],
           toasts,

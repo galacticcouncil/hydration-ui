@@ -10,6 +10,7 @@ import {
   Separator,
   Summary,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -41,7 +42,6 @@ const GigaHDXRepayForm = ({ onClose }: GigaHDXRepayModalProps) => {
     onSubmit,
     mutation,
     maxRepayAmountString,
-    maxRepayWei,
     walletBalance,
     remainingDebt,
     remainingDebtUsd,
@@ -101,7 +101,7 @@ const GigaHDXRepayForm = ({ onClose }: GigaHDXRepayModalProps) => {
             disabled={
               !form.formState.isValid ||
               mutation.isPending ||
-              maxRepayWei <= 0n ||
+              Big(maxRepayAmountString).lte(0) ||
               !hollarReserve
             }
           >

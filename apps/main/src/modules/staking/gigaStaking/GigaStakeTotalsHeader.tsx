@@ -3,13 +3,13 @@ import {
   STHDX_ASSET_ID,
 } from "@galacticcouncil/money-market/ui-config"
 import { isGho } from "@galacticcouncil/money-market/utils"
-import { Stack, Text, ValueStats } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Stack, ValueStats } from "@galacticcouncil/ui/components"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { millisecondsToHours } from "date-fns"
 import { FC } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 
 import {
   borrowReservesQuery,
@@ -67,6 +67,10 @@ export const GigaStakeTotalsHeader: FC = () => {
     facilitatorBucketData?.facilitatorBucketLevel ?? "0",
     hollarReserve?.decimals ?? 18,
   )
+
+  const availableToBorrow = Big(maxBorrowHollar)
+    .minus(borrowedHollar)
+    .toString()
   const hollarSymbol = hollarReserve?.symbol
 
   return (
@@ -106,31 +110,12 @@ export const GigaStakeTotalsHeader: FC = () => {
       <ValueStats
         wrap
         size="medium"
-        label={t("staking:gigaStake.header.currentBorrowLimits")}
+        label={t("staking:gigaStake.header.availableToBorrow")}
         isLoading={isGigaPoolReservesLoading || isFacilitatorBucketLoading}
-        value={t("currency", { value: maxBorrowHollar, symbol: hollarSymbol })}
-        customValue={
-          <Text fs="h6" fw={500} color={getToken("text.high")} font="primary">
-            <Trans
-              t={t}
-              i18nKey="staking:gigaStake.header.currentBorrowLimits.value"
-              values={{
-                value: borrowedHollar,
-                max: maxBorrowHollar,
-                symbol: hollarSymbol,
-              }}
-              components={[
-                <Text
-                  key="max-limit"
-                  as="span"
-                  fs="h6"
-                  color={getToken("text.low")}
-                  font="primary"
-                />,
-              ]}
-            />
-          </Text>
-        }
+        value={t("currency", {
+          value: availableToBorrow,
+          symbol: hollarSymbol,
+        })}
       />
     </Stack>
   )

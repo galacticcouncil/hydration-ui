@@ -4,10 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
-import {
-  gigaTotalLockedQuery,
-  gigaUnstakePositionsQuery,
-} from "@/api/gigaStake"
+import { gigaQueryKey, gigaTotalLockedQuery } from "@/api/gigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -51,7 +48,7 @@ export const useCancelPendingPosition = () => {
         tx,
         invalidateQueries: [
           userGigaBorrowSummaryQueryKey(accountAddress),
-          gigaUnstakePositionsQuery(rpc, accountAddress).queryKey,
+          gigaQueryKey(accountAddress),
           gigaTotalLockedQuery(rpc).queryKey,
         ],
         toasts,
@@ -99,7 +96,7 @@ export const useClaimPendingPosition = () => {
       return createTransaction({
         tx,
         invalidateQueries: [
-          gigaUnstakePositionsQuery(rpc, accountAddress).queryKey,
+          gigaQueryKey(accountAddress),
           nativeTokenLocksQuery(rpc, accountAddress).queryKey,
         ],
         toasts,

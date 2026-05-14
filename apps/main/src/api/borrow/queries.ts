@@ -539,6 +539,7 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery({
+    enabled: !!address,
     queryKey: userGigaBorrowSummaryQueryKey(address),
     queryFn: async (): Promise<UserGigaBorrowSummary> => {
       if (!poolDataContract || !ghoServiceContract)

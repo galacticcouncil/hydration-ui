@@ -9,40 +9,63 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
+import { gigaTotalLockedQuery } from "@/api/gigaStake"
 import { stakingPositionsQuery } from "@/api/staking"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTransactionsStore } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export type GigaStakingMigrationProps = {
-  onMigrate?: () => void
-  isMigrateDisabled?: boolean
+  stakeAmount: bigint
 }
 
 export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
-  onMigrate,
-  isMigrateDisabled,
+  stakeAmount,
 }) => {
+  const { t } = useTranslation("staking")
   const { native } = useAssets()
   const rpc = useRpcProvider()
   const { account } = useAccount()
-  const address = account?.address ?? ""
-  const { t } = useTranslation("staking")
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
-  const { data: stakingPositionsData, isPending: isStakingPositionLoading } =
-    useQuery(stakingPositionsQuery(rpc, address))
+  const stakedAmountHuman = toDecimal(stakeAmount.toString(), native.decimals)
 
-  if (!isStakingPositionLoading && !stakingPositionsData) {
-    return null
-  }
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!account) throw new Error("No account connected")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-  const stakedAmount = stakingPositionsData?.stake
-    ? toDecimal(stakingPositionsData.stake, native.decimals)
-    : undefined
+      const migrateTx = unsafeApi.tx.GigaHdx.migrate()
+
+      const toasts = {
+        submitted: t("gigaStaking.migrate.toasts.submitted", {
+          value: stakedAmountHuman,
+          symbol: native.symbol,
+        }),
+        success: t("gigaStaking.migrate.toasts.success", {
+          value: stakedAmountHuman,
+          symbol: native.symbol,
+        }),
+      }
+
+      return createTransaction({
+        tx: migrateTx,
+        invalidateQueries: [
+          userGigaBorrowSummaryQueryKey(account.address),
+          gigaTotalLockedQuery(rpc).queryKey,
+          stakingPositionsQuery(rpc, account.address).queryKey,
+        ],
+        toasts,
+      })
+    },
+  })
 
   return (
     <Paper>
@@ -69,7 +92,7 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
           <Trans
             t={t}
             i18nKey="gigaStakingMigration.lead"
-            values={{ amount: stakedAmount }}
+            values={{ amount: stakedAmountHuman }}
             components={[
               <Text
                 key="giga-migration-amount"
@@ -89,8 +112,8 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
           variant="secondary"
           size="large"
           width="100%"
-          disabled={isMigrateDisabled}
-          onClick={onMigrate}
+          disabled={mutation.isPending}
+          onClick={() => mutation.mutate()}
         >
           {t("gigaStakingMigration.cta")}
         </Button>
