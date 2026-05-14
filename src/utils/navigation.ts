@@ -66,6 +66,7 @@ export const LINKS = {
   deposit: "/deposit",
   withdraw: "/withdraw",
   strategies: "/strategies",
+  privacy: "/privacy",
 }
 
 export const MENU_ITEMS = [

@@ -169,6 +169,10 @@ const WithdrawPage = lazy(async () => ({
   default: (await import("sections/deposit/WithdrawPage")).WithdrawPage,
 }))
 
+const PrivacyPage = lazy(async () => ({
+  default: (await import("sections/privacy")).PrivacyPage,
+}))
+
 export const routes: Route[] = [
   {
     path: "/",
@@ -541,6 +545,14 @@ export const routes: Route[] = [
     element: (
       <Suspense fallback={<WalletStrategySkeleton />}>
         <WalletStrategy />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.privacy,
+    element: (
+      <Suspense fallback={null}>
+        <PrivacyPage />
       </Suspense>
     ),
   },
