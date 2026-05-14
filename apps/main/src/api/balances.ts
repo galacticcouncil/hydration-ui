@@ -33,7 +33,9 @@ export const nativeTokenLocksQuery = (
   return queryOptions({
     queryKey: ["balances", "native-lock", address],
     queryFn: async () => {
-      const locks = await papi.query.Balances.Locks.getValue(address)
+      const locks = await papi.query.Balances.Locks.getValue(address, {
+        at: "best",
+      })
 
       return locks
         .map(({ id, amount }) => {
@@ -73,8 +75,16 @@ export const tokenReservesQuery = (
     queryFn: async () => {
       const reserves =
         tokenId === NATIVE_ASSET_ID
-          ? await papi.query.Balances.Reserves.getValue(address)
-          : await papi.query.Tokens.Reserves.getValue(address, Number(tokenId))
+          ? await papi.query.Balances.Reserves.getValue(address, {
+              at: "best",
+            })
+          : await papi.query.Tokens.Reserves.getValue(
+              address,
+              Number(tokenId),
+              {
+                at: "best",
+              },
+            )
 
       return reserves.map(({ id, amount }) => {
         const type = Binary.toText(Binary.fromHex(id))
@@ -158,7 +168,9 @@ export const tokenBalanceQuery = (
     queryKey: ["tokenBalance", tokenId, address],
     queryFn: async (): Promise<BalanceData> => {
       if (tokenId === NATIVE_ASSET_ID) {
-        const res = await papi.query.System.Account.getValue(address ?? "")
+        const res = await papi.query.System.Account.getValue(address ?? "", {
+          at: "best",
+        })
 
         return parseNativeBalanceData(res, tokenId, address ?? "")
       }
@@ -166,6 +178,9 @@ export const tokenBalanceQuery = (
       const res = await papi.query.Tokens.Accounts.getValue(
         address ?? "",
         Number(tokenId),
+        {
+          at: "best",
+        },
       )
 
       return parseTokenBalanceData(res, tokenId, address ?? "")
@@ -186,8 +201,8 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
     queryKey: ["hdxIssuance"],
     queryFn: async () => {
       const [totalissuance, inactiveIssuance] = await Promise.all([
-        papi.query.Balances.TotalIssuance.getValue(),
-        papi.query.Balances.InactiveIssuance.getValue(),
+        papi.query.Balances.TotalIssuance.getValue({ at: "best" }),
+        papi.query.Balances.InactiveIssuance.getValue({ at: "best" }),
       ])
 
       return totalissuance - inactiveIssuance
