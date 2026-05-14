@@ -68,6 +68,7 @@ export const LINKS = {
   withdraw: "/withdraw",
   strategies: "/strategies",
   privacy: "/privacy",
+  privacyShield: "/privacy/shield",
 }
 
 export const MENU_ITEMS = [

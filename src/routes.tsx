@@ -173,6 +173,10 @@ const PrivacyPage = lazy(async () => ({
   default: (await import("sections/privacy")).PrivacyPage,
 }))
 
+const PrivacyShieldFlow = lazy(async () => ({
+  default: (await import("sections/privacy")).ShieldFlow,
+}))
+
 export const routes: Route[] = [
   {
     path: "/",
@@ -553,6 +557,14 @@ export const routes: Route[] = [
     element: (
       <Suspense fallback={null}>
         <PrivacyPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: LINKS.privacyShield,
+    element: (
+      <Suspense fallback={null}>
+        <PrivacyShieldFlow />
       </Suspense>
     ),
   },

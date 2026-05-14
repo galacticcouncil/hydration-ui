@@ -1,4 +1,5 @@
 export { PrivacyPage } from "sections/privacy/PrivacyPage"
+export { ShieldFlow } from "sections/privacy/flows/ShieldFlow"
 export {
   RailgunProvider,
   useRailgunContext,
