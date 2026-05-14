@@ -6,9 +6,15 @@ import {
   Icon,
 } from "@galacticcouncil/ui/components"
 import { REFERENDA_URL } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { nativeTokenLocksQuery } from "@/api/balances"
+import {
+  accountOpenGovVotesQuery,
+  openGovReferendaQuery,
+} from "@/api/democracy"
 import { VoteModal } from "@/modules/staking/components/VoteModal/VoteModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -22,10 +28,13 @@ type Props = {
 
 export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
   const { t } = useTranslation("staking")
-  const { papi } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
   const { isBalanceLoading } = useAccountBalances()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const [voteOpen, setVoteOpen] = useState(false)
+
+  const accountAddress = account?.address ?? ""
 
   const handleRemoveVote = () => {
     const toasts = {
@@ -37,8 +46,15 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
       }),
     }
     createTransaction({
-      tx: papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
-      invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
+      tx: rpc.papi.tx.ConvictionVoting.remove_vote({
+        class: classId,
+        index: id,
+      }),
+      invalidateQueries: [
+        accountOpenGovVotesQuery(rpc, accountAddress).queryKey,
+        openGovReferendaQuery(rpc).queryKey,
+        nativeTokenLocksQuery(rpc, accountAddress).queryKey,
+      ],
       toasts,
     })
   }
