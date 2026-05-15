@@ -59,9 +59,10 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   )
   const maxStakeHuman = toDecimal(maxStake, native.decimals)
   const minStakeHuman = toDecimal(minStake, native.decimals)
-  //@TODO: convert to HDX value when spot price is available
-  const availableReserveCap = Big(hdxReserve.supplyCap)
+
+  const availableHDXReserveCap = Big(hdxReserve.supplyCap)
     .minus(hdxReserve.totalLiquidity)
+    .times(exchangeRate?.toString() || "0")
     .toString()
 
   const form = useForm<GigaStakeFormValues>({
@@ -91,11 +92,11 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         .check(
           z.refine<GigaStakeFormValues>(
             ({ amount }) =>
-              amount === "" || Big(amount).lte(availableReserveCap),
+              amount === "" || Big(amount).lte(availableHDXReserveCap),
             {
               error: t("staking:stake.stake.reserveCapError", {
                 amount: t("currency", {
-                  value: availableReserveCap,
+                  value: availableHDXReserveCap,
                   symbol: native.symbol,
                 }),
               }),

@@ -17,6 +17,7 @@ import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
+import { useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { AssetLogo } from "@/components/AssetLogo"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
@@ -39,6 +40,7 @@ export const GigaHDXPosition = () => {
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
 
   const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
   const {
@@ -59,6 +61,8 @@ export const GigaHDXPosition = () => {
     userSummary?.healthFactor || "-1",
   )
 
+  const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+
   /** HOLLAR per 1 HDX at HF = 1 (single collateral / single debt Giga pool). */
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!userSummary || !hdxReserve || !hollarReserve) return null
@@ -68,7 +72,7 @@ export const GigaHDXPosition = () => {
     )
     if (debtMrc.lte(0)) return null
 
-    const qtyCollateral = Big(hdxReserve.underlyingBalance || "0")
+    const qtyCollateral = Big(gigaHdxBalanceHuman)
     if (qtyCollateral.lte(0)) return null
 
     const reserve = hdxReserve.reserve
@@ -91,7 +95,7 @@ export const GigaHDXPosition = () => {
     if (hollarMrc.lte(0)) return null
 
     return liqPxMrc.div(hollarMrc)
-  }, [userSummary, hdxReserve, hollarReserve])
+  }, [userSummary, hdxReserve, hollarReserve, gigaHdxBalanceHuman])
 
   const hasDebt = Big(debt).gt(0)
 
@@ -132,13 +136,16 @@ export const GigaHDXPosition = () => {
                 color={getToken("text.tint.secondary")}
               >
                 {t("common:currency", {
-                  value: hdxReserve?.underlyingBalance || "0",
+                  value: gigaHdxBalanceHuman,
                   symbol: ghdxMeta.symbol,
                 })}
               </Text>
             }
-            displayValue={t("common:currency", {
-              value: hdxReserve?.underlyingBalanceUSD || "0",
+            displayValue={t("gigaStaking.position.underlying.value", {
+              value: Big(gigaHdxBalanceHuman)
+                .times(exchangeRate?.toString() || "0")
+                .toString(),
+              symbol: native.symbol,
             })}
             sx={{ ml: "auto", textAlign: "right" }}
           />

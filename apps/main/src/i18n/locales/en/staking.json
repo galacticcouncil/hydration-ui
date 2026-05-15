@@ -41,6 +41,7 @@
   "gigaStaking.tabs.mob.dashboard": "Dashboard",
   "gigaStaking.tabs.mob.actions": "Stake/Unstake",
   "gigaStaking.position.borrows.title": "Your borrows",
+  "gigaStaking.position.underlying.value": "Underlying {{value, currency}}",
   "gigaStaking.position.borrow.apy": "Borrow APY: <0>{{value, percent}}</0>",
   "gigaStaking.position.borrows.power": "Borrowing power used: {{value, percent}}",
   "gigaStaking.position.supplies.title": "Your supplies",
