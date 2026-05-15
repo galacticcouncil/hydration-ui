@@ -1,17 +1,19 @@
-// Phase 5b — boot the RAILGUN engine in scan-only mode.
+// Phase 5b — boot the RAILGUN engine with a real ArtifactGetter so the prover
+// can actually generate proofs for Shield / Send / Unshield (and the swap
+// flow's inner unshield).
 //
-// scan-only = no proof generation needed (no shield/send/unshield/swap yet),
-// so the artifact getter is a stub that throws. quickSync also stubs to empty
-// arrays for now: 5d wires the Subsquid indexer. Until then the engine falls
-// back to slow `eth_getLogs` against the lark RPC, which is fine for a fresh
-// chain at ~250k blocks.
+// The artifact getter (`createBrowserArtifactGetter()` from `./artifacts.ts`)
+// resolves to the wasm+zkey blobs bundled under
+// `src/sections/privacy/assets/circuits/` — decompressed from the
+// `railgun-circuit-test-artifacts` npm package at build time so the same vkeys
+// are used here as on the on-chain Verifier on the lark proxy
+// (0x195C5EFAa658Ac3C40DF6138F1C3B948Ed2C83D7).
 //
-// What this proves end-to-end once mounted: package resolution, ethers v6
-// FallbackProvider construction, PollingJsonRpcProvider over lark HTTP RPC,
-// engine init + loadNetwork against the Phase 0 proxy, scan progress events.
+// QuickSync still stubs to empty arrays for now: 5d wires the Subsquid
+// indexer. Until then the engine falls back to slow `eth_getLogs` against the
+// lark RPC, which is fine for a fresh chain at ~250k blocks.
 
 import {
-  ArtifactGetter,
   GetLatestValidatedRailgunTxid,
   MerklerootValidator,
   PollingJsonRpcProvider,
@@ -22,6 +24,7 @@ import {
 } from "@railgun-community/engine"
 import leveljs from "level-js"
 
+import { createBrowserArtifactGetter } from "sections/privacy/utils/artifacts"
 import { RailgunChainConfig } from "sections/privacy/utils/networks"
 
 // 16 chars max, lowercase + numerals only — engine enforces.
@@ -34,24 +37,6 @@ const POLLING_INTERVAL_MS = 15_000
 // All hex-zero placeholders — V3 contracts not deployed on Hydration. Engine
 // only consumes these when supportsV3 = true, which we set to false.
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
-
-const stubArtifactGetter: ArtifactGetter = {
-  assertArtifactExists: () => {
-    throw new Error(
-      "RAILGUN proof artifacts not loaded — scan-only mode. Proof generation lands in Phase 5c (shield).",
-    )
-  },
-  getArtifacts: async () => {
-    throw new Error(
-      "RAILGUN proof artifacts not loaded — scan-only mode. Proof generation lands in Phase 5c (shield).",
-    )
-  },
-  getArtifactsPOI: async () => {
-    throw new Error(
-      "RAILGUN POI artifacts not loaded — POI is bypassed on Hydration.",
-    )
-  },
-}
 
 const stubQuickSyncEvents: QuickSyncEvents = async () => ({
   commitmentEvents: [],
@@ -88,7 +73,7 @@ export const bootRailgunEngine = async (
     WALLET_SOURCE,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     leveldown as any,
-    stubArtifactGetter,
+    createBrowserArtifactGetter(),
     stubQuickSyncEvents,
     stubQuickSyncRailgunTransactionsV2,
     alwaysValidMerkleroot,
