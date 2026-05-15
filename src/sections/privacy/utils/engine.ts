@@ -26,6 +26,7 @@ import leveljs from "level-js"
 
 import { createBrowserArtifactGetter } from "sections/privacy/utils/artifacts"
 import { RailgunChainConfig } from "sections/privacy/utils/networks"
+import { installSnarkJsGroth16 } from "sections/privacy/utils/snarkjs-setup"
 
 // 16 chars max, lowercase + numerals only — engine enforces.
 const WALLET_SOURCE = "hydration"
@@ -81,6 +82,12 @@ export const bootRailgunEngine = async (
     undefined,
     false,
   )
+
+  // Phase 5b-snarkjs — wire snarkjs's Groth16 prover into the engine. Without
+  // this the engine throws `Requires groth16 full prover implementation` the
+  // moment Shield / Send / Unshield tries to build a proof, even with the
+  // ArtifactGetter returning wasm+zkey blobs above.
+  installSnarkJsGroth16(engine.prover)
 
   const provider = new PollingJsonRpcProvider(
     config.rpcUrl,
