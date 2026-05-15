@@ -1,6 +1,7 @@
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { ToastProvider } from "components/Toast/ToastProvider"
 import { RpcProvider } from "providers/rpcProvider"
+import { BroadcasterProvider } from "sections/privacy/providers/BroadcasterProvider"
 import { RailgunProvider } from "sections/privacy/providers/RailgunProvider"
 import { FC, PropsWithChildren, lazy } from "react"
 import { SkeletonTheme } from "react-loading-skeleton"
@@ -53,7 +54,9 @@ export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
             >
               <AppsContextProvider>
                 <RailgunProvider>
-                  {children} <Services />
+                  <BroadcasterProvider>
+                    {children} <Services />
+                  </BroadcasterProvider>
                 </RailgunProvider>
               </AppsContextProvider>
             </SkeletonTheme>

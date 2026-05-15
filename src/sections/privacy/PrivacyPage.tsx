@@ -21,6 +21,7 @@ import {
   RailgunWalletState,
   useRailgunWallet,
 } from "sections/privacy/hooks/useRailgunWallet"
+import { BroadcasterPicker } from "sections/privacy/components/BroadcasterPicker"
 
 export const PrivacyPage = () => {
   const { state, scan, chain, config } = useRailgunContext()
@@ -76,6 +77,19 @@ export const PrivacyPage = () => {
             chain={chain}
           />
         )}
+      </Card>
+
+      <div style={{ height: 16 }} />
+
+      <Card>
+        <h2 style={{ marginTop: 0 }}>Relayer</h2>
+        <p style={{ opacity: 0.7, fontSize: 13, marginTop: 0, marginBottom: 12 }}>
+          Pick a broadcaster to pay gas for your shielded transactions. The
+          fee is deducted from your shielded balance and the broadcaster pays
+          the on-chain gas — keeping your EVM address off the transaction.
+          Self-relay reveals the sending EVM address.
+        </p>
+        <BroadcasterPicker />
       </Card>
     </div>
   )
