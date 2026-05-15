@@ -70,6 +70,7 @@ export const LINKS = {
   privacy: "/privacy",
   privacyShield: "/privacy/shield",
   privacyUnshield: "/privacy/unshield",
+  privacySend: "/privacy/send",
 }
 
 export const MENU_ITEMS = [

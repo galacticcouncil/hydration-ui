@@ -31,8 +31,14 @@ const SIGN_IN_MESSAGE = "Sign in to RAILGUN on Hydration · v1"
 // guards the wallet blob inside the engine DB; since we re-derive it from a
 // fresh signature each session, a static key adds no security but the engine
 // API requires one (must be 64-char hex).
-const ENCRYPTION_KEY =
+//
+// Exported so downstream flows (SendFlow et al) can hand it to engine APIs
+// that decrypt the wallet's spending key in order to sign proofs
+// (TransactionBatch.generateTransactions). Internal-but-importable — nothing
+// outside `sections/privacy` should reach for this.
+export const RAILGUN_ENCRYPTION_KEY =
   "0101010101010101010101010101010101010101010101010101010101010101"
+const ENCRYPTION_KEY = RAILGUN_ENCRYPTION_KEY
 
 const walletIdStorageKey = (evmAddress: string, chainId: number) =>
   `railgun.walletId.${chainId}.${evmAddress.toLowerCase()}`

@@ -1,6 +1,7 @@
 export { PrivacyPage } from "sections/privacy/PrivacyPage"
 export { ShieldFlow } from "sections/privacy/flows/ShieldFlow"
 export { UnshieldFlow } from "sections/privacy/flows/UnshieldFlow"
+export { SendFlow } from "sections/privacy/flows/SendFlow"
 export {
   RailgunProvider,
   useRailgunContext,
