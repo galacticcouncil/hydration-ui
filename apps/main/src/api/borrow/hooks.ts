@@ -28,7 +28,7 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { useSquidClient } from "@/api/provider"
+import { useProxyUrl, useSquidClient } from "@/api/provider"
 import { stablepoolReservesQuery, type TReserve } from "@/api/stableswap"
 import {
   isStableSwap,
@@ -62,6 +62,7 @@ export type BorrowAssetApyData = {
 const getExternalIncentives = async (
   queryClient: QueryClient,
   assetsIds: string[],
+  indexerUrl: string,
   reserves?: TReserve[],
 ) => {
   const externalApysQueries: [
@@ -73,7 +74,7 @@ const getExternalIncentives = async (
     const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
     if (defillamaId) {
       const apy = await queryClient.ensureQueryData(
-        defillamaLatestApyQuery(defillamaId),
+        defillamaLatestApyQuery(defillamaId, indexerUrl),
       )
 
       if (apy) {
@@ -88,7 +89,9 @@ const getExternalIncentives = async (
     }
     const kaminoId = ASSET_ID_TO_KAMINO_ID[assetId]
     if (kaminoId) {
-      const apy = await queryClient.ensureQueryData(kaminoApyQuery(kaminoId))
+      const apy = await queryClient.ensureQueryData(
+        kaminoApyQuery(kaminoId, indexerUrl),
+      )
 
       if (apy) {
         externalApysQueries.push([
@@ -122,6 +125,7 @@ export const borrowAssetApyQuery = (
   rpc: TProviderContext,
   queryClient: QueryClient,
   squidClient: SquidSdk,
+  indexerUrl: string,
   assetId: string,
   getAssetWithFallback: TAssetsContext["getAssetWithFallback"],
   getErc20AToken: TAssetsContext["getErc20AToken"],
@@ -192,6 +196,7 @@ export const borrowAssetApyQuery = (
         const externalIncentives = await getExternalIncentives(
           queryClient,
           stableSwapUnderlyingAssetIds,
+          indexerUrl,
           stablepoolData.reserves,
         )
 
@@ -219,9 +224,11 @@ export const borrowAssetApyQuery = (
               .includes(reserve.underlyingAsset)
           },
         )
-        const externalIncentives = await getExternalIncentives(queryClient, [
-          assetId,
-        ])
+        const externalIncentives = await getExternalIncentives(
+          queryClient,
+          [assetId],
+          indexerUrl,
+        )
 
         const calculatedData = calculateAssetApyTotals({
           underlyingReserves,
@@ -245,6 +252,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
   const squidClient = useSquidClient()
+  const indexerUrl = useProxyUrl()
 
   const { data: timestamp } = useBlockTimestamp()
 
@@ -254,6 +262,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
         rpc,
         queryClient,
         squidClient,
+        indexerUrl,
         assetId,
         getAssetWithFallback,
         getErc20AToken,

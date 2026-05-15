@@ -780,6 +780,7 @@ export const useStrategyPositions = () => {
   const queryClient = useQueryClient()
   const indexerClient = useIndexerClient()
   const squidClient = useSquidClient()
+  const indexerUrl = useProxyUrl()
   const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
   const rpc = useRpcProvider()
 
@@ -823,6 +824,7 @@ export const useStrategyPositions = () => {
                 rpc,
                 queryClient,
                 squidClient,
+                indexerUrl,
                 assetId,
                 getAssetWithFallback,
                 getErc20AToken,
