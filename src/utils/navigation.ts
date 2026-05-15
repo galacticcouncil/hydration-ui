@@ -69,6 +69,7 @@ export const LINKS = {
   strategies: "/strategies",
   privacy: "/privacy",
   privacyShield: "/privacy/shield",
+  privacyUnshield: "/privacy/unshield",
 }
 
 export const MENU_ITEMS = [
