@@ -116,6 +116,7 @@
     "react-use": "^17.4.0",
     "recharts": "^2.1.13",
     "reflect-metadata": "^0.1.13",
+    "snarkjs": "^0.7.0",
     "uuid": "^9.0.0",
     "vite": "^5.4.1",
     "vite-plugin-wasm": "^3.3.0",
