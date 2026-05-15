@@ -1,7 +1,7 @@
 import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -9,12 +9,17 @@ import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
-import { gigaQueryKey, gigaTotalLockedQuery } from "@/api/gigaStake"
+import {
+  gigaAccountStakesQuery,
+  gigaQueryKey,
+  gigaTotalLockedQuery,
+  useGigaStakeExchangeRate,
+} from "@/api/gigaStake"
 import { GigaUnstakeProps } from "@/modules/staking/gigaStaking/unstake/GigaUnstake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-import { toBigInt } from "@/utils/formatting"
+import { scaleHuman, toBigInt } from "@/utils/formatting"
 import { positive } from "@/utils/validators"
 
 export type GigaUnstakeFormValues = {
@@ -29,6 +34,10 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { t } = useTranslation(["common", "staking"])
   const meta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: gigaAccountStakes } = useQuery(
+    gigaAccountStakesQuery(rpc, account?.address ?? ""),
+  )
 
   const { hdxReserve, hollarReserve, borrowableHollar, userSummary } =
     userBorrowSummary
@@ -44,7 +53,18 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     Big(hollarReserve.totalBorrows).gt(0)
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
-  const maxUnstake = Big.min(suppliedHdx, debtConstrainedMaxUnstake).toString()
+  const frozen = gigaAccountStakes?.frozen ?? 0n
+  const frozenHuman = scaleHuman(frozen, meta.decimals)
+  const frozenInGigaHdx = exchangeRate
+    ? Big(frozenHuman).div(exchangeRate.toString()).toString()
+    : "0"
+  const maxUnstakeWithFrozen = suppliedHdx.minus(frozenInGigaHdx)
+
+  const maxUnstake = Big.min(
+    suppliedHdx,
+    debtConstrainedMaxUnstake,
+    maxUnstakeWithFrozen,
+  ).toString()
 
   const form = useForm<GigaUnstakeFormValues>({
     mode: "onChange",
@@ -62,6 +82,12 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       }),
     ),
   })
+
+  const amount = form.watch("amount") || "0"
+
+  const amountInHdx = exchangeRate
+    ? Big(amount).mul(exchangeRate.toString()).toString()
+    : undefined
 
   const mutation = useMutation({
     mutationFn: async (amount: string) => {
@@ -107,6 +133,8 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     form,
     meta,
     maxUnstake,
+    amountInHdx,
+    frozenInGigaHdx,
     onSubmit,
   }
 }

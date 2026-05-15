@@ -1,3 +1,4 @@
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
@@ -10,7 +11,11 @@ import { TAssetData } from "@/api/assets"
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
-import { gigaQueryKey, gigaTotalLockedQuery } from "@/api/gigaStake"
+import {
+  gigaQueryKey,
+  gigaTotalLockedQuery,
+  useGigaStakeExchangeRate,
+} from "@/api/gigaStake"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -25,13 +30,15 @@ type GigaStakeFormValues = {
 }
 
 export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
+
   const { t } = useTranslation(["common", "staking"])
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const address = account?.address ?? ""
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const refineMaxBalance = useValidateFormMaxBalance()
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
   const { getBalance } = useAccountBalances()
   const nativeBalance = getBalance(native.id)
   const { data: locksData } = useNativeTokenLocks()
@@ -100,6 +107,11 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     ),
   })
 
+  const amount = form.watch("amount") || "0"
+  const amountInGigaHdx = exchangeRate
+    ? Big(amount).div(exchangeRate.toString()).toString()
+    : undefined
+
   const mutation = useMutation({
     mutationFn: async (amount: string) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,6 +179,8 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     meta: native,
     minStakeHuman,
     maxStakeHuman,
+    amountInGigaHdx,
+    gigaHdxMeta: getAssetWithFallback(HDX_ERC20_ASSET_ID),
     onSubmit,
   }
 }

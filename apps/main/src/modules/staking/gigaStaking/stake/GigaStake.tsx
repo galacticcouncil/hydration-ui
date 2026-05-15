@@ -68,7 +68,15 @@ export const GigaStake = ({ loading }: { loading?: boolean }) => {
 
 const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
   const { t } = useTranslation(["staking", "common"])
-  const { form, minStakeHuman, meta, onSubmit, maxStakeHuman } = useGigaStake({
+  const {
+    form,
+    minStakeHuman,
+    meta,
+    onSubmit,
+    maxStakeHuman,
+    amountInGigaHdx,
+    gigaHdxMeta,
+  } = useGigaStake({
     minStake,
     hdxReserve,
   })
@@ -99,6 +107,18 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
                     {t("common:currency", {
                       value: minStakeHuman,
                       symbol: meta.symbol,
+                    })}
+                  </Text>
+                ),
+              },
+              {
+                label: t("gigaStaking.gigaStake.receive.label"),
+                content: (
+                  <Text>
+                    {t("common:currency", {
+                      prefix: "≈",
+                      value: amountInGigaHdx,
+                      symbol: gigaHdxMeta.symbol,
                     })}
                   </Text>
                 ),

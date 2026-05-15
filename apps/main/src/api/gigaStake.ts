@@ -1,7 +1,8 @@
-import { queryOptions } from "@tanstack/react-query"
+import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 
-import { TProviderContext } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { GC_TIME } from "@/utils/consts"
 
 export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
@@ -98,3 +99,42 @@ export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
       return totalLocked as bigint
     },
   })
+
+export const gigaHDXIssuanceQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    queryKey: ["totalIssuance", STHDX_ASSET_ID],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInMinute,
+    gcTime: millisecondsInMinute,
+    queryFn: async () => {
+      return await rpc.papi.query.Tokens.TotalIssuance.getValue(
+        Number(STHDX_ASSET_ID),
+        {
+          at: "best",
+        },
+      )
+    },
+  })
+
+export const useGigaStakeExchangeRate = () => {
+  const rpc = useRpcProvider()
+
+  const {
+    data: totalIssuance,
+    isSuccess: isTotalIssuanceSuccess,
+    isLoading: isTotalIssuanceLoading,
+  } = useQuery(gigaHDXIssuanceQuery(rpc))
+  const {
+    data: gigaLockedHDX,
+    isSuccess: isGigaLockedHDXSuccess,
+    isLoading: isGigaLockedHDXLoading,
+  } = useQuery(gigaTotalLockedQuery(rpc))
+
+  return {
+    isLoading: isTotalIssuanceLoading || isGigaLockedHDXLoading,
+    data:
+      isTotalIssuanceSuccess && isGigaLockedHDXSuccess
+        ? gigaLockedHDX / totalIssuance
+        : undefined,
+  }
+}
