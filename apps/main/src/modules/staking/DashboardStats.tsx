@@ -70,7 +70,7 @@ export const DashboardStats: FC<Props> = ({
             <PieChart height={90} width={90} sx={{ pointerEvents: "none" }}>
               <Pie
                 data={[{ value: 1 }]}
-                innerRadius={15}
+                innerRadius={25}
                 outerRadius={45}
                 startAngle={PIE_START_ANGLE}
                 endAngle={

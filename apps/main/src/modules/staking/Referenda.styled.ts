@@ -27,7 +27,7 @@ export const SReferenda = styled.div<SReferendaProps>(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.space.l};
+    gap: ${theme.space.m};
 
     min-width: 22rem;
     padding-inline: ${theme.space.l};

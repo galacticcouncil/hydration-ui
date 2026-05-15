@@ -7,7 +7,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { useTheme } from "@galacticcouncil/ui/theme"
+import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -26,6 +26,7 @@ export const GigaHDXSupplyInfo = () => {
   const { t } = useTranslation(["staking", "common"])
   const { native } = useAssets()
   const { themeProps } = useTheme()
+  const { isMobile, isTablet } = useBreakpoints()
 
   const {
     supplyStaked,
@@ -74,23 +75,26 @@ export const GigaHDXSupplyInfo = () => {
   ]
 
   return (
-    <Flex gap="xl" align="center" p="xl">
+    <Flex gap="xl" align="start" p="xl">
       <Flex
-        height={115}
-        width={115}
-        p="m"
+        height={[45, 45, 115]}
+        width={[45, 45, 115]}
         bg={getToken("details.separatorsOnDim")}
         borderRadius="full"
         justify="center"
         align="center"
       >
-        <PieChart height={90} width={90} sx={{ pointerEvents: "none" }}>
+        <PieChart
+          height={isMobile || isTablet ? 35 : 90}
+          width={isMobile || isTablet ? 35 : 90}
+          sx={{ pointerEvents: "none" }}
+        >
           <Pie
             data={pieData}
             dataKey="value"
             nameKey="name"
-            innerRadius={15}
-            outerRadius={45}
+            innerRadius={isMobile || isTablet ? 7 : 25}
+            outerRadius={isMobile || isTablet ? 15 : 45}
             startAngle={PIE_START_ANGLE}
             endAngle={PIE_START_ANGLE - 360}
             stroke="none"
@@ -98,15 +102,15 @@ export const GigaHDXSupplyInfo = () => {
         </PieChart>
       </Flex>
 
-      <Flex direction="column" gap="s" sx={{ minWidth: 0 }}>
+      <Flex direction="column" gap="s" flex={1}>
         <Text fs="p6" fw={500} color={getToken("text.high")}>
           {t("gigaStaking.supply.label")}
         </Text>
 
         <Stack
-          direction={["column", "column", "column", "row"]}
-          gap={["xxl", null]}
-          justify="start"
+          direction={["row", "row", "row", "row"]}
+          gap={["xxl", "xxl", "xxl", pxToRem(48), pxToRem(78)]}
+          justify={["space-between", "space-between", "space-between", "start"]}
           separated
         >
           <Flex direction="column" gap="xs">

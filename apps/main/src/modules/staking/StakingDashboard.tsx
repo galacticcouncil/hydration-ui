@@ -1,10 +1,9 @@
-import { Box, Flex, Paper, SectionHeader } from "@galacticcouncil/ui/components"
+import { Box, Flex, Paper } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
@@ -24,7 +23,6 @@ import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 export const StakingDashboard: FC = () => {
-  const { t } = useTranslation("staking")
   const rpc = useRpcProvider()
 
   const { native } = useAssets()
@@ -78,7 +76,6 @@ export const StakingDashboard: FC = () => {
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap="xl">
           <Box>
-            <SectionHeader title={t("dashboard.title")} />
             <Stake
               key={address}
               staked={staked}
@@ -123,11 +120,6 @@ export const StakingDashboard: FC = () => {
     <Flex direction="column" gap="xl">
       {hasPosition && <GigaHDXBanner />}
       <TwoColumnGrid template="sidebar">
-        <SectionHeader
-          noTopPadding
-          sx={{ gridColumn: "1/-1" }}
-          title={t("dashboard.title")}
-        />
         <Paper>
           {isLoading ? (
             <>

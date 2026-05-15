@@ -34,7 +34,7 @@ export const ReferendaHeader: FC<Props> = ({
   return (
     <Flex direction="column" gap="l">
       <Flex justify="space-between" align="center">
-        <Flex py="s" align="center" gap="s" wrap>
+        <Flex align="center" gap="s" wrap>
           {track && (
             <Chip
               sx={{ textTransform: "uppercase" }}

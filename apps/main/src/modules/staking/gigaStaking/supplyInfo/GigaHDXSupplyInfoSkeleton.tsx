@@ -6,6 +6,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
@@ -15,26 +16,30 @@ import {
 } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 
 export const GigaHDXSupplyInfoSkeleton = () => {
+  const { isMobile, isTablet } = useBreakpoints()
   const { t } = useTranslation("staking")
 
   return (
     <Flex gap="xl" align="center" p="xl">
       <Flex
-        height={pxToRem(115)}
-        width={pxToRem(115)}
-        p="m"
+        height={[45, 45, 115]}
+        width={[45, 45, 115]}
         bg={getToken("details.separatorsOnDim")}
         borderRadius="full"
         justify="center"
         align="center"
       >
-        <PieChart height={90} width={90} sx={{ pointerEvents: "none" }}>
+        <PieChart
+          height={isMobile || isTablet ? 35 : 90}
+          width={isMobile || isTablet ? 35 : 90}
+          sx={{ pointerEvents: "none" }}
+        >
           <Pie
             data={[]}
             dataKey="value"
             nameKey="name"
-            innerRadius={15}
-            outerRadius={45}
+            innerRadius={isMobile || isTablet ? 7 : 25}
+            outerRadius={isMobile || isTablet ? 15 : 45}
             startAngle={PIE_START_ANGLE}
             endAngle={PIE_START_ANGLE - 360}
             stroke="none"
@@ -42,15 +47,15 @@ export const GigaHDXSupplyInfoSkeleton = () => {
         </PieChart>
       </Flex>
 
-      <Flex direction="column" gap="s" sx={{ minWidth: 0 }}>
+      <Flex direction="column" gap="s" flex={1}>
         <Text fs="p6" fw={500} color={getToken("text.high")}>
           {t("gigaStaking.supply.label")}
         </Text>
 
         <Stack
-          direction={["column", "column", "column", "row"]}
-          gap={["xxl", null]}
-          justify="start"
+          direction={["row", "row", "row", "row"]}
+          gap={["xxl", "xxl", "xxl", pxToRem(48), pxToRem(78)]}
+          justify={["space-between", "space-between", "space-between", "start"]}
           separated
         >
           <Flex direction="column" gap="xs">

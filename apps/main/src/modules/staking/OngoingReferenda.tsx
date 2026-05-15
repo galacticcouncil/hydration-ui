@@ -60,33 +60,33 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
       <Flex direction="column" gap="m">
         <Box>
           <Flex
-            align={isMobile ? "center" : "flex-end"}
+            align={["center", "center"]}
             pt={[null, null, "xl"]}
             justify="space-between"
+            asChild
           >
-            <SectionHeader
-              title={t("staking:referenda.title", {
-                count: referenda.length,
-              })}
-              hasDescription
-              noTopPadding
-            />
-            {!isLoading && referenda.length > 0 && (
-              <MicroButton
-                asChild
-                sx={{ display: "flex", alignItems: "center", gap: "s" }}
-              >
-                <CollapsibleTrigger
-                  sx={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setIsCollapsed((prev) => !prev)
+            <CollapsibleTrigger
+              sx={{ cursor: "pointer", width: "100%" }}
+              onClick={() => {
+                setIsCollapsed((prev) => !prev)
 
-                    if (!isMobile) {
-                      setTimeout(() => {
-                        gridRef.current?.scrollIntoView({ behavior: "smooth" })
-                      }, 0)
-                    }
-                  }}
+                if (!isMobile) {
+                  setTimeout(() => {
+                    gridRef.current?.scrollIntoView({ behavior: "smooth" })
+                  }, 0)
+                }
+              }}
+            >
+              <SectionHeader
+                title={t("staking:referenda.title", {
+                  count: referenda.length,
+                })}
+                hasDescription
+                noTopPadding
+              />
+              {!isLoading && referenda.length > 0 && (
+                <MicroButton
+                  sx={{ display: "flex", alignItems: "center", gap: "s" }}
                 >
                   <Text
                     fw={500}
@@ -102,13 +102,15 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                     component={isCollapsed ? ChevronDown : ChevronUp}
                     color={getToken("icons.onContainer")}
                   />
-                </CollapsibleTrigger>
-              </MicroButton>
-            )}
+                </MicroButton>
+              )}
+            </CollapsibleTrigger>
           </Flex>
-          <Text fs="p6" lh="s" color={getToken("text.medium")}>
-            {t("staking:referenda.participate")}
-          </Text>
+          {!isCollapsed && (
+            <Text fs="p6" lh="s" color={getToken("text.medium")}>
+              {t("staking:referenda.participate")}
+            </Text>
+          )}
         </Box>
         <CollapsibleContent>
           {isLoading && (

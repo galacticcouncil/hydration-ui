@@ -7,6 +7,7 @@ import {
   DropletsIcon,
   GemIcon,
   Grid2X2Icon,
+  HDXClassic,
   HistoryIcon,
   LandmarkIcon,
   Repeat2Icon,
@@ -161,7 +162,7 @@ export const NAVIGATION: NavigationItem[] = [
     icon: GemIcon,
     children: [
       { key: "stakingOverview", to: LINKS.stakingOverview, icon: ChartPieIcon },
-      { key: "stakingGigaStake", to: LINKS.stakingGigaStake, icon: GemIcon },
+      { key: "stakingGigaStake", to: LINKS.stakingGigaStake, icon: HDXClassic },
     ],
   },
   {

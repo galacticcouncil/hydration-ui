@@ -61,30 +61,30 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
 
   return (
     <>
-      <Flex direction="row" gap="s">
+      <Flex direction="row" justify="end" gap="s">
         {voted ? (
           <Button
-            size="large"
+            size="medium"
             variant="secondary"
-            sx={{ flex: 1 }}
             onClick={handleRemoveVote}
+            minWidth={140}
           >
             {t("referenda.item.removeVote")}
           </Button>
         ) : (
           <Button
-            size="large"
+            size="medium"
             variant="primary"
-            sx={{ flex: 1 }}
             onClick={() => setVoteOpen(true)}
             disabled={isBalanceLoading}
+            minWidth={140}
           >
             {t("referenda.item.vote")}
           </Button>
         )}
         <Button
-          size="large"
-          variant="secondary"
+          size="medium"
+          variant="tertiary"
           outline
           asChild
           aria-label={t("referenda.item.openOnSubSquare")}

@@ -14,7 +14,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
@@ -98,7 +98,13 @@ export const GigaHDXPosition = () => {
   return (
     <>
       <Paper>
-        <Flex align="center" p="xl" pb="l" gap="base">
+        <Flex
+          align="center"
+          py={["l", "xl"]}
+          px={["m", "xl"]}
+          pb="l"
+          gap="base"
+        >
           <AssetLogo id={ghdxMeta.id} />
 
           <Flex direction="column" justify="space-between">
@@ -111,7 +117,7 @@ export const GigaHDXPosition = () => {
             >
               {t("gigaStaking.position.title")}
             </Text>
-            <Text fs="p6" color={getToken("text.medium")}>
+            <Text fs="p6" lh={1} color={getToken("text.medium")}>
               {t("gigaStaking.position.desc")}
             </Text>
           </Flex>
@@ -120,7 +126,7 @@ export const GigaHDXPosition = () => {
             value={
               <Text
                 font="primary"
-                fs="h6"
+                fs={["base", "h6"]}
                 lh={1}
                 fw={500}
                 color={getToken("text.tint.secondary")}
@@ -145,8 +151,8 @@ export const GigaHDXPosition = () => {
               direction={["column", "column", "column", "row"]}
               gap={["xxl", null]}
               justify="start"
-              py="l"
-              px="xl"
+              py={["l", "l"]}
+              px={["m", "xl"]}
               separated
             >
               <ValueStats
@@ -185,12 +191,10 @@ export const GigaHDXPosition = () => {
             </Stack>
           </>
         )}
-
         <Separator />
-
         <Box
-          m="xl"
-          p="xl"
+          m={["l", "xl"]}
+          p={["m", "xl"]}
           minWidth="300px"
           bg={getToken("surfaces.containers.dim.dimOnBg")}
           borderRadius="xl"
@@ -209,15 +213,14 @@ export const GigaHDXPosition = () => {
                 {t("gigaStaking.position.borrows.title")}
               </Text>
 
-              <Text
-                font="primary"
-                fw={500}
-                fs="p6"
-                lh={1}
-                color={getToken("text.tint.secondary")}
-                transform="uppercase"
-              >
-                4.5% borrow apy
+              <Text fw={500} fs="p5" lh={1} color={getToken("text.medium")}>
+                <Trans
+                  t={t}
+                  i18nKey="gigaStaking.position.borrow.apy"
+                  values={{ value: 4.5 }}
+                >
+                  <Text as="span" color={getToken("text.high")} />
+                </Trans>
               </Text>
             </Flex>
 
@@ -306,9 +309,7 @@ export const GigaHDXPosition = () => {
           </Flex>
         </Box>
 
-        <Separator />
-
-        <Box px="xl" pb="xl">
+        <Box px={["l", "xl"]} pb={["m", "xl"]}>
           <SChartContainer sx={{ mt: "xxl" }}>
             <GigaStakingChart />
 

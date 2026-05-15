@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { stakingPositionsQuery } from "@/api/staking"
 import { GigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration"
+import { PendingPositions } from "@/modules/staking/gigaStaking/pendingPositions/PendingPositions"
 import { GigaStake } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { GigaUnstake } from "@/modules/staking/gigaStaking/unstake/GigaUnstake"
 import { SHeaderTab } from "@/modules/trade/swap/components/FormHeader/FormHeader.styled"
@@ -29,25 +30,29 @@ export const GigaAction = () => {
   }
 
   return (
-    <Paper asChild>
-      <Flex direction="column">
-        <Flex px="xl" py="m" align="center" gap="m">
-          {stakeOptions.map((option) => (
-            <SHeaderTab
-              key={option}
-              disabled={option === "unstake" && !address}
-              data-status={option === type ? "active" : "inactive"}
-              onClick={() => setType(option)}
-            >
-              {t(`gigaStaking.tabs.${option}`)}
-            </SHeaderTab>
-          ))}
+    <Flex direction="column" gap="xl">
+      <Paper asChild>
+        <Flex direction="column">
+          <Flex px="xl" py="m" align="center" gap="m">
+            {stakeOptions.map((option) => (
+              <SHeaderTab
+                key={option}
+                disabled={option === "unstake" && !address}
+                data-status={option === type ? "active" : "inactive"}
+                onClick={() => setType(option)}
+              >
+                {t(`gigaStaking.tabs.${option}`)}
+              </SHeaderTab>
+            ))}
+          </Flex>
+
+          <Separator />
+
+          {type === "stake" ? <GigaStake /> : <GigaUnstake />}
         </Flex>
+      </Paper>
 
-        <Separator />
-
-        {type === "stake" ? <GigaStake /> : <GigaUnstake />}
-      </Flex>
-    </Paper>
+      <PendingPositions />
+    </Flex>
   )
 }
