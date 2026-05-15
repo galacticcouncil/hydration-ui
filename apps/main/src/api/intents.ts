@@ -1,7 +1,11 @@
-import { queryOptions } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { isNonNullish } from "remeda"
 
-import { PapiIce, TProviderContext } from "@/providers/rpcProvider"
+import {
+  PapiIce,
+  TProviderContext,
+  useRpcProvider,
+} from "@/providers/rpcProvider"
 
 type IntentValue = NonNullable<
   Awaited<ReturnType<PapiIce["query"]["Intent"]["Intents"]["getValue"]>>
@@ -43,4 +47,9 @@ export const intentsByAccountQuery = (
       return results.filter(isNonNullish)
     },
   })
+}
+
+export const useAccountIntents = (address: string) => {
+  const rpc = useRpcProvider()
+  return useQuery(intentsByAccountQuery(rpc, address))
 }

@@ -7,10 +7,13 @@ import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
 import {
+  isDcaScheduleOrder,
+  isIntentOrder,
   OrderData,
   OrderKind,
   useOrdersData,
 } from "@/modules/trade/orders/lib/useOrdersData"
+import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
@@ -30,6 +33,7 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
     readonly detail: OrderData
     readonly isTermination: boolean
   } | null>(null)
+  const removeIntent = useRemoveIntent()
 
   const assetFilter = allPairs ? [] : [assetIn, assetOut]
 
@@ -80,17 +84,27 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
           isDetailOpen.isTermination === false && (
             <DcaOrderDetailsModal
               details={isDetailOpen.detail}
-              onTerminate={() =>
+              onTerminate={() => {
+                const detail = isDetailOpen.detail
+
+                if (isIntentOrder(detail)) {
+                  removeIntent.mutate(detail.intentId, {
+                    onSuccess: () => setIsDetailOpen(null),
+                  })
+                  return
+                }
+
                 setIsDetailOpen({
                   ...isDetailOpen,
                   isTermination: true,
                 })
-              }
+              }}
             />
           )}
         {isDetailOpen &&
           isDetailOpen.detail.kind !== OrderKind.Limit &&
-          isDetailOpen.isTermination === true && (
+          isDetailOpen.isTermination === true &&
+          isDcaScheduleOrder(isDetailOpen.detail) && (
             <TerminateDcaScheduleModalContent
               scheduleId={isDetailOpen.detail.scheduleId}
               sold={isDetailOpen.detail.fromAmountExecuted}

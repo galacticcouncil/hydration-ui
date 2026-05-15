@@ -30,7 +30,7 @@ export type OrderDataBase = {
   readonly status: DcaScheduleStatus | null
 }
 
-export type LimitOrderData = OrderDataBase & {
+export type IntentLimitOrderData = OrderDataBase & {
   readonly kind: OrderKind.Limit
   readonly intentId: bigint
   readonly deadline: number | null
@@ -38,15 +38,29 @@ export type LimitOrderData = OrderDataBase & {
   readonly partialFilledAmount: string | null
 }
 
-export type DcaOrderData = OrderDataBase & {
+export type DcaOrderDataBase = OrderDataBase & {
   readonly kind: OrderKind.Dca | OrderKind.DcaRolling
-  readonly scheduleId: number
   readonly singleTradeSize: string | null
   readonly blocksPeriod: string | null
   readonly isOpenBudget: boolean
 }
 
-export type OrderData = LimitOrderData | DcaOrderData
+export type DcaOrderData = DcaOrderDataBase & {
+  readonly scheduleId: number
+}
+
+export type IntentDcaOrderData = DcaOrderDataBase & {
+  readonly intentId: bigint
+}
+
+export type OrderData = IntentLimitOrderData | DcaOrderData | IntentDcaOrderData
+
+export const isIntentOrder = (
+  order: OrderData,
+): order is IntentLimitOrderData | IntentDcaOrderData => "intentId" in order
+
+export const isDcaScheduleOrder = (order: OrderData): order is DcaOrderData =>
+  "scheduleId" in order
 
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,

@@ -16,11 +16,11 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
-import { LimitOrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { IntentLimitOrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 
 type Props = {
-  readonly details: LimitOrderData
+  readonly details: IntentLimitOrderData
   readonly onCancel: () => void
 }
 
@@ -31,8 +31,8 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
   const limitPrice =
     details.toAmountExecuted &&
     details.fromAmountBudget &&
-    Big(details.fromAmountBudget).gt(0)
-      ? Big(details.toAmountExecuted).div(details.fromAmountBudget).toString()
+    Big(details.toAmountExecuted).gt(0)
+      ? Big(details.fromAmountBudget).div(details.toAmountExecuted).toString()
       : null
 
   return (

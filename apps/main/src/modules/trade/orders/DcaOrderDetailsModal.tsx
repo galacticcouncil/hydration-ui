@@ -16,12 +16,16 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
-import { DcaOrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  DcaOrderData,
+  IntentDcaOrderData,
+  isDcaScheduleOrder,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { PastExecutions } from "@/modules/trade/orders/PastExecutions/PastExecutions"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 type Props = {
-  readonly details: DcaOrderData
+  readonly details: DcaOrderData | IntentDcaOrderData
   readonly onTerminate: (() => void) | null
 }
 
@@ -114,10 +118,12 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
             </Button>
           </Flex>
         )}
-        <PastExecutions
-          scheduleId={details.scheduleId}
-          sx={{ marginInline: "var(--modal-content-inset)" }}
-        />
+        {isDcaScheduleOrder(details) && (
+          <PastExecutions
+            scheduleId={details.scheduleId}
+            sx={{ marginInline: "var(--modal-content-inset)" }}
+          />
+        )}
       </ModalBody>
     </>
   )

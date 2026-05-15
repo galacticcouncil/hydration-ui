@@ -19,7 +19,12 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData, OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  isDcaScheduleOrder,
+  isIntentOrder,
+  OrderData,
+  OrderKind,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
@@ -86,26 +91,13 @@ export const useOpenOrdersColumns = () => {
           toAmountExecuted,
         } = row.original
 
-        const price = (() => {
-          if (kind === OrderKind.Limit) {
-            if (
-              toAmountExecuted &&
-              fromAmountBudget &&
-              Big(fromAmountBudget).gt(0)
-            ) {
-              return Big(toAmountExecuted).div(fromAmountBudget).toString()
-            }
-          } else {
-            if (
-              toAmountExecuted &&
-              fromAmountExecuted &&
-              Big(toAmountExecuted).gt(0)
-            ) {
-              return Big(fromAmountExecuted).div(toAmountExecuted).toString()
-            }
-          }
-          return null
-        })()
+        const fromAmount =
+          kind === OrderKind.Limit ? fromAmountBudget : fromAmountExecuted
+
+        const price =
+          toAmountExecuted && fromAmount && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmount).div(toAmountExecuted).toString()
+            : null
 
         return <SwapPrice from={from} to={to} price={price} />
       },
@@ -144,7 +136,8 @@ export const useOpenOrdersColumns = () => {
         const removeIntent = useRemoveIntent()
         const order = row.original
 
-        const isIntent = order.kind === OrderKind.Limit
+        const isIntent = isIntentOrder(order)
+        const isDcaSchedule = isDcaScheduleOrder(order)
 
         return (
           <Flex align="center" gap="base" justify="flex-end">
@@ -164,7 +157,7 @@ export const useOpenOrdersColumns = () => {
               <Icon component={Trash} size="s" />
             </Button>
             <TableRowDetailsExpand />
-            {!isIntent && (
+            {isDcaSchedule && (
               <Modal
                 open={modal === "confirmation"}
                 onOpenChange={() => setModal("none")}

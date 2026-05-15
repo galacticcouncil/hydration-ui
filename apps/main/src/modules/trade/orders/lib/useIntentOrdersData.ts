@@ -1,17 +1,16 @@
 import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import { AccountIntentEntry, intentsByAccountQuery } from "@/api/intents"
+import { AccountIntentEntry, useAccountIntents } from "@/api/intents"
 import {
-  LimitOrderData,
+  IntentDcaOrderData,
+  IntentLimitOrderData,
   OrderData,
   OrderKind,
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 import { numericallyDesc } from "@/utils/sort"
 
@@ -44,21 +43,49 @@ const intentEntryToOrder = (
       timestamp: Number(entry.id >> 64n),
       isPartiallyFillable,
       partialFilledAmount,
-    } satisfies LimitOrderData
+    } satisfies IntentLimitOrderData
   }
 
-  // @TODO: Handle ICE DCA orders
+  if (data.type === "Dca") {
+    const dca = data.value
+    const from = getAssetWithFallback(String(dca.asset_in))
+    const to = getAssetWithFallback(String(dca.asset_out))
+    const isOpenBudget = dca.budget === undefined || dca.budget === 0n
+    const budget = dca.budget ?? 0n
+    const fromAmountBudget = isOpenBudget
+      ? null
+      : scaleHuman(budget, from.decimals)
+    const fromAmountRemaining = isOpenBudget
+      ? null
+      : scaleHuman(dca.remaining_budget, from.decimals)
+    const amountIn = scaleHuman(dca.amount_in, from.decimals)
+    const amountOut = scaleHuman(dca.amount_out, to.decimals)
+
+    return {
+      kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+      intentId: entry.id,
+      from,
+      fromAmountBudget,
+      fromAmountExecuted: amountIn,
+      fromAmountRemaining,
+      to,
+      toAmountExecuted: amountOut,
+      status: DcaScheduleStatus.Created,
+      timestamp: Number(entry.id >> 64n),
+      singleTradeSize: amountIn,
+      blocksPeriod: String(dca.period),
+      isOpenBudget,
+    } satisfies IntentDcaOrderData
+  }
+
   return null
 }
 
 export const useIntentOrdersData = (assetIds: string[]) => {
   const { account } = useAccount()
-  const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
-  const { data: intents, isLoading } = useQuery(
-    intentsByAccountQuery(rpc, account?.address ?? ""),
-  )
+  const { data: intents, isLoading } = useAccountIntents(account?.address ?? "")
 
   const orders = useMemo<OrderData[]>(() => {
     if (!intents) return []
