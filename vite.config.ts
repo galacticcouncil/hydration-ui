@@ -50,6 +50,35 @@ export default defineConfig(({ command }) => {
     optimizeDeps: {
       esbuildOptions: {
         target: "esnext",
+        // shared-models bundles its `configured-json-rpc-provider.js` which
+        // does `class ConfiguredJsonRpcProvider extends ethers_1.JsonRpcProvider`.
+        // Its package.json lists ethers ^6 as a peer dep but the hoisted
+        // top-level `ethers` is v5.7 (used by the rest of the app), so
+        // require("ethers") inside shared-models resolves to v5 and
+        // `JsonRpcProvider` is undefined. We redirect it to `ethers6` (an
+        // npm-alias for `ethers@6.14.3` set up in package.json), but only
+        // when the importer is inside shared-models so other ethers v5
+        // consumers stay on v5.
+        plugins: [
+          {
+            name: "redirect-shared-models-ethers6",
+            setup(build) {
+              build.onResolve({ filter: /^ethers$/ }, (args) => {
+                if (
+                  args.importer.includes(
+                    "/@railgun-community/shared-models/",
+                  )
+                ) {
+                  return build.resolve("ethers6", {
+                    kind: "import-statement",
+                    resolveDir: args.resolveDir,
+                  })
+                }
+                return undefined
+              })
+            },
+          },
+        ],
       },
       // Skip pre-bundling for the RAILGUN engine + its wasm-bearing deps.
       // Vite's CJS-to-ESM scan rewrites their `new URL("./*.wasm", ...)`
@@ -76,6 +105,14 @@ export default defineConfig(({ command }) => {
         "railgun-engine-polling-provider": resolve(
           process.cwd(),
           "node_modules/@railgun-community/engine/dist/provider/polling-json-rpc-provider.js",
+        ),
+        // Phase 5d: vendored waku-broadcaster-client lives outside `src/`,
+        // so it's not picked up by `tsconfigPaths()`'s default rootDirs.
+        // Map the package name straight to its src entrypoint here too;
+        // Vite picks the first matching alias.
+        "@galacticcouncil/railgun-waku-broadcaster-client": resolve(
+          process.cwd(),
+          "packages/railgun-waku-broadcaster-client/src/index.ts",
         ),
         ...(command === "build"
           ? {

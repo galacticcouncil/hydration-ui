@@ -19,10 +19,46 @@ import {
   networkForChain as upstreamNetworkForChain,
 } from "@railgun-community/shared-models"
 
-// Re-export the entire shared-models surface so vendored sources can swap
-// `from '@railgun-community/shared-models'` → `from './shared-models-shim.js'`
-// without losing any symbols.
-export * from "@railgun-community/shared-models"
+// Re-export the symbols vendored sources actually reach for. We **cannot**
+// use `export *` here: `@railgun-community/shared-models` is a CJS package
+// (no `"type": "module"` in its package.json), so Vite's CJS interop only
+// surfaces its `default` binding to a bare `export *`. We have to spell out
+// every named symbol so the dev-server CJS-to-ESM rewrite can pick up each
+// `module.exports.foo` and re-export it as an ESM named export.
+//
+// If a new vendored file imports an additional symbol from the shim, add it
+// to this list (and the type list below if it's purely a type).
+export {
+  // Constants / enums.
+  BroadcasterConnectionStatus,
+  BroadcasterTransactRequestType,
+  ChainType,
+  EVMGasType,
+  NetworkName,
+  POI_REQUIRED_LISTS,
+  TXIDVersion,
+
+  // Functions.
+  compareChains,
+  delay,
+  isDefined,
+  poll,
+  versionCompare,
+} from "@railgun-community/shared-models"
+
+// Types — re-exporting these as `export type` keeps the bundler from
+// trying to emit a runtime binding for them.
+export type {
+  BroadcasterEncryptedMethodParams,
+  BroadcasterFeeMessageData,
+  BroadcasterRawParamsTransact,
+  CachedTokenFee,
+  Chain,
+  EncryptDataWithSharedKeyResponse,
+  Network,
+  PreTransactionPOIsPerTxidLeafPerList,
+  SelectedBroadcaster,
+} from "@railgun-community/shared-models"
 
 // --- Hydration chain registry --------------------------------------------
 //

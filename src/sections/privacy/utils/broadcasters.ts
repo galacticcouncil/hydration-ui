@@ -50,8 +50,12 @@ export type Broadcaster = {
   requiredPOIListKeys: string[]
   /** Accepted fee tokens. The picker shows one row per token, generally. */
   fees: BroadcasterTokenFee[]
-  /** Marker so devs see the mock fallback in the picker until Phase 3 lands. */
-  __MOCK__: true
+  /**
+   * Marker so the picker can flag "MOCK" rows. `true` while the live Waku
+   * client hasn't started yet (or failed to start); `false` once a real
+   * fee announcement populates this row.
+   */
+  __MOCK__: boolean
 }
 
 // Hydration ETH precompile — see project_hydration_evm_assets memory.
