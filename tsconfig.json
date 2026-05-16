@@ -17,9 +17,20 @@
     "noEmit": true,
     "jsxImportSource": "@emotion/react",
     "jsx": "react-jsx",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "paths": {
+      "@galacticcouncil/railgun-waku-broadcaster-client": [
+        "../packages/railgun-waku-broadcaster-client/src/index.ts"
+      ],
+      "@galacticcouncil/railgun-waku-broadcaster-client/*": [
+        "../packages/railgun-waku-broadcaster-client/src/*"
+      ]
+    }
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "packages/railgun-waku-broadcaster-client/src"
+  ],
   "exclude": ["src/graphql/__generated__"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

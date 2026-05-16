@@ -67,6 +67,8 @@
     "@radix-ui/react-tooltip": "^1.0.6",
     "@railgun-community/engine": "9.5.4",
     "@railgun-community/shared-models": "8.0.1",
+    "@waku/discovery": "0.0.13",
+    "@waku/sdk": "0.0.36",
     "@solana/web3.js": "^1.98.0",
     "@talismn/connect-wallets": "^1.2.5",
     "@tanstack/react-location": "^3.7.4",
