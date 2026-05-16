@@ -62,6 +62,9 @@ import {
 } from "sections/privacy/hooks/useRailgunWallet"
 import { useEvmAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmWalletExtension } from "utils/evm"
+import { BroadcasterPicker } from "sections/privacy/components/BroadcasterPicker"
+import { useBroadcasters } from "sections/privacy/hooks/useBroadcasters"
+import { useBroadcastTransaction } from "sections/privacy/hooks/useBroadcastTransaction"
 
 // Hydration ETH precompile (asset 20). Same address ShieldFlow uses — the
 // shielded note's tokenAddress is the EVM-precompile address, not the
@@ -86,8 +89,6 @@ const SENDABLE_ASSETS: Asset[] = [
 // 1-input/2-output Railgun proof on commodity hardware.
 const ESTIMATED_PROOF_SECONDS = 6
 
-type FeeMode = "self-relay" // broadcaster lands in 5d; type stays a union for future
-
 type SendState =
   | { status: "idle" }
   | { status: "proving"; progress: number; message: string }
@@ -101,12 +102,13 @@ export const SendFlow = () => {
   const wallet = useRailgunWallet({ engine })
   const { account } = useEvmAccount()
   const { wallet: connectedWallet } = useWallet()
+  const { selected: selectedBroadcaster } = useBroadcasters()
+  const broadcastTransaction = useBroadcastTransaction()
 
   const [recipient, setRecipient] = useState("")
   const [asset, setAsset] = useState<Asset>(SENDABLE_ASSETS[0])
   const [amount, setAmount] = useState("")
   const [memo, setMemo] = useState("")
-  const [feeMode] = useState<FeeMode>("self-relay")
   const [send, setSend] = useState<SendState>({ status: "idle" })
 
   const decoded = useMemo<
@@ -208,20 +210,34 @@ export const SendFlow = () => {
       )
       const signer = await provider.getSigner()
 
-      const tx = await signer.sendTransaction({
-        to: populated.to,
-        data: populated.data,
-        value: populated.value ?? 0n,
-        // Explicit override — Hydration's Frontier eth_estimateGas false-
-        // reverts on precompile-touching calls. 3M is generous headroom over
-        // the ~1.4M typical transact() spend.
-        gasLimit: 3_000_000n,
-      })
-      setSend({ status: "broadcasting", txHash: tx.hash })
+      const selfRelay = async (): Promise<string> => {
+        const tx = await signer.sendTransaction({
+          to: populated.to,
+          data: populated.data,
+          value: populated.value ?? 0n,
+          // Explicit override — Hydration's Frontier eth_estimateGas false-
+          // reverts on precompile-touching calls. 3M is generous headroom
+          // over the ~1.4M typical transact() spend.
+          gasLimit: 3_000_000n,
+        })
+        setSend({ status: "broadcasting", txHash: tx.hash })
+        const receipt = await tx.wait()
+        if (!receipt) throw new Error("Transaction receipt missing")
+        return tx.hash
+      }
 
-      const receipt = await tx.wait()
-      if (!receipt) throw new Error("Transaction receipt missing")
-      setSend({ status: "confirmed", txHash: tx.hash })
+      // selectedBroadcaster === null → self-relay. Otherwise the picker has
+      // chosen a broadcaster; the transport throws "not wired yet" in 5d
+      // until Waku lands. We let the error surface so the user can pick
+      // self-relay instead.
+      const txHash = selectedBroadcaster
+        ? await broadcastTransaction({
+            signedTx: populated.data ?? "",
+            selfRelay,
+          })
+        : await selfRelay()
+
+      setSend({ status: "confirmed", txHash })
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
       // eslint-disable-next-line no-console
@@ -303,13 +319,17 @@ export const SendFlow = () => {
           />
         </Field>
 
-        <FeePicker feeMode={feeMode} />
+        <div style={{ marginTop: 12, marginBottom: 12 }}>
+          <BroadcasterPicker compact />
+        </div>
 
         <SummaryBlock
           recipient={recipient}
           amount={amount}
           asset={asset}
-          feeMode={feeMode}
+          broadcasterLabel={
+            selectedBroadcaster ? selectedBroadcaster.identifier : "Self-relay"
+          }
         />
 
         <div
@@ -359,47 +379,16 @@ const AddressValidity = ({
   )
 }
 
-const FeePicker = ({ feeMode }: { feeMode: FeeMode }) => (
-  <div
-    style={{
-      marginTop: 16,
-      paddingTop: 12,
-      borderTop: "1px solid rgba(255,255,255,0.08)",
-    }}
-  >
-    <div style={{ opacity: 0.6, fontSize: 12, marginBottom: 8 }}>
-      Pay gas with
-    </div>
-    <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <input type="radio" checked={feeMode === "self-relay"} readOnly />
-      <span>Self-relay (you pay HDX gas directly)</span>
-    </label>
-    <label
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        marginTop: 6,
-        opacity: 0.4,
-      }}
-      title="Broadcaster integration lands in Phase 5d"
-    >
-      <input type="radio" disabled />
-      <span>Broadcaster (gasless for you) — Phase 5d</span>
-    </label>
-  </div>
-)
-
 const SummaryBlock = ({
   recipient,
   amount,
   asset,
-  feeMode,
+  broadcasterLabel,
 }: {
   recipient: string
   amount: string
   asset: Asset
-  feeMode: FeeMode
+  broadcasterLabel: string
 }) => {
   const hasAmount = amount.trim().length > 0
   return (
@@ -419,10 +408,7 @@ const SummaryBlock = ({
         label="Total deducted"
         value={hasAmount ? `${amount} ${asset.symbol}` : "—"}
       />
-      <SummaryRow
-        label="Gas paid by"
-        value={feeMode === "self-relay" ? "You (self-relay)" : "Broadcaster"}
-      />
+      <SummaryRow label="Gas paid by" value={broadcasterLabel} />
       <SummaryRow
         label="Proof generation"
         value={`~ ${ESTIMATED_PROOF_SECONDS}s`}
