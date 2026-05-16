@@ -18,8 +18,8 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { Mnemonic, RailgunEngine } from "@railgun-community/engine"
-import { sha256 } from "@noble/hashes/sha2"
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils"
+import { sha256 } from "@noble/hashes/sha2.js"
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js"
 
 import { useEvmAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmWalletExtension } from "utils/evm"

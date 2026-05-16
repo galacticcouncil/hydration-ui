@@ -23,8 +23,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "@tanstack/react-location"
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers6"
-import { sha256 } from "@noble/hashes/sha2"
-import { hexToBytes } from "@noble/hashes/utils"
+import { sha256 } from "@noble/hashes/sha2.js"
+import { hexToBytes } from "@noble/hashes/utils.js"
 import {
   ByteUtils,
   ChainType,
