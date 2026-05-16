@@ -57,6 +57,20 @@ export const useRailgunContext = (): RailgunContextValue => {
   return ctx
 }
 
+// Module-level singleton — survives React Strict Mode's double-mount of
+// useEffect. The first mount kicks off the boot; subsequent mounts await
+// the same promise instead of starting another (or, worse, getting cancelled
+// by the first mount's cleanup before they can attach a `.then`).
+let enginePromise: Promise<RailgunEngine> | null = null
+const getEnginePromise = (
+  config: typeof ACTIVE_RAILGUN_CHAIN,
+): Promise<RailgunEngine> => {
+  if (!enginePromise) {
+    enginePromise = bootRailgunEngine(config).then(({ engine }) => engine)
+  }
+  return enginePromise
+}
+
 export const RailgunProvider = ({ children }: { children: ReactNode }) => {
   const config = ACTIVE_RAILGUN_CHAIN
   const chain: RailgunChain = useMemo(
@@ -65,40 +79,34 @@ export const RailgunProvider = ({ children }: { children: ReactNode }) => {
   )
   const [state, setState] = useState<ConnectionState>({ status: "idle" })
   const [scan, setScan] = useState<ScanState>({ status: "Idle", progress: 0 })
-  const bootedRef = useRef(false)
+  const scanListenerAttachedRef = useRef(false)
 
   useEffect(() => {
-    if (bootedRef.current) return
-    bootedRef.current = true
-
-    let engineRef: RailgunEngine | null = null
     let cancelled = false
-
     setState({ status: "booting" })
-    bootRailgunEngine(config)
-      .then(({ engine }) => {
+    getEnginePromise(config)
+      .then((engine) => {
         if (cancelled) return
-        engineRef = engine
 
-        engine.on(
-          EngineEvent.UTXOMerkletreeHistoryScanUpdate,
-          (data: MerkletreeHistoryScanEventData) => {
-            setScan({
-              status: data.scanStatus,
-              progress: data.progress ?? 0,
-            })
-          },
-        )
+        if (!scanListenerAttachedRef.current) {
+          scanListenerAttachedRef.current = true
+          engine.on(
+            EngineEvent.UTXOMerkletreeHistoryScanUpdate,
+            (data: MerkletreeHistoryScanEventData) => {
+              setScan({
+                status: data.scanStatus,
+                progress: data.progress ?? 0,
+              })
+            },
+          )
+          // No wallet filter yet — wallets injected from useRailgunWallet
+          engine.scanContractHistory(chain, undefined).catch((e) => {
+            // eslint-disable-next-line no-console
+            console.error("[RailgunProvider] initial scan failed:", e)
+          })
+        }
 
         setState({ status: "ready", engine })
-
-        // Kick off the initial scan. No wallet filter yet — wallets get
-        // injected from `useRailgunWallet` and the engine picks them up
-        // automatically on the next scanContractHistory pass.
-        engine.scanContractHistory(chain, undefined).catch((e) => {
-          // eslint-disable-next-line no-console
-          console.error("[RailgunProvider] initial scan failed:", e)
-        })
       })
       .catch((e) => {
         if (cancelled) return
@@ -110,9 +118,8 @@ export const RailgunProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       cancelled = true
-      if (engineRef) {
-        engineRef.unload().catch(() => undefined)
-      }
+      // Don't unload the engine here — the singleton outlives any single
+      // mount cycle and is reused across the SPA's lifetime.
     }
   }, [config, chain])
 

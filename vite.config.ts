@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react"
 import wasm from "vite-plugin-wasm"
 import svgr from "vite-plugin-svgr"
 import tsconfigPaths from "vite-tsconfig-paths"
+import { nodePolyfills } from "vite-plugin-node-polyfills"
+import basicSsl from "@vitejs/plugin-basic-ssl"
 import fs from "fs/promises"
 import { resolve } from "node:path"
 import { exec } from "child_process"
@@ -49,19 +51,53 @@ export default defineConfig(({ command }) => {
       esbuildOptions: {
         target: "esnext",
       },
+      // Skip pre-bundling for the RAILGUN engine + its wasm-bearing deps.
+      // Vite's CJS-to-ESM scan rewrites their `new URL("./*.wasm", ...)`
+      // patterns incorrectly, so the wasm assets resolve to index.html and
+      // fail with "WebAssembly.instantiate(): expected magic word 00 61 73 6d".
+      // Leaving them un-bundled lets the engine load its wasm at runtime
+      // directly from node_modules.
+      // Only the two wasm packages must be excluded — Vite's pre-bundler
+      // breaks their `new URL("./*.wasm", import.meta.url)` patterns. The
+      // engine itself MUST be pre-bundled (it ships CJS, named imports
+      // depend on Vite's interop).
+      exclude: [
+        "@railgun-community/poseidon-hash-wasm",
+        "@railgun-community/curve25519-scalarmult-wasm",
+      ],
     },
     esbuild: {
       logOverride: { "this-is-undefined-in-esm": "silent" },
     },
-    resolve:
-      command === "build"
-        ? {
-            alias: {
-              "@polkadot-api/descriptors": "./.papi/descriptors/dist/index.mjs",
-            },
-          }
-        : undefined,
+    resolve: {
+      alias: {
+        // Engine package's exports map blocks subpaths; alias straight to the
+        // internal file so the privacy module can grab PollingJsonRpcProvider.
+        "railgun-engine-polling-provider": resolve(
+          process.cwd(),
+          "node_modules/@railgun-community/engine/dist/provider/polling-json-rpc-provider.js",
+        ),
+        ...(command === "build"
+          ? {
+              "@polkadot-api/descriptors":
+                "./.papi/descriptors/dist/index.mjs",
+            }
+          : {}),
+      },
+    },
     plugins: [
+      // Polyfill Node builtins (buffer, util, stream, process, crypto, …) that
+      // the RAILGUN engine pulls in transitively via bn.js, readable-stream,
+      // browserify-aes, hash-base, etc.
+      nodePolyfills({
+        protocolImports: true,
+        globals: { Buffer: true, global: true, process: true },
+      }),
+      // Self-signed HTTPS so the LAN URL counts as a "secure context".
+      // Without this `window.crypto.randomUUID` and `crypto.subtle` are
+      // undefined on `http://192.168.x.x:5175/`, which the RAILGUN wallet
+      // signing path needs. localhost would also work, but we want LAN access.
+      basicSsl(),
       tsconfigPaths(),
       react({
         jsxImportSource: "@basilisk/jsx",

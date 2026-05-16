@@ -16,12 +16,14 @@
 import {
   GetLatestValidatedRailgunTxid,
   MerklerootValidator,
-  PollingJsonRpcProvider,
   QuickSyncEvents,
   QuickSyncRailgunTransactionsV2,
   RailgunEngine,
   TXIDVersion,
 } from "@railgun-community/engine"
+// Engine's main entry now goes through Vite's CJS→ESM interop again, so
+// importing PollingJsonRpcProvider directly works.
+import { PollingJsonRpcProvider } from "@railgun-community/engine"
 import leveljs from "level-js"
 
 import { createBrowserArtifactGetter } from "sections/privacy/utils/artifacts"
@@ -65,11 +67,12 @@ export type BootedEngine = {
 export const bootRailgunEngine = async (
   config: RailgunChainConfig,
 ): Promise<BootedEngine> => {
-  // level-js returns an abstract-leveldown-compatible store on top of
-  // IndexedDB. The engine's `Database` class detects this and reaches into
-  // `level.db.db.db` to clear namespaces efficiently on rescan.
+  const log = (msg: string) => console.log(`[railgun-boot] ${msg}`)
+
+  log("step 1/5: opening leveldown via level-js IndexedDB")
   const leveldown = leveljs(`railgun-engine-${config.chainId}`)
 
+  log("step 2/5: RailgunEngine.initForWallet")
   const engine = await RailgunEngine.initForWallet(
     WALLET_SOURCE,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,18 +86,17 @@ export const bootRailgunEngine = async (
     false,
   )
 
-  // Phase 5b-snarkjs — wire snarkjs's Groth16 prover into the engine. Without
-  // this the engine throws `Requires groth16 full prover implementation` the
-  // moment Shield / Send / Unshield tries to build a proof, even with the
-  // ArtifactGetter returning wasm+zkey blobs above.
+  log("step 3/5: installing snarkjs prover")
   installSnarkJsGroth16(engine.prover)
 
+  log(`step 4/5: PollingJsonRpcProvider → ${config.rpcUrl}`)
   const provider = new PollingJsonRpcProvider(
     config.rpcUrl,
     config.chainId,
     POLLING_INTERVAL_MS,
   )
 
+  log("step 5/5: engine.loadNetwork (will await getBlockNumber, up to 60s)")
   await engine.loadNetwork(
     { type: 0, id: config.chainId },
     config.proxy,
@@ -111,6 +113,7 @@ export const bootRailgunEngine = async (
     undefined,
     false,
   )
+  log("loadNetwork resolved — engine ready")
 
   return { engine, provider }
 }
