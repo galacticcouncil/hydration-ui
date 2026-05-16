@@ -1,4 +1,4 @@
-// Phase 5c — Unshield flow UI scaffold.
+// Phase 5c — Unshield flow real wiring.
 //
 // What this ships:
 //   - shielded-balance asset picker (defaults to ETH precompile,
@@ -16,48 +16,56 @@
 //         Presentation only — the on-chain `UnshieldNote.toAddress` is still
 //         the EVM 20-byte address; the substrate option just relabels it.
 //       * Other address     — free-form EVM address input
-//   - gas-payment selector pinned to "self-relay" (broadcaster integration
-//     is a separate track; Phase 5c v1 is broadcaster-less)
-//   - Unshield CTA (disabled until proof artifacts + signer bridge land —
-//     same blocker as ShieldFlow; see header comment there)
+//   - BroadcasterPicker (self-relay default, mock broadcasters list for
+//     Phase 5d UI; broadcaster transport throws "not wired yet" if picked)
+//   - Unshield CTA — re-enabled now that artifacts + snarkjs Groth16 are
+//     installed in the engine (commits ba09a90 + 0360b3b). Drives the full
+//     pipeline:
+//         TransactionBatch.addUnshieldData({ toAddress, value, tokenData })
+//       → batch.generateTransactions(prover, wallet, V2, key, progress, false)
+//       → RailgunVersionedSmartContracts.generateTransact(V2, chain, [proved])
+//       → user's connected EVM wallet signs + sends with gasLimit 3_000_000n
 //
-// What this does NOT ship yet:
-//   - real shielded-balance query plumbed into the picker (today the picker
-//     shows the static asset list; balance read happens once the asset is
-//     selected via `wallet.getTokenBalancesByBucket(...)`)
-//   - real `TransactionBatch` → `prover.prove` → `RailgunSmartWalletContract
-//     .generateTransact` → EVM-wallet broadcast pipeline. Wiring needs:
-//       * proof artifacts (engine boots with stubArtifactGetter that throws;
-//         see sections/privacy/utils/engine.ts header)
-//       * viem↔ethers v6 signer adapter for the broadcast step
-//   - broadcaster path (UI says "self-relay" only)
-//
-// Reference: /home/mrq/git/hydration-railgun-poc/contract/cli.ts cmdUnshield
-// (ethers v5, full balance only, gasLimit 2_000_000). The Phase 5 plan
-// bumps gasLimit to 3_000_000n once the call goes through the proxy on
-// Frontier; eth_estimateGas false-reverts on this path so the limit has to
-// be explicit (see project_hydration_evm_quirks memory).
+// Reference: hydration-railgun-poc/contract/cli.ts → cmdUnshield, and
+// hydration-railgun-poc/contract/tasks/wallet.ts → wallet:unshield. Same
+// shape — 1 input, 1 unshield output, UnshieldType.NORMAL. The ethers v5
+// helper stack from Phase 0 is replaced by the engine's higher-level
+// addUnshieldData() helper which produces a SpendingSolutionGroup with
+// unshieldValue set; the prover gates on that to flip the on-chain
+// UnshieldType.NONE → NORMAL.
 
 import { useEffect, useMemo, useState } from "react"
 import {
   RailgunEngine,
+  RailgunVersionedSmartContracts,
   TXIDVersion,
   TokenBalances,
+  TransactionBatch,
   WalletBalanceBucket,
+  getTokenDataERC20,
 } from "@railgun-community/engine"
+import { BrowserProvider, Eip1193Provider } from "ethers6"
 
 import { useRailgunContext } from "sections/privacy/providers/RailgunProvider"
 import {
+  RAILGUN_ENCRYPTION_KEY,
   RailgunWalletState,
   useRailgunWallet,
 } from "sections/privacy/hooks/useRailgunWallet"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
-import { H160 } from "utils/evm"
+import { useEvmAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import { H160, isEvmWalletExtension } from "utils/evm"
+import { BroadcasterPicker } from "sections/privacy/components/BroadcasterPicker"
+import { useBroadcasters } from "sections/privacy/hooks/useBroadcasters"
+import { useBroadcastTransaction } from "sections/privacy/hooks/useBroadcastTransaction"
 
 // Hydration ETH precompile (asset 20). Big-endian encoding — see
 // project_hydration_evm_assets memory. The `1` at byte 15 is the
 // "registered-asset" marker baked into Hydration's ERC20 precompile router.
 const ETH_PRECOMPILE = "0x0000000000000000000000000000000100000014" as const
+
+// All txs against RAILGUN on Hydration use this floor — eth_estimateGas
+// false-reverts on precompile-touching calls (project_hydration_evm_quirks).
+const UNSHIELD_GAS_LIMIT = 3_000_000n
 
 type Asset = {
   id: number
@@ -75,23 +83,31 @@ type Destination =
   | { kind: "substrate-self" }
   | { kind: "other"; address: string }
 
-type GasMode = "broadcaster" | "self-relay"
+type UnshieldState =
+  | { status: "idle" }
+  | { status: "proving"; progress: number; message: string }
+  | { status: "broadcasting"; txHash?: string }
+  | { status: "confirmed"; txHash: string }
+  | { status: "error"; error: Error }
 
 export const UnshieldFlow = () => {
   const { state, chain } = useRailgunContext()
   const engine = state.status === "ready" ? state.engine : null
   const wallet = useRailgunWallet({ engine })
   const { account } = useEvmAccount()
+  const { wallet: connectedWallet } = useWallet()
+  const { selected: selectedBroadcaster } = useBroadcasters()
+  const broadcastTransaction = useBroadcastTransaction()
 
   const evmAddress = account?.address ?? ""
+  const extension = connectedWallet?.extension
 
   const [asset, setAsset] = useState<Asset>(UNSHIELDABLE_ASSETS[0])
   const [amount, setAmount] = useState("")
   const [destination, setDestination] = useState<Destination>({
     kind: "evm-self",
   })
-  // Broadcaster integration is a separate track. v1 = self-relay only.
-  const gasMode: GasMode = "self-relay"
+  const [send, setSend] = useState<UnshieldState>({ status: "idle" })
 
   const balance = useShieldedBalance({
     engine,
@@ -111,17 +127,124 @@ export const UnshieldFlow = () => {
 
   const resolvedTo = resolveDestination(destination, evmAddress)
   const balanceStr = balance.value != null ? balance.value.toString() : "—"
+  const amountWei = useMemo(() => parseRaw(amount), [amount])
   const isFullBalance =
-    balance.value != null && amount !== "" && amount === balance.value.toString()
+    balance.value != null &&
+    amountWei !== null &&
+    amountWei === balance.value &&
+    balance.value > 0n
 
   const cta = describeCta({
     walletReady: wallet.status === "ready",
+    engineReady: engine !== null,
     balance: balance.value,
-    amount,
+    amountWei,
     isFullBalance,
     resolvedTo,
     asset,
+    extensionOk: !!extension && isEvmWalletExtension(extension),
+    send,
   })
+
+  const onUnshield = async () => {
+    if (!engine) return
+    if (wallet.status !== "ready") return
+    if (amountWei === null || amountWei <= 0n) return
+    if (!isFullBalance) return
+    if (!resolvedTo) return
+    if (!extension || !isEvmWalletExtension(extension)) return
+
+    setSend({
+      status: "proving",
+      progress: 0,
+      message: "Building transaction…",
+    })
+
+    try {
+      const railgunWallet = engine.wallets[wallet.walletId]
+      if (!railgunWallet) {
+        throw new Error(
+          `RAILGUN wallet ${wallet.walletId} not loaded in the engine. Reload /privacy and re-sign.`,
+        )
+      }
+
+      const tokenData = getTokenDataERC20(asset.address)
+
+      // 1 input → 1 unshield note, no change output (v1 full-balance only).
+      // Mirrors hydration-railgun-poc/contract/tasks/wallet.ts:wallet:unshield.
+      const batch = new TransactionBatch(chain)
+      batch.addUnshieldData({
+        toAddress: resolvedTo,
+        value: amountWei,
+        tokenData,
+      })
+
+      const { provedTransactions } = await batch.generateTransactions(
+        engine.prover,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        railgunWallet as any,
+        TXIDVersion.V2_PoseidonMerkle,
+        RAILGUN_ENCRYPTION_KEY,
+        (progress, message) => {
+          setSend({ status: "proving", progress, message })
+        },
+        false, // shouldGeneratePreTransactionPOIs — POI is bypassed on Hydration
+      )
+
+      setSend({ status: "broadcasting" })
+
+      const populated = await RailgunVersionedSmartContracts.generateTransact(
+        TXIDVersion.V2_PoseidonMerkle,
+        chain,
+        provedTransactions,
+      )
+
+      // Self-relay path: sign + send through the user's connected EVM wallet.
+      // Broadcaster path: hand the populated tx data off to the
+      // BroadcasterContext, which (Phase 5d) throws a "transport not wired"
+      // error until @railgun-community/waku-broadcaster-client is available.
+      const provider = new BrowserProvider(
+        extension as unknown as Eip1193Provider,
+      )
+      const signer = await provider.getSigner()
+
+      const selfRelay = async (): Promise<string> => {
+        const tx = await signer.sendTransaction({
+          to: populated.to,
+          data: populated.data,
+          value: populated.value ?? 0n,
+          gasLimit: UNSHIELD_GAS_LIMIT,
+        })
+        setSend({ status: "broadcasting", txHash: tx.hash })
+        const receipt = await tx.wait()
+        if (!receipt) throw new Error("Transaction receipt missing")
+        return tx.hash
+      }
+
+      const txHash = selectedBroadcaster
+        ? await broadcastTransaction({
+            // We don't have a wire-format signed tx here — the broadcaster
+            // transport is a stub until 5d. Pass the populated payload as a
+            // sentinel; the stub will throw before it inspects this.
+            signedTx: populated.data ?? "",
+            selfRelay,
+          })
+        : await selfRelay()
+
+      setSend({ status: "confirmed", txHash })
+
+      // Nudge the engine to pick up the spent commitment in the next pass.
+      engine
+        .scanContractHistory(chain, [wallet.walletId])
+        // eslint-disable-next-line no-console
+        .catch((e) => console.warn("[UnshieldFlow] post-unshield rescan:", e))
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e))
+      // eslint-disable-next-line no-console
+      console.error("[UnshieldFlow] unshield failed:", err)
+      setSend({ status: "error", error: err })
+    }
+  }
 
   return (
     <div
@@ -211,9 +334,9 @@ export const UnshieldFlow = () => {
           />
         </Field>
 
-        <Field label="Pay gas with">
-          <GasModePicker value={gasMode} />
-        </Field>
+        <div style={{ marginBottom: 12 }}>
+          <BroadcasterPicker compact />
+        </div>
 
         <Summary
           asset={asset}
@@ -221,21 +344,22 @@ export const UnshieldFlow = () => {
           to={resolvedTo}
           balance={balance.value}
           isFullBalance={isFullBalance}
+          selectedBroadcasterLabel={
+            selectedBroadcaster ? selectedBroadcaster.identifier : "Self-relay"
+          }
         />
 
         <div style={{ display: "flex", marginTop: 16 }}>
-          <button style={cta.disabled ? pendingBtnStyle : primaryBtnStyle} disabled>
+          <button
+            style={cta.disabled ? pendingBtnStyle : primaryBtnStyle}
+            disabled={cta.disabled}
+            onClick={onUnshield}
+          >
             {cta.label}
           </button>
         </div>
 
-        <p style={{ marginTop: 16, fontSize: 12, opacity: 0.55 }}>
-          Button disabled — same blocker as ShieldFlow: proof artifacts and
-          the viem↔ethers v6 signer bridge are not wired yet. Once the
-          prover can run, the call is `RailgunSmartWalletContract
-          .generateTransact([provedTx])` with explicit{" "}
-          <code style={codeStyle}>gasLimit: 3_000_000n</code>.
-        </p>
+        <UnshieldStatus send={send} />
       </Card>
     </div>
   )
@@ -350,25 +474,6 @@ const RadioRow = ({
   </label>
 )
 
-// ---------- gas mode ----------
-
-const GasModePicker = ({ value }: { value: GasMode }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-    <RadioRow
-      checked={false}
-      onSelect={() => undefined}
-      label="Broadcaster"
-      detail="Not available in Phase 5c"
-    />
-    <RadioRow
-      checked={value === "self-relay"}
-      onSelect={() => undefined}
-      label="Self-relay"
-      detail="You pay gas from the connected EVM wallet"
-    />
-  </div>
-)
-
 // ---------- summary ----------
 
 const Summary = ({
@@ -377,12 +482,14 @@ const Summary = ({
   to,
   balance,
   isFullBalance,
+  selectedBroadcasterLabel,
 }: {
   asset: Asset
   amount: string
   to: string
   balance: bigint | null
   isFullBalance: boolean
+  selectedBroadcasterLabel: string
 }) => (
   <div
     style={{
@@ -404,7 +511,7 @@ const Summary = ({
     <span style={{ opacity: 0.6 }}>To (EVM)</span>
     <span style={monoStyle}>{to || "—"}</span>
     <span style={{ opacity: 0.6 }}>Mode</span>
-    <span>Self-relay (you pay gas)</span>
+    <span>{selectedBroadcasterLabel}</span>
     <span style={{ opacity: 0.6 }}>Balance</span>
     <span style={monoStyle}>{balance != null ? balance.toString() : "—"}</span>
     <span style={{ opacity: 0.6 }}>Full balance?</span>
@@ -413,6 +520,47 @@ const Summary = ({
     </span>
   </div>
 )
+
+const UnshieldStatus = ({ send }: { send: UnshieldState }) => {
+  if (send.status === "idle") return null
+  if (send.status === "proving") {
+    const pct = Math.round(send.progress * 100)
+    return (
+      <p style={{ ...hintStyle, marginTop: 12 }}>
+        Generating proof… {pct}% — {send.message}
+      </p>
+    )
+  }
+  if (send.status === "broadcasting") {
+    return (
+      <p style={{ ...hintStyle, marginTop: 12 }}>
+        Broadcasting{send.txHash ? ` ${truncateMiddle(send.txHash, 10, 8)}` : ""}…
+      </p>
+    )
+  }
+  if (send.status === "confirmed") {
+    return (
+      <p style={{ ...hintStyle, marginTop: 12, color: "#7d7" }}>
+        Confirmed ✓ {truncateMiddle(send.txHash, 10, 8)}
+      </p>
+    )
+  }
+  return (
+    <pre
+      style={{
+        marginTop: 12,
+        padding: 12,
+        background: "rgba(0,0,0,0.3)",
+        borderRadius: 4,
+        fontSize: 11,
+        whiteSpace: "pre-wrap",
+        color: "#f88",
+      }}
+    >
+      {send.error.message}
+    </pre>
+  )
+}
 
 // ---------- shielded-balance reader (mirrors PrivacyPage's poller) ----------
 
@@ -493,30 +641,58 @@ const resolveDestination = (d: Destination, evmAddress: string): string => {
   }
 }
 
+const parseRaw = (input: string): bigint | null => {
+  const t = input.trim()
+  if (!t) return null
+  if (!/^\d+$/.test(t)) return null
+  try {
+    return BigInt(t)
+  } catch {
+    return null
+  }
+}
+
 const describeCta = ({
   walletReady,
+  engineReady,
   balance,
-  amount,
+  amountWei,
   isFullBalance,
   resolvedTo,
   asset,
+  extensionOk,
+  send,
 }: {
   walletReady: boolean
+  engineReady: boolean
   balance: bigint | null
-  amount: string
+  amountWei: bigint | null
   isFullBalance: boolean
   resolvedTo: string
   asset: Asset
-}): { label: string; disabled: true } => {
-  // Always disabled in 5c — see footer note in the component. The label
-  // still reflects the next blocker so the UI explains itself.
+  extensionOk: boolean
+  send: UnshieldState
+}): { label: string; disabled: boolean } => {
+  if (send.status === "proving") return { label: "Generating proof…", disabled: true }
+  if (send.status === "broadcasting") return { label: "Broadcasting…", disabled: true }
+  if (send.status === "confirmed") return { label: "Unshielded ✓", disabled: true }
+  if (!engineReady) return { label: "Engine booting…", disabled: true }
   if (!walletReady) return { label: "Sign in to RAILGUN first", disabled: true }
   if (balance == null) return { label: "Loading balance…", disabled: true }
   if (balance === 0n) return { label: "No shielded balance", disabled: true }
-  if (!amount) return { label: "Enter amount", disabled: true }
+  if (amountWei === null || amountWei <= 0n) return { label: "Enter amount", disabled: true }
   if (!isFullBalance) return { label: "Use Max (full balance only)", disabled: true }
   if (!resolvedTo) return { label: "Enter destination", disabled: true }
-  return { label: `Unshield ${amount} raw ${asset.symbol}`, disabled: true }
+  if (!extensionOk) return { label: "Connect EVM wallet", disabled: true }
+  return {
+    label: `Unshield ${amountWei.toString()} raw ${asset.symbol}`,
+    disabled: false,
+  }
+}
+
+const truncateMiddle = (s: string, head: number, tail: number): string => {
+  if (s.length <= head + tail + 1) return s
+  return `${s.slice(0, head)}…${s.slice(-tail)}`
 }
 
 // ---------- presentation primitives (mirrors ShieldFlow) ----------
@@ -565,14 +741,6 @@ const monoStyle: React.CSSProperties = {
   wordBreak: "break-all",
 }
 
-const codeStyle: React.CSSProperties = {
-  fontFamily: "monospace",
-  fontSize: 11,
-  background: "rgba(0,0,0,0.3)",
-  padding: "1px 4px",
-  borderRadius: 3,
-}
-
 const hintStyle: React.CSSProperties = {
   marginTop: 4,
   fontSize: 11,
@@ -611,6 +779,7 @@ const maxBtnStyle: React.CSSProperties = {
 }
 
 // Silence unused-import warning until the wallet object is consumed by the
-// proof-generation path. Phase 5c v1 only renders state; the wallet is
-// already plumbed in via useRailgunWallet -> RailgunWalletState.
+// proof-generation path. The wallet is consumed through useRailgunWallet's
+// RailgunWalletState — re-exported so the privacy section index can pick it
+// up without introducing an extra barrel.
 export type _UnshieldWalletState = RailgunWalletState
