@@ -561,36 +561,41 @@ export const routes: Route[] = [
     ),
   },
   {
-    path: LINKS.privacy,
-    element: (
-      <Suspense fallback={null}>
-        <PrivacyPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: LINKS.privacyShield,
-    element: (
-      <Suspense fallback={null}>
-        <PrivacyShieldFlow />
-      </Suspense>
-    ),
-  },
-  {
-    path: LINKS.privacyUnshield,
-    element: (
-      <Suspense fallback={null}>
-        <PrivacyUnshieldFlow />
-      </Suspense>
-    ),
-  },
-  {
-    path: LINKS.privacySend,
-    element: (
-      <Suspense fallback={null}>
-        <PrivacySendFlow />
-      </Suspense>
-    ),
+    path: "privacy",
+    children: [
+      {
+        path: "/",
+        element: (
+          <Suspense fallback={null}>
+            <PrivacyPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "shield",
+        element: (
+          <Suspense fallback={null}>
+            <PrivacyShieldFlow />
+          </Suspense>
+        ),
+      },
+      {
+        path: "unshield",
+        element: (
+          <Suspense fallback={null}>
+            <PrivacyUnshieldFlow />
+          </Suspense>
+        ),
+      },
+      {
+        path: "send",
+        element: (
+          <Suspense fallback={null}>
+            <PrivacySendFlow />
+          </Suspense>
+        ),
+      },
+    ],
   },
   {
     path: "*",

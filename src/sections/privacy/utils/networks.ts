@@ -15,13 +15,13 @@ export type RailgunChainConfig = {
 
 export const RAILGUN_LARK: RailgunChainConfig = {
   chainId: 222222,
-  rpcUrl: "https://node4.lark.hydration.cloud",
-  wsUrl: "wss://node4.lark.hydration.cloud",
+  rpcUrl: "https://node3.lark.hydration.cloud",
+  wsUrl: "wss://node3.lark.hydration.cloud",
   proxy: "0x195C5EFAa658Ac3C40DF6138F1C3B948Ed2C83D7",
   relayAdapt: "0x273280a6248BFEC57bc7ef2A16E70AEBe065D737",
   delegator: "0xfa456bAF41daB0051E50D0a3a5aF3eFD3431cA2f",
   deploymentBlock: 244000,
-  label: "Hydration lark node4 (Phase 0)",
+  label: "Hydration lark node3 (Phase 0)",
 }
 
 // Default config used by the Privacy module. Switches when mainnet lands.
