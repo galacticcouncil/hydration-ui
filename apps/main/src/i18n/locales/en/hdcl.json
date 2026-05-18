@@ -3,7 +3,6 @@
   "strategy.type": "RWA LOOP",
   "strategy.collateralAsset": "Decentral",
   "strategy.debtAsset": "Hollar",
-
   "strategy.title": "Strategy details",
   "strategy.tvl": "TVL",
   "strategy.maxNetApy": "Max Net APY",

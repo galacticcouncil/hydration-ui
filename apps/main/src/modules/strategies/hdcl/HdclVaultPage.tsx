@@ -5,6 +5,7 @@ import { useState } from "react"
 import { type Hex } from "viem"
 
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
+import { AboutCard } from "@/modules/strategies/hdcl/components/AboutCard"
 import { BorrowHollarModal } from "@/modules/strategies/hdcl/components/BorrowHollarModal"
 import { DepositPanel } from "@/modules/strategies/hdcl/components/DepositPanel"
 import { MyBorrowsCard } from "@/modules/strategies/hdcl/components/MyBorrowsCard"
@@ -208,6 +209,8 @@ export const HdclVaultPage = () => {
           />
 
           <StrategyDetailsCard vaultStats={stats} />
+
+          <AboutCard />
         </Stack>
 
         <DepositPanel

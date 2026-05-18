@@ -231,7 +231,7 @@ export const DepositPanel = ({
       <Separator mx="-xl" />
 
       <Box py="xl">
-        <AuthorizedAction size="large">
+        <AuthorizedAction size="large" width="100%">
           <Button
             size="large"
             width="100%"
