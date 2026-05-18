@@ -1,7 +1,7 @@
 import { CodegenConfig } from "@graphql-codegen/cli"
 
 export default {
-  schema: "https://hydration.graphql.multix.cloud/graphql",
+  schema: "https://multix-graphql.lark.hydration.cloud/graphql",
   overwrite: true,
   config: {
     preResolveTypes: true,
