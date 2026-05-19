@@ -5,7 +5,13 @@ import {
   Icon,
   Logo,
 } from "@galacticcouncil/ui/components"
-import { shortenAccountAddress } from "@galacticcouncil/utils"
+import {
+  isH160Address,
+  isSS58Address,
+  safeConvertAddressH160,
+  safeConvertAddressSS58,
+  shortenAccountAddress,
+} from "@galacticcouncil/utils"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 
@@ -23,23 +29,31 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   placeholder,
   ...props
 }) => {
+  const formattedAddress = isH160Address(address)
+    ? safeConvertAddressH160(address)
+    : isSS58Address(address)
+      ? safeConvertAddressSS58(address)
+      : address
+
   const wallet = walletProvider ? getWallet(walletProvider) : null
   return (
     <SConnectButton
       size="small"
-      variant={address ? "transparent" : "accent"}
-      outline={!address}
-      sx={!address ? { textTransform: "uppercase" } : undefined}
+      variant={formattedAddress ? "transparent" : "accent"}
+      outline={!formattedAddress}
+      sx={!formattedAddress ? { textTransform: "uppercase" } : undefined}
       {...props}
     >
-      {!address && <Icon size="xs" component={WalletIcon} sx={{ ml: 4 }} />}
+      {!formattedAddress && (
+        <Icon size="xs" component={WalletIcon} sx={{ ml: 4 }} />
+      )}
       {wallet ? (
         <Logo src={wallet.logo} size="extra-small" />
-      ) : address ? (
-        <AccountAvatar address={address} size={12} />
+      ) : formattedAddress ? (
+        <AccountAvatar address={formattedAddress} size={12} />
       ) : null}
-      {address ? shortenAccountAddress(address) : placeholder}
-      {address && <Icon size="xs" component={ChevronDown} />}
+      {formattedAddress ? shortenAccountAddress(formattedAddress) : placeholder}
+      {formattedAddress && <Icon size="xs" component={ChevronDown} />}
     </SConnectButton>
   )
 }
