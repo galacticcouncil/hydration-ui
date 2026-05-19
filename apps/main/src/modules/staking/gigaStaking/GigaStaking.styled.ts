@@ -20,6 +20,21 @@ export const SChartLegendContainer = styled(Box)(
   `,
 )
 
+/**
+ * Standalone rewards-to-claim container. Replaces the chart + legend stack
+ * after the rewards-curve chart was removed from the design. Visually the
+ * legend variant (dim background, primary padding) inside a bordered card.
+ */
+export const SRewardsContainer = styled(Box)(
+  ({ theme }) => css`
+    padding: ${theme.containers.paddings.primary};
+
+    background: ${theme.surfaces.containers.dim.dimOnBg};
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
+    border: 1px solid ${theme.details.borders};
+  `,
+)
+
 // export const SGigaHDXBanner = styled(Box)(
 //   ({ theme }) => css`
 //     position: relative;

@@ -9,38 +9,51 @@ import {
   Separator,
   Stack,
   Text,
+  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
-import { useGigaStakeExchangeRate } from "@/api/gigaStake"
+import {
+  claimableVotingRewardsQuery,
+  gigaAccountStakesQuery,
+  useGigaStakeExchangeRate,
+} from "@/api/gigaStake"
 import { AssetLogo } from "@/components/AssetLogo"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
-import {
-  SChartContainer,
-  SChartLegendContainer,
-} from "@/modules/staking/gigaStaking/GigaStaking.styled"
-import { GigaStakingChart } from "@/modules/staking/gigaStaking/GigaStakingChart"
+import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
+import { SRewardsContainer } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { GigaHDXRepayModal } from "@/modules/staking/gigaStaking/repay/GigaHDXRepayModal"
 import { GigaHDXSupplyInfo } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 import { useAssets } from "@/providers/assetsProvider"
-
-const REWARDS_TO_CLAIM = 23444
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 export const GigaHDXPosition = () => {
   const { t } = useTranslation(["staking", "common", "borrow"])
   const [borrowModalOpen, setBorrowModalOpen] = useState(false)
 
   const { getAssetWithFallback, native } = useAssets()
+  const { account } = useAccount()
+  const rpc = useRpcProvider()
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
   const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: accountStake } = useQuery(
+    gigaAccountStakesQuery(rpc, account?.address ?? ""),
+  )
+  const { data: claimableRewards } = useQuery(
+    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
+  )
+  const claimMutation = useClaimAndCompound()
 
   const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
   const {
@@ -62,6 +75,75 @@ export const GigaHDXPosition = () => {
   )
 
   const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+  const gigaHdxBalanceUsd = hdxReserve?.underlyingBalanceUSD ?? "0"
+  // HDX-equivalent of the user's position (gigahdx × rate).
+  // This is the value the user actually owns — the GIGAHDX balance is the
+  // position token, but the HDX number is what matters for staking yield
+  // and what they'd receive on full unstake.
+  const stakedHdxHuman = Big(gigaHdxBalanceHuman)
+    .times(exchangeRate?.toString() || "0")
+    .toString()
+
+  // Principal vs accrued breakdown.
+  // `Stakes.hdx` is the runtime-tracked locked principal (HDX the user
+  // originally deposited, plus any yield they've already crystallized via
+  // `realizeYield`). The accrued portion = current value − principal; this
+  // is what `realizeYield` would move into the principal in one tx.
+  const principalHdxHuman = accountStake
+    ? scaleHuman(accountStake.hdx, native.decimals)
+    : "0"
+  const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
+  const accruedHdxHuman = Big.max(accruedHdxBig, 0).toString()
+  const accruedPct =
+    Big(principalHdxHuman).gt(0) && accruedHdxBig.gt(0)
+      ? accruedHdxBig.div(principalHdxHuman).times(100).toNumber()
+      : 0
+  // Hide the row entirely when there's no position to break down.
+  const hasPosition = Big(stakedHdxHuman).gt(0)
+
+  // "Rewards to claim" shows VOTING REWARDS ONLY — the two HDX flows that
+  // actually need an explicit user action to land:
+  //   • pendingHdx       — already-credited voting rewards (`claim_rewards`)
+  //   • allocReadyHdx    — voting rewards earned but not yet in PendingRewards;
+  //                         the batch's `removeVote` calls credit them first
+  //
+  // Passive yield (`accruedHdx`) is intentionally EXCLUDED here. It's already
+  // working for the user inside their gigahdx position (the rate appreciation
+  // is automatic — no action required). `realize_yield` only crystallises
+  // accrued into `Stakes.hdx` (= principal), which is a no-op for the user's
+  // economic position. The "Accrued yield" row on the breakdown already shows
+  // the value; calling it a "reward to claim" misleads users into thinking
+  // it's something they're missing out on by not clicking.
+  //
+  // `useClaimAndCompound` still folds `realize_yield` into the batch when
+  // accrued > 0 — that lifts the vote-weight cap and is free to include.
+  // Independent of UI surfacing.
+  const pendingHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
+    : Big(0)
+  const allocReadyHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
+    : Big(0)
+  // Shares earned but excluded from the batch because their conviction lock
+  // may still be active (winning side of an Approved/Rejected ref). Surfaced
+  // separately so the user knows the value isn't lost — just deferred.
+  const lockedHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.lockedHdx, native.decimals))
+    : Big(0)
+  const lockedHdxHuman = lockedHdxBig.toString()
+  const hasLockedShares = lockedHdxBig.gt("0.000001")
+  const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
+  const claimableTotalHuman = claimableTotalBig.toString()
+  // Anything over 1 µHDX is worth a tx (matches gigahdx pallet's rounding
+  // tolerance — `MAX_GIGAPOT_ROUNDING_SHORTFALL = 1_000_000` plancks).
+  const hasClaimable = claimableTotalBig.gt("0.000001")
+  const claimAndCompoundArgs = {
+    allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
+    unlockClasses: claimableRewards?.unlockClasses ?? [],
+    accountAddress: account?.address ?? "",
+    hasAccruedYield: accruedHdxBig.gt("0.000001"),
+    hasClaimableRewards: pendingHdxBig.plus(allocReadyHdxBig).gt("0.000001"),
+  }
 
   /** HOLLAR per 1 HDX at HF = 1 (single collateral / single debt Giga pool). */
   const liquidationPriceHollarPerHdx = useMemo(() => {
@@ -126,30 +208,101 @@ export const GigaHDXPosition = () => {
             </Text>
           </Flex>
 
+          {/* Headline: GIGAHDX balance (stable position-token identity).
+              Secondary: current HDX claim (gigahdx × rate) — what the
+              position is worth right now, equals Principal + Accruing.
+              Tertiary: USD equivalent. */}
           <Amount
             value={
-              <Text
-                font="primary"
-                fs={["base", "h6"]}
-                lh={1}
-                fw={500}
-                color={getToken("text.tint.secondary")}
-              >
-                {t("common:currency", {
-                  value: gigaHdxBalanceHuman,
-                  symbol: ghdxMeta.symbol,
-                })}
-              </Text>
+              <Flex direction="column" gap="xs" align="flex-end">
+                <Text
+                  font="primary"
+                  fs={["base", "h6"]}
+                  lh={1}
+                  fw={500}
+                  color={getToken("text.tint.secondary")}
+                >
+                  {t("common:currency", {
+                    value: gigaHdxBalanceHuman,
+                    symbol: ghdxMeta.symbol,
+                  })}
+                </Text>
+                <Text fs="p5" lh={1} color={getToken("text.medium")}>
+                  {"≈ "}
+                  {t("common:currency", {
+                    value: stakedHdxHuman,
+                    symbol: native.symbol,
+                  })}
+                </Text>
+              </Flex>
             }
-            displayValue={t("gigaStaking.position.underlying.value", {
-              value: Big(gigaHdxBalanceHuman)
-                .times(exchangeRate?.toString() || "0")
-                .toString(),
-              symbol: native.symbol,
-            })}
+            displayValue={t("common:currency", { value: gigaHdxBalanceUsd })}
             sx={{ ml: "auto", textAlign: "right" }}
           />
         </Flex>
+
+        {hasPosition && (
+          <>
+            <Separator />
+            <Stack
+              direction={["column", "column", "column", "row"]}
+              gap={["xxl", null]}
+              align={["stretch", null, null, "center"]}
+              justify="space-between"
+              py={["l", "l"]}
+              px={["m", "xl"]}
+              separated
+            >
+              <ValueStats
+                size="small"
+                label={t("staking:gigaStaking.position.principal.label")}
+                wrap={[false, true]}
+                value={t("common:currency", {
+                  value: principalHdxHuman,
+                  symbol: native.symbol,
+                })}
+              />
+              <ValueStats
+                size="small"
+                label={t("staking:gigaStaking.position.accrued.label")}
+                wrap={[false, true]}
+                customValue={
+                  <Flex align="baseline" gap="xs">
+                    <Text
+                      font="primary"
+                      fw={500}
+                      fs="h7"
+                      lh={1}
+                      color={getToken(
+                        accruedHdxBig.gt(0) ? "text.tint.primary" : "text.high",
+                      )}
+                    >
+                      {accruedHdxBig.gt(0) ? "+" : ""}
+                      {t("common:currency", {
+                        value: accruedHdxHuman,
+                        symbol: native.symbol,
+                      })}
+                    </Text>
+                    {accruedPct > 0 && (
+                      <Text
+                        fs="p6"
+                        lh={1}
+                        color={getToken("text.tint.primary")}
+                      >
+                        ({t("common:percent", { value: accruedPct })})
+                      </Text>
+                    )}
+                  </Flex>
+                }
+              />
+              {/* No standalone "Realize yield" action — the call is auto-
+                  batched with vote actions where it materially helps
+                  (lifting the vote-weight cap = min(vote_amount, Stakes.hdx)
+                  to include accrued passive yield). For unstake / claim
+                  rewards it would add gas without user-visible benefit. */}
+            </Stack>
+          </>
+        )}
 
         {hasDebt && (
           <>
@@ -316,44 +469,60 @@ export const GigaHDXPosition = () => {
           </Flex>
         </Box>
 
+        {/* Rewards to claim — chart-less variant per the new design.
+            Previously this was layered as a chart container (timeseries
+            chart + legend block); the chart was removed and the rewards
+            block now stands on its own with the same visual treatment. */}
         <Box px={["l", "xl"]} pb={["m", "xl"]}>
-          <SChartContainer sx={{ mt: "xxl" }}>
-            <GigaStakingChart />
+          <SRewardsContainer sx={{ mt: "xxl" }} asChild>
+            <Flex direction="column" gap="l">
+              <Flex justify="space-between" align="center">
+                <Amount
+                  label={t("gigaStaking.claim.label")}
+                  value={
+                    <Text
+                      font="primary"
+                      fs="h5"
+                      fw={500}
+                      lh={1}
+                      color={getToken("text.tint.primary")}
+                    >
+                      {t("common:currency", {
+                        value: claimableTotalHuman,
+                        symbol: native.symbol,
+                      })}
+                    </Text>
+                  }
+                />
 
-            <SChartLegendContainer asChild>
-              <Flex direction="column" gap="l">
-                <Flex justify="space-between" align="center">
-                  <Amount
-                    label={t("gigaStaking.claim.label")}
-                    value={
-                      <Text
-                        font="primary"
-                        fs="h5"
-                        fw={500}
-                        lh={1}
-                        color={getToken("text.tint.primary")}
-                      >
-                        {t("common:currency", {
-                          value: REWARDS_TO_CLAIM,
-                          symbol: native.symbol,
-                        })}
-                      </Text>
-                    }
-                  />
-
-                  <Button variant="secondary" size="large">
+                <Tooltip asChild={false} text={t("gigaStaking.claim.tooltip")}>
+                  <Button
+                    variant="secondary"
+                    size="large"
+                    disabled={!hasClaimable || claimMutation.isPending}
+                    onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
+                  >
                     {t("gigaStaking.claim.cta")}
                   </Button>
-                </Flex>
-
-                <Separator />
-
-                <Text fs="p2" lh="m" color={getToken("text.medium")}>
-                  {t("staking:gigaStaking.rewards.desc")}
-                </Text>
+                </Tooltip>
               </Flex>
-            </SChartLegendContainer>
-          </SChartContainer>
+
+              {hasLockedShares && (
+                <Text fs="p6" lh="m" color={getToken("text.low")}>
+                  {t("staking:gigaStaking.claim.locked", {
+                    value: lockedHdxHuman,
+                    symbol: native.symbol,
+                  })}
+                </Text>
+              )}
+
+              <Separator />
+
+              <Text fs="p2" lh="m" color={getToken("text.medium")}>
+                {t("staking:gigaStaking.rewards.desc")}
+              </Text>
+            </Flex>
+          </SRewardsContainer>
         </Box>
 
         <GigaHDXSupplyInfo />

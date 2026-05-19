@@ -5,6 +5,7 @@ import { FC } from "react"
 import { bestNumberQuery } from "@/api/chain"
 import { ReferendaTrack } from "@/api/constants"
 import { OngoingGovReferenda, referendumInfoQuery } from "@/api/democracy"
+import { gigaRewardPoolEstimateQuery } from "@/api/gigaStake"
 import { SReferenda } from "@/modules/staking/Referenda.styled"
 import {
   getPerbillPercentage,
@@ -14,6 +15,7 @@ import {
 } from "@/modules/staking/Referenda.utils"
 import { ReferendaFooter } from "@/modules/staking/ReferendaFooter"
 import { ReferendaHeader } from "@/modules/staking/ReferendaHeader"
+import { ReferendaRewardBadge } from "@/modules/staking/ReferendaRewardBadge"
 import { ReferendaSeparator } from "@/modules/staking/ReferendaSeparator"
 import { ReferendaStatus } from "@/modules/staking/ReferendaStatus"
 import { useAssets } from "@/providers/assetsProvider"
@@ -39,6 +41,9 @@ export const Referenda: FC<Props> = ({
   const { native } = useAssets()
 
   const { data: subscanInfo, isLoading } = useQuery(referendumInfoQuery(id))
+  const { data: rewardPool } = useQuery(
+    gigaRewardPoolEstimateQuery(rpc, id, item.track),
+  )
   const state = useReferendaState(item)
 
   const sum = item.tally.ayes + item.tally.nays
@@ -77,6 +82,14 @@ export const Referenda: FC<Props> = ({
 
   return (
     <SReferenda voted={voted}>
+      {rewardPool && rewardPool.amount > 0n && (
+        <ReferendaRewardBadge
+          amount={rewardPool.amount}
+          isEstimate={rewardPool.isEstimate}
+          decimals={native.decimals}
+          symbol={native.symbol}
+        />
+      )}
       <ReferendaHeader
         track={track?.name}
         state={state}

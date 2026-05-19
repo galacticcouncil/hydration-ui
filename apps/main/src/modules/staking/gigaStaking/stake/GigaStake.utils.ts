@@ -103,6 +103,10 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
             },
           ),
         )
+        // Stake-specific max: runtime allows pyconvot ↔ ghdxlock overlap,
+        // so the generic `transferable = free − frozen` check is too strict
+        // for accounts that already vote. Validate against `maxStakeHuman`
+        // (= free − vested − legacy_staked − gigaStaked) instead.
         .check(
           z.refine<GigaStakeFormValues>(
             ({ amount }) => Big(amount || "0").lte(maxStakeHuman),
