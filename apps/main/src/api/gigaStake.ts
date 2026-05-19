@@ -1,4 +1,8 @@
-import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import {
+  HDX_ERC20_ASSET_ID,
+  STHDX_ASSET_ID,
+} from "@galacticcouncil/money-market/ui-config"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 
@@ -81,6 +85,30 @@ export const gigaAccountStakesQuery = (
       }
     },
   })
+
+export const gigaAccountBalanceQuery = (
+  rpc: TProviderContext,
+  address: string,
+) =>
+  queryOptions({
+    queryKey: [...gigaQueryKey(address), "balance"],
+    enabled: !!address && rpc.isApiLoaded,
+    queryFn: async () => {
+      const balance = await rpc.sdk.client.balance.getErc20Balance(
+        address,
+        Number(HDX_ERC20_ASSET_ID),
+      )
+
+      return balance
+    },
+  })
+
+export const useGigaAccountBalance = () => {
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
+  const address = account?.address ?? ""
+  return useQuery(gigaAccountBalanceQuery(rpc, address))
+}
 
 export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
   queryOptions({

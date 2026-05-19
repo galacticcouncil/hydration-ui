@@ -10,6 +10,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useGigaAccountBalance } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
@@ -27,6 +28,7 @@ export const GovernanceTotalsHeader: FC<GovernanceTotalsHeaderProps> = ({
   const { t } = useTranslation(["common", "staking"])
   const { getAssetWithFallback, native } = useAssets()
   const { isBalanceLoading, getBalance } = useAccountBalances()
+  const { data: gigaHdxBalance } = useGigaAccountBalance()
 
   const hdxBalance = getBalance(native.id)
   const humanHdx = toDecimal(hdxBalance?.total ?? "0", native.decimals) // @TODO: should be total or transferable?
@@ -36,7 +38,6 @@ export const GovernanceTotalsHeader: FC<GovernanceTotalsHeaderProps> = ({
   )
 
   const gigaHdxAsset = getAssetWithFallback(HDX_ERC20_ASSET_ID)
-  const gigaHdxBalance = getBalance(HDX_ERC20_ASSET_ID)
   const humanGigaHdx = toDecimal(
     gigaHdxBalance?.total ?? "0",
     gigaHdxAsset.decimals,

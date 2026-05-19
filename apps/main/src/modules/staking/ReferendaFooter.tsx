@@ -68,6 +68,7 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
             variant="secondary"
             onClick={handleRemoveVote}
             minWidth={140}
+            sx={{ flex: 1 }}
           >
             {t("referenda.item.removeVote")}
           </Button>
@@ -78,6 +79,7 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
             onClick={() => setVoteOpen(true)}
             disabled={isBalanceLoading}
             minWidth={140}
+            sx={{ flex: 1 }}
           >
             {t("referenda.item.vote")}
           </Button>

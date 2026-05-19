@@ -111,7 +111,7 @@ export const GigaHDXPosition = () => {
         >
           <AssetLogo id={ghdxMeta.id} />
 
-          <Flex direction="column" justify="space-between">
+          <Flex direction="column" justify="space-between" gap="xs">
             <Text
               font="primary"
               fw={500}

@@ -6,6 +6,8 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { millisecondsToSeconds } from "date-fns"
+import { secondsInDay } from "date-fns/constants"
 
 import { bestNumberQuery } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
@@ -78,9 +80,9 @@ export const useRewardsCurveData = () => {
       return []
     }
 
-    const payablePercentageHuman = Big(
-      scalePercentage(stakingRewards.payablePercentage),
-    ).mul(100)
+    const allocatedRewardsPercentage = Big(
+      stakingRewards.allocatedRewardsPercentage ?? 0,
+    )
 
     const extraPayablePercentageHuman = stakingRewards.extraPayablePercentage
       ? Big(scalePercentage(stakingRewards.extraPayablePercentage)).mul(100)
@@ -136,8 +138,8 @@ export const useRewardsCurveData = () => {
         const x = Big.max(
           Big(stakingConsts.periodLength)
             .times(period)
-            .times(Big(rpc.slotDurationMs).div(1000))
-            .div(86400),
+            .times(millisecondsToSeconds(rpc.slotDurationMs))
+            .div(secondsInDay),
           0,
         ).toNumber()
 
@@ -150,8 +152,8 @@ export const useRewardsCurveData = () => {
         const nextPoint = arr[i + 1]
 
         const current =
-          Big(payablePercentageHuman).gte(chartPoints.y) &&
-          (nextPoint ? Big(payablePercentageHuman).lt(nextPoint.y) : true)
+          Big(allocatedRewardsPercentage).gte(chartPoints.y) &&
+          (nextPoint ? Big(allocatedRewardsPercentage).lt(nextPoint.y) : true)
 
         if (current) {
           currentPointDays = chartPoints.x

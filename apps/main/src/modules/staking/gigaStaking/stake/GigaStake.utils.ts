@@ -22,7 +22,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt, toDecimal } from "@/utils/formatting"
-import { positive, useValidateFormMaxBalance } from "@/utils/validators"
+import { positive } from "@/utils/validators"
 
 type GigaStakeFormValues = {
   amount: string
@@ -37,7 +37,6 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   const { account } = useAccount()
   const address = account?.address ?? ""
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const refineMaxBalance = useValidateFormMaxBalance()
   const { data: exchangeRate } = useGigaStakeExchangeRate()
   const { getBalance } = useAccountBalances()
   const nativeBalance = getBalance(native.id)
@@ -104,7 +103,15 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
             },
           ),
         )
-        .check(refineMaxBalance("amount", (form) => [form.asset, form.amount])),
+        .check(
+          z.refine<GigaStakeFormValues>(
+            ({ amount }) => Big(amount || "0").lte(maxStakeHuman),
+            {
+              error: t("error.maxBalance"),
+              path: ["amount"],
+            },
+          ),
+        ),
     ),
   })
 

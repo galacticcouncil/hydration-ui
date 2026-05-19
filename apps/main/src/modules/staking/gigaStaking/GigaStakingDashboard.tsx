@@ -1,13 +1,10 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
-
+import { useGigaAccountBalance } from "@/api/gigaStake"
 import { GigaHDXDescription } from "@/modules/staking/gigaStaking/GigaHDXDescription"
 import { GigaHDXPosition } from "@/modules/staking/gigaStaking/GigaHDXPosition"
-import { useAccountBalances } from "@/states/account"
 
 export const GigaStakingDashboard = () => {
-  const { getTransferableBalance } = useAccountBalances()
+  const { data: gigaAccountBalance } = useGigaAccountBalance()
+  const transferable = gigaAccountBalance?.transferable ?? 0n
 
-  const gigaHdxBalance = getTransferableBalance(HDX_ERC20_ASSET_ID)
-
-  return gigaHdxBalance > 0n ? <GigaHDXPosition /> : <GigaHDXDescription />
+  return transferable > 0n ? <GigaHDXPosition /> : <GigaHDXDescription />
 }
