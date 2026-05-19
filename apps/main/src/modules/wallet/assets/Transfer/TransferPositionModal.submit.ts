@@ -1,5 +1,7 @@
 import {
+  isEvmParachainAccount,
   normalizeSS58Address,
+  safeConvertSS58toH160,
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
@@ -37,6 +39,10 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       const amountScaled = scale(amount, asset.decimals)
       const normalizedDest = normalizeSS58Address(address)
 
+      const formattedDest = isEvmParachainAccount(normalizedDest)
+        ? safeConvertSS58toH160(normalizedDest)
+        : normalizedDest
+
       return createTransaction({
         withExtraGas: isErc20(asset),
         tx: papi.tx.Currencies.transfer({
@@ -56,17 +62,17 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
           submitted: t("transfer.modal.onLoading", {
             amount,
             symbol: asset.symbol,
-            address: shortenAccountAddress(normalizedDest, 12),
+            address: shortenAccountAddress(formattedDest),
           }),
           success: t("transfer.modal.onSuccess", {
             amount,
             symbol: asset.symbol,
-            address: shortenAccountAddress(normalizedDest, 12),
+            address: shortenAccountAddress(formattedDest),
           }),
           error: t("transfer.modal.onError", {
             amount,
             symbol: asset.symbol,
-            address: shortenAccountAddress(normalizedDest, 12),
+            address: shortenAccountAddress(formattedDest),
           }),
         },
       })

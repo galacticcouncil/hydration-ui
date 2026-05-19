@@ -7,4 +7,4 @@ export const dataTableSortSchema = z
       desc: z.boolean(),
     }),
   )
-  .default([{ id: "underlyingBalanceUSD", desc: true }])
+  .default([])

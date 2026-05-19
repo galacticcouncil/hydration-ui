@@ -100,8 +100,15 @@ export const useXcScanSubscription = (address: string) => {
                 item,
                 journey.originTxSecondary ?? "",
               )
-              return !isOptimisticPrimary && !isOptimisticSecondary
+              const isSameCorrelationId =
+                item.correlationId === journey.correlationId
+              return (
+                !isOptimisticPrimary &&
+                !isOptimisticSecondary &&
+                !isSameCorrelationId
+              )
             })
+
             return [journey, ...prev]
           })
         },
