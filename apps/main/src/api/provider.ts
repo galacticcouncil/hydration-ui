@@ -151,10 +151,6 @@ export const useIndexerUrl = (): string => {
   return useState(() => ENV.VITE_INDEXER_URL)[0]
 }
 
-export const useSnowbridgeUrl = (): string => {
-  return useState(() => ENV.VITE_SNOWBRIDGE_URL)[0]
-}
-
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
 

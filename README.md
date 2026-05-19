@@ -48,7 +48,7 @@ packages/
   utils/            # Shared TS utilities
   web3-connect/     # Wallet connectors (Substrate, EVM, Solana, Sui)
   money-market/     # Aave-based lending integration
-  indexer/          # GraphQL clients (indexer / squid / snowbridge / multix)
+  indexer/          # GraphQL clients (indexer / squid / multix)
   eslint-config/    # Shared ESLint + Prettier config
   typescript-config/# Shared tsconfig presets
 ```
