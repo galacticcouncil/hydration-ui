@@ -107,7 +107,7 @@ export const DepositPanel = ({
     if (isBelowMin)
       return t("deposit.cta.belowMin", {
         value: vaultStats.minDeposit,
-        currency: hollar.symbol,
+        symbol: hollar.symbol,
       })
     return t("deposit.cta.deposit")
   })()
@@ -117,7 +117,7 @@ export const DepositPanel = ({
     : isBelowMin
       ? t("deposit.cta.belowMin", {
           value: vaultStats.minDeposit,
-          currency: hollar.symbol,
+          symbol: hollar.symbol,
         })
       : undefined
 
