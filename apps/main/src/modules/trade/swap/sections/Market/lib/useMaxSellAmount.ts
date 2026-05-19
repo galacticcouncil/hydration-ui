@@ -32,7 +32,7 @@ export const useMaxSellAmount = ({
 
   const { data: tx } = useQuery({
     enabled,
-    queryKey: ["max-trade-balance", assetIn, assetOut],
+    queryKey: ["maxSellAmount", assetIn, assetOut],
     queryFn: async () => {
       const swap = await rpc.sdk.api.router.getBestSell(
         Number(assetIn),
