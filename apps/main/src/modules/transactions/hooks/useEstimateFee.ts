@@ -44,7 +44,6 @@ export const useEstimateFee = (
     feePaymentAssetIdOverride || accountFeePaymentAssetId?.toString()
   const feeAsset = getAsset(feeAssetId ?? "")
 
-  const isEvmTx = !!anyTx && isEvmCall(anyTx)
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
   return useQuery({
@@ -65,6 +64,7 @@ export const useEstimateFee = (
     queryFn: async () => {
       if (!tx) throw new Error("Invalid transaction")
       if (!feeAsset) throw new Error(`Asset ${feeAssetId} is not valid`)
+      const isEvmTx = !!anyTx && isEvmCall(anyTx)
 
       const getSpotPriceFn = getSpotPrice(
         sdk.api.router,
