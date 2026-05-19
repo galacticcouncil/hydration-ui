@@ -26,7 +26,7 @@ import { toDecimal } from "@/utils/formatting"
 type Props = {
   readonly id: number
   readonly item: OngoingGovReferenda
-  readonly track: ReferendaTrack | undefined
+  readonly track: ReferendaTrack
   readonly totalIssuance: bigint | undefined
   readonly vote: TAccountVote | undefined
 }
@@ -42,6 +42,7 @@ export const Referenda: FC<Props> = ({
   const { native } = useAssets()
 
   const { data: subscanInfo, isLoading } = useQuery(referendumInfoQuery(id))
+
   const state = useReferendaState(item)
 
   const sum = item.tally.ayes + item.tally.nays
@@ -83,9 +84,10 @@ export const Referenda: FC<Props> = ({
   return (
     <SReferenda voted={voted}>
       <ReferendaHeader
-        track={track?.name}
+        trackId={item.track}
+        trackName={track.name}
         state={state}
-        number={id}
+        id={id}
         vote={vote}
       />
       <SReferendaBody>

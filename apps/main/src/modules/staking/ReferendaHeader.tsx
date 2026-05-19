@@ -22,17 +22,27 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { toDecimal } from "@/utils/formatting"
 
+import { ReferendaRewardBadge } from "./ReferendaRewardBadge"
+
 type Props = {
-  readonly track: string | undefined
+  readonly trackId: number
+  readonly trackName: string
   readonly state: string
-  readonly number: number
+  readonly id: number
   readonly vote: TAccountVote | undefined
 }
 
-export const ReferendaHeader: FC<Props> = ({ track, state, number, vote }) => {
+export const ReferendaHeader: FC<Props> = ({
+  trackId,
+  trackName,
+  state,
+  id,
+  vote,
+}) => {
   const { native } = useAssets()
   const { t } = useTranslation(["staking", "common"])
-  const trackFormatted = track?.replaceAll("_", " ")
+
+  const trackFormatted = trackName.replaceAll("_", " ")
   const isStandardVote = vote?.voteKind === "aye" || vote?.voteKind === "nay"
 
   if (vote) {
@@ -63,6 +73,7 @@ export const ReferendaHeader: FC<Props> = ({ track, state, number, vote }) => {
 
     return (
       <Box bg={getToken("surfaces.containers.dim.dimOnHigh")}>
+        <ReferendaRewardBadge id={id} trackId={trackId} />
         <Flex align="center" justify="space-between" py="m" px="l">
           <Flex align="center" gap="s">
             {trackFormatted && (
@@ -81,7 +92,7 @@ export const ReferendaHeader: FC<Props> = ({ track, state, number, vote }) => {
               lh={1.3}
               color={getToken("text.tint.primary")}
             >
-              #{number}
+              #{id}
             </Text>
           </Flex>
 
@@ -128,27 +139,34 @@ export const ReferendaHeader: FC<Props> = ({ track, state, number, vote }) => {
   }
 
   return (
-    <Flex align="center" justify="space-between" py="m" px="l">
-      <Flex align="center" gap="s" wrap>
-        {trackFormatted && (
-          <Chip sx={{ textTransform: "uppercase" }} rounded variant="tertiary">
-            {trackFormatted}
+    <Box>
+      <ReferendaRewardBadge id={id} trackId={trackId} />
+      <Flex align="center" justify="space-between" py="m" px="l">
+        <Flex align="center" gap="s" wrap>
+          {trackFormatted && (
+            <Chip
+              sx={{ textTransform: "uppercase" }}
+              rounded
+              variant="tertiary"
+            >
+              {trackFormatted}
+            </Chip>
+          )}
+          <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
+            {state}
           </Chip>
-        )}
-        <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
-          {state}
-        </Chip>
-      </Flex>
+        </Flex>
 
-      <Text
-        font="primary"
-        fs="p3"
-        fw={500}
-        lh={1.3}
-        color={getToken("text.medium")}
-      >
-        #{number}
-      </Text>
-    </Flex>
+        <Text
+          font="primary"
+          fs="p3"
+          fw={500}
+          lh={1.3}
+          color={getToken("text.medium")}
+        >
+          #{id}
+        </Text>
+      </Flex>
+    </Box>
   )
 }
