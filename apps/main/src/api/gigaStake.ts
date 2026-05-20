@@ -425,36 +425,64 @@ export const claimableVotingRewardsQuery = (
 
       const refIds = userVoteEntries.map(({ keyArgs }) => keyArgs[1])
 
-      const [refInfos, allocPools, cachedTracks, accumulatorAccount] =
-        await Promise.all([
-          Promise.all(
-            refIds.map((id) =>
-              rpc.papi.query.Referenda.ReferendumInfoFor.getValue(id, {
-                at: "best",
-              }),
-            ),
-          ),
-          Promise.all(
-            refIds.map((id) =>
-              unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(id, {
-                at: "best",
-              }),
-            ),
-          ),
-          Promise.all(
-            refIds.map((id) =>
-              unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(id, {
-                at: "best",
-              }),
-            ),
-          ),
-          rpc.papi.query.System.Account.getValue(
-            REWARD_ACCUMULATOR_POT_ADDRESS,
-            {
+      const [
+        refInfos,
+        allocPools,
+        cachedTracks,
+        accumulatorAccount,
+        votingForEntries,
+      ] = await Promise.all([
+        Promise.all(
+          refIds.map((id) =>
+            rpc.papi.query.Referenda.ReferendumInfoFor.getValue(id, {
               at: "best",
-            },
+            }),
           ),
-        ])
+        ),
+        Promise.all(
+          refIds.map((id) =>
+            unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(id, {
+              at: "best",
+            }),
+          ),
+        ),
+        Promise.all(
+          refIds.map((id) =>
+            unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(id, {
+              at: "best",
+            }),
+          ),
+        ),
+        rpc.papi.query.System.Account.getValue(REWARD_ACCUMULATOR_POT_ADDRESS, {
+          at: "best",
+        }),
+        // Fallback class lookup. `GigaHdxRewards.ReferendumTracks` is the
+        // primary source (cached on first vote) but the runtime deletes it
+        // when allocation fires on the first remove_vote. After that, voters
+        // still holding `UserVoteRecord` entries for the same ref have no
+        // way back to the class via gigahdx-rewards storage.
+        //
+        // `ConvictionVoting.VotingFor[(who, class)]` still has their vote
+        // until they themselves call remove_vote — so we can reverse-map
+        // `refIndex → classId` by walking the user's per-class vote entries.
+        //
+        // Required to avoid `ConvictionVoting.ClassNeeded` errors in the
+        // batched claim, because remove_vote(class: undefined) only falls
+        // back to `Polls::class_of()` which returns None for completed refs.
+        rpc.papi.query.ConvictionVoting.VotingFor.getEntries(who, {
+          at: "best",
+        }),
+      ])
+
+      // Build refIndex → classId map from the user's VotingFor entries.
+      const refToClassFromVotingFor = new Map<number, number>()
+      for (const voteClass of votingForEntries) {
+        if (voteClass.value.type !== "Casting") continue
+        const classId = Number(voteClass.keyArgs[1])
+        for (const [pollId] of voteClass.value.value.votes) {
+          refToClassFromVotingFor.set(Number(pollId), classId)
+        }
+      }
 
       const potFree = BigInt(accumulatorAccount.data.free)
       // Refs whose `removeVote` is GUARANTEED to succeed → safe to include
@@ -488,10 +516,18 @@ export const claimableVotingRewardsQuery = (
         if (!refInfo) continue
         if (refInfo.type === "Ongoing") continue
 
-        const trackId =
+        // Three-tier track resolution:
+        //   1. GigaHdxRewards.ReferendumTracks cache (primary — populated
+        //      on first vote, deleted when allocation fires)
+        //   2. ConvictionVoting.VotingFor reverse-map (secondary — still
+        //      has the vote until the user calls remove_vote themselves)
+        //   3. null (only when both above fail — `remove_vote` would then
+        //      revert with `ClassNeeded`; we still include in the batch so
+        //      the user sees the diagnostic and we don't silently drop refs)
+        const trackId: number | null =
           cachedTrack !== null && cachedTrack !== undefined
             ? Number(cachedTrack)
-            : null
+            : (refToClassFromVotingFor.get(refIndex) ?? null)
 
         // Defensive field reader — `unsafeApi` decodes runtime structs with
         // snake_case field names (matching the Rust definitions), not the
