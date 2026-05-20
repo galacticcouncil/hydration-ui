@@ -142,6 +142,29 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   }, [destPair, bridgeProvider, form])
 
   useEffect(() => {
+    if (!destPair || !destAsset) return
+
+    const route = destPair.routes.find(
+      (r) => r.destination.asset.key === destAsset.key,
+    )
+    const tag = route ? getPrimaryBridgeTag(route) : null
+    if (!tag) return
+
+    // Keep an explicit SnowbridgeFast selection — both fast and slow share
+    // the same destAsset, so don't downgrade fast → slow on resync.
+    if (
+      isSnowbridgeFastTag(bridgeProvider) &&
+      destPair.routes.some((r) => (r.tags ?? []).includes(XcmTag.SnowbridgeFast))
+    ) {
+      return
+    }
+
+    if (tag !== bridgeProvider) {
+      form.setValue("bridgeProvider", tag)
+    }
+  }, [bridgeProvider, destPair, destAsset, form])
+
+  useEffect(() => {
     const validRoutes = pipe(
       destChainAssetPairs,
       flatMap((c) => c.routes),
