@@ -22,7 +22,7 @@
   "gigaStaking.gigaStake.cta": "Giga Stake",
   "gigaStaking.gigaUnstake.input.label": "Amount to unstake",
   "gigaStaking.gigaUnstake.receive.label": "Estimated receive",
-  "gigaStaking.gigaUnstake.frozen.alert": "{{value, number}} GHDX are locked in ongoing referenda, they are not possible to unstake now.",
+  "gigaStaking.gigaUnstake.frozen.alert": "{{ value, number }} GHDX of your stake is locked under a referendum vote. Use \"Claim rewards\" to release it (works for completed referenda). Active votes on still-running referenda stay locked until you remove the vote.",
   "gigaStaking.gigaUnstake.minStake.label": "Minimum unstake",
   "gigaStaking.gigaUnstake.cta": "Giga Unstake",
   "gigaStaking.banner.title": "Maximize APR with GIGA HDX",
