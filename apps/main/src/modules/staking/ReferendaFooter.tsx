@@ -61,7 +61,7 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
 
   return (
     <>
-      <Flex direction="row" justify="end" gap="s">
+      <Flex direction="row" justify="end" gap="s" p="l">
         {voted ? (
           <Button
             size="medium"

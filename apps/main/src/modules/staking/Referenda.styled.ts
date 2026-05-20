@@ -28,14 +28,38 @@ export const SReferenda = styled.div<SReferendaProps>(
     display: flex;
     flex-direction: column;
     gap: ${theme.space.m};
+    min-height: 0;
+    height: 100%;
 
     min-width: 22rem;
-    padding-inline: ${theme.space.l};
-    padding-block: ${theme.space.l};
+
     border-radius: ${theme.radii.xl};
     background: ${theme.surfaces.containers.high.primary};
 
     border: solid 1px ${theme.details.borders};
+    overflow: hidden;
+
+    & > :first-child {
+      border-bottom: solid 1px ${theme.details.borders};
+    }
+
+    & > :last-child {
+      border-top: solid 1px ${theme.details.borders};
+    }
+
+    & > :first-child,
+    & > :last-child {
+      flex-shrink: 0;
+    }
+  `,
+)
+
+export const SReferendaBody = styled.div(
+  () => css`
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
   `,
 )
 

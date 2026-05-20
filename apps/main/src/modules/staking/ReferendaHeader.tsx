@@ -1,79 +1,154 @@
 import { Check } from "@galacticcouncil/ui/assets/icons"
 import {
+  Amount,
+  Box,
   Chip,
   Flex,
   Icon,
-  Skeleton,
+  Separator,
+  Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ReferendaSeparator } from "@/modules/staking/ReferendaSeparator"
+import {
+  convictionVoteMultiplierForDisplay,
+  convictionVoteWeightFactor,
+  TAccountVote,
+} from "@/api/democracy"
+import { useAssets } from "@/providers/assetsProvider"
+import { toDecimal } from "@/utils/formatting"
 
 type Props = {
   readonly track: string | undefined
   readonly state: string
   readonly number: number
-  readonly voted: boolean
-  readonly title: string
-  readonly isTitledLoading: boolean
+  readonly vote: TAccountVote | undefined
 }
 
-export const ReferendaHeader: FC<Props> = ({
-  track,
-  state,
-  number,
-  title,
-  isTitledLoading,
-  voted,
-}) => {
-  const { t } = useTranslation(["staking"])
+export const ReferendaHeader: FC<Props> = ({ track, state, number, vote }) => {
+  const { native } = useAssets()
+  const { t } = useTranslation(["staking", "common"])
+  const trackFormatted = track?.replaceAll("_", " ")
+  const isStandardVote = vote?.voteKind === "aye" || vote?.voteKind === "nay"
 
-  return (
-    <Flex direction="column" gap="l">
-      <Flex justify="space-between" align="center">
-        <Flex align="center" gap="s" wrap>
-          {track && (
-            <Chip
-              sx={{ textTransform: "uppercase" }}
-              rounded
-              variant="tertiary"
+  if (vote) {
+    const capitalHuman = toDecimal(vote.balance, native.decimals)
+
+    const yourVotesHuman = isStandardVote
+      ? Big(capitalHuman)
+          .times(convictionVoteWeightFactor(vote.conviction))
+          .toString()
+      : capitalHuman
+
+    const convictionDisplay = isStandardVote
+      ? convictionVoteMultiplierForDisplay(vote.conviction)
+      : t("staking:referenda.item.convictionVarious")
+
+    const yourVotesDisplay = `${t("common:approx.short")} ${t(
+      "common:currency",
+      {
+        value: yourVotesHuman,
+        symbol: native.symbol,
+      },
+    )}`
+
+    const capitalDisplay = `${t("common:approx.short")} ${t("common:currency", {
+      value: capitalHuman,
+      symbol: native.symbol,
+    })}`
+
+    return (
+      <Box bg={getToken("surfaces.containers.dim.dimOnHigh")}>
+        <Flex align="center" justify="space-between" py="m" px="l">
+          <Flex align="center" gap="s">
+            {trackFormatted && (
+              <Chip
+                sx={{ textTransform: "uppercase" }}
+                rounded
+                variant="tertiary"
+              >
+                {trackFormatted}
+              </Chip>
+            )}
+            <Text
+              font="primary"
+              fs="p3"
+              fw={500}
+              lh={1.3}
+              color={getToken("text.tint.primary")}
             >
-              {track.replaceAll("_", " ")}
-            </Chip>
-          )}
+              #{number}
+            </Text>
+          </Flex>
+
           <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
-            {state}
+            <Flex align="center" gap="s">
+              <Icon size="xs" component={Check} />
+              <Text as="span" fs="p6" lh={1}>
+                <Text as="span" fw={500}>
+                  {t("staking:referenda.item.votedWith")}
+                </Text>
+                <Text as="span" fw={700}>
+                  {t(`staking:referenda.item.${vote.voteKind}`)}
+                </Text>
+              </Text>
+            </Flex>
           </Chip>
         </Flex>
-        <Flex align="center" gap="s">
-          <Text
-            font="primary"
-            fs="p3"
-            fw={500}
-            lh={1.3}
-            color={getToken("text.medium")}
-          >
-            #{number}
-          </Text>
-          {voted && (
-            <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
-              <Icon size="xs" component={Check} />
-              {t("staking:referenda.item.voted")}
-            </Chip>
-          )}
-        </Flex>
+        <Separator orientation="horizontal" />
+        <Stack
+          direction="row"
+          gap="s"
+          justify="space-between"
+          py={["l", "l"]}
+          px={["m", "xl"]}
+          separated
+        >
+          <Amount
+            label={t("staking:referenda.item.yourVotes")}
+            value={yourVotesDisplay}
+          />
+
+          <Amount
+            label={t("staking:referenda.item.convictionLabel")}
+            value={convictionDisplay}
+          />
+
+          <Amount
+            label={t("staking:referenda.item.capital")}
+            value={capitalDisplay}
+          />
+        </Stack>
+      </Box>
+    )
+  }
+
+  return (
+    <Flex align="center" justify="space-between" py="m" px="l">
+      <Flex align="center" gap="s" wrap>
+        {trackFormatted && (
+          <Chip sx={{ textTransform: "uppercase" }} rounded variant="tertiary">
+            {trackFormatted}
+          </Chip>
+        )}
+        <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
+          {state}
+        </Chip>
       </Flex>
-      <ReferendaSeparator voted={voted} />
-      {isTitledLoading ? (
-        <Skeleton height={23} width="100%" />
-      ) : (
-        <Text py="s" fw={500} fs="p2" lh={1.3} color={getToken("text.high")}>
-          {title || "N/a"}
-        </Text>
-      )}
+
+      <Text
+        font="primary"
+        fs="p3"
+        fw={500}
+        lh={1.3}
+        color={getToken("text.medium")}
+      >
+        #{number}
+      </Text>
     </Flex>
   )
 }

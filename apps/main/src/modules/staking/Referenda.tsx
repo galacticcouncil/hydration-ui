@@ -4,8 +4,12 @@ import { FC } from "react"
 
 import { bestNumberQuery } from "@/api/chain"
 import { ReferendaTrack } from "@/api/constants"
-import { OngoingGovReferenda, referendumInfoQuery } from "@/api/democracy"
-import { SReferenda } from "@/modules/staking/Referenda.styled"
+import {
+  OngoingGovReferenda,
+  referendumInfoQuery,
+  TAccountVote,
+} from "@/api/democracy"
+import { SReferenda, SReferendaBody } from "@/modules/staking/Referenda.styled"
 import {
   getPerbillPercentage,
   getSupportThreshold,
@@ -14,7 +18,6 @@ import {
 } from "@/modules/staking/Referenda.utils"
 import { ReferendaFooter } from "@/modules/staking/ReferendaFooter"
 import { ReferendaHeader } from "@/modules/staking/ReferendaHeader"
-import { ReferendaSeparator } from "@/modules/staking/ReferendaSeparator"
 import { ReferendaStatus } from "@/modules/staking/ReferendaStatus"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -25,7 +28,7 @@ type Props = {
   readonly item: OngoingGovReferenda
   readonly track: ReferendaTrack | undefined
   readonly totalIssuance: bigint | undefined
-  readonly voted: boolean
+  readonly vote: TAccountVote | undefined
 }
 
 export const Referenda: FC<Props> = ({
@@ -33,7 +36,7 @@ export const Referenda: FC<Props> = ({
   item,
   track,
   totalIssuance,
-  voted,
+  vote,
 }) => {
   const rpc = useRpcProvider()
   const { native } = useAssets()
@@ -75,30 +78,33 @@ export const Referenda: FC<Props> = ({
     parachainBlockNumber,
   )
 
+  const voted = !!vote
+
   return (
     <SReferenda voted={voted}>
       <ReferendaHeader
         track={track?.name}
         state={state}
         number={id}
-        voted={voted}
-        title={subscanInfo?.title ?? ""}
-        isTitledLoading={isLoading}
+        vote={vote}
       />
-      <ReferendaStatus
-        ayeValue={toDecimal(item.tally.ayes, native.decimals)}
-        ayePercent={ayesPercentage}
-        thresholdPercent={thresholdPercentage}
-        nayValue={toDecimal(item.tally.nays, native.decimals)}
-        nayPercent={naysPercentage}
-        supportPercent={barPercentage}
-        supportThreshold={getPerbillPercentage(_)}
-        supportMaxPercentage={getPerbillPercentage(maxSupportBarValue)}
-        supportTooltipPercent={getPerbillPercentage(support)}
-        supportMarkPercentage={markPercentage}
-        voted={voted}
-      />
-      <ReferendaSeparator voted={voted} />
+      <SReferendaBody>
+        <ReferendaStatus
+          ayeValue={toDecimal(item.tally.ayes, native.decimals)}
+          ayePercent={ayesPercentage}
+          thresholdPercent={thresholdPercentage}
+          nayValue={toDecimal(item.tally.nays, native.decimals)}
+          nayPercent={naysPercentage}
+          supportPercent={barPercentage}
+          supportThreshold={getPerbillPercentage(_)}
+          supportMaxPercentage={getPerbillPercentage(maxSupportBarValue)}
+          supportTooltipPercent={getPerbillPercentage(support)}
+          supportMarkPercentage={markPercentage}
+          voted={voted}
+          title={subscanInfo?.title ?? ""}
+          isTitledLoading={isLoading}
+        />
+      </SReferendaBody>
       <ReferendaFooter id={id} classId={item.track} voted={voted} />
     </SReferenda>
   )

@@ -93,6 +93,35 @@ const getVoteConviction = (vote: ConvictionVotingVoteAccountVote): string => {
   return "none"
 }
 
+export type TVoteKind = "aye" | "nay" | "split" | "abstain"
+
+export const convictionVoteWeightFactor = (conviction: string): number => {
+  if (conviction === "none") return 0.1
+
+  const locked = /^locked([1-6])x$/u.exec(conviction)
+  if (locked?.[1]) return Number.parseInt(locked[1], 10)
+
+  return 0.1
+}
+
+/** Human-facing multiplier for Standard conviction (0.1x … 6x). */
+export const convictionVoteMultiplierForDisplay = (
+  conviction: string,
+): string => {
+  const factor = convictionVoteWeightFactor(conviction)
+  return factor === 0.1 ? "0.1x" : `${factor}x`
+}
+
+const voteKindFromAccountVote = (
+  vote: ConvictionVotingVoteAccountVote,
+): TVoteKind => {
+  if (vote.type === "Standard") {
+    return decodeStandardVote(vote.value.vote).aye ? "aye" : "nay"
+  }
+
+  return vote.type === "Split" ? "split" : "abstain"
+}
+
 export type OpenGovReferendum = Extract<
   Awaited<
     ReturnType<Papi["query"]["Referenda"]["ReferendumInfoFor"]["getEntries"]>
@@ -136,6 +165,7 @@ export type TAccountVote = {
   readonly classId: number
   readonly balance: bigint
   readonly conviction: string
+  readonly voteKind: TVoteKind
 }
 
 type TAccountOpenGovVotesAccumulator = {
@@ -171,6 +201,7 @@ export const accountOpenGovVotesQuery = (
                 classId,
                 balance: getVoteAmount(data),
                 conviction: getVoteConviction(data),
+                voteKind: voteKindFromAccountVote(data),
               })
             })
             acc.classIds.add(classId)

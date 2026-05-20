@@ -127,7 +127,7 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
               <SReferendaList ref={gridRef}>
                 {referenda.map((item) => {
                   const track = tracksData?.get(item.track)
-                  const voted = !!votes.some((vote) => vote.id === item.id)
+                  const vote = votes.find((vote) => vote.id === item.id)
 
                   return (
                     <Referenda
@@ -136,7 +136,7 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                       item={item}
                       track={track}
                       totalIssuance={totalIssuance}
-                      voted={voted}
+                      vote={vote}
                     />
                   )
                 })}
