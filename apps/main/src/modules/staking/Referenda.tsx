@@ -1,3 +1,4 @@
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
@@ -5,7 +6,10 @@ import { FC } from "react"
 import { bestNumberQuery } from "@/api/chain"
 import { ReferendaTrack } from "@/api/constants"
 import { OngoingGovReferenda, referendumInfoQuery } from "@/api/democracy"
-import { gigaRewardPoolEstimateQuery } from "@/api/gigaStake"
+import {
+  gigaRewardPoolEstimateQuery,
+  useGigaStakeExchangeRate,
+} from "@/api/gigaStake"
 import { SReferenda } from "@/modules/staking/Referenda.styled"
 import {
   getPerbillPercentage,
@@ -38,12 +42,31 @@ export const Referenda: FC<Props> = ({
   voted,
 }) => {
   const rpc = useRpcProvider()
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
+  const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
 
   const { data: subscanInfo, isLoading } = useQuery(referendumInfoQuery(id))
   const { data: rewardPool } = useQuery(
     gigaRewardPoolEstimateQuery(rpc, id, item.track),
   )
+  // Pool amounts are stored / emitted in HDX (the runtime moves HDX through
+  // all reward pots; `claim_rewards` converts to GIGAHDX on claim). Convert
+  // to GIGAHDX for display so the unit matches what users see elsewhere on
+  // the staking page. Fallback to HDX-equivalent if rate not yet loaded.
+  const rewardPoolGigaHdx = (() => {
+    if (!rewardPool || !exchangeRate || exchangeRate.lte(0)) return undefined
+    const hdxHuman = Big(rewardPool.amount.toString()).div(
+      `1e${native.decimals}`,
+    )
+    const ghdxHuman = hdxHuman.div(exchangeRate.toString())
+    return BigInt(
+      ghdxHuman
+        .times(`1e${ghdxMeta.decimals}`)
+        .round(0, Big.roundDown)
+        .toString(),
+    )
+  })()
   const state = useReferendaState(item)
 
   const sum = item.tally.ayes + item.tally.nays
@@ -82,14 +105,16 @@ export const Referenda: FC<Props> = ({
 
   return (
     <SReferenda voted={voted}>
-      {rewardPool && rewardPool.amount > 0n && (
-        <ReferendaRewardBadge
-          amount={rewardPool.amount}
-          isEstimate={rewardPool.isEstimate}
-          decimals={native.decimals}
-          symbol={native.symbol}
-        />
-      )}
+      {rewardPool &&
+        rewardPool.amount > 0n &&
+        rewardPoolGigaHdx !== undefined && (
+          <ReferendaRewardBadge
+            amount={rewardPoolGigaHdx}
+            isEstimate={rewardPool.isEstimate}
+            decimals={ghdxMeta.decimals}
+            symbol={ghdxMeta.symbol}
+          />
+        )}
       <ReferendaHeader
         track={track?.name}
         state={state}
