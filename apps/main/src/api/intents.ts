@@ -53,3 +53,21 @@ export const useAccountIntents = (address: string) => {
   const rpc = useRpcProvider()
   return useQuery(intentsByAccountQuery(rpc, address))
 }
+
+export const maxIntentDurationQuery = (context: TProviderContext) => {
+  const { papiClient, isApiLoaded, featureFlags } = context
+
+  return queryOptions({
+    enabled: featureFlags.isIceEnabled && isApiLoaded,
+    staleTime: Infinity,
+    queryKey: ["intents", "maxAllowedIntentDuration"],
+    queryFn: async () => {
+      // @TODO: Add constants.Intent to the descriptors whitelist
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = papiClient.getUnsafeApi() as any
+      const maxIntentDuration =
+        await unsafeApi.constants.Intent.MaxAllowedIntentDuration()
+      return Number(maxIntentDuration - 60_000n) // safety margin of 60 seconds
+    },
+  })
+}

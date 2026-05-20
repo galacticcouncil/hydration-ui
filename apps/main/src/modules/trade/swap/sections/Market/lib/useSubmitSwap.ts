@@ -4,7 +4,6 @@ import React from "react"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
-import { intentsByAccountQuery } from "@/api/intents"
 import { Trade, TradeType } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSellAllAlert } from "@/modules/trade/swap/sections/Market/MarketSellAllAlert"
@@ -17,7 +16,7 @@ export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
   const rpc = useRpcProvider()
-  const { sdk, featureFlags } = rpc
+  const { sdk } = rpc
 
   const {
     swap: {
@@ -63,7 +62,8 @@ export const useSubmitSwap = () => {
               }),
             }
 
-      if (featureFlags.isIceEnabled) {
+      // Not ready to switch to market intents yet
+      /* if (featureFlags.isIceEnabled) {
         const tx = await sdk.tx
           .intentMarket(swap)
           .withBeneficiary(account.address)
@@ -88,7 +88,7 @@ export const useSubmitSwap = () => {
             intentsByAccountQuery(rpc, account.address).queryKey,
           ],
         })
-      }
+      } */
 
       const tx = await sdk.tx
         .trade(swap)
