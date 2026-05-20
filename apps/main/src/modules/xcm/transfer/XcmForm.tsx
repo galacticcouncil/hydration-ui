@@ -29,6 +29,7 @@ import {
   ChainAssetFormField,
 } from "@/modules/xcm/transfer/components/FormField"
 import { RecipientSelectButton } from "@/modules/xcm/transfer/components/Recipient"
+import { SnowbridgeVariantSelector } from "@/modules/xcm/transfer/components/SnowbridgeVariantSelector"
 import { SubmitButton } from "@/modules/xcm/transfer/components/SubmitButton"
 import { useChainSwitch } from "@/modules/xcm/transfer/hooks/useChainSwitch"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
@@ -53,6 +54,7 @@ export const XcmForm = () => {
     sourceChainAssetPairs,
     destChainAssetPairs,
     availableBridgeRoutes,
+    hasSnowbridgeVariants,
     isLoading,
     isLoadingCall,
     isLoadingTransfer,
@@ -306,6 +308,14 @@ export const XcmForm = () => {
               <Separator />
               <Stack px={["l", "xl"]} py="m">
                 <BridgeSelector routes={availableBridgeRoutes} />
+              </Stack>
+            </>
+          )}
+          {hasSnowbridgeVariants && (
+            <>
+              <Separator />
+              <Stack px={["l", "xl"]} py="m">
+                <SnowbridgeVariantSelector />
               </Stack>
             </>
           )}

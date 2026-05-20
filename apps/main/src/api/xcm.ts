@@ -149,7 +149,7 @@ export const xcmTransferQuery = (
     destAsset,
     bridgeTag,
   }: XcmTransferArgs,
-  options?: UseQueryOptions<Transfer>,
+  options?: Partial<UseQueryOptions<Transfer>>,
 ) => {
   return queryOptions({
     refetchInterval: secondsToMilliseconds(30),
@@ -208,6 +208,21 @@ export const xcmTransferReportQuery = (
     queryFn: async () => {
       if (!transfer) return []
       return transfer.validate()
+    },
+  })
+
+export const xcmDestinationFeeQuery = (
+  transfer: Transfer | null,
+  amount: string,
+  transferArgs: XcmTransferArgs,
+) =>
+  queryOptions({
+    enabled: !!transfer && !!amount && Number(amount) > 0,
+    placeholderData: keepPreviousData,
+    queryKey: ["xcm", "destFee", amount, transferArgs],
+    queryFn: async () => {
+      if (!transfer) throw new Error("Invalid transfer")
+      return transfer.estimateDestinationFee(amount)
     },
   })
 

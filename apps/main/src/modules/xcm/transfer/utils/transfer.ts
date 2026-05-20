@@ -17,12 +17,43 @@ import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { BRIDGE_PROVIDER_TAGS, XcmTags } from "@/states/transactions"
+import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export const getPrimaryBridgeTag = (route: AssetRoute): string | null => {
   const tags = (route.tags ?? []) as string[]
   return BRIDGE_PROVIDER_TAGS.find((tag) => tags.includes(tag)) ?? null
+}
+
+export const isSnowbridgeRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as string[]
+  return tags.includes(XcmTag.Snowbridge)
+}
+
+export const isSnowbridgeFastRoute = (route: AssetRoute): boolean => {
+  const tags = (route.tags ?? []) as string[]
+  return tags.includes(XcmTag.SnowbridgeFast)
+}
+
+export const isSnowbridgeFastTag = (tag: string | null | undefined): boolean =>
+  tag === XcmTag.SnowbridgeFast
+
+export const isSnowbridgeTag = (tag: string | null | undefined): boolean =>
+  tag === XcmTag.Snowbridge || isSnowbridgeFastTag(tag)
+
+export const pickSnowbridgeVariants = (
+  routes: AssetRoute[],
+): { slow: AssetRoute | null; fast: AssetRoute | null } => {
+  const snowbridge = routes.filter(isSnowbridgeRoute)
+  return {
+    slow: snowbridge.find((r) => !isSnowbridgeFastRoute(r)) ?? null,
+    fast: snowbridge.find(isSnowbridgeFastRoute) ?? null,
+  }
+}
+
+export const hasSnowbridgeVariantChoice = (routes: AssetRoute[]): boolean => {
+  const { slow, fast } = pickSnowbridgeVariants(routes)
+  return !!slow && !!fast
 }
 
 export enum XcmTransferStatus {

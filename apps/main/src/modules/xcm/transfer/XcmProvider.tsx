@@ -30,6 +30,9 @@ import {
   calculateTransferDestAmount,
   getPrimaryBridgeTag,
   getTransferStatus,
+  hasSnowbridgeVariantChoice,
+  isSnowbridgeFastTag,
+  isSnowbridgeRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
 import { XcmTag } from "@/states/transactions"
 
@@ -115,13 +118,21 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   )
 
   useEffect(() => {
-    if (!destPair?.isTagSelect) {
+    if (!destPair) return
+
+    const hasSnowbridgeRoute = destPair.routes.some(isSnowbridgeRoute)
+    if (!destPair.isTagSelect && !hasSnowbridgeRoute) {
       form.setValue("bridgeProvider", null)
       return
     }
 
-    if (destPair.routes.some((r) => getPrimaryBridgeTag(r) === bridgeProvider))
-      return
+    const hasFastVariant = destPair.routes.some((r) =>
+      (r.tags ?? []).includes(XcmTag.SnowbridgeFast),
+    )
+    const isAlreadyValid =
+      (isSnowbridgeFastTag(bridgeProvider) && hasFastVariant) ||
+      destPair.routes.some((r) => getPrimaryBridgeTag(r) === bridgeProvider)
+    if (isAlreadyValid) return
 
     const defaultRoute =
       destPair.routes.find((r) => getPrimaryBridgeTag(r) === XcmTag.Basejump) ??
@@ -220,6 +231,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         sourceChainAssetPairs,
         destChainAssetPairs,
         availableBridgeRoutes: destPair?.isTagSelect ? destPair.routes : [],
+        hasSnowbridgeVariants: destPair
+          ? hasSnowbridgeVariantChoice(destPair.routes)
+          : false,
         alerts,
         transfer,
         call,

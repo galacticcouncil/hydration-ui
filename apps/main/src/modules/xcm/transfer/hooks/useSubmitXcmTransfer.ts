@@ -17,7 +17,10 @@ import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
+import {
+  buildTransferCall,
+  isSnowbridgeTag,
+} from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   TransactionActions,
@@ -91,6 +94,11 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       const isApprove = isEvmApproveCall(call)
 
       const buildTransferTransaction = async () => {
+
+        if (isSnowbridgeTag(bridgeProvider)) {
+          await transfer.estimateDestinationFee(srcAmount)
+        }
+
         const call = await transfer.buildCall(srcAmount)
         const transferCall = await buildTransferCall(
           call,

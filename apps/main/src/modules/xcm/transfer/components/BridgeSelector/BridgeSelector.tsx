@@ -3,7 +3,7 @@ import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useFormContext } from "react-hook-form"
-import { isNonNullish } from "remeda"
+import { isNonNullish, uniqueBy } from "remeda"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { getPrimaryBridgeTag } from "@/modules/xcm/transfer/utils/transfer"
@@ -27,7 +27,7 @@ const BRIDGE_PRIORITY: Record<string, number> = {
 const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
   [XcmTag.Basejump]: "~22 sec",
   [XcmTag.Wormhole]: "~30 min",
-  [XcmTag.Snowbridge]: "~25 min",
+  [XcmTag.Snowbridge]: "5–20 min",
 }
 
 const BRIDGE_ICONS: Partial<Record<string, React.ComponentType>> = {
@@ -43,21 +43,23 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
   const { watch, setValue } = useFormContext<XcmFormValues>()
   const bridgeProvider = watch("bridgeProvider")
 
-  const options = routes
-    .map((route) => {
-      const tag = getPrimaryBridgeTag(route)
-      if (!tag) return null
-      return {
-        id: tag,
-        label: tag,
-        time: BRIDGE_TIME_ESTIMATES[tag] ?? "",
-        icon: BRIDGE_ICONS[tag],
-      } satisfies BridgeOption
-    })
-    .filter(isNonNullish)
-    .sort(
-      (a, b) => (BRIDGE_PRIORITY[a.id] ?? 99) - (BRIDGE_PRIORITY[b.id] ?? 99),
-    )
+  const options = uniqueBy(
+    routes
+      .map((route) => {
+        const tag = getPrimaryBridgeTag(route)
+        if (!tag) return null
+        return {
+          id: tag,
+          label: tag,
+          time: BRIDGE_TIME_ESTIMATES[tag] ?? "",
+          icon: BRIDGE_ICONS[tag],
+        } satisfies BridgeOption
+      })
+      .filter(isNonNullish),
+    (o) => o.id,
+  ).sort(
+    (a, b) => (BRIDGE_PRIORITY[a.id] ?? 99) - (BRIDGE_PRIORITY[b.id] ?? 99),
+  )
 
   if (options.length < 2) return null
 
