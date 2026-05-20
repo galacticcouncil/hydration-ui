@@ -6,7 +6,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AssetAmount } from "@galacticcouncil/xc-core"
 import Big from "big.js"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { pick, unique } from "remeda"
@@ -106,9 +106,45 @@ export const SnowbridgeVariantSelector = () => {
   const { t } = useTranslation(["xcm", "common"])
   const { account } = useAccount()
   const { watch, setValue } = useFormContext<XcmFormValues>()
-  const values = watch()
 
-  const args = getXcmTransferArgs(account, values)
+  const [
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+    destAddress,
+    bridgeProvider,
+    srcAmount,
+  ] = watch([
+    "srcChain",
+    "srcAsset",
+    "destChain",
+    "destAsset",
+    "destAddress",
+    "bridgeProvider",
+    "srcAmount",
+  ])
+
+  const args = useMemo(
+    () =>
+      getXcmTransferArgs(account, {
+        srcChain,
+        srcAsset,
+        destChain,
+        destAsset,
+        destAddress,
+        bridgeProvider,
+      } as XcmFormValues),
+    [
+      account,
+      srcChain,
+      srcAsset,
+      destChain,
+      destAsset,
+      destAddress,
+      bridgeProvider,
+    ],
+  )
   const enabled =
     !!args.srcAddress &&
     !!args.destAddress &&
@@ -117,12 +153,10 @@ export const SnowbridgeVariantSelector = () => {
 
   const { slow, fast, refetch } = useSnowbridgeVariantFees(
     args,
-    values.srcAmount,
+    srcAmount,
     enabled,
   )
 
-  // Single price subscription covering both variants' fee assets — keeps RQ
-  // from creating duplicate observers per row.
   const assetIds = useMemo(
     () =>
       unique(
@@ -149,18 +183,7 @@ export const SnowbridgeVariantSelector = () => {
   const slowTotal = formatTotalUsd(slow, getAssetPrice, formatCurrency)
   const fastTotal = formatTotalUsd(fast, getAssetPrice, formatCurrency)
 
-  // Make sure the form's bridgeProvider is one of the two Snowbridge variants
-  // when this selector is shown (XcmProvider seeds it to Snowbridge by default).
-  useEffect(() => {
-    if (
-      values.bridgeProvider !== XcmTag.Snowbridge &&
-      values.bridgeProvider !== XcmTag.SnowbridgeFast
-    ) {
-      setValue("bridgeProvider", XcmTag.Snowbridge)
-    }
-  }, [values.bridgeProvider, setValue])
-
-  const isFast = values.bridgeProvider === XcmTag.SnowbridgeFast
+  const isFast = bridgeProvider === XcmTag.SnowbridgeFast
 
   const pickVariant = (tag: string) => {
     setValue("bridgeProvider", tag)

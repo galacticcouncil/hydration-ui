@@ -10,6 +10,7 @@ import {
 import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -32,18 +33,26 @@ export const XcmSummary = () => {
   const { account } = useAccount()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
-  const values = watch()
 
   const { source, destination } = transfer || {}
 
-  const {
+  const [
     srcAsset,
     destAsset,
     srcChain,
     destChain,
     bridgeProvider,
     srcAmount,
-  } = values
+    destAddress,
+  ] = watch([
+    "srcAsset",
+    "destAsset",
+    "srcChain",
+    "destChain",
+    "bridgeProvider",
+    "srcAmount",
+    "destAddress",
+  ])
 
   const config = useXcmTransferConfigs(
     srcAsset,
@@ -55,7 +64,26 @@ export const XcmSummary = () => {
   const { origin } = config ?? {}
 
   const isSnowbridge = !!origin?.route && isSnowbridgeRoute(origin.route)
-  const xcmArgs = getXcmTransferArgs(account, values)
+  const xcmArgs = useMemo(
+    () =>
+      getXcmTransferArgs(account, {
+        srcChain,
+        srcAsset,
+        destChain,
+        destAsset,
+        destAddress,
+        bridgeProvider,
+      } as XcmFormValues),
+    [
+      account,
+      srcChain,
+      srcAsset,
+      destChain,
+      destAsset,
+      destAddress,
+      bridgeProvider,
+    ],
+  )
   const { data: snowbridgeDestFee } = useQuery(
     xcmDestinationFeeQuery(isSnowbridge ? transfer : null, srcAmount, xcmArgs),
   )
