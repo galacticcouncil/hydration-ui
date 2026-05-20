@@ -130,13 +130,27 @@ export const GigaHDXPosition = () => {
   const lockedHdxBig = claimableRewards
     ? Big(scaleHuman(claimableRewards.lockedHdx, native.decimals))
     : Big(0)
-  const lockedHdxHuman = lockedHdxBig.toString()
-  const hasLockedShares = lockedHdxBig.gt("0.000001")
-  const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
-  const claimableTotalHuman = claimableTotalBig.toString()
+  const claimableTotalHdxBig = pendingHdxBig.plus(allocReadyHdxBig)
   // Anything over 1 µHDX is worth a tx (matches gigahdx pallet's rounding
   // tolerance — `MAX_GIGAPOT_ROUNDING_SHORTFALL = 1_000_000` plancks).
-  const hasClaimable = claimableTotalBig.gt("0.000001")
+  const hasClaimable = claimableTotalHdxBig.gt("0.000001")
+  // Display in GIGAHDX (the position-token unit users see in their wallet).
+  // Storage / event amounts are HDX-denominated because that's what the
+  // runtime moves through internally — `claim_rewards` converts HDX →
+  // staked GIGAHDX on the fly via `pallet-gigahdx::do_stake`. So showing
+  // GIGAHDX is what the user actually receives, just the unit the rest of
+  // the My Stake card already uses.
+  //
+  // Conversion: `gigahdx_amount = hdx_amount / exchange_rate`. Falls back
+  // to the HDX value when the rate isn't loaded yet (avoids flicker).
+  const rateBig = exchangeRate ? Big(exchangeRate.toString()) : Big(1)
+  const safeDiv = (hdx: Big) => (rateBig.gt(0) ? hdx.div(rateBig) : hdx)
+  const claimableTotalGigaHdxBig = safeDiv(claimableTotalHdxBig)
+  const claimableTotalGigaHdxHuman = claimableTotalGigaHdxBig.toString()
+  const claimableTotalHdxHuman = claimableTotalHdxBig.toString()
+  const lockedGigaHdxBig = safeDiv(lockedHdxBig)
+  const lockedGigaHdxHuman = lockedGigaHdxBig.toString()
+  const hasLockedShares = lockedHdxBig.gt("0.000001")
   const claimAndCompoundArgs = {
     allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
     unlockClasses: claimableRewards?.unlockClasses ?? [],
@@ -484,21 +498,34 @@ export const GigaHDXPosition = () => {
           <SRewardsContainer sx={{ mt: "xxl" }} asChild>
             <Flex direction="column" gap="l">
               <Flex justify="space-between" align="center">
+                {/* Show the GIGAHDX-equivalent (= HDX/rate) — matches the
+                    My Stake card's primary unit. HDX shown as secondary so
+                    users can cross-reference with the storage / event
+                    amounts they might see elsewhere. */}
                 <Amount
                   label={t("gigaStaking.claim.label")}
                   value={
-                    <Text
-                      font="primary"
-                      fs="h5"
-                      fw={500}
-                      lh={1}
-                      color={getToken("text.tint.primary")}
-                    >
-                      {t("common:currency", {
-                        value: claimableTotalHuman,
-                        symbol: native.symbol,
-                      })}
-                    </Text>
+                    <Flex direction="column" gap="xs" align="flex-start">
+                      <Text
+                        font="primary"
+                        fs="h5"
+                        fw={500}
+                        lh={1}
+                        color={getToken("text.tint.primary")}
+                      >
+                        {t("common:currency", {
+                          value: claimableTotalGigaHdxHuman,
+                          symbol: ghdxMeta.symbol,
+                        })}
+                      </Text>
+                      <Text fs="p6" lh={1} color={getToken("text.medium")}>
+                        {"≈ "}
+                        {t("common:currency", {
+                          value: claimableTotalHdxHuman,
+                          symbol: native.symbol,
+                        })}
+                      </Text>
+                    </Flex>
                   }
                 />
 
@@ -517,8 +544,8 @@ export const GigaHDXPosition = () => {
               {hasLockedShares && (
                 <Text fs="p6" lh="m" color={getToken("text.low")}>
                   {t("staking:gigaStaking.claim.locked", {
-                    value: lockedHdxHuman,
-                    symbol: native.symbol,
+                    value: lockedGigaHdxHuman,
+                    symbol: ghdxMeta.symbol,
                   })}
                 </Text>
               )}
