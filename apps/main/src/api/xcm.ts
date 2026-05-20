@@ -138,6 +138,9 @@ export type XcmTransferArgs = {
   readonly bridgeTag?: string
 }
 
+const hasAssetOnChain = (assetKey: string, chainKey: string) =>
+  !!chainsMap.get(chainKey)?.assetsData.has(assetKey)
+
 export const xcmTransferQuery = (
   wallet: Wallet,
   {
@@ -172,8 +175,16 @@ export const xcmTransferQuery = (
         .withSource(srcChain)
         .withDestination(destChain)
 
-      // Do not pass invalid/stale dest asset
-      const validDstAsset = builder.routes.some(
+      const validBridgeTag =
+        !bridgeTag ||
+        builder.routes.some((r) => (r.tags ?? []).includes(bridgeTag))
+          ? bridgeTag
+          : undefined
+      const candidateRoutes = validBridgeTag
+        ? builder.routes.filter((r) => (r.tags ?? []).includes(validBridgeTag))
+        : builder.routes
+
+      const validDstAsset = candidateRoutes.some(
         (r) => r.destination.asset.key === destAsset,
       )
         ? destAsset
@@ -183,7 +194,7 @@ export const xcmTransferQuery = (
         srcAddress,
         dstAddress: destAddress,
         dstAsset: validDstAsset,
-        tag: bridgeTag,
+        tag: validBridgeTag,
       })
     },
     enabled:
@@ -192,7 +203,9 @@ export const xcmTransferQuery = (
       !!srcAsset &&
       !!destAsset &&
       !!srcChain &&
-      !!destChain,
+      !!destChain &&
+      hasAssetOnChain(srcAsset, srcChain) &&
+      hasAssetOnChain(destAsset, destChain),
     ...options,
   })
 }
