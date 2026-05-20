@@ -6,6 +6,7 @@ import {
   Summary,
   Text,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -79,7 +80,11 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
 
         <Separator />
 
-        {frozenInGigaHdx && (
+        {/* `frozenInGigaHdx` is a string. Empty/"0" still passes a naive
+            truthy check, which made the alert render even when nothing's
+            frozen. Use a numeric > 0 check (with sub-µHDX tolerance to
+            ignore floor-rounding dust). */}
+        {Big(frozenInGigaHdx || "0").gt("0.000001") && (
           <>
             <Alert
               sx={{ m: "l" }}
