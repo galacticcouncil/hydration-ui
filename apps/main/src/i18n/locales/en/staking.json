@@ -125,7 +125,7 @@
   "dashboard.projectedAPR.tooltip": [
     "Annualised return from the past 60 days of activity (capped at chain age).",
     "Base APR is measured from HDX flowing into the GIGAHDX reward pot — every GIGAHDX holder shares it proportionally to their balance, no action required.",
-    "Voting APR is conditional: it only applies if you vote. The figure assumes maximum conviction (Locked6x — 8× reward multiplier, 224-day lock). Dilution is sized to your existing position; if you don't have one yet, it's sized to a typical 1,000 HDX new-staker entry.",
+    "Voting APR is conditional: it only applies if you vote. The figure assumes maximum conviction (Locked6x — 8× reward multiplier, 224-day lock) and assumes ~30% of TVL competes for each referendum's pool at average conviction. Dilution is sized to your existing position; if you don't have one yet, it's sized to a typical 1,000 HDX new-staker entry.",
     "Your actual share scales with your stake, your chosen conviction, and the number of other voters on each referendum.",
     "Past performance does not guarantee future results."
   ],

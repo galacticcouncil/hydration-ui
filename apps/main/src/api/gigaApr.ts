@@ -65,6 +65,26 @@ const QUERY_KEY_VERSION = "v2"
  */
 const MIN_REAL_VOTE_WEIGHTED = 100n * 10n ** 12n
 
+/**
+ * Synthetic dilution floor as a fraction of TVL (in basis points). Models
+ * the assumption that on a busy chain a meaningful slice of staked HDX will
+ * vote on each referendum at average conviction.
+ *
+ * Why: the per-ref dilution `pool × 8 / (weighted + 8 × stakeValue)` uses
+ * **only existing voters** as the denominator. On a sparse / young chain
+ * with one or two small conviction-locked voters, a marginal max-conviction
+ * staker would grab nearly the entire pool — the formula faithfully reports
+ * that as huge per-stake yield (4,000%+ on lark). Not useful as a fleet
+ * projection.
+ *
+ * We floor the effective weighted at `TVL × FRACTION × avgConvictionMult`.
+ * With FRACTION = 30% and avgConvictionMult = 1× (Locked3x ≈ middle of the
+ * range), this says "assume ≈30% of TVL votes on each ref at moderate
+ * conviction." On mainnet at maturity, real participation exceeds this and
+ * the floor is invisible. On lark / young chains it caps the explosion.
+ */
+const DILUTION_FLOOR_TVL_FRACTION_BPS = 3000n // 30% in basis points
+
 // ---------------------------------------------------------------------------
 // Base APR (passive — gigapot inflow)
 // ---------------------------------------------------------------------------
@@ -232,6 +252,14 @@ export const votingAprQuery = (
             { at: "best" },
           ),
           rpc.papi.query.System.Number.getValue({ at: "best" }),
+          // TVL for the synthetic dilution floor — TotalLocked + gigapot.free
+          // is the runtime's `total_staked_hdx()` (HDX backing all GIGAHDX).
+          unsafeApi.query.GigaHdx.TotalLocked.getValue({ at: "best" }).catch(
+            () => 0n,
+          ),
+          rpc.papi.query.System.Account.getValue(STAKE_GIGAPOT_ADDRESS, {
+            at: "best",
+          }),
         ])
       } catch (e) {
         // eslint-disable-next-line no-console
@@ -244,6 +272,8 @@ export const votingAprQuery = (
         cachedTrackEntries,
         rewardPotAcct,
         headBlockNum,
+        totalLockedRaw,
+        gigapotAcct,
       ] = fetched as [
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any[],
@@ -253,6 +283,8 @@ export const votingAprQuery = (
         any[],
         { data: { free: bigint } },
         unknown,
+        bigint,
+        { data: { free: bigint } },
       ]
 
       // Temporary diagnostic — remove once voting APR is verified working
@@ -324,6 +356,14 @@ export const votingAprQuery = (
       const potFree = BigInt(rewardPotAcct?.data?.free ?? 0n)
       const headBlock = Number(headBlockNum)
 
+      // Synthetic dilution floor: assume `DILUTION_FLOOR_TVL_FRACTION_BPS`
+      // bps of TVL votes on each ref at average conviction (~1× Locked3x).
+      // Stops sparse-chain refs from yielding absurd per-stake projections.
+      const tvl =
+        BigInt(totalLockedRaw ?? 0n) + BigInt(gigapotAcct?.data?.free ?? 0n)
+      const syntheticWeightedFloor =
+        (tvl * DILUTION_FLOOR_TVL_FRACTION_BPS) / 10000n
+
       const myWeighted = stakeValueHdxPlanck * LOCKED_6X_MULTIPLIER
       const myWeightedBig = Big(myWeighted.toString())
       const multBig = Big(LOCKED_6X_MULTIPLIER.toString())
@@ -371,7 +411,13 @@ export const votingAprQuery = (
           })
           continue
         }
-        const denom = Big(weighted.toString()).plus(myWeightedBig)
+        // Apply the synthetic dilution floor: any ref with weighted below
+        // the assumed-participation level uses the floor instead. This is
+        // invisible on mainnet (real voters dominate) and tames the
+        // sparse-chain explosion case.
+        const effectiveWeighted =
+          weighted < syntheticWeightedFloor ? syntheticWeightedFloor : weighted
+        const denom = Big(effectiveWeighted.toString()).plus(myWeightedBig)
         if (denom.lte(0)) {
           perRefContrib.push({
             refId,
