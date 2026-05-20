@@ -1,8 +1,6 @@
 import {
   Button,
-  ExternalLink,
   Flex,
-  Icon,
   ModalBody,
   ModalCloseTrigger,
   ModalContentDivider,
@@ -15,24 +13,25 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   HYDRATION_CHAIN_KEY,
-  multix,
-  safeConvertAddressSS58,
-  safeConvertPublicKeyToSS58,
   shortenAccountAddress,
   stringEquals,
 } from "@galacticcouncil/utils"
 import {
-  MultisigAccount,
-  MultisigPendingTx,
+  type MultisigAccount,
+  type MultisigPendingTx,
   useAccount,
   useMultisigConfigs,
 } from "@galacticcouncil/web3-connect"
-import { MoveUpRight } from "lucide-react"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDecodedMultisigTx } from "@/api/multisig"
 import { MultisigSummary } from "@/modules/transactions/review/ReviewMultisig/components/MultisigSummary"
+import { ReviewMultisigAction } from "@/modules/transactions/review/ReviewMultisig/components/ReviewMultisigAction"
+import {
+  getMultisigAddress,
+  getNormalizedApprovals,
+} from "@/modules/transactions/review/ReviewMultisig/ReviewMultisig.utils"
 import { ReviewTransactionJsonContent } from "@/modules/transactions/review/ReviewTransactionJsonView"
 import { JsonViewContainer } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.styled"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
@@ -48,30 +47,12 @@ export const ReviewMultisig: FC<ReviewMultisigProps> = ({ tx, multisig }) => {
   const configs = useMultisigConfigs()
   const { data: decodedTx } = useDecodedMultisigTx(tx)
 
-  const normalizedApprovals = useMemo(
-    () => tx.approvals.map((a) => safeConvertAddressSS58(a)),
-    [tx.approvals],
-  )
-
-  const connectedNormalized = account
-    ? safeConvertAddressSS58(account.address)
-    : ""
-
-  const hasApprovedAsMultisig =
-    !!account?.isMultisig &&
-    !!account?.multisigSignerAddress &&
-    normalizedApprovals.includes(account.multisigSignerAddress)
-
-  const hasApprovedAsConnected = connectedNormalized
-    ? normalizedApprovals.includes(connectedNormalized)
-    : false
-
-  const hasApproved = hasApprovedAsMultisig || hasApprovedAsConnected
+  const normalizedApprovals = useMemo(() => getNormalizedApprovals(tx), [tx])
 
   const approvedCount = normalizedApprovals.length
   const totalSignatories = multisig.signatories.length
   const threshold = multisig.threshold ?? totalSignatories
-  const multisigAddress = safeConvertPublicKeyToSS58(multisig.pubKey)
+  const multisigAddress = getMultisigAddress(multisig)
 
   const config = configs.find((c) => stringEquals(c.address, multisigAddress))
 
@@ -150,18 +131,7 @@ export const ReviewMultisig: FC<ReviewMultisigProps> = ({ tx, multisig }) => {
             {t("close")}
           </Button>
         </ModalCloseTrigger>
-        <Button
-          size="large"
-          variant={hasApproved ? "secondary" : "primary"}
-          asChild
-        >
-          <ExternalLink href={multix.account(multisigAddress)}>
-            {hasApproved
-              ? t("multisig.modal.viewOnMultix")
-              : t("multisig.modal.approveOnMultix")}
-            <Icon component={MoveUpRight} size="s" />
-          </ExternalLink>
-        </Button>
+        <ReviewMultisigAction tx={tx} multisig={multisig} />
       </ModalFooter>
     </>
   )

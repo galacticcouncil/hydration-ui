@@ -7,7 +7,7 @@ import {
   stripTrailingSlash,
 } from "./helpers"
 
-type SubscanLinkPath = "tx" | "account" | "block"
+type SubscanLinkPath = "tx" | "account" | "block" | "multisig_extrinsic"
 
 const SUBSCAN_API_PROXY_URL =
   "https://unified-main-aggr-indx.indexer.hydration.cloud/proxy/subscan"
@@ -46,5 +46,18 @@ export const subscan = {
       tab: "event",
       event: `${blockNumber}-${indexInBlock}`,
     })
+  },
+  multisigExtrinsic: (
+    chainKey: string,
+    blockNumber: number,
+    indexInBlock: number,
+    callHash: string,
+  ) => {
+    return subscan.link(
+      chainKey,
+      "multisig_extrinsic",
+      `${blockNumber}-${indexInBlock}`,
+      { call_hash: callHash },
+    )
   },
 }

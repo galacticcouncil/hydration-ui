@@ -1,7 +1,10 @@
 import { pxToRem } from "@galacticcouncil/ui/utils"
-import { Web3ConnectButton } from "@galacticcouncil/web3-connect"
+import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { useMatch } from "@tanstack/react-router"
 import React from "react"
+
+import { UserMenu } from "@/modules/layout/components/UserMenu"
+import { SSplitContainer } from "@/modules/layout/components/UserMenu/UserMenu.styled"
 
 export const HeaderWeb3ConnectButton: React.FC<
   React.ComponentPropsWithoutRef<typeof Web3ConnectButton>
@@ -10,13 +13,27 @@ export const HeaderWeb3ConnectButton: React.FC<
     from: "/cross-chain/",
     shouldThrow: false,
   })
-  return (
+  const { account } = useAccount()
+  const showUserMenu =
+    !!account && (isCrossChainPage || !account.isIncompatible)
+
+  const button = (
     <Web3ConnectButton
       {...props}
       size="large"
       variant="secondary"
       allowIncompatibleAccounts={isCrossChainPage}
       sx={{ height: pxToRem(36) }}
+      hideCaret={showUserMenu}
     />
+  )
+
+  if (!showUserMenu) return button
+
+  return (
+    <SSplitContainer>
+      {button}
+      <UserMenu />
+    </SSplitContainer>
   )
 }

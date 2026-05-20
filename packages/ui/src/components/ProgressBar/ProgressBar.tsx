@@ -19,6 +19,7 @@ type Props = {
   readonly format?: (percentage: number) => string
   readonly orientation?: ProgressBarOrientation
   readonly hideLabel?: boolean
+  readonly animated?: boolean
   readonly className?: string
   readonly color?: ThemeUICSSObject["color"]
 }
@@ -30,6 +31,7 @@ export const ProgressBar: FC<Props> = ({
   format,
   orientation = "horizontal",
   hideLabel,
+  animated = true,
   className,
   color,
 }) => {
@@ -43,6 +45,7 @@ export const ProgressBar: FC<Props> = ({
       <SProgressBar>
         <SProgressBarFill
           value={clippedValue}
+          animated={animated}
           sx={{ backgroundColor: color }}
         />
       </SProgressBar>

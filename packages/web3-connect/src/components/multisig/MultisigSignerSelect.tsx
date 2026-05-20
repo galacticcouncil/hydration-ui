@@ -45,8 +45,8 @@ export const MultisigSignerSelect: React.FC = () => {
   const { papi } = useWeb3ConnectContext()
   const config = useActiveMultisigConfig()
 
-  const { accounts, getStatus, disconnect } = useWeb3Connect(
-    useShallow(pick(["accounts", "getStatus", "disconnect"])),
+  const { accounts, getStatus, disconnect, toggle } = useWeb3Connect(
+    useShallow(pick(["accounts", "getStatus", "disconnect", "toggle"])),
   )
 
   const { activate } = useActivateMultisig()
@@ -80,6 +80,7 @@ export const MultisigSignerSelect: React.FC = () => {
 
   const handleSelectSigner = (signerAddress: string) => {
     activate(config, signerAddress)
+    toggle()
   }
 
   const substrateSignerAccounts = substrateAccounts.filter((account) =>

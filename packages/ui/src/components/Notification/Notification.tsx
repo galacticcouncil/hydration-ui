@@ -61,7 +61,13 @@ function renderBold(text: string) {
   const parts = text.split(/\*\*(.*?)\*\*/g)
 
   return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i}>{part}</strong> : part,
+    i % 2 === 1 ? (
+      <strong key={i} sx={{ color: getToken("text.tint.secondary") }}>
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
   )
 }
 

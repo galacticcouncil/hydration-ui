@@ -13,6 +13,7 @@ export type ChipVariant =
   | "warning"
   | "danger"
   | "green"
+  | "red"
   | "accent"
 
 export type ChipSize = "extra-small" | "small" | "medium" | "large"
@@ -45,6 +46,7 @@ const variants = createVariants(({ buttons, accents }) => ({
   warning: variantStyles(accents.alertAlt.onPrimary, accents.alertAlt.primary),
   danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
   green: variantStyles(accents.success.emphasis, accents.success.dim),
+  red: variantStyles(accents.danger.emphasis, accents.danger.dimBg),
 }))
 
 const sizes = createVariants((theme) => ({
