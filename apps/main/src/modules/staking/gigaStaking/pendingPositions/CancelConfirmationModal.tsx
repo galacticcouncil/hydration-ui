@@ -24,7 +24,7 @@ export const CancelConfirmationModal = ({
   const { t } = useTranslation(["staking", "common"])
 
   return (
-    <Modal open={open} onOpenChange={() => {}}>
+    <Modal open={open} onOpenChange={onClose}>
       <ModalHeader title="Confirmation" customTitle={<></>} closable hidden />
       <ModalBody noPadding scrollable={false} sx={{ pb: pxToRem(40) }}>
         <Flex
