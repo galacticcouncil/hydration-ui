@@ -94,7 +94,6 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       const isApprove = isEvmApproveCall(call)
 
       const buildTransferTransaction = async () => {
-
         if (isSnowbridgeTag(bridgeProvider)) {
           await transfer.estimateDestinationFee(srcAmount)
         }
