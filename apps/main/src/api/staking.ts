@@ -198,6 +198,40 @@ export const stakingInitializedEventsQuery = (indexerSdk: IndexerSdk) =>
     },
   })
 
+/**
+ * `pallet-gigahdx-rewards::Event::UserRewardRecorded` — fires every time a
+ * user's per-referendum share is credited to `PendingRewards`. The runtime
+ * has already computed the share (track-pct × pot × user_weighted / total_
+ * weighted, with last-claimer dust scoop) so `rewardAmount` is the realised
+ * HDX value paid to that voter for that referendum.
+ *
+ * Summing `rewardAmount` over a time window gives total HDX paid to voters
+ * — the basis for backward-looking voting APR (`gigaApr.votingAprQuery`).
+ *
+ * Args shape may use either camelCase or snake_case keys depending on the
+ * indexer's event-args decoder; the consumer should probe both.
+ */
+const gigaUserRewardEvent = stakeEventBase.extend({
+  name: z.literal("GigaHdxRewards.UserRewardRecorded"),
+  args: z.unknown(),
+})
+
+export type GigaUserRewardEvent = z.infer<typeof gigaUserRewardEvent>
+
+export const userRewardRecordedEventsQuery = (
+  indexerSdk: IndexerSdk,
+  sinceBlock: number,
+) =>
+  queryOptions({
+    queryKey: ["gigaHdxRewards", "events", "userRewardRecorded", sinceBlock],
+    queryFn: async () => {
+      const { events } = await indexerSdk.UserRewardRecordedEvents({
+        sinceBlock,
+      })
+      return events.map((event) => gigaUserRewardEvent.parse(event))
+    },
+  })
+
 export const potBalanceQuery = ({ sdk, isApiLoaded }: TProviderContext) =>
   queryOptions({
     queryKey: ["potBalance"],

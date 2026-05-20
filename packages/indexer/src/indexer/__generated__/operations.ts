@@ -40,3 +40,10 @@ export type StakingInitializedEventsQueryVariables = Types.Exact<{ [key: string]
 
 
 export type StakingInitializedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, block: { __typename?: 'Block', height: number } }> };
+
+export type UserRewardRecordedEventsQueryVariables = Types.Exact<{
+  sinceBlock: Types.Scalars['Int']['input'];
+}>;
+
+
+export type UserRewardRecordedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null, name: string, block: { __typename?: 'Block', height: number } }> };

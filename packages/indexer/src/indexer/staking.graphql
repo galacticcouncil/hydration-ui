@@ -19,3 +19,24 @@ query StakingInitializedEvents {
     name
   }
 }
+
+# Per-(user, ref) reward payouts from pallet-gigahdx-rewards.
+# Each event = `reward_amount` HDX credited to a voter's PendingRewards
+# (sourced from a referendum's allocated pool). Summing over a window
+# gives the total HDX actually paid out to voters in that period —
+# the basis for the event-based voting APR.
+query UserRewardRecordedEvents($sinceBlock: Int!) {
+  events(
+    where: {
+      name_eq: "GigaHdxRewards.UserRewardRecorded"
+      block: { height_gte: $sinceBlock }
+    }
+    orderBy: [block_height_ASC]
+  ) {
+    args
+    block {
+      height
+    }
+    name
+  }
+}

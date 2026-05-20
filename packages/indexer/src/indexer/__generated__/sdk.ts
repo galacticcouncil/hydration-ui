@@ -72,6 +72,20 @@ export const StakingInitializedEventsDocument = gql`
   }
 }
     `;
+export const UserRewardRecordedEventsDocument = gql`
+    query UserRewardRecordedEvents($sinceBlock: Int!) {
+  events(
+    where: {name_eq: "GigaHdxRewards.UserRewardRecorded", block: {height_gte: $sinceBlock}}
+    orderBy: [block_height_ASC]
+  ) {
+    args
+    block {
+      height
+    }
+    name
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -97,6 +111,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     StakingInitializedEvents(variables?: Types.StakingInitializedEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.StakingInitializedEventsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.StakingInitializedEventsQuery>({ document: StakingInitializedEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'StakingInitializedEvents', 'query', variables);
+    },
+    UserRewardRecordedEvents(variables: Types.UserRewardRecordedEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.UserRewardRecordedEventsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.UserRewardRecordedEventsQuery>({ document: UserRewardRecordedEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UserRewardRecordedEvents', 'query', variables);
     }
   };
 }
