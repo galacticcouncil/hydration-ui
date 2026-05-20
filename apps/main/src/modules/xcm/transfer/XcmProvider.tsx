@@ -154,7 +154,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     // the same destAsset, so don't downgrade fast → slow on resync.
     if (
       isSnowbridgeFastTag(bridgeProvider) &&
-      destPair.routes.some((r) => (r.tags ?? []).includes(XcmTag.SnowbridgeFast))
+      destPair.routes.some((r) =>
+        (r.tags ?? []).includes(XcmTag.SnowbridgeFast),
+      )
     ) {
       return
     }
