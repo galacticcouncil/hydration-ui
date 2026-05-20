@@ -4,7 +4,7 @@
   "gigaStake.header.lockdownPeriod": "Lockdown period",
   "gigaStake.header.valueDays": "{{ value, number }} days",
   "gigaStake.header.minimumLockPeriod": "Minimum lock period",
-  "gigaStake.header.availableToBorrow": "Available to borrow",
+  "gigaStake.header.availableToBorrow": "Total borrow limit",
   "gigaStake.header.totalStake": "Total GIGA Stake",
   "gigaStake.section.gigaStakingDashboard": "GIGA staking dashboard",
   "gigaStakingMigration.title": "GIGA staking migration",
@@ -123,12 +123,12 @@
   "dashboard.projectedAPR.base": "{{ value, percent }} base",
   "dashboard.projectedAPR.voting": "+ up to {{ value, percent }} voting",
   "dashboard.projectedAPR.tooltip": [
-    "Annualised return from the past 60 days of activity (capped at chain age).",
-    "Base APR is measured from HDX flowing into the GIGAHDX reward pot — every GIGAHDX holder shares it proportionally to their balance, no action required.",
-    "Voting APR is conditional: it only applies if you vote. The figure assumes maximum conviction (Locked6x — 8× reward multiplier, 224-day lock) and assumes ~30% of TVL competes for each referendum's pool at average conviction. Dilution is sized to your existing position; if you don't have one yet, it's sized to a typical 1,000 HDX new-staker entry.",
-    "Your actual share scales with your stake, your chosen conviction, and the number of other voters on each referendum.",
-    "Past performance does not guarantee future results."
+    "Estimated from the last 60 days of reward activity.",
+    "Base APR is shared automatically by GIGAHDX holders.",
+    "Voting APR applies only when you vote and assumes Locked 6x conviction.",
+    "Actual rewards depend on your stake, conviction, and other voters."
   ],
+  "dashboard.projectedAPR.tooltip.docs": "Go to docs",
   "dashboard.balance": "Staked balance",
 
   "howTo.title": "How to stake?",

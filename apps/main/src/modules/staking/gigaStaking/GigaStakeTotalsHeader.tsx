@@ -7,6 +7,7 @@ import {
   ValueStatsBottomValue,
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -26,6 +27,7 @@ import {
   gigaStakeConstantsQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { ProjectedAPRTooltipContent } from "@/modules/staking/ProjectedAPRTooltip"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
@@ -143,14 +145,7 @@ export const GigaStakeTotalsHeader: FC = () => {
         })}
         bottomLabel={t("currency", { value: totalSuppliedUsd })}
       />
-      <Tooltip
-        asChild={false}
-        text={
-          t("staking:dashboard.projectedAPR.tooltip", {
-            returnObjects: true,
-          }) as Array<string>
-        }
-      >
+      <Tooltip asChild={false} text={<ProjectedAPRTooltipContent />}>
         <ValueStats
           wrap
           size="medium"
@@ -164,7 +159,9 @@ export const GigaStakeTotalsHeader: FC = () => {
             </ValueStatsValue>
           }
           customBottomLabel={
-            <ValueStatsBottomValue>
+            <ValueStatsBottomValue
+              sx={{ color: getToken("accents.success.emphasis") }}
+            >
               {t("staking:dashboard.projectedAPR.voting", {
                 value: Number(aprVoting.toFixed(2)),
               })}

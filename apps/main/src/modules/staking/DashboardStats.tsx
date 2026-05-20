@@ -9,7 +9,6 @@ import {
   Separator,
   Skeleton,
   Text,
-  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -22,6 +21,7 @@ import {
   useStakingSupply,
 } from "@/modules/staking/DashboardStats.data"
 import { SDashboardStats } from "@/modules/staking/DashboardStats.styled"
+import { ProjectedAPRTooltip } from "@/modules/staking/ProjectedAPRTooltip"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
@@ -135,15 +135,7 @@ export const DashboardStats: FC<Props> = ({
               <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
                 {t("staking:dashboard.projectedAPR")}
               </Text>
-              <Tooltip
-                text={(
-                  t("staking:dashboard.projectedAPR.tooltip", {
-                    returnObjects: true,
-                  }) as Array<string>
-                ).map((line, index) => (
-                  <div key={index}>{line}</div>
-                ))}
-              />
+              <ProjectedAPRTooltip />
             </Flex>
             {APRLoading ? (
               <Skeleton height={18} />

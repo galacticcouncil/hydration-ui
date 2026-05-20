@@ -98,8 +98,8 @@ const pointsTitleSizes = createVariants<PointsSize>((theme) => ({
   `,
   l: css`
     font-family: ${theme.fontFamilies1.primary};
-    font-weight: 700;
-    font-size: ${theme.fontSizes.base};
+    font-weight: 500;
+    font-size: ${theme.fontSizes.p3};
     line-height: 1.3;
     color: ${theme.text.high};
   `,
