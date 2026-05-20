@@ -9,13 +9,14 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { durationInDaysAndHoursFromNow } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
-import { FC, useMemo } from "react"
+import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { bestNumberQuery } from "@/api/chain"
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { CancelConfirmationModal } from "@/modules/staking/gigaStaking/pendingPositions/CancelConfirmationModal"
 import {
   useCancelPendingPosition,
   useClaimPendingPosition,
@@ -35,6 +36,8 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   voteAtBlock,
 }) => {
   const { t } = useTranslation(["common", "staking"])
+  const [isCancelConfirmationModalOpen, setIsCancelConfirmationModalOpen] =
+    useState(false)
   const { native } = useAssets()
   const rpc = useRpcProvider()
   const { data: best } = useQuery(bestNumberQuery(rpc))
@@ -128,12 +131,17 @@ export const PendingPosition: FC<PendingPositionProps> = ({
         <Button
           variant="tertiary"
           size="small"
-          onClick={() => cancelPendingPosition.mutate({ voteAtBlock, amount })}
+          onClick={() => setIsCancelConfirmationModalOpen(true)}
           disabled={cancelPendingPosition.isPending}
         >
           {t("cancel")}
         </Button>
       </Flex>
+      <CancelConfirmationModal
+        open={isCancelConfirmationModalOpen}
+        onClose={() => setIsCancelConfirmationModalOpen(false)}
+        onConfirm={() => cancelPendingPosition.mutate({ voteAtBlock, amount })}
+      />
     </SUnstakingPosition>
   )
 }

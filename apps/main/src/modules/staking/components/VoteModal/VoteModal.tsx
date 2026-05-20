@@ -94,7 +94,11 @@ const VoteForm = ({
 
             {!isSingleInputField && (
               <Box>
-                <Flex justify="space-between" align="center">
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  pb={getToken("scales.paddings.base")}
+                >
                   <Text fs="p5" fw={500} color={getToken("text.medium")}>
                     {t("staking:referenda.vote.modal.totalBalance")}
                   </Text>

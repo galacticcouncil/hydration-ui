@@ -78,6 +78,8 @@
   "gigaStaking.unstake.toasts.success": "Giga unstaked {{ value, currency }}",
   "gigaStaking.migrate.toasts.submitted": "Migrating {{ value, currency }} to GIGA HDX",
   "gigaStaking.migrate.toasts.success": "Migrated {{ value, currency }} to GIGA HDX",
+  "gigaStaking.cancelPendingPosition.confirm.title": "Are you sure you want to cancel unstaking position?",
+  "gigaStaking.cancelPendingPosition.confirm.desc": "You’ll loose all unstaking progress and your position will go back to your GHDX Stake balance.",
   "gigaStaking.cancelPendingPosition.toasts.submitted": "Cancelling pending position {{ value, currency }}",
   "gigaStaking.cancelPendingPosition.toasts.success": "Cancelled pending position {{ value, currency }}",
   "gigaStaking.claimPendingPosition.toasts.submitted": "Claiming pending position {{ value, currency }}",

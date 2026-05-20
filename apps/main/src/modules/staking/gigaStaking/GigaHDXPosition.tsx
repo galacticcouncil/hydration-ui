@@ -11,7 +11,8 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -25,7 +26,6 @@ import {
   SChartContainer,
   SChartLegendContainer,
 } from "@/modules/staking/gigaStaking/GigaStaking.styled"
-import { GigaStakingChart } from "@/modules/staking/gigaStaking/GigaStakingChart"
 import { GigaHDXRepayModal } from "@/modules/staking/gigaStaking/repay/GigaHDXRepayModal"
 import { GigaHDXSupplyInfo } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 import { useAssets } from "@/providers/assetsProvider"
@@ -35,6 +35,7 @@ const REWARDS_TO_CLAIM = 23444
 export const GigaHDXPosition = () => {
   const { t } = useTranslation(["staking", "common", "borrow"])
   const [borrowModalOpen, setBorrowModalOpen] = useState(false)
+  const { isMobile, isTablet } = useBreakpoints()
 
   const { getAssetWithFallback, native } = useAssets()
 
@@ -115,13 +116,17 @@ export const GigaHDXPosition = () => {
             <Text
               font="primary"
               fw={500}
-              fs="base"
+              fs={["p6", "base"]}
               lh={1}
               color={getToken("text.high")}
             >
               {t("gigaStaking.position.title")}
             </Text>
-            <Text fs="p6" lh={1} color={getToken("text.medium")}>
+            <Text
+              fs={[pxToRem(9), "p6"]}
+              lh={1}
+              color={getToken("text.medium")}
+            >
               {t("gigaStaking.position.desc")}
             </Text>
           </Flex>
@@ -130,7 +135,7 @@ export const GigaHDXPosition = () => {
             value={
               <Text
                 font="primary"
-                fs={["base", "h6"]}
+                fs={["p3", "p3", "p3", "h6"]}
                 lh={1}
                 fw={500}
                 color={getToken("text.tint.secondary")}
@@ -155,8 +160,8 @@ export const GigaHDXPosition = () => {
           <>
             <Separator />
             <Stack
-              direction={["column", "column", "column", "row"]}
-              gap={["xxl", null]}
+              direction="row"
+              gap={["xl", null]}
               justify="start"
               py={["l", "l"]}
               px={["m", "xl"]}
@@ -165,13 +170,13 @@ export const GigaHDXPosition = () => {
               <ValueStats
                 size="small"
                 label={t("borrow:healthFactor")}
-                wrap={[false, true]}
+                wrap={[true]}
                 isLoading={isLoading}
                 customValue={
                   <Text
                     font="primary"
                     fw={500}
-                    fs="h7"
+                    fs={["p3", "p3", "h7"]}
                     lh={1}
                     sx={{ color: healthFactorColor }}
                   >
@@ -182,17 +187,25 @@ export const GigaHDXPosition = () => {
               <ValueStats
                 size="small"
                 label="Liquidation price"
-                wrap={[false, true]}
+                wrap={[true]}
                 isLoading={isLoading}
-                value={
-                  liquidationPriceHollarPerHdx
-                    ? t("common:currency", {
-                        value: liquidationPriceHollarPerHdx
-                          .round(18, Big.roundHalfUp)
-                          .toFixed(),
-                        symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
-                      })
-                    : "-"
+                customValue={
+                  <Text
+                    font="primary"
+                    fw={500}
+                    fs={["p3", "p3", "h7"]}
+                    lh={1}
+                    color={getToken("text.high")}
+                  >
+                    {liquidationPriceHollarPerHdx
+                      ? t("common:currency", {
+                          value: liquidationPriceHollarPerHdx
+                            .round(18, Big.roundHalfUp)
+                            .toFixed(),
+                          symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
+                        })
+                      : "-"}
+                  </Text>
                 }
               />
             </Stack>
@@ -213,7 +226,7 @@ export const GigaHDXPosition = () => {
               <Text
                 font="primary"
                 fw={500}
-                fs="base"
+                fs={["p3", "p3", "base"]}
                 lh={1}
                 color={getToken("text.high")}
               >
@@ -250,7 +263,7 @@ export const GigaHDXPosition = () => {
                     value={
                       <Text
                         font="primary"
-                        fs="base"
+                        fs={["p3", "p3", "base"]}
                         lh={1}
                         fw={500}
                         color={getToken("text.high")}
@@ -291,7 +304,7 @@ export const GigaHDXPosition = () => {
                   value={
                     <Text
                       font="primary"
-                      fs="base"
+                      fs={["p3", "p3", "base"]}
                       lh={1}
                       fw={500}
                       color={getToken("text.high")}
@@ -318,17 +331,23 @@ export const GigaHDXPosition = () => {
 
         <Box px={["l", "xl"]} pb={["m", "xl"]}>
           <SChartContainer sx={{ mt: "xxl" }}>
-            <GigaStakingChart />
-
             <SChartLegendContainer asChild>
-              <Flex direction="column" gap="l">
+              <Flex direction="column" gap="l" justify="space-between">
                 <Flex justify="space-between" align="center">
                   <Amount
-                    label={t("gigaStaking.claim.label")}
+                    label={
+                      <Text
+                        fs={["p6", "p6", "p4"]}
+                        lh={1}
+                        color={getToken("text.medium")}
+                      >
+                        {t("gigaStaking.claim.label")}
+                      </Text>
+                    }
                     value={
                       <Text
                         font="primary"
-                        fs="h5"
+                        fs={["p3", "p1", "h5"]}
                         fw={500}
                         lh={1}
                         color={getToken("text.tint.primary")}
@@ -341,14 +360,21 @@ export const GigaHDXPosition = () => {
                     }
                   />
 
-                  <Button variant="secondary" size="large">
+                  <Button
+                    variant="secondary"
+                    size={isMobile || isTablet ? "medium" : "large"}
+                  >
                     {t("gigaStaking.claim.cta")}
                   </Button>
                 </Flex>
 
                 <Separator />
 
-                <Text fs="p2" lh="m" color={getToken("text.medium")}>
+                <Text
+                  fs={["p5", "p5", "p2"]}
+                  lh="m"
+                  color={getToken("text.medium")}
+                >
                   {t("staking:gigaStaking.rewards.desc")}
                 </Text>
               </Flex>
