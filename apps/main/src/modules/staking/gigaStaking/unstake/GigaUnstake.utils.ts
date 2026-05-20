@@ -53,12 +53,43 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     Big(hollarReserve.totalBorrows).gt(0)
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
+
+  // Frozen-bound unstake cap — must mirror the runtime's check exactly:
+  //   pallet-gigahdx::do_unstake enforces `stake.hdx - payout >= stake.frozen`
+  //   where payout = gigahdx_amount × current_rate (floor-rounded).
+  //
+  // Rearranged:  max_gigahdx = (stake.hdx − stake.frozen) / current_rate
+  //
+  // Earlier we used `userGhdx − stake.frozen/rate`, but `userGhdx` (= the
+  // aToken balance) drifts from `stake.hdx / rate` as accrued yield builds
+  // up — leading the UI to allow an amount the runtime would reject with
+  // `StakeFrozen`. Use the runtime's exact quantities + a 1 µHDX safety
+  // margin to absorb floor-rounding mismatches between Big.js and the
+  // integer-math `multiply_by_rational_with_rounding`.
+  const stakeHdxHuman = gigaAccountStakes
+    ? scaleHuman(gigaAccountStakes.hdx, meta.decimals)
+    : "0"
   const frozen = gigaAccountStakes?.frozen ?? 0n
   const frozenHuman = scaleHuman(frozen, meta.decimals)
+  const unstakeablePrincipalHdx = Big.max(
+    Big(stakeHdxHuman).minus(frozenHuman),
+    Big(0),
+  )
+  const SAFETY_DUST_HDX = Big("0.000001") // 1 µHDX
+  const maxUnstakeWithFrozen =
+    exchangeRate && exchangeRate.gt(0)
+      ? Big.max(
+          unstakeablePrincipalHdx
+            .minus(SAFETY_DUST_HDX)
+            .div(exchangeRate.toString()),
+          Big(0),
+        )
+      : suppliedHdx
+  // Backwards-compat alias for any consumer expecting GHDX-equivalent of
+  // the rewards-pallet freeze — used by the existing alert text.
   const frozenInGigaHdx = exchangeRate
     ? Big(frozenHuman).div(exchangeRate.toString()).toString()
     : "0"
-  const maxUnstakeWithFrozen = suppliedHdx.minus(frozenInGigaHdx)
 
   const maxUnstake = Big.min(
     suppliedHdx,
