@@ -14,6 +14,7 @@ import {
 import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
+import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/transfer"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
@@ -175,26 +176,17 @@ export const xcmTransferQuery = (
         .withSource(srcChain)
         .withDestination(destChain)
 
-      const validBridgeTag =
-        !bridgeTag ||
-        builder.routes.some((r) => (r.tags ?? []).includes(bridgeTag))
-          ? bridgeTag
-          : undefined
-      const candidateRoutes = validBridgeTag
-        ? builder.routes.filter((r) => (r.tags ?? []).includes(validBridgeTag))
-        : builder.routes
-
-      const validDstAsset = candidateRoutes.some(
-        (r) => r.destination.asset.key === destAsset,
+      const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
+        builder.routes,
+        destAsset,
+        bridgeTag,
       )
-        ? destAsset
-        : undefined
 
       return builder.build({
         srcAddress,
         dstAddress: destAddress,
-        dstAsset: validDstAsset,
-        tag: validBridgeTag,
+        dstAsset,
+        tag,
       })
     },
     enabled:

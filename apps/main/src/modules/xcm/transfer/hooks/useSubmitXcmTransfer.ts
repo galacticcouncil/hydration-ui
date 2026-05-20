@@ -20,6 +20,7 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import {
   buildTransferCall,
   isSnowbridgeTag,
+  resolveRouteBuilderArgs,
 } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -83,12 +84,19 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain: destChain.name,
       }
 
-      const { origin } = ConfigBuilder(configService)
+      const destPair = ConfigBuilder(configService)
         .assets()
         .asset(srcAsset)
         .source(srcChain)
         .destination(destChain)
-        .build(destAsset, bridgeProvider ?? undefined)
+
+      const { tag, destAsset: validDstAsset } = resolveRouteBuilderArgs(
+        destPair.routes,
+        destAsset,
+        bridgeProvider ?? undefined,
+      )
+
+      const { origin } = destPair.build(validDstAsset, tag)
 
       const call = await transfer.buildCall(srcAmount)
       const isApprove = isEvmApproveCall(call)

@@ -56,6 +56,33 @@ export const hasSnowbridgeVariantChoice = (routes: AssetRoute[]): boolean => {
   return !!slow && !!fast
 }
 
+// Drop bridgeTag / destAsset values that don't match any route in the
+// current pair — the SDK's ConfigBuilder.build asserts route non-null but
+// can return undefined when the (tag, destAsset) combo has no match, which
+// would crash downstream destructures. Falling back to `undefined` lets the
+// SDK pick the default route/asset instead.
+export const resolveRouteBuilderArgs = <T extends string | Asset>(
+  routes: AssetRoute[],
+  destAsset: T,
+  tag: string | undefined,
+): { tag: string | undefined; destAsset: T | undefined } => {
+  const validTag =
+    !tag || routes.some((r) => (r.tags ?? []).includes(tag)) ? tag : undefined
+
+  const candidates = validTag
+    ? routes.filter((r) => (r.tags ?? []).includes(validTag))
+    : routes
+
+  const destKey = typeof destAsset === "string" ? destAsset : destAsset.key
+  const validDestAsset = candidates.some(
+    (r) => r.destination.asset.key === destKey,
+  )
+    ? destAsset
+    : undefined
+
+  return { tag: validTag, destAsset: validDestAsset }
+}
+
 export enum XcmTransferStatus {
   Default = "DEFAULT",
   TransferValid = "TRANSFER_VALID",
