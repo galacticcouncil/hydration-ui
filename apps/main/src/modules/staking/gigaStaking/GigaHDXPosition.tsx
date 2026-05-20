@@ -50,8 +50,9 @@ export const GigaHDXPosition = () => {
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
-  const { data: exchangeRate } = useGigaStakeExchangeRate()
-  const { data: accountStake } = useQuery(
+  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
+    useGigaStakeExchangeRate()
+  const { data: accountStake, isLoading: isAccountStakeLoading } = useQuery(
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
   const { data: claimableRewards } = useQuery(
@@ -80,21 +81,11 @@ export const GigaHDXPosition = () => {
 
   const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
 
-  //@TODO: review this
   const gigaHdxBalanceUsd = hdxReserve?.underlyingBalanceUSD ?? "0"
-  // HDX-equivalent of the user's position (gigahdx × rate).
-  // This is the value the user actually owns — the GIGAHDX balance is the
-  // position token, but the HDX number is what matters for staking yield
-  // and what they'd receive on full unstake.
   const stakedHdxHuman = Big(gigaHdxBalanceHuman)
     .times(exchangeRate?.toString() || "0")
     .toString()
 
-  // Principal vs accrued breakdown.
-  // `Stakes.hdx` is the runtime-tracked locked principal (HDX the user
-  // originally deposited, plus any yield they've already crystallized via
-  // `realizeYield`). The accrued portion = current value − principal; this
-  // is what `realizeYield` would move into the principal in one tx.
   const principalHdxHuman = accountStake
     ? scaleHuman(accountStake.hdx, native.decimals)
     : "0"
@@ -104,35 +95,16 @@ export const GigaHDXPosition = () => {
     Big(principalHdxHuman).gt(0) && accruedHdxBig.gt(0)
       ? accruedHdxBig.div(principalHdxHuman).times(100).toNumber()
       : 0
-  // Hide the row entirely when there's no position to break down.
+
   const hasPosition = Big(stakedHdxHuman).gt(0)
 
-  // "Rewards to claim" shows VOTING REWARDS ONLY — the two HDX flows that
-  // actually need an explicit user action to land:
-  //   • pendingHdx       — already-credited voting rewards (`claim_rewards`)
-  //   • allocReadyHdx    — voting rewards earned but not yet in PendingRewards;
-  //                         the batch's `removeVote` calls credit them first
-  //
-  // Passive yield (`accruedHdx`) is intentionally EXCLUDED here. It's already
-  // working for the user inside their gigahdx position (the rate appreciation
-  // is automatic — no action required). `realize_yield` only crystallises
-  // accrued into `Stakes.hdx` (= principal), which is a no-op for the user's
-  // economic position. The "Accrued yield" row on the breakdown already shows
-  // the value; calling it a "reward to claim" misleads users into thinking
-  // it's something they're missing out on by not clicking.
-  //
-  // `useClaimAndCompound` still folds `realize_yield` into the batch when
-  // accrued > 0 — that lifts the vote-weight cap and is free to include.
-  // Independent of UI surfacing.
   const pendingHdxBig = claimableRewards
     ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
     : Big(0)
   const allocReadyHdxBig = claimableRewards
     ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
     : Big(0)
-  // Shares earned but excluded from the batch because their conviction lock
-  // may still be active (winning side of an Approved/Rejected ref). Surfaced
-  // separately so the user knows the value isn't lost — just deferred.
+
   const lockedHdxBig = claimableRewards
     ? Big(scaleHuman(claimableRewards.lockedHdx, native.decimals))
     : Big(0)
@@ -140,8 +112,7 @@ export const GigaHDXPosition = () => {
   const hasLockedShares = lockedHdxBig.gt("0.000001")
   const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
   const claimableTotalHuman = claimableTotalBig.toString()
-  // Anything over 1 µHDX is worth a tx (matches gigahdx pallet's rounding
-  // tolerance — `MAX_GIGAPOT_ROUNDING_SHORTFALL = 1_000_000` plancks).
+
   const hasClaimable = claimableTotalBig.gt("0.000001")
   const claimAndCompoundArgs = {
     allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
@@ -150,7 +121,6 @@ export const GigaHDXPosition = () => {
     hasAccruedYield: accruedHdxBig.gt("0.000001"),
     hasClaimableRewards: pendingHdxBig.plus(allocReadyHdxBig).gt("0.000001"),
   }
-  //end
 
   /** HOLLAR per 1 HDX at HF = 1 (single collateral / single debt Giga pool). */
   const liquidationPriceHollarPerHdx = useMemo(() => {
@@ -263,6 +233,7 @@ export const GigaHDXPosition = () => {
                   size="small"
                   label={t("staking:gigaStaking.position.principal.label")}
                   wrap={[false, false, false, true]}
+                  isLoading={isAccountStakeLoading}
                   customValue={
                     <Text
                       font="primary"
@@ -284,6 +255,7 @@ export const GigaHDXPosition = () => {
                   size="small"
                   label={t("staking:gigaStaking.position.accrued.label")}
                   wrap={[false, false, false, true]}
+                  isLoading={isExchangeRateLoading}
                   customValue={
                     <Flex align="baseline" gap="xs">
                       <Text

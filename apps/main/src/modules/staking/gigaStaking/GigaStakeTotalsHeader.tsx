@@ -53,13 +53,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   //@TODO: review this
   const { data: exchangeRate, isLoading: isExchangeRateLoading } =
     useGigaStakeExchangeRate()
-  // Fleet APR — always projected at maximum conviction (Locked6x = 8×).
-  // Dilution reference: the connected user's actual GIGAHDX position (in HDX
-  // equivalent) when present, falling back to `DEFAULT_REFERENCE_STAKE_HDX_PLANCK`
-  // otherwise. Using a non-zero reference avoids the "marginal voter grabs
-  // the whole pool" pathological limit that distorts the headline on chains
-  // with few voters. The displayed label stays "up to X% voting" — the user's
-  // realised yield can be less if they vote at lower conviction or skip refs.
+
   const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
   // Convert user GIGAHDX × rate → HDX planck. Returns the default reference
@@ -145,12 +139,9 @@ export const GigaStakeTotalsHeader: FC = () => {
         bottomLabel={t("currency", { value: totalSuppliedUsd })}
       />
       <Tooltip
-        asChild={false}
-        text={
-          t("staking:dashboard.projectedAPR.tooltip", {
-            returnObjects: true,
-          }) as Array<string>
-        }
+        text={t("staking:dashboard.projectedAPR.tooltip", {
+          returnObjects: true,
+        })}
       >
         <ValueStats
           wrap

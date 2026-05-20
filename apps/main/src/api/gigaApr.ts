@@ -1,6 +1,8 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { millisecondsToSeconds } from "date-fns"
 
+import { bestNumberQuery } from "@/api/chain"
 import {
   getRewardTrackPercentage,
   REWARD_ACCUMULATOR_POT_ADDRESS,
@@ -8,6 +10,29 @@ import {
 } from "@/api/gigaStake"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
+type PalletGigahdxRewardsReferendaReward = {
+  keyArgs: [number]
+  value: {
+    totalReward: bigint
+    remainingReward: bigint
+    totalWeightedVotes: bigint
+    trackId: number
+    votersRemaining: number
+  }
+}
+
+type PalletGigahdxRewardsReferendumLiveTally = {
+  keyArgs: [number]
+  value: {
+    totalWeighted: bigint
+    votersCount: number
+  }
+}
+
+type PalletGigahdxRewardsReferendumTracks = {
+  keyArgs: [number]
+  value: number
+}
 /**
  * GIGAHDX APR (annual percentage return).
  *
@@ -21,7 +46,10 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
  * the window").
  */
 
-const BLOCKS_PER_DAY = 14_400
+const getBlocksPerDay = (blockSeconds: number) => {
+  return Math.floor(86400 / blockSeconds)
+}
+
 /** Locked6x conviction multiplier / REWARD_MULTIPLIER_SCALE = 800/100. */
 const LOCKED_6X_MULTIPLIER = 8n
 const DEFAULT_WINDOW_DAYS = 60
@@ -39,14 +67,12 @@ const DEFAULT_WINDOW_DAYS = 60
  * implementation gets discarded on first render under the new code.
  */
 const APR_QUERY_OPTS = {
-  // Never go stale on its own — explicit invalidation only.
   staleTime: Infinity,
-  // Don't refetch on remount / window focus / network reconnect.
   refetchOnMount: false as const,
   refetchOnWindowFocus: false as const,
   refetchOnReconnect: false as const,
 }
-const QUERY_KEY_VERSION = "v2"
+
 /**
  * Minimum aggregate `weighted` (Σ staked × conviction_mult / scale, in HDX
  * planck) required for a referendum's pool to contribute to the voting APR
@@ -96,19 +122,24 @@ export const passiveAprQuery = (
 ) =>
   queryOptions({
     ...APR_QUERY_OPTS,
-    queryKey: ["gigaApr", "passive", QUERY_KEY_VERSION, windowDays],
+    queryKey: ["gigaApr", "passive", windowDays],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const headBlock = Number(
-        await rpc.papi.query.System.Number.getValue({ at: "best" }),
+      const blocksPerDay = getBlocksPerDay(
+        millisecondsToSeconds(rpc.slotDurationMs),
       )
-      const windowBlocks = windowDays * BLOCKS_PER_DAY
-      const t0Block = Math.max(1, headBlock - windowBlocks)
-      const actualWindowBlocks = headBlock - t0Block
-      const actualWindowDays = Math.max(1, actualWindowBlocks / BLOCKS_PER_DAY)
+
+      const bestNumber = await rpc.queryClient.ensureQueryData(
+        bestNumberQuery(rpc),
+      )
+      const parachainBlockNumber = bestNumber.parachainBlockNumber
+
+      const windowBlocks = windowDays * blocksPerDay
+      const t0Block = Math.max(1, parachainBlockNumber - windowBlocks)
+      const actualWindowBlocks = parachainBlockNumber - t0Block
+      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
 
       // Raw RPC for the t0 hash — returns a 0x-prefixed hex string that
       // polkadot-api's `{ at }` accepts (same pattern as api/multisig.ts).
@@ -193,101 +224,33 @@ export const votingAprQuery = (
 ) =>
   queryOptions({
     ...APR_QUERY_OPTS,
-    queryKey: [
-      "gigaApr",
-      "voting",
-      QUERY_KEY_VERSION,
-      stakeValueHdxPlanck.toString(),
-      windowDays,
-    ],
+    queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString(), windowDays],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      // Probe the unsafeApi shape so we can spot pallet/storage mismatches.
-      // eslint-disable-next-line no-console
-      console.debug("[gigaApr.voting] api shape", {
-        hasGigaHdxRewards: !!unsafeApi.query.GigaHdxRewards,
-        storageKeys: unsafeApi.query.GigaHdxRewards
-          ? Object.keys(unsafeApi.query.GigaHdxRewards)
-          : null,
-      })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let fetched: any
-      try {
-        fetched = await Promise.all([
-          unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
-            at: "best",
-          }),
-          unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries(
-            { at: "best" },
-          ),
-          unsafeApi.query.GigaHdxRewards.ReferendumTracks.getEntries({
-            at: "best",
-          }),
-          rpc.papi.query.System.Account.getValue(
-            REWARD_ACCUMULATOR_POT_ADDRESS,
-            { at: "best" },
-          ),
-          rpc.papi.query.System.Number.getValue({ at: "best" }),
-        ])
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("[gigaApr.voting] FETCH FAILED", e)
-        return Big(0)
-      }
       const [
         allocatedEntries,
         liveEntries,
         cachedTrackEntries,
         rewardPotAcct,
-        headBlockNum,
-      ] = fetched as [
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any[],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any[],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any[],
-        { data: { free: bigint } },
-        unknown,
-      ]
+        bestNumber,
+      ] = await Promise.all([
+        unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
+          at: "best",
+        }) as PalletGigahdxRewardsReferendaReward[],
+        unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries({
+          at: "best",
+        }) as PalletGigahdxRewardsReferendumLiveTally[],
+        unsafeApi.query.GigaHdxRewards.ReferendumTracks.getEntries({
+          at: "best",
+        }) as PalletGigahdxRewardsReferendumTracks[],
+        rpc.sdk.client.balance.getSystemBalance(REWARD_ACCUMULATOR_POT_ADDRESS),
+        rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
+      ])
 
-      // Temporary diagnostic — remove once voting APR is verified working
-      // on lark. Logs the raw shape returned by polkadot-api so we can spot
-      // any field-name / wrapping mismatch vs the @polkadot/api test script.
-      // eslint-disable-next-line no-console
-      console.debug("[gigaApr.voting] raw fetches", {
-        allocatedEntries,
-        liveEntries: liveEntries.slice(0, 3),
-        cachedTrackEntries: cachedTrackEntries.slice(0, 3),
-        rewardPotFree: rewardPotAcct?.data?.free,
-      })
-
-      // Defensive field accessors — `unsafeApi.getEntries()` may decode
-      // runtime structs with snake_case field names (matching the Rust
-      // definitions) rather than camelCase. We probe both shapes so the
-      // query is robust to either convention.
-      const readField = (obj: unknown, ...names: string[]): unknown => {
-        if (obj === null || obj === undefined || typeof obj !== "object")
-          return undefined
-        for (const n of names) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const v = (obj as any)[n]
-          if (v !== undefined) return v
-        }
-        return undefined
-      }
-      const toBig = (v: unknown): bigint => {
-        if (v === undefined || v === null) return 0n
-        if (typeof v === "bigint") return v
-        if (typeof v === "number") return BigInt(v)
-        if (typeof v === "string") return BigInt(v)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return BigInt((v as any).toString())
-      }
+      const parachainBlockNumber = bestNumber.parachainBlockNumber
 
       // Index pre-fetched data by ref id.
       const allocated = new Map<
@@ -296,33 +259,20 @@ export const votingAprQuery = (
       >()
       for (const { keyArgs, value } of allocatedEntries) {
         allocated.set(keyArgs[0], {
-          totalReward: toBig(readField(value, "totalReward", "total_reward")),
-          totalWeightedVotes: toBig(
-            readField(value, "totalWeightedVotes", "total_weighted_votes"),
-          ),
+          totalReward: value.totalReward,
+          totalWeightedVotes: value.totalWeightedVotes,
         })
       }
       const live = new Map<number, bigint>()
       for (const { keyArgs, value } of liveEntries) {
-        live.set(
-          keyArgs[0],
-          toBig(readField(value, "totalWeighted", "total_weighted")),
-        )
+        live.set(keyArgs[0], value.totalWeighted)
       }
       const cachedTracks = new Map<number, number>()
       for (const { keyArgs, value } of cachedTrackEntries) {
-        cachedTracks.set(keyArgs[0], Number(value))
+        cachedTracks.set(keyArgs[0], value)
       }
 
-      // eslint-disable-next-line no-console
-      console.debug("[gigaApr.voting] indexed", {
-        allocated: [...allocated.entries()],
-        live: [...live.entries()],
-        cachedTracks: [...cachedTracks.entries()],
-      })
-
-      const potFree = BigInt(rewardPotAcct?.data?.free ?? 0n)
-      const headBlock = Number(headBlockNum)
+      const potFree = rewardPotAcct.free
 
       const myWeighted = stakeValueHdxPlanck * LOCKED_6X_MULTIPLIER
       const myWeightedBig = Big(myWeighted.toString())
@@ -393,20 +343,16 @@ export const votingAprQuery = (
         })
       }
 
-      // eslint-disable-next-line no-console
-      console.debug("[gigaApr.voting] per-ref contributions", perRefContrib)
-      // eslint-disable-next-line no-console
-      console.debug("[gigaApr.voting] sum + result", {
-        sum: sumPerStakeUnit.toFixed(8),
-        windowDays,
-      })
+      const blocksPerDay = getBlocksPerDay(
+        millisecondsToSeconds(rpc.slotDurationMs),
+      )
 
-      const windowBlocks = windowDays * BLOCKS_PER_DAY
+      const windowBlocks = windowDays * blocksPerDay
       const actualWindowBlocks = Math.min(
         windowBlocks,
-        Math.max(1, headBlock - 1),
+        Math.max(1, parachainBlockNumber - 1),
       )
-      const actualWindowDays = Math.max(1, actualWindowBlocks / BLOCKS_PER_DAY)
+      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
 
       return sumPerStakeUnit.times(365).div(actualWindowDays).times(100)
     },

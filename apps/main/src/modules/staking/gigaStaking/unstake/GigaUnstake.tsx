@@ -6,6 +6,7 @@ import {
   Summary,
   Text,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -79,7 +80,7 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
 
         <Separator />
 
-        {frozenInGigaHdx && (
+        {Big(frozenInGigaHdx).gt(0) && (
           <>
             <Alert
               sx={{ m: "l" }}
