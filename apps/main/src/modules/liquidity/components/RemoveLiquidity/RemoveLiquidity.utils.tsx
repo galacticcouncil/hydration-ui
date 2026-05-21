@@ -13,9 +13,9 @@ import {
   useFarmRewards,
   useOmnipoolActiveFarm,
 } from "@/api/farms"
+import type { TReserve } from "@/api/stableswap"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
-import { TReserve } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,

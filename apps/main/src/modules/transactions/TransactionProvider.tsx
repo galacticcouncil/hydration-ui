@@ -81,6 +81,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const { account } = useAccount()
 
   const transaction = useWrapTransaction(config)
+  const successMode = transaction.successMode ?? "best"
 
   const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
   const ecosystem = useTransactionEcosystem(transaction)
@@ -174,6 +175,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         addPendingTransaction(transaction.id, nonce, transaction.meta)
       },
       onSuccess: (event) => {
+        if (successMode !== "best") return
+
         dispatch(doSetStatus("success"))
         transaction.onSuccess?.(event)
         transaction.invalidateQueries?.forEach((queryKey) =>
@@ -191,7 +194,17 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
           toasts.onError?.(message)
         }
       },
-      onFinalized: () => {
+
+      onFinalized: (event) => {
+        if (successMode === "finalized") {
+          dispatch(doSetStatus("success"))
+          transaction.onSuccess?.(event)
+          transaction.invalidateQueries?.forEach((queryKey) =>
+            queryClient.invalidateQueries({ queryKey }),
+          )
+          toasts.onSuccess?.(event)
+        }
+
         cancelTransaction(transaction.id)
         removePendingTransaction(transaction.id)
       },

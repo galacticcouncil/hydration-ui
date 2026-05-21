@@ -266,9 +266,11 @@ export const formatEmodes = (reserves: ReserveDataHumanized[]) => {
           liquidationBonus: r.eModeLiquidationBonus,
           id: r.eModeCategoryId,
           label:
-            r.eModeLabel === "Stablecoins"
+            !r.eModeLabel ||
+            r.eModeLabel === "Stablecoins" ||
+            r.eModeLabel.toLowerCase().includes("correlated")
               ? r.eModeLabel
-              : `${r.eModeLabel} Correlated`,
+              : `${r.eModeLabel} correlated`,
           liquidationThreshold: r.eModeLiquidationThreshold,
           ltv: r.eModeLtv,
           priceSource: r.eModePriceSource,

@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { spotPriceQuery } from "@/api/spotPrice"
+import type { TStablepoolDetails } from "@/api/stableswap"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
@@ -25,10 +26,7 @@ import {
   TradeLimitRow,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
-import {
-  TStablepoolDetails,
-  useStablepoolReserves,
-} from "@/modules/liquidity/Liquidity.utils"
+import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 

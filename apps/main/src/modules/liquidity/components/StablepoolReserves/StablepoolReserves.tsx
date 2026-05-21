@@ -73,18 +73,16 @@ export const StablepoolReserves = ({
 
         <CollapsibleContent>
           <Flex direction="column" gap="base" my="base">
-            {totalDisplayAmount &&
-              reserves?.map((reserve, index) => (
-                <CurrencyReservesRow
-                  key={reserve.asset_id}
-                  reserve={reserve}
-                  totalDisplayAmount={totalDisplayAmount}
-                  separator={
-                    index === reserves.length - 1 ? undefined : separator
-                  }
-                  loading={isLoading}
-                />
-              ))}
+            {reserves?.map((reserve, index) => (
+              <CurrencyReservesRow
+                key={reserve.asset_id}
+                reserve={reserve}
+                separator={
+                  index === reserves.length - 1 ? undefined : separator
+                }
+                loading={isLoading}
+              />
+            ))}
           </Flex>
         </CollapsibleContent>
       </CollapsibleRoot>

@@ -31,6 +31,7 @@ import { TAssetData } from "@/api/assets"
 import { useBorrowAssetsApy } from "@/api/borrow"
 import { Farm } from "@/api/farms"
 import { spotPriceQuery } from "@/api/spotPrice"
+import type { TStablepoolDetails } from "@/api/stableswap"
 import { useStableSwapTradability } from "@/api/stableswap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
@@ -50,10 +51,7 @@ import {
   TradeLimit,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
-import {
-  TStablepoolDetails,
-  useStablepoolReserves,
-} from "@/modules/liquidity/Liquidity.utils"
+import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
