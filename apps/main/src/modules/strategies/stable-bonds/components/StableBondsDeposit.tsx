@@ -110,17 +110,11 @@ export const StableBondsDeposit = () => {
   const depositAmountBig = depositAmount
     ? Big(depositAmount)
     : Big(depositAmountNum)
-  const feeAmount =
-    selectedOrder && depositAmountBig.gt(0)
-      ? formatAssetAmount(
-          depositAmountBig.times(feePct).toString(),
-          selectedOrder.assetIn.decimals,
-        )
-      : ""
+
   const receiveAmount =
     selectedOrder && depositAmountBig.gt(0)
       ? formatAssetAmount(
-          Big.max(depositAmountBig.minus(feeAmount || "0"), 0)
+          Big.max(depositAmountBig, 0)
             .div(
               Big(selectedOrder.assetAmountIn).div(
                 selectedOrder.assetAmountOut,
@@ -130,6 +124,12 @@ export const StableBondsDeposit = () => {
           selectedOrder.assetOut.decimals,
         )
       : ""
+
+  const feeAmount =
+    !receiveAmount || !feePct
+      ? undefined
+      : Big(receiveAmount).times(feePct).toString()
+
   const isDepositAmountValid =
     !!selectedOrder &&
     depositAmountBig.gt(0) &&
@@ -225,7 +225,7 @@ export const StableBondsDeposit = () => {
                   content={t("currency", {
                     value: feeAmount || "0",
                     percentage: Big(feePct).times(100).toNumber(),
-                    symbol: selectedOrder?.assetIn.symbol,
+                    symbol: selectedOrder?.assetOut.symbol,
                   })}
                 />
               </Summary>

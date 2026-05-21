@@ -1,3 +1,4 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { isNonNullish } from "remeda"
 
@@ -23,13 +24,18 @@ export const useStableBondsOtcOrders = () => {
   const { getAsset, isExternal } = useAssets()
 
   return useQuery({
-    queryKey: ["stable-bonds", "otc-orders", ...STABLE_BONDS_OTC_ORDER_IDS],
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "stable-bonds",
+      "otc-orders",
+      ...STABLE_BONDS_OTC_ORDER_IDS,
+    ],
     enabled: isApiLoaded,
     queryFn: async (): Promise<StableBondsOtcOrder[]> => {
       const entries = await Promise.all(
         STABLE_BONDS_OTC_ORDER_IDS.map(async (orderId) => ({
           orderId,
-          offer: await papi.query.OTC.Orders.getValue(orderId),
+          offer: await papi.query.OTC.Orders.getValue(orderId, { at: "best" }),
         })),
       )
 

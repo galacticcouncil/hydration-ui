@@ -63,13 +63,11 @@ export const FillOrderModalContent: FC<Props> = ({
     }
   }, [otcOffer.isPartiallyFillable, trigger])
 
-  const sellAmount = form.watch("sellAmount")
+  const [sellAmount, buyAmount] = form.watch(["sellAmount", "buyAmount"])
 
-  const feeAsset = otcOffer.assetIn
+  const feeAsset = otcOffer.assetOut
   const fee =
-    !sellAmount || !feePct
-      ? undefined
-      : Big(sellAmount).times(feePct).toString()
+    !buyAmount || !feePct ? undefined : Big(buyAmount).times(feePct).toString()
 
   const [feeDisplay] = useDisplayAssetPrice(feeAsset.id, fee || "0", {
     maximumFractionDigits: null,
