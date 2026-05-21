@@ -40,25 +40,53 @@ type ClaimAndCompoundArgs = {
    * batch to drain everything into auto-staked GIGAHDX.
    */
   hasClaimableRewards: boolean
+  /**
+   * Optional GIGAHDX amount (in planck) to `giga_unstake` at the end of the
+   * batch. When present, the batch becomes "unlock + unstake" — all the
+   * `remove_vote` calls release `Stakes.frozen` first, then `giga_unstake`
+   * runs against the now-reduced freeze. Used by the Withdraw form when the
+   * user wants to unstake more than the current frozen-constrained max.
+   *
+   * Omit / 0n for the plain "Claim rewards" flow (no unstake).
+   */
+  unstakeGigahdxAmount?: bigint
+  /**
+   * Used for toast messages and form reset when `unstakeGigahdxAmount` is
+   * present. Ignored otherwise.
+   */
+  unstakeAmountHuman?: string
+  /**
+   * Total HDX amount that `claim_rewards` will drain into the position
+   * inside the batch (pending + about-to-be-credited from `remove_vote`).
+   * When non-empty and unstake is set, the success/submitted toasts use
+   * the "...claimed N HDX rewards" variants so the user sees the rewards
+   * piece broken out from the unstaked total.
+   */
+  claimedRewardsHdxHuman?: string
 }
 
 /**
- * Batches everything the user has to compound back into their stake position:
+ * Batches everything the user has to compound back into their stake position
+ * — and optionally appends a `giga_unstake` call at the end:
  *
  *   utility.batch_all([
- *     ConvictionVoting.remove_vote(class, refIndex)  ×  N,   // populates PendingRewards
+ *     ConvictionVoting.remove_vote(class, refIndex)  ×  N,   // populates PendingRewards, unfreezes Stakes
  *     ConvictionVoting.unlock(class, target)         ×  M,   // releases expired class locks
  *     GigaHdx.realize_yield()             (if hasAccruedYield),
  *     GigaHdxRewards.claim_rewards()      (if hasClaimableRewards),
+ *     GigaHdx.giga_unstake(amount)        (if unstakeGigahdxAmount > 0),
  *   ])
  *
  * Net effect after success:
  *   - User's accrued passive yield folded into Stakes.hdx
  *   - User's earned voting reward shares credited and auto-staked into more GIGAHDX
  *   - Per-class conviction locks recomputed (expired ones drop to zero)
- *   - Vote-weight cap (Stakes.hdx) at maximum
- *   - NO HDX hits the user's wallet — both reward types compound into the
- *     position. To receive spendable HDX, the user still needs to unstake.
+ *   - `Stakes.frozen` reduced by the sum of unfreezable vote stakes
+ *   - If `unstakeGigahdxAmount` set: GIGAHDX unstaked into a pending position
+ *     (the `remove_vote` calls run first, reducing freeze, so this succeeds
+ *     against the post-cleanup freeze level)
+ *   - When no unstake: NO HDX hits the user's wallet — reward types compound
+ *     into the position.
  */
 export const useClaimAndCompound = () => {
   const { account } = useAccount()
@@ -73,10 +101,15 @@ export const useClaimAndCompound = () => {
       accountAddress: argAccountAddress,
       hasAccruedYield,
       hasClaimableRewards,
+      unstakeGigahdxAmount,
+      unstakeAmountHuman,
+      claimedRewardsHdxHuman,
     }: ClaimAndCompoundArgs) => {
       const accountAddress = argAccountAddress || account?.address || ""
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+      const hasUnstake =
+        unstakeGigahdxAmount !== undefined && unstakeGigahdxAmount > 0n
 
       const calls = [
         // 1. Force-remove the user's vote from every completed referendum.
@@ -116,14 +149,52 @@ export const useClaimAndCompound = () => {
         hasClaimableRewards
           ? unsafeApi.tx.GigaHdxRewards.claim_rewards().decodedCall
           : null,
+
+        // 5. Optionally append the unstake. By this point all remove_vote
+        //    calls have unfrozen `Stakes.frozen`, so the runtime's
+        //    `do_unstake` check (`projected_hdx >= Stakes.frozen`) sees the
+        //    post-cleanup frozen value.
+        hasUnstake
+          ? unsafeApi.tx.GigaHdx.giga_unstake({
+              gigahdx_amount: unstakeGigahdxAmount,
+            }).decodedCall
+          : null,
       ].filter(Boolean)
 
       const tx = rpc.papi.tx.Utility.batch_all({ calls })
 
-      const toasts = {
-        submitted: t("gigaStaking.claim.toasts.submitted"),
-        success: t("gigaStaking.claim.toasts.success"),
-      }
+      const hasClaimedRewards =
+        claimedRewardsHdxHuman != null && claimedRewardsHdxHuman !== "0"
+
+      const toasts = hasUnstake
+        ? hasClaimedRewards
+          ? {
+              submitted: t(
+                "gigaStaking.unstake.toasts.submittedWithRewards",
+                {
+                  value: unstakeAmountHuman ?? "0",
+                  rewardsValue: claimedRewardsHdxHuman,
+                },
+              ),
+              success: t("gigaStaking.unstake.toasts.successWithRewards", {
+                value: unstakeAmountHuman ?? "0",
+                rewardsValue: claimedRewardsHdxHuman,
+              }),
+            }
+          : {
+              submitted: t("gigaStaking.unstake.toasts.submitted", {
+                value: unstakeAmountHuman ?? "0",
+                symbol: "GIGAHDX",
+              }),
+              success: t("gigaStaking.unstake.toasts.success", {
+                value: unstakeAmountHuman ?? "0",
+                symbol: "GIGAHDX",
+              }),
+            }
+        : {
+            submitted: t("gigaStaking.claim.toasts.submitted"),
+            success: t("gigaStaking.claim.toasts.success"),
+          }
 
       return createTransaction({
         tx,

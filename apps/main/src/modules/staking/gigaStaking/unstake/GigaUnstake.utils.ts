@@ -10,11 +10,13 @@ import { z } from "zod/v4"
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import {
+  claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
   gigaQueryKey,
   gigaTotalLockedQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
 import { GigaUnstakeProps } from "@/modules/staking/gigaStaking/unstake/GigaUnstake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -38,6 +40,13 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const { data: gigaAccountStakes } = useQuery(
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
+  // Two-tier freeze breakdown — needed to decide how much is unstakeable
+  // and whether to route the submit through the combined unlock+unstake
+  // batch or just a plain `giga_unstake`.
+  const { data: claimableRewards } = useQuery(
+    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
+  )
+  const claimMutation = useClaimAndCompound()
 
   const { hdxReserve, hollarReserve, borrowableHollar, userSummary } =
     userBorrowSummary
@@ -54,42 +63,51 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
 
-  // Frozen-bound unstake cap — must mirror the runtime's check exactly:
-  //   pallet-gigahdx::do_unstake enforces `stake.hdx - payout >= stake.frozen`
-  //   where payout = gigahdx_amount × current_rate (floor-rounded).
-  //
-  // Rearranged:  max_gigahdx = (stake.hdx − stake.frozen) / current_rate
-  //
-  // Earlier we used `userGhdx − stake.frozen/rate`, but `userGhdx` (= the
-  // aToken balance) drifts from `stake.hdx / rate` as accrued yield builds
-  // up — leading the UI to allow an amount the runtime would reject with
-  // `StakeFrozen`. Use the runtime's exact quantities + a 1 µHDX safety
-  // margin to absorb floor-rounding mismatches between Big.js and the
-  // integer-math `multiply_by_rational_with_rounding`.
-  const stakeHdxHuman = gigaAccountStakes
-    ? scaleHuman(gigaAccountStakes.hdx, meta.decimals)
+  // Freeze breakdown:
+  //   - `ongoingLockedHdx`  → votes on still-running referenda; can't be
+  //     unstaked without abandoning the vote. Show as a warning, exclude
+  //     from MAX.
+  //   - `unfreezableHdx`    → votes on completed referenda; auto-released
+  //     by the combined batch (`remove_vote × N + giga_unstake`). Include
+  //     in MAX — when the user enters more than the runtime currently
+  //     allows, we route through the combined batch instead of a plain
+  //     unstake.
+  const ongoingLockedHdxPlanck = claimableRewards?.ongoingLockedHdx ?? 0n
+  const unfreezableHdxPlanck = claimableRewards?.unfreezableHdx ?? 0n
+  // Total HDX that `claim_rewards` will drain into auto-staked GIGAHDX
+  // inside the combined batch — sum of already-pending and allocations
+  // about to be credited by `remove_vote`. Used to (a) silently bump
+  // the chain-side unstake amount when the user submits at MAX, so the
+  // freshly auto-staked shares get unstaked too (clean exit), and
+  // (b) drive the "...claimed N HDX rewards" suffix in the toast.
+  const pendingHdxPlanck = claimableRewards?.pendingHdx ?? 0n
+  const allocReadyHdxPlanck = claimableRewards?.allocReadyHdx ?? 0n
+  const totalClaimableHdxPlanck = pendingHdxPlanck + allocReadyHdxPlanck
+  const totalClaimableHdxHuman = scaleHuman(
+    totalClaimableHdxPlanck,
+    meta.decimals,
+  )
+  const totalClaimableInGigaHdx = exchangeRate
+    ? Big(totalClaimableHdxHuman).div(exchangeRate.toString())
+    : Big(0)
+  const ongoingLockedHdxHuman = scaleHuman(
+    ongoingLockedHdxPlanck,
+    meta.decimals,
+  )
+  const ongoingLockedInGigaHdx = exchangeRate
+    ? Big(ongoingLockedHdxHuman).div(exchangeRate.toString()).toString()
     : "0"
-  const frozen = gigaAccountStakes?.frozen ?? 0n
-  const frozenHuman = scaleHuman(frozen, meta.decimals)
-  const unstakeablePrincipalHdx = Big.max(
-    Big(stakeHdxHuman).minus(frozenHuman),
+  // `frozenInGigaHdx` retained for back-compat with the alert UI — but
+  // now represents only the permanently-locked portion (ongoing votes),
+  // which is what the alert text was always meant to communicate.
+  const frozenInGigaHdx = ongoingLockedInGigaHdx
+  // MAX with frozen — only the ongoing portion limits us, completed-ref
+  // freeze gets cleaned up in the combined batch. Defensive clamp at 0
+  // for the runtime-invariant-violation case (frozen > hdx).
+  const maxUnstakeWithFrozen = Big.max(
+    suppliedHdx.minus(ongoingLockedInGigaHdx),
     Big(0),
   )
-  const SAFETY_DUST_HDX = Big("0.000001") // 1 µHDX
-  const maxUnstakeWithFrozen =
-    exchangeRate && exchangeRate.gt(0)
-      ? Big.max(
-          unstakeablePrincipalHdx
-            .minus(SAFETY_DUST_HDX)
-            .div(exchangeRate.toString()),
-          Big(0),
-        )
-      : suppliedHdx
-  // Backwards-compat alias for any consumer expecting GHDX-equivalent of
-  // the rewards-pallet freeze — used by the existing alert text.
-  const frozenInGigaHdx = exchangeRate
-    ? Big(frozenHuman).div(exchangeRate.toString()).toString()
-    : "0"
 
   const maxUnstake = Big.min(
     suppliedHdx,
@@ -156,8 +174,78 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     },
   })
 
+  // `Stakes.gigahdx × rate > Stakes.hdx` means there's passive yield that
+  // hasn't been folded into `Stakes.hdx` yet — `realize_yield` will do it.
+  const accruedYieldExists = Big(suppliedHdx)
+    .mul(exchangeRate?.toString() || "0")
+    .gt(
+      gigaAccountStakes
+        ? scaleHuman(gigaAccountStakes.hdx, meta.decimals)
+        : "0",
+    )
+
+  const hasAllocReadyVotes =
+    (claimableRewards?.allocReadyVotes.length ?? 0) > 0
+  const hasPendingRewards = (claimableRewards?.pendingHdx ?? 0n) > 0n
+
+  /**
+   * Decide whether to route the submit through the combined claim+unstake
+   * batch, or just `giga_unstake` alone.
+   *
+   * Use the batch whenever there's anything worth bundling alongside the
+   * unstake — so the user signs once for "unstake + claim everything I'm
+   * entitled to":
+   *
+   *   - completed-ref votes (`allocReadyVotes`) → `remove_vote` releases
+   *     `Stakes.frozen` AND credits the user's reward share into
+   *     `PendingRewards`. Required when `unfreezableHdx > 0`; harmless
+   *     otherwise.
+   *   - pending rewards (`pendingHdx > 0`) → `claim_rewards` drains them
+   *     into auto-staked GIGAHDX.
+   *   - accrued passive yield → `realize_yield` folds it into `Stakes.hdx`.
+   *
+   * If none of these apply, plain `giga_unstake` is enough.
+   */
+  const useCombinedBatch =
+    hasAllocReadyVotes || hasPendingRewards || accruedYieldExists
+
   const onSubmit = form.handleSubmit((values) => {
-    mutation.mutate(values.amount)
+    if (!account) return
+    if (useCombinedBatch && claimableRewards) {
+      // When the user submits at MAX, `claim_rewards` inside the batch
+      // will auto-stake `totalClaimableHdx` worth of GIGAHDX into the
+      // position right before `giga_unstake` runs. Without compensating,
+      // those fresh shares would be left as a residual. Bumping the
+      // chain-side amount by the equivalent so the unstake clears them
+      // too — the displayed MAX stays unchanged (matches the form input
+      // the user actually saw); the toast suffix carries the receipt.
+      const submittingAtMax =
+        totalClaimableInGigaHdx.gt(0) &&
+        Big(values.amount || "0").gte(maxUnstake)
+      const chainAmountHuman = submittingAtMax
+        ? Big(values.amount).plus(totalClaimableInGigaHdx).toString()
+        : values.amount
+
+      const willClaimRewards = totalClaimableHdxPlanck > 0n
+
+      claimMutation.mutate(
+        {
+          allocReadyVotes: claimableRewards.allocReadyVotes,
+          unlockClasses: claimableRewards.unlockClasses,
+          accountAddress: account.address,
+          hasAccruedYield: accruedYieldExists,
+          hasClaimableRewards: willClaimRewards,
+          unstakeGigahdxAmount: toBigInt(chainAmountHuman, meta.decimals),
+          unstakeAmountHuman: chainAmountHuman,
+          claimedRewardsHdxHuman: willClaimRewards
+            ? totalClaimableHdxHuman
+            : undefined,
+        },
+        { onSuccess: () => form.reset() },
+      )
+    } else {
+      mutation.mutate(values.amount)
+    }
   })
 
   return {
