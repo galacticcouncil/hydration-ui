@@ -51,6 +51,8 @@ export const OtcTable: FC<Props> = ({
     [data, offersType, userAddress],
   )
 
+  console.log({ filteredOffers })
+
   const assetIds = useMemo(
     () => [
       ...new Set(

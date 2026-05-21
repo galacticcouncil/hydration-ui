@@ -3,7 +3,7 @@ import { Stack } from "@galacticcouncil/ui/components"
 import { AssetHeader } from "@/components/AssetHeader"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/stable-bonds/components/AboutCard"
-import { MyPositionsCard } from "@/modules/strategies/stable-bonds/components/MyPositionsCard"
+// import { MyPositionsCard } from "@/modules/strategies/stable-bonds/components/MyPositionsCard"
 import { StableBondsPanel } from "@/modules/strategies/stable-bonds/components/StableBondsPanel"
 import { StrategyDetailsCard } from "@/modules/strategies/stable-bonds/components/StrategyDetailsCard"
 import { STABLE_BONDS_ASSET_ID } from "@/modules/strategies/stable-bonds/constants"
@@ -18,7 +18,7 @@ export const StableBondsPage = () => {
       <AssetHeader asset={asset} />
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl">
-          <MyPositionsCard />
+          {/* <MyPositionsCard /> */}
           <StrategyDetailsCard />
           <AboutCard />
         </Stack>

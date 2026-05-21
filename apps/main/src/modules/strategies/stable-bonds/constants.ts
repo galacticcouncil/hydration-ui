@@ -1,4 +1,6 @@
-export const STABLE_BONDS_ASSET_ID = "222"
+export const STABLE_BONDS_ASSET_ID = "1001349"
+
+export const STABLE_BONDS_OTC_ORDER_IDS = [1453, 1454] as const
 
 export const FAKE_POSITION = {
   initialPaidAmount: 1000,

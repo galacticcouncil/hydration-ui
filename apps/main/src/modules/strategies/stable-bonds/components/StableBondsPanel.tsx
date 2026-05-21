@@ -10,59 +10,137 @@ import {
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
-import { USDC_ASSET_ID, USDT_ASSET_ID } from "@galacticcouncil/utils"
+import { formatAssetAmount } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetLogo } from "@/components/AssetLogo"
-import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { StableBondsAssetSwitcher } from "@/modules/strategies/stable-bonds/components/StableBondsAssetSwitcher"
 import type { StableBondsFormValues } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.form"
 import { useStableBondsForm } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.form"
+import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.query"
+import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.submit"
 import {
   FAKE_STRATEGY,
   STABLE_BONDS_ASSET_ID,
 } from "@/modules/strategies/stable-bonds/constants"
+import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-
-const TOTAL_FEES_USD = 5.63
+import { useAccountBalance } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 export const StableBondsPanel = () => {
   const { t } = useTranslation("common")
   const rpc = useRpcProvider()
   const form = useStableBondsForm()
+  const submit = useSubmitStableBondsOrder()
   const { getAssetWithFallback } = useAssets()
 
-  const depositAssets = useMemo(() => {
-    return [USDC_ASSET_ID, USDT_ASSET_ID].map((id) => getAssetWithFallback(id))
-  }, [getAssetWithFallback])
-
-  const receiveAsset = getAssetWithFallback(STABLE_BONDS_ASSET_ID)
-
-  const { handleSubmit, watch } = form
-  const [depositAsset, depositAmount] = watch(["depositAsset", "depositAmount"])
-
-  const depositAssetId = depositAsset?.id ?? ""
-
-  const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
-    spotPriceQuery(rpc, depositAssetId, STABLE_BONDS_ASSET_ID),
+  const { data: otcOrders = [], isLoading: isOrdersLoading } =
+    useStableBondsOtcOrders()
+  const { data: feePct = "0", isPending: isFeePending } = useQuery(
+    otcTradeFeeQuery(rpc),
   )
 
-  const depositAmountNum = parseFloat(depositAmount) || 0
-  const spotPrice = spotPriceData?.spotPrice
-  const receiveAmount =
-    spotPrice && depositAmountNum > 0
-      ? Big(depositAmountNum).times(spotPrice).toString()
-      : ""
+  const depositAssets = useMemo(() => {
+    return [
+      ...new Map(
+        otcOrders.map((order) => [order.assetIn.id, order.assetIn]),
+      ).values(),
+    ]
+  }, [otcOrders])
 
-  const onSubmit = (_values: StableBondsFormValues) => {
-    // TODO: implement stable bonds deposit transaction
+  const { handleSubmit, watch, setValue } = form
+  const [depositAsset, depositAmount] = watch(["depositAsset", "depositAmount"])
+
+  useEffect(() => {
+    const firstDepositAsset = depositAssets[0]
+
+    if (!firstDepositAsset) {
+      return
+    }
+
+    const isSelectedAssetAvailable = depositAssets.some(
+      (asset) => asset.id === depositAsset?.id,
+    )
+
+    if (!isSelectedAssetAvailable) {
+      setValue("depositAsset", firstDepositAsset, { shouldValidate: true })
+    }
+  }, [depositAsset?.id, depositAssets, setValue])
+
+  const selectedOrder = useMemo(
+    () => otcOrders.find((order) => order.assetIn.id === depositAsset?.id),
+    [depositAsset?.id, otcOrders],
+  )
+
+  useEffect(() => {
+    if (
+      selectedOrder &&
+      !selectedOrder.isPartiallyFillable &&
+      depositAmount !== selectedOrder.assetAmountIn
+    ) {
+      setValue("depositAmount", selectedOrder.assetAmountIn, {
+        shouldValidate: true,
+      })
+    }
+  }, [depositAmount, selectedOrder, setValue])
+
+  const depositAssetId = selectedOrder?.assetIn.id ?? ""
+  const receiveAsset =
+    selectedOrder?.assetOut ?? getAssetWithFallback(STABLE_BONDS_ASSET_ID)
+
+  const inBalance = useAccountBalance(depositAssetId)
+  const assetInBalance =
+    selectedOrder && inBalance
+      ? scaleHuman(inBalance.transferable, selectedOrder.assetIn.decimals)
+      : "0"
+  const assetInMax = selectedOrder
+    ? Big.min(selectedOrder.assetAmountIn, assetInBalance).toString()
+    : "0"
+
+  const depositAmountNum = parseFloat(depositAmount) || 0
+  const depositAmountBig = depositAmount
+    ? Big(depositAmount)
+    : Big(depositAmountNum)
+  const feeAmount =
+    selectedOrder && depositAmountBig.gt(0)
+      ? formatAssetAmount(
+          depositAmountBig.times(feePct).toString(),
+          selectedOrder.assetIn.decimals,
+        )
+      : ""
+  const receiveAmount =
+    selectedOrder && depositAmountBig.gt(0)
+      ? formatAssetAmount(
+          Big.max(depositAmountBig.minus(feeAmount || "0"), 0)
+            .div(
+              Big(selectedOrder.assetAmountIn).div(
+                selectedOrder.assetAmountOut,
+              ),
+            )
+            .toString(),
+          selectedOrder.assetOut.decimals,
+        )
+      : ""
+  const isDepositAmountValid =
+    !!selectedOrder &&
+    depositAmountBig.gt(0) &&
+    depositAmountBig.lte(selectedOrder.assetAmountIn) &&
+    depositAmountBig.lte(assetInBalance)
+
+  const onSubmit = (values: StableBondsFormValues) => {
+    if (!selectedOrder || !receiveAmount) {
+      return
+    }
+
+    submit.mutate({ values, order: selectedOrder, receiveAmount })
   }
 
   return (
@@ -75,21 +153,19 @@ export const StableBondsPanel = () => {
               assetFieldName="depositAsset"
               amountFieldName="depositAmount"
               assets={depositAssets}
+              disabled={isOrdersLoading || !selectedOrder}
+              hideMaxBalanceAction={!selectedOrder?.isPartiallyFillable}
+              maxButtonBalance={assetInMax}
               maxBalanceFallback="0"
             />
 
-            <AssetSwitcher
-              assetInId={depositAssetId}
-              assetOutId={STABLE_BONDS_ASSET_ID}
-              fallbackPrice={spotPrice ?? undefined}
-              isFallbackPriceLoading={isSpotPricePending}
-            />
+            <StableBondsAssetSwitcher />
 
             <AssetInput
               label="Receive at maturity"
               symbol={receiveAsset.symbol}
               selectedAssetIcon={
-                <AssetLogo id={STABLE_BONDS_ASSET_ID} size="medium" />
+                <AssetLogo id={receiveAsset.id} size="medium" />
               }
               modalDisabled
               disabledInput
@@ -125,7 +201,12 @@ export const StableBondsPanel = () => {
                 type="submit"
                 size="large"
                 width="100%"
-                disabled={depositAmountNum <= 0}
+                disabled={
+                  !isDepositAmountValid ||
+                  isOrdersLoading ||
+                  isFeePending ||
+                  submit.isPending
+                }
               >
                 {t("confirm")}
               </Button>
@@ -137,7 +218,10 @@ export const StableBondsPanel = () => {
           <Summary>
             <SummaryRow
               label="Total fees"
-              content={t("currency", { value: TOTAL_FEES_USD })}
+              content={t("currency", {
+                value: feeAmount || "0",
+                symbol: selectedOrder?.assetIn.symbol,
+              })}
             />
           </Summary>
         </Paper>
