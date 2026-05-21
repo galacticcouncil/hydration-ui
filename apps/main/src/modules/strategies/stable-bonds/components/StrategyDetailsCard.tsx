@@ -25,9 +25,11 @@ type FundingCapacity = {
 export const StrategyDetailsCard = () => {
   const { t } = useTranslation("common")
   const strategy = FAKE_STRATEGY
-  const { data: otcOrders = [] } = useStableBondsOtcOrders()
+  const { data: otcOrders } = useStableBondsOtcOrders()
 
   const fundingCapacities = useMemo(() => {
+    if (!otcOrders) return []
+
     const byAssetId = otcOrders.reduce<Map<string, FundingCapacity>>(
       (acc, order) => {
         const current = acc.get(order.assetIn.id)
@@ -76,7 +78,11 @@ export const StrategyDetailsCard = () => {
 
         <Separator
           orientation="vertical"
-          sx={{ alignSelf: "stretch", display: ["none", null, "block"] }}
+          sx={{
+            alignSelf: "stretch",
+            display: ["none", null, "block"],
+            mx: "l",
+          }}
         />
 
         <Box>
@@ -99,7 +105,11 @@ export const StrategyDetailsCard = () => {
 
         <Separator
           orientation="vertical"
-          sx={{ alignSelf: "stretch", display: ["none", null, "block"] }}
+          sx={{
+            alignSelf: "stretch",
+            display: ["none", null, "block"],
+            mx: "l",
+          }}
         />
 
         <Box>

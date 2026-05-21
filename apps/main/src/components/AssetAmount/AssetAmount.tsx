@@ -17,7 +17,7 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
   const { isBond } = useAssets()
 
   return (
-    <Flex align="center" p="s">
+    <Flex align="center" p="" gap="s">
       <AssetLogo id={asset.id} />
       <Text
         fw={500}
@@ -33,7 +33,17 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
               value: scaleHuman(amount, asset.decimals),
               symbol: asset.symbol,
             })}{" "}
-        {isBond(asset) && asset.name.replace("HDX Bond ", "").slice(3)}
+        {isBond(asset) && (
+          <Text
+            display="block"
+            as="span"
+            fs="p5"
+            lh={1.4}
+            color={getToken("text.low")}
+          >
+            {asset.name}
+          </Text>
+        )}
       </Text>
     </Flex>
   )

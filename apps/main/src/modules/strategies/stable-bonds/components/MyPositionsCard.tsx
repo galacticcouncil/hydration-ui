@@ -5,21 +5,58 @@ import {
   Paper,
   Separator,
   Text,
-  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
+import { differenceInMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import {
-  FAKE_POSITION,
+  FAKE_STRATEGY,
   STABLE_BONDS_ASSET_ID,
 } from "@/modules/strategies/stable-bonds/constants"
+import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalance, useAccountBalances } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 export const MyPositionsCard = () => {
-  const { t } = useTranslation("common")
-  const position = FAKE_POSITION
+  const { t } = useTranslation(["common"])
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback, getBond, isBond } = useAssets()
+  const { isBalanceLoading: isAccountBalanceLoading } = useAccountBalances()
+
+  const asset = getAssetWithFallback(STABLE_BONDS_ASSET_ID)
+  const bondMeta = getBond(STABLE_BONDS_ASSET_ID)
+  const balance = useAccountBalance(STABLE_BONDS_ASSET_ID)
+
+  const { data: feePct = "0", isPending: isFeePending } = useQuery(
+    otcTradeFeeQuery(rpc),
+  )
+
+  const balanceAmount = balance?.transferable ?? 0n
+  const balanceHuman = scaleHuman(balanceAmount, asset.decimals)
+  const underlyingAssetId = isBond(asset) ? asset.underlyingAssetId : ""
+  const underlyingAsset = getAssetWithFallback(underlyingAssetId)
+  const [balanceUsdDisplay] = useDisplayAssetPrice(
+    underlyingAssetId,
+    balanceHuman,
+    {
+      maximumFractionDigits: 2,
+    },
+  )
+
+  const daysLeft = bondMeta?.maturity
+    ? Math.max(
+        0,
+        differenceInMilliseconds(new Date(bondMeta.maturity), new Date()),
+      )
+    : 0
 
   return (
     <Paper>
@@ -35,7 +72,7 @@ export const MyPositionsCard = () => {
             <Flex align="center" gap="s" minWidth={120}>
               <AssetLogo id={STABLE_BONDS_ASSET_ID} size="medium" />
               <Text fs="p3" fw={500} color={getToken("text.high")}>
-                HOLLARb
+                {asset.symbol}
               </Text>
             </Flex>
 
@@ -51,58 +88,47 @@ export const MyPositionsCard = () => {
                 wrap
                 size="small"
                 font="secondary"
-                label="Initial paid"
+                label="Value"
+                isLoading={isAccountBalanceLoading}
                 customValue={
                   <Text fs="p3" fw={500} lh={1}>
                     {t("currency", {
-                      value: position.initialPaidAmount,
-                      symbol: position.initialPaidSymbol,
+                      value: balanceHuman,
+                      symbol: underlyingAsset.symbol,
                     })}
                   </Text>
                 }
-                bottomLabel={t("currency", {
-                  value: position.initialPaidUsd,
-                })}
+                bottomLabel={balanceUsdDisplay}
               />
+              {bondMeta && (
+                <ValueStats
+                  wrap
+                  size="small"
+                  font="secondary"
+                  label="Maturity date"
+                  customValue={
+                    <Text fs="p3" fw={500} lh={1}>
+                      {t("date.date", {
+                        value: new Date(bondMeta.maturity),
+                      })}
+                    </Text>
+                  }
+                  bottomLabel={t("interval", {
+                    value: daysLeft,
+                    unit: "d",
+                  })}
+                />
+              )}
               <ValueStats
                 wrap
                 size="small"
                 font="secondary"
-                label="Receive"
-                customValue={
-                  <Text fs="p3" fw={500} lh={1}>
-                    {t("currency", {
-                      value: position.receiveAmount,
-                      symbol: position.receiveSymbol,
-                    })}
-                  </Text>
-                }
-                bottomLabel={t("currency", {
-                  value: position.receiveUsd,
-                })}
-              />
-              <ValueStats
-                wrap
-                size="small"
-                font="secondary"
-                label="Maturity date"
-                customValue={
-                  <Text fs="p3" fw={500} lh={1}>
-                    {position.maturityDate}
-                  </Text>
-                }
-                bottomLabel={`${position.daysLeft} days left`}
-              />
-              <ValueStats
-                wrap
-                size="small"
-                font="secondary"
+                isLoading={isFeePending}
                 customLabel={
                   <Flex align="center" gap="xs">
                     <Text fs="p5" color={getToken("text.medium")}>
-                      Net APR
+                      APR
                     </Text>
-                    <Tooltip text="Annual percentage return net of fees, based on the bond purchase discount and time to maturity." />
                   </Flex>
                 }
                 customValue={
@@ -113,8 +139,10 @@ export const MyPositionsCard = () => {
                     color={getToken("accents.success.emphasis")}
                   >
                     {t("percent", {
-                      value: position.netApr,
-                      minimumFractionDigits: 2,
+                      value: Big(FAKE_STRATEGY.availableApr).minus(
+                        Big(feePct).times(100),
+                      ),
+                      minimumFractionDigits: 1,
                     })}
                   </Text>
                 }

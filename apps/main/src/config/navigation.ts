@@ -52,7 +52,7 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
-  strategiesStableBonds: "/strategies/stable-bonds",
+  strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -159,8 +159,8 @@ export const NAVIGATION: NavigationItem[] = [
     icon: GemIcon,
   },
   {
-    key: "strategiesStableBonds",
-    to: LINKS.strategiesStableBonds,
+    key: "strategiesHollarBonds",
+    to: LINKS.strategiesHollarBonds,
     icon: GoalIcon,
   },
   // {
@@ -307,8 +307,8 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
-    strategiesStableBonds: {
-      title: t("navigation.strategiesStableBonds.title"),
+    strategiesHollarBonds: {
+      title: t("navigation.strategiesHollarBonds.title"),
       description: "",
     },
     // memepad: {

@@ -27,12 +27,9 @@ import type { StableBondsFormValues } from "@/modules/strategies/stable-bonds/co
 import { useStableBondsForm } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.form"
 import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.query"
 import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.submit"
-import {
-  FAKE_STRATEGY,
-  STABLE_BONDS_ASSET_ID,
-} from "@/modules/strategies/stable-bonds/constants"
+import { FAKE_STRATEGY } from "@/modules/strategies/stable-bonds/constants"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
-import { useAssets } from "@/providers/assetsProvider"
+import { isBond, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalance } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
@@ -95,8 +92,10 @@ export const StableBondsDeposit = () => {
   }, [depositAmount, selectedOrder, setValue])
 
   const depositAssetId = selectedOrder?.assetIn.id ?? ""
-  const receiveAsset =
-    selectedOrder?.assetOut ?? getAssetWithFallback(STABLE_BONDS_ASSET_ID)
+  const receiveAsset = selectedOrder?.assetOut
+  const underlyingAssetId =
+    receiveAsset && isBond(receiveAsset) ? receiveAsset.underlyingAssetId : ""
+  const underlyingAsset = getAssetWithFallback(underlyingAssetId)
 
   const inBalance = useAccountBalance(depositAssetId)
   const assetInBalance =
@@ -165,9 +164,9 @@ export const StableBondsDeposit = () => {
 
             <AssetInput
               label="Receive at maturity"
-              symbol={receiveAsset.symbol}
+              symbol={underlyingAsset.symbol}
               selectedAssetIcon={
-                <AssetLogo id={receiveAsset.id} size="medium" />
+                <AssetLogo id={underlyingAsset.id} size="medium" />
               }
               modalDisabled
               disabledInput

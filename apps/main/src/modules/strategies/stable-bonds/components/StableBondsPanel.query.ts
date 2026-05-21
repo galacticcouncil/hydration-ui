@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { isNonNullish } from "remeda"
 
 import { STABLE_BONDS_OTC_ORDER_IDS } from "@/modules/strategies/stable-bonds/constants"
 import { type TAsset, useAssets } from "@/providers/assetsProvider"
@@ -22,7 +23,7 @@ export const useStableBondsOtcOrders = () => {
   const { getAsset, isExternal } = useAssets()
 
   return useQuery({
-    queryKey: ["strategies", "stable-bonds", "otc-orders"],
+    queryKey: ["stable-bonds", "otc-orders", ...STABLE_BONDS_OTC_ORDER_IDS],
     enabled: isApiLoaded,
     queryFn: async (): Promise<StableBondsOtcOrder[]> => {
       const entries = await Promise.all(
@@ -33,7 +34,7 @@ export const useStableBondsOtcOrders = () => {
       )
 
       return entries
-        .map<StableBondsOtcOrder | null>(({ orderId, offer }) => {
+        .map(({ orderId, offer }) => {
           if (!offer) {
             return null
           }
@@ -64,9 +65,9 @@ export const useStableBondsOtcOrders = () => {
             assetAmountIn: scaleHuman(amountIn, assetIn.decimals),
             assetAmountOut: scaleHuman(amountOut, assetOut.decimals),
             isPartiallyFillable: offer.partially_fillable,
-          }
+          } satisfies StableBondsOtcOrder
         })
-        .filter((offer): offer is StableBondsOtcOrder => !!offer)
+        .filter(isNonNullish)
     },
   })
 }
