@@ -24,6 +24,10 @@ type Args = {
   readonly timeFrame: TradeChartTimeFrameType | null
 }
 
+const ROUND_DIGITS = 10
+const formatValue = (value: string) =>
+  Number(Big(value).round(ROUND_DIGITS, Big.roundDown).toString())
+
 export const useTradeChartData = ({
   assetInId,
   assetOutId,
@@ -42,6 +46,8 @@ export const useTradeChartData = ({
     spotPriceQuery(rpc, assetInId, assetOutId),
   )
 
+  const spotPrice = spotPriceData?.spotPrice ?? "0"
+
   const [startTimestamp, endTimestamp] = useMemo(() => {
     if (!timeFrame) {
       return []
@@ -53,7 +59,7 @@ export const useTradeChartData = ({
     return [(now - ms).toString(), now.toString()]
     // refetch chart data on spot price change to keep it consistent
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeFrame, spotPriceData])
+  }, [timeFrame, spotPrice])
 
   const bucketSize = timeFrame
     ? bucketSizes[timeFrame]
@@ -86,7 +92,7 @@ export const useTradeChartData = ({
         volume: bucket.referenceAssetVolNorm,
       }))
 
-    const currentPrice = Big(spotPriceData?.spotPrice || "0")
+    const currentPrice = Big(spotPrice)
 
     const lastPricePoint = prices.at(prices.length - 1)
 
@@ -111,10 +117,10 @@ export const useTradeChartData = ({
       )
       .map<OhlcData>((bucket) => ({
         time: toUTCTimestamp(bucket.timestamp),
-        close: Number(bucket.amount),
-        volume: Number(bucket.volume),
+        close: formatValue(bucket.amount),
+        volume: formatValue(bucket.volume),
       }))
-  }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPriceData])
+  }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPrice])
 
   return {
     prices,

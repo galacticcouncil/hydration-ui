@@ -13,9 +13,9 @@ import {
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useRef, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { last } from "remeda"
+import { funnel, last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
@@ -54,6 +54,20 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     "week",
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
+  const { call: onCrosshairMove } = useMemo(
+    () =>
+      funnel(
+        (nextCrosshair: BaselineChartData | null) => {
+          setCrosshair(nextCrosshair)
+        },
+        {
+          minGapMs: 200,
+          triggerAt: "start",
+          reducer: (_, next: BaselineChartData | null) => next,
+        },
+      ),
+    [],
+  )
 
   const assetA = isInverted ? assetOut : assetIn
   const assetB = isInverted ? assetIn : assetOut
@@ -150,7 +164,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           height={height}
           data={prices}
           hidePriceIndicator
-          onCrosshairMove={setCrosshair}
+          onCrosshairMove={onCrosshairMove}
         />
       </ChartState>
     </Paper>
