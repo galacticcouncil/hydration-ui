@@ -24,9 +24,15 @@ type Props = {
   readonly id: number
   readonly classId: number
   readonly voted: boolean
+  readonly isGigaStaking?: boolean
 }
 
-export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
+export const ReferendaFooter: FC<Props> = ({
+  id,
+  classId,
+  voted,
+  isGigaStaking,
+}) => {
   const { t } = useTranslation("staking")
   const rpc = useRpcProvider()
   const { account } = useAccount()
@@ -100,6 +106,7 @@ export const ReferendaFooter: FC<Props> = ({ id, classId, voted }) => {
         referendumId={id}
         open={voteOpen}
         onClose={() => setVoteOpen(false)}
+        isGigaStaking={isGigaStaking}
       />
     </>
   )

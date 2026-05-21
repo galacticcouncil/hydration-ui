@@ -30,6 +30,7 @@ type Props = {
   readonly state: string
   readonly id: number
   readonly vote: TAccountVote | undefined
+  readonly isGigaStaking?: boolean
 }
 
 export const ReferendaHeader: FC<Props> = ({
@@ -38,6 +39,7 @@ export const ReferendaHeader: FC<Props> = ({
   state,
   id,
   vote,
+  isGigaStaking,
 }) => {
   const { native } = useAssets()
   const { t } = useTranslation(["staking", "common"])
@@ -73,7 +75,7 @@ export const ReferendaHeader: FC<Props> = ({
 
     return (
       <Box bg={getToken("surfaces.containers.dim.dimOnHigh")}>
-        <ReferendaRewardBadge id={id} trackId={trackId} />
+        {isGigaStaking && <ReferendaRewardBadge id={id} trackId={trackId} />}
         <Flex align="center" justify="space-between" py="m" px="l">
           <Flex align="center" gap="s">
             {trackFormatted && (

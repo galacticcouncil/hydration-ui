@@ -13,6 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -25,6 +26,7 @@ import {
   gigaAccountStakesQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetLogo } from "@/components/AssetLogo"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
@@ -50,9 +52,8 @@ export const GigaHDXPosition = () => {
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
-  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
-    useGigaStakeExchangeRate()
-  const { data: accountStake, isLoading: isAccountStakeLoading } = useQuery(
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: accountStake } = useQuery(
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
   const { data: claimableRewards } = useQuery(
@@ -90,13 +91,13 @@ export const GigaHDXPosition = () => {
     ? scaleHuman(accountStake.hdx, native.decimals)
     : "0"
   const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
-  const accruedHdxHuman = Big.max(accruedHdxBig, 0).toString()
-  const accruedPct =
-    Big(principalHdxHuman).gt(0) && accruedHdxBig.gt(0)
-      ? accruedHdxBig.div(principalHdxHuman).times(100).toNumber()
-      : 0
+  // const accruedHdxHuman = Big.max(accruedHdxBig, 0).toString()
+  // const accruedPct =
+  //   Big(principalHdxHuman).gt(0) && accruedHdxBig.gt(0)
+  //     ? accruedHdxBig.div(principalHdxHuman).times(100).toNumber()
+  //     : 0
 
-  const hasPosition = Big(stakedHdxHuman).gt(0)
+  // const hasPosition = Big(stakedHdxHuman).gt(0)
 
   const pendingHdxBig = claimableRewards
     ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
@@ -122,14 +123,11 @@ export const GigaHDXPosition = () => {
     hasClaimableRewards: pendingHdxBig.plus(allocReadyHdxBig).gt("0.000001"),
   }
 
-  /** HOLLAR per 1 HDX at HF = 1 (single collateral / single debt Giga pool). */
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!userSummary || !hdxReserve || !hollarReserve) return null
 
-    const debtMrc = Big(
-      hollarReserve.totalBorrowsMarketReferenceCurrency || "0",
-    )
-    if (debtMrc.lte(0)) return null
+    const debtHollar = Big(hollarReserve.variableBorrows || "0")
+    if (debtHollar.lte(0)) return null
 
     const qtyCollateral = Big(gigaHdxBalanceHuman)
     if (qtyCollateral.lte(0)) return null
@@ -146,16 +144,19 @@ export const GigaHDXPosition = () => {
     const ltNum = Big(lt || "0")
     if (ltNum.lte(0)) return null
 
-    const liqPxMrc = debtMrc.div(qtyCollateral.times(ltNum))
+    const liqPxHollarPerGhdx = debtHollar.div(qtyCollateral.times(ltNum))
 
-    const hollarMrc = Big(
-      hollarReserve.reserve.formattedPriceInMarketReferenceCurrency || "0",
-    )
-    if (hollarMrc.lte(0)) return null
+    const rate = Big(exchangeRate?.toString() || "0")
+    if (rate.lte(0)) return null
 
-    return liqPxMrc.div(hollarMrc)
-  }, [userSummary, hdxReserve, hollarReserve, gigaHdxBalanceHuman])
-
+    return liqPxHollarPerGhdx.div(rate)
+  }, [
+    userSummary,
+    hdxReserve,
+    hollarReserve,
+    gigaHdxBalanceHuman,
+    exchangeRate,
+  ])
   const hasDebt = Big(debt).gt(0)
 
   return (
@@ -199,25 +200,25 @@ export const GigaHDXPosition = () => {
                 color={getToken("text.tint.secondary")}
               >
                 {t("common:currency", {
-                  value: gigaHdxBalanceHuman,
-                  symbol: ghdxMeta.symbol,
+                  value: Big(gigaHdxBalanceHuman)
+                    .times(exchangeRate?.toString() || "0")
+                    .toString(),
+                  symbol: native.symbol,
                 })}
               </Text>
             }
             displayValue={t("gigaStaking.position.underlying.value", {
-              value: Big(gigaHdxBalanceHuman)
-                .times(exchangeRate?.toString() || "0")
-                .toString(),
+              value: gigaHdxBalanceHuman,
               displayValue: t("common:currency", {
                 value: gigaHdxBalanceUsd,
               }),
-              symbol: native.symbol,
+              symbol: ghdxMeta.symbol,
             })}
             sx={{ ml: "auto", textAlign: "right" }}
           />
         </Flex>
 
-        {(hasDebt || hasPosition) && (
+        {hasDebt && (
           <>
             <Separator />
             <Stack
@@ -228,7 +229,7 @@ export const GigaHDXPosition = () => {
               px={["m", "xl"]}
               separated
             >
-              {hasPosition && (
+              {/* {hasPosition && (
                 <ValueStats
                   size="small"
                   label={t("staking:gigaStaking.position.principal.label")}
@@ -287,7 +288,7 @@ export const GigaHDXPosition = () => {
                     </Flex>
                   }
                 />
-              )}
+              )} */}
               {hasDebt && (
                 <ValueStats
                   size="small"
@@ -308,29 +309,12 @@ export const GigaHDXPosition = () => {
                 />
               )}
               {hasDebt && (
-                <ValueStats
-                  size="small"
-                  label="Liquidation price"
-                  wrap={[false, false, false, true]}
+                <LiquidationPrice
                   isLoading={isLoading}
-                  customValue={
-                    <Text
-                      font="primary"
-                      fw={500}
-                      fs={["p3", "p3", "h7"]}
-                      lh={1}
-                      color={getToken("text.high")}
-                    >
-                      {liquidationPriceHollarPerHdx
-                        ? t("common:currency", {
-                            value: liquidationPriceHollarPerHdx
-                              .round(18, Big.roundHalfUp)
-                              .toFixed(),
-                            symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
-                          })
-                        : "-"}
-                    </Text>
-                  }
+                  liquidationPriceHollarPerHdx={liquidationPriceHollarPerHdx}
+                  hollarAssetId={HOLLAR_ASSET_ID}
+                  nativeAssetId={native.id}
+                  symbol={`${hollarReserve?.reserve.symbol ?? ""}/${native.symbol}`}
                 />
               )}
             </Stack>
@@ -362,7 +346,11 @@ export const GigaHDXPosition = () => {
                 <Trans
                   t={t}
                   i18nKey="gigaStaking.position.borrow.apy"
-                  values={{ value: 4.5 }}
+                  values={{
+                    value:
+                      Number(hollarReserve?.reserve.variableBorrowAPY ?? 0) *
+                      100,
+                  }}
                 >
                   <Text as="span" color={getToken("text.high")} />
                 </Trans>
@@ -533,5 +521,84 @@ export const GigaHDXPosition = () => {
         onClose={() => setBorrowModalOpen(false)}
       />
     </>
+  )
+}
+
+const LiquidationPrice = ({
+  isLoading,
+  liquidationPriceHollarPerHdx,
+  hollarAssetId,
+  nativeAssetId,
+  symbol,
+}: {
+  isLoading: boolean
+  liquidationPriceHollarPerHdx: Big | null
+  symbol: string
+  hollarAssetId: string
+  nativeAssetId: string
+}) => {
+  const { t } = useTranslation(["common", "staking"])
+  const rpc = useRpcProvider()
+
+  const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
+    spotPriceQuery(rpc, nativeAssetId, hollarAssetId),
+  )
+
+  const spotDropToLiquidationPercent = useMemo(() => {
+    if (!liquidationPriceHollarPerHdx || !spotPriceData?.spotPrice) return null
+
+    const spotPrice = Big(spotPriceData.spotPrice)
+    if (spotPrice.lte(0)) return null
+
+    const dropPercent = spotPrice
+      .minus(liquidationPriceHollarPerHdx)
+      .div(spotPrice)
+      .times(100)
+
+    if (dropPercent.lte(0)) return null
+
+    return dropPercent.toNumber()
+  }, [liquidationPriceHollarPerHdx, spotPriceData?.spotPrice])
+
+  return (
+    <ValueStats
+      size="small"
+      label={t("staking:gigaStaking.position.liquidationPrice.label")}
+      wrap={[false, false, false, true]}
+      isLoading={isLoading || isSpotPricePending}
+      customValue={
+        <Stack
+          direction={["column", "column", "column", "row"]}
+          align="end"
+          gap="xs"
+        >
+          <Text
+            font="primary"
+            fw={500}
+            fs={["p3", "p3", "h7"]}
+            lh={1}
+            color={getToken("text.high")}
+          >
+            {liquidationPriceHollarPerHdx
+              ? t("currency", {
+                  value: liquidationPriceHollarPerHdx
+                    .round(18, Big.roundHalfUp)
+                    .toFixed(),
+                  symbol,
+                })
+              : "-"}
+          </Text>
+          {spotDropToLiquidationPercent !== null && (
+            <Text fs="p6" lh={1} color={getToken("text.medium")}>
+              (
+              {t("staking:gigaStaking.position.liquidationPrice.spotDrop", {
+                value: spotDropToLiquidationPercent,
+              })}
+              )
+            </Text>
+          )}
+        </Stack>
+      }
+    />
   )
 }

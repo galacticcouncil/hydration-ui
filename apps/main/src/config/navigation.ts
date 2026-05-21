@@ -9,7 +9,6 @@ import {
   Grid2X2Icon,
   HDXClassic,
   HistoryIcon,
-  LandmarkIcon,
   Repeat2Icon,
   WalletCardsIcon,
   WavesIcon,
@@ -165,11 +164,11 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "stakingGigaStake", to: LINKS.stakingGigaStake, icon: HDXClassic },
     ],
   },
-  {
-    key: "governance",
-    to: LINKS.governance,
-    icon: LandmarkIcon,
-  },
+  // {
+  //   key: "governance",
+  //   to: LINKS.governance,
+  //   icon: LandmarkIcon,
+  // },
   // {
   //   key: "referrals",
   //   to: LINKS.referrals,

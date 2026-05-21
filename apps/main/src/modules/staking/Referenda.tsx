@@ -29,6 +29,7 @@ type Props = {
   readonly track: ReferendaTrack
   readonly totalIssuance: bigint | undefined
   readonly vote: TAccountVote | undefined
+  readonly isGigaStaking?: boolean
 }
 
 export const Referenda: FC<Props> = ({
@@ -37,6 +38,7 @@ export const Referenda: FC<Props> = ({
   track,
   totalIssuance,
   vote,
+  isGigaStaking,
 }) => {
   const rpc = useRpcProvider()
   const { native } = useAssets()
@@ -89,6 +91,7 @@ export const Referenda: FC<Props> = ({
         state={state}
         id={id}
         vote={vote}
+        isGigaStaking={isGigaStaking}
       />
       <SReferendaBody>
         <ReferendaStatus
@@ -107,7 +110,12 @@ export const Referenda: FC<Props> = ({
           isTitledLoading={isLoading}
         />
       </SReferendaBody>
-      <ReferendaFooter id={id} classId={item.track} voted={voted} />
+      <ReferendaFooter
+        id={id}
+        classId={item.track}
+        voted={voted}
+        isGigaStaking={isGigaStaking}
+      />
     </SReferenda>
   )
 }

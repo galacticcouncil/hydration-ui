@@ -1,10 +1,13 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
-import { ArrowRightLong } from "@galacticcouncil/ui/assets/icons"
+import { ArrowRightLong, Close } from "@galacticcouncil/ui/assets/icons"
 import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
-import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import { ButtonIcon, Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+
+import { useBannersStore } from "@/states/banners"
 
 import { SContainer, SContent, SText } from "./HollarBanner.styled"
 
@@ -14,6 +17,10 @@ type Props = {
 
 export const HollarBannerMobile: FC<Props> = ({ reserve }) => {
   const { t } = useTranslation()
+  const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
+  const banner = useBannersStore((state) => state.banners["hollar-banner"])
+
+  if (banner.visible === false) return null
 
   return (
     <SContainer>
@@ -43,6 +50,23 @@ export const HollarBannerMobile: FC<Props> = ({ reserve }) => {
         sx={{ size: "3xl", mr: "base", mt: "-base", zIndex: 1 }}
         src={HollarCans}
       />
+      <ButtonIcon
+        sx={{
+          position: "absolute",
+          top: -5,
+          right: -5,
+          p: "s",
+          zIndex: 1,
+          background: getToken("icons.onSurface"),
+        }}
+      >
+        <Icon
+          component={Close}
+          size={12}
+          color={getToken("text.high")}
+          onClick={() => setBannerVisible("hollar-banner", false, Date.now())}
+        />
+      </ButtonIcon>
     </SContainer>
   )
 }

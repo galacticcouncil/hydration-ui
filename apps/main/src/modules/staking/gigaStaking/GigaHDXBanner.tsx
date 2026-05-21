@@ -13,12 +13,19 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SGigaHDXBanner } from "@/modules/staking/gigaStaking/GigaStaking.styled"
+import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
 import { useBannersStore } from "@/states/banners"
 
-export const GigaHDXBanner: FC = () => {
+export type GigaHDXBannerProps = {
+  stakeAmount: bigint
+}
+
+export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({ stakeAmount }) => {
   const { t } = useTranslation("staking")
   const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
   const banner = useBannersStore((state) => state.banners["giga-stake"])
+
+  const mutation = useGigaStakingMigration()
 
   if (banner.visible === false) return null
 
@@ -55,7 +62,11 @@ export const GigaHDXBanner: FC = () => {
           </Text>
         </Box>
 
-        <Button size="medium" sx={{ display: ["none", "none", "block"] }}>
+        <Button
+          size="medium"
+          sx={{ display: ["none", "none", "block"] }}
+          onClick={() => mutation.mutate(stakeAmount.toString())}
+        >
           {t("gigaStaking.banner.cta")}
         </Button>
       </Flex>

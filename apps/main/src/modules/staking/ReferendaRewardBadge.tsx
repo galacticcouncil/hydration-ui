@@ -65,7 +65,7 @@ export const ReferendaRewardBadge: FC<ReferendaRewardBadgeProps> = ({
       </Text>
       {isEstimate && (
         <Tooltip
-          asChild={false}
+          asChild={true}
           text={t("staking:referenda.rewardPool.estimateTooltip")}
         >
           <TooltipIcon color={getToken("buttons.primary.medium.onButton")} />
