@@ -6,6 +6,7 @@ import {
   DropletIcon,
   DropletsIcon,
   GemIcon,
+  GoalIcon,
   Grid2X2Icon,
   HistoryIcon,
   Repeat2Icon,
@@ -156,6 +157,11 @@ export const NAVIGATION: NavigationItem[] = [
     key: "staking",
     to: LINKS.staking,
     icon: GemIcon,
+  },
+  {
+    key: "strategiesStableBonds",
+    to: LINKS.strategiesStableBonds,
+    icon: GoalIcon,
   },
   // {
   //   key: "referrals",
