@@ -107,10 +107,18 @@ type WakuStartResult =
   | { ok: false; error: Error }
 
 let wakuStartPromise: Promise<WakuStartResult> | null = null
+// Module-level mutable callback so re-mounts (e.g. React Strict Mode) can
+// swap in their own `setStatus` without losing updates. The Waku client
+// only registers the FIRST callback it sees, so we wire it once at start
+// time and have it call through this ref each invocation.
+let currentStatusListener:
+  | ((s: BroadcasterConnectionStatus) => void)
+  | null = null
 const ensureWakuStarted = (
   chain: RailgunChain,
   onStatus: (s: BroadcasterConnectionStatus) => void,
 ): Promise<WakuStartResult> => {
+  currentStatusListener = onStatus
   if (wakuStartPromise) {
     return wakuStartPromise
   }
@@ -120,9 +128,11 @@ const ensureWakuStarted = (
         chain,
         {
           // No trusted-fee-signer gating on Hydration — accept any
-          // announcement on the topic. When/if a known signer keypair
-          // exists, plug it in here.
-          trustedFeeSigner: [],
+          // announcement on the topic. Must be `undefined`, not `[]`:
+          // empty arrays are truthy in JS, so passing `[]` would trigger
+          // findBroadcastersForToken's "trustedFeeSigner set" branch and
+          // reject every broadcaster for lack of an authorized fee.
+          trustedFeeSigner: undefined,
           // POI gating is disabled on the Hydration deployment. The fee
           // cache short-circuits if any requiredPOIListKey isn't in this
           // array, so an empty list means "no POI lists active".
@@ -130,7 +140,10 @@ const ensureWakuStarted = (
           enableHealthcheckLogs: false,
         },
         (_chain, status) => {
-          onStatus(status)
+          // Always route through the latest listener — not the `onStatus`
+          // closure captured at start time, which would be the first
+          // (cancelled) mount's setter under React Strict Mode.
+          currentStatusListener?.(status)
         },
         {
           // Pipe BroadcasterDebug.log into the console; the cache's debug
