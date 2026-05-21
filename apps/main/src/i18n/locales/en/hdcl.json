@@ -39,6 +39,7 @@
 
   "withdrawals.title": "Withdrawals",
   "withdrawals.showRedeemed": "Show Redeemed",
+  "withdrawals.autoClaim": "Auto-claim",
   "withdrawals.col.amount": "Amount",
   "withdrawals.col.estValue": "Est. Value",
   "withdrawals.col.date": "Date",
@@ -49,8 +50,10 @@
   "withdrawals.state.nDays": "{{days}} Days",
   "withdrawals.state.redeemed": "Redeemed",
   "withdrawals.state.cancelled": "Cancelled",
+  "withdrawals.state.claimable": "Claim ready",
   "withdrawals.action.cancel": "Cancel",
   "withdrawals.action.instant": "Instant redeem",
+  "withdrawals.action.claim": "Claim",
   "withdrawals.instantDisabledTooltip": "Per-row instant redeem isn't available yet — Cancel this request first (it auto-resupplies as aHDCL), then use the Withdraw modal's Instant option on the freed balance.",
 
   "deposit.your": "Your deposit",

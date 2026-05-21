@@ -256,6 +256,31 @@ export function usePreviewRedeem(hdclAmount: number) {
   })
 }
 
+/**
+ * Whether the connected wallet has opted into keeper-driven auto-claim.
+ * Toggled via `useSetAutoClaim`. When true, a CLAIM_OPERATOR_ROLE holder
+ * (the keeper bot) will call `redeem` on the user's behalf as soon as
+ * their settled inventory is non-zero — funds go to the controller's own
+ * address.
+ */
+export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
+  const { evm } = useRpcProvider()
+  return useQuery({
+    queryKey: ["hdcl-vault-autoclaim", evmAddress],
+    enabled: !!evmAddress,
+    queryFn: async () => {
+      if (!evmAddress) return false
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: evm,
+      })
+      return vault.read.autoClaimEnabled([evmAddress])
+    },
+    refetchInterval: 30_000,
+  })
+}
+
 export function useHollarAllowance(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({

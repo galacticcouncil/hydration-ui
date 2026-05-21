@@ -2,7 +2,7 @@ import { Stack } from "@galacticcouncil/ui/components"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
-import { type Hex } from "viem"
+import { type Hex, parseUnits } from "viem"
 
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/hdcl/components/AboutCard"
@@ -29,14 +29,17 @@ import { useRedemptionHistory } from "@/modules/strategies/hdcl/hooks/useRedempt
 import { useRedemptionQueue } from "@/modules/strategies/hdcl/hooks/useRedemptionQueue"
 import { useInstantRedeem } from "@/modules/strategies/hdcl/hooks/useStableswap"
 import {
+  useAutoClaimEnabled,
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/hdcl/hooks/useVaultReads"
 import {
   useCancelRedeem,
+  useClaim,
   useDeposit,
   useRequestRedeem,
   useRequestRedeemRaw,
+  useSetAutoClaim,
   useSupplyRawHdcl,
 } from "@/modules/strategies/hdcl/hooks/useVaultWrites"
 
@@ -68,9 +71,13 @@ export const HdclVaultPage = () => {
   const redeemRawMutation = useRequestRedeemRaw()
   const supplyRawMutation = useSupplyRawHdcl()
   const cancelMutation = useCancelRedeem()
+  const claimMutation = useClaim()
+  const setAutoClaimMutation = useSetAutoClaim()
   const borrowMutation = useBorrowHollar()
   const repayMutation = useRepayHollar()
   const instantRedeemMutation = useInstantRedeem()
+
+  const { data: autoClaimOn } = useAutoClaimEnabled(evmAddress)
 
   const isPending =
     depositMutation.isPending ||
@@ -128,6 +135,9 @@ export const HdclVaultPage = () => {
         state,
         timeRemainingDays: e.estTimeRemainingDays,
         fulfilledDate: h?.fulfilledAt ?? undefined,
+        // Surfaced from the queue read — drives the per-row Claim button.
+        claimableHdcl: e.hdclSettled,
+        claimableHollar: e.hollarOwed,
       }
     })
 
@@ -207,6 +217,17 @@ export const HdclVaultPage = () => {
             onShowRedeemedChange={setShowRedeemed}
             onCancel={(id) => cancelMutation.mutate(id)}
             isCancelling={cancelMutation.isPending}
+            onClaim={(claimableHdcl) => {
+              // useClaim takes shares in wei (bigint). The row carries a
+              // human-scaled number from `formatUnits(..., 18)`; round-trip
+              // back via parseUnits to avoid FP edge cases at low decimals.
+              const shares = parseUnits(claimableHdcl.toString(), 18)
+              claimMutation.mutate(shares)
+            }}
+            isClaiming={claimMutation.isPending}
+            autoClaimEnabled={autoClaimOn ?? false}
+            onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
+            isAutoClaimUpdating={setAutoClaimMutation.isPending}
           />
 
           <StrategyDetailsCard vaultStats={stats} />

@@ -30,6 +30,10 @@ export interface WithdrawalRow {
   state: WithdrawalRowState
   timeRemainingDays?: number
   fulfilledDate?: Date
+  /** Shares already queue-side-settled and ready for the user to claim. */
+  claimableHdcl?: number
+  /** HOLLAR price-locked at settlement, paid out when the user claims. */
+  claimableHollar?: number
 }
 
 const columnHelper = createColumnHelper<WithdrawalRow>()
@@ -40,11 +44,16 @@ export type WithdrawalColumnHandlers = {
   /** Cancel an active queued redemption (auto-resupplies as aHDCL). */
   onCancel: (id: number) => void
   isCancelling: boolean
+  /** Claim settled HOLLAR for a single request (calls vault.redeem). */
+  onClaim: (claimableHdcl: number) => void
+  isClaiming: boolean
 }
 
 export const useWithdrawalColumns = ({
   onCancel,
   isCancelling,
+  onClaim,
+  isClaiming,
 }: WithdrawalColumnHandlers) => {
   const { t } = useTranslation(["hdcl", "common"])
   const { isMobile } = useBreakpoints()
@@ -106,6 +115,15 @@ export const useWithdrawalColumns = ({
       header: t("withdrawals.col.timeRemaining"),
       cell: ({ row }) => {
         const r = row.original
+        // Settled shares that the user hasn't claimed yet — always take
+        // priority over the time-remaining countdown.
+        if ((r.claimableHdcl ?? 0) > 0) {
+          return (
+            <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
+              {t("withdrawals.state.claimable")}
+            </Text>
+          )
+        }
         if (r.state === "fulfilled" || r.state === "cancelled") {
           return (
             <Text fs="p4" color={getToken("text.medium")}>
@@ -132,27 +150,46 @@ export const useWithdrawalColumns = ({
       meta: { sx: { textAlign: "right" } },
       cell: ({ row }) => {
         const r = row.original
-        if (!isActive(r.state)) return null
+        const claimable = r.claimableHdcl ?? 0
+        const stillActive = isActive(r.state)
+        if (!stillActive && claimable <= 0) return null
         // Per-row Instant: blocked by SDK (handover lesson 11) — disabled
         // with tooltip pointing to the Cancel-then-modal-Instant flow.
         return (
           <Flex justify="flex-end" align="center" gap="base">
-            <Tooltip text={t("withdrawals.instantDisabledTooltip")}>
-              <Button variant="secondary" size="small" disabled>
-                {t("withdrawals.action.instant")}
+            {claimable > 0 && (
+              <Button
+                variant="primary"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onClaim(claimable)
+                }}
+                disabled={isClaiming}
+              >
+                {t("withdrawals.action.claim")}
               </Button>
-            </Tooltip>
-            <Button
-              variant="tertiary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation()
-                onCancel(r.id)
-              }}
-              disabled={isCancelling}
-            >
-              {t("withdrawals.action.cancel")}
-            </Button>
+            )}
+            {stillActive && (
+              <>
+                <Tooltip text={t("withdrawals.instantDisabledTooltip")}>
+                  <Button variant="secondary" size="small" disabled>
+                    {t("withdrawals.action.instant")}
+                  </Button>
+                </Tooltip>
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onCancel(r.id)
+                  }}
+                  disabled={isCancelling}
+                >
+                  {t("withdrawals.action.cancel")}
+                </Button>
+              </>
+            )}
           </Flex>
         )
       },
@@ -165,5 +202,5 @@ export const useWithdrawalColumns = ({
       timeRemainingColumn,
       actionsColumn,
     ]
-  }, [t, isMobile, hollar.symbol, isCancelling, onCancel])
+  }, [t, isMobile, hollar.symbol, isCancelling, onCancel, isClaiming, onClaim])
 }
