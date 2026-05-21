@@ -47,6 +47,7 @@ export const GigaStakePage: FC = () => {
             <OngoingReferenda
               votes={votesData}
               isVotesLoading={votesIsLoading}
+              isGigaStaking
             />
             <GigaStakingDashboard />
           </Flex>
@@ -67,7 +68,11 @@ export const GigaStakePage: FC = () => {
         <GigaAction key={address} />
       </TwoColumnGrid>
 
-      <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
+      <OngoingReferenda
+        votes={votesData}
+        isVotesLoading={votesIsLoading}
+        isGigaStaking
+      />
     </Flex>
   )
 }

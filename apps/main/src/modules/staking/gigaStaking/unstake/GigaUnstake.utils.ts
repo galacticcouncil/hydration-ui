@@ -73,7 +73,6 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   //     allows, we route through the combined batch instead of a plain
   //     unstake.
   const ongoingLockedHdxPlanck = claimableRewards?.ongoingLockedHdx ?? 0n
-  const unfreezableHdxPlanck = claimableRewards?.unfreezableHdx ?? 0n
   // Total HDX that `claim_rewards` will drain into auto-staked GIGAHDX
   // inside the combined batch — sum of already-pending and allocations
   // about to be credited by `remove_vote`. Used to (a) silently bump

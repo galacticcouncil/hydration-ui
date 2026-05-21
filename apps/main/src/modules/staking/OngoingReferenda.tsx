@@ -28,9 +28,14 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type Props = {
   readonly votes: ReadonlyArray<TAccountVote>
   readonly isVotesLoading: boolean
+  readonly isGigaStaking?: boolean
 }
 
-export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
+export const OngoingReferenda: FC<Props> = ({
+  votes,
+  isVotesLoading,
+  isGigaStaking,
+}) => {
   const { t } = useTranslation(["common", "staking"])
   const { isMobile } = useBreakpoints()
 
@@ -66,6 +71,7 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
             asChild
           >
             <CollapsibleTrigger
+              asChild
               sx={{ cursor: "pointer", width: "100%" }}
               onClick={() => {
                 setIsCollapsed((prev) => !prev)
@@ -77,33 +83,35 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                 }
               }}
             >
-              <SectionHeader
-                title={t("staking:referenda.title", {
-                  count: referenda.length,
-                })}
-                hasDescription
-                noTopPadding
-              />
-              {!isLoading && referenda.length > 0 && (
-                <MicroButton
-                  sx={{ display: "flex", alignItems: "center", gap: "s" }}
-                >
-                  <Text
-                    fw={500}
-                    fs="p6"
-                    lh={1.4}
-                    color={getToken("text.medium")}
-                    transform="uppercase"
+              <Box>
+                <SectionHeader
+                  title={t("staking:referenda.title", {
+                    count: referenda.length,
+                  })}
+                  hasDescription
+                  noTopPadding
+                />
+                {!isLoading && referenda.length > 0 && (
+                  <MicroButton
+                    sx={{ display: "flex", alignItems: "center", gap: "s" }}
                   >
-                    {isCollapsed ? t("show") : t("hide")}
-                  </Text>
-                  <Icon
-                    size="xs"
-                    component={isCollapsed ? ChevronDown : ChevronUp}
-                    color={getToken("icons.onContainer")}
-                  />
-                </MicroButton>
-              )}
+                    <Text
+                      fw={500}
+                      fs="p6"
+                      lh={1.4}
+                      color={getToken("text.medium")}
+                      transform="uppercase"
+                    >
+                      {isCollapsed ? t("show") : t("hide")}
+                    </Text>
+                    <Icon
+                      size="xs"
+                      component={isCollapsed ? ChevronDown : ChevronUp}
+                      color={getToken("icons.onContainer")}
+                    />
+                  </MicroButton>
+                )}
+              </Box>
             </CollapsibleTrigger>
           </Flex>
           {!isCollapsed && (
@@ -123,11 +131,11 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
             </SReferendaList>
           )}
           {!isLoading &&
-            (referenda.length ? (
+            (referenda.length && tracksData ? (
               <SReferendaList ref={gridRef}>
                 {referenda.map((item) => {
-                  const track = tracksData?.get(item.track)
-                  const voted = !!votes.some((vote) => vote.id === item.id)
+                  const track = tracksData.get(item.track)!
+                  const vote = votes.find((vote) => vote.id === item.id)
 
                   return (
                     <Referenda
@@ -136,7 +144,8 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                       item={item}
                       track={track}
                       totalIssuance={totalIssuance}
-                      voted={voted}
+                      vote={vote}
+                      isGigaStaking={isGigaStaking}
                     />
                   )
                 })}

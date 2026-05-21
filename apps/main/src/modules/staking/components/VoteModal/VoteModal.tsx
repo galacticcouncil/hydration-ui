@@ -35,9 +35,15 @@ type VoteFormProps = {
   referendumId: number
   open: boolean
   onClose: () => void
+  isGigaStaking?: boolean
 }
 
-export const VoteModal = ({ open, onClose, referendumId }: VoteFormProps) => {
+export const VoteModal = ({
+  open,
+  onClose,
+  referendumId,
+  isGigaStaking,
+}: VoteFormProps) => {
   const { t } = useTranslation("staking")
 
   return (
@@ -47,7 +53,11 @@ export const VoteModal = ({ open, onClose, referendumId }: VoteFormProps) => {
         description={t("referenda.vote.modal.description")}
         align="center"
       />
-      <VoteForm referendumId={referendumId} onClose={onClose} />
+      <VoteForm
+        referendumId={referendumId}
+        onClose={onClose}
+        isGigaStaking={isGigaStaking}
+      />
     </Modal>
   )
 }
@@ -55,7 +65,8 @@ export const VoteModal = ({ open, onClose, referendumId }: VoteFormProps) => {
 const VoteForm = ({
   referendumId,
   onClose,
-}: Pick<VoteFormProps, "referendumId" | "onClose">) => {
+  isGigaStaking,
+}: Pick<VoteFormProps, "referendumId" | "onClose" | "isGigaStaking">) => {
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const {
@@ -66,7 +77,7 @@ const VoteForm = ({
     onSubmit,
     governanceLocksHuman,
     allLocksHuman,
-  } = useVoteModal(referendumId, onClose)
+  } = useVoteModal(referendumId, onClose, isGigaStaking)
 
   const [voteType, multiplier] = form.watch(["voteType", "multiplier"])
   const isSingleInputField = voteType === "aye" || voteType === "nay"
@@ -94,7 +105,11 @@ const VoteForm = ({
 
             {!isSingleInputField && (
               <Box>
-                <Flex justify="space-between" align="center">
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  pb={getToken("scales.paddings.base")}
+                >
                   <Text fs="p5" fw={500} color={getToken("text.medium")}>
                     {t("staking:referenda.vote.modal.totalBalance")}
                   </Text>

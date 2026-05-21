@@ -7,6 +7,16 @@ type BannersState = {
   banners: {
     ["new-farms"]: { visible?: boolean; type: BannerType; timestamp?: number }
     ["giga-stake"]: { visible?: boolean; type: BannerType; timestamp?: number }
+    ["hollar-banner"]: {
+      visible?: boolean
+      type: BannerType
+      timestamp?: number
+    }
+    ["giga-migration"]: {
+      visible?: boolean
+      type: BannerType
+      timestamp?: number
+    }
   }
 }
 
@@ -24,6 +34,8 @@ const defaultState: BannersState = {
   banners: {
     ["new-farms"]: { visible: undefined, type: "top" },
     ["giga-stake"]: { visible: undefined, type: "flow" },
+    ["hollar-banner"]: { visible: undefined, type: "flow" },
+    ["giga-migration"]: { visible: undefined, type: "flow" },
   },
 }
 
@@ -68,7 +80,7 @@ export const useBannersStore = create<BannersStore>()(
     }),
     {
       name: "banners",
-      version: 1,
+      version: 2,
       merge: mergePersistedWithDefaults,
       partialize: (state) => ({ banners: state.banners }),
     },

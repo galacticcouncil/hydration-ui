@@ -45,7 +45,7 @@ export const StakingDashboard: FC = () => {
     : undefined
 
   const positionId = stakingPositionsData?.stakePositionId ?? 0n
-  const hasPosition = !!positionId
+  const hasPosition = !!stakingPositionsData?.stake
 
   const { getBalance } = useAccountBalances()
 
@@ -72,7 +72,12 @@ export const StakingDashboard: FC = () => {
   if (isMobile || isTablet) {
     return (
       <Flex direction="column" gap="base">
-        {hasPosition && <GigaHDXBanner />}
+        {!!stakingPositionsData?.stake && (
+          <GigaHDXBanner
+            stakeAmount={stakingPositionsData.stake}
+            type="migration"
+          />
+        )}
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap="xl">
           <Box>
@@ -118,7 +123,12 @@ export const StakingDashboard: FC = () => {
 
   return (
     <Flex direction="column" gap="xl">
-      {hasPosition && <GigaHDXBanner />}
+      {!!stakingPositionsData?.stake && (
+        <GigaHDXBanner
+          stakeAmount={stakingPositionsData.stake}
+          type="migration"
+        />
+      )}
       <TwoColumnGrid template="sidebar">
         <Paper>
           {isLoading ? (
