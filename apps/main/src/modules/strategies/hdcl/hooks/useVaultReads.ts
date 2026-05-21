@@ -156,25 +156,21 @@ export function useUserBalances(evmAddress: Hex | undefined) {
       // aHDCL only exists when the Aave money-market layer is deployed.
       // On lark-2 (vault-only) we skip the read entirely so we don't spam
       // dev warnings against the zero address.
-      const reads: Array<Promise<bigint>> = [
+      const aTokenRead: Promise<bigint> = HDCL_HAS_AAVE_LAYER
+        ? safeBalance("HDCL aToken", () =>
+            getContract({
+              address: HDCL_ATOKEN_ADDRESS,
+              abi: ERC20_ABI,
+              client: evm,
+            }).read.balanceOf([evmAddress]),
+          )
+        : Promise.resolve(0n)
+
+      const [hollarBal, vaultBal, aTokenBal] = await Promise.all([
         safeBalance("HOLLAR", () => hollarToken.read.balanceOf([evmAddress])),
         safeBalance("HDCL vault", () => vault.read.balanceOf([evmAddress])),
-      ]
-      if (HDCL_HAS_AAVE_LAYER) {
-        const aToken = getContract({
-          address: HDCL_ATOKEN_ADDRESS,
-          abi: ERC20_ABI,
-          client: evm,
-        })
-        reads.push(
-          safeBalance("HDCL aToken", () =>
-            aToken.read.balanceOf([evmAddress]),
-          ),
-        )
-      } else {
-        reads.push(Promise.resolve(0n))
-      }
-      const [hollarBal, vaultBal, aTokenBal] = await Promise.all(reads)
+        aTokenRead,
+      ] as const)
 
       return {
         hollar: Number(formatUnits(hollarBal, 18)),

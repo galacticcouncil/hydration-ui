@@ -84,11 +84,11 @@ export const WithdrawalsCard = ({
 
   return (
     <Paper>
-      <Flex justify="space-between" align="center" p="l" wrap="wrap" gap="m">
+      <Flex justify="space-between" align="center" p="l" wrap gap="m">
         <Text as="h2" font="primary" fs="base" fw={500}>
           {t("withdrawals.title")}
         </Text>
-        <Flex align="center" gap="l" wrap="wrap">
+        <Flex align="center" gap="l" wrap>
           <Flex align="center" gap="base">
             <Text fs="p5" color={getToken("text.medium")}>
               {t("withdrawals.autoClaim")}
