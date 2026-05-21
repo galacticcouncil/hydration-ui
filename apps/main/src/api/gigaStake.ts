@@ -300,30 +300,44 @@ export const gigaRewardPoolEstimateQuery = (
 /**
  * Total voting rewards the user can claim *right now* if they triggered
  * the full "claim & compound" batch, plus the metadata needed to build
- * that batch.
+ * that batch — and the breakdown of which `Stakes.frozen` contribution is
+ * releasable vs. permanently locked from the unstake form's perspective.
  *
  * Components:
- *   pendingHdx      = GigaHdxRewards.PendingRewards[who]
- *                     (already credited — claimable directly via claim_rewards)
+ *   pendingHdx       = GigaHdxRewards.PendingRewards[who]
+ *                      (already credited — claimable directly via claim_rewards)
  *
- *   allocReadyHdx   = Σ (per-ref share) over every UserVoteRecord[who, ref]
- *                     for completed referenda. Includes Approved/Rejected
- *                     with any conviction — `remove_vote` (the voter calling
- *                     it themselves) always succeeds post-completion. The
- *                     conviction-period lock on the underlying HDX balance
- *                     persists separately in `pallet-balances` and does not
- *                     block `remove_vote` or reward allocation.
+ *   allocReadyHdx    = Σ (per-ref share) over every UserVoteRecord[who, ref]
+ *                      for completed referenda. Includes Approved/Rejected
+ *                      with any conviction — `remove_vote` (the voter calling
+ *                      it themselves) always succeeds post-completion. The
+ *                      conviction-period lock on the underlying HDX balance
+ *                      persists separately in `pallet-balances` and does not
+ *                      block `remove_vote` or reward allocation.
  *
- *   allocReadyVotes = list of (refIndex, trackId) for the `remove_vote`
- *                     calls in the batch.
+ *   allocReadyVotes  = list of (refIndex, trackId) for the `remove_vote`
+ *                      calls in the batch.
  *
- *   lockedHdx       = Reserved for future use (e.g. shares earned on Ongoing
- *                     refs the user voted on). Currently always 0n —
- *                     Ongoing refs are filtered out earlier in the loop and
- *                     no other case excludes a share.
+ *   unlockClasses    = track-class ids to `ConvictionVoting.unlock` against
+ *                      (cleans up balance locks, both fresh and legacy).
  *
- * Used by the "Claim rewards" button (`useClaimAndCompound`) which batches:
- *   removeVote × N → realize_yield (optional) → claim_rewards
+ *   unfreezableHdx   = Σ `staked_vote_amount` over completed-ref UserVoteRecords.
+ *                      This is the portion of `Stakes.frozen` that the
+ *                      "Claim rewards" batch (or combined unlock+unstake batch)
+ *                      will release by running `remove_vote` × N — making
+ *                      that much extra GIGAHDX unstakeable in the same batch.
+ *
+ *   ongoingLockedHdx = Σ `staked_vote_amount` over ongoing-ref UserVoteRecords.
+ *                      Permanently locked from unstake-flow's perspective:
+ *                      we don't auto-remove active votes (would interrupt the
+ *                      user's voting commitment). Released only when the ref
+ *                      ends + user removes the vote (or manually removes now,
+ *                      forfeiting the active vote).
+ *
+ *   lockedHdx        = Legacy field, always 0n. Kept for back-compat.
+ *
+ * Used by the "Claim rewards" button (`useClaimAndCompound`) and the unstake
+ * form's combined unlock+unstake flow.
  */
 export const claimableVotingRewardsQuery = (
   rpc: TProviderContext,
@@ -419,42 +433,59 @@ export const claimableVotingRewardsQuery = (
           allocReadyHdx: 0n,
           allocReadyVotes: [],
           unlockClasses: [...legacyLockClasses],
+          unfreezableHdx: 0n,
+          ongoingLockedHdx: 0n,
           lockedHdx: 0n,
         }
       }
 
       const refIds = userVoteEntries.map(({ keyArgs }) => keyArgs[1])
 
-      const [refInfos, allocPools, cachedTracks, accumulatorAccount] =
-        await Promise.all([
-          Promise.all(
-            refIds.map((id) =>
-              rpc.papi.query.Referenda.ReferendumInfoFor.getValue(id, {
-                at: "best",
-              }),
-            ),
-          ),
-          Promise.all(
-            refIds.map((id) =>
-              unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(id, {
-                at: "best",
-              }),
-            ),
-          ),
-          Promise.all(
-            refIds.map((id) =>
-              unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(id, {
-                at: "best",
-              }),
-            ),
-          ),
-          rpc.papi.query.System.Account.getValue(
-            REWARD_ACCUMULATOR_POT_ADDRESS,
-            {
+      const [
+        refInfos,
+        allocPools,
+        cachedTracks,
+        accumulatorAccount,
+        votingForEntries,
+      ] = await Promise.all([
+        Promise.all(
+          refIds.map((id) =>
+            rpc.papi.query.Referenda.ReferendumInfoFor.getValue(id, {
               at: "best",
-            },
+            }),
           ),
-        ])
+        ),
+        Promise.all(
+          refIds.map((id) =>
+            unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(id, {
+              at: "best",
+            }),
+          ),
+        ),
+        Promise.all(
+          refIds.map((id) =>
+            unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(id, {
+              at: "best",
+            }),
+          ),
+        ),
+        rpc.papi.query.System.Account.getValue(REWARD_ACCUMULATOR_POT_ADDRESS, {
+          at: "best",
+        }),
+        rpc.papi.query.ConvictionVoting.VotingFor.getEntries(who, {
+          at: "best",
+        }),
+      ])
+
+      // Build refIndex → classId map from the user's VotingFor entries.
+      const refToClassFromVotingFor = new Map<number, number>()
+      for (const voteClass of votingForEntries) {
+        if (voteClass.value.type !== "Casting") continue
+        const classId = Number(voteClass.keyArgs[1])
+        for (const [pollId] of voteClass.value.value.votes) {
+          refToClassFromVotingFor.set(Number(pollId), classId)
+        }
+      }
 
       const potFree = BigInt(accumulatorAccount.data.free)
       // Refs whose `removeVote` is GUARANTEED to succeed → safe to include
@@ -464,6 +495,15 @@ export const claimableVotingRewardsQuery = (
         refIndex: number
         trackId: number | null
       }> = []
+      // `Stakes.frozen` contribution that we CAN release in a batched
+      // `remove_vote` call. Comes from completed referenda the user has
+      // a UserVoteRecord on. Summed across all such refs.
+      let unfreezableHdx = 0n
+      // `Stakes.frozen` contribution we CANNOT release without manual
+      // intervention. Comes from ongoing-ref UserVoteRecords — removing
+      // them would mean abandoning the active vote, which we don't do
+      // automatically (preserves user's voting commitment).
+      let ongoingLockedHdx = 0n
       // Refs where the user has an earned share but `removeVote` may revert
       // with `NoPermissionYet` (winning conviction vote whose lock has not
       // expired). We surface the amount as informational — the user will be
@@ -483,16 +523,6 @@ export const claimableVotingRewardsQuery = (
         } | null
         const cachedTrack = cachedTracks[i] as number | null | undefined
 
-        // Skip refs that don't exist (shouldn't happen) or are still ongoing
-        // (removing an active vote would interrupt the user's choice).
-        if (!refInfo) continue
-        if (refInfo.type === "Ongoing") continue
-
-        const trackId =
-          cachedTrack !== null && cachedTrack !== undefined
-            ? Number(cachedTrack)
-            : null
-
         // Defensive field reader — `unsafeApi` decodes runtime structs with
         // snake_case field names (matching the Rust definitions), not the
         // camelCase we'd expect from typed bindings. We probe both shapes.
@@ -506,6 +536,38 @@ export const claimableVotingRewardsQuery = (
           }
           return undefined
         }
+
+        // Skip refs whose info we can't resolve (shouldn't happen).
+        if (!refInfo) continue
+
+        // Ongoing refs: their freeze contribution is "permanently locked"
+        // from the unstake form's perspective. Accumulate then skip the
+        // claim-batching logic — we don't auto-remove active votes.
+        if (refInfo.type === "Ongoing") {
+          ongoingLockedHdx += toBig(
+            readField(record, "stakedVoteAmount", "staked_vote_amount"),
+          )
+          continue
+        }
+
+        // Completed ref — the freeze can be released by `remove_vote` in
+        // the claim/unstake batch.
+        unfreezableHdx += toBig(
+          readField(record, "stakedVoteAmount", "staked_vote_amount"),
+        )
+
+        // Three-tier track resolution:
+        //   1. GigaHdxRewards.ReferendumTracks cache (primary — populated
+        //      on first vote, deleted when allocation fires)
+        //   2. ConvictionVoting.VotingFor reverse-map (secondary — still
+        //      has the vote until the user calls remove_vote themselves)
+        //   3. null (only when both above fail — `remove_vote` would then
+        //      revert with `ClassNeeded`; we still include in the batch so
+        //      the user sees the diagnostic and we don't silently drop refs)
+        const trackId: number | null =
+          cachedTrack !== null && cachedTrack !== undefined
+            ? Number(cachedTrack)
+            : (refToClassFromVotingFor.get(refIndex) ?? null)
 
         let share = 0n
         const weighted = toBig(readField(record, "weighted"))
@@ -572,6 +634,8 @@ export const claimableVotingRewardsQuery = (
         allocReadyHdx,
         allocReadyVotes,
         unlockClasses: [...legacyLockClasses],
+        unfreezableHdx,
+        ongoingLockedHdx,
         lockedHdx,
       }
     },
