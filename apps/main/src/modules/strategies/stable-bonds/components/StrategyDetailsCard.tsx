@@ -23,8 +23,8 @@ export const StrategyDetailsCard = () => {
       <SectionHeader title="Strategy details" as="h2" noTopPadding />
       <Separator mx="-l" />
 
-      <Flex align="stretch" gap="l" py="l" wrap>
-        <Box flex={1}>
+      <Flex align="stretch" gap={["xl", null, "xxxl"]} py="l" wrap>
+        <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             Remaining capacity
           </Text>
@@ -59,7 +59,7 @@ export const StrategyDetailsCard = () => {
           sx={{ alignSelf: "stretch", display: ["none", null, "block"] }}
         />
 
-        <Box flex={1}>
+        <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             Available APR
           </Text>
@@ -82,7 +82,7 @@ export const StrategyDetailsCard = () => {
           sx={{ alignSelf: "stretch", display: ["none", null, "block"] }}
         />
 
-        <Box flex={1}>
+        <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             Maturity period
           </Text>
