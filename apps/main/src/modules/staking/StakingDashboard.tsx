@@ -73,7 +73,10 @@ export const StakingDashboard: FC = () => {
     return (
       <Flex direction="column" gap="base">
         {!!stakingPositionsData?.stake && (
-          <GigaHDXBanner stakeAmount={stakingPositionsData.stake} />
+          <GigaHDXBanner
+            stakeAmount={stakingPositionsData.stake}
+            type="migration"
+          />
         )}
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap="xl">
@@ -121,7 +124,10 @@ export const StakingDashboard: FC = () => {
   return (
     <Flex direction="column" gap="xl">
       {!!stakingPositionsData?.stake && (
-        <GigaHDXBanner stakeAmount={stakingPositionsData.stake} />
+        <GigaHDXBanner
+          stakeAmount={stakingPositionsData.stake}
+          type="migration"
+        />
       )}
       <TwoColumnGrid template="sidebar">
         <Paper>
