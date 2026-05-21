@@ -8,15 +8,44 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { USDC_ASSET_ID, USDT_ASSET_ID } from "@galacticcouncil/utils"
+import Big from "big.js"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/components/StableBondsPanel.query"
 import { FAKE_STRATEGY } from "@/modules/strategies/stable-bonds/constants"
+import type { TAsset } from "@/providers/assetsProvider"
+
+type FundingCapacity = {
+  readonly asset: TAsset
+  readonly amount: string
+}
 
 export const StrategyDetailsCard = () => {
   const { t } = useTranslation("common")
   const strategy = FAKE_STRATEGY
+  const { data: otcOrders = [] } = useStableBondsOtcOrders()
+
+  const fundingCapacities = useMemo(() => {
+    const byAssetId = otcOrders.reduce<Map<string, FundingCapacity>>(
+      (acc, order) => {
+        const current = acc.get(order.assetIn.id)
+
+        acc.set(order.assetIn.id, {
+          asset: order.assetIn,
+          amount: current
+            ? Big(current.amount).plus(order.assetAmountIn).toString()
+            : order.assetAmountIn,
+        })
+
+        return acc
+      },
+      new Map(),
+    )
+
+    return [...byAssetId.values()]
+  }, [otcOrders])
 
   return (
     <Paper p="l">
@@ -29,28 +58,19 @@ export const StrategyDetailsCard = () => {
             Remaining capacity
           </Text>
           <Flex gap="xl">
-            <Flex align="center" gap="base">
-              <AssetLogo id={USDC_ASSET_ID} size="small" />
-              <Text
-                font="primary"
-                fs="h6"
-                fw={600}
-                color={getToken("text.high")}
-              >
-                {strategy.remainingCapacityUsdc}
-              </Text>
-            </Flex>
-            <Flex align="center" gap="base">
-              <AssetLogo id={USDT_ASSET_ID} size="small" />
-              <Text
-                font="primary"
-                fs="h6"
-                fw={600}
-                color={getToken("text.high")}
-              >
-                {strategy.remainingCapacityUsdt}
-              </Text>
-            </Flex>
+            {fundingCapacities.map(({ asset, amount }) => (
+              <Flex key={asset.id} align="center" gap="base">
+                <AssetLogo id={asset.id} size="small" />
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken("text.high")}
+                >
+                  {t("number", { value: amount })}
+                </Text>
+              </Flex>
+            ))}
           </Flex>
         </Box>
 
@@ -105,19 +125,17 @@ export const StrategyDetailsCard = () => {
           label="Funding currency"
           content={
             <Flex align="center" wrap>
-              <Flex align="center" gap="xs">
-                <AssetLogo id={USDT_ASSET_ID} size="small" />
-                <Text fs="p4" lh={1.5}>
-                  USDT
-                </Text>
-              </Flex>
-              <Text mr="base">{", "}</Text>
-              <Flex align="center" gap="xs">
-                <AssetLogo id={USDC_ASSET_ID} size="small" />
-                <Text fs="p4" lh={1.5}>
-                  USDC
-                </Text>
-              </Flex>
+              {fundingCapacities.map(({ asset }, index) => (
+                <Flex key={asset.id} align="center" wrap>
+                  {index > 0 && <Text mr="base">{", "}</Text>}
+                  <Flex align="center" gap="xs">
+                    <AssetLogo id={asset.id} size="small" />
+                    <Text fs="p4" lh={1.5}>
+                      {asset.symbol}
+                    </Text>
+                  </Flex>
+                </Flex>
+              ))}
             </Flex>
           }
         />
