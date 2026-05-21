@@ -4,7 +4,7 @@ import { AssetHeader } from "@/components/AssetHeader"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/stable-bonds/components/AboutCard"
 // import { MyPositionsCard } from "@/modules/strategies/stable-bonds/components/MyPositionsCard"
-import { StableBondsPanel } from "@/modules/strategies/stable-bonds/components/StableBondsPanel"
+import { StableBondsDeposit } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit"
 import { StrategyDetailsCard } from "@/modules/strategies/stable-bonds/components/StrategyDetailsCard"
 import { STABLE_BONDS_ASSET_ID } from "@/modules/strategies/stable-bonds/constants"
 import { useAssets } from "@/providers/assetsProvider"
@@ -22,7 +22,7 @@ export const StableBondsPage = () => {
           <StrategyDetailsCard />
           <AboutCard />
         </Stack>
-        <StableBondsPanel />
+        <StableBondsDeposit />
       </TwoColumnGrid>
     </Stack>
   )

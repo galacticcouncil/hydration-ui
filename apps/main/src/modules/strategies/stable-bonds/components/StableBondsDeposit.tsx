@@ -3,6 +3,8 @@ import {
   AssetInput,
   Box,
   Button,
+  CollapsibleContent,
+  CollapsibleRoot,
   Flex,
   Paper,
   Separator,
@@ -35,8 +37,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalance } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
-export const StableBondsPanel = () => {
-  const { t } = useTranslation("common")
+export const StableBondsDeposit = () => {
+  const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
   const form = useStableBondsForm()
   const submit = useSubmitStableBondsOrder()
@@ -213,17 +215,23 @@ export const StableBondsPanel = () => {
             </AuthorizedAction>
           </Box>
 
-          <Separator mx="-xl" />
-
-          <Summary>
-            <SummaryRow
-              label="Total fees"
-              content={t("currency", {
-                value: feeAmount || "0",
-                symbol: selectedOrder?.assetIn.symbol,
-              })}
-            />
-          </Summary>
+          <CollapsibleRoot open={isDepositAmountValid}>
+            <CollapsibleContent>
+              <Separator mx="-xl" />
+              <Summary>
+                <SummaryRow
+                  label={t("trade:otc.fillOrder.tradeFee", {
+                    percentage: Big(feePct).times(100).toNumber(),
+                  })}
+                  content={t("currency", {
+                    value: feeAmount || "0",
+                    percentage: Big(feePct).times(100).toNumber(),
+                    symbol: selectedOrder?.assetIn.symbol,
+                  })}
+                />
+              </Summary>
+            </CollapsibleContent>
+          </CollapsibleRoot>
         </Paper>
       </form>
     </FormProvider>
