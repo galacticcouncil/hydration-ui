@@ -63,7 +63,19 @@ export const useVoteModal = (
 
   //@TODO: can I use total balance or should substrate locked balance from OTC or DCA for example?
   const totalHdxBalance = hdxBalance?.total?.toString() ?? "0"
-  const totalHdxBalanceHuman = scaleHuman(totalHdxBalance, native.decimals)
+  // Gas reserve — subtract a small buffer from the displayed max so users
+  // can't enter literally their entire balance. The runtime's vote check
+  // (`vote.balance ≤ total_balance`) fires AFTER the tx-fee deduction; if
+  // you vote with all your HDX the gas comes out of the same pot and the
+  // check fails with `InsufficientFunds`. 0.1 HDX is way more than any
+  // actual extrinsic fee and invisible at staking-scale balances.
+  const VOTE_GAS_RESERVE_HDX_HUMAN = "0.1"
+  const totalHdxBalanceHuman = Big.max(
+    Big(scaleHuman(totalHdxBalance, native.decimals)).minus(
+      VOTE_GAS_RESERVE_HDX_HUMAN,
+    ),
+    Big(0),
+  ).toString()
 
   const form = useForm<VoteModalFormValues>({
     mode: "onChange",
