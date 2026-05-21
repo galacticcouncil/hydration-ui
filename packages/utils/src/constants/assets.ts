@@ -1,6 +1,7 @@
 export const HOLLAR_ASSET_ID = "222"
 export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"
+export const USDC_ASSET_ID = "22"
 export const GDOT_ASSET_ID = "690"
 export const GDOT_ERC20_ID = "69"
 export const GETH_ASSET_ID = "4200"

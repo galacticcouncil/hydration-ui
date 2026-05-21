@@ -51,6 +51,7 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
+  strategiesStableBonds: "/strategies/stable-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -298,6 +299,10 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     statsFees: {
       title: t("navigation.statsFees.title"),
+      description: "",
+    },
+    strategiesStableBonds: {
+      title: t("navigation.strategiesStableBonds.title"),
       description: "",
     },
     // memepad: {
