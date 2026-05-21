@@ -7,7 +7,11 @@ export interface QueueEntry {
   requestId: number
   user: string
   hdclAmount: number
-  hdclFulfilled: number
+  /** Portion already settled — waiting for the user to call redeem/withdraw. */
+  hdclSettled: number
+  /** HOLLAR price-locked for the settled portion. */
+  hollarOwed: number
+  /** Still queued (not yet settled). */
   hdclRemaining: number
   active: boolean
   isUser: boolean
@@ -18,6 +22,10 @@ export interface WithdrawalRequest {
   id: number
   amountHdcl: number
   estHollar: number
+  /** Shares already settled and ready to claim. */
+  claimableHdcl: number
+  /** HOLLAR price-locked for those settled shares. */
+  claimableHollar: number
   requestedDate: Date
   maxTimeRemainingDays: number
 }
@@ -49,15 +57,17 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
           vault.read.getEstimatedWaitTime([BigInt(i)]),
         ])
 
-        const [user, hdclAmount, hdclFulfilled, active] = reqResult
+        // Lark-2 5-tuple: (user, hdclAmount, hdclSettled, hollarOwed, active)
+        const [user, hdclAmount, hdclSettled, hollarOwed, active] = reqResult
         if (!active) continue
 
-        const remaining = Number(formatUnits(hdclAmount - hdclFulfilled, 18))
+        const remaining = Number(formatUnits(hdclAmount - hdclSettled, 18))
         entries.push({
           requestId: i,
           user,
           hdclAmount: Number(formatUnits(hdclAmount, 18)),
-          hdclFulfilled: Number(formatUnits(hdclFulfilled, 18)),
+          hdclSettled: Number(formatUnits(hdclSettled, 18)),
+          hollarOwed: Number(formatUnits(hollarOwed, 18)),
           hdclRemaining: remaining,
           active,
           isUser: addr ? user.toLowerCase() === addr : false,
@@ -71,6 +81,8 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
           id: e.requestId,
           amountHdcl: e.hdclRemaining,
           estHollar: e.hdclRemaining,
+          claimableHdcl: e.hdclSettled,
+          claimableHollar: e.hollarOwed,
           // Sentinel value (epoch). The real `requestedAt` comes from the
           // `RedemptionRequested` event log and is merged in at page level
           // via useRedemptionHistory — the on-chain queue struct doesn't

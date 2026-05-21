@@ -19,6 +19,7 @@ import type {
 } from "@/modules/strategies/hdcl/components/Withdrawals.columns"
 import { WithdrawalsCard } from "@/modules/strategies/hdcl/components/WithdrawalsCard"
 import { WithdrawModal } from "@/modules/strategies/hdcl/components/WithdrawModal"
+import { HDCL_HAS_AAVE_LAYER } from "@/modules/strategies/hdcl/constants"
 import { useHdclPoolPosition } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
 import {
   useBorrowHollar,
@@ -239,7 +240,9 @@ export const HdclVaultPage = () => {
           instantRedeemMutation.mutate(amount)
           setShowWithdraw(false)
         }}
-        instantAvailable={true}
+        // Instant redeem depends on the HDCL/HOLLAR stableswap pool, which
+        // depends on aHDCL — only available once the Aave layer is live.
+        instantAvailable={HDCL_HAS_AAVE_LAYER}
         isPending={isPending}
       />
 

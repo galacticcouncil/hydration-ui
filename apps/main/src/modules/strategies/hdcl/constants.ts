@@ -1,90 +1,74 @@
 import { type Hex } from "viem"
 
-export const VAULT_ADDRESS: Hex = "0xB82cF8A62EB1b51a2f2A9d71C120E2fB8ae548D8"
+// ════════════════════════════════════════════════════════════════════════
+//  HDCL Vault — lark-2 deployment
+//  ─────────────────────────────────────────────────────────────────────
+//  Reference: aave-v3-deploy/hdcl-vault/deployments/lark-2.md
+//  Network:   Hydration lark testnet (`2.lark.hydration.cloud`, chain 222222)
+//  Surface:   ERC-4626 (deposit/mint) + ERC-7540 (async redeem)
+// ════════════════════════════════════════════════════════════════════════
+
+export const VAULT_ADDRESS: Hex = "0xbDAFEB92440d8696d6C143bc7e6B086d461e3502"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 
-// HDCL Aave V3 pool — separate Aave instance from the main money market.
-// HDCL is supply-only collateral; HOLLAR is borrow-only via the GhoAToken
-// facilitator. ProviderId 22222255.
-//   0.lark Pool-Proxy: 0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8
-//   mainnet: TODO update on launch (Phase 9)
+// Decentral pool the vault deploys HOLLAR into. Surfaced here only so the
+// DepositPanel can read `minimumInvestmentPeriodSeconds` for the "Lockup
+// period" copy. Vault uses `activeDepositPool()` to resolve the same value
+// on-chain, which is the authoritative source.
+export const DECENTRAL_POOL_ADDRESS: Hex =
+  "0x207a626c07b73E76134177D1f44B0f32e94ADB5a"
+
+// ────────────────────────────────────────────────────────────────────────
+// HDCL Aave V3 money-market layer — NOT deployed on lark-2 yet.
+//
+// The lark-2 redeploy is vault-only (see deployments/lark-2.md). The Aave
+// pool, deposit-zap, and aToken from the previous lark generation
+// (`HDCL_HAS_AAVE_LAYER = true` era) need to be re-deployed against the
+// new vault before borrow / supply / instant-redeem flows can be enabled.
+//
+// Until that ships, the UI runs in "vault-only" mode:
+//   - Deposit calls `vault.deposit(assets, receiver)` directly
+//   - Request redeem calls `vault.requestRedeem(shares, ctrl, owner)` directly
+//   - Claim calls `vault.redeem(shares, receiver, controller)`
+//   - Borrow card, instant-redeem-via-stableswap, and the aHDCL collateral
+//     row are hidden / disabled.
+// ────────────────────────────────────────────────────────────────────────
+export const HDCL_HAS_AAVE_LAYER = false
+
 export const HDCL_POOL_ADDRESS: Hex =
-  "0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8"
-
-// Atomic helper that bundles HOLLAR.transferFrom + vault.deposit +
-// pool.supply into one EVM call. Replaces the previous off-chain
-// `previewDeposit` prediction (which was lossy due to yield accruing
-// between read and execution) with the exact `vault.deposit` return value
-// passed straight to `pool.supply` on-chain.
-//
-// Source: aave-v3-deploy/contracts/HDCLDepositZap.sol
-// Deploy task: aave-v3-deploy/tasks/misc/deploy-HDCLDepositZap.ts
-//   HARDHAT_NETWORK=lark MARKET_NAME=HDCL npx hardhat deploy-HDCLDepositZap \
-//     --hollar 0x531a... --vault 0xB82c... --pool 0x7d78... --precompile 0x0000...0037
-//
-// TODO Phase 9: replace with mainnet deployment address.
-//   0.lark: 0x75d09AbAF2005b0ba06abE6a49796D0180D9a375
+  "0x0000000000000000000000000000000000000000"
 export const HDCL_DEPOSIT_ZAP_ADDRESS: Hex =
-  "0x75d09AbAF2005b0ba06abE6a49796D0180D9a375"
-
-// aToken receipt for HDCL supplied as collateral on the HDCL pool.
-// In the post-registry world this aToken is what users see as their "HDCL"
-// balance — VAULT_ADDRESS becomes the underlying reserve asset.
-//   0.lark AToken-HDCL proxy: 0x9cd4410c27977CD5e400e43B7B1aB5ADD845ada2
-//   mainnet: TODO update on launch (Phase 9)
+  "0x0000000000000000000000000000000000000000"
 export const HDCL_ATOKEN_ADDRESS: Hex =
-  "0x9cd4410c27977CD5e400e43B7B1aB5ADD845ada2"
+  "0x0000000000000000000000000000000000000000"
 
-// Substrate-asset precompile that the HDCL Aave reserve is registered under.
-// Hydration treats EVM tokens that are also substrate-side assets as having a
-// precompile alias at `0x000…01000000XX` where XX is the substrate asset ID.
-// HDCL is asset ID 55 (= 0x37), per `assetRegistry.register(55, ...)` in the
-// handover's governance proposal.
-//
-// Aave's `getReservesList()` returns this precompile, NOT the HDCLVault
-// contract address — so all `pool.supply` / `pool.withdraw` / `pool.borrow`
-// calls that operate on HDCL must pass this address as the asset argument
-// (and approvals must be set on this address too — Aave calls
-// `IERC20(precompile).transferFrom(...)` to pull collateral in).
-//
-// `vault.balanceOf(user)` and `precompile.balanceOf(user)` return the same
-// number (they're aliases for the same substrate balance), so balance
-// reads on the vault contract still work for the "raw HDCL" display.
+// Substrate-asset precompile alias for HDCL. Unchanged across lark
+// generations — keyed off the substrate asset id, not the EVM deploy.
 export const HDCL_PRECOMPILE_ADDRESS: Hex =
   "0x0000000000000000000000000000000100000037"
 
-// Aave V3 interestRateMode for borrows: 1=stable (deprecated), 2=variable.
-// The HOLLAR borrow on this pool flows through the GhoAToken facilitator
-// which uses variable rate; a stable-rate borrow would revert.
+// Aave V3 interestRateMode for borrows: 2 = variable (GhoAToken path).
 export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
 
-// Block at which the vault proxy was deployed on the configured network.
-// Used as `fromBlock` for getLogs queries — scanning from genesis is too
-// wide for public RPC nodes. Update when redeploying / switching networks.
-//   0.lark proxy deploy: block 0x12623 (75299)
-//   mainnet: TODO update on launch
-export const VAULT_DEPLOY_BLOCK = 75299n
+// First block at which the lark-2 vault proxy emitted a log. Used as
+// `fromBlock` for getLogs queries — public RPCs reject scans from genesis.
+// Update on every fresh lark deploy.
+//   2.lark proxy deploy: tx in block 138433
+export const VAULT_DEPLOY_BLOCK = 138433n
 
-// HDCL/HOLLAR stableswap pool — share-asset id 10055. Underlying assets:
-//   - HOLLAR (substrate id 222)
-//   - aHDCL on lark (substrate id 550) / HDCL on mainnet after the rename (id 55)
-// The stablepool launch proposal `hdcl-stablepool-lark.ts` registered this
-// pool. Used here to wire the instant-redeem path — users swap their
-// aToken for HOLLAR via this pool instead of waiting for the queue.
+// HDCL/HOLLAR stableswap pool — share-asset id 10055. Used by the
+// instant-redeem path which swaps the aToken receipt for HOLLAR via
+// the substrate stableswap. Only meaningful once HDCL_HAS_AAVE_LAYER is on.
 export const STABLESWAP_POOL_ID = 10055n
-
-// User-held aToken substrate id used by the stableswap. Lark naming has
-// the aToken at asset 550 (named "aHDCL"); after the mainnet rename it
-// will be at asset 55 (named "HDCL"). See HDCL-MAINNET-HANDOVER.md
-// "Lark vs mainnet asset id divergence" for full context.
-//
-// TODO Phase 9: switch to 55n once mainnet runs the asset-rename.
 export const STABLESWAP_HDCL_ASSET_ID = 550n
 
 export const EVM_CALL_GAS = 5_000_000n
 
+// ────────────────────────────────────────────────────────────────────────
+// Vault ABI — current surface as of lark-2 (commit 555abc7).
+// ────────────────────────────────────────────────────────────────────────
 export const VAULT_ABI = [
-  // Read functions
+  // ERC-20 / state -------------------------------------------------------
   {
     type: "function",
     name: "totalAssets",
@@ -115,14 +99,28 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
-    name: "withdrawalDelay",
-    inputs: [],
+    name: "allowance",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
-    name: "decentralPool",
+    name: "approve",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "value", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+  },
+  // Config / state views -------------------------------------------------
+  {
+    type: "function",
+    name: "activeDepositPool",
     inputs: [],
     outputs: [{ name: "", type: "address" }],
     stateMutability: "view",
@@ -136,21 +134,7 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
-    name: "getAPYWad",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getRedemptionQueuePending",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "queueTail",
+    name: "minReinvestAmount",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
@@ -178,12 +162,12 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
-    name: "minReinvestAmount",
+    name: "getAPYWad",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
-  // Positions
+  // Positions ------------------------------------------------------------
   {
     type: "function",
     name: "getPositionCount",
@@ -212,10 +196,17 @@ export const VAULT_ABI = [
     ],
     stateMutability: "view",
   },
-  // Redemption queue
+  // Redemption queue -----------------------------------------------------
   {
     type: "function",
     name: "getRedemptionQueueLength",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getRedemptionQueuePending",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
@@ -229,12 +220,25 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
+    name: "queueTail",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Note: tuple shape changed at lark-2.
+  // Old: (user, hdclAmount, hdclFulfilled, active) — 4 fields
+  // New: (user, hdclAmount, hdclSettled, hollarOwed, active) — 5 fields.
+  // `hdclSettled` is the portion already covered by idle HOLLAR;
+  // `hollarOwed` is the HOLLAR price-locked for that settled portion.
+  {
+    type: "function",
     name: "getRedemptionRequest",
     inputs: [{ name: "requestId", type: "uint256" }],
     outputs: [
       { name: "user", type: "address" },
       { name: "hdclAmount", type: "uint256" },
-      { name: "hdclFulfilled", type: "uint256" },
+      { name: "hdclSettled", type: "uint256" },
+      { name: "hollarOwed", type: "uint256" },
       { name: "active", type: "bool" },
     ],
     stateMutability: "view",
@@ -260,48 +264,140 @@ export const VAULT_ABI = [
     outputs: [{ name: "estimatedSeconds", type: "uint256" }],
     stateMutability: "view",
   },
-  // Preview
+  // ERC-7540 spec views --------------------------------------------------
+  {
+    type: "function",
+    name: "pendingRedeemRequest",
+    inputs: [
+      { name: "requestId", type: "uint256" },
+      { name: "controller", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "claimableRedeemRequest",
+    inputs: [
+      { name: "requestId", type: "uint256" },
+      { name: "controller", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "maxRedeem",
+    inputs: [{ name: "controller", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "maxWithdraw",
+    inputs: [{ name: "controller", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Previews. `previewDeposit` reverts on inputs where `deposit` would
+  // revert (ZeroAmount / DepositTooSmall / VaultEmpty); callers must wrap
+  // it in a try/catch or guard against the failure modes.
   {
     type: "function",
     name: "previewDeposit",
-    inputs: [{ name: "hollarAmount", type: "uint256" }],
-    outputs: [{ name: "hdclAmount", type: "uint256" }],
+    inputs: [{ name: "assets", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "previewMint",
+    inputs: [{ name: "shares", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "previewRedeem",
-    inputs: [{ name: "hdclAmount", type: "uint256" }],
-    outputs: [{ name: "hollarAmount", type: "uint256" }],
-    stateMutability: "view",
-  },
-  // APY
-  {
-    type: "function",
-    name: "getActiveAPYCount",
-    inputs: [],
+    inputs: [{ name: "shares", type: "uint256" }],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
-    name: "getActiveAPY",
-    inputs: [{ name: "index", type: "uint256" }],
+    name: "previewWithdraw",
+    inputs: [{ name: "assets", type: "uint256" }],
     outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
+    stateMutability: "pure",
   },
-  // Write functions
+  // Operator / auto-claim opt-in ----------------------------------------
   {
     type: "function",
-    name: "deposit",
-    inputs: [{ name: "hollarAmount", type: "uint256" }],
-    outputs: [{ name: "hdclMinted", type: "uint256" }],
+    name: "isOperator",
+    inputs: [
+      { name: "controller", type: "address" },
+      { name: "operator", type: "address" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "setOperator",
+    inputs: [
+      { name: "operator", type: "address" },
+      { name: "approved", type: "bool" },
+    ],
+    outputs: [],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
+    name: "autoClaimEnabled",
+    inputs: [{ name: "controller", type: "address" }],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "setAutoClaim",
+    inputs: [{ name: "enabled", type: "bool" }],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  // Writes --------------------------------------------------------------
+  // ERC-4626 deposit. assets = HOLLAR, receiver = hDCL recipient.
+  {
+    type: "function",
+    name: "deposit",
+    inputs: [
+      { name: "assets", type: "uint256" },
+      { name: "receiver", type: "address" },
+    ],
+    outputs: [{ name: "shares", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  // ERC-4626 mint. shares = exact hDCL output; pulls computed HOLLAR.
+  {
+    type: "function",
+    name: "mint",
+    inputs: [
+      { name: "shares", type: "uint256" },
+      { name: "receiver", type: "address" },
+    ],
+    outputs: [{ name: "assets", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  // ERC-7540 async redeem request. shares = hDCL escrowed,
+  // controller = future claimer, owner = source of the hDCL.
+  {
+    type: "function",
     name: "requestRedeem",
-    inputs: [{ name: "hdclAmount", type: "uint256" }],
+    inputs: [
+      { name: "shares", type: "uint256" },
+      { name: "controller", type: "address" },
+      { name: "owner", type: "address" },
+    ],
     outputs: [{ name: "requestId", type: "uint256" }],
     stateMutability: "nonpayable",
   },
@@ -312,8 +408,79 @@ export const VAULT_ABI = [
     outputs: [],
     stateMutability: "nonpayable",
   },
-  // Events — needed for redemption history (request timestamps, fulfilled/cancelled states).
-  // Logs filtered by indexed `user`; block timestamps fetched per log.
+  // ERC-7540 claim — pulls settled HOLLAR by share count.
+  {
+    type: "function",
+    name: "redeem",
+    inputs: [
+      { name: "shares", type: "uint256" },
+      { name: "receiver", type: "address" },
+      { name: "controller", type: "address" },
+    ],
+    outputs: [{ name: "assets", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  // ERC-7540 claim — pulls settled HOLLAR by HOLLAR amount.
+  {
+    type: "function",
+    name: "withdraw",
+    inputs: [
+      { name: "assets", type: "uint256" },
+      { name: "receiver", type: "address" },
+      { name: "controller", type: "address" },
+    ],
+    outputs: [{ name: "shares", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  // Events ---------------------------------------------------------------
+  // Canonical ERC-4626 / 7540 events
+  {
+    type: "event",
+    name: "Deposit",
+    anonymous: false,
+    inputs: [
+      { name: "sender", type: "address", indexed: true },
+      { name: "owner", type: "address", indexed: true },
+      { name: "assets", type: "uint256", indexed: false },
+      { name: "shares", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "Withdraw",
+    anonymous: false,
+    inputs: [
+      { name: "sender", type: "address", indexed: true },
+      { name: "receiver", type: "address", indexed: true },
+      { name: "owner", type: "address", indexed: true },
+      { name: "assets", type: "uint256", indexed: false },
+      { name: "shares", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "RedeemRequest",
+    anonymous: false,
+    inputs: [
+      { name: "controller", type: "address", indexed: true },
+      { name: "owner", type: "address", indexed: true },
+      { name: "requestId", type: "uint256", indexed: true },
+      { name: "sender", type: "address", indexed: false },
+      { name: "shares", type: "uint256", indexed: false },
+    ],
+  },
+  // Vault-specific richer events
+  {
+    type: "event",
+    name: "Deposited",
+    anonymous: false,
+    inputs: [
+      { name: "user", type: "address", indexed: true },
+      { name: "hollarAmount", type: "uint256", indexed: false },
+      { name: "hdclMinted", type: "uint256", indexed: false },
+      { name: "tokenId", type: "uint256", indexed: false },
+    ],
+  },
   {
     type: "event",
     name: "RedemptionRequested",
@@ -355,6 +522,25 @@ export const VAULT_ABI = [
       { name: "hdclReturned", type: "uint256", indexed: false },
     ],
   },
+  {
+    type: "event",
+    name: "OperatorSet",
+    anonymous: false,
+    inputs: [
+      { name: "controller", type: "address", indexed: true },
+      { name: "operator", type: "address", indexed: true },
+      { name: "approved", type: "bool", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "AutoClaimSet",
+    anonymous: false,
+    inputs: [
+      { name: "controller", type: "address", indexed: true },
+      { name: "enabled", type: "bool", indexed: false },
+    ],
+  },
 ] as const
 
 // Static (non-display) metadata for the single HDCL strategy ("Decentral").
@@ -363,7 +549,8 @@ export const VAULT_ABI = [
 //
 // `maxLtvPct` / `liquidationLtvPct` are first-paint fallbacks; the live
 // values come from `useHdclReserveConfig` (decoded from the HDCL pool's
-// reserve configuration bitmap) and replace these on resolve.
+// reserve configuration bitmap) and replace these on resolve — only
+// meaningful when HDCL_HAS_AAVE_LAYER is true.
 export const STRATEGY = {
   id: "decentral",
   /** First-paint LTV fallback (pct). Live value from reserve config. */
@@ -373,14 +560,9 @@ export const STRATEGY = {
 } as const
 
 // Minimal Aave V3 Pool ABI subset — only the calls the HDCL-strategy page
-// actually makes. The full Pool interface is much larger; we reuse the same
-// `vaultEvmClient` http transport since the HDCL pool sits on the same RPC.
+// actually makes. Inactive on lark-2 until the Aave layer is redeployed
+// (HDCL_HAS_AAVE_LAYER = false).
 export const HDCL_POOL_ABI = [
-  // getUserAccountData returns everything the AvailableToBorrowCard +
-  // BorrowHollarModal need in one call: borrowable USD, health factor,
-  // user's effective LTV / liquidation threshold.
-  // All "Base" fields are USD denominated with 1e8 decimals (Aave convention).
-  // healthFactor is 1e18.
   {
     type: "function",
     name: "getUserAccountData",
@@ -395,8 +577,6 @@ export const HDCL_POOL_ABI = [
     ],
     stateMutability: "view",
   },
-  // Borrow against supplied collateral. interestRateMode must be 2 (variable)
-  // for the HOLLAR / GhoAToken facilitator path on this pool.
   {
     type: "function",
     name: "borrow",
@@ -410,11 +590,6 @@ export const HDCL_POOL_ABI = [
     outputs: [],
     stateMutability: "nonpayable",
   },
-  // Supply collateral to the pool. Used inside the batched deposit flow:
-  // vault.deposit mints raw HDCL into the user's wallet; this call hands
-  // that HDCL to the pool and mints the aToken receipt back. Aave V3's
-  // supply() requires an exact amount (uint256.max is NOT a sweep here —
-  // that's repay's behaviour, not supply's).
   {
     type: "function",
     name: "supply",
@@ -427,10 +602,6 @@ export const HDCL_POOL_ABI = [
     outputs: [],
     stateMutability: "nonpayable",
   },
-  // Pull supplied collateral back out — burns the user's aToken and returns
-  // the underlying. Used inside the batched withdraw flow:
-  // pool.withdraw → user has raw HDCL → vault.requestRedeem queues it for
-  // HOLLAR redemption. Aave V3 returns the actual amount withdrawn.
   {
     type: "function",
     name: "withdraw",
@@ -442,8 +613,6 @@ export const HDCL_POOL_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  // Repay outstanding HOLLAR debt. interestRateMode must match the borrow
-  // (=2 / variable). Aave returns the actual amount repaid (capped to debt).
   {
     type: "function",
     name: "repay",
@@ -456,11 +625,6 @@ export const HDCL_POOL_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  // Reserve configuration as a packed uint256 bitmap. Bits we care about:
-  //   0-15:  LTV (basis points)
-  //   16-31: liquidation threshold (basis points)
-  // Used to display the live Max LTV / Liquidation LTV in the strategy
-  // overview, instead of static `STRATEGY` config (which can drift from chain).
   {
     type: "function",
     name: "getConfiguration",
@@ -488,9 +652,8 @@ export const HDCL_DEPOSIT_ZAP_ABI = [
 ] as const
 
 // Subset of IDecentralPool — the underlying RWA pool the vault deploys
-// HOLLAR into. We only need the minimum investment period, which is the
-// shortest a position must run before it can mature and be redeemed. This
-// drives the deposit panel's "Lockup period: up to N days" copy.
+// HOLLAR into. We only need the minimum investment period for the
+// "Lockup period" copy.
 export const DECENTRAL_POOL_ABI = [
   {
     type: "function",

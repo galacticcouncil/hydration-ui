@@ -55,15 +55,28 @@ export interface RedemptionHistoryEntry {
  * Data comes from event logs scanned from VAULT_DEPLOY_BLOCK. Block timestamps
  * are fetched once per unique blockHash (logs in the same block share one).
  *
- * State machine per requestId:
+ * State machine per requestId (event-derived):
  *   Requested → (PartiallyFulfilled)* → Fulfilled  → state = "fulfilled"
  *   Requested → (PartiallyFulfilled)+                → state = "partial"
  *   Requested                                        → state = "pending"
  *   Requested → Cancelled                            → state = "cancelled"
  *
+ * Semantics changed at lark-2 (ERC-7540 async-claim model):
+ *   - `RedemptionFulfilled` event no longer means "user has received
+ *     HOLLAR". It means "all of this request's hDCL is queue-side settled
+ *     and waiting in the controller's claimable inventory". The user must
+ *     still call `vault.redeem(shares, receiver, controller)` (or the
+ *     keeper does it via auto-claim) to actually receive the HOLLAR.
+ *   - For "is this request claimable right now?" reads, use
+ *     `claimableRedeemRequest(reqId, controller)` from the on-chain view —
+ *     event logs alone can't tell you whether the claim step has run.
+ *   - For the actual HOLLAR-transfer audit, scan the canonical
+ *     ERC-4626/7540 `Withdraw(sender, receiver, owner, assets, shares)`
+ *     event.
+ *
  * Drives:
  *   - MyWithdrawals "Date" column (requestedAt)
- *   - MyWithdrawals time-remaining cell state ("Pending" / "Instant redeem" / "Redeemed")
+ *   - MyWithdrawals time-remaining cell state ("Pending" / "Claimable" / "Redeemed")
  *   - "Show Redeemed" toggle (filters on state)
  *   - History rows
  */

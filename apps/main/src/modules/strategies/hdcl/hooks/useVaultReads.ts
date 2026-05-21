@@ -5,6 +5,7 @@ import {
   DECENTRAL_POOL_ABI,
   ERC20_ABI,
   HDCL_ATOKEN_ADDRESS,
+  HDCL_HAS_AAVE_LAYER,
   HOLLAR_ADDRESS,
   VAULT_ABI,
   VAULT_ADDRESS,
@@ -24,7 +25,6 @@ export function useVaultStats() {
         totalAssets,
         totalSupply,
         exchangeRateWad,
-        withdrawalDelay,
         tvlCap,
         paused,
         depositsPaused,
@@ -39,7 +39,6 @@ export function useVaultStats() {
         vault.read.totalAssets(),
         vault.read.totalSupply(),
         vault.read.exchangeRate(),
-        vault.read.withdrawalDelay(),
         vault.read.tvlCap(),
         vault.read.paused(),
         vault.read.depositsPaused(),
@@ -52,17 +51,14 @@ export function useVaultStats() {
         vault.read.getPositionHead(),
       ])
 
-      // Realistic worst-case wait = (time until enough HOLLAR becomes available)
-      // + the vault's own withdrawalDelay (the 48h redemption buffer).
-      // The contract's getEstimatedWaitTime returns LP maturity + decentral unbonding
-      // only — it does NOT add the vault's withdrawalDelay, so we add it here.
-      //
-      // We also expose `nextMaturitySec` separately — when a vault position
-      // next matures, regardless of queue contention. The Withdraw modal's
-      // timeline distinguishes "Next maturity" (vault-side liquidity event)
-      // from "Est. receive" (your request's actual fulfillment time, which
-      // can be later under queue contention).
-      let worstCaseWaitSec = withdrawalDelay
+      // The old vault exposed a flat `withdrawalDelay()` (48h buffer between
+      // request and fulfilment). That was removed in commit 47b7041 — the
+      // queue settles as positions mature, no separate redemption delay.
+      // So worst-case-wait now folds back to:
+      //   - if queue non-empty: `getEstimatedWaitTime` for the tail request
+      //   - else if no idle HOLLAR: time until next position maturity
+      //   - else: 0 (settles immediately on next pokeQueue)
+      let worstCaseWaitSec = 0n
       let nextMaturitySec = 0n
       const now = BigInt(Math.floor(Date.now() / 1000))
 
@@ -76,27 +72,25 @@ export function useVaultStats() {
       }
 
       if (queueLength > 0n) {
-        const queueWait = await vault.read.getEstimatedWaitTime([
+        worstCaseWaitSec = await vault.read.getEstimatedWaitTime([
           queueLength - 1n,
         ])
-        worstCaseWaitSec = queueWait + withdrawalDelay
       } else if (idleHollar === 0n && nextMaturitySec > 0n) {
-        worstCaseWaitSec = nextMaturitySec + withdrawalDelay
+        worstCaseWaitSec = nextMaturitySec
       }
 
       // Maximum lockup a *new* deposit can face — regardless of current
       // queue contention. A fresh deposit creates a new Decentral position
       // that has to run for at least `minimumInvestmentPeriodSeconds`
-      // before it matures. After maturity the vault still applies its
-      // 48h withdrawalDelay before redeeming. Sum = max upper bound on
-      // "if I deposit now, when's the soonest I can have HOLLAR back?".
-      const decentralPoolAddr = await vault.read.decentralPool()
+      // before it matures. The previously-added 48h `withdrawalDelay` no
+      // longer applies (see above).
+      const decentralPoolAddr = await vault.read.activeDepositPool()
       const investmentPeriodSec = await evm.readContract({
         address: decentralPoolAddr,
         abi: DECENTRAL_POOL_ABI,
         functionName: "minimumInvestmentPeriodSeconds",
       })
-      const maxLockupSec = investmentPeriodSec + withdrawalDelay
+      const maxLockupSec = investmentPeriodSec
 
       return {
         totalAssets: Number(formatUnits(totalAssets, 18)),
@@ -135,11 +129,6 @@ export function useUserBalances(evmAddress: Hex | undefined) {
         abi: VAULT_ABI,
         client: evm,
       })
-      const aToken = getContract({
-        address: HDCL_ATOKEN_ADDRESS,
-        abi: ERC20_ABI,
-        client: evm,
-      })
 
       // Each balance read is wrapped independently — on partial-deploy
       // environments any one of these contracts (HOLLAR token, vault,
@@ -164,11 +153,28 @@ export function useUserBalances(evmAddress: Hex | undefined) {
         }
       }
 
-      const [hollarBal, vaultBal, aTokenBal] = await Promise.all([
+      // aHDCL only exists when the Aave money-market layer is deployed.
+      // On lark-2 (vault-only) we skip the read entirely so we don't spam
+      // dev warnings against the zero address.
+      const reads: Array<Promise<bigint>> = [
         safeBalance("HOLLAR", () => hollarToken.read.balanceOf([evmAddress])),
         safeBalance("HDCL vault", () => vault.read.balanceOf([evmAddress])),
-        safeBalance("HDCL aToken", () => aToken.read.balanceOf([evmAddress])),
-      ])
+      ]
+      if (HDCL_HAS_AAVE_LAYER) {
+        const aToken = getContract({
+          address: HDCL_ATOKEN_ADDRESS,
+          abi: ERC20_ABI,
+          client: evm,
+        })
+        reads.push(
+          safeBalance("HDCL aToken", () =>
+            aToken.read.balanceOf([evmAddress]),
+          ),
+        )
+      } else {
+        reads.push(Promise.resolve(0n))
+      }
+      const [hollarBal, vaultBal, aTokenBal] = await Promise.all(reads)
 
       return {
         hollar: Number(formatUnits(hollarBal, 18)),
@@ -188,6 +194,13 @@ export function useUserBalances(evmAddress: Hex | undefined) {
  * `previewDeposit` view. The difference between input HOLLAR and
  * `output × exchangeRate` is the deposit fee in HOLLAR (≈ USD, since
  * HOLLAR is $-pegged). Caller is responsible for debouncing the input.
+ *
+ * Note: at the lark-2 vault version (commit 555abc7), `previewDeposit`
+ * reverts on inputs where the actual `deposit` would revert
+ * (ZeroAmount / DepositTooSmall / VaultEmpty) instead of returning 0.
+ * That is per ERC-4626 §previewDeposit. We swallow the revert here and
+ * return 0 so the fees row in the deposit panel doesn't blow up the
+ * whole query.
  */
 export function usePreviewDeposit(hollarAmount: number) {
   const { evm } = useRpcProvider()
@@ -200,10 +213,17 @@ export function usePreviewDeposit(hollarAmount: number) {
         abi: VAULT_ABI,
         client: evm,
       })
-      const result = await vault.read.previewDeposit([
-        parseUnits(hollarAmount.toString(), 18),
-      ])
-      return Number(formatUnits(result, 18))
+      try {
+        const result = await vault.read.previewDeposit([
+          parseUnits(hollarAmount.toString(), 18),
+        ])
+        return Number(formatUnits(result, 18))
+      } catch {
+        // Input below the dust threshold or vault empty — no preview to
+        // show. Caller treats this as "fee unknown" and shows the
+        // standard form-validation error from the input itself.
+        return 0
+      }
     },
     placeholderData: keepPreviousData,
     staleTime: 15_000,

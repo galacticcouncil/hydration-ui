@@ -13,6 +13,7 @@ import {
   EVM_CALL_GAS,
   HDCL_DEPOSIT_ZAP_ABI,
   HDCL_DEPOSIT_ZAP_ADDRESS,
+  HDCL_HAS_AAVE_LAYER,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
   HDCL_PRECOMPILE_ADDRESS,
@@ -170,26 +171,19 @@ function useVaultEvmCall() {
 }
 
 /**
- * Deposit HOLLAR and end up holding aHDCL (already supplied as collateral
- * on the HDCL Aave pool) in one signed transaction.
+ * Deposit HOLLAR and end up holding hDCL.
  *
- * Routes through the on-chain `HDCLDepositZap` helper, which atomically does:
- *   HOLLAR.transferFrom(user, zap, amount)
- *   VAULT.deposit(amount)              — returns hdclMinted
- *   POOL.supply(precompile, hdclMinted, user, 0)
+ * Has two paths, chosen at build-time by `HDCL_HAS_AAVE_LAYER`:
  *
- * The previous version of this hook predicted the mint amount off-chain via
- * `vault.previewDeposit` and supplied that — which left dust in the wallet
- * whenever yield had accrued between read and execute, and intermittently
- * reverted when drift exceeded the safety margin. The zap reads the actual
- * `vault.deposit` return value on-chain so the supply step always pulls the
- * exact mint, eliminating both the dust and the failure mode.
+ *  (a) Aave layer deployed: routes through `HDCLDepositZap`, which
+ *      atomically does HOLLAR.transferFrom → vault.deposit → pool.supply
+ *      and ends with the user holding aHDCL (the Aave receipt) as
+ *      collateral. Batched call: [HOLLAR.approve(zap), zap.depositAndSupply].
  *
- * Substrate flow:
- *   batch_all([
- *     HOLLAR.approve(zap, hollarAmount)    — only if allowance < amount
- *     zap.depositAndSupply(hollarAmount)   — atomic deposit + supply
- *   ])
+ *  (b) Vault-only (lark-2 today): direct call to
+ *      `vault.deposit(assets, receiver)`. User ends with raw hDCL in
+ *      their wallet — no aToken because there's no money market yet.
+ *      Batched call: [HOLLAR.approve(vault), vault.deposit].
  */
 export function useDeposit() {
   const { t } = useTranslation(["common"])
@@ -198,49 +192,80 @@ export function useDeposit() {
 
   return useMutation({
     mutationFn: async (hollarAmount: number) => {
-      if (
-        HDCL_DEPOSIT_ZAP_ADDRESS ===
-        "0x0000000000000000000000000000000000000000"
-      ) {
-        throw new Error(
-          "HDCLDepositZap address not configured — deploy via " +
-            "`npx hardhat deploy-HDCLDepositZap` and update " +
-            "HDCL_DEPOSIT_ZAP_ADDRESS in modules/hdcl/constants.ts",
-        )
-      }
-
       const hollarBig = parseUnits(hollarAmount.toString(), 18)
-
-      const hollarAllowance = await evm.readContract({
-        address: HOLLAR_ADDRESS,
-        abi: ERC20_ABI,
-        functionName: "allowance",
-        args: [evmAddress, HDCL_DEPOSIT_ZAP_ADDRESS],
-      })
-
       const calls: BatchEvmCall[] = []
 
-      if (hollarAllowance < hollarBig) {
+      if (HDCL_HAS_AAVE_LAYER) {
+        if (
+          HDCL_DEPOSIT_ZAP_ADDRESS ===
+          "0x0000000000000000000000000000000000000000"
+        ) {
+          throw new Error(
+            "HDCLDepositZap address not configured — deploy via " +
+              "`npx hardhat deploy-HDCLDepositZap` and update " +
+              "HDCL_DEPOSIT_ZAP_ADDRESS in modules/strategies/hdcl/constants.ts",
+          )
+        }
+
+        const hollarAllowance = await evm.readContract({
+          address: HOLLAR_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: "allowance",
+          args: [evmAddress, HDCL_DEPOSIT_ZAP_ADDRESS],
+        })
+
+        if (hollarAllowance < hollarBig) {
+          calls.push({
+            to: HOLLAR_ADDRESS,
+            data: encodeFunctionData({
+              abi: ERC20_ABI,
+              functionName: "approve",
+              args: [HDCL_DEPOSIT_ZAP_ADDRESS, hollarBig],
+            }),
+            abi: [...ERC20_ABI],
+          })
+        }
+
         calls.push({
-          to: HOLLAR_ADDRESS,
+          to: HDCL_DEPOSIT_ZAP_ADDRESS,
           data: encodeFunctionData({
-            abi: ERC20_ABI,
-            functionName: "approve",
-            args: [HDCL_DEPOSIT_ZAP_ADDRESS, hollarBig],
+            abi: HDCL_DEPOSIT_ZAP_ABI,
+            functionName: "depositAndSupply",
+            args: [hollarBig],
           }),
-          abi: [...ERC20_ABI],
+          abi: [...HDCL_DEPOSIT_ZAP_ABI],
+        })
+      } else {
+        // Vault-only mode: approve vault, then call vault.deposit directly.
+        const hollarAllowance = await evm.readContract({
+          address: HOLLAR_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: "allowance",
+          args: [evmAddress, VAULT_ADDRESS],
+        })
+
+        if (hollarAllowance < hollarBig) {
+          calls.push({
+            to: HOLLAR_ADDRESS,
+            data: encodeFunctionData({
+              abi: ERC20_ABI,
+              functionName: "approve",
+              args: [VAULT_ADDRESS, hollarBig],
+            }),
+            abi: [...ERC20_ABI],
+          })
+        }
+
+        calls.push({
+          to: VAULT_ADDRESS,
+          data: encodeFunctionData({
+            abi: VAULT_ABI,
+            functionName: "deposit",
+            args: [hollarBig, evmAddress],
+          }),
+          abi: [...VAULT_ABI],
         })
       }
-
-      calls.push({
-        to: HDCL_DEPOSIT_ZAP_ADDRESS,
-        data: encodeFunctionData({
-          abi: HDCL_DEPOSIT_ZAP_ABI,
-          functionName: "depositAndSupply",
-          args: [hollarBig],
-        }),
-        abi: [...HDCL_DEPOSIT_ZAP_ABI],
-      })
 
       const fmt = t("currency", {
         value: hollarAmount,
@@ -260,16 +285,14 @@ export function useDeposit() {
 }
 
 /**
- * Withdraw aHDCL collateral and queue it for HOLLAR redemption — atomic
- * single-signature flow.
+ * Request a redemption of `hdclAmount` hDCL for HOLLAR via the async queue.
  *
- * Two-call batch:
- *   1. POOL.withdraw(VAULT_ADDRESS, hdclAmount, user)  — burns aHDCL, returns raw HDCL
- *   2. VAULT.requestRedeem(hdclAmount)                 — queues raw HDCL for HOLLAR
+ *  (a) Aave layer: pool.withdraw burns the user's aHDCL into raw HDCL, then
+ *      vault.requestRedeem queues it. Atomic two-call batch.
  *
- * Assumes the source is the user's pool position. Legacy raw-HDCL positions
- * (pre-batched-deposit world) are surfaced as a separate row in My positions
- * with their own button → `useRequestRedeemRaw` below.
+ *  (b) Vault-only: direct call to
+ *      `vault.requestRedeem(shares, controller, owner)`. User must already
+ *      hold the raw hDCL.
  */
 export function useRequestRedeem() {
   const { t } = useTranslation(["common"])
@@ -279,8 +302,9 @@ export function useRequestRedeem() {
     mutationFn: (hdclAmount: number) => {
       const hdclBig = parseUnits(hdclAmount.toString(), 18)
 
-      const calls: BatchEvmCall[] = [
-        {
+      const calls: BatchEvmCall[] = []
+      if (HDCL_HAS_AAVE_LAYER) {
+        calls.push({
           to: HDCL_POOL_ADDRESS,
           data: encodeFunctionData({
             abi: HDCL_POOL_ABI,
@@ -288,17 +312,17 @@ export function useRequestRedeem() {
             args: [HDCL_PRECOMPILE_ADDRESS, hdclBig, evmAddress],
           }),
           abi: [...HDCL_POOL_ABI],
-        },
-        {
-          to: VAULT_ADDRESS,
-          data: encodeFunctionData({
-            abi: VAULT_ABI,
-            functionName: "requestRedeem",
-            args: [hdclBig],
-          }),
-          abi: [...VAULT_ABI],
-        },
-      ]
+        })
+      }
+      calls.push({
+        to: VAULT_ADDRESS,
+        data: encodeFunctionData({
+          abi: VAULT_ABI,
+          functionName: "requestRedeem",
+          args: [hdclBig, evmAddress, evmAddress],
+        }),
+        abi: [...VAULT_ABI],
+      })
 
       const fmt = t("currency", {
         value: hdclAmount,
@@ -318,22 +342,14 @@ export function useRequestRedeem() {
 }
 
 /**
- * Recovery: user has raw HDCL sitting in their wallet (e.g. left over from a
- * partial deposit batch) and wants to complete the deposit by supplying it
- * as collateral. Single call — Hydration's pool pulls substrate-asset
- * collateral via the precompile without an ERC20 approve gate.
+ * Recovery: user has raw HDCL sitting in their wallet (legacy from before
+ * the batched-deposit refactor) and wants to supply it as Aave collateral.
+ * Single call — Hydration's pool pulls substrate-asset collateral via the
+ * precompile without an ERC20 approve gate.
  *
  *   POOL.supply(PRECOMPILE, amount, user, 0)
  *
- * The amount is read fresh from `vault.balanceOf(user)` at mutation time
- * rather than reused from the cached `userBalances.hdclRaw` Number — that
- * Number is `Number(formatUnits(bigint, 18))` and loses precision past
- * ~16 sig figs, so re-parsing it through parseUnits can produce a wei
- * value that's slightly larger than the on-chain balance and reverts
- * pool.supply with insufficient balance. Reading the bigint directly
- * eliminates the round-trip entirely.
- *
- * The `hdclAmountHint` arg is for the toast text only.
+ * Only meaningful when the Aave layer is live. Disabled in vault-only mode.
  */
 export function useSupplyRawHdcl() {
   const { t } = useTranslation(["common"])
@@ -342,6 +358,11 @@ export function useSupplyRawHdcl() {
 
   return useMutation({
     mutationFn: async (hdclAmountHint: number) => {
+      if (!HDCL_HAS_AAVE_LAYER) {
+        throw new Error(
+          "Cannot supply HDCL as collateral — Aave layer not deployed on this network",
+        )
+      }
       const hdclBig = await evm.readContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
@@ -373,26 +394,23 @@ export function useSupplyRawHdcl() {
 }
 
 /**
- * Edge-case path: user holds raw HDCL in their wallet (legacy from before
- * the batched-deposit refactor) and wants to redeem it directly without
- * round-tripping through the pool. Single call:
+ * Direct vault redeem-request when the user already holds raw hDCL — same
+ * codepath that `useRequestRedeem` lands on in vault-only mode, but exposed
+ * as its own hook for the (legacy) "raw HDCL in wallet" recovery row.
  *
- *   VAULT.requestRedeem(hdclAmount)
- *
- * Surfaced via the secondary "raw" row in My positions, which only appears
- * when `useUserBalances.hdclRaw > 0`. New deposits never produce raw HDCL
- * (they're auto-supplied), so this row eventually disappears for everyone.
+ * New signature: requestRedeem(shares, controller, owner) — caller's EVM
+ * address fills both controller and owner.
  */
 export function useRequestRedeemRaw() {
   const { t } = useTranslation(["common"])
-  const { submitTx } = useVaultEvmCall()
+  const { evmAddress, submitTx } = useVaultEvmCall()
 
   return useMutation({
     mutationFn: (hdclAmount: number) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseUnits(hdclAmount.toString(), 18)],
+        args: [parseUnits(hdclAmount.toString(), 18), evmAddress, evmAddress],
       })
 
       const fmt = t("currency", {
@@ -409,31 +427,28 @@ export function useRequestRedeemRaw() {
 }
 
 /**
- * Cancel a queued redemption request and put the freed HDCL back to work
- * as collateral — atomic single-signature flow.
+ * Cancel a queued redemption request.
  *
- * The contract returns un-fulfilled HDCL to the user's wallet as raw HDCL,
- * but the user-facing model is that "HDCL" always lives in the pool. So we:
- *   1. Read `vault.getRedemptionRequest(requestId)` to know the un-fulfilled amount
- *   2. VAULT.cancelRedeem(requestId)        — raw HDCL returned to wallet
- *   3. VAULT.approve(POOL, returnAmount)     — let the pool pull it
- *   4. POOL.supply(VAULT, returnAmount, user, 0)  — re-mints aHDCL to user
+ *  (a) Aave layer: cancel returns the unsettled hDCL to the user's wallet,
+ *      then a follow-up `pool.supply` re-supplies it as aHDCL collateral.
+ *      The 5-tuple from `getRedemptionRequest` is used to size the resupply.
  *
- * Steps 2-4 are bundled. The "approve" step is unconditional here for
- * simplicity — a previous deposit may have left non-max allowance and the
- * exact-match approval keeps state simple.
+ *  (b) Vault-only: single `vault.cancelRedeem(requestId)` call. The
+ *      unsettled hDCL lands in the user's wallet as raw hDCL.
+ *
+ * `getRedemptionRequest` tuple changed at lark-2:
+ *   (user, hdclAmount, hdclSettled, hollarOwed, active) — was 4-tuple.
+ *   The "still queued" portion = hdclAmount - hdclSettled. The settled
+ *   portion stays claimable via `redeem` / `withdraw` and is NOT returned
+ *   by cancel.
  */
 export function useCancelRedeem() {
   const { evm } = useRpcProvider()
-  const { evmAddress, submitBatch } = useVaultEvmCall()
+  const { evmAddress, submitTx, submitBatch } = useVaultEvmCall()
 
   return useMutation({
     mutationFn: async (requestId: number) => {
-      // Read the request to predict how much HDCL will be returned. Steps
-      // 2-4 sit in the same atomic batch so the state read here is the
-      // state the cancelRedeem will see (modulo concurrent fulfillments,
-      // which would revert the whole batch).
-      const [, hdclAmount, hdclFulfilled, active] = await evm.readContract({
+      const [, hdclAmount, hdclSettled, , active] = await evm.readContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
         functionName: "getRedemptionRequest",
@@ -446,11 +461,20 @@ export function useCancelRedeem() {
         )
       }
 
-      const returnAmount = hdclAmount - hdclFulfilled
+      const returnAmount = hdclAmount - hdclSettled
 
-      // Two-call batch: cancel returns raw HDCL → re-supply back into the
-      // pool. Assumes HDCL pool is whitelisted in EVMAccounts, same as
-      // `useDeposit` — once whitelisted, no precompile.approve is needed.
+      if (!HDCL_HAS_AAVE_LAYER) {
+        const data = encodeFunctionData({
+          abi: VAULT_ABI,
+          functionName: "cancelRedeem",
+          args: [BigInt(requestId)],
+        })
+        return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
+          submitted: "Cancelling withdrawal...",
+          success: "Withdrawal cancelled",
+        })
+      }
+
       const calls: BatchEvmCall[] = [
         {
           to: VAULT_ADDRESS,
@@ -480,6 +504,64 @@ export function useCancelRedeem() {
         },
         [["hdcl-vault"], ["hdcl-pool-position"]],
       )
+    },
+  })
+}
+
+/**
+ * Claim settled HOLLAR from one or more (already-settled) redemption
+ * requests. Goes through `vault.redeem(shares, receiver, controller)`,
+ * which walks the controller's settled inventory back-to-front.
+ *
+ * Pass the number of settled hDCL shares to drain — read from
+ * `maxRedeem(controller)` for "claim all", or from
+ * `claimableRedeemRequest(requestId, controller)` for a single request.
+ */
+export function useClaim() {
+  const { t } = useTranslation(["common"])
+  const { evmAddress, submitTx } = useVaultEvmCall()
+
+  return useMutation({
+    mutationFn: (shares: bigint) => {
+      const data = encodeFunctionData({
+        abi: VAULT_ABI,
+        functionName: "redeem",
+        args: [shares, evmAddress, evmAddress],
+      })
+
+      const fmt = t("currency", {
+        value: Number(shares) / 1e18,
+        symbol: "HDCL",
+        maximumFractionDigits: 2,
+      })
+      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
+        submitted: `Claiming ${fmt} → HOLLAR...`,
+        success: `Claim sent`,
+      })
+    },
+  })
+}
+
+/**
+ * Opt the connected wallet in/out of keeper-bot auto-claim. When enabled
+ * (and a CLAIM_OPERATOR_ROLE holder is running), the keeper will call
+ * `redeem(shares, controller, controller)` on the user's behalf as soon as
+ * their requests settle. The role only grants the *timing* of the claim —
+ * funds are always paid to the controller's own address.
+ */
+export function useSetAutoClaim() {
+  const { submitTx } = useVaultEvmCall()
+  return useMutation({
+    mutationFn: (enabled: boolean) => {
+      const data = encodeFunctionData({
+        abi: VAULT_ABI,
+        functionName: "setAutoClaim",
+        args: [enabled],
+      })
+      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
+        submitted: enabled ? "Enabling auto-claim..." : "Disabling auto-claim...",
+        success: enabled ? "Auto-claim enabled" : "Auto-claim disabled",
+      })
     },
   })
 }

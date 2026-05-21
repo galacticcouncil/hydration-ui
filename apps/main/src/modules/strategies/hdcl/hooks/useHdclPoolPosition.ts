@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
 import {
+  HDCL_HAS_AAVE_LAYER,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
   HDCL_PRECOMPILE_ADDRESS,
@@ -51,7 +52,11 @@ export function useHdclPoolPosition(evmAddress: Hex | undefined) {
   const { data: pool } = useHdclPoolContract()
   return useQuery({
     queryKey: ["hdcl-pool-position", evmAddress],
-    enabled: !!evmAddress && !!pool,
+    // The HDCL Aave pool is the source of borrow / collateral data. On
+    // networks that don't have the pool deployed yet (e.g. lark-2 vault-
+    // only mode), short-circuit to keep the query inert instead of
+    // hammering the zero address with reverts every 30s.
+    enabled: HDCL_HAS_AAVE_LAYER && !!evmAddress && !!pool,
     queryFn: async (): Promise<HdclPoolPosition> => {
       if (!evmAddress || !pool) {
         return {
@@ -113,6 +118,7 @@ export function useHdclReserveConfig() {
   const { evm } = useRpcProvider()
   return useQuery({
     queryKey: ["hdcl-reserve-config"],
+    enabled: HDCL_HAS_AAVE_LAYER,
     queryFn: async (): Promise<HdclReserveConfig> => {
       const pool = getContract({
         address: HDCL_POOL_ADDRESS,

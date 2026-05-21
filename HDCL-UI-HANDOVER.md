@@ -6,57 +6,56 @@ proposal). This one captures **where the UI is**, what's wired, what's
 stubbed, and the gotchas that bit us during the build — so a fresh context
 window can pick up the next stage of UI work without re-deriving everything.
 
-## TL;DR
+## TL;DR (lark-2 generation)
 
-- Codebase: `galacticcouncil/hydration-ui`, branch **`feat/hdcl-vault`**, base `next`. PR #3606.
-- All HDCL UI lives at `apps/main/src/modules/hdcl/`. Routed at `/hdcl-vault`.
-- **End-to-end working on 0.lark**: deposit, withdraw (queue), cancel, instant redeem (modal-input, liquid aHDCL → HOLLAR), borrow modal, all the read views.
-- **Stubbed**: mainnet env switch + feature flag (Phase 9, blocked on
-  mainnet governance). Per-row instant exit on a queued request is **not**
-  implemented — blocked by an SDK limitation (lesson 11); workaround is
-  Cancel + modal-instant.
-- **i18n done** — `apps/main/src/i18n/locales/en/hdcl.json` covers all
-  user-visible strings, `hdcl` namespace registered, every component
-  uses `useTranslation("hdcl")`.
-- **Live LTVs done** — `useHdclReserveConfig` decodes `getConfiguration`
-  bitmap (bits 0-15 LTV, 16-31 liqThreshold) from the HDCL pool;
-  `STRATEGY` config remains as a first-paint fallback only.
-- **previewDeposit / previewRedeem wired** — Total fees row in DepositPanel
-  + WithdrawModal computes `input − output × rate` from on-chain preview
-  (debounced 250ms via `use-debounce`).
-- All edits in this branch are **uncommitted local WIP** — the user's
-  policy is no auto-push; commits are made by hand.
-- Design source of truth: 5 Figma surfaces in file `bTJRKXVmuqZ0v4KY63TyK1`
-  (Money Market). Reference patterns: PR #3579 (`feat/looping`) Multiply
-  module — for layout shells, modal primitive usage, form stack. **Don't
-  copy visuals from #3579, copy patterns; visuals come from Figma.**
+- Codebase: `galacticcouncil/hydration-ui`, working branch **`feat/hdcl-lark2`** (cut from `origin/feat/hdcl`). The merged HDCL Vault commit is `d9a18172c`.
+- All HDCL UI lives at `apps/main/src/modules/strategies/hdcl/`. Routed at `/strategies/hdcl-vault`.
+- Vault contracts: **lark-2** (`2.lark.hydration.cloud`, chain `222222`). See `aave-v3-deploy/hdcl-vault/deployments/lark-2.md` for the canonical address manifest.
+- **Mode: vault-only.** The lark-2 contracts redeploy is vault-only — no HDCL Aave pool, no deposit-zap, no aToken yet. The `HDCL_HAS_AAVE_LAYER` toggle in `constants.ts` is `false`; deposit and redeem hooks fall back to direct vault calls. See "Vault-only mode" below.
+- **Spec: ERC-4626 + ERC-7540.** Major ABI rewrite vs the 0.lark generation; see "Vault ABI changes at lark-2" below.
+- New write hooks: `useClaim` (call `vault.redeem(shares, receiver, controller)`) and `useSetAutoClaim` (toggle keeper-driven claim).
+- **Stubbed / off on lark-2**: Aave-side flows (borrow, supply-as-collateral, instant-redeem stableswap), per-row instant exit, mainnet env switch.
+- **i18n done** — `apps/main/src/i18n/locales/en/hdcl.json` covers all user-visible strings, `hdcl` namespace registered, every component uses `useTranslation("hdcl")`.
+- **Live LTVs done** — `useHdclReserveConfig` decodes `getConfiguration` bitmap (bits 0-15 LTV, 16-31 liqThreshold) from the HDCL pool; `STRATEGY` config remains as a first-paint fallback only. Inert in vault-only mode.
+- **previewDeposit / previewRedeem wired** — Total fees row in DepositPanel + WithdrawModal computes `input − output × rate` from on-chain preview (debounced 250ms via `use-debounce`). `previewDeposit` now *reverts* on edge inputs (post-lark-2 spec fix) — the `usePreviewDeposit` hook swallows that and returns 0.
 
-## What works end-to-end (on 0.lark, verified)
+## What works end-to-end on lark-2 (vault-only mode)
 
 | Flow | Path | Status |
 |---|---|---|
-| Deposit HOLLAR → aHDCL | UI `Deposit` button → `useDeposit` → `HOLLAR.approve(zap) + zap.depositAndSupply` (atomic) | ✅ |
-| Withdraw queue | UI Withdraw modal (Queue method) → `useRequestRedeem` batch: `pool.withdraw + vault.requestRedeem` | ✅ |
-| Cancel queued redemption | `MyWithdrawals` row Cancel → `useCancelRedeem` batch: `vault.cancelRedeem + pool.supply` | ✅ |
-| Instant redeem (liquid aHDCL) | UI Withdraw modal (Instant method) → `useInstantRedeem` → `sdk.tx.trade(550 → 222)` | ✅ |
-| Borrow HOLLAR | `AvailableToBorrowCard` → `BorrowHollarModal` → `useBorrowHollar` (single `pool.borrow`) | ✅ |
-| Recovery deposit (raw → aHDCL) | Uncollateralised row Deposit button → `useSupplyRawHdcl` (single `pool.supply`) | ✅ |
+| Deposit HOLLAR → hDCL | UI `Deposit` button → `useDeposit` → `HOLLAR.approve(vault) + vault.deposit(assets, receiver)` (atomic batch) | ✅ |
+| Withdraw queue | UI Withdraw modal (Queue method) → `useRequestRedeem` → `vault.requestRedeem(shares, controller, owner)` | ✅ |
+| Cancel queued redemption | `MyWithdrawals` row Cancel → `useCancelRedeem` → `vault.cancelRedeem(requestId)` | ✅ |
+| Claim settled HOLLAR | (UI integration TBD) → `useClaim` → `vault.redeem(shares, receiver, controller)` | ✅ hook ready |
+| Opt into keeper auto-claim | (UI integration TBD) → `useSetAutoClaim(true)` → `vault.setAutoClaim(true)` | ✅ hook ready |
 | My positions / My withdrawals / Strategy overview / About | Pure reads, real on-chain data | ✅ |
 
-## What's stubbed / disabled
+## What's gated off in vault-only mode
+
+These are unchanged from the 0.lark build, just inert against zero-address contracts until the Aave layer redeploys for lark-2:
 
 | Feature | Why | Where it lives |
 |---|---|---|
-| Per-row "Instant redeem" on a queued request | Would need an atomic `cancelRedeem + trade(raw HDCL → HOLLAR)`, but the SDK router rejects asset 55 (raw HDCL) — see lesson 11. Workaround: user clicks Cancel (auto-resupplies as aHDCL), then uses the Withdraw modal's instant path on the freed balance. | Button removed from `MyWithdrawals`; no hook |
+| Borrow HOLLAR | No HDCL Aave pool deployed on lark-2 yet | `BorrowHollarModal` + `useBorrowHollar` (still rendered; `useHdclPoolPosition` short-circuits when flag off) |
+| Recovery supply (raw HDCL → aHDCL) | No HDCL Aave pool deployed on lark-2 yet | `useSupplyRawHdcl` throws "Aave layer not deployed" if called |
+| Instant redeem (stableswap path) | Depends on aHDCL substrate-side asset, which the Aave pool mints | `WithdrawModal` `instantAvailable` prop ties to `HDCL_HAS_AAVE_LAYER`; submit button stays disabled |
+| Per-row "Instant redeem" on a queued request | Same SDK limitation as 0.lark (lesson 11) — and depends on Aave layer anyway | Button removed from `MyWithdrawals`; no hook |
+| Live reserve-config LTV decode | Needs the Aave pool's `getConfiguration` view | `useHdclReserveConfig` short-circuits when flag off — `STRATEGY` static fallback shown |
+
+Other items still pending from before lark-2:
+
+| Feature | Why | Where it lives |
+|---|---|---|
 | Real `Collapsible` primitive | Hand-rolled show/hide toggles in About card and others | `AboutCard.tsx` |
 | Bottom-nav entry (mobile) | Top-nav added; `bottomNavOrder` not | `apps/main/src/config/navigation.ts` |
-| Mainnet RPC switch | `vaultEvmClient` defaults to `https://0.lark.hydration.cloud`; reads `VITE_PROVIDER_URL` if set | `constants.ts` |
+| Mainnet RPC switch | RPC URL comes from the wider `useRpcProvider`; lark-2 dev should point that at `https://2.lark.hydration.cloud` (HTTP) / `wss://2.lark.hydration.cloud` (WS), legacy-tx mode only |
 | Feature flag for HDCL nav | Always-on; should gate behind env var until mainnet governance lands | nav config |
+| Claim / auto-claim UI | Hooks ready (`useClaim`, `useSetAutoClaim`) — needs surfacing in `MyWithdrawals` rows + a top-level toggle | new |
 
 ## Where the code lives
 
 ```
-apps/main/src/modules/hdcl/
+apps/main/src/modules/strategies/hdcl/
 ├── HdclVaultPage.tsx           # Top-level page, wires everything
 ├── HdclVault.styled.ts         # Legacy styled-components (some pre-existing TS errors)
 ├── constants.ts                # Addresses, ABIs, STRATEGY config (LTV fallbacks + explorer URL), RPC client
@@ -111,21 +110,69 @@ i18n:
 - **Data fetching**: TanStack Query via `useQuery`. Query keys: `["hdcl-vault-<scope>", ...keys]`. `refetchInterval` 15-30s.
 - **Forms**: not currently used — deposit/withdraw modals are plain `useState`. If adding more complex forms, use `react-hook-form + @hookform/resolvers/standard-schema + zod` per project convention (see `modules/trade/otc/place-order/`).
 
-## On-chain addresses (0.lark)
+## On-chain addresses (lark-2)
 
-All in `apps/main/src/modules/hdcl/constants.ts`. **Mainnet TODO** comments mark each one for Phase 9 swap.
+All in `apps/main/src/modules/strategies/hdcl/constants.ts`. The reference
+deployment manifest lives at `aave-v3-deploy/hdcl-vault/deployments/lark-2.md`
+in the contracts repo — copy from there on every fresh lark deploy.
 
-| Constant | Lark address | Notes |
+Lark gets reset periodically — when it does, only the vault-side gets
+re-deployed first (the Aave money-market layer comes later). The UI
+runs in **vault-only mode** until then, controlled by the
+`HDCL_HAS_AAVE_LAYER` flag.
+
+| Constant | lark-2 address | Notes |
 |---|---|---|
-| `VAULT_ADDRESS` | `0xB82cF8…548D8` | HDCL Vault proxy |
-| `HOLLAR_ADDRESS` | `0x531a65…0f99a` | Mainnet constant on lark too |
-| `HDCL_POOL_ADDRESS` | `0x7d78C0…92e8` | Pool-Proxy-HDCL (separate Aave V3 instance) |
-| `HDCL_ATOKEN_ADDRESS` | `0x9cd441…ada2` | AToken-HDCL proxy (asset 55 = aHDCL = "HDCL") |
-| `HDCL_PRECOMPILE_ADDRESS` | `0x000…01000000037` | Substrate-asset precompile for asset id 55 |
-| `HDCL_DEPOSIT_ZAP_ADDRESS` | `0x75d09A…a375` | Atomic deposit+supply helper (deployed 2026-04-30) |
-| `VAULT_DEPLOY_BLOCK` | `75299n` | `fromBlock` for getLogs queries |
+| `VAULT_ADDRESS` | `0xbDAFEB…3502` | HDCL Vault proxy (ERC-4626 + ERC-7540) |
+| `HOLLAR_ADDRESS` | `0x531a65…0f99a` | Unchanged across lark generations |
+| `DECENTRAL_POOL_ADDRESS` | `0x207a62…DB5a` | Underlying RWA pool — for `minimumInvestmentPeriodSeconds` only |
+| `HDCL_POOL_ADDRESS` | `0x0…0000` | **Not deployed on lark-2 yet** |
+| `HDCL_ATOKEN_ADDRESS` | `0x0…0000` | **Not deployed on lark-2 yet** |
+| `HDCL_DEPOSIT_ZAP_ADDRESS` | `0x0…0000` | **Not deployed on lark-2 yet** |
+| `HDCL_PRECOMPILE_ADDRESS` | `0x000…01000000037` | Substrate-asset alias — stable across deploys |
+| `VAULT_DEPLOY_BLOCK` | `138433n` | `fromBlock` for getLogs queries on lark-2 |
+| `HDCL_HAS_AAVE_LAYER` | `false` | Master toggle for the money-market layer |
 
-The `STRATEGY` static config in `constants.ts` carries display-only metadata (max LTV 80%, liq LTV 90%, About copy, breadcrumb path, asset labels). Some of these should eventually be read from on-chain reserve config (LTVs) but it's static for now.
+The `STRATEGY` static config in `constants.ts` carries display-only metadata (max LTV 80%, liq LTV 90%, About copy, breadcrumb path, asset labels). The on-chain reserve-config decode in `useHdclReserveConfig` replaces these on resolve — but only when `HDCL_HAS_AAVE_LAYER` is true.
+
+### Vault-only mode (lark-2)
+
+When `HDCL_HAS_AAVE_LAYER = false`:
+
+- **Deposit** calls `vault.deposit(assets, receiver)` directly. No zap, no aToken — user ends up holding raw hDCL.
+- **Withdraw → request** calls `vault.requestRedeem(shares, controller, owner)` directly. No `pool.withdraw` first.
+- **Cancel** calls `vault.cancelRedeem(requestId)` only. No re-supply step (since there's nothing to re-supply into).
+- **Claim** (new, post-lark-2 ERC-7540 flow) calls `vault.redeem(shares, receiver, controller)`. Exposed via `useClaim`.
+- **Auto-claim opt-in**: `useSetAutoClaim(enabled)` toggles `vault.setAutoClaim(true)`. When enabled, the keeper bot (running `CLAIM_OPERATOR_ROLE`) calls `redeem` for the user as soon as their settled inventory becomes non-zero. Pays only to the controller's own address.
+- **Borrow / repay / supply-as-collateral** flows are unavailable. `BorrowHollarModal`, `AvailableToBorrowCard`, `MyBorrowsCard`, and the secondary "uncollateralised raw HDCL" recovery row stay rendered (component code unchanged) but the hooks behind them (`useHdclPoolPosition`, `useHdclReserveConfig`, `useBorrowHollar`, etc.) short-circuit when the flag is off.
+- **Instant redeem** (stableswap path) is gated off — `instantAvailable={HDCL_HAS_AAVE_LAYER}` on `WithdrawModal`. The Instant card stays visible but the submit button stays disabled.
+
+### Vault ABI changes at lark-2 (vs 0.lark)
+
+The vault was rewritten between lark generations to conform to ERC-4626
+(deposit side) + ERC-7540 (async redeem). The breakage that affects the
+UI:
+
+| What | Old (0.lark) | New (lark-2) |
+|---|---|---|
+| `deposit` | `(hollarAmount) → hdclMinted` | `(assets, receiver) → shares` |
+| `requestRedeem` | `(hdclAmount) → requestId` | `(shares, controller, owner) → requestId` |
+| `getRedemptionRequest` | 4-tuple `(user, hdclAmount, hdclFulfilled, active)` | 5-tuple `(user, hdclAmount, hdclSettled, hollarOwed, active)` |
+| `decentralPool()` | view → address | renamed to `activeDepositPool()` |
+| `withdrawalDelay()` | view → uint256 | **removed** — queue settles as positions mature, no separate 48h buffer |
+| Claim step | implicit (HOLLAR transferred at fulfillment) | **explicit** — user must call `redeem(shares, receiver, controller)` or `withdraw(assets, receiver, controller)` after settlement |
+| Cancel return | unsettled hDCL returned | unchanged in semantics; tuple read uses 5-field shape |
+| Events | `Deposited`, `RedemptionRequested`, `RedemptionFulfilled`, `RedemptionPartiallyFulfilled`, `RedemptionCancelled` | All of the above kept, **plus** canonical ERC-4626 `Deposit` / ERC-7540 `RedeemRequest` / canonical `Withdraw` (sender, receiver, owner, assets, shares) — emitted on claim |
+
+`RedemptionFulfilled` event semantics changed: it no longer means "user has received HOLLAR". It means "all of this request's hDCL is queue-side settled and waiting in the controller's claimable inventory". The canonical `Withdraw(sender, receiver, owner, assets, shares)` event is the actual money-moved signal.
+
+### New views worth reading from the UI
+
+- `pendingRedeemRequest(reqId, controller)` — unsettled shares for a request.
+- `claimableRedeemRequest(reqId, controller)` — settled-but-unclaimed shares.
+- `maxRedeem(controller)` / `maxWithdraw(controller)` — totals across all requests, ready for a "Claim all" button.
+- `autoClaimEnabled(controller)` — whether the user has opted into keeper auto-claim.
+- `isOperator(controller, operator)` — per-spec ERC-7540 operator approval (for the future "let dApp X claim on my behalf" path).
 
 ## Phase progress vs original plan
 

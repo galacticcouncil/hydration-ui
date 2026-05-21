@@ -36,7 +36,7 @@ interface Props {
   /** Worst-case days until the queue settles (your actual fulfillment time). */
   worstCaseWaitDays: number
   /** Days until the next vault position matures, regardless of queue.
-      In the no-queue-contention case this equals worstCaseWaitDays - withdrawalDelay. */
+      In the no-queue-contention case this equals worstCaseWaitDays. */
   nextMaturityDays: number
   /** Stableswap quote — undefined while loading or when path unavailable. */
   instantQuote?: InstantQuote
@@ -89,10 +89,10 @@ export const WithdrawMethodPicker = ({
 
   // Timeline stops are read directly from contract state:
   //   Next maturity  = next vault position's maturityTime - now
-  //   Est. receive   = worstCaseWaitDays (= maturity + delay in case B,
-  //                    or queue-contention wait + delay in case A)
+  //   Est. receive   = worstCaseWaitDays (queue-contention wait estimate
+  //                    in case A, or simply next maturity in case B)
   // When no positions are active yet, fall back to a single "Est. receive"
-  // stop based on the withdrawalDelay alone.
+  // stop based on the queue's getEstimatedWaitTime view.
   /* const hasMaturity = nextMaturityDays > 0
   const timelineStops: TimelineStop[] = [
     {
