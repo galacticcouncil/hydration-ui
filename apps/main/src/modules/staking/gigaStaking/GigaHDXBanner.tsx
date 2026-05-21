@@ -9,21 +9,30 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { LINKS } from "@/config/navigation"
 import { SGigaHDXBanner } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
 import { useBannersStore } from "@/states/banners"
 
 export type GigaHDXBannerProps = {
   stakeAmount: bigint
+  type: "stake" | "migration"
 }
 
-export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({ stakeAmount }) => {
+export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
+  stakeAmount,
+  type,
+}) => {
   const { t } = useTranslation("staking")
   const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
-  const banner = useBannersStore((state) => state.banners["giga-stake"])
+  const banner = useBannersStore(
+    (state) =>
+      state.banners[type === "stake" ? "giga-stake" : "giga-migration"],
+  )
 
   const mutation = useGigaStakingMigration()
 
@@ -58,17 +67,31 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({ stakeAmount }) => {
             {t("gigaStaking.banner.title")}
           </Text>
           <Text fs={["p5", "p5", "p4"]} lh="m" color={getToken("text.high")}>
-            {t("gigaStaking.banner.description")}
+            {type === "stake"
+              ? t("gigaStaking.banner.description.stake")
+              : t("gigaStaking.banner.description.migrate")}
           </Text>
         </Box>
 
-        <Button
-          size="medium"
-          sx={{ display: ["none", "none", "block"] }}
-          onClick={() => mutation.mutate(stakeAmount.toString())}
-        >
-          {t("gigaStaking.banner.cta")}
-        </Button>
+        {type === "stake" ? (
+          <Button
+            size="medium"
+            sx={{ display: ["none", "none", "block"] }}
+            asChild
+          >
+            <Link to={LINKS.stakingGigaStake}>
+              {t("gigaStaking.banner.cta.stake")}
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            size="medium"
+            sx={{ display: ["none", "none", "block"] }}
+            onClick={() => mutation.mutate(stakeAmount.toString())}
+          >
+            {t("gigaStaking.banner.cta.migrate")}
+          </Button>
+        )}
       </Flex>
 
       <ButtonIcon
@@ -85,7 +108,13 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({ stakeAmount }) => {
           component={Close}
           size={12}
           color={getToken("text.high")}
-          onClick={() => setBannerVisible("giga-stake", false, Date.now())}
+          onClick={() =>
+            setBannerVisible(
+              type === "stake" ? "giga-stake" : "giga-migration",
+              false,
+              Date.now(),
+            )
+          }
         />
       </ButtonIcon>
     </SGigaHDXBanner>
