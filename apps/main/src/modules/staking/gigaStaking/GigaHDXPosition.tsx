@@ -1,5 +1,7 @@
+import { MAX_DISPLAY_HF } from "@galacticcouncil/money-market/components"
 import { useFormattedHealthFactor } from "@galacticcouncil/money-market/hooks"
 import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import { InfinityIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Box,
@@ -304,7 +306,12 @@ export const GigaHDXPosition = () => {
                       lh={1}
                       sx={{ color: healthFactorColor }}
                     >
-                      {healthFactor !== "-1" ? healthFactor : "-"}
+                      {healthFactor !== "-1" ||
+                      Big(healthFactor).gt(MAX_DISPLAY_HF) ? (
+                        healthFactor
+                      ) : (
+                        <InfinityIcon />
+                      )}
                     </Text>
                   }
                 />
