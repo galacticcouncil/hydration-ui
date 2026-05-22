@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Flex,
   Paper,
   ResponsiveScope,
@@ -11,12 +10,12 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { differenceInMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
-import { useBestNumber } from "@/api/chain"
+import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { BondRedeemButton } from "@/components/BondRedeemButton"
 import {
   SActionColumn,
   SNameColumn,
@@ -27,39 +26,31 @@ import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalance, useAccountBalances } from "@/states/account"
+import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 const PositionRow = () => {
   const { t } = useTranslation(["common", "strategies"])
   const rpc = useRpcProvider()
-  const { getAssetWithFallback, getBond, isBond } = useAssets()
-  const { data: bestNumber } = useBestNumber()
-  const { isBalanceLoading: isAccountBalanceLoading } = useAccountBalances()
   const config = useStableBondsConfig()
 
+  const { getAssetWithFallback, isBond } = useAssets()
+  const { isBalanceLoading: isAccountBalanceLoading } = useAccountBalances()
+  const { balance, maturity, timeLeft, isMatured } = useBondData(config.bondId)
+
   const asset = getAssetWithFallback(config.bondId)
-  const bondMeta = getBond(config.bondId)
-  const balance = useAccountBalance(config.bondId)
 
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
   )
 
-  const balanceAmount = balance?.transferable ?? 0n
-  const balanceHuman = scaleHuman(balanceAmount, asset.decimals)
+  const balanceHuman = scaleHuman(balance, asset.decimals)
   const underlyingAssetId = isBond(asset) ? asset.underlyingAssetId : ""
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
   const [balanceUsdDisplay] = useDisplayAssetPrice(
     underlyingAssetId,
     balanceHuman,
   )
-
-  const maturity = bondMeta?.maturity ?? 0
-  const timeLeft =
-    maturity && bestNumber
-      ? differenceInMilliseconds(maturity, bestNumber.timestamp)
-      : 0
 
   return (
     <ResponsiveScope>
@@ -140,12 +131,12 @@ const PositionRow = () => {
           </SValuesColumn>
 
           <SActionColumn direction="column" align="flex-end" gap="xs">
-            <Button variant="tertiary" size="small" disabled>
-              {t("strategies:bonds.position.redeem")}
-            </Button>
-            <Text fs="p6" color={getToken("text.low")}>
-              {t("strategies:bonds.position.availableAtMaturity")}
-            </Text>
+            <BondRedeemButton bondId={config.bondId} />
+            {!isMatured && (
+              <Text fs="p6" color={getToken("text.low")}>
+                {t("strategies:bonds.position.availableAtMaturity")}
+              </Text>
+            )}
           </SActionColumn>
         </SRowContainer>
       </Paper>

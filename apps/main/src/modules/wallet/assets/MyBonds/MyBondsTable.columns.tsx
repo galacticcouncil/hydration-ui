@@ -7,13 +7,13 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { differenceInMilliseconds } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TBond } from "@/api/assets"
-import { useBestNumber } from "@/api/chain"
+import { useBondData } from "@/api/bonds"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { BondRedeemButton } from "@/components/BondRedeemButton"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
 
@@ -107,12 +107,8 @@ export const useMyBondsColumns = () => {
         compare: numerically,
       }),
       cell: function Cell({ row }) {
-        const { maturity } = row.original
-        const { data: bestNumber } = useBestNumber()
-        const timeLeft =
-          maturity && bestNumber
-            ? differenceInMilliseconds(maturity, bestNumber.timestamp)
-            : 0
+        const { timeLeft } = useBondData(row.original.id)
+
         return (
           <Amount
             value={t("common:date.date", {
@@ -143,9 +139,7 @@ export const useMyBondsColumns = () => {
 
         return (
           <Flex gap="base" justify="flex-end">
-            <TableRowAction disabled>
-              {t("myBonds.actions.redeem")}
-            </TableRowAction>
+            <BondRedeemButton bondId={row.original.id} />
             <TableRowAction onClick={() => setIsTransferOpen(true)}>
               {t("common:send")}
             </TableRowAction>

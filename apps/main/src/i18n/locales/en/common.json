@@ -76,6 +76,7 @@
   "copyError": "Copy error",
   "copied": "Copied",
   "claim": "Claim",
+  "redeem": "Redeem",
   "you": "You",
   "claim.asset": "Claim {{ symbol }}",
   "claiming": "Claiming...",

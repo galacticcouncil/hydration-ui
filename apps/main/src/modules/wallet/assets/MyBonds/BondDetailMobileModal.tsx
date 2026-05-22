@@ -1,10 +1,10 @@
 import { Amount, Button, ModalHeader } from "@galacticcouncil/ui/components"
-import { differenceInMilliseconds } from "date-fns"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useBestNumber } from "@/api/chain"
+import { useBondData } from "@/api/bonds"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { BondRedeemButton } from "@/components/BondRedeemButton"
 import { SAssetDetailMobileActions } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions.styled"
 import {
   SAssetDetailMobileSeparator,
@@ -19,12 +19,8 @@ type Props = {
 
 export const BondDetailMobileModal: FC<Props> = ({ bond, onTransfer }) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { data: bestNumber } = useBestNumber()
 
-  const timeLeft =
-    bond.maturity && bestNumber
-      ? differenceInMilliseconds(bond.maturity, bestNumber.timestamp)
-      : 0
+  const { timeLeft } = useBondData(bond.id)
 
   return (
     <>
@@ -58,12 +54,10 @@ export const BondDetailMobileModal: FC<Props> = ({ bond, onTransfer }) => {
           }
         />
         <SAssetDetailMobileActions>
-          <Button size="large" disabled>
-            {t("myBonds.actions.redeem")}
-          </Button>
-          <Button variant="secondary" size="large" onClick={onTransfer}>
+          <Button variant="primary" size="large" onClick={onTransfer}>
             {t("common:send")}
           </Button>
+          <BondRedeemButton size="large" bondId={bond.id} />
         </SAssetDetailMobileActions>
       </SAssetDetailModalBody>
     </>
