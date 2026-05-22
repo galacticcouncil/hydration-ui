@@ -18,7 +18,6 @@ import {
 } from "@/modules/staking/Referenda.utils"
 import { ReferendaFooter } from "@/modules/staking/ReferendaFooter"
 import { ReferendaHeader } from "@/modules/staking/ReferendaHeader"
-import { ReferendaRewardBadge } from "@/modules/staking/ReferendaRewardBadge"
 import { ReferendaStatus } from "@/modules/staking/ReferendaStatus"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -85,7 +84,6 @@ export const Referenda: FC<Props> = ({
 
   return (
     <SReferenda voted={voted}>
-      <ReferendaRewardBadge id={id} trackId={item.track} />
       <ReferendaHeader
         trackId={item.track}
         trackName={track.name}

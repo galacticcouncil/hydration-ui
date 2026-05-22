@@ -13,10 +13,11 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
@@ -25,6 +26,7 @@ import {
   gigaAccountStakesQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetLogo } from "@/components/AssetLogo"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
@@ -84,21 +86,16 @@ export const GigaHDXPosition = () => {
     .times(exchangeRate?.toString() || "0")
     .toString()
 
-  // Principal vs accrued breakdown.
   // `Stakes.hdx` is the runtime-tracked locked principal (HDX the user
   // originally deposited, plus any yield they've already crystallized via
-  // `realizeYield`). The accrued portion = current value − principal; this
-  // is what `realizeYield` would move into the principal in one tx.
+  // `realizeYield`). Accrued = position value − principal; still needed to
+  // decide whether the batched `realize_yield` call should fire even though
+  // we no longer surface principal / accrued in the UI (per #3775 design).
   const principalHdxHuman = accountStake
     ? scaleHuman(accountStake.hdx, native.decimals)
     : "0"
   const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
-  const accruedHdxHuman = Big.max(accruedHdxBig, 0).toString()
-  const accruedPct =
-    Big(principalHdxHuman).gt(0) && accruedHdxBig.gt(0)
-      ? accruedHdxBig.div(principalHdxHuman).times(100).toNumber()
-      : 0
-  // Hide the row entirely when there's no position to break down.
+  // Hide the position-detail row entirely when there's nothing to show.
   const hasPosition = Big(stakedHdxHuman).gt(0)
 
   // "Rewards to claim" shows VOTING REWARDS ONLY — the two HDX flows that
@@ -195,89 +192,6 @@ export const GigaHDXPosition = () => {
 
   const hasDebt = Big(debt).gt(0)
 
-  const principalStat = (
-    <ValueStats
-      size="small"
-      label={t("staking:gigaStaking.position.principal.label")}
-      wrap={[false, true]}
-      value={t("common:currency", {
-        value: principalHdxHuman,
-        symbol: native.symbol,
-      })}
-    />
-  )
-
-  const accruedYieldStat = (
-    <ValueStats
-      size="small"
-      label={t("staking:gigaStaking.position.accrued.label")}
-      wrap={[false, true]}
-      customValue={
-        <Flex align="baseline" gap="xs">
-          <Text
-            font="primary"
-            fw={500}
-            fs="h7"
-            lh={1}
-            color={getToken(
-              accruedHdxBig.gt(0) ? "accents.success.emphasis" : "text.high",
-            )}
-          >
-            {accruedHdxBig.gt(0) ? "+" : ""}
-            {t("common:currency", {
-              value: accruedHdxHuman,
-              symbol: native.symbol,
-            })}
-          </Text>
-          {accruedPct > 0 && (
-            <Text fs="p6" lh={1} color={getToken("accents.success.emphasis")}>
-              ({t("common:percent", { value: accruedPct })})
-            </Text>
-          )}
-        </Flex>
-      }
-    />
-  )
-
-  const healthFactorStat = (
-    <ValueStats
-      size="small"
-      label={t("borrow:healthFactor")}
-      wrap={[false, true]}
-      isLoading={isLoading}
-      customValue={
-        <Text
-          font="primary"
-          fw={500}
-          fs="h7"
-          lh={1}
-          sx={{ color: healthFactorColor }}
-        >
-          {healthFactor !== "-1" ? healthFactor : "-"}
-        </Text>
-      }
-    />
-  )
-
-  const liquidationPriceStat = (
-    <ValueStats
-      size="small"
-      label="Liquidation price"
-      wrap={[false, true]}
-      isLoading={isLoading}
-      value={
-        liquidationPriceHollarPerHdx
-          ? t("common:currency", {
-              value: liquidationPriceHollarPerHdx
-                .round(18, Big.roundHalfUp)
-                .toFixed(),
-              symbol: `${hollarReserve?.reserve.symbol ?? ""}/${ghdxMeta.symbol}`,
-            })
-          : "-"
-      }
-    />
-  )
-
   return (
     <>
       <Paper>
@@ -340,30 +254,42 @@ export const GigaHDXPosition = () => {
           />
         </Flex>
 
-        {hasPosition && (
+        {hasPosition && hasDebt && (
           <>
             <Separator />
-            {hasDebt ? (
-              <GigaPositionDebtStats
-                principalStat={principalStat}
-                accruedYieldStat={accruedYieldStat}
-                healthFactorStat={healthFactorStat}
-                liquidationPriceStat={liquidationPriceStat}
+            <Stack
+              direction={["column", "column", "column", "row"]}
+              gap={["xl", null]}
+              justify="start"
+              py={["l", "l"]}
+              px={["m", "xl"]}
+              separated
+            >
+              <ValueStats
+                size="small"
+                label={t("borrow:healthFactor")}
+                wrap={[false, false, false, true]}
+                isLoading={isLoading}
+                customValue={
+                  <Text
+                    font="primary"
+                    fw={500}
+                    fs={["p3", "p3", "h7"]}
+                    lh={1}
+                    sx={{ color: healthFactorColor }}
+                  >
+                    {healthFactor !== "-1" ? healthFactor : "-"}
+                  </Text>
+                }
               />
-            ) : (
-              <Stack
-                direction={["column", "column", "column", "row"]}
-                gap={["xxl", null]}
-                align={["stretch", null, null, "center"]}
-                justify="space-between"
-                py={["l", "l"]}
-                px={["m", "xl"]}
-                separated
-              >
-                {principalStat}
-                {accruedYieldStat}
-              </Stack>
-            )}
+              <LiquidationPrice
+                isLoading={isLoading}
+                liquidationPriceHollarPerHdx={liquidationPriceHollarPerHdx}
+                hollarAssetId={HOLLAR_ASSET_ID}
+                nativeAssetId={native.id}
+                symbol={`${hollarReserve?.reserve.symbol ?? ""}/${native.symbol}`}
+              />
+            </Stack>
             {/* No standalone "Realize yield" action — the call is auto-
                 batched with vote actions where it materially helps
                 (lifting the vote-weight cap = min(vote_amount, Stakes.hdx)
@@ -577,114 +503,81 @@ export const GigaHDXPosition = () => {
   )
 }
 
-type GigaPositionDebtStatsProps = {
-  principalStat: ReactNode
-  accruedYieldStat: ReactNode
-  healthFactorStat: ReactNode
-  liquidationPriceStat: ReactNode
-}
+const LiquidationPrice = ({
+  isLoading,
+  liquidationPriceHollarPerHdx,
+  hollarAssetId,
+  nativeAssetId,
+  symbol,
+}: {
+  isLoading: boolean
+  liquidationPriceHollarPerHdx: Big | null
+  symbol: string
+  hollarAssetId: string
+  nativeAssetId: string
+}) => {
+  const { t } = useTranslation(["common", "staking"])
+  const rpc = useRpcProvider()
 
-const GigaPositionDebtStats = ({
-  principalStat,
-  accruedYieldStat,
-  healthFactorStat,
-  liquidationPriceStat,
-}: GigaPositionDebtStatsProps) => {
-  const measureRef = useRef<HTMLDivElement>(null)
-  const [hasOverflow, setHasOverflow] = useState(false)
+  const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
+    spotPriceQuery(rpc, nativeAssetId, hollarAssetId),
+  )
 
-  useEffect(() => {
-    const node = measureRef.current
-    if (!node) return
+  const spotDropToLiquidationPercent = useMemo(() => {
+    if (!liquidationPriceHollarPerHdx || !spotPriceData?.spotPrice) return null
 
-    let animationFrame = 0
+    const spotPrice = Big(spotPriceData.spotPrice)
+    if (spotPrice.lte(0)) return null
 
-    const updateOverflow = () => {
-      cancelAnimationFrame(animationFrame)
-      animationFrame = requestAnimationFrame(() => {
-        const nextHasOverflow = node.scrollWidth > node.clientWidth + 1
-        setHasOverflow((current) =>
-          current === nextHasOverflow ? current : nextHasOverflow,
-        )
-      })
-    }
+    const dropPercent = spotPrice
+      .minus(liquidationPriceHollarPerHdx)
+      .div(spotPrice)
+      .times(100)
 
-    updateOverflow()
+    if (dropPercent.lte(0)) return null
 
-    const resizeObserver = new ResizeObserver(updateOverflow)
-    resizeObserver.observe(node)
-    Array.from(node.children).forEach((child) => resizeObserver.observe(child))
-    window.addEventListener("resize", updateOverflow)
-
-    return () => {
-      cancelAnimationFrame(animationFrame)
-      resizeObserver.disconnect()
-      window.removeEventListener("resize", updateOverflow)
-    }
-  }, [accruedYieldStat, healthFactorStat, liquidationPriceStat, principalStat])
+    return dropPercent.toNumber()
+  }, [liquidationPriceHollarPerHdx, spotPriceData?.spotPrice])
 
   return (
-    <Box position="relative">
-      <Box
-        ref={measureRef}
-        py={["l", "l"]}
-        px={["m", "xl"]}
-        sx={{
-          position: "absolute",
-          width: "100%",
-          height: 0,
-          boxSizing: "border-box",
-          overflow: "hidden",
-          pointerEvents: "none",
-          visibility: "hidden",
-        }}
-      >
+    <ValueStats
+      size="small"
+      label={t("staking:gigaStaking.position.liquidationPrice.label")}
+      wrap={[false, false, false, true]}
+      isLoading={isLoading || isSpotPricePending}
+      customValue={
         <Stack
-          direction="row"
-          gap={["xxl", null]}
-          align="center"
-          justify="start"
-          separated
+          direction={["column", "column", "column", "row"]}
+          align="end"
+          gap="xs"
         >
-          {principalStat}
-          {accruedYieldStat}
-          {healthFactorStat}
-          {liquidationPriceStat}
-        </Stack>
-      </Box>
-
-      {hasOverflow ? (
-        <Stack direction="column" py={["l", "l"]} px={["m", "xl"]}>
-          <Stack
-            direction={["column", "row"]}
-            gap={["xxl", null]}
-            align={["stretch", "center"]}
-            justify="start"
-            separated
+          <Text
+            font="primary"
+            fw={500}
+            fs={["p3", "p3", "h7"]}
+            lh={1}
+            color={getToken("text.high")}
           >
-            {principalStat}
-            {accruedYieldStat}
-            {healthFactorStat}
-          </Stack>
-          <Separator sx={{ my: "l" }} />
-          {liquidationPriceStat}
+            {liquidationPriceHollarPerHdx
+              ? t("currency", {
+                  value: liquidationPriceHollarPerHdx
+                    .round(18, Big.roundHalfUp)
+                    .toFixed(),
+                  symbol,
+                })
+              : "-"}
+          </Text>
+          {spotDropToLiquidationPercent !== null && (
+            <Text fs="p6" lh={1} color={getToken("text.medium")}>
+              (
+              {t("staking:gigaStaking.position.liquidationPrice.spotDrop", {
+                value: spotDropToLiquidationPercent,
+              })}
+              )
+            </Text>
+          )}
         </Stack>
-      ) : (
-        <Stack
-          direction="row"
-          gap={["xxl", null]}
-          align="center"
-          justify="start"
-          py={["l", "l"]}
-          px={["m", "xl"]}
-          separated
-        >
-          {principalStat}
-          {accruedYieldStat}
-          {healthFactorStat}
-          {liquidationPriceStat}
-        </Stack>
-      )}
-    </Box>
+      }
+    />
   )
 }
