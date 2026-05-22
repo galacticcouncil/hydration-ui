@@ -31,10 +31,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
-import {
-  SChartContainer,
-  SChartLegendContainer,
-} from "@/modules/staking/gigaStaking/GigaStaking.styled"
+import { SChartLegendContainer } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { GigaHDXRepayModal } from "@/modules/staking/gigaStaking/repay/GigaHDXRepayModal"
 import { GigaHDXSupplyInfo } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 import { useAssets } from "@/providers/assetsProvider"
@@ -444,67 +441,65 @@ export const GigaHDXPosition = () => {
         </Box>
 
         <Box px={["l", "xl"]} pb={["m", "xl"]}>
-          <SChartContainer sx={{ mt: "xxl" }}>
-            <SChartLegendContainer asChild>
-              <Flex direction="column" gap="l" justify="space-between">
-                <Flex justify="space-between" align="center">
-                  <Amount
-                    label={
-                      <Text
-                        fs={["p6", "p6", "p4"]}
-                        lh={1}
-                        color={getToken("text.medium")}
-                      >
-                        {t("gigaStaking.claim.label")}
-                      </Text>
-                    }
-                    value={
-                      <Text
-                        font="primary"
-                        fs={["p3", "p1", "h5"]}
-                        fw={500}
-                        lh={1}
-                        color={getToken("text.tint.primary")}
-                      >
-                        {t("common:currency", {
-                          value: claimableTotalHuman,
-                          symbol: native.symbol,
-                        })}
-                      </Text>
-                    }
-                  />
+          <SChartLegendContainer asChild>
+            <Flex direction="column" gap="l" justify="space-between">
+              <Flex justify="space-between" align="center">
+                <Amount
+                  label={
+                    <Text
+                      fs={["p6", "p6", "p4"]}
+                      lh={1}
+                      color={getToken("text.medium")}
+                    >
+                      {t("gigaStaking.claim.label")}
+                    </Text>
+                  }
+                  value={
+                    <Text
+                      font="primary"
+                      fs={["p3", "p1", "h5"]}
+                      fw={500}
+                      lh={1}
+                      color={getToken("text.tint.primary")}
+                    >
+                      {t("common:currency", {
+                        value: claimableTotalHuman,
+                        symbol: native.symbol,
+                      })}
+                    </Text>
+                  }
+                />
 
-                  <Button
-                    variant="secondary"
-                    size={isMobile || isTablet ? "medium" : "large"}
-                    disabled={!hasClaimable || claimMutation.isPending}
-                    onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
-                  >
-                    {t("gigaStaking.claim.cta")}
-                  </Button>
-                </Flex>
-
-                <Separator />
-
-                <Text
-                  fs={["p5", "p5", "p2"]}
-                  lh="m"
-                  color={getToken("text.medium")}
+                <Button
+                  variant="secondary"
+                  size={isMobile || isTablet ? "medium" : "large"}
+                  disabled={!hasClaimable || claimMutation.isPending}
+                  onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
                 >
-                  {t("staking:gigaStaking.rewards.desc")}
-                </Text>
+                  {t("gigaStaking.claim.cta")}
+                </Button>
               </Flex>
-            </SChartLegendContainer>
 
-            {hasLockedShares && (
-              <Text fs="p6" lh="m" color={getToken("text.low")}>
-                {t("staking:gigaStaking.claim.locked", {
-                  value: lockedHdxHuman,
-                  symbol: native.symbol,
-                })}
+              <Separator />
+
+              <Text
+                fs={["p5", "p5", "p2"]}
+                lh="m"
+                color={getToken("text.medium")}
+              >
+                {t("staking:gigaStaking.rewards.desc")}
               </Text>
-            )}
-          </SChartContainer>
+            </Flex>
+          </SChartLegendContainer>
+
+          {hasLockedShares && (
+            <Text fs="p6" lh="m" color={getToken("text.low")}>
+              {t("staking:gigaStaking.claim.locked", {
+                value: lockedHdxHuman,
+                symbol: native.symbol,
+              })}
+            </Text>
+          )}
         </Box>
 
         <GigaHDXSupplyInfo />

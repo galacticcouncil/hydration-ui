@@ -15,12 +15,27 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
+import { useUserGigaBorrowSummary } from "@/api/borrow"
+import {
+  claimableVotingRewardsQuery,
+  gigaAccountStakesQuery,
+} from "@/api/gigaStake"
+import { useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { SLockedBalanceButton } from "@/modules/staking/components/VoteModal/VoteModal.styled"
+import {
+  SClaimableRewardsContainer,
+  SLockedBalanceButton,
+} from "@/modules/staking/components/VoteModal/VoteModal.styled"
+import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 import {
   useVoteModal,
@@ -128,6 +143,8 @@ const VoteForm = ({
               voteType={voteType}
               maxBalanceWithFee={maxBalanceWithFee}
             />
+
+            {isGigaStaking && <ClaimableRewardsField />}
 
             {isSingleInputField && (
               <>
@@ -381,5 +398,79 @@ const AmountFields = ({
       maxBalance={maxBalanceWithFee}
       sx={{ p: 0 }}
     />
+  )
+}
+
+const ClaimableRewardsField = () => {
+  const { t } = useTranslation("staking")
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
+  const { native } = useAssets()
+
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: claimableRewards } = useQuery(
+    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
+  )
+  const { data: accountStake } = useQuery(
+    gigaAccountStakesQuery(rpc, account?.address ?? ""),
+  )
+
+  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
+  const { hdxReserve } = gigaBorrowSummary ?? {}
+
+  const claimMutation = useClaimAndCompound()
+
+  const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+
+  const stakedHdxHuman = Big(gigaHdxBalanceHuman)
+    .times(exchangeRate?.toString() || "0")
+    .toString()
+
+  const principalHdxHuman = accountStake
+    ? scaleHuman(accountStake.hdx, native.decimals)
+    : "0"
+  const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
+
+  const pendingHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
+    : Big(0)
+  const allocReadyHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
+    : Big(0)
+
+  const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
+
+  const hasClaimable = claimableTotalBig.gt(0)
+  const claimAndCompoundArgs = {
+    allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
+    unlockClasses: claimableRewards?.unlockClasses ?? [],
+    accountAddress: account?.address ?? "",
+    hasAccruedYield: accruedHdxBig.gt(0),
+    hasClaimableRewards: hasClaimable,
+  }
+
+  return (
+    <SClaimableRewardsContainer justify="space-between" align="center">
+      <Text fs="p4" fw={500} color={getToken("text.medium")}>
+        <Trans
+          t={t}
+          i18nKey="staking:referenda.vote.modal.claimableRewards"
+          values={{
+            value: claimableTotalBig,
+            currency: native.symbol,
+          }}
+        >
+          <Text as="span" fw={500} color={getToken("text.tint.primary")} />
+        </Trans>
+      </Text>
+      <Button
+        variant="secondary"
+        size="small"
+        disabled={!hasClaimable || claimMutation.isPending}
+        onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
+      >
+        {t("gigaStaking.claim.cta")}
+      </Button>
+    </SClaimableRewardsContainer>
   )
 }
