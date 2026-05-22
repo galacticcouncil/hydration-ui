@@ -4,6 +4,7 @@ import {
   Paper,
   SectionHeader,
   Separator,
+  Stack,
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -21,17 +22,6 @@ import type { TAsset } from "@/providers/assetsProvider"
 export type StableBondsDetailsProps = {
   orders?: OtcOffer[]
 }
-
-const DetailSeparator = () => (
-  <Separator
-    orientation="vertical"
-    sx={{
-      alignSelf: "stretch",
-      display: ["none", null, "block"],
-      mx: "l",
-    }}
-  />
-)
 
 export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   orders,
@@ -75,31 +65,34 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
       />
       <Separator mx="-l" mb="l" />
 
-      <Flex align="stretch" gap={["xl", null, "xxxl"]} wrap>
+      <Stack
+        direction={["column", null, "row"]}
+        separated
+        gap={["m", null, "xxxl"]}
+        justify="flex-start"
+        mb="l"
+      >
         {fundingCapacities.length > 0 && (
-          <>
-            <Box>
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("strategies:bonds.details.remainingCapacity")}
-              </Text>
-              <Flex gap="xl">
-                {fundingCapacities.map(({ asset, amount }) => (
-                  <Flex key={asset.id} align="center" gap="base">
-                    <AssetLogo id={asset.id} size="small" />
-                    <Text
-                      font="primary"
-                      fs="h6"
-                      fw={600}
-                      color={getToken("text.high")}
-                    >
-                      {t("number", { value: amount })}
-                    </Text>
-                  </Flex>
-                ))}
-              </Flex>
-            </Box>
-            <DetailSeparator />
-          </>
+          <Box>
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("strategies:bonds.details.remainingCapacity")}
+            </Text>
+            <Flex gap="xl">
+              {fundingCapacities.map(({ asset, amount }) => (
+                <Flex key={asset.id} align="center" gap="base">
+                  <AssetLogo id={asset.id} size="small" />
+                  <Text
+                    font="primary"
+                    fs="h6"
+                    fw={600}
+                    color={getToken("text.high")}
+                  >
+                    {t("number", { value: amount })}
+                  </Text>
+                </Flex>
+              ))}
+            </Flex>
+          </Box>
         )}
 
         <Box>
@@ -120,8 +113,6 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
           </Text>
         </Box>
 
-        <DetailSeparator />
-
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             {t("strategies:bonds.details.maturityPeriod")}
@@ -139,7 +130,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
             })}
           </Text>
         </Box>
-      </Flex>
+      </Stack>
 
       {fundingCapacities.length > 0 && (
         <>
