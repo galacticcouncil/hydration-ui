@@ -449,6 +449,10 @@ const ClaimableRewardsField = () => {
     hasClaimableRewards: hasClaimable,
   }
 
+  if (!hasClaimable) {
+    return null
+  }
+
   return (
     <SClaimableRewardsContainer justify="space-between" align="center">
       <Text fs="p4" fw={500} color={getToken("text.medium")}>
