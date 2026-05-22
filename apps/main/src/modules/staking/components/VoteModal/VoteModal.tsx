@@ -71,7 +71,7 @@ const VoteForm = ({
   const { native } = useAssets()
   const {
     form,
-    totalHdxBalanceHuman,
+    maxBalanceWithFee,
     lockedDays,
     totaVotes,
     onSubmit,
@@ -115,7 +115,7 @@ const VoteForm = ({
                   </Text>
                   <Text fs="p5" fw={500} color={getToken("text.low")}>
                     {t("currency", {
-                      value: totalHdxBalanceHuman,
+                      value: maxBalanceWithFee,
                       symbol: native.symbol,
                     })}
                   </Text>
@@ -126,7 +126,7 @@ const VoteForm = ({
 
             <AmountFields
               voteType={voteType}
-              totalHdxBalanceHuman={totalHdxBalanceHuman}
+              maxBalanceWithFee={maxBalanceWithFee}
             />
 
             {isSingleInputField && (
@@ -288,10 +288,10 @@ const VoteForm = ({
 
 const AmountFields = ({
   voteType,
-  totalHdxBalanceHuman,
+  maxBalanceWithFee,
 }: {
   voteType: VoteType
-  totalHdxBalanceHuman: string
+  maxBalanceWithFee: string
 }) => {
   const { t } = useTranslation("staking")
 
@@ -378,7 +378,7 @@ const AmountFields = ({
       }
       assets={[]}
       disabledAssetSelector
-      maxBalance={totalHdxBalanceHuman}
+      maxBalance={maxBalanceWithFee}
       sx={{ p: 0 }}
     />
   )

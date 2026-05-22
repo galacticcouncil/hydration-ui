@@ -12,6 +12,7 @@ import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { Conviction, CONVICTIONS_BLOCKS_BY_INDEX } from "@/api/democracy"
 import { gigaAccountStakesQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
+import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -34,11 +35,8 @@ export type VoteModalFormValues = {
   voteType: VoteType
   multiplier: Conviction
   amount: string
-  /** HDX amount for split / split-abstain (aye side). */
   aye: string
-  /** HDX amount for split / split-abstain (nay side). */
   nay: string
-  /** HDX amount for split-abstain (abstain side). */
   abstain: string
   asset: TAssetData
 }
@@ -76,6 +74,22 @@ export const useVoteModal = (
   //@TODO: can I use total balance or should substrate locked balance from OTC or DCA for example?
   const totalHdxBalance = hdxBalance?.total?.toString() ?? "0"
   const totalHdxBalanceHuman = scaleHuman(totalHdxBalance, native.decimals)
+
+  const hdxAtomic = (v: string) => toBigInt(v || "0", native.decimals)
+  const maxBalanceWithFee = useMaxBalanceWithFee(
+    native.id,
+    rpc.papi.tx.ConvictionVoting.vote({
+      poll_index: referendumId,
+      vote: {
+        type: "Standard" as const,
+        value: {
+          vote: 0x80,
+          balance: hdxAtomic(totalHdxBalanceHuman),
+        },
+      },
+    }),
+    totalHdxBalance,
+  )
 
   const form = useForm<VoteModalFormValues>({
     mode: "onChange",
@@ -150,7 +164,7 @@ export const useVoteModal = (
               return
             }
 
-            if (ayeNum.plus(nayNum).gt(totalHdxBalanceHuman)) {
+            if (ayeNum.plus(nayNum).gt(maxBalanceWithFee)) {
               const msg = t("error.maxBalance")
               addIssue({ code: "custom", message: msg, path: ["aye"] })
               addIssue({ code: "custom", message: msg, path: ["nay"] })
@@ -173,7 +187,7 @@ export const useVoteModal = (
             ) {
               return
             }
-            if (ayeNum.plus(nayNum).plus(abstainNum).gt(totalHdxBalanceHuman)) {
+            if (ayeNum.plus(nayNum).plus(abstainNum).gt(maxBalanceWithFee)) {
               const msg = t("error.maxBalance")
               addIssue({ code: "custom", message: msg, path: ["aye"] })
               addIssue({ code: "custom", message: msg, path: ["nay"] })
@@ -193,7 +207,7 @@ export const useVoteModal = (
             })
             return
           }
-          if (Big(data.amount || "0").gt(totalHdxBalanceHuman)) {
+          if (Big(data.amount || "0").gt(maxBalanceWithFee)) {
             addIssue({
               code: "custom",
               message: t("error.maxBalance"),
@@ -241,8 +255,6 @@ export const useVoteModal = (
       nay,
       abstain: abstainAmount,
     }: VoteModalFormValues) => {
-      const hdxAtomic = (v: string) => toBigInt(v || "0", native.decimals)
-
       const buildAccountVote = () => {
         if (voteType === "aye" || voteType === "nay") {
           const isAye = voteType === "aye"
@@ -306,7 +318,7 @@ export const useVoteModal = (
   return {
     form,
     totalHdxBalance,
-    totalHdxBalanceHuman,
+    maxBalanceWithFee,
     lockedDays,
     totaVotes,
     onSubmit,

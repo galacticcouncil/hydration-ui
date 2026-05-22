@@ -182,7 +182,7 @@
   "referenda.openArchive": "Open archive",
   "referenda.participate": "Participate in governance to speed up the rate at which you can claim your staking rewards.",
   "referenda.rewardPool": "{{value}} in rewards pool",
-  "referenda.rewardPool.upTo": "Up to {{value}} in rewards pool",
+  "referenda.rewardPool.upTo": "Estimated rewards pool for this referenda {{value}}",
   "referenda.rewardPool.estimateTooltip": "Upper bound — the pool is sized when the first voter removes their vote after the referendum ends. Multiple referenda share this pool: whichever allocates first takes its slice, and the rest see a smaller pot.",
 
   "referenda.item.aye": "Aye",

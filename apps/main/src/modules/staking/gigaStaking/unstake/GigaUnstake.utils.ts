@@ -10,6 +10,7 @@ import { z } from "zod/v4"
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import {
+  claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
   gigaQueryKey,
   gigaTotalLockedQuery,
@@ -95,9 +96,40 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const stakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
+      const unstakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
         gigahdx_amount: toBigInt(amount, meta.decimals),
       })
+
+      const rewards = await rpc.queryClient.ensureQueryData(
+        claimableVotingRewardsQuery(rpc, account.address),
+      )
+
+      const allocReadyVotes = rewards.allocReadyVotes
+      const unlockClasses = rewards.unlockClasses
+
+      const calls = [
+        ...allocReadyVotes.map(
+          ({ refIndex, trackId }) =>
+            rpc.papi.tx.ConvictionVoting.remove_vote({
+              class: trackId ?? undefined,
+              index: refIndex,
+            }).decodedCall,
+        ),
+        ...unlockClasses.map(
+          (classId) =>
+            rpc.papi.tx.ConvictionVoting.unlock({
+              target: account.address,
+              class: classId,
+            }).decodedCall,
+        ),
+      ]
+
+      const tx =
+        calls.length > 0
+          ? rpc.papi.tx.Utility.batch_all({
+              calls: [...calls, unstakeTx.decodedCall],
+            })
+          : unstakeTx
 
       const toasts = {
         submitted: t("staking:gigaStaking.unstake.toasts.submitted", {
@@ -112,7 +144,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
 
       return createTransaction(
         {
-          tx: stakeTx,
+          tx,
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(account.address),
             gigaQueryKey(account.address),

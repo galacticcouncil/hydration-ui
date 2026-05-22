@@ -59,6 +59,7 @@ export const GigaHDXPosition = () => {
   const { data: claimableRewards } = useQuery(
     claimableVotingRewardsQuery(rpc, account?.address ?? ""),
   )
+
   const claimMutation = useClaimAndCompound()
 
   const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
