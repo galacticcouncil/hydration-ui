@@ -1,3 +1,4 @@
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Flex,
   Text,
@@ -6,10 +7,14 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { gigaRewardPoolEstimateQuery } from "@/api/gigaStake"
+import {
+  gigaRewardPoolEstimateQuery,
+  useGigaStakeExchangeRate,
+} from "@/api/gigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
@@ -24,23 +29,28 @@ export const ReferendaRewardBadge: FC<ReferendaRewardBadgeProps> = ({
   trackId,
 }) => {
   const { t } = useTranslation(["common", "staking"])
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const rpc = useRpcProvider()
   const { data: rewardPool } = useQuery(
     gigaRewardPoolEstimateQuery(rpc, id, trackId),
   )
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
 
   if (!rewardPool) {
     return null
   }
 
   const { amount, isEstimate } = rewardPool
+  const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
 
   const amountHuman = toDecimal(amount, native.decimals)
+  const amountInGigaHdx = exchangeRate
+    ? Big(amountHuman).div(exchangeRate.toString())
+    : undefined
 
   const value = t("currency.compact", {
-    value: amountHuman,
-    symbol: native.symbol,
+    value: amountInGigaHdx,
+    symbol: ghdxMeta.symbol,
   })
 
   const label = isEstimate

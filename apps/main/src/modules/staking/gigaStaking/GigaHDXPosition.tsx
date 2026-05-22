@@ -111,6 +111,9 @@ export const GigaHDXPosition = () => {
   const hasLockedShares = lockedHdxBig.gt("0.000001")
   const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
   const claimableTotalHuman = claimableTotalBig.toString()
+  const climableGigaHdxBig = exchangeRate
+    ? claimableTotalBig.div(exchangeRate.toString())
+    : undefined
 
   const hasClaimable = claimableTotalBig.gt("0.000001")
   const claimAndCompoundArgs = {
@@ -463,11 +466,15 @@ export const GigaHDXPosition = () => {
                       color={getToken("text.tint.primary")}
                     >
                       {t("common:currency", {
-                        value: claimableTotalHuman,
-                        symbol: native.symbol,
+                        value: climableGigaHdxBig,
+                        symbol: ghdxMeta.symbol,
                       })}
                     </Text>
                   }
+                  displayValue={t("common:currency", {
+                    value: claimableTotalHuman,
+                    symbol: native.symbol,
+                  })}
                 />
 
                 <Button

@@ -429,24 +429,18 @@ const ClaimableRewardsField = () => {
   const principalHdxHuman = accountStake
     ? scaleHuman(accountStake.hdx, native.decimals)
     : "0"
-  const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
+  const accruedHdxBig = Big.max(
+    Big(stakedHdxHuman).minus(principalHdxHuman),
+    Big(0),
+  )
 
-  const pendingHdxBig = claimableRewards
-    ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
-    : Big(0)
-  const allocReadyHdxBig = claimableRewards
-    ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
-    : Big(0)
-
-  const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
-
-  const hasClaimable = claimableTotalBig.gt(0)
+  const hasClaimable = accruedHdxBig.gt(0)
   const claimAndCompoundArgs = {
     allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
     unlockClasses: claimableRewards?.unlockClasses ?? [],
     accountAddress: account?.address ?? "",
-    hasAccruedYield: accruedHdxBig.gt(0),
-    hasClaimableRewards: hasClaimable,
+    hasAccruedYield: hasClaimable,
+    hasClaimableRewards: false, // claim only realize yield
   }
 
   if (!hasClaimable) {
@@ -460,7 +454,7 @@ const ClaimableRewardsField = () => {
           t={t}
           i18nKey="staking:referenda.vote.modal.claimableRewards"
           values={{
-            value: claimableTotalBig,
+            value: accruedHdxBig,
             currency: native.symbol,
           }}
         >
