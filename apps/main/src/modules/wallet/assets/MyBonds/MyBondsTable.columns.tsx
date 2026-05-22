@@ -3,13 +3,16 @@ import {
   Flex,
   Modal,
   TableRowAction,
+  TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
-import { createColumnHelper } from "@tanstack/react-table"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { differenceInMilliseconds } from "date-fns"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TBond } from "@/api/assets"
+import { useBestNumber } from "@/api/chain"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
@@ -30,6 +33,7 @@ const columnHelper = createColumnHelper<MyBond>()
 
 export const useMyBondsColumns = () => {
   const { t } = useTranslation(["wallet", "common"])
+  const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
@@ -42,6 +46,40 @@ export const useMyBondsColumns = () => {
       cell: ({ row }) => {
         return <AssetLabelFull asset={row.original} />
       },
+    })
+
+    const assetColumnMobile = columnHelper.accessor("symbol", {
+      id: MyBondsTableColumnId.Asset,
+      enableSorting: false,
+      header: t("common:bond"),
+      cell: ({ row }) => {
+        return <AssetLabelFull asset={row.original} withName={false} />
+      },
+    })
+
+    const totalColumnMobile = columnHelper.accessor("total", {
+      id: MyBondsTableColumnId.Total,
+      header: t("myBonds.header.total"),
+      meta: {
+        sx: {
+          textAlign: "right",
+        },
+      },
+      sortingFn: sortBy({
+        select: (row) => row.original.totalDisplay || "0",
+        compare: numericallyStr,
+      }),
+      cell: ({ row }) => (
+        <TableRowDetailsExpand>
+          <Amount
+            variant="default"
+            value={t("common:number", {
+              value: row.original.total,
+            })}
+            displayValue={row.original.totalDisplay}
+          />
+        </TableRowDetailsExpand>
+      ),
     })
 
     const totalColumn = columnHelper.accessor("total", {
@@ -68,11 +106,13 @@ export const useMyBondsColumns = () => {
         select: (row) => row.original.maturity,
         compare: numerically,
       }),
-      cell: ({ row }) => {
-        const timeLeft = differenceInMilliseconds(
-          new Date(row.original.maturity),
-          new Date(),
-        )
+      cell: function Cell({ row }) {
+        const { maturity } = row.original
+        const { data: bestNumber } = useBestNumber()
+        const timeLeft =
+          maturity && bestNumber
+            ? differenceInMilliseconds(maturity, bestNumber.timestamp)
+            : 0
         return (
           <Amount
             value={t("common:date.date", {
@@ -126,6 +166,10 @@ export const useMyBondsColumns = () => {
       },
     })
 
-    return [assetColumn, totalColumn, maturityColumn, actionsColumn]
-  }, [t])
+    return isMobile
+      ? ([assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyBond>>)
+      : ([assetColumn, totalColumn, maturityColumn, actionsColumn] as Array<
+          ColumnDef<MyBond>
+        >)
+  }, [isMobile, t])
 }

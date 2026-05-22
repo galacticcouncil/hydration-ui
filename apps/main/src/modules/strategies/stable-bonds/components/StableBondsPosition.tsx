@@ -14,6 +14,7 @@ import Big from "big.js"
 import { differenceInMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
+import { useBestNumber } from "@/api/chain"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import {
@@ -33,6 +34,7 @@ const PositionRow = () => {
   const { t } = useTranslation(["common", "strategies"])
   const rpc = useRpcProvider()
   const { getAssetWithFallback, getBond, isBond } = useAssets()
+  const { data: bestNumber } = useBestNumber()
   const { isBalanceLoading: isAccountBalanceLoading } = useAccountBalances()
   const config = useStableBondsConfig()
 
@@ -53,10 +55,11 @@ const PositionRow = () => {
     balanceHuman,
   )
 
-  const maturityDate = bondMeta?.maturity
-  const timeLeft = maturityDate
-    ? differenceInMilliseconds(new Date(maturityDate), new Date())
-    : 0
+  const maturity = bondMeta?.maturity ?? 0
+  const timeLeft =
+    maturity && bestNumber
+      ? differenceInMilliseconds(maturity, bestNumber.timestamp)
+      : 0
 
   return (
     <ResponsiveScope>
@@ -86,7 +89,7 @@ const PositionRow = () => {
               }
               bottomLabel={balanceUsdDisplay}
             />
-            {bondMeta && (
+            {maturity > 0 && (
               <ValueStats
                 wrap
                 size="small"
@@ -95,7 +98,7 @@ const PositionRow = () => {
                 customValue={
                   <Text fs="p3" fw={500} lh={1}>
                     {t("date.date", {
-                      value: new Date(bondMeta.maturity),
+                      value: new Date(maturity),
                     })}
                   </Text>
                 }
