@@ -73,6 +73,14 @@ export const PROVIDERS: ProviderProps[] = [
     "testnet",
   ),
   createProvider(
+    "Lark 2 (GIGAHDX)",
+    "wss://2.lark.hydration.cloud",
+    "https://archive.nice.hydration.cloud/graphql",
+    "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql",
+    ["development"],
+    "testnet",
+  ),
+  createProvider(
     "Paseo",
     "wss://paseo-rpc.play.hydration.cloud",
     "https://explorer.hydradx.cloud/graphql",
