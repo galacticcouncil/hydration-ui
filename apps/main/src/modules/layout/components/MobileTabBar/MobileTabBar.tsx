@@ -17,6 +17,7 @@ import {
   NAV_ITEMS_SHOWN_MOBILE,
   NAV_ITEMS_SHOWN_TABLET,
   NAVIGATION,
+  NavigationKey,
 } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 import {
@@ -34,6 +35,11 @@ export enum MobileTabBarDrawer {
   Settings = "Settings",
 }
 
+const getBottomNavOrder = (key: NavigationKey) => {
+  const order = bottomNavOrder.indexOf(key)
+  return order === -1 ? bottomNavOrder.length : order
+}
+
 export const MobileTabBar: FC = () => {
   const { t } = useTranslation()
   const translations = useMenuTranslations()
@@ -44,11 +50,14 @@ export const MobileTabBar: FC = () => {
   const closeDrawer = () => setDrawer(null)
 
   const itemsShown = isMobile ? NAV_ITEMS_SHOWN_MOBILE : NAV_ITEMS_SHOWN_TABLET
+
   const navItems = NAVIGATION.toSorted(
     (item1, item2) =>
-      bottomNavOrder.indexOf(item1.key) - bottomNavOrder.indexOf(item2.key),
+      getBottomNavOrder(item1.key) - getBottomNavOrder(item2.key),
   )
   const moreItems = navItems.slice(itemsShown)
+
+  console.log({ navItems, moreItems })
 
   if (!hasMobNavbar) return null
 

@@ -29,7 +29,7 @@ const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
     <Stack gap="xxl">
       <AssetHeader asset={asset} />
       <TwoColumnGrid template="sidebar">
-        <Stack gap="xl">
+        <Stack gap="xl" sx={{ order: [2, null, 0] }}>
           {balance && balance.transferable > 0n && <StableBondsPosition />}
           <StableBondsDetails orders={orders} />
           <StableBondsAbout />

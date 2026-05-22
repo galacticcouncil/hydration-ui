@@ -1,7 +1,7 @@
 {
   "about.title": "About {{ symbol }}",
   "details.title": "Strategy details",
-  "position.title": "My positions",
+  "position.title": "My position",
 
   "bonds.deposit.yourDeposit": "Your deposit",
   "bonds.deposit.receiveAtMaturity": "Receive at maturity",
