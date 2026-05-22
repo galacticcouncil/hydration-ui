@@ -164,18 +164,17 @@ export const useClaimAndCompound = () => {
       const tx = rpc.papi.tx.Utility.batch_all({ calls })
 
       const hasClaimedRewards =
-        claimedRewardsHdxHuman != null && claimedRewardsHdxHuman !== "0"
+        claimedRewardsHdxHuman !== undefined &&
+        claimedRewardsHdxHuman !== null &&
+        claimedRewardsHdxHuman !== "0"
 
       const toasts = hasUnstake
         ? hasClaimedRewards
           ? {
-              submitted: t(
-                "gigaStaking.unstake.toasts.submittedWithRewards",
-                {
-                  value: unstakeAmountHuman ?? "0",
-                  rewardsValue: claimedRewardsHdxHuman,
-                },
-              ),
+              submitted: t("gigaStaking.unstake.toasts.submittedWithRewards", {
+                value: unstakeAmountHuman ?? "0",
+                rewardsValue: claimedRewardsHdxHuman,
+              }),
               success: t("gigaStaking.unstake.toasts.successWithRewards", {
                 value: unstakeAmountHuman ?? "0",
                 rewardsValue: claimedRewardsHdxHuman,

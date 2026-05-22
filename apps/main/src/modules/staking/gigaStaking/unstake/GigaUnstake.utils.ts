@@ -183,8 +183,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
         : "0",
     )
 
-  const hasAllocReadyVotes =
-    (claimableRewards?.allocReadyVotes.length ?? 0) > 0
+  const hasAllocReadyVotes = (claimableRewards?.allocReadyVotes.length ?? 0) > 0
   const hasPendingRewards = (claimableRewards?.pendingHdx ?? 0n) > 0n
 
   /**

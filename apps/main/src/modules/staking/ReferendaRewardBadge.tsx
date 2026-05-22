@@ -52,9 +52,7 @@ export const ReferendaRewardBadge: FC<Props> = ({ id, trackId }) => {
   if (!rewardPool || rewardPool.amount <= 0n) return null
   if (!exchangeRate || exchangeRate.lte(0)) return null
 
-  const hdxHuman = Big(rewardPool.amount.toString()).div(
-    `1e${native.decimals}`,
-  )
+  const hdxHuman = Big(rewardPool.amount.toString()).div(`1e${native.decimals}`)
   const ghdxHuman = hdxHuman.div(exchangeRate.toString())
   const amount = BigInt(
     ghdxHuman
