@@ -15,25 +15,23 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import {
-  FAKE_STRATEGY,
-  STABLE_BONDS_ASSET_ID,
-} from "@/modules/strategies/stable-bonds/constants"
+import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalance, useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
-export const MyPositionsCard = () => {
+export const StableBondsPosition = () => {
   const { t } = useTranslation(["common"])
   const rpc = useRpcProvider()
   const { getAssetWithFallback, getBond, isBond } = useAssets()
   const { isBalanceLoading: isAccountBalanceLoading } = useAccountBalances()
+  const config = useStableBondsConfig()
 
-  const asset = getAssetWithFallback(STABLE_BONDS_ASSET_ID)
-  const bondMeta = getBond(STABLE_BONDS_ASSET_ID)
-  const balance = useAccountBalance(STABLE_BONDS_ASSET_ID)
+  const asset = getAssetWithFallback(config.bondId)
+  const bondMeta = getBond(config.bondId)
+  const balance = useAccountBalance(config.bondId)
 
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
@@ -46,17 +44,13 @@ export const MyPositionsCard = () => {
   const [balanceUsdDisplay] = useDisplayAssetPrice(
     underlyingAssetId,
     balanceHuman,
-    {
-      maximumFractionDigits: 2,
-    },
   )
 
-  const daysLeft = bondMeta?.maturity
-    ? Math.max(
-        0,
-        differenceInMilliseconds(new Date(bondMeta.maturity), new Date()),
-      )
-    : 0
+  const maturityDate = bondMeta?.maturity
+  const timeLeft =
+    maturityDate && maturityDate > Date.now()
+      ? differenceInMilliseconds(new Date(maturityDate), new Date())
+      : 0
 
   return (
     <Paper>
@@ -70,7 +64,7 @@ export const MyPositionsCard = () => {
         <Paper p="l" shadow={false}>
           <Flex align="center" gap="l" wrap>
             <Flex align="center" gap="s" minWidth={120}>
-              <AssetLogo id={STABLE_BONDS_ASSET_ID} size="medium" />
+              <AssetLogo id={config.bondId} size="medium" />
               <Text fs="p3" fw={500} color={getToken("text.high")}>
                 {asset.symbol}
               </Text>
@@ -113,10 +107,14 @@ export const MyPositionsCard = () => {
                       })}
                     </Text>
                   }
-                  bottomLabel={t("interval", {
-                    value: daysLeft,
-                    unit: "d",
-                  })}
+                  bottomLabel={
+                    timeLeft > 0
+                      ? t("interval", {
+                          value: timeLeft,
+                          unit: "d",
+                        })
+                      : undefined
+                  }
                 />
               )}
               <ValueStats
@@ -139,9 +137,7 @@ export const MyPositionsCard = () => {
                     color={getToken("accents.success.emphasis")}
                   >
                     {t("percent", {
-                      value: Big(FAKE_STRATEGY.availableApr).minus(
-                        Big(feePct).times(100),
-                      ),
+                      value: Big(config.apr).minus(Big(feePct).times(100)),
                       minimumFractionDigits: 1,
                     })}
                   </Text>

@@ -1,0 +1,95 @@
+import { formatAssetAmount } from "@galacticcouncil/utils"
+import { useMutation } from "@tanstack/react-query"
+import Big from "big.js"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import type { StableBondsFormValues } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
+import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrderModalContent.submit"
+import {
+  type OtcOffer,
+  useOtcOffers,
+} from "@/modules/trade/otc/table/OtcTable.query"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTransactionsStore } from "@/states/transactions"
+
+export const getStableBondsReceiveAmount = (
+  order: OtcOffer | undefined,
+  depositAmount: string,
+) => {
+  const depositAmountBig = Big(depositAmount || "0")
+  return order && depositAmountBig.gt(0)
+    ? formatAssetAmount(
+        Big.max(depositAmountBig, 0)
+          .div(Big(order.assetAmountIn).div(order.assetAmountOut))
+          .toString(),
+        order.assetOut.decimals,
+      )
+    : ""
+}
+
+export const getStableBondsFeeAmount = (amount: string, feePct: string) => {
+  return !amount || !feePct ? undefined : Big(amount).times(feePct).toString()
+}
+
+export const useStableBondsOtcOrders = (offerIds: number[]) => {
+  const query = useOtcOffers()
+
+  const data = useMemo(() => {
+    if (!query.data) return []
+    return query.data.filter(
+      (offer) => !!offer.id && offerIds.includes(Number(offer.id)),
+    )
+  }, [query.data, offerIds])
+
+  return { ...query, data }
+}
+
+type SubmitStableBondsOrderArgs = {
+  values: StableBondsFormValues
+  order: OtcOffer
+  receiveAmount: string
+}
+
+export const useSubmitStableBondsOrder = () => {
+  const { t } = useTranslation(["trade", "common"])
+  const { papi } = useRpcProvider()
+  const { isErc20AToken } = useAssets()
+
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+
+  return useMutation({
+    mutationFn: async ({
+      values,
+      order,
+      receiveAmount,
+    }: SubmitStableBondsOrderArgs) => {
+      const formattedAmount = t("common:currency", {
+        value: receiveAmount,
+        symbol: order.assetOut.symbol,
+      })
+
+      const tx = getOtcFillOrderTx(papi, order, values.depositAmount)
+
+      const hasAToken =
+        isErc20AToken(order.assetIn) || isErc20AToken(order.assetOut)
+
+      return createTransaction({
+        withExtraGas: hasAToken,
+        tx,
+        toasts: {
+          submitted: t("otc.fillOrder.loading", {
+            amount: formattedAmount,
+          }),
+          success: t("otc.fillOrder.success", {
+            amount: formattedAmount,
+          }),
+          error: t("otc.fillOrder.error", {
+            amount: formattedAmount,
+          }),
+        },
+      })
+    },
+  })
+}

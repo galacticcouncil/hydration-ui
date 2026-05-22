@@ -5,8 +5,9 @@ import { useTranslation } from "react-i18next"
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { FillOrderFormValues } from "@/modules/trade/otc/fill-order/FillOrderModalContent.form"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
+import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
@@ -15,6 +16,26 @@ const FULL_ORDER_PCT_LBOUND = 99
 type Args = {
   readonly otcOffer: OtcOfferTabular
   readonly onSubmitted: () => void
+}
+
+export const getOtcFillOrderTx = (
+  papi: Papi,
+  otcOffer: OtcOffer,
+  sellAmount: string,
+) => {
+  const filledPct = new Big(sellAmount)
+    .div(otcOffer.assetAmountIn)
+    .mul(100)
+    .toNumber()
+
+  return otcOffer.isPartiallyFillable && filledPct <= FULL_ORDER_PCT_LBOUND
+    ? papi.tx.OTC.partial_fill_order({
+        order_id: Number(otcOffer.id),
+        amount_in: BigInt(scale(sellAmount, otcOffer.assetIn.decimals)),
+      })
+    : papi.tx.OTC.fill_order({
+        order_id: Number(otcOffer.id),
+      })
 }
 
 export const useSubmitFillOrder = ({ otcOffer, onSubmitted }: Args) => {
@@ -31,25 +52,10 @@ export const useSubmitFillOrder = ({ otcOffer, onSubmitted }: Args) => {
         symbol: otcOffer.assetOut.symbol,
       })
 
-      const filledPct = new Big(form.sellAmount)
-        .div(otcOffer.assetAmountIn)
-        .mul(100)
-        .toNumber()
-
       const hasAToken =
         isErc20AToken(otcOffer.assetIn) || isErc20AToken(otcOffer.assetOut)
 
-      const tx =
-        otcOffer.isPartiallyFillable && filledPct <= FULL_ORDER_PCT_LBOUND
-          ? papi.tx.OTC.partial_fill_order({
-              order_id: Number(otcOffer.id),
-              amount_in: BigInt(
-                scale(form.sellAmount, otcOffer.assetIn.decimals),
-              ),
-            })
-          : papi.tx.OTC.fill_order({
-              order_id: Number(otcOffer.id),
-            })
+      const tx = getOtcFillOrderTx(papi, otcOffer, form.sellAmount)
 
       await createTransaction(
         {

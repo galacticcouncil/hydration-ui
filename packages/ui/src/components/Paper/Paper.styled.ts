@@ -13,17 +13,17 @@ const variants = createVariants((theme) => ({
   plain: css``,
 }))
 
-export const SPaper = styled(Box)<PaperProps>(
-  ({ theme, variant = "bordered", shadow = true }) => [
-    variants(variant),
-    shadow &&
-      css`
-        box-shadow:
-          0px 3px 9px 0px rgba(0, 0, 0, 0.04),
-          0px 14px 37px 0px rgba(0, 0, 0, 0.04);
-      `,
+export const SPaper = styled(Box, {
+  shouldForwardProp: (prop) => !["variant", "shadow"].includes(prop),
+})<PaperProps>(({ theme, variant = "bordered", shadow = true }) => [
+  variants(variant),
+  shadow &&
     css`
-      background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
+      box-shadow:
+        0px 3px 9px 0px rgba(0, 0, 0, 0.04),
+        0px 14px 37px 0px rgba(0, 0, 0, 0.04);
     `,
-  ],
-)
+  css`
+    background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
+  `,
+])
