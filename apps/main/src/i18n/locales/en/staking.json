@@ -130,6 +130,7 @@
   "dashboard.projectedAPR": "Projected APR",
   "dashboard.projectedAPR.base": "{{ value, percent }} base",
   "dashboard.projectedAPR.voting": "+ up to {{ value, percent }} voting",
+  "dashboard.projectedAPR.breakdown": "{{ base, percent }} base + {{ voting, percent }} voting",
   "dashboard.projectedAPR.tooltip": [
     "Estimated from the last 60 days of reward activity.",
     "Base APR is shared automatically by GIGAHDX holders.",

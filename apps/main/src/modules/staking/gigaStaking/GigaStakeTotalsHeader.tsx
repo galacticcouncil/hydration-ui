@@ -79,6 +79,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   const {
     passive: aprPassive,
     voting: aprVoting,
+    total: aprTotal,
     isLoading: isAprLoading,
   } = useGigaApr(aprReferenceStake)
 
@@ -153,8 +154,8 @@ export const GigaStakeTotalsHeader: FC = () => {
           isLoading={isAprLoading}
           customValue={
             <ValueStatsValue size="medium">
-              {t("staking:dashboard.projectedAPR.base", {
-                value: Number(aprPassive.toFixed(2)),
+              {t("common:percent", {
+                value: Number(aprTotal.toFixed(2)),
               })}
             </ValueStatsValue>
           }
@@ -162,8 +163,9 @@ export const GigaStakeTotalsHeader: FC = () => {
             <ValueStatsBottomValue
               sx={{ color: getToken("accents.success.emphasis") }}
             >
-              {t("staking:dashboard.projectedAPR.voting", {
-                value: Number(aprVoting.toFixed(2)),
+              {t("staking:dashboard.projectedAPR.breakdown", {
+                base: Number(aprPassive.toFixed(2)),
+                voting: Number(aprVoting.toFixed(2)),
               })}
             </ValueStatsBottomValue>
           }
