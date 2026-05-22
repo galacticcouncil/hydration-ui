@@ -1,0 +1,17 @@
+{
+  "about.title": "About {{ symbol }}",
+  "details.title": "Strategy details",
+  "position.title": "My positions",
+
+  "bonds.deposit.yourDeposit": "Your deposit",
+  "bonds.deposit.receiveAtMaturity": "Receive at maturity",
+  "bonds.deposit.maturityPeriod": "Maturity period",
+  "bonds.details.remainingCapacity": "Remaining capacity",
+  "bonds.details.availableApr": "Available APR",
+  "bonds.details.maturityPeriod": "Maturity period",
+  "bonds.details.fundingCurrency": "Funding currency",
+  "bonds.position.value": "Value",
+  "bonds.position.maturityDate": "Maturity date",
+  "bonds.position.redeem": "Redeem",
+  "bonds.position.availableAtMaturity": "Available at maturity"
+}

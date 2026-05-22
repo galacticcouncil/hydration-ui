@@ -48,7 +48,7 @@ export type StableBondsDepositProps = {
 export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   orders,
 }) => {
-  const { t } = useTranslation(["common", "trade"])
+  const { t } = useTranslation(["common", "trade", "strategies"])
   const rpc = useRpcProvider()
   const submit = useSubmitStableBondsOrder()
   const { getAssetWithFallback } = useAssets()
@@ -111,7 +111,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
         <Paper px="xl">
           <Box>
             <AssetSelectFormField<StableBondsFormValues>
-              label="Your deposit"
+              label={t("strategies:bonds.deposit.yourDeposit")}
               assetFieldName="depositAsset"
               amountFieldName="depositAmount"
               assets={depositAssets}
@@ -122,7 +122,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
             <StableBondsExchangeRate order={selectedOrder} />
 
             <AssetInput
-              label="Receive at maturity"
+              label={t("strategies:bonds.deposit.receiveAtMaturity")}
               symbol={underlyingAsset.symbol}
               selectedAssetIcon={
                 <AssetLogo id={underlyingAsset.id} size="medium" />
@@ -143,7 +143,9 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
             label={
               <Flex align="center" gap="base">
                 <Icon component={Lock} size="xs" />
-                <Text fs="p5">Maturity period</Text>
+                <Text fs="p5">
+                  {t("strategies:bonds.deposit.maturityPeriod")}
+                </Text>
               </Flex>
             }
             content={t("interval", {

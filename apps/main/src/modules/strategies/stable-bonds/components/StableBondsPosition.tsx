@@ -23,7 +23,7 @@ import { useAccountBalance, useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 export const StableBondsPosition = () => {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["common", "strategies"])
   const rpc = useRpcProvider()
   const { getAssetWithFallback, getBond, isBond } = useAssets()
   const { isBalanceLoading: isAccountBalanceLoading } = useAccountBalances()
@@ -56,7 +56,7 @@ export const StableBondsPosition = () => {
     <Paper>
       <Box p="l">
         <Text as="h2" font="primary" fs="base" fw={500}>
-          My positions
+          {t("strategies:position.title")}
         </Text>
       </Box>
       <Separator />
@@ -82,7 +82,7 @@ export const StableBondsPosition = () => {
                 wrap
                 size="small"
                 font="secondary"
-                label="Value"
+                label={t("strategies:bonds.position.value")}
                 isLoading={isAccountBalanceLoading}
                 customValue={
                   <Text fs="p3" fw={500} lh={1}>
@@ -99,7 +99,7 @@ export const StableBondsPosition = () => {
                   wrap
                   size="small"
                   font="secondary"
-                  label="Maturity date"
+                  label={t("strategies:bonds.position.maturityDate")}
                   customValue={
                     <Text fs="p3" fw={500} lh={1}>
                       {t("date.date", {
@@ -125,7 +125,7 @@ export const StableBondsPosition = () => {
                 customLabel={
                   <Flex align="center" gap="xs">
                     <Text fs="p5" color={getToken("text.medium")}>
-                      APR
+                      {t("apr")}
                     </Text>
                   </Flex>
                 }
@@ -147,10 +147,10 @@ export const StableBondsPosition = () => {
 
             <Flex direction="column" align="flex-end" gap="xs" minWidth={140}>
               <Button variant="tertiary" size="small" disabled>
-                Redeem
+                {t("strategies:bonds.position.redeem")}
               </Button>
               <Text fs="p6" color={getToken("text.low")}>
-                Available at maturity
+                {t("strategies:bonds.position.availableAtMaturity")}
               </Text>
             </Flex>
           </Flex>

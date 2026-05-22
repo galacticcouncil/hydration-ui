@@ -36,7 +36,7 @@ const DetailSeparator = () => (
 export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   orders,
 }) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "strategies"])
   const config = useStableBondsConfig()
 
   const fundingCapacities = useMemo(() => {
@@ -68,7 +68,11 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
 
   return (
     <Paper p="l">
-      <SectionHeader title="Strategy details" as="h2" noTopPadding />
+      <SectionHeader
+        title={t("strategies:details.title")}
+        as="h2"
+        noTopPadding
+      />
       <Separator mx="-l" mb="l" />
 
       <Flex align="stretch" gap={["xl", null, "xxxl"]} wrap>
@@ -76,7 +80,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
           <>
             <Box>
               <Text fs="p5" color={getToken("text.medium")}>
-                Remaining capacity
+                {t("strategies:bonds.details.remainingCapacity")}
               </Text>
               <Flex gap="xl">
                 {fundingCapacities.map(({ asset, amount }) => (
@@ -100,7 +104,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
 
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            Available APR
+            {t("strategies:bonds.details.availableApr")}
           </Text>
           <Text
             font="primary"
@@ -120,7 +124,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
 
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            Maturity period
+            {t("strategies:bonds.details.maturityPeriod")}
           </Text>
           <Text
             font="primary"
@@ -142,7 +146,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
           <Separator mx="-l" />
           <Box mb="-s" pt="s" asChild>
             <SummaryRow
-              label="Funding currency"
+              label={t("strategies:bonds.details.fundingCurrency")}
               content={
                 <Flex align="center" wrap>
                   {fundingCapacities.map(({ asset }, index) => (
