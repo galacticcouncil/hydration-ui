@@ -54,10 +54,9 @@ const PositionRow = () => {
   )
 
   const maturityDate = bondMeta?.maturity
-  const timeLeft =
-    maturityDate && maturityDate > Date.now()
-      ? differenceInMilliseconds(new Date(maturityDate), new Date())
-      : 0
+  const timeLeft = maturityDate
+    ? differenceInMilliseconds(new Date(maturityDate), new Date())
+    : 0
 
   return (
     <ResponsiveScope>
@@ -102,9 +101,8 @@ const PositionRow = () => {
                 }
                 bottomLabel={
                   timeLeft > 0
-                    ? t("interval", {
+                    ? t("interval.daysLeft", {
                         value: timeLeft,
-                        unit: "d",
                       })
                     : undefined
                 }

@@ -27,13 +27,13 @@ import {
   type StableBondsFormValues,
   useStableBondsForm,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
-import {
-  getStableBondsFeeAmount,
-  getStableBondsReceiveAmount,
-  useSubmitStableBondsOrder,
-} from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.utils"
+import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.utils"
 import { StableBondsExchangeRate } from "@/modules/strategies/stable-bonds/components/StableBondsExchangeRate"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
+import {
+  getOtcBuyAmountFromSellAmount,
+  getOtcFeeAmount,
+} from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { isBond, useAssets } from "@/providers/assetsProvider"
@@ -92,12 +92,13 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
     ? Big.min(selectedOrder.assetAmountIn, depositAssetBalance).toString()
     : "0"
 
-  const receiveAmount = getStableBondsReceiveAmount(
+  const receiveAmount = getOtcBuyAmountFromSellAmount(
     selectedOrder,
     depositAmount,
+    feePct,
   )
 
-  const feeAmount = getStableBondsFeeAmount(receiveAmount, feePct)
+  const feeAmount = getOtcFeeAmount(receiveAmount, feePct)
 
   return (
     <FormProvider {...form}>
@@ -177,7 +178,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
             </AuthorizedAction>
           </Box>
 
-          <CollapsibleRoot open={form.formState.isValid}>
+          <CollapsibleRoot open={Big(feeAmount || "0").gt(0)}>
             <CollapsibleContent>
               <Separator mx="-xl" />
               <Summary>
@@ -187,7 +188,6 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
                   })}
                   content={t("currency", {
                     value: feeAmount,
-                    percentage: Big(feePct).times(100).toNumber(),
                     symbol: selectedOrder?.assetOut.symbol,
                   })}
                 />

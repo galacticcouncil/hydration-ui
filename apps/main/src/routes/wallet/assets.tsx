@@ -3,6 +3,7 @@ import * as z from "zod/v4"
 
 import { getPageMeta } from "@/config/navigation"
 import { dataTableSortSchema } from "@/form/dataTableSortSchema"
+import { MyBondsTableColumnId } from "@/modules/wallet/assets/MyBonds/MyBondsTable.columns"
 import { MyLiquidityTableColumnId } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import { WalletAssetsPage } from "@/modules/wallet/assets/WalletAssetsPage"
 import { WalletAssetsSkeleton } from "@/modules/wallet/assets/WalletAssetsSkeleton"
@@ -11,6 +12,10 @@ const searchSchema = z.object({
   category: z.enum(["all", "assets", "liquidity"]).default("all"),
   assetsPage: z.number().optional(),
   assetsSort: dataTableSortSchema,
+  bondsPage: z.number().optional(),
+  bondsSort: dataTableSortSchema.default([
+    { id: MyBondsTableColumnId.Total, desc: true },
+  ]),
   liquidityPage: z.number().optional(),
   liquiditySort: dataTableSortSchema.default([
     { id: MyLiquidityTableColumnId.CurrentValue, desc: true },

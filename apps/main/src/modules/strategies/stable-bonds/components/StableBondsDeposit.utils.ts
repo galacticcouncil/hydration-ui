@@ -1,6 +1,4 @@
-import { formatAssetAmount } from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
-import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,25 +11,6 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-
-export const getStableBondsReceiveAmount = (
-  order: OtcOffer | undefined,
-  depositAmount: string,
-) => {
-  const depositAmountBig = Big(depositAmount || "0")
-  return order && depositAmountBig.gt(0)
-    ? formatAssetAmount(
-        Big.max(depositAmountBig, 0)
-          .div(Big(order.assetAmountIn).div(order.assetAmountOut))
-          .toString(),
-        order.assetOut.decimals,
-      )
-    : ""
-}
-
-export const getStableBondsFeeAmount = (amount: string, feePct: string) => {
-  return !amount || !feePct ? undefined : Big(amount).times(feePct).toString()
-}
 
 export const useStableBondsOtcOrders = (offerIds: number[]) => {
   const query = useOtcOffers()
