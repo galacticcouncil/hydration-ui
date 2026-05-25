@@ -434,7 +434,7 @@ const ClaimableRewardsField = () => {
     Big(0),
   )
 
-  const hasClaimable = accruedHdxBig.gt(0)
+  const hasClaimable = accruedHdxBig.gt("0.000001")
   const claimAndCompoundArgs = {
     allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
     unlockClasses: claimableRewards?.unlockClasses ?? [],

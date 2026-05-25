@@ -141,7 +141,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         amount: toBigInt(amount, native.decimals),
       })
 
-      const isBound = await rpc.queryClient.ensureQueryData(
+      const isBound = await rpc.queryClient.fetchQuery(
         evmAccountBindingQuery(rpc, address),
       )
 
