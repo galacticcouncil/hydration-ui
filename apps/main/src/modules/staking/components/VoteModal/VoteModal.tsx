@@ -246,6 +246,7 @@ const VoteForm = ({
                         max={6}
                         step={1}
                         dashCount={12}
+                        variant="accent"
                         value={field.value}
                         onChange={field.onChange}
                       />

@@ -2,6 +2,8 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Root, Thumb, Track } from "@radix-ui/react-slider"
 
+export type SliderVariant = "default" | "accent"
+
 export const SRoot = styled(Root)`
   position: relative;
   width: 100%;
@@ -18,12 +20,14 @@ export const SRoot = styled(Root)`
   }
 `
 
-export const SRange = styled.div(
-  ({ theme }) => css`
+export const SRange = styled.div<{ $variant: SliderVariant }>(
+  ({ theme, $variant }) => css`
     position: absolute;
     height: 100%;
 
-    background: ${theme.text.tint.secondary};
+    background: ${$variant === "accent"
+      ? theme.controls.solid.accent
+      : theme.text.tint.secondary};
 
     border-radius: ${theme.radii.full};
   `,
@@ -41,8 +45,8 @@ export const STrack = styled(Track)(
   `,
 )
 
-export const SThumb = styled(Thumb)(
-  ({ theme }) => css`
+export const SThumb = styled(Thumb)<{ $variant: SliderVariant }>(
+  ({ theme, $variant }) => css`
     all: unset;
     display: flex;
     align-items: center;
@@ -52,12 +56,16 @@ export const SThumb = styled(Thumb)(
     height: 32px;
 
     box-shadow:
-      0px 0px 17.2px 0px rgba(0, 0, 0, 0.13),
-      0px 4px 2.8px 0px rgba(0, 0, 0, 0.71);
+      0 0 17.2px 0 rgba(0, 0, 0, 0.03),
+      0 4px 2.8px 0 rgba(0, 0, 0, 0.1);
 
-    background: ${theme.text.tint.secondary};
+    background: ${$variant === "accent"
+      ? theme.controls.solid.accent
+      : theme.text.tint.secondary};
     border-radius: 12px;
-    transition: all ${theme.transitions.transform};
+    transition:
+      transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow ${theme.transitions.transform};
 
     cursor: grab;
 
@@ -66,7 +74,7 @@ export const SThumb = styled(Thumb)(
     }
 
     &:hover {
-      transform: scale(0.9);
+      transform: scale(1.06);
     }
 
     &[data-disabled] {

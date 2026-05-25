@@ -8,7 +8,14 @@ import { Union } from "@/assets/icons"
 import { getToken } from "@/utils"
 
 import { Icon } from "../Icon/Icon"
-import { SDash, SRange, SRoot, SThumb, STrack } from "./Slider.styled"
+import {
+  SDash,
+  SliderVariant,
+  SRange,
+  SRoot,
+  SThumb,
+  STrack,
+} from "./Slider.styled"
 
 export type SliderProps = {
   value: number
@@ -18,6 +25,7 @@ export type SliderProps = {
   step: number
   disabled?: boolean
   dashCount?: number
+  variant?: SliderVariant
 }
 
 export const Slider: FC<SliderProps> = ({
@@ -28,6 +36,7 @@ export const Slider: FC<SliderProps> = ({
   onChange,
   disabled,
   dashCount = 20,
+  variant = "default",
 }) => {
   const [ref, { width }] = useMeasure<HTMLSpanElement>()
 
@@ -59,14 +68,18 @@ export const Slider: FC<SliderProps> = ({
       {dashes}
       <STrack>
         <Range asChild>
-          <SRange />
+          <SRange $variant={variant} />
         </Range>
       </STrack>
-      <SThumb>
+      <SThumb $variant={variant}>
         <Icon
           size={10}
           component={Union}
-          color={getToken("controls.outline.active")}
+          color={getToken(
+            variant === "accent"
+              ? "controls.solid.onAccent"
+              : "controls.outline.active",
+          )}
         />
       </SThumb>
     </SRoot>
