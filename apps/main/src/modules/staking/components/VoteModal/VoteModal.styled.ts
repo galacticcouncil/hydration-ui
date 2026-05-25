@@ -28,7 +28,7 @@ export const SClaimYieldPrompt = styled(Flex)(
 export const SRewardMultiplierCard = styled(Flex)(
   ({ theme }) => css`
     --electric-start-color: ${theme.text.low};
-    --electric-end-color: ${theme.buttons.primary.medium.rest};
+    --electric-end-color: ${theme.controls.solid.accent};
     --electric-border-color: var(--electric-end-color);
     --electric-light-color: var(--electric-start-color);
     --electric-muted-border-color: ${theme.buttons.secondary.low.borderRest};
