@@ -25,6 +25,7 @@ export const SValuesColumn = styled(Flex)`
   flex: 1 1 100%;
   flex-basis: 100%;
   min-width: 0;
+  justify-content: space-between;
 
   ${containerSize(
     "md",
@@ -32,6 +33,7 @@ export const SValuesColumn = styled(Flex)`
       order: 1;
       flex: 1 1 auto;
       flex-basis: auto;
+      justify-content: space-around;
     `,
   )}
 `
