@@ -137,6 +137,12 @@ export const SModalPaper = styled(Paper)`
 
   max-width: ${({ theme }) => theme.sizes["6xl"]};
   padding-bottom: env(safe-area-inset-bottom);
+  border: 2.2343px solid #212837;
+  border-radius: 24px;
+  box-shadow:
+    0 6.70291px 20.1087px rgba(4, 9, 23, 0.04),
+    0 84.9035px 134.058px rgba(3, 6, 16, 0.2);
+  overflow: hidden;
 
   ${mq("max-xs")} {
     height: calc(100% - var(--modal-top-content-height));

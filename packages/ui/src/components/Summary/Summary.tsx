@@ -29,6 +29,7 @@ export const Summary = ({
         description={row.description}
         content={row.content}
         loading={row.loading}
+        className={row.className}
       />
     )) ?? children}
   </Stack>
