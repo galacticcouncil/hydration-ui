@@ -251,6 +251,23 @@ export const referendumInfoQuery = (referendumIndex: number) =>
     },
   })
 
+type TChainVotes = {
+  isUnlocked: boolean
+  amount: bigint
+  id: number
+  classId: number
+  endDiff: number | undefined
+  diffBlockNumber: number | undefined
+  locked: boolean
+}
+
+type TIndexedVotes = {
+  id: number
+  amount: bigint
+  locked: boolean
+  diffBlockNumber: number | undefined
+}
+
 export const openGovUnlockedTokensQuery = (
   rpc: TProviderContext,
   address: string,
@@ -275,7 +292,7 @@ export const openGovUnlockedTokensQuery = (
 
       const currentBlock = bestNumber.parachainBlockNumber
 
-      const filteredVotes = []
+      const indexedVotes: TIndexedVotes[] = []
       for (const vote of subsquareAccountVotes.items) {
         const status = vote.proposal.state.name
         if (status === SubsquareVoteState.Executed) {
@@ -283,7 +300,7 @@ export const openGovUnlockedTokensQuery = (
             CONVICTIONS_BLOCKS_BY_INDEX[vote.conviction]
 
           if (convictionBlockNumber === undefined) {
-            filteredVotes.push({
+            indexedVotes.push({
               amount: BigInt(vote.balance),
               id: vote.referendumIndex,
               locked: true,
@@ -297,7 +314,7 @@ export const openGovUnlockedTokensQuery = (
 
           const diffBlockNumber = unlockBlockNumber - currentBlock
 
-          filteredVotes.push({
+          indexedVotes.push({
             id: vote.referendumIndex,
             amount: BigInt(vote.balance),
             locked: Big(unlockBlockNumber).gt(currentBlock),
@@ -309,7 +326,7 @@ export const openGovUnlockedTokensQuery = (
           status === SubsquareVoteState.Deciding ||
           status === SubsquareVoteState.Confirming
         ) {
-          filteredVotes.push({
+          indexedVotes.push({
             id: vote.referendumIndex,
             amount: BigInt(vote.balance),
             locked: true,
@@ -321,7 +338,7 @@ export const openGovUnlockedTokensQuery = (
         }
       }
 
-      const votesData = await Promise.all(
+      const votesData: TChainVotes[] = await Promise.all(
         accountVotes.votes.map(async (accountVote) => {
           const referendumInfo =
             await rpc.papi.query.Referenda.ReferendumInfoFor.getValue(
@@ -381,9 +398,9 @@ export const openGovUnlockedTokensQuery = (
         }),
       )
 
-      const votesById = new Map()
+      const votesById = new Map<number, TIndexedVotes | TChainVotes>()
 
-      for (const vote of filteredVotes) {
+      for (const vote of indexedVotes) {
         votesById.set(vote.id, vote)
       }
 
@@ -397,7 +414,7 @@ export const openGovUnlockedTokensQuery = (
         votesToRemove: TUnlockableVote[]
       }>(
         (acc, voteData) => {
-          if (!voteData.locked && typeof voteData.classId === "number") {
+          if (!voteData.locked && "classId" in voteData) {
             acc.votesToRemove.push({
               voteId: voteData.id,
               classId: voteData.classId,

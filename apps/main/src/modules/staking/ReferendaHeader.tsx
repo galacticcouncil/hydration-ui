@@ -74,7 +74,7 @@ export const ReferendaHeader: FC<Props> = ({
     })}`
 
     return (
-      <Box bg={getToken("surfaces.containers.dim.dimOnHigh")}>
+      <Box>
         {isGigaStaking && <ReferendaRewardBadge id={id} trackId={trackId} />}
         <Flex align="center" justify="space-between" py="m" px="l">
           <Flex align="center" gap="s">

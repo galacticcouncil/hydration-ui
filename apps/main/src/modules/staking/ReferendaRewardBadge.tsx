@@ -63,11 +63,12 @@ export const ReferendaRewardBadge: FC<ReferendaRewardBadgeProps> = ({
       justify="center"
       gap="xs"
       px="m"
-      py="s"
+      py="m"
       bg={getToken("buttons.primary.medium.rest")}
     >
       <Text
-        fs="p5"
+        fs="p4"
+        lh={1}
         fw={500}
         color={getToken("buttons.primary.medium.onButton")}
       >

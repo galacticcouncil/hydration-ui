@@ -8,11 +8,14 @@ import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
-import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
+import {
+  nativeTokenLocksQuery,
+  TokenLockType,
+  useNativeTokenLocks,
+} from "@/api/balances"
 import { Conviction, CONVICTIONS_BLOCKS_BY_INDEX } from "@/api/democracy"
 import { gigaAccountStakesQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
-import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -70,26 +73,13 @@ export const useVoteModal = (
     governanceLocks.toString(),
   )
   const allLocksHuman = scaleHuman(allLocks.toString(), native.decimals)
+  const ghdxLocks = locks?.get(TokenLockType.GigaStaking) ?? 0n
+  const ghdxLocksHuman = scaleHuman(ghdxLocks.toString(), native.decimals)
 
-  //@TODO: can I use total balance or should substrate locked balance from OTC or DCA for example?
-  const totalHdxBalance = hdxBalance?.total?.toString() ?? "0"
+  const totalHdxBalance = hdxBalance?.free?.toString() ?? "0"
   const totalHdxBalanceHuman = scaleHuman(totalHdxBalance, native.decimals)
 
   const hdxAtomic = (v: string) => toBigInt(v || "0", native.decimals)
-  const maxBalanceWithFee = useMaxBalanceWithFee(
-    native.id,
-    rpc.papi.tx.ConvictionVoting.vote({
-      poll_index: referendumId,
-      vote: {
-        type: "Standard" as const,
-        value: {
-          vote: 0x80,
-          balance: hdxAtomic(totalHdxBalanceHuman),
-        },
-      },
-    }),
-    totalHdxBalance,
-  )
 
   const form = useForm<VoteModalFormValues>({
     mode: "onChange",
@@ -164,7 +154,7 @@ export const useVoteModal = (
               return
             }
 
-            if (ayeNum.plus(nayNum).gt(maxBalanceWithFee)) {
+            if (ayeNum.plus(nayNum).gt(totalHdxBalanceHuman)) {
               const msg = t("error.maxBalance")
               addIssue({ code: "custom", message: msg, path: ["aye"] })
               addIssue({ code: "custom", message: msg, path: ["nay"] })
@@ -187,7 +177,7 @@ export const useVoteModal = (
             ) {
               return
             }
-            if (ayeNum.plus(nayNum).plus(abstainNum).gt(maxBalanceWithFee)) {
+            if (ayeNum.plus(nayNum).plus(abstainNum).gt(totalHdxBalanceHuman)) {
               const msg = t("error.maxBalance")
               addIssue({ code: "custom", message: msg, path: ["aye"] })
               addIssue({ code: "custom", message: msg, path: ["nay"] })
@@ -207,7 +197,7 @@ export const useVoteModal = (
             })
             return
           }
-          if (Big(data.amount || "0").gt(maxBalanceWithFee)) {
+          if (Big(data.amount || "0").gt(totalHdxBalanceHuman)) {
             addIssue({
               code: "custom",
               message: t("error.maxBalance"),
@@ -229,7 +219,7 @@ export const useVoteModal = (
 
   const lockedBlocks = CONVICTIONS_BLOCKS_BY_INDEX[multiplier] ?? 0
   const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
-  const totaVotes = (() => {
+  const totalVotes = (() => {
     if (voteType === "split") {
       return Big(aye || "0")
         .add(nay || "0")
@@ -241,10 +231,15 @@ export const useVoteModal = (
         .add(abstain || "0")
         .toString()
     }
-    return Big(amount || "0")
-      .mul(multiplier || 0.1)
-      .toString()
+    return Big(amount || "0").toString()
   })()
+
+  const totalVotesWithMultiplier =
+    voteType === "aye" || voteType === "nay"
+      ? Big(totalVotes)
+          .mul(multiplier || 0.1)
+          .toString()
+      : totalVotes
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -300,11 +295,25 @@ export const useVoteModal = (
         }),
       }
 
+      const executedTransfarableAmount = Big(totalVotes)
+        .minus(
+          scaleHuman(hdxBalance?.frozen?.toString() ?? "0", native.decimals),
+        )
+        .toString()
+
       return createTransaction(
         {
           tx,
-          invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
+          invalidateQueries: [
+            ["accountOpenGovVotes"],
+            ["openGovReferenda"],
+            nativeTokenLocksQuery(rpc, account?.address ?? "").queryKey,
+          ],
           toasts,
+          executedAmount: {
+            amount: executedTransfarableAmount,
+            assetId: native.id,
+          },
         },
         { onSubmitted },
       )
@@ -318,9 +327,10 @@ export const useVoteModal = (
   return {
     form,
     totalHdxBalance,
-    maxBalanceWithFee,
+    totalHdxBalanceHuman,
     lockedDays,
-    totaVotes,
+    totalVotesWithMultiplier,
+    ghdxLocksHuman,
     onSubmit,
     governanceLocksHuman,
     allLocksHuman,

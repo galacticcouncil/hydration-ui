@@ -9,7 +9,11 @@ import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
-import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
+import {
+  nativeTokenLocksQuery,
+  TokenLockType,
+  useNativeTokenLocks,
+} from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
 import {
@@ -189,6 +193,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
             userGigaBorrowSummaryQueryKey(address),
             gigaQueryKey(address),
             gigaTotalLockedQuery(rpc).queryKey,
+            nativeTokenLocksQuery(rpc, address).queryKey,
           ],
           toasts,
         },

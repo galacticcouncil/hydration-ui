@@ -2,6 +2,7 @@ import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
+import Big from "big.js"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
@@ -99,7 +100,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
   const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
-  const feeAssetBalance = fee?.feeAssetBalance
+  const feeAssetBalance =
+    transaction.executedAmount &&
+    transaction.executedAmount.assetId === feeAssetId
+      ? Big(fee?.feeAssetBalance ?? "0")
+          .minus(transaction.executedAmount.amount)
+          .toString()
+      : fee?.feeAssetBalance
 
   const {
     nonce,

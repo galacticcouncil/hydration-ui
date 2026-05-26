@@ -40,6 +40,8 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
+const GIGAHDX_MIN_REWARDS_VISIBLE = 0.1
+
 export const GigaHDXPosition = () => {
   const { t } = useTranslation(["staking", "common", "borrow"])
   const [borrowModalOpen, setBorrowModalOpen] = useState(false)
@@ -373,47 +375,54 @@ export const GigaHDXPosition = () => {
               justify="space-between"
               separated
             >
-              <Flex justify="space-between" align="center" gap="base" flex={1}>
-                <Flex direction="column">
-                  <Amount
-                    label={
-                      <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                        {t("borrow:debt")}
-                      </Text>
-                    }
-                    value={
-                      <Text
-                        font="primary"
-                        fs={["p3", "p3", "base"]}
-                        lh={1}
-                        fw={500}
-                        color={getToken("text.high")}
-                      >
-                        {t("common:currency", {
-                          value: debt,
-                          symbol: hollarReserve?.reserve.symbol,
-                        })}
-                      </Text>
-                    }
-                    displayValue={t("common:currency", {
-                      value: hollarReserve?.totalBorrowsUSD || "0",
-                    })}
-                  />
-                  <Text fs="p6" fw={400} color={getToken("text.high")}>
-                    {t("gigaStaking.position.borrows.power", {
-                      value: usedBorrowingPower,
-                    })}
-                  </Text>
-                </Flex>
-
-                <Button
-                  variant="secondary"
-                  disabled={!hasDebt}
-                  onClick={() => setRepayModalOpen(true)}
+              {hasDebt && (
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  gap="base"
+                  flex={1}
                 >
-                  {t("common:repay")}
-                </Button>
-              </Flex>
+                  <Flex direction="column">
+                    <Amount
+                      label={
+                        <Text fs="p6" lh={1} color={getToken("text.medium")}>
+                          {t("borrow:debt")}
+                        </Text>
+                      }
+                      value={
+                        <Text
+                          font="primary"
+                          fs={["p3", "p3", "base"]}
+                          lh={1}
+                          fw={500}
+                          color={getToken("text.high")}
+                        >
+                          {t("common:currency", {
+                            value: debt,
+                            symbol: hollarReserve?.reserve.symbol,
+                          })}
+                        </Text>
+                      }
+                      displayValue={t("common:currency", {
+                        value: hollarReserve?.totalBorrowsUSD || "0",
+                      })}
+                    />
+                    <Text fs="p6" fw={400} color={getToken("text.high")}>
+                      {t("gigaStaking.position.borrows.power", {
+                        value: usedBorrowingPower,
+                      })}
+                    </Text>
+                  </Flex>
+
+                  <Button
+                    variant="secondary"
+                    disabled={!hasDebt}
+                    onClick={() => setRepayModalOpen(true)}
+                  >
+                    {t("common:repay")}
+                  </Button>
+                </Flex>
+              )}
 
               <Flex justify="space-between" align="center" gap="base" flex={1}>
                 <Amount
@@ -453,48 +462,52 @@ export const GigaHDXPosition = () => {
         <Box px={["l", "xl"]} pb={["m", "xl"]}>
           <SChartLegendContainer asChild>
             <Flex direction="column" gap="l" justify="space-between">
-              <Flex justify="space-between" align="center">
-                <Amount
-                  label={
-                    <Text
-                      fs={["p6", "p6", "p4"]}
-                      lh={1}
-                      color={getToken("text.medium")}
-                    >
-                      {t("gigaStaking.claim.label")}
-                    </Text>
-                  }
-                  value={
-                    <Text
-                      font="primary"
-                      fs={["p3", "p1", "h5"]}
-                      fw={500}
-                      lh={1}
-                      color={getToken("text.tint.primary")}
-                    >
-                      {t("common:currency", {
-                        value: climableGigaHdxBig,
-                        symbol: ghdxMeta.symbol,
+              {climableGigaHdxBig?.gt(GIGAHDX_MIN_REWARDS_VISIBLE) && (
+                <>
+                  <Flex justify="space-between" align="center">
+                    <Amount
+                      label={
+                        <Text
+                          fs={["p6", "p6", "p4"]}
+                          lh={1}
+                          color={getToken("text.medium")}
+                        >
+                          {t("gigaStaking.claim.label")}
+                        </Text>
+                      }
+                      value={
+                        <Text
+                          font="primary"
+                          fs={["p3", "p1", "h5"]}
+                          fw={500}
+                          lh={1}
+                          color={getToken("text.tint.primary")}
+                        >
+                          {t("common:currency", {
+                            value: climableGigaHdxBig,
+                            symbol: ghdxMeta.symbol,
+                          })}
+                        </Text>
+                      }
+                      displayValue={t("common:currency", {
+                        value: claimableTotalHuman,
+                        symbol: native.symbol,
                       })}
-                    </Text>
-                  }
-                  displayValue={t("common:currency", {
-                    value: claimableTotalHuman,
-                    symbol: native.symbol,
-                  })}
-                />
+                    />
 
-                <Button
-                  variant="secondary"
-                  size={isMobile || isTablet ? "medium" : "large"}
-                  disabled={!hasClaimable || claimMutation.isPending}
-                  onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
-                >
-                  {t("gigaStaking.claim.cta")}
-                </Button>
-              </Flex>
+                    <Button
+                      variant="secondary"
+                      size={isMobile || isTablet ? "medium" : "large"}
+                      disabled={!hasClaimable || claimMutation.isPending}
+                      onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
+                    >
+                      {t("gigaStaking.claim.cta")}
+                    </Button>
+                  </Flex>
 
-              <Separator />
+                  <Separator />
+                </>
+              )}
 
               <Text
                 fs={["p5", "p5", "p2"]}

@@ -71,12 +71,7 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
   const indexerUrl = useProxyUrl()
 
   const { data: unlockedTokens, isLoading: unlockedTokensLoading } = useQuery(
-    openGovUnlockedTokensQuery(
-      rpc,
-
-      account?.address ?? "",
-      indexerUrl,
-    ),
+    openGovUnlockedTokensQuery(rpc, account?.address ?? "", indexerUrl),
   )
 
   const lockedInReferendaBig = new Big(lockedInReferenda)
