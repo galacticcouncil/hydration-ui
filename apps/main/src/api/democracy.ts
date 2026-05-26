@@ -268,15 +268,20 @@ type TIndexedVotes = {
   diffBlockNumber: number | undefined
 }
 
+export const openGovUnlockedTokensQueryKey = (address: string) => [
+  "openGovUnlockedTokens",
+  address,
+]
+
 export const openGovUnlockedTokensQuery = (
   rpc: TProviderContext,
   address: string,
   indexerUrl: string,
 ) =>
   queryOptions({
-    queryKey: ["openGovUnlockedTokens", rpc.endpoint, address],
+    queryKey: openGovUnlockedTokensQueryKey(address),
     queryFn: async () => {
-      const [accountVotes, bestNumber, subsquareAccountVotes] =
+      const [accountVotes, bestNumber, subsquareAccountVotes, votesRewarded] =
         await Promise.all([
           rpc.queryClient.ensureQueryData(
             accountOpenGovVotesQuery(rpc, address),
@@ -285,6 +290,7 @@ export const openGovUnlockedTokensQuery = (
           rpc.queryClient.ensureQueryData(
             accountVotesQuery(address, indexerUrl),
           ),
+          rpc.papi.query.Staking.VotesRewarded.getEntries(address),
         ])
       if (!bestNumber) {
         throw new Error("Best number not found")
@@ -408,13 +414,17 @@ export const openGovUnlockedTokensQuery = (
         votesById.set(vote.id, vote)
       }
 
+      const processedVotes = new Set(
+        votesRewarded.map(({ keyArgs }) => keyArgs[1]),
+      )
+
       const mergedVotesMax = [...votesById.values()].reduce<{
         maxLockedValue: string
         maxLockedBlock: number | undefined
         votesToRemove: TUnlockableVote[]
       }>(
         (acc, voteData) => {
-          if (!voteData.locked && "classId" in voteData) {
+          if ("classId" in voteData && processedVotes.has(voteData.id)) {
             acc.votesToRemove.push({
               voteId: voteData.id,
               classId: voteData.classId,

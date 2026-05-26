@@ -46,8 +46,6 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   const claimPendingPosition = useClaimPendingPosition()
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
 
-  // TODO: Add claiming logic
-
   const amountShifted = scaleHuman(amount, native.decimals)
   const [displayValue] = useDisplayAssetPrice(native.id, amountShifted)
 
