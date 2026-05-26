@@ -14,7 +14,7 @@ import {
 import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
-import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/transfer"
+import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
@@ -144,7 +144,10 @@ const hasAssetOnChain = (assetKey: string, chainKey: string) =>
 
 export const xcmTransferQuery = (
   wallet: Wallet,
-  {
+  transferArgs: XcmTransferArgs | null,
+  options?: Partial<UseQueryOptions<Transfer>>,
+) => {
+  const {
     srcAddress,
     srcAsset,
     srcChain,
@@ -152,9 +155,8 @@ export const xcmTransferQuery = (
     destChain,
     destAsset,
     bridgeTag,
-  }: XcmTransferArgs,
-  options?: Partial<UseQueryOptions<Transfer>>,
-) => {
+  } = transferArgs ?? {}
+
   return queryOptions({
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
@@ -171,24 +173,27 @@ export const xcmTransferQuery = (
       bridgeTag,
     ],
     queryFn: async () => {
+      if (!transferArgs) throw new Error("Invalid transfer args")
+
       const builder = TransferBuilder(wallet)
-        .withAsset(srcAsset)
-        .withSource(srcChain)
-        .withDestination(destChain)
+        .withAsset(transferArgs.srcAsset)
+        .withSource(transferArgs.srcChain)
+        .withDestination(transferArgs.destChain)
 
       const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
         builder.routes,
-        destAsset,
-        bridgeTag,
+        transferArgs.destAsset,
+        transferArgs.bridgeTag,
       )
 
       return builder.build({
-        srcAddress,
-        dstAddress: destAddress,
+        srcAddress: transferArgs.srcAddress,
+        dstAddress: transferArgs.destAddress,
         dstAsset,
         tag,
       })
     },
+    ...options,
     enabled:
       !!srcAddress &&
       !!destAddress &&
@@ -197,17 +202,17 @@ export const xcmTransferQuery = (
       !!srcChain &&
       !!destChain &&
       hasAssetOnChain(srcAsset, srcChain) &&
-      hasAssetOnChain(destAsset, destChain),
-    ...options,
+      hasAssetOnChain(destAsset, destChain) &&
+      Boolean(options?.enabled ?? true),
   })
 }
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
-    enabled: !!transfer,
+    enabled: !!transfer && !!transferArgs,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "report", transferArgs],
     queryFn: async () => {
@@ -219,10 +224,10 @@ export const xcmTransferReportQuery = (
 export const xcmDestinationFeeQuery = (
   transfer: Transfer | null,
   amount: string,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
-    enabled: !!transfer && !!amount && Number(amount) > 0,
+    enabled: !!transfer && !!transferArgs && !!amount && Number(amount) > 0,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "destFee", amount, transferArgs],
     queryFn: async () => {
@@ -235,11 +240,11 @@ export const xcmTransferCallQuery = (
   { dryRunErrorDecoder }: TProviderContext,
   transfer: Transfer | null,
   amount: string,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
   dryRun?: boolean,
 ) =>
   queryOptions({
-    enabled: !!transfer && !!amount,
+    enabled: !!transfer && !!transferArgs && !!amount,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "call", amount, transferArgs, dryRun],
     queryFn: async () => {

@@ -8,9 +8,7 @@ import {
   SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { isAnyEvmChain } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -20,39 +18,27 @@ import { useEvmApprovalFee } from "@/modules/xcm/transfer/hooks/useEvmApprovalFe
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
-import {
-  getXcmTransferArgs,
-  isSnowbridgeRoute,
-} from "@/modules/xcm/transfer/utils/transfer"
+import { isSnowbridgeRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
   const { t } = useTranslation(["common", "xcm"])
-  const { transfer, call, alerts, isLoading } = useXcmProvider()
-  const { account } = useAccount()
+  const { transfer, call, alerts, isLoading, transferArgs } = useXcmProvider()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
 
   const { source, destination } = transfer || {}
 
-  const [
-    srcAsset,
-    destAsset,
-    srcChain,
-    destChain,
-    bridgeProvider,
-    srcAmount,
-    destAddress,
-  ] = watch([
-    "srcAsset",
-    "destAsset",
-    "srcChain",
-    "destChain",
-    "bridgeProvider",
-    "srcAmount",
-    "destAddress",
-  ])
+  const [srcAsset, destAsset, srcChain, destChain, bridgeProvider, srcAmount] =
+    watch([
+      "srcAsset",
+      "destAsset",
+      "srcChain",
+      "destChain",
+      "bridgeProvider",
+      "srcAmount",
+    ])
 
   const config = useXcmTransferConfigs(
     srcAsset,
@@ -64,28 +50,12 @@ export const XcmSummary = () => {
   const { origin } = config ?? {}
 
   const isSnowbridge = !!origin?.route && isSnowbridgeRoute(origin.route)
-  const xcmArgs = useMemo(
-    () =>
-      getXcmTransferArgs(account, {
-        srcChain,
-        srcAsset,
-        destChain,
-        destAsset,
-        destAddress,
-        bridgeProvider,
-      } as XcmFormValues),
-    [
-      account,
-      srcChain,
-      srcAsset,
-      destChain,
-      destAsset,
-      destAddress,
-      bridgeProvider,
-    ],
-  )
   const { data: snowbridgeDestFee } = useQuery(
-    xcmDestinationFeeQuery(isSnowbridge ? transfer : null, srcAmount, xcmArgs),
+    xcmDestinationFeeQuery(
+      isSnowbridge ? transfer : null,
+      srcAmount,
+      transferArgs,
+    ),
   )
 
   // For Snowbridge V2 the destination fee is volume-based — read the

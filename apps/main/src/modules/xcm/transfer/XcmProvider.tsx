@@ -22,18 +22,19 @@ import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
+  resolveValidBridgeProvider,
+  shouldPreserveSnowbridgeFastSelection,
+} from "@/modules/xcm/transfer/utils/bridge"
+import {
   getChainPriority,
   isAccountValidOnChain,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
 import {
   calculateTransferDestAmount,
-  getPrimaryBridgeTag,
   getTransferStatus,
-  hasSnowbridgeVariantChoice,
-  isSnowbridgeFastTag,
+  getXcmTransferArgs,
 } from "@/modules/xcm/transfer/utils/transfer"
-import { XcmTag } from "@/states/transactions"
 
 type XcmProviderProps = {
   children: React.ReactNode
@@ -48,7 +49,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const configService = useCrossChainConfigService()
 
-  const [
+  const values = form.watch()
+
+  const {
     srcChain,
     srcAsset,
     destChain,
@@ -56,15 +59,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     srcAmount,
     destAddress,
     bridgeProvider,
-  ] = form.watch([
-    "srcChain",
-    "srcAsset",
-    "destChain",
-    "destAsset",
-    "srcAmount",
-    "destAddress",
-    "bridgeProvider",
-  ])
+  } = values
 
   const config = useMemo(
     () => ConfigBuilder(configService).assets(),
@@ -117,45 +112,22 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   )
 
   useEffect(() => {
-    if (!destPair) return
-
-    const hasFastVariant = destPair.routes.some((r) =>
-      (r.tags ?? []).includes(XcmTag.SnowbridgeFast),
-    )
-    const isAlreadyValid =
-      (isSnowbridgeFastTag(bridgeProvider) && hasFastVariant) ||
-      destPair.routes.some((r) => getPrimaryBridgeTag(r) === bridgeProvider)
-    if (isAlreadyValid) return
-
-    const defaultRoute =
-      destPair.routes.find((r) => getPrimaryBridgeTag(r) === XcmTag.Basejump) ??
-      destPair.routes[0]
-    if (defaultRoute)
-      form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))
-  }, [destPair, bridgeProvider, form])
-
-  useEffect(() => {
     if (!destPair || !destAsset) return
 
-    const route = destPair.routes.find(
+    const matchingRoutes = destPair.routes.filter(
       (r) => r.destination.asset.key === destAsset.key,
     )
-    const tag = route ? getPrimaryBridgeTag(route) : null
-    if (!tag) return
 
-    // Keep an explicit SnowbridgeFast selection — both fast and slow share
-    // the same destAsset, so don't downgrade fast → slow on resync.
-    if (
-      isSnowbridgeFastTag(bridgeProvider) &&
-      destPair.routes.some((r) =>
-        (r.tags ?? []).includes(XcmTag.SnowbridgeFast),
-      )
-    ) {
-      return
-    }
+    if (!matchingRoutes.length) return
 
-    if (tag !== bridgeProvider) {
-      form.setValue("bridgeProvider", tag)
+    if (shouldPreserveSnowbridgeFastSelection(bridgeProvider, destPair)) return
+
+    const validProvider = resolveValidBridgeProvider(
+      bridgeProvider,
+      matchingRoutes,
+    )
+    if (validProvider !== bridgeProvider) {
+      form.setValue("bridgeProvider", validProvider)
     }
   }, [bridgeProvider, destPair, destAsset, form])
 
@@ -201,6 +173,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
+  const transferArgs = useMemo(
+    () => getXcmTransferArgs(account, values),
+    [account, values],
+  )
+
   const {
     transfer: xcmTransfer,
     isLoadingTransfer,
@@ -208,7 +185,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     call,
     dryRunError,
     report,
-  } = useXcmTransfer(form)
+  } = useXcmTransfer(form, transferArgs)
 
   const alerts = useXcmTransferAlerts(report)
 
@@ -249,14 +226,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         sourceChainAssetPairs,
         destChainAssetPairs,
         availableBridgeRoutes: destPair?.isTagSelect ? destPair.routes : [],
-        hasSnowbridgeVariants:
-          destPair && destAsset
-            ? hasSnowbridgeVariantChoice(
-                destPair.routes.filter(
-                  (r) => r.destination.asset.key === destAsset.key,
-                ),
-              )
-            : false,
+        transferArgs,
         alerts,
         transfer,
         call,

@@ -1,4 +1,4 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
+import { Flex, OptionCard, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
@@ -6,8 +6,6 @@ import { isNullish } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { TAsset } from "@/providers/assetsProvider"
-
-import { STradeOptionContainer } from "./TradeOption.styled"
 
 type Props = {
   readonly asset: TAsset
@@ -40,27 +38,14 @@ export const TradeOption = ({
   const isPositive = Big(diff || "0").gte(0)
 
   return (
-    <STradeOptionContainer
-      type="button"
-      onClick={onClick}
-      active={active}
-      disabled={disabled}
-    >
-      <Flex direction="column">
-        <Text fs="p3" lh={1} color={getToken("text.high")}>
-          {label}
-        </Text>
-        <Text fs="p5" color={getToken("text.medium")}>
-          {time}
-        </Text>
-      </Flex>
-      <Flex direction="column" align="end">
-        <Text fs="p3" lh={1} fw={600} color={getToken("text.high")}>
-          {t("currency", {
-            value: value,
-            symbol: asset.symbol,
-          })}
-        </Text>
+    <OptionCard
+      label={label}
+      description={time}
+      value={t("currency", {
+        value: value,
+        symbol: asset.symbol,
+      })}
+      displayValue={
         <Flex gap="s" align="center">
           <Text fs="p6" fw={400} color={getToken("text.medium")}>
             {displayValue}
@@ -84,7 +69,10 @@ export const TradeOption = ({
             </Text>
           )}
         </Flex>
-      </Flex>
-    </STradeOptionContainer>
+      }
+      isActive={active}
+      onClick={onClick}
+      disabled={disabled}
+    />
   )
 }

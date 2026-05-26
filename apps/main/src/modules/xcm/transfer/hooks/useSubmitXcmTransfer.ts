@@ -17,11 +17,8 @@ import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import {
-  buildTransferCall,
-  isSnowbridgeTag,
-  resolveRouteBuilderArgs,
-} from "@/modules/xcm/transfer/utils/transfer"
+import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
+import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   TransactionActions,
@@ -75,7 +72,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       if (!srcAsset) throw new Error("Source asset is required")
       if (!destAsset) throw new Error("Destination asset is required")
 
-      const { destination, source } = transfer
+      const { source } = transfer
 
       const i18nVars = {
         amount: srcAmount,
@@ -102,10 +99,6 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       const isApprove = isEvmApproveCall(call)
 
       const buildTransferTransaction = async () => {
-        if (isSnowbridgeTag(bridgeProvider)) {
-          await transfer.estimateDestinationFee(srcAmount)
-        }
-
         const call = await transfer.buildCall(srcAmount)
         const transferCall = await buildTransferCall(
           call,
@@ -130,6 +123,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
           })
         })()
 
+        const destFee = await transfer.estimateDestinationFee(srcAmount)
+
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
@@ -149,11 +144,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             srcChainFee: sourceFeeValue,
             srcChainFeeSymbol: sourceFee.symbol,
             dstChainKey: destChain.key,
-            dstChainFee: toDecimal(
-              destination.fee.amount,
-              destination.fee.decimals,
-            ),
-            dstChainFeeSymbol: destination.fee.symbol,
+            dstChainFee: destFee.toDecimal(),
+            dstChainFeeSymbol: destFee.symbol,
             tags: (origin.route.tags as XcmTags) || [],
           },
         }

@@ -1,39 +1,14 @@
-import { Basejumper, WormholeLogo } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { OptionCard, Stack } from "@galacticcouncil/ui/components"
 import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useFormContext } from "react-hook-form"
-import { isNonNullish, uniqueBy } from "remeda"
 
+import { SnowbridgeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/SnowbridgeOptions"
+import {
+  BridgeEntryKind,
+  useBridgeOptions,
+} from "@/modules/xcm/transfer/hooks/useBridgeOptions"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { getPrimaryBridgeTag } from "@/modules/xcm/transfer/utils/transfer"
-import { XcmTag } from "@/states/transactions"
-
-import { SBridgeOption } from "./BridgeSelector.styled"
-
-type BridgeOption = {
-  id: string
-  label: string
-  time: string
-  icon?: React.ComponentType
-}
-
-const BRIDGE_PRIORITY: Record<string, number> = {
-  [XcmTag.Basejump]: 0,
-  [XcmTag.Wormhole]: 1,
-  [XcmTag.Snowbridge]: 2,
-}
-
-const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
-  [XcmTag.Basejump]: "~22 sec",
-  [XcmTag.Wormhole]: "~30 min",
-  [XcmTag.Snowbridge]: "5–20 min",
-}
-
-const BRIDGE_ICONS: Partial<Record<string, React.ComponentType>> = {
-  [XcmTag.Basejump]: Basejumper,
-  [XcmTag.Wormhole]: WormholeLogo,
-}
+import { BRIDGE_ICON, BRIDGE_TIME } from "@/modules/xcm/transfer/utils/bridge"
 
 type BridgeSelectorProps = {
   routes: AssetRoute[]
@@ -41,51 +16,41 @@ type BridgeSelectorProps = {
 
 export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
   const { watch, setValue } = useFormContext<XcmFormValues>()
-  const bridgeProvider = watch("bridgeProvider")
+  const [destAsset, bridgeProvider] = watch(["destAsset", "bridgeProvider"])
 
-  const options = uniqueBy(
-    routes
-      .map((route) => {
-        const tag = getPrimaryBridgeTag(route)
-        if (!tag) return null
-        return {
-          id: tag,
-          label: tag,
-          time: BRIDGE_TIME_ESTIMATES[tag] ?? "",
-          icon: BRIDGE_ICONS[tag],
-        } satisfies BridgeOption
-      })
-      .filter(isNonNullish),
-    (o) => o.id,
-  ).sort(
-    (a, b) => (BRIDGE_PRIORITY[a.id] ?? 99) - (BRIDGE_PRIORITY[b.id] ?? 99),
-  )
+  const { options, hasVisibleOptions } = useBridgeOptions(routes, destAsset)
 
-  if (options.length < 2) return null
+  if (!hasVisibleOptions) return null
+
+  const handleSelect = (id: string) => {
+    setValue("bridgeProvider", id)
+  }
 
   return (
-    <Flex direction="column" gap="base">
-      {options.map((option) => {
-        const active = bridgeProvider === option.id
-        return (
-          <SBridgeOption
-            key={option.id}
-            type="button"
-            active={active}
-            onClick={() => setValue("bridgeProvider", option.id)}
-          >
-            <Flex gap="base" align="center">
-              {option.icon && <Icon component={option.icon} size="xl" />}
-              <Text fs="p3" fw={500} lh={1} color={getToken("text.high")}>
-                {option.label}
-              </Text>
-            </Flex>
-            <Text fs="p5" fw={600} color={getToken("text.high")}>
-              {option.time}
-            </Text>
-          </SBridgeOption>
-        )
+    <Stack gap="base">
+      {options.map((entry) => {
+        switch (entry.kind) {
+          case BridgeEntryKind.Default:
+            return (
+              <OptionCard
+                key={entry.tag}
+                label={entry.tag}
+                value={BRIDGE_TIME[entry.tag] ?? ""}
+                icon={BRIDGE_ICON[entry.tag]}
+                isActive={bridgeProvider === entry.tag}
+                onClick={() => handleSelect(entry.tag)}
+              />
+            )
+          case BridgeEntryKind.Snowbridge:
+            return (
+              <SnowbridgeOptions
+                key={BridgeEntryKind.Snowbridge}
+                activeProvider={bridgeProvider ?? null}
+                onSelect={handleSelect}
+              />
+            )
+        }
       })}
-    </Flex>
+    </Stack>
   )
 }

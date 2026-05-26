@@ -1,1 +1,0 @@
-export { SnowbridgeVariantSelector } from "./SnowbridgeVariantSelector"

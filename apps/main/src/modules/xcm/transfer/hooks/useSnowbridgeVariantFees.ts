@@ -36,18 +36,24 @@ const noop = () => {}
 // variants in parallel, so the selector can show real USD totals on both
 // rows without the user having to flip between them.
 export const useSnowbridgeVariantFees = (
-  args: XcmTransferArgs,
+  args: XcmTransferArgs | null,
   srcAmount: string,
-  enabled: boolean,
 ): SnowbridgeVariantFees => {
   const wallet = useCrossChainWallet()
 
+  const enabled =
+    !!args &&
+    !!args.srcAddress &&
+    !!args.destAddress &&
+    !!args.srcAsset &&
+    !!args.destAsset
+
   const slowArgs = useMemo(
-    () => ({ ...args, bridgeTag: XcmTag.Snowbridge as string }),
+    () => (args ? { ...args, bridgeTag: XcmTag.Snowbridge } : null),
     [args],
   )
   const fastArgs = useMemo(
-    () => ({ ...args, bridgeTag: XcmTag.SnowbridgeFast as string }),
+    () => (args ? { ...args, bridgeTag: XcmTag.SnowbridgeFast } : null),
     [args],
   )
 
