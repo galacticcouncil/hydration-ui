@@ -43,42 +43,8 @@ export const useMyBondsColumns = () => {
         select: (row) => row.original.symbol,
         compare: naturally,
       }),
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original} />
-      },
-    })
-
-    const assetColumnMobile = columnHelper.accessor("symbol", {
-      id: MyBondsTableColumnId.Asset,
-      enableSorting: false,
-      header: t("common:bond"),
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original} withName={false} />
-      },
-    })
-
-    const totalColumnMobile = columnHelper.accessor("total", {
-      id: MyBondsTableColumnId.Total,
-      header: t("myBonds.header.total"),
-      meta: {
-        sx: {
-          textAlign: "right",
-        },
-      },
-      sortingFn: sortBy({
-        select: (row) => row.original.totalDisplay || "0",
-        compare: numericallyStr,
-      }),
       cell: ({ row }) => (
-        <TableRowDetailsExpand>
-          <Amount
-            variant="default"
-            value={t("common:number", {
-              value: row.original.total,
-            })}
-            displayValue={row.original.totalDisplay}
-          />
-        </TableRowDetailsExpand>
+        <AssetLabelFull asset={row.original} withName={!isMobile} />
       ),
     })
 
@@ -89,14 +55,23 @@ export const useMyBondsColumns = () => {
         select: (row) => row.original.totalDisplay || "0",
         compare: numericallyStr,
       }),
-      cell: ({ row }) => (
-        <Amount
-          value={t("common:number", {
-            value: row.original.total,
-          })}
-          displayValue={row.original.totalDisplay}
-        />
-      ),
+      cell: ({ row }) => {
+        const amount = (
+          <Amount
+            value={t("common:number", {
+              value: row.original.total,
+            })}
+            displayValue={t("common:currency", {
+              value: row.original.totalDisplay,
+            })}
+          />
+        )
+        return isMobile ? (
+          <TableRowDetailsExpand>{amount}</TableRowDetailsExpand>
+        ) : (
+          amount
+        )
+      },
     })
 
     const maturityColumn = columnHelper.accessor("maturity", {
@@ -161,7 +136,7 @@ export const useMyBondsColumns = () => {
     })
 
     return isMobile
-      ? ([assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyBond>>)
+      ? ([assetColumn, totalColumn] as Array<ColumnDef<MyBond>>)
       : ([assetColumn, totalColumn, maturityColumn, actionsColumn] as Array<
           ColumnDef<MyBond>
         >)

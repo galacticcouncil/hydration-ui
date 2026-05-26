@@ -25,22 +25,21 @@ export const BondDetailMobileModal: FC<Props> = ({ bond, onTransfer }) => {
   return (
     <>
       <ModalHeader
-        sx={{ p: 16 }}
         title={bond.symbol}
         customTitle={<AssetLabelFull asset={bond} size="primary" />}
       />
       <SAssetDetailModalBody>
         <Amount
-          variant="primary"
           label={t("myBonds.header.total")}
           value={t("common:number", {
             value: bond.total,
           })}
-          displayValue={bond.totalDisplay}
+          displayValue={t("common:currency", {
+            value: bond.totalDisplay,
+          })}
         />
         <SAssetDetailMobileSeparator />
         <Amount
-          variant="horizontalLabel"
           label={t("myBonds.header.maturity")}
           value={t("common:date.date", {
             value: new Date(bond.maturity),
