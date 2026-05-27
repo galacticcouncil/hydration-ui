@@ -252,7 +252,7 @@ export const referendumInfoQuery = (referendumIndex: number) =>
   })
 
 type TChainVotes = {
-  isUnlocked: boolean
+  isRemovable: boolean
   amount: bigint
   id: number
   classId: number
@@ -281,7 +281,7 @@ export const openGovUnlockedTokensQuery = (
   queryOptions({
     queryKey: openGovUnlockedTokensQueryKey(address),
     queryFn: async () => {
-      const [accountVotes, bestNumber, subsquareAccountVotes, votesRewarded] =
+      const [accountVotes, bestNumber, subsquareAccountVotes] =
         await Promise.all([
           rpc.queryClient.ensureQueryData(
             accountOpenGovVotesQuery(rpc, address),
@@ -290,7 +290,6 @@ export const openGovUnlockedTokensQuery = (
           rpc.queryClient.ensureQueryData(
             accountVotesQuery(address, indexerUrl),
           ),
-          rpc.papi.query.Staking.VotesRewarded.getEntries(address),
         ])
       if (!bestNumber) {
         throw new Error("Best number not found")
@@ -354,7 +353,7 @@ export const openGovUnlockedTokensQuery = (
 
           if (!referendumInfo) {
             return {
-              isUnlocked: true,
+              isRemovable: false,
               amount: accountVote.balance,
               id: accountVote.id,
               classId: accountVote.classId,
@@ -366,7 +365,7 @@ export const openGovUnlockedTokensQuery = (
 
           if (referendumInfo.type === "Ongoing") {
             return {
-              isUnlocked: false,
+              isRemovable: false,
               amount: accountVote.balance,
               id: accountVote.id,
               classId: accountVote.classId,
@@ -387,12 +386,11 @@ export const openGovUnlockedTokensQuery = (
             }
 
             const unlockBlockNumber = endBlock + convictionBlockNumber
-            const isUnlocked = Big(unlockBlockNumber).lte(currentBlock)
 
             const diffBlockNumber = unlockBlockNumber - currentBlock
 
             return {
-              isUnlocked,
+              isRemovable: true,
               amount: accountVote.balance,
               id: accountVote.id,
               classId: accountVote.classId,
@@ -414,17 +412,13 @@ export const openGovUnlockedTokensQuery = (
         votesById.set(vote.id, vote)
       }
 
-      const processedVotes = new Set(
-        votesRewarded.map(({ keyArgs }) => keyArgs[1]),
-      )
-
       const mergedVotesMax = [...votesById.values()].reduce<{
         maxLockedValue: string
         maxLockedBlock: number | undefined
         votesToRemove: TUnlockableVote[]
       }>(
         (acc, voteData) => {
-          if ("classId" in voteData && processedVotes.has(voteData.id)) {
+          if ("classId" in voteData && voteData.isRemovable) {
             acc.votesToRemove.push({
               voteId: voteData.id,
               classId: voteData.classId,
