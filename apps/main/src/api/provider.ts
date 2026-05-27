@@ -5,10 +5,6 @@ import {
   hydrationNext,
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
-import {
-  getSnowbridgeSdk,
-  SnowbridgeSdk,
-} from "@galacticcouncil/indexer/snowbridge"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
@@ -155,10 +151,6 @@ export const useIndexerUrl = (): string => {
   return useState(() => ENV.VITE_INDEXER_URL)[0]
 }
 
-export const useSnowbridgeUrl = (): string => {
-  return useState(() => ENV.VITE_SNOWBRIDGE_URL)[0]
-}
-
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
 
@@ -182,19 +174,6 @@ export const useIndexerClient = (): IndexerSdk => {
 
   useEffect(() => {
     setClient(getIndexerSdk(url))
-  }, [url])
-
-  return client
-}
-
-export const useSnowbridgeClient = (): SnowbridgeSdk => {
-  const url = useSnowbridgeUrl()
-  const [client, setClient] = useState<SnowbridgeSdk>(() =>
-    getSnowbridgeSdk(url),
-  )
-
-  useEffect(() => {
-    setClient(getSnowbridgeSdk(url))
   }, [url])
 
   return client
