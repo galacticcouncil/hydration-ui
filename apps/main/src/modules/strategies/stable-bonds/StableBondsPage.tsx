@@ -1,11 +1,11 @@
 import { Stack } from "@galacticcouncil/ui/components"
 
-import { AssetHeader } from "@/components/AssetHeader"
+import { TBond } from "@/api/assets"
 import { Page404 } from "@/components/Page404"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { StableBondsAbout } from "@/modules/strategies/stable-bonds/components/StableBondsAbout"
+import { StableBondsAssetHeader } from "@/modules/strategies/stable-bonds/components/StableBondsAssetHeader"
 import { StableBondsDeposit } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit"
-import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.utils"
 import { StableBondsDetails } from "@/modules/strategies/stable-bonds/components/StableBondsDetails"
 import { StableBondsPosition } from "@/modules/strategies/stable-bonds/components/StableBondsPosition"
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
@@ -13,11 +13,12 @@ import {
   StableBondsConfigProvider,
   useStableBondsConfig,
 } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalance } from "@/states/account"
 
 type StableBondsPageProps = {
-  asset: TAsset
+  asset: TBond
 }
 
 const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
@@ -27,7 +28,7 @@ const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
 
   return (
     <Stack gap="xxl">
-      <AssetHeader asset={asset} />
+      <StableBondsAssetHeader asset={asset} />
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl" sx={{ order: [2, null, 0] }}>
           {balance && balance.transferable > 0n && <StableBondsPosition />}
@@ -45,8 +46,8 @@ type StableBondsPage = {
 }
 
 export const StableBondsPage: React.FC<StableBondsPage> = ({ bondId }) => {
-  const { getAsset } = useAssets()
-  const asset = getAsset(bondId)
+  const { getBond } = useAssets()
+  const asset = getBond(bondId)
   const config = STABLE_BONDS[bondId]
 
   if (!asset || !config) return <Page404 />

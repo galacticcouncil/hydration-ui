@@ -15,11 +15,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { hoursToMilliseconds } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { useMemo } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
@@ -27,9 +28,9 @@ import {
   type StableBondsFormValues,
   useStableBondsForm,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
-import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.utils"
 import { StableBondsExchangeRate } from "@/modules/strategies/stable-bonds/components/StableBondsExchangeRate"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
+import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/hooks/useSubmitStableBondsOrder"
 import {
   getOtcBuyAmountFromSellAmount,
   getOtcFeeAmount,
@@ -53,6 +54,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const submit = useSubmitStableBondsOrder()
   const { getAssetWithFallback } = useAssets()
   const stableBond = useStableBondsConfig()
+  const { timeLeft } = useBondData(stableBond.bondId)
 
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
@@ -140,24 +142,27 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
 
           <Separator mx="-xl" />
 
-          <SummaryRow
-            label={
-              <Flex align="center" gap="base">
-                <Icon component={Lock} size="xs" />
-                <Text fs="p5">
-                  {t("strategies:bonds.deposit.maturityPeriod")}
-                </Text>
-              </Flex>
-            }
-            content={t("interval", {
-              value: stableBond?.maturityPeriodDays
-                ? hoursToMilliseconds(stableBond?.maturityPeriodDays * 24)
-                : 0,
-              unit: "d",
-            })}
-          />
+          {timeLeft > 0 && (
+            <>
+              <SummaryRow
+                label={
+                  <Flex align="center" gap="base">
+                    <Icon component={Lock} size="xs" />
+                    <Text fs="p5">
+                      {t("strategies:bonds.deposit.maturityPeriod")}
+                    </Text>
+                  </Flex>
+                }
+                content={t("interval.remaining", {
+                  value: timeLeft,
+                  largest: 1,
+                  ...(timeLeft > millisecondsInDay && { unit: "d" }),
+                })}
+              />
 
-          <Separator mx="-xl" />
+              <Separator mx="-xl" />
+            </>
+          )}
 
           <Box py="xl">
             <AuthorizedAction size="large" width="100%">

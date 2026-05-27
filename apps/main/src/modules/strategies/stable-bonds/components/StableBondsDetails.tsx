@@ -12,10 +12,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import { hoursToMilliseconds } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
 import {
   SDetailsContainer,
@@ -41,6 +42,10 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
 }) => {
   const { t } = useTranslation(["common", "strategies"])
   const config = useStableBondsConfig()
+  const { timeLeft } = useBondData(config.bondId)
+
+  const daysLeft = timeLeft > 0 ? Math.ceil(timeLeft / millisecondsInDay) : 0
+  const currentApr = daysLeft > 0 ? (config.fixedYield / daysLeft) * 365 : null
 
   const fundingCapacities = useMemo(() => {
     if (!orders) return []
@@ -128,47 +133,50 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
             </>
           )}
 
-          <SStatsGroup>
-            <ValueStats
-              sx={{ alignSelf: "center" }}
-              wrap
-              label={t("strategies:bonds.details.availableApr")}
-              customValue={
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={getToken("accents.success.emphasis")}
-                >
-                  {t("percent", {
-                    value: config.apr,
-                    maximumFractionDigits: 1,
-                  })}
-                </Text>
-              }
-            />
+          {currentApr && timeLeft > 0 && (
+            <SStatsGroup>
+              <ValueStats
+                sx={{ alignSelf: "center" }}
+                wrap
+                label={t("apr")}
+                customValue={
+                  <Text
+                    font="primary"
+                    fs="h6"
+                    fw={600}
+                    color={getToken("accents.success.emphasis")}
+                  >
+                    {t("percent", {
+                      value: currentApr,
+                      minimumFractionDigits: 2,
+                    })}
+                  </Text>
+                }
+              />
 
-            <Separator orientation="vertical" sx={{ alignSelf: "stretch" }} />
+              <Separator orientation="vertical" sx={{ alignSelf: "stretch" }} />
 
-            <ValueStats
-              sx={{ alignSelf: "center" }}
-              wrap
-              label={t("strategies:bonds.details.maturityPeriod")}
-              customValue={
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={getToken("text.high")}
-                >
-                  {t("interval", {
-                    value: hoursToMilliseconds(config.maturityPeriodDays * 24),
-                    unit: "d",
-                  })}
-                </Text>
-              }
-            />
-          </SStatsGroup>
+              <ValueStats
+                sx={{ alignSelf: "center" }}
+                wrap
+                label={t("strategies:bonds.details.maturityPeriod")}
+                customValue={
+                  <Text
+                    font="primary"
+                    fs="h6"
+                    fw={600}
+                    color={getToken("text.high")}
+                  >
+                    {t("interval.remaining", {
+                      value: timeLeft,
+                      largest: 1,
+                      ...(timeLeft > millisecondsInDay && { unit: "d" }),
+                    })}
+                  </Text>
+                }
+              />
+            </SStatsGroup>
+          )}
         </SDetailsContainer>
       </ResponsiveScope>
 

@@ -91,8 +91,9 @@ export const useMyBondsColumns = () => {
             })}
             displayValue={
               timeLeft > 0
-                ? t("common:interval.daysLeft", {
+                ? t("common:interval.remaining", {
                     value: timeLeft,
+                    largest: 1,
                   })
                 : undefined
             }

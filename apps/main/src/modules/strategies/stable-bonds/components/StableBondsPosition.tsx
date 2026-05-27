@@ -1,6 +1,5 @@
 import {
   Box,
-  Flex,
   Paper,
   ResponsiveScope,
   Separator,
@@ -8,8 +7,7 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
+import { millisecondsInDay } from "date-fns/constants"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -23,15 +21,12 @@ import {
   SValuesColumn,
 } from "@/modules/strategies/stable-bonds/components/StableBondsPosition.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
-import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 const PositionRow = () => {
   const { t } = useTranslation(["common", "strategies"])
-  const rpc = useRpcProvider()
   const config = useStableBondsConfig()
 
   const { getAssetWithFallback, isBond } = useAssets()
@@ -39,10 +34,6 @@ const PositionRow = () => {
   const { balance, maturity, timeLeft, isMatured } = useBondData(config.bondId)
 
   const asset = getAssetWithFallback(config.bondId)
-
-  const { data: feePct = "0", isPending: isFeePending } = useQuery(
-    otcTradeFeeQuery(rpc),
-  )
 
   const balanceHuman = scaleHuman(balance, asset.decimals)
   const underlyingAssetId = isBond(asset) ? asset.underlyingAssetId : ""
@@ -95,8 +86,10 @@ const PositionRow = () => {
                 }
                 bottomLabel={
                   timeLeft > 0
-                    ? t("interval.daysLeft", {
+                    ? t("interval.remaining", {
                         value: timeLeft,
+                        largest: 1,
+                        ...(timeLeft > millisecondsInDay && { unit: "d" }),
                       })
                     : undefined
                 }
@@ -106,13 +99,10 @@ const PositionRow = () => {
               wrap
               size="small"
               font="secondary"
-              isLoading={isFeePending}
               customLabel={
-                <Flex align="center" gap="xs">
-                  <Text fs="p5" color={getToken("text.medium")}>
-                    {t("apr")}
-                  </Text>
-                </Flex>
+                <Text fs="p5" color={getToken("text.medium")}>
+                  {t("fixedYield")}
+                </Text>
               }
               customValue={
                 <Text
@@ -122,8 +112,7 @@ const PositionRow = () => {
                   color={getToken("accents.success.emphasis")}
                 >
                   {t("percent", {
-                    value: Big(config.apr).minus(Big(feePct).times(100)),
-                    minimumFractionDigits: 1,
+                    value: config.fixedYield,
                   })}
                 </Text>
               }

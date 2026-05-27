@@ -8,7 +8,7 @@ export const SDetailsContainer = styled(Stack)(
     margin-bottom: ${theme.space.l};
 
     ${containerSize(
-      "sm",
+      "md",
       css`
         flex-direction: row;
         gap: ${theme.space.xxxl};
@@ -25,7 +25,7 @@ export const SDetailsSeparator = styled(Box)(
     background: ${theme.details.separators};
 
     ${containerSize(
-      "sm",
+      "md",
       css`
         width: 1px;
         height: auto;
@@ -39,13 +39,14 @@ export const SStatsGroup = styled(Flex)(
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
-    gap: ${theme.space.xxxl};
+    gap: ${theme.space.s};
     width: 100%;
     min-width: 0;
 
     ${containerSize(
-      "sm",
+      "md",
       css`
+        gap: ${theme.space.xxxl};
         display: contents;
       `,
     )}
@@ -56,7 +57,7 @@ export const SRemaining = styled(Box)`
   min-width: 0;
   width: 100%;
   ${containerSize(
-    "sm",
+    "md",
     css`
       width: auto;
     `,
@@ -66,7 +67,7 @@ export const SRemaining = styled(Box)`
 export const SRemainingList = styled(Stack)`
   width: 100%;
   ${containerSize(
-    "sm",
+    "md",
     css`
       width: auto;
       flex-direction: row;
@@ -77,7 +78,7 @@ export const SRemainingList = styled(Stack)`
 export const SRemainingItem = styled(Stack)`
   width: 100%;
   ${containerSize(
-    "sm",
+    "md",
     css`
       width: ${pxToRem(120)};
     `,

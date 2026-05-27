@@ -57,8 +57,6 @@ export const MobileTabBar: FC = () => {
   )
   const moreItems = navItems.slice(itemsShown)
 
-  console.log({ navItems, moreItems })
-
   if (!hasMobNavbar) return null
 
   return (

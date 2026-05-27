@@ -1,29 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { StableBondsFormValues } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
 import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrderModalContent.submit"
-import {
-  type OtcOffer,
-  useOtcOffers,
-} from "@/modules/trade/otc/table/OtcTable.query"
+import { type OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-
-export const useStableBondsOtcOrders = (offerIds: number[]) => {
-  const query = useOtcOffers()
-
-  const data = useMemo(() => {
-    if (!query.data) return []
-    return query.data.filter(
-      (offer) => !!offer.id && offerIds.includes(Number(offer.id)),
-    )
-  }, [query.data, offerIds])
-
-  return { ...query, data }
-}
 
 type SubmitStableBondsOrderArgs = {
   values: StableBondsFormValues
