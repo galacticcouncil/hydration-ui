@@ -16,21 +16,22 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const { t } = useTranslation("common")
   const [isCloseAll, setCloseAll] = useState(false)
 
-  const { openAll, closeAll, closedBannerIds } = useBannersStore()
+  const { openAllGigaNews, closeAllGigaNews, closedGigaNewsIds } =
+    useBannersStore()
 
-  const allClosed = closedBannerIds.length === bannerConfig.length
+  const allClosed = closedGigaNewsIds.length === bannerConfig.length
   const [expanded, setExpanded] = useState(allClosed ? false : true)
   const toggleLabel = expanded ? t("closeAll") : t("gigaNews")
 
-  const close = useBannersStore((state) => state.close)
+  const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
 
   const visibleBanners = bannerConfig.filter(
-    (banner) => !closedBannerIds.includes(banner.id),
+    (banner) => !closedGigaNewsIds.includes(banner.id),
   )
 
-  const onCloseRef = useRef(closeAll)
-  onCloseRef.current = closeAll
+  const onCloseRef = useRef(closeAllGigaNews)
+  onCloseRef.current = closeAllGigaNews
 
   const onCloseAll = useCallback(() => {
     if (!onCloseRef.current || isCloseAll) return
@@ -40,8 +41,8 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
   const onOpenAll = useCallback(() => {
     setExpanded(true)
-    openAll()
-  }, [openAll, setExpanded])
+    openAllGigaNews()
+  }, [openAllGigaNews, setExpanded])
 
   useEffect(() => {
     if (!isCloseAll) return
@@ -57,6 +58,8 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
       setExpanded(false)
     }
   }, [allClosed, expanded, setExpanded])
+
+  if (!bannerConfig.length) return <div />
 
   return (
     <SGigaNewsContainer $hidden={isHidden && allClosed}>
