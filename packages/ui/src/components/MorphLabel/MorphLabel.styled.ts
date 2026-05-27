@@ -1,11 +1,11 @@
-import { pxToRem, styled } from "@/utils"
+import { styled } from "@/utils"
 
 export const SMorphLabel = styled.span`
-  display: inline-block;
+  display: block;
+  align-self: end;
   position: relative;
   overflow: hidden;
-  height: ${pxToRem(15)};
-  vertical-align: bottom;
+  height: 1.2em;
   transition: width 0.35s cubic-bezier(0.19, 1, 0.22, 1);
 
   & > span {

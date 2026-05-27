@@ -21,7 +21,11 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
   const allClosed = closedGigaNewsIds.length === bannerConfig.length
   const [expanded, setExpanded] = useState(allClosed ? false : true)
-  const toggleLabel = expanded ? t("closeAll") : t("gigaNews")
+  const toggleLabel = expanded
+    ? bannerConfig.length > 1
+      ? t("closeAll")
+      : t("close")
+    : t("gigaNews")
 
   const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
