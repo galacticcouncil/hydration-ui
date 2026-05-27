@@ -54,7 +54,7 @@ const PositionRow = () => {
             </Text>
           </SNameColumn>
 
-          <SValuesColumn align="center" justify="space-between" gap="xxl" wrap>
+          <SValuesColumn align="center" justify="space-between" gap="xxl">
             <ValueStats
               wrap
               size="small"
@@ -95,28 +95,6 @@ const PositionRow = () => {
                 }
               />
             )}
-            <ValueStats
-              wrap
-              size="small"
-              font="secondary"
-              customLabel={
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t("fixedYield")}
-                </Text>
-              }
-              customValue={
-                <Text
-                  fs="p3"
-                  fw={500}
-                  lh={1}
-                  color={getToken("accents.success.emphasis")}
-                >
-                  {t("percent", {
-                    value: config.fixedYield,
-                  })}
-                </Text>
-              }
-            />
           </SValuesColumn>
 
           <SActionColumn direction="column" align="flex-end" gap="xs">

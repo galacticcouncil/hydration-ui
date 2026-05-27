@@ -8,7 +8,7 @@ export const SRowContainer = styled(Flex)`
   justify-content: space-between;
 
   ${containerSize(
-    "md",
+    "sm",
     css`
       flex-wrap: nowrap;
     `,
@@ -28,7 +28,7 @@ export const SValuesColumn = styled(Flex)`
   justify-content: space-between;
 
   ${containerSize(
-    "md",
+    "sm",
     css`
       order: 1;
       flex: 1 1 auto;
@@ -43,7 +43,7 @@ export const SActionColumn = styled(Flex)`
   min-width: 140px;
 
   ${containerSize(
-    "md",
+    "sm",
     css`
       order: 2;
     `,
