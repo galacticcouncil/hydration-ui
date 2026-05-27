@@ -17,9 +17,8 @@ export const useMaxBalanceWithFee = (tx: AnyTransaction | null) => {
       0,
       Big(fee.feeAssetBalance)
         .minus(fee.feeEstimate)
-        .minus(scaleHuman(meta.existentialDeposit, meta.decimals))
-        .toString(),
-    ),
+        .minus(scaleHuman(meta.existentialDeposit, meta.decimals)),
+    ).toString(),
     ...fee,
   }
 }
