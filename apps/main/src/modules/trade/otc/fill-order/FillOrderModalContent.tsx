@@ -27,6 +27,7 @@ import { TokensConversion } from "@/modules/trade/otc/fill-order/TokensConversio
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
+import { isBond } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalance } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
@@ -72,7 +73,11 @@ export const FillOrderModalContent: FC<Props> = ({
   const feeAsset = otcOffer.assetOut
   const fee = getOtcFeeAmount(buyAmount, feePct)
 
-  const [feeDisplay] = useDisplayAssetPrice(feeAsset.id, fee || "0", {
+  const feeAssetPriceId = isBond(feeAsset)
+    ? feeAsset.underlyingAssetId
+    : feeAsset.id
+
+  const [feeDisplay] = useDisplayAssetPrice(feeAssetPriceId, fee || "0", {
     maximumFractionDigits: null,
   })
 
