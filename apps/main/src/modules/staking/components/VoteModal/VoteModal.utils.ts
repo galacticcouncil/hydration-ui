@@ -1,6 +1,6 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToHours } from "date-fns"
 import { useForm } from "react-hook-form"
@@ -14,7 +14,7 @@ import {
   useNativeTokenLocks,
 } from "@/api/balances"
 import { Conviction, CONVICTIONS_BLOCKS_BY_INDEX } from "@/api/democracy"
-import { gigaAccountStakesQuery } from "@/api/gigaStake"
+import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -57,14 +57,6 @@ export const useVoteModal = (
   const { getBalance } = useAccountBalances()
   const { data: locks } = useNativeTokenLocks()
   const hdxBalance = getBalance(native.id)
-  const { data: accountStake } = useQuery({
-    ...gigaAccountStakesQuery(rpc, account?.address ?? ""),
-    enabled: isGigaStaking,
-  })
-
-  const principalHuman = isGigaStaking
-    ? scaleHuman(accountStake?.hdx ?? 0n, native.decimals)
-    : ""
 
   const governanceLocks = locks?.get(TokenLockType.OpenGov) ?? 0n
   const governanceLocksHuman = scaleHuman(governanceLocks, native.decimals)
@@ -86,7 +78,7 @@ export const useVoteModal = (
     defaultValues: {
       voteType: "aye",
       multiplier: 0,
-      amount: principalHuman ?? "",
+      amount: isGigaStaking ? ghdxLocksHuman : "",
       aye: "",
       nay: "",
       abstain: "",
@@ -301,14 +293,23 @@ export const useVoteModal = (
         )
         .toString()
 
+      const invalidateQueriesBase = [
+        ["accountOpenGovVotes"],
+        ["openGovReferenda"],
+        nativeTokenLocksQuery(rpc, account?.address ?? "").queryKey,
+      ]
+
+      const invalidateQueries = isGigaStaking
+        ? [
+            ...invalidateQueriesBase,
+            claimableVotingRewardsQuery(rpc, account?.address ?? "").queryKey,
+          ]
+        : invalidateQueriesBase
+
       return createTransaction(
         {
           tx,
-          invalidateQueries: [
-            ["accountOpenGovVotes"],
-            ["openGovReferenda"],
-            nativeTokenLocksQuery(rpc, account?.address ?? "").queryKey,
-          ],
+          invalidateQueries,
           toasts,
           executedAmount: {
             amount: executedTransfarableAmount,
