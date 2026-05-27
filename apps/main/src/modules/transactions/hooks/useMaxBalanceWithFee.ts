@@ -13,10 +13,13 @@ export const useMaxBalanceWithFee = (tx: AnyTransaction | null) => {
   if (!fee) return undefined
 
   return {
-    maxBalanceHuman: Big(fee.feeAssetBalance)
-      .minus(fee.feeEstimate)
-      .minus(scaleHuman(meta.existentialDeposit, meta.decimals))
-      .toString(),
+    maxBalanceHuman: Big.max(
+      0,
+      Big(fee.feeAssetBalance)
+        .minus(fee.feeEstimate)
+        .minus(scaleHuman(meta.existentialDeposit, meta.decimals))
+        .toString(),
+    ),
     ...fee,
   }
 }
