@@ -2,7 +2,9 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Button } from "@galacticcouncil/ui/components"
 
-export const SButton = styled(Button)<{
+export const SButton = styled(Button, {
+  shouldForwardProp: (prop: string) => prop !== "hasSelection",
+})<{
   hasSelection: boolean
   disabled: boolean
 }>(

@@ -7,16 +7,14 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  shortenAccountAddress,
-  stringEquals,
-  xcscan,
-} from "@galacticcouncil/utils"
+import { basejumpscan, stringEquals, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { createColumnHelper } from "@tanstack/react-table"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AccountIdentity } from "@/components/AccountIdentity"
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
@@ -56,9 +54,11 @@ export const useXcScanHistoryColumns = () => {
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.origin} />
-            <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(from)}
-            </Text>
+            <AccountIdentity
+              fw={500}
+              color={getToken("text.high")}
+              address={from}
+            />
           </Flex>
         )
       },
@@ -72,9 +72,11 @@ export const useXcScanHistoryColumns = () => {
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.destination} />
-            <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(to)}
-            </Text>
+            <AccountIdentity
+              fw={500}
+              color={getToken("text.high")}
+              address={to}
+            />
           </Flex>
         )
       },
@@ -87,6 +89,8 @@ export const useXcScanHistoryColumns = () => {
         const transferAsset = getTransferAsset(row.original)
 
         if (!transferAsset) return null
+
+        const usdValue = Big(row.original.totalUsd || transferAsset?.usd || 0)
 
         return (
           <Flex gap="base" align="center">
@@ -103,9 +107,11 @@ export const useXcScanHistoryColumns = () => {
                     })
                   : t("number", { value: transferAsset.amount })}
               </Text>
-              <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                {t("currency", { value: row.original.totalUsd })}
-              </Text>
+              {usdValue.gt(0) && (
+                <Text fs="p6" lh={1} color={getToken("text.medium")}>
+                  {t("currency", { value: usdValue })}
+                </Text>
+              )}
             </Stack>
           </Flex>
         )
@@ -182,7 +188,7 @@ export const useXcScanHistoryColumns = () => {
 
         const durationMs = recvAt - sentAt
 
-        if (durationMs < 0) {
+        if (durationMs <= 0) {
           return null
         }
 
@@ -197,11 +203,13 @@ export const useXcScanHistoryColumns = () => {
     const actionColumn = columnHelper.display({
       id: XcScanHistoryTableColumnId.Action,
       cell: ({ row }) => {
-        const link = xcscan.tx(row.original.correlationId)
+        const { correlationId, originProtocol } = row.original
+        const link =
+          originProtocol === "basejump"
+            ? basejumpscan.tx(correlationId)
+            : xcscan.tx(correlationId)
 
-        const isNotPending = !pendingCorrelationIds.includes(
-          row.original.correlationId,
-        )
+        const isNotPending = !pendingCorrelationIds.includes(correlationId)
         const isClaimable = isNotPending && isJourneyClaimable(row.original)
 
         return (

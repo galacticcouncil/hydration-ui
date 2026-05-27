@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { useCrossChainConfigService } from "@/api/xcm"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
+import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
@@ -55,7 +56,14 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
-      const { srcAmount, srcChain, destChain, srcAsset, destAsset } = values
+      const {
+        srcAmount,
+        srcChain,
+        destChain,
+        srcAsset,
+        destAsset,
+        bridgeProvider,
+      } = values
 
       if (!account) throw new Error("Account is required")
       if (!destChain) throw new Error("Destination chain is required")
@@ -72,13 +80,12 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain: destChain.name,
       }
 
-      const { build } = ConfigBuilder(configService)
+      const { origin } = ConfigBuilder(configService)
         .assets()
         .asset(srcAsset)
         .source(srcChain)
         .destination(destChain)
-
-      const { origin } = build(destAsset)
+        .build(destAsset, bridgeProvider ?? undefined)
 
       const call = await transfer.buildCall(srcAmount)
       const isApprove = isEvmApproveCall(call)
@@ -92,10 +99,22 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
           srcAmount,
         )
 
+        const sourceFee = await transfer.estimateFee(srcAmount)
+
         const tx =
           srcChain.key === HYDRATION_CHAIN_KEY
             ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
             : await getExternalChainTx(srcChain, transferCall)
+
+        const sourceFeeValue = (() => {
+          if (sourceFee.amount === 0n)
+            return t("xcm:summary.feeEstimationNotAvailable")
+          return t("common:currency", {
+            value: toDecimal(sourceFee.amount, sourceFee.decimals),
+            symbol: sourceFee.originSymbol,
+          })
+        })()
+
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
@@ -106,14 +125,14 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             success: t("tx.toast.success", i18nVars),
           },
           fee: {
-            feeAmount: toDecimal(source.fee.amount, source.fee.decimals),
-            feeSymbol: source.fee.symbol,
+            feeAmount: toDecimal(sourceFee.amount, sourceFee.decimals),
+            feeSymbol: sourceFee.symbol,
           },
           meta: {
             type: TransactionType.Xcm,
             srcChainKey: srcChain.key,
-            srcChainFee: toDecimal(source.fee.amount, source.fee.decimals),
-            srcChainFeeSymbol: source.fee.symbol,
+            srcChainFee: sourceFeeValue,
+            srcChainFeeSymbol: sourceFee.symbol,
             dstChainKey: destChain.key,
             dstChainFee: toDecimal(
               destination.fee.amount,
@@ -164,6 +183,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
               },
               {
                 stepTitle: t("common:transfer"),
+                pendingComponent: PendingApproval,
                 tx: buildTransferTransaction,
                 onSubmitted: (txHash: string) => {
                   transferTxHash = txHash

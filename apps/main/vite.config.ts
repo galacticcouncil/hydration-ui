@@ -1,58 +1,52 @@
 /* eslint-disable no-restricted-imports */
 import fs from "node:fs"
 
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
+import babel from "@rolldown/plugin-babel"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig, transformWithEsbuild } from "vite"
+import { defineConfig } from "vite"
 import { createHtmlPlugin } from "vite-plugin-html"
 import svgr from "vite-plugin-svgr"
 import wasm from "vite-plugin-wasm"
-import tsconfigPaths from "vite-tsconfig-paths"
 
 import { SEO_CONFIG } from "./src/config/seo"
 
-const headInlineScript = await transformWithEsbuild(
-  fs.readFileSync("./src/utils/head.js", "utf-8"),
-  "head.js",
-  { minify: true },
-)
-
-const headCriticalCss = await transformWithEsbuild(
-  fs.readFileSync("./src/styles/critical.css", "utf-8"),
-  "critical.css",
-  { minify: true },
-)
+const headInlineScript =  fs.readFileSync("./src/utils/head.js", "utf-8")
 
 const loaderHtml = fs.readFileSync(
   "./src/components/Loader/loader.html",
   "utf-8",
 )
 
+const headCriticalCss = fs.readFileSync(
+  "./src/styles/critical.css",
+  "utf-8",
+)
+
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   build: {
     target: "es2022",
     outDir: "build",
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         chunkFileNames: "chunk-[hash].js",
-        manualChunks: (id) => {
-          if (id.includes("/assets/icons")) {
-            return "icons"
-          }
-        },
-        experimentalMinChunkSize: 20_000,
       },
     },
   },
   plugins: [
-    TanStackRouterVite({
+    tanstackRouter({
       autoCodeSplitting: true,
     }),
     react({
       jsxImportSource: "@galacticcouncil/ui/jsx",
-      babel: {
-        plugins: ["@emotion/babel-plugin"],
-      },
+    }),
+    babel({
+      include: /\.[jt]sx?$/,
+      exclude: /node_modules/,
+      plugins: ["@emotion/babel-plugin"],
     }),
     wasm(),
     svgr({
@@ -67,12 +61,12 @@ export default defineConfig({
           {
             injectTo: "head-prepend",
             tag: "script",
-            children: headInlineScript.code,
+            children: headInlineScript,
           },
           {
             injectTo: "head-prepend",
             tag: "style",
-            children: headCriticalCss.code,
+            children: headCriticalCss,
           },
           {
             injectTo: "body-prepend",
@@ -83,6 +77,5 @@ export default defineConfig({
         ],
       },
     }),
-    tsconfigPaths(),
   ],
 })

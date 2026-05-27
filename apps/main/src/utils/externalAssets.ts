@@ -8,7 +8,7 @@ import { isAnyParachain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xc-core"
 import { Buffer } from "buffer"
-import { FixedSizeBinary } from "polkadot-api"
+import type { SizedHex } from "polkadot-api"
 
 import { TAssetData } from "@/api/assets"
 
@@ -135,7 +135,7 @@ export const getParachainInputData = (asset: TExternalAssetWithLocation) => {
 
 type GeneralKeyType = {
   length?: number
-  data?: FixedSizeBinary<32>
+  data?: SizedHex<32>
 }
 
 export const getPendulumAssetIdFromGeneralKey = (
@@ -143,8 +143,7 @@ export const getPendulumAssetIdFromGeneralKey = (
 ) => {
   if (!generalKey || !generalKey.length || !generalKey.data) return undefined
 
-  const hex = generalKey.data.asHex()
-  const bytes = Buffer.from(hex.slice(2), "hex")
+  const bytes = Buffer.from(generalKey.data.slice(2), "hex")
   return `0x${bytes.slice(0, generalKey.length).toString("hex")}`
 }
 

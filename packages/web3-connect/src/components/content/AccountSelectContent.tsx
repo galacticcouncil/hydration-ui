@@ -18,6 +18,7 @@ import {
   AccountFilterOption,
 } from "@/components/account/AccountFilter"
 import { AccountMetaMaskOption } from "@/components/account/AccountMetaMaskOption"
+import { AccountMultisigOption } from "@/components/account/AccountMultisigOption"
 import { AccountOption } from "@/components/account/AccountOption"
 import { AccountSolanaOption } from "@/components/account/AccountSolanaOption"
 import { AccountSuiOption } from "@/components/account/AccountSuiOption"
@@ -26,6 +27,7 @@ import {
   useAccountsWithBalance,
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
+import { Web3ConnectModalPage } from "@/config/modal"
 import {
   SOLANA_PROVIDERS,
   SUI_PROVIDERS,
@@ -33,6 +35,8 @@ import {
 } from "@/config/providers"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
+import { useActiveMultisigConfig } from "@/hooks/useMultisigConfigs"
+import { MultisigConfig, useMultisigStore } from "@/hooks/useMultisigStore"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
 import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
@@ -52,10 +56,13 @@ const getAccountOptionComponent = (account: Account) => {
 export const AccountSelectContent = () => {
   const { t } = useTranslation()
   const { account: currentAccount } = useAccount()
-  const { onAccountSelect, isControlled, mode } = useWeb3ConnectContext()
+  const { onAccountSelect, isControlled, mode, setPage } =
+    useWeb3ConnectContext()
   const { accounts, toggle, getProviders } = useWeb3Connect(
     useShallow(pick(["accounts", "toggle", "getProviders"])),
   )
+  const { setActive } = useMultisigStore()
+  const activeMultisig = useActiveMultisigConfig()
 
   const isDefaultMode = mode === WalletMode.Default
 
@@ -88,7 +95,7 @@ export const AccountSelectContent = () => {
     [accounts, currentAccount, filter, search],
   )
 
-  const hasNoResults = accountList.length === 0
+  const hasNoResults = accountList.length === 0 && !activeMultisig
 
   const handleAccountSelect = useCallback(
     (account: Account) => {
@@ -98,6 +105,14 @@ export const AccountSelectContent = () => {
       }
     },
     [isControlled, onAccountSelect, toggle],
+  )
+
+  const handleMultisigSelect = useCallback(
+    (config: MultisigConfig) => {
+      setActive(config.id, null)
+      setPage(Web3ConnectModalPage.MultisigSignerSelect)
+    },
+    [setActive, setPage],
   )
 
   const { accountsWithBalances, areBalancesLoading } =
@@ -141,6 +156,14 @@ export const AccountSelectContent = () => {
           ) : (
             <>
               {hasNoResults && <Text>{t("account.noResults")}</Text>}
+              {isDefaultMode && activeMultisig && (
+                <AccountMultisigOption
+                  key={activeMultisig.id}
+                  isActive={!!currentAccount?.isMultisig}
+                  onSelect={handleMultisigSelect}
+                  config={activeMultisig}
+                />
+              )}
               {accountsWithBalances.map((account) => {
                 const Component = getAccountOptionComponent(account)
                 return (

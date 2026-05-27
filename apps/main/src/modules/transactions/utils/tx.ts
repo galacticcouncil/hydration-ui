@@ -1,10 +1,12 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY, isBinary } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
-import { Binary, CompatibilityToken } from "polkadot-api"
+import { Binary, SizedHex } from "polkadot-api"
+import { first, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
 import { paymentInfoQuery } from "@/api/transaction"
+import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import {
   AnyPapiTx,
   AnyTransaction,
@@ -25,14 +27,14 @@ export const transformPermitToPapiTx = (
 ): AnyPapiTx => {
   return papi.tx.MultiTransactionPayment.dispatch_permit({
     data: Binary.fromHex(permit.message.data),
-    from: Binary.fromHex(permit.message.from),
-    to: Binary.fromHex(permit.message.to),
+    from: permit.message.from as SizedHex<20>,
+    to: permit.message.to as SizedHex<20>,
     value: [BigInt(permit.message.value), 0n, 0n, 0n],
     gas_limit: BigInt(permit.message.gaslimit),
     deadline: [BigInt(permit.message.deadline), 0n, 0n, 0n],
     v: Number(permit.signature.v),
-    r: Binary.fromHex(permit.signature.r),
-    s: Binary.fromHex(permit.signature.s),
+    r: permit.signature.r as SizedHex<32>,
+    s: permit.signature.s as SizedHex<32>,
   })
 }
 
@@ -41,8 +43,8 @@ export const transformEvmCallToPapiTx = (
   tx: ExtendedEvmCall,
 ): AnyPapiTx => {
   return papi.tx.EVM.call({
-    source: Binary.fromHex(tx.from),
-    target: Binary.fromHex(tx.to),
+    source: tx.from as SizedHex<20>,
+    target: tx.to as SizedHex<20>,
     input: Binary.fromHex(tx.data),
     value: [0n, 0n, 0n, 0n],
     gas_limit: tx.gasLimit || 0n,
@@ -121,15 +123,14 @@ export const isValidPapiTxForPermit = (
 ): tx is AnyPapiTx =>
   isPapiTransaction(tx) && isValidTxOptionsForPermit(txOptions)
 
-export const getPapiTransactionCallData = (
+export const getPapiTransactionCallData = async (
   tx: AnyTransaction,
-  papiCompatibilityToken: CompatibilityToken,
-): string => {
+): Promise<string> => {
   if (!isPapiTransaction(tx)) return ""
 
   try {
-    const binary = tx.getEncodedData(papiCompatibilityToken)
-    return isBinary(binary) ? binary.asHex() : ""
+    const bytes = await tx.getEncodedData()
+    return Binary.toHex(bytes)
   } catch {
     return ""
   }
@@ -152,4 +153,19 @@ export const getExtraTxFeeByWeight = async (
   return queryClient.ensureQueryData(
     weightToEvmFeeQuery(rpc, weight, assetOutId),
   )
+}
+
+export const parseTxMethodName = (
+  tx: AnyTransaction,
+  path?: string,
+): string | undefined => {
+  if (!isPapiTransaction(tx)) return
+  try {
+    const call = tx ? decodeTx(tx, path) : null
+    if (isObjectType(call)) {
+      return first(Object.keys(call))
+    }
+  } catch {
+    return
+  }
 }

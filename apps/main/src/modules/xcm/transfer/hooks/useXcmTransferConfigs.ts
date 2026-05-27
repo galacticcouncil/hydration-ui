@@ -12,6 +12,7 @@ export const useXcmTransferConfigs = (
   srcChain: AnyChain | null,
   destChain: AnyChain | null,
   destAsset: Asset | null,
+  bridgeProvider?: string | null,
 ): TransferConfigs | null => {
   const configService = useCrossChainConfigService()
   if (!srcAsset || !srcChain || !destChain || !destAsset) return null
@@ -37,5 +38,5 @@ export const useXcmTransferConfigs = (
     return null
   }
 
-  return build(destAsset)
+  return build(destAsset, bridgeProvider ?? undefined)
 }

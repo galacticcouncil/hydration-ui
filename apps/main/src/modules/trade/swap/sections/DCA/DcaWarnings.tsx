@@ -1,6 +1,6 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { Alert, Flex } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"

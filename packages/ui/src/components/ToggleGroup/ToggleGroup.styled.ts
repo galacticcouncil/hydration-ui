@@ -84,6 +84,10 @@ export const SToggleGroupItem = styled(ToggleGroupPrimitive.Item, {
     background-color: transparent;
     color: ${theme.icons.onSurface};
 
+    &:hover {
+      background-color: ${theme.buttons.secondary.low.hover};
+    }
+
     &[data-state="on"] {
       background-color: ${theme.buttons.primary.medium.rest};
       color: ${theme.buttons.primary.medium.onButton};

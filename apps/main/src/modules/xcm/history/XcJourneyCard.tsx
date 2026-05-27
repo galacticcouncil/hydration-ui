@@ -1,5 +1,7 @@
 import {
   ArrowRight,
+  Basejumper,
+  ExternalLinkIcon,
   QuestionCircleRegular,
 } from "@galacticcouncil/ui/assets/icons"
 import {
@@ -13,15 +15,17 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress, xcscan } from "@galacticcouncil/utils"
+import { basejumpscan, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
-import { isNumber } from "remeda"
 
+import { AccountIdentity } from "@/components/AccountIdentity"
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
+import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
@@ -34,8 +38,15 @@ import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
-  const { origin, destination, sentAt, correlationId, status, totalUsd } =
-    journey
+  const {
+    origin,
+    destination,
+    sentAt,
+    correlationId,
+    status,
+    totalUsd,
+    originProtocol,
+  } = journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
 
@@ -44,10 +55,15 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const transferAsset = getTransferAsset(journey)
   const { from, to } = getFormattedAddresses(journey)
 
-  const link = xcscan.tx(correlationId)
+  const link =
+    originProtocol === "basejump"
+      ? basejumpscan.tx(correlationId)
+      : xcscan.tx(correlationId)
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
   const isClaimable = isNotPending && isJourneyClaimable(journey)
+
+  const usdValue = Big(totalUsd || transferAsset?.usd || 0)
 
   return (
     <Stack as={Paper} px="primary">
@@ -85,8 +101,25 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         </Flex>
 
         {sentAt && (
-          <Flex align="center" justify="space-between" ml="auto">
+          <Flex
+            direction={["column", "row"]}
+            align={["flex-end", "center"]}
+            gap={["xs", "m"]}
+            justify="space-between"
+            ml="auto"
+          >
+            {originProtocol === "basejump" && (
+              <Flex gap="s" align="center">
+                <Icon
+                  component={Basejumper}
+                  size="m"
+                  color={getToken("colors.skyBlue.600")}
+                />
+                <JourneyProtocol fs="p5" protocol={originProtocol} />
+              </Flex>
+            )}
             <JourneyDate
+              truncate
               timestamp={sentAt}
               fs="p5"
               color={getToken("text.medium")}
@@ -111,9 +144,9 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
                   symbol: transferAsset.symbol,
                 })}
               </Text>
-              {isNumber(totalUsd) && totalUsd > 0 && (
+              {usdValue.gt(0) && (
                 <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                  {t("currency", { value: totalUsd })}
+                  {t("currency", { value: usdValue })}
                 </Text>
               )}
             </Stack>
@@ -123,16 +156,22 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         <Stack>
           <Flex gap="s" align="center">
             {from && (
-              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-                {t("from")}: {shortenAccountAddress(from)}
-              </Text>
+              <Flex gap="s" align="center">
+                <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                  {t("from")}:
+                </Text>
+                <AccountIdentity fs="p6" lh={1.3} address={from} />
+              </Flex>
             )}
           </Flex>
           <Flex gap="s" align="center">
             {to && (
-              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-                {t("to")}: {shortenAccountAddress(to)}
-              </Text>
+              <Flex gap="s" align="center">
+                <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                  {t("to")}:
+                </Text>
+                <AccountIdentity fs="p6" lh={1.3} address={to} />
+              </Flex>
             )}
           </Flex>
         </Stack>
@@ -141,11 +180,27 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
           {isClaimable && <ClaimButton journey={journey} />}
           {isOptimisticJourney(journey) ? (
             <Button variant="accent" outline disabled>
-              {t("details")}
+              <Text display={["none", "inline"]} as="span">
+                {t("details")}
+              </Text>
+              <Icon
+                display={["block", "none"]}
+                size="s"
+                component={ExternalLinkIcon}
+              />
             </Button>
           ) : (
             <Button variant="accent" outline asChild>
-              <ExternalLink href={link}>{t("details")}</ExternalLink>
+              <ExternalLink href={link}>
+                <Text display={["none", "inline"]} as="span">
+                  {t("details")}
+                </Text>
+                <Icon
+                  display={["block", "none"]}
+                  size="s"
+                  component={ExternalLinkIcon}
+                />
+              </ExternalLink>
             </Button>
           )}
         </Flex>

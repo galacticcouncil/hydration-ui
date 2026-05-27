@@ -18,7 +18,7 @@ export const ChartValues: React.FC<ChartValuesProps> = ({
   return (
     <Flex direction="column" {...props}>
       {(value || isLoading) && (
-        <Text fs="p3" fw={600} asChild={typeof value !== "string"}>
+        <Text fs={["p3", "p1"]} fw={600} asChild={typeof value !== "string"}>
           {isLoading ? <Skeleton width={100} /> : value}
         </Text>
       )}

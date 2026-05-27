@@ -8,7 +8,6 @@ import {
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -16,6 +15,7 @@ import { useDebounce } from "react-use"
 
 import { TAccountVote } from "@/api/democracy"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useStakeForm } from "@/modules/staking/Stake.form"
 import { useStake } from "@/modules/staking/Stake.stake"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
@@ -40,7 +40,6 @@ export const StakeForm: FC<Props> = ({
   isLoading,
 }) => {
   const { t } = useTranslation(["common", "staking"])
-  const { account } = useAccount()
 
   const { native } = useAssets()
   const { form, minStake } = useStakeForm(balance, staked || "0")
@@ -117,7 +116,7 @@ export const StakeForm: FC<Props> = ({
         <Separator />
         {
           <Grid px="xl" py="xl">
-            {account ? (
+            <AuthorizedAction size="large">
               <Button
                 type="submit"
                 size="large"
@@ -129,9 +128,7 @@ export const StakeForm: FC<Props> = ({
               >
                 {t("staking:stake.stake.cta")}
               </Button>
-            ) : (
-              <Web3ConnectButton variant="secondary" size="large" />
-            )}
+            </AuthorizedAction>
           </Grid>
         }
       </form>

@@ -1,4 +1,5 @@
 import {
+  AssetButton,
   Box,
   Flex,
   LoadingButton,
@@ -8,10 +9,11 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 
 const AssetSectionSkeleton = () => {
   return (
-    <Stack gap="s" py="m" px="l">
+    <Stack gap="m" py="l" px="xl">
       <Flex justify="space-between">
         <Text fs="p6">
           <Skeleton width={100} />
@@ -21,13 +23,14 @@ const AssetSectionSkeleton = () => {
         </Text>
       </Flex>
       <Flex justify="space-between" align="center">
-        <Flex gap="m" align="center">
-          <Skeleton width={42} height={42} circle />
-          <Skeleton width={70} height={30} />
-        </Flex>
-        <Flex gap="base" direction="column" align="end">
-          <Skeleton width={40} height={30} />
-          <Skeleton width={50} height={14} />
+        <AssetButton loading error={false} />
+        <Flex gap="s" direction="column" align="end">
+          <div sx={{ height: pxToRem(26), lineHeight: 1 }}>
+            <Skeleton width={pxToRem(40)} height={pxToRem(26)} />
+          </div>
+          <div sx={{ height: pxToRem(12), lineHeight: 1 }}>
+            <Skeleton width={pxToRem(50)} height={pxToRem(12)} />
+          </div>
         </Flex>
       </Flex>
     </Stack>
@@ -36,11 +39,11 @@ const AssetSectionSkeleton = () => {
 
 const SwitcherSkeleton = () => {
   return (
-    <Flex align="center" justify="space-between" gap="s">
-      <Separator sx={{ flexShrink: 0, width: "m" }} />
+    <Flex align="center" justify="space-between">
+      <Separator sx={{ flexShrink: 0, width: 32 }} />
       <Skeleton
-        width={30}
-        height={30}
+        width={34}
+        height={34}
         circle
         sx={{ display: "inline-flex", flexShrink: 0 }}
       />

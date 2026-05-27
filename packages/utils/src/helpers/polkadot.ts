@@ -1,11 +1,11 @@
 import { h160 } from "@galacticcouncil/common"
 import { toHex } from "@polkadot-api/utils"
-import { AccountId, Binary } from "polkadot-api"
+import { AccountId } from "polkadot-api"
 
 const { H160, isEvmAddress } = h160
 
-export const isBinary = (value: unknown): value is Binary =>
-  value instanceof Binary
+export const isBinary = (value: unknown): value is Uint8Array =>
+  value instanceof Uint8Array
 
 export const safeConvertAddressSS58 = (address: string, ss58prefix = 0) => {
   try {

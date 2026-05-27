@@ -1,4 +1,4 @@
-import { Binary, FixedSizeBinary } from "polkadot-api"
+import { Binary } from "polkadot-api"
 import { isBigInt } from "remeda"
 
 export const safeStringify = (value: unknown, format?: boolean) => {
@@ -7,8 +7,8 @@ export const safeStringify = (value: unknown, format?: boolean) => {
   return JSON.stringify(
     value,
     (_, value) => {
-      if (value instanceof Binary) {
-        return FixedSizeBinary.fromBytes(value.asBytes()).asHex()
+      if (value instanceof Uint8Array) {
+        return Binary.toHex(value)
       }
       return isBigInt(value) ? `bigint:${value.toString()}` : value
     },

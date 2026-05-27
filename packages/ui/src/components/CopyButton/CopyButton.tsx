@@ -1,4 +1,5 @@
 import { useCopy } from "@galacticcouncil/utils"
+import { ThemeUICSSProperties } from "@theme-ui/css"
 
 import { CheckIcon, CopyIcon } from "@/assets/icons"
 import { Icon } from "@/components"
@@ -12,7 +13,7 @@ export type CopyButtonProps = {
   delay?: number
   defaultIcon?: React.ComponentType
   copiedIcon?: React.ComponentType
-  iconSize?: number
+  iconSize?: ThemeUICSSProperties["size"]
   children?: (props: RenderProps) => React.ReactNode
 } & Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -24,7 +25,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   delay = 5000,
   defaultIcon = CopyIcon,
   copiedIcon = CheckIcon,
-  iconSize = 14,
+  iconSize = "s",
   children,
   ...props
 }) => {

@@ -64,10 +64,7 @@ export const interpolationFormat = (
       return formatInterval(value, options)
 
     case "relative":
-      return formatRelativeTime(
-        value,
-        options.targetDate instanceof Date ? options.targetDate : new Date(),
-      )
+      return formatRelativeTime(value, options)
 
     default:
       return String(value ?? "")

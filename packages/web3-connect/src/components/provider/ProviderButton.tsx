@@ -59,20 +59,25 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
   const { logo, title, installed, provider } = walletData
   const modes = getWalletModesByProviderType(provider)
 
+  const isHybridWallet = [WalletMode.Substrate, WalletMode.EVM].every((mode) =>
+    modes.includes(mode),
+  )
+
   const content = (
     <>
       <Box sx={{ position: "relative" }}>
         <img sx={{ size: "xl" }} src={logo} alt={title} />
-        {modes.filter(hasModeIcon).map((mode) => (
-          <Box
-            sx={{ position: "absolute", bottom: -4, right: -4 }}
-            borderRadius="full"
-            bg={getToken("surfaces.themeBasePalette.background")}
-            key={mode}
-          >
-            <img sx={{ size: "xs" }} src={getWalletModeIcon(mode)} />
-          </Box>
-        ))}
+        {!isHybridWallet &&
+          modes.filter(hasModeIcon).map((mode) => (
+            <Box
+              sx={{ position: "absolute", bottom: -4, right: -4 }}
+              borderRadius="full"
+              bg={getToken("surfaces.themeBasePalette.background")}
+              key={mode}
+            >
+              <img sx={{ size: "xs" }} src={getWalletModeIcon(mode)} />
+            </Box>
+          ))}
       </Box>
       <Text fs={["p5", "p4"]} align="center" mt="base">
         {title}

@@ -399,8 +399,8 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                   addedShares =
                     papi.event.Stableswap.LiquidityAdded.filter(
                       addingSharesResult.events,
-                    ).find((event) => event.who === account?.address)?.shares ??
-                    0n
+                    ).find((event) => event.payload.who === account?.address)
+                      ?.payload.shares ?? 0n
                 } else {
                   const { client } = sdk
                   const { balance } = client
@@ -804,8 +804,8 @@ export const useAddMoneyMarketLiquidity = ({
                   addedShares =
                     papi.event.Stableswap.LiquidityAdded.filter(
                       addingSharesResult.events,
-                    ).find((event) => event.who === account.address)?.shares ??
-                    0n
+                    ).find((event) => event.payload.who === account.address)
+                      ?.payload.shares ?? 0n
                 } else {
                   const { client } = sdk
                   const { balance } = client

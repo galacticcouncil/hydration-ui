@@ -10,7 +10,7 @@ import {
 type SubscanLinkPath = "tx" | "account" | "block"
 
 const SUBSCAN_API_PROXY_URL =
-  "https://unified-main-aggr-indx.indexer.hydration.cloud/api/proxy/subscan"
+  "https://unified-main-aggr-indx.indexer.hydration.cloud/proxy/subscan"
 
 export const subscan = {
   rdns: "io.subscan",

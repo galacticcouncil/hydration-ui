@@ -1,5 +1,5 @@
 import { logger } from "@galacticcouncil/utils"
-import { Binary, compactNumber } from "@polkadot-api/substrate-bindings"
+import { compactNumber } from "@polkadot-api/substrate-bindings"
 import { InvalidTxError, PolkadotSigner } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { isBigInt, isFunction, isNumber, isObjectType, isString } from "remeda"
@@ -50,16 +50,12 @@ export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   return observeTransactionEvents(observer, options)
 }
 
-const unsigedTxFromCallData = (callData: Binary): Binary => {
-  const rawCallData = callData.asBytes()
-  return Binary.fromBytes(
-    mergeUint8(
-      compactNumber.enc(rawCallData.length + 1),
-      new Uint8Array([4]),
-      rawCallData,
-    ),
-  )
-}
+const unsigedTxFromCallData = (callData: Uint8Array): Uint8Array =>
+  mergeUint8([
+    compactNumber.enc(callData.length + 1),
+    new Uint8Array([4]),
+    callData,
+  ])
 
 const txToUnsigedTx = async (tx: AnyPapiTx) =>
   unsigedTxFromCallData(await tx.getEncodedData())
@@ -70,7 +66,7 @@ export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
   options,
 ) => {
   const unsignedTx = await txToUnsigedTx(tx)
-  const observer = client.submitAndWatch(unsignedTx.asHex()).pipe(
+  const observer = client.submitAndWatch(unsignedTx).pipe(
     catchError((error) => of({ type: "error" as const, error })),
     shareReplay({ bufferSize: 1, refCount: true }),
   )

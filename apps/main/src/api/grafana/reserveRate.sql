@@ -1,39 +1,17 @@
 WITH rates AS (
-    SELECT timestamp,
-        ('x' || RIGHT(args->>'reserve', 8))::bit(32)::int as reserve,
-        (args->>'$rateParam')::numeric / 10 ^ 25 as rate
+    SELECT
+        block.timestamp,
+        (args->>'$rateParam')::numeric / 10^25 AS rate
     FROM logs
-        JOIN block ON block_number = block.height
+    JOIN block ON block_number = block.height
     WHERE event_name = 'ReserveDataUpdated'
-        AND timestamp BETWEEN '$from' AND '$to'
-),
-bucketed_rates AS (
-    SELECT floor(
-            extract(
-                epoch
-                from timestamp
-            ) / 1800
-        ) * 1800 as time,
-        reserve,
-        LAST(
-            rate
-            ORDER BY timestamp
-        ) as rate
-    FROM rates
-    where reserve = $assetId
-    GROUP BY floor(
-            extract(
-                epoch
-                from timestamp
-            ) / 1800
-        ) * 1800,
-        reserve
+        AND LOWER(args->>'reserve') = LOWER('$assetId')
+        AND block.timestamp BETWEEN '$from' AND '$to'
 )
-SELECT time,
-    symbol,
-    rate
-FROM bucketed_rates
-    join token_metadata on id = reserve
-WHERE reserve IS NOT NULL
-    and rate > 0
-ORDER BY time ASC
+SELECT
+    floor(extract(epoch FROM timestamp) / 14400) * 14400 AS time,
+    LAST(rate ORDER BY timestamp) AS rate
+FROM rates
+GROUP BY 1
+HAVING LAST(rate ORDER BY timestamp) > 0
+ORDER BY 1 ASC

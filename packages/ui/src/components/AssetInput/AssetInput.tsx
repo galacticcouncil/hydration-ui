@@ -5,7 +5,7 @@ import { ReactNode } from "react"
 
 import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
 import { FormError } from "@/components/FormError"
-import { getToken } from "@/utils"
+import { getToken, pxToRem } from "@/utils"
 
 import {
   SAssetButton,
@@ -75,7 +75,8 @@ export const AssetInput = ({
     <Flex
       direction="column"
       gap="m"
-      sx={{ position: "relative", py: 20, overflow: "hidden" }}
+      py="l"
+      sx={{ position: "relative", overflow: "hidden" }}
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between">
@@ -222,20 +223,9 @@ export const AssetButton = ({
 }) => {
   if (loading)
     return (
-      <Flex
-        direction="column"
-        height="2.375rem"
-        gap="xs"
-        justify="center"
-        className={className}
-      >
-        <div sx={{ height: "xs", lineHeight: 1 }}>
-          <Skeleton sx={{ width: "m", height: "xs" }} />
-        </div>
-        <div sx={{ height: "xs", lineHeight: 1 }}>
-          <Skeleton sx={{ width: "100%", minWidth: "xl", height: "xs" }} />
-        </div>
-      </Flex>
+      <div sx={{ height: pxToRem(34), lineHeight: 1 }}>
+        <Skeleton sx={{ width: pxToRem(80), height: pxToRem(34) }} />
+      </div>
     )
 
   if (symbol && icon)

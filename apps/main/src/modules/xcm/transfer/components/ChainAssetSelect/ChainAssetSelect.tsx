@@ -32,6 +32,7 @@ export type ChainAssetPair = {
   chain: AnyChain
   assets: Asset[]
   routes: AssetRoute[]
+  isTagSelect: boolean
 }
 
 export type ChainAssetSelection = {
@@ -177,8 +178,9 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
 
           {pendingChain && !isCompatibleWalletMode && (
             <ConnectChainTile
-              p="base"
+              layout="vertical"
               chain={pendingChain}
+              bg="transparent"
               onConnect={() =>
                 toggle(getWalletModeByChain(pendingChain), {
                   title: t("xcm:connect.modal.title", {

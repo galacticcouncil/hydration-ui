@@ -37,32 +37,12 @@ export const createProvider = (
 
 export const SQUID_URLS_CONFIG = [
   {
-    name: "Orca Prod",
-    url: "https://orca-main-aggr-indx.indexer.hydration.cloud",
+    name: "Orca",
+    url: "https://orca-prod-pool-01.orca.hydration.cloud",
   },
   {
-    name: "Orca Prod 01 indx",
-    url: "https://orca-prod-pool-01-aggr-indx.indexer.hydration.cloud",
-  },
-  {
-    name: "Orca Prod 02 indx",
-    url: "https://orca-prod-pool-02-aggr-indx.indexer.hydration.cloud",
-  },
-  {
-    name: "Orca Prod 03 indx",
-    url: "https://orca-prod-pool-03-aggr-indx.indexer.hydration.cloud",
-  },
-  {
-    name: "Orca Prod 01 indexer",
-    url: "https://orca-prod-pool-01.aggr-indexer-hydration.shadow-senate.com",
-  },
-  {
-    name: "Orca Prod 02 indexer",
-    url: "https://orca-prod-pool-02.aggr-indexer-hydration.shadow-senate.com",
-  },
-  {
-    name: "Orca Prod 03 indexer",
-    url: "https://orca-prod-pool-03.aggr-indexer-hydration.shadow-senate.com",
+    name: "Catfish",
+    url: "https://orca-prod-pool-02.catfish.hydration.cloud",
   },
 ]
 
@@ -74,20 +54,16 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
-  createProvider("Helikon", "wss://rpc.helikon.io/hydradx"),
   createProvider("Dotters", "wss://hydration.dotters.network"),
   createProvider("IBP", "wss://hydration.ibp.network"),
   createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
-  /* These RPCs don't work with Papi, disabled for now  */
-  // createProvider("cay", "wss://rpc.cay.hydration.cloud"),
-  // createProvider("cay2", "wss://rpc2.cay.hydration.cloud"),
-  // createProvider("parm", "wss://rpc.parm.hydration.cloud"),
-  // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
-  // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
-  // createProvider("sin", "wss://rpc.sin.hydration.cloud"),
-  // createProvider("coke", "wss://rpc.coke.hydration.cloud"),
-  // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
-  // createProvider("3", "wss://3.rpc.hydration.cloud"),
+  createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
+  createProvider("roach", "wss://rpc.roach.hydration.cloud"),
+  createProvider("lait", "wss://rpc.lait.hydration.cloud"),
+  //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
+  createProvider("sin", "wss://rpc.sin.hydration.cloud"),
+  createProvider("coke", "wss://rpc.coke.hydration.cloud"),
+  // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
   createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",

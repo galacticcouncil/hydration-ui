@@ -1,4 +1,3 @@
-import { ClassNames } from "@emotion/react"
 import { Box, Flex, Paper, SectionHeader } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -41,10 +40,12 @@ export const StakingDashboard: FC = () => {
     useQuery(stakingPositionsQuery(rpc, address, stakingId))
 
   const {
-    data: votesData = [],
+    data: accountVotes,
     isLoading: votesIsLoading,
     isSuccess: votesIsSuccess,
   } = useQuery(accountOpenGovVotesQuery(rpc, address))
+
+  const votesData = accountVotes?.votes ?? []
 
   const staked = stakingPositionsData?.stake
     ? toDecimal(stakingPositionsData.stake, native.decimals)
@@ -133,16 +134,11 @@ export const StakingDashboard: FC = () => {
   return (
     <Flex direction="column" gap="xl">
       <TwoColumnGrid template="sidebar">
-        <ClassNames>
-          {({ css }) => (
-            <SectionHeader
-              noTopPadding
-              containerClassName={css({ gridColumn: "1/-1" })}
-              title={t("dashboard.title")}
-            />
-          )}
-        </ClassNames>
-
+        <SectionHeader
+          noTopPadding
+          sx={{ gridColumn: "1/-1" }}
+          title={t("dashboard.title")}
+        />
         <Paper>
           {isLoading ? (
             <>

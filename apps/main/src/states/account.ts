@@ -1,5 +1,6 @@
 import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
 import { useStableArray } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { produce } from "immer"
 import { useCallback, useMemo } from "react"
 import { pick } from "remeda"
@@ -138,6 +139,7 @@ export const useAccountData = create<
 }))
 
 export const useAccountBalances = () => {
+  const { account } = useAccount()
   const { balances, isBalanceLoading } = useAccountData(
     useShallow(pick(["balances", "isBalanceLoading"])),
   )
@@ -159,7 +161,7 @@ export const useAccountBalances = () => {
 
   return {
     balances,
-    isBalanceLoading,
+    isBalanceLoading: account ? isBalanceLoading : false,
     getBalance,
     getTransferableBalance,
     isBalanceLoaded,

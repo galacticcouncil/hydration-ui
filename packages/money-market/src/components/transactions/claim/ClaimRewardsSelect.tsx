@@ -79,12 +79,7 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         {selectedItem && (
-          <ButtonTransparent
-            sx={{
-              bg: getToken("details.separators"),
-              borderRadius: "lg",
-            }}
-          >
+          <ButtonTransparent>
             <ClaimRewardsSelectItem {...selectedItem} isTrigger />
           </ButtonTransparent>
         )}

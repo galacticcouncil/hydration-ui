@@ -1,4 +1,4 @@
-import { Swap } from "@galacticcouncil/sdk-next/build/types/sor"
+import { Swap } from "@galacticcouncil/sdk-next/sor"
 import { Routes } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, MicroButton, Modal } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"

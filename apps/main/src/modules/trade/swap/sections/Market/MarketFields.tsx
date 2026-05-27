@@ -1,166 +1,75 @@
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { useDebouncedCallback } from "use-debounce"
 
-import { Trade, TradeType } from "@/api/trade"
+import { Trade, TradeOrder, TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
-import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
-
-const RECALCULATE_DEBOUNCE_MS = 250
+import { useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly swap: Trade | undefined
+  readonly twap: TradeOrder | undefined
 }
 
-export const MarketFields: FC<Props> = ({ swap }) => {
+export const MarketFields: FC<Props> = ({ swap, twap }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
   const navigate = useNavigate()
 
-  const { reset, getValues, setValue, trigger } =
+  const { getValues, setValue, trigger, watch } =
     useFormContext<MarketFormValues>()
 
   const switchAssets = useSwitchAssets()
-  const calculateBuyAmount = useCalculateBuyAmount()
-  const calculateSellAmount = useCalculateSellAmount()
 
   const buyableAssets = tradable.filter(
     (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
   )
+  const [type, sellAsset, buyAsset, sellAmount, buyAmount, isSingleTrade] =
+    watch([
+      "type",
+      "sellAsset",
+      "buyAsset",
+      "sellAmount",
+      "buyAmount",
+      "isSingleTrade",
+    ])
 
-  const handleSellAssetChange = async (sellAsset: TAsset): Promise<void> => {
-    const formValues = getValues()
+  const amountOut = isSingleTrade ? swap?.amountOut : twap?.amountOut
+  const amountIn = isSingleTrade ? swap?.amountIn : twap?.amountIn
+  const isSell = type === TradeType.Sell
 
-    if (
-      formValues.type === TradeType.Sell &&
-      formValues.buyAsset &&
-      formValues.sellAmount
-    ) {
-      reset({
-        ...formValues,
-        buyAmount: await calculateBuyAmount({
-          sellAsset,
-          buyAsset: formValues.buyAsset,
-          sellAmount: formValues.sellAmount,
-          isSingleTrade: formValues.isSingleTrade,
-        }),
-      })
-    } else if (
-      formValues.type === TradeType.Buy &&
-      formValues.buyAsset &&
-      formValues.sellAmount
-    ) {
-      reset({
-        ...formValues,
-        sellAmount: await calculateSellAmount({
-          sellAsset,
-          buyAsset: formValues.buyAsset,
-          buyAmount: formValues.buyAmount,
-          isSingleTrade: formValues.isSingleTrade,
-        }),
-      })
-    }
-
-    trigger()
-  }
-
-  const handleBuyAssetChange = async (buyAsset: TAsset): Promise<void> => {
-    const formValues = getValues()
-
-    if (
-      formValues.type === TradeType.Sell &&
-      formValues.sellAsset &&
-      formValues.sellAmount
-    ) {
-      reset({
-        ...formValues,
-        buyAmount: await calculateBuyAmount({
-          sellAsset: formValues.sellAsset,
-          buyAsset,
-          sellAmount: formValues.sellAmount,
-          isSingleTrade: formValues.isSingleTrade,
-        }),
-      })
-    } else if (
-      formValues.type === TradeType.Buy &&
-      formValues.sellAsset &&
-      formValues.sellAmount
-    ) {
-      reset({
-        ...formValues,
-        sellAmount: await calculateSellAmount({
-          sellAsset: formValues.sellAsset,
-          buyAsset,
-          buyAmount: formValues.buyAmount,
-          isSingleTrade: formValues.isSingleTrade,
-        }),
-      })
-    }
-
-    trigger()
-  }
-
-  const handleSellChange = useDebouncedCallback(
-    async (newSellAmount: string) => {
-      const formValues = getValues()
-      const { sellAsset, sellAmount, buyAsset, type } = formValues
-
-      const usedSellAmount = newSellAmount || sellAmount
-
-      if (!sellAsset || !buyAsset) {
-        return
-      }
-
-      reset({
-        ...formValues,
-        buyAmount: await calculateBuyAmount({
-          sellAsset,
-          buyAsset,
-          sellAmount: usedSellAmount,
-          isSingleTrade: true,
-        }),
-        isSingleTrade: true,
-        ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
-      })
-
-      trigger()
-    },
-    RECALCULATE_DEBOUNCE_MS,
-  )
-
-  const handleBuyChange = useDebouncedCallback(async (newBuyAmount: string) => {
-    const formValues = getValues()
-    const { sellAsset, buyAsset, buyAmount, type } = formValues
-
-    const usedBuyAmount = newBuyAmount || buyAmount
-
-    if (!sellAsset || !buyAsset) {
+  useEffect(() => {
+    if (!amountOut || !isSell || !buyAsset) {
       return
     }
 
-    reset({
-      ...formValues,
-      sellAmount: await calculateSellAmount({
-        sellAsset,
-        buyAsset,
-        buyAmount: usedBuyAmount,
-        isSingleTrade: true,
-      }),
-      isSingleTrade: true,
-      ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
-    })
+    const nextBuyAmount = scaleHuman(amountOut, buyAsset.decimals) || "0"
 
-    trigger()
-  }, RECALCULATE_DEBOUNCE_MS)
+    if (buyAmount !== nextBuyAmount) {
+      setValue("buyAmount", nextBuyAmount)
+      trigger()
+    }
+  }, [buyAmount, buyAsset, setValue, trigger, amountOut, isSell])
+
+  useEffect(() => {
+    if (!amountIn || isSell || !sellAsset) {
+      return
+    }
+
+    const nextSellAmount = scaleHuman(amountIn, sellAsset.decimals) || "0"
+
+    if (sellAmount !== nextSellAmount) {
+      setValue("sellAmount", nextSellAmount)
+      trigger()
+    }
+  }, [sellAmount, sellAsset, setValue, trigger, amountIn, isSell])
 
   return (
     <div>
@@ -176,10 +85,8 @@ export const MarketFields: FC<Props> = ({ swap }) => {
 
           if (isSwitch) {
             setValue("sellAsset", previousSellAsset)
-            switchAssets.mutate()
+            switchAssets()
           } else {
-            handleSellAssetChange(sellAsset)
-
             navigate({
               to: ".",
               search: (search) => ({
@@ -191,9 +98,10 @@ export const MarketFields: FC<Props> = ({ swap }) => {
             })
           }
         }}
-        onAmountChange={(sellAmount) => {
-          handleBuyChange.cancel()
-          handleSellChange(sellAmount)
+        onAmountChange={() => {
+          if (!isSell) {
+            setValue("type", TradeType.Sell)
+          }
         }}
       />
       <MarketSwitcher swap={swap} />
@@ -210,10 +118,8 @@ export const MarketFields: FC<Props> = ({ swap }) => {
 
           if (isSwitch) {
             setValue("buyAsset", previousBuyAsset)
-            switchAssets.mutate()
+            switchAssets()
           } else {
-            handleBuyAssetChange(buyAsset)
-
             navigate({
               to: ".",
               search: (search) => ({
@@ -225,9 +131,10 @@ export const MarketFields: FC<Props> = ({ swap }) => {
             })
           }
         }}
-        onAmountChange={(buyAmount) => {
-          handleSellChange.cancel()
-          handleBuyChange(buyAmount)
+        onAmountChange={() => {
+          if (isSell) {
+            setValue("type", TradeType.Buy)
+          }
         }}
       />
     </div>

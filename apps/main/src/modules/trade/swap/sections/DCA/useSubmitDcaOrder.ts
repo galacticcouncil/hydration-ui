@@ -1,5 +1,5 @@
 import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"

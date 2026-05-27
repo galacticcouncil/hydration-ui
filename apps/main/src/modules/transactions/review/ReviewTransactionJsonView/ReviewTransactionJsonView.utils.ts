@@ -1,10 +1,10 @@
 import {
   formatTypeValueJson,
   JsonValue,
+  propPath,
   safeParse,
   safeStringify,
 } from "@galacticcouncil/utils"
-import { CompatibilityToken } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
@@ -51,9 +51,13 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
   }
 }
 
-export const decodeTx = (tx: AnyTransaction): object | JsonValue => {
+export const decodeTx = (
+  tx: AnyTransaction,
+  path?: string,
+): object | JsonValue => {
   if (isPapiTransaction(tx)) {
-    const txJson = safeStringify(tx.decodedCall)
+    const decodedCall = path ? propPath(tx.decodedCall, path) : tx.decodedCall
+    const txJson = safeStringify(decodedCall)
     try {
       return formatTypeValueJson(safeParse(txJson))
     } catch {
@@ -79,12 +83,9 @@ export const decodeTx = (tx: AnyTransaction): object | JsonValue => {
   return {}
 }
 
-export const getTxCallHash = (
-  tx: AnyTransaction,
-  papiCompatibilityToken: CompatibilityToken,
-): string => {
+export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
   if (isPapiTransaction(tx)) {
-    return getPapiTransactionCallData(tx, papiCompatibilityToken)
+    return getPapiTransactionCallData(tx)
   }
 
   if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {

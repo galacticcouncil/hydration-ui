@@ -7,7 +7,9 @@ import { BorrowDashboardPage } from "@/modules/borrow/dashboard/BorrowDashboardP
 import { BorrowDashboardSkeletonPage } from "@/modules/borrow/dashboard/BorrowDashboardSkeletonPage"
 
 const searchSchema = z.object({
-  suppliedSort: dataTableSortSchema,
+  suppliedSort: dataTableSortSchema.default([
+    { id: "underlyingBalanceUSD", desc: true },
+  ]),
   borrowedSort: dataTableSortSchema,
   supplyGSort: dataTableSortSchema,
   supplySort: dataTableSortSchema,

@@ -134,5 +134,5 @@ export function formatDestChainAddress(
   if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
     return safeConvertH160toSS58(address)
   }
-  return address
+  return isAddressValidOnChain(address, chain) ? address : ""
 }

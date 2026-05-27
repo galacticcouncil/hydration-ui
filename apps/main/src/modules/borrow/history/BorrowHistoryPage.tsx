@@ -41,7 +41,13 @@ export const BorrowHistoryPage = () => {
             onChange={setSearchPhrase}
           />
         }
+        sx={{
+          flexDirection: ["column-reverse", "row"],
+          gap: ["xl", 0],
+          alignItems: ["flex-start", "center"],
+        }}
       />
+
       <BorrowHistoryTable
         searchPhrase={searchPhrase}
         paginationProps={paginationProps}

@@ -3,11 +3,13 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
-import { bestNumberQuery } from "@/api/chain"
-import { accountVotesQuery } from "@/api/democracy"
+import { openGovUnlockedTokensQuery } from "@/api/democracy"
+import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID, PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { scaleHuman } from "@/utils/formatting"
 
 export const useNativeAssetLocks = () => {
   const { account } = useAccount()
@@ -58,36 +60,44 @@ export const useNativeAssetLocks = () => {
   }
 }
 
-export const useUnlockableNativeTokens = (lockedInDemocracy: string) => {
+export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
+  const { native } = useAssets()
+  const indexerUrl = useProxyUrl()
 
-  const { data: bestNumber } = useQuery(bestNumberQuery(rpc))
-  const { data, isLoading } = useQuery(
-    accountVotesQuery(
+  const { data: unlockedTokens, isLoading: unlockedTokensLoading } = useQuery(
+    openGovUnlockedTokensQuery(
       rpc,
+
       account?.address ?? "",
-      bestNumber?.parachainBlockNumber ?? 0,
+      indexerUrl,
     ),
   )
 
-  const lockedInDemocracyBig = new Big(lockedInDemocracy)
-  const value = lockedInDemocracyBig.lte(0)
+  const lockedInReferendaBig = new Big(lockedInReferenda)
+
+  const maxLocked = scaleHuman(
+    unlockedTokens?.maxLockedValue ?? "0",
+    native.decimals,
+  )
+
+  const value = lockedInReferendaBig.lte(0)
     ? "0"
-    : lockedInDemocracyBig
-        .minus(data?.maxLockedValue.toString() || "0")
-        .toString()
+    : lockedInReferendaBig.minus(maxLocked).toString()
 
-  const [displayValue] = useDisplayAssetPrice(NATIVE_ASSET_ID, value)
-  const unlockableIds = data?.ids ?? []
+  const [displayValue] = useDisplayAssetPrice(native.id, value)
 
-  const lockedSeconds = (data?.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
+  const lockedSeconds =
+    (unlockedTokens?.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
 
   return {
     value,
     displayValue,
     lockedSeconds,
-    unlockableIds,
-    isLoading,
+    unlockableIds: [],
+    votesToRemove: unlockedTokens?.votesToRemove ?? [],
+    classIds: unlockedTokens?.classIds ?? [],
+    isLoading: unlockedTokensLoading,
   }
 }

@@ -3,7 +3,6 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 
 import { Contacts } from "@/modules/layout/components/Settings/Contacts"
-// import { DegenMode } from "@/modules/layout/components/Settings/DegenMode"
 import { PaymentAsset } from "@/modules/layout/components/Settings/PaymentAsset"
 import {
   SSettingsContent,
@@ -31,7 +30,6 @@ export const SettingsModalDefault: FC<Props> = ({
         </SSettingsSection>
         <ModalContentDivider />
         <SSettingsSection>
-          {/* <DegenMode /> */}
           <ThemePreference />
         </SSettingsSection>
       </SSettingsContent>

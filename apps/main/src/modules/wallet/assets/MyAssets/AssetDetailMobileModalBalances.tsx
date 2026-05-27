@@ -1,58 +1,90 @@
-import { Hourglass, Landmark } from "@galacticcouncil/ui/assets/icons"
+import {
+  CoinsIcon,
+  Hourglass,
+  Landmark,
+} from "@galacticcouncil/ui/assets/icons"
 import { Amount } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
 import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
-import { useAssets } from "@/providers/assetsProvider"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useAssetPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
-  readonly assetId: string
-  readonly reserved: string
-  readonly reservedDca: string | undefined
+  readonly asset: MyAsset
 }
 
-export const AssetDetailMobileModalBalances: FC<Props> = ({
-  assetId,
-  reserved,
-}) => {
+export const AssetDetailMobileModalBalances: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const { getAssetWithFallback } = useAssets()
-  const asset = getAssetWithFallback(assetId)
+  const { data: reserves } = useAccountTokenReserves(asset.id)
+  const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
+  const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
+  const dcaAmountHuman = scaleHuman(dca, asset.decimals)
+  const otcAmountHuman = scaleHuman(otc, asset.decimals)
+  const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
 
-  const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, reserved)
-
-  // TODO integrate
-  const xcm = "-1"
-  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
+  const { price: assetPrice } = useAssetPrice(asset.id)
 
   return (
     <>
       <Amount
         variant="horizontalLabel"
+        label={t("myAssets.expandedNative.transferrable")}
+        value={t("common:number", {
+          value: asset.transferable,
+        })}
+        displayValue={t("common:currency", {
+          value: asset.transferableDisplay,
+        })}
+      />
+      <SAssetDetailMobileSeparator />
+      <Amount
+        variant="horizontalLabel"
         label={t("myAssets.expandedNative.lockedInDCA")}
         labelIcon={Landmark}
         value={t("common:number", {
-          value: reserved,
+          value: dcaAmountHuman,
         })}
-        displayValue={reservedDisplayPrice}
+        displayValue={t("common:currency", {
+          value: Big(dcaAmountHuman).times(assetPrice).toString(),
+        })}
       />
-      {xcm !== "-1" && (
+      {otc > 0n && (
+        <>
+          <SAssetDetailMobileSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInOTC")}
+            labelIcon={CoinsIcon}
+            value={t("common:number", {
+              value: otcAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(otcAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
+      {xcm > 0n && (
         <>
           <SAssetDetailMobileSeparator />
           <Amount
             variant="horizontalLabel"
             label={t("myAssets.expandedNative.lockedInXCM")}
+            description={t("myAssets.expandedNative.lockedInXCM.description")}
             labelIcon={Hourglass}
-            description={t("myAssets.expandedNative.lockedInXCM.description", {
-              returnObjects: true,
-            })}
             value={t("common:number", {
-              value: xcm,
+              value: xcmAmountHuman,
             })}
-            displayValue={xcmDisplay}
+            displayValue={t("common:currency", {
+              value: Big(xcmAmountHuman).times(assetPrice).toString(),
+            })}
           />
         </>
       )}

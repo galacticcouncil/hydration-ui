@@ -7,6 +7,7 @@ import { AnyChain } from "@galacticcouncil/xc-core"
 
 import { useSquidClient } from "@/api/provider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type RecipientConnectModalProps = {
   open: boolean
@@ -22,12 +23,13 @@ export const RecipientConnectModal: React.FC<RecipientConnectModalProps> = ({
   onAccountSelect,
 }) => {
   const squidSdk = useSquidClient()
-
+  const { papi } = useRpcProvider()
   const walletMode = destChain ? getWalletModeByChain(destChain) : null
 
   return (
     <Web3ConnectModal
       squidSdk={squidSdk}
+      papi={papi}
       open={open}
       mode={walletMode ?? WalletMode.Default}
       onOpenChange={onOpenChange}

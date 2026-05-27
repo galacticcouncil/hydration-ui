@@ -1,16 +1,16 @@
 import {
+  CoinsIcon,
   Hourglass,
   Landmark,
   Layers,
   LockOpen,
-  Vote,
 } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
 import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
 import {
   useNativeAssetLocks,
@@ -19,7 +19,8 @@ import {
 import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
 import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
-import { LockExpiration } from "@/modules/wallet/assets/MyLiquidity/LockExpiration"
+import { useAssetPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly asset: MyAsset
@@ -29,13 +30,16 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const locks = useNativeAssetLocks()
-  const unlockable = useUnlockableNativeTokens(locks.lockedInDemocracy)
+  const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
+  const { data: reserves } = useAccountTokenReserves(asset.id)
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
+  const { price: assetPrice } = useAssetPrice(asset.id)
 
-  const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
-
-  // TODO integrate
-  const xcm = "-1"
-  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
+  const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
+  const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
+  const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
+  const dcaAmountHuman = scaleHuman(dca, asset.decimals)
+  const otcAmountHuman = scaleHuman(otc, asset.decimals)
 
   return (
     <Flex direction="column" gap="xl">
@@ -44,24 +48,41 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
         label={t("myAssets.expandedNative.lockedInDCA")}
         labelIcon={Landmark}
         value={t("common:number", {
-          value: asset.reserved,
+          value: dcaAmountHuman,
         })}
-        displayValue={reservedDisplayPrice}
+        displayValue={t("common:currency", {
+          value: Big(dcaAmountHuman).times(assetPrice).toString(),
+        })}
       />
-      {xcm !== "-1" && (
+      {otc > 0n && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInOTC")}
+            labelIcon={CoinsIcon}
+            value={t("common:number", {
+              value: otcAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(otcAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
+      {xcm > 0n && (
         <>
           <ExpandedRowSeparator />
           <Amount
             variant="horizontalLabel"
             label={t("myAssets.expandedNative.lockedInXCM")}
             labelIcon={Hourglass}
-            description={t("myAssets.expandedNative.lockedInXCM.description", {
-              returnObjects: true,
-            })}
             value={t("common:number", {
-              value: xcm,
+              value: xcmAmountHuman,
             })}
-            displayValue={xcmDisplay}
+            displayValue={t("common:currency", {
+              value: Big(xcmAmountHuman).times(assetPrice).toString(),
+            })}
           />
         </>
       )}
@@ -75,56 +96,20 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
         })}
         displayValue={locks.lockedInStakingDisplayPrice}
       />
-      <ExpandedRowSeparator />
-      <Amount
-        variant="horizontalLabel"
-        label={t("myAssets.expandedNative.lockedInDemocracy")}
-        labelIcon={Vote}
-        value={t("common:number", {
-          value: locks.lockedInDemocracy,
-        })}
-        displayValue={locks.lockedInDemocracyDisplayPrice}
-        descriptionCustom={
-          unlockable.lockedSeconds > 0 && (
-            <FullExpiration
-              sx={{ width: "fit-content" }}
-              initialLockedSeconds={unlockable.lockedSeconds}
-            />
-          )
-        }
-      />
-      <ExpandedRowSeparator />
-      <Flex align="center" gap="m">
-        <Amount
-          css={{ flex: 1 }}
-          variant="horizontalLabel"
-          color="tint"
-          label={t("myAssets.expandedNative.unlockableInDemocracy")}
-          labelIcon={LockOpen}
-          value={t("common:number", {
-            value: unlockable.value,
-          })}
-          displayValue={unlockable.displayValue}
-          descriptionCustom={
-            unlockable.unlockableIds.length > 0 && (
-              <LockExpiration
-                sx={{
-                  width: "fit-content",
-                }}
-              >
-                {t("myAssets.expandedNative.expiredLocks", {
-                  amount: unlockable.unlockableIds.length,
-                })}
-              </LockExpiration>
-            )
-          }
-        />
-        <AssetDetailUnlock
-          unlockableIds={unlockable.unlockableIds}
-          value={unlockable.value}
-        />
-      </Flex>
-      {new Big(locks.lockedInOpenGov).gt(0) && (
+      {Big(locks.lockedInDemocracy).gt(0) && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInDemocracy")}
+            value={t("common:number", {
+              value: locks.lockedInDemocracy,
+            })}
+            displayValue={locks.lockedInDemocracyDisplayPrice}
+          />
+        </>
+      )}
+      {Big(locks.lockedInOpenGov).gt(0) && (
         <>
           <ExpandedRowSeparator />
           <Amount
@@ -137,6 +122,31 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           />
         </>
       )}
+      <ExpandedRowSeparator />
+
+      <Flex align="center" gap="m">
+        <Amount
+          css={{ flex: 1 }}
+          variant="horizontalLabel"
+          color="tint"
+          label={t("myAssets.expandedNative.unlockable")}
+          labelIcon={LockOpen}
+          value={t("common:number", {
+            value: unlockable.value,
+          })}
+          displayValue={unlockable.displayValue}
+          descriptionCustom={
+            unlockable.lockedSeconds > 0 && (
+              <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
+            )
+          }
+        />
+        <AssetDetailUnlock
+          votesToRemove={unlockable.votesToRemove}
+          classIds={unlockable.classIds}
+          value={unlockable.value}
+        />
+      </Flex>
 
       {new Big(locks.lockedInVesting).gt(0) && (
         <>

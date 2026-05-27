@@ -1,6 +1,11 @@
 import { ComponentType, FC, ReactNode } from "react"
 
-import { CircleInfo, ExclamationMark, TriangleAlert } from "@/assets/icons"
+import {
+  CircleCheck,
+  CircleInfo,
+  ExclamationMark,
+  TriangleAlert,
+} from "@/assets/icons"
 import {
   AlertVariant,
   SAlertContainer,
@@ -71,4 +76,5 @@ const alertIcons: Record<AlertVariant, ComponentType> = {
   info: CircleInfo,
   warning: TriangleAlert,
   error: ExclamationMark,
+  success: CircleCheck,
 }

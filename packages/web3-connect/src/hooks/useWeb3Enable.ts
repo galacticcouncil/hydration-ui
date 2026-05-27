@@ -12,13 +12,18 @@ import {
 } from "@/components/address-book/AddressBook.store"
 import { WalletProviderType } from "@/config/providers"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
-import { BaseWalletError } from "@/utils/errors"
+import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 
 type UseWeb3EnableOptions = {
   disconnectOnError?: boolean
 }
+
+const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
+  WalletProviderType.ExternalWallet,
+  WalletProviderType.WalletConnect,
+]
 
 export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
   const { setStatus, setError, disconnect, setAccounts } = useWeb3Connect(
@@ -52,15 +57,16 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
           }),
         )
         .filter(
-          ({ provider }) => provider !== WalletProviderType.ExternalWallet,
+          ({ provider }) => !ADDRESS_BOOK_PROVIDER_BLACKLIST.includes(provider),
         )
 
       addToAddressBook(addresses)
     },
     onError: (error, type) => {
-      if (options.disconnectOnError) {
+      if (options.disconnectOnError || error instanceof UserRejectedError) {
         return disconnect(type)
       }
+
       setStatus(type, WalletProviderStatus.Error)
       if (error instanceof BaseWalletError) {
         setError(error.message)

@@ -14,6 +14,7 @@ import { Phantom, PhantomSui } from "@/wallets/Phantom"
 import { PolkadotJS } from "@/wallets/PolkadotJS"
 import { PolkaGate } from "@/wallets/PolkaGate"
 import { RabbyWallet } from "@/wallets/RabbyWallet"
+import { ReownWalletConnect } from "@/wallets/ReownWalletConnect"
 import { Slush } from "@/wallets/Slush"
 import { Solflare } from "@/wallets/Solflare"
 import { SubWallet, SubWalletEvm, SubWalletH160 } from "@/wallets/SubWallet"
@@ -37,6 +38,7 @@ export {
   PolkadotJS,
   PolkaGate,
   RabbyWallet,
+  ReownWalletConnect,
   Slush,
   Solflare,
   SubWallet,
@@ -84,6 +86,7 @@ const wallets = [
   new PhantomSui(),
 
   // Other
+  new ReownWalletConnect(),
   new ExternalWallet(),
 ]
 

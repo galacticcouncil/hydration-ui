@@ -21,7 +21,7 @@
   "trade.orders.fromTo.mobile": "Pay with / Get",
   "trade.orders.status.mobile": "Amount/Status",
   "trade.orders.allPairs.on": "All pairs",
-  "trade.orders.allPairs.off": "Recent pair",
+  "trade.orders.allPairs.off": "Current pair",
   "trade.orders.type.market": "Market",
   "trade.orders.type.dca": "DCA",
   "trade.orders.status.filled": "Filled",

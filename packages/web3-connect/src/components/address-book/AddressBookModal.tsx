@@ -1,4 +1,4 @@
-import { Flex, ModalBody } from "@galacticcouncil/ui/components"
+import { ModalBody, Stack } from "@galacticcouncil/ui/components"
 import {
   normalizeSS58Address,
   safeConvertSS58toPublicKey,
@@ -124,7 +124,7 @@ export const AddressBookModal: FC<Props> = ({
 
     add({
       address: searchPhrase,
-      name: t("addressBook.defaultName"),
+      name: "",
       provider: PROVIDERS_BY_WALLET_MODE[addressProvider][0],
       publicKey: addressPublicKey,
       isCustom: true,
@@ -158,13 +158,13 @@ export const AddressBookModal: FC<Props> = ({
         {searchedAddresses.length === 0 ? (
           <AddressBookEmptyState canAdd={canAdd} />
         ) : (
-          <Flex direction="column" gap="base">
+          <Stack gap="base">
             {searchedAddresses.map((address) => (
               <Web3ConnectAccount
                 key={address.publicKey}
                 rawAddress={address.address}
                 publicKey={address.publicKey}
-                name={address.name}
+                name={address.name || t("addressBook.defaultName")}
                 address={address.address}
                 displayAddress={address.address}
                 provider={address.provider}
@@ -181,7 +181,7 @@ export const AddressBookModal: FC<Props> = ({
                 })}
               />
             ))}
-          </Flex>
+          </Stack>
         )}
       </ModalBody>
     </>

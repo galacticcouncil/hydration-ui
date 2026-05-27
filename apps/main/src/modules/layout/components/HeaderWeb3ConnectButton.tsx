@@ -1,3 +1,4 @@
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { useMatch } from "@tanstack/react-router"
 import React from "react"
@@ -15,7 +16,7 @@ export const HeaderWeb3ConnectButton: React.FC<
       size="large"
       variant="secondary"
       allowIncompatibleAccounts={isCrossChainPage}
-      sx={{ height: 40 }}
+      sx={{ height: pxToRem(36) }}
     />
   )
 }

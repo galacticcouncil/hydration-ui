@@ -1,7 +1,9 @@
 import Big, { BigSource } from "big.js"
 import {
   differenceInSeconds,
+  Duration,
   format as formatDateFns,
+  FormatDistanceToken,
   formatDuration,
   intervalToDuration,
   isBefore,
@@ -28,6 +30,31 @@ const DEFAULT_LOCALE = "en-US"
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
 const NA_VALUE = "N/A"
 const MIN_PERCENTAGE_THRESHOLD = Big(0.01)
+
+const formatDistanceLocale: Record<FormatDistanceToken, string> = {
+  xSeconds: "{{count}}s",
+  xMinutes: "{{count}}m",
+  xHours: "{{count}}h",
+  xDays: "{{count}}d",
+  xMonths: "{{count}}mo",
+  xYears: "{{count}}y",
+  lessThanXSeconds: "less than {{count}}s",
+  halfAMinute: "half a minute",
+  lessThanXMinutes: "less than {{count}}m",
+  aboutXHours: "about {{count}}h",
+  aboutXWeeks: "about {{count}}w",
+  xWeeks: "{{count}}w",
+  aboutXMonths: "about {{count}}mo",
+  aboutXYears: "about {{count}}y",
+  overXYears: "over {{count}}y",
+  almostXYears: "almost {{count}}y",
+}
+
+const shortEnLocale = {
+  formatDistance: (token: FormatDistanceToken, count: number) => {
+    return formatDistanceLocale[token].replace("{{count}}", count.toString())
+  },
+}
 
 const formatNumberParts = (part: Intl.NumberFormatPart) => {
   if (part.type === "group") {
@@ -277,8 +304,11 @@ export const formatDate = (
 
 export const formatRelativeTime = (
   value: FormatValue,
-  targetDate: Date = new Date(),
+  options: Record<string, unknown> = {},
 ) => {
+  const targetDate =
+    options.targetDate instanceof Date ? options.targetDate : new Date()
+
   if (!isValidDateValue(value)) return ""
   const date = toDate(value)
 
@@ -294,11 +324,24 @@ export const formatRelativeTime = (
     return "Now"
   }
 
+  const format: (keyof Duration)[] = (() => {
+    switch (true) {
+      case diffInSec < 60:
+        return ["seconds"]
+      case diffInSec < 24 * 60 * 60:
+        return ["hours", "minutes"]
+      case !!duration.years:
+        return ["years"]
+      case !!duration.months:
+        return ["months"]
+      default:
+        return ["days"]
+    }
+  })()
+
   const formatted = formatDuration(duration, {
-    format:
-      diffInSec < 60
-        ? ["seconds"]
-        : ["years", "months", "days", "hours", "minutes"],
+    format,
+    locale: options?.format === "short" ? shortEnLocale : undefined,
   })
 
   return isPast ? `${formatted} ago` : `In ${formatted}`

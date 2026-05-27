@@ -11,6 +11,7 @@ import {
   safeConvertSuiAddressToSS58,
   SolanaAddr,
   Ss58Addr,
+  stringEquals,
 } from "@galacticcouncil/utils"
 
 import {
@@ -171,8 +172,12 @@ export function subscribeWalletAccounts(
     const { account: currentAccount } = useWeb3Connect.getState()
     if (!currentAccount || currentAccount.provider !== wallet.provider) return
 
-    const isCurrentAccountConnected = accounts.some(
-      (a) => toStoredAccount(a).publicKey === currentAccount.publicKey,
+    const publicKey = currentAccount.isMultisig
+      ? safeConvertSS58toPublicKey(currentAccount.multisigSignerAddress ?? "")
+      : currentAccount.publicKey
+
+    const isCurrentAccountConnected = accounts.some((a) =>
+      stringEquals(toStoredAccount(a).publicKey, publicKey),
     )
 
     if (isCurrentAccountConnected) return

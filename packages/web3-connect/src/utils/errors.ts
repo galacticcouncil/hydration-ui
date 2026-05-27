@@ -23,3 +23,8 @@ export class NotInstalledError extends BaseWalletError {
   readonly name = "NotInstalledError"
   readonly message = `${this.wallet.title} could not be enabled. Refresh the browser if ${this.wallet.title} is already installed.`
 }
+
+export class UserRejectedError extends BaseWalletError {
+  readonly name = "UserRejectedError"
+  readonly message = `${this.wallet.title} was rejected by the user.`
+}

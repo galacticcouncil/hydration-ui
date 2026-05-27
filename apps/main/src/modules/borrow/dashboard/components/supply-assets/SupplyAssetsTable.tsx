@@ -25,9 +25,11 @@ import {
   AddStablepoolLiquidityWrapper,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
+import { useAssets } from "@/providers/assetsProvider"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation("borrow")
+  const { getAssetWithFallback } = useAssets()
   const [modalProps, setModalProps] = useState<
     | (Omit<AddStablepoolLiquidityProps, "onSubmitted"> & {
         isIsolated?: boolean
@@ -124,7 +126,11 @@ export const SupplyAssetsTable = () => {
             <AddStablepoolLiquidityWrapper
               {...modalProps}
               initialOption="stablepool"
-              title={t("supply")}
+              title={t("supply.withSymbol", {
+                symbol: modalProps.erc20Id
+                  ? getAssetWithFallback(modalProps.erc20Id).symbol
+                  : undefined,
+              })}
               closable
               onSubmitted={() => setModalProps(undefined)}
             />

@@ -51,7 +51,7 @@ export const AllPools = () => {
     <>
       <ValueStats
         label={t("liquidity:header.totalLiquidity")}
-        value={t("common:currency", {
+        value={t("common:currency.compact", {
           value: totals.totalLiquidity,
         })}
         size="medium"
@@ -60,8 +60,18 @@ export const AllPools = () => {
       />
       <PoolsHeaderSeparator />
       <ValueStats
+        label={t("liquidity:header.volume")}
+        value={t("common:currency.compact", {
+          value: totals.volume,
+        })}
+        isLoading={isLoadingPlatformTotal || isLoadingXYK}
+        size="medium"
+        wrap
+      />
+      <PoolsHeaderSeparator />
+      <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
-        value={t("common:currency", { value: totals.liquidity })}
+        value={t("common:currency.compact", { value: totals.liquidity })}
         size="medium"
         isLoading={isLoadingPlatformTotal}
         wrap
@@ -69,7 +79,7 @@ export const AllPools = () => {
       <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInStablepool")}
-        value={t("common:currency", { value: totals.stablepool })}
+        value={t("common:currency.compact", { value: totals.stablepool })}
         size="medium"
         isLoading={isLoadingPlatformTotal}
         wrap
@@ -77,19 +87,9 @@ export const AllPools = () => {
       <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
-        value={t("common:currency", {
+        value={t("common:currency.compact", {
           value: xykTotals.liquidity,
         })}
-        size="medium"
-        wrap
-      />
-      <PoolsHeaderSeparator />
-      <ValueStats
-        label={t("liquidity:header.volume")}
-        value={t("common:currency", {
-          value: totals.volume,
-        })}
-        isLoading={isLoadingPlatformTotal || isLoadingXYK}
         size="medium"
         wrap
       />

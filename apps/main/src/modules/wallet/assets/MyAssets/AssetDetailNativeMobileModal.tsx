@@ -30,18 +30,14 @@ export const AssetDetailNativeMobileModal: FC<Props> = ({
       <ModalHeader
         sx={{ p: 16 }}
         title={asset.symbol}
-        customTitle={
-          <AssetLabelFull asset={asset} size="primary" variant="vertical" />
-        }
+        customTitle={<AssetLabelFull asset={asset} size="primary" />}
       />
       <SAssetDetailModalBody>
-        <Flex direction="column" gap="base">
-          <SAssetDetailMobileSeparator />
-          <Flex justify="space-between" align="center">
-            <AssetDetailTotal assetId={asset.id} total={asset.total} />
-            <AssetDetailStaking asset={asset} />
-          </Flex>
+        <Flex justify="space-between" align="center">
+          <AssetDetailTotal assetId={asset.id} total={asset.total} />
+          <AssetDetailStaking asset={asset} />
         </Flex>
+
         <div>
           <SAssetDetailMobileSeparator />
           <AssetDetailMobileModalBalancesHeader />

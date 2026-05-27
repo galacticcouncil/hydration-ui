@@ -34,9 +34,10 @@ const useGetClaimStakingTx = () => {
   )
   const positionId = stakingPositionsData?.stakePositionId
 
-  const { data: votes = [], isSuccess: votesSuccess } = useQuery(
+  const { data: accountVotes, isSuccess: votesSuccess } = useQuery(
     accountOpenGovVotesQuery(rpc, address ?? ""),
   )
+  const votes = accountVotes?.votes ?? []
 
   const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
     votes,
