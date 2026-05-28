@@ -97,6 +97,6 @@ export const SStackLayer = styled.div<{ readonly $depth: number }>(
   `,
 )
 
-export const SGigaNewsContainer = styled(Box)<{ readonly $hidden?: boolean }>(
-  ({ $hidden }) => hiddenStyles($hidden),
+export const SGigaNewsContainer = styled(Box)<{ readonly isHidden?: boolean }>(
+  ({ isHidden }) => hiddenStyles(isHidden),
 )

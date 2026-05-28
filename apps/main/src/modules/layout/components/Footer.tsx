@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { funnel } from "remeda"
 
 import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
 import { GigaNews } from "@/components/GigaNews/GigaNews"
@@ -23,32 +24,38 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
       return scrollTop + viewportHeight >= scrollHeight - 2
     }
 
-    const markActive = () => {
-      setIsActive(true)
-      if (activityTimeoutRef.current !== null) {
-        clearTimeout(activityTimeoutRef.current)
-      }
-      activityTimeoutRef.current = window.setTimeout(() => {
-        setIsActive(false)
-      }, FOOTER_VISIBLE_AFTER_ACTIVITY_MS)
-    }
+    const { call: markActive } = funnel(
+      () => {
+        setIsActive(true)
+        if (activityTimeoutRef.current !== null) {
+          clearTimeout(activityTimeoutRef.current)
+        }
+        activityTimeoutRef.current = window.setTimeout(() => {
+          setIsActive(false)
+        }, FOOTER_VISIBLE_AFTER_ACTIVITY_MS)
+      },
+      { minGapMs: FOOTER_VISIBLE_AFTER_ACTIVITY_MS, triggerAt: "start" },
+    )
 
-    const onScrollOrResize = () => {
-      setIsAtBottom(computeIsAtBottom())
-      markActive()
-    }
+    const { call: onScrollOrResize } = funnel(
+      () => {
+        setIsAtBottom(computeIsAtBottom())
+        markActive()
+      },
+      { minGapMs: FOOTER_VISIBLE_AFTER_ACTIVITY_MS, triggerAt: "start" },
+    )
 
     setIsAtBottom(computeIsAtBottom())
 
-    window.addEventListener("scroll", onScrollOrResize, { passive: true })
-    window.addEventListener("resize", onScrollOrResize, { passive: true })
-    window.addEventListener("pointermove", markActive, { passive: true })
+    addEventListener("scroll", onScrollOrResize, { passive: true })
+    addEventListener("resize", onScrollOrResize, { passive: true })
+    addEventListener("pointermove", markActive, { passive: true })
     return () => {
-      window.removeEventListener("scroll", onScrollOrResize)
-      window.removeEventListener("resize", onScrollOrResize)
-      window.removeEventListener("pointermove", markActive)
+      removeEventListener("scroll", onScrollOrResize)
+      removeEventListener("resize", onScrollOrResize)
+      removeEventListener("pointermove", markActive)
       if (activityTimeoutRef.current !== null) {
-        window.clearTimeout(activityTimeoutRef.current)
+        clearTimeout(activityTimeoutRef.current)
       }
     }
   }, [])
@@ -57,9 +64,9 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
 
   return (
     <SFooter justify="space-between">
-      {!loading ? <GigaNews isHidden={hidden} /> : <div />}
+      {!loading && <GigaNews isHidden={hidden} />}
 
-      <SFooterControls $hidden={hidden} gap="base">
+      <SFooterControls hidden={hidden} gap="base" ml="auto">
         <DataProviderSelect />
       </SFooterControls>
     </SFooter>

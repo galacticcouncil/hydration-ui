@@ -10,7 +10,7 @@ import {
   SStackLayer,
   SStackRoot,
 } from "@/components/GigaNews/GigaNews.styled"
-import { bannerConfig, useBannersStore } from "@/states/banners"
+import { useBannersStore, useEnabledBanners } from "@/states/banners"
 
 export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const { t } = useTranslation("common")
@@ -18,11 +18,12 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
   const { openAllGigaNews, closeAllGigaNews, closedGigaNewsIds } =
     useBannersStore()
+  const enabledBanners = useEnabledBanners()
 
-  const allClosed = closedGigaNewsIds.length === bannerConfig.length
+  const allClosed = closedGigaNewsIds.length === enabledBanners.length
   const [expanded, setExpanded] = useState(allClosed ? false : true)
   const toggleLabel = expanded
-    ? bannerConfig.length > 1
+    ? enabledBanners.length > 1
       ? t("closeAll")
       : t("close")
     : t("gigaNews")
@@ -30,7 +31,7 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
 
-  const visibleBanners = bannerConfig.filter(
+  const visibleBanners = enabledBanners.filter(
     (banner) => !closedGigaNewsIds.includes(banner.id),
   )
 
@@ -63,10 +64,10 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
     }
   }, [allClosed, expanded, setExpanded])
 
-  if (!bannerConfig.length) return <div />
+  if (!enabledBanners.length) return null
 
   return (
-    <SGigaNewsContainer $hidden={isHidden && allClosed}>
+    <SGigaNewsContainer isHidden={isHidden && allClosed}>
       {visibleBanners.length > 0 && (
         <SStackRoot $closing={isCloseAll}>
           {visibleBanners.map((banner, depth) => {

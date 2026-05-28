@@ -1,8 +1,17 @@
 import { type PromoteBannerItem } from "@galacticcouncil/ui/components"
+import { useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-type BannerConfig = PromoteBannerItem & { to?: string; priority: number }
+import { LINKS } from "@/config/navigation"
+import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useHasFillableStableBondsOrders"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+type BannerConfig = PromoteBannerItem & {
+  to?: string
+  priority: number
+  enabled: boolean
+}
 
 const bannerEntries: BannerConfig[] = [
   {
@@ -15,10 +24,26 @@ const bannerEntries: BannerConfig[] = [
     ctaColor: "#B3D7FA",
     ctaTextColor: "#0D1525",
     cta: "Get HOLLARb",
-    to: "/borrow",
+    to: LINKS.strategiesHollarBonds,
     priority: 1,
+    enabled: false,
   },
 ]
+
+export const useEnabledBanners = () => {
+  const { featureFlags } = useRpcProvider()
+  const hasFillableStableBondsOrders = useHasFillableStableBondsOrders()
+
+  return useMemo(() => {
+    return bannerEntries.filter((banner) => {
+      if (banner.id === "hollarb") {
+        return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
+      }
+
+      return banner.enabled
+    })
+  }, [featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders])
+}
 
 export const bannerConfig: BannerConfig[] = [...bannerEntries].sort(
   (a, b) => a.priority - b.priority,

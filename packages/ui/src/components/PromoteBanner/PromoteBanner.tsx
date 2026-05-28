@@ -1,7 +1,7 @@
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import { Flex, Icon, SDefaultButton, Text } from "@/components"
 import { getToken } from "@/utils"
@@ -39,18 +39,10 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
   const onCloseRef = useRef(item.onClose)
   onCloseRef.current = item.onClose
 
-  const requestClose = useCallback(() => {
+  const requestClose = () => {
     if (!onCloseRef.current || exiting) return
     setExiting(true)
-  }, [exiting])
-
-  useEffect(() => {
-    if (!exiting) return
-    const id = setTimeout(() => {
-      onCloseRef.current?.()
-    }, 280)
-    return () => clearTimeout(id)
-  }, [exiting])
+  }
 
   return (
     <DialogPrimitive.Root
@@ -64,6 +56,9 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
           backgroundImageMobile={item.backgroundImageMobile}
           $exiting={exiting}
           m="auto"
+          onTransitionEnd={() => {
+            if (exiting) onCloseRef.current?.()
+          }}
         >
           <SPromoteBannerBody
             direction="column"

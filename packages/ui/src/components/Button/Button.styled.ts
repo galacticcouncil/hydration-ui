@@ -305,7 +305,8 @@ const sizes = createVariants<ButtonSize>((theme) => ({
 }))
 
 export const SButton = styled(Box, {
-  shouldForwardProp: (prop) => !["variant", "size", "outline"].includes(prop),
+  shouldForwardProp: (prop) =>
+    !["variant", "size", "outline", "blur"].includes(prop),
 })<SButtonProps>(
   defaulStyles,
   ({ variant = "primary", size = "small", outline = false, blur = false }) => [

@@ -39,6 +39,6 @@ export const hiddenStyles = (hidden?: boolean) => css`
     transform 360ms ease;
 `
 
-export const SFooterControls = styled(Flex)<{ readonly $hidden?: boolean }>(
-  ({ $hidden }) => hiddenStyles($hidden),
+export const SFooterControls = styled(Flex)<{ readonly hidden?: boolean }>(
+  ({ hidden }) => hiddenStyles(hidden),
 )

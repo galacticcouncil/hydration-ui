@@ -54,10 +54,15 @@ export const MorphLabel = ({ text }: MorphLabelProps) => {
       })
     })
 
-    if (current) {
-      const removeCurrent = () => current.remove()
-      current.addEventListener("transitionend", removeCurrent, { once: true })
-      setTimeout(removeCurrent, 400)
+    if (!current) return
+
+    const removeCurrent = () => current.remove()
+    current.addEventListener("transitionend", removeCurrent, { once: true })
+    const timeoutId = setTimeout(removeCurrent, 400)
+
+    return () => {
+      clearTimeout(timeoutId)
+      current.removeEventListener("transitionend", removeCurrent)
     }
   }, [text])
 

@@ -63,7 +63,6 @@ export const SPromoteBannerContent = styled(Box, {
     background-size: cover;
     background-position: right;
     background-repeat: no-repeat;
-    box-shadow: ${theme.shadows.base};
 
     ${mq("sm")} {
       width: ${pxToRem(278)};
