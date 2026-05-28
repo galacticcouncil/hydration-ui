@@ -53,10 +53,11 @@ export const EmptyState: FC<Props> = ({
           fs="p5"
           lh={1.3}
           align="center"
+          sx={{ textWrap: "balance" }}
         >
           {description.split(". ").map((sentence, index) => (
             <Fragment key={index}>
-              {sentence}
+              {sentence.endsWith(".") ? sentence : `${sentence}.`}
               <br />
             </Fragment>
           ))}
