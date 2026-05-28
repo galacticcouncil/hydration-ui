@@ -16,7 +16,7 @@ import {
   bottomNavOrder,
   NAV_ITEMS_SHOWN_MOBILE,
   NAV_ITEMS_SHOWN_TABLET,
-  NAVIGATION,
+  NavigationKey,
 } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 import {
@@ -29,14 +29,21 @@ import { MobileTabBarActions } from "@/modules/layout/components/MobileTabBar/Mo
 import { MobileTabBarSubmenuItem } from "@/modules/layout/components/MobileTabBar/MobileTabBarSubMenu"
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
 import { useHasMobNavbar } from "@/modules/layout/hooks/useHasMobNavbar"
+import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 
 export enum MobileTabBarDrawer {
   Settings = "Settings",
 }
 
+const getBottomNavOrder = (key: NavigationKey) => {
+  const order = bottomNavOrder.indexOf(key)
+  return order === -1 ? bottomNavOrder.length : order
+}
+
 export const MobileTabBar: FC = () => {
   const { t } = useTranslation()
   const translations = useMenuTranslations()
+  const navigation = useNavigation()
   const { isMobile } = useBreakpoints()
   const hasMobNavbar = useHasMobNavbar()
 
@@ -44,9 +51,10 @@ export const MobileTabBar: FC = () => {
   const closeDrawer = () => setDrawer(null)
 
   const itemsShown = isMobile ? NAV_ITEMS_SHOWN_MOBILE : NAV_ITEMS_SHOWN_TABLET
-  const navItems = NAVIGATION.toSorted(
+
+  const navItems = navigation.toSorted(
     (item1, item2) =>
-      bottomNavOrder.indexOf(item1.key) - bottomNavOrder.indexOf(item2.key),
+      getBottomNavOrder(item1.key) - getBottomNavOrder(item2.key),
   )
   const moreItems = navItems.slice(itemsShown)
 

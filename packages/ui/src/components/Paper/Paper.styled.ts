@@ -13,8 +13,10 @@ const variants = createVariants((theme) => ({
   plain: css``,
 }))
 
-export const SPaper = styled(Box)<PaperProps>(
-  ({ theme, variant = "bordered", shadow = true }) => [
+export const SPaper = styled(Box, {
+  shouldForwardProp: (prop) => !["variant", "shadow", "bg"].includes(prop),
+})<PaperProps>(
+  ({ theme, variant = "bordered", shadow = true, bg = "high" }) => [
     variants(variant),
     shadow &&
       css`
@@ -23,7 +25,9 @@ export const SPaper = styled(Box)<PaperProps>(
           0px 14px 37px 0px rgba(0, 0, 0, 0.04);
       `,
     css`
-      background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
+      background-color: ${bg === "high"
+        ? theme.surfaces.themeBasePalette.surfaceHigh
+        : theme.controls.dim.base};
     `,
   ],
 )
