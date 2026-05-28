@@ -20,7 +20,10 @@ import type {
 import { WithdrawalsCard } from "@/modules/strategies/hdcl/components/WithdrawalsCard"
 import { WithdrawModal } from "@/modules/strategies/hdcl/components/WithdrawModal"
 import { HDCL_HAS_AAVE_LAYER } from "@/modules/strategies/hdcl/constants"
-import { useHdclPoolPosition } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
+import {
+  useHdclPoolPosition,
+  useHdclReserveConfig,
+} from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
 import {
   useBorrowHollar,
   useRepayHollar,
@@ -63,6 +66,7 @@ export const HdclVaultPage = () => {
   const { data: queueData } = useRedemptionQueue(evmAddress)
   const { data: historyData } = useRedemptionHistory(evmAddress)
   const { data: poolPosition } = useHdclPoolPosition(evmAddress)
+  const { data: reserveConfig } = useHdclReserveConfig()
 
   console.log({ poolPosition, vaultStats })
 
@@ -203,10 +207,10 @@ export const HdclVaultPage = () => {
 
           <MyBorrowsCard
             poolPosition={poolPosition}
-            // No on-chain Borrow APY read on the HDCL pool yet — surface a
-            // best-effort static value from STRATEGY config until a real
-            // reserve-data hook lands. Display-only.
-            borrowApyPercent={4.5}
+            // Live APY: HOLLAR's currentVariableBorrowRate is decoded inside
+            // useHdclReserveConfig (ray → APR → APY via per-second compounding).
+            // 10% is the launch fallback while the query is in flight.
+            borrowApyPercent={reserveConfig?.borrowApyPct ?? 10}
             onBorrow={() => setShowBorrow(true)}
             onRepay={() => setShowRepay(true)}
           />

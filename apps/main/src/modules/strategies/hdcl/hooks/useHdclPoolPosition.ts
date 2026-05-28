@@ -3,10 +3,12 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
 import {
+  DCL_PRECOMPILE_ADDRESS,
   HDCL_HAS_AAVE_LAYER,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
   HDCL_PRECOMPILE_ADDRESS,
+  HOLLAR_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
 import { useHdclPoolContract } from "@/modules/strategies/hdcl/hooks/useHdclPoolContract"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -101,6 +103,16 @@ export interface HdclReserveConfig {
   maxLtvPct: number
   /** Liquidation threshold (percentage). Below this and the position is liquidatable. */
   liquidationThresholdPct: number
+  /**
+   * HOLLAR borrow APR (percentage). The pool's GhoInterestRateStrategy is
+   * fixed-rate, so this is constant until governance swaps the strategy.
+   */
+  borrowAprPct: number
+  /**
+   * HOLLAR borrow APY (percentage). Annualized from APR using Aave's
+   * per-second compounding (n = 31_536_000). What users typically see.
+   */
+  borrowApyPct: number
 }
 
 /**
@@ -125,13 +137,30 @@ export function useHdclReserveConfig() {
         abi: HDCL_POOL_ABI,
         client: evm,
       })
-      const config = await pool.read.getConfiguration([HDCL_PRECOMPILE_ADDRESS])
+      // The DCL precompile (asset 550) is the actual reserve; HDCL (asset 55,
+      // the aToken receipt) is a user-facing alias and is *not* registered as
+      // a reserve, so getConfiguration on it returns 0x.
+      const [config, reserveData] = await Promise.all([
+        pool.read.getConfiguration([DCL_PRECOMPILE_ADDRESS]),
+        pool.read.getReserveData([HOLLAR_ADDRESS]),
+      ])
       const data = config.data
       const ltvBps = Number(data & 0xffffn)
       const liqThresholdBps = Number((data >> 16n) & 0xffffn)
+
+      // currentVariableBorrowRate is stored as a uint128 ray (1e27) — the
+      // annual *linear* rate. Convert to APY via Aave's per-second compounding:
+      //   apy = (1 + apr/n)^n − 1,  n = 31_536_000 (seconds per year).
+      const RAY = 1e27
+      const SECONDS_PER_YEAR = 31_536_000
+      const borrowApr = Number(reserveData.currentVariableBorrowRate) / RAY
+      const borrowApy =
+        Math.pow(1 + borrowApr / SECONDS_PER_YEAR, SECONDS_PER_YEAR) - 1
       return {
         maxLtvPct: ltvBps / 100,
         liquidationThresholdPct: liqThresholdBps / 100,
+        borrowAprPct: borrowApr * 100,
+        borrowApyPct: borrowApy * 100,
       }
     },
     refetchInterval: 60_000,

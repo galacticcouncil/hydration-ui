@@ -40,10 +40,16 @@ export const HDCL_DEPOSIT_ZAP_ADDRESS: Hex =
 export const HDCL_ATOKEN_ADDRESS: Hex =
   "0x8912ff2164655A3406902ee9e802EBb16ec881D9"
 
-// Substrate-asset precompile alias for HDCL. Unchanged across lark
-// generations — keyed off the substrate asset id, not the EVM deploy.
+// Substrate-asset precompile aliases. Keyed off substrate asset ids, not the
+// EVM deploy — unchanged across lark generations.
+//   HDCL (asset 55,  0x37 hex) — user-facing aToken receipt; what users hold.
+//   DCL  (asset 550, 0x226 hex) — the underlying reserve registered in the
+//                                  Aave pool. Use this for pool.getConfiguration
+//                                  / pool.getReserveData.
 export const HDCL_PRECOMPILE_ADDRESS: Hex =
   "0x0000000000000000000000000000000100000037"
+export const DCL_PRECOMPILE_ADDRESS: Hex =
+  "0x0000000000000000000000000000000100000226"
 
 // Aave V3 interestRateMode for borrows: 2 = variable (GhoAToken path).
 export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
@@ -632,6 +638,38 @@ export const HDCL_POOL_ABI = [
         name: "",
         type: "tuple",
         components: [{ name: "data", type: "uint256" }],
+      },
+    ],
+    stateMutability: "view",
+  },
+  // Subset of Aave V3 reserve data — we only consume `currentVariableBorrowRate`
+  // (uint128 ray; annual linear rate) but the tuple shape must match exactly
+  // for viem to decode the return value.
+  {
+    type: "function",
+    name: "getReserveData",
+    inputs: [{ name: "asset", type: "address" }],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        components: [
+          { name: "configuration", type: "uint256" },
+          { name: "liquidityIndex", type: "uint128" },
+          { name: "currentLiquidityRate", type: "uint128" },
+          { name: "variableBorrowIndex", type: "uint128" },
+          { name: "currentVariableBorrowRate", type: "uint128" },
+          { name: "currentStableBorrowRate", type: "uint128" },
+          { name: "lastUpdateTimestamp", type: "uint40" },
+          { name: "id", type: "uint16" },
+          { name: "aTokenAddress", type: "address" },
+          { name: "stableDebtTokenAddress", type: "address" },
+          { name: "variableDebtTokenAddress", type: "address" },
+          { name: "interestRateStrategyAddress", type: "address" },
+          { name: "accruedToTreasury", type: "uint128" },
+          { name: "unbacked", type: "uint128" },
+          { name: "isolationModeTotalDebt", type: "uint128" },
+        ],
       },
     ],
     stateMutability: "view",
