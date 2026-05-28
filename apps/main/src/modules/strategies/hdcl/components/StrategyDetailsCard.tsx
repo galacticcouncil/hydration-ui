@@ -43,6 +43,18 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   const liqLtvPct =
     reserveConfig?.liquidationThresholdPct ?? STRATEGY.liquidationLtvPct
 
+  // "Max Net APY" = the leveraged yield an idealized user achieves at max LTV.
+  //   L = 1 / (1 − LTV)
+  //   netApy = L × vault_apy − (L − 1) × borrow_apy
+  // vaultStats.apr is named historically but actually carries vault APY in %
+  // (see useVaultReads: getAPYWad / 1e16). Falls back to the raw vault yield
+  // until the borrow rate query lands.
+  const vaultApyPct = vaultStats.apr
+  const borrowApyPct = reserveConfig?.borrowApyPct ?? 10
+  const maxLeverage = maxLtvPct < 100 ? 100 / (100 - maxLtvPct) : 1
+  const maxNetApyPct =
+    maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
+
   return (
     <Paper p="l">
       <SectionHeader title={t("strategy.title")} as="h2" noTopPadding />
@@ -72,7 +84,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
           >
             {t("common:percent", {
               prefix: "+",
-              value: vaultStats.apr,
+              value: maxNetApyPct,
               maximumFractionDigits: 1,
             })}
           </Text>

@@ -30,6 +30,7 @@
   "borrows.title": "My borrows",
   "borrows.healthFactor": "Health factor",
   "borrows.borrowApy": "Borrow APY",
+  "borrows.netApy": "Net APY",
   "borrows.debt": "Debt",
   "borrows.borrowingPowerUsed": "Borrowing power used: {{ value, percent }}",
   "borrows.repay": "Repay",

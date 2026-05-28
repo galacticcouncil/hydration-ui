@@ -15,6 +15,11 @@ import type { HdclPoolPosition } from "@/modules/strategies/hdcl/hooks/useHdclPo
 interface Props {
   poolPosition: HdclPoolPosition | undefined
   borrowApyPercent: number
+  /**
+   * Annualised vault APY on the collateral side, in percent. Used together
+   * with `borrowApyPercent` to compute the user's leveraged net APY.
+   */
+  vaultApyPercent: number
   onBorrow: () => void
   onRepay: () => void
 }
@@ -38,6 +43,7 @@ const hfColorToken = (hf: number) => {
 export const MyBorrowsCard = ({
   poolPosition,
   borrowApyPercent,
+  vaultApyPercent,
   onBorrow,
   onRepay,
 }: Props) => {
@@ -54,6 +60,18 @@ export const MyBorrowsCard = ({
   const totalCreditUsd = totalCollateralUsd * (ltvPct / 100)
   const borrowingPowerUsedPct =
     totalCreditUsd > 0 ? (totalDebtUsd / totalCreditUsd) * 100 : 0
+
+  // Effective leveraged net APY on the user's *equity*:
+  //   leverage = collateral / equity,  equity = collateral − debt
+  //   netApy   = L × vault_apy − (L − 1) × borrow_apy
+  // For users with collateral but no debt, leverage = 1 and netApy = vault APY.
+  // Hidden when there's no collateral (nothing meaningful to show).
+  const equityUsd = totalCollateralUsd - totalDebtUsd
+  const leverage = equityUsd > 0 ? totalCollateralUsd / equityUsd : 0
+  const netApyPercent =
+    leverage > 0
+      ? leverage * vaultApyPercent - (leverage - 1) * borrowApyPercent
+      : 0
 
   return (
     <Paper>
@@ -80,6 +98,24 @@ export const MyBorrowsCard = ({
               })}
             </Text>
           </Flex>
+          {hasCollateral && (
+            <Flex align="center" gap="xs">
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("borrows.netApy")}:
+              </Text>
+              <Text
+                fs="p4"
+                fw={600}
+                color={getToken("accents.success.emphasis")}
+              >
+                {t("common:percent", {
+                  prefix: netApyPercent >= 0 ? "+" : "",
+                  value: netApyPercent,
+                  maximumFractionDigits: 1,
+                })}
+              </Text>
+            </Flex>
+          )}
         </Flex>
       </Flex>
 

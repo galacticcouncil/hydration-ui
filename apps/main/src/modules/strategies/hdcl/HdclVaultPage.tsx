@@ -211,6 +211,8 @@ export const HdclVaultPage = () => {
             // useHdclReserveConfig (ray → APR → APY via per-second compounding).
             // 10% is the launch fallback while the query is in flight.
             borrowApyPercent={reserveConfig?.borrowApyPct ?? 10}
+            // vault APY drives the long-side of the leveraged Net APY display.
+            vaultApyPercent={vaultStats?.apr ?? 0}
             onBorrow={() => setShowBorrow(true)}
             onRepay={() => setShowRepay(true)}
           />
