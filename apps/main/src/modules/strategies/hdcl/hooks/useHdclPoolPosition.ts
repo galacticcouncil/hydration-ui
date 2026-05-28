@@ -7,7 +7,6 @@ import {
   HDCL_HAS_AAVE_LAYER,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
-  HDCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
 import { useHdclPoolContract } from "@/modules/strategies/hdcl/hooks/useHdclPoolContract"
