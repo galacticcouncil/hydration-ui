@@ -12,6 +12,7 @@ import {
 import {
   HumanizeDuration,
   HumanizeDurationLanguage,
+  UnitName,
 } from "humanize-duration-ts"
 import { isDate, isNumber, isString } from "remeda"
 
@@ -356,10 +357,12 @@ export const formatInterval = (
   }
 
   const isShort = options.format === "short"
+  const largest = isNumber(options.largest) ? options.largest : 2
 
   return humanizer.humanize(value, {
     round: true,
-    largest: 2,
+    largest,
+    ...(isString(options.unit) ? { units: [options.unit as UnitName] } : {}),
     ...(isShort && { language: "shortEn", conjunction: " ", spacer: "" }),
   })
 }

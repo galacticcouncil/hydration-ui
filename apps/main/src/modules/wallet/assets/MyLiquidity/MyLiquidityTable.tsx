@@ -80,7 +80,7 @@ export const MyLiquidityTable: FC<Props> = ({
   isLoading,
 }) => {
   const { isMobile } = useBreakpoints()
-  const columns = useMyLiquidityColumns(!isLoading && data.length === 0)
+  const columns = useMyLiquidityColumns()
 
   const [isDetailOpen, setIsDetailOpen] = useState<ModalType | null>(null)
 

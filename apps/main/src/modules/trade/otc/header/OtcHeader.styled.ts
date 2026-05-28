@@ -12,6 +12,7 @@ export const SOtcHeader = styled.div(
     ${mq("sm")} {
       flex-direction: row;
       justify-content: space-between;
+      align-items: center;
       gap: 0;
       padding-bottom: ${theme.space.xxl};
     }

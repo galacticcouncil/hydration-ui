@@ -6,6 +6,7 @@ import {
   DropletIcon,
   DropletsIcon,
   GemIcon,
+  GoalIcon,
   Grid2X2Icon,
   HistoryIcon,
   Repeat2Icon,
@@ -51,6 +52,7 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
+  strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -155,6 +157,12 @@ export const NAVIGATION: NavigationItem[] = [
     key: "staking",
     to: LINKS.staking,
     icon: GemIcon,
+  },
+  {
+    key: "strategiesHollarBonds",
+    to: LINKS.strategiesHollarBonds,
+    icon: GoalIcon,
+    enabled: false,
   },
   // {
   //   key: "referrals",
@@ -298,6 +306,10 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     statsFees: {
       title: t("navigation.statsFees.title"),
+      description: "",
+    },
+    strategiesHollarBonds: {
+      title: t("navigation.strategiesHollarBonds.title"),
       description: "",
     },
     // memepad: {

@@ -9,7 +9,7 @@ export const MyAssetsEmptyState: FC = () => {
 
   return (
     <EmptyState
-      sx={{ py: 80 }}
+      sx={{ py: "xxxl" }}
       image={NoFunds}
       header={t("wallet:myAssets.emptyState.header")}
       description={t("wallet:myAssets.emptyState.description")}

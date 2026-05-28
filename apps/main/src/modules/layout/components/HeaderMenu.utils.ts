@@ -5,11 +5,11 @@ import {
   bottomNavOrder,
   getMenuTranslations,
   LINKS,
-  NAVIGATION,
   topNavOrder,
 } from "@/config/navigation"
 import { useVisibleElements } from "@/hooks/useVisibleElements"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
+import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 
 export const useMenuTranslations = () => {
   const { t } = useTranslation(["common"])
@@ -19,11 +19,12 @@ export const useMenuTranslations = () => {
 
 export const useVisibleHeaderMenuItems = <T extends HTMLElement>() => {
   const hasTopNavbar = useHasTopNavbar()
+  const navigation = useNavigation()
   const { hiddenElementsKeys, observe } = useVisibleElements<T>()
 
   return useMemo(() => {
     const order = hasTopNavbar ? topNavOrder : bottomNavOrder
-    const items = NAVIGATION.toSorted(
+    const items = navigation.toSorted(
       (item1, item2) => order.indexOf(item1.key) - order.indexOf(item2.key),
     )
 
@@ -53,7 +54,7 @@ export const useVisibleHeaderMenuItems = <T extends HTMLElement>() => {
       moreButtonKey,
       observe,
     }
-  }, [hiddenElementsKeys, observe, hasTopNavbar])
+  }, [hiddenElementsKeys, observe, hasTopNavbar, navigation])
 }
 
 export const HIDDEN_DESKTOP_NAV_ROUTES = [LINKS.submitTransaction]
