@@ -1,7 +1,4 @@
-import {
-  HYDRATION_CHAIN_KEY,
-  QUERY_KEY_BLOCK_PREFIX,
-} from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQueries } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
@@ -11,11 +8,7 @@ import { prop } from "remeda"
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { ToastData, useToasts, useToastsStore } from "@/states/toasts"
-import {
-  isBridgeTransaction,
-  TransactionType,
-  useTransactionsStore,
-} from "@/states/transactions"
+import { TransactionType, useTransactionsStore } from "@/states/transactions"
 
 const TOAST_STALE_AFTER_MINUTES = 60
 
@@ -27,12 +20,14 @@ const isPendingOnChainToast = (toast: ToastData) => {
   )
 }
 
-const isSubmittedBridgeToast = (toast: ToastData) => {
-  return toast.variant === "submitted" && isBridgeTransaction(toast.meta)
+const isSubmittedXcmToast = (toast: ToastData) => {
+  return (
+    toast.variant === "submitted" && toast.meta.type === TransactionType.Xcm
+  )
 }
 
 const isValidToastForProcessing = (toast: ToastData) => {
-  return isPendingOnChainToast(toast) || isSubmittedBridgeToast(toast)
+  return isPendingOnChainToast(toast) || isSubmittedXcmToast(toast)
 }
 
 const isStaleToast = (toast: ToastData) => {
@@ -42,6 +37,12 @@ const isStaleToast = (toast: ToastData) => {
     differenceInMinutes(new Date(), new Date(toast.dateCreated)) >
       TOAST_STALE_AFTER_MINUTES
   )
+}
+
+const getToastProcessingRefetchInterval = (toast: ToastData) => {
+  const diffInMin = differenceInMinutes(new Date(), new Date(toast.dateCreated))
+  // Process older toasts less frequently
+  return diffInMin >= 5 ? 60_000 : 10_000
 }
 
 export const useProcessTransactionToasts = (toasts: ToastData[]) => {
@@ -80,7 +81,8 @@ export const useProcessTransactionToasts = (toasts: ToastData[]) => {
         retry: false,
         enabled: isLoaded,
         notifyOnChangeProps: [],
-        queryKey: [QUERY_KEY_BLOCK_PREFIX, "toast", "status", toast.id],
+        refetchInterval: getToastProcessingRefetchInterval(toast),
+        queryKey: ["toast", "status", toast.id],
         queryFn: async () => {
           const result = await processToast(toast)
 

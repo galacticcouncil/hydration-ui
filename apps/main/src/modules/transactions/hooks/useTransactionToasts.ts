@@ -1,9 +1,4 @@
-import {
-  etherscan,
-  HYDRATION_CHAIN_KEY,
-  subscan,
-  wormholescan,
-} from "@galacticcouncil/utils"
+import { etherscan, subscan } from "@galacticcouncil/utils"
 import {
   useAccount,
   useActiveMultisigConfig,
@@ -16,11 +11,9 @@ import { TxStatusCallbacks } from "@/modules/transactions/types"
 import { parseTxMethodName } from "@/modules/transactions/utils/tx"
 import { useToasts } from "@/states/toasts"
 import {
-  isBridgeTransaction,
   SingleTransaction,
   TransactionMeta,
   TransactionType,
-  XcmTag,
 } from "@/states/transactions"
 
 export const useTransactionToasts = (
@@ -34,8 +27,8 @@ export const useTransactionToasts = (
 
   const { id, toasts, meta } = transaction
 
-  const isBridge = isBridgeTransaction(meta)
   const isMultisig = !!multisigConfig && !!account?.isMultisig
+  const isXcm = meta.type === TransactionType.Xcm
 
   const method = parseTxMethodName(transaction.tx, "value.value.call")
 
@@ -72,7 +65,7 @@ export const useTransactionToasts = (
         if (isMultisig) {
           return remove(id)
         }
-        if (isBridge) {
+        if (isXcm) {
           return edit(id, {
             variant: "submitted",
             dateCreated: new Date().toISOString(),
@@ -101,16 +94,16 @@ export const useTransactionToasts = (
     ecosystem,
     edit,
     id,
-    isBridge,
     isMultisig,
+    isXcm,
     meta,
+    method,
     pending,
     remove,
     t,
     toasts?.error,
     toasts?.submitted,
     toasts?.success,
-    method,
   ])
 }
 
@@ -119,14 +112,6 @@ function getTransactionLink(
   meta: TransactionMeta,
   txHash: string,
 ) {
-  if (
-    meta.type === TransactionType.Xcm &&
-    meta.srcChainKey !== HYDRATION_CHAIN_KEY &&
-    meta.tags.includes(XcmTag.Wormhole)
-  ) {
-    return wormholescan.tx(txHash)
-  }
-
   if (
     meta.type === TransactionType.EvmApprove ||
     (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm)
