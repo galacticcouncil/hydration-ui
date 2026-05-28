@@ -3,7 +3,7 @@
   "details.title": "Strategy details",
   "position.title": "My position",
 
-  "bonds.title.stableYieldBonds": "{{ symbol }} Stable Yield Bonds",
+  "bonds.title.stableYieldBonds": "Fixed Yield {{ symbol }} Bonds",
   "bonds.deposit.yourDeposit": "Your deposit",
   "bonds.deposit.receiveAtMaturity": "Receive at maturity",
   "bonds.deposit.maturityPeriod": "Maturity period",
