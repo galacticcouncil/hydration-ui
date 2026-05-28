@@ -7,6 +7,8 @@
   "bonds.deposit.yourDeposit": "Your deposit",
   "bonds.deposit.receiveAtMaturity": "Receive at maturity",
   "bonds.deposit.maturityPeriod": "Maturity period",
+  "bonds.deposit.soldOut.header": "Out of bonds",
+  "bonds.deposit.soldOut.description": "Unfortunately, the current batch of bonds sold out. Keep an eye out for next updates on our channels.",
   "bonds.details.remainingCapacity": "Remaining capacity",
   "bonds.details.maturityPeriod": "Maturity period",
   "bonds.details.fundingCurrency": "Funding currency",

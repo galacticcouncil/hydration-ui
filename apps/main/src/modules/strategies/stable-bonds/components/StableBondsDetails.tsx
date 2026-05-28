@@ -98,6 +98,8 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
                       .mul(100)
                       .toNumber()
 
+                    const isFillable = Big(amount).gt(0)
+
                     return (
                       <SRemainingItem key={asset.id} gap="xs">
                         <Flex align="center" gap="base">
@@ -106,24 +108,33 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
                             font="primary"
                             fs="h6"
                             fw={600}
-                            color={getToken("text.high")}
+                            decoration={isFillable ? "none" : "line-through"}
+                            color={
+                              isFillable
+                                ? getToken("text.high")
+                                : getToken("text.low")
+                            }
                           >
-                            {t("number", { value: amount })}
+                            {isFillable
+                              ? t("number", { value: amount })
+                              : "Sold out"}
                           </Text>
                         </Flex>
-                        <ProgressBar
-                          value={remainingPct}
-                          customLabel={
-                            <Text
-                              fs="p4"
-                              as="span"
-                              fw={600}
-                              color={getToken("text.tint.quart")}
-                            >
-                              {t("percent", { value: remainingPct })}
-                            </Text>
-                          }
-                        />
+                        {isFillable && (
+                          <ProgressBar
+                            value={remainingPct}
+                            customLabel={
+                              <Text
+                                fs="p4"
+                                as="span"
+                                fw={600}
+                                color={getToken("text.tint.quart")}
+                              >
+                                {t("percent", { value: remainingPct })}
+                              </Text>
+                            }
+                          />
+                        )}
                       </SRemainingItem>
                     )
                   })}

@@ -19,6 +19,12 @@ import {
 const getSelectedOrder = (orders: OtcOffer[], asset: TAsset | null) =>
   orders.find((order) => order.assetIn.id === asset?.id)
 
+const isFillableOrder = (order: OtcOffer) =>
+  !!order.id && Big(order.assetAmountIn).gt(0)
+
+const getDefaultDepositAsset = (orders: OtcOffer[]) =>
+  orders.find(isFillableOrder)?.assetIn ?? orders[0]?.assetIn ?? null
+
 const useSchema = (orders: OtcOffer[]) => {
   const { t } = useTranslation(["trade"])
   const rpc = useRpcProvider()
@@ -68,7 +74,7 @@ export type StableBondsFormValues = z.infer<ReturnType<typeof useSchema>>
 export const useStableBondsForm = (orders: OtcOffer[]) => {
   return useForm<StableBondsFormValues>({
     defaultValues: {
-      depositAsset: orders[0]?.assetIn ?? null,
+      depositAsset: getDefaultDepositAsset(orders),
       depositAmount: "",
     },
     resolver: standardSchemaResolver(useSchema(orders)),

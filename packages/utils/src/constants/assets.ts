@@ -29,6 +29,7 @@ export const JITOSOL_ASSET_ID = "40"
 export const APYUSD_ASSET_ID = "46"
 export const HEURC_ASSET_ID = "10044"
 
+//export const HOLLAR_BOND_25_08_26_ID = "1001351"
 export const HOLLAR_BOND_25_08_26_ID = "1001349"
 
 export const HOLLAR_ASSETS = [

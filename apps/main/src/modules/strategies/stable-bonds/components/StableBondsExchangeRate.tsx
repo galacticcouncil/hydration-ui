@@ -13,9 +13,10 @@ export const StableBondsExchangeRate: React.FC<
   const depositAssetId = order?.assetIn.id ?? ""
   const receiveAssetId = order?.assetOut.id ?? ""
 
-  const fallbackPrice = order
-    ? Big(order.assetAmountOut).div(order.assetAmountIn).toString()
-    : undefined
+  const fallbackPrice =
+    order && Big(order.assetAmountIn).gt(0)
+      ? Big(order.assetAmountOut).div(order.assetAmountIn).toString()
+      : undefined
 
   return (
     <AssetSwitcher

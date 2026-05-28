@@ -2,6 +2,7 @@ import { Stack } from "@galacticcouncil/ui/components"
 
 import { TBond } from "@/api/assets"
 import { Page404 } from "@/components/Page404"
+import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { StableBondsAbout } from "@/modules/strategies/stable-bonds/components/StableBondsAbout"
 import { StableBondsAssetHeader } from "@/modules/strategies/stable-bonds/components/StableBondsAssetHeader"
@@ -23,7 +24,7 @@ type StableBondsPageProps = {
 
 const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
   const config = useStableBondsConfig()
-  const { data: orders } = useStableBondsOtcOrders(
+  const { data: orders, isReady } = useStableBondsOtcOrders(
     config.bondId,
     config.otcAcceptedAssetIds,
   )
@@ -38,7 +39,7 @@ const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
           <StableBondsDetails orders={orders} />
           <StableBondsAbout />
         </Stack>
-        {orders && orders.length > 0 && <StableBondsDeposit orders={orders} />}
+        {isReady ? <StableBondsDeposit orders={orders} /> : <AppSkeleton />}
       </TwoColumnGrid>
     </Stack>
   )

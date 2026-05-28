@@ -29,6 +29,7 @@ import {
   useStableBondsForm,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
 import { StableBondsExchangeRate } from "@/modules/strategies/stable-bonds/components/StableBondsExchangeRate"
+import { StableBondsSoldOut } from "@/modules/strategies/stable-bonds/components/StableBondsSoldOut"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/hooks/useSubmitStableBondsOrder"
 import {
@@ -64,7 +65,9 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const depositAssets = useMemo(() => {
     return [
       ...new Map(
-        orders.map((order) => [order.assetIn.id, order.assetIn]),
+        orders
+          .filter((order) => Big(order.assetAmountIn).gt(0))
+          .map((order) => [order.assetIn.id, order.assetIn]),
       ).values(),
     ]
   }, [orders])
@@ -77,8 +80,11 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
     [depositAsset?.id, orders],
   )
 
+  const isSelectedOrderFillable =
+    !!selectedOrder?.id && Big(selectedOrder.assetAmountIn).gt(0)
+
   const depositAssetId = selectedOrder?.assetIn.id ?? ""
-  const receiveAsset = selectedOrder?.assetOut ?? ""
+  const receiveAsset = selectedOrder?.assetOut ?? null
 
   const underlyingAssetId =
     receiveAsset && isBond(receiveAsset) ? receiveAsset.underlyingAssetId : ""
@@ -107,18 +113,19 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
       <form
         onSubmit={handleSubmit(
           (values) =>
+            isSelectedOrderFillable &&
             selectedOrder &&
             submit.mutate({ values, order: selectedOrder, receiveAmount }),
         )}
       >
-        <Paper px="xl">
+        <Paper px="xl" position="relative">
           <Box>
             <AssetSelectFormField<StableBondsFormValues>
               label={t("strategies:bonds.deposit.yourDeposit")}
               assetFieldName="depositAsset"
               amountFieldName="depositAmount"
               assets={depositAssets}
-              disabled={!selectedOrder}
+              disabled={!isSelectedOrderFillable}
               maxButtonBalance={assetInMax}
             />
 
@@ -173,7 +180,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
                 width="100%"
                 disabled={
                   !form.formState.isValid ||
-                  !selectedOrder ||
+                  !isSelectedOrderFillable ||
                   isFeePending ||
                   submit.isPending
                 }
@@ -199,6 +206,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
               </Summary>
             </CollapsibleContent>
           </CollapsibleRoot>
+          {!isSelectedOrderFillable && <StableBondsSoldOut />}
         </Paper>
       </form>
     </FormProvider>
