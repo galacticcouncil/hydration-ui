@@ -46,8 +46,18 @@ export const useEstimateFee = (
 
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
+  const feeAssetBalance = feeAsset
+    ? scaleHuman(getTransferableBalance(feeAsset.id), feeAsset.decimals)
+    : "0"
+
   return useQuery({
     placeholderData: keepPreviousData,
+    select: (data) => {
+      return {
+        ...data,
+        feeAssetBalance,
+      }
+    },
     enabled:
       isLoaded &&
       !!tx &&
@@ -83,11 +93,6 @@ export const useEstimateFee = (
         ? Big(extraFee).add(feeEstimateNativeBase).toString()
         : feeEstimateNativeBase
 
-      const feeAssetBalance = scaleHuman(
-        getTransferableBalance(feeAsset.id),
-        feeAsset.decimals,
-      )
-
       if (spot?.spotPrice) {
         const feeEstimate = Big(feeEstimateNative)
           .mul(spot.spotPrice)
@@ -96,7 +101,6 @@ export const useEstimateFee = (
         return {
           feeEstimateNative,
           feeEstimate,
-          feeAssetBalance,
           feeAssetId,
         }
       }
@@ -123,7 +127,6 @@ export const useEstimateFee = (
       return {
         feeEstimateNative,
         feeEstimate,
-        feeAssetBalance,
         feeAssetId,
       }
     },
