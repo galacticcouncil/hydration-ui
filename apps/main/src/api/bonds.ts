@@ -22,7 +22,7 @@ export const useBondData = (bondId: string) => {
       ? differenceInMilliseconds(maturity, bestNumber.timestamp)
       : 0
 
-  const isMatured = timeLeft < 0
+  const isMatured = timeLeft <= 0
 
   return {
     bond,
@@ -52,7 +52,7 @@ export const useRedeemBond = () => {
 
       const formattedAmount = t("common:currency", {
         value: toDecimal(amount, bond.decimals),
-        suffix: ` ${bond.symbol}`,
+        symbol: bond.symbol,
       })
 
       return createTransaction({

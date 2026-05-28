@@ -17,7 +17,7 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
   const { isBond } = useAssets()
 
   return (
-    <Flex align="center" p="" gap="s">
+    <Flex align="center" gap="s">
       <AssetLogo id={asset.id} />
       <Text
         fw={500}
