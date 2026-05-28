@@ -10,6 +10,7 @@ import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
+  HOLLAR_BOND_25_08_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { createWsClient } from "polkadot-api/ws"
@@ -22,7 +23,9 @@ import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
-export type TFeatureFlags = object
+export type TFeatureFlags = {
+  hollarBondsEnabled: boolean
+}
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
 
@@ -100,9 +103,10 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration] = await Promise.all([
+  const [sdk, slotDuration, hollarBond] = await Promise.all([
     createSdkContext(papiClient),
     papi.constants.Aura.SlotDuration(),
+    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
@@ -128,7 +132,9 @@ const getProviderData = async (
     sdk,
     rpcUrlList,
     slotDurationMs: Number(slotDuration),
-    featureFlags: {},
+    featureFlags: {
+      hollarBondsEnabled: !!hollarBond,
+    },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }

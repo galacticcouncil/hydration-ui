@@ -41,7 +41,9 @@ const defaultData: TProviderContext = {
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
-  featureFlags: {} as TProviderData["featureFlags"],
+  featureFlags: {
+    hollarBondsEnabled: false,
+  },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
   isLoaded: false,

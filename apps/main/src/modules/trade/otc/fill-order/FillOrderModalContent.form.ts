@@ -7,6 +7,7 @@ import { type infer as Infer, object, refine } from "zod/v4"
 
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
+import { getOtcBuyAmountAfterFee } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -61,9 +62,10 @@ export const useFillOrderForm = (
       : {
           sellAmount: otcOffer.assetAmountIn,
           buyAmount: formatAssetAmount(
-            Big(otcOffer.assetAmountOut)
-              .minus(Big(otcOffer.assetAmountOut).times(feePrice))
-              .toString(),
+            getOtcBuyAmountAfterFee(
+              otcOffer.assetAmountOut,
+              feePrice,
+            ).toString(),
             otcOffer.assetOut.decimals,
           ),
         }

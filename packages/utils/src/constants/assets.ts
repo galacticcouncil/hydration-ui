@@ -1,6 +1,7 @@
 export const HOLLAR_ASSET_ID = "222"
 export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"
+export const USDC_ASSET_ID = "22"
 export const GDOT_ASSET_ID = "690"
 export const GDOT_ERC20_ID = "69"
 export const GETH_ASSET_ID = "4200"
@@ -27,6 +28,8 @@ export const GSOL_ERC20_ID = "9001"
 export const JITOSOL_ASSET_ID = "40"
 export const APYUSD_ASSET_ID = "46"
 export const HEURC_ASSET_ID = "10044"
+
+export const HOLLAR_BOND_25_08_26_ID = "1001351"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,

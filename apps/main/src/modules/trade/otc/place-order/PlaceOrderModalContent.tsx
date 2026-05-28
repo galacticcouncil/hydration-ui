@@ -445,12 +445,15 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 <PartiallyFillableToggle />
                 <Separator />
                 {offerAsset && buyAsset && (
-                  <PriceGainWarning
-                    offerAsset={offerAsset}
-                    buyAsset={buyAsset}
-                    priceGain={priceGain}
-                    view={view}
-                  />
+                  <>
+                    <PriceGainWarning
+                      offerAsset={offerAsset}
+                      buyAsset={buyAsset}
+                      priceGain={priceGain}
+                      view={view}
+                    />
+                    <Separator />
+                  </>
                 )}
               </>
             )}
