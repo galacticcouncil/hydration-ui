@@ -1,4 +1,5 @@
 import {
+  APYUSD_ASSET_ID,
   JITOSOL_ASSET_ID,
   SUSDE_ASSET_ID,
   SUSDS_ASSET_ID,
@@ -31,6 +32,7 @@ export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
   [SUSDE_ASSET_ID]: "66985a81-9c51-46ca-9977-42b4fe7bc6df",
   [SUSDS_ASSET_ID]: "d8c4eff5-c8a9-46fc-a888-057c4c668e72",
   [JITOSOL_ASSET_ID]: "0e7d0722-9054-4907-8593-567b353c0900",
+  [APYUSD_ASSET_ID]: "cb6139f9-4a68-4efd-8245-0312a92aee55",
 }
 
 const DEFILLAMA_YIELDS_CHART = "defillama/yields/chart"

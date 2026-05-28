@@ -1,18 +1,11 @@
-import {
-  CircleCheckBig,
-  CircleOff,
-  Minus,
-  Plus,
-} from "@galacticcouncil/ui/assets/icons"
+import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Flex,
-  Icon,
   Modal,
   TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
 import { CSSProperties, useCallback, useMemo, useState } from "react"
@@ -22,6 +15,7 @@ import { AssetAmount } from "@/components/AssetAmount/AssetAmount"
 import { CancelOtcOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelOtcOrderModalContent"
 import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferMarketPriceColumn"
+import { OfferPartialyFillable } from "@/modules/trade/otc/table/columns/OfferPartialyFillable"
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { logically, nullLast, numerically, sortBy } from "@/utils/sort"
@@ -142,21 +136,7 @@ export const useOtcTableColums = () => {
         compare: logically,
       }),
       cell: ({ row }) => {
-        return (
-          <Flex justify="center">
-            <Icon
-              size="m"
-              component={
-                row.original.isPartiallyFillable ? CircleCheckBig : CircleOff
-              }
-              color={
-                row.original.isPartiallyFillable
-                  ? getToken("icons.onContainer")
-                  : getToken("icons.onSurface")
-              }
-            />
-          </Flex>
-        )
+        return <OfferPartialyFillable offer={row.original} />
       },
     })
 
