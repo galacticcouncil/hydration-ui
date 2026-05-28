@@ -18,7 +18,7 @@ export const StableBondsAssetHeader: React.FC<StableBondsAssetHeaderProps> = ({
     <AssetHeader
       asset={{
         ...asset,
-        name: t("bonds.title.fixedYieldBonds", {
+        name: t("bonds.title.stableYieldBonds", {
           symbol: underlyingAsset.symbol,
         }),
       }}

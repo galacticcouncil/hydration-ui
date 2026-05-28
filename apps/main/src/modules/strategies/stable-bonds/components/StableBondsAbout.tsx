@@ -13,15 +13,21 @@ import { useAssets } from "@/providers/assetsProvider"
 export const StableBondsAbout: React.FC<PaperProps> = (props) => {
   const { t } = useTranslation("strategies")
   const config = useStableBondsConfig()
-  const { getBond } = useAssets()
+  const { getBond, getAssetWithFallback } = useAssets()
   const bond = getBond(config.bondId)
 
   if (!config.contentId || !bond) return null
 
+  const underlyingAsset = getAssetWithFallback(bond.underlyingAssetId)
+
   return (
     <Paper p="xl" {...props}>
       <SectionHeader
-        title={t("about.title", { symbol: bond.symbol })}
+        title={t("about.title", {
+          suffix: t("bonds.title.stableYieldBonds", {
+            symbol: underlyingAsset.symbol,
+          }),
+        })}
         as="h2"
         noTopPadding
       />

@@ -23,7 +23,10 @@ type StableBondsPageProps = {
 
 const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
   const config = useStableBondsConfig()
-  const { data: orders } = useStableBondsOtcOrders(config.otcOfferIds)
+  const { data: orders } = useStableBondsOtcOrders(
+    config.bondId,
+    config.otcAcceptedAssetIds,
+  )
   const balance = useAccountBalance(asset.id)
 
   return (

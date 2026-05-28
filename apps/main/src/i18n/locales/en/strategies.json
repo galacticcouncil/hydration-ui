@@ -1,9 +1,9 @@
 {
-  "about.title": "About {{ symbol }}",
+  "about.title": "About {{ suffix }}",
   "details.title": "Strategy details",
   "position.title": "My position",
 
-  "bonds.title.fixedYieldBonds": "{{ symbol }} fixed yield bonds",
+  "bonds.title.stableYieldBonds": "{{ symbol }} Stable Yield Bonds",
   "bonds.deposit.yourDeposit": "Your deposit",
   "bonds.deposit.receiveAtMaturity": "Receive at maturity",
   "bonds.deposit.maturityPeriod": "Maturity period",

@@ -1,4 +1,4 @@
-import { HOLLAR_BOND_25_08_26 } from "@galacticcouncil/utils"
+import { HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { createFileRoute } from "@tanstack/react-router"
 
 import { getPageMeta } from "@/config/navigation"
@@ -6,7 +6,7 @@ import { StableBondsPage } from "@/modules/strategies/stable-bonds/StableBondsPa
 import { StableBondsPageSkeleton } from "@/modules/strategies/stable-bonds/StableBondsPageSkeleton"
 
 export const Route = createFileRoute("/strategies/hollar-bonds/")({
-  component: () => <StableBondsPage bondId={HOLLAR_BOND_25_08_26} />,
+  component: () => <StableBondsPage bondId={HOLLAR_BOND_25_08_26_ID} />,
   pendingComponent: StableBondsPageSkeleton,
   head: ({
     match: {
