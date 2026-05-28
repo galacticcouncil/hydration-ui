@@ -40,7 +40,7 @@ type RedeemBondArgs = {
 
 export const useRedeemBond = () => {
   const { t } = useTranslation(["wallet", "common"])
-  const { papiClient } = useRpcProvider()
+  const { papi } = useRpcProvider()
   const { getBond } = useAssets()
   const { createTransaction } = useTransactionsStore()
 
@@ -55,11 +55,8 @@ export const useRedeemBond = () => {
         suffix: ` ${bond.symbol}`,
       })
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = papiClient.getUnsafeApi() as any
-
       return createTransaction({
-        tx: unsafeApi.tx.Bonds.redeem({
+        tx: papi.tx.Bonds.redeem({
           bond_id: Number(bond.id),
           amount,
         }),

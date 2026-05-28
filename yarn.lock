@@ -1589,10 +1589,10 @@
     big.js "^6.2.1"
     lru-cache "^11.2.2"
 
-"@galacticcouncil/descriptors@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-2.0.0.tgz#e911eb01ca70d9df902244f399e0510e148261a8"
-  integrity sha512-2VGbm4xuCh9ev8eomfyjpQshsadj+ZBllySEOL0XA9W9orUSg2dOh12wt+D8FtkIhHwGbgOz2OGdExJM87DFTw==
+"@galacticcouncil/descriptors@2.3.0-pr322-74b1b07":
+  version "2.3.0-pr322-74b1b07"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-2.3.0-pr322-74b1b07.tgz#cc99e18e86ff80d4b6f3ef8e121034fb97e42cb7"
+  integrity sha512-uVR7vIznyDS5ZcojuGPd30ZSMHNImy24X9tJyVURCKAorHZpzkbHb0YLZwnc6136Qz50mnB9HdHc9AuIFkaqow==
 
 "@galacticcouncil/math-hsm@^1.2.0":
   version "1.2.0"
