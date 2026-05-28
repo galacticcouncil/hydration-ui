@@ -19,28 +19,26 @@ export const DECENTRAL_POOL_ADDRESS: Hex =
   "0x207a626c07b73E76134177D1f44B0f32e94ADB5a"
 
 // ────────────────────────────────────────────────────────────────────────
-// HDCL Aave V3 money-market layer — NOT deployed on lark-2 yet.
+// HDCL Aave V3 money-market layer — live on lark-2.
 //
-// The lark-2 redeploy is vault-only (see deployments/lark-2.md). The Aave
-// pool, deposit-zap, and aToken from the previous lark generation
-// (`HDCL_HAS_AAVE_LAYER = true` era) need to be re-deployed against the
-// new vault before borrow / supply / instant-redeem flows can be enabled.
+// Deployed against the lark-2 vault and enacted via governance ref #383
+// (Root track, block 222762). The Aave pool, deposit-zap, and aToken below
+// power the borrow / supply / instant-redeem flows.
 //
-// Until that ships, the UI runs in "vault-only" mode:
-//   - Deposit calls `vault.deposit(assets, receiver)` directly
-//   - Request redeem calls `vault.requestRedeem(shares, ctrl, owner)` directly
-//   - Claim calls `vault.redeem(shares, receiver, controller)`
-//   - Borrow card, instant-redeem-via-stableswap, and the aHDCL collateral
-//     row are hidden / disabled.
+// Aave layer endpoints:
+//   - Supply DCL  → pool.supply(DCL_PRECOMPILE, ..., user, 0)
+//   - Borrow HOLLAR → pool.borrow(HOLLAR, ..., 2, 0, user)
+//   - Zap deposit (HOLLAR → vault → pool.supply) → zap.depositAndSupply
+//   - Instant redeem path uses the HDCL/HOLLAR stableswap (id 10055).
 // ────────────────────────────────────────────────────────────────────────
-export const HDCL_HAS_AAVE_LAYER = false
+export const HDCL_HAS_AAVE_LAYER = true
 
 export const HDCL_POOL_ADDRESS: Hex =
-  "0x0000000000000000000000000000000000000000"
+  "0xEAb87D2aAc4C70AF63D2d9E85876665060e117E2"
 export const HDCL_DEPOSIT_ZAP_ADDRESS: Hex =
-  "0x0000000000000000000000000000000000000000"
+  "0x146F6C43a0070F42cB532C74c412A34bb55A5729"
 export const HDCL_ATOKEN_ADDRESS: Hex =
-  "0x0000000000000000000000000000000000000000"
+  "0x8912ff2164655A3406902ee9e802EBb16ec881D9"
 
 // Substrate-asset precompile alias for HDCL. Unchanged across lark
 // generations — keyed off the substrate asset id, not the EVM deploy.
