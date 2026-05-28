@@ -15,7 +15,7 @@ type SubmitStableBondsOrderArgs = {
 }
 
 export const useSubmitStableBondsOrder = () => {
-  const { t } = useTranslation(["trade", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { papi } = useRpcProvider()
   const { isErc20AToken } = useAssets()
 
@@ -27,11 +27,6 @@ export const useSubmitStableBondsOrder = () => {
       order,
       receiveAmount,
     }: SubmitStableBondsOrderArgs) => {
-      const formattedAmount = t("common:currency", {
-        value: receiveAmount,
-        symbol: order.assetOut.symbol,
-      })
-
       const tx = getOtcFillOrderTx(papi, order, values.depositAmount)
 
       const hasAToken =
@@ -41,14 +36,15 @@ export const useSubmitStableBondsOrder = () => {
         withExtraGas: hasAToken,
         tx,
         toasts: {
-          submitted: t("otc.fillOrder.loading", {
-            amount: formattedAmount,
+          submitted: t("bonds.deposit.toast.submitted", {
+            amount: receiveAmount,
+            symbol: order.assetIn.symbol,
+            bond: order.assetOut.symbol,
           }),
-          success: t("otc.fillOrder.success", {
-            amount: formattedAmount,
-          }),
-          error: t("otc.fillOrder.error", {
-            amount: formattedAmount,
+          success: t("bonds.deposit.toast.success", {
+            amount: receiveAmount,
+            symbol: order.assetIn.symbol,
+            bond: order.assetOut.symbol,
           }),
         },
       })
