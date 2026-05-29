@@ -123,11 +123,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
               content={
                 <Flex align="center" wrap>
                   {orders.map((order, index) => (
-                    <Flex
-                      key={order.id ?? order.assetIn.id}
-                      align="center"
-                      wrap
-                    >
+                    <Flex key={order.id} align="center" wrap>
                       {index > 0 && <Text mr="base">{", "}</Text>}
                       <Flex align="center" gap="xs">
                         <AssetLogo id={order.assetIn.id} size="small" />

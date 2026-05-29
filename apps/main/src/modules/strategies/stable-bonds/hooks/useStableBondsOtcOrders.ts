@@ -1,3 +1,4 @@
+import { uuid } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
@@ -10,7 +11,7 @@ import {
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 
 const createEmptyOtcOffer = (assetIn: TAsset, assetOut: TAsset): OtcOffer => ({
-  id: undefined,
+  id: uuid(),
   owner: "",
   assetIn,
   assetOut,

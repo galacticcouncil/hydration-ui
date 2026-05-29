@@ -50,14 +50,16 @@ export const StableBondsCurrency: React.FC<StableBondsCurrencyProps> = ({
           decoration={isFillable ? "none" : "line-through"}
           color={isFillable ? getToken("text.high") : getToken("text.low")}
         >
-          {isFillable ? t("number", { value: amount }) : "Sold out"}
+          {isFillable
+            ? t("number", { value: amount })
+            : t("strategies:bonds.soldOut")}
         </Text>
       </Flex>
       {isFillable &&
         (isLoading ? (
           <Skeleton sx={{ height: "2xs" }} />
         ) : (
-          initialAmount && (
+          remainingPct > 0 && (
             <ProgressBar
               value={remainingPct}
               customLabel={
