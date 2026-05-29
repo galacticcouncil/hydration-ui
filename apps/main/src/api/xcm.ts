@@ -1,7 +1,12 @@
-import { formatSourceChainAddress } from "@galacticcouncil/utils"
+import {
+  formatSourceChainAddress,
+  HYDRATION_CHAIN_KEY,
+  isEvmParachain,
+  QUERY_KEY_BLOCK_PREFIX,
+} from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
+import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
+import { AnyChain, Asset, AssetAmount } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
@@ -11,7 +16,7 @@ import {
   UseQueryOptions,
   useSuspenseQuery,
 } from "@tanstack/react-query"
-import { secondsToMilliseconds } from "date-fns"
+import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -27,6 +32,20 @@ export const useCrossChainConfig = () => {
       createXcContext({
         poolCtx: sdk.ctx.pool,
       }),
+  })
+}
+
+const useHydrationClient = () => {
+  return useSuspenseQuery({
+    queryKey: ["xcm", "hydrationClient"],
+    queryFn: () => {
+      const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
+      if (!hydration || !isEvmParachain(hydration))
+        throw new Error("Invalid chain for HydrationClient")
+      return new clients.HydrationClient(hydration)
+    },
+    staleTime: Infinity,
+    gcTime: Infinity,
   })
 }
 
@@ -261,3 +280,26 @@ export const xcmTransferCallQuery = (
       return { call, dryRunError }
     },
   })
+
+export const useCrossChainDepositLimit = (asset: Asset | null) => {
+  const { data: client } = useHydrationClient()
+
+  return useQuery({
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "xcm", "depositLimit", asset?.key],
+    queryFn: () => {
+      if (!asset) throw new Error("Asset is required")
+      return client.getAssetDepositLimit(asset)
+    },
+    enabled: !!asset,
+  })
+}
+
+export const useCrossChainGlobalWithdrawLimit = () => {
+  const { data: client } = useHydrationClient()
+
+  return useQuery({
+    queryKey: ["xcm", "globalWithdrawLimit"],
+    staleTime: minutesToMilliseconds(5),
+    queryFn: () => client.getGlobalWithdrawLimit(),
+  })
+}
