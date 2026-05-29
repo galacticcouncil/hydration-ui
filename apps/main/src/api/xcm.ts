@@ -15,6 +15,7 @@ import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { toDecimal } from "@/utils/formatting"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -179,12 +180,29 @@ export const xcmTransferQuery = (
         ? destAsset
         : undefined
 
-      return builder.build({
+      const transfer = await builder.build({
         srcAddress,
         dstAddress: destAddress,
         dstAsset: validDstAsset,
         tag: bridgeTag,
       })
+
+      const { balance, fee, max } = transfer.source
+      if (balance.isSame(fee) && max.amount > 0n) {
+        try {
+          const atMaxFee = await transfer.estimateFee(
+            toDecimal(max.amount, max.decimals),
+          )
+          const delta = atMaxFee.amount - fee.amount
+          if (delta > 0n) {
+            transfer.source.max = max.copyWith({ amount: max.amount - delta })
+          }
+        } catch {
+          // keep original max if re-pricing fails
+        }
+      }
+
+      return transfer
     },
     enabled:
       !!srcAddress &&
