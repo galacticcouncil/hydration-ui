@@ -370,6 +370,8 @@
   "multisig.toast.unnamed.title": "Multisig operation was created and ready to sign",
   "banners.newFarms.title": "New Farms for {{ assetSymbols }}",
   "banners.newFarms.cta": "More Info",
+  "banners.hollarb.title": "Introducing Fixed Yield HOLLAR Bonds",
+  "banners.hollarb.description": "Earn {{ apr, percent }} APR with fixed-term HOLLAR bonds.",
   "gigaNews": "GIGA News",
   "closeAll": "Close all"
 }
