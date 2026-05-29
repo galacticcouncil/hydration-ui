@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
 
 import { blockTimeQuery } from "@/api/chain"
+import { intentsByAccountQuery } from "@/api/intents"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -13,10 +14,10 @@ import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitTwap = (actions?: TransactionActions) => {
   const { t } = useTranslation(["common", "trade"])
-  const rpc = useRpcProvider()
-  const { sdk } = rpc
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const rpc = useRpcProvider()
+  const { sdk, featureFlags } = rpc
+
   const {
     swap: {
       split: { twapSlippage, twapMaxRetries },
@@ -26,13 +27,13 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
   const { createTransaction } = useTransactionsStore()
 
   return useMutation({
-    mutationFn: async ([values, twap]: [MarketFormValues, TradeOrder]) => {
-      const { sellAsset } = values
-      const sellDecimals = sellAsset?.decimals ?? 0
-      const sellSymbol = sellAsset?.symbol ?? ""
-      const blockTimeMs = await rpc.queryClient.ensureQueryData(
-        blockTimeQuery(sdk),
-      )
+    mutationFn: async ([values, twap]: [
+      MarketFormValues,
+      TradeOrder,
+    ]): Promise<void> => {
+      const { sellAsset, buyAsset } = values
+      if (!sellAsset || !buyAsset) throw new Error("Invalid twap assets")
+      if (!account) throw new Error("Account not connected")
 
       const params = {
         noOfTrades: twap.tradeCount,
@@ -41,21 +42,27 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
           { includeSeconds: true },
         ),
         in: t("currency", {
-          value: scaleHuman(twap.tradeAmountIn, sellDecimals),
-          symbol: sellSymbol,
+          value: scaleHuman(twap.tradeAmountIn, sellAsset.decimals),
+          symbol: sellAsset.symbol,
         }),
         inTotal: t("currency", {
-          value: scaleHuman(twap.amountIn, sellDecimals),
-          symbol: sellSymbol,
+          value: scaleHuman(twap.amountIn, sellAsset.decimals),
+          symbol: sellAsset.symbol,
         }),
       }
 
-      const tx = await sdk.tx
-        .order(twap)
-        .withSlippage(twapSlippage)
-        .withMaxRetries(twapMaxRetries)
-        .withBeneficiary(address)
-        .build()
+      const tx = featureFlags.isIceEnabled
+        ? await sdk.tx
+            .intentOrder(twap)
+            .withBeneficiary(account.address)
+            .withSlippage(twapSlippage)
+            .build()
+        : await sdk.tx
+            .order(twap)
+            .withSlippage(twapSlippage)
+            .withMaxRetries(twapMaxRetries)
+            .withBeneficiary(account.address)
+            .build()
 
       return createTransaction(
         {
@@ -66,8 +73,10 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             error: t("trade:market.twap.error", params),
           },
         },
-        actions,
-      )
+        invalidateQueries: [
+          intentsByAccountQuery(rpc, account.address).queryKey,
+        ],
+      })
     },
   })
 }

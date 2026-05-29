@@ -4,9 +4,9 @@ import { FC, useState } from "react"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
-  DCA_HISTORY_ORDER_STATUSES,
-  OrderData,
-} from "@/modules/trade/orders/lib/types"
+  DcaOrderData,
+  useOrdersData,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { useHistoryData } from "@/modules/trade/orders/TradeOrders/lib/useHistoryData"
@@ -17,8 +17,12 @@ type Props = {
   readonly assetIds: Array<string>
 }
 
-export const OrderHistory: FC<Props> = ({ paginationProps, assetIds }) => {
-  const [isDetailOpen, setIsDetailOpen] = useState<OrderData | null>(null)
+export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
+  const { assetIn, assetOut } = useSearch({
+    from: "/trade/_history",
+  })
+
+  const [isDetailOpen, setIsDetailOpen] = useState<DcaOrderData | null>(null)
 
   const { orders, totalCount, isLoading } = useHistoryData(
     DCA_HISTORY_ORDER_STATUSES,

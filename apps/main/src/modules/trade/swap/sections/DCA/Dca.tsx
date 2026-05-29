@@ -48,8 +48,6 @@ export const Dca: FC = () => {
 
   const {
     order,
-    orderTx,
-    dryRunError,
     healthFactor: initialHealthFactor,
     isLoading,
   } = useDcaTradeOrder(form)
@@ -116,8 +114,7 @@ export const Dca: FC = () => {
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(
-          (values) =>
-            order && orderTx && submitDcaOrder.mutate([values, order, orderTx]),
+          (values) => order && submitDcaOrder.mutate([values, order]),
         )}
       >
         <Controller
@@ -174,11 +171,7 @@ export const Dca: FC = () => {
           }
           isLoading={isLoading}
         />
-        <DcaErrors
-          priceImpact={order?.tradeImpactPct ?? 0}
-          errors={errors}
-          dryRunError={dryRunError}
-        />
+        <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
         <DcaWarnings
           isFormValid={isFormValid}
           order={order}

@@ -10,9 +10,7 @@ import {
   ModalContentDivider,
   ModalHeader,
   Separator,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { neckwork } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,15 +19,15 @@ import { useBlockTime } from "@/api/chain"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import {
-  getDcaCompletionPercent,
-  getDcaTradeProgress,
-  useDcaFundingBalance,
-} from "@/modules/trade/orders/lib/dcaProgress"
-import { DcaScheduleStatus, OrderData } from "@/modules/trade/orders/lib/types"
-import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
+  DcaOrderData,
+  IntentDcaOrderData,
+  isDcaScheduleOrder,
+} from "@/modules/trade/orders/lib/useOrdersData"
+import { PastExecutions } from "@/modules/trade/orders/PastExecutions/PastExecutions"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 type Props = {
-  readonly details: OrderData
+  readonly details: DcaOrderData | IntentDcaOrderData
   readonly onTerminate: (() => void) | null
   readonly pastExecutions: ReactNode
 }
@@ -69,37 +67,6 @@ export const DcaOrderDetailsModal = ({
     value: details.toAmountExecuted ?? "0",
     symbol: details.to.symbol,
   })
-
-  const isActive = details.status === DcaScheduleStatus.Created
-  const progressPercent = isActive
-    ? getDcaCompletionPercent({
-        sold: details.fromAmountExecuted,
-        total: details.fromAmountBudget,
-        isOpenBudget: details.isOpenBudget,
-        fundingBalance,
-      })
-    : null
-  const tradeProgress = isActive
-    ? getDcaTradeProgress({
-        sold: details.fromAmountExecuted,
-        total: details.fromAmountBudget,
-        singleTradeSize: details.singleTradeSize,
-        isOpenBudget: details.isOpenBudget,
-        fundingBalance,
-      })
-    : null
-
-  let tradesLabel: string | null = null
-  if (tradeProgress !== null && tradeProgress.remaining > 0) {
-    tradesLabel = t("trade:trade.orders.dcaDetail.tradesProgress", {
-      executed: tradeProgress.executed,
-      total: tradeProgress.executed + tradeProgress.remaining,
-    })
-  } else if (tradeProgress !== null) {
-    tradesLabel = t("trade:trade.orders.dcaDetail.tradesCount", {
-      count: tradeProgress.executed,
-    })
-  }
 
   return (
     <>
@@ -156,41 +123,21 @@ export const DcaOrderDetailsModal = ({
             })}
           />
         </Grid>
-        {progressPercent !== null && (
-          <>
-            <ModalContentDivider />
-            <Grid columnTemplate="1fr" gap="xxl" py="xl">
-              <DcaOrderProgress
-                percent={progressPercent}
-                tradesLabel={tradesLabel}
-              />
-            </Grid>
-          </>
-        )}
         <ModalContentDivider />
-        <Flex justify="space-between" gap="base" pt="l" pb="xl">
-          <Button variant="tertiary" outline asChild>
-            <ExternalLink href={neckwork.activityDca(details.scheduleId)}>
-              <Icon component={SquareArrowOutUpRight} size="xs" />
-              <Text fw={500} fs="p6" lh={1.4}>
-                {t("openInExplorer")}
-              </Text>
-            </ExternalLink>
-          </Button>
-          {details.status === DcaScheduleStatus.Created && onTerminate && (
+        {details.status === DcaScheduleStatus.Created && onTerminate && (
+          <Flex justify="flex-end" pt="l" pb="xl">
             <Button variant="danger" outline onClick={onTerminate}>
               <Icon component={Trash} size="s" />
               {t("trade:trade.cancelOrder.cta")}
             </Button>
-          )}
-        </Flex>
-        <Flex
-          direction="column"
-          sx={{ marginInline: "var(--modal-content-inset)" }}
-        >
-          {pastExecutions}
-        </Flex>
-        <ModalContentDivider />
+          </Flex>
+        )}
+        {isDcaScheduleOrder(details) && (
+          <PastExecutions
+            scheduleId={details.scheduleId}
+            sx={{ marginInline: "var(--modal-content-inset)" }}
+          />
+        )}
       </ModalBody>
     </>
   )
