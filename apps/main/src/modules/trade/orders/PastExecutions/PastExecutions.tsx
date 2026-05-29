@@ -1,14 +1,11 @@
 import {
   Flex,
-  LoadingButton,
   Separator,
   Skeleton,
-  Stack,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
 
 import { PastExecutionData } from "@/modules/trade/orders/lib/types"
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
@@ -88,9 +85,10 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
           />
         ) : (
           <VirtualizedList
-            {...pastExecutionsListProps}
             items={executions}
-            onEndReached={onEndReached}
+            maxVisibleItems={5}
+            itemSize={60}
+            separated
             renderItem={(execution) => (
               <PastExecutionItem
                 assetIn={assetIn}
@@ -99,20 +97,6 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
               />
             )}
           />
-        )}
-        {loadAll && hasMore && (
-          <Flex justify="center" px="l" pb="l">
-            <LoadingButton
-              variant="tertiary"
-              outline
-              isLoading={isLoadingAll ?? false}
-              onClick={loadAll}
-            >
-              {t("trade.orders.pastExecutions.loadAll", {
-                count: totalCount ?? 0,
-              })}
-            </LoadingButton>
-          </Flex>
         )}
       </Flex>
     </Flex>

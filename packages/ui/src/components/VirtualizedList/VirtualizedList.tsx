@@ -28,7 +28,6 @@ type VirtualizedListProps<T> = VirtualizerProps &
     initialScrollIndex?: number
     maxVisibleItems?: ResponsiveStyleValue<number>
     separated?: boolean
-    onEndReached?: () => void
   }
 
 function VirtualizedList<T>({
@@ -40,7 +39,6 @@ function VirtualizedList<T>({
   getItemKey,
   initialScrollIndex,
   separated = false,
-  onEndReached,
   ...props
 }: VirtualizedListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)

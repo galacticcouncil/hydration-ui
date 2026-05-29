@@ -1,4 +1,13 @@
-import { DryRunErrorDecoder, logger } from "@galacticcouncil/utils"
+import {
+  hydration,
+  hydrationIce,
+  hydrationNext,
+} from "@galacticcouncil/descriptors"
+import {
+  AssetMetadataFactory,
+  DryRunErrorDecoder,
+  logger,
+} from "@galacticcouncil/utils"
 import {
   QueryClient,
   useQueryClient,
@@ -12,6 +21,10 @@ import { getProviderDataEnv } from "@/api/rpcConfig"
 import { TDataEnv } from "@/config/rpc"
 import { useAssetRegistryStore } from "@/states/assetRegistry"
 import { useProviderRpcUrlStore } from "@/states/provider"
+
+export type Papi = TypedApi<typeof hydration>
+export type PapiNext = TypedApi<typeof hydrationNext>
+export type PapiIce = TypedApi<typeof hydrationIce>
 
 export type TProviderContext = TProviderData & {
   /** The endpoint is connected and not mid-switch. */
@@ -39,15 +52,17 @@ export type TProviderContext = TProviderData & {
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
-  papi: {} as TProviderData["papi"],
-  papiNext: {} as TProviderData["papiNext"],
+  slotDurationMs: 6000,
+  papi: {} as Papi,
+  papiNext: {} as PapiNext,
+  papiIce: {} as PapiIce,
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   genesisHash: "",
   evm: {} as TProviderData["evm"],
   featureFlags: {
     hollarBondsEnabled: true,
-    bilEnabled: false,
+    isIceEnabled: false,
   },
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
   isEndpointSettled: false,

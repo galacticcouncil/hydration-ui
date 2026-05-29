@@ -7,6 +7,8 @@ import { useLocation, useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useAccountIntents } from "@/api/intents"
+import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
@@ -47,6 +49,27 @@ export const TradeOrdersHeader: FC<Props> = ({
   const { allPairs, assetIn, assetOut, destPlatform } = useSearch({
     from: "/trade/_history",
   })
+
+  const squidClient = useSquidClient()
+  const { account } = useAccount()
+  const address = account?.address ?? ""
+  const pubKey = safeConvertSS58toPublicKey(address)
+
+  const { data: openOrdersCountData } = useQuery(
+    userOpenOrdersCountQuery(
+      squidClient,
+      pubKey,
+      allPairs ? [] : [assetIn, assetOut],
+    ),
+  )
+
+  const { data: intents } = useAccountIntents(address)
+
+  const dcaCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
+  const intentCount = intents?.length ?? 0
+  const openOrdersCount = dcaCount + intentCount
+
+  const navigate = useNavigate()
 
   return (
     <Flex align="center" px="xl">
