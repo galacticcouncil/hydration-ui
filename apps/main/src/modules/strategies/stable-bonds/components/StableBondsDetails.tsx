@@ -24,6 +24,7 @@ import {
   SStatsGroup,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDetails.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
+import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 
 export type StableBondsDetailsProps = {
@@ -37,8 +38,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   const config = useStableBondsConfig()
   const { timeLeft } = useBondData(config.bondId)
 
-  const daysLeft = timeLeft > 0 ? Math.ceil(timeLeft / millisecondsInDay) : 0
-  const currentApr = daysLeft > 0 ? (config.fixedYield / daysLeft) * 365 : null
+  const currentApr = getBondApr(config.bondId, timeLeft)
 
   return (
     <Paper p="l">

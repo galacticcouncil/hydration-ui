@@ -1,13 +1,20 @@
 import { type PromoteBannerItem } from "@galacticcouncil/ui/components"
+import { HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
+import type { ParseKeys } from "i18next"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
 import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-type BannerConfig = PromoteBannerItem & {
+type BannerConfig = Omit<PromoteBannerItem, "title" | "description"> & {
+  title: ParseKeys<"common">
+  description?: ParseKeys<"common">
   to?: string
   priority: number
   enabled: boolean
@@ -18,8 +25,8 @@ const bannerEntries: BannerConfig[] = [
     id: "hollarb",
     backgroundImage: "/images/hollarb.webp",
     backgroundImageMobile: "/images/hollarbMobile.webp",
-    title: "Introducing fixed yield Hollar bonds",
-    description: "Earn 6.9% APR with fixed-term HOLLAR bonds.",
+    title: "banners.hollarb.title",
+    description: "banners.hollarb.description",
     textColor: "#FFF",
     ctaColor: "#B3D7FA",
     ctaTextColor: "#0D1525",
@@ -31,18 +38,40 @@ const bannerEntries: BannerConfig[] = [
 ]
 
 export const useEnabledBanners = () => {
+  const { t } = useTranslation("common")
   const { featureFlags } = useRpcProvider()
   const hasFillableStableBondsOrders = useHasFillableStableBondsOrders()
+  const { timeLeft } = useBondData(HOLLAR_BOND_25_08_26_ID)
+  const apr = getBondApr(HOLLAR_BOND_25_08_26_ID, timeLeft)
 
   return useMemo(() => {
-    return bannerEntries.filter((banner) => {
-      if (banner.id === "hollarb") {
-        return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
-      }
+    return bannerEntries
+      .filter((banner) => {
+        if (banner.id === "hollarb") {
+          return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
+        }
 
-      return banner.enabled
-    })
-  }, [featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders])
+        return banner.enabled
+      })
+      .map((banner) => {
+        const description = (() => {
+          if (banner.id === "hollarb" && banner.description) {
+            return apr ? t(banner.description, { apr }) : ""
+          }
+
+          if (banner.description) {
+            return t(banner.description)
+          }
+
+          return undefined
+        })()
+        return {
+          ...banner,
+          title: t(banner.title),
+          description,
+        }
+      })
+  }, [apr, featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders, t])
 }
 
 export const bannerConfig: BannerConfig[] = [...bannerEntries].sort(
