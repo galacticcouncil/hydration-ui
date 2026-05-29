@@ -162,7 +162,6 @@ export const NAVIGATION: NavigationItem[] = [
     key: "strategiesHollarBonds",
     to: LINKS.strategiesHollarBonds,
     icon: GoalIcon,
-    enabled: false,
   },
   // {
   //   key: "referrals",

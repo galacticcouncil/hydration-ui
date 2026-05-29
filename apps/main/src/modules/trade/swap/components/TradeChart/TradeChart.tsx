@@ -1,12 +1,14 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
+  AnimatedValue,
   Box,
   ChartValues,
   Flex,
   Icon,
   Paper,
   Separator,
+  Text,
   TradingViewChart,
   TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
@@ -108,12 +110,16 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const assetBMeta = getAssetWithFallback(assetB)
 
   const chartValue =
-    !isEmpty && !isError
-      ? t("currency", {
-          value,
-          symbol: assetAMeta.symbol,
-        })
-      : ""
+    !isEmpty && !isError ? (
+      <Text>
+        <AnimatedValue
+          value={value}
+          format={(value) =>
+            t("currency", { value, symbol: assetAMeta.symbol })
+          }
+        />
+      </Text>
+    ) : undefined
 
   const chartDisplayValue =
     !isEmpty && !isError ? (

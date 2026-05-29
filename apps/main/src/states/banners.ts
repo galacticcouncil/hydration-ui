@@ -4,7 +4,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { LINKS } from "@/config/navigation"
-import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useHasFillableStableBondsOrders"
+import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type BannerConfig = PromoteBannerItem & {
