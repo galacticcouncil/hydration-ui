@@ -13,7 +13,7 @@ import {
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useMemo, useRef, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { funnel, last } from "remeda"
 
@@ -54,21 +54,33 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     "week",
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
-  const { call: onCrosshairMove } = useMemo(
-    () =>
-      funnel(
-        (nextCrosshair: BaselineChartData | null) => {
-          setCrosshair(nextCrosshair)
-        },
-        {
-          minGapMs: 200,
-          triggerAt: "start",
-          reducer: (_, next: BaselineChartData | null) => next,
-        },
-      ),
-    [],
-  )
+  const { call: setCrosshairThrottled, cancel: cancelCrosshairThrottle } =
+    useMemo(
+      () =>
+        funnel(
+          (nextCrosshair: BaselineChartData | null) => {
+            setCrosshair(nextCrosshair)
+          },
+          {
+            minGapMs: 200,
+            triggerAt: "start",
+            reducer: (_, next: BaselineChartData | null) => next,
+          },
+        ),
+      [],
+    )
 
+  const onCrosshairMove = useCallback(
+    (nextCrosshair: BaselineChartData | null) => {
+      if (nextCrosshair === null) {
+        cancelCrosshairThrottle()
+        setCrosshair(null)
+        return
+      }
+      setCrosshairThrottled(nextCrosshair)
+    },
+    [cancelCrosshairThrottle, setCrosshairThrottled],
+  )
   const assetA = isInverted ? assetOut : assetIn
   const assetB = isInverted ? assetIn : assetOut
 
