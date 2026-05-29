@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { LINKS, NAVIGATION } from "@/config/navigation"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { SFormHeader, SHeaderTab } from "./FormHeader.styled"
 
@@ -17,6 +18,7 @@ const swapRouteItems =
 export const FormHeader = () => {
   const { t } = useTranslation(["trade", "common"])
   const [openSettings, setOpenSettings] = useState(false)
+  const { featureFlags } = useRpcProvider()
 
   const search = useSearch({ from: "/trade/_history/swap" })
   const matchRoute = useMatchRoute()
@@ -27,13 +29,18 @@ export const FormHeader = () => {
   return (
     <SFormHeader justify="space-between" align="center">
       <Flex>
-        {swapRouteItems.map((routeItem) => (
-          <SHeaderTab key={routeItem.key} asChild>
-            <Link to={routeItem.to} search={search}>
-              {t(`common:navigation.${routeItem.key}.title`)}
-            </Link>
-          </SHeaderTab>
-        ))}
+        {swapRouteItems
+          .filter(
+            (routeItem) =>
+              featureFlags.isIceEnabled || routeItem.key !== "swapLimit",
+          )
+          .map((routeItem) => (
+            <SHeaderTab key={routeItem.key} asChild>
+              <Link to={routeItem.to} search={search}>
+                {t(`common:navigation.${routeItem.key}.title`)}
+              </Link>
+            </SHeaderTab>
+          ))}
       </Flex>
 
       {hasSettings && (

@@ -1,42 +1,47 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { useMutation } from "@tanstack/react-query"
-import { formatDistanceToNow } from "date-fns"
-import { useTranslation } from "react-i18next"
+import { useAccount } from "@galacticcouncil/web3-connect";
+import { useMutation } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
-import { blockTimeQuery } from "@/api/chain"
-import { bestBuyQuery, bestSellTwapQuery, TradeType } from "@/api/trade"
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
-import { TransactionActions, useTransactionsStore } from "@/states/transactions"
-import { scaleHuman } from "@/utils/formatting"
+import { blockTimeQuery } from "@/api/chain";
+import { intentsByAccountQuery } from "@/api/intents";
+import { bestBuyQuery, bestSellTwapQuery, TradeType } from "@/api/trade";
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm";
+import { useRpcProvider } from "@/providers/rpcProvider";
+import { useTradeSettings } from "@/states/tradeSettings";
+import {
+  TransactionActions,
+  useTransactionsStore,
+} from "@/states/transactions";
+import { scaleHuman } from "@/utils/formatting";
 
 export const useSubmitTwap = (actions?: TransactionActions) => {
-  const { t } = useTranslation(["common", "trade"])
-  const rpc = useRpcProvider()
-  const { sdk } = rpc
-  const { account } = useAccount()
-  const address = account?.address ?? ""
+  const { t } = useTranslation(["common", "trade"]);
+  const { account } = useAccount();
+  const rpc = useRpcProvider();
+  const { sdk, featureFlags } = rpc;
+
   const {
     swap: {
       split: { twapSlippage, twapMaxRetries },
     },
-  } = useTradeSettings()
+  } = useTradeSettings();
 
-  const { createTransaction } = useTransactionsStore()
+  const { createTransaction } = useTransactionsStore();
 
   return useMutation({
     mutationFn: async (values: MarketFormValues) => {
-      const { sellAsset, buyAsset } = values
+      const { sellAsset, buyAsset } = values;
 
-      if (!sellAsset) throw new Error("Invalid sell asset")
-      if (!buyAsset) throw new Error("Invalid buy asset")
+      if (!sellAsset) throw new Error("Invalid sell asset");
+      if (!buyAsset) throw new Error("Invalid buy asset");
+      if (!account) throw new Error("Account not connected");
 
-      const sellDecimals = sellAsset.decimals
-      const sellSymbol = sellAsset.symbol
+      const sellDecimals = sellAsset.decimals;
+      const sellSymbol = sellAsset.symbol;
 
       const budget = await (async () => {
-        if (values.type !== TradeType.Buy) return values.sellAmount
+        if (values.type !== TradeType.Buy) return values.sellAmount;
 
         const quote = await rpc.queryClient.ensureQueryData(
           bestBuyQuery(rpc, {
@@ -44,10 +49,10 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             assetOut: buyAsset.id,
             amountOut: values.buyAmount,
           }),
-        )
+        );
 
-        return scaleHuman(quote.amountIn, sellDecimals)
-      })()
+        return scaleHuman(quote.amountIn, sellDecimals);
+      })();
 
       const twap = await rpc.queryClient.ensureQueryData(
         bestSellTwapQuery(rpc, {
@@ -55,11 +60,11 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
           assetOut: buyAsset.id,
           amountIn: budget,
         }),
-      )
+      );
 
       const blockTimeMs = await rpc.queryClient.ensureQueryData(
         blockTimeQuery(sdk),
-      )
+      );
 
       const params = {
         noOfTrades: twap.tradeCount,
@@ -75,14 +80,20 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
           value: scaleHuman(twap.amountIn, sellDecimals),
           symbol: sellSymbol,
         }),
-      }
+      };
 
-      const tx = await sdk.tx
-        .order(twap)
-        .withSlippage(twapSlippage)
-        .withMaxRetries(twapMaxRetries)
-        .withBeneficiary(address)
-        .build()
+      const tx = featureFlags.isIceEnabled
+        ? await sdk.tx
+            .intentOrder(twap)
+            .withBeneficiary(account.address)
+            .withSlippage(twapSlippage)
+            .build()
+        : await sdk.tx
+            .order(twap)
+            .withSlippage(twapSlippage)
+            .withMaxRetries(twapMaxRetries)
+            .withBeneficiary(account.address)
+            .build();
 
       return createTransaction(
         {
@@ -92,9 +103,12 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             success: t("trade:market.twap.success", params),
             error: t("trade:market.twap.error", params),
           },
+          invalidateQueries: [
+            intentsByAccountQuery(rpc, account.address).queryKey,
+          ],
         },
         actions,
-      )
+      );
     },
-  })
-}
+  });
+};

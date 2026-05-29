@@ -1,10 +1,10 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { Flex, Text } from "@galacticcouncil/ui/components";
+import { getToken } from "@galacticcouncil/ui/utils";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 export const PastExecutionsHeader: FC = () => {
-  const { t } = useTranslation("trade")
+  const { t } = useTranslation("trade");
 
   return (
     <Flex justify="space-between" align="center" py="xl" px="l" gap="l">
@@ -12,5 +12,5 @@ export const PastExecutionsHeader: FC = () => {
         {t("trade.orders.pastExecutions.title")}
       </Text>
     </Flex>
-  )
-}
+  );
+};

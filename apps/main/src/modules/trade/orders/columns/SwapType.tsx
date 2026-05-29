@@ -25,7 +25,9 @@ export const SwapType: FC<Props> = ({ type }) => {
       <Text fw={500} fs="p5" lh="s" color={getToken("text.high")}>
         {type === OrderKind.DcaRolling
           ? t("trade.orders.type.dca")
-          : t(`trade.orders.type.${type}`)}
+          : type === OrderKind.Limit
+            ? t("trade.orders.type.limit")
+            : t(`trade.orders.type.${type}`)}
       </Text>
     </Flex>
   )

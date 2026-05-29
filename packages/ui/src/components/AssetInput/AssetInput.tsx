@@ -1,17 +1,9 @@
 import { formatNumber } from "@galacticcouncil/utils"
 import Big from "big.js"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
 import { ReactNode } from "react"
 
-import {
-  Flex,
-  FormLabel,
-  Icon,
-  LogoSkeleton,
-  MicroButton,
-  Skeleton,
-  Text,
-} from "@/components"
+import { Button, Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
 
@@ -40,6 +32,8 @@ export type AssetInputProps = {
   amountError?: string
   disabled?: boolean
   disabledInput?: boolean
+  isLocked?: boolean
+  onLock?: () => void
   hideInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
@@ -75,6 +69,8 @@ export const AssetInput = ({
   modalDisabled,
   loading,
   onAsssetBtnClick,
+  onLock,
+  isLocked,
   className,
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
@@ -147,15 +143,8 @@ export const AssetInput = ({
         <Flex
           width="100%"
           align="center"
-          gap="m"
-          sx={{
-            minWidth: 0,
-            overflow: "hidden",
-            display: "grid",
-            gridTemplateColumns: hideInput
-              ? "minmax(0, 1fr)"
-              : "auto minmax(0, 1fr)",
-          }}
+          justify="space-between"
+          gap="s"
         >
           <AssetButton
             symbol={symbol}
@@ -165,6 +154,19 @@ export const AssetInput = ({
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
+          {onLock && (
+            <Button
+              variant={isLocked ? "accent" : "tertiary"}
+              outline
+              onClick={onLock}
+              sx={{ p: 0, size: "2rem" }}
+            >
+              <Icon
+                component={isLocked ? LockKeyhole : LockKeyholeOpen}
+                size="s"
+              />
+            </Button>
+          )}
           {!hideInput && (
             <Flex
               direction="column"

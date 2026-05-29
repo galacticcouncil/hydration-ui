@@ -1,37 +1,40 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { useMutation } from "@tanstack/react-query"
-import React from "react"
-import { useTranslation } from "react-i18next"
-import { toLowerCase } from "remeda"
+import { useAccount } from "@galacticcouncil/web3-connect";
+import { useMutation } from "@tanstack/react-query";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { toLowerCase } from "remeda";
 
-import { bestBuyQuery, bestSellQuery, TradeType } from "@/api/trade"
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { MarketSellAllAlert } from "@/modules/trade/swap/sections/Market/MarketSellAllAlert"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
-import { TransactionActions, useTransactionsStore } from "@/states/transactions"
-import { scaleHuman } from "@/utils/formatting"
+import { bestBuyQuery, bestSellQuery, TradeType } from "@/api/trade";
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm";
+import { MarketSellAllAlert } from "@/modules/trade/swap/sections/Market/MarketSellAllAlert";
+import { useRpcProvider } from "@/providers/rpcProvider";
+import { useTradeSettings } from "@/states/tradeSettings";
+import {
+  TransactionActions,
+  useTransactionsStore,
+} from "@/states/transactions";
+import { scaleHuman } from "@/utils/formatting";
 
 export const useSubmitSwap = (actions?: TransactionActions) => {
-  const { t } = useTranslation(["common", "trade"])
-  const rpc = useRpcProvider()
-  const { sdk } = rpc
-  const { account } = useAccount()
-  const address = account?.address ?? ""
+  const { t } = useTranslation(["common", "trade"]);
+  const { account } = useAccount();
+  const rpc = useRpcProvider();
+  const { sdk } = rpc;
+
   const {
     swap: {
       single: { swapSlippage },
     },
-  } = useTradeSettings()
+  } = useTradeSettings();
 
-  const { createTransaction } = useTransactionsStore()
+  const { createTransaction } = useTransactionsStore();
 
   return useMutation({
     mutationFn: async (values: MarketFormValues) => {
-      const { sellAsset, buyAsset } = values
+      const { sellAsset, buyAsset } = values;
 
-      if (!sellAsset) throw new Error("Invalid sell asset")
-      if (!buyAsset) throw new Error("Invalid buy asset")
+      if (!sellAsset || !buyAsset) throw new Error("Invalid swap assets");
+      if (!account) throw new Error("Account not connected");
 
       const swap = await rpc.queryClient.ensureQueryData(
         values.type === TradeType.Buy
@@ -45,14 +48,14 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
               assetOut: buyAsset.id,
               amountIn: values.sellAmount,
             }),
-      )
+      );
 
-      const { amountIn, amountOut, type } = swap
+      const { amountIn, amountOut, type } = swap;
 
-      const sellDecimals = sellAsset.decimals
-      const sellSymbol = sellAsset.symbol
-      const buyDecimals = buyAsset.decimals
-      const buySymbol = buyAsset.symbol
+      const sellDecimals = sellAsset.decimals;
+      const sellSymbol = sellAsset.symbol;
+      const buyDecimals = buyAsset.decimals;
+      const buySymbol = buyAsset.symbol;
 
       const params =
         type === TradeType.Sell
@@ -75,15 +78,43 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
                 value: scaleHuman(amountIn, sellDecimals),
                 symbol: sellSymbol,
               }),
-            }
+            };
+
+      // Not ready to switch to market intents yet
+      /* if (featureFlags.isIceEnabled) {
+        const tx = await sdk.tx
+          .intentMarket(swap)
+          .withBeneficiary(account.address)
+          .withSlippage(swapSlippage)
+          .build()
+
+        return createTransaction({
+          tx: tx.get(),
+          alerts: [],
+          toasts: {
+            submitted: t(
+              `trade:market.swap.${toLowerCase(type)}.loading`,
+              params,
+            ),
+            success: t(
+              `trade:market.swap.${toLowerCase(type)}.success`,
+              params,
+            ),
+            error: t(`trade:market.swap.${toLowerCase(type)}.error`, params),
+          },
+          invalidateQueries: [
+            intentsByAccountQuery(rpc, account.address).queryKey,
+          ],
+        })
+      } */
 
       const tx = await sdk.tx
         .trade(swap)
         .withSlippage(swapSlippage)
-        .withBeneficiary(address)
-        .build()
+        .withBeneficiary(account.address)
+        .build();
 
-      const isSellAll = tx.name === "RouterSellAll"
+      const isSellAll = tx.name === "RouterSellAll";
 
       return createTransaction(
         {
@@ -113,7 +144,7 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
           },
         },
         actions,
-      )
+      );
     },
-  })
-}
+  });
+};

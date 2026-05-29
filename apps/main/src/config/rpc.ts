@@ -19,6 +19,20 @@ export const createProvider = (
 })
 
 export const PROVIDERS: ProviderProps[] = [
+  // Lark: mainnet fork with the Intent/ICE pallet enabled. Required
+  // for testing limit orders and Intent-based DCA. Listed first so
+  // it's visible at the top of the RPC picker.
+  // dataEnv MUST be "mainnet" — Lark is forked from mainnet and uses
+  // the mainnet Aave / money market contracts; setting "testnet" here
+  // causes the supply/borrow screens to fail to load.
+  createProvider(
+    "Lark (Intents)",
+    "wss://node3.lark.hydration.cloud",
+    MAINNET_INDEXER_URL,
+    MAINNET_SQUID_URL,
+    ["development", "production"],
+    "mainnet",
+  ),
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   // createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),

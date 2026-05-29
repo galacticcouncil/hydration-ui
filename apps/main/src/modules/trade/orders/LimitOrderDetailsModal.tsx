@@ -1,0 +1,140 @@
+import { Trash } from "@galacticcouncil/ui/assets/icons"
+import {
+  Amount,
+  Button,
+  Flex,
+  Grid,
+  Icon,
+  ModalBody,
+  ModalContentDivider,
+  ModalHeader,
+  Separator,
+  Text,
+} from "@galacticcouncil/ui/components"
+import Big from "big.js"
+import { useTranslation } from "react-i18next"
+
+import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
+import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
+import { IntentLimitOrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
+
+type Props = {
+  readonly details: IntentLimitOrderData
+  readonly onCancel: () => void
+}
+
+export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
+  const { t } = useTranslation(["common", "trade"])
+  const removeIntent = useRemoveIntent()
+
+  const limitPrice =
+    details.toAmountExecuted &&
+    details.fromAmountBudget &&
+    Big(details.toAmountExecuted).gt(0)
+      ? Big(details.fromAmountBudget).div(details.toAmountExecuted).toString()
+      : null
+
+  return (
+    <>
+      <ModalHeader title={t("trade:trade.orders.limit.title")} align="center" />
+      <ModalBody scrollable={false}>
+        <Flex justify="space-between" align="center" pb="xl">
+          <Flex direction="column" gap="s">
+            {details.isPartiallyFillable && (
+              <Text fs="p6" fw={500}>
+                {t("trade:limit.partiallyFillable")}
+              </Text>
+            )}
+            <SwapAmount
+              fromAmount={details.fromAmountBudget}
+              toAmount={details.toAmountExecuted}
+              from={details.from}
+              to={details.to}
+              showLogo
+            />
+          </Flex>
+          {details.status && <DcaOrderStatus status={details.status} />}
+        </Flex>
+        <ModalContentDivider />
+        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
+          <Amount
+            label={t("trade:trade.orders.limit.filledFrom")}
+            value={
+              details.fromAmountBudget
+                ? t("currency", {
+                    value: details.fromAmountBudget,
+                    symbol: details.from.symbol,
+                  })
+                : "-"
+            }
+          />
+          <Separator orientation="vertical" />
+          <Amount
+            label={t("trade:trade.orders.limit.filledTo")}
+            value={
+              details.partialFilledAmount
+                ? t("currency", {
+                    value: details.partialFilledAmount,
+                    symbol: details.to.symbol,
+                  })
+                : "-"
+            }
+          />
+        </Grid>
+        <ModalContentDivider />
+        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
+          <Amount
+            label={t("trade:trade.orders.limit.limitPrice")}
+            value={
+              limitPrice
+                ? `${t("number", { value: limitPrice })} ${details.to.symbol} / ${details.from.symbol}`
+                : "-"
+            }
+          />
+          <Separator orientation="vertical" />
+          <Amount label={t("trade:trade.orders.limit.avgPrice")} value="-" />
+        </Grid>
+        <ModalContentDivider />
+        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
+          <Amount
+            label={t("trade:trade.orders.limit.creationDate")}
+            value={
+              details.timestamp
+                ? t("date.datetime", {
+                    value: new Date(details.timestamp),
+                  })
+                : "-"
+            }
+          />
+          <Separator orientation="vertical" />
+          <Amount
+            label={t("trade:trade.orders.limit.expirationDate")}
+            value={
+              details.deadline
+                ? t("date.datetime", {
+                    value: new Date(details.deadline),
+                  })
+                : "-"
+            }
+          />
+        </Grid>
+        <ModalContentDivider />
+        <Flex justify="flex-end" pt="l">
+          <Button
+            variant="danger"
+            outline
+            onClick={() => {
+              removeIntent.mutate(details.intentId, {
+                onSuccess: () => onCancel(),
+              })
+            }}
+          >
+            <Icon component={Trash} size="s" />
+            {t("trade:trade.orders.limit.cancelOrder")}
+          </Button>
+        </Flex>
+      </ModalBody>
+    </>
+  )
+}
