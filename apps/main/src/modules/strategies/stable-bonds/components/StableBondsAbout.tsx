@@ -4,6 +4,7 @@ import {
   SectionHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
+import { millisecondsInDay } from "date-fns/constants"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -41,6 +42,11 @@ export const StableBondsAbout: React.FC<PaperProps> = (props) => {
         muted
         size="small"
         values={{
+          daysLeft: t("interval", {
+            value: timeLeft,
+            largest: 1,
+            ...(timeLeft > millisecondsInDay && { unit: "d" }),
+          }),
           apr: apr
             ? t("common:percent", { value: apr, minimumFractionDigits: 2 })
             : "",
