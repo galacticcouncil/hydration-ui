@@ -2,7 +2,6 @@ import {
   Box,
   Flex,
   Paper,
-  ProgressBar,
   ResponsiveScope,
   SectionHeader,
   Separator,
@@ -11,27 +10,21 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { millisecondsInDay } from "date-fns/constants"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
+import { StableBondsCurrency } from "@/modules/strategies/stable-bonds/components/StableBondsCurrency"
 import {
   SDetailsContainer,
   SDetailsSeparator,
   SRemaining,
-  SRemainingItem,
   SRemainingList,
   SStatsGroup,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDetails.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import type { TAsset } from "@/providers/assetsProvider"
-
-// @TODO: can be replaced with initial OTC value from mainnet indexer
-const MAX_FUNDING_CAPACITY = 222_222
 
 export type StableBondsDetailsProps = {
   orders?: OtcOffer[]
@@ -47,33 +40,6 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   const daysLeft = timeLeft > 0 ? Math.ceil(timeLeft / millisecondsInDay) : 0
   const currentApr = daysLeft > 0 ? (config.fixedYield / daysLeft) * 365 : null
 
-  const fundingCapacities = useMemo(() => {
-    if (!orders) return []
-
-    const byAssetId = orders.reduce<
-      Map<
-        string,
-        {
-          asset: TAsset
-          amount: string
-        }
-      >
-    >((acc, order) => {
-      const current = acc.get(order.assetIn.id)
-
-      acc.set(order.assetIn.id, {
-        asset: order.assetIn,
-        amount: current
-          ? Big(current.amount).plus(order.assetAmountIn).toString()
-          : order.assetAmountIn,
-      })
-
-      return acc
-    }, new Map())
-
-    return [...byAssetId.values()]
-  }, [orders])
-
   return (
     <Paper p="l">
       <SectionHeader
@@ -85,59 +51,16 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
 
       <ResponsiveScope>
         <SDetailsContainer justify="flex-start">
-          {fundingCapacities.length > 0 && (
+          {!!orders?.length && (
             <>
               <SRemaining>
                 <Text fs="p5" color={getToken("text.medium")}>
                   {t("strategies:bonds.details.remainingCapacity")}
                 </Text>
                 <SRemainingList gap="xl">
-                  {fundingCapacities.map(({ asset, amount }) => {
-                    const remainingPct = Big(amount)
-                      .div(MAX_FUNDING_CAPACITY)
-                      .mul(100)
-                      .toNumber()
-
-                    const isFillable = Big(amount).gt(0)
-
-                    return (
-                      <SRemainingItem key={asset.id} gap="xs">
-                        <Flex align="center" gap="base">
-                          <AssetLogo id={asset.id} size="small" />
-                          <Text
-                            font="primary"
-                            fs="h6"
-                            fw={600}
-                            decoration={isFillable ? "none" : "line-through"}
-                            color={
-                              isFillable
-                                ? getToken("text.high")
-                                : getToken("text.low")
-                            }
-                          >
-                            {isFillable
-                              ? t("number", { value: amount })
-                              : "Sold out"}
-                          </Text>
-                        </Flex>
-                        {isFillable && (
-                          <ProgressBar
-                            value={remainingPct}
-                            customLabel={
-                              <Text
-                                fs="p4"
-                                as="span"
-                                fw={600}
-                                color={getToken("text.tint.quart")}
-                              >
-                                {t("percent", { value: remainingPct })}
-                              </Text>
-                            }
-                          />
-                        )}
-                      </SRemainingItem>
-                    )
-                  })}
+                  {orders.map((order) => (
+                    <StableBondsCurrency key={order.id} order={order} />
+                  ))}
                 </SRemainingList>
               </SRemaining>
               <SDetailsSeparator />
@@ -191,7 +114,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
         </SDetailsContainer>
       </ResponsiveScope>
 
-      {fundingCapacities.length > 0 && (
+      {!!orders?.length && (
         <>
           <Separator mx="-l" />
           <Box mb="-s" pt="s" asChild>
@@ -199,13 +122,13 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
               label={t("strategies:bonds.details.fundingCurrency")}
               content={
                 <Flex align="center" wrap>
-                  {fundingCapacities.map(({ asset }, index) => (
-                    <Flex key={asset.id} align="center" wrap>
+                  {orders.map((order, index) => (
+                    <Flex key={order.id} align="center" wrap>
                       {index > 0 && <Text mr="base">{", "}</Text>}
                       <Flex align="center" gap="xs">
-                        <AssetLogo id={asset.id} size="small" />
+                        <AssetLogo id={order.assetIn.id} size="small" />
                         <Text fs="p4" lh={1.5}>
-                          {asset.symbol}
+                          {order.assetIn.symbol}
                         </Text>
                       </Flex>
                     </Flex>
