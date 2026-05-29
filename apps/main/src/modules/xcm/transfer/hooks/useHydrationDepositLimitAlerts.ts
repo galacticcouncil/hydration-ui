@@ -36,9 +36,11 @@ export const useHydrationDepositLimitAlerts = (
 
     const currentBlock = bestNumber.parachainBlockNumber
     const currentTimestamp = bestNumber.timestamp
-    const periodWindow = currentBlock
-      ? getDepositLimitPeriodWindow(data, currentBlock, slotDurationMs)
-      : undefined
+    const periodWindow = getDepositLimitPeriodWindow(
+      data,
+      currentBlock,
+      slotDurationMs,
+    )
 
     const lockedUntil =
       periodWindow &&
