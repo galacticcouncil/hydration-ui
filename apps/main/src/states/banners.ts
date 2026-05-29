@@ -4,10 +4,10 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { LINKS } from "@/config/navigation"
-import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useHasFillableStableBondsOrders"
+import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-type BannerConfig = PromoteBannerItem & {
+export type BannerConfig = PromoteBannerItem & {
   to?: string
   priority: number
   enabled: boolean
@@ -18,8 +18,8 @@ const bannerEntries: BannerConfig[] = [
     id: "hollarb",
     backgroundImage: "/images/hollarb.webp",
     backgroundImageMobile: "/images/hollarbMobile.webp",
-    title: "Introducing fixed yield Hollar bonds",
-    description: "Earn 6.9% APR with fixed-term HOLLAR bonds.",
+    title: "banners.hollarb.title",
+    description: "banners.hollarb.description",
     textColor: "#FFF",
     ctaColor: "#B3D7FA",
     ctaTextColor: "#0D1525",

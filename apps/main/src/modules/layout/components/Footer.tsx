@@ -24,7 +24,7 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
       return scrollTop + viewportHeight >= scrollHeight - 2
     }
 
-    const { call: markActive } = funnel(
+    const markActive = funnel(
       () => {
         setIsActive(true)
         if (activityTimeoutRef.current !== null) {
@@ -37,23 +37,25 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
       { minGapMs: FOOTER_VISIBLE_AFTER_ACTIVITY_MS, triggerAt: "start" },
     )
 
-    const { call: onScrollOrResize } = funnel(
+    const onScrollOrResize = funnel(
       () => {
         setIsAtBottom(computeIsAtBottom())
-        markActive()
+        markActive.call()
       },
       { minGapMs: FOOTER_VISIBLE_AFTER_ACTIVITY_MS, triggerAt: "start" },
     )
 
     setIsAtBottom(computeIsAtBottom())
 
-    addEventListener("scroll", onScrollOrResize, { passive: true })
-    addEventListener("resize", onScrollOrResize, { passive: true })
-    addEventListener("pointermove", markActive, { passive: true })
+    addEventListener("scroll", onScrollOrResize.call, { passive: true })
+    addEventListener("resize", onScrollOrResize.call, { passive: true })
+    addEventListener("pointermove", markActive.call, { passive: true })
     return () => {
-      removeEventListener("scroll", onScrollOrResize)
-      removeEventListener("resize", onScrollOrResize)
-      removeEventListener("pointermove", markActive)
+      removeEventListener("scroll", onScrollOrResize.call)
+      removeEventListener("resize", onScrollOrResize.call)
+      removeEventListener("pointermove", markActive.call)
+      markActive.cancel()
+      onScrollOrResize.cancel()
       if (activityTimeoutRef.current !== null) {
         clearTimeout(activityTimeoutRef.current)
       }

@@ -15,6 +15,7 @@ import {
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
+  WalletProviderType,
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
@@ -135,7 +136,8 @@ export const isAccountValidOnChain = (
   chain: AnyChain,
 ): account is Account => {
   if (!account) return false
-  const walletMode = getWalletModeByChain(chain)
+  if (account.provider === WalletProviderType.ExternalWallet) return true
 
+  const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
 }
