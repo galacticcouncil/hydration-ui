@@ -1,10 +1,13 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToSeconds } from "date-fns"
+import { daysInYear, secondsInDay } from "date-fns/constants"
 
 import { bestNumberQuery } from "@/api/chain"
 import {
   getRewardTrackPercentage,
+  gigapotBalanceQuery,
+  gigaTotalLockedQuery,
   REWARD_ACCUMULATOR_POT_ADDRESS,
   STAKE_GIGAPOT_ADDRESS,
 } from "@/api/gigaStake"
@@ -47,25 +50,13 @@ type PalletGigahdxRewardsReferendumTracks = {
  */
 
 const getBlocksPerDay = (blockSeconds: number) => {
-  return Math.floor(86400 / blockSeconds)
+  return Math.floor(secondsInDay / blockSeconds)
 }
 
 /** Locked6x conviction multiplier / REWARD_MULTIPLIER_SCALE = 800/100. */
 const LOCKED_6X_MULTIPLIER = 8n
 const DEFAULT_WINDOW_DAYS = 60
 
-/**
- * APR queries deliberately load **once per session** — backward-looking
- * windowed averages move slowly and a fleet-level number doesn't need to
- * react to individual blocks. Keeping these stable also prevents the
- * dashboard headline from flickering on every chain tick.
- *
- * Refresh path: a full page reload (or react-query `invalidateQueries`).
- *
- * `v2` in the queryKey is a deliberate cache-bust marker for the
- * Option-B / Option-A formula migration — any cached `0` from the previous
- * implementation gets discarded on first render under the new code.
- */
 const APR_QUERY_OPTS = {
   staleTime: Infinity,
   refetchOnMount: false as const,
@@ -91,31 +82,6 @@ const APR_QUERY_OPTS = {
  */
 const MIN_REAL_VOTE_WEIGHTED = 100n * 10n ** 12n
 
-// ---------------------------------------------------------------------------
-// Base APR (passive — gigapot inflow)
-// ---------------------------------------------------------------------------
-
-/**
- * Passive APR — annualised HDX flow into the gigapot per unit of total stake.
- *
- *   baseAPR = (gp_now − gp_t0) / (TL_now + gp_now) × (365 / actualWindowDays) × 100
- *
- * Where:
- *   - gp        = `System.Account(gigapot).data.free` (yield accumulator)
- *   - TL        = `GigaHdx.TotalLocked`               (sum of all stake principal)
- *   - TL + gp   = runtime's `total_staked_hdx()`     (HDX backing all GIGAHDX)
- *
- * Position-size-independent — the rate moves the same for every GIGAHDX
- * holder proportional to their balance, so the displayed % applies universally.
- *
- * On chains younger than the requested window, the window clamps to the
- * actual elapsed days (so a 60d request on a 9d chain annualises over 9d).
- *
- * Mild undercount on mature chains when `realize_yield` or yield-paying
- * unstakes drain the pot during the window — those flows are real yield but
- * leave the pot. Errs conservative; never overstates. Event-scan compensation
- * would be needed for full accuracy and is deferred to indexer integration.
- */
 export const passiveAprQuery = (
   rpc: TProviderContext,
   windowDays: number = DEFAULT_WINDOW_DAYS,
@@ -125,8 +91,6 @@ export const passiveAprQuery = (
     queryKey: ["gigaApr", "passive", windowDays],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
       const blocksPerDay = getBlocksPerDay(
         millisecondsToSeconds(rpc.slotDurationMs),
       )
@@ -138,33 +102,23 @@ export const passiveAprQuery = (
 
       const windowBlocks = windowDays * blocksPerDay
       const t0Block = Math.max(1, parachainBlockNumber - windowBlocks)
-      const actualWindowBlocks = parachainBlockNumber - t0Block
-      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
 
-      // Raw RPC for the t0 hash — returns a 0x-prefixed hex string that
-      // polkadot-api's `{ at }` accepts (same pattern as api/multisig.ts).
-      // Current state uses `{ at: "best" }`; no need to materialise the head
-      // hash.
       const t0HashStr: string = await rpc.papiClient._request(
         "chain_getBlockHash",
         [t0Block],
       )
 
       const [tlNowRaw, gpNowAcct, gpT0Acct] = await Promise.all([
-        unsafeApi.query.GigaHdx.TotalLocked.getValue({ at: "best" }).catch(
-          () => 0n,
-        ),
-        rpc.papi.query.System.Account.getValue(STAKE_GIGAPOT_ADDRESS, {
-          at: "best",
-        }),
+        rpc.queryClient.ensureQueryData(gigaTotalLockedQuery(rpc)),
+        rpc.queryClient.ensureQueryData(gigapotBalanceQuery(rpc)),
         rpc.papi.query.System.Account.getValue(STAKE_GIGAPOT_ADDRESS, {
           at: t0HashStr,
         }).catch(() => undefined),
       ])
 
-      const tlNow = BigInt(tlNowRaw ?? 0n)
-      const gpNow = BigInt(gpNowAcct?.data?.free ?? 0n)
-      const gpT0 = BigInt(gpT0Acct?.data?.free ?? 0n)
+      const tlNow = tlNowRaw ?? 0n
+      const gpNow = gpNowAcct ?? 0n
+      const gpT0 = gpT0Acct?.data?.free ?? 0n
 
       const totalStake = tlNow + gpNow
       if (totalStake === 0n) return Big(0)
@@ -173,10 +127,12 @@ export const passiveAprQuery = (
       // yield-paying user flows (already-earned HDX leaving the pot); neither
       // represents anti-yield.
       const dgp = gpNow > gpT0 ? gpNow - gpT0 : 0n
+      const actualWindowBlocks = parachainBlockNumber - t0Block
+      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
 
       return Big(dgp.toString())
         .div(totalStake.toString())
-        .times(365)
+        .times(daysInYear)
         .div(actualWindowDays)
         .times(100)
     },

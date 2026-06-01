@@ -479,7 +479,6 @@ const ClaimableRewardsField = () => {
   )
   const claimAndCompoundArgs = {
     allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
-    unlockClasses: claimableRewards?.unlockClasses ?? [],
     accountAddress: account?.address ?? "",
     hasAccruedYield: hasClaimable,
     hasClaimableRewards: false, // claim only realize yield

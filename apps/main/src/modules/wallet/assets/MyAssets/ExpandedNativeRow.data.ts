@@ -4,7 +4,10 @@ import Big from "big.js"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { bestNumberQuery } from "@/api/chain"
-import { openGovUnlockedTokensQuery } from "@/api/democracy"
+import {
+  accountUnlockClassesQuery,
+  openGovUnlockedTokensQuery,
+} from "@/api/democracy"
 import {
   gigaStakeConstantsQuery,
   gigaUnstakePositionsQuery,
@@ -86,6 +89,10 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
     openGovUnlockedTokensQuery(rpc, account?.address ?? "", indexerUrl),
   )
 
+  const { data: unlockClasses, isLoading: unlockClassesLoading } = useQuery(
+    accountUnlockClassesQuery(rpc, account?.address ?? ""),
+  )
+
   const { data: pendingPositions = [], isLoading: pendingPositionsLoading } =
     useQuery(gigaUnstakePositionsQuery(rpc, account?.address ?? ""))
 
@@ -124,10 +131,11 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
     lockedReferendaSeconds: lockedReferendaSeconds,
     unlockableGigaPendingPositions,
     votesToRemove: unlockedTokens?.votesToRemove ?? [],
-    classIds: unlockedTokens?.classIds ?? [],
+    classIds: unlockClasses ?? [],
     isLoading:
       unlockedTokensLoading ||
       pendingPositionsLoading ||
-      gigaStakeConstantsLoading,
+      gigaStakeConstantsLoading ||
+      unlockClassesLoading,
   }
 }

@@ -11,10 +11,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
-import {
-  accountOpenGovVotesQuery,
-  openGovReferendaQuery,
-} from "@/api/democracy"
+import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { VoteModal } from "@/modules/staking/components/VoteModal/VoteModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -58,7 +55,6 @@ export const ReferendaFooter: FC<Props> = ({
       }),
       invalidateQueries: [
         accountOpenGovVotesQuery(rpc, accountAddress).queryKey,
-        openGovReferendaQuery(rpc).queryKey,
         nativeTokenLocksQuery(rpc, accountAddress).queryKey,
       ],
       toasts,

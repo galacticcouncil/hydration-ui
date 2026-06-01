@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next"
 
 import { HDXIssuanceQuery } from "@/api/balances"
 import { referendaTracksQuery } from "@/api/constants"
-import { openGovReferendaQuery, TAccountVote } from "@/api/democracy"
+import { ongoingReferendaQuery, TAccountVote } from "@/api/democracy"
 import { OngoingReferendaEmptyState } from "@/modules/staking/OngoingReferendaEmptyState"
 import { Referenda } from "@/modules/staking/Referenda"
 import { SReferendaList } from "@/modules/staking/Referenda.styled"
@@ -44,7 +44,7 @@ export const OngoingReferenda: FC<Props> = ({
   const [isCollapsed, setIsCollapsed] = useState(isMobile)
 
   const { data: referenda = [], isPending: referendaLoading } = useQuery(
-    openGovReferendaQuery(rpc),
+    ongoingReferendaQuery(rpc),
   )
 
   const { data: tracksData, isLoading: tracksLoading } = useQuery(

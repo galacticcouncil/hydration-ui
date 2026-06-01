@@ -6,7 +6,7 @@ import { bestNumberQuery } from "@/api/chain"
 import { ReferendaTrack } from "@/api/constants"
 import {
   OngoingGovReferenda,
-  referendumInfoQuery,
+  referendumSubscanInfoQuery,
   TAccountVote,
 } from "@/api/democracy"
 import { SReferenda, SReferendaBody } from "@/modules/staking/Referenda.styled"
@@ -43,7 +43,9 @@ export const Referenda: FC<Props> = ({
   const rpc = useRpcProvider()
   const { native } = useAssets()
 
-  const { data: subscanInfo, isLoading } = useQuery(referendumInfoQuery(id))
+  const { data: subscanInfo, isLoading } = useQuery(
+    referendumSubscanInfoQuery(id),
+  )
 
   const state = useReferendaState(item)
 

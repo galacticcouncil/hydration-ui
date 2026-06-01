@@ -45,23 +45,12 @@ const GIGAHDX_MIN_REWARDS_VISIBLE = 0.1
 export const GigaHDXPosition = () => {
   const { t } = useTranslation(["staking", "common", "borrow"])
   const [borrowModalOpen, setBorrowModalOpen] = useState(false)
-  const { isMobile, isTablet } = useBreakpoints()
 
   const { getAssetWithFallback, native } = useAssets()
-  const { account } = useAccount()
-  const rpc = useRpcProvider()
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
   const { data: exchangeRate } = useGigaStakeExchangeRate()
-  const { data: accountStake } = useQuery(
-    gigaAccountStakesQuery(rpc, account?.address ?? ""),
-  )
-  const { data: claimableRewards } = useQuery(
-    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
-  )
-
-  const claimMutation = useClaimAndCompound()
 
   const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
   const {
@@ -85,48 +74,6 @@ export const GigaHDXPosition = () => {
   const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
 
   const gigaHdxBalanceUsd = hdxReserve?.underlyingBalanceUSD ?? "0"
-  const stakedHdxHuman = Big(gigaHdxBalanceHuman)
-    .times(exchangeRate?.toString() || "0")
-    .toString()
-
-  const principalHdxHuman = accountStake
-    ? scaleHuman(accountStake.hdx, native.decimals)
-    : "0"
-  const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
-  // const accruedHdxHuman = Big.max(accruedHdxBig, 0).toString()
-  // const accruedPct =
-  //   Big(principalHdxHuman).gt(0) && accruedHdxBig.gt(0)
-  //     ? accruedHdxBig.div(principalHdxHuman).times(100).toNumber()
-  //     : 0
-
-  // const hasPosition = Big(stakedHdxHuman).gt(0)
-
-  const pendingHdxBig = claimableRewards
-    ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
-    : Big(0)
-  const allocReadyHdxBig = claimableRewards
-    ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
-    : Big(0)
-
-  const lockedHdxBig = claimableRewards
-    ? Big(scaleHuman(claimableRewards.lockedHdx, native.decimals))
-    : Big(0)
-  const lockedHdxHuman = lockedHdxBig.toString()
-  const hasLockedShares = lockedHdxBig.gt("0.000001")
-  const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
-  const claimableTotalHuman = claimableTotalBig.toString()
-  const climableGigaHdxBig = exchangeRate
-    ? claimableTotalBig.div(exchangeRate.toString())
-    : undefined
-
-  const hasClaimable = claimableTotalBig.gt("0.000001")
-  const claimAndCompoundArgs = {
-    allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
-    unlockClasses: claimableRewards?.unlockClasses ?? [],
-    accountAddress: account?.address ?? "",
-    hasAccruedYield: accruedHdxBig.gt("0.000001"),
-    hasClaimableRewards: pendingHdxBig.plus(allocReadyHdxBig).gt("0.000001"),
-  }
 
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!userSummary || !hdxReserve || !hollarReserve) return null
@@ -234,66 +181,6 @@ export const GigaHDXPosition = () => {
               px={["m", "xl"]}
               separated
             >
-              {/* {hasPosition && (
-                <ValueStats
-                  size="small"
-                  label={t("staking:gigaStaking.position.principal.label")}
-                  wrap={[false, false, false, true]}
-                  isLoading={isAccountStakeLoading}
-                  customValue={
-                    <Text
-                      font="primary"
-                      fw={500}
-                      fs={["p3", "p3", "h7"]}
-                      lh={1}
-                      color={getToken("text.high")}
-                    >
-                      {t("common:currency", {
-                        value: principalHdxHuman,
-                        symbol: native.symbol,
-                      })}
-                    </Text>
-                  }
-                />
-              )}
-              {hasPosition && (
-                <ValueStats
-                  size="small"
-                  label={t("staking:gigaStaking.position.accrued.label")}
-                  wrap={[false, false, false, true]}
-                  isLoading={isExchangeRateLoading}
-                  customValue={
-                    <Flex align="baseline" gap="xs">
-                      <Text
-                        font="primary"
-                        fw={500}
-                        fs={["p3", "p3", "h7"]}
-                        lh={1}
-                        color={getToken(
-                          accruedHdxBig.gt(0)
-                            ? "text.tint.primary"
-                            : "text.high",
-                        )}
-                      >
-                        {accruedHdxBig.gt(0) ? "+" : ""}
-                        {t("common:currency", {
-                          value: accruedHdxHuman,
-                          symbol: native.symbol,
-                        })}
-                      </Text>
-                      {accruedPct > 0 && (
-                        <Text
-                          fs="p6"
-                          lh={1}
-                          color={getToken("text.tint.primary")}
-                        >
-                          ({t("common:percent", { value: accruedPct })})
-                        </Text>
-                      )}
-                    </Flex>
-                  }
-                />
-              )} */}
               {hasDebt && (
                 <ValueStats
                   size="small"
@@ -459,75 +346,7 @@ export const GigaHDXPosition = () => {
           </Flex>
         </Box>
 
-        <Box px={["l", "xl"]} pb={["m", "xl"]}>
-          <SChartLegendContainer asChild>
-            <Flex direction="column" gap="l" justify="space-between">
-              {climableGigaHdxBig?.gt(GIGAHDX_MIN_REWARDS_VISIBLE) && (
-                <>
-                  <Flex justify="space-between" align="center">
-                    <Amount
-                      label={
-                        <Text
-                          fs={["p6", "p6", "p4"]}
-                          lh={1}
-                          color={getToken("text.medium")}
-                        >
-                          {t("gigaStaking.claim.label")}
-                        </Text>
-                      }
-                      value={
-                        <Text
-                          font="primary"
-                          fs={["p3", "p1", "h5"]}
-                          fw={500}
-                          lh={1}
-                          color={getToken("text.tint.primary")}
-                        >
-                          {t("common:currency", {
-                            value: climableGigaHdxBig,
-                            symbol: ghdxMeta.symbol,
-                          })}
-                        </Text>
-                      }
-                      displayValue={t("common:currency", {
-                        value: claimableTotalHuman,
-                        symbol: native.symbol,
-                      })}
-                    />
-
-                    <Button
-                      variant="secondary"
-                      size={isMobile || isTablet ? "medium" : "large"}
-                      disabled={!hasClaimable || claimMutation.isPending}
-                      onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
-                    >
-                      {t("gigaStaking.claim.cta")}
-                    </Button>
-                  </Flex>
-
-                  <Separator />
-                </>
-              )}
-
-              <Text
-                fs={["p5", "p5", "p2"]}
-                lh="m"
-                color={getToken("text.medium")}
-              >
-                {t("staking:gigaStaking.rewards.desc")}
-              </Text>
-            </Flex>
-          </SChartLegendContainer>
-
-          {hasLockedShares && (
-            <Text fs="p6" lh="m" color={getToken("text.low")}>
-              {t("staking:gigaStaking.claim.locked", {
-                value: lockedHdxHuman,
-                symbol: native.symbol,
-              })}
-            </Text>
-          )}
-        </Box>
+        <ClaimableRewards gigaHdxBalanceHuman={gigaHdxBalanceHuman} />
 
         <GigaHDXSupplyInfo />
 
@@ -544,6 +363,123 @@ export const GigaHDXPosition = () => {
         onClose={() => setBorrowModalOpen(false)}
       />
     </>
+  )
+}
+
+const ClaimableRewards = ({
+  gigaHdxBalanceHuman,
+}: {
+  gigaHdxBalanceHuman: string
+}) => {
+  const { t } = useTranslation(["staking", "common"])
+  const { native, getAssetWithFallback } = useAssets()
+  const { isMobile, isTablet } = useBreakpoints()
+  const { account } = useAccount()
+  const rpc = useRpcProvider()
+
+  const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
+
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: accountStake } = useQuery(
+    gigaAccountStakesQuery(rpc, account?.address ?? ""),
+  )
+  const { data: claimableRewards } = useQuery(
+    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
+  )
+
+  const claimMutation = useClaimAndCompound()
+
+  const stakedHdxHuman = Big(gigaHdxBalanceHuman)
+    .times(exchangeRate?.toString() || "0")
+    .toString()
+
+  const principalHdxHuman = accountStake
+    ? scaleHuman(accountStake.hdx, native.decimals)
+    : "0"
+
+  const accruedHdxBig = Big(stakedHdxHuman).minus(principalHdxHuman)
+
+  const pendingHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
+    : Big(0)
+  const allocReadyHdxBig = claimableRewards
+    ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
+    : Big(0)
+
+  const claimableTotalBig = pendingHdxBig.plus(allocReadyHdxBig)
+
+  const claimableTotalHuman = claimableTotalBig.toString()
+  const climableGigaHdxBig = exchangeRate
+    ? claimableTotalBig.div(exchangeRate.toString())
+    : undefined
+
+  const hasClaimable = claimableTotalBig.gt(GIGAHDX_MIN_REWARDS_VISIBLE)
+  const claimAndCompoundArgs = {
+    allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
+    accountAddress: account?.address ?? "",
+    hasAccruedYield: accruedHdxBig.gt(GIGAHDX_MIN_REWARDS_VISIBLE),
+    hasClaimableRewards: pendingHdxBig
+      .plus(allocReadyHdxBig)
+      .gt(GIGAHDX_MIN_REWARDS_VISIBLE),
+  }
+
+  return (
+    <Box px={["l", "xl"]} pb={["m", "xl"]}>
+      <SChartLegendContainer asChild>
+        <Flex direction="column" gap="l" justify="space-between">
+          {climableGigaHdxBig?.gt(GIGAHDX_MIN_REWARDS_VISIBLE) && (
+            <>
+              <Flex justify="space-between" align="center">
+                <Amount
+                  label={
+                    <Text
+                      fs={["p6", "p6", "p4"]}
+                      lh={1}
+                      color={getToken("text.medium")}
+                    >
+                      {t("gigaStaking.claim.label")}
+                    </Text>
+                  }
+                  value={
+                    <Text
+                      font="primary"
+                      fs={["p3", "p1", "h5"]}
+                      fw={500}
+                      lh={1}
+                      color={getToken("text.tint.primary")}
+                    >
+                      {t("common:currency", {
+                        value: climableGigaHdxBig,
+                        symbol: ghdxMeta.symbol,
+                      })}
+                    </Text>
+                  }
+                  displayValue={t("common:currency", {
+                    value: claimableTotalHuman,
+                    symbol: native.symbol,
+                  })}
+                />
+
+                <Button
+                  variant="secondary"
+                  size={isMobile || isTablet ? "medium" : "large"}
+                  disabled={!hasClaimable || claimMutation.isPending}
+                  onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
+                >
+                  {t("gigaStaking.claim.cta")}
+                </Button>
+              </Flex>
+
+              <Separator />
+            </>
+          )}
+
+          <Text fs={["p5", "p5", "p2"]} lh="m" color={getToken("text.medium")}>
+            {t("staking:gigaStaking.rewards.desc")}
+          </Text>
+        </Flex>
+      </SChartLegendContainer>
+    </Box>
   )
 }
 

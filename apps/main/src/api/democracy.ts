@@ -6,6 +6,7 @@ import { number, string, z } from "zod/v4"
 import { bestNumberQuery } from "@/api/chain"
 import { accountVotesQuery, SubsquareVoteState } from "@/api/external/subsquare"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 export type CastingVoteInfo = Extract<
   Awaited<
@@ -122,41 +123,53 @@ const voteKindFromAccountVote = (
   return vote.type === "Split" ? "split" : "abstain"
 }
 
-export type OpenGovReferendum = Extract<
-  Awaited<
-    ReturnType<Papi["query"]["Referenda"]["ReferendumInfoFor"]["getEntries"]>
-  >[number]["value"],
-  { type: "Ongoing" }
->["value"] & {
-  id: number
-}
+export const referendumInfoQuery = (
+  { papi, isApiLoaded }: TProviderContext,
+  referendumIndex: number,
+) =>
+  queryOptions({
+    enabled: isApiLoaded,
+    staleTime: millisecondsInMinute,
+    queryKey: ["referendumInfoQuery", referendumIndex],
+    queryFn: async () => {
+      const value = await papi.query.Referenda.ReferendumInfoFor.getValue(
+        referendumIndex,
+        {
+          at: "best",
+        },
+      )
 
-export const openGovReferendaQuery = ({
+      return { id: referendumIndex, value }
+    },
+  })
+
+export const ongoingReferendaQuery = ({
   papi,
   isApiLoaded,
-  endpoint,
 }: TProviderContext) =>
   queryOptions({
-    queryKey: ["openGovReferenda", endpoint],
+    queryKey: ["ongoingReferenda"],
     enabled: isApiLoaded,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
     queryFn: async () => {
       const newReferendums =
         await papi.query.Referenda.ReferendumInfoFor.getEntries({
           at: "best",
         })
 
-      return newReferendums.reduce<Array<OpenGovReferendum>>(
-        (acc, { keyArgs, value }) => {
-          const id = keyArgs[0]
+      const ongoingReferendums = []
 
-          if (value.type === "Ongoing") {
-            acc.push({ id, ...value.value })
-          }
+      for (const { keyArgs, value } of newReferendums) {
+        if (value.type === "Ongoing") {
+          ongoingReferendums.push({
+            id: keyArgs[0],
+            ...value.value,
+          })
+        }
+      }
 
-          return acc
-        },
-        [],
-      )
+      return ongoingReferendums
     },
   })
 
@@ -174,11 +187,11 @@ type TAccountOpenGovVotesAccumulator = {
 }
 
 export const accountOpenGovVotesQuery = (
-  { papi, isApiLoaded, endpoint }: TProviderContext,
+  { papi, isApiLoaded }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
-    queryKey: ["accountOpenGovVotes", endpoint, address],
+    queryKey: ["accountOpenGovVotes", address],
     queryFn: async () => {
       const voteEntries =
         await papi.query.ConvictionVoting.VotingFor.getEntries(address, {
@@ -229,7 +242,7 @@ const referendumSchema = z
   })
   .nullable()
 
-export const referendumInfoQuery = (referendumIndex: number) =>
+export const referendumSubscanInfoQuery = (referendumIndex: number) =>
   queryOptions({
     queryKey: ["referendumInfo", referendumIndex],
     queryFn: async () => {
@@ -272,6 +285,30 @@ export const openGovUnlockedTokensQueryKey = (address: string) => [
   "openGovUnlockedTokens",
   address,
 ]
+
+export const accountUnlockClassesQuery = (
+  rpc: TProviderContext,
+  address: string,
+) =>
+  queryOptions({
+    enabled: rpc.isApiLoaded && !!address,
+    queryKey: ["accountUnlockClasses", address],
+    queryFn: async () => {
+      const classLocksRaw =
+        await rpc.papi.query.ConvictionVoting.ClassLocksFor.getValue(address, {
+          at: "best",
+        })
+
+      const lockClasses = new Set<number>()
+
+      for (const [classId, balance] of classLocksRaw) {
+        if (balance === 0n) continue
+        lockClasses.add(classId)
+      }
+
+      return Array.from(lockClasses)
+    },
+  })
 
 export const openGovUnlockedTokensQuery = (
   rpc: TProviderContext,
@@ -345,10 +382,9 @@ export const openGovUnlockedTokensQuery = (
 
       const votesData: TChainVotes[] = await Promise.all(
         accountVotes.votes.map(async (accountVote) => {
-          const referendumInfo =
-            await rpc.papi.query.Referenda.ReferendumInfoFor.getValue(
-              accountVote.id,
-              { at: "best" },
+          const { value: referendumInfo } =
+            await rpc.queryClient.ensureQueryData(
+              referendumInfoQuery(rpc, accountVote.id),
             )
 
           if (!referendumInfo) {
@@ -450,6 +486,6 @@ export const openGovUnlockedTokensQuery = (
         },
       )
 
-      return { ...mergedVotesMax, classIds: accountVotes.classIds }
+      return mergedVotesMax
     },
   })
