@@ -44,6 +44,11 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
     setExiting(true)
   }
 
+  const ctaHandler = () => {
+    item.onCta?.()
+    requestClose()
+  }
+
   return (
     <DialogPrimitive.Root
       open={isOpen}
@@ -75,9 +80,10 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                   <Text
                     fs={["h7", "h6"]}
                     fw={500}
-                    lh={[1, 1.2]}
+                    lh={1.2}
                     color={getToken("colors.darkBlue.900")}
                     font="primary"
+                    align={["left", "center"]}
                     sx={{ color: item.textColor }}
                   >
                     {item.title}
@@ -88,9 +94,10 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                     <Text
                       fs="p4"
                       fw={400}
-                      lh={[1, 1.2]}
+                      lh={[1.1, 1.2]}
                       color={getToken("colors.darkBlue.900")}
                       font="secondary"
+                      align={["left", "center"]}
                       sx={{ color: item.textColor }}
                     >
                       {item.description}
@@ -102,7 +109,8 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                 typeof item.cta === "string" ? (
                   <SDefaultButton
                     size="medium"
-                    onClick={item.onCta}
+                    onClick={ctaHandler}
+                    minWidth={[pxToRem(140), "auto"]}
                     sx={{
                       backgroundColor: item.ctaColor,
                       color: item.ctaTextColor,
