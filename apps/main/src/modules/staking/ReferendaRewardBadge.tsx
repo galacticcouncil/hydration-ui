@@ -1,10 +1,5 @@
 import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
-import {
-  Flex,
-  Text,
-  Tooltip,
-  TooltipIcon,
-} from "@galacticcouncil/ui/components"
+import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -60,7 +55,7 @@ export const ReferendaRewardBadge: FC<ReferendaRewardBadgeProps> = ({
   return (
     <Flex
       align="center"
-      justify="center"
+      justify="space-between"
       gap="xs"
       px="m"
       py="m"
@@ -71,16 +66,26 @@ export const ReferendaRewardBadge: FC<ReferendaRewardBadgeProps> = ({
         lh={1}
         fw={500}
         color={getToken("buttons.primary.medium.onButton")}
+        aria-hidden
       >
-        ✦ {label}
+        ✦
       </Text>
-      {isEstimate && (
+      <Text
+        fs="p4"
+        lh={1.1}
+        fw={500}
+        color={getToken("buttons.primary.medium.onButton")}
+      >
+        {label}
+      </Text>
+      {isEstimate ? (
         <Tooltip
           asChild={true}
           text={t("staking:referenda.rewardPool.estimateTooltip")}
-        >
-          <TooltipIcon color={getToken("buttons.primary.medium.onButton")} />
-        </Tooltip>
+          iconColor={getToken("buttons.primary.medium.onButton")}
+        />
+      ) : (
+        <div />
       )}
     </Flex>
   )

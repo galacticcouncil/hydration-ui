@@ -72,6 +72,7 @@ export const Tooltip = ({
             height: "auto",
             width: "auto",
             justifyContent: "start",
+            color: iconColor,
             "&:hover": { background: "transparent" },
           }}
         >

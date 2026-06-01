@@ -1,18 +1,22 @@
 import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { isGho } from "@galacticcouncil/money-market/utils"
 import {
+  Flex,
+  LinkTextButton,
   Stack,
+  Text,
   Tooltip,
   ValueStats,
   ValueStatsBottomValue,
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToHours } from "date-fns"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 import {
   borrowReservesQuery,
@@ -26,6 +30,7 @@ import {
   gigaStakeConstantsQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
@@ -138,11 +143,7 @@ export const GigaStakeTotalsHeader: FC = () => {
         })}
         bottomLabel={t("currency", { value: totalSuppliedUsd })}
       />
-      <Tooltip
-        text={t("staking:dashboard.projectedAPR.tooltip", {
-          returnObjects: true,
-        })}
-      >
+      <Tooltip asChild={false} text={<ProjectedAPRTooltipContent />}>
         <ValueStats
           wrap
           size="medium"
@@ -185,5 +186,40 @@ export const GigaStakeTotalsHeader: FC = () => {
         })}
       />
     </Stack>
+  )
+}
+
+export const ProjectedAPRTooltipContent = () => {
+  const { t } = useTranslation("staking")
+  const lines = t("dashboard.projectedAPR.tooltip", {
+    returnObjects: true,
+  }) as Array<string>
+
+  return (
+    <Flex direction="column" gap="m">
+      <Text fw={600} fs="p6" lh={1.4} color={getToken("text.high")}>
+        {lines[0]}
+      </Text>
+
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+        <Trans t={t} i18nKey="gigaStaking.projectedAPR.base.tooltip">
+          <Text fw={600} />
+        </Trans>
+      </Text>
+
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+        <Trans t={t} i18nKey="gigaStaking.projectedAPR.voting.tooltip">
+          <Text fw={600} />
+        </Trans>
+      </Text>
+
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
+        {lines[3]}
+      </Text>
+
+      <LinkTextButton href={STAKING_DOCS_LINK} direction="internal">
+        {t("dashboard.projectedAPR.tooltip.docs")}
+      </LinkTextButton>
+    </Flex>
   )
 }
