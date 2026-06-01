@@ -78,6 +78,8 @@ export const SPromoteBannerBody = styled(Flex)(
     padding: ${theme.space.xl} ${theme.space.l} ${theme.space.l};
     text-align: center;
 
+    will-change: transform;
+
     ${mq("sm")} {
       min-height: 21.5rem;
     }
