@@ -1,19 +1,22 @@
 import {
-  Alert,
   CollapsibleContent,
   CollapsibleRoot,
+  Flex,
   Separator,
-  Stack,
   Summary,
   SummaryRow,
+  Tooltip,
+  TooltipIcon,
 } from "@galacticcouncil/ui/components"
-import { isAnyEvmChain } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { xcmDestinationFeeQuery } from "@/api/xcm"
+import { useCrossChainDepositLimit } from "@/api/xcm"
 import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
+import { DepositLimitSummary } from "@/modules/xcm/transfer/components/DepositLimitSummary"
 import { useEvmApprovalFee } from "@/modules/xcm/transfer/hooks/useEvmApprovalFee"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
@@ -39,6 +42,9 @@ export const XcmSummary = () => {
       "bridgeProvider",
       "srcAmount",
     ])
+
+  const { data: depositLimit, isLoading: isLoadingDepositLimit } =
+    useCrossChainDepositLimit(destAsset)
 
   const config = useXcmTransferConfigs(
     srcAsset,
@@ -103,51 +109,59 @@ export const XcmSummary = () => {
     })
   })()
 
-  const isTransferValid = !!transfer && formState.isValid && !alerts.length
-  const isSummaryOpen = isTransferValid || alerts.length > 0
+  const hasErrorAlerts = alerts.some((a) => a.severity === "error")
+  const isTransferValid = !!transfer && formState.isValid && !hasErrorAlerts
+  const isDeposit = destChain?.key === HYDRATION_CHAIN_KEY
 
   return (
-    <CollapsibleRoot open={isSummaryOpen}>
+    <CollapsibleRoot open={isTransferValid}>
       <CollapsibleContent>
-        {alerts.length > 0 && (
-          <>
-            <Separator />
-            <Stack gap="base" px="xl" my="xl">
-              {alerts.map((alert) => (
-                <Alert
-                  variant="error"
-                  key={alert.key}
-                  description={alert.message}
-                />
-              ))}
-            </Stack>
-          </>
-        )}
-        {isTransferValid && (
-          <Summary
-            separator={<Separator mx="-xl" />}
-            px="xl"
-            withLeadingSeparator
-          >
-            {call && isEvmSourceChain && isEvmApproveCall(call) && (
-              <SummaryRow
-                label={t("xcm:summary.approvalFee")}
-                loading={isLoading || isLoadingApprovalFee}
-                content={approvalFeeValue}
-              />
-            )}
+        <Summary
+          separator={<Separator mx="-xl" />}
+          px="xl"
+          withLeadingSeparator
+        >
+          {isDeposit && depositLimit && depositLimit.headroom !== null && (
             <SummaryRow
-              label={t("xcm:summary.sourceFee")}
-              loading={isLoading}
-              content={sourceFeeValue}
+              label={t("xcm:summary.remainingLimit")}
+              loading={isLoading || isLoadingDepositLimit}
+              content={
+                <Tooltip
+                  text={<DepositLimitSummary depositLimit={depositLimit} />}
+                  asChild
+                >
+                  <Flex align="center" gap="xs">
+                    {t("currency", {
+                      value: toDecimal(
+                        depositLimit.headroom,
+                        depositLimit.decimals,
+                      ),
+                      symbol: depositLimit.symbol,
+                    })}
+                    <TooltipIcon />
+                  </Flex>
+                </Tooltip>
+              }
             />
+          )}
+          {call && isEvmSourceChain && isEvmApproveCall(call) && (
             <SummaryRow
-              label={destFeeLabel}
-              loading={isLoading}
-              content={destFeeValue}
+              label={t("xcm:summary.approvalFee")}
+              loading={isLoading || isLoadingApprovalFee}
+              content={approvalFeeValue}
             />
-          </Summary>
-        )}
+          )}
+          <SummaryRow
+            label={t("xcm:summary.sourceFee")}
+            loading={isLoading}
+            content={sourceFeeValue}
+          />
+          <SummaryRow
+            label={destFeeLabel}
+            loading={isLoading}
+            content={destFeeValue}
+          />
+        </Summary>
       </CollapsibleContent>
     </CollapsibleRoot>
   )

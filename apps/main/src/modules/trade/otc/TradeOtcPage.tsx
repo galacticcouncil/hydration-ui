@@ -1,4 +1,4 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Flex, Stack } from "@galacticcouncil/ui/components"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
@@ -6,7 +6,6 @@ import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { OtcFilters } from "@/modules/trade/otc/filter/OtcFilters"
 import { OtcSearch } from "@/modules/trade/otc/filter/OtcSearch"
 import { OtcHeader } from "@/modules/trade/otc/header/OtcHeader"
-import { PlaceOrder } from "@/modules/trade/otc/place-order/PlaceOrder"
 import { OtcTable } from "@/modules/trade/otc/table/OtcTable"
 import { otcColumnSortPriority } from "@/modules/trade/otc/table/OtcTable.columns"
 
@@ -27,21 +26,20 @@ export const TradeOtcPage = () => {
   return (
     <>
       <OtcHeader />
-      <Flex direction="column" gap="xl">
-        <OtcSearch
-          searchPhrase={searchPhrase}
-          onSearchPhraseChange={setSearchPhrase}
-        />
+      <Stack gap="xl">
         <Flex justify="space-between" align="center">
           <OtcFilters />
-          <PlaceOrder />
+          <OtcSearch
+            searchPhrase={searchPhrase}
+            onSearchPhraseChange={setSearchPhrase}
+          />
         </Flex>
         <OtcTable
           searchPhrase={searchPhrase}
           paginationProps={paginationProps}
           sortingProps={sortingProps}
         />
-      </Flex>
+      </Stack>
     </>
   )
 }

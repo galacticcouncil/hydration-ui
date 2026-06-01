@@ -10,7 +10,7 @@ import {
 import { formatAssetAmount, formatNumber } from "@galacticcouncil/utils"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
-import { FC, useCallback, useEffect, useRef } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef } from "react"
 import { FormProvider, useController } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -86,7 +86,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
-  const { tradable } = useAssets()
+  const { all } = useAssets()
 
   const form = usePlaceOrderForm()
   const { getValues, setValue, watch, control } = form
@@ -100,6 +100,11 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
       "priceSettings",
       "view",
     ])
+
+  const sufficientAssets = useMemo(
+    () => Array.from(all.values()).filter((asset) => asset.isSufficient),
+    [all],
+  )
 
   const { field: priceConfirmationField } = useController({
     control,
@@ -399,7 +404,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 assetFieldName="offerAsset"
                 amountFieldName="offerAmount"
                 label={t("common:offer")}
-                assets={tradable}
+                assets={sufficientAssets}
                 maxBalanceFallback="0"
                 ignoreBalance={!areAssetsSelected}
                 ignoreDisplayValue={!areAssetsSelected}
@@ -425,7 +430,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 assetFieldName="buyAsset"
                 amountFieldName="buyAmount"
                 label={t("otc.placeOrder.buy")}
-                assets={tradable}
+                assets={sufficientAssets}
                 maxBalanceFallback="0"
                 hideMaxBalanceAction
                 ignoreDisplayValue={!areAssetsSelected}
@@ -440,12 +445,15 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 <PartiallyFillableToggle />
                 <Separator />
                 {offerAsset && buyAsset && (
-                  <PriceGainWarning
-                    offerAsset={offerAsset}
-                    buyAsset={buyAsset}
-                    priceGain={priceGain}
-                    view={view}
-                  />
+                  <>
+                    <PriceGainWarning
+                      offerAsset={offerAsset}
+                      buyAsset={buyAsset}
+                      priceGain={priceGain}
+                      view={view}
+                    />
+                    <Separator />
+                  </>
                 )}
               </>
             )}

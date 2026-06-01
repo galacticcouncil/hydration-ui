@@ -7,9 +7,13 @@ import { XcmTransferArgs } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
 
+export type XcmAlertSeverity = "error" | "warning" | "info"
+
 export type XcmAlert = {
   key: string
   message: string
+  severity: XcmAlertSeverity
+  requiresUserConsent?: boolean | string
 }
 
 type XcmContextValue = {

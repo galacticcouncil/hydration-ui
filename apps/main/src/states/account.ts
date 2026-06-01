@@ -324,7 +324,7 @@ export const useAccountBalancesWithPriceByAssetType = (
 
       if (!isValidType) continue
 
-      priceIds.push(balance.assetId)
+      priceIds.push(isBondType ? asset.underlyingAssetId : balance.assetId)
 
       if (isTokenType) {
         tokenBalances.push({
@@ -373,9 +373,10 @@ export const useAccountBalancesWithPriceByAssetType = (
   const mapBalancesWithPrice = useCallback(
     <T extends { meta: { id: string } }>(
       balances: T[],
+      getPriceAssetId: (meta: T["meta"]) => string = (meta) => meta.id,
     ): Array<T & { price: string | undefined }> => {
       return balances.map((balance) => {
-        const assetPrice = getAssetPrice(balance.meta.id)
+        const assetPrice = getAssetPrice(getPriceAssetId(balance.meta))
         return {
           ...balance,
           price: assetPrice.isValid ? assetPrice.price : undefined,
@@ -392,7 +393,10 @@ export const useAccountBalancesWithPriceByAssetType = (
       tokenBalances: mapBalancesWithPrice(tokenBalances),
       erc20Balances: mapBalancesWithPrice(erc20Balances),
       stableSwapBalances: mapBalancesWithPrice(stableSwapBalances),
-      bondBalances: mapBalancesWithPrice(bondBalances),
+      bondBalances: mapBalancesWithPrice(
+        bondBalances,
+        (meta) => (meta as TBond).underlyingAssetId,
+      ),
     }
   }, [
     bondBalances,
