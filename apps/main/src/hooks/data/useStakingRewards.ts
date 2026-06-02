@@ -2,7 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
 import { bestNumberQuery } from "@/api/chain"
-import { openGovReferendaQuery } from "@/api/democracy"
+import { ongoingReferendaQuery } from "@/api/democracy"
 import { stakingRewardsQuery } from "@/api/staking"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -13,13 +13,13 @@ export const useStakingRewards = () => {
 
   const { data: blockNumber } = useQuery(bestNumberQuery(rpc))
 
-  const { data: openGovReferendas } = useQuery(openGovReferendaQuery(rpc))
+  const { data: ongoingReferenda } = useQuery(ongoingReferendaQuery(rpc))
 
   return useQuery({
     ...stakingRewardsQuery(
       rpc,
       address,
-      openGovReferendas?.map((referenda) => referenda.id.toString()) ?? [],
+      ongoingReferenda?.map((referenda) => referenda.id.toString()) ?? [],
       blockNumber?.parachainBlockNumber ?? 0,
     ),
     placeholderData: (prev) => prev,

@@ -11,7 +11,7 @@ import { secondsInDay } from "date-fns/constants"
 
 import { bestNumberQuery } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
-import { openGovReferendaQuery } from "@/api/democracy"
+import { ongoingReferendaQuery } from "@/api/democracy"
 import { stakingPositionsQuery, stakingRewardsQuery } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -46,7 +46,7 @@ export const useRewardsCurveData = () => {
     useQuery(stakingPositionsQuery(rpc, address))
 
   const { data: openGovReferendas, isLoading: openGovReferendasLoading } =
-    useQuery(openGovReferendaQuery(rpc))
+    useQuery(ongoingReferendaQuery(rpc))
 
   const { data: blockNumber } = useQuery(stableQuery(bestNumberQuery(rpc)))
 

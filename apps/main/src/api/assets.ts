@@ -160,7 +160,7 @@ export const assetsQuery = (
         } else if (asset.type === AssetType.ERC20) {
           return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
         } else if (asset.type === AssetType.BOND) {
-          return assetToBondType(asset, commonAssetData)
+          return assetToBondType(asset, commonAssetData, metadata)
         } else if (asset.type === AssetType.STABLESWAP) {
           return assetToStableSwapType(asset, commonAssetData)
         } else if (asset.type === AssetType.External) {
@@ -241,6 +241,7 @@ function assetToErc20Type(
 function assetToBondType(
   asset: Asset,
   commonAssetData: TCommonAssetData,
+  metadata: AssetMetadataFactory,
 ): TBond {
   const bondData = asset as Bond
   const { underlyingAssetId, maturity } = bondData
@@ -249,6 +250,10 @@ function assetToBondType(
     ...commonAssetData,
     type: AssetType.BOND,
     underlyingAssetId: underlyingAssetId.toString(),
+    iconSrc: metadata.getAssetLogoSrc(
+      HYDRATION_PARACHAIN_ID,
+      underlyingAssetId,
+    ),
     maturity,
   }
 }

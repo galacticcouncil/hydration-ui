@@ -9,17 +9,19 @@ import {
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
-import { LINKS, NAVIGATION, NavigationItem } from "@/config/navigation"
+import { LINKS, NavigationItem } from "@/config/navigation"
 import {
   HIDDEN_DESKTOP_NAV_ROUTES,
   useMenuTranslations,
 } from "@/modules/layout/components/HeaderMenu.utils"
+import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 export const HeaderMenu: React.FC<
   React.ComponentProps<typeof NavigationMenu>
 > = (props) => {
   const translations = useMenuTranslations()
+  const navigation = useNavigation()
   const matchRoute = useMatchRoute()
   const isHiddenDesktopNavRoute = HIDDEN_DESKTOP_NAV_ROUTES.some(
     (route) => !!matchRoute({ to: route }),
@@ -32,7 +34,7 @@ export const HeaderMenu: React.FC<
   return (
     <NavigationMenu {...props}>
       <NavigationMenuList>
-        {NAVIGATION.map(({ key, children, to, search, defaultChild }) => {
+        {navigation.map(({ key, children, to, search, defaultChild }) => {
           const linkTo = defaultChild ?? to
 
           const isLiquidityPage = to === LINKS.liquidity

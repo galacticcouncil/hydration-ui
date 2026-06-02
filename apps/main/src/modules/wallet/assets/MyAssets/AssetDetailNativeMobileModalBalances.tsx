@@ -139,10 +139,10 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
               value: locks.lockedInDemocracyDisplay,
             })}
             descriptionCustom={
-              unlockable.lockedSeconds > 0 && (
+              unlockable.lockedReferendaSeconds > 0 && (
                 <FullExpiration
                   sx={{ width: "fit-content" }}
-                  initialLockedSeconds={unlockable.lockedSeconds}
+                  initialLockedSeconds={unlockable.lockedReferendaSeconds}
                 />
               )
             }
@@ -173,14 +173,14 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
           label={t("myAssets.expandedNative.unlockable")}
           labelIcon={LockOpen}
           value={t("common:number", {
-            value: unlockable.value,
+            value: unlockable.maxUnlockable,
           })}
-          displayValue={unlockable.displayValue}
+          displayValue={unlockable.displayMaxUnlockable}
           descriptionCustom={
-            unlockable.lockedSeconds > 0 && (
+            unlockable.lockedReferendaSeconds > 0 && (
               <FullExpiration
                 sx={{ width: "fit-content" }}
-                initialLockedSeconds={unlockable.lockedSeconds}
+                initialLockedSeconds={unlockable.lockedReferendaSeconds}
               />
             )
           }
@@ -188,7 +188,8 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
         <AssetDetailUnlock
           votesToRemove={unlockable.votesToRemove}
           classIds={unlockable.classIds}
-          value={unlockable.value}
+          value={unlockable.maxUnlockable}
+          pendingPositions={unlockable.unlockableGigaPendingPositions}
         />
       </Flex>
       {new Big(locks.lockedInVesting).gt(0) && (

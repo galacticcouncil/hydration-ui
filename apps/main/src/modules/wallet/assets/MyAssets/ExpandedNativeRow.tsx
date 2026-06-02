@@ -17,7 +17,6 @@ import {
   useUnlockableNativeTokens,
 } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
 import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
-import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -153,19 +152,15 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           label={t("myAssets.expandedNative.unlockable")}
           labelIcon={LockOpen}
           value={t("common:number", {
-            value: unlockable.value,
+            value: unlockable.maxUnlockable,
           })}
-          displayValue={unlockable.displayValue}
-          descriptionCustom={
-            unlockable.lockedSeconds > 0 && (
-              <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
-            )
-          }
+          displayValue={unlockable.displayMaxUnlockable}
         />
         <AssetDetailUnlock
           votesToRemove={unlockable.votesToRemove}
+          pendingPositions={unlockable.unlockableGigaPendingPositions}
           classIds={unlockable.classIds}
-          value={unlockable.value}
+          value={unlockable.maxUnlockable}
         />
       </Flex>
 

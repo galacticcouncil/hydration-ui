@@ -1,7 +1,10 @@
 import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { isGho } from "@galacticcouncil/money-market/utils"
 import {
+  Flex,
+  LinkTextButton,
   Stack,
+  Text,
   Tooltip,
   ValueStats,
   ValueStatsBottomValue,
@@ -13,7 +16,7 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToHours } from "date-fns"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 import {
   borrowReservesQuery,
@@ -27,7 +30,7 @@ import {
   gigaStakeConstantsQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
-import { ProjectedAPRTooltipContent } from "@/modules/staking/ProjectedAPRTooltip"
+import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
@@ -51,15 +54,11 @@ export const GigaStakeTotalsHeader: FC = () => {
   const { data: constants, isLoading: isConstantsLoading } = useQuery(
     gigaStakeConstantsQuery(rpc),
   )
+
+  //@TODO: review this
   const { data: exchangeRate, isLoading: isExchangeRateLoading } =
     useGigaStakeExchangeRate()
-  // Fleet APR — always projected at maximum conviction (Locked6x = 8×).
-  // Dilution reference: the connected user's actual GIGAHDX position (in HDX
-  // equivalent) when present, falling back to `DEFAULT_REFERENCE_STAKE_HDX_PLANCK`
-  // otherwise. Using a non-zero reference avoids the "marginal voter grabs
-  // the whole pool" pathological limit that distorts the headline on chains
-  // with few voters. The displayed label stays "up to X% voting" — the user's
-  // realised yield can be less if they vote at lower conviction or skip refs.
+
   const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
   // Convert user GIGAHDX × rate → HDX planck. Returns the default reference
@@ -79,10 +78,9 @@ export const GigaStakeTotalsHeader: FC = () => {
   const {
     passive: aprPassive,
     voting: aprVoting,
-    total: aprTotal,
     isLoading: isAprLoading,
   } = useGigaApr(aprReferenceStake)
-
+  //end
   const cooldownPeriodDays =
     millisecondsToHours((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) /
     24
@@ -109,8 +107,7 @@ export const GigaStakeTotalsHeader: FC = () => {
 
   const totalSupplied = hdxReserve?.totalLiquidity ?? "0"
   const totalSuppliedUsd = hdxReserve?.totalLiquidityUSD ?? "0"
-  // HDX-equivalent of total supplied GIGAHDX (rate-adjusted). This is the
-  // headline number users care about — same convention as the My Stake card.
+
   const totalSuppliedHdx = Big(totalSupplied)
     .times(exchangeRate?.toString() || "0")
     .toString()
@@ -154,18 +151,15 @@ export const GigaStakeTotalsHeader: FC = () => {
           isLoading={isAprLoading}
           customValue={
             <ValueStatsValue size="medium">
-              {t("common:percent", {
-                value: Number(aprTotal.toFixed(2)),
+              {t("staking:dashboard.projectedAPR.base", {
+                value: Number(aprPassive.toFixed(2)),
               })}
             </ValueStatsValue>
           }
           customBottomLabel={
-            <ValueStatsBottomValue
-              sx={{ color: getToken("accents.success.emphasis") }}
-            >
-              {t("staking:dashboard.projectedAPR.breakdown", {
-                base: Number(aprPassive.toFixed(2)),
-                voting: Number(aprVoting.toFixed(2)),
+            <ValueStatsBottomValue>
+              {t("staking:dashboard.projectedAPR.voting", {
+                value: Number(aprVoting.toFixed(2)),
               })}
             </ValueStatsBottomValue>
           }
@@ -192,5 +186,40 @@ export const GigaStakeTotalsHeader: FC = () => {
         })}
       />
     </Stack>
+  )
+}
+
+export const ProjectedAPRTooltipContent = () => {
+  const { t } = useTranslation("staking")
+  const lines = t("dashboard.projectedAPR.tooltip", {
+    returnObjects: true,
+  }) as Array<string>
+
+  return (
+    <Flex direction="column" gap="m">
+      <Text fw={600} fs="p6" lh={1.4} color={getToken("text.high")}>
+        {lines[0]}
+      </Text>
+
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+        <Trans t={t} i18nKey="gigaStaking.projectedAPR.base.tooltip">
+          <Text fw={600} />
+        </Trans>
+      </Text>
+
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+        <Trans t={t} i18nKey="gigaStaking.projectedAPR.voting.tooltip">
+          <Text fw={600} />
+        </Trans>
+      </Text>
+
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
+        {lines[3]}
+      </Text>
+
+      <LinkTextButton href={STAKING_DOCS_LINK} direction="internal">
+        {t("dashboard.projectedAPR.tooltip.docs")}
+      </LinkTextButton>
+    </Flex>
   )
 }

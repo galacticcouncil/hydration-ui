@@ -7,6 +7,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 
+import { accountOpenGovVotesQuery, referendumInfoQuery } from "@/api/democracy"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { GC_TIME } from "@/utils/consts"
 
@@ -157,11 +158,6 @@ export const gigaHDXIssuanceQuery = (rpc: TProviderContext) =>
     },
   })
 
-/**
- * Free HDX balance of the gigapot account — second component of the
- * exchange-rate numerator (alongside `GigaHdx.TotalLocked`). Accumulates
- * yield destined for stakers; drained on `realizeYield` / `gigaUnstake`.
- */
 export const gigapotBalanceQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["gigapotBalance"],
@@ -169,25 +165,61 @@ export const gigapotBalanceQuery = (rpc: TProviderContext) =>
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
     queryFn: async () => {
-      const account = await rpc.papi.query.System.Account.getValue(
+      const { free } = await rpc.sdk.client.balance.getSystemBalance(
         STAKE_GIGAPOT_ADDRESS,
-        { at: "best" },
       )
-      return BigInt(account.data.free)
+      return free
+    },
+  })
+export const referendaRewardPoolQuery = (
+  rpc: TProviderContext,
+  refId: number,
+) =>
+  queryOptions({
+    queryKey: ["referendaRewardPool", refId],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInMinute,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+
+      const referendaRewardPool =
+        (await unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(
+          refId,
+          { at: "best" },
+        )) ?? null
+
+      return referendaRewardPool as {
+        total_reward: bigint
+        remaining_reward: bigint
+        total_weighted_votes: bigint
+        track_id: number
+        voters_remaining: number
+      } | null
     },
   })
 
-/**
- * GIGAHDX exchange rate (HDX per 1 GIGAHDX), matching the runtime's
- * `pallet_gigahdx::Pallet::exchange_rate()` exactly:
- *
- *   n    = TotalLocked + free_balance(gigapot)
- *   d    = totalIssuance(stHDX)
- *   rate = max(1.0, n / d)
- *
- * Returned as `Big` (decimal) to preserve full precision — callers use
- * `.toString()` to feed into other `Big` ops.
- */
+export const referendaTotalWeightedVotesQuery = (
+  rpc: TProviderContext,
+  refId: number,
+) =>
+  queryOptions({
+    queryKey: ["referendaTotalWeightedVotes", refId],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInMinute,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+      return (await unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getValue(
+        refId,
+        { at: "best" },
+      )) as {
+        total_weighted: bigint
+        voters_count: number
+      } | null
+    },
+  })
+
 export const useGigaStakeExchangeRate = () => {
   const rpc = useRpcProvider()
 
@@ -209,24 +241,22 @@ export const useGigaStakeExchangeRate = () => {
 
   const allReady =
     isTotalIssuanceSuccess && isGigaLockedHDXSuccess && isGigapotSuccess
+  const isLoading =
+    isTotalIssuanceLoading || isGigaLockedHDXLoading || isGigapotLoading
 
-  let rate: Big | undefined
-  if (allReady) {
-    const supply = Big(totalIssuance.toString())
-    if (supply.gt(0)) {
-      const numerator = Big(gigaLockedHDX.toString()).plus(
-        gigapotFree.toString(),
-      )
-      const raw = numerator.div(supply)
-      rate = raw.lt(1) ? Big(1) : raw
-    } else {
-      rate = Big(1) // bootstrap: no GIGAHDX in circulation
+  if (!allReady)
+    return {
+      isLoading,
+      data: undefined,
     }
-  }
+
+  const supply = Big(totalIssuance.toString())
+  const numerator = Big(gigaLockedHDX.toString()).plus(gigapotFree.toString())
+  const raw = numerator.div(supply)
+  const rate = Big.max(1, raw)
 
   return {
-    isLoading:
-      isTotalIssuanceLoading || isGigaLockedHDXLoading || isGigapotLoading,
+    isLoading,
     data: rate,
   }
 }
@@ -254,15 +284,18 @@ const DEFAULT_TRACK_PERCENTAGE = 2
 export const getRewardTrackPercentage = (trackId: number): number =>
   REWARD_TRACK_PERCENTAGES[trackId] ?? DEFAULT_TRACK_PERCENTAGE
 
-/**
- * Estimated HDX rewards earmarked for a given referendum.
- *
- *  - If the pool has already been allocated (`ReferendaRewardPool` entry exists),
- *    returns the exact `total_reward`.
- *  - Otherwise estimates as `track_pct × accumulator_pot.free`. Caveat: the
- *    estimate shrinks if another ref allocates first, and grows when the pot
- *    is replenished.
- */
+export const accumulatorPotBalanceQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    queryKey: ["accumulatorPotBalance"],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInMinute,
+    queryFn: async () => {
+      return await rpc.sdk.client.balance.getSystemBalance(
+        REWARD_ACCUMULATOR_POT_ADDRESS,
+      )
+    },
+  })
+
 export const gigaRewardPoolEstimateQuery = (
   rpc: TProviderContext,
   refId: number,
@@ -273,11 +306,10 @@ export const gigaRewardPoolEstimateQuery = (
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+      const allocated = await rpc.queryClient.fetchQuery(
+        referendaRewardPoolQuery(rpc, refId),
+      )
 
-      const allocated =
-        await unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(refId)
       if (allocated) {
         return {
           amount: BigInt(allocated.total_reward),
@@ -285,15 +317,32 @@ export const gigaRewardPoolEstimateQuery = (
         }
       }
 
-      const account = await rpc.papi.query.System.Account.getValue(
-        REWARD_ACCUMULATOR_POT_ADDRESS,
+      const { free } = await rpc.queryClient.fetchQuery(
+        accumulatorPotBalanceQuery(rpc),
       )
-      const potFree = BigInt(account.data.free)
+
       const pct = getRewardTrackPercentage(trackId)
       return {
-        amount: (potFree * BigInt(pct)) / 100n,
+        amount: (free * BigInt(pct)) / 100n,
         isEstimate: true,
       }
+    },
+  })
+
+export const referendumTracksQuery = (rpc: TProviderContext, refId: number) =>
+  queryOptions({
+    queryKey: ["referendumTracks", refId],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInMinute,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+      return (await unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(
+        refId,
+        {
+          at: "best",
+        },
+      )) as number | null
     },
   })
 
@@ -334,7 +383,6 @@ export const gigaRewardPoolEstimateQuery = (
  *                      ends + user removes the vote (or manually removes now,
  *                      forfeiting the active vote).
  *
- *   lockedHdx        = Legacy field, always 0n. Kept for back-compat.
  *
  * Used by the "Claim rewards" button (`useClaimAndCompound`) and the unstake
  * form's combined unlock+unstake flow.
@@ -351,305 +399,153 @@ export const claimableVotingRewardsQuery = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const pendingRaw =
-        await unsafeApi.query.GigaHdxRewards.PendingRewards.getValue(who, {
+      const [pendingHdx, userVoteEntries] = await Promise.all([
+        unsafeApi.query.GigaHdxRewards.PendingRewards.getValue(who, {
           at: "best",
-        })
-      // eslint-disable-next-line no-console
-      console.debug("[claimableVotingRewards] PendingRewards raw", {
-        who,
-        pendingRaw,
-        typeofPending: typeof pendingRaw,
-      })
-      // PendingRewards is `StorageMap<AccountId, Balance, ValueQuery>` — the
-      // value should be a bare bigint. Defensively handle the case where the
-      // typed binding wraps it (snake_case struct, tuple, etc.) — same
-      // pattern that bit us in gigaApr.ts:289.
-      const toBig = (v: unknown): bigint => {
-        if (v === undefined || v === null) return 0n
-        if (typeof v === "bigint") return v
-        if (typeof v === "number") return BigInt(v)
-        if (typeof v === "string") return BigInt(v)
-        if (typeof v === "object") {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const o = v as any
-          if (typeof o.amount !== "undefined")
-            return BigInt(o.amount.toString())
-          if (typeof o.value !== "undefined") return BigInt(o.value.toString())
-          try {
-            return BigInt(o.toString())
-          } catch {
-            return 0n
-          }
-        }
-        return 0n
-      }
-      const pendingHdx = toBig(pendingRaw)
-
-      const userVoteEntries: Array<{
-        keyArgs: [string, number]
-        value: {
-          weighted: bigint
-          stakedVoteAmount: bigint
-          conviction: unknown
-        }
-      }> = await unsafeApi.query.GigaHdxRewards.UserVoteRecords.getEntries(
-        who,
-        { at: "best" },
-      )
-
-      // Legacy / phantom class locks: ConvictionVoting.ClassLocksFor[user]
-      // tracks the aggregate lock per track from ALL the user's past votes
-      // (including ones that have been remove_vote'd but never unlocked).
-      // Call `ConvictionVoting.unlock(class, target)` to recompute and shrink
-      // those locks per class. Idempotent / safe even when nothing's expired.
-      //
-      // We fetch this here so the consumer can batch unlocks for every class
-      // the user has any leftover lock on — not just the ones with current
-      // UserVoteRecords.
-      const classLocksRaw =
-        await rpc.papi.query.ConvictionVoting.ClassLocksFor.getValue(who, {
+        }) as bigint,
+        unsafeApi.query.GigaHdxRewards.UserVoteRecords.getEntries(who, {
           at: "best",
-        })
-      // Shape: Array<[classId, balance]>. Defensive coercion via toBig in case
-      // typed binding wraps the balance.
-      const legacyLockClasses = new Set<number>()
-      if (Array.isArray(classLocksRaw)) {
-        for (const entry of classLocksRaw) {
-          if (!Array.isArray(entry) || entry.length < 2) continue
-          const classId = Number(entry[0])
-          const balance = toBig(entry[1])
-          if (Number.isFinite(classId) && balance > 0n) {
-            legacyLockClasses.add(classId)
+        }) as Array<{
+          keyArgs: [string, number]
+          value: {
+            weighted: bigint
+            staked_vote_amount: bigint
+            conviction: string
           }
-        }
-      }
+        }>,
+      ])
 
       if (userVoteEntries.length === 0) {
-        // No active vote records, but the user may still hold legacy class
-        // locks worth cleaning up.
         return {
           pendingHdx,
           allocReadyHdx: 0n,
           allocReadyVotes: [],
-          unlockClasses: [...legacyLockClasses],
           unfreezableHdx: 0n,
           ongoingLockedHdx: 0n,
-          lockedHdx: 0n,
         }
       }
 
-      const refIds = userVoteEntries.map(({ keyArgs }) => keyArgs[1])
-
-      const [
-        refInfos,
-        allocPools,
-        cachedTracks,
-        accumulatorAccount,
-        votingForEntries,
-      ] = await Promise.all([
-        Promise.all(
-          refIds.map((id) =>
-            rpc.papi.query.Referenda.ReferendumInfoFor.getValue(id, {
-              at: "best",
-            }),
-          ),
-        ),
-        Promise.all(
-          refIds.map((id) =>
-            unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(id, {
-              at: "best",
-            }),
-          ),
-        ),
-        Promise.all(
-          refIds.map((id) =>
-            unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(id, {
-              at: "best",
-            }),
-          ),
-        ),
-        rpc.papi.query.System.Account.getValue(REWARD_ACCUMULATOR_POT_ADDRESS, {
-          at: "best",
-        }),
-        // Fallback class lookup. `GigaHdxRewards.ReferendumTracks` is the
-        // primary source (cached on first vote) but the runtime deletes it
-        // when allocation fires on the first remove_vote. After that, voters
-        // still holding `UserVoteRecord` entries for the same ref have no
-        // way back to the class via gigahdx-rewards storage.
-        //
-        // `ConvictionVoting.VotingFor[(who, class)]` still has their vote
-        // until they themselves call remove_vote — so we can reverse-map
-        // `refIndex → classId` by walking the user's per-class vote entries.
-        //
-        // Required to avoid `ConvictionVoting.ClassNeeded` errors in the
-        // batched claim, because remove_vote(class: undefined) only falls
-        // back to `Polls::class_of()` which returns None for completed refs.
-        rpc.papi.query.ConvictionVoting.VotingFor.getEntries(who, {
-          at: "best",
-        }),
+      const [accumulatorAccount, votingForEntries] = await Promise.all([
+        rpc.queryClient.fetchQuery(accumulatorPotBalanceQuery(rpc)),
+        rpc.queryClient.fetchQuery(accountOpenGovVotesQuery(rpc, who)),
       ])
 
-      // Build refIndex → classId map from the user's VotingFor entries.
+      const potFree = accumulatorAccount.free
       const refToClassFromVotingFor = new Map<number, number>()
-      for (const voteClass of votingForEntries) {
-        if (voteClass.value.type !== "Casting") continue
-        const classId = Number(voteClass.keyArgs[1])
-        for (const [pollId] of voteClass.value.value.votes) {
-          refToClassFromVotingFor.set(Number(pollId), classId)
-        }
+
+      for (const vote of votingForEntries.votes) {
+        refToClassFromVotingFor.set(Number(vote.id), vote.classId)
       }
 
-      const potFree = BigInt(accumulatorAccount.data.free)
-      // Refs whose `removeVote` is GUARANTEED to succeed → safe to include
-      // in a `utility.batchAll` claim (atomic-on-failure).
-      let allocReadyHdx = 0n
-      const allocReadyVotes: Array<{
-        refIndex: number
-        trackId: number | null
-      }> = []
-      // `Stakes.frozen` contribution that we CAN release in a batched
-      // `remove_vote` call. Comes from completed referenda the user has
-      // a UserVoteRecord on. Summed across all such refs.
-      let unfreezableHdx = 0n
-      // `Stakes.frozen` contribution we CANNOT release without manual
-      // intervention. Comes from ongoing-ref UserVoteRecords — removing
-      // them would mean abandoning the active vote, which we don't do
-      // automatically (preserves user's voting commitment).
-      let ongoingLockedHdx = 0n
-      // Refs where the user has an earned share but `removeVote` may revert
-      // with `NoPermissionYet` (winning conviction vote whose lock has not
-      // expired). We surface the amount as informational — the user will be
-      // able to claim it once locks expire (or via Phase 2 lock-aware logic).
-      const lockedHdx = 0n
-
-      for (let i = 0; i < userVoteEntries.length; i++) {
-        const entry = userVoteEntries[i]
-        const refIndex = refIds[i]
-        // Loop bounds guarantee these exist; satisfy noUncheckedIndexedAccess.
-        if (entry === undefined || refIndex === undefined) continue
-        const record = entry.value
-        const refInfo = refInfos[i] as { type?: string } | null
-        const allocated = allocPools[i] as {
-          totalReward: bigint
-          totalWeightedVotes: bigint
-        } | null
-        const cachedTrack = cachedTracks[i] as number | null | undefined
-
-        // Defensive field reader — `unsafeApi` decodes runtime structs with
-        // snake_case field names (matching the Rust definitions), not the
-        // camelCase we'd expect from typed bindings. We probe both shapes.
-        const readField = (obj: unknown, ...names: string[]): unknown => {
-          if (obj === null || obj === undefined || typeof obj !== "object")
-            return undefined
-          for (const n of names) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const v = (obj as any)[n]
-            if (v !== undefined) return v
-          }
-          return undefined
-        }
-
-        // Skip refs whose info we can't resolve (shouldn't happen).
-        if (!refInfo) continue
-
-        // Ongoing refs: their freeze contribution is "permanently locked"
-        // from the unstake form's perspective. Accumulate then skip the
-        // claim-batching logic — we don't auto-remove active votes.
-        if (refInfo.type === "Ongoing") {
-          ongoingLockedHdx += toBig(
-            readField(record, "stakedVoteAmount", "staked_vote_amount"),
+      const promises = userVoteEntries.map(
+        async ({ keyArgs: [, refIndex], value: record }) => {
+          const refInfo = await rpc.queryClient.ensureQueryData(
+            referendumInfoQuery(rpc, refIndex),
           )
-          continue
-        }
 
-        // Completed ref — the freeze can be released by `remove_vote` in
-        // the claim/unstake batch.
-        unfreezableHdx += toBig(
-          readField(record, "stakedVoteAmount", "staked_vote_amount"),
-        )
+          const reInfoType = refInfo?.value?.type
+          if (!reInfoType)
+            return {
+              ongoingLockedHdx: 0n,
+              allocReadyHdx: 0n,
+              unfreezableHdx: 0n,
+              allocReadyVote: null,
+            }
 
-        // Three-tier track resolution:
-        //   1. GigaHdxRewards.ReferendumTracks cache (primary — populated
-        //      on first vote, deleted when allocation fires)
-        //   2. ConvictionVoting.VotingFor reverse-map (secondary — still
-        //      has the vote until the user calls remove_vote themselves)
-        //   3. null (only when both above fail — `remove_vote` would then
-        //      revert with `ClassNeeded`; we still include in the batch so
-        //      the user sees the diagnostic and we don't silently drop refs)
-        const trackId: number | null =
-          cachedTrack !== null && cachedTrack !== undefined
-            ? Number(cachedTrack)
-            : (refToClassFromVotingFor.get(refIndex) ?? null)
-
-        let share = 0n
-        const weighted = toBig(readField(record, "weighted"))
-
-        if (allocated) {
-          // Exact: allocation snapshot already exists.
-          const totalReward = toBig(
-            readField(allocated, "totalReward", "total_reward"),
-          )
-          const totalWeighted = toBig(
-            readField(allocated, "totalWeightedVotes", "total_weighted_votes"),
-          )
-          if (totalWeighted > 0n) {
-            share = (weighted * totalReward) / totalWeighted
-          }
-        } else if (trackId !== null) {
-          // Estimate: allocation will fire on next remove_vote.
-          // share = weighted × (track_pct × pot) / live_total_weighted
-          const pct = getRewardTrackPercentage(trackId)
-          const allocation = (potFree * BigInt(pct)) / 100n
-          const liveTally =
-            await unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getValue(
-              refIndex,
-              { at: "best" },
-            )
-          if (liveTally) {
-            const totalWeighted = toBig(
-              readField(liveTally, "totalWeighted", "total_weighted"),
-            )
-            if (totalWeighted > 0n) {
-              share = (weighted * allocation) / totalWeighted
+          if (reInfoType === "Ongoing") {
+            return {
+              allocReadyHdx: 0n,
+              unfreezableHdx: 0n,
+              allocReadyVote: null,
+              ongoingLockedHdx: record.staked_vote_amount,
             }
           }
-        }
 
-        // `remove_vote` (called by the voter themselves) succeeds for ANY
-        // completed referendum, regardless of conviction:
-        //   - The vote storage entry is removed unconditionally
-        //   - The reward allocation hook fires and credits PendingRewards
-        //   - The conviction lock on the user's HDX balance (in
-        //     `pallet-balances`) persists until its lock period elapses
-        //     naturally — but it does NOT block `remove_vote` itself
-        //
-        // The `NoPermissionYet` error I previously gated against is from
-        // `remove_other_vote` (a 3rd party trying to clean up someone else's
-        // vote pre-lock-expiry), not `remove_vote`. So the only refs we must
-        // exclude from a batch are still-Ongoing ones — removing those would
-        // pull the user's active vote.
-        //
-        // Validated on lark with ref 342 (Approved + Aye + Locked1x), where
-        // `remove_vote` succeeded ~1.8 hours post-approval while the 7-day
-        // lock was still active. The reward (2,000 HDX) landed in
-        // PendingRewards as expected.
-        //
-        // The Ongoing case is already filtered above (`if (refInfo.type ===
-        // "Ongoing") continue`), so here we treat everything else as safe.
-        allocReadyHdx += share
-        allocReadyVotes.push({ refIndex, trackId })
-        if (trackId !== null) legacyLockClasses.add(trackId)
-      }
+          let share = 0n
+          const weighted = record.weighted
+          const allocated = await rpc.queryClient.ensureQueryData(
+            referendaRewardPoolQuery(rpc, refIndex),
+          )
+          const referendumTrack = await rpc.queryClient.ensureQueryData(
+            referendumTracksQuery(rpc, refIndex),
+          )
+          const trackId =
+            referendumTrack !== null
+              ? referendumTrack
+              : (refToClassFromVotingFor.get(refIndex) ?? null)
+
+          if (allocated) {
+            const totalReward = allocated.total_reward
+            const totalWeighted = allocated.total_weighted_votes
+
+            if (totalWeighted > 0n) {
+              share = (weighted * totalReward) / totalWeighted
+            }
+          } else if (trackId !== null) {
+            const liveTally = await rpc.queryClient.ensureQueryData(
+              referendaTotalWeightedVotesQuery(rpc, refIndex),
+            )
+
+            if (liveTally) {
+              const pct = getRewardTrackPercentage(trackId)
+              const allocation = (potFree * BigInt(pct)) / 100n
+              const totalWeighted = liveTally.total_weighted
+
+              if (totalWeighted > 0n) {
+                share = (weighted * allocation) / totalWeighted
+              }
+            }
+          }
+
+          return {
+            ongoingLockedHdx: 0n,
+            allocReadyHdx: share,
+            unfreezableHdx: record.staked_vote_amount,
+            allocReadyVote: {
+              refIndex,
+              trackId,
+            },
+          }
+        },
+      )
+
+      const promisesRes = await Promise.all(promises)
+
+      const {
+        ongoingLockedHdx,
+        allocReadyHdx,
+        unfreezableHdx,
+        allocReadyVotes,
+      } = promisesRes.reduce<{
+        ongoingLockedHdx: bigint
+        allocReadyHdx: bigint
+        unfreezableHdx: bigint
+        allocReadyVotes: Array<{ refIndex: number; trackId: number | null }>
+      }>(
+        (acc, curr) => {
+          return {
+            ongoingLockedHdx: acc.ongoingLockedHdx + curr.ongoingLockedHdx,
+            allocReadyHdx: acc.allocReadyHdx + curr.allocReadyHdx,
+            allocReadyVotes: curr.allocReadyVote
+              ? [...acc.allocReadyVotes, curr.allocReadyVote]
+              : acc.allocReadyVotes,
+            unfreezableHdx: acc.unfreezableHdx + curr.unfreezableHdx,
+          }
+        },
+        {
+          ongoingLockedHdx: 0n,
+          allocReadyHdx: 0n,
+          unfreezableHdx: 0n,
+          allocReadyVotes: [],
+        },
+      )
 
       return {
         pendingHdx,
         allocReadyHdx,
         allocReadyVotes,
-        unlockClasses: [...legacyLockClasses],
         unfreezableHdx,
         ongoingLockedHdx,
-        lockedHdx,
       }
     },
   })

@@ -1,14 +1,19 @@
 import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
-import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
+import {
+  nativeTokenLocksQuery,
+  TokenLockType,
+  useNativeTokenLocks,
+} from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
 import {
@@ -16,6 +21,7 @@ import {
   gigaTotalLockedQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -58,6 +64,8 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   )
   const maxStakeHuman = toDecimal(maxStake, native.decimals)
   const minStakeHuman = toDecimal(minStake, native.decimals)
+
+  const [maxBalanceWithFee, setMaxBalanceWithFee] = useState(maxStakeHuman)
 
   const availableHDXReserveCap = Big(hdxReserve.supplyCap)
     .minus(hdxReserve.totalLiquidity)
@@ -109,7 +117,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         // (= free − vested − legacy_staked − gigaStaked) instead.
         .check(
           z.refine<GigaStakeFormValues>(
-            ({ amount }) => Big(amount || "0").lte(maxStakeHuman),
+            ({ amount }) => Big(amount || "0").lte(maxBalanceWithFee),
             {
               error: t("error.maxBalance"),
               path: ["amount"],
@@ -124,8 +132,16 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     ? Big(amount).div(exchangeRate.toString()).toString()
     : undefined
 
-  const mutation = useMutation({
-    mutationFn: async (amount: string) => {
+  const {
+    data: accountFeePaymentAssetId,
+    isSuccess: isAccountFeePaymentAssetIdSuccess,
+  } = useAccountFeePaymentAssetId()
+
+  // experimental feature to get transaction cost
+  const { data: tx } = useQuery({
+    enabled: !!address && isAccountFeePaymentAssetIdSuccess,
+    queryKey: ["tx", "gigaStake", address, amount],
+    queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
@@ -133,10 +149,36 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         amount: toBigInt(amount, native.decimals),
       })
 
-      const isBound = await rpc.queryClient.ensureQueryData(
+      const isBound = await rpc.queryClient.fetchQuery(
         evmAccountBindingQuery(rpc, address),
       )
 
+      const tx = !isBound
+        ? rpc.papi.tx.Utility.batch_all({
+            calls: [
+              rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
+              stakeTx.decodedCall,
+            ],
+          })
+        : stakeTx
+
+      if (accountFeePaymentAssetId === Number(native.id)) {
+        const fees = await tx.getEstimatedFees(address)
+        const feeEstimateNativeBase = scaleHuman(fees, native.decimals)
+
+        setMaxBalanceWithFee(
+          Big(maxStakeHuman).minus(feeEstimateNativeBase).toString(),
+        )
+        return tx
+      }
+
+      setMaxBalanceWithFee(maxStakeHuman)
+      return tx
+    },
+  })
+
+  const mutation = useMutation({
+    mutationFn: async (amount: string) => {
       const toasts = {
         submitted: t("staking:gigaStaking.stake.toasts.submitted", {
           value: amount,
@@ -148,32 +190,14 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         }),
       }
 
-      if (!isBound) {
-        return createTransaction(
-          {
-            tx: rpc.papi.tx.Utility.batch_all({
-              calls: [
-                rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
-                stakeTx.decodedCall,
-              ],
-            }),
-            invalidateQueries: [
-              userGigaBorrowSummaryQueryKey(address),
-              gigaQueryKey(address),
-            ],
-            toasts,
-          },
-          { onSuccess: () => form.reset() },
-        )
-      }
-
       return createTransaction(
         {
-          tx: stakeTx,
+          tx,
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(address),
             gigaQueryKey(address),
             gigaTotalLockedQuery(rpc).queryKey,
+            nativeTokenLocksQuery(rpc, address).queryKey,
           ],
           toasts,
         },
@@ -190,7 +214,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     form,
     meta: native,
     minStakeHuman,
-    maxStakeHuman,
+    maxStakeHuman: maxBalanceWithFee,
     amountInGigaHdx,
     gigaHdxMeta: getAssetWithFallback(HDX_ERC20_ASSET_ID),
     onSubmit,

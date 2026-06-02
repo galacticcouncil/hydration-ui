@@ -1,6 +1,6 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToHours } from "date-fns"
 import { useForm } from "react-hook-form"
@@ -8,9 +8,13 @@ import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
-import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
+import {
+  nativeTokenLocksQuery,
+  TokenLockType,
+  useNativeTokenLocks,
+} from "@/api/balances"
 import { Conviction, CONVICTIONS_BLOCKS_BY_INDEX } from "@/api/democracy"
-import { gigaAccountStakesQuery } from "@/api/gigaStake"
+import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -34,11 +38,8 @@ export type VoteModalFormValues = {
   voteType: VoteType
   multiplier: Conviction
   amount: string
-  /** HDX amount for split / split-abstain (aye side). */
   aye: string
-  /** HDX amount for split / split-abstain (nay side). */
   nay: string
-  /** HDX amount for split-abstain (abstain side). */
   abstain: string
   asset: TAssetData
 }
@@ -56,14 +57,6 @@ export const useVoteModal = (
   const { getBalance } = useAccountBalances()
   const { data: locks } = useNativeTokenLocks()
   const hdxBalance = getBalance(native.id)
-  const { data: accountStake } = useQuery({
-    ...gigaAccountStakesQuery(rpc, account?.address ?? ""),
-    enabled: isGigaStaking,
-  })
-
-  const principalHuman = isGigaStaking
-    ? scaleHuman(accountStake?.hdx ?? 0n, native.decimals)
-    : ""
 
   const governanceLocks = locks?.get(TokenLockType.OpenGov) ?? 0n
   const governanceLocksHuman = scaleHuman(governanceLocks, native.decimals)
@@ -72,29 +65,20 @@ export const useVoteModal = (
     governanceLocks.toString(),
   )
   const allLocksHuman = scaleHuman(allLocks.toString(), native.decimals)
+  const ghdxLocks = locks?.get(TokenLockType.GigaStaking) ?? 0n
+  const ghdxLocksHuman = scaleHuman(ghdxLocks.toString(), native.decimals)
 
-  //@TODO: can I use total balance or should substrate locked balance from OTC or DCA for example?
-  const totalHdxBalance = hdxBalance?.total?.toString() ?? "0"
-  // Gas reserve — subtract a small buffer from the displayed max so users
-  // can't enter literally their entire balance. The runtime's vote check
-  // (`vote.balance ≤ total_balance`) fires AFTER the tx-fee deduction; if
-  // you vote with all your HDX the gas comes out of the same pot and the
-  // check fails with `InsufficientFunds`. 0.1 HDX is way more than any
-  // actual extrinsic fee and invisible at staking-scale balances.
-  const VOTE_GAS_RESERVE_HDX_HUMAN = "0.1"
-  const totalHdxBalanceHuman = Big.max(
-    Big(scaleHuman(totalHdxBalance, native.decimals)).minus(
-      VOTE_GAS_RESERVE_HDX_HUMAN,
-    ),
-    Big(0),
-  ).toString()
+  const totalHdxBalance = hdxBalance?.free?.toString() ?? "0"
+  const totalHdxBalanceHuman = scaleHuman(totalHdxBalance, native.decimals)
+
+  const hdxAtomic = (v: string) => toBigInt(v || "0", native.decimals)
 
   const form = useForm<VoteModalFormValues>({
     mode: "onChange",
     defaultValues: {
       voteType: "aye",
       multiplier: 0,
-      amount: principalHuman ?? "",
+      amount: isGigaStaking ? ghdxLocksHuman : "",
       aye: "",
       nay: "",
       abstain: "",
@@ -227,7 +211,7 @@ export const useVoteModal = (
 
   const lockedBlocks = CONVICTIONS_BLOCKS_BY_INDEX[multiplier] ?? 0
   const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
-  const totaVotes = (() => {
+  const totalVotes = (() => {
     if (voteType === "split") {
       return Big(aye || "0")
         .add(nay || "0")
@@ -239,10 +223,15 @@ export const useVoteModal = (
         .add(abstain || "0")
         .toString()
     }
-    return Big(amount || "0")
-      .mul(multiplier || 0.1)
-      .toString()
+    return Big(amount || "0").toString()
   })()
+
+  const totalVotesWithMultiplier =
+    voteType === "aye" || voteType === "nay"
+      ? Big(totalVotes)
+          .mul(multiplier || 0.1)
+          .toString()
+      : totalVotes
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -253,8 +242,6 @@ export const useVoteModal = (
       nay,
       abstain: abstainAmount,
     }: VoteModalFormValues) => {
-      const hdxAtomic = (v: string) => toBigInt(v || "0", native.decimals)
-
       const buildAccountVote = () => {
         if (voteType === "aye" || voteType === "nay") {
           const isAye = voteType === "aye"
@@ -300,11 +287,34 @@ export const useVoteModal = (
         }),
       }
 
+      const executedTransfarableAmount = Big(totalVotes)
+        .minus(
+          scaleHuman(hdxBalance?.frozen?.toString() ?? "0", native.decimals),
+        )
+        .toString()
+
+      const invalidateQueriesBase = [
+        ["accountOpenGovVotes"],
+        ["openGovReferenda"],
+        nativeTokenLocksQuery(rpc, account?.address ?? "").queryKey,
+      ]
+
+      const invalidateQueries = isGigaStaking
+        ? [
+            ...invalidateQueriesBase,
+            claimableVotingRewardsQuery(rpc, account?.address ?? "").queryKey,
+          ]
+        : invalidateQueriesBase
+
       return createTransaction(
         {
           tx,
-          invalidateQueries: [["accountOpenGovVotes"], ["openGovReferenda"]],
+          invalidateQueries,
           toasts,
+          executedAmount: {
+            amount: executedTransfarableAmount,
+            assetId: native.id,
+          },
         },
         { onSubmitted },
       )
@@ -320,7 +330,8 @@ export const useVoteModal = (
     totalHdxBalance,
     totalHdxBalanceHuman,
     lockedDays,
-    totaVotes,
+    totalVotesWithMultiplier,
+    ghdxLocksHuman,
     onSubmit,
     governanceLocksHuman,
     allLocksHuman,

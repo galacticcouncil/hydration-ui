@@ -3,7 +3,15 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
-import { openGovUnlockedTokensQuery } from "@/api/democracy"
+import { bestNumberQuery } from "@/api/chain"
+import {
+  accountUnlockClassesQuery,
+  openGovUnlockedTokensQuery,
+} from "@/api/democracy"
+import {
+  gigaStakeConstantsQuery,
+  gigaUnstakePositionsQuery,
+} from "@/api/gigaStake"
 import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
@@ -70,14 +78,23 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
   const { native } = useAssets()
   const indexerUrl = useProxyUrl()
 
-  const { data: unlockedTokens, isLoading: unlockedTokensLoading } = useQuery(
-    openGovUnlockedTokensQuery(
-      rpc,
+  const { data: bestNumber } = useQuery(bestNumberQuery(rpc))
+  const { data: gigaStakeConstants, isLoading: gigaStakeConstantsLoading } =
+    useQuery(gigaStakeConstantsQuery(rpc))
 
-      account?.address ?? "",
-      indexerUrl,
-    ),
+  const cooldownPeriod = gigaStakeConstants?.cooldownPeriod ?? 0
+  const parachainBlockNumber = bestNumber?.parachainBlockNumber ?? 0
+
+  const { data: unlockedTokens, isLoading: unlockedTokensLoading } = useQuery(
+    openGovUnlockedTokensQuery(rpc, account?.address ?? "", indexerUrl),
   )
+
+  const { data: unlockClasses, isLoading: unlockClassesLoading } = useQuery(
+    accountUnlockClassesQuery(rpc, account?.address ?? ""),
+  )
+
+  const { data: pendingPositions = [], isLoading: pendingPositionsLoading } =
+    useQuery(gigaUnstakePositionsQuery(rpc, account?.address ?? ""))
 
   const lockedInReferendaBig = new Big(lockedInReferenda)
 
@@ -86,22 +103,39 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
     native.decimals,
   )
 
-  const value = lockedInReferendaBig.lte(0)
+  const unlockableReferendaLocks = lockedInReferendaBig.lte(0)
     ? "0"
     : lockedInReferendaBig.minus(maxLocked).toString()
 
-  const [displayValue] = useDisplayAssetPrice(native.id, value)
+  const unlockableGigaPendingPositions = pendingPositions.filter(
+    (position) => position.voteAtBlock + cooldownPeriod < parachainBlockNumber,
+  )
 
-  const lockedSeconds =
+  const unlockableGigaStakingLocks = unlockableGigaPendingPositions
+    .reduce((acc, position) => acc + position.amount, 0n)
+    .toString()
+
+  const lockedReferendaSeconds =
     (unlockedTokens?.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
 
+  const maxUnlockable = Big.min(
+    unlockableReferendaLocks,
+    unlockableGigaStakingLocks,
+  ).toString()
+
+  const [displayMaxUnlockable] = useDisplayAssetPrice(native.id, maxUnlockable)
+
   return {
-    value,
-    displayValue,
-    lockedSeconds,
-    unlockableIds: [],
+    maxUnlockable,
+    displayMaxUnlockable,
+    lockedReferendaSeconds: lockedReferendaSeconds,
+    unlockableGigaPendingPositions,
     votesToRemove: unlockedTokens?.votesToRemove ?? [],
-    classIds: unlockedTokens?.classIds ?? [],
-    isLoading: unlockedTokensLoading,
+    classIds: unlockClasses ?? [],
+    isLoading:
+      unlockedTokensLoading ||
+      pendingPositionsLoading ||
+      gigaStakeConstantsLoading ||
+      unlockClassesLoading,
   }
 }

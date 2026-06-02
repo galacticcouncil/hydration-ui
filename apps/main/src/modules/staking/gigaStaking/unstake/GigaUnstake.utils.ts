@@ -9,6 +9,7 @@ import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
+import { accountUnlockClassesQuery } from "@/api/democracy"
 import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
@@ -40,9 +41,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const { data: gigaAccountStakes } = useQuery(
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
-  // Two-tier freeze breakdown — needed to decide how much is unstakeable
-  // and whether to route the submit through the combined unlock+unstake
-  // batch or just a plain `giga_unstake`.
+
   const { data: claimableRewards } = useQuery(
     claimableVotingRewardsQuery(rpc, account?.address ?? ""),
   )
@@ -63,22 +62,8 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
 
-  // Freeze breakdown:
-  //   - `ongoingLockedHdx`  → votes on still-running referenda; can't be
-  //     unstaked without abandoning the vote. Show as a warning, exclude
-  //     from MAX.
-  //   - `unfreezableHdx`    → votes on completed referenda; auto-released
-  //     by the combined batch (`remove_vote × N + giga_unstake`). Include
-  //     in MAX — when the user enters more than the runtime currently
-  //     allows, we route through the combined batch instead of a plain
-  //     unstake.
   const ongoingLockedHdxPlanck = claimableRewards?.ongoingLockedHdx ?? 0n
-  // Total HDX that `claim_rewards` will drain into auto-staked GIGAHDX
-  // inside the combined batch — sum of already-pending and allocations
-  // about to be credited by `remove_vote`. Used to (a) silently bump
-  // the chain-side unstake amount when the user submits at MAX, so the
-  // freshly auto-staked shares get unstaked too (clean exit), and
-  // (b) drive the "...claimed N HDX rewards" suffix in the toast.
+
   const pendingHdxPlanck = claimableRewards?.pendingHdx ?? 0n
   const allocReadyHdxPlanck = claimableRewards?.allocReadyHdx ?? 0n
   const totalClaimableHdxPlanck = pendingHdxPlanck + allocReadyHdxPlanck
@@ -96,13 +81,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const ongoingLockedInGigaHdx = exchangeRate
     ? Big(ongoingLockedHdxHuman).div(exchangeRate.toString()).toString()
     : "0"
-  // `frozenInGigaHdx` retained for back-compat with the alert UI — but
-  // now represents only the permanently-locked portion (ongoing votes),
-  // which is what the alert text was always meant to communicate.
   const frozenInGigaHdx = ongoingLockedInGigaHdx
-  // MAX with frozen — only the ongoing portion limits us, completed-ref
-  // freeze gets cleaned up in the combined batch. Defensive clamp at 0
-  // for the runtime-invariant-violation case (frozen > hdx).
   const maxUnstakeWithFrozen = Big.max(
     suppliedHdx.minus(ongoingLockedInGigaHdx),
     Big(0),
@@ -143,9 +122,42 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const stakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
+      const unstakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
         gigahdx_amount: toBigInt(amount, meta.decimals),
       })
+
+      const rewards = await rpc.queryClient.ensureQueryData(
+        claimableVotingRewardsQuery(rpc, account.address),
+      )
+
+      const allocReadyVotes = rewards.allocReadyVotes
+      const unlockClasses = await rpc.queryClient.ensureQueryData(
+        accountUnlockClassesQuery(rpc, account.address),
+      )
+
+      const calls = [
+        ...allocReadyVotes.map(
+          ({ refIndex, trackId }) =>
+            rpc.papi.tx.ConvictionVoting.remove_vote({
+              class: trackId ?? undefined,
+              index: refIndex,
+            }).decodedCall,
+        ),
+        ...unlockClasses.map(
+          (classId) =>
+            rpc.papi.tx.ConvictionVoting.unlock({
+              target: account.address,
+              class: classId,
+            }).decodedCall,
+        ),
+      ]
+
+      const tx =
+        calls.length > 0
+          ? rpc.papi.tx.Utility.batch_all({
+              calls: [...calls, unstakeTx.decodedCall],
+            })
+          : unstakeTx
 
       const toasts = {
         submitted: t("staking:gigaStaking.unstake.toasts.submitted", {
@@ -160,7 +172,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
 
       return createTransaction(
         {
-          tx: stakeTx,
+          tx,
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(account.address),
             gigaQueryKey(account.address),
@@ -173,8 +185,6 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     },
   })
 
-  // `Stakes.gigahdx × rate > Stakes.hdx` means there's passive yield that
-  // hasn't been folded into `Stakes.hdx` yet — `realize_yield` will do it.
   const accruedYieldExists = Big(suppliedHdx)
     .mul(exchangeRate?.toString() || "0")
     .gt(
@@ -186,50 +196,25 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const hasAllocReadyVotes = (claimableRewards?.allocReadyVotes.length ?? 0) > 0
   const hasPendingRewards = (claimableRewards?.pendingHdx ?? 0n) > 0n
 
-  /**
-   * Decide whether to route the submit through the combined claim+unstake
-   * batch, or just `giga_unstake` alone.
-   *
-   * Use the batch whenever there's anything worth bundling alongside the
-   * unstake — so the user signs once for "unstake + claim everything I'm
-   * entitled to":
-   *
-   *   - completed-ref votes (`allocReadyVotes`) → `remove_vote` releases
-   *     `Stakes.frozen` AND credits the user's reward share into
-   *     `PendingRewards`. Required when `unfreezableHdx > 0`; harmless
-   *     otherwise.
-   *   - pending rewards (`pendingHdx > 0`) → `claim_rewards` drains them
-   *     into auto-staked GIGAHDX.
-   *   - accrued passive yield → `realize_yield` folds it into `Stakes.hdx`.
-   *
-   * If none of these apply, plain `giga_unstake` is enough.
-   */
   const useCombinedBatch =
     hasAllocReadyVotes || hasPendingRewards || accruedYieldExists
 
   const onSubmit = form.handleSubmit((values) => {
-    if (!account) return
+    if (!account) throw new Error("No account connected")
+    const amount = Big(values.amount || "0")
+
     if (useCombinedBatch && claimableRewards) {
-      // When the user submits at MAX, `claim_rewards` inside the batch
-      // will auto-stake `totalClaimableHdx` worth of GIGAHDX into the
-      // position right before `giga_unstake` runs. Without compensating,
-      // those fresh shares would be left as a residual. Bumping the
-      // chain-side amount by the equivalent so the unstake clears them
-      // too — the displayed MAX stays unchanged (matches the form input
-      // the user actually saw); the toast suffix carries the receipt.
       const submittingAtMax =
-        totalClaimableInGigaHdx.gt(0) &&
-        Big(values.amount || "0").gte(maxUnstake)
+        totalClaimableInGigaHdx.gt(0) && amount.gte(maxUnstake)
       const chainAmountHuman = submittingAtMax
-        ? Big(values.amount).plus(totalClaimableInGigaHdx).toString()
-        : values.amount
+        ? amount.plus(totalClaimableInGigaHdx).toString()
+        : amount.toString()
 
       const willClaimRewards = totalClaimableHdxPlanck > 0n
 
       claimMutation.mutate(
         {
           allocReadyVotes: claimableRewards.allocReadyVotes,
-          unlockClasses: claimableRewards.unlockClasses,
           accountAddress: account.address,
           hasAccruedYield: accruedYieldExists,
           hasClaimableRewards: willClaimRewards,

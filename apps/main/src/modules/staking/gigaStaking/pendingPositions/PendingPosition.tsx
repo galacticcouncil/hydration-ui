@@ -2,10 +2,12 @@ import {
   Amount,
   Button,
   Flex,
+  Separator,
   Text,
   Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { durationInDaysAndHoursFromNow } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -38,6 +40,7 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   const { t } = useTranslation(["common", "staking"])
   const [isCancelConfirmationModalOpen, setIsCancelConfirmationModalOpen] =
     useState(false)
+  const { isMobile } = useBreakpoints()
   const { native } = useAssets()
   const rpc = useRpcProvider()
   const { data: best } = useQuery(bestNumberQuery(rpc))
@@ -45,8 +48,6 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   const cancelPendingPosition = useCancelPendingPosition()
   const claimPendingPosition = useClaimPendingPosition()
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
-
-  // TODO: Add claiming logic
 
   const amountShifted = scaleHuman(amount, native.decimals)
   const [displayValue] = useDisplayAssetPrice(native.id, amountShifted)
@@ -77,13 +78,89 @@ export const PendingPosition: FC<PendingPositionProps> = ({
     }
   }, [currentBlock, rpc.slotDurationMs, t, cooldownPeriod, voteAtBlock])
 
+  if (isMobile) {
+    return (
+      <SUnstakingPosition align="center" justify="space-between" gap="base">
+        <Flex direction="column" gap="base" flex={1}>
+          <Flex align="center" gap="s">
+            <AssetLogo id={native.id} />
+
+            <Amount
+              value={t("currency", {
+                value: amountShifted,
+                symbol: native.symbol,
+              })}
+              displayValue={displayValue}
+            />
+          </Flex>
+
+          <Separator />
+
+          {unlockStats === null ? (
+            <ValueStats
+              label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
+              value="—"
+              wrap
+              size="small"
+              sx={{
+                alignItems: "flex-end",
+              }}
+            />
+          ) : unlockStats.claimableNow ? (
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={() =>
+                claimPendingPosition.mutate({ voteAtBlock, amount })
+              }
+              width="fit-content"
+              disabled={claimPendingPosition.isPending}
+            >
+              {t("staking:gigaStaking.unstakingPositions.claimCta")}
+            </Button>
+          ) : (
+            <ValueStats
+              label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
+              customValue={
+                <Flex align="center" gap="s">
+                  <Text fs="p5" lh={1} fw={500} color={getToken("text.high")}>
+                    {unlockStats.label}
+                  </Text>
+                  {unlockStats.tooltip && (
+                    <Tooltip asChild text={unlockStats.tooltip} />
+                  )}
+                </Flex>
+              }
+              wrap={false}
+              size="small"
+              sx={{
+                alignItems: "flex-end",
+              }}
+            />
+          )}
+        </Flex>
+        <Button
+          variant="tertiary"
+          size="small"
+          onClick={() => setIsCancelConfirmationModalOpen(true)}
+          disabled={cancelPendingPosition.isPending}
+        >
+          {t("cancel")}
+        </Button>
+      </SUnstakingPosition>
+    )
+  }
+
   return (
     <SUnstakingPosition align="center" justify="space-between">
       <Flex align="center" gap="s">
         <AssetLogo id={native.id} />
 
         <Amount
-          value={t("currency", { value: amountShifted, symbol: native.symbol })}
+          value={t("currency", {
+            value: amountShifted,
+            symbol: native.symbol,
+          })}
           displayValue={displayValue}
         />
       </Flex>

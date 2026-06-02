@@ -24,7 +24,7 @@ export const useGigaStakingMigration = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const isBound = await rpc.queryClient.ensureQueryData(
+      const isBound = await rpc.queryClient.fetchQuery(
         evmAccountBindingQuery(rpc, account.address),
       )
 

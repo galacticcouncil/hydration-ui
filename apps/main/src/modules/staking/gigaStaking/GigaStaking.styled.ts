@@ -2,52 +2,14 @@ import { Box, Flex } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SChartContainer = styled(Box)(
+export const SChartLegendContainer = styled(Box)(
   ({ theme }) => css`
-    position: relative;
-    overflow: hidden;
+    padding: ${theme.containers.paddings.primary};
     background: ${theme.surfaces.containers.mid.primary};
     border-radius: ${theme.containers.cornerRadius.containersPrimary};
     border: 1px solid ${theme.details.borders};
   `,
 )
-
-export const SChartLegendContainer = styled(Box)(
-  ({ theme }) => css`
-    padding: ${theme.containers.paddings.primary};
-
-    background: ${theme.surfaces.containers.dim.dimOnBg};
-  `,
-)
-
-/**
- * Standalone rewards-to-claim container. Replaces the chart + legend stack
- * after the rewards-curve chart was removed from the design. Visually the
- * legend variant (dim background, primary padding) inside a bordered card.
- */
-export const SRewardsContainer = styled(Box)(
-  ({ theme }) => css`
-    padding: ${theme.containers.paddings.primary};
-
-    background: ${theme.surfaces.containers.dim.dimOnBg};
-    border-radius: ${theme.containers.cornerRadius.containersPrimary};
-    border: 1px solid ${theme.details.borders};
-  `,
-)
-
-// export const SGigaHDXBanner = styled(Box)(
-//   ({ theme }) => css`
-//     position: relative;
-
-// background: linear-gradient(
-//   90deg,
-//   ${theme.colors.basePalette.coralPink} 5.78%,
-//   rgba(229, 62, 118, 0) 75.2%
-// );
-//     border-radius: ${theme.containers.cornerRadius.containersPrimary};
-//     border: 1px solid ${theme.colors.basePalette.coralPink};
-//   `,
-// )
 
 export const SGigaHDXBanner = styled(Flex)(
   ({ theme }) => css`
