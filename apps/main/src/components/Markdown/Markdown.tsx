@@ -14,9 +14,10 @@ import { mdx } from "@/i18n/content"
 
 export type MarkdownProps = ProseProps & {
   id: string
+  values?: Record<string, string | number>
 }
 
-export const Markdown: React.FC<MarkdownProps> = ({ id, ...props }) => {
+export const Markdown: React.FC<MarkdownProps> = ({ id, values, ...props }) => {
   const { i18n } = useTranslation()
   const locale = i18n.language
 
@@ -47,7 +48,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ id, ...props }) => {
               ),
           }}
         >
-          <Mdx />
+          <Mdx {...values} />
         </MDXProvider>
       </Prose>
     </Suspense>

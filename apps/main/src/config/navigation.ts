@@ -54,6 +54,7 @@ export const LINKS = {
   // memepad: "/memepad",
   strategies: "/strategies",
   strategiesHdcl: "/strategies/hdcl-vault",
+  strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -166,6 +167,11 @@ export const NAVIGATION: NavigationItem[] = [
     key: "staking",
     to: LINKS.staking,
     icon: GemIcon,
+  },
+  {
+    key: "strategiesHollarBonds",
+    to: LINKS.strategiesHollarBonds,
+    icon: GoalIcon,
   },
   // {
   //   key: "referrals",
@@ -317,6 +323,10 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     strategiesHdcl: {
       title: t("navigation.strategiesHdcl.title"),
+      description: "",
+    },
+    strategiesHollarBonds: {
+      title: t("navigation.strategiesHollarBonds.title"),
       description: "",
     },
     // memepad: {

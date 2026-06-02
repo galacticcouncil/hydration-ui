@@ -17,7 +17,7 @@ export const mapOtcOffersToTableData =
     const priceOut = assetPrices[assetOut.id]
 
     const offerPrice =
-      priceIn?.isValid && priceOut?.isValid && Big(priceIn.price).gt(0)
+      priceIn?.isValid && Big(priceIn.price).gt(0)
         ? new Big(assetAmountIn)
             .mul(priceIn.price)
             .div(assetAmountOut)
@@ -25,7 +25,7 @@ export const mapOtcOffersToTableData =
         : null
 
     const marketPricePercentage =
-      offerPrice && priceOut && Big(priceOut.price).gt(0)
+      offerPrice && priceOut?.isValid && Big(priceOut.price).gt(0)
         ? math.calculateDiffToRef(
             toBigInt(offerPrice, RUNTIME_DECIMALS),
             toBigInt(priceOut.price, RUNTIME_DECIMALS),

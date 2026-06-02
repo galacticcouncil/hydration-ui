@@ -165,6 +165,7 @@ export const SProse = styled(Box)<ProseStyleProps>(
         color: ${theme.details.separators};
         background: ${theme.details.separators};
         border: 0;
+        margin: ${theme.space.l} 0;
       }
 
       blockquote {

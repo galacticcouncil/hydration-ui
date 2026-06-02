@@ -8,13 +8,25 @@ import hdcl from "@/i18n/locales/en/hdcl.json"
 import liquidity from "@/i18n/locales/en/liquidity.json"
 import staking from "@/i18n/locales/en/staking.json"
 import stats from "@/i18n/locales/en/stats.json"
+import strategies from "@/i18n/locales/en/strategies.json"
 import trade from "@/i18n/locales/en/trade.json"
 import wallet from "@/i18n/locales/en/wallet.json"
 import xcm from "@/i18n/locales/en/xcm.json"
 
 export const defaultNS = "common"
 export const resources = {
-  en: { common, liquidity, trade, wallet, borrow, staking, xcm, stats, hdcl },
+  en: {
+    common,
+    liquidity,
+    trade,
+    wallet,
+    borrow,
+    staking,
+    xcm,
+    stats,
+    strategies,
+    hdcl,
+  },
 } as const
 
 const i18n = i18next.createInstance()

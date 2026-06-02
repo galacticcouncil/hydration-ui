@@ -33,6 +33,7 @@
   "recipient.modal.destinationWallet": "Destination wallet",
   "recipient.modal.empty.description": "All of accounts you've used before will appear here",
   "recipient.modal.title": "Change receiving address",
+  "summary.remainingLimit": "Remaining transfer limit",
   "summary.approvalFee": "Approval fee",
   "summary.bridgeFee": "Bridge fee",
   "summary.destinationFee.free": "FREE",
@@ -60,5 +61,16 @@
   "journey.status.timeout": "Timeout",
   "history.emptyState.noTransfers": "No transfer history found",
   "history.emptyState.connectWallet": "Please connect a wallet to view transfer history",
-  "history.emptyState.empty": "No transfers found for your account"
+  "history.emptyState.empty": "No transfers found for your account",
+  "limit.usage": "Limit usage",
+  "limit.description": "Transfers beyond this limit will be temporarily locked by the circuit breaker.",
+  "limit.alert.deposit.exceeded": "This deposit exceeds the circuit breaker threshold. {{ remaining, currency }} will be deposited immediately. {{ locked, currency }} will remain temporarily locked until {{ datetime, date(format: 'dd/MM/yyyy HH:mm') }} or until the circuit breaker is lifted.",
+  "limit.alert.deposit.locked": "This deposit exceeds the circuit breaker threshold. {{ locked, currency }} will remain temporarily locked until {{ datetime, date(format: 'dd/MM/yyyy HH:mm') }} or until the circuit breaker is lifted.",
+  "limit.alert.window.reset": "You can try again in ~{{ value, interval(format: 'short'; largest: 1) }} to transfer without lockup period.",
+  "limit.alert.window.lockdown": "Lockdown lifts in ~{{ value, interval(format: 'short'; largest: 1) }}.",
+  "limit.alert.acceptLockupPeriod": "I accept the lockup period for my transfer.",
+  "limit.alert.withdraw.locked": "Withdrawals are currently disabled.",
+  "limit.tooltip.window.expired": "Period expired - next mint resets.",
+  "limit.tooltip.window.reset": "Resets in ~{{ value, interval(format: 'short'; largest: 1) }}",
+  "limit.tooltip.window.lockdown": "Lockdown lifts in ~{{ value, interval(format: 'short'; largest: 1) }}."
 }
