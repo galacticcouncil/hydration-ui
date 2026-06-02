@@ -2,7 +2,7 @@ import { ENV } from "@/config/env"
 
 export const fetchGrafana = async (
   sql: string,
-  refId: "buckets" | "price",
+  refId: "buckets" | "price" | "received" | "spent",
   signal?: AbortSignal,
 ) =>
   fetch(ENV.VITE_GRAFANA_URL, {
