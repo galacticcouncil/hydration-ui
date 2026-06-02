@@ -175,6 +175,7 @@ export const AppDataProvider: React.FC<{
     formattedPoolReserves,
     formattedGhoUserData,
     formattedGhoReserveData,
+    externalApyData,
   )
 
   return (
