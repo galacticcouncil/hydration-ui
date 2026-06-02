@@ -18,6 +18,7 @@ import { millisecondsToHours } from "date-fns"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import {
   borrowReservesQuery,
   gigaLendingPoolAddressProvider,
@@ -33,14 +34,17 @@ import {
 import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 /**
- * Reference stake (in HDX planck) used as the dilution input for the fleet
- * voting APR when the connected wallet has no GIGAHDX position (or no wallet
- * is connected at all). Picked so the projection doesn't degenerate into the
- * "marginal voter grabs the whole pool" limit on chains with few voters,
- * while still being small enough to represent a realistic new-staker entry.
+ * Reference stake (in HDX planck) used as the dilution input for the
+ * voting APR when the connected wallet has no GIGAHDX position AND no
+ * unstaked HDX in their wallet (or no wallet is connected at all).
+ *
+ * Picked so the projection doesn't degenerate into the "marginal voter
+ * grabs the whole pool" limit on chains with few voters, while still
+ * being small enough to represent a realistic new-staker entry.
  *
  * 1,000 HDX — a plausible "I'm trying staking out" amount.
  */
@@ -61,17 +65,43 @@ export const GigaStakeTotalsHeader: FC = () => {
 
   const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
-  // Convert user GIGAHDX × rate → HDX planck. Returns the default reference
-  // when the user has no position (or no rate yet).
-  const aprReferenceStake = (() => {
-    if (!exchangeRate) return DEFAULT_REFERENCE_STAKE_HDX_PLANCK
+  // Spendable HDX in the wallet (i.e. what the user could in theory stake
+  // right now). Same derivation `GigaStake.utils.ts` uses for the "MAX"
+  // button: free balance minus any in-flight lock from other pallets
+  // (vested unlock, classic staking, prior gigastaking).
+  const { getBalance } = useAccountBalances()
+  const nativeBalance = getBalance(native.id)
+  const { data: locksData } = useNativeTokenLocks()
+  const stakeableHdxPlanck = (() => {
+    if (!nativeBalance) return 0n
+    const free = BigInt(nativeBalance.free.toString())
+    const vested = locksData?.get(TokenLockType.Vesting) ?? 0n
+    const classicStake = locksData?.get(TokenLockType.Staking) ?? 0n
+    const gigaStaked = locksData?.get(TokenLockType.GigaStaking) ?? 0n
+    const spendable = free - vested - classicStake - gigaStaked
+    return spendable > 0n ? spendable : 0n
+  })()
+
+  // Voting-APR reference stake = what the user currently has staked PLUS
+  // what they could add by staking their free HDX. This is the "if I went
+  // all-in" projection — answers the question "what could I realistically
+  // earn with everything I have available?". Falls back to a default
+  // reference (1,000 HDX) only when both pieces are zero, so the headline
+  // never collapses to the noisy marginal-voter limit.
+  const stakedHdxPlanck = (() => {
+    if (!exchangeRate) return 0n
     const ghdxBig = Big(userGhdxHuman)
-    if (ghdxBig.lte(0)) return DEFAULT_REFERENCE_STAKE_HDX_PLANCK
+    if (ghdxBig.lte(0)) return 0n
     const hdxHuman = ghdxBig.times(exchangeRate.toString())
     return BigInt(
       hdxHuman.times(`1e${native.decimals}`).round(0, Big.roundDown).toString(),
     )
   })()
+  const totalReferenceStake = stakedHdxPlanck + stakeableHdxPlanck
+  const aprReferenceStake =
+    totalReferenceStake > 0n
+      ? totalReferenceStake
+      : DEFAULT_REFERENCE_STAKE_HDX_PLANCK
   // We render passive and voting on separate lines (Option 2 split) to make
   // the conditionality of voting APR explicit — a passive holder earns only
   // the base component; voting is "+ up to X% if you vote at max conviction".
