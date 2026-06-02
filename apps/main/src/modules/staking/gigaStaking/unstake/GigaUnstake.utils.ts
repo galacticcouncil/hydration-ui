@@ -78,10 +78,27 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     ongoingLockedHdxPlanck,
     meta.decimals,
   )
-  const ongoingLockedInGigaHdx = exchangeRate
-    ? Big(ongoingLockedHdxHuman).div(exchangeRate.toString()).toString()
-    : "0"
-  const frozenInGigaHdx = ongoingLockedInGigaHdx
+  // Raw vote-commitment in GIGAHDX terms — straight from chain (sum across
+  // every UserVoteRecord on an ongoing ref). Can exceed the user's position
+  // when the same conviction-locked balance backs votes across multiple
+  // tracks (pallet-gigahdx::Stakes.frozen is a SUM, not a per-class max).
+  const ongoingLockedInGigaHdxRaw = exchangeRate
+    ? Big(ongoingLockedHdxHuman).div(exchangeRate.toString())
+    : Big(0)
+  // Display value — clamped to the user's actual position so the warning
+  // ("X GHDX of your stake is locked under ongoing referenda") never shows
+  // an X larger than the stake itself. Honest in both regimes:
+  //   - Voted with less than position: clamp inactive → shows actual lock.
+  //   - Voted across many tracks beyond position: clamps to position →
+  //     reads as "your entire position is locked", which is the truth
+  //     (maxUnstake is 0 in this case anyway).
+  const frozenInGigaHdx = Big.min(
+    ongoingLockedInGigaHdxRaw,
+    suppliedHdx,
+  ).toString()
+  // Unstake math still uses the raw value so over-commit still correctly
+  // produces maxUnstakeWithFrozen = 0 via the Big.max clamp below.
+  const ongoingLockedInGigaHdx = ongoingLockedInGigaHdxRaw.toString()
   const maxUnstakeWithFrozen = Big.max(
     suppliedHdx.minus(ongoingLockedInGigaHdx),
     Big(0),
