@@ -3,6 +3,7 @@ import { Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
+import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 
@@ -19,6 +20,7 @@ export const SwapPageMobile: FC = () => {
         <Outlet />
       </SSwapFormContainer>
       <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
+      <TradeOrdersHistory />
       <TradeOrders />
     </Flex>
   )
