@@ -44,9 +44,7 @@ interface Props {
  * shares queue-side settled, click Claim to receive".
  */
 const isActionable = (r: WithdrawalRow) =>
-  r.state === "pending" ||
-  r.state === "partial" ||
-  (r.claimableHdcl ?? 0) > 0
+  r.state === "pending" || r.state === "partial" || (r.claimableHdcl ?? 0) > 0
 
 export const WithdrawalsCard = ({
   rows,

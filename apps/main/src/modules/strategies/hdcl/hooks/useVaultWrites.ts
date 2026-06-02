@@ -559,7 +559,9 @@ export function useSetAutoClaim() {
         args: [enabled],
       })
       return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-        submitted: enabled ? "Enabling auto-claim..." : "Disabling auto-claim...",
+        submitted: enabled
+          ? "Enabling auto-claim..."
+          : "Disabling auto-claim...",
         success: enabled ? "Auto-claim enabled" : "Auto-claim disabled",
       })
     },
