@@ -1,13 +1,10 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
-import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
   AnimatedValue,
   Box,
   ChartValues,
   Flex,
-  Icon,
   Paper,
-  Separator,
   Text,
   TradingViewChart,
   TradingViewChartRef,
@@ -22,14 +19,12 @@ import {
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
-import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
-import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { useTradeChartGrafanaData } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.data"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
-
-export type TradeChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
 
 const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
   ChartTimeRangeOptionType<TradeChartTimeFrameType | "all">
@@ -38,27 +33,25 @@ const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
   label: i18n.t(`chart.timeFrame.${option}`),
 }))
 
-type TradeChartProps = {
+type TradeChartGrafanaProps = {
   readonly height: number
 }
 
-export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
+export const TradeChartGrafana: React.FC<TradeChartGrafanaProps> = ({
+  height,
+}) => {
   const { t } = useTranslation()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const chartRef = useRef<TradingViewChartRef>(null)
-  const [isInverted, setIsInverted] = useState(false)
   const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
     "week",
   )
 
-  const assetA = isInverted ? assetOut : assetIn
-  const assetB = isInverted ? assetIn : assetOut
-
-  const { prices, isLoading, isSuccess, isError } = useTradeChartData({
-    assetInId: assetA,
-    assetOutId: assetB,
-    timeFrame: interval === "all" ? null : interval,
+  const { prices, isLoading, isSuccess, isError } = useTradeChartGrafanaData({
+    assetInId: assetIn,
+    assetOutId: assetOut,
+    timeFrame: interval,
   })
 
   const isEmpty = isSuccess && !prices.length
@@ -73,22 +66,20 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     isLoadingValues,
   } = useTradeChartValues({
     prices,
-    priceAssetId: assetA,
+    priceAssetId: assetIn,
     isEmpty,
     isError,
     isLoading,
   })
 
   const { getAssetWithFallback } = useAssets()
-
-  const assetAMeta = getAssetWithFallback(assetA)
-  const assetBMeta = getAssetWithFallback(assetB)
+  const assetInMeta = getAssetWithFallback(assetIn)
 
   const chartValue = shouldShowValues ? (
     <Text>
       <AnimatedValue
         value={value}
-        format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
+        format={(value) => t("currency", { value, symbol: assetInMeta.symbol })}
       />
     </Text>
   ) : undefined
@@ -112,35 +103,14 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           displayValue={chartDisplayValue}
           isLoading={isLoadingValues}
         />
-        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <SChartInvertButton
-            size="small"
-            variant="tertiary"
-            outline
-            onClick={() => setIsInverted((prev) => !prev)}
-          >
-            <Icon component={ArrowLeftRight} size="m" />
-            {assetBMeta.symbol}/{assetAMeta.symbol}
-          </SChartInvertButton>
-          <Separator
-            orientation="vertical"
-            mx="base"
-            sx={{
-              height: "l",
-              mt: "xs",
-              display: ["none", null, null, null, "block"],
-            }}
-          />
-          <ChartTimeRange
-            sx={{ ml: "auto" }}
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={(option) => {
-              setInterval(option.key)
-              chartRef.current?.resetZoom()
-            }}
-          />
-        </Flex>
+        <ChartTimeRange
+          options={intervalOptions}
+          selectedOption={interval}
+          onSelect={(option) => {
+            setInterval(option.key)
+            chartRef.current?.resetZoom()
+          }}
+        />
       </Flex>
       <ChartState
         sx={{ height }}
