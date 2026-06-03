@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
+import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import { VoteModal } from "@/modules/staking/components/VoteModal/VoteModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -48,15 +49,24 @@ export const ReferendaFooter: FC<Props> = ({
         referendumId: id,
       }),
     }
+    const invalidateQueriesBase = [
+      accountOpenGovVotesQuery(rpc, accountAddress).queryKey,
+      nativeTokenLocksQuery(rpc, accountAddress).queryKey,
+    ]
+
+    const invalidateQueries = isGigaStaking
+      ? [
+          ...invalidateQueriesBase,
+          claimableVotingRewardsQuery(rpc, account?.address ?? "").queryKey,
+        ]
+      : invalidateQueriesBase
+
     createTransaction({
       tx: rpc.papi.tx.ConvictionVoting.remove_vote({
         class: classId,
         index: id,
       }),
-      invalidateQueries: [
-        accountOpenGovVotesQuery(rpc, accountAddress).queryKey,
-        nativeTokenLocksQuery(rpc, accountAddress).queryKey,
-      ],
+      invalidateQueries,
       toasts,
     })
   }
