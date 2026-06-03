@@ -1,16 +1,39 @@
 import { Close, Flame } from "@galacticcouncil/ui/assets/icons"
-import { Icon, MorphLabel, PromoteBanner } from "@galacticcouncil/ui/components"
+import {
+  Icon,
+  MorphLabel,
+  PromoteBanner,
+  PromoteBannerProps,
+} from "@galacticcouncil/ui/components"
+import { HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useBondData } from "@/api/bonds"
 import {
   SGigaNewsContainer,
   SGigaNewsToggleButton,
   SStackLayer,
   SStackRoot,
 } from "@/components/GigaNews/GigaNews.styled"
+import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useBannersStore, useEnabledBanners } from "@/states/banners"
+
+const HollarBondBanner: React.FC<PromoteBannerProps> = ({ item }) => {
+  const { t } = useTranslation("common")
+  const { timeLeft } = useBondData(HOLLAR_BOND_25_08_26_ID)
+  const apr = getBondApr(HOLLAR_BOND_25_08_26_ID, timeLeft)
+  return (
+    <PromoteBanner
+      item={{
+        ...item,
+        title: t("banners.hollarb.title"),
+        description: apr ? t("banners.hollarb.description", { apr }) : "",
+      }}
+    />
+  )
+}
 
 export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const { t } = useTranslation("common")
@@ -76,21 +99,25 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
               banner.onClose?.()
             }
 
+            const item = {
+              ...banner,
+              onClose: depth === 0 ? onClose : undefined,
+              ...(banner.to
+                ? {
+                    onCta: () => {
+                      navigate({ to: banner.to })
+                    },
+                  }
+                : {}),
+            }
+
             return (
               <SStackLayer key={banner.id} $depth={depth}>
-                <PromoteBanner
-                  item={{
-                    ...banner,
-                    onClose: depth === 0 ? onClose : undefined,
-                    ...(banner.to
-                      ? {
-                          onCta: () => {
-                            navigate({ to: banner.to })
-                          },
-                        }
-                      : {}),
-                  }}
-                />
+                {banner.id === "hollarb" ? (
+                  <HollarBondBanner item={item} />
+                ) : (
+                  <PromoteBanner item={item} />
+                )}
               </SStackLayer>
             )
           })}

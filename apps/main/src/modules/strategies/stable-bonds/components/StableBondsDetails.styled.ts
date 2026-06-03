@@ -1,5 +1,5 @@
 import { Box, Flex, Stack } from "@galacticcouncil/ui/components"
-import { containerSize, css, pxToRem, styled } from "@galacticcouncil/ui/utils"
+import { containerSize, css, styled } from "@galacticcouncil/ui/utils"
 
 export const SDetailsContainer = styled(Stack)(
   ({ theme }) => css`
@@ -71,22 +71,6 @@ export const SRemainingList = styled(Stack)`
     css`
       width: auto;
       flex-direction: row;
-    `,
-  )}
-`
-
-export const SRemainingItem = styled(Stack)`
-  width: 100%;
-  ${containerSize(
-    "md",
-    css`
-      width: ${pxToRem(120)};
-    `,
-  )}
-  ${containerSize(
-    "md",
-    css`
-      width: ${pxToRem(160)};
     `,
   )}
 `

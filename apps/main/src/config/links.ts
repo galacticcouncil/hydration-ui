@@ -3,6 +3,4 @@ export const IMPERMANENT_LOSS_LINK =
 
 export const HYDRATION_DOCS_LINK = "https://docs.hydration.net"
 
-export const CLASSIC_UI_LINK = "https://classic.hydration.net"
-
 export const STAKING_DOCS_LINK = "https://docs.hydration.net/products/staking"

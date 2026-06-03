@@ -54,8 +54,8 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const rpc = useRpcProvider()
   const submit = useSubmitStableBondsOrder()
   const { getAssetWithFallback } = useAssets()
-  const stableBond = useStableBondsConfig()
-  const { timeLeft } = useBondData(stableBond.bondId)
+  const config = useStableBondsConfig()
+  const { timeLeft } = useBondData(config.bondId)
 
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),

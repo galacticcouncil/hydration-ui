@@ -1,19 +1,21 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
+  AnimatedValue,
   Box,
   ChartValues,
   Flex,
   Icon,
   Paper,
   Separator,
+  Text,
   TradingViewChart,
   TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useMemo, useRef, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { funnel, last } from "remeda"
 
@@ -54,21 +56,33 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     "week",
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
-  const { call: onCrosshairMove } = useMemo(
-    () =>
-      funnel(
-        (nextCrosshair: BaselineChartData | null) => {
-          setCrosshair(nextCrosshair)
-        },
-        {
-          minGapMs: 200,
-          triggerAt: "start",
-          reducer: (_, next: BaselineChartData | null) => next,
-        },
-      ),
-    [],
-  )
+  const { call: setCrosshairThrottled, cancel: cancelCrosshairThrottle } =
+    useMemo(
+      () =>
+        funnel(
+          (nextCrosshair: BaselineChartData | null) => {
+            setCrosshair(nextCrosshair)
+          },
+          {
+            minGapMs: 200,
+            triggerAt: "start",
+            reducer: (_, next: BaselineChartData | null) => next,
+          },
+        ),
+      [],
+    )
 
+  const onCrosshairMove = useCallback(
+    (nextCrosshair: BaselineChartData | null) => {
+      if (nextCrosshair === null) {
+        cancelCrosshairThrottle()
+        setCrosshair(null)
+        return
+      }
+      setCrosshairThrottled(nextCrosshair)
+    },
+    [cancelCrosshairThrottle, setCrosshairThrottled],
+  )
   const assetA = isInverted ? assetOut : assetIn
   const assetB = isInverted ? assetIn : assetOut
 
@@ -96,12 +110,16 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const assetBMeta = getAssetWithFallback(assetB)
 
   const chartValue =
-    !isEmpty && !isError
-      ? t("currency", {
-          value,
-          symbol: assetAMeta.symbol,
-        })
-      : ""
+    !isEmpty && !isError ? (
+      <Text>
+        <AnimatedValue
+          value={value}
+          format={(value) =>
+            t("currency", { value, symbol: assetAMeta.symbol })
+          }
+        />
+      </Text>
+    ) : undefined
 
   const chartDisplayValue =
     !isEmpty && !isError ? (
