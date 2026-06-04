@@ -23,6 +23,7 @@
   "gigaStaking.gigaUnstake.input.label": "Amount to unstake",
   "gigaStaking.gigaUnstake.receive.label": "Estimated receive",
   "gigaStaking.gigaUnstake.frozen.alert": "{{ value, number }} GHDX of your stake is locked under ongoing referenda. Available again once the referenda end or you remove your vote",
+  "gigaStaking.gigaUnstake.debtLocked.alert": "{{ value, number }} GHDX of your stake is locked as collateral for your HOLLAR borrow. Available again when you repay some or all of your debt",
   "gigaStaking.gigaUnstake.minStake.label": "Minimum unstake",
   "gigaStaking.gigaUnstake.cta": "Giga Unstake",
   "gigaStaking.banner.title": "Maximize APR with GIGA HDX",

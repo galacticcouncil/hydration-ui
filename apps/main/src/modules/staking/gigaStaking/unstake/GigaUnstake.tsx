@@ -37,10 +37,19 @@ export const GigaUnstake = ({ loading }: { loading?: boolean }) => {
 const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   const { t } = useTranslation(["staking", "common"])
   const { native } = useAssets()
-  const { form, onSubmit, maxUnstake, amountInHdx, frozenInGigaHdx } =
-    useGigaUnstake({
-      userBorrowSummary,
-    })
+  const {
+    form,
+    onSubmit,
+    maxUnstake,
+    amountInHdx,
+    frozenInGigaHdx,
+    debtLockedInGigaHdx,
+  } = useGigaUnstake({
+    userBorrowSummary,
+  })
+
+  const isDebtLocked = Big(debtLockedInGigaHdx).gt(0)
+  const isFrozen = Big(frozenInGigaHdx).gt(0)
 
   return (
     <FormProvider {...form}>
@@ -80,15 +89,26 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
 
         <Separator />
 
-        {Big(frozenInGigaHdx).gt(0) && (
+        {(isDebtLocked || isFrozen) && (
           <>
-            <Alert
-              sx={{ m: "l" }}
-              variant="warning"
-              title={t("gigaStaking.gigaUnstake.frozen.alert", {
-                value: frozenInGigaHdx,
-              })}
-            />
+            {isFrozen && (
+              <Alert
+                sx={{ m: "l" }}
+                variant="warning"
+                title={t("gigaStaking.gigaUnstake.frozen.alert", {
+                  value: frozenInGigaHdx,
+                })}
+              />
+            )}
+            {isDebtLocked && (
+              <Alert
+                sx={{ m: "l" }}
+                variant="warning"
+                title={t("gigaStaking.gigaUnstake.debtLocked.alert", {
+                  value: debtLockedInGigaHdx,
+                })}
+              />
+            )}
 
             <Separator />
           </>

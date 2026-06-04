@@ -61,6 +61,10 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     Big(hollarReserve.totalBorrows).gt(0)
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
+  const debtLockedInGigaHdx = Big.max(
+    suppliedHdx.minus(debtConstrainedMaxUnstake),
+    Big(0),
+  ).toString()
 
   const ongoingLockedHdxPlanck = claimableRewards?.ongoingLockedHdx ?? 0n
 
@@ -237,6 +241,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     maxUnstake,
     amountInHdx,
     frozenInGigaHdx,
+    debtLockedInGigaHdx,
     onSubmit,
   }
 }
