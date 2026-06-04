@@ -110,7 +110,7 @@ export const useVoteModal = (
           }
 
           const assertNonNegative = (value: Big, path: VoteType) => {
-            if (value.lte(0)) {
+            if (value.lt(0)) {
               addIssue({
                 code: "custom",
                 message: t("error.positive"),
@@ -162,6 +162,17 @@ export const useVoteModal = (
             if (ayeNum === null || nayNum === null || abstainNum === null) {
               return
             }
+
+            if (ayeNum.lte(0) && nayNum.lte(0) && abstainNum.lte(0)) {
+              addIssue({
+                code: "custom",
+                message: t("error.positive"),
+                path: ["aye"],
+              })
+
+              return
+            }
+
             if (
               !assertNonNegative(ayeNum, "aye") ||
               !assertNonNegative(nayNum, "nay") ||
