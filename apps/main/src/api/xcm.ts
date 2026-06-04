@@ -19,6 +19,7 @@ import {
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
+import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
@@ -158,9 +159,15 @@ export type XcmTransferArgs = {
   readonly bridgeTag?: string
 }
 
+const hasAssetOnChain = (assetKey: string, chainKey: string) =>
+  !!chainsMap.get(chainKey)?.assetsData.has(assetKey)
+
 export const xcmTransferQuery = (
   wallet: Wallet,
-  {
+  transferArgs: XcmTransferArgs | null,
+  options?: Partial<UseQueryOptions<Transfer>>,
+) => {
+  const {
     srcAddress,
     srcAsset,
     srcChain,
@@ -168,9 +175,8 @@ export const xcmTransferQuery = (
     destChain,
     destAsset,
     bridgeTag,
-  }: XcmTransferArgs,
-  options?: UseQueryOptions<Transfer>,
-) => {
+  } = transferArgs ?? {}
+
   return queryOptions({
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
@@ -187,23 +193,24 @@ export const xcmTransferQuery = (
       bridgeTag,
     ],
     queryFn: async () => {
-      const builder = TransferBuilder(wallet)
-        .withAsset(srcAsset)
-        .withSource(srcChain)
-        .withDestination(destChain)
+      if (!transferArgs) throw new Error("Invalid transfer args")
 
-      // Do not pass invalid/stale dest asset
-      const validDstAsset = builder.routes.some(
-        (r) => r.destination.asset.key === destAsset,
+      const builder = TransferBuilder(wallet)
+        .withAsset(transferArgs.srcAsset)
+        .withSource(transferArgs.srcChain)
+        .withDestination(transferArgs.destChain)
+
+      const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
+        builder.routes,
+        transferArgs.destAsset,
+        transferArgs.bridgeTag,
       )
-        ? destAsset
-        : undefined
 
       const transfer = await builder.build({
-        srcAddress,
-        dstAddress: destAddress,
-        dstAsset: validDstAsset,
-        tag: bridgeTag,
+        srcAddress: transferArgs.srcAddress,
+        dstAddress: transferArgs.destAddress,
+        dstAsset,
+        tag,
       })
 
       const { balance, fee, max } = transfer.source
@@ -223,23 +230,26 @@ export const xcmTransferQuery = (
 
       return transfer
     },
+    ...options,
     enabled:
       !!srcAddress &&
       !!destAddress &&
       !!srcAsset &&
       !!destAsset &&
       !!srcChain &&
-      !!destChain,
-    ...options,
+      !!destChain &&
+      hasAssetOnChain(srcAsset, srcChain) &&
+      hasAssetOnChain(destAsset, destChain) &&
+      Boolean(options?.enabled ?? true),
   })
 }
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
-    enabled: !!transfer,
+    enabled: !!transfer && !!transferArgs,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "report", transferArgs],
     queryFn: async () => {
@@ -248,15 +258,30 @@ export const xcmTransferReportQuery = (
     },
   })
 
+export const xcmDestinationFeeQuery = (
+  transfer: Transfer | null,
+  amount: string,
+  transferArgs: XcmTransferArgs | null,
+) =>
+  queryOptions({
+    enabled: !!transfer && !!transferArgs && !!amount && Number(amount) > 0,
+    placeholderData: keepPreviousData,
+    queryKey: ["xcm", "destFee", amount, transferArgs],
+    queryFn: async () => {
+      if (!transfer) throw new Error("Invalid transfer")
+      return transfer.estimateDestinationFee(amount)
+    },
+  })
+
 export const xcmTransferCallQuery = (
   { dryRunErrorDecoder }: TProviderContext,
   transfer: Transfer | null,
   amount: string,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
   dryRun?: boolean,
 ) =>
   queryOptions({
-    enabled: !!transfer && !!amount,
+    enabled: !!transfer && !!transferArgs && !!amount,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "call", amount, transferArgs, dryRun],
     queryFn: async () => {

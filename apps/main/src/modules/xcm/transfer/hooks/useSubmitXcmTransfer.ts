@@ -17,6 +17,7 @@ import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -71,7 +72,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       if (!srcAsset) throw new Error("Source asset is required")
       if (!destAsset) throw new Error("Destination asset is required")
 
-      const { destination, source } = transfer
+      const { source } = transfer
 
       const i18nVars = {
         amount: srcAmount,
@@ -80,12 +81,19 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain: destChain.name,
       }
 
-      const { origin } = ConfigBuilder(configService)
+      const destPair = ConfigBuilder(configService)
         .assets()
         .asset(srcAsset)
         .source(srcChain)
         .destination(destChain)
-        .build(destAsset, bridgeProvider ?? undefined)
+
+      const { tag, destAsset: validDstAsset } = resolveRouteBuilderArgs(
+        destPair.routes,
+        destAsset,
+        bridgeProvider ?? undefined,
+      )
+
+      const { origin } = destPair.build(validDstAsset, tag)
 
       const call = await transfer.buildCall(srcAmount)
       const isApprove = isEvmApproveCall(call)
@@ -115,6 +123,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
           })
         })()
 
+        const destFee = await transfer.estimateDestinationFee(srcAmount)
+
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
@@ -134,11 +144,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             srcChainFee: sourceFeeValue,
             srcChainFeeSymbol: sourceFee.symbol,
             dstChainKey: destChain.key,
-            dstChainFee: toDecimal(
-              destination.fee.amount,
-              destination.fee.decimals,
-            ),
-            dstChainFeeSymbol: destination.fee.symbol,
+            dstChainFee: destFee.toDecimal(),
+            dstChainFeeSymbol: destFee.symbol,
             tags: (origin.route.tags as XcmTags) || [],
           },
         }
