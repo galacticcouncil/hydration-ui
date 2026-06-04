@@ -106,7 +106,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         return feeEstimateNativeBase
       }
 
-      return tx
+      return "0"
     },
   })
 
