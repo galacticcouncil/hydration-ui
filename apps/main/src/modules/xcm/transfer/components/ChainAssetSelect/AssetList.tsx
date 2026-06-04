@@ -11,7 +11,7 @@ import {
   useCrossChainBalanceSubscription,
 } from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
-import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
+import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { numericallyStrDesc } from "@/utils/sort"
 
