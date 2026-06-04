@@ -3,6 +3,7 @@ import fs from "node:fs"
 
 import mdx from "@mdx-js/rollup"
 import babel from "@rolldown/plugin-babel"
+import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
 import remarkGfm from "remark-gfm"
@@ -22,7 +23,7 @@ const loaderHtml = fs.readFileSync(
 
 const headCriticalCss = fs.readFileSync("./src/styles/critical.css", "utf-8")
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   resolve: {
     tsconfigPaths: true,
   },
@@ -36,6 +37,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    ...(mode !== "production" ? [devtools()] : []),
     mdx({ remarkPlugins: [remarkGfm], providerImportSource: "@mdx-js/react" }),
     tanstackRouter({
       autoCodeSplitting: true,
@@ -78,4 +80,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

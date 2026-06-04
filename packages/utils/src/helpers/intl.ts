@@ -283,8 +283,6 @@ langService.addLanguage("shortEn", {
   decimal: "2",
 })
 
-const humanizer = new HumanizeDuration(langService)
-
 export const formatDate = (
   value: FormatValue,
   options: Record<string, unknown> = {},
@@ -371,7 +369,7 @@ export const formatInterval = (
     return defaultLargest
   })()
 
-  return humanizer.humanize(value, {
+  return new HumanizeDuration(langService).humanize(value, {
     round: true,
     largest,
     ...(isString(options.unit) ? { units: [options.unit as UnitName] } : {}),
