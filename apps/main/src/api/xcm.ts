@@ -16,12 +16,61 @@ import {
   UseQueryOptions,
   useSuspenseQuery,
 } from "@tanstack/react-query"
+import Big from "big.js"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
+import { getWormholeTokenOrigins } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { toDecimal } from "@/utils/formatting"
+import { toBigInt, toDecimal } from "@/utils/formatting"
+
+// TODO: remove — temporary XCM balance debug override
+const XCM_DEBUG_FAKE_BALANCE = {
+  enabled: true,
+  amount: 10_000_000,
+} as const
+
+const getDebugFakeAmount = (decimals: number) =>
+  BigInt(XCM_DEBUG_FAKE_BALANCE.amount) * 10n ** BigInt(decimals)
+
+const applyDebugFakeBalances = (
+  balances: AssetAmount[],
+  chain: AnyChain,
+): Map<string, AssetAmount> => {
+  const balanceMap = new Map<string, AssetAmount>()
+
+  for (const { asset, decimals } of chain.assetsData.values()) {
+    if (!decimals) continue
+
+    balanceMap.set(
+      asset.key,
+      AssetAmount.fromAsset(asset, {
+        amount: getDebugFakeAmount(decimals),
+        decimals,
+      }),
+    )
+  }
+
+  for (const balance of balances) {
+    balanceMap.set(
+      balance.key,
+      balance.copyWith({ amount: getDebugFakeAmount(balance.decimals) }),
+    )
+  }
+
+  return balanceMap
+}
+
+const applyDebugFakeTransferSource = (transfer: Transfer) => {
+  const { balance, fee, max } = transfer.source
+  const fakeAmount = getDebugFakeAmount(balance.decimals)
+
+  transfer.source.balance = balance.copyWith({ amount: fakeAmount })
+  transfer.source.max = max.copyWith({
+    amount: fee.amount < fakeAmount ? fakeAmount - fee.amount : fakeAmount,
+  })
+}
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -58,6 +107,58 @@ export const useCrossChainConfigService = () => {
 export const useCrossChainWallet = () => {
   const { data } = useCrossChainConfig()
   return data.wallet
+}
+
+export const useWormholeGovernor = () => {
+  const { data } = useCrossChainConfig()
+  return data.wormhole.governor
+}
+
+export const useWormholeRateLimit = (wormholeId: number | null) => {
+  const governor = useWormholeGovernor()
+
+  return useQuery({
+    queryKey: ["xcm", "wormhole", "rateLimit", wormholeId],
+    staleTime: minutesToMilliseconds(1),
+    enabled: wormholeId !== null,
+    queryFn: () => {
+      if (wormholeId === null) throw new Error("wormholeId is required")
+      return governor.getWormholeRateLimit(wormholeId)
+    },
+  })
+}
+
+export const useWormholeNotionalUsd = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+  amount: string,
+) => {
+  const governor = useWormholeGovernor()
+  const config = useCrossChainConfigService()
+
+  return useQuery({
+    queryKey: [
+      "xcm",
+      "wormhole",
+      "notionalUsd",
+      chain?.key,
+      asset?.key,
+      amount,
+    ],
+    staleTime: minutesToMilliseconds(1),
+    enabled: !!chain && !!asset && Big(amount || "0").gt(0),
+    queryFn: () => {
+      const decimals =
+        chain && asset ? chain.getAssetDecimals(asset) : undefined
+      if (!asset || !chain || decimals === undefined) return null
+      const origins = getWormholeTokenOrigins(config.chains.values(), asset)
+      return governor.toNotionalUsd(
+        origins,
+        toBigInt(amount, decimals),
+        decimals,
+      )
+    },
+  })
 }
 
 const createCrossChainBalanceQueryKey = (chainKey: string, address: string) => {
@@ -119,9 +220,9 @@ export const useCrossChainBalanceSubscription = (
           formattedAddress,
           chain,
           (balances) => {
-            const balanceMap = new Map(
-              balances.map((balance) => [balance.key, balance]),
-            )
+            const balanceMap = XCM_DEBUG_FAKE_BALANCE.enabled
+              ? applyDebugFakeBalances(balances, chain)
+              : new Map(balances.map((balance) => [balance.key, balance]))
 
             queryClient.setQueryData<Map<string, AssetAmount>>(
               queryKey,
@@ -213,18 +314,22 @@ export const xcmTransferQuery = (
         tag,
       })
 
-      const { balance, fee, max } = transfer.source
-      if (balance.isSame(fee) && max.amount > 0n) {
-        try {
-          const atMaxFee = await transfer.estimateFee(
-            toDecimal(max.amount, max.decimals),
-          )
-          const delta = atMaxFee.amount - fee.amount
-          if (delta > 0n) {
-            transfer.source.max = max.copyWith({ amount: max.amount - delta })
+      if (XCM_DEBUG_FAKE_BALANCE.enabled) {
+        applyDebugFakeTransferSource(transfer)
+      } else {
+        const { balance, fee, max } = transfer.source
+        if (balance.isSame(fee) && max.amount > 0n) {
+          try {
+            const atMaxFee = await transfer.estimateFee(
+              toDecimal(max.amount, max.decimals),
+            )
+            const delta = atMaxFee.amount - fee.amount
+            if (delta > 0n) {
+              transfer.source.max = max.copyWith({ amount: max.amount - delta })
+            }
+          } catch {
+            // keep original max if re-pricing fails
           }
-        } catch {
-          // keep original max if re-pricing fails
         }
       }
 

@@ -15,12 +15,13 @@ import {
   getDepositLimitUsagePercent,
 } from "@/modules/xcm/transfer/utils/limits"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { toDecimal } from "@/utils/formatting"
 
-export type DepositLimitSummaryProps = {
+export type DepositLimitInfoProps = {
   depositLimit: AssetDepositLimit
 }
 
-export const DepositLimitSummary: React.FC<DepositLimitSummaryProps> = ({
+export const DepositLimitInfo: React.FC<DepositLimitInfoProps> = ({
   depositLimit,
 }) => {
   const { t } = useTranslation(["common", "xcm"])
@@ -52,10 +53,26 @@ export const DepositLimitSummary: React.FC<DepositLimitSummaryProps> = ({
   })()
 
   const hasUsage = usagePercent !== null && usagePercent > 0
+  const headroomValue = depositLimit.headroom
+    ? toDecimal(depositLimit.headroom, depositLimit.decimals)
+    : null
 
   return (
     <Stack gap="base">
-      <Text fs="p4">{t("xcm:limit.description")}</Text>
+      <Text fs="p4">{t("xcm:limit.deposit.description")}</Text>
+      {headroomValue && (
+        <Flex align="center" justify="space-between" gap="xs">
+          <Text fs="p4" fw={500}>
+            {t("xcm:limit.headroom")}
+          </Text>
+          <Text fs="p4" fw={600} color={getToken("text.tint.secondary")}>
+            {t("currency", {
+              value: headroomValue,
+              symbol: depositLimit.symbol,
+            })}
+          </Text>
+        </Flex>
+      )}
       {hasUsage && (
         <Box>
           <Flex align="center" justify="space-between" gap="xs">

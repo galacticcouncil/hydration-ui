@@ -35,6 +35,7 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
+import { XcmLimits } from "@/modules/xcm/transfer/XcmLimits"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
 
@@ -297,6 +298,7 @@ export const XcmForm = () => {
             </>
           )}
           <XcmSummary />
+          <XcmLimits />
           <Separator />
           <XcmFooter isSubmitting={submit.isPending} />
         </Paper>

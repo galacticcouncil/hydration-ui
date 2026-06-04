@@ -45,11 +45,12 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
 
   return (
     <Box p={["l", "xl"]}>
-      <Flex direction="column" gap="xl">
+      <Flex direction="column" gap="m">
         {alerts.map((alert) => (
           <Alert
             key={alert.key}
             variant={alert.severity}
+            title={alert.title}
             description={alert.message}
             action={
               alert.requiresUserConsent ? (
