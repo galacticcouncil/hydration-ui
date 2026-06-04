@@ -1,9 +1,7 @@
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { lazy } from "react"
+import { lazy, Suspense } from "react"
 
 import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
@@ -43,6 +41,12 @@ const Web3ConnectModal = lazy(async () => ({
   ),
 }))
 
+const Devtools = import.meta.env.DEV
+  ? lazy(async () => ({
+      default: await import("@/components/Devtools").then((m) => m.Devtools),
+    }))
+  : lazy(async () => ({ default: () => null }))
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   pendingComponent: LayoutSkeleton,
@@ -79,8 +83,11 @@ function RootComponent() {
           </MultisigProvider>
         </RpcProvider>
       </AssetsProvider>
-      {hasTopNavbar && <ReactQueryDevtools buttonPosition="top-left" />}
-      {hasTopNavbar && <TanStackRouterDevtools position="top-left" />}
+      {hasTopNavbar && (
+        <Suspense>
+          <Devtools />
+        </Suspense>
+      )}
     </>
   )
 }

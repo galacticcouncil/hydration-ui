@@ -1,23 +1,19 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
-export const SBridgeOption = styled.button<{ active: boolean }>(
+export const SOptionCardContainer = styled.button<{ active: boolean }>(
   ({ theme, active }) => css`
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: ${theme.space.base};
-
-    position: relative;
-    overflow: hidden;
-
-    color: ${theme.text.medium};
+    width: 100%;
+    height: 4rem;
 
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
     border-radius: ${theme.radii.m};
 
-    padding-block: ${theme.space.l};
-    padding-inline: ${theme.space.m};
+    padding: ${theme.space.l} ${theme.space.m};
 
     cursor: pointer;
 
@@ -25,14 +21,21 @@ export const SBridgeOption = styled.button<{ active: boolean }>(
 
     ${active
       ? css`
-          color: ${theme.text.high};
+          border-color: ${theme.buttons.secondary.outline.outline};
           background-color: ${theme.controls.dim.active};
-          border-color: ${theme.controls.dim.active};
+          svg {
+            color: ${theme.text.tint.quart};
+          }
         `
       : css`
           &:hover:not(:disabled) {
             background-color: ${theme.buttons.outlineDark.rest};
           }
         `}
+
+    &:disabled {
+      cursor: unset;
+      opacity: 0.6;
+    }
   `,
 )

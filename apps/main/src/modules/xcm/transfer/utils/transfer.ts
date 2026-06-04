@@ -6,7 +6,7 @@ import {
   isValidBigSource,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
-import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
+import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 import { minutesToMilliseconds } from "date-fns"
@@ -17,13 +17,7 @@ import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { BRIDGE_PROVIDER_TAGS, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
-
-export const getPrimaryBridgeTag = (route: AssetRoute): string | null => {
-  const tags = (route.tags ?? []) as string[]
-  return BRIDGE_PROVIDER_TAGS.find((tag) => tags.includes(tag)) ?? null
-}
 
 export enum XcmTransferStatus {
   Default = "DEFAULT",
@@ -75,11 +69,6 @@ export const calculateTransferDestAmount = (
   }
 
   return amount
-}
-
-export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
-  const tags = (route?.tags ?? []) as XcmTags
-  return tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
 }
 
 export const getXcmTransferArgs = (
