@@ -2,6 +2,7 @@ import { ApiOptions, SubstrateApis } from "@galacticcouncil/common"
 import {
   getMetadata,
   hydration,
+  hydrationIce,
   hydrationNext,
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
@@ -13,6 +14,7 @@ import {
   HOLLAR_BOND_25_08_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
+import { CompatibilityLevel } from "polkadot-api"
 import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
@@ -20,11 +22,17 @@ import { createPublicClient, custom, PublicClient } from "viem"
 
 import { ENV } from "@/config/env"
 import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
-import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
+import {
+  Papi,
+  PapiIce,
+  PapiNext,
+  useRpcProvider,
+} from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
+  isIceEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -33,6 +41,7 @@ export type TProviderData = {
   queryClient: QueryClient
   papi: Papi
   papiNext: PapiNext
+  papiIce: PapiIce
   sdk: SdkCtx
   papiClient: WsPolkadotClient
   evm: PublicClient
@@ -123,10 +132,17 @@ const getProviderData = async (
     }),
   })
 
+  const papiIce = papiClient.getTypedApi(hydrationIce)
+  const staticIceApis = await papiIce.getStaticApis()
+  const isIceEnabled = staticIceApis.compat.query.Intent.Intents.isCompatible(
+    CompatibilityLevel.Partial,
+  )
+
   return {
     queryClient,
     papi,
     papiNext,
+    papiIce,
     papiClient,
     evm,
     sdk,
@@ -134,6 +150,7 @@ const getProviderData = async (
     slotDurationMs: Number(slotDuration),
     featureFlags: {
       hollarBondsEnabled: !!hollarBond,
+      isIceEnabled,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),

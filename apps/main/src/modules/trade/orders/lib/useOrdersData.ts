@@ -16,22 +16,51 @@ import { scaleHuman } from "@/utils/formatting"
 export enum OrderKind {
   Dca = "dca",
   DcaRolling = "dcaRolling",
+  Limit = "limit",
 }
 
-export type OrderData = {
-  readonly kind: OrderKind
-  readonly scheduleId: number
+export type OrderDataBase = {
   readonly from: TAsset
+  readonly to: TAsset
   readonly fromAmountBudget: string | null
   readonly fromAmountExecuted: string | null
   readonly fromAmountRemaining: string | null
-  readonly singleTradeSize: string | null
-  readonly to: TAsset
   readonly toAmountExecuted: string | null
+  readonly timestamp: number | null
   readonly status: DcaScheduleStatus | null
+}
+
+export type IntentLimitOrderData = OrderDataBase & {
+  readonly kind: OrderKind.Limit
+  readonly intentId: bigint
+  readonly deadline: number | null
+  readonly isPartiallyFillable: boolean
+  readonly partialFilledAmount: string | null
+}
+
+export type DcaOrderDataBase = OrderDataBase & {
+  readonly kind: OrderKind.Dca | OrderKind.DcaRolling
+  readonly singleTradeSize: string | null
   readonly blocksPeriod: string | null
   readonly isOpenBudget: boolean
 }
+
+export type DcaOrderData = DcaOrderDataBase & {
+  readonly scheduleId: number
+}
+
+export type IntentDcaOrderData = DcaOrderDataBase & {
+  readonly intentId: bigint
+}
+
+export type OrderData = IntentLimitOrderData | DcaOrderData | IntentDcaOrderData
+
+export const isIntentOrder = (
+  order: OrderData,
+): order is IntentLimitOrderData | IntentDcaOrderData => "intentId" in order
+
+export const isDcaScheduleOrder = (order: OrderData): order is DcaOrderData =>
+  "scheduleId" in order
 
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,
@@ -51,11 +80,11 @@ export const useOrdersData = (
   const { getAssetWithFallback } = useAssets()
 
   const totalCount = data?.dcaSchedules?.totalCount ?? 0
-  const orders = useMemo<Array<OrderData>>(
+  const orders = useMemo<Array<DcaOrderData>>(
     () =>
       data?.dcaSchedules?.nodes
         .filter((schedule) => !!schedule)
-        .map<OrderData>((schedule) => {
+        .map<DcaOrderData>((schedule) => {
           const isOpenBudget = schedule.budgetAmountIn === "0"
 
           const from = getAssetWithFallback(
@@ -102,6 +131,7 @@ export const useOrdersData = (
             status,
             blocksPeriod: schedule.period ?? null,
             isOpenBudget,
+            timestamp: null,
           }
         }) ?? [],
     [data, getAssetWithFallback],

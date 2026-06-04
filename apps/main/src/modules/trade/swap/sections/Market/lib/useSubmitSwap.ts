@@ -14,9 +14,10 @@ import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { sdk } = useRpcProvider()
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const rpc = useRpcProvider()
+  const { sdk } = rpc
+
   const {
     swap: {
       single: { swapSlippage },
@@ -26,15 +27,12 @@ export const useSubmitSwap = () => {
   const { createTransaction } = useTransactionsStore()
 
   return useMutation({
-    mutationFn: async ([values, swap]: [
-      MarketFormValues,
-      Trade,
-    ]): Promise<void> => {
+    mutationFn: async ([values, swap]: [MarketFormValues, Trade]) => {
       const { sellAsset, buyAsset } = values
       const { amountIn, amountOut, type } = swap
 
-      if (!sellAsset) throw new Error("Invalid sell asset")
-      if (!buyAsset) throw new Error("Invalid buy asset")
+      if (!sellAsset || !buyAsset) throw new Error("Invalid swap assets")
+      if (!account) throw new Error("Account not connected")
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
@@ -64,15 +62,43 @@ export const useSubmitSwap = () => {
               }),
             }
 
+      // Not ready to switch to market intents yet
+      /* if (featureFlags.isIceEnabled) {
+        const tx = await sdk.tx
+          .intentMarket(swap)
+          .withBeneficiary(account.address)
+          .withSlippage(swapSlippage)
+          .build()
+
+        return createTransaction({
+          tx: tx.get(),
+          alerts: [],
+          toasts: {
+            submitted: t(
+              `trade:market.swap.${toLowerCase(type)}.loading`,
+              params,
+            ),
+            success: t(
+              `trade:market.swap.${toLowerCase(type)}.success`,
+              params,
+            ),
+            error: t(`trade:market.swap.${toLowerCase(type)}.error`, params),
+          },
+          invalidateQueries: [
+            intentsByAccountQuery(rpc, account.address).queryKey,
+          ],
+        })
+      } */
+
       const tx = await sdk.tx
         .trade(swap)
         .withSlippage(swapSlippage)
-        .withBeneficiary(address)
+        .withBeneficiary(account.address)
         .build()
 
       const isSellAll = tx.name === "RouterSellAll"
 
-      await createTransaction({
+      return createTransaction({
         tx: tx.get(),
         alerts: isSellAll
           ? [

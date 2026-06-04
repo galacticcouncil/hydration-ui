@@ -19,7 +19,13 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  isDcaScheduleOrder,
+  isIntentOrder,
+  OrderData,
+  OrderKind,
+} from "@/modules/trade/orders/lib/useOrdersData"
+import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const columnHelper = createColumnHelper<OrderData>()
@@ -32,20 +38,28 @@ export const useOpenOrdersColumns = () => {
     const fromToColumn = columnHelper.display({
       header: t("trade:trade.orders.openOrders.inOut"),
       cell: ({ row }) => {
+        const order = row.original
+
+        const fromAmount =
+          order.kind === OrderKind.Limit
+            ? order.fromAmountBudget
+            : order.isOpenBudget
+              ? order.fromAmountExecuted
+              : order.fromAmountBudget
+
+        const toAmount =
+          order.kind === OrderKind.Limit
+            ? order.toAmountExecuted
+            : order.isOpenBudget
+              ? order.toAmountExecuted
+              : undefined
+
         return (
           <SwapAmount
-            fromAmount={
-              row.original.isOpenBudget
-                ? row.original.fromAmountExecuted
-                : row.original.fromAmountBudget
-            }
-            toAmount={
-              row.original.isOpenBudget
-                ? row.original.toAmountExecuted
-                : undefined
-            }
-            from={row.original.from}
-            to={row.original.to}
+            fromAmount={fromAmount}
+            toAmount={toAmount}
+            from={order.from}
+            to={order.to}
             showLogo
           />
         )
@@ -68,11 +82,21 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const {
+          kind,
+          from,
+          to,
+          fromAmountBudget,
+          fromAmountExecuted,
+          toAmountExecuted,
+        } = row.original
+
+        const fromAmount =
+          kind === OrderKind.Limit ? fromAmountBudget : fromAmountExecuted
 
         const price =
-          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
-            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
+          toAmountExecuted && fromAmount && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmount).div(toAmountExecuted).toString()
             : null
 
         return <SwapPrice from={from} to={to} price={price} />
@@ -109,35 +133,45 @@ export const useOpenOrdersColumns = () => {
       id: "actions",
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<"confirmation" | "none">("none")
+        const removeIntent = useRemoveIntent()
+        const order = row.original
+
+        const isIntent = isIntentOrder(order)
+        const isDcaSchedule = isDcaScheduleOrder(order)
 
         return (
-          <Flex align="center" gap="base">
+          <Flex align="center" gap="base" justify="flex-end">
             <Button
               variant="danger"
               outline
-              height={28}
-              width={34}
+              sx={{ p: "base" }}
               onClick={(e) => {
                 e.stopPropagation()
-                setModal("confirmation")
+                if (isIntent) {
+                  removeIntent.mutate(order.intentId)
+                } else {
+                  setModal("confirmation")
+                }
               }}
             >
               <Icon component={Trash} size="s" />
             </Button>
             <TableRowDetailsExpand />
-            <Modal
-              open={modal === "confirmation"}
-              onOpenChange={() => setModal("none")}
-            >
-              <TerminateDcaScheduleModalContent
-                scheduleId={row.original.scheduleId}
-                sold={row.original.fromAmountExecuted}
-                total={row.original.fromAmountBudget}
-                symbol={row.original.from.symbol}
-                openBudget={row.original.isOpenBudget}
-                onClose={() => setModal("none")}
-              />
-            </Modal>
+            {isDcaSchedule && (
+              <Modal
+                open={modal === "confirmation"}
+                onOpenChange={() => setModal("none")}
+              >
+                <TerminateDcaScheduleModalContent
+                  scheduleId={order.scheduleId}
+                  sold={order.fromAmountExecuted}
+                  total={order.fromAmountBudget}
+                  symbol={order.from.symbol}
+                  openBudget={order.isOpenBudget}
+                  onClose={() => setModal("none")}
+                />
+              </Modal>
+            )}
           </Flex>
         )
       },

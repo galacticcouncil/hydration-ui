@@ -1,4 +1,8 @@
-import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
+import {
+  hydration,
+  hydrationIce,
+  hydrationNext,
+} from "@galacticcouncil/descriptors"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
@@ -24,6 +28,7 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type Papi = TypedApi<typeof hydration>
 export type PapiNext = TypedApi<typeof hydrationNext>
+export type PapiIce = TypedApi<typeof hydrationIce>
 
 export type TProviderContext = TProviderData & {
   isLoaded: boolean
@@ -36,13 +41,15 @@ const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
   slotDurationMs: 6000,
-  papi: {} as TProviderData["papi"],
-  papiNext: {} as TProviderData["papiNext"],
+  papi: {} as Papi,
+  papiNext: {} as PapiNext,
+  papiIce: {} as PapiIce,
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
   featureFlags: {
     hollarBondsEnabled: true,
+    isIceEnabled: false,
   },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,

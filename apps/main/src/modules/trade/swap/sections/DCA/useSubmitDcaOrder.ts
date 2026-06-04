@@ -4,33 +4,34 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
+import { intentsByAccountQuery } from "@/api/intents"
 import {
   DcaFormValues,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
-import { AnyTransaction } from "@/modules/transactions/types"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitDcaOrder = () => {
   const { t } = useTranslation(["common", "trade"])
-
   const { account } = useAccount()
-  const address = account?.address
+  const rpc = useRpcProvider()
+  const { sdk, featureFlags } = rpc
+
+  const {
+    dca: { slippage, maxRetries },
+  } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
 
   return useMutation({
-    mutationFn: async ([formValues, order, orderTx]: [
-      DcaFormValues,
-      TradeDcaOrder,
-      AnyTransaction,
-    ]) => {
+    mutationFn: async ([formValues, order]: [DcaFormValues, TradeDcaOrder]) => {
       const { sellAsset, buyAsset, sellAmount, orders } = formValues
 
-      if (!sellAsset || !buyAsset || !address) {
-        return
-      }
+      if (!account) throw new Error("Account not connected")
+      if (!sellAsset || !buyAsset) throw new Error("Invalid DCA assets")
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
@@ -38,6 +39,19 @@ export const useSubmitDcaOrder = () => {
       const duration = getTimeFrameMillis(formValues.duration)
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
       const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+
+      const tx = featureFlags.isIceEnabled
+        ? await sdk.tx
+            .intentOrder(order)
+            .withBeneficiary(account.address)
+            .withSlippage(slippage)
+            .build()
+        : await sdk.tx
+            .order(order)
+            .withBeneficiary(account.address)
+            .withSlippage(slippage)
+            .withMaxRetries(maxRetries)
+            .build()
 
       const params = {
         amountIn: t("currency", {
@@ -53,7 +67,7 @@ export const useSubmitDcaOrder = () => {
       }
 
       return createTransaction({
-        tx: orderTx,
+        tx: tx.get(),
         toasts: {
           submitted: t(
             `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
@@ -68,6 +82,9 @@ export const useSubmitDcaOrder = () => {
             params,
           ),
         },
+        invalidateQueries: [
+          intentsByAccountQuery(rpc, account.address).queryKey,
+        ],
       })
     },
   })

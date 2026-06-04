@@ -1,6 +1,11 @@
-import { Flex, Separator, Skeleton } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  Separator,
+  Skeleton,
+  VirtualizedList,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC, Fragment } from "react"
+import { FC } from "react"
 
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
@@ -29,18 +34,19 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
         {isLoading ? (
           <Skeleton height={100} />
         ) : (
-          <Flex direction="column" gap="xs" px="xxl">
-            {executions.map((execution, index) => (
-              <Fragment key={execution.id}>
-                {index > 0 && <Separator sx={{ flexShrink: 0 }} mx="-xl" />}
-                <PastExecutionItem
-                  assetIn={assetIn}
-                  assetOut={assetOut}
-                  execution={execution}
-                />
-              </Fragment>
-            ))}
-          </Flex>
+          <VirtualizedList
+            items={executions}
+            maxVisibleItems={5}
+            itemSize={60}
+            separated
+            renderItem={(execution) => (
+              <PastExecutionItem
+                assetIn={assetIn}
+                assetOut={assetOut}
+                execution={execution}
+              />
+            )}
+          />
         )}
       </Flex>
     </Flex>
