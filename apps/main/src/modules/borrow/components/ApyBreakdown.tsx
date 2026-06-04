@@ -1,4 +1,4 @@
-import { FlexProps, Text } from "@galacticcouncil/ui/components"
+import { Flex, FlexProps, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big from "big.js"
@@ -23,7 +23,7 @@ export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
   apyData,
   ...props
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
 
   const { totalSupplyApy, totalBorrowApy, incentives } = apyData
 
@@ -36,12 +36,22 @@ export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
           .plus(omnipoolFee ?? 0)
           .toNumber()
 
+  const description =
+    apy === null ? (
+      <Flex direction="column" gap="s">
+        <Text fs="p6" fw={500}>
+          {t("apy.rewards.description")}
+        </Text>
+        <Text fs="p6" fw={500} color={getToken("accents.alertAlt.primary")}>
+          {t("externalApy.alert")}
+        </Text>
+      </Flex>
+    ) : (
+      t("apy.rewards.description")
+    )
+
   return (
-    <DetailedApy
-      apyData={apyData}
-      description={t("apy.rewards.description")}
-      {...props}
-    >
+    <DetailedApy apyData={apyData} description={description} {...props}>
       {incentives.length > 0 && (
         <AssetLogo
           size="extra-small"

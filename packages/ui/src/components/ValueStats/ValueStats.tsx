@@ -71,13 +71,11 @@ export const ValueStats: FC<ValueStatsProps> = ({
           <SValueStatsBottomValue isFloating={floatingBottomLabel}>
             <Skeleton width={120} height="100%" />
           </SValueStatsBottomValue>
-        ) : (
-          (customBottomLabel ?? (
-            <SValueStatsBottomValue isFloating={floatingBottomLabel}>
-              {bottomLabel}
-            </SValueStatsBottomValue>
-          ))
-        )}
+        ) : customBottomLabel ? (
+          <SValueStatsBottomValue isFloating={floatingBottomLabel}>
+            {bottomLabel}
+          </SValueStatsBottomValue>
+        ) : null}
       </SValueStatsValueContainer>
     </SValueStats>
   )

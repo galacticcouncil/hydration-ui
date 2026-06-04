@@ -3,11 +3,7 @@ import {
   FormattedGhoUserData,
   FormatUserSummaryAndIncentivesResponse,
 } from "@aave/math-utils"
-import {
-  bigShift,
-  getAddressFromAssetId,
-  getAssetIdFromAddress,
-} from "@galacticcouncil/utils"
+import { bigShift, getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import { ComputedReserveData, ExtendedFormattedUser } from "@/hooks"
@@ -71,32 +67,29 @@ export const getUserApyValues = (
   ghoReserve: FormattedGhoReserveData,
   externalApyData: ExternalApyData = new Map(),
 ) => {
-  const externalApyAddresses = new Set(
-    [...externalApyData.keys()].map(getAddressFromAssetId),
-  )
-
   let positiveProportion = Big(0)
   let negativeProportion = Big(0)
+  let hasInvalidSupply = false
+  let hasInvalidBorrow = false
 
   for (const value of user.userReservesData) {
     const { reserve } = value
 
-    const hasExternalApy = externalApyAddresses.has(reserve.underlyingAsset)
     const externalApy = externalApyData.get(
       getAssetIdFromAddress(reserve.underlyingAsset),
     )
-    const isInvalidApy =
-      hasExternalApy &&
-      (externalApy?.supplyApy === null || externalApy?.borrowApy === null)
+    const hasExternalApy = !!externalApy
 
-    if (isInvalidApy) {
-      return { earnedAPY: null, debtAPY: null, netAPY: null }
-    }
+    const isInvalidSupply = externalApy?.supplyApy === null
+    const isInvalidBorrow = externalApy?.borrowApy === null
 
-    if (value.underlyingBalanceUSD !== "0") {
+    if (value.underlyingBalanceUSD !== "0" && !hasInvalidSupply) {
       positiveProportion = positiveProportion.plus(
         Big(reserve.supplyAPY).mul(value.underlyingBalanceUSD),
       )
+      if (isInvalidSupply) {
+        hasInvalidSupply = true
+      }
       if (!hasExternalApy && reserve.aIncentivesData) {
         reserve.aIncentivesData.forEach((incentive) => {
           positiveProportion = positiveProportion.plus(
@@ -105,7 +98,10 @@ export const getUserApyValues = (
         })
       }
     }
-    if (value.variableBorrowsUSD !== "0") {
+    if (value.variableBorrowsUSD !== "0" && !hasInvalidBorrow) {
+      if (isInvalidBorrow) {
+        hasInvalidBorrow = true
+      }
       if (isGho(reserve)) {
         const borrowRateAfterDiscount = weightedAverageAPY(
           ghoReserve.ghoVariableBorrowAPY,
@@ -136,7 +132,10 @@ export const getUserApyValues = (
         }
       }
     }
-    if (value.stableBorrowsUSD !== "0") {
+    if (value.stableBorrowsUSD !== "0" && !hasInvalidBorrow) {
+      if (isInvalidBorrow) {
+        hasInvalidBorrow = true
+      }
       negativeProportion = negativeProportion.plus(
         Big(value.stableBorrowAPY).mul(value.stableBorrowsUSD),
       )
@@ -150,12 +149,25 @@ export const getUserApyValues = (
     }
   }
 
-  const earnedAPY = Big(user.totalLiquidityUSD).gt(0)
-    ? positiveProportion.div(user.totalLiquidityUSD).toNumber()
-    : 0
-  const debtAPY = Big(user.totalBorrowsUSD).gt(0)
-    ? negativeProportion.div(user.totalBorrowsUSD).toNumber()
-    : 0
+  const earnedAPY = hasInvalidSupply
+    ? null
+    : Big(user.totalLiquidityUSD).gt(0)
+      ? positiveProportion.div(user.totalLiquidityUSD).toNumber()
+      : 0
+  const debtAPY = hasInvalidBorrow
+    ? null
+    : Big(user.totalBorrowsUSD).gt(0)
+      ? negativeProportion.div(user.totalBorrowsUSD).toNumber()
+      : 0
+
+  if (hasInvalidSupply || hasInvalidBorrow) {
+    return {
+      earnedAPY,
+      debtAPY,
+      netAPY: null,
+    }
+  }
+
   const netAPY =
     (earnedAPY || 0) *
       (Number(user.totalLiquidityUSD) /
@@ -163,6 +175,7 @@ export const getUserApyValues = (
     (debtAPY || 0) *
       (Number(user.totalBorrowsUSD) /
         Number(user.netWorthUSD !== "0" ? user.netWorthUSD : "1"))
+
   return {
     earnedAPY,
     debtAPY,

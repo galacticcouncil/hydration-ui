@@ -1,4 +1,5 @@
 import { createZustandStorage } from "@galacticcouncil/utils"
+import { millisecondsInWeek } from "date-fns/constants"
 import z from "zod/v4"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -22,6 +23,8 @@ type ExternalApyActions = {
 }
 
 type ExternalApyStore = ExternalApyState & ExternalApyActions
+
+const EXTERNAL_APY_CACHE_TTL_MS = millisecondsInWeek
 
 const defaultState: ExternalApyState = {
   entries: {},
@@ -62,10 +65,13 @@ export const fetchExternalApyWithCache = async (
   } catch (error) {
     const cached = getCachedExternalApy(id)
 
-    if (cached !== undefined) {
+    if (
+      cached !== undefined &&
+      Date.now() - cached.timestamp <= EXTERNAL_APY_CACHE_TTL_MS
+    ) {
       return cached.apy
+    } else {
+      return null
     }
-
-    throw error
   }
 }

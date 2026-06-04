@@ -3,13 +3,13 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
-import { APY_NOT_AVAILABLE } from "@/utils/formatApyPercent"
 
 export const AssetYields = ({
   data,
@@ -39,7 +39,7 @@ export const AssetYields = ({
   if (underlyingSupplyApy === null) {
     return (
       <Chip variant="green" size="small">
-        {APY_NOT_AVAILABLE}
+        <UnavailableApy />
       </Chip>
     )
   }
