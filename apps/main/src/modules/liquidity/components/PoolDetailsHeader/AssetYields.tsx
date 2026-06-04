@@ -9,6 +9,7 @@ import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
+import { APY_NOT_AVAILABLE } from "@/utils/formatApyPercent"
 
 export const AssetYields = ({
   data,
@@ -33,9 +34,19 @@ export const AssetYields = ({
   let apy = Big(0)
   let incentivesApr = Big(0)
 
-  if (data.borrowApyData?.underlyingSupplyApy)
+  const underlyingSupplyApy = data.borrowApyData?.underlyingSupplyApy
+
+  if (underlyingSupplyApy === null) {
+    return (
+      <Chip variant="green" size="small">
+        {APY_NOT_AVAILABLE}
+      </Chip>
+    )
+  }
+
+  if (underlyingSupplyApy)
     apy = apy
-      .plus(data.borrowApyData.underlyingSupplyApy)
+      .plus(underlyingSupplyApy)
       .plus(data.lpFeeOmnipool ?? 0)
       .plus(data.lpFeeStablepool ?? 0)
 

@@ -9,6 +9,7 @@ import {
 } from "@/modules/borrow/components/ApyBreakdown"
 import { NoData } from "@/modules/borrow/components/NoData"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
+import { APY_NOT_AVAILABLE } from "@/utils/formatApyPercent"
 
 type ApyColumnProps = Omit<ApyBreakdownProps, "apyData"> & {
   reserve: ComputedReserveData
@@ -40,15 +41,28 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
 
   const shouldRenderDetailedApy = hasMultipleUnderlying || hasIncentives
 
-  return shouldRenderDetailedApy ? (
-    <ApyBreakdown apyData={apyData} {...props} justify="end" />
-  ) : (
+  if (shouldRenderDetailedApy) {
+    return <ApyBreakdown apyData={apyData} {...props} justify="end" />
+  }
+
+  if (
+    apyData &&
+    (props.type === "supply"
+      ? apyData.totalSupplyApy
+      : apyData.totalBorrowApy) === null
+  ) {
+    return <Amount value={APY_NOT_AVAILABLE} />
+  }
+
+  const apy =
+    props.type === "supply"
+      ? Number(reserve.supplyAPY)
+      : Number(reserve.variableBorrowAPY)
+
+  return (
     <Amount
       value={t("percent", {
-        value:
-          props.type === "supply"
-            ? Number(reserve.supplyAPY) * 100
-            : Number(reserve.variableBorrowAPY) * 100,
+        value: apy * 100,
       })}
     />
   )

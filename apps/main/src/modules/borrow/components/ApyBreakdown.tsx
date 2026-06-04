@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { ApyType, BorrowAssetApyData } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
 import { DetailedApy } from "@/components/DetailedApy/DetailedApy"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 export type ApyBreakdownProps = FlexProps & {
   type: ApyType
@@ -28,9 +29,12 @@ export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
 
   const isSupply = type === "supply"
   const baseApy = isSupply ? totalSupplyApy : totalBorrowApy
-  const apy = Big(baseApy ?? 0)
-    .plus(omnipoolFee ?? 0)
-    .toNumber()
+  const apy =
+    baseApy === null
+      ? null
+      : Big(baseApy)
+          .plus(omnipoolFee ?? 0)
+          .toNumber()
 
   return (
     <DetailedApy
@@ -46,11 +50,7 @@ export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
           )}
         />
       )}
-      <Text color={getToken("text.high")}>
-        {t("percent", {
-          value: apy,
-        })}
-      </Text>
+      <Text color={getToken("text.high")}>{formatApyPercent(t, apy)}</Text>
     </DetailedApy>
   )
 }

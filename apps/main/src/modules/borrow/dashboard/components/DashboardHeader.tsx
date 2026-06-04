@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next"
 
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk"
+import { APY_NOT_AVAILABLE } from "@/utils/formatApyPercent"
 
 export const MIN_CLAIMABLE_INCENTIVES_USDT = 0.01
 
@@ -70,9 +71,11 @@ export const DashboardHeader = () => {
           wrap={[false, false, true]}
           value={
             isConnected
-              ? t("percent", {
-                  value: user.netAPY * 100,
-                })
+              ? user.netAPY !== null
+                ? t("percent", {
+                    value: user.netAPY * 100,
+                  })
+                : APY_NOT_AVAILABLE
               : "-"
           }
         />

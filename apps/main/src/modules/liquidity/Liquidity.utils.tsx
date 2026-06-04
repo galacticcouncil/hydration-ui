@@ -62,7 +62,7 @@ export type OmnipoolAssetTable = {
   tvlDisplay: string | undefined
   lpFeeOmnipool?: string
   lpFeeStablepool?: string
-  totalFee?: string
+  totalFee?: string | null
   isFeeLoading: boolean
   isNative: boolean
   isPositions: boolean
@@ -370,7 +370,9 @@ export const useOmnipoolStablepools = () => {
           .toString()
       }
 
-      if (borrowApyData?.totalSupplyApy) {
+      if (borrowApyData?.totalSupplyApy === null) {
+        totalFee = undefined
+      } else if (borrowApyData?.totalSupplyApy) {
         totalFee = Big(borrowApyData.totalSupplyApy)
           .plus(totalFee ?? 0)
           .minus(lpFeeStablepool ?? 0)
