@@ -93,7 +93,6 @@ export const gigaAccountStakesQuery = (
       return stakes as {
         hdx: bigint
         gigahdx: bigint
-        frozen: bigint
         unstaking: bigint
         unstakingCount: number
       }

@@ -48,8 +48,9 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
     userBorrowSummary,
   })
 
-  const isDebtLocked = Big(debtLockedInGigaHdx).gt(0)
-  const isFrozen = Big(frozenInGigaHdx).gt(0)
+  const hasLock = Big(frozenInGigaHdx).gt(0) || Big(debtLockedInGigaHdx).gt(0)
+  const showFrozenLockAlert =
+    hasLock && Big(frozenInGigaHdx).gte(Big(debtLockedInGigaHdx))
 
   return (
     <FormProvider {...form}>
@@ -89,26 +90,21 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
 
         <Separator />
 
-        {(isDebtLocked || isFrozen) && (
+        {hasLock && (
           <>
-            {isFrozen && (
-              <Alert
-                sx={{ m: "l" }}
-                variant="warning"
-                title={t("gigaStaking.gigaUnstake.frozen.alert", {
-                  value: frozenInGigaHdx,
-                })}
-              />
-            )}
-            {isDebtLocked && (
-              <Alert
-                sx={{ m: "l" }}
-                variant="warning"
-                title={t("gigaStaking.gigaUnstake.debtLocked.alert", {
-                  value: debtLockedInGigaHdx,
-                })}
-              />
-            )}
+            <Alert
+              sx={{ m: "l" }}
+              variant="warning"
+              title={
+                showFrozenLockAlert
+                  ? t("gigaStaking.gigaUnstake.frozen.alert", {
+                      value: frozenInGigaHdx,
+                    })
+                  : t("gigaStaking.gigaUnstake.debtLocked.alert", {
+                      value: debtLockedInGigaHdx,
+                    })
+              }
+            />
 
             <Separator />
           </>
