@@ -375,7 +375,7 @@ export const referendumTracksQuery = (rpc: TProviderContext, refId: number) =>
  *                      will release by running `remove_vote` × N — making
  *                      that much extra GIGAHDX unstakeable in the same batch.
  *
- *   ongoingLockedHdx = Σ `staked_vote_amount` over ongoing-ref UserVoteRecords.
+ *   ongoingLockedHdx = max `staked_vote_amount` over ongoing-ref UserVoteRecords.
  *                      Permanently locked from unstake-flow's perspective:
  *                      we don't auto-remove active votes (would interrupt the
  *                      user's voting commitment). Released only when the ref
@@ -523,7 +523,10 @@ export const claimableVotingRewardsQuery = (
       }>(
         (acc, curr) => {
           return {
-            ongoingLockedHdx: acc.ongoingLockedHdx + curr.ongoingLockedHdx,
+            ongoingLockedHdx:
+              acc.ongoingLockedHdx > curr.ongoingLockedHdx
+                ? acc.ongoingLockedHdx
+                : curr.ongoingLockedHdx,
             allocReadyHdx: acc.allocReadyHdx + curr.allocReadyHdx,
             allocReadyVotes: curr.allocReadyVote
               ? [...acc.allocReadyVotes, curr.allocReadyVote]
