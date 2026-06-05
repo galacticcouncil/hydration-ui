@@ -19,7 +19,7 @@ import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { PastExecutions } from "@/modules/trade/orders/PastExecutions/PastExecutions"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly details: OrderData
@@ -27,9 +27,11 @@ type Props = {
 }
 
 export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
+  const rpc = useRpcProvider()
   const { t } = useTranslation(["common", "trade"])
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
+  const parachainBlockTime = rpc.slotDurationMs
 
   return (
     <>
@@ -96,14 +98,12 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
         </Flex>
         <ModalContentDivider />
         <Flex justify="space-between" py="xxl">
-          {blocksPeriod && (
+          {blocksPeriod && parachainBlockTime && (
             <>
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: blocksPeriod
-                    .times(PARACHAIN_BLOCK_TIME)
-                    .toNumber(),
+                  timeframe: blocksPeriod.times(parachainBlockTime).toNumber(),
                   count: blocksPeriod.toNumber(),
                 })}
               />

@@ -6,20 +6,21 @@ import { useCountdown } from "@/hooks/useCountdown"
 import { LockExpiration } from "@/modules/wallet/assets/MyLiquidity/LockExpiration"
 
 type Props = {
-  readonly initialLockedSeconds: number
+  readonly initialLockedMilliseconds: number
   readonly className?: string
 }
 
 export const FullExpiration: FC<Props> = ({
-  initialLockedSeconds,
+  initialLockedMilliseconds,
   className,
 }) => {
   const { t } = useTranslation(["wallet"])
 
-  const seconds = useCountdown(initialLockedSeconds)
+  const milliseconds = useCountdown(initialLockedMilliseconds)
+
   const endDate = useMemo(
-    () => durationInDaysAndHoursFromNow(seconds),
-    [seconds],
+    () => durationInDaysAndHoursFromNow(milliseconds),
+    [milliseconds],
   )
 
   return (

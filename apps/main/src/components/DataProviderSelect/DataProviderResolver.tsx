@@ -1,5 +1,5 @@
 import { getBestRpcs } from "@galacticcouncil/utils"
-import { useQueryClient } from "@tanstack/react-query"
+import { millisecondsInSecond } from "date-fns/constants"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { first, prop } from "remeda"
@@ -8,6 +8,7 @@ import { PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { ENV } from "@/config/env"
 import { SQUID_URLS } from "@/config/rpc"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 import { fetchIndexerInfo, getBestIndexer } from "./DataProviderResolver.utils"
@@ -15,7 +16,8 @@ import { fetchIndexerInfo, getBestIndexer } from "./DataProviderResolver.utils"
 export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const queryClient = useQueryClient()
+  const { queryClient, slotDurationMs } = useRpcProvider()
+  const refetchInterval = (slotDurationMs || millisecondsInSecond) / 2
 
   const [isBestProviderFound, setIsBestProviderFound] = useState(
     () => !useProviderRpcUrlStore.getState().autoMode,
@@ -35,7 +37,7 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
 
     if (bestRpc) {
       queryClient.setQueryData(
-        rpcStatusQueryOptions(bestRpc.url).queryKey,
+        rpcStatusQueryOptions(bestRpc.url, refetchInterval).queryKey,
         bestRpc,
       )
     }
