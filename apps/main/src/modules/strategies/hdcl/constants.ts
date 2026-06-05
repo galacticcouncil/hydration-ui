@@ -62,9 +62,12 @@ export const VAULT_DEPLOY_BLOCK = 138433n
 
 // HDCL/HOLLAR stableswap pool — share-asset id 10055. Used by the
 // instant-redeem path which swaps the aToken receipt for HOLLAR via
-// the substrate stableswap. Only meaningful once HDCL_HAS_AAVE_LAYER is on.
+// the substrate stableswap. Live on lark-2 since ref #399.
 export const STABLESWAP_POOL_ID = 10055n
-export const STABLESWAP_HDCL_ASSET_ID = 550n
+// Asset id of HDCL inside the stableswap pair (the aToken receipt users
+// hold). Under the mainnet-aligned naming applied by ref #383, HDCL =
+// asset 55. The substrate stableswap pair is (55, 222) = (HDCL, HOLLAR).
+export const STABLESWAP_HDCL_ASSET_ID = 55n
 
 export const EVM_CALL_GAS = 5_000_000n
 
