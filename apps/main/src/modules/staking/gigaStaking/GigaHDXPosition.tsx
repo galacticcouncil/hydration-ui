@@ -195,8 +195,8 @@ export const GigaHDXPosition = () => {
                       lh={1}
                       sx={{ color: healthFactorColor }}
                     >
-                      {healthFactor !== "-1" ||
-                      Big(healthFactor).gt(MAX_DISPLAY_HF) ? (
+                      {healthFactor !== "-1" &&
+                      Big(healthFactor).lte(MAX_DISPLAY_HF) ? (
                         healthFactor
                       ) : (
                         <InfinityIcon />
