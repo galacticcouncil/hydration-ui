@@ -33,12 +33,11 @@ interface BatchEvmCall {
 }
 
 function useVaultEvmCall() {
-  const { evm } = useRpcProvider()
+  const rpc = useRpcProvider()
 
   const { account } = useAccount()
   const { createTransaction } = useTransactionsStore()
   const queryClient = useQueryClient()
-  const rpc = useRpcProvider()
 
   const address = account?.address ?? ""
   const evmAddress = safeConvertSS58toH160(address) as Hex
@@ -52,8 +51,9 @@ function useVaultEvmCall() {
       abi: Abi,
       toasts: { submitted: string; success: string },
     ) => {
-      const gasPrice = await evm.getGasPrice()
-      const gasPricePlus = gasPrice + gasPrice / 100n
+      const gasPriceBase = await rpc.evm.getGasPrice()
+      const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
+      const gasPrice = gasPriceBase + gasPriceSurplus
 
       const evmCall: ExtendedEvmCall = {
         from: evmAddress,
@@ -62,8 +62,8 @@ function useVaultEvmCall() {
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
         gasLimit: EVM_CALL_GAS,
-        maxFeePerGas: gasPricePlus,
-        maxPriorityFeePerGas: gasPricePlus,
+        maxFeePerGas: gasPrice,
+        maxPriorityFeePerGas: gasPrice,
         abi: safeStringify(abi),
       }
 
@@ -97,7 +97,7 @@ function useVaultEvmCall() {
         },
       )
     },
-    [evmAddress, isBound, rpc, address, createTransaction, queryClient, evm],
+    [evmAddress, isBound, rpc, address, createTransaction, queryClient],
   )
 
   /**
@@ -119,8 +119,9 @@ function useVaultEvmCall() {
         throw new Error("submitBatch called with no calls")
       }
 
-      const gasPrice = await evm.getGasPrice()
-      const gasPricePlus = gasPrice + gasPrice / 100n
+      const gasPriceBase = await rpc.evm.getGasPrice()
+      const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
+      const gasPrice = gasPriceBase + gasPriceSurplus
 
       const evmCalls = calls.map(({ to, data, abi }) => ({
         from: evmAddress,
@@ -129,8 +130,8 @@ function useVaultEvmCall() {
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
         gasLimit: EVM_CALL_GAS,
-        maxFeePerGas: gasPricePlus,
-        maxPriorityFeePerGas: gasPricePlus,
+        maxFeePerGas: gasPrice,
+        maxPriorityFeePerGas: gasPrice,
         abi: safeStringify(abi),
       }))
 
@@ -164,7 +165,7 @@ function useVaultEvmCall() {
         },
       )
     },
-    [evmAddress, isBound, rpc, address, createTransaction, queryClient, evm],
+    [evmAddress, isBound, rpc, address, createTransaction, queryClient],
   )
 
   return { evmAddress, submitTx, submitBatch }

@@ -6,7 +6,6 @@ import {
   Grid,
   Icon,
   Paper,
-  SectionHeader,
   Separator,
   SummaryRow,
   Text,
@@ -56,10 +55,15 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
     maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
 
   return (
-    <Paper p="l">
-      <SectionHeader title={t("strategy.title")} as="h2" noTopPadding />
+    <Paper>
+      <Box p="l">
+        <Text as="h2" font="primary" fs="base" fw={500}>
+          {t("strategy.title")}
+        </Text>
+      </Box>
+      <Separator />
 
-      <Flex justify="space-between" gap="l" mb="l" wrap>
+      <Flex justify="space-between" gap="l" mb="l" p="l" wrap>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             {t("strategy.tvl")}
@@ -107,7 +111,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
 
       <Separator />
 
-      <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]}>
+      <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]} p="l">
         <Box>
           <SummaryRow
             label={t("strategy.collateralAssetLabel")}

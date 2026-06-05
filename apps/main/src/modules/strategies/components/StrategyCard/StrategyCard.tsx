@@ -1,22 +1,29 @@
 import {
+  Chip,
+  ChipProps,
   Flex,
   Paper,
   Separator,
   Stack,
   Text,
   ValueStats,
+  ValueStatsProps,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link } from "@tanstack/react-router"
-import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
 
+type BadgeProps = {
+  label: string
+  variant: ChipProps["variant"]
+}
+
 export type StrategyCardProps = {
   logoId: string
-  apy: number
-  liquidity?: string
+  stats: ValueStatsProps[]
+  badges?: BadgeProps[]
   title: string
   description: string
   link?: FileRouteTypes["to"]
@@ -24,58 +31,50 @@ export type StrategyCardProps = {
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   logoId,
-  apy,
-  liquidity,
+  stats,
   title,
   description,
   link,
+  badges = [],
 }) => {
-  const { t } = useTranslation(["common", "borrow"])
-
   return (
     <Paper p="xl" hoverable position="relative">
       <Stack gap="l">
         <Flex
           justify="space-between"
           align="flex-start"
-          sx={{ aspectRatio: ["3 / 1", "2 / 1"] }}
+          sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
           {logoId === "decentral" ? (
             <DecentralLogo size={56} />
           ) : (
             <AssetLogo id={logoId} size="extra-large" />
           )}
+          {badges.length > 0 && (
+            <Flex direction="column" gap="s" align="flex-end">
+              {badges.map(({ label, variant }) => (
+                <Chip key={label} variant={variant} rounded>
+                  {label}
+                </Chip>
+              ))}
+            </Flex>
+          )}
         </Flex>
 
         <Flex gap="xl">
-          <ValueStats
-            label={t("apy")}
-            customValue={
-              <Text
-                fs="h5"
-                lh={1}
-                font="primary"
-                fw={600}
-                color={getToken("accents.success.emphasis")}
-              >
-                {t("common:percent", { value: apy })}
-              </Text>
-            }
-            size="medium"
-            wrap
-          />
-          {liquidity && (
+          {stats.map((stat) => (
             <ValueStats
-              label={t("liquidity")}
+              key={stat.label}
               customValue={
                 <Text fs="h5" lh={1} font="primary" fw={600}>
-                  {liquidity}
+                  {stat.value}
                 </Text>
               }
-              size="medium"
+              {...stat}
+              size="large"
               wrap
             />
-          )}
+          ))}
         </Flex>
 
         <Separator my="s" />

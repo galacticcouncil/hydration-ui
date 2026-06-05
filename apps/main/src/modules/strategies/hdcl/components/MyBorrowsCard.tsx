@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Paper,
+  ResponsiveScope,
   Separator,
   Text,
   ValueStats,
@@ -10,6 +11,11 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import {
+  SBorrowPanel,
+  SBorrowsContent,
+  SBorrowsSeparator,
+} from "@/modules/strategies/hdcl/components/MyBorrowsCard.styled"
 import type { HdclPoolPosition } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
 
 interface Props {
@@ -75,11 +81,11 @@ export const MyBorrowsCard = ({
 
   return (
     <Paper>
-      <Flex align="center" justify="space-between" p="l" wrap>
+      <Flex align="center" justify="space-between" p="l" gap="s" wrap>
         <Text as="h2" font="primary" fs="base" fw={500}>
           {t("borrows.title")}
         </Text>
-        <Flex align="center" gap="l" ml="auto">
+        <Flex align="center" gap="l">
           <Flex align="center" gap="xs">
             <Text fs="p5" color={getToken("text.medium")}>
               {t("borrows.healthFactor")}:
@@ -121,50 +127,52 @@ export const MyBorrowsCard = ({
 
       <Separator />
 
-      <Flex gap={["s", null, "xl"]} direction={["column", null, "row"]}>
-        <Flex justify="space-between" px="l" py="xl" flex={1}>
-          <ValueStats
-            wrap
-            size="medium"
-            label={t("borrows.debt")}
-            value={t("common:currency", {
-              value: totalDebtUsd,
-              symbol: t("borrows.unit"),
-            })}
-            bottomLabel={t("borrows.borrowingPowerUsed", {
-              value: borrowingPowerUsedPct,
-            })}
-          />
-          <Box mt="m">
-            <Button variant="secondary" onClick={onRepay} disabled={!hasDebt}>
-              {t("borrows.repay")}
-            </Button>
-          </Box>
-        </Flex>
+      <ResponsiveScope>
+        <SBorrowsContent>
+          <SBorrowPanel>
+            <ValueStats
+              wrap
+              size="medium"
+              label={t("borrows.debt")}
+              value={t("common:currency", {
+                value: totalDebtUsd,
+                symbol: t("borrows.unit"),
+              })}
+              bottomLabel={t("borrows.borrowingPowerUsed", {
+                value: borrowingPowerUsedPct,
+              })}
+            />
+            <Box mt="m">
+              <Button variant="secondary" onClick={onRepay} disabled={!hasDebt}>
+                {t("borrows.repay")}
+              </Button>
+            </Box>
+          </SBorrowPanel>
 
-        <Separator orientation={["horizontal", null, "vertical"]} />
+          <SBorrowsSeparator />
 
-        <Flex justify="space-between" px="l" py="xl" flex={1}>
-          <ValueStats
-            wrap
-            size="medium"
-            label={t("borrows.available")}
-            value={t("common:currency", {
-              value: availableUsd,
-              symbol: t("borrows.unit"),
-            })}
-          />
-          <Box mt="m">
-            <Button
-              variant="primary"
-              onClick={onBorrow}
-              disabled={!hasCollateral || availableUsd <= 0}
-            >
-              {t("borrows.borrow")}
-            </Button>
-          </Box>
-        </Flex>
-      </Flex>
+          <SBorrowPanel>
+            <ValueStats
+              wrap
+              size="medium"
+              label={t("borrows.available")}
+              value={t("common:currency", {
+                value: availableUsd,
+                symbol: t("borrows.unit"),
+              })}
+            />
+            <Box mt="m">
+              <Button
+                variant="primary"
+                onClick={onBorrow}
+                disabled={!hasCollateral || availableUsd <= 0}
+              >
+                {t("borrows.borrow")}
+              </Button>
+            </Box>
+          </SBorrowPanel>
+        </SBorrowsContent>
+      </ResponsiveScope>
     </Paper>
   )
 }

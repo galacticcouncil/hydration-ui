@@ -40,6 +40,9 @@ export const HDCL_DEPOSIT_ZAP_ADDRESS: Hex =
 export const HDCL_ATOKEN_ADDRESS: Hex =
   "0x8912ff2164655A3406902ee9e802EBb16ec881D9"
 
+/** Substrate asset id for HDCL (vault share / aToken receipt). */
+export const HDCL_ASSET_ID = "55"
+
 // Substrate-asset precompile aliases. Keyed off substrate asset ids, not the
 // EVM deploy — unchanged across lark generations.
 //   HDCL (asset 55,  0x37 hex) — user-facing aToken receipt; what users hold.
@@ -69,7 +72,7 @@ export const STABLESWAP_POOL_ID = 10055n
 // asset 55. The substrate stableswap pair is (55, 222) = (HDCL, HOLLAR).
 export const STABLESWAP_HDCL_ASSET_ID = 55n
 
-export const EVM_CALL_GAS = 5_000_000n
+export const EVM_CALL_GAS = 2_000_000n
 
 // ────────────────────────────────────────────────────────────────────────
 // Vault ABI — current surface as of lark-2 (commit 555abc7).

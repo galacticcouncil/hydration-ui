@@ -4,22 +4,29 @@ import {
   Flex,
   MicroButton,
   Paper,
+  PositionCard,
   Separator,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
 
-import {
-  type ColumnHandlers,
-  type PositionRow,
-  usePositionColumns,
-} from "./MyPositions.columns"
+export type PositionRow = {
+  /** Stable id for react-table key + filtering. */
+  id: "supplied" | "raw"
+  label: string
+  amount: number
+  usdValue: number
+  /** Net worth (USD), after borrow. For the supplied row only — raw rows
+      report the same as amount × rate (not collateralised, no borrow). */
+  netWorthUsd: number
+  /** Your net APY %, including borrow effects. */
+  netApyPercent: number
+  /** Whether to show the recovery Deposit button (raw HDCL only). */
+  isRaw: boolean
+}
 
 interface Props {
   hdclSupplied: number
@@ -52,7 +59,6 @@ export const MyPositionsCard = ({
   isDepositingRaw,
 }: Props) => {
   const { t } = useTranslation(["hdcl", "common"])
-  const { isMobile, isTablet } = useBreakpoints()
 
   const collateralLabel = t("strategy.collateralAsset")
   const hasSupplied = hdclSupplied >= minDisplayBalance
@@ -86,98 +92,6 @@ export const MyPositionsCard = ({
     })
   }
 
-  const handlers: ColumnHandlers = {
-    onWithdraw,
-    onDepositRaw,
-    isDepositingRaw,
-  }
-  const columns = usePositionColumns(handlers)
-
-  const renderDesktopRow = (row: PositionRow) => (
-    <Paper key={row.id} p="l" shadow={false}>
-      <Flex align="center">
-        <Flex align="center" gap="s">
-          <DecentralLogo size={32} />
-          <Text fs="p3" fw={500} color={getToken("text.high")}>
-            {row.label}
-          </Text>
-        </Flex>
-
-        <Flex
-          align="center"
-          justify="space-around"
-          gap="xxl"
-          px="xl"
-          flex={1}
-          sx={{ minWidth: 0 }}
-        >
-          <ValueStats
-            wrap
-            size="small"
-            font="secondary"
-            label={t("positions.col.amount")}
-            customValue={
-              <Text fs="p3" fw={500} lh={1}>
-                {t("common:currency", {
-                  value: row.amount,
-                  symbol: "aHDCL",
-                })}
-              </Text>
-            }
-            bottomLabel={t("common:currency", {
-              value: row.usdValue,
-            })}
-          />
-          <ValueStats
-            wrap
-            size="small"
-            font="secondary"
-            label={t("positions.col.netWorth")}
-            customValue={
-              <Text fs="p3" fw={500} lh={1}>
-                {t("common:currency", {
-                  value: row.netWorthUsd,
-                })}
-              </Text>
-            }
-            bottomLabel={t("positions.afterBorrow")}
-          />
-          <ValueStats
-            wrap
-            size="small"
-            font="secondary"
-            label={t("positions.col.netApy")}
-            customValue={
-              <Text fs="p3" fw={500} lh={1}>
-                {t("common:percent", {
-                  value: row.netApyPercent,
-                })}
-              </Text>
-            }
-            bottomLabel={t("positions.inclBorrow")}
-          />
-        </Flex>
-
-        <Flex justify="flex-end" align="center" gap="s">
-          {row.isRaw && (
-            <MicroButton onClick={onDepositRaw} disabled={isDepositingRaw}>
-              {isDepositingRaw
-                ? t("positions.action.depositing")
-                : t("positions.action.deposit")}
-            </MicroButton>
-          )}
-          <Button
-            variant="tertiary"
-            size="small"
-            onClick={() => onWithdraw(row.id)}
-          >
-            {t("positions.action.withdraw")}
-          </Button>
-        </Flex>
-      </Flex>
-    </Paper>
-  )
-
   return (
     <Paper>
       <Box p="l">
@@ -186,21 +100,85 @@ export const MyPositionsCard = ({
         </Text>
       </Box>
       <Separator />
-      {rows.length === 0 ? (
-        <Box px="l" py="xl">
-          <Text fs="p4" color={getToken("text.low")}>
-            {t("positions.empty")}
-          </Text>
-        </Box>
-      ) : isMobile || isTablet ? (
-        <Box px="m" pb="m">
-          <StackedTable data={rows} columns={columns} />
-        </Box>
-      ) : (
-        <Flex direction="column" gap="m" p="m">
-          {rows.map(renderDesktopRow)}
-        </Flex>
-      )}
+      <Flex direction="column" gap="m" p="m">
+        {rows.map((row) => (
+          <PositionCard
+            key={row.id}
+            logo={<DecentralLogo size={32} />}
+            symbol={row.label}
+            stats={
+              <>
+                <ValueStats
+                  wrap
+                  size="small"
+                  font="secondary"
+                  label={t("positions.col.amount")}
+                  customValue={
+                    <Text fs="p3" fw={500} lh={1}>
+                      {t("common:currency", {
+                        value: row.amount,
+                        symbol: "aHDCL",
+                      })}
+                    </Text>
+                  }
+                  bottomLabel={t("common:currency", {
+                    value: row.usdValue,
+                  })}
+                />
+                <ValueStats
+                  wrap
+                  size="small"
+                  font="secondary"
+                  label={t("positions.col.netWorth")}
+                  customValue={
+                    <Text fs="p3" fw={500} lh={1}>
+                      {t("common:currency", {
+                        value: row.netWorthUsd,
+                      })}
+                    </Text>
+                  }
+                  bottomLabel={t("positions.afterBorrow")}
+                />
+                <ValueStats
+                  wrap
+                  size="small"
+                  font="secondary"
+                  label={t("positions.col.netApy")}
+                  customValue={
+                    <Text fs="p3" fw={500} lh={1}>
+                      {t("common:percent", {
+                        value: row.netApyPercent,
+                      })}
+                    </Text>
+                  }
+                  bottomLabel={t("positions.inclBorrow")}
+                />
+              </>
+            }
+            cta={
+              <>
+                {row.isRaw && (
+                  <MicroButton
+                    onClick={onDepositRaw}
+                    disabled={isDepositingRaw}
+                  >
+                    {isDepositingRaw
+                      ? t("positions.action.depositing")
+                      : t("positions.action.deposit")}
+                  </MicroButton>
+                )}
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  onClick={() => onWithdraw(row.id)}
+                >
+                  {t("positions.action.withdraw")}
+                </Button>
+              </>
+            }
+          />
+        ))}
+      </Flex>
     </Paper>
   )
 }

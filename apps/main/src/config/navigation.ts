@@ -168,11 +168,6 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.staking,
     icon: GemIcon,
   },
-  {
-    key: "strategiesHollarBonds",
-    to: LINKS.strategiesHollarBonds,
-    icon: GoalIcon,
-  },
   // {
   //   key: "referrals",
   //   to: LINKS.referrals,

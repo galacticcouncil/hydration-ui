@@ -1,5 +1,6 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { hexToRgba } from "@galacticcouncil/utils"
 
 import { Box } from "@/components"
 import { createVariants } from "@/utils"
@@ -14,6 +15,8 @@ export type ChipVariant =
   | "danger"
   | "green"
   | "accent"
+  | "red"
+  | "purple"
 
 export type ChipSize = "extra-small" | "small" | "medium" | "large"
 export type SChipProps = {
@@ -27,7 +30,7 @@ const variantStyles = (color: string, bg: string) => css`
   color: ${color};
 `
 
-const variants = createVariants(({ buttons, accents }) => ({
+const variants = createVariants(({ buttons, accents, secondaryColors }) => ({
   primary: variantStyles(
     buttons.primary.high.onButton,
     buttons.primary.high.rest,
@@ -45,6 +48,11 @@ const variants = createVariants(({ buttons, accents }) => ({
   warning: variantStyles(accents.alertAlt.onPrimary, accents.alertAlt.primary),
   danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
   green: variantStyles(accents.success.emphasis, accents.success.dim),
+  red: variantStyles(accents.danger.emphasis, accents.danger.dimBg),
+  purple: variantStyles(
+    secondaryColors.blues.blueViolet,
+    hexToRgba(secondaryColors.blues.blueViolet, 0.3),
+  ),
 }))
 
 const sizes = createVariants((theme) => ({
@@ -86,7 +94,7 @@ export const SChip = styled(Box, {
       font-weight: 500;
       line-height: 1;
 
-      border-radius: ${rounded ? theme.radii.full : theme.radii.m};
+      border-radius: ${rounded ? theme.radii.full : theme.radii.base};
     `,
   ],
 )

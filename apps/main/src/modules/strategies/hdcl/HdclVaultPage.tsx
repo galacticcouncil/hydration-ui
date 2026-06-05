@@ -68,8 +68,6 @@ export const HdclVaultPage = () => {
   const { data: poolPosition } = useHdclPoolPosition(evmAddress)
   const { data: reserveConfig } = useHdclReserveConfig()
 
-  console.log({ poolPosition, vaultStats })
-
   const depositMutation = useDeposit()
   const redeemMutation = useRequestRedeem()
   const redeemRawMutation = useRequestRedeemRaw()
@@ -172,6 +170,11 @@ export const HdclVaultPage = () => {
   const debtUsd = poolPosition?.totalDebtUsd ?? 0
   const netWorthUsd = Math.max(0, collateralUsd - debtUsd)
 
+  const minDisplayBalance = stats.minRedeem
+  const hasPositions =
+    (userBalances.hdclSupplied ?? 0) >= minDisplayBalance ||
+    (userBalances.hdclRaw ?? 0) >= minDisplayBalance
+
   const handleWithdrawSupplied = () => {
     setWithdrawSource("supplied")
     setShowWithdraw(true)
@@ -191,19 +194,21 @@ export const HdclVaultPage = () => {
 
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl" sx={{ order: [1, null, 0] }}>
-          <MyPositionsCard
-            hdclSupplied={userBalances.hdclSupplied ?? 0}
-            hdclRaw={userBalances.hdclRaw ?? 0}
-            exchangeRate={stats.exchangeRate}
-            apyPercent={stats.apr}
-            netWorthUsd={netWorthUsd}
-            minDisplayBalance={stats.minRedeem}
-            onWithdraw={handleWithdrawByRow}
-            onDepositRaw={() =>
-              supplyRawMutation.mutate(userBalances.hdclRaw ?? 0)
-            }
-            isDepositingRaw={supplyRawMutation.isPending}
-          />
+          {hasPositions && (
+            <MyPositionsCard
+              hdclSupplied={userBalances.hdclSupplied ?? 0}
+              hdclRaw={userBalances.hdclRaw ?? 0}
+              exchangeRate={stats.exchangeRate}
+              apyPercent={stats.apr}
+              netWorthUsd={netWorthUsd}
+              minDisplayBalance={minDisplayBalance}
+              onWithdraw={handleWithdrawByRow}
+              onDepositRaw={() =>
+                supplyRawMutation.mutate(userBalances.hdclRaw ?? 0)
+              }
+              isDepositingRaw={supplyRawMutation.isPending}
+            />
+          )}
 
           <MyBorrowsCard
             poolPosition={poolPosition}

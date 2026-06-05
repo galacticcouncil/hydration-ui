@@ -1,12 +1,10 @@
-import { css } from "@emotion/react"
-import styled from "@emotion/styled"
 import { Hourglass, Lock, Zap } from "@galacticcouncil/ui/assets/icons"
 import {
   AssetInput,
   Box,
   Button,
-  Chip,
   Flex,
+  Icon,
   Paper,
   Separator,
   Summary,
@@ -21,28 +19,9 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { HdclExchangeRate } from "@/modules/strategies/hdcl/components/HdclExchangeRate"
 import { HdclLogo } from "@/modules/strategies/hdcl/components/HdclLogo"
 import { useAssets } from "@/providers/assetsProvider"
-
-const SDepositContainer = styled(Paper)(
-  ({ theme }) => css`
-    --deposit-section-padding-inline: ${theme.containers.paddings.primary};
-    --deposit-section-inset-inline: calc(
-      var(--deposit-section-padding-inline) * -1
-    );
-
-    padding: 0 var(--deposit-section-padding-inline);
-    overflow-x: hidden;
-  `,
-)
-
-const SPriceChipWrap = styled(Flex)`
-  position: relative;
-  justify-content: center;
-  z-index: 1;
-  align-items: center;
-  margin-inline: -${({ theme }) => theme.space.xl};
-`
 
 interface VaultStats {
   exchangeRate: number
@@ -122,8 +101,8 @@ export const DepositPanel = ({
       : undefined
 
   return (
-    <SDepositContainer>
-      <Box pt="l">
+    <Paper px="xl" position="relative">
+      <Box>
         <AssetInput
           label={t("deposit.your")}
           symbol="HOLLAR"
@@ -139,17 +118,7 @@ export const DepositPanel = ({
           amountError={amountError}
         />
 
-        <SPriceChipWrap>
-          <Separator sx={{ flex: 1 }} />
-          <Chip size="small" rounded variant="tertiary">
-            <Text fs="p6" color={getToken("text.medium")}>
-              {t("deposit.price", {
-                rate: vaultStats.exchangeRate,
-              })}
-            </Text>
-          </Chip>
-          <Separator sx={{ width: "xl" }} />
-        </SPriceChipWrap>
+        <HdclExchangeRate exchangeRate={vaultStats.exchangeRate} />
 
         <AssetInput
           label={t("deposit.youReceive")}
@@ -167,66 +136,60 @@ export const DepositPanel = ({
 
       <Separator mx="-xl" />
 
-      <Box>
-        <Summary separator={<Separator mx="-xl" />}>
-          <SummaryRow
-            label={
-              <Flex align="center" gap="base">
-                <Lock size={14} />
-                <Text fs="p5">{t("deposit.lockup")}</Text>
-              </Flex>
-            }
-            content={t("deposit.lockupValue", {
-              days: vaultStats.maxLockupDays,
-            })}
-          />
-          <Box>
-            <Text fs="p5" color={getToken("text.medium")} pt="m" pb="s">
-              {t("deposit.redeemOptions")}:
-            </Text>
-            <SummaryRow
-              label={
-                <Flex
-                  align="center"
-                  gap="base"
-                  sx={{ color: getToken("text.tint.secondary") }}
-                >
-                  <Hourglass size={14} />
-                  <Text
-                    fs="p5"
-                    fw={500}
-                    color={getToken("text.tint.secondary")}
-                  >
-                    {t("deposit.option.queue")}
-                  </Text>
-                </Flex>
-              }
-              content={t("deposit.option.queueValue", {
-                days: vaultStats.maxLockupDays,
-              })}
-            />
-          </Box>
+      <Summary separator={<Separator mx="-xl" />}>
+        <SummaryRow
+          label={
+            <Flex align="center" gap="base">
+              <Icon component={Lock} size="xs" />
+              <Text fs="p5">{t("deposit.lockup")}</Text>
+            </Flex>
+          }
+          content={t("deposit.lockupValue", {
+            days: vaultStats.maxLockupDays,
+          })}
+        />
+        <Box>
+          <Text fs="p5" color={getToken("text.medium")} pt="m" pb="s">
+            {t("deposit.redeemOptions")}:
+          </Text>
           <SummaryRow
             label={
               <Flex
                 align="center"
                 gap="base"
-                sx={{ color: getToken("accents.success.emphasis") }}
+                sx={{ color: getToken("text.tint.secondary") }}
               >
-                <Zap size={14} />
-                <Text
-                  fs="p5"
-                  fw={500}
-                  color={getToken("accents.success.emphasis")}
-                >
-                  {t("deposit.option.instant")}
+                <Icon component={Hourglass} size="xs" />
+                <Text fs="p5" fw={500} color={getToken("text.tint.secondary")}>
+                  {t("deposit.option.queue")}
                 </Text>
               </Flex>
             }
-            content={t("deposit.option.instantValue")}
+            content={t("deposit.option.queueValue", {
+              days: vaultStats.maxLockupDays,
+            })}
           />
-        </Summary>
-      </Box>
+        </Box>
+        <SummaryRow
+          label={
+            <Flex
+              align="center"
+              gap="base"
+              sx={{ color: getToken("accents.success.emphasis") }}
+            >
+              <Icon component={Zap} size="xs" />
+              <Text
+                fs="p5"
+                fw={500}
+                color={getToken("accents.success.emphasis")}
+              >
+                {t("deposit.option.instant")}
+              </Text>
+            </Flex>
+          }
+          content={t("deposit.option.instantValue")}
+        />
+      </Summary>
 
       <Separator mx="-xl" />
 
@@ -280,6 +243,6 @@ export const DepositPanel = ({
           </Box>
         </>
       )} */}
-    </SDepositContainer>
+    </Paper>
   )
 }
