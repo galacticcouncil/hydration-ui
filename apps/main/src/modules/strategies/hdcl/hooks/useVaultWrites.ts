@@ -16,7 +16,7 @@ import {
   HDCL_HAS_AAVE_LAYER,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
-  HDCL_PRECOMPILE_ADDRESS,
+  DCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
   VAULT_ABI,
   VAULT_ADDRESS,
@@ -310,7 +310,7 @@ export function useRequestRedeem() {
           data: encodeFunctionData({
             abi: HDCL_POOL_ABI,
             functionName: "withdraw",
-            args: [HDCL_PRECOMPILE_ADDRESS, hdclBig, evmAddress],
+            args: [DCL_PRECOMPILE_ADDRESS, hdclBig, evmAddress],
           }),
           abi: [...HDCL_POOL_ABI],
         })
@@ -378,7 +378,7 @@ export function useSupplyRawHdcl() {
       const data = encodeFunctionData({
         abi: HDCL_POOL_ABI,
         functionName: "supply",
-        args: [HDCL_PRECOMPILE_ADDRESS, hdclBig, evmAddress, 0],
+        args: [DCL_PRECOMPILE_ADDRESS, hdclBig, evmAddress, 0],
       })
 
       const fmt = t("currency", {
@@ -491,7 +491,7 @@ export function useCancelRedeem() {
           data: encodeFunctionData({
             abi: HDCL_POOL_ABI,
             functionName: "supply",
-            args: [HDCL_PRECOMPILE_ADDRESS, returnAmount, evmAddress, 0],
+            args: [DCL_PRECOMPILE_ADDRESS, returnAmount, evmAddress, 0],
           }),
           abi: [...HDCL_POOL_ABI],
         },
