@@ -1,34 +1,77 @@
-import { Text } from "@galacticcouncil/ui/components"
+import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
   readonly percentage: number | null
+  readonly marketPrice: string | null
+  readonly nativeMarketPrice: string | null
+  readonly assetInSymbol: string
+  readonly assetOutSymbol: string
 }
 
-export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
-  const { t } = useTranslation()
+export const OfferMarketPriceColumn: FC<Props> = ({
+  percentage,
+  marketPrice,
+  nativeMarketPrice,
+  assetInSymbol,
+  assetOutSymbol,
+}) => {
+  const { t } = useTranslation(["trade", "common"])
 
-  const percentageNum = Number(percentage)
+  if (percentage === null) {
+    return (
+      <Text fw={500} fs="p4" lh={1} color={getToken("text.low")} truncate>
+        —
+      </Text>
+    )
+  }
+
+  const isDiscount = percentage < 0
+  const isPremium = percentage > 0
+
+  const color = isDiscount
+    ? getToken("details.values.positive")
+    : isPremium
+      ? getToken("details.values.negative")
+      : getToken("text.high")
+
+  const label = isDiscount
+    ? t("otc.marketPrice.discount")
+    : isPremium
+      ? t("otc.marketPrice.premium")
+      : undefined
+
+  const tooltipKey = isDiscount
+    ? "otc.marketPrice.tooltip.discount"
+    : "otc.marketPrice.tooltip.premium"
+
+  const tooltip = t(tooltipKey, {
+    percentage: t("common:percent.compact", { value: Math.abs(percentage) }),
+    marketNative: t("common:number", { value: nativeMarketPrice }),
+    assetIn: assetInSymbol,
+    assetOut: assetOutSymbol,
+    marketUsd: t("common:currency", {
+      value: marketPrice,
+      maximumFractionDigits: null,
+    }),
+  })
 
   return (
-    <Text
-      fw={500}
-      fs="p4"
-      lh={1}
-      color={
-        percentageNum < 0
-          ? getToken("details.values.positive")
-          : percentageNum > 0 && getToken("details.values.negative")
-      }
-      truncate
-    >
-      {percentageNum < 0 && "-"}
-      {percentageNum > 0 && "+"}
-      {t("percent.compact", {
-        value: percentage === null ? null : Math.abs(percentage),
-      })}
-    </Text>
+    <Tooltip text={tooltip} asChild>
+      <Flex direction="column" align="center" gap={2} sx={{ cursor: "help" }}>
+        <Text fw={500} fs="p4" lh={1} color={color} truncate>
+          {isDiscount && "-"}
+          {isPremium && "+"}
+          {t("common:percent.compact", { value: Math.abs(percentage) })}
+        </Text>
+        {label && (
+          <Text fw={500} fs="p6" lh={1} color={getToken("text.low")} truncate>
+            {label}
+          </Text>
+        )}
+      </Flex>
+    </Tooltip>
   )
 }

@@ -24,11 +24,30 @@ export const mapOtcOffersToTableData =
             .toString()
         : null
 
+    const marketPrice =
+      priceOut?.isValid && Big(priceOut.price).gt(0) ? priceOut.price : null
+
+    // Native exchange rate of the order: how much of the accepting asset (assetIn)
+    // is paid per 1 unit of the offered asset (assetOut). Oracle-independent.
+    const nativePrice = Big(assetAmountOut).gt(0)
+      ? new Big(assetAmountIn).div(assetAmountOut).toString()
+      : null
+
+    // Same rate at market, derived from the two display-currency prices:
+    // (USD per assetOut) / (USD per assetIn) = assetIn per assetOut.
+    const nativeMarketPrice =
+      priceIn?.isValid &&
+      priceOut?.isValid &&
+      Big(priceIn.price).gt(0) &&
+      Big(priceOut.price).gt(0)
+        ? new Big(priceOut.price).div(priceIn.price).toString()
+        : null
+
     const marketPricePercentage =
-      offerPrice && priceOut?.isValid && Big(priceOut.price).gt(0)
+      offerPrice && marketPrice
         ? math.calculateDiffToRef(
             toBigInt(offerPrice, RUNTIME_DECIMALS),
-            toBigInt(priceOut.price, RUNTIME_DECIMALS),
+            toBigInt(marketPrice, RUNTIME_DECIMALS),
           )
         : null
 
@@ -37,6 +56,9 @@ export const mapOtcOffersToTableData =
       assetAmountIn,
       assetAmountOut,
       offerPrice,
+      nativePrice,
+      marketPrice,
+      nativeMarketPrice,
       marketPricePercentage,
     }
   }

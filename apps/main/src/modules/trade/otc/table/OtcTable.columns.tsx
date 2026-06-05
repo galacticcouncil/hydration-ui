@@ -4,6 +4,7 @@ import {
   Flex,
   Modal,
   TableRowDetailsExpand,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -33,6 +34,9 @@ export const otcColumnSortPriority: ReadonlyArray<OtcColumn> = [
 
 export type OtcOfferTabular = OtcOffer & {
   readonly offerPrice: string | null
+  readonly nativePrice: string | null
+  readonly marketPrice: string | null
+  readonly nativeMarketPrice: string | null
   readonly marketPricePercentage: number | null
 }
 
@@ -81,17 +85,26 @@ export const useOtcTableColums = () => {
         return (
           <OfferPriceColumn
             offerPrice={row.original.offerPrice}
+            nativePrice={row.original.nativePrice}
+            assetInSymbol={row.original.assetIn.symbol}
             assetOutSymbol={row.original.assetOut.symbol}
           />
         )
       },
     })
 
+    const marketPriceHeader = (
+      <Flex display="inline-flex" align="center" gap={4}>
+        {t("otc.marketPrice.header")}
+        <Tooltip text={t("otc.marketPrice.header.tooltip")} />
+      </Flex>
+    )
+
     const marketPricePercentage = columnHelper.accessor(
       "marketPricePercentage",
       {
         id: OtcColumn.MarketPrice,
-        header: t("common:marketPrice"),
+        header: () => marketPriceHeader,
         meta: {
           sx: { textAlign: "center" },
         },
@@ -103,6 +116,10 @@ export const useOtcTableColums = () => {
           return (
             <OfferMarketPriceColumn
               percentage={row.original.marketPricePercentage}
+              marketPrice={row.original.marketPrice}
+              nativeMarketPrice={row.original.nativeMarketPrice}
+              assetInSymbol={row.original.assetIn.symbol}
+              assetOutSymbol={row.original.assetOut.symbol}
             />
           )
         },
@@ -111,7 +128,7 @@ export const useOtcTableColums = () => {
 
     const profitMobile = columnHelper.accessor("marketPricePercentage", {
       id: OtcColumn.MarketPrice,
-      header: t("common:marketPrice"),
+      header: () => marketPriceHeader,
       sortingFn: sortBy({
         select: (row) => row.original.marketPricePercentage,
         compare: nullLast(numerically),
@@ -120,6 +137,10 @@ export const useOtcTableColums = () => {
         <TableRowDetailsExpand>
           <OfferMarketPriceColumn
             percentage={row.original.marketPricePercentage}
+            marketPrice={row.original.marketPrice}
+            nativeMarketPrice={row.original.nativeMarketPrice}
+            assetInSymbol={row.original.assetIn.symbol}
+            assetOutSymbol={row.original.assetOut.symbol}
           />
         </TableRowDetailsExpand>
       ),
