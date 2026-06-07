@@ -5,5 +5,3 @@ There is **no user-facing borrow** and **no liquidation risk** for depositors. T
 ### Withdrawals
 
 Exits go through an **async withdrawal queue**. When you request a redemption, your pETH is escrowed and the vault unwinds the corresponding slice of the loop. Once settled, you **claim** your ETH back. The settlement uses the exchange rate at the time of settlement, so your position keeps earning while it's in the queue.
-
-[Read more](https://example.com)
