@@ -40,7 +40,9 @@ export const StrategiesPage = () => {
           logoId={ETH_ASSET_ID}
           title={t("strategies:cards.propeller.title")}
           stats={[
-            { label: t("apy"), value: t("common:percent", { value: 12 }) },
+            // Propeller has no on-chain APR feed yet (see useVaultReads); show
+            // "-" rather than a fabricated figure, matching the hollar-bonds card.
+            { label: t("apy"), value: "-" },
           ]}
           badges={[
             { label: "Leverage", variant: "accent" },

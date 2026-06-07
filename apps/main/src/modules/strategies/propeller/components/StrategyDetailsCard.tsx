@@ -79,11 +79,13 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             color={getToken("accents.success.emphasis")}
             mt="xs"
           >
-            {t("common:percent", {
-              prefix: "+",
-              value: vaultStats.apr,
-              maximumFractionDigits: 1,
-            })}
+            {vaultStats.apr > 0
+              ? t("common:percent", {
+                  prefix: "+",
+                  value: vaultStats.apr,
+                  maximumFractionDigits: 1,
+                })
+              : "-"}
           </Text>
         </Box>
         <Box>
