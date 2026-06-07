@@ -5,6 +5,8 @@
 
   "cards.hdcl.title": "Decentral",
   "cards.hdcl.description": "Decentral is revolutionizing the payment process for creators, influencers, agencies, and production companies in Brazil.",
+  "cards.propeller.title": "Propeller",
+  "cards.propeller.description": "Deposit ETH and earn leveraged staking yield. Propeller loops your collateral automatically and self-deleverages to avoid liquidation. Exit any time via the async withdrawal queue.",
   "cards.hollarBonds.title": "HOLLAR Bonds",
   "cards.hollarBonds.description": "Lock stablecoins and earn fixed APR. Fixed Yield HOLLAR Bonds have no liquidation risk for users, as the protocol covers the underlying yield and liquidation risk.",
 

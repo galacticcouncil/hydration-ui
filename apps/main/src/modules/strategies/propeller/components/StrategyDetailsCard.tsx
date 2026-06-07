@@ -1,0 +1,157 @@
+import { MoveUpRight } from "@galacticcouncil/ui/assets/icons"
+import {
+  Box,
+  ExternalLink,
+  Flex,
+  Grid,
+  Icon,
+  Paper,
+  Separator,
+  SummaryRow,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  shortenAccountAddress,
+  subscan,
+} from "@galacticcouncil/utils"
+import { useTranslation } from "react-i18next"
+
+import { AssetLogo } from "@/components/AssetLogo"
+import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
+import {
+  ETH_ASSET_ID,
+  VAULT_ADDRESS,
+} from "@/modules/strategies/propeller/constants"
+import { useSubLoopStats } from "@/modules/strategies/propeller/hooks/useVaultReads"
+
+interface VaultStats {
+  totalAssets: number
+  exchangeRate: number
+  apr: number
+}
+
+interface Props {
+  vaultStats: VaultStats
+}
+
+export const StrategyDetailsCard = ({ vaultStats }: Props) => {
+  const { t } = useTranslation(["propeller", "common"])
+  // totalAssets is denominated in ETH (the underlying); display it directly.
+  const tvl = vaultStats.totalAssets
+  const { data: subLoop } = useSubLoopStats()
+  const healthFactor = subLoop?.healthFactor ?? null
+
+  return (
+    <Paper>
+      <Box p="l">
+        <Text as="h2" font="primary" fs="base" fw={500}>
+          {t("strategy.title")}
+        </Text>
+      </Box>
+      <Separator />
+
+      <Flex justify="space-between" gap="l" mb="l" p="l" wrap>
+        <Box>
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("strategy.tvl")}
+          </Text>
+          <Flex align="center" gap="s" mt="xs">
+            <PropellerLogo size={28} />
+            <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
+              {t("common:currency", {
+                value: tvl,
+                symbol: "ETH",
+                maximumFractionDigits: 2,
+              })}
+            </Text>
+          </Flex>
+        </Box>
+        <Box>
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("strategy.netApy")}
+          </Text>
+          <Text
+            font="primary"
+            fs="h6"
+            fw={600}
+            color={getToken("accents.success.emphasis")}
+            mt="xs"
+          >
+            {t("common:percent", {
+              prefix: "+",
+              value: vaultStats.apr,
+              maximumFractionDigits: 1,
+            })}
+          </Text>
+        </Box>
+        <Box>
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("strategy.healthFactor")}
+          </Text>
+          <Text
+            font="primary"
+            fs="h6"
+            fw={500}
+            color={getToken("text.high")}
+            mt="xs"
+          >
+            {healthFactor === null
+              ? "—"
+              : t("common:number", {
+                  value: healthFactor,
+                  maximumFractionDigits: 2,
+                })}
+          </Text>
+        </Box>
+      </Flex>
+
+      <Separator />
+
+      <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]} p="l">
+        <Box>
+          <SummaryRow
+            label={t("strategy.collateralAssetLabel")}
+            content={
+              <Flex align="center" gap="xs">
+                <AssetLogo id={ETH_ASSET_ID} size="small" />
+                <Text fs="p4" lh={1.5}>
+                  {t("strategy.collateralAsset")}
+                </Text>
+              </Flex>
+            }
+          />
+          <Separator />
+        </Box>
+        <Box>
+          <SummaryRow
+            label={t("strategy.yieldCycle")}
+            content={
+              <Text fs="p4" lh={1.5}>
+                {t("strategy.yieldCycleValue")}
+              </Text>
+            }
+          />
+          <Separator />
+        </Box>
+        <Box>
+          <SummaryRow
+            label={t("strategy.contractAddress")}
+            content={
+              <Text fs="p4" lh={1.5}>
+                <ExternalLink
+                  href={subscan.account(HYDRATION_CHAIN_KEY, VAULT_ADDRESS)}
+                >
+                  {shortenAccountAddress(VAULT_ADDRESS)}
+                  <Icon component={MoveUpRight} size="xs" />
+                </ExternalLink>
+              </Text>
+            }
+          />
+          <Separator />
+        </Box>
+      </Grid>
+    </Paper>
+  )
+}

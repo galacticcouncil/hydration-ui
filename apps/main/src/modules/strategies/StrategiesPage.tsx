@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { ETH_ASSET_ID } from "@/modules/strategies/propeller/constants"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -34,6 +35,19 @@ export const StrategiesPage = () => {
           ]}
           description={t("strategies:cards.hdcl.description")}
           link={LINKS.strategiesHdcl}
+        />
+        <StrategyCard
+          logoId={ETH_ASSET_ID}
+          title={t("strategies:cards.propeller.title")}
+          stats={[
+            { label: t("apy"), value: t("common:percent", { value: 12 }) },
+          ]}
+          badges={[
+            { label: "Leverage", variant: "accent" },
+            { label: "No liquidation", variant: "green" },
+          ]}
+          description={t("strategies:cards.propeller.description")}
+          link={LINKS.strategiesPropeller}
         />
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard

@@ -187,6 +187,7 @@
   "navigation.crossChainHistory.description": "A history of your cross-chain transfers",
   "navigation.strategies.title": "Strategies",
   "navigation.strategiesHdcl.title": "HDCL Vault",
+  "navigation.strategiesPropeller.title": "Propeller Vault",
   "navigation.home.title": "Hydration",
   "navigation.strategiesHollarBonds.title": "HOLLAR Bonds",
   "navigation.liquidity.title": "Liquidity",

@@ -1,0 +1,9 @@
+Propeller is a **leveraged staking** strategy. You deposit **ETH** and the vault runs a recursive loop — supplying your collateral, minting a synthetic against it, and re-staking — to amplify the underlying staking yield without you having to manage any positions manually.
+
+There is **no user-facing borrow** and **no liquidation risk** for depositors. The vault keeps its loan-to-value inside a target band and **self-deleverages** automatically when the market moves, so your shares (**pETH**) simply accrue value as the loop harvests and compounds rewards.
+
+### Withdrawals
+
+Exits go through an **async withdrawal queue**. When you request a redemption, your pETH is escrowed and the vault unwinds the corresponding slice of the loop. Once settled, you **claim** your ETH back. The settlement uses the exchange rate at the time of settlement, so your position keeps earning while it's in the queue.
+
+[Read more](https://example.com)
