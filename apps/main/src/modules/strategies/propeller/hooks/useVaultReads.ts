@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
+import { usePRIMEAPY } from "@/api/external/kamino"
 import {
   ERC20_ABI,
   ETH_ADDRESS,
+  HOLLAR_ADDRESS,
+  POOL_ABI,
+  POOL_ADDRESS,
   SUBLOOP_ABI,
   SUBLOOP_ADDRESS,
   VAULT_ABI,
@@ -81,32 +85,86 @@ export function useSubLoopStats() {
         abi: SUBLOOP_ABI,
         client: evm,
       })
-      const safeRead = async (
+      const pool = getContract({
+        address: POOL_ADDRESS,
+        abi: POOL_ABI,
+        client: evm,
+      })
+      const safe = async <T>(
         label: string,
-        read: () => Promise<bigint>,
-      ): Promise<bigint | null> => {
+        read: () => Promise<T>,
+      ): Promise<T | null> => {
         try {
           return await read()
         } catch (err) {
           if (import.meta.env.DEV) {
-            console.warn(`[propeller-vault] SubLoop.${label} reverted`, err)
+            console.warn(`[propeller-vault] ${label} reverted`, err)
           }
           return null
         }
       }
-      const [healthFactor, totalEquity] = await Promise.all([
-        safeRead("healthFactor", () => subLoop.read.healthFactor()),
-        safeRead("totalEquity", () => subLoop.read.totalEquity()),
-      ])
+      const [healthFactor, totalEquity, targetHf, account, hollarRes] =
+        await Promise.all([
+          safe("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
+          safe("SubLoop.totalEquity", () => subLoop.read.totalEquity()),
+          safe("SubLoop.targetHf", () => subLoop.read.targetHf()),
+          safe("Pool.getUserAccountData", () =>
+            pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
+          ),
+          safe("Pool.getReserveData(HOLLAR)", () =>
+            pool.read.getReserveData([HOLLAR_ADDRESS]),
+          ),
+        ])
+
+      // leverage = collateral / equity. borrowRate = the HOLLAR variable borrow
+      // rate (Aave rates are ray, 1e27) as a fraction. The PRIME supply leg of
+      // the carry is sourced off-chain (Kamino, same as the borrow page) — the
+      // Aave testnet liquidity rate reads ~0 and doesn't reflect PRIME's yield.
+      let leverage: number | null = null
+      let borrowRate: number | null = null
+      if (account) {
+        const equity = account[0] - account[1] // totalCollateralBase − totalDebtBase
+        if (equity > 0n) {
+          leverage = Number(account[0]) / Number(equity)
+        }
+      }
+      if (hollarRes) {
+        borrowRate = Number(hollarRes.currentVariableBorrowRate) / 1e27
+      }
+
       return {
         healthFactor:
           healthFactor === null ? null : Number(formatUnits(healthFactor, 18)),
+        targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),
         totalEquity:
           totalEquity === null ? null : Number(formatUnits(totalEquity, 18)),
+        leverage,
+        borrowRate,
       }
     },
     refetchInterval: 30_000,
   })
+}
+
+/**
+ * Live net APY for the loop = leveraged PRIME supply yield minus the HOLLAR
+ * borrow cost: primeYield·L − borrowRate·(L−1). The PRIME yield comes from the
+ * same Kamino feed the borrow page uses (usePRIMEAPY, a percent → /100 to a
+ * fraction). Returns null — never 0 or a negative — when any input is missing
+ * or the carry isn't positive, so the UI can simply hide it.
+ */
+export function usePropellerApy(): number | null {
+  const { data: subLoop } = useSubLoopStats()
+  const { data: primeApyPct } = usePRIMEAPY({ enabled: true })
+
+  const leverage = subLoop?.leverage ?? null
+  const borrowRate = subLoop?.borrowRate ?? null
+  if (leverage === null || borrowRate === null || primeApyPct === undefined) {
+    return null
+  }
+  const primeYield = primeApyPct / 100 // percent → fraction
+  const apr = primeYield * leverage - borrowRate * (leverage - 1)
+  return apr > 0 ? apr : null
 }
 
 export function useUserBalances(evmAddress: Hex | undefined) {

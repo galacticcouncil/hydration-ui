@@ -24,7 +24,10 @@ import {
   ETH_ASSET_ID,
   VAULT_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
-import { useSubLoopStats } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import {
+  usePropellerApy,
+  useSubLoopStats,
+} from "@/modules/strategies/propeller/hooks/useVaultReads"
 
 interface VaultStats {
   totalAssets: number
@@ -42,6 +45,11 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   const tvl = vaultStats.totalAssets
   const { data: subLoop } = useSubLoopStats()
   const healthFactor = subLoop?.healthFactor ?? null
+  const targetHf = subLoop?.targetHf ?? null
+  const leverage = subLoop?.leverage ?? null
+  // live leveraged carry (Kamino PRIME yield − HOLLAR borrow); null unless
+  // positive — we never surface a 0% or negative APY.
+  const apr = usePropellerApy()
 
   return (
     <Paper>
@@ -76,36 +84,53 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             font="primary"
             fs="h6"
             fw={600}
-            color={getToken("accents.success.emphasis")}
+            color={getToken(
+              apr === null ? "text.high" : "accents.success.emphasis",
+            )}
             mt="xs"
           >
-            {vaultStats.apr > 0
-              ? t("common:percent", {
+            {apr === null
+              ? "—"
+              : t("common:percent", {
                   prefix: "+",
-                  value: vaultStats.apr,
-                  maximumFractionDigits: 1,
-                })
-              : "-"}
+                  value: apr,
+                  maximumFractionDigits: 2,
+                })}
           </Text>
         </Box>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             {t("strategy.healthFactor")}
           </Text>
-          <Text
-            font="primary"
-            fs="h6"
-            fw={500}
-            color={getToken("text.high")}
-            mt="xs"
-          >
-            {healthFactor === null
-              ? "—"
-              : t("common:number", {
-                  value: healthFactor,
+          <Flex align="baseline" gap="xs" mt="xs">
+            <Text font="primary" fs="h6" fw={500} color={getToken("text.high")}>
+              {healthFactor === null
+                ? "—"
+                : t("common:number", {
+                    value: healthFactor,
+                    maximumFractionDigits: 2,
+                  })}
+            </Text>
+            {healthFactor !== null && targetHf !== null && (
+              <Text fs="p4" color={getToken("text.medium")}>
+                {"→ "}
+                {t("common:number", {
+                  value: targetHf,
                   maximumFractionDigits: 2,
                 })}
-          </Text>
+              </Text>
+            )}
+          </Flex>
+          {leverage !== null && (
+            <Text fs="p5" color={getToken("text.medium")} mt="xs">
+              {t("strategy.leverage", {
+                value: t("common:number", {
+                  value: leverage,
+                  maximumFractionDigits: 2,
+                }),
+              })}
+            </Text>
+          )}
         </Box>
       </Flex>
 

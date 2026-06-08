@@ -17,15 +17,15 @@ interface Props {
   shares: number
   /** pETH → ETH exchange rate. */
   exchangeRate: number
-  /** Strategy APY %. */
-  apyPercent: number
+  /** Strategy net APY as a fraction; null hides it (never show 0%/negative). */
+  apy: number | null
   onWithdraw: () => void
 }
 
 export const MyPositionsCard = ({
   shares,
   exchangeRate,
-  apyPercent,
+  apy,
   onWithdraw,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
@@ -71,9 +71,11 @@ export const MyPositionsCard = ({
                 label={t("positions.col.netApy")}
                 customValue={
                   <Text fs="p3" fw={500} lh={1}>
-                    {t("common:percent", {
-                      value: apyPercent,
-                    })}
+                    {apy === null
+                      ? "—"
+                      : t("common:percent", {
+                          value: apy,
+                        })}
                   </Text>
                 }
               />

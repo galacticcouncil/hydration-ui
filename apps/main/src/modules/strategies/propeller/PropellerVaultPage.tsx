@@ -16,6 +16,7 @@ import { WithdrawModal } from "@/modules/strategies/propeller/components/Withdra
 import { useRedemptionHistory } from "@/modules/strategies/propeller/hooks/useRedemptionHistory"
 import { useRedemptionQueue } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
 import {
+  usePropellerApy,
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
@@ -36,6 +37,7 @@ export const PropellerVaultPage = () => {
     : undefined
 
   const { data: vaultStats } = useVaultStats()
+  const apy = usePropellerApy()
   const { data: balances } = useUserBalances(evmAddress)
   const { data: queueData } = useRedemptionQueue(evmAddress)
   const { data: historyData } = useRedemptionHistory(evmAddress)
@@ -120,7 +122,7 @@ export const PropellerVaultPage = () => {
             <MyPositionsCard
               shares={userBalances.shares}
               exchangeRate={stats.exchangeRate}
-              apyPercent={stats.apr}
+              apy={apy}
               onWithdraw={() => setShowWithdraw(true)}
             />
           )}
