@@ -53,12 +53,19 @@ type PalletGigahdxRewardsReferendumTracks = {
  *
  *   totalAPR = baseAPR + votingAPR
  *
- * Both components are backward-looking over a sliding window (default 60d,
- * capped at chain age). Both work whether the user has a position or not:
- * baseAPR is position-size-independent (rate is universal across all
- * GIGAHDX holders), votingAPR degrades cleanly at stakeValue = 0 to a fleet
- * estimate ("what 1 unit of stake would have earned at max conviction over
- * the window").
+ * - `baseAPR`  — backward-looking: annualised gigapot inflow over a 60-day
+ *   window (clamped to chain age). Position-size-independent — same value
+ *   for every GIGAHDX holder.
+ *
+ * - `votingAPR` — forward-looking: per-stake-unit share of pools across all
+ *   ongoing rewardable refs at max conviction, averaged per-ref, scaled by
+ *   an assumed annual cadence (`REFS_PER_YEAR = 75`). Personalised by the
+ *   caller-supplied `stakeValueHdxPlanck`; degrades cleanly at
+ *   `stakeValue = 0` to the marginal-voter limit ("what 1 wei of additional
+ *   stake would earn").
+ *
+ * Both components read entirely from chain storage at head — no indexer
+ * dependency.
  */
 
 const getBlocksPerDay = (blockSeconds: number) => {
@@ -93,6 +100,20 @@ const APR_QUERY_OPTS = {
  * dust-votes that would otherwise blow up the headline number.
  */
 const MIN_REAL_VOTE_WEIGHTED = 100n * 10n ** 12n
+
+/**
+ * Assumed annual referendum throughput used by `votingAprQuery` to project
+ * an annualised APR from the current snapshot of ongoing rewardable refs.
+ *
+ * Sourced from mainnet history: 35 completed refs in the trailing 60-day
+ * window ≈ 213/yr face-value. Discount heavily for sparse periods and for
+ * refs without rewardable tracks → ~75/yr is a defensible "expected"
+ * cadence. APR scales linearly with this constant — wrong by 2× means
+ * displayed APR is wrong by 2×, but relative ordering between users and
+ * across time is preserved. Tune from telemetry once realised data is
+ * available via an indexer.
+ */
+const REFS_PER_YEAR = 75
 
 export const passiveAprQuery = (
   rpc: TProviderContext,
@@ -155,11 +176,25 @@ export const passiveAprQuery = (
 // ---------------------------------------------------------------------------
 
 /**
- * Voting APR — annualised share of referendum reward pools at max
- * conviction (Locked6x = 8×).
+ * Voting APR — forward-looking projection of referendum reward pools at
+ * max conviction (Locked6x = 8×).
  *
- *   votingAPR = Σ [ 8 × pool_r / (weighted_r + 8 × stakeValue) ]
- *               × (365 / windowDays) × 100
+ *   votingAPR  =  (Σ_ongoing 8 × pool_r / (weighted_r + 8 × stakeValue))
+ *                 × (REFS_PER_YEAR / num_counted_refs)
+ *                 × 100
+ *
+ * **Mental model.** `Σ 8R/(W+8S)` is the per-stake-unit share the caller
+ * would earn if all currently-ongoing rewardable refs paid out today. We
+ * normalise that by `num_counted_refs` to get the per-ref average share,
+ * then scale by an assumed yearly ref cadence (`REFS_PER_YEAR`) to project
+ * an annual return. This treats the current snapshot as a representative
+ * cross-section, not as historic earnings to annualise.
+ *
+ * `REFS_PER_YEAR` is a tunable constant — seeded from mainnet history
+ * (35 refs in trailing 60 days ≈ 213/yr theoretical; discounted for sparse
+ * weeks and non-rewardable tracks → 75 as a defensible expected cadence).
+ * The APR scales linearly with this constant; calibrate from telemetry
+ * once realised data is available via an indexer.
  *
  * Per-referendum pool sourcing (mirrors `claimableVotingRewardsQuery` and
  * the `gigahdx-voting-rewards-estimate.mjs` test script):
@@ -172,7 +207,7 @@ export const passiveAprQuery = (
  * yet contribute nothing (denominator would be 0 for the fleet case anyway).
  *
  * Behaviour at stakeValue = 0: denominator collapses to `weighted_r`, giving
- * the fleet-level "per-stake-unit" projection — the natural answer for
+ * the marginal-voter "per-stake-unit" projection — the natural answer for
  * users without a position considering whether to stake.
  *
  * On long-lived chains, refs whose entries have been deleted after the last
@@ -188,37 +223,32 @@ export const passiveAprQuery = (
 export const votingAprQuery = (
   rpc: TProviderContext,
   stakeValueHdxPlanck: bigint,
-  windowDays: number = DEFAULT_WINDOW_DAYS,
 ) =>
   queryOptions({
     ...APR_QUERY_OPTS,
-    queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString(), windowDays],
+    queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString()],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const [
-        allocatedEntries,
-        liveEntries,
-        cachedTrackEntries,
-        rewardPotAcct,
-        bestNumber,
-      ] = await Promise.all([
-        unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
-          at: "best",
-        }) as PalletGigahdxRewardsReferendaReward[],
-        unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries({
-          at: "best",
-        }) as PalletGigahdxRewardsReferendumLiveTally[],
-        unsafeApi.query.GigaHdxRewards.ReferendumTracks.getEntries({
-          at: "best",
-        }) as PalletGigahdxRewardsReferendumTracks[],
-        rpc.sdk.client.balance.getSystemBalance(REWARD_ACCUMULATOR_POT_ADDRESS),
-        rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
-      ])
-
-      const parachainBlockNumber = bestNumber.parachainBlockNumber
+      const [allocatedEntries, liveEntries, cachedTrackEntries, rewardPotAcct] =
+        await Promise.all([
+          unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
+            at: "best",
+          }) as PalletGigahdxRewardsReferendaReward[],
+          unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries(
+            {
+              at: "best",
+            },
+          ) as PalletGigahdxRewardsReferendumLiveTally[],
+          unsafeApi.query.GigaHdxRewards.ReferendumTracks.getEntries({
+            at: "best",
+          }) as PalletGigahdxRewardsReferendumTracks[],
+          rpc.sdk.client.balance.getSystemBalance(
+            REWARD_ACCUMULATOR_POT_ADDRESS,
+          ),
+        ])
 
       // Index pre-fetched data by ref id.
       //
@@ -261,6 +291,7 @@ export const votingAprQuery = (
       const refIds = new Set<number>([...allocated.keys(), ...live.keys()])
 
       let sumPerStakeUnit = Big(0)
+      let countedRefs = 0
       const perRefContrib: Array<{
         refId: number
         pool: string
@@ -312,6 +343,7 @@ export const votingAprQuery = (
         }
         const c = Big(pool.toString()).times(multBig).div(denom)
         sumPerStakeUnit = sumPerStakeUnit.plus(c)
+        countedRefs += 1
         perRefContrib.push({
           refId,
           pool: pool.toString(),
@@ -321,18 +353,15 @@ export const votingAprQuery = (
         })
       }
 
-      const blocksPerDay = getBlocksPerDay(
-        millisecondsToSeconds(rpc.slotDurationMs),
-      )
+      // No refs contributed → no meaningful projection. Return 0% rather
+      // than dividing by zero. Caller already falls back to Big(0) when
+      // data is undefined; this is the well-defined "nothing to project"
+      // path.
+      if (countedRefs === 0) return Big(0)
 
-      const windowBlocks = windowDays * blocksPerDay
-      const actualWindowBlocks = Math.min(
-        windowBlocks,
-        Math.max(1, parachainBlockNumber - 1),
-      )
-      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
-
-      return sumPerStakeUnit.times(365).div(actualWindowDays).times(100)
+      // Project forward: treat the current snapshot as a representative
+      // cross-section, average per ref, scale by assumed annual cadence.
+      return sumPerStakeUnit.div(countedRefs).times(REFS_PER_YEAR).times(100)
     },
   })
 
