@@ -19,8 +19,7 @@ export const VAULT_ADDRESS: Hex = "0x305EE427b94187c5abC68fCCc194E77D82F39921"
 // SubLoop — the leverage engine behind the vault. Read-only from the UI:
 // `healthFactor()` and `totalEquity()` power the optional leverage/HF detail
 // line in the strategy card.
-export const SUBLOOP_ADDRESS: Hex =
-  "0xF23F4baFB4560DFb3234ad7f441Da6260b4218E8"
+export const SUBLOOP_ADDRESS: Hex = "0xF23F4baFB4560DFb3234ad7f441Da6260b4218E8"
 
 // SyntheticToken + Harvester — surfaced for reference only; the UI does not
 // call them directly today.

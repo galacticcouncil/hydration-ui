@@ -138,6 +138,12 @@ export const useWithdrawalColumns = ({
       },
     })
 
-    return [amountColumn, estValueColumn, dateColumn, stateColumn, actionsColumn]
+    return [
+      amountColumn,
+      estValueColumn,
+      dateColumn,
+      stateColumn,
+      actionsColumn,
+    ]
   }, [t, isMobile, isClaiming, onClaim])
 }

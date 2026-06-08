@@ -39,16 +39,8 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
       const addr = evmAddress?.toLowerCase()
 
       for (let i = queueHead; i < queueTail; i++) {
-        const [
-          owner,
-          shares,
-          collateralOwed,
-          ,
-          ,
-          ,
-          collateralSettled,
-          active,
-        ] = await vault.read.redemptions([BigInt(i)])
+        const [owner, shares, collateralOwed, , , , collateralSettled, active] =
+          await vault.read.redemptions([BigInt(i)])
 
         // Skip slots that were never populated (zero owner).
         if (owner === "0x0000000000000000000000000000000000000000") continue

@@ -82,7 +82,10 @@ export const PropellerVaultPage = () => {
       return {
         id: e.requestId,
         amountShares: e.shares,
-        estEth: e.collateralOwed > 0 ? e.collateralOwed : e.shares * stats.exchangeRate,
+        estEth:
+          e.collateralOwed > 0
+            ? e.collateralOwed
+            : e.shares * stats.exchangeRate,
         requestedDate: h?.requestedAt ?? new Date(0),
         state,
         settledDate: h?.settledAt ?? undefined,
