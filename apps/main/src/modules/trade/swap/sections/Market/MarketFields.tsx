@@ -1,6 +1,6 @@
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
-import { FC, useEffect } from "react"
+import { FC, useEffect, useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -29,8 +29,9 @@ export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
 
   const switchAssets = useSwitchAssets()
 
-  const buyableAssets = tradable.filter(
-    (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
+  const buyableAssets = useMemo(
+    () => tradable.filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id)),
+    [tradable],
   )
   const [type, sellAsset, buyAsset, sellAmount, buyAmount, isSingleTrade] =
     watch([
@@ -42,16 +43,27 @@ export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
       "isSingleTrade",
     ])
 
-  const amountOut = isSingleTrade ? swap?.amountOut : twap?.amountOut
-  const amountIn = isSingleTrade ? swap?.amountIn : twap?.amountIn
   const isSell = type === TradeType.Sell
+  const isEmpty = isSell ? !sellAmount : !buyAmount
+  const amountOut = isEmpty
+    ? undefined
+    : isSingleTrade
+      ? swap?.amountOut
+      : twap?.amountOut
+  const amountIn = isEmpty
+    ? undefined
+    : isSingleTrade
+      ? swap?.amountIn
+      : twap?.amountIn
 
   useEffect(() => {
-    if (!amountOut || !isSell || !buyAsset) {
+    if (!isSell || !buyAsset) {
       return
     }
 
-    const nextBuyAmount = scaleHuman(amountOut, buyAsset.decimals) || "0"
+    const nextBuyAmount = amountOut
+      ? scaleHuman(amountOut, buyAsset.decimals)
+      : ""
 
     if (buyAmount !== nextBuyAmount) {
       setValue("buyAmount", nextBuyAmount)
@@ -60,11 +72,13 @@ export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
   }, [buyAmount, buyAsset, setValue, trigger, amountOut, isSell])
 
   useEffect(() => {
-    if (!amountIn || isSell || !sellAsset) {
+    if (isSell || !sellAsset) {
       return
     }
 
-    const nextSellAmount = scaleHuman(amountIn, sellAsset.decimals) || "0"
+    const nextSellAmount = amountIn
+      ? scaleHuman(amountIn, sellAsset.decimals)
+      : ""
 
     if (sellAmount !== nextSellAmount) {
       setValue("sellAmount", nextSellAmount)

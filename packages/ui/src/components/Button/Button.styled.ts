@@ -26,6 +26,7 @@ export type SButtonProps = {
   variant?: ButtonVariant
   size?: ButtonSize
   outline?: boolean
+  blur?: boolean
 }
 
 const defaulStyles = createStyles(
@@ -120,6 +121,11 @@ const disabledStyles = css`
 
     opacity: 0.2;
   }
+`
+
+const blurStyles = css`
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 `
 
 const variants = createVariants<ButtonVariant>((theme) => ({
@@ -299,13 +305,23 @@ const sizes = createVariants<ButtonSize>((theme) => ({
 }))
 
 export const SButton = styled(Box, {
+  shouldForwardProp: (prop) =>
+    !["variant", "size", "outline", "blur"].includes(prop),
+})<SButtonProps>(
+  defaulStyles,
+  ({ variant = "primary", size = "small", outline = false, blur = false }) => [
+    sizes(size),
+    outline ? outlineVariants(variant) : variants(variant),
+    blur ? blurStyles : undefined,
+  ],
+  disabledStyles,
+)
+
+export const SDefaultButton = styled(Box, {
   shouldForwardProp: (prop) => !["variant", "size", "outline"].includes(prop),
 })<SButtonProps>(
   defaulStyles,
-  ({ variant = "primary", size = "small", outline = false }) => [
-    sizes(size),
-    outline ? outlineVariants(variant) : variants(variant),
-  ],
+  ({ size = "small" }) => [sizes(size)],
   disabledStyles,
 )
 

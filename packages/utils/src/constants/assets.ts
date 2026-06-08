@@ -1,6 +1,7 @@
 export const HOLLAR_ASSET_ID = "222"
 export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"
+export const USDC_ASSET_ID = "22"
 export const GDOT_ASSET_ID = "690"
 export const GDOT_ERC20_ID = "69"
 export const GETH_ASSET_ID = "4200"
@@ -25,7 +26,10 @@ export const PRIME_STABLESWAP_ASSET_ID = "143"
 export const GSOL_ASSET_ID = "90001"
 export const GSOL_ERC20_ID = "9001"
 export const JITOSOL_ASSET_ID = "40"
+export const APYUSD_ASSET_ID = "46"
 export const HEURC_ASSET_ID = "10044"
+
+export const HOLLAR_BOND_25_08_26_ID = "1001351"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
@@ -37,6 +41,15 @@ export const HOLLAR_ASSETS = [
 
 export const GIGA_ASSETS = [GDOT_ASSET_ID, GETH_ASSET_ID, GSOL_ASSET_ID]
 export const GIGA_ERC20 = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
+
+export const EXTERNAL_APY_ASSET_IDS = [
+  APYUSD_ASSET_ID,
+  USDT_POOL_ASSET_ID,
+  VDOT_ASSET_ID,
+  PRIME_ASSET_ID,
+  ...HOLLAR_ASSETS,
+  ...GIGA_ASSETS,
+]
 
 export const MONEY_MARKET_STRATEGY_ASSETS = [
   ...GIGA_ASSETS,

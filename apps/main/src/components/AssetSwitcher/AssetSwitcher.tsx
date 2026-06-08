@@ -73,7 +73,7 @@ export const AssetSwitcher = ({
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
   return (
-    <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
+    <SAssetSwitcher sx={{ alignItems: "center", mx: "-xl" }}>
       <Separator />
       {onSwitchAssets && (
         <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
