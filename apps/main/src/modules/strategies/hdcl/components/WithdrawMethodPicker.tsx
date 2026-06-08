@@ -59,16 +59,6 @@ export const projectRate = (
   days: number,
 ) => currentRate * Math.pow(1 + aprPercent / 100, days / 365)
 
-/**
- * Method picker cards inside the Withdraw modal — Figma 7526:34522 / 35079 / 35082.
- *
- * Two stacked selectable cards. The selected card expands to show its detail
- * (timeline + breakdown for queue; quote breakdown for instant). The unselected
- * card collapses to its header.
- *
- * The instant card stays clickable but the modal's submit button gates on
- * `instantAvailable` until the secondary-market stableswap deploys.
- */
 export const WithdrawMethodPicker = ({
   selected,
   onSelect,
@@ -81,44 +71,12 @@ export const WithdrawMethodPicker = ({
   instantAvailable,
 }: Props) => {
   const { t } = useTranslation(["hdcl", "common"])
-  // Project the exchange rate forward to fulfillment — the vault keeps
-  // accruing yield during the queue wait, so the user's HOLLAR payout is
-  // calculated against the rate at fulfillment, not today's rate.
+
   const projectedRate = projectRate(exchangeRate, aprPercent, worstCaseWaitDays)
   const queueHollarOut = amountHdcl * projectedRate
 
-  // Timeline stops are read directly from contract state:
-  //   Next maturity  = next vault position's maturityTime - now
-  //   Est. receive   = worstCaseWaitDays (queue-contention wait estimate
-  //                    in case A, or simply next maturity in case B)
-  // When no positions are active yet, fall back to a single "Est. receive"
-  // stop based on the queue's getEstimatedWaitTime view.
-  /* const hasMaturity = nextMaturityDays > 0
-  const timelineStops: TimelineStop[] = [
-    {
-      label: t("method.timeline.today"),
-      sublabel: t("method.timeline.queueEntered"),
-      status: "active",
-    },
-    ...(hasMaturity
-      ? [
-          {
-            label: t("method.timeline.nextMaturity"),
-            sublabel: t("method.timeline.dayN", { day: nextMaturityDays }),
-            status: "future" as const,
-          },
-        ]
-      : []),
-    {
-      label: t("method.timeline.estReceive"),
-      sublabel: t("method.timeline.byDayN", { day: worstCaseWaitDays }),
-      status: "future" as const,
-    },
-  ] */
-
   return (
     <Flex direction="column" gap="base">
-      {/* Queue method card */}
       <MethodCard
         active={selected === "queue"}
         onClick={() => onSelect("queue")}
@@ -137,7 +95,6 @@ export const WithdrawMethodPicker = ({
               bg={getToken("text.high")}
               sx={{ opacity: 0.1 }}
             />
-            {/* <WithdrawTimeline stops={timelineStops} /> */}
             <DetailRow
               label={t("method.queue.youReceive")}
               value={t("common:currency", {
@@ -162,7 +119,6 @@ export const WithdrawMethodPicker = ({
         </CollapsibleRoot>
       </MethodCard>
 
-      {/* Instant method card */}
       <MethodCard
         active={selected === "instant"}
         onClick={() => onSelect("instant")}

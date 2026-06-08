@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   Flex,
+  Label,
   Modal,
   ModalBody,
   ModalContentDivider,
@@ -166,16 +167,26 @@ export const WithdrawModal = ({
 
         <Box px="xl" py="l">
           <Flex align="center" gap="base">
-            <Checkbox
-              name="withdraw-ack"
-              checked={acknowledged}
-              onCheckedChange={(c) => setAcknowledged(!!c)}
-            />
-            <Text fs="p5" onClick={() => setAcknowledged((v) => !v)}>
+            <Label
+              fs="p4"
+              lh={1.2}
+              fw={500}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "base",
+                cursor: "pointer",
+              }}
+            >
+              <Checkbox
+                name="withdraw-ack"
+                checked={acknowledged}
+                onCheckedChange={(c) => setAcknowledged(!!c)}
+              />
               {method === "instant"
                 ? t("withdraw.ackInstant")
                 : t("withdraw.ack")}
-            </Text>
+            </Label>
           </Flex>
         </Box>
       </ModalBody>

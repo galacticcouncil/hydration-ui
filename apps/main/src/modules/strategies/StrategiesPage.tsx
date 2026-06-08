@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { useHdclStrategyMetrics } from "@/modules/strategies/hdcl/hooks/useHdclStrategyMetrics"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -14,6 +15,9 @@ export const StrategiesPage = () => {
   const bondId = HOLLAR_BOND_25_08_26_ID
   const { timeLeft } = useBondData(bondId)
   const bondApr = getBondApr(bondId, timeLeft)
+
+  const { data: hdclMetrics, isLoading: isHdclMetricsLoading } =
+    useHdclStrategyMetrics()
 
   return (
     <>
@@ -26,7 +30,11 @@ export const StrategiesPage = () => {
           logoId="decentral"
           title={t("strategies:cards.hdcl.title")}
           stats={[
-            { label: t("apy"), value: t("common:percent", { value: 4.5 }) },
+            {
+              label: t("apy"),
+              value: t("common:percent", { value: hdclMetrics.maxNetApyPct }),
+              isLoading: isHdclMetricsLoading,
+            },
           ]}
           badges={[
             { label: "Partnership", variant: "green" },

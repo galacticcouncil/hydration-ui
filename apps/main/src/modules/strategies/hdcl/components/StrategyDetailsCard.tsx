@@ -21,39 +21,17 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
-import { STRATEGY, VAULT_ADDRESS } from "@/modules/strategies/hdcl/constants"
-import { useHdclReserveConfig } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
+import { VAULT_ADDRESS } from "@/modules/strategies/hdcl/constants"
+import { HdclStrategyMetrics } from "@/modules/strategies/hdcl/hooks/useHdclStrategyMetrics"
 
-interface VaultStats {
-  totalAssets: number
-  exchangeRate: number
-  apr: number
+type StrategyDetailsCardProps = {
+  metrics: HdclStrategyMetrics
 }
 
-interface Props {
-  vaultStats: VaultStats
-}
-
-export const StrategyDetailsCard = ({ vaultStats }: Props) => {
+export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
+  metrics,
+}) => {
   const { t } = useTranslation(["hdcl", "common"])
-  const tvl = vaultStats.totalAssets * vaultStats.exchangeRate
-  const { data: reserveConfig } = useHdclReserveConfig()
-  const maxLtvPct = reserveConfig?.maxLtvPct ?? STRATEGY.maxLtvPct
-  const liqLtvPct =
-    reserveConfig?.liquidationThresholdPct ?? STRATEGY.liquidationLtvPct
-
-  // "Max Net APY" = the leveraged yield an idealized user achieves at max LTV.
-  //   L = 1 / (1 − LTV)
-  //   netApy = L × vault_apy − (L − 1) × borrow_apy
-  // vaultStats.apr is named historically but actually carries vault APY in %
-  // (see useVaultReads: getAPYWad / 1e16). Falls back to the raw vault yield
-  // until the borrow rate query lands.
-  const vaultApyPct = vaultStats.apr
-  const borrowApyPct = reserveConfig?.borrowApyPct ?? 10
-  const maxLeverage = maxLtvPct < 100 ? 100 / (100 - maxLtvPct) : 1
-  const maxNetApyPct =
-    maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
-
   return (
     <Paper>
       <Box p="l">
@@ -71,7 +49,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
           <Flex align="center" gap="s" mt="xs">
             <DecentralLogo size={28} />
             <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
-              {t("common:currency.compact", { value: tvl })}
+              {t("common:currency.compact", { value: metrics.tvl })}
             </Text>
           </Flex>
         </Box>
@@ -87,8 +65,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             mt="xs"
           >
             {t("common:percent", {
-              prefix: "+",
-              value: maxNetApyPct,
+              value: metrics.maxNetApyPct,
               maximumFractionDigits: 1,
             })}
           </Text>
@@ -132,7 +109,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             content={
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {
-                  value: maxLtvPct,
+                  value: metrics.maxLtvPct,
                   minimumFractionDigits: 1,
                 })}
               </Text>
@@ -160,7 +137,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             content={
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {
-                  value: liqLtvPct,
+                  value: metrics.liquidationLtvPct,
                   minimumFractionDigits: 1,
                 })}
               </Text>
