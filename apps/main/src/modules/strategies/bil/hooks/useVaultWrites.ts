@@ -1,5 +1,9 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
+import {
+  HOLLAR_ASSET_ID,
+  safeConvertSS58toH160,
+  safeStringify,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -18,11 +22,13 @@ import {
   BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
   HOLLAR_ADDRESS,
+  STABLESWAP_BIL_ASSET_ID,
   VAULT_ABI,
   VAULT_ADDRESS,
 } from "@/modules/strategies/bil/constants"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 
 /** A single EVM call to be wrapped + bundled into a substrate batch. */
@@ -30,6 +36,53 @@ interface BatchEvmCall {
   to: Hex
   data: Hex
   abi: Abi
+}
+
+/**
+ * Query keys to invalidate after any mutation that changes a user's redemption
+ * state (request / cancel / claim / instant). These back the Withdrawals table
+ * and the position/borrow cards.
+ *
+ * NOTE: TanStack Query matches by key PREFIX, element-by-element — so
+ * `["bil-vault-queue"]` matches the address-scoped `["bil-vault-queue",
+ * evmAddress]`, but the old generic `["bil-vault"]` matches NOTHING (no query
+ * is keyed exactly `"bil-vault"`; the real keys are `"bil-vault-queue"`,
+ * `"bil-vault-history"`, … which are different first elements). That mismatch
+ * is why the table didn't refresh after a queue withdrawal.
+ */
+const REDEMPTION_INVALIDATE_KEYS: string[][] = [
+  ["bil-vault-queue"],
+  ["bil-vault-history"],
+  ["bil-vault-balances"],
+  ["bil-vault-stats"],
+  ["bil-pool-position"],
+]
+
+function buildCancelResupplyCalls(
+  requestId: number,
+  returnAmount: bigint,
+  evmAddress: Hex,
+): BatchEvmCall[] {
+  return [
+    {
+      to: VAULT_ADDRESS,
+      data: encodeFunctionData({
+        abi: VAULT_ABI,
+        functionName: "cancelRedeem",
+        args: [BigInt(requestId)],
+      }),
+      abi: [...VAULT_ABI],
+    },
+    {
+      to: BIL_POOL_ADDRESS,
+      data: encodeFunctionData({
+        abi: BIL_POOL_ABI,
+        functionName: "supply",
+        args: [DCL_PRECOMPILE_ADDRESS, returnAmount, evmAddress, 0],
+      }),
+      abi: [...BIL_POOL_ABI],
+    },
+  ]
 }
 
 function useVaultEvmCall() {
@@ -50,6 +103,7 @@ function useVaultEvmCall() {
       data: Hex,
       abi: Abi,
       toasts: { submitted: string; success: string },
+      invalidateKeys: string[][] = [["bil-vault-balances"]],
     ) => {
       const gasPriceBase = await rpc.evm.getGasPrice()
       const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
@@ -67,7 +121,9 @@ function useVaultEvmCall() {
         abi: safeStringify(abi),
       }
 
-      // If account not yet bound to EVM, batch bind + evm call
+      // If account not yet bound to EVM, batch bind + evm call. The binding
+      // query can't go through `invalidateQueries` (it's a full filter, not a
+      // plain key), so it stays in `onSuccess`.
       if (isBound === false) {
         const bindTx = rpc.papi.tx.EVMAccounts.bind_evm_address()
         const evmPapiTx = transformEvmCallToPapiTx(rpc.papi, evmCall)
@@ -76,10 +132,9 @@ function useVaultEvmCall() {
         })
 
         return createTransaction(
-          { tx: batchTx, toasts },
+          { tx: batchTx, toasts, invalidateQueries: invalidateKeys },
           {
             onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: ["bil-vault"] })
               queryClient.invalidateQueries(
                 evmAccountBindingQuery(rpc, address),
               )
@@ -88,35 +143,19 @@ function useVaultEvmCall() {
         )
       }
 
-      return createTransaction(
-        { tx: evmCall, toasts },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["bil-vault"] })
-          },
-        },
-      )
+      return createTransaction({
+        tx: evmCall,
+        toasts,
+        invalidateQueries: invalidateKeys,
+      })
     },
     [evmAddress, isBound, rpc, address, createTransaction, queryClient],
   )
 
-  /**
-   * Submit N EVM calls atomically as a single substrate `Utility.batch_all`.
-   * Each call is wrapped through `transformEvmCallToPapiTx` then bundled.
-   * If the user isn't yet bound to their EVM mapping, prepends the bind tx
-   * to the same batch so binding happens atomically with the first call.
-   *
-   * Used by the deposit flow (HOLLAR.approve → vault.deposit → BIL.approve
-   * → pool.supply) and any other multi-step on-chain operation.
-   */
-  const submitBatch = useCallback(
-    async (
-      calls: BatchEvmCall[],
-      toasts: { submitted: string; success: string },
-      invalidateKeys: string[][] = [["bil-vault"]],
-    ) => {
+  const buildBatchCalls = useCallback(
+    async (calls: BatchEvmCall[]) => {
       if (calls.length === 0) {
-        throw new Error("submitBatch called with no calls")
+        throw new Error("buildBatchCalls called with no calls")
       }
 
       const gasPriceBase = await rpc.evm.getGasPrice()
@@ -139,36 +178,48 @@ function useVaultEvmCall() {
         (c) => transformEvmCallToPapiTx(rpc.papi, c).decodedCall,
       )
 
-      const batchInner =
-        isBound === false
-          ? [
-              rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
-              ...papiCalls,
-            ]
-          : papiCalls
-
-      const batchTx = rpc.papi.tx.Utility.batch_all({ calls: batchInner })
-
-      return createTransaction(
-        { tx: batchTx, toasts },
-        {
-          onSuccess: () => {
-            for (const k of invalidateKeys) {
-              queryClient.invalidateQueries({ queryKey: k })
-            }
-            if (isBound === false) {
-              queryClient.invalidateQueries(
-                evmAccountBindingQuery(rpc, address),
-              )
-            }
-          },
-        },
-      )
+      return isBound === false
+        ? [rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall, ...papiCalls]
+        : papiCalls
     },
-    [evmAddress, isBound, rpc, address, createTransaction, queryClient],
+    [evmAddress, isBound, rpc],
   )
 
-  return { evmAddress, submitTx, submitBatch }
+  const buildBatchTx = useCallback(
+    async (calls: BatchEvmCall[]) => {
+      const batchInner = await buildBatchCalls(calls)
+      return rpc.papi.tx.Utility.batch_all({ calls: batchInner })
+    },
+    [buildBatchCalls, rpc],
+  )
+
+  const submitBatch = useCallback(
+    async (
+      calls: BatchEvmCall[],
+      toasts: { submitted: string; success: string },
+      invalidateQueries: string[][] = [["bil-vault-balances"]],
+    ) => {
+      const batchTx = await buildBatchTx(calls)
+
+      return createTransaction(
+        { tx: batchTx, toasts, invalidateQueries },
+        // The binding query can't go through `invalidateQueries` (it's a full
+        // filter, not a plain key), so it stays in `onSuccess`.
+        isBound === false
+          ? {
+              onSuccess: () => {
+                queryClient.invalidateQueries(
+                  evmAccountBindingQuery(rpc, address),
+                )
+              },
+            }
+          : undefined,
+      )
+    },
+    [buildBatchTx, isBound, rpc, address, createTransaction, queryClient],
+  )
+
+  return { evmAddress, submitTx, submitBatch, buildBatchTx, buildBatchCalls }
 }
 
 /**
@@ -279,7 +330,7 @@ export function useDeposit() {
           submitted: `Depositing ${fmt}...`,
           success: `${fmt} deposited`,
         },
-        [["bil-vault"], ["bil-pool-position"]],
+        [["bil-vault-balances"], ["bil-vault-stats"], ["bil-pool-position"]],
       )
     },
   })
@@ -336,7 +387,7 @@ export function useRequestRedeem() {
           submitted: `Requesting ${fmt} withdrawal...`,
           success: `${fmt} withdrawal requested`,
         },
-        [["bil-vault"], ["bil-pool-position"]],
+        REDEMPTION_INVALIDATE_KEYS,
       )
     },
   })
@@ -419,10 +470,16 @@ export function useRequestRedeemRaw() {
         symbol: "BIL",
         maximumFractionDigits: 2,
       })
-      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-        submitted: `Requesting ${fmt} withdrawal...`,
-        success: `${fmt} withdrawal requested`,
-      })
+      return submitTx(
+        VAULT_ADDRESS,
+        data,
+        [...VAULT_ABI],
+        {
+          submitted: `Requesting ${fmt} withdrawal...`,
+          success: `${fmt} withdrawal requested`,
+        },
+        REDEMPTION_INVALIDATE_KEYS,
+      )
     },
   })
 }
@@ -470,32 +527,23 @@ export function useCancelRedeem() {
           functionName: "cancelRedeem",
           args: [BigInt(requestId)],
         })
-        return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-          submitted: "Cancelling withdrawal...",
-          success: "Withdrawal cancelled",
-        })
+        return submitTx(
+          VAULT_ADDRESS,
+          data,
+          [...VAULT_ABI],
+          {
+            submitted: "Cancelling withdrawal...",
+            success: "Withdrawal cancelled",
+          },
+          REDEMPTION_INVALIDATE_KEYS,
+        )
       }
 
-      const calls: BatchEvmCall[] = [
-        {
-          to: VAULT_ADDRESS,
-          data: encodeFunctionData({
-            abi: VAULT_ABI,
-            functionName: "cancelRedeem",
-            args: [BigInt(requestId)],
-          }),
-          abi: [...VAULT_ABI],
-        },
-        {
-          to: BIL_POOL_ADDRESS,
-          data: encodeFunctionData({
-            abi: BIL_POOL_ABI,
-            functionName: "supply",
-            args: [DCL_PRECOMPILE_ADDRESS, returnAmount, evmAddress, 0],
-          }),
-          abi: [...BIL_POOL_ABI],
-        },
-      ]
+      const calls = buildCancelResupplyCalls(
+        requestId,
+        returnAmount,
+        evmAddress,
+      )
 
       return submitBatch(
         calls,
@@ -503,8 +551,92 @@ export function useCancelRedeem() {
           submitted: "Cancelling withdrawal...",
           success: "Withdrawal cancelled",
         },
-        [["bil-vault"], ["bil-pool-position"]],
+        REDEMPTION_INVALIDATE_KEYS,
       )
+    },
+  })
+}
+
+export function useInstantRedeemFromQueue() {
+  const { t } = useTranslation(["common"])
+  const { evm, sdk, papi } = useRpcProvider()
+  const { account } = useAccount()
+  const {
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
+  const { createTransaction } = useTransactionsStore()
+  const { evmAddress, buildBatchCalls } = useVaultEvmCall()
+  const address = account?.address ?? ""
+
+  return useMutation({
+    mutationFn: async ({
+      requestId,
+      bilAmount,
+    }: {
+      requestId: number
+      bilAmount: number
+    }) => {
+      if (!BIL_HAS_AAVE_LAYER) {
+        throw new Error(
+          "Instant redeem from queue requires the Aave layer (aBIL)",
+        )
+      }
+
+      const [, bilAmountBig, bilSettled, , active] = await evm.readContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        functionName: "getRedemptionRequest",
+        args: [BigInt(requestId)],
+      })
+
+      if (!active) {
+        throw new Error(
+          `Redemption request ${requestId} is no longer active (already fulfilled or cancelled)`,
+        )
+      }
+
+      const returnAmount = bilAmountBig - bilSettled
+
+      const cancelCalls = buildCancelResupplyCalls(
+        requestId,
+        returnAmount,
+        evmAddress,
+      )
+
+      const evmInner = await buildBatchCalls(cancelCalls)
+
+      const swap = await sdk.api.router.getBestSell(
+        Number(STABLESWAP_BIL_ASSET_ID),
+        Number(HOLLAR_ASSET_ID),
+        bilAmount.toString(),
+      )
+      const swapTx = await sdk.tx
+        .trade(swap)
+        .withSlippage(swapSlippage)
+        .withBeneficiary(address)
+        .build()
+
+      const batchTx = papi.tx.Utility.batch_all({
+        calls: [...evmInner, swapTx.get().decodedCall],
+      })
+
+      const fmt = t("currency", {
+        value: bilAmount,
+        symbol: "BIL",
+        maximumFractionDigits: 2,
+      })
+
+      return createTransaction({
+        tx: batchTx,
+        toasts: {
+          submitted: `Instant-redeeming ${fmt} for HOLLAR...`,
+          success: `${fmt} redeemed for HOLLAR`,
+          error: `Instant redeem failed`,
+        },
+        invalidateQueries: REDEMPTION_INVALIDATE_KEYS,
+      })
     },
   })
 }
@@ -535,10 +667,16 @@ export function useClaim() {
         symbol: "BIL",
         maximumFractionDigits: 2,
       })
-      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-        submitted: `Claiming ${fmt} → HOLLAR...`,
-        success: `Claim sent`,
-      })
+      return submitTx(
+        VAULT_ADDRESS,
+        data,
+        [...VAULT_ABI],
+        {
+          submitted: `Claiming ${fmt} → HOLLAR...`,
+          success: `Claim sent`,
+        },
+        REDEMPTION_INVALIDATE_KEYS,
+      )
     },
   })
 }
@@ -559,12 +697,18 @@ export function useSetAutoClaim() {
         functionName: "setAutoClaim",
         args: [enabled],
       })
-      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-        submitted: enabled
-          ? "Enabling auto-claim..."
-          : "Disabling auto-claim...",
-        success: enabled ? "Auto-claim enabled" : "Auto-claim disabled",
-      })
+      return submitTx(
+        VAULT_ADDRESS,
+        data,
+        [...VAULT_ABI],
+        {
+          submitted: enabled
+            ? "Enabling auto-claim..."
+            : "Disabling auto-claim...",
+          success: enabled ? "Auto-claim enabled" : "Auto-claim disabled",
+        },
+        [["bil-vault-autoclaim"]],
+      )
     },
   })
 }

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
@@ -24,6 +25,9 @@ export const StrategiesPage = () => {
   const propellerApys = [ethApy, tbtcApy].filter((a): a is number => a !== null)
   const propellerApy = propellerApys.length ? Math.max(...propellerApys) : null
 
+  const { data: bilMetrics, isLoading: isBilMetricsLoading } =
+    useBilStrategyMetrics()
+
   return (
     <>
       <SectionHeader title="Strategies" noTopPadding />
@@ -35,7 +39,11 @@ export const StrategiesPage = () => {
           logoId="decentral"
           title={t("strategies:cards.bil.title")}
           stats={[
-            { label: t("apy"), value: t("common:percent", { value: 4.5 }) },
+            {
+              label: t("apy"),
+              value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
+              isLoading: isBilMetricsLoading,
+            },
           ]}
           badges={[
             { label: "Partnership", variant: "green" },

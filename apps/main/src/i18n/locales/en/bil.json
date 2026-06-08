@@ -55,7 +55,6 @@
   "withdrawals.action.cancel": "Cancel",
   "withdrawals.action.instant": "Instant redeem",
   "withdrawals.action.claim": "Claim",
-  "withdrawals.instantDisabledTooltip": "Per-row instant redeem isn't available yet — Cancel this request first (it auto-resupplies as aBIL), then use the Withdraw modal's Instant option on the freed balance.",
 
   "deposit.your": "Your deposit",
   "deposit.balance": "Balance: {{value}}",

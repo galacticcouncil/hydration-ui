@@ -13,12 +13,43 @@ import {
 import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
+type VaultStats = {
+  totalAssets: number
+  totalSupply: number
+  exchangeRate: number
+  worstCaseWaitDays: number
+  nextMaturityDays: number
+  maxLockupDays: number
+  tvlCap: number
+  paused: boolean
+  depositsPaused: boolean
+  minDeposit: number
+  minRedeem: number
+  apr: number
+}
+
+const DEFAULT_VAULT_STATS: VaultStats = {
+  totalAssets: 0,
+  totalSupply: 0,
+  exchangeRate: 1,
+  worstCaseWaitDays: 0,
+  nextMaturityDays: 0,
+  maxLockupDays: 62,
+  tvlCap: 0,
+  paused: false,
+  depositsPaused: false,
+  minDeposit: 10,
+  minRedeem: 1,
+  apr: 18,
+}
+
 export function useVaultStats() {
   const { evm } = useRpcProvider()
   const { data: vault } = useBilVaultContract()
   return useQuery({
     queryKey: ["bil-vault-stats"],
     enabled: !!vault,
+    initialData: DEFAULT_VAULT_STATS,
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
       const [
@@ -105,9 +136,8 @@ export function useVaultStats() {
         minDeposit: Number(formatUnits(minReinvest, 18)),
         minRedeem: Number(formatUnits(minRedeem, 18)),
         apr: Number(formatUnits(apyWad, 16)),
-      }
+      } satisfies VaultStats
     },
-    refetchInterval: 30_000,
   })
 }
 
@@ -181,7 +211,6 @@ export function useUserBalances(evmAddress: Hex | undefined) {
         bilSupplied: Number(formatUnits(aTokenBal, 18)),
       }
     },
-    refetchInterval: 15_000,
   })
 }
 
