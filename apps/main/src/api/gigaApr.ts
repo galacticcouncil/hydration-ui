@@ -13,22 +13,34 @@ import {
 } from "@/api/gigaStake"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
+// Both camelCase and snake_case shapes are declared because polkadot-api's
+// `unsafeApi` decoder returns the runtime's snake_case field names on this
+// build, while typed metadata in other contexts can yield camelCase. The
+// query reads with `value.totalReward ?? value.total_reward` etc. to handle
+// either shape — TS needs both keys declared as optional.
 type PalletGigahdxRewardsReferendaReward = {
   keyArgs: [number]
   value: {
-    totalReward: bigint
-    remainingReward: bigint
-    totalWeightedVotes: bigint
-    trackId: number
-    votersRemaining: number
+    totalReward?: bigint
+    total_reward?: bigint
+    remainingReward?: bigint
+    remaining_reward?: bigint
+    totalWeightedVotes?: bigint
+    total_weighted_votes?: bigint
+    trackId?: number
+    track_id?: number
+    votersRemaining?: number
+    voters_remaining?: number
   }
 }
 
 type PalletGigahdxRewardsReferendumLiveTally = {
   keyArgs: [number]
   value: {
-    totalWeighted: bigint
-    votersCount: number
+    totalWeighted?: bigint
+    total_weighted?: bigint
+    votersCount?: number
+    voters_count?: number
   }
 }
 
@@ -209,19 +221,29 @@ export const votingAprQuery = (
       const parachainBlockNumber = bestNumber.parachainBlockNumber
 
       // Index pre-fetched data by ref id.
+      //
+      // `unsafeApi` decodes runtime structs with snake_case field names
+      // (matching the Rust definitions). Some metadata builds expose them
+      // as camelCase too. Probe both shapes so we read the right field
+      // regardless of which form the binding returns — same defensive
+      // pattern `claimableVotingRewardsQuery` already uses in gigaStake.ts.
+      // Without this fallback, all reads return undefined, the query
+      // throws on `weighted.toString()` further down, react-query
+      // catches it, and the consumer falls back to `Big(0)` → UI shows 0%.
       const allocated = new Map<
         number,
         { totalReward: bigint; totalWeightedVotes: bigint }
       >()
       for (const { keyArgs, value } of allocatedEntries) {
         allocated.set(keyArgs[0], {
-          totalReward: value.totalReward,
-          totalWeightedVotes: value.totalWeightedVotes,
+          totalReward: value.totalReward ?? value.total_reward ?? 0n,
+          totalWeightedVotes:
+            value.totalWeightedVotes ?? value.total_weighted_votes ?? 0n,
         })
       }
       const live = new Map<number, bigint>()
       for (const { keyArgs, value } of liveEntries) {
-        live.set(keyArgs[0], value.totalWeighted)
+        live.set(keyArgs[0], value.totalWeighted ?? value.total_weighted ?? 0n)
       }
       const cachedTracks = new Map<number, number>()
       for (const { keyArgs, value } of cachedTrackEntries) {
