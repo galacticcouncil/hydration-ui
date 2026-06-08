@@ -1,7 +1,8 @@
+import { PRIME_ASSET_ID } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
-import { usePRIMEAPY } from "@/api/external/kamino"
+import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   ERC20_ABI,
   ETH_ADDRESS,
@@ -155,14 +156,24 @@ export function useSubLoopStats() {
  */
 export function usePropellerApy(): number | null {
   const { data: subLoop } = useSubLoopStats()
-  const { data: primeApyPct } = usePRIMEAPY({ enabled: true })
+  // PRIME supply yield = the SAME total the money market shows for PRIME
+  // (Aave base supply + Kamino external + farms), not just the Kamino feed —
+  // the loop supplies aPRIME and earns that full rate.
+  const { data: apyData } = useBorrowAssetsApy([PRIME_ASSET_ID])
+  const primeSupplyApy = apyData?.find(
+    (a) => a.assetId === PRIME_ASSET_ID,
+  )?.totalSupplyApy
 
   const leverage = subLoop?.leverage ?? null
   const borrowRate = subLoop?.borrowRate ?? null
-  if (leverage === null || borrowRate === null || primeApyPct === undefined) {
+  if (
+    leverage === null ||
+    borrowRate === null ||
+    primeSupplyApy === undefined
+  ) {
     return null
   }
-  const primeYield = primeApyPct / 100 // percent → fraction
+  const primeYield = primeSupplyApy / 100 // percent → fraction
   const apr = primeYield * leverage - borrowRate * (leverage - 1)
   return apr > 0 ? apr : null
 }
