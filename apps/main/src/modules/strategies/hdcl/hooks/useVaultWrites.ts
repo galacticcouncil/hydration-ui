@@ -9,6 +9,7 @@ import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
 import {
+  DCL_PRECOMPILE_ADDRESS,
   ERC20_ABI,
   EVM_CALL_GAS,
   HDCL_DEPOSIT_ZAP_ABI,
@@ -16,7 +17,6 @@ import {
   HDCL_HAS_AAVE_LAYER,
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
-  DCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
   VAULT_ABI,
   VAULT_ADDRESS,
