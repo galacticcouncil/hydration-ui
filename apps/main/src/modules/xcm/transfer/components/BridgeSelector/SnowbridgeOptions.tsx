@@ -1,4 +1,9 @@
-import { OptionCard } from "@galacticcouncil/ui/components"
+import {
+  OptionCard,
+  Stack,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@galacticcouncil/ui/components"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AssetAmount } from "@galacticcouncil/xc-core"
@@ -20,6 +25,11 @@ import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
+
+enum SnowbridgeVersion {
+  V2 = "v2",
+  V1 = "v1",
+}
 
 const hydrationAssetId = (asset: AssetAmount | undefined): string => {
   if (!asset || !hydration) return ""
@@ -61,11 +71,17 @@ const formatTotalUsd = (
 
 type SnowbridgeOptionsProps = {
   activeProvider: string | null
+  hasSlow: boolean
+  hasFast: boolean
+  hasV1: boolean
   onSelect: (id: string) => void
 }
 
 export const SnowbridgeOptions: React.FC<SnowbridgeOptionsProps> = ({
   activeProvider,
+  hasSlow,
+  hasFast,
+  hasV1,
   onSelect,
 }) => {
   const { t } = useTranslation(["xcm", "common"])
@@ -92,37 +108,76 @@ export const SnowbridgeOptions: React.FC<SnowbridgeOptionsProps> = ({
   const slowTotal = formatTotalUsd(slow, getAssetPrice)
   const fastTotal = formatTotalUsd(fast, getAssetPrice)
 
-  const handleClick = (id: string) => {
+  const version =
+    activeProvider === XcmTag.SnowbridgeV1
+      ? SnowbridgeVersion.V1
+      : SnowbridgeVersion.V2
+  const hasV2 = hasSlow || hasFast
+
+  const select = (id: string) => {
     onSelect(id)
     refetch()
   }
 
+  const handleVersionChange = (next: SnowbridgeVersion) => {
+    if (next === version) return
+    if (next === SnowbridgeVersion.V1) {
+      select(XcmTag.SnowbridgeV1)
+    } else {
+      // Default the V2 group to the slow (standard) variant when available.
+      select(hasSlow ? XcmTag.Snowbridge : XcmTag.SnowbridgeFast)
+    }
+  }
+
   return (
-    <>
-      <OptionCard
-        label={t("snowbridge.variant.fast")}
-        value={BRIDGE_TIME[XcmTag.SnowbridgeFast]}
-        displayValue={
-          fastTotal && !fast.isLoading
-            ? t("snowbridge.variant.totalFee", { value: fastTotal })
-            : undefined
-        }
-        icon={BRIDGE_ICON[XcmTag.SnowbridgeFast]}
-        isActive={activeProvider === XcmTag.SnowbridgeFast}
-        onClick={() => handleClick(XcmTag.SnowbridgeFast)}
-      />
-      <OptionCard
-        label={t("snowbridge.variant.slow")}
-        value={BRIDGE_TIME[XcmTag.Snowbridge]}
-        displayValue={
-          slowTotal && !slow.isLoading
-            ? t("snowbridge.variant.totalFee", { value: slowTotal })
-            : undefined
-        }
-        icon={BRIDGE_ICON[XcmTag.Snowbridge]}
-        isActive={activeProvider === XcmTag.Snowbridge}
-        onClick={() => handleClick(XcmTag.Snowbridge)}
-      />
-    </>
+    <Stack gap="base">
+      {hasV2 && hasV1 && (
+        <ToggleGroup<SnowbridgeVersion>
+          type="single"
+          value={version}
+          onValueChange={(value) => value && handleVersionChange(value)}
+        >
+          <ToggleGroupItem value={SnowbridgeVersion.V2}>
+            {t("snowbridge.version.v2")}
+          </ToggleGroupItem>
+          <ToggleGroupItem value={SnowbridgeVersion.V1}>
+            {t("snowbridge.version.v1")}
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
+
+      {/* Time-variant cards only make sense when the selected version has a
+          real sub-choice — i.e. V2 with both Fast and Slow (outbound). When a
+          version has a single variant (inbound V2, or V1), the toggle button
+          itself is the selector. */}
+      {version === SnowbridgeVersion.V2 && hasFast && hasSlow && (
+        <>
+          <OptionCard
+            label={t("snowbridge.variant.fast")}
+            value={BRIDGE_TIME[XcmTag.SnowbridgeFast]}
+            displayValue={
+              fastTotal && !fast.isLoading
+                ? t("snowbridge.variant.totalFee", { value: fastTotal })
+                : undefined
+            }
+            icon={BRIDGE_ICON[XcmTag.SnowbridgeFast]}
+            isActive={activeProvider === XcmTag.SnowbridgeFast}
+            onClick={() => select(XcmTag.SnowbridgeFast)}
+          />
+          <OptionCard
+            label={t("snowbridge.variant.slow")}
+            value={BRIDGE_TIME[XcmTag.Snowbridge]}
+            displayValue={
+              slowTotal && !slow.isLoading
+                ? t("snowbridge.variant.totalFee", { value: slowTotal })
+                : undefined
+            }
+            icon={BRIDGE_ICON[XcmTag.Snowbridge]}
+            isActive={activeProvider === XcmTag.Snowbridge}
+            onClick={() => select(XcmTag.Snowbridge)}
+          />
+        </>
+      )}
+    </Stack>
   )
 }
