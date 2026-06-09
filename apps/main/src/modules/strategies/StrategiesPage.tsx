@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
-import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
+import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
+import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
@@ -45,10 +46,7 @@ export const StrategiesPage = () => {
               isLoading: isBilMetricsLoading,
             },
           ]}
-          badges={[
-            { label: "Partnership", variant: "green" },
-            { label: "RWA", variant: "purple" },
-          ]}
+          badges={[StrategyBadgeType.Partnership, StrategyBadgeType.RWA]}
           description={t("strategies:cards.bil.description")}
           link={LINKS.strategiesBil}
         />
@@ -56,7 +54,6 @@ export const StrategiesPage = () => {
           logoId="propeller"
           title={t("strategies:cards.propeller.title")}
           stats={[
-            // best live net APY across collaterals; "-" until a carry is positive.
             {
               label: t("apy"),
               value:
@@ -66,8 +63,8 @@ export const StrategiesPage = () => {
             },
           ]}
           badges={[
-            { label: "Leverage", variant: "accent" },
-            { label: "No liquidation", variant: "green" },
+            StrategyBadgeType.Leverage,
+            StrategyBadgeType.NoLiquidation,
           ]}
           description={t("strategies:cards.propeller.description")}
           link="/strategies/propeller"
@@ -88,7 +85,7 @@ export const StrategiesPage = () => {
                     : "-",
               },
             ]}
-            badges={[{ label: "Fixed Yield", variant: "info" }]}
+            badges={[StrategyBadgeType.FixedYield]}
             description={t("strategies:cards.hollarBonds.description")}
             link={LINKS.strategiesHollarBonds}
           />

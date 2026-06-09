@@ -1,6 +1,4 @@
 import {
-  Chip,
-  ChipProps,
   Flex,
   Paper,
   Separator,
@@ -13,23 +11,19 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { DecentralLogo } from "@/modules/strategies/bil/components/DecentralLogo"
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
-
-type BadgeProps = {
-  label: string
-  variant: ChipProps["variant"]
-}
+import {
+  StrategyBadge,
+  StrategyBadgeType,
+} from "@/modules/strategies/components/StrategyBadge"
+import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
 
 export type StrategyCardProps = {
   logoId: string
   stats: ValueStatsProps[]
-  badges?: BadgeProps[]
+  badges?: StrategyBadgeType[]
   title: string
   description: string
   link?: FileRouteTypes["to"]
-  /** route params for `link` when it's a dynamic route (e.g. { asset }) */
-  linkParams?: Record<string, string>
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
@@ -38,7 +32,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   title,
   description,
   link,
-  linkParams,
   badges = [],
 }) => {
   return (
@@ -51,17 +44,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         >
           {logoId === "decentral" ? (
             <DecentralLogo size={56} />
-          ) : logoId === "propeller" ? (
-            <PropellerLogo size={56} />
           ) : (
             <AssetLogo id={logoId} size="extra-large" />
           )}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
-              {badges.map(({ label, variant }) => (
-                <Chip key={label} variant={variant} rounded>
-                  {label}
-                </Chip>
+              {badges.map((badge) => (
+                <StrategyBadge key={badge} type={badge} />
               ))}
             </Flex>
           )}
@@ -96,7 +85,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </Stack>
       <Link
         to={link}
-        params={linkParams as never}
         sx={{ "&::before": { content: "''", position: "absolute", inset: 0 } }}
       />
     </Paper>
