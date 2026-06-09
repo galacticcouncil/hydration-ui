@@ -198,7 +198,9 @@ export function usePropellerApy(
   }
   const primeYield = primeSupplyApy / 100 // percent → fraction
   const apr = primeYield * leverage - borrowRate * borrowExposure
-  return apr > 0 ? apr : null
+  // return a PERCENT number (e.g. 11.7), the form `common:percent` expects
+  // (it divides by 100 internally). null — never 0/negative — so the UI hides it.
+  return apr > 0 ? apr * 100 : null
 }
 
 export function useUserBalances(evmAddress: Hex | undefined) {
