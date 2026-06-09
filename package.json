@@ -23,7 +23,7 @@
     "@galacticcouncil/descriptors": "^2.3.0",
     "@galacticcouncil/sdk-next": "^1.1.0",
     "@galacticcouncil/xc": "^1.0.1",
-    "@galacticcouncil/xc-cfg": "^1.4.1",
+    "@galacticcouncil/xc-cfg": "1.4.2-pr331-0384c6d",
     "@galacticcouncil/xc-core": "^1.1.0",
     "@galacticcouncil/xc-scan": "^0.5.0",
     "@galacticcouncil/xc-sdk": "^1.1.1",
