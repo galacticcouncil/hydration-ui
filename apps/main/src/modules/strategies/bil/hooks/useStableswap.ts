@@ -7,6 +7,7 @@ import { useDebounce } from "use-debounce"
 import { bestSellQuery } from "@/api/trade"
 import type { InstantQuote } from "@/modules/strategies/bil/components/WithdrawMethodPicker"
 import { STABLESWAP_BIL_ASSET_ID } from "@/modules/strategies/bil/constants"
+import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -111,11 +112,7 @@ export function useInstantRedeem() {
           success: `${fmt} redeemed for HOLLAR`,
           error: `Instant redeem failed`,
         },
-        invalidateQueries: [
-          ["bil-vault-balances"],
-          ["bil-vault-stats"],
-          ["bil-pool-position"],
-        ],
+        invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
       })
     },
   })

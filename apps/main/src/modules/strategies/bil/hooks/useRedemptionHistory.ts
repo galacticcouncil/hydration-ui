@@ -5,6 +5,7 @@ import {
   VAULT_ADDRESS,
   VAULT_DEPLOY_BLOCK,
 } from "@/modules/strategies/bil/constants"
+import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 // The vault contract emits these events but the on-chain `getRedemptionRequest`
@@ -83,7 +84,7 @@ export interface RedemptionHistoryEntry {
 export function useRedemptionHistory(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["bil-vault-history", evmAddress],
+    queryKey: bilQueryKeys.vaultHistory(evmAddress),
     enabled: !!evmAddress,
     queryFn: async (): Promise<RedemptionHistoryEntry[]> => {
       if (!evmAddress) return []
@@ -203,9 +204,6 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
       // Newest first.
       return result
     },
-    // Logs for finalized blocks are immutable; we refetch periodically to
-    // pick up new requests/fulfillments rather than to revalidate old ones.
-    refetchInterval: 30_000,
     staleTime: 30_000,
   })
 }

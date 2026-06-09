@@ -151,7 +151,6 @@ export const MyPositionsCard = ({
                       })}
                     </Text>
                   }
-                  bottomLabel={t("bil.positions.inclBorrow")}
                 />
               </>
             }

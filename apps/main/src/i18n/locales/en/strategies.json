@@ -46,7 +46,6 @@
   "bil.strategy.liquidationLtv": "Liquidation LTV",
 
   "bil.positions.afterBorrow": "after borrow",
-  "bil.positions.inclBorrow": "(incl. borrow)",
   "bil.positions.uncollateralised": "{{label}} (uncollateralised)",
   "bil.positions.action.depositing": "Depositing...",
 

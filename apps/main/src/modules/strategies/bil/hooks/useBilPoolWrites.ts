@@ -15,6 +15,7 @@ import {
   BIL_POOL_ADDRESS,
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/bil/constants"
+import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -68,8 +69,7 @@ function useBilPoolEvmCall() {
           tx: batchTx,
           toasts,
           invalidateQueries: [
-            ["bil-pool-position"],
-            ["bil-vault"],
+            [BIL_QUERY_KEY_PREFIX],
             evmAccountBindingQuery(rpc, address).queryKey,
           ],
         })
@@ -79,8 +79,7 @@ function useBilPoolEvmCall() {
         tx: evmCall,
         toasts,
         invalidateQueries: [
-          ["bil-pool-position"],
-          ["bil-vault"],
+          [BIL_QUERY_KEY_PREFIX],
           evmAccountBindingQuery(rpc, address).queryKey,
         ],
       })

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex } from "viem"
 
 import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
+import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 
 export interface QueueEntry {
   requestId: number
@@ -34,7 +35,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
   const { data: vault } = useBilVaultContract()
   return useQuery({
     enabled: !!vault && !!evmAddress,
-    queryKey: ["bil-vault-queue", evmAddress],
+    queryKey: bilQueryKeys.vaultQueue(evmAddress),
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
 
@@ -97,6 +98,5 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
         totalQueuedBil,
       }
     },
-    refetchInterval: 30_000,
   })
 }

@@ -1,22 +1,23 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
-  Box,
   Button,
-  Flex,
   Modal,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
-  Text,
+  Summary,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
 import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
@@ -26,9 +27,6 @@ interface Props {
   onBorrow: (amount: number) => void
   isPending: boolean
 }
-
-const HEALTH_LIQUIDATION_THRESHOLD = 1.0
-const HEALTH_WARNING_THRESHOLD = 1.5
 
 export const BorrowHollarModal = ({
   open,
@@ -45,22 +43,17 @@ export const BorrowHollarModal = ({
 
   const inputNum = parseFloat(amount) || 0
 
-  const totalCollateralUsd = poolPosition?.totalCollateralUsd ?? 0
-  const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
   const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
-  const liquidationThresholdPct = poolPosition?.liquidationThresholdPct ?? 0
   const hasCollateral = !!poolPosition?.hasCollateral
 
   const overAvailable = inputNum > availableUsd
-  const projectedDebtUsd = totalDebtUsd + inputNum
-  const projectedHf =
-    projectedDebtUsd > 0
-      ? (totalCollateralUsd * (liquidationThresholdPct / 100)) /
-        projectedDebtUsd
-      : Infinity
-
-  const isLiquidationRisk = projectedHf <= HEALTH_LIQUIDATION_THRESHOLD
-  const isWarning = projectedHf <= HEALTH_WARNING_THRESHOLD
+  const healthFactor = poolPosition
+    ? getBilBorrowHealthFactor(poolPosition, inputNum)
+    : null
+  const isLiquidationRisk =
+    !!healthFactor &&
+    !Big(healthFactor.future).eq(-1) &&
+    Big(healthFactor.future).lte(1)
 
   const canSubmit =
     inputNum > 0 &&
@@ -74,59 +67,45 @@ export const BorrowHollarModal = ({
     onBorrow(inputNum)
   }
 
-  const hfText =
-    projectedHf === Infinity
-      ? "∞"
-      : projectedHf > 999
-        ? ">999"
-        : projectedHf.toFixed(2)
-
-  const hfColor = isLiquidationRisk
-    ? getToken("accents.danger.emphasis")
-    : isWarning
-      ? getToken("accents.alert.primary")
-      : getToken("accents.success.emphasis")
-
   return (
-    <Modal variant="popup" open={open} onOpenChange={(o) => !o && onClose()}>
+    <Modal
+      variant="popup"
+      open={open}
+      onOpenChange={onClose}
+      disableInteractOutside
+    >
       <ModalHeader title={t("bil.borrow.title")} />
 
-      <ModalBody noPadding>
-        <Box px="xl" py="l">
-          <AssetInput
-            label={t("bil.borrow.selectAsset")}
-            balanceLabel="Available"
-            symbol="HOLLAR"
-            selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} size="medium" />}
-            modalDisabled
-            value={amount}
-            onChange={setAmount}
-            displayValue={t("common:currency", {
-              value: inputNum,
-            })}
-            maxBalance={availableUsd.toString()}
-            maxButtonBalance={availableUsd.toString()}
-            amountError={
-              overAvailable ? t("bil.borrow.cta.exceeds") : undefined
-            }
-          />
-        </Box>
+      <ModalBody>
+        <AssetInput
+          sx={{ pt: 0 }}
+          label={t("bil.borrow.selectAsset")}
+          balanceLabel="Available"
+          symbol="HOLLAR"
+          selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} size="medium" />}
+          modalDisabled
+          value={amount}
+          onChange={setAmount}
+          displayValue={t("common:currency", {
+            value: inputNum,
+          })}
+          maxBalance={availableUsd.toString()}
+          maxButtonBalance={availableUsd.toString()}
+          amountError={overAvailable ? t("bil.borrow.cta.exceeds") : undefined}
+        />
 
-        <ModalContentDivider />
-
-        <Box px="xl" py="l">
-          <Flex justify="space-between" align="center">
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("common:healthFactor")}
-            </Text>
-            <Flex align="baseline" gap="xs">
-              <Text fs="p4" fw={600} color={hfColor}>
-                {hfText}
-              </Text>
-              <Text fs="p6">{t("bil.borrow.liquidationAt")}</Text>
-            </Flex>
-          </Flex>
-        </Box>
+        {healthFactor && hasCollateral && (
+          <Summary
+            withLeadingSeparator
+            separator={<ModalContentDivider />}
+            mb="var(--modal-content-inset)"
+          >
+            <SummaryRow
+              label={t("common:healthFactor")}
+              content={<HealthFactorChange {...healthFactor} />}
+            />
+          </Summary>
+        )}
       </ModalBody>
 
       <ModalFooter>

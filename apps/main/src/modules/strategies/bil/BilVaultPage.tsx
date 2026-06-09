@@ -7,7 +7,7 @@ import { type Hex, parseUnits } from "viem"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/bil/components/AboutCard"
 import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
-import { DepositPanel } from "@/modules/strategies/bil/components/DepositPanel"
+import { BilDeposit } from "@/modules/strategies/bil/components/BilDeposit"
 import { MyBorrowsCard } from "@/modules/strategies/bil/components/MyBorrowsCard"
 import { MyPositionsCard } from "@/modules/strategies/bil/components/MyPositionsCard"
 import { RepayHollarModal } from "@/modules/strategies/bil/components/RepayHollarModal"
@@ -241,9 +241,9 @@ export const BilVaultPage = () => {
           <AboutCard />
         </Stack>
 
-        <DepositPanel
+        <BilDeposit
           vaultStats={stats}
-          balances={userBalances}
+          balance={userBalances.hollar}
           onDeposit={(amount) => depositMutation.mutate(amount)}
           isPending={isPending}
         />

@@ -5,11 +5,12 @@ import {
   BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
 } from "@/modules/strategies/bil/constants"
+import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const bilPoolContractQuery = (rpc: TProviderContext) => {
   return queryOptions({
-    queryKey: ["bil-pool-contract"],
+    queryKey: bilQueryKeys.poolContract(),
     enabled: rpc.isLoaded,
     staleTime: Infinity,
     gcTime: Infinity,

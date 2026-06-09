@@ -11,6 +11,7 @@ import {
   VAULT_ADDRESS,
 } from "@/modules/strategies/bil/constants"
 import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
+import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type VaultStats = {
@@ -47,7 +48,7 @@ export function useVaultStats() {
   const { evm } = useRpcProvider()
   const { data: vault } = useBilVaultContract()
   return useQuery({
-    queryKey: ["bil-vault-stats"],
+    queryKey: bilQueryKeys.vaultStats(),
     enabled: !!vault,
     initialData: DEFAULT_VAULT_STATS,
     queryFn: async () => {
@@ -144,7 +145,7 @@ export function useVaultStats() {
 export function useUserBalances(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["bil-vault-balances", evmAddress],
+    queryKey: bilQueryKeys.vaultBalances(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return { hollar: 0, bil: 0 }
@@ -230,7 +231,7 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 export function usePreviewDeposit(hollarAmount: number) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["bil-vault-preview-deposit", hollarAmount],
+    queryKey: bilQueryKeys.vaultPreviewDeposit(hollarAmount),
     enabled: hollarAmount > 0,
     queryFn: async () => {
       const vault = getContract({
@@ -263,7 +264,7 @@ export function usePreviewDeposit(hollarAmount: number) {
 export function usePreviewRedeem(bilAmount: number) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["bil-vault-preview-redeem", bilAmount],
+    queryKey: bilQueryKeys.vaultPreviewRedeem(bilAmount),
     enabled: bilAmount > 0,
     queryFn: async () => {
       const vault = getContract({
@@ -291,7 +292,7 @@ export function usePreviewRedeem(bilAmount: number) {
 export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["bil-vault-autoclaim", evmAddress],
+    queryKey: bilQueryKeys.vaultAutoclaim(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return false

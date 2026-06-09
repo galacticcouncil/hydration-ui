@@ -10,6 +10,7 @@ import {
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/bil/constants"
 import { useBilPoolContract } from "@/modules/strategies/bil/hooks/useBilPoolContract"
+import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export interface BilPoolPosition {
@@ -52,11 +53,11 @@ export interface BilPoolPosition {
 export function useBilPoolPosition(evmAddress: Hex | undefined) {
   const { data: pool } = useBilPoolContract()
   return useQuery({
-    queryKey: ["bil-pool-position", evmAddress],
+    queryKey: bilQueryKeys.poolPosition(evmAddress),
     // The BIL Aave pool is the source of borrow / collateral data. On
     // networks that don't have the pool deployed yet (e.g. lark-2 vault-
     // only mode), short-circuit to keep the query inert instead of
-    // hammering the zero address with reverts every 30s.
+    // hammering the zero address with reverts.
     enabled: BIL_HAS_AAVE_LAYER && !!evmAddress && !!pool,
     queryFn: async (): Promise<BilPoolPosition> => {
       if (!evmAddress || !pool) {
@@ -93,7 +94,6 @@ export function useBilPoolPosition(evmAddress: Hex | undefined) {
         hasCollateral: totalCollateralBase > 0n,
       }
     },
-    refetchInterval: 30_000,
   })
 }
 
@@ -128,7 +128,7 @@ export interface BilReserveConfig {
 export function useBilReserveConfig() {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["bil-reserve-config"],
+    queryKey: bilQueryKeys.reserveConfig(),
     enabled: BIL_HAS_AAVE_LAYER,
     queryFn: async (): Promise<BilReserveConfig> => {
       const pool = getContract({
@@ -136,7 +136,7 @@ export function useBilReserveConfig() {
         abi: BIL_POOL_ABI,
         client: evm,
       })
-      // The BIL precompile (asset 550) is the actual reserve; BIL (asset 55,
+      // The DCL precompile (asset 550) is the actual reserve; BIL (asset 55,
       // the aToken receipt) is a user-facing alias and is *not* registered as
       // a reserve, so getConfiguration on it returns 0x.
       const [config, reserveData] = await Promise.all([
@@ -162,6 +162,5 @@ export function useBilReserveConfig() {
         borrowApyPct: borrowApy * 100,
       }
     },
-    refetchInterval: 60_000,
   })
 }
