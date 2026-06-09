@@ -62,7 +62,7 @@ export function calculateHFAfterSwap({
     fromAssetData.reserveLiquidationThreshold !== "0"
   ) {
     hfEffectOfFromAmount = calculateHealthFactorFromBalancesBigUnits({
-      collateralBalanceMarketReferenceCurrency: Big(fromAmount)
+      collateralBalanceMarketReferenceCurrency: Big(fromAmount || "0")
         .mul(fromAssetData.formattedPriceInMarketReferenceCurrency)
         .toString(),
       borrowBalanceMarketReferenceCurrency:

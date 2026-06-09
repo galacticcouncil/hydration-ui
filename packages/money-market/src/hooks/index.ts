@@ -1,4 +1,5 @@
 export * from "./commonTypes"
+export * from "./paraswap"
 export * from "./useAggregatedMarketStats"
 export * from "./useApprovedAmount"
 export * from "./useAssetCaps"

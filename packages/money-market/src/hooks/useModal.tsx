@@ -68,6 +68,12 @@ export interface ModalContextType<T extends ModalArgsType> {
     underlyingAsset: string,
     currentRateMode: InterestRate,
   ) => void
+  openSwap: (underlyingAsset: string, symbol: string) => void
+  openDebtSwitch: (
+    underlyingAsset: string,
+    currentRateMode: InterestRate,
+    symbol: string,
+  ) => void
   openClaimRewards: (underlyingAsset?: string) => void
   openEmode: (mode: EmodeModalType) => void
   close: () => void
@@ -128,6 +134,14 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
         openRateSwitch: (underlyingAsset, currentRateMode) => {
           setType(ModalType.RateSwitch)
           setArgs({ underlyingAsset, currentRateMode })
+        },
+        openSwap: (underlyingAsset, symbol) => {
+          setType(ModalType.Swap)
+          setArgs({ underlyingAsset, symbol })
+        },
+        openDebtSwitch: (underlyingAsset, currentRateMode, symbol) => {
+          setType(ModalType.DebtSwitch)
+          setArgs({ underlyingAsset, currentRateMode, symbol })
         },
         openClaimRewards: (underlyingAsset) => {
           setType(ModalType.ClaimRewards)
