@@ -1,6 +1,7 @@
 import { Hourglass, Zap } from "@galacticcouncil/ui/assets/icons"
 import {
   Chip,
+  ChipVariant,
   CollapsibleContent,
   CollapsibleRoot,
   Flex,
@@ -109,7 +110,6 @@ export const WithdrawMethodPicker = ({
               value={t("bil.method.queue.atRateValue", {
                 rate: t("common:number", {
                   value: projectedRate,
-                  maximumFractionDigits: 4,
                 }),
               })}
             />
@@ -170,16 +170,14 @@ export const WithdrawMethodPicker = ({
                   label={t("bil.method.instant.difference")}
                   value={(() => {
                     const delta = instantQuote.expectedHollar - queueHollarOut
-                    const sign = delta >= 0 ? "+" : ""
-                    const pctSign = instantQuote.discountPct >= 0 ? "+" : ""
-                    return `${sign}${t("common:currency", {
+                    return `${t("common:currency", {
                       value: delta,
                       symbol: "HOLLAR",
-                      maximumFractionDigits: 2,
-                    })} (${pctSign}${t("common:number", {
+                      signDisplay: "always",
+                    })} (${t("common:percent", {
                       value: instantQuote.discountPct,
-                      maximumFractionDigits: 1,
-                    })}%)`
+                      signDisplay: "always",
+                    })})`
                   })()}
                   valueTone={
                     instantQuote.discountPct < 0 ? "warning" : "neutral"
@@ -231,7 +229,7 @@ const CardHeader = ({
   title: string
   subtitle: string
   rightChip: string
-  rightChipVariant: "primary" | "secondary"
+  rightChipVariant: ChipVariant
   icon?: ComponentType<SVGProps<SVGSVGElement> & { size?: number }>
 }) => (
   <Flex justify="space-between" align="flex-start" gap="s">
@@ -259,7 +257,7 @@ const DetailRow = ({
   value: React.ReactNode
   valueTone?: "neutral" | "warning"
 }) => (
-  <Flex justify="space-between" align="center" sx={{ py: "s" }}>
+  <Flex justify="space-between" align="center" py="xs">
     <Text fs="p5" color={getToken("text.medium")}>
       {label}
     </Text>

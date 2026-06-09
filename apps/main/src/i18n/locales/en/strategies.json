@@ -45,7 +45,6 @@
   "bil.strategy.contractAddress": "Contract address",
   "bil.strategy.liquidationLtv": "Liquidation LTV",
 
-  "bil.positions.col.netApy": "Your net APY",
   "bil.positions.afterBorrow": "after borrow",
   "bil.positions.inclBorrow": "(incl. borrow)",
   "bil.positions.uncollateralised": "{{label}} (uncollateralised)",

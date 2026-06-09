@@ -253,6 +253,9 @@ export const BilVaultPage = () => {
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
         vaultStats={stats}
+        withdrawSource={withdrawSource}
+        poolPosition={poolPosition}
+        reserveConfig={reserveConfig}
         bilBalance={
           withdrawSource === "raw"
             ? (userBalances.bilRaw ?? 0)
