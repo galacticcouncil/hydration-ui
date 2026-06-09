@@ -20,7 +20,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { PropellerExchangeRate } from "@/modules/strategies/propeller/components/PropellerExchangeRate"
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
-import { ETH_ASSET_ID } from "@/modules/strategies/propeller/constants"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 import { useAssets } from "@/providers/assetsProvider"
 
 interface VaultStats {
@@ -51,7 +51,8 @@ export const DepositPanel = ({
   const { isConnected } = useAccount()
   const [amount, setAmount] = useState("")
   const { getAssetWithFallback } = useAssets()
-  const eth = getAssetWithFallback(ETH_ASSET_ID)
+  const vault = useActivePropellerVault()
+  const eth = getAssetWithFallback(vault.assetId)
 
   const inputNum = parseFloat(amount) || 0
   // shares = assets / exchangeRate (exchangeRate is ETH per pETH).
@@ -97,8 +98,8 @@ export const DepositPanel = ({
       <Box>
         <AssetInput
           label={t("deposit.your")}
-          symbol="ETH"
-          selectedAssetIcon={<AssetLogo id={ETH_ASSET_ID} size="medium" />}
+          symbol={vault.symbol}
+          selectedAssetIcon={<AssetLogo id={vault.assetId} size="medium" />}
           modalDisabled
           value={amount}
           onChange={setAmount}
@@ -114,7 +115,7 @@ export const DepositPanel = ({
 
         <AssetInput
           label={t("deposit.youReceive")}
-          symbol="pETH"
+          symbol={vault.shareSymbol}
           selectedAssetIcon={<PropellerLogo size={24} />}
           modalDisabled
           disabledInput

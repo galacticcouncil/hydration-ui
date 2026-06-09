@@ -6,6 +6,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 export type WithdrawalRowState = "pending" | "settled" | "claimed"
 
@@ -37,6 +38,7 @@ export const useWithdrawalColumns = ({
 }: WithdrawalColumnHandlers) => {
   const { t } = useTranslation(["propeller", "common"])
   const { isMobile } = useBreakpoints()
+  const { symbol, shareSymbol } = useActivePropellerVault()
 
   return useMemo(() => {
     const amountColumn = columnHelper.accessor("amountShares", {
@@ -47,7 +49,7 @@ export const useWithdrawalColumns = ({
           <Text fs="p4" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.original.amountShares,
-              symbol: "pETH",
+              symbol: shareSymbol,
             })}
           </Text>
         </Flex>
@@ -61,7 +63,7 @@ export const useWithdrawalColumns = ({
         <Amount
           value={t("common:currency", {
             value: row.original.estEth,
-            symbol: "ETH",
+            symbol,
           })}
           displayValue={t("common:currency", {
             value: row.original.estEth,
@@ -145,5 +147,5 @@ export const useWithdrawalColumns = ({
       stateColumn,
       actionsColumn,
     ]
-  }, [t, isMobile, isClaiming, onClaim])
+  }, [t, isMobile, isClaiming, onClaim, symbol, shareSymbol])
 }

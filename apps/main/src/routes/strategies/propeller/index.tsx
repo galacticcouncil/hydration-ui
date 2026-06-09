@@ -1,15 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { getPageMeta } from "@/config/navigation"
-import { PropellerVaultPage } from "@/modules/strategies/propeller/PropellerVaultPage"
+import { DEFAULT_PROPELLER_ASSET } from "@/modules/strategies/propeller/vaults"
 
+// /strategies/propeller/ → default collateral subpage (back-compat for old links)
 export const Route = createFileRoute("/strategies/propeller/")({
-  component: PropellerVaultPage,
-  head: ({
-    match: {
-      context: { i18n },
-    },
-  }) => ({
-    meta: getPageMeta("strategiesPropeller", i18n.t),
-  }),
+  beforeLoad: () => {
+    throw redirect({
+      to: "/strategies/propeller/$asset",
+      params: { asset: DEFAULT_PROPELLER_ASSET },
+    })
+  },
 })

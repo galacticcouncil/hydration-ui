@@ -1,21 +1,22 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { getContract } from "viem"
+import { getContract, type Hex } from "viem"
 
-import {
-  VAULT_ABI,
-  VAULT_ADDRESS,
-} from "@/modules/strategies/propeller/constants"
+import { VAULT_ABI } from "@/modules/strategies/propeller/constants"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
-export const propellerVaultContractQuery = (rpc: TProviderContext) => {
+export const propellerVaultContractQuery = (
+  rpc: TProviderContext,
+  vaultAddress: Hex,
+) => {
   return queryOptions({
-    queryKey: ["propeller-vault-contract"],
+    queryKey: ["propeller-vault-contract", vaultAddress],
     enabled: rpc.isLoaded,
     staleTime: Infinity,
     gcTime: Infinity,
     queryFn: () => {
       return getContract({
-        address: VAULT_ADDRESS,
+        address: vaultAddress,
         abi: VAULT_ABI,
         client: rpc.evm,
       })
@@ -24,5 +25,6 @@ export const propellerVaultContractQuery = (rpc: TProviderContext) => {
 }
 export const usePropellerVaultContract = () => {
   const rpc = useRpcProvider()
-  return useQuery(propellerVaultContractQuery(rpc))
+  const { vaultAddress } = useActivePropellerVault()
+  return useQuery(propellerVaultContractQuery(rpc, vaultAddress))
 }

@@ -27,6 +27,8 @@ export type StrategyCardProps = {
   title: string
   description: string
   link?: FileRouteTypes["to"]
+  /** route params for `link` when it's a dynamic route (e.g. { asset }) */
+  linkParams?: Record<string, string>
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
@@ -35,6 +37,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   title,
   description,
   link,
+  linkParams,
   badges = [],
 }) => {
   return (
@@ -90,6 +93,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </Stack>
       <Link
         to={link}
+        params={linkParams as never}
         sx={{ "&::before": { content: "''", position: "absolute", inset: 0 } }}
       />
     </Paper>

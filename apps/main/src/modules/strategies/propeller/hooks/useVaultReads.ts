@@ -5,16 +5,16 @@ import { formatUnits, getContract, type Hex } from "viem"
 import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   ERC20_ABI,
-  ETH_ADDRESS,
   HOLLAR_ADDRESS,
   POOL_ABI,
   POOL_ADDRESS,
   SUBLOOP_ABI,
   SUBLOOP_ADDRESS,
   VAULT_ABI,
-  VAULT_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
 import { usePropellerVaultContract } from "@/modules/strategies/propeller/hooks/usePropellerVaultContract"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/vaults"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 // Propeller doesn't expose an on-chain APR view (no getAPYWad), and there's
@@ -27,8 +27,9 @@ const FALLBACK_MIN_REDEEM = 0
 
 export function useVaultStats() {
   const { data: vault } = usePropellerVaultContract()
+  const { vaultAddress } = useActivePropellerVault()
   return useQuery({
-    queryKey: ["propeller-vault-stats"],
+    queryKey: ["propeller-vault-stats", vaultAddress],
     enabled: !!vault,
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
@@ -76,10 +77,11 @@ export function useVaultStats() {
  * line. Both values are WAD-scaled (1e18). Wrapped independently so a revert
  * on a partial deploy doesn't wipe the strategy page.
  */
-export function useSubLoopStats() {
+export function useSubLoopStats(override?: PropellerVaultConfig) {
   const { evm } = useRpcProvider()
+  const { vaultAddress } = useActivePropellerVault(override)
   return useQuery({
-    queryKey: ["propeller-subloop-stats"],
+    queryKey: ["propeller-subloop-stats", vaultAddress],
     queryFn: async () => {
       const subLoop = getContract({
         address: SUBLOOP_ADDRESS,
@@ -119,7 +121,7 @@ export function useSubLoopStats() {
           pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
         ),
         safe("Pool.getUserAccountData(Vault)", () =>
-          pool.read.getUserAccountData([VAULT_ADDRESS]),
+          pool.read.getUserAccountData([vaultAddress]),
         ),
         safe("Pool.getReserveData(HOLLAR)", () =>
           pool.read.getReserveData([HOLLAR_ADDRESS]),
@@ -174,8 +176,10 @@ export function useSubLoopStats() {
  * Returns null — never 0 or negative — when an input is missing or the carry
  * isn't positive, so the UI can simply hide it.
  */
-export function usePropellerApy(): number | null {
-  const { data: subLoop } = useSubLoopStats()
+export function usePropellerApy(
+  override?: PropellerVaultConfig,
+): number | null {
+  const { data: subLoop } = useSubLoopStats(override)
   const { data: apyData } = useBorrowAssetsApy([PRIME_ASSET_ID])
   const primeSupplyApy = apyData?.find(
     (a) => a.assetId === PRIME_ASSET_ID,
@@ -199,19 +203,20 @@ export function usePropellerApy(): number | null {
 
 export function useUserBalances(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
+  const { vaultAddress, assetAddress } = useActivePropellerVault()
   return useQuery({
-    queryKey: ["propeller-vault-balances", evmAddress],
+    queryKey: ["propeller-vault-balances", vaultAddress, evmAddress],
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return { eth: 0, shares: 0 }
 
       const ethToken = getContract({
-        address: ETH_ADDRESS,
+        address: assetAddress,
         abi: ERC20_ABI,
         client: evm,
       })
       const vault = getContract({
-        address: VAULT_ADDRESS,
+        address: vaultAddress,
         abi: VAULT_ABI,
         client: evm,
       })
@@ -252,19 +257,20 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 
 export function useEthAllowance(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
+  const { vaultAddress, assetAddress } = useActivePropellerVault()
   return useQuery({
-    queryKey: ["propeller-vault-allowance", evmAddress],
+    queryKey: ["propeller-vault-allowance", vaultAddress, evmAddress],
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return 0
       const ethToken = getContract({
-        address: ETH_ADDRESS,
+        address: assetAddress,
         abi: ERC20_ABI,
         client: evm,
       })
       const allowance = await ethToken.read.allowance([
         evmAddress,
-        VAULT_ADDRESS,
+        vaultAddress,
       ])
       return Number(formatUnits(allowance, 18))
     },

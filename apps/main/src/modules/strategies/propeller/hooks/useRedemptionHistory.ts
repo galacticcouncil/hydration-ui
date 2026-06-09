@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex, parseAbiItem } from "viem"
 
-import {
-  VAULT_ADDRESS,
-  VAULT_DEPLOY_BLOCK,
-} from "@/modules/strategies/propeller/constants"
+import { VAULT_DEPLOY_BLOCK } from "@/modules/strategies/propeller/constants"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 // The on-chain `redemptions` view doesn't carry request timestamps, so we
@@ -50,14 +48,15 @@ export interface RedemptionHistoryEntry {
  */
 export function useRedemptionHistory(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
+  const { vaultAddress } = useActivePropellerVault()
   return useQuery({
-    queryKey: ["propeller-vault-history", evmAddress],
+    queryKey: ["propeller-vault-history", vaultAddress, evmAddress],
     enabled: !!evmAddress,
     queryFn: async (): Promise<RedemptionHistoryEntry[]> => {
       if (!evmAddress) return []
 
       const baseFilter = {
-        address: VAULT_ADDRESS,
+        address: vaultAddress,
         fromBlock: VAULT_DEPLOY_BLOCK,
       } as const
 

@@ -10,11 +10,10 @@ import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 import { evmAccountBindingQuery } from "@/api/evm"
 import {
   ERC20_ABI,
-  ETH_ADDRESS,
   EVM_CALL_GAS,
   VAULT_ABI,
-  VAULT_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -175,6 +174,7 @@ export function useDeposit() {
   const { t } = useTranslation(["common"])
   const { evm } = useRpcProvider()
   const { evmAddress, submitBatch } = useVaultEvmCall()
+  const { vaultAddress, assetAddress, symbol } = useActivePropellerVault()
 
   return useMutation({
     mutationFn: async (ethAmount: number) => {
@@ -182,26 +182,26 @@ export function useDeposit() {
       const calls: BatchEvmCall[] = []
 
       const ethAllowance = await evm.readContract({
-        address: ETH_ADDRESS,
+        address: assetAddress,
         abi: ERC20_ABI,
         functionName: "allowance",
-        args: [evmAddress, VAULT_ADDRESS],
+        args: [evmAddress, vaultAddress],
       })
 
       if (ethAllowance < ethBig) {
         calls.push({
-          to: ETH_ADDRESS,
+          to: assetAddress,
           data: encodeFunctionData({
             abi: ERC20_ABI,
             functionName: "approve",
-            args: [VAULT_ADDRESS, ethBig],
+            args: [vaultAddress, ethBig],
           }),
           abi: [...ERC20_ABI],
         })
       }
 
       calls.push({
-        to: VAULT_ADDRESS,
+        to: vaultAddress,
         data: encodeFunctionData({
           abi: VAULT_ABI,
           functionName: "deposit",
@@ -212,7 +212,7 @@ export function useDeposit() {
 
       const fmt = t("currency", {
         value: ethAmount,
-        symbol: "ETH",
+        symbol,
         maximumFractionDigits: 4,
       })
       return submitBatch(calls, {
@@ -233,6 +233,7 @@ export function useDeposit() {
 export function useRequestRedeem() {
   const { t } = useTranslation(["common"])
   const { evmAddress, submitTx } = useVaultEvmCall()
+  const { vaultAddress, shareSymbol } = useActivePropellerVault()
 
   return useMutation({
     mutationFn: (shareAmount: number) => {
@@ -244,10 +245,10 @@ export function useRequestRedeem() {
 
       const fmt = t("currency", {
         value: shareAmount,
-        symbol: "pETH",
+        symbol: shareSymbol,
         maximumFractionDigits: 4,
       })
-      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
+      return submitTx(vaultAddress, data, [...VAULT_ABI], {
         submitted: `Requesting ${fmt} withdrawal...`,
         success: `${fmt} withdrawal requested`,
       })
@@ -261,6 +262,7 @@ export function useRequestRedeem() {
  */
 export function useClaim() {
   const { evmAddress, submitTx } = useVaultEvmCall()
+  const { vaultAddress, symbol } = useActivePropellerVault()
 
   return useMutation({
     mutationFn: (requestId: number) => {
@@ -269,8 +271,8 @@ export function useClaim() {
         functionName: "claim",
         args: [BigInt(requestId), evmAddress],
       })
-      return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-        submitted: "Claiming ETH...",
+      return submitTx(vaultAddress, data, [...VAULT_ABI], {
+        submitted: `Claiming ${symbol}...`,
         success: "Claim sent",
       })
     },

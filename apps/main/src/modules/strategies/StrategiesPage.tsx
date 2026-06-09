@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next"
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
-import { ETH_ASSET_ID } from "@/modules/strategies/propeller/constants"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -16,7 +16,13 @@ export const StrategiesPage = () => {
   const bondId = HOLLAR_BOND_25_08_26_ID
   const { timeLeft } = useBondData(bondId)
   const bondApr = getBondApr(bondId, timeLeft)
-  const propellerApy = usePropellerApy() // live net carry; null until positive
+  // live net carry per collateral; null until positive
+  const ethApy = usePropellerApy(PROPELLER_VAULTS.eth)
+  const tbtcApy = usePropellerApy(PROPELLER_VAULTS.tbtc)
+  const propellerCards = [
+    { cfg: PROPELLER_VAULTS.eth, apy: ethApy },
+    { cfg: PROPELLER_VAULTS.tbtc, apy: tbtcApy },
+  ]
 
   return (
     <>
@@ -38,26 +44,27 @@ export const StrategiesPage = () => {
           description={t("strategies:cards.hdcl.description")}
           link={LINKS.strategiesHdcl}
         />
-        <StrategyCard
-          logoId={ETH_ASSET_ID}
-          title={t("strategies:cards.propeller.title")}
-          stats={[
-            // live net APY (usePropellerApy); "-" until the carry is positive.
-            {
-              label: t("apy"),
-              value:
-                propellerApy !== null
-                  ? t("common:percent", { value: propellerApy })
-                  : "-",
-            },
-          ]}
-          badges={[
-            { label: "Leverage", variant: "accent" },
-            { label: "No liquidation", variant: "green" },
-          ]}
-          description={t("strategies:cards.propeller.description")}
-          link={LINKS.strategiesPropeller}
-        />
+        {propellerCards.map(({ cfg, apy }) => (
+          <StrategyCard
+            key={cfg.key}
+            logoId={cfg.assetId}
+            title={`${t("strategies:cards.propeller.title")} ${cfg.symbol}`}
+            stats={[
+              // live net APY (usePropellerApy); "-" until the carry is positive.
+              {
+                label: t("apy"),
+                value: apy !== null ? t("common:percent", { value: apy }) : "-",
+              },
+            ]}
+            badges={[
+              { label: "Leverage", variant: "accent" },
+              { label: "No liquidation", variant: "green" },
+            ]}
+            description={t("strategies:cards.propeller.description")}
+            link="/strategies/propeller/$asset"
+            linkParams={{ asset: cfg.key }}
+          />
+        ))}
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard
             logoId={bondId}

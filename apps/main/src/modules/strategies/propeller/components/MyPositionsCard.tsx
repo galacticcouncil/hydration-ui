@@ -11,6 +11,7 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 interface Props {
   /** pETH shares held by the user. */
@@ -29,6 +30,7 @@ export const MyPositionsCard = ({
   onWithdraw,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
+  const { symbol, shareSymbol } = useActivePropellerVault()
 
   const ethValue = shares * exchangeRate
 
@@ -55,13 +57,13 @@ export const MyPositionsCard = ({
                   <Text fs="p3" fw={500} lh={1}>
                     {t("common:currency", {
                       value: shares,
-                      symbol: "pETH",
+                      symbol: shareSymbol,
                     })}
                   </Text>
                 }
                 bottomLabel={t("common:currency", {
                   value: ethValue,
-                  symbol: "ETH",
+                  symbol,
                 })}
               />
               <ValueStats

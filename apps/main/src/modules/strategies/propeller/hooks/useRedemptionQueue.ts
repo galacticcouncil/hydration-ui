@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex } from "viem"
 
 import { usePropellerVaultContract } from "@/modules/strategies/propeller/hooks/usePropellerVaultContract"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 export interface QueueEntry {
   requestId: number
@@ -19,9 +20,10 @@ export interface QueueEntry {
 
 export function useRedemptionQueue(evmAddress: Hex | undefined) {
   const { data: vault } = usePropellerVaultContract()
+  const { vaultAddress } = useActivePropellerVault()
   return useQuery({
     enabled: !!vault && !!evmAddress,
-    queryKey: ["propeller-vault-queue", evmAddress],
+    queryKey: ["propeller-vault-queue", vaultAddress, evmAddress],
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
 

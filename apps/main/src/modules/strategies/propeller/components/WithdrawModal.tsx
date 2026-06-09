@@ -15,6 +15,7 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 interface VaultStats {
   exchangeRate: number
@@ -40,6 +41,7 @@ export const WithdrawModal = ({
   isPending,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
+  const { shareSymbol } = useActivePropellerVault()
   const [amount, setAmount] = useState("")
   const [acknowledged, setAcknowledged] = useState(false)
 
@@ -65,7 +67,7 @@ export const WithdrawModal = ({
     if (overBalance) return t("withdraw.cta.insufficient")
     if (isBelowMin)
       return t("withdraw.cta.belowMin", {
-        symbol: "pETH",
+        symbol: shareSymbol,
         min: vaultStats.minRedeem,
       })
     return t("withdraw.cta.withdraw")
@@ -75,7 +77,7 @@ export const WithdrawModal = ({
     ? t("withdraw.cta.insufficient")
     : isBelowMin
       ? t("withdraw.cta.belowMin", {
-          symbol: "pETH",
+          symbol: shareSymbol,
           min: vaultStats.minRedeem,
         })
       : undefined
@@ -97,7 +99,7 @@ export const WithdrawModal = ({
         <Box px="xl">
           <AssetInput
             label={t("withdraw.amount")}
-            symbol="pETH"
+            symbol={shareSymbol}
             selectedAssetIcon={<PropellerLogo size={24} />}
             modalDisabled
             value={amount}

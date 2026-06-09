@@ -21,13 +21,10 @@ import { useTranslation } from "react-i18next"
 import { AssetLogo } from "@/components/AssetLogo"
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 import {
-  ETH_ASSET_ID,
-  VAULT_ADDRESS,
-} from "@/modules/strategies/propeller/constants"
-import {
   usePropellerApy,
   useSubLoopStats,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 interface VaultStats {
   totalAssets: number
@@ -41,7 +38,8 @@ interface Props {
 
 export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  // totalAssets is denominated in ETH (the underlying); display it directly.
+  const vault = useActivePropellerVault()
+  // totalAssets is denominated in the collateral (the underlying); display directly.
   const tvl = vaultStats.totalAssets
   const { data: subLoop } = useSubLoopStats()
   const healthFactor = subLoop?.healthFactor ?? null
@@ -70,7 +68,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
               {t("common:currency", {
                 value: tvl,
-                symbol: "ETH",
+                symbol: vault.symbol,
                 maximumFractionDigits: 2,
               })}
             </Text>
@@ -142,7 +140,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             label={t("strategy.collateralAssetLabel")}
             content={
               <Flex align="center" gap="xs">
-                <AssetLogo id={ETH_ASSET_ID} size="small" />
+                <AssetLogo id={vault.assetId} size="small" />
                 <Text fs="p4" lh={1.5}>
                   {t("strategy.collateralAsset")}
                 </Text>
@@ -168,9 +166,12 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             content={
               <Text fs="p4" lh={1.5}>
                 <ExternalLink
-                  href={subscan.account(HYDRATION_CHAIN_KEY, VAULT_ADDRESS)}
+                  href={subscan.account(
+                    HYDRATION_CHAIN_KEY,
+                    vault.vaultAddress,
+                  )}
                 >
-                  {shortenAccountAddress(VAULT_ADDRESS)}
+                  {shortenAccountAddress(vault.vaultAddress)}
                   <Icon component={MoveUpRight} size="xs" />
                 </ExternalLink>
               </Text>
