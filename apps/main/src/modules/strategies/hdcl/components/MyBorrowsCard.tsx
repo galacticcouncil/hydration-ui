@@ -115,7 +115,6 @@ export const MyBorrowsCard = ({
                 color={getToken("accents.success.emphasis")}
               >
                 {t("common:percent", {
-                  prefix: netApyPercent >= 0 ? "+" : "",
                   value: netApyPercent,
                   maximumFractionDigits: 1,
                 })}

@@ -118,6 +118,7 @@
   "assets": "Assets",
   "liquidity": "Liquidity",
   "balance": "Balance",
+  "withdrawableBalance": "Withdrawable balance",
   "initialValue": "Initial value",
   "currentValue": "Current value",
   "withdraw": "Withdraw",

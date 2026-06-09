@@ -253,6 +253,9 @@ export const HdclVaultPage = () => {
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
         vaultStats={stats}
+        withdrawSource={withdrawSource}
+        poolPosition={poolPosition}
+        reserveConfig={reserveConfig}
         hdclBalance={
           withdrawSource === "raw"
             ? (userBalances.hdclRaw ?? 0)

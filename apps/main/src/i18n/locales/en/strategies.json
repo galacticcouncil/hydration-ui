@@ -43,7 +43,6 @@
   "hdcl.strategy.contractAddress": "Contract address",
   "hdcl.strategy.liquidationLtv": "Liquidation LTV",
 
-  "hdcl.positions.col.netApy": "Your net APY",
   "hdcl.positions.afterBorrow": "after borrow",
   "hdcl.positions.inclBorrow": "(incl. borrow)",
   "hdcl.positions.uncollateralised": "{{label}} (uncollateralised)",

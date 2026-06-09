@@ -13,7 +13,7 @@ import {
 import { useHdclVaultContract } from "@/modules/strategies/hdcl/hooks/useHdclVaultContract"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-type VaultStats = {
+export type VaultStats = {
   totalAssets: number
   totalSupply: number
   exchangeRate: number
@@ -302,28 +302,5 @@ export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
       })
       return vault.read.autoClaimEnabled([evmAddress])
     },
-    refetchInterval: 30_000,
-  })
-}
-
-export function useHollarAllowance(evmAddress: Hex | undefined) {
-  const { evm } = useRpcProvider()
-  return useQuery({
-    queryKey: ["hdcl-vault-allowance", evmAddress],
-    enabled: !!evmAddress,
-    queryFn: async () => {
-      if (!evmAddress) return 0
-      const hollarToken = getContract({
-        address: HOLLAR_ADDRESS,
-        abi: ERC20_ABI,
-        client: evm,
-      })
-      const allowance = await hollarToken.read.allowance([
-        evmAddress,
-        VAULT_ADDRESS,
-      ])
-      return Number(formatUnits(allowance, 18))
-    },
-    refetchInterval: 15_000,
   })
 }

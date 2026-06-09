@@ -143,7 +143,7 @@ export const MyPositionsCard = ({
                   wrap
                   size="small"
                   font="secondary"
-                  label={t("hdcl.positions.col.netApy")}
+                  label={t("common:apy")}
                   customValue={
                     <Text fs="p3" fw={500} lh={1}>
                       {t("common:percent", {
