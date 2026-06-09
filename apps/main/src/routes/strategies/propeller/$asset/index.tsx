@@ -1,26 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { getPageMeta } from "@/config/navigation"
-import { PropellerVaultProvider } from "@/modules/strategies/propeller/PropellerVaultContext"
-import { PropellerVaultPage } from "@/modules/strategies/propeller/PropellerVaultPage"
-import { getPropellerVault } from "@/modules/strategies/propeller/vaults"
-
+// Back-compat: per-asset links (/strategies/propeller/eth, /tbtc) now fold into
+// the single shared subpage, which selects the collateral via an in-page switcher.
 export const Route = createFileRoute("/strategies/propeller/$asset/")({
-  component: RouteComponent,
-  head: ({
-    match: {
-      context: { i18n },
-    },
-  }) => ({
-    meta: getPageMeta("strategiesPropeller", i18n.t),
-  }),
+  beforeLoad: () => {
+    throw redirect({ to: "/strategies/propeller" })
+  },
 })
-
-function RouteComponent() {
-  const { asset } = Route.useParams()
-  return (
-    <PropellerVaultProvider vault={getPropellerVault(asset)}>
-      <PropellerVaultPage />
-    </PropellerVaultProvider>
-  )
-}

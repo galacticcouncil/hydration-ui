@@ -142,7 +142,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
               <Flex align="center" gap="xs">
                 <AssetLogo id={vault.assetId} size="small" />
                 <Text fs="p4" lh={1.5}>
-                  {t("strategy.collateralAsset")}
+                  {vault.symbol}
                 </Text>
               </Flex>
             }

@@ -25,8 +25,40 @@ import {
   useDeposit,
   useRequestRedeem,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { PropellerVaultProvider } from "@/modules/strategies/propeller/PropellerVaultContext"
+import {
+  DEFAULT_PROPELLER_ASSET,
+  getPropellerVault,
+  type PropellerAsset,
+} from "@/modules/strategies/propeller/vaults"
 
+/**
+ * The single shared Propeller subpage. All collateral vaults (ETH, tBTC, …) live
+ * here; the active one is local state driven by the in-header collateral switcher
+ * and supplied to every read/write hook via PropellerVaultProvider. The content
+ * is keyed on `asset` so a switch cleanly remounts (resets transient UI state and
+ * re-queries against the new vault).
+ */
 export const PropellerVaultPage = () => {
+  const [asset, setAsset] = useState<PropellerAsset>(DEFAULT_PROPELLER_ASSET)
+
+  return (
+    <PropellerVaultProvider vault={getPropellerVault(asset)}>
+      <PropellerVaultContent
+        key={asset}
+        asset={asset}
+        onAssetChange={setAsset}
+      />
+    </PropellerVaultProvider>
+  )
+}
+
+type ContentProps = {
+  asset: PropellerAsset
+  onAssetChange: (asset: PropellerAsset) => void
+}
+
+const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
   const { account } = useAccount()
   const [showRedeemed, setShowRedeemed] = useState(false)
   const [showWithdraw, setShowWithdraw] = useState(false)
@@ -114,7 +146,7 @@ export const PropellerVaultPage = () => {
 
   return (
     <Stack gap="xxl">
-      <StrategyHeader />
+      <StrategyHeader asset={asset} onAssetChange={onAssetChange} />
 
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl" sx={{ order: [1, null, 0] }}>

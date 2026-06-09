@@ -47,6 +47,9 @@ export const PROPELLER_VAULTS: Record<PropellerAsset, PropellerVaultConfig> = {
 
 export const DEFAULT_PROPELLER_ASSET: PropellerAsset = "eth"
 
+/** Display order for the in-page collateral switcher (all vaults share one subpage). */
+export const PROPELLER_ASSET_ORDER: PropellerAsset[] = ["eth", "tbtc"]
+
 export const getPropellerVault = (key: string): PropellerVaultConfig =>
   PROPELLER_VAULTS[
     (key as PropellerAsset) in PROPELLER_VAULTS

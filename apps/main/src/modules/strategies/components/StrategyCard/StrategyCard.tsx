@@ -14,6 +14,7 @@ import { FileRouteTypes, Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
+import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 
 type BadgeProps = {
   label: string
@@ -50,6 +51,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         >
           {logoId === "decentral" ? (
             <DecentralLogo size={56} />
+          ) : logoId === "propeller" ? (
+            <PropellerLogo size={56} />
           ) : (
             <AssetLogo id={logoId} size="extra-large" />
           )}

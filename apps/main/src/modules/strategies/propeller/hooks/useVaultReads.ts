@@ -128,24 +128,30 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         ),
       ])
 
-      // leverage = loop collateral / loop equity. borrowExposure = the FULL
-      // HOLLAR borrow stack per unit of loop equity — HOLLAR is borrowed twice
-      // (the SubLoop's loop leg + the CollateralVault's Main leg), so BOTH legs'
-      // interest must be subtracted, not just (leverage − 1). borrowRate = the
-      // HOLLAR variable borrow rate (ray, 1e27) as a fraction. The PRIME supply
-      // leg of the carry is sourced from the money market's total supply APY.
-      let leverage: number | null = null
-      let borrowExposure: number | null = null
+      // loopLeverage = the SHARED SubLoop's collateral / equity — the same for
+      // every vault, since one SubLoop backs them all. mainLtv = THIS vault's
+      // own Main-leg LTV (its HOLLAR debt / its collateral). The two must be
+      // kept separate: attributing the loop's HOLLAR debt per-vault by the
+      // aggregate (the old borrowExposure) penalised the larger/higher-LTV vault
+      // as pure cost while crediting only the shared loop benefit — so a bigger
+      // tBTC position showed a LOWER APY than ETH, backwards. The real per-deposit
+      // carry is mainLtv·loopLeverage·(primeYield − borrowRate): set by the
+      // vault's own LTV, not its dollar size. borrowRate = HOLLAR variable borrow
+      // rate (ray, 1e27) as a fraction.
+      let loopLeverage: number | null = null
+      let mainLtv: number | null = null
       let borrowRate: number | null = null
       if (account) {
         const loopColl = account[0]
         const loopDebt = account[1]
         const loopEquity = loopColl - loopDebt // totalCollateralBase − totalDebtBase
-        if (loopEquity > 0n) {
-          leverage = Number(loopColl) / Number(loopEquity)
-          const mainDebt = vaultAccount ? vaultAccount[1] : 0n // vault's HOLLAR debt
-          borrowExposure = Number(loopDebt + mainDebt) / Number(loopEquity)
-        }
+        if (loopEquity > 0n)
+          loopLeverage = Number(loopColl) / Number(loopEquity)
+      }
+      if (vaultAccount) {
+        const vaultColl = vaultAccount[0] // this vault's collateral (base ccy)
+        const mainDebt = vaultAccount[1] // this vault's HOLLAR debt
+        if (vaultColl > 0n) mainLtv = Number(mainDebt) / Number(vaultColl)
       }
       if (hollarRes) {
         borrowRate = Number(hollarRes.currentVariableBorrowRate) / 1e27
@@ -157,8 +163,8 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),
         totalEquity:
           totalEquity === null ? null : Number(formatUnits(totalEquity, 18)),
-        leverage,
-        borrowExposure,
+        leverage: loopLeverage,
+        mainLtv,
         borrowRate,
       }
     },
@@ -167,14 +173,17 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
 }
 
 /**
- * Live net APY for the loop = leveraged PRIME supply yield minus the FULL HOLLAR
- * borrow cost:  primeYield·leverage − borrowRate·borrowExposure
- * where borrowExposure counts BOTH HOLLAR legs (loop + the vault's Main leg) per
- * unit of loop equity — HOLLAR is borrowed twice, so (leverage − 1) alone
- * understates the cost. PRIME yield = the money market's total PRIME supply APY
- * (Aave base + Kamino external + farms), the same number the borrow page shows.
- * Returns null — never 0 or negative — when an input is missing or the carry
- * isn't positive, so the UI can simply hide it.
+ * Live net APY on the deposit = mainLtv·loopLeverage·(primeYield − borrowRate).
+ *
+ * Derivation: a deposit of collateral C borrows mainLtv·C of HOLLAR (the Main
+ * leg), which seeds the shared SubLoop and is levered loopLeverage×. Per unit of
+ * C the loop holds mainLtv·loopLeverage of PRIME (earning primeYield) and owes
+ * the same notional of HOLLAR (costing borrowRate), so the net carry on the
+ * DEPOSIT is mainLtv·loopLeverage·(primeYield − borrowRate). This is the honest
+ * yield-on-collateral; it rises with the vault's own LTV (so tBTC at 80% > ETH at
+ * 75%) and is independent of position size. PRIME yield = the money market's
+ * total PRIME supply APY (Aave base + Kamino + farms). Returns null — never 0 or
+ * negative — when an input is missing or the carry isn't positive.
  */
 export function usePropellerApy(
   override?: PropellerVaultConfig,
@@ -185,20 +194,20 @@ export function usePropellerApy(
     (a) => a.assetId === PRIME_ASSET_ID,
   )?.totalSupplyApy
 
-  const leverage = subLoop?.leverage ?? null
-  const borrowExposure = subLoop?.borrowExposure ?? null
+  const loopLeverage = subLoop?.leverage ?? null
+  const mainLtv = subLoop?.mainLtv ?? null
   const borrowRate = subLoop?.borrowRate ?? null
   if (
-    leverage === null ||
-    borrowExposure === null ||
+    loopLeverage === null ||
+    mainLtv === null ||
     borrowRate === null ||
     primeSupplyApy === undefined
   ) {
     return null
   }
   const primeYield = primeSupplyApy / 100 // percent → fraction
-  const apr = primeYield * leverage - borrowRate * borrowExposure
-  // return a PERCENT number (e.g. 11.7), the form `common:percent` expects
+  const apr = mainLtv * loopLeverage * (primeYield - borrowRate)
+  // return a PERCENT number (e.g. 9.4), the form `common:percent` expects
   // (it divides by 100 internally). null — never 0/negative — so the UI hides it.
   return apr > 0 ? apr * 100 : null
 }
