@@ -102,7 +102,7 @@
   "gigaStaking.realizeYield.toasts.success": "Yield realized",
   "gigaStaking.tabs.stake": "Stake",
   "gigaStaking.tabs.unstake": "Unstake",
-   "gigaStaking.projectedAPR.base.tooltip": "<0>Base APR</0> is shared automatically by GIGAHDX holders.",
+   "gigaStaking.projectedAPR.base.tooltip": "<0>Base APR</0> is applied automatically for GIGAHDX holders.",
    "gigaStaking.projectedAPR.voting.tooltip": "<0>Voting APR</0> applies only when you vote and assumes Locked 6x conviction.",
   "governance.title": "Your voting power",
   "governance.description": "Vote with GIGAHDX or GIGAHDX+HDX. Not possible to vote with only HDX if you have GIGAHDX.",

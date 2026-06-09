@@ -2,7 +2,6 @@ import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { isGho } from "@galacticcouncil/money-market/utils"
 import {
   Flex,
-  LinkTextButton,
   Stack,
   Text,
   Tooltip,
@@ -31,7 +30,6 @@ import {
   gigaStakeConstantsQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
-import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -227,10 +225,6 @@ export const ProjectedAPRTooltipContent = () => {
 
   return (
     <Flex direction="column" gap="m">
-      <Text fw={600} fs="p6" lh={1.4} color={getToken("text.high")}>
-        {lines[0]}
-      </Text>
-
       <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
         <Trans t={t} i18nKey="gigaStaking.projectedAPR.base.tooltip">
           <Text fw={600} />
@@ -246,10 +240,6 @@ export const ProjectedAPRTooltipContent = () => {
       <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
         {lines[3]}
       </Text>
-
-      <LinkTextButton href={STAKING_DOCS_LINK} direction="internal">
-        {t("dashboard.projectedAPR.tooltip.docs")}
-      </LinkTextButton>
     </Flex>
   )
 }
