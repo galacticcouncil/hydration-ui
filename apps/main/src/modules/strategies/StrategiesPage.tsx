@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
+import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { useHdclStrategyMetrics } from "@/modules/strategies/hdcl/hooks/useHdclStrategyMetrics"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
@@ -36,10 +37,7 @@ export const StrategiesPage = () => {
               isLoading: isHdclMetricsLoading,
             },
           ]}
-          badges={[
-            { label: "Partnership", variant: "green" },
-            { label: "RWA", variant: "purple" },
-          ]}
+          badges={[StrategyBadgeType.Partnership, StrategyBadgeType.RWA]}
           description={t("strategies:cards.hdcl.description")}
           link={LINKS.strategiesHdcl}
         />
@@ -59,7 +57,7 @@ export const StrategiesPage = () => {
                     : "-",
               },
             ]}
-            badges={[{ label: "Fixed Yield", variant: "info" }]}
+            badges={[StrategyBadgeType.FixedYield]}
             description={t("strategies:cards.hollarBonds.description")}
             link={LINKS.strategiesHollarBonds}
           />

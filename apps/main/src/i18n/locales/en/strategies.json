@@ -3,6 +3,12 @@
   "details.title": "Strategy details",
   "position.title": "My position",
 
+  "badge.rwa": "RWA",
+  "badge.partnership": "Partnership",
+  "badge.fixedYield": "Fixed Yield",
+  "badge.leverage": "Leverage",
+  "badge.noLiquidation": "No Liquidation",
+
   "cards.hdcl.title": "Decentral",
   "cards.hdcl.description": "Decentral is revolutionizing the payment process for creators, influencers, agencies, and production companies in Brazil.",
   "cards.hollarBonds.title": "HOLLAR Bonds",
