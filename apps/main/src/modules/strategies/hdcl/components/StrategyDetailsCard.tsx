@@ -31,12 +31,12 @@ type StrategyDetailsCardProps = {
 export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
   metrics,
 }) => {
-  const { t } = useTranslation(["hdcl", "common"])
+  const { t } = useTranslation(["strategies", "borrow", "common"])
   return (
     <Paper>
       <Box p="l">
         <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("strategy.title")}
+          {t("details.title")}
         </Text>
       </Box>
       <Separator />
@@ -44,7 +44,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
       <Flex justify="space-between" gap="l" mb="l" p="l" wrap>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.tvl")}
+            {t("hdcl.strategy.tvl")}
           </Text>
           <Flex align="center" gap="s" mt="xs">
             <DecentralLogo size={28} />
@@ -55,7 +55,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
         </Box>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.maxNetApy")}
+            {t("hdcl.strategy.maxNetApy")}
           </Text>
           <Text
             font="primary"
@@ -72,7 +72,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
         </Box>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.yieldCycle")}
+            {t("hdcl.strategy.yieldCycle")}
           </Text>
           <Text
             font="primary"
@@ -81,7 +81,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             color={getToken("text.high")}
             mt="xs"
           >
-            {t("strategy.yieldCycleValue")}
+            {t("hdcl.strategy.yieldCycleValue")}
           </Text>
         </Box>
       </Flex>
@@ -91,12 +91,12 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
       <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]} p="l">
         <Box>
           <SummaryRow
-            label={t("strategy.collateralAssetLabel")}
+            label={t("hdcl.strategy.collateralAssetLabel")}
             content={
               <Flex align="center" gap="xs">
                 <DecentralLogo size={20} />
                 <Text fs="p4" lh={1.5}>
-                  {t("strategy.collateralAsset")}
+                  {t("hdcl.strategy.collateralAsset")}
                 </Text>
               </Flex>
             }
@@ -105,7 +105,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
         </Box>
         <Box>
           <SummaryRow
-            label={t("strategy.maxLtv")}
+            label={t("borrow:maxLTV")}
             content={
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {
@@ -119,12 +119,12 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
         </Box>
         <Box>
           <SummaryRow
-            label={t("strategy.debtAssetLabel")}
+            label={t("hdcl.strategy.debtAssetLabel")}
             content={
               <Flex align="center" gap="xs">
                 <AssetLogo id={HOLLAR_ASSET_ID} size="small" />
                 <Text fs="p4" lh={1.5}>
-                  {t("strategy.debtAsset")}
+                  {t("hdcl.strategy.debtAsset")}
                 </Text>
               </Flex>
             }
@@ -133,7 +133,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
         </Box>
         <Box>
           <SummaryRow
-            label={t("strategy.liquidationLtv")}
+            label={t("hdcl.strategy.liquidationLtv")}
             content={
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {
@@ -147,7 +147,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
         </Box>
         <Box>
           <SummaryRow
-            label={t("strategy.contractAddress")}
+            label={t("hdcl.strategy.contractAddress")}
             content={
               <Text fs="p4" lh={1.5}>
                 <ExternalLink

@@ -70,7 +70,7 @@ export const WithdrawMethodPicker = ({
   instantQuote,
   instantAvailable,
 }: Props) => {
-  const { t } = useTranslation(["hdcl", "common"])
+  const { t } = useTranslation(["strategies", "common"])
 
   const projectedRate = projectRate(exchangeRate, aprPercent, worstCaseWaitDays)
   const queueHollarOut = amountHdcl * projectedRate
@@ -82,10 +82,12 @@ export const WithdrawMethodPicker = ({
         onClick={() => onSelect("queue")}
       >
         <CardHeader
-          title={t("method.queue.title")}
-          subtitle={t("method.queue.subtitle")}
+          title={t("hdcl.method.queue.title")}
+          subtitle={t("hdcl.method.queue.subtitle")}
           icon={Hourglass}
-          rightChip={t("method.queue.upToDays", { days: worstCaseWaitDays })}
+          rightChip={t("hdcl.method.queue.upToDays", {
+            days: worstCaseWaitDays,
+          })}
           rightChipVariant="secondary"
         />
         <CollapsibleRoot open={selected === "queue" && queueHollarOut > 0}>
@@ -96,15 +98,15 @@ export const WithdrawMethodPicker = ({
               sx={{ opacity: 0.1 }}
             />
             <DetailRow
-              label={t("method.queue.youReceive")}
+              label={t("hdcl.method.queue.youReceive")}
               value={t("common:currency", {
                 value: queueHollarOut,
                 symbol: "HOLLAR",
               })}
             />
             <DetailRow
-              label={t("method.queue.atRate")}
-              value={t("method.queue.atRateValue", {
+              label={t("hdcl.method.queue.atRate")}
+              value={t("hdcl.method.queue.atRateValue", {
                 rate: t("common:number", {
                   value: projectedRate,
                   maximumFractionDigits: 4,
@@ -112,8 +114,8 @@ export const WithdrawMethodPicker = ({
               })}
             />
             <DetailRow
-              label={t("method.queue.delay")}
-              value={t("method.queue.delayValue")}
+              label={t("hdcl.method.queue.delay")}
+              value={t("hdcl.method.queue.delayValue")}
             />
           </CollapsibleContent>
         </CollapsibleRoot>
@@ -125,14 +127,14 @@ export const WithdrawMethodPicker = ({
         disabled={!instantAvailable}
       >
         <CardHeader
-          title={t("method.instant.title")}
+          title={t("hdcl.method.instant.title")}
           icon={Zap}
           subtitle={
             instantAvailable
-              ? t("method.instant.subtitleAvailable")
-              : t("method.instant.subtitleUnavailable")
+              ? t("hdcl.method.instant.subtitleAvailable")
+              : t("hdcl.method.instant.subtitleUnavailable")
           }
-          rightChip={t("method.instant.chip")}
+          rightChip={t("hdcl.method.instant.chip")}
           rightChipVariant="primary"
         />
         <CollapsibleRoot open={selected === "instant" && !!instantQuote}>
@@ -149,14 +151,14 @@ export const WithdrawMethodPicker = ({
                     earlier "-2.8% discount" abstract — users found it easier
                     to reason about real numbers than a percentage. */}
                 <DetailRow
-                  label={t("method.instant.youReceiveNow")}
+                  label={t("hdcl.method.instant.youReceiveNow")}
                   value={t("common:currency", {
                     value: instantQuote.expectedHollar,
                     symbol: "HOLLAR",
                   })}
                 />
                 <DetailRow
-                  label={t("method.instant.youReceiveQueue", {
+                  label={t("hdcl.method.instant.youReceiveQueue", {
                     days: worstCaseWaitDays,
                   })}
                   value={t("common:currency", {
@@ -165,7 +167,7 @@ export const WithdrawMethodPicker = ({
                   })}
                 />
                 <DetailRow
-                  label={t("method.instant.difference")}
+                  label={t("hdcl.method.instant.difference")}
                   value={(() => {
                     const delta = instantQuote.expectedHollar - queueHollarOut
                     const sign = delta >= 0 ? "+" : ""
@@ -184,7 +186,7 @@ export const WithdrawMethodPicker = ({
                   }
                 />
                 <DetailRow
-                  label={t("method.instant.slippage")}
+                  label={t("hdcl.method.instant.slippage")}
                   value={t("common:percent", {
                     value: instantQuote.slippagePct,
                   })}

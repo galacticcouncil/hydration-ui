@@ -54,7 +54,7 @@ export const WithdrawModal = ({
   instantAvailable,
   isPending,
 }: Props) => {
-  const { t } = useTranslation(["hdcl", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const [amount, setAmount] = useState("")
   const [method, setMethod] = useState<WithdrawMethod>("queue")
   const [acknowledged, setAcknowledged] = useState(false)
@@ -89,22 +89,21 @@ export const WithdrawModal = ({
     (method === "queue" || (instantAvailable && !!onInstantRedeem))
 
   const ctaLabel = (() => {
-    if (isPending) return t("withdraw.cta.pending")
-    if (overBalance) return t("withdraw.cta.insufficient")
+    if (overBalance) return t("hdcl.withdraw.cta.insufficient")
     if (isBelowMin)
-      return t("withdraw.cta.belowMin", {
+      return t("hdcl.withdraw.cta.belowMin", {
         symbol: "HDCL",
         value: vaultStats.minRedeem,
       })
     if (method === "instant" && !instantAvailable)
-      return t("withdraw.cta.unavailable")
-    return t("withdraw.cta.withdraw")
+      return t("hdcl.withdraw.cta.unavailable")
+    return t("common:withdraw")
   })()
 
   const amountError = overBalance
-    ? t("withdraw.cta.insufficient")
+    ? t("hdcl.withdraw.cta.insufficient")
     : isBelowMin
-      ? t("withdraw.cta.belowMin", {
+      ? t("hdcl.withdraw.cta.belowMin", {
           symbol: "HDCL",
           value: vaultStats.minRedeem,
         })
@@ -123,11 +122,11 @@ export const WithdrawModal = ({
       onOpenChange={onClose}
       disableInteractOutside
     >
-      <ModalHeader title={t("withdraw.title")} />
+      <ModalHeader title={t("hdcl.withdraw.title")} />
       <ModalBody noPadding>
         <Box px="xl">
           <AssetInput
-            label={t("withdraw.amount")}
+            label={t("common:amount")}
             symbol="HDCL"
             selectedAssetIcon={<HdclLogo size={24} />}
             modalDisabled
@@ -148,7 +147,7 @@ export const WithdrawModal = ({
 
         <Box px="xl" py="l">
           <Text fs="p5" fw={500} color={getToken("text.medium")} mb="m">
-            {t("withdraw.method")}
+            {t("hdcl.withdraw.method")}
           </Text>
           <WithdrawMethodPicker
             selected={method}
@@ -184,8 +183,8 @@ export const WithdrawModal = ({
                 onCheckedChange={(c) => setAcknowledged(!!c)}
               />
               {method === "instant"
-                ? t("withdraw.ackInstant")
-                : t("withdraw.ack")}
+                ? t("hdcl.withdraw.ackInstant")
+                : t("hdcl.withdraw.ack")}
             </Label>
           </Flex>
         </Box>

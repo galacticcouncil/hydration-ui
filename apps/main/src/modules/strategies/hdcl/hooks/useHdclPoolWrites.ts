@@ -99,7 +99,7 @@ function useHdclPoolEvmCall() {
  * generally.
  */
 export function useBorrowHollar() {
-  const { t } = useTranslation(["hdcl", "common"])
+  const { t } = useTranslation(["common"])
   const { evmAddress, submitTx } = useHdclPoolEvmCall()
 
   return useMutation({

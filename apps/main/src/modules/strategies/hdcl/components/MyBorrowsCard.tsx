@@ -53,7 +53,7 @@ export const MyBorrowsCard = ({
   onBorrow,
   onRepay,
 }: Props) => {
-  const { t } = useTranslation(["hdcl", "common"])
+  const { t } = useTranslation(["strategies", "borrow", "common"])
 
   const totalCollateralUsd = poolPosition?.totalCollateralUsd ?? 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
@@ -83,12 +83,12 @@ export const MyBorrowsCard = ({
     <Paper>
       <Flex align="center" justify="space-between" p="l" gap="s" wrap>
         <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("borrows.title")}
+          {t("hdcl.borrows.title")}
         </Text>
         <Flex align="center" gap="l">
           <Flex align="center" gap="xs">
             <Text fs="p5" color={getToken("text.medium")}>
-              {t("borrows.healthFactor")}:
+              {t("common:healthFactor")}:
             </Text>
             <Text fs="p4" fw={600} color={hfColorToken(healthFactor)}>
               {formatHf(healthFactor)}
@@ -96,7 +96,7 @@ export const MyBorrowsCard = ({
           </Flex>
           <Flex align="center" gap="xs">
             <Text fs="p5" color={getToken("text.medium")}>
-              {t("borrows.borrowApy")}:
+              {t("common:borrowApy")}:
             </Text>
             <Text fs="p4" fw={600} color={getToken("text.high")}>
               {t("common:percent", {
@@ -107,7 +107,7 @@ export const MyBorrowsCard = ({
           {hasCollateral && (
             <Flex align="center" gap="xs">
               <Text fs="p5" color={getToken("text.medium")}>
-                {t("borrows.netApy")}:
+                {t("borrow:netApy")}:
               </Text>
               <Text
                 fs="p4"
@@ -133,18 +133,18 @@ export const MyBorrowsCard = ({
             <ValueStats
               wrap
               size="medium"
-              label={t("borrows.debt")}
+              label={t("borrow:debt")}
               value={t("common:currency", {
                 value: totalDebtUsd,
-                symbol: t("borrows.unit"),
+                symbol: t("hdcl.borrows.unit"),
               })}
-              bottomLabel={t("borrows.borrowingPowerUsed", {
+              bottomLabel={t("hdcl.borrows.borrowingPowerUsed", {
                 value: borrowingPowerUsedPct,
               })}
             />
             <Box mt="m">
               <Button variant="secondary" onClick={onRepay} disabled={!hasDebt}>
-                {t("borrows.repay")}
+                {t("borrow:repay")}
               </Button>
             </Box>
           </SBorrowPanel>
@@ -155,10 +155,10 @@ export const MyBorrowsCard = ({
             <ValueStats
               wrap
               size="medium"
-              label={t("borrows.available")}
+              label={t("borrow:borrow.available")}
               value={t("common:currency", {
                 value: availableUsd,
-                symbol: t("borrows.unit"),
+                symbol: t("hdcl.borrows.unit"),
               })}
             />
             <Box mt="m">
@@ -167,7 +167,7 @@ export const MyBorrowsCard = ({
                 onClick={onBorrow}
                 disabled={!hasCollateral || availableUsd <= 0}
               >
-                {t("borrows.borrow")}
+                {t("borrow:borrow")}
               </Button>
             </Box>
           </SBorrowPanel>

@@ -64,7 +64,7 @@ export const WithdrawalsCard = ({
   onAutoClaimChange,
   isAutoClaimUpdating,
 }: Props) => {
-  const { t } = useTranslation("hdcl")
+  const { t } = useTranslation(["strategies", "common"])
   const { isMobile, isTablet } = useBreakpoints()
 
   const visibleRows = useMemo(() => {
@@ -93,12 +93,12 @@ export const WithdrawalsCard = ({
     <Paper>
       <Flex justify="space-between" align="center" p="l" wrap gap="m">
         <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("withdrawals.title")}
+          {t("hdcl.withdrawals.title")}
         </Text>
         <Flex align="center" gap="l" wrap>
           <Flex align="center" gap="base">
             <Text fs="p5" color={getToken("text.medium")}>
-              {t("withdrawals.autoClaim")}
+              {t("hdcl.withdrawals.autoClaim")}
             </Text>
             <Toggle
               size="medium"
@@ -110,7 +110,7 @@ export const WithdrawalsCard = ({
           </Flex>
           <Flex align="center" gap="base">
             <Text fs="p5" color={getToken("text.medium")}>
-              {t("withdrawals.showRedeemed")}
+              {t("hdcl.withdrawals.showRedeemed")}
             </Text>
             <Toggle
               size="medium"
@@ -126,8 +126,8 @@ export const WithdrawalsCard = ({
         <Box px="l" py="xl">
           <Text fs="p4" color={getToken("text.low")}>
             {showRedeemed
-              ? t("withdrawals.empty.all")
-              : t("withdrawals.empty.pending")}
+              ? t("hdcl.withdrawals.empty.all")
+              : t("hdcl.withdrawals.empty.pending")}
           </Text>
         </Box>
       ) : isMobile || isTablet ? (

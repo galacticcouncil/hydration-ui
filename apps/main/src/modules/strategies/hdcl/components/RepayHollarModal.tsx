@@ -33,7 +33,7 @@ export const RepayHollarModal = ({
   onRepay,
   isPending,
 }: Props) => {
-  const { t } = useTranslation(["hdcl", "borrow", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const [amount, setAmount] = useState("")
 
   const { getAssetWithFallback } = useAssets()
@@ -55,27 +55,26 @@ export const RepayHollarModal = ({
     inputNum > 0 && !overDebt && !overWallet && !isPending && totalDebtUsd > 0
 
   const ctaLabel = (() => {
-    if (isPending) return t("repay.cta.pending")
-    if (overDebt) return t("repay.cta.exceeds")
-    if (overWallet) return t("repay.cta.insufficient")
-    return t("repay.cta.repay")
+    if (overDebt) return t("hdcl.repay.cta.exceeds")
+    if (overWallet) return t("hdcl.repay.cta.insufficient")
+    return t("hdcl.repay.cta.repay")
   })()
 
   const amountError = overDebt
-    ? t("repay.cta.exceeds")
+    ? t("hdcl.repay.cta.exceeds")
     : overWallet
-      ? t("repay.cta.insufficient")
+      ? t("hdcl.repay.cta.insufficient")
       : undefined
 
   return (
     <Modal variant="popup" open={open} onOpenChange={(o) => !o && onClose()}>
-      <ModalHeader title={t("repay.title")} />
+      <ModalHeader title={t("hdcl.repay.title")} />
 
       <ModalBody noPadding>
         <Box px="xl" py="l">
           <AssetInput
             sx={{ p: 0 }}
-            label={t("repay.amount")}
+            label={t("common:amount")}
             symbol={hollar.symbol}
             selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
             modalDisabled
