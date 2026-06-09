@@ -8,11 +8,16 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { millisecondsToHours } from "date-fns"
+import { FC, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
+import { MigrateConfirmationModal } from "@/modules/staking/gigaStaking/MigrateConfirmationModal"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
 export type GigaStakingMigrationProps = {
@@ -22,8 +27,17 @@ export type GigaStakingMigrationProps = {
 export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
   stakeAmount,
 }) => {
+  const [isMigrateConfirmationModalOpen, setIsMigrateConfirmationModalOpen] =
+    useState(false)
   const { t } = useTranslation("staking")
   const { native } = useAssets()
+  const rpc = useRpcProvider()
+
+  const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
+  const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
+  const cooldownPeriodDays = cooldownPeriod
+    ? millisecondsToHours(cooldownPeriod * rpc.slotDurationMs) / 24
+    : undefined
 
   const stakedAmountHuman = toDecimal(stakeAmount.toString(), native.decimals)
 
@@ -54,7 +68,10 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
           <Trans
             t={t}
             i18nKey="gigaStakingMigration.lead"
-            values={{ amount: stakedAmountHuman }}
+            values={{
+              amount: stakedAmountHuman,
+              days: cooldownPeriodDays ?? "-",
+            }}
             components={[
               <Text
                 key="giga-migration-amount"
@@ -63,9 +80,11 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
                 lh="m"
                 color={getToken("colors.azureBlue.400")}
               />,
+              <br key="giga-migration-br" />,
             ]}
           />
         </Text>
+
         <Text as="p" fs="p2" lh="m" color={getToken("text.medium")} mb={0}>
           {t("gigaStakingMigration.followUp")}
         </Text>
@@ -75,11 +94,16 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
           size="large"
           width="100%"
           disabled={mutation.isPending}
-          onClick={() => mutation.mutate(stakeAmount.toString())}
+          onClick={() => setIsMigrateConfirmationModalOpen(true)}
         >
           {t("gigaStakingMigration.cta")}
         </Button>
       </Flex>
+      <MigrateConfirmationModal
+        open={isMigrateConfirmationModalOpen}
+        onClose={() => setIsMigrateConfirmationModalOpen(false)}
+        onConfirm={() => mutation.mutate(stakeAmount.toString())}
+      />
     </Paper>
   )
 }
