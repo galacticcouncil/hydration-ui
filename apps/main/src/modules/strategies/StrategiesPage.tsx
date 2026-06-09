@@ -6,6 +6,7 @@ import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { ETH_ASSET_ID } from "@/modules/strategies/propeller/constants"
+import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -15,6 +16,7 @@ export const StrategiesPage = () => {
   const bondId = HOLLAR_BOND_25_08_26_ID
   const { timeLeft } = useBondData(bondId)
   const bondApr = getBondApr(bondId, timeLeft)
+  const propellerApy = usePropellerApy() // live net carry; null until positive
 
   return (
     <>
@@ -40,9 +42,14 @@ export const StrategiesPage = () => {
           logoId={ETH_ASSET_ID}
           title={t("strategies:cards.propeller.title")}
           stats={[
-            // Propeller has no on-chain APR feed yet (see useVaultReads); show
-            // "-" rather than a fabricated figure, matching the hollar-bonds card.
-            { label: t("apy"), value: "-" },
+            // live net APY (usePropellerApy); "-" until the carry is positive.
+            {
+              label: t("apy"),
+              value:
+                propellerApy !== null
+                  ? t("common:percent", { value: propellerApy })
+                  : "-",
+            },
           ]}
           badges={[
             { label: "Leverage", variant: "accent" },
