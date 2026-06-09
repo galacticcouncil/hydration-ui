@@ -3,11 +3,17 @@ import {
   FormatterFn,
   MoneyMarketTxFn,
 } from "@galacticcouncil/money-market/types"
+import {
+  AaveV3HydrationMainnet,
+  AaveV3HydrationTestnet,
+} from "@galacticcouncil/money-market/ui-config"
 import { CustomMarket } from "@galacticcouncil/money-market/utils"
+import { Modal } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { TFunction } from "i18next"
-import { PropsWithChildren, useCallback, useMemo } from "react"
+import { PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { prop } from "remeda"
 
 import { TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY } from "@/api/aave"
 import { neckworkClient } from "@/api/neckwork"
@@ -16,11 +22,15 @@ import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
 import { useMoneyMarketPostTxRefresh } from "@/modules/borrow/hooks/useMoneyMarketPostTxRefresh"
+import { createSwapRateProvider } from "@/modules/borrow/swap/createSwapRateProvider"
+import { SwapSettingsModal } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SwapSettingsModal"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useMaxBalance } from "@/modules/transactions/hooks/useMaxBalance"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useDisplayAssetStore } from "@/states/displayAsset"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 
 const defaultMarketByEnv: Record<TDataEnv, CustomMarket> = {
@@ -42,13 +52,43 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const { t } = useTranslation(["common"])
+  const [isSlippageModalOpen, setSlippageModalOpen] = useState(false)
+  const swapSlippage = useTradeSettings((s) => s.swap.single.swapSlippage)
   const { createTransaction } = useTransactionsStore()
   const createBatchTx = useCreateBatchTx()
-  const { evm, dataEnv, papi } = useRpcProvider()
-  const { getRelatedAToken } = useAssets()
+  const { evm, dataEnv, papi, sdk } = useRpcProvider()
+  const { getAsset, getRelatedAToken, isErc20AToken } = useAssets()
   const { market } = useSearch({ from: "/borrow" })
 
   const selectedMarket = market || defaultMarketByEnv[dataEnv]
+  const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
+
+  const ghoTokenAddress =
+    dataEnv === "mainnet"
+      ? AaveV3HydrationMainnet.GHO_TOKEN_ADDRESS
+      : AaveV3HydrationTestnet.GHO_TOKEN_ADDRESS
+
+  const swapRateProvider = useMemo(
+    () =>
+      createSwapRateProvider({
+        sdk,
+        getAsset,
+        getRelatedAToken,
+        isErc20AToken,
+        stableCoinId,
+        createTransaction,
+        ghoTokenAddress,
+      }),
+    [
+      sdk,
+      getAsset,
+      getRelatedAToken,
+      isErc20AToken,
+      stableCoinId,
+      createTransaction,
+      ghoTokenAddress,
+    ],
+  )
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts, activity }, options, withExtraGas) => {
@@ -101,9 +141,19 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
         formatReserve={formatReserve}
         externalApyData={externalApyData}
         getRelatedATokenId={getRelatedATokenId}
+        swapSlippage={swapSlippage}
+        onSwapModalOpenChange={setSlippageModalOpen}
+        swapRateProvider={swapRateProvider}
       >
         <MoneyMarketPostTxRefresh />
         {children}
+        <Modal
+          variant="popup"
+          open={isSlippageModalOpen}
+          onOpenChange={setSlippageModalOpen}
+        >
+          <SwapSettingsModal />
+        </Modal>
       </MoneyMarketProvider>
     </ApyProvider>
   )
