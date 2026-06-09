@@ -1,3 +1,4 @@
+import { calculateHealthFactorFromBalancesBigUnits } from "@aave/math-utils"
 import type {
   ComputedReserveData,
   ComputedUserReserveData,
@@ -98,5 +99,61 @@ export const getHdclWithdrawHealthFactor = (
   return formatHealthFactorResult({
     currentHF: currentHealthFactor,
     futureHF: healthFactorAfterWithdraw.toString(),
+  })
+}
+
+const toHdclHealthFactor = (healthFactor: number) =>
+  healthFactor === Infinity ? "-1" : healthFactor.toString()
+
+const toHdclLiquidationThreshold = (liquidationThresholdPct: number) =>
+  (liquidationThresholdPct / 100).toString()
+
+export const getHdclBorrowHealthFactor = (
+  poolPosition: HdclPoolPosition,
+  borrowAmountUsd: number,
+): HealthFactorResult => {
+  const newHealthFactor = calculateHealthFactorFromBalancesBigUnits({
+    collateralBalanceMarketReferenceCurrency:
+      poolPosition.totalCollateralUsd.toString(),
+    borrowBalanceMarketReferenceCurrency: Big(poolPosition.totalDebtUsd)
+      .plus(borrowAmountUsd)
+      .toString(),
+    currentLiquidationThreshold: toHdclLiquidationThreshold(
+      poolPosition.liquidationThresholdPct,
+    ),
+  })
+
+  return formatHealthFactorResult({
+    currentHF: toHdclHealthFactor(poolPosition.healthFactor),
+    futureHF: newHealthFactor.toString(),
+  })
+}
+
+export const getHdclRepayHealthFactor = (
+  poolPosition: HdclPoolPosition,
+  repayAmountUsd: number,
+): HealthFactorResult => {
+  const remainingBorrowBalance = Big.max(
+    Big(poolPosition.totalDebtUsd).minus(repayAmountUsd),
+    0,
+  )
+
+  const calculatedHealthFactor = calculateHealthFactorFromBalancesBigUnits({
+    collateralBalanceMarketReferenceCurrency:
+      poolPosition.totalCollateralUsd.toString(),
+    borrowBalanceMarketReferenceCurrency: remainingBorrowBalance.toString(),
+    currentLiquidationThreshold: toHdclLiquidationThreshold(
+      poolPosition.liquidationThresholdPct,
+    ),
+  })
+
+  const futureHealthFactor =
+    calculatedHealthFactor.isLessThan(0) && !calculatedHealthFactor.eq(-1)
+      ? "0"
+      : calculatedHealthFactor.toString()
+
+  return formatHealthFactorResult({
+    currentHF: toHdclHealthFactor(poolPosition.healthFactor),
+    futureHF: futureHealthFactor,
   })
 }

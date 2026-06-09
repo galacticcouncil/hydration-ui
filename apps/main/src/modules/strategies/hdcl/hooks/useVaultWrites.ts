@@ -26,6 +26,7 @@ import {
   VAULT_ABI,
   VAULT_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
+import { HDCL_QUERY_KEY_PREFIX } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -37,26 +38,6 @@ interface BatchEvmCall {
   data: Hex
   abi: Abi
 }
-
-/**
- * Query keys to invalidate after any mutation that changes a user's redemption
- * state (request / cancel / claim / instant). These back the Withdrawals table
- * and the position/borrow cards.
- *
- * NOTE: TanStack Query matches by key PREFIX, element-by-element — so
- * `["hdcl-vault-queue"]` matches the address-scoped `["hdcl-vault-queue",
- * evmAddress]`, but the old generic `["hdcl-vault"]` matches NOTHING (no query
- * is keyed exactly `"hdcl-vault"`; the real keys are `"hdcl-vault-queue"`,
- * `"hdcl-vault-history"`, … which are different first elements). That mismatch
- * is why the table didn't refresh after a queue withdrawal.
- */
-const REDEMPTION_INVALIDATE_KEYS: string[][] = [
-  ["hdcl-vault-queue"],
-  ["hdcl-vault-history"],
-  ["hdcl-vault-balances"],
-  ["hdcl-vault-stats"],
-  ["hdcl-pool-position"],
-]
 
 function buildCancelResupplyCalls(
   requestId: number,
@@ -103,7 +84,7 @@ function useVaultEvmCall() {
       data: Hex,
       abi: Abi,
       toasts: { submitted: string; success: string },
-      invalidateKeys: string[][] = [["hdcl-vault-balances"]],
+      invalidateKeys: string[][] = [[HDCL_QUERY_KEY_PREFIX]],
     ) => {
       const gasPriceBase = await rpc.evm.getGasPrice()
       const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
@@ -197,7 +178,7 @@ function useVaultEvmCall() {
     async (
       calls: BatchEvmCall[],
       toasts: { submitted: string; success: string },
-      invalidateQueries: string[][] = [["hdcl-vault-balances"]],
+      invalidateQueries: string[][] = [[HDCL_QUERY_KEY_PREFIX]],
     ) => {
       const batchTx = await buildBatchTx(calls)
 
@@ -330,7 +311,7 @@ export function useDeposit() {
           submitted: `Depositing ${fmt}...`,
           success: `${fmt} deposited`,
         },
-        [["hdcl-vault-balances"], ["hdcl-vault-stats"], ["hdcl-pool-position"]],
+        [[HDCL_QUERY_KEY_PREFIX]],
       )
     },
   })
@@ -387,7 +368,7 @@ export function useRequestRedeem() {
           submitted: `Requesting ${fmt} withdrawal...`,
           success: `${fmt} withdrawal requested`,
         },
-        REDEMPTION_INVALIDATE_KEYS,
+        [[HDCL_QUERY_KEY_PREFIX]],
       )
     },
   })
@@ -478,7 +459,7 @@ export function useRequestRedeemRaw() {
           submitted: `Requesting ${fmt} withdrawal...`,
           success: `${fmt} withdrawal requested`,
         },
-        REDEMPTION_INVALIDATE_KEYS,
+        [[HDCL_QUERY_KEY_PREFIX]],
       )
     },
   })
@@ -535,7 +516,7 @@ export function useCancelRedeem() {
             submitted: "Cancelling withdrawal...",
             success: "Withdrawal cancelled",
           },
-          REDEMPTION_INVALIDATE_KEYS,
+          [[HDCL_QUERY_KEY_PREFIX]],
         )
       }
 
@@ -551,7 +532,7 @@ export function useCancelRedeem() {
           submitted: "Cancelling withdrawal...",
           success: "Withdrawal cancelled",
         },
-        REDEMPTION_INVALIDATE_KEYS,
+        [[HDCL_QUERY_KEY_PREFIX]],
       )
     },
   })
@@ -635,7 +616,7 @@ export function useInstantRedeemFromQueue() {
           success: `${fmt} redeemed for HOLLAR`,
           error: `Instant redeem failed`,
         },
-        invalidateQueries: REDEMPTION_INVALIDATE_KEYS,
+        invalidateQueries: [[HDCL_QUERY_KEY_PREFIX]],
       })
     },
   })
@@ -675,7 +656,7 @@ export function useClaim() {
           submitted: `Claiming ${fmt} → HOLLAR...`,
           success: `Claim sent`,
         },
-        REDEMPTION_INVALIDATE_KEYS,
+        [[HDCL_QUERY_KEY_PREFIX]],
       )
     },
   })
@@ -707,7 +688,7 @@ export function useSetAutoClaim() {
             : "Disabling auto-claim...",
           success: enabled ? "Auto-claim enabled" : "Auto-claim disabled",
         },
-        [["hdcl-vault-autoclaim"]],
+        [[HDCL_QUERY_KEY_PREFIX]],
       )
     },
   })

@@ -15,6 +15,7 @@ import {
   HDCL_POOL_ADDRESS,
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
+import { HDCL_QUERY_KEY_PREFIX } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -68,8 +69,7 @@ function useHdclPoolEvmCall() {
           tx: batchTx,
           toasts,
           invalidateQueries: [
-            ["hdcl-pool-position"],
-            ["hdcl-vault"],
+            [HDCL_QUERY_KEY_PREFIX],
             evmAccountBindingQuery(rpc, address).queryKey,
           ],
         })
@@ -79,8 +79,7 @@ function useHdclPoolEvmCall() {
         tx: evmCall,
         toasts,
         invalidateQueries: [
-          ["hdcl-pool-position"],
-          ["hdcl-vault"],
+          [HDCL_QUERY_KEY_PREFIX],
           evmAccountBindingQuery(rpc, address).queryKey,
         ],
       })

@@ -11,6 +11,7 @@ import {
   VAULT_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
 import { useHdclVaultContract } from "@/modules/strategies/hdcl/hooks/useHdclVaultContract"
+import { hdclQueryKeys } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type VaultStats = {
@@ -47,7 +48,7 @@ export function useVaultStats() {
   const { evm } = useRpcProvider()
   const { data: vault } = useHdclVaultContract()
   return useQuery({
-    queryKey: ["hdcl-vault-stats"],
+    queryKey: hdclQueryKeys.vaultStats(),
     enabled: !!vault,
     initialData: DEFAULT_VAULT_STATS,
     queryFn: async () => {
@@ -144,7 +145,7 @@ export function useVaultStats() {
 export function useUserBalances(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-balances", evmAddress],
+    queryKey: hdclQueryKeys.vaultBalances(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return { hollar: 0, hdcl: 0 }
@@ -230,7 +231,7 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 export function usePreviewDeposit(hollarAmount: number) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-preview-deposit", hollarAmount],
+    queryKey: hdclQueryKeys.vaultPreviewDeposit(hollarAmount),
     enabled: hollarAmount > 0,
     queryFn: async () => {
       const vault = getContract({
@@ -263,7 +264,7 @@ export function usePreviewDeposit(hollarAmount: number) {
 export function usePreviewRedeem(hdclAmount: number) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-preview-redeem", hdclAmount],
+    queryKey: hdclQueryKeys.vaultPreviewRedeem(hdclAmount),
     enabled: hdclAmount > 0,
     queryFn: async () => {
       const vault = getContract({
@@ -291,7 +292,7 @@ export function usePreviewRedeem(hdclAmount: number) {
 export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-autoclaim", evmAddress],
+    queryKey: hdclQueryKeys.vaultAutoclaim(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return false

@@ -1,11 +1,14 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
-  Box,
   Button,
   Modal,
   ModalBody,
+  ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Summary,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useEffect, useState } from "react"
@@ -13,6 +16,7 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import type { HdclPoolPosition } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
+import { getHdclRepayHealthFactor } from "@/modules/strategies/hdcl/utils/hf"
 import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
@@ -45,6 +49,9 @@ export const RepayHollarModal = ({
 
   const inputNum = parseFloat(amount) || 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
+  const healthFactor = poolPosition
+    ? getHdclRepayHealthFactor(poolPosition, inputNum)
+    : null
   // Repay max = min(walletHollar, debt) — can't repay more than you owe
   // and can't repay more than you hold.
   const maxRepay = Math.min(walletHollar, totalDebtUsd)
@@ -67,27 +74,43 @@ export const RepayHollarModal = ({
       : undefined
 
   return (
-    <Modal variant="popup" open={open} onOpenChange={(o) => !o && onClose()}>
+    <Modal
+      variant="popup"
+      open={open}
+      onOpenChange={onClose}
+      disableInteractOutside
+    >
       <ModalHeader title={t("hdcl.repay.title")} />
 
-      <ModalBody noPadding>
-        <Box px="xl" py="l">
-          <AssetInput
-            sx={{ p: 0 }}
-            label={t("common:amount")}
-            symbol={hollar.symbol}
-            selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-            modalDisabled
-            value={amount}
-            onChange={setAmount}
-            displayValue={t("common:currency", {
-              value: inputNum,
-            })}
-            maxBalance={maxRepay.toString()}
-            maxButtonBalance={maxRepay.toString()}
-            amountError={amountError}
-          />
-        </Box>
+      <ModalBody>
+        <AssetInput
+          sx={{ pt: 0 }}
+          label={t("common:amount")}
+          symbol={hollar.symbol}
+          selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
+          modalDisabled
+          value={amount}
+          onChange={setAmount}
+          displayValue={t("common:currency", {
+            value: inputNum,
+          })}
+          maxBalance={maxRepay.toString()}
+          maxButtonBalance={maxRepay.toString()}
+          amountError={amountError}
+        />
+
+        {healthFactor && totalDebtUsd > 0 && (
+          <Summary
+            withLeadingSeparator
+            separator={<ModalContentDivider />}
+            mb="var(--modal-content-inset)"
+          >
+            <SummaryRow
+              label={t("common:healthFactor")}
+              content={<HealthFactorChange {...healthFactor} />}
+            />
+          </Summary>
+        )}
       </ModalBody>
 
       <ModalFooter>

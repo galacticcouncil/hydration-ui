@@ -2,11 +2,12 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { getContract } from "viem"
 
 import { VAULT_ABI, VAULT_ADDRESS } from "@/modules/strategies/hdcl/constants"
+import { hdclQueryKeys } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const hdclVaultContractQuery = (rpc: TProviderContext) => {
   return queryOptions({
-    queryKey: ["hdcl-vault-contract"],
+    queryKey: hdclQueryKeys.vaultContract(),
     enabled: rpc.isLoaded,
     staleTime: Infinity,
     gcTime: Infinity,

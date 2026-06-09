@@ -10,6 +10,7 @@ import {
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
 import { useHdclPoolContract } from "@/modules/strategies/hdcl/hooks/useHdclPoolContract"
+import { hdclQueryKeys } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export interface HdclPoolPosition {
@@ -52,11 +53,11 @@ export interface HdclPoolPosition {
 export function useHdclPoolPosition(evmAddress: Hex | undefined) {
   const { data: pool } = useHdclPoolContract()
   return useQuery({
-    queryKey: ["hdcl-pool-position", evmAddress],
+    queryKey: hdclQueryKeys.poolPosition(evmAddress),
     // The HDCL Aave pool is the source of borrow / collateral data. On
     // networks that don't have the pool deployed yet (e.g. lark-2 vault-
     // only mode), short-circuit to keep the query inert instead of
-    // hammering the zero address with reverts every 30s.
+    // hammering the zero address with reverts.
     enabled: HDCL_HAS_AAVE_LAYER && !!evmAddress && !!pool,
     queryFn: async (): Promise<HdclPoolPosition> => {
       if (!evmAddress || !pool) {
@@ -93,7 +94,6 @@ export function useHdclPoolPosition(evmAddress: Hex | undefined) {
         hasCollateral: totalCollateralBase > 0n,
       }
     },
-    refetchInterval: 30_000,
   })
 }
 
@@ -128,7 +128,7 @@ export interface HdclReserveConfig {
 export function useHdclReserveConfig() {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-reserve-config"],
+    queryKey: hdclQueryKeys.reserveConfig(),
     enabled: HDCL_HAS_AAVE_LAYER,
     queryFn: async (): Promise<HdclReserveConfig> => {
       const pool = getContract({
@@ -162,6 +162,5 @@ export function useHdclReserveConfig() {
         borrowApyPct: borrowApy * 100,
       }
     },
-    refetchInterval: 60_000,
   })
 }

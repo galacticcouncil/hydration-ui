@@ -44,7 +44,6 @@
   "hdcl.strategy.liquidationLtv": "Liquidation LTV",
 
   "hdcl.positions.afterBorrow": "after borrow",
-  "hdcl.positions.inclBorrow": "(incl. borrow)",
   "hdcl.positions.uncollateralised": "{{label}} (uncollateralised)",
   "hdcl.positions.action.depositing": "Depositing...",
 

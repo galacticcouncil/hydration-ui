@@ -5,11 +5,12 @@ import {
   HDCL_POOL_ABI,
   HDCL_POOL_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
+import { hdclQueryKeys } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const hdclPoolContractQuery = (rpc: TProviderContext) => {
   return queryOptions({
-    queryKey: ["hdcl-pool-contract"],
+    queryKey: hdclQueryKeys.poolContract(),
     enabled: rpc.isLoaded,
     staleTime: Infinity,
     gcTime: Infinity,

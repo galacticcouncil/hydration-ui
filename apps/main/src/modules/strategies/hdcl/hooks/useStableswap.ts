@@ -7,6 +7,7 @@ import { useDebounce } from "use-debounce"
 import { bestSellQuery } from "@/api/trade"
 import type { InstantQuote } from "@/modules/strategies/hdcl/components/WithdrawMethodPicker"
 import { STABLESWAP_HDCL_ASSET_ID } from "@/modules/strategies/hdcl/constants"
+import { HDCL_QUERY_KEY_PREFIX } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -111,11 +112,7 @@ export function useInstantRedeem() {
           success: `${fmt} redeemed for HOLLAR`,
           error: `Instant redeem failed`,
         },
-        invalidateQueries: [
-          ["hdcl-vault-balances"],
-          ["hdcl-vault-stats"],
-          ["hdcl-pool-position"],
-        ],
+        invalidateQueries: [[HDCL_QUERY_KEY_PREFIX]],
       })
     },
   })
