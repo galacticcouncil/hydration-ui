@@ -59,7 +59,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   const { data: exchangeRate, isLoading: isExchangeRateLoading } =
     useGigaStakeExchangeRate()
 
-  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
+  const { data: gigaBorrowSummary, isSuccess } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
   // Convert user GIGAHDX × rate → HDX planck. Returns the default reference
   // when the user has no position (or no rate yet).
@@ -137,11 +137,17 @@ export const GigaStakeTotalsHeader: FC = () => {
         size="medium"
         label={t("staking:gigaStake.header.totalStake")}
         isLoading={isGigaPoolReservesLoading || isExchangeRateLoading}
-        value={t("currency.compact", {
-          value: totalSuppliedHdx,
-          symbol: native.symbol,
-        })}
-        bottomLabel={t("currency", { value: totalSuppliedUsd })}
+        value={
+          isSuccess
+            ? t("currency.compact", {
+                value: totalSuppliedHdx,
+                symbol: native.symbol,
+              })
+            : "-"
+        }
+        bottomLabel={
+          isSuccess ? t("currency", { value: totalSuppliedUsd }) : "-"
+        }
       />
       <Tooltip asChild={false} text={<ProjectedAPRTooltipContent />}>
         <ValueStats
@@ -180,10 +186,14 @@ export const GigaStakeTotalsHeader: FC = () => {
         size="medium"
         label={t("staking:gigaStake.header.availableToBorrow")}
         isLoading={isGigaPoolReservesLoading || isFacilitatorBucketLoading}
-        value={t("currency", {
-          value: availableToBorrow,
-          symbol: hollarSymbol,
-        })}
+        value={
+          isSuccess
+            ? t("currency", {
+                value: availableToBorrow,
+                symbol: hollarSymbol,
+              })
+            : "-"
+        }
       />
     </Stack>
   )

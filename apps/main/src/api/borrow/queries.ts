@@ -491,6 +491,7 @@ export const facilitatorBucketQuery = (
   ghoServiceContract: GhoService | null,
 ) =>
   queryOptions({
+    retry: false,
     queryKey: ["borrow", "gho", "facilitatorBucket", aTokenAddress],
     queryFn: async () => {
       if (!ghoServiceContract) throw new Error("Invalid ghoServiceContract")
@@ -508,7 +509,6 @@ export const facilitatorBucketQuery = (
         facilitatorBucketLevel: facilitatorBucketLevel,
       }
     },
-    retry: false,
     enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isApiLoaded,
   })
 
@@ -538,8 +538,13 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const address = givenAddress || account?.address || ""
   const evmAddress = safeConvertAnyToH160(address)
 
+  const isError = !!rpc.queryClient.getQueryState(
+    userGigaBorrowSummaryQueryKey(address),
+  )?.error
+
   return useQuery({
-    enabled: !!address,
+    retry: false,
+    enabled: !!address && !isError,
     queryKey: userGigaBorrowSummaryQueryKey(address),
     queryFn: async (): Promise<UserGigaBorrowSummary> => {
       if (!poolDataContract || !ghoServiceContract)
