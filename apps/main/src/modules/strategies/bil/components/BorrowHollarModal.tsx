@@ -37,7 +37,7 @@ export const BorrowHollarModal = ({
   onBorrow,
   isPending,
 }: Props) => {
-  const { t } = useTranslation(["bil", "borrow", "common"])
+  const { t } = useTranslation(["strategies", "borrow", "common"])
   const [amount, setAmount] = useState("")
 
   const { getAssetWithFallback } = useAssets()
@@ -89,12 +89,12 @@ export const BorrowHollarModal = ({
 
   return (
     <Modal variant="popup" open={open} onOpenChange={(o) => !o && onClose()}>
-      <ModalHeader title={t("borrow.title")} />
+      <ModalHeader title={t("bil.borrow.title")} />
 
       <ModalBody noPadding>
         <Box px="xl" py="l">
           <AssetInput
-            label={t("borrow.selectAsset")}
+            label={t("bil.borrow.selectAsset")}
             balanceLabel="Available"
             symbol="HOLLAR"
             selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} size="medium" />}
@@ -106,7 +106,9 @@ export const BorrowHollarModal = ({
             })}
             maxBalance={availableUsd.toString()}
             maxButtonBalance={availableUsd.toString()}
-            amountError={overAvailable ? t("borrow.cta.exceeds") : undefined}
+            amountError={
+              overAvailable ? t("bil.borrow.cta.exceeds") : undefined
+            }
           />
         </Box>
 
@@ -115,13 +117,13 @@ export const BorrowHollarModal = ({
         <Box px="xl" py="l">
           <Flex justify="space-between" align="center">
             <Text fs="p5" color={getToken("text.medium")}>
-              {t("borrow.healthFactor")}
+              {t("common:healthFactor")}
             </Text>
             <Flex align="baseline" gap="xs">
               <Text fs="p4" fw={600} color={hfColor}>
                 {hfText}
               </Text>
-              <Text fs="p6">{t("borrow.liquidationAt")}</Text>
+              <Text fs="p6">{t("bil.borrow.liquidationAt")}</Text>
             </Flex>
           </Flex>
         </Box>

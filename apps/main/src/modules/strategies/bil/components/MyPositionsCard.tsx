@@ -58,9 +58,9 @@ export const MyPositionsCard = ({
   onDepositRaw,
   isDepositingRaw,
 }: Props) => {
-  const { t } = useTranslation(["bil", "common"])
+  const { t } = useTranslation(["strategies", "borrow", "common"])
 
-  const collateralLabel = t("strategy.collateralAsset")
+  const collateralLabel = t("bil.strategy.collateralAsset")
   const hasSupplied = bilSupplied >= minDisplayBalance
   const hasRaw = bilRaw >= minDisplayBalance
 
@@ -82,7 +82,7 @@ export const MyPositionsCard = ({
   if (hasRaw) {
     rows.push({
       id: "raw",
-      label: t("positions.uncollateralised", { label: collateralLabel }),
+      label: t("bil.positions.uncollateralised", { label: collateralLabel }),
       amount: bilRaw,
       usdValue: bilRaw * exchangeRate,
       // Raw rows are not collateralised — net worth equals their face value.
@@ -96,7 +96,7 @@ export const MyPositionsCard = ({
     <Paper>
       <Box p="l">
         <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("positions.title")}
+          {t("common:myPositions")}
         </Text>
       </Box>
       <Separator />
@@ -112,7 +112,7 @@ export const MyPositionsCard = ({
                   wrap
                   size="small"
                   font="secondary"
-                  label={t("positions.col.amount")}
+                  label={t("common:amount")}
                   customValue={
                     <Text fs="p3" fw={500} lh={1}>
                       {t("common:currency", {
@@ -129,7 +129,7 @@ export const MyPositionsCard = ({
                   wrap
                   size="small"
                   font="secondary"
-                  label={t("positions.col.netWorth")}
+                  label={t("borrow:netWorth")}
                   customValue={
                     <Text fs="p3" fw={500} lh={1}>
                       {t("common:currency", {
@@ -137,13 +137,13 @@ export const MyPositionsCard = ({
                       })}
                     </Text>
                   }
-                  bottomLabel={t("positions.afterBorrow")}
+                  bottomLabel={t("bil.positions.afterBorrow")}
                 />
                 <ValueStats
                   wrap
                   size="small"
                   font="secondary"
-                  label={t("positions.col.netApy")}
+                  label={t("bil.positions.col.netApy")}
                   customValue={
                     <Text fs="p3" fw={500} lh={1}>
                       {t("common:percent", {
@@ -151,7 +151,7 @@ export const MyPositionsCard = ({
                       })}
                     </Text>
                   }
-                  bottomLabel={t("positions.inclBorrow")}
+                  bottomLabel={t("bil.positions.inclBorrow")}
                 />
               </>
             }
@@ -163,8 +163,8 @@ export const MyPositionsCard = ({
                     disabled={isDepositingRaw}
                   >
                     {isDepositingRaw
-                      ? t("positions.action.depositing")
-                      : t("positions.action.deposit")}
+                      ? t("bil.positions.action.depositing")
+                      : t("common:deposit")}
                   </MicroButton>
                 )}
                 <Button
@@ -172,7 +172,7 @@ export const MyPositionsCard = ({
                   size="small"
                   onClick={() => onWithdraw(row.id)}
                 >
-                  {t("positions.action.withdraw")}
+                  {t("common:withdraw")}
                 </Button>
               </>
             }

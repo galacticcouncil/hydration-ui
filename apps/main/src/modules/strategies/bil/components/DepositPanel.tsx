@@ -49,7 +49,7 @@ export const DepositPanel = ({
   onDeposit,
   isPending,
 }: Props) => {
-  const { t } = useTranslation(["bil", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { isConnected } = useAccount()
   const [amount, setAmount] = useState("")
   const { getAssetWithFallback } = useAssets()
@@ -81,20 +81,19 @@ export const DepositPanel = ({
   }
 
   const ctaLabel = (() => {
-    if (isPending) return t("deposit.cta.pending")
-    if (vaultStats.depositsPaused) return t("deposit.cta.paused")
+    if (vaultStats.depositsPaused) return t("bil.deposit.cta.paused")
     if (isBelowMin)
-      return t("deposit.cta.belowMin", {
+      return t("bil.deposit.cta.belowMin", {
         value: vaultStats.minDeposit,
         symbol: hollar.symbol,
       })
-    return t("deposit.cta.deposit")
+    return t("common:deposit")
   })()
 
   const amountError = overBalance
-    ? t("withdraw.cta.insufficient")
+    ? t("bil.withdraw.cta.insufficient")
     : isBelowMin
-      ? t("deposit.cta.belowMin", {
+      ? t("bil.deposit.cta.belowMin", {
           value: vaultStats.minDeposit,
           symbol: hollar.symbol,
         })
@@ -104,7 +103,7 @@ export const DepositPanel = ({
     <Paper px="xl" position="relative">
       <Box>
         <AssetInput
-          label={t("deposit.your")}
+          label={t("bil.deposit.your")}
           symbol="HOLLAR"
           selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} size="medium" />}
           modalDisabled
@@ -121,7 +120,7 @@ export const DepositPanel = ({
         <BilExchangeRate exchangeRate={vaultStats.exchangeRate} />
 
         <AssetInput
-          label={t("deposit.youReceive")}
+          label={t("bil.deposit.youReceive")}
           symbol="BIL"
           selectedAssetIcon={<BilLogo size={24} />}
           modalDisabled
@@ -141,16 +140,16 @@ export const DepositPanel = ({
           label={
             <Flex align="center" gap="base">
               <Icon component={Lock} size="xs" />
-              <Text fs="p5">{t("deposit.lockup")}</Text>
+              <Text fs="p5">{t("bil.deposit.lockup")}</Text>
             </Flex>
           }
-          content={t("deposit.lockupValue", {
+          content={t("bil.deposit.lockupValue", {
             days: vaultStats.maxLockupDays,
           })}
         />
         <Box>
           <Text fs="p5" color={getToken("text.medium")} pt="m" pb="s">
-            {t("deposit.redeemOptions")}:
+            {t("bil.deposit.redeemOptions")}:
           </Text>
           <SummaryRow
             label={
@@ -161,11 +160,11 @@ export const DepositPanel = ({
               >
                 <Icon component={Hourglass} size="xs" />
                 <Text fs="p5" fw={500} color={getToken("text.tint.secondary")}>
-                  {t("deposit.option.queue")}
+                  {t("bil.deposit.option.queue")}
                 </Text>
               </Flex>
             }
-            content={t("deposit.option.queueValue", {
+            content={t("bil.deposit.option.queueValue", {
               days: vaultStats.maxLockupDays,
             })}
           />
@@ -183,11 +182,11 @@ export const DepositPanel = ({
                 fw={500}
                 color={getToken("accents.success.emphasis")}
               >
-                {t("deposit.option.instant")}
+                {t("bil.deposit.option.instant")}
               </Text>
             </Flex>
           }
-          content={t("deposit.option.instantValue")}
+          content={t("bil.deposit.option.instantValue")}
         />
       </Summary>
 
@@ -219,20 +218,20 @@ export const DepositPanel = ({
               label={
                 <Flex align="center" gap="s">
                   <Text fs="p5" color={getToken("text.medium")}>
-                    {t("deposit.totalFees")}
+                    {t("bil.deposit.totalFees")}
                   </Text>
                   <Text fs="p5" fw={500} color={getToken("text.high")}>
                     {t("common:currency", { value: totalFeesUsd })}
                   </Text>
                 </Flex>
               }
-              actionLabel={t("deposit.feesShow")}
-              actionLabelWhenOpen={t("deposit.feesHide")}
+              actionLabel={t("common:show")}
+              actionLabelWhenOpen={t("common:hide")}
             >
               <Stack gap="base" pt="s">
                 <Flex justify="space-between" align="center">
                   <Text fs="p6" color={getToken("text.medium")}>
-                    {t("deposit.totalFees")}
+                    {t("bil.deposit.totalFees")}
                   </Text>
                   <Text fs="p6" fw={500} color={getToken("text.high")}>
                     {t("common:currency", { value: totalFeesUsd })}

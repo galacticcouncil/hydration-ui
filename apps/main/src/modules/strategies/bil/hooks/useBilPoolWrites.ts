@@ -99,7 +99,7 @@ function useBilPoolEvmCall() {
  * generally.
  */
 export function useBorrowHollar() {
-  const { t } = useTranslation(["bil", "common"])
+  const { t } = useTranslation(["common"])
   const { evmAddress, submitTx } = useBilPoolEvmCall()
 
   return useMutation({

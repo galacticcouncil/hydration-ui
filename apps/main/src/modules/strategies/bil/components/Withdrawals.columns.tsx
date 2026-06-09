@@ -42,12 +42,12 @@ export type WithdrawalColumnHandlers = {
   onClaim: (claimableBil: number) => void
   isClaiming: boolean
   /**
-   * Instant-exit a still-queued redemption: cancel + resupply as aHDCL, then
-   * swap the freed aHDCL for HOLLAR. Sequenced two-signature flow.
+   * Instant-exit a still-queued redemption: cancel + resupply as aBIL, then
+   * swap the freed aBIL for HOLLAR. Sequenced two-signature flow.
    */
-  onInstantRedeem: (id: number, amountHdcl: number) => void
+  onInstantRedeem: (id: number, amountBil: number) => void
   isInstantRedeeming: boolean
-  /** Whether the aHDCL/HOLLAR instant-redeem path is available (Aave layer). */
+  /** Whether the aBIL/HOLLAR instant-redeem path is available (Aave layer). */
   instantAvailable: boolean
 }
 
@@ -60,7 +60,7 @@ export const useWithdrawalColumns = ({
   isInstantRedeeming,
   //instantAvailable,
 }: WithdrawalColumnHandlers) => {
-  const { t } = useTranslation(["bil", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { isMobile } = useBreakpoints()
 
   const { getAssetWithFallback } = useAssets()
@@ -69,7 +69,7 @@ export const useWithdrawalColumns = ({
 
   return useMemo(() => {
     const amountColumn = columnHelper.accessor("amountBil", {
-      header: t("withdrawals.col.amount"),
+      header: t("common:amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
           <BilLogo size={20} />
@@ -84,7 +84,7 @@ export const useWithdrawalColumns = ({
     })
 
     const estValueColumn = columnHelper.accessor("estHollar", {
-      header: t("withdrawals.col.estValue"),
+      header: t("bil.withdrawals.col.estValue"),
       meta: { sx: { textAlign: isMobile ? "right" : "left" } },
       cell: ({ row }) => (
         <Amount
@@ -100,7 +100,7 @@ export const useWithdrawalColumns = ({
     })
 
     const dateColumn = columnHelper.accessor("requestedDate", {
-      header: t("withdrawals.col.date"),
+      header: t("common:date"),
       cell: ({ row }) =>
         row.original.requestedDate.getTime() === 0 ? (
           <Text fs="p4" color={getToken("text.medium")}>
@@ -117,7 +117,7 @@ export const useWithdrawalColumns = ({
 
     const timeRemainingColumn = columnHelper.display({
       id: "timeRemaining",
-      header: t("withdrawals.col.timeRemaining"),
+      header: t("bil.withdrawals.col.timeRemaining"),
       cell: ({ row }) => {
         const r = row.original
         // Settled shares that the user hasn't claimed yet — always take
@@ -125,7 +125,7 @@ export const useWithdrawalColumns = ({
         if ((r.claimableBil ?? 0) > 0) {
           return (
             <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
-              {t("withdrawals.state.claimable")}
+              {t("bil.withdrawals.state.claimable")}
             </Text>
           )
         }
@@ -133,8 +133,8 @@ export const useWithdrawalColumns = ({
           return (
             <Text fs="p4" color={getToken("text.medium")}>
               {r.state === "fulfilled"
-                ? t("withdrawals.state.redeemed")
-                : t("withdrawals.state.cancelled")}
+                ? t("bil.withdrawals.state.redeemed")
+                : t("bil.withdrawals.state.cancelled")}
             </Text>
           )
         }
@@ -170,7 +170,7 @@ export const useWithdrawalColumns = ({
                 }}
                 disabled={isClaiming}
               >
-                {t("withdrawals.action.claim")}
+                {t("common:claim")}
               </Button>
             )}
             {stillActive && (
@@ -180,14 +180,14 @@ export const useWithdrawalColumns = ({
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onInstantRedeem(r.id, r.amountHdcl)
+                    onInstantRedeem(r.id, r.amountBil)
                   }}
                   // Two-step flow: keep the button disabled across BOTH the
-                  // cancel+resupply (isCancelling) and the aHDCL->HOLLAR swap
+                  // cancel+resupply (isCancelling) and the aBIL->HOLLAR swap
                   // (isInstantRedeeming) so it can't be re-fired mid-sequence.
                   disabled={isInstantRedeeming || isCancelling}
                 >
-                  {t("withdrawals.action.instant")}
+                  {t("bil.withdrawals.action.instant")}
                 </Button>
                 <Button
                   variant="tertiary"
@@ -198,7 +198,7 @@ export const useWithdrawalColumns = ({
                   }}
                   disabled={isCancelling}
                 >
-                  {t("withdrawals.action.cancel")}
+                  {t("common:cancel")}
                 </Button>
               </>
             )}
