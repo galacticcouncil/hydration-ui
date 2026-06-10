@@ -110,9 +110,12 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     },
   })
 
-  const maxBalanceWithFee = Big(maxStakeHuman)
-    .minus(feeCost || 0)
-    .toString()
+  const maxBalanceWithFee = Big.max(
+    0,
+    Big(maxStakeHuman)
+      .minus(feeCost || 0)
+      .toString(),
+  ).toString()
 
   const form = useForm<GigaStakeFormValues>({
     mode: "onChange",
