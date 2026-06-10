@@ -73,7 +73,12 @@ export const SummaryRow = ({
         {renderLabel()}
 
         {description && (
-          <Text fs="p6" fw={400} color={getToken("text.low")}>
+          <Text
+            fs="p6"
+            fw={400}
+            color={getToken("text.low")}
+            sx={{ whiteSpace: "pre-line" }}
+          >
             {description}
           </Text>
         )}

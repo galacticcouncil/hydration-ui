@@ -9,7 +9,6 @@ import {
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
-  Separator,
   Slider,
   SliderTabs,
   Stack,
@@ -25,15 +24,14 @@ import { CSSProperties } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useUserGigaBorrowSummary } from "@/api/borrow"
 import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
+  useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
-import { useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
-  SClaimableRewardsContainer,
+  SClaimYieldPrompt,
   SLockedBalanceButton,
   SRewardMultiplierCard,
 } from "@/modules/staking/components/VoteModal/VoteModal.styled"
@@ -50,6 +48,7 @@ import {
 } from "./VoteModal.utils"
 
 const MULTIPLIER_LABELS = ["0.1x", "1x", "2x", "3x", "4x", "5x", "6x"]
+
 const getMultiplierLabel = (multiplier: number) => `${multiplier || 0.1}x`
 const getMultiplierProgress = (multiplier: number) =>
   Math.min(Math.max(multiplier / 6, 0), 1)
@@ -95,7 +94,6 @@ const VoteForm = ({
   const {
     form,
     totalHdxBalanceHuman,
-    ghdxLocksHuman,
     lockedDays,
     totalVotesWithMultiplier,
     onSubmit,
@@ -103,13 +101,13 @@ const VoteForm = ({
     allLocksHuman,
   } = useVoteModal(referendumId, onClose, isGigaStaking)
 
-  const [voteType] = form.watch(["voteType", "multiplier"])
+  const [voteType, multiplier] = form.watch(["voteType", "multiplier"])
   const isSingleInputField = voteType === "aye" || voteType === "nay"
 
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <ModalBody asChild>
+        <ModalBody scrollable={false} asChild>
           <Stack direction="column" gap="l">
             <Controller
               control={form.control}
@@ -153,7 +151,7 @@ const VoteForm = ({
               totalHdxBalanceHuman={totalHdxBalanceHuman}
             />
 
-            {isGigaStaking && <ClaimableRewardsField />}
+            <ClaimYieldPrompt />
 
             {isSingleInputField && (
               <>
@@ -185,59 +183,31 @@ const VoteForm = ({
                         </Trans>
                       </Text>
                     </SLockedBalanceButton>
-                    {isGigaStaking ? (
-                      <SLockedBalanceButton
-                        variant="muted"
-                        onClick={() =>
-                          form.setValue("amount", ghdxLocksHuman, {
-                            shouldValidate: true,
-                          })
-                        }
-                      >
-                        <Text fs="p6" fw={400} color={getToken("text.medium")}>
-                          <Trans
-                            t={t}
-                            i18nKey="staking:referenda.vote.modal.reuseGigaStakingLocks"
-                            values={{
-                              value: ghdxLocksHuman,
-                              currency: native.symbol,
-                            }}
-                          >
-                            <Text
-                              as="span"
-                              fw={500}
-                              color={getToken("text.high")}
-                            />
-                          </Trans>
-                        </Text>
-                      </SLockedBalanceButton>
-                    ) : (
-                      <SLockedBalanceButton
-                        variant="muted"
-                        onClick={() =>
-                          form.setValue("amount", allLocksHuman, {
-                            shouldValidate: true,
-                          })
-                        }
-                      >
-                        <Text fs="p6" fw={400} color={getToken("text.medium")}>
-                          <Trans
-                            t={t}
-                            i18nKey="staking:referenda.vote.modal.reuseAllLocks"
-                            values={{
-                              value: allLocksHuman,
-                              currency: native.symbol,
-                            }}
-                          >
-                            <Text
-                              as="span"
-                              fw={500}
-                              color={getToken("text.high")}
-                            />
-                          </Trans>
-                        </Text>
-                      </SLockedBalanceButton>
-                    )}
+                    <SLockedBalanceButton
+                      variant="muted"
+                      onClick={() =>
+                        form.setValue("amount", allLocksHuman, {
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      <Text fs="p6" fw={400} color={getToken("text.medium")}>
+                        <Trans
+                          t={t}
+                          i18nKey="staking:referenda.vote.modal.reuseAllLocks"
+                          values={{
+                            value: allLocksHuman,
+                            currency: native.symbol,
+                          }}
+                        >
+                          <Text
+                            as="span"
+                            fw={500}
+                            color={getToken("text.high")}
+                          />
+                        </Trans>
+                      </Text>
+                    </SLockedBalanceButton>
                   </Flex>
                   <ModalContentDivider />
                 </Box>
@@ -259,7 +229,7 @@ const VoteForm = ({
 
                         <Flex align="center" gap="xs">
                           <Text fs="p5" fw={500}>
-                            {getMultiplierLabel(field.value)}
+                            {getMultiplierLabel(multiplier)}
                           </Text>
 
                           <Tooltip
@@ -276,6 +246,7 @@ const VoteForm = ({
                         max={6}
                         step={1}
                         dashCount={12}
+                        variant="accent"
                         value={field.value}
                         onChange={field.onChange}
                       />
@@ -292,7 +263,7 @@ const VoteForm = ({
                         ))}
                       </Flex>
 
-                      <RewardMultiplierCard multiplier={field.value} />
+                      <RewardMultiplierCard multiplier={multiplier} />
                     </Stack>
                   )}
                 />
@@ -301,6 +272,12 @@ const VoteForm = ({
             <ModalContentDivider />
             <Summary
               separator={<ModalContentDivider />}
+              sx={{
+                ".vote-lock-duration-row > p:last-of-type": {
+                  width: "75px",
+                  textAlign: "right",
+                },
+              }}
               rows={[
                 {
                   label: t("staking:referenda.vote.modal.totalVotes"),
@@ -310,6 +287,7 @@ const VoteForm = ({
                   }),
                 },
                 {
+                  className: "vote-lock-duration-row",
                   label: t("staking:referenda.vote.modal.lockDuration"),
                   description: t(
                     "staking:referenda.vote.modal.lockDuration.description",
@@ -326,7 +304,7 @@ const VoteForm = ({
           </Stack>
         </ModalBody>
 
-        <Separator />
+        <ModalContentDivider />
 
         <ModalFooter>
           <Button
@@ -343,174 +321,76 @@ const VoteForm = ({
   )
 }
 
-const AmountFields = ({
-  voteType,
-  totalHdxBalanceHuman,
-}: {
-  voteType: VoteType
-  totalHdxBalanceHuman: string
-}) => {
-  const { t } = useTranslation("staking")
-
-  if (voteType === "split") {
-    return (
-      <Stack
-        direction="column"
-        gap="m"
-        separated
-        separator={<ModalContentDivider />}
-      >
-        <AssetSelectFormField<VoteModalFormValues>
-          assetFieldName="asset"
-          amountFieldName="aye"
-          label={t("referenda.item.aye")}
-          assets={[]}
-          disabledAssetSelector
-          ignoreBalance
-          hideMaxBalanceAction
-          sx={{ p: 0 }}
-        />
-        <AssetSelectFormField<VoteModalFormValues>
-          assetFieldName="asset"
-          amountFieldName="nay"
-          label={t("referenda.item.nay")}
-          assets={[]}
-          disabledAssetSelector
-          ignoreBalance
-          hideMaxBalanceAction
-          sx={{ p: 0 }}
-        />
-      </Stack>
-    )
-  }
-
-  if (voteType === "abstain") {
-    return (
-      <Stack
-        direction="column"
-        gap="m"
-        separated
-        separator={<ModalContentDivider />}
-      >
-        <AssetSelectFormField<VoteModalFormValues>
-          assetFieldName="asset"
-          amountFieldName="aye"
-          label={t("referenda.item.aye")}
-          assets={[]}
-          disabledAssetSelector
-          ignoreBalance
-          hideMaxBalanceAction
-          sx={{ p: 0 }}
-        />
-        <AssetSelectFormField<VoteModalFormValues>
-          assetFieldName="asset"
-          amountFieldName="nay"
-          label={t("referenda.item.nay")}
-          assets={[]}
-          disabledAssetSelector
-          ignoreBalance
-          hideMaxBalanceAction
-          sx={{ p: 0 }}
-        />
-        <AssetSelectFormField<VoteModalFormValues>
-          assetFieldName="asset"
-          amountFieldName="abstain"
-          label={t("referenda.item.abstain")}
-          assets={[]}
-          disabledAssetSelector
-          ignoreBalance
-          hideMaxBalanceAction
-          sx={{ p: 0 }}
-        />
-      </Stack>
-    )
-  }
-
-  return (
-    <AssetSelectFormField<VoteModalFormValues>
-      assetFieldName="asset"
-      amountFieldName="amount"
-      label={
-        voteType === "aye" ? t("referenda.item.aye") : t("referenda.item.nay")
-      }
-      assets={[]}
-      disabledAssetSelector
-      maxBalance={totalHdxBalanceHuman}
-      sx={{ p: 0 }}
-    />
-  )
-}
-
-const ClaimableRewardsField = () => {
-  const { t } = useTranslation("staking")
-  const rpc = useRpcProvider()
+const ClaimYieldPrompt = () => {
+  const { t } = useTranslation(["staking", "common"])
   const { account } = useAccount()
+  const rpc = useRpcProvider()
   const { native } = useAssets()
-
   const { data: exchangeRate } = useGigaStakeExchangeRate()
-  const { data: claimableRewards } = useQuery(
-    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
-  )
   const { data: accountStake } = useQuery(
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
-
-  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
-  const { hdxReserve } = gigaBorrowSummary ?? {}
-
+  const { data: claimableRewards } = useQuery(
+    claimableVotingRewardsQuery(rpc, account?.address ?? ""),
+  )
   const claimMutation = useClaimAndCompound()
 
-  const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
-
-  const stakedHdxHuman = Big(gigaHdxBalanceHuman)
-    .times(exchangeRate?.toString() || "0")
-    .toString()
-
-  const principalHdxHuman = accountStake
-    ? scaleHuman(accountStake.hdx, native.decimals)
-    : "0"
-  const accruedHdxBig = Big.max(
-    Big(stakedHdxHuman).minus(principalHdxHuman),
-    Big(0),
-  )
-
-  const hasClaimable = accruedHdxBig.gt(
-    scaleHuman(native.existentialDeposit, native.decimals),
-  )
-  const claimAndCompoundArgs = {
-    allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
-    accountAddress: account?.address ?? "",
-    hasAccruedYield: hasClaimable,
-    hasClaimableRewards: false, // claim only realize yield
-  }
-
-  if (!hasClaimable) {
+  if (!account?.address || !accountStake || !exchangeRate) {
     return null
   }
 
+  const gigaHdxHuman = scaleHuman(accountStake.gigahdx, native.decimals)
+  const stakedHdxHuman = Big(gigaHdxHuman).times(exchangeRate.toString())
+  const principalHdxHuman = scaleHuman(accountStake.hdx, native.decimals)
+  const accruedHdx = Big.max(stakedHdxHuman.minus(principalHdxHuman), 0)
+
+  if (accruedHdx.lte("0.000001")) {
+    return null
+  }
+
+  const pendingHdx = claimableRewards
+    ? Big(scaleHuman(claimableRewards.pendingHdx, native.decimals))
+    : Big(0)
+  const allocReadyHdx = claimableRewards
+    ? Big(scaleHuman(claimableRewards.allocReadyHdx, native.decimals))
+    : Big(0)
+  const claimableVotingRewards = pendingHdx.plus(allocReadyHdx)
+
+  const onClaim = () => {
+    // `useClaimAndCompound` fetches its own `unlockClasses` via
+    // `accountUnlockClassesQuery` — no need to pass them in.
+    claimMutation.mutate({
+      allocReadyVotes: claimableRewards?.allocReadyVotes ?? [],
+      accountAddress: account?.address ?? "",
+      hasAccruedYield: true,
+      hasClaimableRewards: claimableVotingRewards.gt("0.000001"),
+    })
+  }
+
   return (
-    <SClaimableRewardsContainer justify="space-between" align="center">
-      <Text fs="p4" fw={500} color={getToken("text.medium")}>
+    <SClaimYieldPrompt>
+      <Text fs="p6" fw={400} color={getToken("text.medium")}>
         <Trans
           t={t}
-          i18nKey="staking:referenda.vote.modal.claimableRewards"
+          i18nKey="staking:referenda.vote.modal.claimYieldPrompt"
           values={{
-            value: accruedHdxBig,
-            currency: native.symbol,
+            value: accruedHdx.toString(),
+            symbol: native.symbol,
           }}
         >
-          <Text as="span" fw={500} color={getToken("text.tint.primary")} />
+          <Text as="span" fw={500} color={getToken("text.high")} />
         </Trans>
       </Text>
+
       <Button
-        variant="secondary"
         size="small"
-        disabled={!hasClaimable || claimMutation.isPending}
-        onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
+        variant="secondary"
+        disabled={claimMutation.isPending}
+        onClick={onClaim}
       >
-        {t("referenda.vote.modal.claim.cta")}
+        {t("staking:referenda.vote.modal.claimYieldCta")}
       </Button>
-    </SClaimableRewardsContainer>
+    </SClaimYieldPrompt>
   )
 }
 
@@ -674,5 +554,103 @@ const RewardMultiplierCard = ({ multiplier }: { multiplier: number }) => {
         </Flex>
       </Flex>
     </SRewardMultiplierCard>
+  )
+}
+
+const AmountFields = ({
+  voteType,
+  totalHdxBalanceHuman,
+}: {
+  voteType: VoteType
+  totalHdxBalanceHuman: string
+}) => {
+  const { t } = useTranslation("staking")
+
+  if (voteType === "split") {
+    return (
+      <Stack
+        direction="column"
+        gap="m"
+        separated
+        separator={<ModalContentDivider />}
+      >
+        <AssetSelectFormField<VoteModalFormValues>
+          assetFieldName="asset"
+          amountFieldName="aye"
+          label={t("referenda.item.aye")}
+          assets={[]}
+          disabledAssetSelector
+          ignoreBalance
+          hideMaxBalanceAction
+          sx={{ p: 0 }}
+        />
+        <AssetSelectFormField<VoteModalFormValues>
+          assetFieldName="asset"
+          amountFieldName="nay"
+          label={t("referenda.item.nay")}
+          assets={[]}
+          disabledAssetSelector
+          ignoreBalance
+          hideMaxBalanceAction
+          sx={{ p: 0 }}
+        />
+      </Stack>
+    )
+  }
+
+  if (voteType === "abstain") {
+    return (
+      <Stack
+        direction="column"
+        gap="m"
+        separated
+        separator={<ModalContentDivider />}
+      >
+        <AssetSelectFormField<VoteModalFormValues>
+          assetFieldName="asset"
+          amountFieldName="aye"
+          label={t("referenda.item.aye")}
+          assets={[]}
+          disabledAssetSelector
+          ignoreBalance
+          hideMaxBalanceAction
+          sx={{ p: 0 }}
+        />
+        <AssetSelectFormField<VoteModalFormValues>
+          assetFieldName="asset"
+          amountFieldName="nay"
+          label={t("referenda.item.nay")}
+          assets={[]}
+          disabledAssetSelector
+          ignoreBalance
+          hideMaxBalanceAction
+          sx={{ p: 0 }}
+        />
+        <AssetSelectFormField<VoteModalFormValues>
+          assetFieldName="asset"
+          amountFieldName="abstain"
+          label={t("referenda.item.abstain")}
+          assets={[]}
+          disabledAssetSelector
+          ignoreBalance
+          hideMaxBalanceAction
+          sx={{ p: 0 }}
+        />
+      </Stack>
+    )
+  }
+
+  return (
+    <AssetSelectFormField<VoteModalFormValues>
+      assetFieldName="asset"
+      amountFieldName="amount"
+      label={
+        voteType === "aye" ? t("referenda.item.aye") : t("referenda.item.nay")
+      }
+      assets={[]}
+      disabledAssetSelector
+      maxBalance={totalHdxBalanceHuman}
+      sx={{ p: 0 }}
+    />
   )
 }

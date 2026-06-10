@@ -11,13 +11,17 @@ export const SLockedBalanceButton = styled(Button)(
   `,
 )
 
-export const SClaimableRewardsContainer = styled(Flex)(
+export const SClaimYieldPrompt = styled(Flex)(
   ({ theme }) => css`
-    background: ${theme.surfaces.containers.mid.primary};
-    border-radius: ${theme.containers.cornerRadius.containersPrimary};
-    border: 1px solid ${theme.details.borders};
-    padding: ${theme.scales.paddings.s} ${theme.scales.paddings.s}
-      ${theme.scales.paddings.s} ${theme.scales.paddings.m};
+    align-items: center;
+    justify-content: space-between;
+    gap: ${theme.space.base};
+
+    padding: ${theme.space.base};
+
+    border: 1px solid ${theme.buttons.secondary.low.borderRest};
+    border-radius: ${theme.radii.l};
+    background: ${theme.surfaces.themeBasePalette.surfaceHigh};
   `,
 )
 
