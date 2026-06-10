@@ -328,14 +328,14 @@ export const votingAprQuery = (
  */
 export const useGigaApr = (stakeValueHdxPlanck: bigint = 0n) => {
   const rpc = useRpcProvider()
-
+  stakeValueHdxPlanck
   const passiveQuery = useQuery(passiveAprQuery(rpc))
-  const votingQueryResult = useQuery(votingAprQuery(rpc, stakeValueHdxPlanck))
+  //const votingQueryResult = useQuery(votingAprQuery(rpc, stakeValueHdxPlanck))
 
   const passive = passiveQuery.data ?? Big(0)
-  const voting = votingQueryResult.data ?? Big(0)
-  const total = passive.plus(voting)
-  const isLoading = passiveQuery.isLoading || votingQueryResult.isLoading
+  //const voting = votingQueryResult.data ?? Big(0)
+  const total = passive //.plus(voting)
+  const isLoading = passiveQuery.isLoading //|| votingQueryResult.isLoading
 
-  return { passive, voting, total, isLoading }
+  return { passive, total, isLoading }
 }

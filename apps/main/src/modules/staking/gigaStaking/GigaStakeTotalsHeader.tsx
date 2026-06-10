@@ -7,7 +7,6 @@ import {
   Text,
   Tooltip,
   ValueStats,
-  ValueStatsBottomValue,
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -77,7 +76,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   // the base component; voting is "+ up to X% if you vote at max conviction".
   const {
     passive: aprPassive,
-    voting: aprVoting,
+    //voting: aprVoting,
     isLoading: isAprLoading,
   } = useGigaApr(aprReferenceStake)
   //end
@@ -162,13 +161,13 @@ export const GigaStakeTotalsHeader: FC = () => {
               })}
             </ValueStatsValue>
           }
-          customBottomLabel={
-            <ValueStatsBottomValue>
-              {t("staking:dashboard.projectedAPR.voting", {
-                value: Number(aprVoting.toFixed(2)),
-              })}
-            </ValueStatsBottomValue>
-          }
+          // customBottomLabel={
+          //   <ValueStatsBottomValue>
+          //     {t("staking:dashboard.projectedAPR.voting", {
+          //       value: Number(aprVoting.toFixed(2)),
+          //     })}
+          //   </ValueStatsBottomValue>
+          // }
         />
       </Tooltip>
 
@@ -217,11 +216,11 @@ export const ProjectedAPRTooltipContent = () => {
         </Trans>
       </Text>
 
-      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+      {/* <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
         <Trans t={t} i18nKey="gigaStaking.projectedAPR.voting.tooltip">
           <Text fw={600} />
         </Trans>
-      </Text>
+      </Text> */}
 
       <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
         {lines[3]}
