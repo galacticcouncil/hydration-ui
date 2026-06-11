@@ -22,6 +22,7 @@ import {
   getOtcSellAmountFromBuyAmount,
 } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { useFillOrderForm } from "@/modules/trade/otc/fill-order/FillOrderModalContent.form"
+import { OtcVsOmnipool } from "@/modules/trade/otc/fill-order/OtcVsOmnipool"
 import { useSubmitFillOrder } from "@/modules/trade/otc/fill-order/FillOrderModalContent.submit"
 import { TokensConversion } from "@/modules/trade/otc/fill-order/TokensConversion"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
@@ -202,6 +203,11 @@ export const FillOrderModalContent: FC<Props> = ({
               feeDisplay={feeDisplay}
               feePct={feePct}
               feeSymbol={feeAsset.symbol}
+            />
+            <OtcVsOmnipool
+              offer={otcOffer}
+              sellAmount={sellAmount}
+              buyAmount={buyAmount}
             />
             <Separator />
           </ModalBody>

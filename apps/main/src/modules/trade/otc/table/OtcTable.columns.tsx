@@ -114,13 +114,7 @@ export const useOtcTableColums = () => {
         }),
         cell: ({ row }) => {
           return (
-            <OfferMarketPriceColumn
-              percentage={row.original.marketPricePercentage}
-              marketPrice={row.original.marketPrice}
-              nativeMarketPrice={row.original.nativeMarketPrice}
-              assetInSymbol={row.original.assetIn.symbol}
-              assetOutSymbol={row.original.assetOut.symbol}
-            />
+            <OfferMarketPriceColumn offer={row.original} />
           )
         },
       },
@@ -135,13 +129,7 @@ export const useOtcTableColums = () => {
       }),
       cell: ({ row }) => (
         <TableRowDetailsExpand>
-          <OfferMarketPriceColumn
-            percentage={row.original.marketPricePercentage}
-            marketPrice={row.original.marketPrice}
-            nativeMarketPrice={row.original.nativeMarketPrice}
-            assetInSymbol={row.original.assetIn.symbol}
-            assetOutSymbol={row.original.assetOut.symbol}
-          />
+          <OfferMarketPriceColumn offer={row.original} />
         </TableRowDetailsExpand>
       ),
     })

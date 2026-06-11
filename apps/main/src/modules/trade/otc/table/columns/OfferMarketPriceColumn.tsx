@@ -3,22 +3,17 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { OfferMarketPriceTooltip } from "@/modules/trade/otc/table/columns/OfferMarketPriceTooltip"
+import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
+
 type Props = {
-  readonly percentage: number | null
-  readonly marketPrice: string | null
-  readonly nativeMarketPrice: string | null
-  readonly assetInSymbol: string
-  readonly assetOutSymbol: string
+  readonly offer: OtcOfferTabular
 }
 
-export const OfferMarketPriceColumn: FC<Props> = ({
-  percentage,
-  marketPrice,
-  nativeMarketPrice,
-  assetInSymbol,
-  assetOutSymbol,
-}) => {
+export const OfferMarketPriceColumn: FC<Props> = ({ offer }) => {
   const { t } = useTranslation(["trade", "common"])
+
+  const percentage = offer.marketPricePercentage
 
   if (percentage === null) {
     return (
@@ -43,23 +38,8 @@ export const OfferMarketPriceColumn: FC<Props> = ({
       ? t("otc.marketPrice.premium")
       : undefined
 
-  const tooltipKey = isDiscount
-    ? "otc.marketPrice.tooltip.discount"
-    : "otc.marketPrice.tooltip.premium"
-
-  const tooltip = t(tooltipKey, {
-    percentage: t("common:percent.compact", { value: Math.abs(percentage) }),
-    marketNative: t("common:number", { value: nativeMarketPrice }),
-    assetIn: assetInSymbol,
-    assetOut: assetOutSymbol,
-    marketUsd: t("common:currency", {
-      value: marketPrice,
-      maximumFractionDigits: null,
-    }),
-  })
-
   return (
-    <Tooltip text={tooltip} asChild>
+    <Tooltip text={<OfferMarketPriceTooltip offer={offer} />} asChild>
       <Flex direction="column" align="center" gap={2} sx={{ cursor: "help" }}>
         <Text fw={500} fs="p4" lh={1} color={color} truncate>
           {isDiscount && "-"}
