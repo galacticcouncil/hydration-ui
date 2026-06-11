@@ -71,7 +71,7 @@ export const Referenda: FC<Props> = ({
     .toNumber()
 
   const {
-    threshold: _,
+    threshold,
     maxSupportBarValue,
     barPercentage,
     markPercentage,
@@ -103,7 +103,7 @@ export const Referenda: FC<Props> = ({
           nayValue={toDecimal(item.tally.nays, native.decimals)}
           nayPercent={naysPercentage}
           supportPercent={barPercentage}
-          supportThreshold={getPerbillPercentage(_)}
+          supportThreshold={getPerbillPercentage(threshold)}
           supportMaxPercentage={getPerbillPercentage(maxSupportBarValue)}
           supportTooltipPercent={getPerbillPercentage(support)}
           supportMarkPercentage={markPercentage}

@@ -13,7 +13,11 @@ import {
   TokenLockType,
   useNativeTokenLocks,
 } from "@/api/balances"
-import { Conviction, CONVICTIONS_BLOCKS_BY_INDEX } from "@/api/democracy"
+import {
+  Conviction,
+  CONVICTIONS_BLOCKS_BY_INDEX,
+  ongoingReferendaQuery,
+} from "@/api/democracy"
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
@@ -308,6 +312,7 @@ export const useVoteModal = (
         ["accountOpenGovVotes"],
         ["openGovReferenda"],
         nativeTokenLocksQuery(rpc, account?.address ?? "").queryKey,
+        ongoingReferendaQuery(rpc).queryKey,
       ]
 
       const invalidateQueries = isGigaStaking
