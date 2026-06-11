@@ -1,3 +1,4 @@
+import { HealthFactorNumber } from "@galacticcouncil/money-market/components"
 import {
   Box,
   Button,
@@ -30,22 +31,6 @@ interface Props {
   onRepay: () => void
 }
 
-const HEALTH_LIQUIDATION_THRESHOLD = 1.0
-const HEALTH_WARNING_THRESHOLD = 1.5
-
-const formatHf = (hf: number) => {
-  if (hf === Infinity) return "∞"
-  if (hf > 999) return ">999"
-  return hf.toFixed(2)
-}
-
-const hfColorToken = (hf: number) => {
-  if (hf <= HEALTH_LIQUIDATION_THRESHOLD)
-    return getToken("accents.danger.emphasis")
-  if (hf <= HEALTH_WARNING_THRESHOLD) return getToken("accents.alert.primary")
-  return getToken("accents.success.emphasis")
-}
-
 export const MyBorrowsCard = ({
   poolPosition,
   borrowApyPercent,
@@ -60,6 +45,8 @@ export const MyBorrowsCard = ({
   const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
   const ltvPct = poolPosition?.ltvPct ?? 0
   const healthFactor = poolPosition?.healthFactor ?? Infinity
+  const healthFactorValue =
+    healthFactor === Infinity ? "-1" : healthFactor.toString()
   const hasCollateral = !!poolPosition?.hasCollateral
   const hasDebt = totalDebtUsd > 0
 
@@ -86,15 +73,13 @@ export const MyBorrowsCard = ({
           {t("hdcl.borrows.title")}
         </Text>
         <Flex align="center" gap="l">
-          <Flex align="center" gap="xs">
+          <Flex align="center" gap="s">
             <Text fs="p5" color={getToken("text.medium")}>
               {t("common:healthFactor")}:
             </Text>
-            <Text fs="p4" fw={600} color={hfColorToken(healthFactor)}>
-              {formatHf(healthFactor)}
-            </Text>
+            <HealthFactorNumber value={healthFactorValue} fontSize="p4" />
           </Flex>
-          <Flex align="center" gap="xs">
+          <Flex align="center" gap="s">
             <Text fs="p5" color={getToken("text.medium")}>
               {t("common:borrowApy")}:
             </Text>
@@ -105,18 +90,21 @@ export const MyBorrowsCard = ({
             </Text>
           </Flex>
           {hasCollateral && (
-            <Flex align="center" gap="xs">
+            <Flex align="center" gap="s">
               <Text fs="p5" color={getToken("text.medium")}>
                 {t("borrow:netApy")}:
               </Text>
               <Text
                 fs="p4"
                 fw={600}
-                color={getToken("accents.success.emphasis")}
+                color={
+                  netApyPercent >= 0
+                    ? getToken("accents.success.emphasis")
+                    : getToken("accents.danger.emphasis")
+                }
               >
                 {t("common:percent", {
                   value: netApyPercent,
-                  maximumFractionDigits: 1,
                 })}
               </Text>
             </Flex>

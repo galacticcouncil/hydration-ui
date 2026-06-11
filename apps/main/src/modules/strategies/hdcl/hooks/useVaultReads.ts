@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { secondsInDay } from "date-fns/constants"
 import { formatUnits, getContract, type Hex, parseUnits } from "viem"
 
 import {
@@ -122,15 +123,14 @@ export function useVaultStats() {
         abi: DECENTRAL_POOL_ABI,
         functionName: "minimumInvestmentPeriodSeconds",
       })
-      const maxLockupSec = investmentPeriodSec
 
       return {
         totalAssets: Number(formatUnits(totalAssets, 18)),
         totalSupply: Number(formatUnits(totalSupply, 18)),
         exchangeRate: Number(formatUnits(exchangeRateWad, 18)),
-        worstCaseWaitDays: Math.round(Number(worstCaseWaitSec) / 86400),
-        nextMaturityDays: Math.round(Number(nextMaturitySec) / 86400),
-        maxLockupDays: Math.ceil(Number(maxLockupSec) / 86400),
+        worstCaseWaitDays: Math.round(Number(worstCaseWaitSec) / secondsInDay),
+        nextMaturityDays: Math.round(Number(nextMaturitySec) / secondsInDay),
+        maxLockupDays: Math.ceil(Number(investmentPeriodSec) / secondsInDay),
         tvlCap: Number(formatUnits(tvlCap, 18)),
         paused,
         depositsPaused,

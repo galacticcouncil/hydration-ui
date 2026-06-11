@@ -292,8 +292,8 @@ export const HdclVaultPage = () => {
         onClose={() => setShowRepay(false)}
         poolPosition={poolPosition}
         walletHollar={userBalances.hollar}
-        onRepay={(amount) => {
-          repayMutation.mutate(amount)
+        onRepay={(args) => {
+          repayMutation.mutate(args)
           setShowRepay(false)
         }}
         isPending={isPending}

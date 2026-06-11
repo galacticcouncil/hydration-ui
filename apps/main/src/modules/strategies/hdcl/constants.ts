@@ -1,3 +1,4 @@
+import { AaveV3HDCLVault } from "@galacticcouncil/money-market/ui-config"
 import { type Hex } from "viem"
 
 // ════════════════════════════════════════════════════════════════════════
@@ -9,7 +10,7 @@ import { type Hex } from "viem"
 // ════════════════════════════════════════════════════════════════════════
 
 export const VAULT_ADDRESS: Hex = "0xbDAFEB92440d8696d6C143bc7e6B086d461e3502"
-export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
+export const HOLLAR_ADDRESS: Hex = AaveV3HDCLVault.GHO_TOKEN_ADDRESS as Hex
 
 // Decentral pool the vault deploys HOLLAR into. Surfaced here only so the
 // DepositPanel can read `minimumInvestmentPeriodSeconds` for the "Lockup
@@ -33,15 +34,11 @@ export const DECENTRAL_POOL_ADDRESS: Hex =
 // ────────────────────────────────────────────────────────────────────────
 export const HDCL_HAS_AAVE_LAYER = true
 
-export const HDCL_POOL_ADDRESS: Hex =
-  "0xEAb87D2aAc4C70AF63D2d9E85876665060e117E2"
+export const HDCL_POOL_ADDRESS: Hex = AaveV3HDCLVault.POOL as Hex
 export const HDCL_DEPOSIT_ZAP_ADDRESS: Hex =
   "0x146F6C43a0070F42cB532C74c412A34bb55A5729"
 export const HDCL_ATOKEN_ADDRESS: Hex =
   "0x8912ff2164655A3406902ee9e802EBb16ec881D9"
-
-/** Substrate asset id for HDCL (vault share / aToken receipt). */
-export const HDCL_ASSET_ID = "55"
 
 // Substrate-asset precompile aliases. Keyed off substrate asset ids, not the
 // EVM deploy — unchanged across lark generations.
@@ -552,22 +549,6 @@ export const VAULT_ABI = [
     ],
   },
 ] as const
-
-// Static (non-display) metadata for the single HDCL strategy ("Decentral").
-// User-visible labels and copy live in `i18n/locales/*/hdcl.json` — this
-// constant only carries values that don't belong in translation.
-//
-// `maxLtvPct` / `liquidationLtvPct` are first-paint fallbacks; the live
-// values come from `useHdclReserveConfig` (decoded from the HDCL pool's
-// reserve configuration bitmap) and replace these on resolve — only
-// meaningful when HDCL_HAS_AAVE_LAYER is true.
-export const STRATEGY = {
-  id: "decentral",
-  /** First-paint LTV fallback (pct). Live value from reserve config. */
-  maxLtvPct: 80,
-  /** First-paint liquidation LTV fallback (pct). Live value from reserve config. */
-  liquidationLtvPct: 90,
-} as const
 
 // Minimal Aave V3 Pool ABI subset — only the calls the HDCL-strategy page
 // actually makes. Inactive on lark-2 until the Aave layer is redeployed
