@@ -114,6 +114,7 @@ function mergePersistedWithDefaults(
   return {
     ...currentState,
     banners,
+    closedGigaNewsIds: p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds,
   }
 }
 
@@ -159,7 +160,10 @@ export const useBannersStore = create<BannersStore>()(
       name: "banners",
       version: 2,
       merge: mergePersistedWithDefaults,
-      partialize: (state) => ({ banners: state.banners }),
+      partialize: (state) => ({
+        banners: state.banners,
+        closedGigaNewsIds: state.closedGigaNewsIds,
+      }),
     },
   ),
 )
