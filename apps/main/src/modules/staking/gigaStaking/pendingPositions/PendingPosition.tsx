@@ -147,6 +147,13 @@ export const PendingPosition: FC<PendingPositionProps> = ({
         >
           {t("cancel")}
         </Button>
+        <CancelConfirmationModal
+          open={isCancelConfirmationModalOpen}
+          onClose={() => setIsCancelConfirmationModalOpen(false)}
+          onConfirm={() =>
+            cancelPendingPosition.mutate({ voteAtBlock, amount })
+          }
+        />
       </SUnstakingPosition>
     )
   }
