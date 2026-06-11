@@ -2,6 +2,7 @@ import {
   HDX_ERC20_ASSET_ID,
   STHDX_ASSET_ID,
 } from "@galacticcouncil/money-market/ui-config"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -128,7 +129,7 @@ export const useGigaAccountBalance = () => {
 
 export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
   queryOptions({
-    queryKey: ["gigaTotalLocked"],
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "gigaTotalLocked"],
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
@@ -146,7 +147,7 @@ export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
 
 export const gigaHDXIssuanceQuery = (rpc: TProviderContext) =>
   queryOptions({
-    queryKey: ["totalIssuance", STHDX_ASSET_ID],
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "totalIssuance", STHDX_ASSET_ID],
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
@@ -162,7 +163,7 @@ export const gigaHDXIssuanceQuery = (rpc: TProviderContext) =>
 
 export const gigapotBalanceQuery = (rpc: TProviderContext) =>
   queryOptions({
-    queryKey: ["gigapotBalance"],
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "gigapotBalance"],
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,

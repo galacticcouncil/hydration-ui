@@ -15,7 +15,6 @@ import {
   gigaAccountStakesQuery,
   gigaQueryKey,
   gigaStakeConstantsQuery,
-  gigaTotalLockedQuery,
   gigaUnstakePositionsQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
@@ -216,7 +215,6 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(account.address),
             gigaQueryKey(account.address),
-            gigaTotalLockedQuery(rpc).queryKey,
           ],
           toasts,
         },

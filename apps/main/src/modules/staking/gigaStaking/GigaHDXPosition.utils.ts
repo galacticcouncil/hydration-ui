@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import { accountUnlockClassesQuery } from "@/api/democracy"
-import { gigaQueryKey, gigaTotalLockedQuery } from "@/api/gigaStake"
+import { gigaQueryKey } from "@/api/gigaStake"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -114,7 +114,6 @@ export const useClaimAndCompound = () => {
         invalidateQueries: [
           userGigaBorrowSummaryQueryKey(accountAddress),
           gigaQueryKey(accountAddress),
-          gigaTotalLockedQuery(rpc).queryKey,
         ],
         toasts,
       })

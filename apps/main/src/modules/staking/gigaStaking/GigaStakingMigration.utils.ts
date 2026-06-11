@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next"
 
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import { evmAccountBindingQuery } from "@/api/evm"
-import { gigaTotalLockedQuery } from "@/api/gigaStake"
 import { stakingPositionsQuery } from "@/api/staking"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -54,7 +53,6 @@ export const useGigaStakingMigration = () => {
           : migrateTx,
         invalidateQueries: [
           userGigaBorrowSummaryQueryKey(account.address),
-          gigaTotalLockedQuery(rpc).queryKey,
           stakingPositionsQuery(rpc, account.address).queryKey,
         ],
         toasts,

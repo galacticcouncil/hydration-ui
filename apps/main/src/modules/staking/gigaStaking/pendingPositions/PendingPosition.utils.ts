@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
-import { gigaQueryKey, gigaTotalLockedQuery } from "@/api/gigaStake"
+import { gigaQueryKey } from "@/api/gigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -49,7 +49,6 @@ export const useCancelPendingPosition = () => {
         invalidateQueries: [
           userGigaBorrowSummaryQueryKey(accountAddress),
           gigaQueryKey(accountAddress),
-          gigaTotalLockedQuery(rpc).queryKey,
         ],
         toasts,
       })

@@ -15,11 +15,7 @@ import {
 } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
-import {
-  gigaQueryKey,
-  gigaTotalLockedQuery,
-  useGigaStakeExchangeRate,
-} from "@/api/gigaStake"
+import { gigaQueryKey, useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
@@ -208,7 +204,6 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
           invalidateQueries: [
             userGigaBorrowSummaryQueryKey(address),
             gigaQueryKey(address),
-            gigaTotalLockedQuery(rpc).queryKey,
             nativeTokenLocksQuery(rpc, address).queryKey,
             ...(!isBound
               ? [evmAccountBindingQuery(rpc, address).queryKey]
