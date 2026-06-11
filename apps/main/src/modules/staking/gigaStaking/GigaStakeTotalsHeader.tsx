@@ -1,4 +1,3 @@
-import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { isGho } from "@galacticcouncil/money-market/utils"
 import {
   Flex,
@@ -10,7 +9,6 @@ import {
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToHours } from "date-fns"
@@ -28,13 +26,15 @@ import { useBorrowPoolDataContract } from "@/api/borrow/contracts"
 import { useGigaApr } from "@/api/gigaApr"
 import {
   gigaStakeConstantsQuery,
+  gigaTotalLockedQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
-import { toDecimal } from "@/utils/formatting"
+import { scaleHuman, toDecimal } from "@/utils/formatting"
 
 /**
  * Reference stake (in HDX planck) used as the dilution input for the fleet
@@ -56,8 +56,7 @@ export const GigaStakeTotalsHeader: FC = () => {
     gigaStakeConstantsQuery(rpc),
   )
 
-  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
-    useGigaStakeExchangeRate()
+  const { data: exchangeRate } = useGigaStakeExchangeRate()
 
   const { data: gigaBorrowSummary, isSuccess } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
@@ -117,22 +116,21 @@ export const GigaStakeTotalsHeader: FC = () => {
       ),
     )
 
-  const hdxReserve = gigaPoolReserves?.formattedReserves.find(
-    (reserve) =>
-      reserve.underlyingAsset === getAddressFromAssetId(STHDX_ASSET_ID),
-  )
   const hollarReserve = gigaPoolReserves?.formattedReserves.find((reserve) =>
     isGho(reserve),
   )
   const { data: facilitatorBucketData, isLoading: isFacilitatorBucketLoading } =
     useFacilitatorBucket(hollarReserve?.aTokenAddress ?? "")
 
-  const totalSupplied = hdxReserve?.totalLiquidity ?? "0"
-  const totalSuppliedUsd = hdxReserve?.totalLiquidityUSD ?? "0"
+  const { data: gigaLockedHDX, isLoading: isGigaLockedHDXLoading } = useQuery(
+    gigaTotalLockedQuery(useRpcProvider()),
+  )
 
-  const totalSuppliedHdx = Big(totalSupplied)
-    .times(exchangeRate?.toString() || "0")
-    .toString()
+  const totalGigaSupplied = scaleHuman(gigaLockedHDX ?? 0n, native.decimals)
+
+  const [totalGigaSuppliedUsd, { isLoading: isTotalGigaSuppliedUsdLoading }] =
+    useDisplayAssetPrice(native.id, totalGigaSupplied)
+
   const maxBorrowHollar = toDecimal(
     facilitatorBucketData?.facilitatorBucketCapacity ?? "0",
     hollarReserve?.decimals ?? 18,
@@ -158,18 +156,16 @@ export const GigaStakeTotalsHeader: FC = () => {
         wrap
         size="medium"
         label={t("staking:gigaStake.header.totalStake")}
-        isLoading={isGigaPoolReservesLoading || isExchangeRateLoading}
+        isLoading={isGigaLockedHDXLoading || isTotalGigaSuppliedUsdLoading}
         value={
           isSuccess
             ? t("currency.compact", {
-                value: totalSuppliedHdx,
+                value: totalGigaSupplied,
                 symbol: native.symbol,
               })
             : "-"
         }
-        bottomLabel={
-          isSuccess ? t("currency", { value: totalSuppliedUsd }) : "-"
-        }
+        bottomLabel={isSuccess ? totalGigaSuppliedUsd : "-"}
       />
       <Tooltip asChild={false} text={<ProjectedAPRTooltipContent />}>
         <ValueStats
