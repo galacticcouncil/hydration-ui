@@ -8,23 +8,34 @@ import {
 } from "@tanstack/react-query"
 import { z } from "zod/v4"
 
+import { bestNumberQuery } from "@/api/chain"
 import { uniquesIds } from "@/api/constants"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const stakingRewardsQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  rpc: TProviderContext,
   address: string,
   openGovReferendaIds: Array<string>,
-  blockNumber: number,
-) =>
-  queryOptions({
-    queryKey: ["staking", "rewards", address, openGovReferendaIds, blockNumber],
-    queryFn: () =>
-      sdk.api.staking
-        .getRewards(address, openGovReferendaIds, blockNumber.toString())
-        .then((r) => r ?? null),
-    enabled: isApiLoaded && !!address && !!blockNumber,
+) => {
+  const { queryClient, sdk, isApiLoaded } = rpc
+
+  return queryOptions({
+    queryKey: ["staking", "rewards", address, openGovReferendaIds],
+    queryFn: async () => {
+      const blockNumber = await queryClient.ensureQueryData(
+        bestNumberQuery(rpc),
+      )
+      return await sdk.api.staking
+        .getRewards(
+          address,
+          openGovReferendaIds,
+          blockNumber.parachainBlockNumber.toString(),
+        )
+        .then((r) => r ?? null)
+    },
+    enabled: isApiLoaded && !!address,
   })
+}
 
 export const StakeQueryKey = ["staking", "stake"]
 
@@ -64,16 +75,19 @@ export const StakingPositionsQueryKey = (address: string) => [
   address,
 ]
 
-export const stakingPositionsQuery = (rpc: TProviderContext, address: string) =>
-  queryOptions({
+export const stakingPositionsQuery = (
+  rpc: TProviderContext,
+  address: string,
+) => {
+  const { queryClient, isApiLoaded, papi } = rpc
+
+  return queryOptions({
     queryKey: StakingPositionsQueryKey(address),
     queryFn: async () => {
-      const uniquesData = await rpc.queryClient.ensureQueryData(uniquesIds(rpc))
-      const stakingCollectionId = uniquesData?.stakingId ?? 0n
-
-      const uniques = await rpc.papi.query.Uniques.Account.getEntries(
+      const ids = await queryClient.ensureQueryData(uniquesIds(rpc))
+      const uniques = await papi.query.Uniques.Account.getEntries(
         address,
-        stakingCollectionId,
+        ids.stakingId,
         { at: "best" },
       )
 
@@ -93,8 +107,9 @@ export const stakingPositionsQuery = (rpc: TProviderContext, address: string) =>
         ...positions,
       }
     },
-    enabled: !!address && rpc.isApiLoaded,
+    enabled: isApiLoaded && !!address,
   })
+}
 
 export const useInvalidateStakeData = () => {
   const queryClient = useQueryClient()

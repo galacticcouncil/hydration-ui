@@ -151,6 +151,7 @@ export const RewardsCurve: FC = () => {
                         {t("staking:dashboard.chart.legend.afterVoting")}
                       </Text>
                       <Tooltip
+                        asChild
                         text={(
                           t("staking:dashboard.chart.legend.afterVoting.help", {
                             returnObjects: true,

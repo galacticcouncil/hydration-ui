@@ -96,7 +96,7 @@ export function getFormattedAddresses(journey: XcJourney) {
   return { from, to }
 }
 
-const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
+export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
 
 export function mergeJourneys(
   existing: XcJourney[],

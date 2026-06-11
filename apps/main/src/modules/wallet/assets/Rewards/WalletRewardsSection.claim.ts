@@ -67,13 +67,12 @@ export const useClaimAllWalletRewards = () => {
   const getClaimBorrowTx = useGetClaimAllBorrowRewardsTx()
   const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
-  // const getClaimStakingTx = useGetClaimStakingTx()
 
   return useMutation({
     mutationFn: async () => {
       const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
       const claimBorrow = await getClaimBorrowTx()
-      // const claimStaking = getClaimStakingTx()
+
       const claimReferral = papi.tx.Referrals.claim_rewards()
 
       const txs = [

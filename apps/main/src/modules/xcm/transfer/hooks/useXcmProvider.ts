@@ -3,6 +3,7 @@ import { AssetRoute, EvmParachain } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { createContext, useContext } from "react"
 
+import { XcmTransferArgs } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
 
@@ -21,6 +22,7 @@ type XcmContextValue = {
   readonly isLoadingTransfer: boolean
   readonly isConnectedAccountValid: boolean
   readonly transfer: Transfer | null
+  readonly transferArgs: XcmTransferArgs | null
   readonly call: Call | null
   readonly dryRunError: DryRunError | null
   readonly alerts: XcmAlert[]
@@ -37,6 +39,7 @@ export const XcmContext = createContext<XcmContextValue>({
   isLoadingTransfer: false,
   isConnectedAccountValid: false,
   transfer: null,
+  transferArgs: null,
   call: null,
   dryRunError: null,
   alerts: [],
