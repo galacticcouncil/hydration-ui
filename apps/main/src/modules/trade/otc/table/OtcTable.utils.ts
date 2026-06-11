@@ -1,17 +1,14 @@
-import { RUNTIME_DECIMALS } from "@galacticcouncil/common"
-import { math } from "@galacticcouncil/sdk-next"
 import Big from "big.js"
 
-import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
+import { OtcOfferPriced } from "@/modules/trade/otc/table/OtcTable.columns"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { OtcOffersType } from "@/routes/trade/otc"
 import { AssetPrice } from "@/states/displayAsset"
 import { Predicate } from "@/types/helpers"
-import { toBigInt } from "@/utils/formatting"
 
 export const mapOtcOffersToTableData =
   (assetPrices: Record<string, AssetPrice>) =>
-  (offer: OtcOffer): OtcOfferTabular => {
+  (offer: OtcOffer): OtcOfferPriced => {
     const { assetIn, assetOut, assetAmountIn, assetAmountOut } = offer
     const priceIn = assetPrices[assetIn.id]
     const priceOut = assetPrices[assetOut.id]
@@ -43,14 +40,6 @@ export const mapOtcOffersToTableData =
         ? new Big(priceOut.price).div(priceIn.price).toString()
         : null
 
-    const marketPricePercentage =
-      offerPrice && marketPrice
-        ? math.calculateDiffToRef(
-            toBigInt(offerPrice, RUNTIME_DECIMALS),
-            toBigInt(marketPrice, RUNTIME_DECIMALS),
-          )
-        : null
-
     return {
       ...offer,
       assetAmountIn,
@@ -59,7 +48,6 @@ export const mapOtcOffersToTableData =
       nativePrice,
       marketPrice,
       nativeMarketPrice,
-      marketPricePercentage,
     }
   }
 

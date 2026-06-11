@@ -17,6 +17,12 @@ type Args = {
   readonly enabled?: boolean
 }
 
+// Beyond these, the Omnipool quote isn't a genuine alternative — e.g. the
+// asset has no real pool, so the router returns a dust amount and the
+// comparison explodes to nonsense (millions of %). Suppress it instead.
+const MAX_VIABLE_PRICE_IMPACT_PCT = 50
+const MAX_PLAUSIBLE_DIFF_PCT = 100
+
 export type OtcOmnipoolComparison = {
   /** Human amount of assetOut you'd get swapping the same amountIn on Omnipool. */
   readonly omnipoolReceive: string
@@ -74,12 +80,19 @@ export const useOtcOmnipoolComparison = ({
         ? otc.div(omni).minus(1).times(100).toNumber()
         : omni.div(otc).minus(1).times(100).toNumber()
 
-      comparison = {
-        omnipoolReceive,
-        betterForTaker,
-        diffPct,
-        priceImpactPct: swap.priceImpactPct,
-        tradeFeePct: swap.tradeFeePct,
+      const isViableRoute =
+        Number.isFinite(swap.priceImpactPct) &&
+        Math.abs(swap.priceImpactPct) <= MAX_VIABLE_PRICE_IMPACT_PCT &&
+        diffPct <= MAX_PLAUSIBLE_DIFF_PCT
+
+      if (isViableRoute) {
+        comparison = {
+          omnipoolReceive,
+          betterForTaker,
+          diffPct,
+          priceImpactPct: swap.priceImpactPct,
+          tradeFeePct: swap.tradeFeePct,
+        }
       }
     }
   }

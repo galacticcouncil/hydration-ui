@@ -32,12 +32,18 @@ export const otcColumnSortPriority: ReadonlyArray<OtcColumn> = [
   OtcColumn.PartiallyFillable,
 ]
 
-export type OtcOfferTabular = OtcOffer & {
+export type OtcOfferPriced = OtcOffer & {
   readonly offerPrice: string | null
   readonly nativePrice: string | null
   readonly marketPrice: string | null
   readonly nativeMarketPrice: string | null
+}
+
+export type OtcOfferTabular = OtcOfferPriced & {
+  // % vs AMM fulfillment (remaining size, incl. price impact + fees).
+  // null = no good data to compare → render "N/A".
   readonly marketPricePercentage: number | null
+  readonly isMarketLoading: boolean
 }
 
 const columnHelper = createColumnHelper<OtcOfferTabular>()
@@ -114,7 +120,10 @@ export const useOtcTableColums = () => {
         }),
         cell: ({ row }) => {
           return (
-            <OfferMarketPriceColumn offer={row.original} />
+            <OfferMarketPriceColumn
+              offer={row.original}
+              isOwnOrder={!!userAddress && row.original.owner === userAddress}
+            />
           )
         },
       },
@@ -129,7 +138,10 @@ export const useOtcTableColums = () => {
       }),
       cell: ({ row }) => (
         <TableRowDetailsExpand>
-          <OfferMarketPriceColumn offer={row.original} />
+          <OfferMarketPriceColumn
+            offer={row.original}
+            isOwnOrder={!!userAddress && row.original.owner === userAddress}
+          />
         </TableRowDetailsExpand>
       ),
     })
