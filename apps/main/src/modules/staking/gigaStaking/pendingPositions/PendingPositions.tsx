@@ -41,6 +41,10 @@ export const PendingPositions: FC = () => {
     return null
   }
 
+  if (visiblePositions.length === 0) {
+    setCurrentPage(Math.max(1, currentPage - 1))
+  }
+
   return (
     <Paper asChild>
       <Flex direction="column" py="l" gap="l">

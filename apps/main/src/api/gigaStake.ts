@@ -30,16 +30,19 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const [minStake, cooldownPeriod] = await Promise.all([
+      const [minStake, cooldownPeriod, maxPendingUnstakes] = await Promise.all([
         unsafeApi.constants.GigaHdx.MinStake(),
         unsafeApi.constants.GigaHdx.CooldownPeriod(),
+        unsafeApi.constants.GigaHdx.MaxPendingUnstakes(),
       ])
 
       return {
         minStake,
         cooldownPeriod,
+        maxPendingUnstakes,
       } as {
         minStake: bigint
+        maxPendingUnstakes: number
         /** blocks number after unstaking */
         cooldownPeriod: number
       }
@@ -170,52 +173,60 @@ export const gigapotBalanceQuery = (rpc: TProviderContext) =>
       return free
     },
   })
-export const referendaRewardPoolQuery = (
-  rpc: TProviderContext,
-  refId: number,
-) =>
+export type ReferendaRewardPoolEntry = {
+  total_reward: bigint
+  remaining_reward: bigint
+  total_weighted_votes: bigint
+  track_id: number
+  voters_remaining: number
+}
+
+export const referendaRewardPoolQuery = (rpc: TProviderContext) =>
   queryOptions({
-    queryKey: ["referendaRewardPool", refId],
+    queryKey: ["referendaRewardPool"],
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const referendaRewardPool =
-        (await unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getValue(
-          refId,
-          { at: "best" },
-        )) ?? null
+      const entries =
+        (await unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
+          at: "best",
+        })) as Array<{
+          keyArgs: [number]
+          value: ReferendaRewardPoolEntry
+        }>
 
-      return referendaRewardPool as {
-        total_reward: bigint
-        remaining_reward: bigint
-        total_weighted_votes: bigint
-        track_id: number
-        voters_remaining: number
-      } | null
+      return new Map(entries.map(({ keyArgs, value }) => [keyArgs[0], value]))
     },
   })
 
-export const referendaTotalWeightedVotesQuery = (
-  rpc: TProviderContext,
-  refId: number,
-) =>
+export type ReferendaTotalWeightedVotesEntry = {
+  total_weighted: bigint
+  voters_count: number
+}
+
+export const referendaTotalWeightedVotesQuery = (rpc: TProviderContext) =>
   queryOptions({
-    queryKey: ["referendaTotalWeightedVotes", refId],
+    queryKey: ["referendaTotalWeightedVotes"],
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-      return (await unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getValue(
-        refId,
-        { at: "best" },
-      )) as {
-        total_weighted: bigint
-        voters_count: number
-      } | null
+
+      const entries =
+        (await unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries(
+          {
+            at: "best",
+          },
+        )) as Array<{
+          keyArgs: [number]
+          value: ReferendaTotalWeightedVotesEntry
+        }>
+
+      return new Map(entries.map(({ keyArgs, value }) => [keyArgs[0], value]))
     },
   })
 
@@ -305,9 +316,10 @@ export const gigaRewardPoolEstimateQuery = (
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
-      const allocated = await rpc.queryClient.fetchQuery(
-        referendaRewardPoolQuery(rpc, refId),
+      const rewardPools = await rpc.queryClient.fetchQuery(
+        referendaRewardPoolQuery(rpc),
       )
+      const allocated = rewardPools.get(refId)
 
       if (allocated) {
         return {
@@ -424,9 +436,16 @@ export const claimableVotingRewardsQuery = (
         }
       }
 
-      const [accumulatorAccount, votingForEntries] = await Promise.all([
+      const [
+        accumulatorAccount,
+        votingForEntries,
+        rewardPools,
+        liveWeightedVotes,
+      ] = await Promise.all([
         rpc.queryClient.fetchQuery(accumulatorPotBalanceQuery(rpc)),
         rpc.queryClient.fetchQuery(accountOpenGovVotesQuery(rpc, who)),
+        rpc.queryClient.fetchQuery(referendaRewardPoolQuery(rpc)),
+        rpc.queryClient.fetchQuery(referendaTotalWeightedVotesQuery(rpc)),
       ])
 
       const potFree = accumulatorAccount.free
@@ -462,9 +481,7 @@ export const claimableVotingRewardsQuery = (
 
           let share = 0n
           const weighted = record.weighted
-          const allocated = await rpc.queryClient.ensureQueryData(
-            referendaRewardPoolQuery(rpc, refIndex),
-          )
+          const allocated = rewardPools.get(refIndex)
           const referendumTrack = await rpc.queryClient.ensureQueryData(
             referendumTracksQuery(rpc, refIndex),
           )
@@ -481,9 +498,7 @@ export const claimableVotingRewardsQuery = (
               share = (weighted * totalReward) / totalWeighted
             }
           } else if (trackId !== null) {
-            const liveTally = await rpc.queryClient.ensureQueryData(
-              referendaTotalWeightedVotesQuery(rpc, refIndex),
-            )
+            const liveTally = liveWeightedVotes.get(refIndex)
 
             if (liveTally) {
               const pct = getRewardTrackPercentage(trackId)

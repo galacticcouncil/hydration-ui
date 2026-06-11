@@ -41,6 +41,7 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
     form,
     onSubmit,
     maxUnstake,
+    displayAmount,
     amountInHdx,
     frozenInGigaHdx,
     debtLockedInGigaHdx,
@@ -63,6 +64,9 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
             assets={[]}
             disabledAssetSelector
             maxBalance={maxUnstake}
+            displayValue={t("common:currency", {
+              value: displayAmount,
+            })}
             balanceLabel={t("common:available")}
           />
         </Box>

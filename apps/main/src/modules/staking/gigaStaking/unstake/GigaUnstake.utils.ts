@@ -14,7 +14,9 @@ import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
   gigaQueryKey,
+  gigaStakeConstantsQuery,
   gigaTotalLockedQuery,
+  gigaUnstakePositionsQuery,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
@@ -41,6 +43,12 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const { data: gigaAccountStakes } = useQuery(
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
+
+  const { data: pendingPositions = [] } = useQuery(
+    gigaUnstakePositionsQuery(rpc, account?.address ?? ""),
+  )
+  const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
+  const maxPendingUnstakes = gigaStakeConstants?.maxPendingUnstakes ?? 0
 
   const { data: claimableRewards } = useQuery(
     claimableVotingRewardsQuery(rpc, account?.address ?? ""),
@@ -105,16 +113,44 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     },
 
     resolver: standardSchemaResolver(
-      z.object({
-        amount: positive.refine((value) => Big(value || "0").lte(maxUnstake), {
-          error: t("error.maxBalance"),
-        }),
-        asset: z.custom<TAssetData>(),
-      }),
+      z
+        .object({
+          amount: positive,
+          asset: z.custom<TAssetData>(),
+        })
+        .check(
+          z.refine<GigaUnstakeFormValues>(
+            ({ amount }) => Big(amount || "0").lte(maxUnstake),
+            {
+              error: t("error.maxBalance"),
+              path: ["amount"],
+            },
+          ),
+        )
+        .check(
+          z.refine<GigaUnstakeFormValues>(
+            ({ amount }) =>
+              amount === "" ||
+              !gigaStakeConstants ||
+              pendingPositions.length < maxPendingUnstakes,
+            {
+              error: t(
+                "staking:gigaStaking.unstake.error.maxPendingPositions",
+                {
+                  max: maxPendingUnstakes,
+                },
+              ),
+              path: ["amount"],
+            },
+          ),
+        ),
     ),
   })
 
   const amount = form.watch("amount") || "0"
+  const displayAmount = Big(amount)
+    .mul(hdxReserve.reserve.priceInUSD || 1)
+    .toString()
 
   const amountInHdx = exchangeRate
     ? Big(amount).mul(exchangeRate.toString()).toString()
@@ -240,6 +276,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
     meta,
     maxUnstake,
     amountInHdx,
+    displayAmount,
     frozenInGigaHdx,
     debtLockedInGigaHdx,
     onSubmit,

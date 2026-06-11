@@ -5,37 +5,17 @@ import { daysInYear, secondsInDay } from "date-fns/constants"
 
 import { bestNumberQuery } from "@/api/chain"
 import {
+  accumulatorPotBalanceQuery,
   getRewardTrackPercentage,
   gigapotBalanceQuery,
   gigaTotalLockedQuery,
-  REWARD_ACCUMULATOR_POT_ADDRESS,
+  referendaRewardPoolQuery,
+  referendaTotalWeightedVotesQuery,
+  referendumTracksQuery,
   STAKE_GIGAPOT_ADDRESS,
 } from "@/api/gigaStake"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
-type PalletGigahdxRewardsReferendaReward = {
-  keyArgs: [number]
-  value: {
-    totalReward: bigint
-    remainingReward: bigint
-    totalWeightedVotes: bigint
-    trackId: number
-    votersRemaining: number
-  }
-}
-
-type PalletGigahdxRewardsReferendumLiveTally = {
-  keyArgs: [number]
-  value: {
-    totalWeighted: bigint
-    votersCount: number
-  }
-}
-
-type PalletGigahdxRewardsReferendumTracks = {
-  keyArgs: [number]
-  value: number
-}
 /**
  * GIGAHDX APR (annual percentage return).
  *
@@ -141,6 +121,7 @@ export const passiveAprQuery = (
 // ---------------------------------------------------------------------------
 // Voting APR (active — referendum reward shares)
 // ---------------------------------------------------------------------------
+const REFS_PER_YEAR = 75
 
 /**
  * Voting APR — annualised share of referendum reward pools at max
@@ -176,57 +157,17 @@ export const passiveAprQuery = (
 export const votingAprQuery = (
   rpc: TProviderContext,
   stakeValueHdxPlanck: bigint,
-  windowDays: number = DEFAULT_WINDOW_DAYS,
 ) =>
   queryOptions({
     ...APR_QUERY_OPTS,
-    queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString(), windowDays],
+    queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString()],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const [
-        allocatedEntries,
-        liveEntries,
-        cachedTrackEntries,
-        rewardPotAcct,
-        bestNumber,
-      ] = await Promise.all([
-        unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
-          at: "best",
-        }) as PalletGigahdxRewardsReferendaReward[],
-        unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries({
-          at: "best",
-        }) as PalletGigahdxRewardsReferendumLiveTally[],
-        unsafeApi.query.GigaHdxRewards.ReferendumTracks.getEntries({
-          at: "best",
-        }) as PalletGigahdxRewardsReferendumTracks[],
-        rpc.sdk.client.balance.getSystemBalance(REWARD_ACCUMULATOR_POT_ADDRESS),
-        rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
+      const [allocatedEntries, liveEntries, rewardPotAcct] = await Promise.all([
+        rpc.queryClient.ensureQueryData(referendaRewardPoolQuery(rpc)),
+        rpc.queryClient.ensureQueryData(referendaTotalWeightedVotesQuery(rpc)),
+        rpc.queryClient.fetchQuery(accumulatorPotBalanceQuery(rpc)),
       ])
-
-      const parachainBlockNumber = bestNumber.parachainBlockNumber
-
-      // Index pre-fetched data by ref id.
-      const allocated = new Map<
-        number,
-        { totalReward: bigint; totalWeightedVotes: bigint }
-      >()
-      for (const { keyArgs, value } of allocatedEntries) {
-        allocated.set(keyArgs[0], {
-          totalReward: value.totalReward,
-          totalWeightedVotes: value.totalWeightedVotes,
-        })
-      }
-      const live = new Map<number, bigint>()
-      for (const { keyArgs, value } of liveEntries) {
-        live.set(keyArgs[0], value.totalWeighted)
-      }
-      const cachedTracks = new Map<number, number>()
-      for (const { keyArgs, value } of cachedTrackEntries) {
-        cachedTracks.set(keyArgs[0], value)
-      }
 
       const potFree = rewardPotAcct.free
 
@@ -236,87 +177,69 @@ export const votingAprQuery = (
 
       // Iterate the union of refs that have any pool we can size — either
       // an exact allocation or a live tally we can estimate against.
-      const refIds = new Set<number>([...allocated.keys(), ...live.keys()])
+      const refIds = new Set<number>([
+        ...allocatedEntries.keys(),
+        ...liveEntries.keys(),
+      ])
 
-      let sumPerStakeUnit = Big(0)
-      const perRefContrib: Array<{
-        refId: number
-        pool: string
-        weighted: string
-        contrib: string
-        source: string
-      }> = []
-      for (const refId of refIds) {
-        const alloc = allocated.get(refId)
+      const promises = Array.from(refIds).map(async (refId) => {
         let pool: bigint
         let weighted: bigint
+
+        const alloc = allocatedEntries.get(refId)
+
         if (alloc) {
-          pool = alloc.totalReward
-          weighted = alloc.totalWeightedVotes
+          pool = alloc.total_reward
+          weighted = alloc.total_weighted_votes
         } else {
-          // Pre-allocation: pool sized at today's pot × track percentage.
-          // Track id must be known — populated in `ReferendumTracks` on the
-          // first vote (`on_before_vote` runtime hook). If we somehow have a
-          // tally without a cached track, skip the ref.
-          const trackId = cachedTracks.get(refId)
-          if (trackId === undefined) continue
+          const trackId = await rpc.queryClient.ensureQueryData(
+            referendumTracksQuery(rpc, refId),
+          )
+          if (trackId === null) return { contrib: Big(0), countedRefs: false }
           const pct = getRewardTrackPercentage(trackId)
           pool = (potFree * BigInt(pct)) / 100n
-          weighted = live.get(refId) ?? 0n
+          weighted = liveEntries.get(refId)?.total_weighted ?? 0n
         }
-        // Sanity filter: refs whose existing voters total a dust amount
-        // produce wildly inflated marginal-stake projections at the fleet
-        // (stakeValue = 0) limit. See `MIN_REAL_VOTE_WEIGHTED` doc-comment.
+
         if (weighted < MIN_REAL_VOTE_WEIGHTED) {
-          perRefContrib.push({
-            refId,
-            pool: pool.toString(),
-            weighted: weighted.toString(),
-            contrib: "0",
-            source: alloc ? "alloc-filtered" : "estimate-filtered",
-          })
-          continue
+          return { contrib: Big(0), countedRefs: false }
         }
+
         const denom = Big(weighted.toString()).plus(myWeightedBig)
         if (denom.lte(0)) {
-          perRefContrib.push({
-            refId,
-            pool: pool.toString(),
-            weighted: weighted.toString(),
-            contrib: "0",
-            source: alloc ? "alloc-zero-denom" : "estimate-zero-denom",
-          })
-          continue
+          return { contrib: Big(0), countedRefs: false }
         }
-        const c = Big(pool.toString()).times(multBig).div(denom)
-        sumPerStakeUnit = sumPerStakeUnit.plus(c)
-        perRefContrib.push({
-          refId,
-          pool: pool.toString(),
-          weighted: weighted.toString(),
-          contrib: c.toFixed(6),
-          source: alloc ? "alloc" : "estimate",
-        })
-      }
 
-      const blocksPerDay = getBlocksPerDay(
-        millisecondsToSeconds(rpc.slotDurationMs),
+        return {
+          contrib: Big(pool.toString()).times(multBig).div(denom),
+          countedRefs: true,
+        }
+      })
+
+      const promisesRes = await Promise.all(promises)
+
+      const { countedRefs, sumPerStakeUnit } = promisesRes.reduce(
+        (acc, curr) => {
+          if (curr.countedRefs) {
+            acc.countedRefs += 1
+            acc.sumPerStakeUnit = acc.sumPerStakeUnit.plus(curr.contrib)
+          }
+          return acc
+        },
+        { countedRefs: 0, sumPerStakeUnit: Big(0) },
       )
 
-      const windowBlocks = windowDays * blocksPerDay
-      const actualWindowBlocks = Math.min(
-        windowBlocks,
-        Math.max(1, parachainBlockNumber - 1),
-      )
-      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
+      // No refs contributed → no meaningful projection. Return 0% rather
+      // than dividing by zero. Caller already falls back to Big(0) when
+      // data is undefined; this is the well-defined "nothing to project"
+      // path.
+      if (countedRefs === 0) return Big(0)
 
-      return sumPerStakeUnit.times(365).div(actualWindowDays).times(100)
+      // Project forward: treat the current snapshot as a representative
+      // cross-section, average per ref, scale by assumed annual cadence.
+      return sumPerStakeUnit.div(countedRefs).times(REFS_PER_YEAR).times(100)
     },
   })
-
-// ---------------------------------------------------------------------------
-// Combined hook
-// ---------------------------------------------------------------------------
 
 /**
  * Combined GIGAHDX APR hook.
@@ -328,14 +251,14 @@ export const votingAprQuery = (
  */
 export const useGigaApr = (stakeValueHdxPlanck: bigint = 0n) => {
   const rpc = useRpcProvider()
-  stakeValueHdxPlanck
+
   const passiveQuery = useQuery(passiveAprQuery(rpc))
-  //const votingQueryResult = useQuery(votingAprQuery(rpc, stakeValueHdxPlanck))
+  const votingQueryResult = useQuery(votingAprQuery(rpc, stakeValueHdxPlanck))
 
   const passive = passiveQuery.data ?? Big(0)
-  //const voting = votingQueryResult.data ?? Big(0)
-  const total = passive //.plus(voting)
-  const isLoading = passiveQuery.isLoading //|| votingQueryResult.isLoading
+  const voting = votingQueryResult.data ?? Big(0)
+  const total = passive.plus(voting)
+  const isLoading = passiveQuery.isLoading || votingQueryResult.isLoading
 
-  return { passive, total, isLoading }
+  return { passive, voting, total, isLoading }
 }

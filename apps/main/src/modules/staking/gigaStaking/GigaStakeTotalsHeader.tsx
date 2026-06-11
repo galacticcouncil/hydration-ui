@@ -17,6 +17,7 @@ import { millisecondsToHours } from "date-fns"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import {
   borrowReservesQuery,
   gigaLendingPoolAddressProvider,
@@ -32,6 +33,7 @@ import {
 import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 /**
@@ -54,32 +56,53 @@ export const GigaStakeTotalsHeader: FC = () => {
     gigaStakeConstantsQuery(rpc),
   )
 
-  //@TODO: review this
   const { data: exchangeRate, isLoading: isExchangeRateLoading } =
     useGigaStakeExchangeRate()
 
   const { data: gigaBorrowSummary, isSuccess } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
+
+  const { getBalance } = useAccountBalances()
+  const nativeBalance = getBalance(native.id)
+  const { data: locksData } = useNativeTokenLocks()
+
+  const stakeableHdxPlanck = (() => {
+    if (!nativeBalance) return 0n
+    const free = BigInt(nativeBalance.free.toString())
+    const vested = locksData?.get(TokenLockType.Vesting) ?? 0n
+    const classicStake = locksData?.get(TokenLockType.Staking) ?? 0n
+    const gigaStaked = locksData?.get(TokenLockType.GigaStaking) ?? 0n
+    const spendable = free - vested - classicStake - gigaStaked
+    return spendable > 0n ? spendable : 0n
+  })()
+
   // Convert user GIGAHDX × rate → HDX planck. Returns the default reference
   // when the user has no position (or no rate yet).
-  const aprReferenceStake = (() => {
-    if (!exchangeRate) return DEFAULT_REFERENCE_STAKE_HDX_PLANCK
+  const stakedHdxPlanck = (() => {
+    if (!exchangeRate) return 0n
     const ghdxBig = Big(userGhdxHuman)
-    if (ghdxBig.lte(0)) return DEFAULT_REFERENCE_STAKE_HDX_PLANCK
+    if (ghdxBig.lte(0)) return 0n
     const hdxHuman = ghdxBig.times(exchangeRate.toString())
     return BigInt(
       hdxHuman.times(`1e${native.decimals}`).round(0, Big.roundDown).toString(),
     )
   })()
+  const totalReferenceStake = stakedHdxPlanck + stakeableHdxPlanck
+  const aprReferenceStake =
+    totalReferenceStake > 0n
+      ? totalReferenceStake
+      : DEFAULT_REFERENCE_STAKE_HDX_PLANCK
+
   // We render passive and voting on separate lines (Option 2 split) to make
   // the conditionality of voting APR explicit — a passive holder earns only
   // the base component; voting is "+ up to X% if you vote at max conviction".
   const {
+    total,
     passive: aprPassive,
-    //voting: aprVoting,
+    voting: aprVoting,
     isLoading: isAprLoading,
   } = useGigaApr(aprReferenceStake)
-  //end
+
   const cooldownPeriodDays =
     millisecondsToHours((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) /
     24
@@ -156,18 +179,19 @@ export const GigaStakeTotalsHeader: FC = () => {
           isLoading={isAprLoading}
           customValue={
             <ValueStatsValue size="medium">
-              {t("staking:dashboard.projectedAPR.base", {
-                value: Number(aprPassive.toFixed(2)),
+              {t("percent", {
+                value: Number(total.toFixed(2)),
               })}
             </ValueStatsValue>
           }
-          // customBottomLabel={
-          //   <ValueStatsBottomValue>
-          //     {t("staking:dashboard.projectedAPR.voting", {
-          //       value: Number(aprVoting.toFixed(2)),
-          //     })}
-          //   </ValueStatsBottomValue>
-          // }
+          customBottomLabel={
+            <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
+              {t("staking:dashboard.projectedAPR.summ", {
+                voting: Number(aprVoting.toFixed(2)),
+                base: Number(aprPassive.toFixed(2)),
+              })}
+            </Text>
+          }
         />
       </Tooltip>
 
@@ -216,11 +240,11 @@ export const ProjectedAPRTooltipContent = () => {
         </Trans>
       </Text>
 
-      {/* <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
         <Trans t={t} i18nKey="gigaStaking.projectedAPR.voting.tooltip">
           <Text fw={600} />
         </Trans>
-      </Text> */}
+      </Text>
 
       <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
         {lines[3]}

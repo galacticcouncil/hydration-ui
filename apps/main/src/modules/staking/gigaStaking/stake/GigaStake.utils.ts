@@ -66,7 +66,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
 
   const availableHDXReserveCap = Big(hdxReserve.supplyCap)
     .minus(hdxReserve.totalLiquidity)
-    .times(exchangeRate?.toString() || "0")
+    .times(exchangeRate?.toString() || 1)
     .toString()
 
   const {

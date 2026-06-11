@@ -60,6 +60,7 @@
   "gigaStaking.borrow.error.borrowLimit": "You can't borrow more than the available borrow amount.",
   "gigaStaking.repay.error.repayLimit": "You can't repay more than your borrowed amount.",
   "gigaStaking.unstake.error.unstakeLimit": "You can't unstake more than your safe unstake limit.",
+  "gigaStaking.unstake.error.maxPendingPositions": "Max unstaking positions is {{ max }}",
   "gigaHdxDescription.points": [
     [
       "What's giga HDX?",
@@ -134,8 +135,7 @@
   "dashboard.supplyStaked.title": "{{ symbol }} Supply Staked",
   "dashboard.supplyStaked.ofSupply": "<0>of {{ amount }}</0> liquid supply",
   "dashboard.projectedAPR": "Projected APR",
-  "dashboard.projectedAPR.base": "{{ value, percent }} base",
-  "dashboard.projectedAPR.voting": "+ up to {{ value, percent }} voting",
+  "dashboard.projectedAPR.summ": "{{ base, percent }} base + {{ voting, percent }} voting",
   "dashboard.projectedAPR.tooltip.docs": "Go to docs",
   "dashboard.projectedAPR.tooltip": [
     "Annualised return from the past 60 days of activity (capped at chain age).",
