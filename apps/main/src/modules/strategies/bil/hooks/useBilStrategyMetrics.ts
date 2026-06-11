@@ -1,6 +1,8 @@
-import { STRATEGY } from "@/modules/strategies/bil/constants"
 import { useBilReserveConfig } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useVaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
+
+const NAX_LTV_PCT_DEFAULT = 80
+const LIQUIDATION_LTV_PCT_DEFAULT = 90
 
 export type BilStrategyMetrics = {
   tvl: number
@@ -17,9 +19,9 @@ export function useBilStrategyMetrics() {
     useBilReserveConfig()
 
   const tvl = vaultStats.totalAssets * vaultStats.exchangeRate
-  const maxLtvPct = reserveConfig?.maxLtvPct ?? STRATEGY.maxLtvPct
+  const maxLtvPct = reserveConfig?.maxLtvPct ?? NAX_LTV_PCT_DEFAULT
   const liquidationLtvPct =
-    reserveConfig?.liquidationThresholdPct ?? STRATEGY.liquidationLtvPct
+    reserveConfig?.liquidationThresholdPct ?? LIQUIDATION_LTV_PCT_DEFAULT
 
   // "Max Net APY" = the leveraged yield an idealized user achieves at max LTV.
   //   L = 1 / (1 − LTV)

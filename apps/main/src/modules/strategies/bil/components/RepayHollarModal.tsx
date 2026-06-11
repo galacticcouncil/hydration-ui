@@ -11,6 +11,7 @@ import {
   SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -25,7 +26,7 @@ interface Props {
   poolPosition: BilPoolPosition | undefined
   /** User's wallet HOLLAR balance (caps the max repay). */
   walletHollar: number
-  onRepay: (amount: number) => void
+  onRepay: (args: { amount: number; repayAll: boolean }) => void
   isPending: boolean
 }
 
@@ -118,7 +119,14 @@ export const RepayHollarModal = ({
           size="large"
           width="100%"
           disabled={!canSubmit}
-          onClick={() => canSubmit && onRepay(inputNum)}
+          onClick={() =>
+            canSubmit &&
+            onRepay({
+              amount: inputNum,
+              repayAll:
+                inputNum > 0 && Big(inputNum).gte(totalDebtUsd.toString()),
+            })
+          }
         >
           {ctaLabel}
         </Button>

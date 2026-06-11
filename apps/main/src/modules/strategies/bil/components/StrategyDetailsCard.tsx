@@ -7,6 +7,7 @@ import {
   Icon,
   Paper,
   Separator,
+  Summary,
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -41,7 +42,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
       </Box>
       <Separator />
 
-      <Flex justify="space-between" gap="l" mb="l" p="l" wrap>
+      <Flex justify="space-between" gap="l" p="l" wrap>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
             {t("bil.strategy.tvl")}
@@ -88,12 +89,12 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
 
       <Separator />
 
-      <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]} p="l">
-        <Box>
+      <Grid columnGap="l" columnTemplate={["1fr", null, null, "1fr 1fr"]} p="l">
+        <Summary withTrailingSeparator justify="flex-start">
           <SummaryRow
             label={t("bil.strategy.collateralAssetLabel")}
             content={
-              <Flex align="center" gap="xs">
+              <Flex align="center" gap="s">
                 <DecentralLogo size={20} />
                 <Text fs="p4" lh={1.5}>
                   {t("bil.strategy.collateralAsset")}
@@ -101,27 +102,10 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
               </Flex>
             }
           />
-          <Separator />
-        </Box>
-        <Box>
-          <SummaryRow
-            label={t("borrow:maxLTV")}
-            content={
-              <Text fs="p4" lh={1.5}>
-                {t("common:percent", {
-                  value: metrics.maxLtvPct,
-                  minimumFractionDigits: 1,
-                })}
-              </Text>
-            }
-          />
-          <Separator />
-        </Box>
-        <Box>
           <SummaryRow
             label={t("bil.strategy.debtAssetLabel")}
             content={
-              <Flex align="center" gap="xs">
+              <Flex align="center" gap="s">
                 <AssetLogo id={HOLLAR_ASSET_ID} size="small" />
                 <Text fs="p4" lh={1.5}>
                   {t("bil.strategy.debtAsset")}
@@ -129,23 +113,6 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
               </Flex>
             }
           />
-          <Separator />
-        </Box>
-        <Box>
-          <SummaryRow
-            label={t("bil.strategy.liquidationLtv")}
-            content={
-              <Text fs="p4" lh={1.5}>
-                {t("common:percent", {
-                  value: metrics.liquidationLtvPct,
-                  minimumFractionDigits: 1,
-                })}
-              </Text>
-            }
-          />
-          <Separator />
-        </Box>
-        <Box>
           <SummaryRow
             label={t("bil.strategy.contractAddress")}
             content={
@@ -159,8 +126,31 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
               </Text>
             }
           />
-          <Separator />
-        </Box>
+        </Summary>
+        <Summary withTrailingSeparator justify="flex-start">
+          <SummaryRow
+            label={t("borrow:maxLTV")}
+            content={
+              <Text fs="p4" lh={1.5}>
+                {t("common:percent", {
+                  value: metrics.maxLtvPct,
+                  minimumFractionDigits: 0,
+                })}
+              </Text>
+            }
+          />
+          <SummaryRow
+            label={t("bil.strategy.liquidationLtv")}
+            content={
+              <Text fs="p4" lh={1.5}>
+                {t("common:percent", {
+                  value: metrics.liquidationLtvPct,
+                  minimumFractionDigits: 0,
+                })}
+              </Text>
+            }
+          />
+        </Summary>
       </Grid>
     </Paper>
   )

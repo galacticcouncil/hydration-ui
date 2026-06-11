@@ -1,4 +1,8 @@
-import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
+import {
+  safeConvertSS58toH160,
+  safeStringify,
+  UINT256_MAX,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -133,28 +137,34 @@ export function useBorrowHollar() {
  *
  * Mirrors `useBorrowHollar` — single `pool.repay(asset, amount, mode, onBehalfOf)`
  * EVM call routed through the project's transaction store. Uses variable rate
- * mode (=2) to match the borrow side. Pass `Number.MAX_SAFE_INTEGER` semantics
- * via the upstream caller to repay the full debt; the call here just forwards
- * the parsed wei amount unchanged.
+ * mode (=2) to match the borrow side. When repaying the full debt, pass
+ * `repayAll: true` so the call uses `UINT256_MAX` (Aave's "repay everything"
+ * sentinel) instead of a fixed wei amount that may drift with accrued interest.
  */
 export function useRepayHollar() {
   const { evmAddress, submitTx } = useBilPoolEvmCall()
 
   return useMutation({
-    mutationFn: (hollarAmount: number) => {
+    mutationFn: ({
+      amount,
+      repayAll,
+    }: {
+      amount: number
+      repayAll?: boolean
+    }) => {
       const data = encodeFunctionData({
         abi: BIL_POOL_ABI,
         functionName: "repay",
         args: [
           HOLLAR_ADDRESS,
-          parseUnits(hollarAmount.toString(), 18),
+          repayAll ? UINT256_MAX : parseUnits(amount.toString(), 18),
           AAVE_INTEREST_RATE_MODE_VARIABLE,
           evmAddress,
         ],
       })
 
       const fmt = i18n.t("common:currency", {
-        value: hollarAmount,
+        value: amount,
         symbol: "HOLLAR",
         maximumFractionDigits: 2,
       })

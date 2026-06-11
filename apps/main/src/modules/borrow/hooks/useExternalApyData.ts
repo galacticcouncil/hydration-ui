@@ -1,37 +1,40 @@
 import { ExternalApyData } from "@galacticcouncil/money-market/types"
-import { EXTERNAL_APY_ASSET_IDS } from "@galacticcouncil/utils"
+import { DCL_ASSET_ID, EXTERNAL_APY_ASSET_IDS } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
-
-type ExternalApyEntry = [
-  string,
-  { supplyApy: string | null; borrowApy: string | null },
-]
+import { useVaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
 
 export const useExternalApyData = (): ExternalApyData => {
   const { data: apy } = useBorrowAssetsApy(EXTERNAL_APY_ASSET_IDS)
+  const { data: vaultStats } = useVaultStats()
 
   return useMemo(() => {
-    if (!apy) return new Map()
+    const entries = apy
+      ? apy.map(({ assetId, totalSupplyApy, totalBorrowApy }) => {
+          const supplyApy = Big(totalSupplyApy).div(100)
+          const borrowApy = Big(totalBorrowApy).div(100)
 
-    const entries: ExternalApyEntry[] = apy.map(
-      ({ assetId, totalSupplyApy, totalBorrowApy }) => {
-        if (totalSupplyApy === null || totalBorrowApy === null) {
-          return [assetId, { supplyApy: null, borrowApy: null }]
-        }
+          return [
+            assetId,
+            {
+              supplyApy: supplyApy.toString(),
+              borrowApy: borrowApy.toString(),
+            },
+          ] as const
+        })
+      : []
 
-        return [
-          assetId,
-          {
-            supplyApy: Big(totalSupplyApy).div(100).toString(),
-            borrowApy: Big(totalBorrowApy).div(100).toString(),
-          },
-        ]
-      },
-    )
+    const map = new Map(entries)
 
-    return new Map(entries)
-  }, [apy])
+    // DCL yield comes from the BIL vault's on-chain APY, not Aave reserve rates.
+    const existing = map.get(DCL_ASSET_ID)
+    map.set(DCL_ASSET_ID, {
+      supplyApy: Big(vaultStats.apr).div(100).toString(),
+      borrowApy: existing?.borrowApy ?? "0",
+    })
+
+    return map
+  }, [apy, vaultStats.apr])
 }

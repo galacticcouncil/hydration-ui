@@ -9,9 +9,9 @@ export const SMethodCard = styled.button<{ active: boolean }>(
     width: 100%;
 
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
-    border-radius: 8px;
+    border-radius: ${theme.radii.m};
 
-    padding: 16px 12px;
+    padding: ${theme.space.l} ${theme.space.m};
 
     cursor: pointer;
 
@@ -19,8 +19,8 @@ export const SMethodCard = styled.button<{ active: boolean }>(
 
     ${active
       ? css`
-          background-color: ${theme.buttons.secondary.outline.fill};
           border-color: ${theme.buttons.secondary.outline.outline};
+          background-color: ${theme.controls.dim.active};
         `
       : css`
           &:hover:not(:disabled) {

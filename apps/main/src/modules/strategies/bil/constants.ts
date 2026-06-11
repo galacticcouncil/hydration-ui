@@ -553,22 +553,6 @@ export const VAULT_ABI = [
   },
 ] as const
 
-// Static (non-display) metadata for the single BIL strategy ("Decentral").
-// User-visible labels and copy live in `i18n/locales/*/bil.json` — this
-// constant only carries values that don't belong in translation.
-//
-// `maxLtvPct` / `liquidationLtvPct` are first-paint fallbacks; the live
-// values come from `useBilReserveConfig` (decoded from the BIL pool's
-// reserve configuration bitmap) and replace these on resolve — only
-// meaningful when BIL_HAS_AAVE_LAYER is true.
-export const STRATEGY = {
-  id: "decentral",
-  /** First-paint LTV fallback (pct). Live value from reserve config. */
-  maxLtvPct: 80,
-  /** First-paint liquidation LTV fallback (pct). Live value from reserve config. */
-  liquidationLtvPct: 90,
-} as const
-
 // Minimal Aave V3 Pool ABI subset — only the calls the BIL-strategy page
 // actually makes. Active on node0.lark (BIL_HAS_AAVE_LAYER = true).
 export const BIL_POOL_ABI = [

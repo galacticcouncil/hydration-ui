@@ -54,16 +54,12 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
   const outputBil =
     vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
 
-  const amountError = formState.errors.amount?.message
-
   const canSubmit =
     formState.isValid && !isPending && !vaultStats.depositsPaused
 
-  const ctaLabel = (() => {
-    if (amountError) return amountError
-    if (vaultStats.depositsPaused) return t("bil.deposit.cta.paused")
-    return t("common:deposit")
-  })()
+  const ctaLabel = vaultStats.depositsPaused
+    ? t("bil.deposit.cta.paused")
+    : t("common:deposit")
 
   const onSubmit = handleSubmit(({ amount }) => {
     onDeposit(parseFloat(amount) || 0)
