@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex } from "viem"
 
 import { useHdclVaultContract } from "@/modules/strategies/hdcl/hooks/useHdclVaultContract"
+import { hdclQueryKeys } from "@/modules/strategies/hdcl/utils/queryKeys"
 
 export interface QueueEntry {
   requestId: number
@@ -34,7 +35,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
   const { data: vault } = useHdclVaultContract()
   return useQuery({
     enabled: !!vault && !!evmAddress,
-    queryKey: ["hdcl-vault-queue", evmAddress],
+    queryKey: hdclQueryKeys.vaultQueue(evmAddress),
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
 
@@ -97,6 +98,5 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
         totalQueuedHdcl,
       }
     },
-    refetchInterval: 30_000,
   })
 }

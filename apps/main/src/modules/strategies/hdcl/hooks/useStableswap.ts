@@ -7,6 +7,7 @@ import { useDebounce } from "use-debounce"
 import { bestSellQuery } from "@/api/trade"
 import type { InstantQuote } from "@/modules/strategies/hdcl/components/WithdrawMethodPicker"
 import { STABLESWAP_HDCL_ASSET_ID } from "@/modules/strategies/hdcl/constants"
+import { HDCL_QUERY_KEY_PREFIX } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -111,34 +112,8 @@ export function useInstantRedeem() {
           success: `${fmt} redeemed for HOLLAR`,
           error: `Instant redeem failed`,
         },
-        invalidateQueries: [
-          ["hdcl-vault-balances"],
-          ["hdcl-vault-stats"],
-          ["hdcl-pool-position"],
-        ],
+        invalidateQueries: [[HDCL_QUERY_KEY_PREFIX]],
       })
     },
   })
 }
-
-// NOTE: there is intentionally NO `useInstantRedeemFromQueue` hook.
-//
-// We tried building one (cancelRedeem on EVM + substrate router-trade of
-// raw HDCL → HOLLAR, batched). The cancel side worked, but the SDK's
-// router rejects asset 55 (raw HDCL) with "55 is not supported asset"
-// because the HDCL Aave instance is a SECOND, separate Aave deployment
-// from the main money-market — and the SDK discovers Aave reserves via
-// the runtime's `AaveTradeExecutor.pools()` API, which on Hydration is
-// backed by a single-pool storage value (`pallet_liquidation::Borrowing-
-// Contract`) and only ever returns reserves for the main MM pool.
-//
-// Making the SDK aware of the second instance requires upgrading that
-// chain-side storage to a map and looping the runtime API over all
-// registered pools. That's a `hydration-node` runtime upgrade + governance
-// flow, deferred (see HDCL-UI-HANDOVER.md "SDK doesn't know about the
-// second Aave instance").
-//
-// Until that lands, users wanting an instant exit on a queued request
-// click Cancel (which auto-resupplies the freed HDCL as aHDCL) and then
-// use the WithdrawModal's instant path on the liquid aHDCL balance. Two
-// signatures, but no atomicity hole and no surprises.

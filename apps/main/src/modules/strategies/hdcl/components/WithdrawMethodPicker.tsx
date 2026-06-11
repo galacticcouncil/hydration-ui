@@ -1,6 +1,7 @@
 import { Hourglass, Zap } from "@galacticcouncil/ui/assets/icons"
 import {
   Chip,
+  ChipVariant,
   CollapsibleContent,
   CollapsibleRoot,
   Flex,
@@ -59,16 +60,6 @@ export const projectRate = (
   days: number,
 ) => currentRate * Math.pow(1 + aprPercent / 100, days / 365)
 
-/**
- * Method picker cards inside the Withdraw modal — Figma 7526:34522 / 35079 / 35082.
- *
- * Two stacked selectable cards. The selected card expands to show its detail
- * (timeline + breakdown for queue; quote breakdown for instant). The unselected
- * card collapses to its header.
- *
- * The instant card stays clickable but the modal's submit button gates on
- * `instantAvailable` until the secondary-market stableswap deploys.
- */
 export const WithdrawMethodPicker = ({
   selected,
   onSelect,
@@ -80,54 +71,24 @@ export const WithdrawMethodPicker = ({
   instantQuote,
   instantAvailable,
 }: Props) => {
-  const { t } = useTranslation(["hdcl", "common"])
-  // Project the exchange rate forward to fulfillment — the vault keeps
-  // accruing yield during the queue wait, so the user's HOLLAR payout is
-  // calculated against the rate at fulfillment, not today's rate.
+  const { t } = useTranslation(["strategies", "common"])
+
   const projectedRate = projectRate(exchangeRate, aprPercent, worstCaseWaitDays)
   const queueHollarOut = amountHdcl * projectedRate
 
-  // Timeline stops are read directly from contract state:
-  //   Next maturity  = next vault position's maturityTime - now
-  //   Est. receive   = worstCaseWaitDays (queue-contention wait estimate
-  //                    in case A, or simply next maturity in case B)
-  // When no positions are active yet, fall back to a single "Est. receive"
-  // stop based on the queue's getEstimatedWaitTime view.
-  /* const hasMaturity = nextMaturityDays > 0
-  const timelineStops: TimelineStop[] = [
-    {
-      label: t("method.timeline.today"),
-      sublabel: t("method.timeline.queueEntered"),
-      status: "active",
-    },
-    ...(hasMaturity
-      ? [
-          {
-            label: t("method.timeline.nextMaturity"),
-            sublabel: t("method.timeline.dayN", { day: nextMaturityDays }),
-            status: "future" as const,
-          },
-        ]
-      : []),
-    {
-      label: t("method.timeline.estReceive"),
-      sublabel: t("method.timeline.byDayN", { day: worstCaseWaitDays }),
-      status: "future" as const,
-    },
-  ] */
-
   return (
     <Flex direction="column" gap="base">
-      {/* Queue method card */}
       <MethodCard
         active={selected === "queue"}
         onClick={() => onSelect("queue")}
       >
         <CardHeader
-          title={t("method.queue.title")}
-          subtitle={t("method.queue.subtitle")}
+          title={t("hdcl.method.queue.title")}
+          subtitle={t("hdcl.method.queue.subtitle")}
           icon={Hourglass}
-          rightChip={t("method.queue.upToDays", { days: worstCaseWaitDays })}
+          rightChip={t("hdcl.method.queue.upToDays", {
+            days: worstCaseWaitDays,
+          })}
           rightChipVariant="secondary"
         />
         <CollapsibleRoot open={selected === "queue" && queueHollarOut > 0}>
@@ -137,46 +98,43 @@ export const WithdrawMethodPicker = ({
               bg={getToken("text.high")}
               sx={{ opacity: 0.1 }}
             />
-            {/* <WithdrawTimeline stops={timelineStops} /> */}
             <DetailRow
-              label={t("method.queue.youReceive")}
+              label={t("hdcl.method.queue.youReceive")}
               value={t("common:currency", {
                 value: queueHollarOut,
                 symbol: "HOLLAR",
               })}
             />
             <DetailRow
-              label={t("method.queue.atRate")}
-              value={t("method.queue.atRateValue", {
+              label={t("hdcl.method.queue.atRate")}
+              value={t("hdcl.method.queue.atRateValue", {
                 rate: t("common:number", {
                   value: projectedRate,
-                  maximumFractionDigits: 4,
                 }),
               })}
             />
             <DetailRow
-              label={t("method.queue.delay")}
-              value={t("method.queue.delayValue")}
+              label={t("hdcl.method.queue.delay")}
+              value={t("hdcl.method.queue.delayValue")}
             />
           </CollapsibleContent>
         </CollapsibleRoot>
       </MethodCard>
 
-      {/* Instant method card */}
       <MethodCard
         active={selected === "instant"}
         onClick={() => onSelect("instant")}
         disabled={!instantAvailable}
       >
         <CardHeader
-          title={t("method.instant.title")}
+          title={t("hdcl.method.instant.title")}
           icon={Zap}
           subtitle={
             instantAvailable
-              ? t("method.instant.subtitleAvailable")
-              : t("method.instant.subtitleUnavailable")
+              ? t("hdcl.method.instant.subtitleAvailable")
+              : t("hdcl.method.instant.subtitleUnavailable")
           }
-          rightChip={t("method.instant.chip")}
+          rightChip={t("hdcl.method.instant.chip")}
           rightChipVariant="primary"
         />
         <CollapsibleRoot open={selected === "instant" && !!instantQuote}>
@@ -193,14 +151,14 @@ export const WithdrawMethodPicker = ({
                     earlier "-2.8% discount" abstract — users found it easier
                     to reason about real numbers than a percentage. */}
                 <DetailRow
-                  label={t("method.instant.youReceiveNow")}
+                  label={t("hdcl.method.instant.youReceiveNow")}
                   value={t("common:currency", {
                     value: instantQuote.expectedHollar,
                     symbol: "HOLLAR",
                   })}
                 />
                 <DetailRow
-                  label={t("method.instant.youReceiveQueue", {
+                  label={t("hdcl.method.instant.youReceiveQueue", {
                     days: worstCaseWaitDays,
                   })}
                   value={t("common:currency", {
@@ -209,26 +167,24 @@ export const WithdrawMethodPicker = ({
                   })}
                 />
                 <DetailRow
-                  label={t("method.instant.difference")}
+                  label={t("hdcl.method.instant.difference")}
                   value={(() => {
                     const delta = instantQuote.expectedHollar - queueHollarOut
-                    const sign = delta >= 0 ? "+" : ""
-                    const pctSign = instantQuote.discountPct >= 0 ? "+" : ""
-                    return `${sign}${t("common:currency", {
+                    return `${t("common:currency", {
                       value: delta,
                       symbol: "HOLLAR",
-                      maximumFractionDigits: 2,
-                    })} (${pctSign}${t("common:number", {
+                      signDisplay: "always",
+                    })} (${t("common:percent", {
                       value: instantQuote.discountPct,
-                      maximumFractionDigits: 1,
-                    })}%)`
+                      signDisplay: "always",
+                    })})`
                   })()}
                   valueTone={
                     instantQuote.discountPct < 0 ? "warning" : "neutral"
                   }
                 />
                 <DetailRow
-                  label={t("method.instant.slippage")}
+                  label={t("hdcl.method.instant.slippage")}
                   value={t("common:percent", {
                     value: instantQuote.slippagePct,
                   })}
@@ -273,7 +229,7 @@ const CardHeader = ({
   title: string
   subtitle: string
   rightChip: string
-  rightChipVariant: "primary" | "secondary"
+  rightChipVariant: ChipVariant
   icon?: ComponentType<SVGProps<SVGSVGElement> & { size?: number }>
 }) => (
   <Flex justify="space-between" align="flex-start" gap="s">
@@ -301,7 +257,7 @@ const DetailRow = ({
   value: React.ReactNode
   valueTone?: "neutral" | "warning"
 }) => (
-  <Flex justify="space-between" align="center" sx={{ py: "s" }}>
+  <Flex justify="space-between" align="center" py="xs">
     <Text fs="p5" color={getToken("text.medium")}>
       {label}
     </Text>

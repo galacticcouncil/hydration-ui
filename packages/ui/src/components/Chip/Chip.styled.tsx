@@ -1,6 +1,5 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import { hexToRgba } from "@galacticcouncil/utils"
 
 import { Box } from "@/components"
 import { createVariants } from "@/utils"
@@ -13,10 +12,15 @@ export type ChipVariant =
   | "success"
   | "warning"
   | "danger"
-  | "green"
-  | "accent"
   | "red"
+  | "orange"
+  | "amber"
+  | "lime"
+  | "green"
+  | "cyan"
+  | "blue"
   | "purple"
+  | "pink"
 
 export type ChipSize = "extra-small" | "small" | "medium" | "large"
 export type SChipProps = {
@@ -30,7 +34,7 @@ const variantStyles = (color: string, bg: string) => css`
   color: ${color};
 `
 
-const variants = createVariants(({ buttons, accents, secondaryColors }) => ({
+const variants = createVariants(({ buttons, accents, tags: { soft } }) => ({
   primary: variantStyles(
     buttons.primary.high.onButton,
     buttons.primary.high.rest,
@@ -47,12 +51,15 @@ const variants = createVariants(({ buttons, accents, secondaryColors }) => ({
   success: variantStyles(accents.success.onEmphasis, accents.success.emphasis),
   warning: variantStyles(accents.alertAlt.onPrimary, accents.alertAlt.primary),
   danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
-  green: variantStyles(accents.success.emphasis, accents.success.dim),
-  red: variantStyles(accents.danger.emphasis, accents.danger.dimBg),
-  purple: variantStyles(
-    secondaryColors.blues.blueViolet,
-    hexToRgba(secondaryColors.blues.blueViolet, 0.3),
-  ),
+  red: variantStyles(soft.red.foreground, soft.red.background),
+  orange: variantStyles(soft.orange.foreground, soft.orange.background),
+  amber: variantStyles(soft.amber.foreground, soft.amber.background),
+  lime: variantStyles(soft.lime.foreground, soft.lime.background),
+  green: variantStyles(soft.green.foreground, soft.green.background),
+  cyan: variantStyles(soft.cyan.foreground, soft.cyan.background),
+  blue: variantStyles(soft.blue.foreground, soft.blue.background),
+  purple: variantStyles(soft.purple.foreground, soft.purple.background),
+  pink: variantStyles(soft.pink.foreground, soft.pink.background),
 }))
 
 const sizes = createVariants((theme) => ({

@@ -1,10 +1,4 @@
-import {
-  Amount,
-  Button,
-  Flex,
-  Text,
-  Tooltip,
-} from "@galacticcouncil/ui/components"
+import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
@@ -47,6 +41,14 @@ export type WithdrawalColumnHandlers = {
   /** Claim settled HOLLAR for a single request (calls vault.redeem). */
   onClaim: (claimableHdcl: number) => void
   isClaiming: boolean
+  /**
+   * Instant-exit a still-queued redemption: cancel + resupply as aHDCL, then
+   * swap the freed aHDCL for HOLLAR. Sequenced two-signature flow.
+   */
+  onInstantRedeem: (id: number, amountHdcl: number) => void
+  isInstantRedeeming: boolean
+  /** Whether the aHDCL/HOLLAR instant-redeem path is available (Aave layer). */
+  instantAvailable: boolean
 }
 
 export const useWithdrawalColumns = ({
@@ -54,8 +56,11 @@ export const useWithdrawalColumns = ({
   isCancelling,
   onClaim,
   isClaiming,
+  onInstantRedeem,
+  isInstantRedeeming,
+  //instantAvailable,
 }: WithdrawalColumnHandlers) => {
-  const { t } = useTranslation(["hdcl", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { isMobile } = useBreakpoints()
 
   const { getAssetWithFallback } = useAssets()
@@ -64,7 +69,7 @@ export const useWithdrawalColumns = ({
 
   return useMemo(() => {
     const amountColumn = columnHelper.accessor("amountHdcl", {
-      header: t("withdrawals.col.amount"),
+      header: t("common:amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
           <HdclLogo size={20} />
@@ -79,7 +84,7 @@ export const useWithdrawalColumns = ({
     })
 
     const estValueColumn = columnHelper.accessor("estHollar", {
-      header: t("withdrawals.col.estValue"),
+      header: t("hdcl.withdrawals.col.estValue"),
       meta: { sx: { textAlign: isMobile ? "right" : "left" } },
       cell: ({ row }) => (
         <Amount
@@ -95,7 +100,7 @@ export const useWithdrawalColumns = ({
     })
 
     const dateColumn = columnHelper.accessor("requestedDate", {
-      header: t("withdrawals.col.date"),
+      header: t("common:date"),
       cell: ({ row }) =>
         row.original.requestedDate.getTime() === 0 ? (
           <Text fs="p4" color={getToken("text.medium")}>
@@ -112,7 +117,7 @@ export const useWithdrawalColumns = ({
 
     const timeRemainingColumn = columnHelper.display({
       id: "timeRemaining",
-      header: t("withdrawals.col.timeRemaining"),
+      header: t("hdcl.withdrawals.col.timeRemaining"),
       cell: ({ row }) => {
         const r = row.original
         // Settled shares that the user hasn't claimed yet — always take
@@ -120,7 +125,7 @@ export const useWithdrawalColumns = ({
         if ((r.claimableHdcl ?? 0) > 0) {
           return (
             <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
-              {t("withdrawals.state.claimable")}
+              {t("hdcl.withdrawals.state.claimable")}
             </Text>
           )
         }
@@ -128,8 +133,8 @@ export const useWithdrawalColumns = ({
           return (
             <Text fs="p4" color={getToken("text.medium")}>
               {r.state === "fulfilled"
-                ? t("withdrawals.state.redeemed")
-                : t("withdrawals.state.cancelled")}
+                ? t("hdcl.withdrawals.state.redeemed")
+                : t("hdcl.withdrawals.state.cancelled")}
             </Text>
           )
         }
@@ -153,8 +158,6 @@ export const useWithdrawalColumns = ({
         const claimable = r.claimableHdcl ?? 0
         const stillActive = isActive(r.state)
         if (!stillActive && claimable <= 0) return null
-        // Per-row Instant: blocked by SDK (handover lesson 11) — disabled
-        // with tooltip pointing to the Cancel-then-modal-Instant flow.
         return (
           <Flex justify="flex-end" align="center" gap="base">
             {claimable > 0 && (
@@ -167,16 +170,25 @@ export const useWithdrawalColumns = ({
                 }}
                 disabled={isClaiming}
               >
-                {t("withdrawals.action.claim")}
+                {t("common:claim")}
               </Button>
             )}
             {stillActive && (
               <>
-                <Tooltip text={t("withdrawals.instantDisabledTooltip")}>
-                  <Button variant="secondary" size="small" disabled>
-                    {t("withdrawals.action.instant")}
-                  </Button>
-                </Tooltip>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onInstantRedeem(r.id, r.amountHdcl)
+                  }}
+                  // Two-step flow: keep the button disabled across BOTH the
+                  // cancel+resupply (isCancelling) and the aHDCL->HOLLAR swap
+                  // (isInstantRedeeming) so it can't be re-fired mid-sequence.
+                  disabled={isInstantRedeeming || isCancelling}
+                >
+                  {t("hdcl.withdrawals.action.instant")}
+                </Button>
                 <Button
                   variant="tertiary"
                   size="small"
@@ -186,7 +198,7 @@ export const useWithdrawalColumns = ({
                   }}
                   disabled={isCancelling}
                 >
-                  {t("withdrawals.action.cancel")}
+                  {t("common:cancel")}
                 </Button>
               </>
             )}
@@ -202,5 +214,15 @@ export const useWithdrawalColumns = ({
       timeRemainingColumn,
       actionsColumn,
     ]
-  }, [t, isMobile, hollar.symbol, isCancelling, onCancel, isClaiming, onClaim])
+  }, [
+    t,
+    isMobile,
+    hollar.symbol,
+    isCancelling,
+    onCancel,
+    isClaiming,
+    onClaim,
+    onInstantRedeem,
+    isInstantRedeeming,
+  ])
 }

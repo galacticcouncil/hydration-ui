@@ -39,7 +39,7 @@ export const PositionCard: FC<PositionCardProps> = ({
             )}
           </SNameColumn>
 
-          <SValuesColumn align="center" justify="space-between" gap="xxl">
+          <SValuesColumn justify="space-between" gap="xxl">
             {stats}
           </SValuesColumn>
 

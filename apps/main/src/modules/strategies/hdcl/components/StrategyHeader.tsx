@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { DecentralLogo } from "./DecentralLogo"
 
 export const StrategyHeader = () => {
-  const { t } = useTranslation("hdcl")
+  const { t } = useTranslation("strategies")
 
   return (
     <Flex justify="space-between" align="center" gap="s">
@@ -19,10 +19,10 @@ export const StrategyHeader = () => {
             fw={600}
             color={getToken("text.high")}
           >
-            {t("strategy.name")}
+            {t("hdcl.strategy.name")}
           </Text>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.collateralAsset")}
+            {t("hdcl.strategy.collateralAsset")}
           </Text>
         </Flex>
       </Flex>

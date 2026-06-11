@@ -7,6 +7,7 @@ import {
   Icon,
   Paper,
   Separator,
+  Summary,
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -21,63 +22,41 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
-import { STRATEGY, VAULT_ADDRESS } from "@/modules/strategies/hdcl/constants"
-import { useHdclReserveConfig } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
+import { VAULT_ADDRESS } from "@/modules/strategies/hdcl/constants"
+import { HdclStrategyMetrics } from "@/modules/strategies/hdcl/hooks/useHdclStrategyMetrics"
 
-interface VaultStats {
-  totalAssets: number
-  exchangeRate: number
-  apr: number
+type StrategyDetailsCardProps = {
+  metrics: HdclStrategyMetrics
 }
 
-interface Props {
-  vaultStats: VaultStats
-}
-
-export const StrategyDetailsCard = ({ vaultStats }: Props) => {
-  const { t } = useTranslation(["hdcl", "common"])
-  const tvl = vaultStats.totalAssets * vaultStats.exchangeRate
-  const { data: reserveConfig } = useHdclReserveConfig()
-  const maxLtvPct = reserveConfig?.maxLtvPct ?? STRATEGY.maxLtvPct
-  const liqLtvPct =
-    reserveConfig?.liquidationThresholdPct ?? STRATEGY.liquidationLtvPct
-
-  // "Max Net APY" = the leveraged yield an idealized user achieves at max LTV.
-  //   L = 1 / (1 − LTV)
-  //   netApy = L × vault_apy − (L − 1) × borrow_apy
-  // vaultStats.apr is named historically but actually carries vault APY in %
-  // (see useVaultReads: getAPYWad / 1e16). Falls back to the raw vault yield
-  // until the borrow rate query lands.
-  const vaultApyPct = vaultStats.apr
-  const borrowApyPct = reserveConfig?.borrowApyPct ?? 10
-  const maxLeverage = maxLtvPct < 100 ? 100 / (100 - maxLtvPct) : 1
-  const maxNetApyPct =
-    maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
-
+export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
+  metrics,
+}) => {
+  const { t } = useTranslation(["strategies", "borrow", "common"])
   return (
     <Paper>
       <Box p="l">
         <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("strategy.title")}
+          {t("details.title")}
         </Text>
       </Box>
       <Separator />
 
-      <Flex justify="space-between" gap="l" mb="l" p="l" wrap>
+      <Flex justify="space-between" gap="l" p="l" wrap>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.tvl")}
+            {t("hdcl.strategy.tvl")}
           </Text>
           <Flex align="center" gap="s" mt="xs">
             <DecentralLogo size={28} />
             <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
-              {t("common:currency.compact", { value: tvl })}
+              {t("common:currency.compact", { value: metrics.tvl })}
             </Text>
           </Flex>
         </Box>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.maxNetApy")}
+            {t("hdcl.strategy.maxNetApy")}
           </Text>
           <Text
             font="primary"
@@ -87,15 +66,14 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             mt="xs"
           >
             {t("common:percent", {
-              prefix: "+",
-              value: maxNetApyPct,
+              value: metrics.maxNetApyPct,
               maximumFractionDigits: 1,
             })}
           </Text>
         </Box>
         <Box>
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.yieldCycle")}
+            {t("hdcl.strategy.yieldCycle")}
           </Text>
           <Text
             font="primary"
@@ -104,73 +82,39 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             color={getToken("text.high")}
             mt="xs"
           >
-            {t("strategy.yieldCycleValue")}
+            {t("hdcl.strategy.yieldCycleValue")}
           </Text>
         </Box>
       </Flex>
 
       <Separator />
 
-      <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]} p="l">
-        <Box>
+      <Grid columnGap="l" columnTemplate={["1fr", null, null, "1fr 1fr"]} p="l">
+        <Summary withTrailingSeparator justify="flex-start">
           <SummaryRow
-            label={t("strategy.collateralAssetLabel")}
+            label={t("hdcl.strategy.collateralAssetLabel")}
             content={
-              <Flex align="center" gap="xs">
+              <Flex align="center" gap="s">
                 <DecentralLogo size={20} />
                 <Text fs="p4" lh={1.5}>
-                  {t("strategy.collateralAsset")}
+                  {t("hdcl.strategy.collateralAsset")}
                 </Text>
               </Flex>
             }
           />
-          <Separator />
-        </Box>
-        <Box>
           <SummaryRow
-            label={t("strategy.maxLtv")}
+            label={t("hdcl.strategy.debtAssetLabel")}
             content={
-              <Text fs="p4" lh={1.5}>
-                {t("common:percent", {
-                  value: maxLtvPct,
-                  minimumFractionDigits: 1,
-                })}
-              </Text>
-            }
-          />
-          <Separator />
-        </Box>
-        <Box>
-          <SummaryRow
-            label={t("strategy.debtAssetLabel")}
-            content={
-              <Flex align="center" gap="xs">
+              <Flex align="center" gap="s">
                 <AssetLogo id={HOLLAR_ASSET_ID} size="small" />
                 <Text fs="p4" lh={1.5}>
-                  {t("strategy.debtAsset")}
+                  {t("hdcl.strategy.debtAsset")}
                 </Text>
               </Flex>
             }
           />
-          <Separator />
-        </Box>
-        <Box>
           <SummaryRow
-            label={t("strategy.liquidationLtv")}
-            content={
-              <Text fs="p4" lh={1.5}>
-                {t("common:percent", {
-                  value: liqLtvPct,
-                  minimumFractionDigits: 1,
-                })}
-              </Text>
-            }
-          />
-          <Separator />
-        </Box>
-        <Box>
-          <SummaryRow
-            label={t("strategy.contractAddress")}
+            label={t("hdcl.strategy.contractAddress")}
             content={
               <Text fs="p4" lh={1.5}>
                 <ExternalLink
@@ -182,8 +126,31 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
               </Text>
             }
           />
-          <Separator />
-        </Box>
+        </Summary>
+        <Summary withTrailingSeparator justify="flex-start">
+          <SummaryRow
+            label={t("borrow:maxLTV")}
+            content={
+              <Text fs="p4" lh={1.5}>
+                {t("common:percent", {
+                  value: metrics.maxLtvPct,
+                  minimumFractionDigits: 0,
+                })}
+              </Text>
+            }
+          />
+          <SummaryRow
+            label={t("hdcl.strategy.liquidationLtv")}
+            content={
+              <Text fs="p4" lh={1.5}>
+                {t("common:percent", {
+                  value: metrics.liquidationLtvPct,
+                  minimumFractionDigits: 0,
+                })}
+              </Text>
+            }
+          />
+        </Summary>
       </Grid>
     </Paper>
   )

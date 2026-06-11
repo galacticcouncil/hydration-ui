@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
+import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { useHdclStrategyMetrics } from "@/modules/strategies/hdcl/hooks/useHdclStrategyMetrics"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
@@ -24,6 +26,9 @@ export const StrategiesPage = () => {
   const propellerApys = [ethApy, tbtcApy].filter((a): a is number => a !== null)
   const propellerApy = propellerApys.length ? Math.max(...propellerApys) : null
 
+  const { data: hdclMetrics, isLoading: isHdclMetricsLoading } =
+    useHdclStrategyMetrics()
+
   return (
     <>
       <SectionHeader title="Strategies" noTopPadding />
@@ -35,12 +40,13 @@ export const StrategiesPage = () => {
           logoId="decentral"
           title={t("strategies:cards.hdcl.title")}
           stats={[
-            { label: t("apy"), value: t("common:percent", { value: 4.5 }) },
+            {
+              label: t("apy"),
+              value: t("common:percent", { value: hdclMetrics.maxNetApyPct }),
+              isLoading: isHdclMetricsLoading,
+            },
           ]}
-          badges={[
-            { label: "Partnership", variant: "green" },
-            { label: "RWA", variant: "purple" },
-          ]}
+          badges={[StrategyBadgeType.Partnership, StrategyBadgeType.RWA]}
           description={t("strategies:cards.hdcl.description")}
           link={LINKS.strategiesHdcl}
         />
@@ -57,10 +63,7 @@ export const StrategiesPage = () => {
                   : "-",
             },
           ]}
-          badges={[
-            { label: "Leverage", variant: "accent" },
-            { label: "No liquidation", variant: "green" },
-          ]}
+          badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
           description={t("strategies:cards.propeller.description")}
           link="/strategies/propeller"
         />
@@ -80,7 +83,7 @@ export const StrategiesPage = () => {
                     : "-",
               },
             ]}
-            badges={[{ label: "Fixed Yield", variant: "info" }]}
+            badges={[StrategyBadgeType.FixedYield]}
             description={t("strategies:cards.hollarBonds.description")}
             link={LINKS.strategiesHollarBonds}
           />

@@ -7,7 +7,7 @@ import { type Hex, parseUnits } from "viem"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/hdcl/components/AboutCard"
 import { BorrowHollarModal } from "@/modules/strategies/hdcl/components/BorrowHollarModal"
-import { DepositPanel } from "@/modules/strategies/hdcl/components/DepositPanel"
+import { HdclDeposit } from "@/modules/strategies/hdcl/components/HdclDeposit"
 import { MyBorrowsCard } from "@/modules/strategies/hdcl/components/MyBorrowsCard"
 import { MyPositionsCard } from "@/modules/strategies/hdcl/components/MyPositionsCard"
 import { RepayHollarModal } from "@/modules/strategies/hdcl/components/RepayHollarModal"
@@ -28,6 +28,7 @@ import {
   useBorrowHollar,
   useRepayHollar,
 } from "@/modules/strategies/hdcl/hooks/useHdclPoolWrites"
+import { useHdclStrategyMetrics } from "@/modules/strategies/hdcl/hooks/useHdclStrategyMetrics"
 import { useRedemptionHistory } from "@/modules/strategies/hdcl/hooks/useRedemptionHistory"
 import { useRedemptionQueue } from "@/modules/strategies/hdcl/hooks/useRedemptionQueue"
 import { useInstantRedeem } from "@/modules/strategies/hdcl/hooks/useStableswap"
@@ -40,6 +41,7 @@ import {
   useCancelRedeem,
   useClaim,
   useDeposit,
+  useInstantRedeemFromQueue,
   useRequestRedeem,
   useRequestRedeemRaw,
   useSetAutoClaim,
@@ -61,12 +63,13 @@ export const HdclVaultPage = () => {
     ? (safeConvertSS58toH160(address) as Hex)
     : undefined
 
-  const { data: vaultStats } = useVaultStats()
+  const { data: stats } = useVaultStats()
   const { data: balances } = useUserBalances(evmAddress)
   const { data: queueData } = useRedemptionQueue(evmAddress)
   const { data: historyData } = useRedemptionHistory(evmAddress)
   const { data: poolPosition } = useHdclPoolPosition(evmAddress)
   const { data: reserveConfig } = useHdclReserveConfig()
+  const { data: hdclMetrics } = useHdclStrategyMetrics()
 
   const depositMutation = useDeposit()
   const redeemMutation = useRequestRedeem()
@@ -78,6 +81,7 @@ export const HdclVaultPage = () => {
   const borrowMutation = useBorrowHollar()
   const repayMutation = useRepayHollar()
   const instantRedeemMutation = useInstantRedeem()
+  const instantRedeemQueueMutation = useInstantRedeemFromQueue()
 
   const { data: autoClaimOn } = useAutoClaimEnabled(evmAddress)
 
@@ -88,22 +92,8 @@ export const HdclVaultPage = () => {
     supplyRawMutation.isPending ||
     borrowMutation.isPending ||
     repayMutation.isPending ||
-    instantRedeemMutation.isPending
-
-  const stats = vaultStats ?? {
-    totalAssets: 0,
-    totalSupply: 0,
-    exchangeRate: 1,
-    worstCaseWaitDays: 0,
-    nextMaturityDays: 0,
-    maxLockupDays: 62,
-    tvlCap: 0,
-    paused: false,
-    depositsPaused: false,
-    minDeposit: 10,
-    minRedeem: 1,
-    apr: 18,
-  }
+    instantRedeemMutation.isPending ||
+    instantRedeemQueueMutation.isPending
 
   const userBalances = balances ?? {
     hollar: 0,
@@ -217,7 +207,7 @@ export const HdclVaultPage = () => {
             // 10% is the launch fallback while the query is in flight.
             borrowApyPercent={reserveConfig?.borrowApyPct ?? 10}
             // vault APY drives the long-side of the leveraged Net APY display.
-            vaultApyPercent={vaultStats?.apr ?? 0}
+            vaultApyPercent={stats.apr}
             onBorrow={() => setShowBorrow(true)}
             onRepay={() => setShowRepay(true)}
           />
@@ -229,26 +219,31 @@ export const HdclVaultPage = () => {
             onCancel={(id) => cancelMutation.mutate(id)}
             isCancelling={cancelMutation.isPending}
             onClaim={(claimableHdcl) => {
-              // useClaim takes shares in wei (bigint). The row carries a
-              // human-scaled number from `formatUnits(..., 18)`; round-trip
-              // back via parseUnits to avoid FP edge cases at low decimals.
               const shares = parseUnits(claimableHdcl.toString(), 18)
               claimMutation.mutate(shares)
             }}
             isClaiming={claimMutation.isPending}
+            onInstantRedeem={(id, amountHdcl) =>
+              instantRedeemQueueMutation.mutate({
+                requestId: id,
+                hdclAmount: amountHdcl,
+              })
+            }
+            isInstantRedeeming={instantRedeemQueueMutation.isPending}
+            instantAvailable={HDCL_HAS_AAVE_LAYER}
             autoClaimEnabled={autoClaimOn ?? false}
             onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
             isAutoClaimUpdating={setAutoClaimMutation.isPending}
           />
 
-          <StrategyDetailsCard vaultStats={stats} />
+          <StrategyDetailsCard metrics={hdclMetrics} />
 
           <AboutCard />
         </Stack>
 
-        <DepositPanel
+        <HdclDeposit
           vaultStats={stats}
-          balances={userBalances}
+          balance={userBalances.hollar}
           onDeposit={(amount) => depositMutation.mutate(amount)}
           isPending={isPending}
         />
@@ -258,6 +253,9 @@ export const HdclVaultPage = () => {
         open={showWithdraw}
         onClose={() => setShowWithdraw(false)}
         vaultStats={stats}
+        withdrawSource={withdrawSource}
+        poolPosition={poolPosition}
+        reserveConfig={reserveConfig}
         hdclBalance={
           withdrawSource === "raw"
             ? (userBalances.hdclRaw ?? 0)
@@ -294,8 +292,8 @@ export const HdclVaultPage = () => {
         onClose={() => setShowRepay(false)}
         poolPosition={poolPosition}
         walletHollar={userBalances.hollar}
-        onRepay={(amount) => {
-          repayMutation.mutate(amount)
+        onRepay={(args) => {
+          repayMutation.mutate(args)
           setShowRepay(false)
         }}
         isPending={isPending}

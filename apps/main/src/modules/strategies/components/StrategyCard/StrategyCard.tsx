@@ -1,6 +1,4 @@
 import {
-  Chip,
-  ChipProps,
   Flex,
   Paper,
   Separator,
@@ -13,18 +11,17 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import {
+  StrategyBadge,
+  StrategyBadgeType,
+} from "@/modules/strategies/components/StrategyBadge"
 import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
-
-type BadgeProps = {
-  label: string
-  variant: ChipProps["variant"]
-}
 
 export type StrategyCardProps = {
   logoId: string
   stats: ValueStatsProps[]
-  badges?: BadgeProps[]
+  badges?: StrategyBadgeType[]
   title: string
   description: string
   link?: FileRouteTypes["to"]
@@ -58,10 +55,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           )}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
-              {badges.map(({ label, variant }) => (
-                <Chip key={label} variant={variant} rounded>
-                  {label}
-                </Chip>
+              {badges.map((badge) => (
+                <StrategyBadge key={badge} type={badge} />
               ))}
             </Flex>
           )}

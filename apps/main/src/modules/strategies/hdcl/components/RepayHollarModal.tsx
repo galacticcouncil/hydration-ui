@@ -1,18 +1,23 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
-  Box,
   Button,
   Modal,
   ModalBody,
+  ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Summary,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import type { HdclPoolPosition } from "@/modules/strategies/hdcl/hooks/useHdclPoolPosition"
+import { getHdclRepayHealthFactor } from "@/modules/strategies/hdcl/utils/hf"
 import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
@@ -21,7 +26,7 @@ interface Props {
   poolPosition: HdclPoolPosition | undefined
   /** User's wallet HOLLAR balance (caps the max repay). */
   walletHollar: number
-  onRepay: (amount: number) => void
+  onRepay: (args: { amount: number; repayAll: boolean }) => void
   isPending: boolean
 }
 
@@ -33,7 +38,7 @@ export const RepayHollarModal = ({
   onRepay,
   isPending,
 }: Props) => {
-  const { t } = useTranslation(["hdcl", "borrow", "common"])
+  const { t } = useTranslation(["strategies", "common"])
   const [amount, setAmount] = useState("")
 
   const { getAssetWithFallback } = useAssets()
@@ -45,6 +50,9 @@ export const RepayHollarModal = ({
 
   const inputNum = parseFloat(amount) || 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
+  const healthFactor = poolPosition
+    ? getHdclRepayHealthFactor(poolPosition, inputNum)
+    : null
   // Repay max = min(walletHollar, debt) — can't repay more than you owe
   // and can't repay more than you hold.
   const maxRepay = Math.min(walletHollar, totalDebtUsd)
@@ -55,40 +63,55 @@ export const RepayHollarModal = ({
     inputNum > 0 && !overDebt && !overWallet && !isPending && totalDebtUsd > 0
 
   const ctaLabel = (() => {
-    if (isPending) return t("repay.cta.pending")
-    if (overDebt) return t("repay.cta.exceeds")
-    if (overWallet) return t("repay.cta.insufficient")
-    return t("repay.cta.repay")
+    if (overDebt) return t("hdcl.repay.cta.exceeds")
+    if (overWallet) return t("hdcl.repay.cta.insufficient")
+    return t("hdcl.repay.cta.repay")
   })()
 
   const amountError = overDebt
-    ? t("repay.cta.exceeds")
+    ? t("hdcl.repay.cta.exceeds")
     : overWallet
-      ? t("repay.cta.insufficient")
+      ? t("hdcl.repay.cta.insufficient")
       : undefined
 
   return (
-    <Modal variant="popup" open={open} onOpenChange={(o) => !o && onClose()}>
-      <ModalHeader title={t("repay.title")} />
+    <Modal
+      variant="popup"
+      open={open}
+      onOpenChange={onClose}
+      disableInteractOutside
+    >
+      <ModalHeader title={t("hdcl.repay.title")} />
 
-      <ModalBody noPadding>
-        <Box px="xl" py="l">
-          <AssetInput
-            sx={{ p: 0 }}
-            label={t("repay.amount")}
-            symbol={hollar.symbol}
-            selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-            modalDisabled
-            value={amount}
-            onChange={setAmount}
-            displayValue={t("common:currency", {
-              value: inputNum,
-            })}
-            maxBalance={maxRepay.toString()}
-            maxButtonBalance={maxRepay.toString()}
-            amountError={amountError}
-          />
-        </Box>
+      <ModalBody>
+        <AssetInput
+          sx={{ pt: 0 }}
+          label={t("common:amount")}
+          symbol={hollar.symbol}
+          selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
+          modalDisabled
+          value={amount}
+          onChange={setAmount}
+          displayValue={t("common:currency", {
+            value: inputNum,
+          })}
+          maxBalance={maxRepay.toString()}
+          maxButtonBalance={maxRepay.toString()}
+          amountError={amountError}
+        />
+
+        {healthFactor && totalDebtUsd > 0 && (
+          <Summary
+            withLeadingSeparator
+            separator={<ModalContentDivider />}
+            mb="var(--modal-content-inset)"
+          >
+            <SummaryRow
+              label={t("common:healthFactor")}
+              content={<HealthFactorChange {...healthFactor} />}
+            />
+          </Summary>
+        )}
       </ModalBody>
 
       <ModalFooter>
@@ -96,7 +119,14 @@ export const RepayHollarModal = ({
           size="large"
           width="100%"
           disabled={!canSubmit}
-          onClick={() => canSubmit && onRepay(inputNum)}
+          onClick={() =>
+            canSubmit &&
+            onRepay({
+              amount: inputNum,
+              repayAll:
+                inputNum > 0 && Big(inputNum).gte(totalDebtUsd.toString()),
+            })
+          }
         >
           {ctaLabel}
         </Button>

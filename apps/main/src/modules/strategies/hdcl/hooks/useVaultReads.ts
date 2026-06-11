@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { secondsInDay } from "date-fns/constants"
 import { formatUnits, getContract, type Hex, parseUnits } from "viem"
 
 import {
@@ -11,14 +12,46 @@ import {
   VAULT_ADDRESS,
 } from "@/modules/strategies/hdcl/constants"
 import { useHdclVaultContract } from "@/modules/strategies/hdcl/hooks/useHdclVaultContract"
+import { hdclQueryKeys } from "@/modules/strategies/hdcl/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
+
+export type VaultStats = {
+  totalAssets: number
+  totalSupply: number
+  exchangeRate: number
+  worstCaseWaitDays: number
+  nextMaturityDays: number
+  maxLockupDays: number
+  tvlCap: number
+  paused: boolean
+  depositsPaused: boolean
+  minDeposit: number
+  minRedeem: number
+  apr: number
+}
+
+const DEFAULT_VAULT_STATS: VaultStats = {
+  totalAssets: 0,
+  totalSupply: 0,
+  exchangeRate: 1,
+  worstCaseWaitDays: 0,
+  nextMaturityDays: 0,
+  maxLockupDays: 62,
+  tvlCap: 0,
+  paused: false,
+  depositsPaused: false,
+  minDeposit: 10,
+  minRedeem: 1,
+  apr: 18,
+}
 
 export function useVaultStats() {
   const { evm } = useRpcProvider()
   const { data: vault } = useHdclVaultContract()
   return useQuery({
-    queryKey: ["hdcl-vault-stats"],
+    queryKey: hdclQueryKeys.vaultStats(),
     enabled: !!vault,
+    initialData: DEFAULT_VAULT_STATS,
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
       const [
@@ -90,31 +123,29 @@ export function useVaultStats() {
         abi: DECENTRAL_POOL_ABI,
         functionName: "minimumInvestmentPeriodSeconds",
       })
-      const maxLockupSec = investmentPeriodSec
 
       return {
         totalAssets: Number(formatUnits(totalAssets, 18)),
         totalSupply: Number(formatUnits(totalSupply, 18)),
         exchangeRate: Number(formatUnits(exchangeRateWad, 18)),
-        worstCaseWaitDays: Math.round(Number(worstCaseWaitSec) / 86400),
-        nextMaturityDays: Math.round(Number(nextMaturitySec) / 86400),
-        maxLockupDays: Math.ceil(Number(maxLockupSec) / 86400),
+        worstCaseWaitDays: Math.round(Number(worstCaseWaitSec) / secondsInDay),
+        nextMaturityDays: Math.round(Number(nextMaturitySec) / secondsInDay),
+        maxLockupDays: Math.ceil(Number(investmentPeriodSec) / secondsInDay),
         tvlCap: Number(formatUnits(tvlCap, 18)),
         paused,
         depositsPaused,
         minDeposit: Number(formatUnits(minReinvest, 18)),
         minRedeem: Number(formatUnits(minRedeem, 18)),
         apr: Number(formatUnits(apyWad, 16)),
-      }
+      } satisfies VaultStats
     },
-    refetchInterval: 30_000,
   })
 }
 
 export function useUserBalances(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-balances", evmAddress],
+    queryKey: hdclQueryKeys.vaultBalances(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return { hollar: 0, hdcl: 0 }
@@ -181,7 +212,6 @@ export function useUserBalances(evmAddress: Hex | undefined) {
         hdclSupplied: Number(formatUnits(aTokenBal, 18)),
       }
     },
-    refetchInterval: 15_000,
   })
 }
 
@@ -201,7 +231,7 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 export function usePreviewDeposit(hollarAmount: number) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-preview-deposit", hollarAmount],
+    queryKey: hdclQueryKeys.vaultPreviewDeposit(hollarAmount),
     enabled: hollarAmount > 0,
     queryFn: async () => {
       const vault = getContract({
@@ -234,7 +264,7 @@ export function usePreviewDeposit(hollarAmount: number) {
 export function usePreviewRedeem(hdclAmount: number) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-preview-redeem", hdclAmount],
+    queryKey: hdclQueryKeys.vaultPreviewRedeem(hdclAmount),
     enabled: hdclAmount > 0,
     queryFn: async () => {
       const vault = getContract({
@@ -262,7 +292,7 @@ export function usePreviewRedeem(hdclAmount: number) {
 export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
-    queryKey: ["hdcl-vault-autoclaim", evmAddress],
+    queryKey: hdclQueryKeys.vaultAutoclaim(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return false
@@ -273,28 +303,5 @@ export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
       })
       return vault.read.autoClaimEnabled([evmAddress])
     },
-    refetchInterval: 30_000,
-  })
-}
-
-export function useHollarAllowance(evmAddress: Hex | undefined) {
-  const { evm } = useRpcProvider()
-  return useQuery({
-    queryKey: ["hdcl-vault-allowance", evmAddress],
-    enabled: !!evmAddress,
-    queryFn: async () => {
-      if (!evmAddress) return 0
-      const hollarToken = getContract({
-        address: HOLLAR_ADDRESS,
-        abi: ERC20_ABI,
-        client: evm,
-      })
-      const allowance = await hollarToken.read.allowance([
-        evmAddress,
-        VAULT_ADDRESS,
-      ])
-      return Number(formatUnits(allowance, 18))
-    },
-    refetchInterval: 15_000,
   })
 }
