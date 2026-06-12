@@ -1,5 +1,5 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
-import { HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
+import { DCL_ASSET_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -28,7 +28,7 @@ export const StrategiesPage = () => {
         gap="xl"
       >
         <StrategyCard
-          logoId="decentral"
+          logoId={DCL_ASSET_ID}
           title={t("strategies:cards.hdcl.title")}
           stats={[
             {

@@ -15,7 +15,7 @@ export const SUSDE_ASSET_ID = "1000625"
 export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 export const WETH_POOL_ASSET_ID = "104"
-export const HDCL_ERC20_ID = "55"
+export const HDCL_STABLESWAP_ASSET_ID = "55"
 export const DCL_ASSET_ID = "550"
 
 export const HUSDC_ASSET_ID = "110"

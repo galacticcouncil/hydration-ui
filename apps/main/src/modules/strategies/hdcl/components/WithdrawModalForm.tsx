@@ -15,11 +15,12 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HDCL_STABLESWAP_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HdclLogo } from "@/modules/strategies/hdcl/components/HdclLogo"
+import { AssetLogo } from "@/components/AssetLogo"
 import {
   projectRate,
   WithdrawMethodPicker,
@@ -36,6 +37,7 @@ import {
   getHdclMaxWithdrawable,
   getHdclWithdrawHealthFactor,
 } from "@/modules/strategies/hdcl/utils/hf"
+import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
   vaultStats: VaultStats
@@ -61,6 +63,8 @@ export const WithdrawModalForm = ({
   isPending,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
+  const { getAssetWithFallback } = useAssets()
+  const hdcl = getAssetWithFallback(HDCL_STABLESWAP_ASSET_ID)
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
   const hfContextEnabled =
@@ -83,6 +87,7 @@ export const WithdrawModalForm = ({
     : Big(hdclBalance.toString())
 
   const form = useWithdrawForm({
+    asset: hdcl,
     maxWithdrawable: maxWithdrawable.toString(),
     minRedeem: vaultStats.minRedeem,
   })
@@ -115,14 +120,10 @@ export const WithdrawModalForm = ({
 
   const canSubmit = formState.isValid && !isPending && isInstantMethodAvailable
 
-  const amountError = formState.errors.amount?.message
-
-  const ctaLabel = (() => {
-    if (amountError) return amountError
-    if (method === "instant" && !instantAvailable)
-      return t("hdcl.withdraw.cta.unavailable")
-    return t("common:withdraw")
-  })()
+  const ctaLabel =
+    method === "instant" && !instantAvailable
+      ? t("hdcl.withdraw.cta.unavailable")
+      : t("common:withdraw")
 
   const onSubmit = handleSubmit(({ amount, method }) => {
     const isMaxSelected =
@@ -149,7 +150,7 @@ export const WithdrawModalForm = ({
                 sx={{ pt: 0 }}
                 label={t("common:amount")}
                 symbol="HDCL"
-                selectedAssetIcon={<HdclLogo size={24} />}
+                selectedAssetIcon={<AssetLogo id={HDCL_STABLESWAP_ASSET_ID} />}
                 modalDisabled
                 value={field.value}
                 onChange={field.onChange}

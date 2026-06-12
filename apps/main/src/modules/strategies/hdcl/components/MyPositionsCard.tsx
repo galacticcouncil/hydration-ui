@@ -9,9 +9,10 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { DCL_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
-import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
+import { AssetLogo } from "@/components/AssetLogo"
 
 export type PositionRow = {
   /** Stable id for react-table key + filtering. */
@@ -104,7 +105,7 @@ export const MyPositionsCard = ({
         {rows.map((row) => (
           <PositionCard
             key={row.id}
-            logo={<DecentralLogo size={32} />}
+            logo={<AssetLogo id={DCL_ASSET_ID} size="medium" />}
             symbol={row.label}
             stats={
               <>

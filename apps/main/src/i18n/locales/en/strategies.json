@@ -73,14 +73,14 @@
   "hdcl.deposit.option.instant": "Instant",
   "hdcl.deposit.option.instantValue": "Sell HDCL on secondary market at slight discount",
   "hdcl.deposit.cta.paused": "Deposits paused",
-  "hdcl.deposit.cta.belowMin": "Min. {{ value, currency }}",
+  "hdcl.deposit.cta.belowMin": "Minimum deposit amount is {{ value, currency }}",
 
   "hdcl.withdraw.title": "Withdraw HDCL",
   "hdcl.withdraw.method": "Withdraw method",
   "hdcl.withdraw.ack": "I understand my HDCL will be locked in the queue until cancelled or the next position matures.",
   "hdcl.withdraw.ackInstant": "I understand that my HDCL will be swapped for HOLLAR and is subject to the above pool slippage.",
   "hdcl.withdraw.cta.insufficient": "Insufficient HDCL",
-  "hdcl.withdraw.cta.belowMin": "Min. {{ min, currency }}",
+  "hdcl.withdraw.cta.belowMin": "Minimum withdrawable amount is {{ min, currency }}",
   "hdcl.withdraw.cta.unavailable": "Instant redeem unavailable",
 
   "hdcl.method.queue.title": "Redemption queue",

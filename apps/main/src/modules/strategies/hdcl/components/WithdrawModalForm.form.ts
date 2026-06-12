@@ -5,22 +5,28 @@ import { useTranslation } from "react-i18next"
 import { refine, z } from "zod/v4"
 
 import i18n from "@/i18n"
-import type { WithdrawMethod } from "@/modules/strategies/hdcl/components/WithdrawMethodPicker"
+import { TAsset } from "@/providers/assetsProvider"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
-export type WithdrawFormValues = {
-  amount: string
-  method: WithdrawMethod
-  acknowledged: boolean
+export type WithdrawFormValues = z.infer<ReturnType<typeof useSchema>>
+
+type UseWithdrawFormParams = {
+  asset: TAsset
+  maxWithdrawable: string
+  minRedeem: number
 }
 
-const withdrawFormDefaultValues: WithdrawFormValues = {
+const WITHDRAW_FORM_DEFAULT_VALUES: WithdrawFormValues = {
   amount: "",
   method: "queue",
   acknowledged: false,
 }
 
-const useSchema = (maxWithdrawable: string, minRedeem: number) => {
+const useSchema = (
+  asset: TAsset,
+  maxWithdrawable: string,
+  minRedeem: number,
+) => {
   const { t } = useTranslation(["strategies"])
 
   return z.object({
@@ -29,7 +35,10 @@ const useSchema = (maxWithdrawable: string, minRedeem: number) => {
       .check(validateFieldMaxBalance(maxWithdrawable))
       .check(
         refine<string>((value) => Big(value || "0").gte(minRedeem), {
-          error: t("hdcl.withdraw.cta.belowMin", { min: minRedeem }),
+          error: t("hdcl.withdraw.cta.belowMin", {
+            min: minRedeem,
+            symbol: asset.symbol,
+          }),
         }),
       ),
     method: z.enum(["queue", "instant"]),
@@ -39,18 +48,16 @@ const useSchema = (maxWithdrawable: string, minRedeem: number) => {
   })
 }
 
-type UseWithdrawFormParams = {
-  maxWithdrawable: string
-  minRedeem: number
-}
-
 export const useWithdrawForm = ({
+  asset,
   maxWithdrawable,
   minRedeem,
 }: UseWithdrawFormParams) => {
-  return useForm<WithdrawFormValues>({
-    defaultValues: withdrawFormDefaultValues,
-    resolver: standardSchemaResolver(useSchema(maxWithdrawable, minRedeem)),
+  return useForm({
+    defaultValues: WITHDRAW_FORM_DEFAULT_VALUES,
+    resolver: standardSchemaResolver(
+      useSchema(asset, maxWithdrawable, minRedeem),
+    ),
     mode: "onChange",
   })
 }

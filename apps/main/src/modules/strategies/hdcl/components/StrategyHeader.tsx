@@ -1,8 +1,9 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { DCL_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
-import { DecentralLogo } from "./DecentralLogo"
+import { AssetLogo } from "@/components/AssetLogo"
 
 export const StrategyHeader = () => {
   const { t } = useTranslation("strategies")
@@ -10,7 +11,7 @@ export const StrategyHeader = () => {
   return (
     <Flex justify="space-between" align="center" gap="s">
       <Flex align="center" gap="base">
-        <DecentralLogo size={32} />
+        <AssetLogo id={DCL_ASSET_ID} size="large" />
         <Flex direction="column">
           <Text
             font="primary"

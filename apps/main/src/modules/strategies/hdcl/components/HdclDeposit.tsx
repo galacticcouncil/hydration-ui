@@ -12,7 +12,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import {
+  HDCL_STABLESWAP_ASSET_ID,
+  HOLLAR_ASSET_ID,
+} from "@galacticcouncil/utils"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -20,7 +23,6 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useHdclDepositForm } from "@/modules/strategies/hdcl/components/HdclDeposit.form"
 import { HdclExchangeRate } from "@/modules/strategies/hdcl/components/HdclExchangeRate"
-import { HdclLogo } from "@/modules/strategies/hdcl/components/HdclLogo"
 import { VaultStats } from "@/modules/strategies/hdcl/hooks/useVaultReads"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -77,9 +79,7 @@ export const HdclDeposit: React.FC<HdclDepositProps> = ({
                 <AssetInput
                   label={t("hdcl.deposit.your")}
                   symbol="HOLLAR"
-                  selectedAssetIcon={
-                    <AssetLogo id={HOLLAR_ASSET_ID} size="medium" />
-                  }
+                  selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} />}
                   modalDisabled
                   value={field.value}
                   onChange={field.onChange}
@@ -98,7 +98,7 @@ export const HdclDeposit: React.FC<HdclDepositProps> = ({
             <AssetInput
               label={t("hdcl.deposit.youReceive")}
               symbol="HDCL"
-              selectedAssetIcon={<HdclLogo size={24} />}
+              selectedAssetIcon={<AssetLogo id={HDCL_STABLESWAP_ASSET_ID} />}
               modalDisabled
               disabledInput
               ignoreBalance

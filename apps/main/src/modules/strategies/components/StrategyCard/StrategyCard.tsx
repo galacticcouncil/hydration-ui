@@ -15,7 +15,6 @@ import {
   StrategyBadge,
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
-import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
 
 export type StrategyCardProps = {
   logoId: string
@@ -42,11 +41,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          {logoId === "decentral" ? (
-            <DecentralLogo size={56} />
-          ) : (
-            <AssetLogo id={logoId} size="extra-large" />
-          )}
+          <AssetLogo id={logoId} size="extra-large" />
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (
