@@ -7,18 +7,16 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
-import { bestNumberQuery } from "@/api/chain"
-import { stakingConstsQuery, uniquesIds } from "@/api/constants"
+import { stakingConstsQuery } from "@/api/constants"
 import { openGovReferendaQuery } from "@/api/democracy"
 import { stakingPositionsQuery, stakingRewardsQuery } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 import { QUINTILL_DECIMALS } from "@/utils/formatting"
-import { stableQuery } from "@/utils/query"
 
 const MIN_SLASH_POINTS = "5"
-const PERIOD_AMOUNT = 80
+const PERIOD_AMOUNT = 200
 
 const scalePercentage = (p: string) => toDecimal(p, QUINTILL_DECIMALS)
 
@@ -40,27 +38,19 @@ export const useRewardsCurveData = () => {
     stakingConstsQuery(rpc),
   )
 
-  const { data: uniquesData, isLoading: uniquesLoading } = useQuery(
-    uniquesIds(rpc),
-  )
-  const stakingId = uniquesData?.stakingId ?? 0n
-
   const { data: stakingPosition, isLoading: isStakingPositionLoading } =
-    useQuery(stakingPositionsQuery(rpc, address, stakingId))
+    useQuery(stakingPositionsQuery(rpc, address))
 
   const { data: openGovReferendas, isLoading: openGovReferendasLoading } =
     useQuery(openGovReferendaQuery(rpc))
 
-  const { data: blockNumber } = useQuery(stableQuery(bestNumberQuery(rpc)))
-
-  const { data: stakingRewards, isLoading: stakingRewardsLoading } = useQuery({
-    ...stakingRewardsQuery(
+  const { data: stakingRewards, isLoading: stakingRewardsLoading } = useQuery(
+    stakingRewardsQuery(
       rpc,
       address,
       openGovReferendas?.map((referenda) => referenda.id.toString()) ?? [],
-      blockNumber?.parachainBlockNumber ?? 0,
     ),
-  })
+  )
 
   const {
     value: increaseStake,
@@ -72,7 +62,6 @@ export const useRewardsCurveData = () => {
     stakingConstsLoading ||
     stakingRewardsLoading ||
     isStakingPositionLoading ||
-    uniquesLoading ||
     openGovReferendasLoading
 
   let currentPointDays: number | undefined
@@ -87,9 +76,17 @@ export const useRewardsCurveData = () => {
     const payablePercentageHuman = Big(
       scalePercentage(stakingRewards.payablePercentage),
     ).mul(100)
+    const stakingRewardsPercentage = Big(
+      stakingRewards.allocatedRewardsPercentage ?? 0,
+    )
 
-    const extraPayablePercentageHuman = stakingRewards.extraPayablePercentage
-      ? Big(scalePercentage(stakingRewards.extraPayablePercentage)).mul(100)
+    const diffExtraPayablePercentage = stakingRewards.extraPayablePercentage
+      ? Big(scalePercentage(stakingRewards.extraPayablePercentage))
+          .mul(100)
+          .minus(payablePercentageHuman)
+      : undefined
+    const extraPayablePercentageHuman = diffExtraPayablePercentage
+      ? stakingRewardsPercentage.plus(diffExtraPayablePercentage)
       : undefined
 
     if (increaseStake && stakingPosition?.stake && stakingRewards.points) {
@@ -119,7 +116,7 @@ export const useRewardsCurveData = () => {
 
     return Array.from({ length: PERIOD_AMOUNT })
       .map((_, i) => {
-        const period = Big(i).times(10).toString()
+        const period = Big(i).div(2).times(10).toString()
 
         const points = calculate_points(
           "0",
@@ -156,8 +153,8 @@ export const useRewardsCurveData = () => {
         const nextPoint = arr[i + 1]
 
         const current =
-          Big(payablePercentageHuman).gte(chartPoints.y) &&
-          (nextPoint ? Big(payablePercentageHuman).lt(nextPoint.y) : true)
+          Big(stakingRewardsPercentage).gte(chartPoints.y) &&
+          (nextPoint ? Big(stakingRewardsPercentage).lt(nextPoint.y) : true)
 
         if (current) {
           currentPointDays = chartPoints.x
