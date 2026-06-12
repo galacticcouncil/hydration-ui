@@ -42,7 +42,8 @@ export const OfferPriceColumn: FC<Props> = ({
       {offerPrice && (
         <Flex gap="xs" align="baseline">
           <Text fw={500} fs="p6" lh="xs" color={getToken("text.low")}>
-            ≈ {t("currency", { value: offerPrice, maximumFractionDigits: null })}
+            ≈{" "}
+            {t("currency", { value: offerPrice, maximumFractionDigits: null })}
           </Text>
           <Text
             fw={500}

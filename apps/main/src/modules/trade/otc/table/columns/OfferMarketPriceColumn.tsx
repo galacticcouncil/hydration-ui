@@ -77,7 +77,9 @@ export const OfferMarketPriceColumn: FC<Props> = ({ offer, isOwnOrder }) => {
 
   return (
     <Tooltip
-      text={isOwnOrder ? makerTooltip : <OfferMarketPriceTooltip offer={offer} />}
+      text={
+        isOwnOrder ? makerTooltip : <OfferMarketPriceTooltip offer={offer} />
+      }
       asChild
     >
       <Flex direction="column" align="center" gap={2} sx={{ cursor: "help" }}>
