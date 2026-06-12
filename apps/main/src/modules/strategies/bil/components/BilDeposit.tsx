@@ -12,7 +12,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import {
+  BIL_STABLESWAP_ASSET_ID,
+  HOLLAR_ASSET_ID,
+} from "@galacticcouncil/utils"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -20,7 +23,6 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useBilDepositForm } from "@/modules/strategies/bil/components/BilDeposit.form"
 import { BilExchangeRate } from "@/modules/strategies/bil/components/BilExchangeRate"
-import { BilLogo } from "@/modules/strategies/bil/components/BilLogo"
 import { VaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -77,9 +79,7 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
                 <AssetInput
                   label={t("bil.deposit.your")}
                   symbol="HOLLAR"
-                  selectedAssetIcon={
-                    <AssetLogo id={HOLLAR_ASSET_ID} size="medium" />
-                  }
+                  selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} />}
                   modalDisabled
                   value={field.value}
                   onChange={field.onChange}
@@ -98,7 +98,7 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
             <AssetInput
               label={t("bil.deposit.youReceive")}
               symbol="BIL"
-              selectedAssetIcon={<BilLogo size={24} />}
+              selectedAssetIcon={<AssetLogo id={BIL_STABLESWAP_ASSET_ID} />}
               modalDisabled
               disabledInput
               ignoreBalance

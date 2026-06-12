@@ -1,4 +1,7 @@
-import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import {
+  BIL_STABLESWAP_ASSET_ID,
+  HOLLAR_ASSET_ID,
+} from "@galacticcouncil/utils"
 
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 
@@ -10,7 +13,7 @@ export const BilExchangeRate: React.FC<BilExchangeRateProps> = ({
   exchangeRate,
 }) => (
   <AssetSwitcher
-    assetInId={BIL_ERC20_ID}
+    assetInId={BIL_STABLESWAP_ASSET_ID}
     assetOutId={HOLLAR_ASSET_ID}
     fallbackPrice={exchangeRate > 0 ? exchangeRate.toString() : undefined}
   />

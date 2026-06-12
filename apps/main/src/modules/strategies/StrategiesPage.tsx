@@ -1,5 +1,5 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
-import { HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
+import { DCL_ASSET_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -18,9 +18,6 @@ export const StrategiesPage = () => {
   const bondId = HOLLAR_BOND_25_08_26_ID
   const { timeLeft } = useBondData(bondId)
   const bondApr = getBondApr(bondId, timeLeft)
-  // live net carry per collateral; null until positive. All vaults share one
-  // Propeller subpage, so the overview shows a single card with the best (highest)
-  // available carry across collaterals as the headline APY.
   const ethApy = usePropellerApy(PROPELLER_VAULTS.eth)
   const tbtcApy = usePropellerApy(PROPELLER_VAULTS.tbtc)
   const propellerApys = [ethApy, tbtcApy].filter((a): a is number => a !== null)
@@ -37,7 +34,7 @@ export const StrategiesPage = () => {
         gap="xl"
       >
         <StrategyCard
-          logoId="decentral"
+          logoId={DCL_ASSET_ID}
           title={t("strategies:cards.bil.title")}
           stats={[
             {

@@ -1,13 +1,21 @@
-import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  Amount,
+  AssetLogo,
+  Button,
+  Flex,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import {
+  BIL_STABLESWAP_ASSET_ID,
+  HOLLAR_ASSET_ID,
+} from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { hoursToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BilLogo } from "@/modules/strategies/bil/components/BilLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type WithdrawalRowState =
@@ -72,7 +80,7 @@ export const useWithdrawalColumns = ({
       header: t("common:amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
-          <BilLogo size={20} />
+          <AssetLogo id={BIL_STABLESWAP_ASSET_ID} size="small" />
           <Text fs="p4" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.original.amountBil,

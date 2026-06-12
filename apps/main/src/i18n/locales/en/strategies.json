@@ -82,7 +82,7 @@
   "bil.withdraw.ack": "I understand my BIL will be locked in the queue until cancelled or the next position matures.",
   "bil.withdraw.ackInstant": "I understand that my BIL will be swapped for HOLLAR and is subject to the above pool slippage.",
   "bil.withdraw.cta.insufficient": "Insufficient BIL",
-  "bil.withdraw.cta.belowMin": "Min. {{ min, currency }}",
+  "bil.withdraw.cta.belowMin": "Minimum withdrawable amount is {{ min, currency }}",
   "bil.withdraw.cta.unavailable": "Instant redeem unavailable",
 
   "bil.method.queue.title": "Redemption queue",

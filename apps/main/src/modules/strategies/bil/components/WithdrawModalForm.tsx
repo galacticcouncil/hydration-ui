@@ -15,11 +15,12 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { BIL_STABLESWAP_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { BilLogo } from "@/modules/strategies/bil/components/BilLogo"
+import { AssetLogo } from "@/components/AssetLogo"
 import {
   projectRate,
   WithdrawMethodPicker,
@@ -36,6 +37,7 @@ import {
   getBilMaxWithdrawable,
   getBilWithdrawHealthFactor,
 } from "@/modules/strategies/bil/utils/hf"
+import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
   vaultStats: VaultStats
@@ -61,6 +63,8 @@ export const WithdrawModalForm = ({
   isPending,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
+  const { getAssetWithFallback } = useAssets()
+  const bil = getAssetWithFallback(BIL_STABLESWAP_ASSET_ID)
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
   const hfContextEnabled =
@@ -83,6 +87,7 @@ export const WithdrawModalForm = ({
     : Big(bilBalance.toString())
 
   const form = useWithdrawForm({
+    asset: bil,
     maxWithdrawable: maxWithdrawable.toString(),
     minRedeem: vaultStats.minRedeem,
   })
@@ -115,14 +120,10 @@ export const WithdrawModalForm = ({
 
   const canSubmit = formState.isValid && !isPending && isInstantMethodAvailable
 
-  const amountError = formState.errors.amount?.message
-
-  const ctaLabel = (() => {
-    if (amountError) return amountError
-    if (method === "instant" && !instantAvailable)
-      return t("bil.withdraw.cta.unavailable")
-    return t("common:withdraw")
-  })()
+  const ctaLabel =
+    method === "instant" && !instantAvailable
+      ? t("bil.withdraw.cta.unavailable")
+      : t("common:withdraw")
 
   const onSubmit = handleSubmit(({ amount, method }) => {
     const isMaxSelected =
@@ -149,7 +150,7 @@ export const WithdrawModalForm = ({
                 sx={{ pt: 0 }}
                 label={t("common:amount")}
                 symbol="BIL"
-                selectedAssetIcon={<BilLogo size={24} />}
+                selectedAssetIcon={<AssetLogo id={BIL_STABLESWAP_ASSET_ID} />}
                 modalDisabled
                 value={field.value}
                 onChange={field.onChange}

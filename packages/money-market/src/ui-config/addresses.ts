@@ -36,3 +36,6 @@ export const AaveV3BILVaultLark = {
   GHO_UI_DATA_PROVIDER: "0x5A31E4a57212eB5ad02a1b9fd736A1fDd9Caa05D",
   COLLECTOR: "",
 }
+
+/** @deprecated Use `AaveV3BILVaultLark` — kept for money-market market config imports. */
+export const AaveV3HDCLVault = AaveV3BILVaultLark
