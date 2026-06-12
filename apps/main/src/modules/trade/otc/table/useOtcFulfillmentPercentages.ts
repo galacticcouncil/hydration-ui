@@ -7,11 +7,12 @@ import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-// Beyond these the AMM quote isn't a genuine alternative (no real pool → dust
-// quote), so there's "no good data to compare" → show N/A rather than a
-// misleading %.
-const MAX_VIABLE_PRICE_IMPACT_PCT = 50
-const MAX_PLAUSIBLE_DIFF_PCT = 100
+// N/A is shown ONLY when there's no usable AMM price to compare against:
+// no route, a zero/dust output, or near-total price impact (an illiquid route
+// returns dust and the comparison would explode to nonsense). A real route
+// with a large-but-valid premium still shows its % — a big red premium is a
+// clearer warning than "N/A".
+const NO_LIQUIDITY_IMPACT_PCT = 90
 
 export type FulfillmentResult = {
   /**
@@ -70,12 +71,11 @@ export const useOtcFulfillmentPercentages = (
             .times(100)
             .toNumber()
 
-          const viable =
+          const hasUsableQuote =
             Number.isFinite(swap.priceImpactPct) &&
-            Math.abs(swap.priceImpactPct) <= MAX_VIABLE_PRICE_IMPACT_PCT &&
-            Math.abs(signed) <= MAX_PLAUSIBLE_DIFF_PCT
+            Math.abs(swap.priceImpactPct) < NO_LIQUIDITY_IMPACT_PCT
 
-          pct = viable ? signed : null
+          pct = hasUsableQuote ? signed : null
         }
       }
 

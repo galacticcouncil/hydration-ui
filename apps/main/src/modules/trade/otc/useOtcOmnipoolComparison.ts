@@ -17,11 +17,11 @@ type Args = {
   readonly enabled?: boolean
 }
 
-// Beyond these, the Omnipool quote isn't a genuine alternative — e.g. the
-// asset has no real pool, so the router returns a dust amount and the
-// comparison explodes to nonsense (millions of %). Suppress it instead.
-const MAX_VIABLE_PRICE_IMPACT_PCT = 50
-const MAX_PLAUSIBLE_DIFF_PCT = 100
+// Suppress only when there's no usable Omnipool price: no route, a zero/dust
+// output, or near-total price impact (an illiquid route returns dust and the
+// comparison would explode to nonsense). A real route with a large-but-valid
+// difference still shows.
+const NO_LIQUIDITY_IMPACT_PCT = 90
 
 export type OtcOmnipoolComparison = {
   /** Human amount of assetOut you'd get swapping the same amountIn on Omnipool. */
@@ -80,12 +80,11 @@ export const useOtcOmnipoolComparison = ({
         ? otc.div(omni).minus(1).times(100).toNumber()
         : omni.div(otc).minus(1).times(100).toNumber()
 
-      const isViableRoute =
+      const hasUsableQuote =
         Number.isFinite(swap.priceImpactPct) &&
-        Math.abs(swap.priceImpactPct) <= MAX_VIABLE_PRICE_IMPACT_PCT &&
-        diffPct <= MAX_PLAUSIBLE_DIFF_PCT
+        Math.abs(swap.priceImpactPct) < NO_LIQUIDITY_IMPACT_PCT
 
-      if (isViableRoute) {
+      if (hasUsableQuote) {
         comparison = {
           omnipoolReceive,
           betterForTaker,
