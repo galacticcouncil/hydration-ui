@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { useHydrationDepositLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationDepositLimitAlerts"
 import { useHydrationGlobalWithdrawLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationGlobalWithdrawLimitAlerts"
+import { useWormholeGovernorLimitAlerts } from "@/modules/xcm/transfer/hooks/useWormholeGovernorLimitAlerts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 
@@ -29,6 +30,7 @@ export const useXcmTransferAlerts = (
 
   const depositLimitAlerts = useHydrationDepositLimitAlerts(form)
   const globalWithdrawLimitAlerts = useHydrationGlobalWithdrawLimitAlerts(form)
+  const wormholeGovernorLimitAlerts = useWormholeGovernorLimitAlerts(form)
 
   return useMemo<XcmAlert[]>(() => {
     const transferReportAlerts: XcmAlert[] = []
@@ -51,6 +53,13 @@ export const useXcmTransferAlerts = (
       ...transferReportAlerts,
       ...depositLimitAlerts,
       ...globalWithdrawLimitAlerts,
+      ...wormholeGovernorLimitAlerts,
     ]
-  }, [t, transferReport, depositLimitAlerts, globalWithdrawLimitAlerts])
+  }, [
+    t,
+    transferReport,
+    depositLimitAlerts,
+    globalWithdrawLimitAlerts,
+    wormholeGovernorLimitAlerts,
+  ])
 }

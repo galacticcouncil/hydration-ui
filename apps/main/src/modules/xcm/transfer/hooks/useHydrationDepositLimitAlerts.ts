@@ -8,7 +8,10 @@ import { useBestNumber } from "@/api/chain"
 import { useCrossChainDepositLimit } from "@/api/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { getDepositLimitPeriodWindow } from "@/modules/xcm/transfer/utils/limits"
+import {
+  getDepositLimitPeriodWindow,
+  XcmLimitAlertKey,
+} from "@/modules/xcm/transfer/utils/limits"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toBigInt, toDecimal } from "@/utils/formatting"
 
@@ -52,8 +55,9 @@ export const useHydrationDepositLimitAlerts = (
     if (lockedUntil && data.locked) {
       return [
         {
-          key: "depositLocked",
-          message: t("xcm:limit.alert.deposit.locked", {
+          key: XcmLimitAlertKey.DepositLocked,
+          title: t("limit.circuitBreaker"),
+          message: t("limit.alert.deposit.locked", {
             locked: destAmount,
             symbol: data.symbol,
             datetime: lockedUntil,
@@ -70,8 +74,9 @@ export const useHydrationDepositLimitAlerts = (
         const lockedAmount = sentAmount - data.headroom
         return [
           {
-            key: "depositExceeded",
-            message: t("xcm:limit.alert.deposit.exceeded", {
+            key: XcmLimitAlertKey.DepositExceeded,
+            title: t("limit.circuitBreaker"),
+            message: t("limit.alert.deposit.exceeded", {
               remaining: toDecimal(data.headroom, data.decimals),
               locked: toDecimal(lockedAmount, data.decimals),
               symbol: data.symbol,
