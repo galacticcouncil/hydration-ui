@@ -15,6 +15,7 @@ export const BRIDGE_TIME: Record<string, string> = {
   [XcmTag.Wormhole]: "≈ 30 min",
   [XcmTag.SnowbridgeFast]: "≈ 5-10 min",
   [XcmTag.Snowbridge]: "≈ 20 min",
+  [XcmTag.SnowbridgeV1]: "≈ 20 min",
 }
 
 export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
@@ -22,6 +23,7 @@ export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
   [XcmTag.Wormhole]: WormholeLogo,
   [XcmTag.SnowbridgeFast]: Jetski,
   [XcmTag.Snowbridge]: Swimmer,
+  [XcmTag.SnowbridgeV1]: Swimmer,
 }
 
 export const BRIDGE_PRIORITY: Record<string, number> = {
@@ -46,19 +48,42 @@ export const isSnowbridgeFastRoute = (route: AssetRoute): boolean => {
   return tags.includes(XcmTag.SnowbridgeFast)
 }
 
+export const isSnowbridgeV1Route = (route: AssetRoute): boolean => {
+  const tags = (route.tags ?? []) as string[]
+  return tags.includes(XcmTag.SnowbridgeV1)
+}
+
 export const isSnowbridgeFastTag = (tag: string | null | undefined): boolean =>
   tag === XcmTag.SnowbridgeFast
 
+export const isSnowbridgeV1Tag = (tag: string | null | undefined): boolean =>
+  tag === XcmTag.SnowbridgeV1
+
+// A Snowbridge "sub" selection is one that's not surfaced as a top-level
+// bridge tag (SnowbridgeFast = V2 fast, SnowbridgeV1 = V1) — these must be
+// preserved across the default-selection effect, which only knows about the
+// top-level Snowbridge tag.
+export const isSnowbridgeSubTag = (tag: string | null | undefined): boolean =>
+  isSnowbridgeFastTag(tag) || isSnowbridgeV1Tag(tag)
+
 export const isSnowbridgeTag = (tag: string | null | undefined): boolean =>
-  tag === XcmTag.Snowbridge || isSnowbridgeFastTag(tag)
+  tag === XcmTag.Snowbridge || isSnowbridgeSubTag(tag)
 
 export const pickSnowbridgeVariants = (
   routes: AssetRoute[],
-): { slow: AssetRoute | null; fast: AssetRoute | null } => {
+): {
+  slow: AssetRoute | null
+  fast: AssetRoute | null
+  v1: AssetRoute | null
+} => {
   const snowbridge = routes.filter(isSnowbridgeRoute)
   return {
-    slow: snowbridge.find((r) => !isSnowbridgeFastRoute(r)) ?? null,
+    slow:
+      snowbridge.find(
+        (r) => !isSnowbridgeFastRoute(r) && !isSnowbridgeV1Route(r),
+      ) ?? null,
     fast: snowbridge.find(isSnowbridgeFastRoute) ?? null,
+    v1: snowbridge.find(isSnowbridgeV1Route) ?? null,
   }
 }
 
@@ -94,13 +119,13 @@ export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
   return tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
 }
 
-export function shouldPreserveSnowbridgeFastSelection(
+export function shouldPreserveSnowbridgeSubSelection(
   currentProvider: string | null,
   destPair: ChainAssetPair,
 ): boolean {
-  return (
-    isSnowbridgeFastTag(currentProvider) &&
-    destPair.routes.some((r) => (r.tags ?? []).includes(XcmTag.SnowbridgeFast))
+  if (!isSnowbridgeSubTag(currentProvider)) return false
+  return destPair.routes.some((r) =>
+    (r.tags ?? []).includes(currentProvider as string),
   )
 }
 
