@@ -24,7 +24,7 @@ export const AaveV3HydrationMainnet = {
   COLLECTOR: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
 }
 
-export const AaveV3HDCLVaultLark = {
+export const AaveV3BILVaultLark = {
   POOL_ADDRESSES_PROVIDER: "0xB0fa53A6cBaF88eDD90aD27a6c396D99d272FE64",
   POOL: "0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8",
   WETH_GATEWAY: "",

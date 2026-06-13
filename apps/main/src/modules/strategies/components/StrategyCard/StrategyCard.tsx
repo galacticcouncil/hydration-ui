@@ -13,7 +13,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { DecentralLogo } from "@/modules/strategies/hdcl/components/DecentralLogo"
+import { DecentralLogo } from "@/modules/strategies/bil/components/DecentralLogo"
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 
 type BadgeProps = {

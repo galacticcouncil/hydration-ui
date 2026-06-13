@@ -7,7 +7,7 @@ import { type Hex } from "viem"
 //  Network:   Hydration lark testnet (`2.lark.hydration.cloud`, chain 222222)
 //  Surface:   ERC-4626 (deposit) + ERC-7540-style async redeem queue.
 //
-//  Unlike HDCL, Propeller has NO user-facing borrow leg. The vault runs a
+//  Unlike BIL, Propeller has NO user-facing borrow leg. The vault runs a
 //  leveraged loop internally (CollateralVault → SubLoop) and the user only
 //  ever sees: deposit ETH → hold pETH shares → async redeem back to ETH.
 // ════════════════════════════════════════════════════════════════════════

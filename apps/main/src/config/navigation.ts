@@ -53,7 +53,7 @@ export const LINKS = {
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
   strategies: "/strategies",
-  strategiesHdcl: "/strategies/hdcl-vault",
+  strategiesBil: "/strategies/bil-vault",
   strategiesPropeller: "/strategies/propeller",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
@@ -106,7 +106,7 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.strategies,
     icon: CoinsIcon,
     children: [
-      { key: "strategiesHdcl", to: LINKS.strategiesHdcl, icon: GoalIcon },
+      { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
       {
         key: "strategiesPropeller",
         to: LINKS.strategiesPropeller,
@@ -322,8 +322,8 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.strategies.title"),
       description: "",
     },
-    strategiesHdcl: {
-      title: t("navigation.strategiesHdcl.title"),
+    strategiesBil: {
+      title: t("navigation.strategiesBil.title"),
       description: "",
     },
     strategiesPropeller: {

@@ -33,7 +33,7 @@ export const StrategiesPage = () => {
       >
         <StrategyCard
           logoId="decentral"
-          title={t("strategies:cards.hdcl.title")}
+          title={t("strategies:cards.bil.title")}
           stats={[
             { label: t("apy"), value: t("common:percent", { value: 4.5 }) },
           ]}
@@ -41,8 +41,8 @@ export const StrategiesPage = () => {
             { label: "Partnership", variant: "green" },
             { label: "RWA", variant: "purple" },
           ]}
-          description={t("strategies:cards.hdcl.description")}
-          link={LINKS.strategiesHdcl}
+          description={t("strategies:cards.bil.description")}
+          link={LINKS.strategiesBil}
         />
         <StrategyCard
           logoId="propeller"

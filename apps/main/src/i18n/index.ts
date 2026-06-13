@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next"
 
 import borrow from "@/i18n/locales/en/borrow.json"
 import common from "@/i18n/locales/en/common.json"
-import hdcl from "@/i18n/locales/en/hdcl.json"
+import bil from "@/i18n/locales/en/bil.json"
 import liquidity from "@/i18n/locales/en/liquidity.json"
 import propeller from "@/i18n/locales/en/propeller.json"
 import staking from "@/i18n/locales/en/staking.json"
@@ -26,7 +26,7 @@ export const resources = {
     xcm,
     stats,
     strategies,
-    hdcl,
+    bil,
     propeller,
   },
 } as const
