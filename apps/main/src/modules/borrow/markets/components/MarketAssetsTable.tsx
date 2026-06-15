@@ -4,9 +4,9 @@ import {
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
 
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { useNavigateToReserve } from "@/modules/borrow/hooks/useNavigateToReserve"
 import { useMarketAssetsTableColumns } from "@/modules/borrow/markets/components/MarketAssetsTable.columns"
 
 type MarketAssetsTableProps = {
@@ -18,19 +18,14 @@ export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
 }) => {
   const { data, isLoading } = useMarketAssetsData()
   const columns = useMarketAssetsTableColumns()
-
-  const navigate = useNavigate()
+  const navigateToReserve = useNavigateToReserve()
 
   return (
     <TableContainer as={Paper}>
       <DataTable
         globalFilter={search}
         isLoading={isLoading}
-        onRowClick={(row) =>
-          navigate({
-            to: `/borrow/markets/${row.underlyingAsset}`,
-          })
-        }
+        onRowClick={(row) => navigateToReserve(row.underlyingAsset)}
         data={data}
         columns={columns}
         {...useDataTableUrlSorting("/borrow/markets/", "sort")}
