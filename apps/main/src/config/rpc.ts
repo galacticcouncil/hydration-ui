@@ -55,8 +55,8 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   createProvider("Dotters", "wss://hydration.dotters.network"),
-  createProvider("IBP", "wss://hydration.ibp.network"),
   createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
+  createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
   createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
   createProvider("roach", "wss://rpc.roach.hydration.cloud"),
   createProvider("lait", "wss://rpc.lait.hydration.cloud"),

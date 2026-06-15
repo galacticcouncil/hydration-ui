@@ -1,6 +1,6 @@
 import {
   AssetCapsProvider,
-  useMarketAssetsData,
+  useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
 import { isGho } from "@galacticcouncil/money-market/utils"
 import {
@@ -13,11 +13,10 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getAssetIdFromAddress, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
-import { Navigate } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LINKS } from "@/config/navigation"
+import { Page404 } from "@/components/Page404"
 import { AccountBindingBanner } from "@/modules/borrow/account/AccountBindingBanner"
 import { HollarReserveHeader } from "@/modules/borrow/reserve/components/HollarReserveHeader"
 import { ReserveActions } from "@/modules/borrow/reserve/components/ReserveActions"
@@ -37,7 +36,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
 }) => {
   const { t } = useTranslation(["borrow"])
   const [mode, setMode] = useState<"overview" | "actions">("overview")
-  const { data: reserves, isLoading } = useMarketAssetsData()
+  const { reserves, loading } = useMoneyMarketData()
   const { isTablet, isMobile } = useBreakpoints()
 
   const reserve = reserves.find(
@@ -52,8 +51,8 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
     ? getAsset(HOLLAR_ASSET_ID)
     : getAsset(getAssetIdFromAddress(address))
 
-  if (!isLoading && !asset) return <Navigate to={LINKS.borrowMarkets} />
-  if (!reserve) return null
+  if (loading) return null
+  if (!asset || !reserve) return <Page404 />
 
   const filterVisible = isTablet || isMobile
   const overviewVisible = mode === "overview" || !filterVisible
