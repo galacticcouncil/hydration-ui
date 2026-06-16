@@ -1,10 +1,4 @@
-import {
-  Amount,
-  AssetLogo,
-  Button,
-  Flex,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -16,6 +10,7 @@ import { hoursToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type WithdrawalRowState =
@@ -55,8 +50,6 @@ export type WithdrawalColumnHandlers = {
    */
   onInstantRedeem: (id: number, amountBil: number) => void
   isInstantRedeeming: boolean
-  /** Whether the aBIL/HOLLAR instant-redeem path is available (Aave layer). */
-  instantAvailable: boolean
 }
 
 export const useWithdrawalColumns = ({
@@ -66,7 +59,6 @@ export const useWithdrawalColumns = ({
   isClaiming,
   onInstantRedeem,
   isInstantRedeeming,
-  //instantAvailable,
 }: WithdrawalColumnHandlers) => {
   const { t } = useTranslation(["strategies", "common"])
   const { isMobile } = useBreakpoints()
@@ -190,9 +182,6 @@ export const useWithdrawalColumns = ({
                     e.stopPropagation()
                     onInstantRedeem(r.id, r.amountBil)
                   }}
-                  // Two-step flow: keep the button disabled across BOTH the
-                  // cancel+resupply (isCancelling) and the aBIL->HOLLAR swap
-                  // (isInstantRedeeming) so it can't be re-fired mid-sequence.
                   disabled={isInstantRedeeming || isCancelling}
                 >
                   {t("bil.withdrawals.action.instant")}

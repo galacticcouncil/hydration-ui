@@ -41,8 +41,6 @@ interface Props {
   nextMaturityDays: number
   /** Stableswap quote — undefined while loading or when path unavailable. */
   instantQuote?: InstantQuote
-  /** Whether the instant-redeem path is operational (stableswap deployed). */
-  instantAvailable: boolean
 }
 
 /**
@@ -69,7 +67,6 @@ export const WithdrawMethodPicker = ({
   worstCaseWaitDays,
   //nextMaturityDays,
   instantQuote,
-  instantAvailable,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
 
@@ -124,16 +121,11 @@ export const WithdrawMethodPicker = ({
       <MethodCard
         active={selected === "instant"}
         onClick={() => onSelect("instant")}
-        disabled={!instantAvailable}
       >
         <CardHeader
           title={t("bil.method.instant.title")}
           icon={Zap}
-          subtitle={
-            instantAvailable
-              ? t("bil.method.instant.subtitleAvailable")
-              : t("bil.method.instant.subtitleUnavailable")
-          }
+          subtitle={t("bil.method.instant.subtitleAvailable")}
           rightChip={t("bil.method.instant.chip")}
           rightChipVariant="primary"
         />

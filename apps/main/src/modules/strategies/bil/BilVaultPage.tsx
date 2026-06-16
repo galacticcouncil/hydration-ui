@@ -19,7 +19,6 @@ import type {
 } from "@/modules/strategies/bil/components/Withdrawals.columns"
 import { WithdrawalsCard } from "@/modules/strategies/bil/components/WithdrawalsCard"
 import { WithdrawModal } from "@/modules/strategies/bil/components/WithdrawModal"
-import { BIL_HAS_AAVE_LAYER } from "@/modules/strategies/bil/constants"
 import {
   useBilPoolPosition,
   useBilReserveConfig,
@@ -66,10 +65,13 @@ export const BilVaultPage = () => {
   const { data: stats } = useVaultStats()
   const { data: balances } = useUserBalances(evmAddress)
   const { data: queueData } = useRedemptionQueue(evmAddress)
-  const { data: historyData } = useRedemptionHistory(evmAddress)
+  const { data: historyData, isLoading: isHistoryLoading } =
+    useRedemptionHistory(evmAddress)
   const { data: poolPosition } = useBilPoolPosition(evmAddress)
   const { data: reserveConfig } = useBilReserveConfig()
   const { data: bilMetrics } = useBilStrategyMetrics()
+
+  console.log({ historyData, isHistoryLoading, evmAddress })
 
   const depositMutation = useDeposit()
   const redeemMutation = useRequestRedeem()
@@ -230,7 +232,6 @@ export const BilVaultPage = () => {
               })
             }
             isInstantRedeeming={instantRedeemQueueMutation.isPending}
-            instantAvailable={BIL_HAS_AAVE_LAYER}
             autoClaimEnabled={autoClaimOn ?? false}
             onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
             isAutoClaimUpdating={setAutoClaimMutation.isPending}
@@ -270,9 +271,6 @@ export const BilVaultPage = () => {
           instantRedeemMutation.mutate(amount)
           setShowWithdraw(false)
         }}
-        // Instant redeem depends on the BIL/HOLLAR stableswap pool, which
-        // depends on aBIL — only available once the Aave layer is live.
-        instantAvailable={BIL_HAS_AAVE_LAYER}
         isPending={isPending}
       />
 

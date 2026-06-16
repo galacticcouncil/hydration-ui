@@ -83,7 +83,6 @@
   "bil.withdraw.ackInstant": "I understand that my BIL will be swapped for HOLLAR and is subject to the above pool slippage.",
   "bil.withdraw.cta.insufficient": "Insufficient BIL",
   "bil.withdraw.cta.belowMin": "Minimum withdrawable amount is {{ min, currency }}",
-  "bil.withdraw.cta.unavailable": "Instant redeem unavailable",
 
   "bil.method.queue.title": "Redemption queue",
   "bil.method.queue.subtitle": "Receive full HOLLAR value",
@@ -95,7 +94,6 @@
   "bil.method.queue.delayValue": "+48 hrs after maturity",
   "bil.method.instant.title": "Instant redeem",
   "bil.method.instant.subtitleAvailable": "Sell on liquid market with discount",
-  "bil.method.instant.subtitleUnavailable": "Coming soon — secondary-market stableswap not yet deployed",
   "bil.method.instant.chip": "Instant",
   "bil.method.instant.youReceiveNow": "You receive now",
   "bil.method.instant.youReceiveQueue": "Via queue (~{{days}} days)",
