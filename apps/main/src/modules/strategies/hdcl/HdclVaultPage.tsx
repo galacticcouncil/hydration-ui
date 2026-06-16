@@ -19,7 +19,6 @@ import type {
 } from "@/modules/strategies/hdcl/components/Withdrawals.columns"
 import { WithdrawalsCard } from "@/modules/strategies/hdcl/components/WithdrawalsCard"
 import { WithdrawModal } from "@/modules/strategies/hdcl/components/WithdrawModal"
-import { HDCL_HAS_AAVE_LAYER } from "@/modules/strategies/hdcl/constants"
 import {
   useHdclPoolPosition,
   useHdclReserveConfig,
@@ -66,10 +65,13 @@ export const HdclVaultPage = () => {
   const { data: stats } = useVaultStats()
   const { data: balances } = useUserBalances(evmAddress)
   const { data: queueData } = useRedemptionQueue(evmAddress)
-  const { data: historyData } = useRedemptionHistory(evmAddress)
+  const { data: historyData, isLoading: isHistoryLoading } =
+    useRedemptionHistory(evmAddress)
   const { data: poolPosition } = useHdclPoolPosition(evmAddress)
   const { data: reserveConfig } = useHdclReserveConfig()
   const { data: hdclMetrics } = useHdclStrategyMetrics()
+
+  console.log({ historyData, isHistoryLoading, evmAddress })
 
   const depositMutation = useDeposit()
   const redeemMutation = useRequestRedeem()
@@ -230,7 +232,6 @@ export const HdclVaultPage = () => {
               })
             }
             isInstantRedeeming={instantRedeemQueueMutation.isPending}
-            instantAvailable={HDCL_HAS_AAVE_LAYER}
             autoClaimEnabled={autoClaimOn ?? false}
             onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
             isAutoClaimUpdating={setAutoClaimMutation.isPending}
@@ -270,9 +271,6 @@ export const HdclVaultPage = () => {
           instantRedeemMutation.mutate(amount)
           setShowWithdraw(false)
         }}
-        // Instant redeem depends on the HDCL/HOLLAR stableswap pool, which
-        // depends on aHDCL — only available once the Aave layer is live.
-        instantAvailable={HDCL_HAS_AAVE_LAYER}
         isPending={isPending}
       />
 

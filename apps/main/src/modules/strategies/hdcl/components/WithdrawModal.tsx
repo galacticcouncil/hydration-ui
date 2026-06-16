@@ -18,7 +18,6 @@ type WithdrawModalProps = {
   reserveConfig: HdclReserveConfig | undefined
   onRequestRedeem: (amount: number) => void
   onInstantRedeem?: (amount: number) => void
-  instantAvailable: boolean
   isPending: boolean
 }
 
@@ -32,7 +31,6 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
   reserveConfig,
   onRequestRedeem,
   onInstantRedeem,
-  instantAvailable,
   isPending,
 }) => {
   const { t } = useTranslation(["strategies"])
@@ -53,7 +51,6 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
         reserveConfig={reserveConfig}
         onRequestRedeem={onRequestRedeem}
         onInstantRedeem={onInstantRedeem}
-        instantAvailable={instantAvailable}
         isPending={isPending}
       />
     </Modal>

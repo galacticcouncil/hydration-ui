@@ -31,7 +31,6 @@ interface Props {
   isClaiming: boolean
   onInstantRedeem: WithdrawalColumnHandlers["onInstantRedeem"]
   isInstantRedeeming: boolean
-  instantAvailable: boolean
   autoClaimEnabled: boolean
   onAutoClaimChange: (next: boolean) => void
   isAutoClaimUpdating: boolean
@@ -59,7 +58,6 @@ export const WithdrawalsCard = ({
   isClaiming,
   onInstantRedeem,
   isInstantRedeeming,
-  instantAvailable,
   autoClaimEnabled,
   onAutoClaimChange,
   isAutoClaimUpdating,
@@ -86,7 +84,6 @@ export const WithdrawalsCard = ({
     isClaiming,
     onInstantRedeem,
     isInstantRedeeming,
-    instantAvailable,
   })
 
   return (

@@ -81,7 +81,6 @@
   "hdcl.withdraw.ackInstant": "I understand that my HDCL will be swapped for HOLLAR and is subject to the above pool slippage.",
   "hdcl.withdraw.cta.insufficient": "Insufficient HDCL",
   "hdcl.withdraw.cta.belowMin": "Minimum withdrawable amount is {{ min, currency }}",
-  "hdcl.withdraw.cta.unavailable": "Instant redeem unavailable",
 
   "hdcl.method.queue.title": "Redemption queue",
   "hdcl.method.queue.subtitle": "Receive full HOLLAR value",
@@ -93,7 +92,6 @@
   "hdcl.method.queue.delayValue": "+48 hrs after maturity",
   "hdcl.method.instant.title": "Instant redeem",
   "hdcl.method.instant.subtitleAvailable": "Sell on liquid market with discount",
-  "hdcl.method.instant.subtitleUnavailable": "Coming soon — secondary-market stableswap not yet deployed",
   "hdcl.method.instant.chip": "Instant",
   "hdcl.method.instant.youReceiveNow": "You receive now",
   "hdcl.method.instant.youReceiveQueue": "Via queue (~{{days}} days)",

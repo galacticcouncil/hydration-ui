@@ -47,7 +47,6 @@ interface Props {
   reserveConfig: HdclReserveConfig | undefined
   onRequestRedeem: (amount: number) => void
   onInstantRedeem?: (amount: number) => void
-  instantAvailable: boolean
   isPending: boolean
 }
 
@@ -59,7 +58,6 @@ export const WithdrawModalForm = ({
   reserveConfig,
   onRequestRedeem,
   onInstantRedeem,
-  instantAvailable,
   isPending,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
@@ -115,15 +113,9 @@ export const WithdrawModalForm = ({
   const queueHollarOut = inputNum * projectedQueueRate
   const { quote: instantQuote } = useInstantQuote(inputNum, queueHollarOut)
 
-  const isInstantMethodAvailable =
-    method === "queue" || (instantAvailable && !!onInstantRedeem)
+  const isInstantMethodAvailable = method === "queue" || !!onInstantRedeem
 
   const canSubmit = formState.isValid && !isPending && isInstantMethodAvailable
-
-  const ctaLabel =
-    method === "instant" && !instantAvailable
-      ? t("hdcl.withdraw.cta.unavailable")
-      : t("common:withdraw")
 
   const onSubmit = handleSubmit(({ amount, method }) => {
     const isMaxSelected =
@@ -186,7 +178,6 @@ export const WithdrawModalForm = ({
                   worstCaseWaitDays={vaultStats.worstCaseWaitDays}
                   nextMaturityDays={vaultStats.nextMaturityDays}
                   instantQuote={instantQuote}
-                  instantAvailable={instantAvailable}
                 />
               )}
             />
@@ -234,7 +225,7 @@ export const WithdrawModalForm = ({
         <Separator />
         <ModalFooter>
           <Button type="submit" size="large" width="100%" disabled={!canSubmit}>
-            {ctaLabel}
+            {t("common:withdraw")}
           </Button>
         </ModalFooter>
       </form>
