@@ -1646,17 +1646,17 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-1.4.0.tgz#c70d9f59d30e95095303fe7bd2262c9f3acc38fa"
-  integrity sha512-Sr/XqQqsL4XBzBH/oL4GEOFhuK9OZddsf5aMtXrRxoTbOXE8j9BRX9gnFoWIU1mzstKZG3oSznmXPtBeNPTuQA==
+"@galacticcouncil/xc-cfg@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-1.4.2.tgz#4add7bbcf09f95c460d86a1e237b6086b4587300"
+  integrity sha512-jxcs7+phOyA91inSSpBJXLB1LmsSS1NqB60iZmzl1q3zZsz16lafI2qjLjLN2YH/WOISxawJ5vIGRKL9vsmtEg==
   dependencies:
-    "@galacticcouncil/xc-core" "^1.1.0"
+    "@galacticcouncil/xc-core" "^1.1.1"
 
-"@galacticcouncil/xc-core@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-1.1.0.tgz#a2d90a5eb65fdd56c7a5002ecb3f2e698a6121e1"
-  integrity sha512-AOGQmovSn6fKPorzls5iL1q2Dse1U6HXetjEwVseEl/imFzzGTZno+ASND0mdt949YdK1QcbImvjxQq/tyIHGQ==
+"@galacticcouncil/xc-core@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-1.1.1.tgz#44b22a3f6a87405393f272278cbe18e6b5fd62b7"
+  integrity sha512-etuoRkabgkZJN+g+4Qi0zBjq+5hwzId9xOVZONI0FAsrnOqAz/QC7CDoY6P1ahQhDefIWu90xcd3/+4BsYwurQ==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -1677,17 +1677,17 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
   integrity sha512-OS/TfBaToyHSN6VqlfDxjXnBeI4Nx03OBGNrlS7a6qlutGF28lqGFiQgzqEGRYo5iQcTV2/WmKcBsWaMOl31fg==
 
-"@galacticcouncil/xc-sdk@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-1.1.0.tgz#f55f120603948cc0eaf98f0aa552184c4028f1c4"
-  integrity sha512-4xtLqnzzogD5bkNKzzBjb/jcXwEZVOy105sJsm5G9hjaDPZ31DxEdUzUHguBOJpQ+FxP0LgEkk/eEU1Y9x9KKg==
+"@galacticcouncil/xc-sdk@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-1.1.2.tgz#c586d3d757bef56871002c8ce7440894d397cd4c"
+  integrity sha512-LCnUYDV4rO+9j8XlMIIe3391ue3p++gtmoyndbCD2irCTtJxKaxJJuZyoiyBRMjaL8RN0OvkoeyPeEZ/txsOOQ==
   dependencies:
-    "@galacticcouncil/xc-core" "^1.1.0"
+    "@galacticcouncil/xc-core" "^1.1.1"
 
-"@galacticcouncil/xc@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-1.0.0.tgz#1f5aeec9d0c3236ee013329079c94bd8350ff917"
-  integrity sha512-Q3lOjZiUoO0Yl+D2LPaG57D+nt+tw10jsMmq0OKfSzuBPGP8yWdJ30S/uf3MPYwRtuAfrrKWrJflNmFx23unDA==
+"@galacticcouncil/xc@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-1.0.1.tgz#f544a648af507c630c0b183d98be5d3c7325f9c4"
+  integrity sha512-pBCyjtNu1r5S1kGAyjicSftL7+76f46b825sw3yBMZo/eQrYWckxo9iwoUCUYGwlOkVKmTZ0qqXkUf33QOmJ4w==
 
 "@gql.tada/cli-utils@1.7.3":
   version "1.7.3"
