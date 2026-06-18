@@ -3,13 +3,23 @@ import {
   isValidBigSource,
   safeStringify,
 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  isEthereumSigner,
+  useAccount,
+  useWallet,
+} from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
 import { AnyTransaction } from "@/modules/transactions/types"
+import {
+  estimatePermitFee,
+  getPermitFeeQueryKeyPart,
+  isPermitFeeEstimation,
+} from "@/modules/transactions/utils/permitFee"
+import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
   getExtraTxFeeByWeight,
   transformAnyToPapiTx,
@@ -28,6 +38,7 @@ export const useEstimateFee = (
   const { papi, sdk, isLoaded } = rpc
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
+  const wallet = useWallet()
 
   const {
     data: accountFeePaymentAssetId,
@@ -46,6 +57,11 @@ export const useEstimateFee = (
 
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
+  const isUsingPermitFee = isPermitFeeEstimation(
+    feeAssetId ?? "",
+    isEthereumSigner(wallet?.signer),
+  )
+
   const feeAssetBalance = feeAsset
     ? scaleHuman(getTransferableBalance(feeAsset.id), feeAsset.decimals)
     : "0"
@@ -60,7 +76,7 @@ export const useEstimateFee = (
     },
     enabled:
       isLoaded &&
-      !!tx &&
+      !!anyTx &&
       !!feeAsset &&
       !isLoadingFeePaymentAssetId &&
       !isBalanceLoading &&
@@ -69,12 +85,25 @@ export const useEstimateFee = (
       "estimateFee",
       feeAssetId,
       address,
-      safeStringify(tx?.decodedCall),
+      isUsingPermitFee,
+      safeStringify(getPermitFeeQueryKeyPart(anyTx) ?? tx?.decodedCall),
     ],
     queryFn: async () => {
-      if (!tx) throw new Error("Invalid transaction")
+      if (!anyTx) throw new Error("Invalid transaction")
       if (!feeAsset) throw new Error(`Asset ${feeAssetId} is not valid`)
-      const isEvmTx = !!anyTx && isEvmCall(anyTx)
+
+      if (isUsingPermitFee) {
+        try {
+          return await estimatePermitFee(rpc, address, anyTx, feeAsset, native)
+        } catch {
+          // Fall back to substrate-only estimate for PAPI txs if EVM simulation fails.
+          if (!isPapiTransaction(anyTx))
+            throw new Error("Permit fee estimation failed")
+        }
+      }
+
+      if (!tx) throw new Error("Invalid transaction")
+      const isEvmTx = isEvmCall(anyTx)
 
       const getSpotPriceFn = getSpotPrice(
         sdk.api.router,

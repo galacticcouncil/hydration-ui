@@ -7,7 +7,7 @@ import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { ResolverOptions, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import z from "zod"
+import z from "zod/v4"
 
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
@@ -25,6 +25,10 @@ import {
   TStablepoolDetails,
   useAddableStablepoolTokens,
 } from "@/modules/liquidity/Liquidity.utils"
+import {
+  GetMaxBalanceWithFee,
+  useFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -87,7 +91,6 @@ export const useStablepoolAddLiquidity = ({
   const { getAssetWithFallback } = useAssets()
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const { getTransferableBalance } = useAccountBalances()
   const {
     liquidity: { slippage },
   } = useTradeSettings()
@@ -97,30 +100,29 @@ export const useStablepoolAddLiquidity = ({
   const { data: omnipoolIds } = useOmnipoolIds()
 
   const isAddableToOmnipool = omnipoolIds?.includes(pool.id.toString())
-  const { stablepoolAssets, accountBalances } = useMemo(() => {
-    const stablepoolAssets: { asset: TAssetData; balance: string }[] = []
-    const accountBalances: Map<string, string> = new Map()
-    for (const reserve of reserves) {
-      stablepoolAssets.push({
+  const stablepoolAssets = useMemo(
+    () =>
+      reserves.map((reserve) => ({
         asset: reserve.meta,
         balance: reserve.amount,
-      })
-
-      accountBalances.set(
-        reserve.asset_id.toString(),
-        scaleHuman(
-          getTransferableBalance(reserve.asset_id.toString()),
-          reserve.meta.decimals,
-        ),
-      )
-    }
-
-    return { stablepoolAssets, accountBalances }
-  }, [reserves, getTransferableBalance])
+      })),
+    [reserves],
+  )
 
   const reserveIds = addebleReserves.map((reserve) =>
     reserve.asset_id.toString(),
   )
+
+  const addLiquidityTx = papi.tx.Stableswap.add_assets_liquidity({
+    pool_id: pool.id,
+    assets: addebleReserves.map((reserve) => ({
+      asset_id: reserve.asset_id,
+      amount: BigInt(scale("1", reserve.meta.decimals)),
+    })),
+    min_shares: 0n,
+  })
+
+  const { getMaxBalance } = useFormMaxBalanceWithFee(addLiquidityTx, 3)
 
   const assetsToSelect = useAssetsToAddToStablepool({
     reserves: addebleReserves,
@@ -131,7 +133,7 @@ export const useStablepoolAddLiquidity = ({
   const form = useStablepoolAddLiquidityForm({
     stablepoolId: stableswapId,
     omnipoolId: stableswapId,
-    accountBalances,
+    getMaxBalance,
     activeFieldIds: reserveIds,
     selectedAssetId: initialAssetIdToAdd ?? "",
     split: enabledSplit,
@@ -257,7 +259,7 @@ export const useStablepoolAddLiquidity = ({
 
   return {
     form,
-    accountBalances,
+    getMaxBalance,
     assetsToSelect,
     minReceiveAmount,
     meta,
@@ -311,10 +313,11 @@ export const getStablepoolShares = (
 
 const useStablepoolAddLiquidityFormResolver = (
   stablepoolId: string,
-  accountReserveBalances: Map<string, string>,
+  getMaxBalance: GetMaxBalanceWithFee,
   omnipoolId?: string,
 ) => {
   const omnipoolZodSchema = useAddToOmnipoolZod(omnipoolId)
+  const { getAssetWithFallback } = useAssets()
   const { data: reserves } = useBorrowReserves()
 
   const assetReserve = reserves?.formattedReserves.find(
@@ -338,15 +341,12 @@ const useStablepoolAddLiquidityFormResolver = (
           assetId: z.string(),
         })
         .refine(
-          (field) => {
-            const maxBalance = accountReserveBalances.get(field.assetId)
-
-            if (!maxBalance) return false
-            return validateMaxBalance(maxBalance, field.amount || "0")
-          },
-          {
-            message: maxBalanceError,
-          },
+          (field) =>
+            validateMaxBalance(
+              getMaxBalance(getAssetWithFallback(field.assetId)),
+              field.amount || "0",
+            ),
+          { error: maxBalanceError },
         ),
     )
 
@@ -359,7 +359,7 @@ const useStablepoolAddLiquidityFormResolver = (
             return Big(value).lte(maxCapToAdd)
           },
           {
-            message: maxCapToAdd,
+            error: maxCapToAdd,
             path: ["supplyCap"],
           },
         ),
@@ -386,7 +386,7 @@ const useStablepoolAddLiquidityFormResolver = (
 export const useStablepoolAddLiquidityForm = ({
   omnipoolId,
   stablepoolId,
-  accountBalances,
+  getMaxBalance,
   option = "omnipool",
   activeFieldIds,
   selectedAssetId,
@@ -395,14 +395,14 @@ export const useStablepoolAddLiquidityForm = ({
   omnipoolId: string
   stablepoolId: string
   option?: TAddStablepoolLiquidityOption
-  accountBalances: Map<string, string>
+  getMaxBalance: GetMaxBalanceWithFee
   activeFieldIds: string[]
   selectedAssetId: string
   split?: boolean
 }) => {
   const resolver = useStablepoolAddLiquidityFormResolver(
     stablepoolId,
-    accountBalances,
+    getMaxBalance,
     option === "omnipool" ? omnipoolId : undefined,
   )
 

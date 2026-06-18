@@ -11,20 +11,19 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import * as z from "zod/v4"
 
-import { TAsset, useAssets } from "@/providers/assetsProvider"
 import {
-  positive,
-  required,
-  requiredObject,
-  useValidateFormMaxBalance,
-} from "@/utils/validators"
+  useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { scale } from "@/utils/formatting"
+import { positive, required, requiredObject } from "@/utils/validators"
 
-const useSchema = () => {
+const useSchema = (validateBalance: ValidateFormMaxBalanceWithFee) => {
   const { t } = useTranslation("wallet")
   const { account } = useAccount()
   const currentPublicKey = account?.publicKey
-
-  const refineMaxBalance = useValidateFormMaxBalance()
 
   return z
     .object({
@@ -58,7 +57,7 @@ const useSchema = () => {
       asset: requiredObject<TAsset>(),
       amount: required.pipe(positive),
     })
-    .check(refineMaxBalance("amount", (form) => [form.asset, form.amount]))
+    .check(validateBalance("amount", (form) => [form.asset, form.amount]))
 }
 
 export type TransferPositionFormValues = z.infer<ReturnType<typeof useSchema>>
@@ -67,9 +66,11 @@ type Props = {
   readonly assetId?: string
 }
 
-export const useTransferPositionForm = (props?: Props) => {
+export const useTransferPosition = (props?: Props) => {
+  const { account } = useAccount()
   const { getAsset } = useAssets()
-  const asset = props?.assetId ? (getAsset(props?.assetId) ?? null) : null
+  const { papi } = useRpcProvider()
+  const asset = props?.assetId ? (getAsset(props.assetId) ?? null) : null
 
   const defaultValues: TransferPositionFormValues = {
     address: "",
@@ -77,9 +78,25 @@ export const useTransferPositionForm = (props?: Props) => {
     amount: "",
   }
 
-  return useForm<TransferPositionFormValues>({
+  const normalizedDest =
+    safeConvertAddressSS58(account?.address ?? "") || account?.address || ""
+
+  const tx = papi.tx.Currencies.transfer({
+    currency_id: asset ? Number(asset.id) : 0,
+    dest: normalizedDest,
+    amount: BigInt(scale(1, asset?.decimals ?? 12)),
+  })
+
+  const { getMaxBalance, validateBalance } = useFormMaxBalanceWithFee(tx)
+
+  const form = useForm<TransferPositionFormValues>({
     mode: "onChange",
     defaultValues,
-    resolver: standardSchemaResolver(useSchema()),
+    resolver: standardSchemaResolver(useSchema(validateBalance)),
   })
+
+  return {
+    form,
+    getMaxBalance,
+  }
 }

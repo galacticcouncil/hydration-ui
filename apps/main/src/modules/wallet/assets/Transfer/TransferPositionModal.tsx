@@ -30,7 +30,7 @@ import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TransferPositionFormValues,
-  useTransferPositionForm,
+  useTransferPosition,
 } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
 import { isErc20AToken, useAssets } from "@/providers/assetsProvider"
@@ -47,7 +47,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const { tradable, native } = useAssets()
 
   const transferPosition = useSubmitTransferPosition({ onClose })
-  const form = useTransferPositionForm({ assetId })
+  const { form, getMaxBalance } = useTransferPosition({ assetId })
   const shouldValidate = form.formState.isSubmitted
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
@@ -133,6 +133,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             label={t("transfer.modal.asset.label")}
             assetFieldName="asset"
             amountFieldName="amount"
+            maxBalance={getMaxBalance(asset)}
             assets={tradable}
           />
           <ModalContentDivider />

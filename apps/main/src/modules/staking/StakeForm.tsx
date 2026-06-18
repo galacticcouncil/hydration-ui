@@ -16,8 +16,7 @@ import { useDebounce } from "react-use"
 import { TAccountVote } from "@/api/democracy"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-import { useStakeForm } from "@/modules/staking/Stake.form"
-import { useStake } from "@/modules/staking/Stake.stake"
+import { useStake } from "@/modules/staking/Stake.form"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { toBigInt } from "@/utils/formatting"
@@ -42,14 +41,16 @@ export const StakeForm: FC<Props> = ({
   const { t } = useTranslation(["common", "staking"])
 
   const { native } = useAssets()
-  const { form, minStake } = useStakeForm(balance, staked || "0")
-
-  const stakeMutation = useStake(positionId, votes, votesSuccess, () =>
-    form.reset(),
+  const { form, minStake, maxBalanceHuman, mutation } = useStake(
+    balance,
+    staked || "0",
+    positionId,
+    votes,
+    votesSuccess,
   )
 
   const submitForm = form.handleSubmit((values) =>
-    stakeMutation.mutate(values.amount),
+    mutation.mutate(values.amount),
   )
 
   const amount = form.watch("amount")
@@ -79,7 +80,7 @@ export const StakeForm: FC<Props> = ({
               assets={[]}
               selectedAsset={native}
               modalDisabled
-              maxBalance={balance}
+              maxBalance={maxBalanceHuman}
               value={field.value}
               onChange={field.onChange}
               amountError={fieldState.error?.message}
