@@ -4,7 +4,11 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { ConfigBuilder, EvmParachain } from "@galacticcouncil/xc-core"
+import {
+  AssetRoute,
+  ConfigBuilder,
+  EvmParachain,
+} from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
@@ -23,7 +27,7 @@ import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
   resolveValidBridgeProvider,
-  shouldPreserveSnowbridgeFastSelection,
+  shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
 import {
   getChainPriority,
@@ -111,6 +115,22 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     (p) => p.chain.key === destChain?.key,
   )
 
+  // The SDK only sets isTagSelect when every route in the pair delivers the
+  // same destination asset (e.g. outbound Snowbridge V2/Fast/V1, all → ETH).
+  // Inbound, Snowbridge and Wormhole deliver *different* assets, so the pair
+  // is isAssetSelect and isTagSelect is false — yet once a destination asset
+  // is picked there can still be multiple bridge variants for it (Snowbridge
+  // V2 + V1). Surface those by falling back to the routes matching the
+  // selected destination asset.
+  const availableBridgeRoutes = useMemo<AssetRoute[]>(() => {
+    if (!destPair) return []
+    if (destPair.isTagSelect) return destPair.routes
+    const forDestAsset = destPair.routes.filter(
+      (r) => r.destination.asset.key === destAsset?.key,
+    )
+    return forDestAsset.length > 1 ? forDestAsset : []
+  }, [destPair, destAsset?.key])
+
   useEffect(() => {
     if (!destPair || !destAsset) return
 
@@ -120,7 +140,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     if (!matchingRoutes.length) return
 
-    if (shouldPreserveSnowbridgeFastSelection(bridgeProvider, destPair)) return
+    if (shouldPreserveSnowbridgeSubSelection(bridgeProvider, destPair)) return
 
     const validProvider = resolveValidBridgeProvider(
       bridgeProvider,
@@ -225,7 +245,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
-        availableBridgeRoutes: destPair?.isTagSelect ? destPair.routes : [],
+        availableBridgeRoutes,
         transferArgs,
         alerts,
         transfer,
