@@ -15,18 +15,17 @@ import { useTranslation } from "react-i18next"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { XcChainAssetSelectFormField } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
+import { XcSrcAssetSelectField } from "@/modules/trade/swap/sections/XcSwap/components/XcSrcAssetSelectField"
 import {
   XcChain,
   XcChainAssetPair,
-  XcUserData,
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
-import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/lib/useXcSwapForm"
+import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
 
 type Props = {
-  readonly sourceChainAssetPairs: XcChainAssetPair[]
   readonly destChainAssetPairs: XcChainAssetPair[]
-  readonly userData: XcUserData
 }
 
 const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
@@ -48,31 +47,18 @@ const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
   </Flex>
 )
 
-export const XcSwapFields: React.FC<Props> = ({
-  sourceChainAssetPairs,
-  destChainAssetPairs,
-  userData,
-}) => {
+export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common"])
   const { watch, setValue } = useFormContext<XcSwapFormValues>()
+  const { isCrossChain } = useXcSwap()
   const [isContactsOpen, setIsContactsOpen] = useState(false)
 
   const [srcChain, destChain] = watch(["srcChain", "destChain"])
 
   return (
     <Stack>
-      <XcChainAssetSelectFormField<XcSwapFormValues>
-        chainFieldName="srcChain"
-        assetFieldName="srcAsset"
-        amountFieldName="srcAmount"
+      <XcSrcAssetSelectField
         label={<ChainLabel label={t("from")} chain={srcChain} />}
-        chainAssetPairs={sourceChainAssetPairs}
-        modalTitle="Source chain & asset"
-        maxBalance={userData.sourceBalance}
-        displayValue={`$${userData.sourceUsd}`}
-        onAmountChange={(amount) =>
-          setValue("destAmount", amount, { shouldValidate: true })
-        }
       />
 
       <XcSwapSwitcher />
@@ -85,35 +71,41 @@ export const XcSwapFields: React.FC<Props> = ({
         chainAssetPairs={destChainAssetPairs}
         modalTitle="Destination chain & asset"
         hideMaxBalanceAction
-        maxBalance="0"
+        ignoreBalance
         disabledInput
       />
 
-      <Separator mx="-xl" />
+      {isCrossChain && (
+        <>
+          <Separator mx="-xl" />
 
-      <AddressBookFormField<XcSwapFormValues>
-        fieldName="destAddress"
-        onOpenMyContacts={() => setIsContactsOpen(true)}
-      />
+          <AddressBookFormField<XcSwapFormValues>
+            fieldName="destAddress"
+            onOpenMyContacts={() => setIsContactsOpen(true)}
+          />
 
-      <Modal
-        variant="popup"
-        open={isContactsOpen}
-        onOpenChange={setIsContactsOpen}
-      >
-        <AddressBookModal
-          header={
-            <ModalHeader
-              title={t("addressBook.modal.title")}
-              onBack={() => setIsContactsOpen(false)}
+          <Modal
+            variant="popup"
+            open={isContactsOpen}
+            onOpenChange={setIsContactsOpen}
+          >
+            <AddressBookModal
+              header={
+                <ModalHeader
+                  title={t("addressBook.modal.title")}
+                  onBack={() => setIsContactsOpen(false)}
+                />
+              }
+              onSelect={(address) => {
+                setValue("destAddress", address.address, {
+                  shouldValidate: true,
+                })
+                setIsContactsOpen(false)
+              }}
             />
-          }
-          onSelect={(address) => {
-            setValue("destAddress", address.address, { shouldValidate: true })
-            setIsContactsOpen(false)
-          }}
-        />
-      </Modal>
+          </Modal>
+        </>
+      )}
     </Stack>
   )
 }
