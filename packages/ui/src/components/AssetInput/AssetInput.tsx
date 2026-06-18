@@ -15,7 +15,7 @@ import {
 import { defaultAssetValueFormatter } from "./AssetInput.utils"
 
 export type AssetInputProps = {
-  label?: string
+  label?: ReactNode
   balanceLabel?: string
   symbol?: string
   value?: string
@@ -85,20 +85,23 @@ export const AssetInput = ({
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between">
-        {label && (
-          <Text
-            color={getToken("text.medium")}
-            fs="p5"
-            fw={500}
-            sx={{
-              width: "fit-content",
-              lineHeight: "120%",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </Text>
-        )}
+        {label &&
+          (typeof label === "string" ? (
+            <Text
+              color={getToken("text.medium")}
+              fs="p5"
+              fw={500}
+              sx={{
+                width: "fit-content",
+                lineHeight: "120%",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {label}
+            </Text>
+          ) : (
+            label
+          ))}
         {!ignoreBalance && (
           <Flex align="center" gap="s" sx={{ marginLeft: "auto" }}>
             <Text
