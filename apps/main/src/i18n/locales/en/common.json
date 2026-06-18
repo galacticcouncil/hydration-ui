@@ -215,6 +215,7 @@
   "navigation.statsHollar.title": "Hollar",
   "navigation.statsAmm.title": "AMM",
   "navigation.statsFees.title": "Fees",
+  "navigation.swapXc.title": "XC",
   "remove": "Remove",
   "rpc.change.modal.autoMode.desc": "Enabling this will automatically switch RPCs and Indexers when one of the active ones is unavailable.",
   "rpc.change.modal.autoMode.title": "Auto-connect to working RPC and Indexer",

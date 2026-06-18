@@ -28,7 +28,7 @@ export const AddressBook: FC<AddressBookProps> = ({
   const isTalisman = !!provider && TALISMAN_PROVIDERS.includes(provider)
 
   return (
-    <Flex py="xxl" direction="column" justify="flex-end">
+    <Flex py="xl" direction="column" justify="flex-end">
       <Flex direction="column" gap="m">
         <Flex justify="space-between" align="center">
           <Label
