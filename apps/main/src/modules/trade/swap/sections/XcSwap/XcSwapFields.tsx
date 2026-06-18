@@ -50,7 +50,7 @@ const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common"])
   const { watch, setValue } = useFormContext<XcSwapFormValues>()
-  const { isCrossChain } = useXcSwap()
+  const { isCrossChain, isSelectionLoading } = useXcSwap()
   const [isContactsOpen, setIsContactsOpen] = useState(false)
 
   const [srcChain, destChain] = watch(["srcChain", "destChain"])
@@ -59,6 +59,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     <Stack>
       <XcSrcAssetSelectField
         label={<ChainLabel label={t("from")} chain={srcChain} />}
+        loading={isSelectionLoading}
       />
 
       <XcSwapSwitcher />
@@ -73,6 +74,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         hideMaxBalanceAction
         ignoreBalance
         disabledInput
+        loading={isSelectionLoading}
       />
 
       {isCrossChain && (
