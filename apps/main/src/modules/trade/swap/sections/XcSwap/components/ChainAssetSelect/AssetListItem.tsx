@@ -1,8 +1,9 @@
 import { Minus } from "@galacticcouncil/ui/assets/icons"
 import { AssetLabel, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useTranslation } from "react-i18next"
 
-import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
+import { XcAssetLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 
 import { SAssetListItem } from "./AssetListItem.styled"
@@ -18,12 +19,13 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   isSelected,
   onClick,
 }) => {
+  const { t } = useTranslation("common")
   const hasBalance = Number(asset.balance) > 0
 
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
       <Flex align="start" gap="base">
-        <XcLogo src={asset.logo} />
+        <XcAssetLogo asset={asset} />
         <Text truncate as="div">
           <AssetLabel symbol={asset.symbol} name={asset.name} />
         </Text>
@@ -37,10 +39,14 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
         {hasBalance ? (
           <Flex direction="column" align="flex-end">
             <Text fs="p5" lh={1} fw={600}>
-              {asset.balance} {asset.symbol}
+              {t("number", {
+                value: asset.balance,
+              })}
             </Text>
             <Text fs="p6" color={getToken("text.low")}>
-              ${asset.balanceUsd}
+              {t("currency", {
+                value: asset.balanceUsd,
+              })}
             </Text>
           </Flex>
         ) : (

@@ -1,7 +1,7 @@
-import { Button } from "@galacticcouncil/ui/components"
+import { LoadingButton } from "@galacticcouncil/ui/components"
 import { useFormContext } from "react-hook-form"
 
-import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/lib/useXcSwapForm"
+import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { XcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/XcSwapAlerts"
 import { XcSwapFields } from "@/modules/trade/swap/sections/XcSwap/XcSwapFields"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
@@ -10,16 +10,19 @@ import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 export const XcSwap: React.FC = () => {
   const {
-    sourceChainAssetPairs,
     destChainAssetPairs,
-    userData,
     onSubmit,
     alerts,
+    quote,
+    isQuoteLoading,
+    isLoading,
   } = useXcSwap()
   const form = useFormContext<XcSwapFormValues>()
 
   const destAsset = form.watch("destAsset")
-  const canSubmit = form.formState.isValid && !alerts.length
+  // Block submit without a firm quote (loading or absent) or a blocking alert.
+  const canSubmit =
+    form.formState.isValid && !alerts.length && !!quote && !isQuoteLoading
 
   const submitLabel = (() => {
     if (canSubmit) return "Swap"
@@ -30,23 +33,20 @@ export const XcSwap: React.FC = () => {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <XcSwapFields
-        sourceChainAssetPairs={sourceChainAssetPairs}
-        destChainAssetPairs={destChainAssetPairs}
-        userData={userData}
-      />
+      <XcSwapFields destChainAssetPairs={destChainAssetPairs} />
       <SwapSectionSeparator />
       <XcSwapAlerts />
-      <Button
+      <LoadingButton
         type="submit"
         size="large"
         width="100%"
-        disabled={!canSubmit}
+        isLoading={isLoading}
+        disabled={!canSubmit || isLoading}
         variant={canSubmit ? "primary" : "tertiary"}
         sx={{ my: "xl", opacity: 1 }}
       >
         {submitLabel}
-      </Button>
+      </LoadingButton>
       <SwapSectionSeparator />
 
       <XcSwapSummary />
