@@ -10,9 +10,20 @@ export const XC_SWAP_CHAIN_CMC_IDS = {
   bitcoin: 1,
 } as const
 
+export const XC_SWAP_ASSET_CMC_IDS = {
+  "nep141:zec.omft.near": 1437,
+  "nep141:wrap.near": 6535,
+} as const
+
 export const getXcSwapChainLogoUrl = (chainKey: string): string => {
   const id =
     XC_SWAP_CHAIN_CMC_IDS[chainKey as keyof typeof XC_SWAP_CHAIN_CMC_IDS]
+  return id ? `${CMC_COIN_LOGO_URL}/${id}.png` : ""
+}
+
+export const getXcSwapAssetLogoUrl = (assetKey: string): string => {
+  const id =
+    XC_SWAP_ASSET_CMC_IDS[assetKey as keyof typeof XC_SWAP_ASSET_CMC_IDS]
   return id ? `${CMC_COIN_LOGO_URL}/${id}.png` : ""
 }
 

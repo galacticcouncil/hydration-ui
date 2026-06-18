@@ -13,12 +13,13 @@ import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   readonly label: ReactNode
+  readonly loading?: boolean
 }
 
 // Source picker for XcSwap. Uses Market's AssetSelect UI (full tradable list,
 // native MAX balance + $ display) but keeps the form value as an XcAsset:
 // the picked TAssetData id is resolved back to an origin XcAsset via the map.
-export const XcSrcAssetSelectField: React.FC<Props> = ({ label }) => {
+export const XcSrcAssetSelectField: React.FC<Props> = ({ label, loading }) => {
   const { tradable } = useAssets()
   const { originAssetMap } = useXcSwap()
   const { control } = useFormContext<XcSwapFormValues>()
@@ -69,6 +70,7 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({ label }) => {
       assetError={assetFieldState.error?.message}
       amountError={amountFieldState.error?.message}
       maxBalanceFallback="0"
+      loading={loading}
     />
   )
 }
