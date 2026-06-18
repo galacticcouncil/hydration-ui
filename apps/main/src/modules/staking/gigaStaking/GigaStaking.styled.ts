@@ -15,10 +15,14 @@ export const SGigaHDXBanner = styled(Flex)(
   ({ theme }) => css`
     position: relative;
 
-    height: 5.25rem;
+    height: 6rem;
 
     border: 1px solid ${theme.details.separators};
     border-radius: ${theme.containers.cornerRadius.containersPrimary};
+
+    ${mq("sm")} {
+      height: 5.25rem;
+    }
 
     &:before {
       content: "";
