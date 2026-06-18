@@ -2,7 +2,7 @@ import { AssetInput, AssetInputProps } from "@galacticcouncil/ui/components"
 import { useState } from "react"
 
 import { ChainAssetSelectDialog } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect"
-import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
+import { XcAssetLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import {
   XcAsset,
   XcChain,
@@ -43,7 +43,7 @@ export const XcChainAssetSelect = ({
         {...assetInputProps}
         selectedAssetIcon={
           currentSelection ? (
-            <XcLogo src={currentSelection.asset.logo} />
+            <XcAssetLogo asset={currentSelection.asset} />
           ) : undefined
         }
         symbol={selectedAsset?.symbol}

@@ -13,15 +13,18 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useState } from "react"
 
 import { AssetList } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/AssetList"
 import { ChainAssetSelectButton } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/ChainAssetSelectButton"
 import { ChainList } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/ChainList"
+import { HydrationAssetList } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/HydrationAssetList"
 import {
   XcChain,
   XcChainAssetPair,
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { numericallyStrDesc } from "@/utils/sort"
 
 export type ChainAssetSelectModalProps = {
   title: string
@@ -98,13 +101,23 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     currentSelection?.chain ?? chainAssetPairs[0]!.chain,
   )
 
-  const filteredChains = chainAssetPairs
-    .map(({ chain }) => chain)
-    .filter(
-      (chain) =>
-        chain.name.toLowerCase().includes(chainSearch.toLowerCase()) ||
-        chain.key.toLowerCase().includes(chainSearch.toLowerCase()),
-    )
+  const filteredChains = [
+    ...chainAssetPairs
+      .filter(
+        ({ chain }) =>
+          chain.name.toLowerCase().includes(chainSearch.toLowerCase()) ||
+          chain.key.toLowerCase().includes(chainSearch.toLowerCase()),
+      )
+      .reduce<Map<string, XcChain>>((acc, { chain }) => {
+        if (!acc.has(chain.key)) acc.set(chain.key, chain)
+        return acc
+      }, new Map())
+      .values(),
+  ].sort((a, b) => {
+    if (a.key === HYDRATION_CHAIN_KEY) return -1
+    if (b.key === HYDRATION_CHAIN_KEY) return 1
+    return a.name.localeCompare(b.name)
+  })
 
   const filteredAssets = chainAssetPairs
     .filter(({ chain }) => chain.key === pendingChain.key)
@@ -112,6 +125,15 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     .filter((asset) =>
       asset.symbol.toLowerCase().includes(assetSearch.toLowerCase()),
     )
+    .sort((a, b) =>
+      numericallyStrDesc(a.balanceUsd ?? "0", b.balanceUsd ?? "0"),
+    )
+
+  const isHydrationPending = pendingChain.key === HYDRATION_CHAIN_KEY
+  const selectedAsset =
+    currentSelection?.chain.key === pendingChain.key
+      ? currentSelection.asset
+      : undefined
 
   return (
     <>
@@ -144,10 +166,17 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
           setSelectedChain={setPendingChain}
         />
         <Flex direction="column">
-          {filteredAssets.length ? (
+          {isHydrationPending ? (
+            <HydrationAssetList
+              chain={pendingChain}
+              search={assetSearch}
+              selectedAsset={selectedAsset}
+              onAssetSelect={onAssetSelect}
+            />
+          ) : filteredAssets.length ? (
             <AssetList
               items={filteredAssets}
-              selectedAsset={currentSelection?.asset}
+              selectedAsset={selectedAsset}
               setSelectedAsset={(asset) => {
                 onAssetSelect({ chain: pendingChain, asset })
               }}

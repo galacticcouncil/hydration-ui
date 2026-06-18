@@ -10,11 +10,12 @@ export type XcSwapAlert = {
   severity: XcSwapAlertSeverity
 }
 
-export const useXcSwapAlerts = (): XcSwapAlert[] => {
+export const useXcSwapAlerts = (isCrossChain: boolean): XcSwapAlert[] => {
   const { account, isConnected } = useAccount()
 
   return useMemo(() => {
     if (
+      !isCrossChain ||
       !isConnected ||
       !account?.provider ||
       EVM_PROVIDERS.includes(account.provider)
@@ -30,5 +31,5 @@ export const useXcSwapAlerts = (): XcSwapAlert[] => {
         severity: "error",
       },
     ]
-  }, [account?.provider, isConnected])
+  }, [account?.provider, isConnected, isCrossChain])
 }
