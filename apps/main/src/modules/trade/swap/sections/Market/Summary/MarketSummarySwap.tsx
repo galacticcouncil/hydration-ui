@@ -13,6 +13,7 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { TAssetData } from "@/api/assets"
 import { TradeType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
@@ -32,9 +33,16 @@ import { getTradeFeeIntervals } from "@/utils/trade"
 type Props = {
   readonly swap: Trade
   readonly healthFactor: HealthFactorResult | undefined
+  readonly sellAssetOverride?: TAssetData | null
+  readonly buyAssetOverride?: TAssetData | null
 }
 
-export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
+export const MarketSummarySwap: FC<Props> = ({
+  swap,
+  healthFactor,
+  sellAssetOverride,
+  buyAssetOverride,
+}) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
 
@@ -57,7 +65,9 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form
-  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
+  const [formSellAsset, formBuyAsset] = watch(["sellAsset", "buyAsset"])
+  const sellAsset = sellAssetOverride ?? formSellAsset
+  const buyAsset = buyAssetOverride ?? formBuyAsset
 
   const { data: transactionFee, isLoading: isTransactionFeeLoading } =
     useSwapFee(swap)
@@ -143,7 +153,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
             value: minSummaryValue,
             symbol: minSummaryAsset.symbol,
           })}
-          amountDisplay={minSummaryValueDisplay}
+          amountDisplay={`(${minSummaryValueDisplay})`}
           isLoading={minSummaryValueDisplayLoading}
           isExpanded={isSummaryExpanded}
           onIsExpandedChange={changeSummaryExpanded}

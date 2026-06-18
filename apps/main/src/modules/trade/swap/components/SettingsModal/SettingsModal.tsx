@@ -9,6 +9,7 @@ export const SettingsModal = () => {
   switch (true) {
     case !!matchRoute({ to: "/trade/swap/dca" }):
       return <DcaSettingsModal />
+    case !!matchRoute({ to: "/trade/swap/xc" }):
     case !!matchRoute({ to: "/trade/swap/market" }):
       return <SwapSettingsModal />
     default:
