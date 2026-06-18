@@ -21,6 +21,7 @@ export const FormHeader = () => {
   const search = useSearch({ from: "/trade/_history/swap" })
   const matchRoute = useMatchRoute()
   const hasSettings =
+    !!matchRoute({ to: LINKS.swapXc }) ||
     !!matchRoute({ to: LINKS.swapMarket }) ||
     !!matchRoute({ to: LINKS.swapDca })
 
@@ -43,7 +44,7 @@ export const FormHeader = () => {
             aria-label="Settings"
             mr="-s"
           >
-            <Icon size="s" component={Settings} />
+            <Icon size="m" component={Settings} />
           </ButtonIcon>
 
           <Modal

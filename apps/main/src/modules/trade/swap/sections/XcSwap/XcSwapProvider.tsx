@@ -35,10 +35,9 @@ import {
 import { assertXcSwapQuoteParams } from "@/modules/trade/swap/sections/XcSwap/lib/assertXcSwapQuoteParams"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { scale, scaleHuman } from "@/utils/formatting"
-
-const QUOTE_SLIPPAGE = 1
 
 type XcSwapDefaultSelection = {
   readonly chainKey: string
@@ -72,6 +71,7 @@ type XcSwapContextValue = {
   readonly refundTo: string | null
   readonly quote: XcSwapQuote
   readonly isQuoteLoading: boolean
+  readonly isSelectionLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
   readonly alerts: XcSwapAlert[]
@@ -86,6 +86,7 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   refundTo: null,
   quote: null,
   isQuoteLoading: false,
+  isSelectionLoading: true,
   onSubmit: () => {},
   isLoading: false,
   alerts: [],
@@ -105,6 +106,11 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
   const form = useXcSwapForm()
   const submit = useSubmitXcSwap()
   const submitOmnipool = useSubmitSwap()
+  const {
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
 
   // EVM-wallet-only (phase 1): the H160 comes straight from the connected
   // account's raw address. Substrate-account H160 derivation is out of scope.
@@ -216,6 +222,9 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
 
   const isSelectionDataReady =
     !isOriginLoading && !isDestLoading && sourceChainAssetPairs.length > 0
+  const srcAsset = form.watch("srcAsset")
+  const destAsset = form.watch("destAsset")
+  const isSelectionLoading = !isSelectionDataReady || !srcAsset || !destAsset
 
   useEffect(() => {
     if (!isSelectionDataReady) return
@@ -254,12 +263,11 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
   const alerts = useXcSwapAlerts(isCrossChain)
 
   useEffect(() => {
-    if (form.getValues("destAddress")) form.trigger("destAddress")
+    if (form.getValues("destAddress")) {
+      form.trigger("destAddress")
+    }
   }, [destChain, form])
 
-  // Live dry quote — debounce the source amount, then estimate via the SDK.
-  const srcAsset = form.watch("srcAsset")
-  const destAsset = form.watch("destAsset")
   const srcAmount = form.watch("srcAmount")
   const recipient = form.watch("destAddress")
 
@@ -273,7 +281,6 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
     return BigInt(scale(debouncedAmount, srcAsset.decimals))
   }, [debouncedAmount, srcAsset])
 
-  // Cross-chain (xc-swap SDK) quote — needs refund/recipient addresses.
   const xcQuoteEnabled =
     isCrossChain &&
     isApiLoaded &&
@@ -299,7 +306,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
       destAsset?.oneClickId,
       recipient,
       refundTo,
-      QUOTE_SLIPPAGE,
+      swapSlippage,
     ],
     queryFn: () =>
       xcSwap.swap(
@@ -309,7 +316,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
           destAsset,
           recipient,
           refundTo,
-          slippage: QUOTE_SLIPPAGE,
+          slippage: swapSlippage,
         }),
       ),
   })
@@ -411,6 +418,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
         refundTo,
         quote,
         isQuoteLoading,
+        isSelectionLoading,
         onSubmit,
         isLoading:
           isOriginLoading ||

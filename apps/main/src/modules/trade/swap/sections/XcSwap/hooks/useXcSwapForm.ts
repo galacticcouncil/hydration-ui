@@ -14,6 +14,7 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import {
   positive,
+  required,
   requiredObject,
   useValidateFormMaxBalance,
 } from "@/utils/validators"
@@ -22,10 +23,10 @@ const schema = z
   .object({
     srcChain: requiredObject<XcChain>(),
     srcAsset: requiredObject<XcAsset>(),
-    srcAmount: positive,
+    srcAmount: required.pipe(positive),
     destChain: requiredObject<XcChain>(),
     destAsset: requiredObject<XcAsset>(),
-    destAmount: positive,
+    destAmount: required.pipe(positive),
     destAddress: z.string(),
   })
   .superRefine((data, ctx) => {
@@ -102,7 +103,7 @@ export const useXcSwapForm = () => {
     resolver: standardSchemaResolver(useSchema()),
   })
 
-  const { trigger, getValues } = form
+  const { trigger, getValues, getFieldState } = form
   useEffect(() => {
     const { srcAsset } = getValues()
 
@@ -111,9 +112,22 @@ export const useXcSwapForm = () => {
     }
 
     if (isBalanceLoaded(String(srcAsset.id)) || !isBalanceLoading) {
+      const srcAmountState = getFieldState("srcAmount")
+
+      if (!srcAmountState.isDirty && !srcAmountState.isTouched) {
+        return
+      }
+
       trigger("srcAmount")
     }
-  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
+  }, [
+    account,
+    isBalanceLoading,
+    trigger,
+    getValues,
+    getFieldState,
+    isBalanceLoaded,
+  ])
 
   return form
 }
