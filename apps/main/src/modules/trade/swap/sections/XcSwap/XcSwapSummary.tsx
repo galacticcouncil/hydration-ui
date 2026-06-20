@@ -2,7 +2,9 @@ import {
   CollapsibleContent,
   CollapsibleRoot,
   Summary,
+  Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { XcSwapTrade } from "@galacticcouncil/xc-swap"
 import { produce } from "immer"
 import { useFormContext } from "react-hook-form"
@@ -19,9 +21,6 @@ import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { scaleHuman } from "@/utils/formatting"
-
-const RELAY_FEE_DECIMALS = 18
 
 export const XcSwapSummary = () => {
   const { quote } = useXcSwap()
@@ -83,17 +82,13 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
       minAmountOut,
     )
 
-  const maxFeeIn = t("currency", {
-    value: trade.maxFeeIn.toDecimal(),
-    symbol: trade.maxFeeIn.symbol,
+  const feeUsd = t("currency", {
+    value: trade.fee.usd,
+    maximumFractionDigits: null,
   })
+  const feePct = t("percent", { value: trade.fee.pct })
 
-  const relayFee = t("currency", {
-    value: scaleHuman(trade.maxRelayFee, RELAY_FEE_DECIMALS),
-    symbol: "ETH",
-  })
-
-  const eta = t("interval.short", { value: trade.swapTimeEstimate * 1000 })
+  const eta = t("interval.short", { value: trade.timeEstimate.quote * 1000 })
 
   const formattedMinAmountOut = t("currency", {
     value: minAmountOut,
@@ -117,8 +112,18 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
       <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
           <PriceImpactSummaryRow priceImpact={trade.priceImpactPct} />
-          <SwapSummaryRow label="Max fee in" content={maxFeeIn} />
-          <SwapSummaryRow label="Relay fee" content={relayFee} />
+          <SwapSummaryRow
+            label={t("trade:market.summary.estTradeFees")}
+            tooltip={t("trade:market.summary.estTradeFees.tooltip")}
+            content={
+              <Text fs="p5" fw={500} lh={1.2}>
+                <span sx={{ color: getToken("text.high") }}>{feeUsd}</span>{" "}
+                <span sx={{ color: getToken("colors.skyBlue.500") }}>
+                  ({feePct})
+                </span>
+              </Text>
+            }
+          />
           <SwapSummaryRow label="Estimated time" content={eta} />
         </Summary>
       </CollapsibleContent>

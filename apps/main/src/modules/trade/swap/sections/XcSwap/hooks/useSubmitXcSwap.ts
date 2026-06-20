@@ -9,10 +9,6 @@ import {
   TransactionXcSwapMeta,
   useTransactionsStore,
 } from "@/states/transactions"
-import { scaleHuman } from "@/utils/formatting"
-
-// trade.maxRelayFee is denominated in ETH/WETH wei (18 decimals).
-const RELAY_FEE_DECIMALS = 18
 
 export const useSubmitXcSwap = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -30,8 +26,6 @@ export const useSubmitXcSwap = () => {
       // Firm quote — network call that yields the deposit address + calls.
       const { calls, depositAddress, intentId, correlationId } =
         await trade.buildCall()
-
-      console.log({ calls })
 
       // calls = [approve?, swapAndBridge]; approve is omitted when the emitter
       // already has allowance over the source asset.
@@ -60,14 +54,12 @@ export const useSubmitXcSwap = () => {
         srcChainKey: HYDRATION_CHAIN_KEY,
         srcAssetSymbol: srcAsset.symbol,
         srcAmount,
-        srcChainFee: trade.maxFeeIn.toDecimal(),
-        srcChainFeeSymbol: trade.maxFeeIn.symbol,
+        srcChainFee: trade.fee.amount.toDecimal(),
+        srcChainFeeSymbol: trade.fee.amount.symbol,
         dstChainKey: destChain.key,
         dstAssetSymbol: destAsset.symbol,
         dstAmount: trade.amountOut.toDecimal(),
         dstAddress: destAddress,
-        dstChainFee: scaleHuman(trade.maxRelayFee, RELAY_FEE_DECIMALS),
-        dstChainFeeSymbol: "ETH",
         intentId,
         depositAddress,
         correlationId,
