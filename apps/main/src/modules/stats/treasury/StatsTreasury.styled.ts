@@ -522,8 +522,9 @@ export const STooltipTitle = styled.span(
     color: ${theme.text.medium};
     font-family: ${theme.fontFamilies1.secondary};
     font-size: ${theme.fontSizes.p6};
-    font-weight: 500;
-    line-height: ${theme.lineHeights.s};
+    font-weight: 600;
+    line-height: ${theme.lineHeights.m};
+    margin-bottom: calc(${theme.space.base} * -0.5);
     text-transform: uppercase;
   `,
 )

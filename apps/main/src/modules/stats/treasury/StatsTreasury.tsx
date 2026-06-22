@@ -425,6 +425,11 @@ const getPositionGroupLabel = (item: TreasuryAssetBalance) => {
 const getAssetCompositionLabel = (item: TreasuryAssetBalance) =>
   item.source === "moneyMarketBorrow" ? "-" : formatSharePercent(item.share)
 
+const getTooltipAssetName = (
+  item: GroupedTreasuryAssetBalance,
+  isGroupedAsset: boolean,
+) => (isGroupedAsset ? "Aggregated balances" : item.asset.name)
+
 const getAssetOffchainBreakdown = (
   item: TreasuryAssetBalance,
   isLiquidityAsset?: boolean,
@@ -491,6 +496,12 @@ const BreakdownValue = ({
   )
 }
 
+const TooltipLabel = ({ children }: { children: ReactNode }) => (
+  <Text fs="p7" fw={500} color="text.high">
+    {children}
+  </Text>
+)
+
 const AssetDetailsTooltipContent = ({
   item,
   relatedPositions = [],
@@ -526,7 +537,7 @@ const AssetDetailsTooltipContent = ({
                 {item.asset.symbol}
               </Text>
               <Text fs="p7" lh={1.1} color="text.high">
-                {item.asset.name}
+                {getTooltipAssetName(item, isGroupedAsset)}
               </Text>
             </STooltipAssetIdentity>
           </STooltipAsset>
@@ -534,20 +545,6 @@ const AssetDetailsTooltipContent = ({
             {getAssetCompositionLabel(item)}
           </Text>
         </STooltipHeader>
-        <STooltipRow $compact $noDivider>
-          <Text fs="p7" color="text.high">
-            Balance
-          </Text>
-          <STooltipValues $compact>
-            <Text fs="p7" fw={600} color="text.high">
-              {formatTooltipTokenAmount(item.balance)}
-            </Text>
-            <Text fs="p7" color={getToken("text.medium")}>
-              {item.source === "moneyMarketBorrow" ? "-" : ""}
-              {formatTooltipCurrency(item.valueUsd)}
-            </Text>
-          </STooltipValues>
-        </STooltipRow>
         {isGroupedAsset ? (
           <>
             <STooltipTitle>Consisting of</STooltipTitle>
@@ -581,9 +578,7 @@ const AssetDetailsTooltipContent = ({
         <STooltipTitle>Breakdown</STooltipTitle>
         <STooltipSection>
           <STooltipRow $compact>
-            <Text fs="p7" color="text.high">
-              Total
-            </Text>
+            <TooltipLabel>Total balance</TooltipLabel>
             <BreakdownValue
               part={{
                 balance: item.balance,
@@ -594,9 +589,7 @@ const AssetDetailsTooltipContent = ({
           </STooltipRow>
           {breakdownRows.map(({ label, part }) => (
             <STooltipRow key={label} $compact>
-              <Text fs="p7" color={getToken("text.medium")}>
-                {label}
-              </Text>
+              <TooltipLabel>{label}</TooltipLabel>
               <BreakdownValue part={part} />
             </STooltipRow>
           ))}
@@ -606,9 +599,7 @@ const AssetDetailsTooltipContent = ({
             <STooltipTitle>Related positions</STooltipTitle>
             {tooltipPositions.map((position) => (
               <STooltipRow key={position.source} $compact>
-                <Text fs="p7" color={getToken("text.medium")}>
-                  {getPositionGroupLabel(position)}
-                </Text>
+                <TooltipLabel>{getPositionGroupLabel(position)}</TooltipLabel>
                 <STooltipValues $compact>
                   <Text fs="p7" fw={600} color="text.high">
                     {formatTooltipTokenAmount(position.balance)}
