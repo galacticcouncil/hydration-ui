@@ -80,4 +80,11 @@ export const PROVIDERS: ProviderProps[] = [
     ["rococo", "development"],
     "testnet",
   ),
+  createProvider(
+    "Lark1",
+    "wss://1.lark.hydration.cloud",
+    MAINNET_INDEXER_URL,
+    MAINNET_SQUID_URL,
+    ["development", "production"],
+  ),
 ]
