@@ -158,7 +158,10 @@ export const MarketSummarySwap: FC<Props> = ({
           isExpanded={isSummaryExpanded}
           onIsExpandedChange={changeSummaryExpanded}
         />
-        <CollapsibleContent asChild>
+        <CollapsibleContent
+          asChild
+          sx={{ overflow: "hidden", mx: "-xl", px: "xl" }}
+        >
           <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
             <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
             <SwapSummaryRow

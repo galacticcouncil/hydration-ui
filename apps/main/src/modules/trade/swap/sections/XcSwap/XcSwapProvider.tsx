@@ -14,7 +14,11 @@ import { useDebounce } from "react-use"
 import { isNumber } from "remeda"
 
 import { bestSellQuery, Trade, TradeType } from "@/api/trade"
-import { getXcSwapChainLogoUrl, XC_SWAP_CONFIG } from "@/config/xcSwap"
+import {
+  getXcSwapChainLogoUrl,
+  XC_SWAP_CONFIG,
+  XC_SWAP_RECIPIENT_PLACEHOLDERS,
+} from "@/config/xcSwap"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
 import {
@@ -269,7 +273,10 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
   }, [destChain, form])
 
   const srcAmount = form.watch("srcAmount")
-  const recipient = form.watch("destAddress")
+  const destAddress = form.watch("destAddress")
+  const recipient =
+    destAddress.trim() ||
+    (destChain ? XC_SWAP_RECIPIENT_PLACEHOLDERS[destChain.key] : undefined)
 
   const [debouncedAmount, setDebouncedAmount] = useState("")
   useDebounce(() => setDebouncedAmount(srcAmount), 400, [srcAmount])
