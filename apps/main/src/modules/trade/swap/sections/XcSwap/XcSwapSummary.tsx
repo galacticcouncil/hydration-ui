@@ -109,7 +109,10 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
         isExpanded={isSummaryExpanded}
         onIsExpandedChange={changeSummaryExpanded}
       />
-      <CollapsibleContent asChild>
+      <CollapsibleContent
+        asChild
+        sx={{ overflow: "hidden", mx: "-xl", px: "xl" }}
+      >
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
           <PriceImpactSummaryRow priceImpact={trade.priceImpactPct} />
           <SwapSummaryRow
@@ -118,7 +121,7 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
             content={
               <Text fs="p5" fw={500} lh={1.2}>
                 <span sx={{ color: getToken("text.high") }}>{feeUsd}</span>{" "}
-                <span sx={{ color: getToken("colors.skyBlue.500") }}>
+                <span sx={{ color: getToken("text.tint.quart") }}>
                   ({feePct})
                 </span>
               </Text>
