@@ -178,6 +178,36 @@ const formatCurrency = (value: string | number | null | undefined) => {
   }).format(numericValue)
 }
 
+const formatTreasuryValue = (value: string | number | null | undefined) => {
+  if (!value) return "-"
+
+  const numericValue = Number(value)
+
+  if (!Number.isFinite(numericValue)) return "-"
+
+  const formatCompact = (divisor: number, suffix: string) =>
+    `$${(numericValue / divisor).toFixed(2)}${suffix}`
+
+  if (Math.abs(numericValue) >= 1_000_000_000) {
+    return formatCompact(1_000_000_000, "B")
+  }
+
+  if (Math.abs(numericValue) >= 1_000_000) {
+    return formatCompact(1_000_000, "M")
+  }
+
+  if (Math.abs(numericValue) >= 1_000) {
+    return formatCompact(1_000, "K")
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: numericValue >= 1 ? 2 : 6,
+    maximumFractionDigits: numericValue >= 1 ? 2 : 6,
+  }).format(numericValue)
+}
+
 const isPositiveNumberString = (value: string | null | undefined) => {
   const numberValue = Number(value ?? 0)
 
@@ -1461,8 +1491,15 @@ export const StatsTreasury = () => {
               <ValueStats
                 wrap
                 size="medium"
-                label="Treasury value"
-                value={formatCurrency(data?.totalValueUsd)}
+                label="Treasury holdings"
+                value={formatTreasuryValue(data?.holdingsValueUsd)}
+                isLoading={isLoading}
+              />
+              <ValueStats
+                wrap
+                size="medium"
+                label="Net treasury value"
+                value={formatTreasuryValue(data?.totalValueUsd)}
                 isLoading={isLoading}
               />
               <ValueStats
