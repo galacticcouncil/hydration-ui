@@ -142,11 +142,11 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "stats",
     to: LINKS.stats,
-    defaultChild: LINKS.statsFees,
+    defaultChild: LINKS.statsTreasury,
     icon: ChartPieIcon,
     children: [
       // { key: "statsOverview", to: LINKS.statsOverview },
-      // { key: "statsTreasury", to: LINKS.statsTreasury },
+      { key: "statsTreasury", to: LINKS.statsTreasury },
       // { key: "statsMoneyMarket", to: LINKS.statsMoneyMarket },
       // { key: "statsHollar", to: LINKS.statsHollar },
       // { key: "statsAmm", to: LINKS.statsAmm },
