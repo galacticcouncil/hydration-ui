@@ -1468,124 +1468,112 @@ export const StatsTreasury = () => {
 
   return (
     <STreasuryGrid>
-      <Paper
-        p="xl"
-        sx={{
-          "@media (width < 640px)": {
-            p: "l",
-          },
-        }}
-      >
-        <STreasuryOverview>
-          <SLoadedContent key={isLoading ? "stats-loading" : "stats-loaded"}>
-            <SKpiGrid>
-              <ValueStats
-                wrap
-                size="medium"
-                label="Treasury holdings"
-                value={formatTreasuryValue(data?.holdingsValueUsd)}
-                isLoading={isLoading}
-              />
-              <ValueStats
-                wrap
-                size="medium"
-                label="Net treasury value"
-                value={formatTreasuryValue(data?.totalValueUsd)}
-                isLoading={isLoading}
-              />
-              <ValueStats
-                wrap
-                size="medium"
-                label="Assets held"
-                value={data ? allTreasuryAssets.length.toString() : "-"}
-                isLoading={isLoading}
-              />
-            </SKpiGrid>
-          </SLoadedContent>
+      <STreasuryOverview>
+        <SLoadedContent key={isLoading ? "stats-loading" : "stats-loaded"}>
+          <SKpiGrid>
+            <ValueStats
+              wrap
+              size="medium"
+              label="Treasury holdings"
+              value={formatTreasuryValue(data?.holdingsValueUsd)}
+              isLoading={isLoading}
+            />
+            <ValueStats
+              wrap
+              size="medium"
+              label="Net treasury value"
+              value={formatTreasuryValue(data?.totalValueUsd)}
+              isLoading={isLoading}
+            />
+            <ValueStats
+              wrap
+              size="medium"
+              label="Assets held"
+              value={data ? allTreasuryAssets.length.toString() : "-"}
+              isLoading={isLoading}
+            />
+          </SKpiGrid>
+        </SLoadedContent>
 
-          <SComposition>
-            <SCompositionGrid data-composition-grid="">
-              {isCompositionLoading ? (
-                compositionSkeletonSpecs.map((spec, index) => (
-                  <Skeleton
-                    key={index}
-                    height="100%"
-                    sx={{
-                      gridColumn: `span ${spec.colSpan}`,
-                      gridRow: `span ${spec.rowSpan}`,
-                    }}
-                  />
-                ))
-              ) : compositionBlocks.length ? (
-                compositionBlocks.map((block) => {
-                  if (block.kind === "others") {
-                    const layout = useCompositionMobileLayout
-                      ? getOthersCompositionMobileBlockLayout(
-                          block.share,
-                          compositionPrimarySpecs,
-                        )
-                      : getOthersCompositionBlockLayout(
-                          block.share,
-                          compositionPrimarySpecs,
-                        )
-
-                    return (
-                      <OthersCompositionBlock
-                        key={block.id}
-                        block={block}
-                        layout={layout}
-                      />
-                    )
-                  }
-
-                  const assetIndex = compositionLayoutAssets.findIndex(
-                    (asset) => asset.id === block.asset.id,
-                  )
+        <SComposition>
+          <SCompositionGrid data-composition-grid="">
+            {isCompositionLoading ? (
+              compositionSkeletonSpecs.map((spec, index) => (
+                <Skeleton
+                  key={index}
+                  height="100%"
+                  sx={{
+                    gridColumn: `span ${spec.colSpan}`,
+                    gridRow: `span ${spec.rowSpan}`,
+                  }}
+                />
+              ))
+            ) : compositionBlocks.length ? (
+              compositionBlocks.map((block) => {
+                if (block.kind === "others") {
                   const layout = useCompositionMobileLayout
-                    ? getResolvedCompositionMobileBlockLayout(
+                    ? getOthersCompositionMobileBlockLayout(
                         block.share,
-                        getCompositionLayoutOptions(
-                          block.asset,
-                          block.valueUsd,
-                        ),
-                        compositionLayoutAssets,
-                        assetIndex,
-                        compositionOthersShare,
+                        compositionPrimarySpecs,
                       )
-                    : getResolvedCompositionBlockLayout(
+                    : getOthersCompositionBlockLayout(
                         block.share,
-                        getCompositionLayoutOptions(
-                          block.asset,
-                          block.valueUsd,
-                        ),
-                        compositionLayoutAssets,
-                        assetIndex,
-                        compositionOthersShare,
+                        compositionPrimarySpecs,
                       )
 
                   return (
-                    <AssetCompositionBlock
-                      key={block.asset.id}
+                    <OthersCompositionBlock
+                      key={block.id}
                       block={block}
                       layout={layout}
-                      relatedPositions={relatedPositionsBySymbol.get(
-                        getCompositionGroupKey(block),
-                      )}
-                      isLiquidityAsset={
-                        isShareToken(block.asset) || isStableSwap(block.asset)
-                      }
-                      isMultipleLogo={isStableSwap(block.asset)}
-                      useDrawer={useCompositionMobileLayout}
                     />
                   )
-                })
-              ) : (
-                <SMuted>No priced balances found</SMuted>
-              )}
-            </SCompositionGrid>
-          </SComposition>
-        </STreasuryOverview>
-      </Paper>
+                }
+
+                const assetIndex = compositionLayoutAssets.findIndex(
+                  (asset) => asset.id === block.asset.id,
+                )
+                const layout = useCompositionMobileLayout
+                  ? getResolvedCompositionMobileBlockLayout(
+                      block.share,
+                      getCompositionLayoutOptions(
+                        block.asset,
+                        block.valueUsd,
+                      ),
+                      compositionLayoutAssets,
+                      assetIndex,
+                      compositionOthersShare,
+                    )
+                  : getResolvedCompositionBlockLayout(
+                      block.share,
+                      getCompositionLayoutOptions(block.asset, block.valueUsd),
+                      compositionLayoutAssets,
+                      assetIndex,
+                      compositionOthersShare,
+                    )
+
+                return (
+                  <AssetCompositionBlock
+                    key={block.asset.id}
+                    block={block}
+                    layout={layout}
+                    relatedPositions={relatedPositionsBySymbol.get(
+                      getCompositionGroupKey(block),
+                    )}
+                    isLiquidityAsset={
+                      isShareToken(block.asset) || isStableSwap(block.asset)
+                    }
+                    isMultipleLogo={isStableSwap(block.asset)}
+                    useDrawer={useCompositionMobileLayout}
+                  />
+                )
+              })
+            ) : (
+              <SMuted>No priced balances found</SMuted>
+            )}
+          </SCompositionGrid>
+        </SComposition>
+      </STreasuryOverview>
 
       {isError && (
         <Text color="warning">
