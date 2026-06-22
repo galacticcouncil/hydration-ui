@@ -15,6 +15,11 @@ export const XC_SWAP_ASSET_CMC_IDS = {
   "nep141:wrap.near": 6535,
 } as const
 
+export const XC_SWAP_RECIPIENT_PLACEHOLDERS: Record<string, string> = {
+  zec: "t1PKtYdJJHhc3Pxowmznkg7vdTwnhEsCvR4",
+  near: "alice.near",
+}
+
 export const getXcSwapChainLogoUrl = (chainKey: string): string => {
   const id =
     XC_SWAP_CHAIN_CMC_IDS[chainKey as keyof typeof XC_SWAP_CHAIN_CMC_IDS]

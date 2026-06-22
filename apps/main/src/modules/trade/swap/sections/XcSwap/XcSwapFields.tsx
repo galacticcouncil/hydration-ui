@@ -11,7 +11,9 @@ import { AddressBookModal } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { XcChainAssetSelectFormField } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
@@ -23,6 +25,8 @@ import {
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
+import { useAccountBalances } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly destChainAssetPairs: XcChainAssetPair[]
@@ -50,10 +54,27 @@ const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common"])
   const { watch, setValue } = useFormContext<XcSwapFormValues>()
-  const { isCrossChain, isSelectionLoading } = useXcSwap()
+  const { isCrossChain, isSelectionLoading, isQuoteLoading } = useXcSwap()
+  const { getTransferableBalance } = useAccountBalances()
   const [isContactsOpen, setIsContactsOpen] = useState(false)
 
-  const [srcChain, destChain] = watch(["srcChain", "destChain"])
+  const [srcChain, destChain, destAsset, destAmount] = watch([
+    "srcChain",
+    "destChain",
+    "destAsset",
+    "destAmount",
+  ])
+  const onChainDestAssetId =
+    !isCrossChain && isNumber(destAsset?.id) ? String(destAsset.id) : ""
+  const [destDisplayValue, { isLoading: isDestDisplayValueLoading }] =
+    useDisplayAssetPrice(onChainDestAssetId, destAmount || "0")
+  const destMaxBalance =
+    onChainDestAssetId && destAsset
+      ? scaleHuman(
+          getTransferableBalance(onChainDestAssetId),
+          destAsset.decimals,
+        )
+      : undefined
 
   return (
     <Stack>
@@ -72,9 +93,16 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         chainAssetPairs={destChainAssetPairs}
         modalTitle="Destination chain & asset"
         hideMaxBalanceAction
-        ignoreBalance
+        ignoreBalance={isCrossChain}
+        ignoreDisplayValue={isCrossChain}
+        maxBalance={destMaxBalance}
+        displayValue={!isCrossChain ? destDisplayValue : undefined}
         disabledInput
         loading={isSelectionLoading}
+        valueLoading={isQuoteLoading}
+        displayValueLoading={
+          !isCrossChain && (isQuoteLoading || isDestDisplayValueLoading)
+        }
       />
 
       {isCrossChain && (
