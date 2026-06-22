@@ -220,6 +220,7 @@ const mergeBreakdowns = (
     first.moneyMarketSupply,
     second.moneyMarketSupply,
   ),
+  liquidity: mergeBreakdownPart(first.liquidity, second.liquidity),
   moneyMarketBorrow: mergeBreakdownPart(
     first.moneyMarketBorrow,
     second.moneyMarketBorrow,
@@ -407,6 +408,7 @@ const getAssetLiquidityBreakdown = (
   item: TreasuryAssetBalance,
   isLiquidityAsset?: boolean,
 ): TreasuryAssetBreakdownPart | undefined => {
+  if (item.breakdown.liquidity) return item.breakdown.liquidity
   if (!isLiquidityAsset) return undefined
 
   return item.breakdown.wallet

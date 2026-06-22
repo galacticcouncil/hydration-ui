@@ -43,9 +43,12 @@ Each `TreasuryAssetBalance` carries a `breakdown`:
 |---|---|
 | `wallet` | Not supplied; shown as `Offchain` unless the asset itself is a liquidity/share token |
 | `moneyMarketSupply` | Supplied as collateral |
+| `liquidity` | Underlying value expanded from wallet-held LP/share tokens |
 | `moneyMarketBorrow` | Borrowed exposure |
 
 Receipt tokens with an `underlyingAssetId` are excluded from wallet holdings so supplied assets are counted from money-market data instead of double-counting receipt balances.
+
+Wallet-held XYK share tokens and stablepool shares are expanded into their underlying pool assets before merging. The original share token row is omitted when expansion succeeds, so assets like PAXG inside a treasury LP position contribute to the PAXG tile/table row as `Supplied as liquidity` instead of being hidden behind the LP token.
 
 ## UI Rules
 

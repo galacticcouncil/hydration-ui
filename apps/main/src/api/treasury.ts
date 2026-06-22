@@ -9,6 +9,7 @@ import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
 import { useUserBorrowSummary } from "@/api/borrow"
+import { PoolToken } from "@/api/pools"
 import { getSpotPrice } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
 import { TAsset } from "@/providers/assetsProvider"
@@ -30,6 +31,7 @@ export type TreasuryAssetBreakdownPart = {
 export type TreasuryAssetBreakdown = {
   wallet?: TreasuryAssetBreakdownPart
   moneyMarketSupply?: TreasuryAssetBreakdownPart
+  liquidity?: TreasuryAssetBreakdownPart
   moneyMarketBorrow?: TreasuryAssetBreakdownPart
 }
 
@@ -91,6 +93,19 @@ const isReceiptToken = (asset: TAsset) =>
   "underlyingAssetId" in asset &&
   !!asset.underlyingAssetId
 
+const isStableSwapAsset = (asset: TAsset) => asset.type === AssetType.STABLESWAP
+
+const isXYKShareAsset = (
+  asset: TAsset,
+): asset is TAsset & {
+  poolAddress: string
+  assets: [TAsset, TAsset]
+} =>
+  "poolAddress" in asset &&
+  typeof asset.poolAddress === "string" &&
+  "assets" in asset &&
+  Array.isArray(asset.assets)
+
 const sumBigStrings = (...values: Array<string | null | undefined>) =>
   values.reduce((acc, value) => {
     if (!value) return acc
@@ -138,12 +153,183 @@ const getAssetBalance = async (
   return free + reserved
 }
 
+const getAssetValueUsd = async (
+  { sdk }: TProviderContext,
+  assetId: string,
+  balance: string,
+  displayAssetId: string,
+) => {
+  const { spotPrice } = await getSpotPrice(
+    sdk.api.router,
+    assetId,
+    displayAssetId,
+  )()
+
+  return {
+    price: spotPrice,
+    valueUsd: spotPrice ? new Big(balance).times(spotPrice).toString() : null,
+  }
+}
+
+const createWalletAssetBalance = async (
+  rpc: TProviderContext,
+  asset: TAsset,
+  balance: string,
+  balanceRaw: string,
+  displayAssetId: string,
+): Promise<TreasuryAssetBalance> => {
+  const { price, valueUsd } = await getAssetValueUsd(
+    rpc,
+    asset.id,
+    balance,
+    displayAssetId,
+  )
+
+  return {
+    asset,
+    balance,
+    balanceRaw,
+    price,
+    valueUsd,
+    share: 0,
+    source: "wallet" as const,
+    breakdown: {
+      wallet: {
+        balance,
+        valueUsd,
+      },
+    },
+  }
+}
+
+const createLiquidityAssetBalance = async (
+  rpc: TProviderContext,
+  asset: TAsset,
+  balanceRaw: string,
+  displayAssetId: string,
+): Promise<TreasuryAssetBalance> => {
+  const balance = scaleHuman(balanceRaw, asset.decimals)
+  const { price, valueUsd } = await getAssetValueUsd(
+    rpc,
+    asset.id,
+    balance,
+    displayAssetId,
+  )
+
+  return {
+    asset,
+    balance,
+    balanceRaw,
+    price,
+    valueUsd,
+    share: 0,
+    source: "wallet" as const,
+    breakdown: {
+      liquidity: {
+        balance,
+        valueUsd,
+      },
+    },
+  }
+}
+
+const getPoolTokenBalance = (poolToken: PoolToken, shares: string) =>
+  Big(poolToken.balance.toString()).times(shares)
+
+type TreasuryPool = Awaited<
+  ReturnType<TProviderContext["sdk"]["api"]["router"]["getPools"]>
+>[number]
+
+const expandXYKShareToken = async (
+  rpc: TProviderContext,
+  pools: TreasuryPool[],
+  asset: TAsset,
+  balanceRaw: string,
+  displayAssetId: string,
+): Promise<TreasuryAssetBalance[]> => {
+  if (!isXYKShareAsset(asset)) return []
+
+  const pool = pools.find((pool) => pool.address === asset.poolAddress)
+  const totalLiquidity = await rpc.papi.query.XYK.TotalLiquidity.getValue(
+    asset.poolAddress,
+  )
+
+  if (!pool || !totalLiquidity || Big(totalLiquidity.toString()).lte(0)) {
+    return []
+  }
+
+  const shareRatio = Big(balanceRaw).div(totalLiquidity.toString())
+  const poolTokens = pool.tokens.filter((token) =>
+    asset.assets.some((asset) => asset.id === token.id.toString()),
+  )
+
+  return Promise.all(
+    poolTokens.map((token) => {
+      const tokenAsset = asset.assets.find(
+        (asset) => asset.id === token.id.toString(),
+      )
+
+      if (!tokenAsset) return undefined
+
+      return createLiquidityAssetBalance(
+        rpc,
+        tokenAsset,
+        getPoolTokenBalance(token, shareRatio.toString()).toString(),
+        displayAssetId,
+      )
+    }),
+  ).then((items) =>
+    items.filter((item): item is TreasuryAssetBalance => !!item),
+  )
+}
+
+const expandStableSwapAsset = async (
+  rpc: TProviderContext,
+  pools: TreasuryPool[],
+  asset: TAsset,
+  assetMap: Map<string, TAsset>,
+  balanceRaw: string,
+  displayAssetId: string,
+): Promise<TreasuryAssetBalance[]> => {
+  if (!isStableSwapAsset(asset)) return []
+
+  const pool = pools.find((pool) => pool.id?.toString() === asset.id)
+  const totalIssuance = await rpc.papi.query.Tokens.TotalIssuance.getValue(
+    Number(asset.id),
+  )
+
+  if (!pool || !totalIssuance || Big(totalIssuance.toString()).lte(0)) {
+    return []
+  }
+
+  const shareRatio = Big(balanceRaw).div(totalIssuance.toString())
+
+  return Promise.all(
+    pool.tokens
+      .filter((token) => token.id.toString() !== asset.id)
+      .map((token) => {
+        const tokenAsset = assetMap.get(token.id.toString())
+
+        if (!tokenAsset) return undefined
+
+        return createLiquidityAssetBalance(
+          rpc,
+          tokenAsset,
+          getPoolTokenBalance(token, shareRatio.toString()).toString(),
+          displayAssetId,
+        )
+      }),
+  ).then((items) =>
+    items.filter((item): item is TreasuryAssetBalance => !!item),
+  )
+}
+
 export const treasuryStatsQuery = (
   rpc: TProviderContext,
   assets: TAsset[],
   accounts: TreasuryAccount[] = TREASURY_STATS_ACCOUNTS,
 ) => {
-  const { isApiLoaded, sdk } = rpc
+  const { isApiLoaded } = rpc
   const displayAssetId = ENV.VITE_DISPLAY_ASSET_ID
   const assetIds = assets.map((asset) => asset.id).join(",")
   const accountAddresses = accounts.map((account) => account.address).join(",")
@@ -154,6 +340,13 @@ export const treasuryStatsQuery = (
       const walletAccounts = accounts.filter(
         (account) => account.includeWalletBalances,
       )
+      const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
+      const hasLiquidityAssets = assets.some(
+        (asset) => isXYKShareAsset(asset) || isStableSwapAsset(asset),
+      )
+      const pools = hasLiquidityAssets
+        ? await rpc.sdk.api.router.getPools()
+        : []
       const balances = await Promise.all(
         walletAccounts.flatMap((account) => {
           const address = getBalanceAccountAddress(account.address)
@@ -177,35 +370,44 @@ export const treasuryStatsQuery = (
         isPositive(balance),
       )
 
-      const pricedAssets = await Promise.all(
+      const walletAssets = await Promise.all(
         nonZeroBalances.map(async ({ asset, balance, balanceRaw }) => {
-          const { spotPrice } = await getSpotPrice(
-            sdk.api.router,
-            asset.id,
-            displayAssetId,
-          )()
+          if (isXYKShareAsset(asset)) {
+            const liquidityAssets = await expandXYKShareToken(
+              rpc,
+              pools,
+              asset,
+              balanceRaw,
+              displayAssetId,
+            )
 
-          const valueUsd = spotPrice
-            ? new Big(balance).times(spotPrice).toString()
-            : null
+            if (liquidityAssets.length) return liquidityAssets
+          }
 
-          return {
+          if (isStableSwapAsset(asset)) {
+            const liquidityAssets = await expandStableSwapAsset(
+              rpc,
+              pools,
+              asset,
+              assetMap,
+              balanceRaw,
+              displayAssetId,
+            )
+
+            if (liquidityAssets.length) return liquidityAssets
+          }
+
+          return createWalletAssetBalance(
+            rpc,
             asset,
             balance,
             balanceRaw,
-            price: spotPrice,
-            valueUsd,
-            share: 0,
-            source: "wallet" as const,
-            breakdown: {
-              wallet: {
-                balance,
-                valueUsd,
-              },
-            },
-          }
+            displayAssetId,
+          )
         }),
-      )
+      ).then((items) => items.flat())
+
+      const pricedAssets = mergePositivePositions([], walletAssets)
 
       const totalValueUsd = pricedAssets.reduce(
         (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
@@ -264,6 +466,7 @@ const mergeAssetBreakdowns = (
     first.moneyMarketSupply,
     second.moneyMarketSupply,
   ),
+  liquidity: mergeBreakdownPart(first.liquidity, second.liquidity),
   moneyMarketBorrow: mergeBreakdownPart(
     first.moneyMarketBorrow,
     second.moneyMarketBorrow,
