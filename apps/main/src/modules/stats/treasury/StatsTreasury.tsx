@@ -113,7 +113,7 @@ const getCompositionLayoutOptions = (
   valueUsd,
 })
 const ASSET_PAGE_SIZE = 20
-const OTHERS_VALUE_THRESHOLD_USD = 600
+const COMPOSITION_PRIMARY_MIN_VALUE_USD = 15_000
 const OTHERS_GROUP_ID = "others"
 const FORCE_OTHERS_ASSET_SYMBOLS = new Set(["ibtc", "wsteth"])
 
@@ -751,12 +751,16 @@ type CompositionDisplayBlock =
   | CompositionOthersBlock
 
 const OTHERS_TOOLTIP_MAX_COLUMNS = 3
+const OTHERS_TOOLTIP_MAX_COLUMNS_MOBILE = 2
 const OTHERS_TOOLTIP_ITEMS_PER_COLUMN = 12
 const OTHERS_TOOLTIP_MIN_DISPLAY_USD = 20
 
-const getOthersTooltipColumns = (itemCount: number) =>
+const getOthersTooltipColumns = (
+  itemCount: number,
+  maxColumns = OTHERS_TOOLTIP_MAX_COLUMNS,
+) =>
   Math.min(
-    OTHERS_TOOLTIP_MAX_COLUMNS,
+    maxColumns,
     Math.max(1, Math.ceil(itemCount / OTHERS_TOOLTIP_ITEMS_PER_COLUMN)),
   )
 
@@ -858,8 +862,10 @@ const CompositionTooltipMoreRow = ({
 
 const CompositionTooltip = ({
   items,
+  maxColumns = OTHERS_TOOLTIP_MAX_COLUMNS,
 }: {
   items: Array<TreasuryAssetBalance & { color: string }>
+  maxColumns?: number
 }) => {
   const { visibleItems, hiddenCount, hiddenTotalUsd } =
     partitionOthersTooltipItems(items)
@@ -875,7 +881,10 @@ const CompositionTooltip = ({
     )
   }
 
-  const columns = getOthersTooltipColumns(Math.max(visibleItems.length, 1))
+  const columns = getOthersTooltipColumns(
+    Math.max(visibleItems.length, 1),
+    maxColumns,
+  )
   const columnItems = visibleItems.length
     ? splitTooltipItems(visibleItems, columns)
     : [[]]
@@ -965,7 +974,10 @@ const OthersCompositionBlock = ({
           title="Other assets"
         >
           <DrawerBody>
-            <CompositionTooltip items={block.items} />
+            <CompositionTooltip
+              items={block.items}
+              maxColumns={OTHERS_TOOLTIP_MAX_COLUMNS_MOBILE}
+            />
           </DrawerBody>
         </Drawer>
       </>
@@ -998,6 +1010,102 @@ const OthersCompositionBlock = ({
         </SCompositionOthersTooltipContent>
       </Portal>
     </Root>
+  )
+}
+
+const AssetCompositionBlock = ({
+  block,
+  layout,
+  relatedPositions,
+  isLiquidityAsset,
+  isMultipleLogo,
+  useDrawer,
+}: {
+  block: CompositionAssetBlock
+  layout: CompositionBlockLayout
+  relatedPositions?: TreasuryAssetBalance[]
+  isLiquidityAsset?: boolean
+  isMultipleLogo?: boolean
+  useDrawer: boolean
+}) => {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const blockContent = (
+    <CompositionBlockContent
+      logo={
+        <SCompositionBlockLogo $isMultiple={isMultipleLogo}>
+          <AssetLogo
+            id={block.asset.id}
+            size="extra-small"
+            hideChain={(block.groupedAssets?.length ?? 0) > 1}
+          />
+        </SCompositionBlockLogo>
+      }
+      symbol={block.asset.symbol}
+      valueUsd={block.valueUsd}
+      share={block.share}
+      layout={layout}
+    />
+  )
+
+  if (useDrawer) {
+    return (
+      <>
+        <SCompositionBlock
+          data-composition-block=""
+          color={block.color}
+          darkColor={block.colors.dark}
+          lightColor={block.colors.light}
+          tier={layout.tier}
+          colSpan={layout.colSpan}
+          rowSpan={layout.rowSpan}
+          role="button"
+          tabIndex={0}
+          onClick={() => setDrawerOpen(true)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault()
+              setDrawerOpen(true)
+            }
+          }}
+        >
+          {blockContent}
+        </SCompositionBlock>
+        <Drawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          customTitle=" "
+          title={block.asset.symbol}
+        >
+          <DrawerBody>
+            <AssetDetailsTooltipContent
+              item={block}
+              relatedPositions={relatedPositions}
+              isLiquidityAsset={isLiquidityAsset}
+            />
+          </DrawerBody>
+        </Drawer>
+      </>
+    )
+  }
+
+  return (
+    <CursorAssetDetailsTooltip
+      item={block}
+      relatedPositions={relatedPositions}
+      isLiquidityAsset={isLiquidityAsset}
+    >
+      <SCompositionBlock
+        data-composition-block=""
+        color={block.color}
+        darkColor={block.colors.dark}
+        lightColor={block.colors.light}
+        tier={layout.tier}
+        colSpan={layout.colSpan}
+        rowSpan={layout.rowSpan}
+      >
+        {blockContent}
+      </SCompositionBlock>
+    </CursorAssetDetailsTooltip>
   )
 }
 
@@ -1141,12 +1249,12 @@ export const StatsTreasury = () => {
 
     const primaryAssets = pricedAssets.filter(
       (item) =>
-        Number(item.valueUsd) >= OTHERS_VALUE_THRESHOLD_USD &&
+        Number(item.valueUsd) >= COMPOSITION_PRIMARY_MIN_VALUE_USD &&
         !shouldForceAssetIntoOthers(item.asset),
     )
     let othersAssets = pricedAssets.filter(
       (item) =>
-        Number(item.valueUsd) < OTHERS_VALUE_THRESHOLD_USD ||
+        Number(item.valueUsd) < COMPOSITION_PRIMARY_MIN_VALUE_USD ||
         shouldForceAssetIntoOthers(item.asset),
     )
 
@@ -1428,46 +1536,19 @@ export const StatsTreasury = () => {
                       )
 
                   return (
-                    <CursorAssetDetailsTooltip
+                    <AssetCompositionBlock
                       key={block.asset.id}
-                      item={block}
+                      block={block}
+                      layout={layout}
                       relatedPositions={relatedPositionsBySymbol.get(
                         getCompositionGroupKey(block),
                       )}
                       isLiquidityAsset={
                         isShareToken(block.asset) || isStableSwap(block.asset)
                       }
-                    >
-                      <SCompositionBlock
-                        data-composition-block=""
-                        color={block.color}
-                        darkColor={block.colors.dark}
-                        lightColor={block.colors.light}
-                        tier={layout.tier}
-                        colSpan={layout.colSpan}
-                        rowSpan={layout.rowSpan}
-                      >
-                        <CompositionBlockContent
-                          logo={
-                            <SCompositionBlockLogo
-                              $isMultiple={isStableSwap(block.asset)}
-                            >
-                              <AssetLogo
-                                id={block.asset.id}
-                                size="extra-small"
-                                hideChain={
-                                  (block.groupedAssets?.length ?? 0) > 1
-                                }
-                              />
-                            </SCompositionBlockLogo>
-                          }
-                          symbol={block.asset.symbol}
-                          valueUsd={block.valueUsd}
-                          share={block.share}
-                          layout={layout}
-                        />
-                      </SCompositionBlock>
-                    </CursorAssetDetailsTooltip>
+                      isMultipleLogo={isStableSwap(block.asset)}
+                      useDrawer={useCompositionMobileLayout}
+                    />
                   )
                 })
               ) : (

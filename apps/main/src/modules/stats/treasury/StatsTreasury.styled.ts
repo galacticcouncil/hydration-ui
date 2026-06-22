@@ -490,6 +490,11 @@ export const SCompositionTooltipShell = styled.div(
     max-width: min(52rem, calc(100vw - ${theme.space.xl} * 2));
     min-width: 0;
     box-sizing: border-box;
+
+    @media (width < ${MOBILE_BREAKPOINT}) {
+      width: 100%;
+      max-width: 100%;
+    }
   `,
 )
 
@@ -502,6 +507,11 @@ export const STooltipLegend = styled.div<{ readonly $compact?: boolean }>(
     max-width: min(52rem, calc(100vw - ${theme.space.xl} * 2));
     min-width: 0;
     box-sizing: border-box;
+
+    @media (width < ${MOBILE_BREAKPOINT}) {
+      width: 100%;
+      max-width: 100%;
+    }
   `,
 )
 
@@ -530,6 +540,16 @@ export const STooltipColumns = styled.div<{
     width: max-content;
     max-width: min(52rem, calc(100vw - ${theme.space.xl} * 2));
     min-width: 0;
+
+    @media (width < ${MOBILE_BREAKPOINT}) {
+      grid-template-columns: repeat(
+        ${Math.min($columns ?? 2, 2)},
+        minmax(0, 1fr)
+      );
+      column-gap: ${theme.space.base};
+      width: 100%;
+      max-width: 100%;
+    }
   `,
 )
 

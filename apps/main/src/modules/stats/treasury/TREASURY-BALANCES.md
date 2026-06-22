@@ -8,9 +8,9 @@ The page tracks these hardcoded treasury accounts in `apps/main/src/api/treasury
 
 | Account | Address | Used for |
 |---|---|---|
-| Hydration treasury | `13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB` | Wallet balances, money-market supply, money-market borrow |
-| HOLLAR collector treasury | `0x8C0f3b9602374198974d2B2679d14a386f5b108e` | Wallet balances, money-market supply, money-market borrow |
-| Money market treasury | `0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9` | Wallet balances, money-market supply, money-market borrow |
+| Hydration treasury | `13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
+| HOLLAR collector treasury | `0x8C0f3b9602374198974d2B2679d14a386f5b108e` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
+| Money market treasury | `0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
 
 EVM treasury addresses are converted to Hydration SS58 before reading normal on-chain wallet balances.
 
@@ -21,6 +21,7 @@ Data is live at fetch time, but not streamed every block. React Query refetches 
 | Source | Data |
 |---|---|
 | Substrate RPC (`papi`) | `System.Account` for HDX, `Tokens.Accounts` for other wallet balances |
+| Substrate RPC (`papi`) | Treasury-owned omnipool position NFTs and omnipool liquidity-mining NFTs |
 | SDK router spot price | USD value for wallet balances |
 | `useUserBorrowSummary` | Money-market supplied collateral and borrow positions |
 | `compositionAssetColors.json` | Saved tile colors for known assets; logo extraction is only a fallback for new assets |
@@ -31,9 +32,9 @@ Data is live at fetch time, but not streamed every block. React Query refetches 
 
 | Field | Meaning |
 |---|---|
-| `assets` | Treasury holdings: wallet balances + supplied collateral merged by asset id |
+| `assets` | Treasury holdings: wallet balances + liquidity positions + supplied collateral merged by asset id |
 | `borrowPositions` | Borrow exposure, kept separate and subtracted from totals |
-| `holdingsValueUsd` | Wallet + supplied collateral |
+| `holdingsValueUsd` | Wallet + liquidity positions + supplied collateral |
 | `borrowValueUsd` | Sum of borrow positions |
 | `totalValueUsd` | Net value: holdings minus borrow |
 
@@ -43,21 +44,24 @@ Each `TreasuryAssetBalance` carries a `breakdown`:
 |---|---|
 | `wallet` | Not supplied; shown as `Offchain` unless the asset itself is a liquidity/share token |
 | `moneyMarketSupply` | Supplied as collateral |
-| `liquidity` | Underlying value expanded from wallet-held LP/share tokens |
+| `liquidity` | Underlying value expanded from wallet-held LP/share tokens and treasury-owned omnipool positions |
 | `moneyMarketBorrow` | Borrowed exposure |
 
-Receipt tokens with an `underlyingAssetId` are excluded from wallet holdings so supplied assets are counted from money-market data instead of double-counting receipt balances.
+Wallet-held XYK share tokens, stablepool shares, and treasury-owned omnipool positions are expanded before merging. The original share token row is omitted when expansion succeeds, so assets like PAXG inside a treasury LP position contribute to the PAXG tile/table row as `Supplied as liquidity` instead of being hidden behind the LP token.
 
-Wallet-held XYK share tokens and stablepool shares are expanded into their underlying pool assets before merging. The original share token row is omitted when expansion succeeds, so assets like PAXG inside a treasury LP position contribute to the PAXG tile/table row as `Supplied as liquidity` instead of being hidden behind the LP token.
+Borrow positions are kept separate from holdings and subtracted from `totalValueUsd`. Receipt tokens with an `underlyingAssetId` are ignored in wallet holdings, so supplied collateral comes from money-market data once instead of being double-counted through receipt balances.
 
 ## UI Rules
 
 ### Composition Tiles
 
 - Tiles show grouped USD value and treasury composition %.
+- Top-level tiles require at least `$15k` USD value; smaller assets are grouped into `Others`.
+- Tile size is chosen from balance/share ranges so larger holdings get more width and/or height while the grid keeps the same row cap.
 - Assets with the same symbol, such as multiple `USDC` variants, are grouped into one tile.
 - The grouped tile/header hides the origin chain badge to avoid implying only one origin.
 - The grouped tooltip shows each underlying asset with its origin chain badge, amount, and USD value.
+- On mobile/tablet, composition tiles open the same detail content in a drawer instead of relying on hover.
 - Supplied/liquidity/offchain details are summarized once in the grouped asset breakdown below the constituent list:
   - `Supplied as collateral`
   - `Supplied as liquidity`

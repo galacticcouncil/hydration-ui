@@ -1,4 +1,8 @@
 import {
+  calculate_liquidity_lrna_out,
+  calculate_liquidity_out,
+} from "@galacticcouncil/math-omnipool"
+import {
   getAssetIdFromAddress,
   isH160Address,
   safeConvertH160toSS58,
@@ -7,15 +11,20 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
+import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
 import { AssetType } from "@/api/assets"
 import { useUserBorrowSummary } from "@/api/borrow"
-import { PoolToken } from "@/api/pools"
+import { OmniPoolToken, PoolToken, PoolType } from "@/api/pools"
 import { getSpotPrice } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
 import { TAsset } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
-import { scaleHuman } from "@/utils/formatting"
+import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
+import { scale, scaleHuman } from "@/utils/formatting"
+import {
+  getOmnipoolMiningPositions,
+  getOmnipoolPositions,
+} from "@/utils/uniques"
 
 export type TreasuryAssetSource =
   | "wallet"
@@ -240,6 +249,71 @@ type TreasuryPool = Awaited<
   ReturnType<TProviderContext["sdk"]["api"]["router"]["getPools"]>
 >[number]
 
+type TreasuryOmnipoolPosition = OmnipoolPosition | OmnipoolDepositFull
+
+const getOmnipoolPositionLiquidity = (
+  omnipoolData: OmniPoolToken,
+  position: TreasuryOmnipoolPosition,
+) => {
+  const [nom, denom] = position.price.map((value) => value.toString()) as [
+    string,
+    string,
+  ]
+  const positionPrice = Big(nom).div(denom).toString()
+  const params = [
+    omnipoolData.balance.toString(),
+    omnipoolData.hubReserves.toString(),
+    omnipoolData.shares.toString(),
+    position.amount.toString(),
+    position.shares.toString(),
+    Big(scale(positionPrice, "q")).toFixed(0),
+    position.shares.toString(),
+    "0",
+  ] as Parameters<typeof calculate_liquidity_out>
+
+  return {
+    liquidity: calculate_liquidity_out(...params),
+    hubLiquidity: calculate_liquidity_lrna_out(...params),
+  }
+}
+
+const getTreasuryOmnipoolPositions = async (
+  rpc: TProviderContext,
+  address: string,
+) => {
+  const [omnipoolNftId, miningNftId] = await Promise.all([
+    rpc.papi.constants.Omnipool.NFTCollectionId(),
+    rpc.papi.constants.OmnipoolLiquidityMining.NFTCollectionId(),
+  ])
+
+  const [omnipoolEntries, miningEntries] = await Promise.all([
+    rpc.papi.query.Uniques.Account.getEntries(address, omnipoolNftId, {
+      at: "best",
+    }),
+    rpc.papi.query.Uniques.Account.getEntries(address, miningNftId, {
+      at: "best",
+    }),
+  ])
+
+  const [omnipoolPositions, omnipoolMiningPositions] = await Promise.all([
+    omnipoolEntries.length
+      ? getOmnipoolPositions(rpc.papi, omnipoolEntries)
+      : [],
+    miningEntries.length
+      ? getOmnipoolMiningPositions(rpc.papi, miningEntries)
+      : [],
+  ])
+
+  return Array.from(
+    new Map(
+      [...omnipoolPositions, ...omnipoolMiningPositions].map((position) => [
+        position.positionId,
+        position,
+      ]),
+    ).values(),
+  )
+}
+
 const expandXYKShareToken = async (
   rpc: TProviderContext,
   pools: TreasuryPool[],
@@ -324,6 +398,66 @@ const expandStableSwapAsset = async (
   )
 }
 
+const expandOmnipoolPosition = async (
+  rpc: TProviderContext,
+  omnipoolTokens: OmniPoolToken[],
+  assetMap: Map<string, TAsset>,
+  position: TreasuryOmnipoolPosition,
+  displayAssetId: string,
+): Promise<TreasuryAssetBalance | undefined> => {
+  const asset = assetMap.get(position.assetId)
+  const omnipoolData = omnipoolTokens.find(
+    (token) => token.id.toString() === position.assetId,
+  )
+
+  if (!asset || !omnipoolData) return undefined
+
+  const { liquidity, hubLiquidity } = getOmnipoolPositionLiquidity(
+    omnipoolData,
+    position,
+  )
+  const balance = scaleHuman(liquidity, asset.decimals)
+  const { price, valueUsd } = await getAssetValueUsd(
+    rpc,
+    asset.id,
+    balance,
+    displayAssetId,
+  )
+  const hubAsset = assetMap.get(HUB_ID)
+  const hubValueUsd =
+    hubAsset && Big(hubLiquidity).gt(0)
+      ? (
+          await getAssetValueUsd(
+            rpc,
+            hubAsset.id,
+            scaleHuman(hubLiquidity, hubAsset.decimals),
+            displayAssetId,
+          )
+        ).valueUsd
+      : null
+  const totalValueUsd = valueUsd
+    ? sumBigStrings(valueUsd, hubValueUsd).toString()
+    : null
+  const totalBalance =
+    price && totalValueUsd ? Big(totalValueUsd).div(price).toString() : balance
+
+  return {
+    asset,
+    balance: totalBalance,
+    balanceRaw: liquidity,
+    price,
+    valueUsd: totalValueUsd,
+    share: 0,
+    source: "wallet" as const,
+    breakdown: {
+      liquidity: {
+        balance: totalBalance,
+        valueUsd: totalValueUsd,
+      },
+    },
+  }
+}
+
 export const treasuryStatsQuery = (
   rpc: TProviderContext,
   assets: TAsset[],
@@ -341,12 +475,10 @@ export const treasuryStatsQuery = (
         (account) => account.includeWalletBalances,
       )
       const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
-      const hasLiquidityAssets = assets.some(
-        (asset) => isXYKShareAsset(asset) || isStableSwapAsset(asset),
+      const pools = await rpc.sdk.api.router.getPools()
+      const omnipoolTokens = pools.flatMap((pool) =>
+        pool.type === PoolType.Omni ? (pool.tokens as OmniPoolToken[]) : [],
       )
-      const pools = hasLiquidityAssets
-        ? await rpc.sdk.api.router.getPools()
-        : []
       const balances = await Promise.all(
         walletAccounts.flatMap((account) => {
           const address = getBalanceAccountAddress(account.address)
@@ -407,7 +539,34 @@ export const treasuryStatsQuery = (
         }),
       ).then((items) => items.flat())
 
-      const pricedAssets = mergePositivePositions([], walletAssets)
+      const omnipoolLiquidityAssets = await Promise.all(
+        walletAccounts.flatMap((account) => {
+          const address = getBalanceAccountAddress(account.address)
+
+          if (!address) return []
+
+          return getTreasuryOmnipoolPositions(rpc, address).then((positions) =>
+            Promise.all(
+              positions.map((position) =>
+                expandOmnipoolPosition(
+                  rpc,
+                  omnipoolTokens,
+                  assetMap,
+                  position,
+                  displayAssetId,
+                ),
+              ),
+            ),
+          )
+        }),
+      ).then((items) =>
+        items.flat().filter((item): item is TreasuryAssetBalance => !!item),
+      )
+
+      const pricedAssets = mergePositivePositions(
+        [],
+        [...walletAssets, ...omnipoolLiquidityAssets],
+      )
 
       const totalValueUsd = pricedAssets.reduce(
         (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
