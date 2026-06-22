@@ -19,6 +19,7 @@ export type AssetInputProps = {
   balanceLabel?: string
   symbol?: string
   value?: string
+  valueLoading?: boolean
   displayValue?: string
   displayValueLoading?: boolean
   maxBalance?: string
@@ -43,6 +44,7 @@ export const AssetInput = ({
   symbol,
   selectedAssetIcon,
   value,
+  valueLoading,
   displayValue,
   displayValueLoading,
   label,
@@ -70,6 +72,8 @@ export const AssetInput = ({
   }
 
   const errorMessage = assetError ?? amountError
+
+  const isLoading = valueLoading || displayValueLoading || loading
 
   return (
     <Flex
@@ -148,7 +152,7 @@ export const AssetInput = ({
             symbol={symbol}
             icon={selectedAssetIcon}
             loading={loading}
-            error={!!assetError}
+            error={!!assetError && !isLoading}
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
@@ -161,26 +165,30 @@ export const AssetInput = ({
               flex={1}
               sx={{ minWidth: 0, overflow: "hidden" }}
             >
-              <SAssetInput
-                isError={!!amountError}
-                placeholder="0"
-                variant="embedded"
-                autoComplete="off"
-                inputMode="decimal"
-                disabled={disabled || loading || !onChange || disabledInput}
-                value={defaultAssetValueFormatter(value ?? "")}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  if (e.target.validity.valid) {
-                    const formattedValue = e.target.value
-                      .replace(/\s+/g, "")
-                      .replace(/,/g, ".")
+              {valueLoading ? (
+                <Skeleton sx={{ width: "3xl" }} height="1em" />
+              ) : (
+                <SAssetInput
+                  isError={!!amountError && !isLoading}
+                  placeholder="0"
+                  variant="embedded"
+                  autoComplete="off"
+                  inputMode="decimal"
+                  disabled={disabled || loading || !onChange || disabledInput}
+                  value={defaultAssetValueFormatter(value ?? "")}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (e.target.validity.valid) {
+                      const formattedValue = e.target.value
+                        .replace(/\s+/g, "")
+                        .replace(/,/g, ".")
 
-                    if (!isNaN(Number(formattedValue))) {
-                      onChange?.(formattedValue)
+                      if (!isNaN(Number(formattedValue))) {
+                        onChange?.(formattedValue)
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              )}
 
               {!ignoreDisplayValue && (
                 <Text
@@ -197,7 +205,7 @@ export const AssetInput = ({
             </Flex>
           )}
         </Flex>
-        {errorMessage && (
+        {errorMessage && !isLoading && (
           <FormError lh={1} ml="auto">
             {errorMessage}
           </FormError>
