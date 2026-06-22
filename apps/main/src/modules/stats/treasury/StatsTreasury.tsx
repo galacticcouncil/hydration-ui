@@ -1,10 +1,15 @@
+import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Drawer,
   DrawerBody,
   Flex,
+  Icon,
+  Input,
+  Label,
   Pagination,
   Paper,
+  SectionHeader,
   Skeleton,
   Table,
   TableBody,
@@ -13,24 +18,35 @@ import {
   TableHead,
   TableHeader,
   Text,
-  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { formatCurrency as formatUsdValue } from "@galacticcouncil/utils"
 import { Portal, Root, Trigger } from "@radix-ui/react-tooltip"
+import Big from "big.js"
 import {
   cloneElement,
   isValidElement,
   type MouseEvent,
   type ReactElement,
   type ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 
-import { TreasuryAssetBalance, useTreasuryStats } from "@/api/treasury"
+import {
+  type TreasuryAssetBalance,
+  type TreasuryAssetBreakdown,
+  type TreasuryAssetBreakdownPart,
+  useTreasuryStats,
+} from "@/api/treasury"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -49,8 +65,6 @@ import {
   getResolvedCompositionMobileBlockLayout,
 } from "./compositionGridLayout"
 import {
-  SAssetCell,
-  SAssetLabel,
   SComposition,
   SCompositionBlock,
   SCompositionBlockIdentity,
@@ -71,15 +85,16 @@ import {
   SKpiGrid,
   SLoadedContent,
   SMuted,
-  SPanelHeader,
-  SPanelSectionHeader,
+  SPanelSearch,
   STablesGrid,
   STooltipAsset,
   STooltipAssetIdentity,
   STooltipColumn,
   STooltipColumns,
+  STooltipHeader,
   STooltipLegend,
   STooltipRow,
+  STooltipSection,
   STooltipTitle,
   STooltipValues,
   STreasuryGrid,
@@ -97,7 +112,7 @@ const getCompositionLayoutOptions = (
   symbol: asset.symbol,
   valueUsd,
 })
-const PAGE_SIZE = 8
+const ASSET_PAGE_SIZE = 20
 const OTHERS_VALUE_THRESHOLD_USD = 600
 const OTHERS_GROUP_ID = "others"
 const FORCE_OTHERS_ASSET_SYMBOLS = new Set(["ibtc", "wsteth"])
@@ -112,6 +127,18 @@ const COMPOSITION_COLOR_FALLBACK: CompositionTileColors = {
   base: "#4b5160",
   dark: "#3f4652",
   light: "#c9ccd2",
+}
+const CURSOR_TOOLTIP_OFFSET = 14
+const CURSOR_TOOLTIP_VIEWPORT_PADDING = 12
+
+type GroupedTreasuryAssetBalance = TreasuryAssetBalance & {
+  groupedAssets?: TreasuryAssetBalance[]
+}
+
+type TooltipBreakdownRow = {
+  label: string
+  part: TreasuryAssetBreakdownPart
+  negative?: boolean
 }
 
 const DESKTOP_SKELETON_SPECS: CompositionGridBlockSpec[] = [
@@ -151,12 +178,94 @@ const formatCurrency = (value: string | number | null | undefined) => {
   }).format(numericValue)
 }
 
-const sumAssetValuesUsd = (items: ReadonlyArray<TreasuryAssetBalance>) =>
-  items.reduce((acc, item) => {
-    const value = Number(item.valueUsd ?? 0)
+const isPositiveNumberString = (value: string | null | undefined) => {
+  const numberValue = Number(value ?? 0)
 
-    return Number.isFinite(value) ? acc + value : acc
-  }, 0)
+  return Number.isFinite(numberValue) && numberValue > 0
+}
+
+const sumDecimalStrings = (...values: Array<string | null | undefined>) =>
+  values.reduce((acc, value) => {
+    if (!value) return acc
+
+    try {
+      return acc.plus(value)
+    } catch {
+      return acc
+    }
+  }, new Big(0))
+
+const getCompositionGroupKey = (item: TreasuryAssetBalance) =>
+  item.asset.symbol.trim().toLowerCase()
+
+const mergeBreakdownPart = (
+  first?: TreasuryAssetBreakdownPart,
+  second?: TreasuryAssetBreakdownPart,
+): TreasuryAssetBreakdownPart | undefined => {
+  if (!first) return second
+  if (!second) return first
+
+  return {
+    balance: sumDecimalStrings(first.balance, second.balance).toString(),
+    valueUsd: sumDecimalStrings(first.valueUsd, second.valueUsd).toString(),
+  }
+}
+
+const mergeBreakdowns = (
+  first: TreasuryAssetBreakdown,
+  second: TreasuryAssetBreakdown,
+): TreasuryAssetBreakdown => ({
+  wallet: mergeBreakdownPart(first.wallet, second.wallet),
+  moneyMarketSupply: mergeBreakdownPart(
+    first.moneyMarketSupply,
+    second.moneyMarketSupply,
+  ),
+  moneyMarketBorrow: mergeBreakdownPart(
+    first.moneyMarketBorrow,
+    second.moneyMarketBorrow,
+  ),
+})
+
+const mergeCompositionAsset = (
+  current: GroupedTreasuryAssetBalance,
+  next: TreasuryAssetBalance,
+): GroupedTreasuryAssetBalance => {
+  const currentValueUsd = Number(current.valueUsd ?? 0)
+  const nextValueUsd = Number(next.valueUsd ?? 0)
+  const representative = nextValueUsd > currentValueUsd ? next : current
+  const balance = sumDecimalStrings(current.balance, next.balance).toString()
+  const valueUsd = sumDecimalStrings(current.valueUsd, next.valueUsd).toString()
+  const groupedAssets = [...(current.groupedAssets ?? [current]), next].sort(
+    (a, b) => Number(b.valueUsd ?? 0) - Number(a.valueUsd ?? 0),
+  )
+
+  return {
+    ...representative,
+    groupedAssets,
+    balance,
+    balanceRaw: balance,
+    valueUsd,
+    price: null,
+    share: current.share + next.share,
+    source: current.source === next.source ? current.source : "mixed",
+    breakdown: mergeBreakdowns(current.breakdown, next.breakdown),
+  }
+}
+
+const groupCompositionAssets = (items: TreasuryAssetBalance[]) =>
+  Array.from(
+    items
+      .filter((asset) => asset.valueUsd && asset.share > 0)
+      .reduce((groups, item) => {
+        const key = getCompositionGroupKey(item)
+        const existing = groups.get(key)
+
+        groups.set(key, existing ? mergeCompositionAsset(existing, item) : item)
+
+        return groups
+      }, new Map<string, GroupedTreasuryAssetBalance>())
+      .values(),
+  ).sort((a, b) => Number(b.valueUsd ?? 0) - Number(a.valueUsd ?? 0))
 
 const formatTokenAmount = (value: string) => {
   const numericValue = Number(value)
@@ -169,6 +278,32 @@ const formatTokenAmount = (value: string) => {
   }).format(numericValue)
 }
 
+const formatTooltipTokenAmount = (value: string) => {
+  const numericValue = Number(value)
+
+  if (!Number.isFinite(numericValue)) return "-"
+
+  return new Intl.NumberFormat("en-US", {
+    notation: numericValue >= 1_000 ? "compact" : "standard",
+    maximumFractionDigits: numericValue >= 1 ? 2 : 6,
+  }).format(numericValue)
+}
+
+const formatTooltipCurrency = (value: string | number | null | undefined) => {
+  if (!value) return "-"
+
+  const numericValue = Number(value)
+
+  if (!Number.isFinite(numericValue)) return "-"
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: numericValue >= 1_000 ? "compact" : "standard",
+    maximumFractionDigits: numericValue >= 1 ? 2 : 6,
+  }).format(numericValue)
+}
+
 const getTreasuryBalanceAmountProps = (item: TreasuryAssetBalance) => ({
   value: formatTokenAmount(item.balance),
   displayValue:
@@ -176,6 +311,21 @@ const getTreasuryBalanceAmountProps = (item: TreasuryAssetBalance) => ({
       ? `-${formatCurrency(item.valueUsd)}`
       : formatCurrency(item.valueUsd),
 })
+
+const getPartValueUsd = (part?: TreasuryAssetBreakdownPart) => {
+  const value = Number(part?.valueUsd ?? 0)
+
+  return Number.isFinite(value) ? value : 0
+}
+
+const hasBreakdownPartValue = (part?: TreasuryAssetBreakdownPart) =>
+  !!part && (isPositiveNumberString(part.balance) || getPartValueUsd(part) > 0)
+
+const isTooltipBreakdownRow = (row: {
+  label: string
+  part?: TreasuryAssetBreakdownPart
+  negative?: boolean
+}): row is TooltipBreakdownRow => hasBreakdownPartValue(row.part)
 
 const TreasuryBalanceAmount = ({
   item,
@@ -188,6 +338,27 @@ const TreasuryBalanceAmount = ({
     <Amount {...getTreasuryBalanceAmountProps(item)} />
   </Flex>
 )
+
+const SuppliedAmount = ({ item }: { item: TreasuryAssetBalance }) => {
+  const supplied = item.breakdown.moneyMarketSupply
+
+  if (!supplied || !hasBreakdownPartValue(supplied)) {
+    return (
+      <Text fs="p6" color="text.low">
+        -
+      </Text>
+    )
+  }
+
+  return (
+    <Flex direction="column" align="flex-start">
+      <Amount
+        value={formatTokenAmount(supplied.balance)}
+        displayValue={formatCurrency(supplied.valueUsd)}
+      />
+    </Flex>
+  )
+}
 
 const formatSharePercent = (share: number) => {
   if (!Number.isFinite(share) || share <= 0) return "0%"
@@ -206,75 +377,223 @@ const formatSharePercent = (share: number) => {
   return format(4, 3)
 }
 
-const getTreasurySourceLabel = (item: TreasuryAssetBalance) => {
+const getPositionGroupLabel = (item: TreasuryAssetBalance) => {
   switch (item.source) {
     case "moneyMarketBorrow":
-      return "Borrowed"
-    case "wallet":
+      return "Borrow"
     case "moneyMarketSupply":
+      return "Supply"
     case "mixed":
+      return "Wallet + supply"
+    case "wallet":
     default:
-      return undefined
+      return "Wallet"
   }
+}
+
+const getAssetCompositionLabel = (item: TreasuryAssetBalance) =>
+  item.source === "moneyMarketBorrow" ? "-" : formatSharePercent(item.share)
+
+const getAssetOffchainBreakdown = (
+  item: TreasuryAssetBalance,
+  isLiquidityAsset?: boolean,
+): TreasuryAssetBreakdownPart | undefined => {
+  if (isLiquidityAsset) return undefined
+
+  return item.breakdown.wallet
+}
+
+const getAssetLiquidityBreakdown = (
+  item: TreasuryAssetBalance,
+  isLiquidityAsset?: boolean,
+): TreasuryAssetBreakdownPart | undefined => {
+  if (!isLiquidityAsset) return undefined
+
+  return item.breakdown.wallet
+}
+
+const getAssetBreakdownRows = (
+  item: TreasuryAssetBalance,
+  isLiquidityAsset?: boolean,
+): TooltipBreakdownRow[] =>
+  [
+    {
+      label: "Supplied as collateral",
+      part: item.breakdown.moneyMarketSupply,
+    },
+    {
+      label: "Supplied as liquidity",
+      part: getAssetLiquidityBreakdown(item, isLiquidityAsset),
+    },
+    {
+      label: "Offchain",
+      part: getAssetOffchainBreakdown(item, isLiquidityAsset),
+    },
+  ].filter(isTooltipBreakdownRow)
+
+const BreakdownValue = ({
+  part,
+  negative,
+}: {
+  part?: TreasuryAssetBreakdownPart
+  negative?: boolean
+}) => {
+  if (!part || !hasBreakdownPartValue(part)) {
+    return (
+      <Text fs="p7" color="text.low">
+        -
+      </Text>
+    )
+  }
+
+  return (
+    <STooltipValues $compact>
+      <Text fs="p7" fw={600} color="text.high">
+        {formatTooltipTokenAmount(part.balance)}
+      </Text>
+      <Text fs="p7" color={getToken("text.medium")}>
+        {negative ? "-" : ""}
+        {formatTooltipCurrency(part.valueUsd)}
+      </Text>
+    </STooltipValues>
+  )
 }
 
 const AssetDetailsTooltipContent = ({
   item,
+  relatedPositions = [],
+  isLiquidityAsset,
 }: {
-  item: TreasuryAssetBalance
-}) => (
-  <SCompositionTooltipShell>
-    <STooltipLegend $compact>
-      <STooltipAsset>
-        <AssetLogo id={item.asset.id} size="extra-small" />
-        <STooltipAssetIdentity>
-          <Text fs="p6" fw={600} lh={1.1} color="text.high">
-            {item.asset.symbol}
-          </Text>
-          <Text fs="p7" lh={1.1} color="text.medium">
-            {item.asset.name}
-          </Text>
-        </STooltipAssetIdentity>
-      </STooltipAsset>
-      <STooltipRow $compact>
-        <Text fs="p7" color="text.medium">
-          Balance
-        </Text>
-        <STooltipValues $compact>
-          <Text fs="p7" fw={600} color="text.high">
-            {formatTokenAmount(item.balance)}
-          </Text>
-          <Text fs="p7" color="text.low">
-            {item.source === "moneyMarketBorrow" ? "-" : ""}
-            {formatCurrency(item.valueUsd)}
-          </Text>
-        </STooltipValues>
-      </STooltipRow>
-      <STooltipRow $compact>
-        <Text fs="p7" color="text.medium">
-          Composition
-        </Text>
-        <STooltipValues $compact>
-          <Text fs="p7" fw={600} color="text.high">
-            {formatSharePercent(item.share)}
-          </Text>
-        </STooltipValues>
-      </STooltipRow>
-    </STooltipLegend>
-  </SCompositionTooltipShell>
-)
+  item: GroupedTreasuryAssetBalance
+  relatedPositions?: TreasuryAssetBalance[]
+  isLiquidityAsset?: boolean
+}) => {
+  const groupedAssets = item.groupedAssets ?? []
+  const isGroupedAsset = groupedAssets.length > 1
+  const breakdownRows = getAssetBreakdownRows(item, isLiquidityAsset)
+  const tooltipPositions = relatedPositions.filter(
+    (position) =>
+      getCompositionGroupKey(position) === getCompositionGroupKey(item) &&
+      (position.source !== item.source ||
+        position.balance !== item.balance ||
+        position.valueUsd !== item.valueUsd),
+  )
 
-const AssetDetailsTooltip = ({
-  item,
-  children,
-}: {
-  item: TreasuryAssetBalance
-  children: ReactNode
-}) => (
-  <Tooltip asChild text={<AssetDetailsTooltipContent item={item} />}>
-    {children}
-  </Tooltip>
-)
+  return (
+    <SCompositionTooltipShell>
+      <STooltipLegend $compact>
+        <STooltipHeader>
+          <STooltipAsset>
+            <AssetLogo
+              id={item.asset.id}
+              size="extra-small"
+              hideChain={isGroupedAsset}
+            />
+            <STooltipAssetIdentity>
+              <Text fs="p6" fw={600} lh={1.1} color="text.high">
+                {item.asset.symbol}
+              </Text>
+              <Text fs="p7" lh={1.1} color="text.high">
+                {item.asset.name}
+              </Text>
+            </STooltipAssetIdentity>
+          </STooltipAsset>
+          <Text fs="p7" fw={600} color="text.high">
+            {getAssetCompositionLabel(item)}
+          </Text>
+        </STooltipHeader>
+        <STooltipRow $compact $noDivider>
+          <Text fs="p7" color="text.high">
+            Balance
+          </Text>
+          <STooltipValues $compact>
+            <Text fs="p7" fw={600} color="text.high">
+              {formatTooltipTokenAmount(item.balance)}
+            </Text>
+            <Text fs="p7" color={getToken("text.medium")}>
+              {item.source === "moneyMarketBorrow" ? "-" : ""}
+              {formatTooltipCurrency(item.valueUsd)}
+            </Text>
+          </STooltipValues>
+        </STooltipRow>
+        {isGroupedAsset ? (
+          <>
+            <STooltipTitle>Consisting of</STooltipTitle>
+            <STooltipSection>
+              {groupedAssets.map((groupedAsset) => (
+                <STooltipRow key={groupedAsset.asset.id} $compact>
+                  <STooltipAsset>
+                    <AssetLogo id={groupedAsset.asset.id} size="extra-small" />
+                    <STooltipAssetIdentity>
+                      <Text fs="p7" fw={600} lh={1.1} color="text.high">
+                        {groupedAsset.asset.symbol}
+                      </Text>
+                      <Text fs="p7" lh={1.1} color="text.high">
+                        {groupedAsset.asset.name}
+                      </Text>
+                    </STooltipAssetIdentity>
+                  </STooltipAsset>
+                  <STooltipValues $compact>
+                    <Text fs="p7" fw={600} color="text.high">
+                      {formatTooltipTokenAmount(groupedAsset.balance)}
+                    </Text>
+                    <Text fs="p7" color={getToken("text.medium")}>
+                      {formatTooltipCurrency(groupedAsset.valueUsd)}
+                    </Text>
+                  </STooltipValues>
+                </STooltipRow>
+              ))}
+            </STooltipSection>
+          </>
+        ) : null}
+        <STooltipTitle>Breakdown</STooltipTitle>
+        <STooltipSection>
+          <STooltipRow $compact>
+            <Text fs="p7" color="text.high">
+              Total
+            </Text>
+            <BreakdownValue
+              part={{
+                balance: item.balance,
+                valueUsd: item.valueUsd,
+              }}
+              negative={item.source === "moneyMarketBorrow"}
+            />
+          </STooltipRow>
+          {breakdownRows.map(({ label, part }) => (
+            <STooltipRow key={label} $compact>
+              <Text fs="p7" color={getToken("text.medium")}>
+                {label}
+              </Text>
+              <BreakdownValue part={part} />
+            </STooltipRow>
+          ))}
+        </STooltipSection>
+        {tooltipPositions.length ? (
+          <>
+            <STooltipTitle>Related positions</STooltipTitle>
+            {tooltipPositions.map((position) => (
+              <STooltipRow key={position.source} $compact>
+                <Text fs="p7" color={getToken("text.medium")}>
+                  {getPositionGroupLabel(position)}
+                </Text>
+                <STooltipValues $compact>
+                  <Text fs="p7" fw={600} color="text.high">
+                    {formatTooltipTokenAmount(position.balance)}
+                  </Text>
+                  <Text fs="p7" color={getToken("text.medium")}>
+                    {position.source === "moneyMarketBorrow" ? "-" : ""}
+                    {formatTooltipCurrency(position.valueUsd)}
+                  </Text>
+                </STooltipValues>
+              </STooltipRow>
+            ))}
+          </>
+        ) : null}
+      </STooltipLegend>
+    </SCompositionTooltipShell>
+  )
+}
 
 type CursorTooltipChildProps = {
   onMouseMove?: (event: MouseEvent<HTMLElement>) => void
@@ -283,15 +602,67 @@ type CursorTooltipChildProps = {
 
 const CursorAssetDetailsTooltip = ({
   item,
+  relatedPositions,
+  isLiquidityAsset,
   children,
 }: {
-  item: TreasuryAssetBalance
+  item: GroupedTreasuryAssetBalance
+  relatedPositions?: TreasuryAssetBalance[]
+  isLiquidityAsset?: boolean
   children: ReactElement<CursorTooltipChildProps>
 }) => {
   const [position, setPosition] = useState<{
+    clientX: number
+    clientY: number
     x: number
     y: number
   } | null>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+
+  const getTooltipPosition = useCallback((clientX: number, clientY: number) => {
+    const tooltipRect = tooltipRef.current?.getBoundingClientRect()
+    const tooltipWidth = tooltipRect?.width ?? 0
+    const tooltipHeight = tooltipRect?.height ?? 0
+    const minX = CURSOR_TOOLTIP_VIEWPORT_PADDING
+    const minY = CURSOR_TOOLTIP_VIEWPORT_PADDING
+    const maxX = Math.max(
+      minX,
+      window.innerWidth - CURSOR_TOOLTIP_VIEWPORT_PADDING - tooltipWidth,
+    )
+    const maxY = Math.max(
+      minY,
+      window.innerHeight - CURSOR_TOOLTIP_VIEWPORT_PADDING - tooltipHeight,
+    )
+    const preferredX = clientX + CURSOR_TOOLTIP_OFFSET
+    const preferredY = clientY + CURSOR_TOOLTIP_OFFSET
+    const flippedX = clientX - CURSOR_TOOLTIP_OFFSET - tooltipWidth
+    const flippedY = clientY - CURSOR_TOOLTIP_OFFSET - tooltipHeight
+    const centeredX = clientX - tooltipWidth / 2
+    const centeredY = clientY - tooltipHeight / 2
+    const hasRoomRight = preferredX <= maxX
+    const hasRoomLeft = flippedX >= minX
+    const hasRoomBelow = preferredY <= maxY
+    const hasRoomAbove = flippedY >= minY
+    const x = hasRoomRight ? preferredX : hasRoomLeft ? flippedX : centeredX
+    const y = hasRoomBelow ? preferredY : hasRoomAbove ? flippedY : centeredY
+
+    return {
+      clientX,
+      clientY,
+      x: Math.max(minX, Math.min(x, maxX)),
+      y: Math.max(minY, Math.min(y, maxY)),
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!position) return
+
+    const nextPosition = getTooltipPosition(position.clientX, position.clientY)
+
+    if (nextPosition.x === position.x && nextPosition.y === position.y) return
+
+    setPosition(nextPosition)
+  }, [getTooltipPosition, position])
 
   if (!isValidElement(children)) return children
 
@@ -301,14 +672,7 @@ const CursorAssetDetailsTooltip = ({
         onMouseMove: (event: MouseEvent<HTMLElement>) => {
           children.props.onMouseMove?.(event)
 
-          const offset = 14
-          const maxLeft = window.innerWidth - 340
-          const maxTop = window.innerHeight - 180
-
-          setPosition({
-            x: Math.max(12, Math.min(event.clientX + offset, maxLeft)),
-            y: Math.max(12, Math.min(event.clientY + offset, maxTop)),
-          })
+          setPosition(getTooltipPosition(event.clientX, event.clientY))
         },
         onMouseLeave: (event: MouseEvent<HTMLElement>) => {
           children.props.onMouseLeave?.(event)
@@ -317,9 +681,14 @@ const CursorAssetDetailsTooltip = ({
       })}
       {position ? (
         <SCursorAssetTooltipContent
+          ref={tooltipRef}
           style={{ left: position.x, top: position.y }}
         >
-          <AssetDetailsTooltipContent item={item} />
+          <AssetDetailsTooltipContent
+            item={item}
+            relatedPositions={relatedPositions}
+            isLiquidityAsset={isLiquidityAsset}
+          />
         </SCursorAssetTooltipContent>
       ) : null}
     </>
@@ -361,7 +730,7 @@ const CompositionBlockContent = ({
   </SCompositionBlockMeta>
 )
 
-type CompositionAssetBlock = TreasuryAssetBalance & {
+type CompositionAssetBlock = GroupedTreasuryAssetBalance & {
   color: string
   colors: CompositionTileColors
 }
@@ -630,105 +999,22 @@ const OthersCompositionBlock = ({
   )
 }
 
-const MOBILE_NAME_MAX_LENGTH = 5
-const TABLET_NAME_MAX_LENGTH = 10
-
-const truncateDisplayName = (name: string, maxLength: number) => {
-  if (!Number.isFinite(maxLength) || name.length <= maxLength) return name
-
-  return `${name.slice(0, maxLength)}…`
-}
-
-const getNameMaxLength = (isMobile: boolean, isTablet: boolean) => {
-  if (isMobile) return MOBILE_NAME_MAX_LENGTH
-  if (isTablet) return TABLET_NAME_MAX_LENGTH
-
-  return Number.POSITIVE_INFINITY
-}
-
-const AssetName = ({
-  item,
-  maxLength,
-}: {
-  item: TreasuryAssetBalance
-  maxLength: number
-}) => {
-  const { symbol } = item.asset
-  const displayName = truncateDisplayName(symbol, maxLength)
-  const isTruncated = displayName !== symbol
-
-  const label = (
-    <Text fs="p5" fw={500}>
-      {displayName}
-    </Text>
-  )
-
-  if (!isTruncated) return label
-
-  return <AssetDetailsTooltip item={item}>{label}</AssetDetailsTooltip>
-}
-
-const FluidAssetName = ({ item }: { item: TreasuryAssetBalance }) => {
-  const label = (
-    <Text
-      fs="p5"
-      fw={500}
-      sx={{
-        minWidth: 0,
-        flex: "1 1 auto",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {item.asset.symbol}
-    </Text>
-  )
-
-  return <AssetDetailsTooltip item={item}>{label}</AssetDetailsTooltip>
-}
-
 const AssetRow = ({
   item,
-  typeLabel,
   showComposition,
   isCompact,
-  nameMaxLength,
-  useFluidName,
   balanceAlign = "start",
 }: {
-  item: TreasuryAssetBalance
-  typeLabel?: string
+  item: GroupedTreasuryAssetBalance
   showComposition?: boolean
   isCompact?: boolean
-  nameMaxLength?: number
-  useFluidName?: boolean
   balanceAlign?: "start" | "end"
 }) => {
   if (isCompact) {
     return (
       <SInteractiveTableRow>
-        <TableCell
-          sx={
-            useFluidName
-              ? {
-                  maxWidth: 0,
-                  width: "100%",
-                }
-              : undefined
-          }
-        >
-          <SAssetCell $reserveGap={useFluidName}>
-            <AssetLogo id={item.asset.id} size="small" />
-            {useFluidName ? (
-              <FluidAssetName item={item} />
-            ) : (
-              <AssetName
-                item={item}
-                maxLength={nameMaxLength ?? Number.POSITIVE_INFINITY}
-              />
-            )}
-          </SAssetCell>
+        <TableCell>
+          <AssetLabelFull asset={item.asset} />
         </TableCell>
         <TableCell sx={{ textAlign: "right", whiteSpace: "nowrap" }}>
           <TreasuryBalanceAmount item={item} align="end" />
@@ -740,19 +1026,7 @@ const AssetRow = ({
   return (
     <SInteractiveTableRow>
       <TableCell>
-        <SAssetCell>
-          <AssetLogo id={item.asset.id} size="small" />
-          <SAssetLabel>
-            <Text fs="p5" fw={500}>
-              {item.asset.symbol}
-            </Text>
-            {typeLabel && (
-              <Text fs="p6" color="text.medium">
-                {typeLabel}
-              </Text>
-            )}
-          </SAssetLabel>
-        </SAssetCell>
+        <AssetLabelFull asset={item.asset} />
       </TableCell>
       <TableCell
         sx={balanceAlign === "end" ? { textAlign: "right" } : undefined}
@@ -760,8 +1034,13 @@ const AssetRow = ({
         <TreasuryBalanceAmount item={item} align={balanceAlign} />
       </TableCell>
       {showComposition && (
+        <TableCell sx={{ textAlign: "left" }}>
+          <SuppliedAmount item={item} />
+        </TableCell>
+      )}
+      {showComposition && (
         <TableCell sx={{ textAlign: "right" }}>
-          {formatSharePercent(item.share)}
+          {getAssetCompositionLabel(item)}
         </TableCell>
       )}
     </SInteractiveTableRow>
@@ -804,10 +1083,11 @@ export const StatsTreasury = () => {
     getShareToken,
   } = useAssets()
   const { isMobile, isTablet } = useBreakpoints()
+  const searchInputId = useId()
   const useCompositionMobileLayout = isMobile || isTablet
   const isCompactTable = useCompositionMobileLayout
-  const nameMaxLength = getNameMaxLength(isMobile, isTablet)
   const [assetPage, setAssetPage] = useState(1)
+  const [assetSearch, setAssetSearch] = useState("")
   const compositionGridContext = getCompositionGridContext(
     useCompositionMobileLayout,
   )
@@ -826,12 +1106,14 @@ export const StatsTreasury = () => {
 
   const { data, isLoading, isError } = useTreasuryStats(assets)
 
-  const compositionAssetIds = useMemo(
-    () =>
-      data?.assets
-        .filter((asset) => asset.valueUsd && asset.share > 0)
-        .map((item) => item.asset.id) ?? [],
+  const compositionAssets = useMemo(
+    () => groupCompositionAssets(data?.assets ?? []),
     [data?.assets],
+  )
+
+  const compositionAssetIds = useMemo(
+    () => compositionAssets.map((item) => item.asset.id),
+    [compositionAssets],
   )
 
   const {
@@ -845,20 +1127,15 @@ export const StatsTreasury = () => {
   )
   const isCompositionLoading = isLoading || isCompositionColorsLoading
 
-  const allAssets = data?.assets ?? []
   const { compositionBlocks } = useMemo(() => {
-    const pricedAssets =
-      data?.assets
-        .filter((asset) => asset.valueUsd && asset.share > 0)
-        .map((item) => ({
-          ...item,
-          colors:
-            compositionAssetColors.get(item.asset.id) ??
-            COMPOSITION_COLOR_FALLBACK,
-          color:
-            compositionAssetColors.get(item.asset.id)?.base ??
-            COMPOSITION_COLOR_FALLBACK.base,
-        })) ?? []
+    const pricedAssets = compositionAssets.map((item) => ({
+      ...item,
+      colors:
+        compositionAssetColors.get(item.asset.id) ?? COMPOSITION_COLOR_FALLBACK,
+      color:
+        compositionAssetColors.get(item.asset.id)?.base ??
+        COMPOSITION_COLOR_FALLBACK.base,
+    }))
 
     const primaryAssets = pricedAssets.filter(
       (item) =>
@@ -931,9 +1208,9 @@ export const StatsTreasury = () => {
     }
   }, [
     compositionAssetColors,
+    compositionAssets,
     compositionGridContext,
     compositionMaxRows,
-    data?.assets,
     useCompositionMobileLayout,
   ])
 
@@ -1000,38 +1277,63 @@ export const StatsTreasury = () => {
     useCompositionMobileLayout,
   ])
 
-  const liquidityPositions = allAssets.filter(
-    (item) => isShareToken(item.asset) || isStableSwap(item.asset),
-  )
-  const positionAssets = [
-    ...liquidityPositions,
-    ...(data?.borrowPositions ?? []),
-  ]
-  const treasuryValueBreakdown = useMemo(() => {
-    const assets = data?.assets ?? []
-    const liquidityValueUsd = sumAssetValuesUsd(
-      assets.filter(
-        (item) => isShareToken(item.asset) || isStableSwap(item.asset),
-      ),
-    )
-    const supplyValueUsd = sumAssetValuesUsd(
-      assets.filter(
-        (item) =>
-          item.source === "moneyMarketSupply" || item.source === "mixed",
-      ),
-    )
-    const borrowValueUsd = sumAssetValuesUsd(data?.borrowPositions ?? [])
+  const relatedPositionsBySymbol = useMemo(() => {
+    const positionsBySymbol = new Map<string, TreasuryAssetBalance[]>()
 
-    return {
-      liquidityValueUsd,
-      borrowSupplyValueUsd: supplyValueUsd - borrowValueUsd,
+    for (const position of data?.borrowPositions ?? []) {
+      const key = getCompositionGroupKey(position)
+      const positions = positionsBySymbol.get(key) ?? []
+
+      positions.push(position)
+      positionsBySymbol.set(key, positions)
     }
-  }, [data?.assets, data?.borrowPositions, isShareToken, isStableSwap])
-  const totalAssetPages = Math.max(1, Math.ceil(allAssets.length / PAGE_SIZE))
-  const paginatedAssets = allAssets.slice(
-    (assetPage - 1) * PAGE_SIZE,
-    assetPage * PAGE_SIZE,
+
+    return positionsBySymbol
+  }, [data?.borrowPositions])
+  const allTreasuryAssets = useMemo(() => {
+    const assets = data?.assets ?? []
+    const holdingAssetIds = new Set(assets.map((item) => item.asset.id))
+    const borrowOnlyAssets =
+      data?.borrowPositions.filter(
+        (position) => !holdingAssetIds.has(position.asset.id),
+      ) ?? []
+
+    return [...assets, ...borrowOnlyAssets].sort((a, b) => {
+      const valueA = Number(a.valueUsd ?? 0)
+      const valueB = Number(b.valueUsd ?? 0)
+
+      return valueB - valueA
+    })
+  }, [data?.assets, data?.borrowPositions])
+  const filteredTreasuryAssets = useMemo(() => {
+    const search = assetSearch.trim().toLowerCase()
+
+    if (!search) return allTreasuryAssets
+
+    return allTreasuryAssets.filter(
+      (item) =>
+        item.asset.symbol.toLowerCase().includes(search) ||
+        item.asset.name.toLowerCase().includes(search),
+    )
+  }, [allTreasuryAssets, assetSearch])
+  const totalAssetPages = Math.max(
+    1,
+    Math.ceil(filteredTreasuryAssets.length / ASSET_PAGE_SIZE),
   )
+  const paginatedAssets = filteredTreasuryAssets.slice(
+    (assetPage - 1) * ASSET_PAGE_SIZE,
+    assetPage * ASSET_PAGE_SIZE,
+  )
+
+  useEffect(() => {
+    if (assetPage > totalAssetPages) {
+      setAssetPage(totalAssetPages)
+    }
+  }, [assetPage, totalAssetPages])
+
+  useEffect(() => {
+    setAssetPage(1)
+  }, [assetSearch])
 
   return (
     <STreasuryGrid>
@@ -1056,24 +1358,8 @@ export const StatsTreasury = () => {
               <ValueStats
                 wrap
                 size="medium"
-                label="Liquidity positions"
-                value={formatCurrency(treasuryValueBreakdown.liquidityValueUsd)}
-                isLoading={isLoading}
-              />
-              <ValueStats
-                wrap
-                size="medium"
-                label="Borrow/supply"
-                value={formatCurrency(
-                  treasuryValueBreakdown.borrowSupplyValueUsd,
-                )}
-                isLoading={isLoading}
-              />
-              <ValueStats
-                wrap
-                size="medium"
-                label="Priced assets"
-                value={data?.pricedAssetCount.toString() ?? "-"}
+                label="Assets held"
+                value={data ? allTreasuryAssets.length.toString() : "-"}
                 isLoading={isLoading}
               />
             </SKpiGrid>
@@ -1143,6 +1429,12 @@ export const StatsTreasury = () => {
                     <CursorAssetDetailsTooltip
                       key={block.asset.id}
                       item={block}
+                      relatedPositions={relatedPositionsBySymbol.get(
+                        getCompositionGroupKey(block),
+                      )}
+                      isLiquidityAsset={
+                        isShareToken(block.asset) || isStableSwap(block.asset)
+                      }
                     >
                       <SCompositionBlock
                         data-composition-block=""
@@ -1161,6 +1453,9 @@ export const StatsTreasury = () => {
                               <AssetLogo
                                 id={block.asset.id}
                                 size="extra-small"
+                                hideChain={
+                                  (block.groupedAssets?.length ?? 0) > 1
+                                }
                               />
                             </SCompositionBlockLogo>
                           }
@@ -1188,13 +1483,31 @@ export const StatsTreasury = () => {
       )}
 
       <STablesGrid>
+        <SectionHeader
+          title="All treasury assets"
+          actions={
+            <SPanelSearch>
+              <Input
+                id={searchInputId}
+                value={assetSearch}
+                placeholder="Search assets"
+                leadingElement={
+                  <Label asChild htmlFor={searchInputId}>
+                    <Icon
+                      as="label"
+                      sx={{ cursor: "text" }}
+                      size="m"
+                      component={Search}
+                      mr="base"
+                    />
+                  </Label>
+                }
+                onChange={(event) => setAssetSearch(event.target.value)}
+              />
+            </SPanelSearch>
+          }
+        />
         <TableContainer as={Paper}>
-          <SPanelHeader>
-            <SPanelSectionHeader title="All treasury assets" noTopPadding />
-            <Text fs="p6" color="text.medium">
-              {allAssets.length} assets
-            </Text>
-          </SPanelHeader>
           <Table size="small">
             <TableHeader>
               <tr>
@@ -1204,6 +1517,9 @@ export const StatsTreasury = () => {
                 ) : (
                   <>
                     <TableHead>Balance</TableHead>
+                    <TableHead sx={{ textAlign: "left" }}>
+                      Of which supplied
+                    </TableHead>
                     <TableHead sx={{ textAlign: "right" }}>
                       Composition
                     </TableHead>
@@ -1213,20 +1529,21 @@ export const StatsTreasury = () => {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <SkeletonRows colSpan={isCompactTable ? 2 : 3} />
+                <SkeletonRows colSpan={isCompactTable ? 2 : 4} />
               ) : paginatedAssets.length ? (
                 paginatedAssets.map((item) => (
                   <AssetRow
-                    key={item.asset.id}
+                    key={`${item.source}-${item.asset.id}`}
                     item={item}
                     showComposition
                     isCompact={isCompactTable}
-                    nameMaxLength={nameMaxLength}
                   />
                 ))
               ) : (
-                <EmptyRow colSpan={isCompactTable ? 2 : 3}>
-                  No treasury assets found.
+                <EmptyRow colSpan={isCompactTable ? 2 : 4}>
+                  {assetSearch
+                    ? "No treasury assets match your search."
+                    : "No treasury assets found."}
                 </EmptyRow>
               )}
             </TableBody>
@@ -1236,50 +1553,6 @@ export const StatsTreasury = () => {
             currentPage={assetPage}
             onPageChange={setAssetPage}
           />
-        </TableContainer>
-
-        <TableContainer as={Paper}>
-          <SPanelHeader>
-            <SPanelSectionHeader title="Treasury positions" noTopPadding />
-            <Text fs="p6" color="text.medium">
-              {positionAssets.length} positions
-            </Text>
-          </SPanelHeader>
-          <Table size="small">
-            <TableHeader>
-              <tr>
-                <TableHead>Position</TableHead>
-                {isCompactTable ? (
-                  <TableHead sx={{ textAlign: "right" }}>Balance</TableHead>
-                ) : (
-                  <TableHead sx={{ textAlign: "right" }}>Balance</TableHead>
-                )}
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <SkeletonRows colSpan={2} />
-              ) : positionAssets.length ? (
-                positionAssets.map((item) => (
-                  <AssetRow
-                    key={`${item.source}-${item.asset.id}`}
-                    item={item}
-                    typeLabel={
-                      getTreasurySourceLabel(item) ??
-                      (isShareToken(item.asset) ? "XYK share" : "Stablepool")
-                    }
-                    isCompact={isCompactTable}
-                    useFluidName
-                    balanceAlign="end"
-                  />
-                ))
-              ) : (
-                <EmptyRow colSpan={2}>
-                  No liquidity positions found for this treasury.
-                </EmptyRow>
-              )}
-            </TableBody>
-          </Table>
         </TableContainer>
       </STablesGrid>
     </STreasuryGrid>

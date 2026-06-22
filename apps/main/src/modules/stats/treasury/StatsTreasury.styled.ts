@@ -1,4 +1,4 @@
-import { SectionHeader, TableRow } from "@galacticcouncil/ui/components"
+import { TableRow } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 import { Content } from "@radix-ui/react-tooltip"
 
@@ -416,36 +416,24 @@ export const SCompositionOthersLogos = styled.div(
 )
 
 export const STablesGrid = styled.div(
-  ({ theme }) => css`
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: ${theme.space.xl};
-
-    @media (width < 768px) {
-      grid-template-columns: 1fr;
-    }
-  `,
-)
-
-export const SPanelHeader = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: ${theme.space.base};
-    padding: ${theme.space.l} ${theme.space.xl};
-    border-bottom: 1px solid ${theme.details.separators};
-
-    @media (width < 768px) {
-      padding: ${theme.space.base} ${theme.space.l};
-    }
-  `,
-)
-
-export const SPanelSectionHeader = styled(SectionHeader)(
   () => css`
-    && {
-      padding-bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  `,
+)
+
+export const SPanelSearch = styled.div(
+  ({ theme }) => css`
+    align-self: center;
+    display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
+    width: 100%;
+    max-width: ${theme.sizes["4xl"]};
+    min-width: 0;
+
+    > * {
+      width: 100%;
     }
   `,
 )
@@ -453,28 +441,12 @@ export const SPanelSectionHeader = styled(SectionHeader)(
 export const SInteractiveTableRow = styled(TableRow)(
   ({ theme }) => css`
     animation: ${theme.animations.fadeIn} 160ms ease-out both;
+
+    &:last-of-type {
+      border-bottom: 1px solid ${theme.details.separators};
+    }
   `,
 )
-
-export const SAssetCell = styled.div<{ readonly $reserveGap?: boolean }>(
-  ({ $reserveGap, theme }) => css`
-    display: flex;
-    align-items: center;
-    gap: ${theme.space.base};
-    min-width: 0;
-    width: 100%;
-
-    ${$reserveGap &&
-    css`
-      padding-right: ${theme.space.base};
-    `}
-  `,
-)
-
-export const SAssetLabel = styled.div`
-  display: grid;
-  min-width: 0;
-`
 
 export const SMuted = styled.span(
   ({ theme }) => css`
@@ -489,7 +461,7 @@ export const SCompositionOthersTooltipContent = styled(Content)(
     max-width: min(52rem, calc(100vw - ${theme.space.xl} * 2));
     font-size: ${theme.fontSizes.p5};
     line-height: ${theme.lineHeights.m};
-    padding: ${theme.space.m} ${theme.space.l};
+    padding: ${theme.space.base};
     background: ${theme.details.tooltips};
     box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
     border-radius: ${theme.radii.m};
@@ -504,7 +476,7 @@ export const SCursorAssetTooltipContent = styled.div(
     max-width: min(20rem, calc(100vw - ${theme.space.xl} * 2));
     font-size: ${theme.fontSizes.p5};
     line-height: ${theme.lineHeights.m};
-    padding: ${theme.space.m} ${theme.space.l};
+    padding: ${theme.space.base};
     pointer-events: none;
     background: ${theme.details.tooltips};
     box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
@@ -522,10 +494,10 @@ export const SCompositionTooltipShell = styled.div(
 )
 
 export const STooltipLegend = styled.div<{ readonly $compact?: boolean }>(
-  ({ $compact, theme }) => css`
+  ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${$compact ? theme.space.s : theme.space.base};
+    gap: ${theme.space.base};
     width: max-content;
     max-width: min(52rem, calc(100vw - ${theme.space.xl} * 2));
     min-width: 0;
@@ -539,9 +511,10 @@ export const STooltipTitle = styled.span(
     width: 100%;
     color: ${theme.text.medium};
     font-family: ${theme.fontFamilies1.secondary};
-    font-size: ${theme.fontSizes.p7};
-    font-weight: 600;
-    line-height: 1;
+    font-size: ${theme.fontSizes.p6};
+    font-weight: 500;
+    line-height: ${theme.lineHeights.s};
+    text-transform: uppercase;
   `,
 )
 
@@ -568,15 +541,30 @@ export const STooltipColumn = styled.div<{ readonly $compact?: boolean }>(
   `,
 )
 
-export const STooltipRow = styled.div<{ readonly $compact?: boolean }>(
-  ({ $compact, theme }) => css`
+export const STooltipHeader = styled.div(
+  ({ theme }) => css`
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: ${theme.space.base};
+    min-width: 0;
+  `,
+)
+
+export const STooltipRow = styled.div<{
+  readonly $compact?: boolean
+  readonly $noDivider?: boolean
+}>(
+  ({ $compact, $noDivider, theme }) => css`
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(5.5rem, auto);
     align-items: start;
     gap: ${$compact ? theme.space.s : theme.space.base};
     padding: ${$compact ? `${theme.space.xs} 0` : `${theme.space.s} 0`};
     min-width: 0;
-    border-bottom: 1px solid ${tooltipRowDivider(theme)};
+    border-bottom: ${$noDivider
+      ? "none"
+      : `1px solid ${tooltipRowDivider(theme)}`};
 
     &:last-child {
       border-bottom: none;
@@ -585,34 +573,58 @@ export const STooltipRow = styled.div<{ readonly $compact?: boolean }>(
   `,
 )
 
+export const STooltipSection = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.space.s};
+    padding: ${theme.space.base} 0;
+    width: 100%;
+    min-width: 0;
+    background: ${theme.surfaces.containers.dim.dimOnHigh};
+    border-radius: ${theme.radii.m};
+    overflow: hidden;
+
+    > div {
+      padding: 0 ${theme.space.base};
+      border-bottom: none;
+    }
+
+    > div + div {
+      padding-top: ${theme.space.s};
+      border-top: 1px solid ${tooltipRowDivider(theme)};
+    }
+  `,
+)
+
 export const STooltipValues = styled.div<{ readonly $compact?: boolean }>(
-  ({ $compact }) => css`
+  ({ theme }) => css`
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     justify-content: flex-start;
-    gap: 2px;
+    gap: ${theme.space.xs};
     text-align: right;
-    min-width: ${$compact ? "5.5rem" : "6rem"};
+    min-width: ${theme.sizes["3xl"]};
     white-space: nowrap;
     line-height: 1.1;
   `,
 )
 
 export const STooltipAsset = styled.div(
-  () => css`
+  ({ theme }) => css`
     display: flex;
     align-items: center;
-    gap: ${pxToRem(8)};
+    gap: ${theme.space.base};
     min-width: 0;
     overflow: hidden;
   `,
 )
 
 export const STooltipAssetIdentity = styled.div(
-  () => css`
+  ({ theme }) => css`
     display: grid;
-    gap: 1px;
+    gap: ${theme.space.xs};
     min-width: 0;
     line-height: 1.1;
   `,
