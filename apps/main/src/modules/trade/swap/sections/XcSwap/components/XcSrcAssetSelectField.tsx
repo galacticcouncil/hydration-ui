@@ -16,12 +16,14 @@ type Props = {
     asset: TAssetData,
     previousAsset: TAssetData | null,
   ) => void
+  readonly onAmountChange?: (amount: string) => void
 }
 
 export const XcSrcAssetSelectField: React.FC<Props> = ({
   label,
   loading,
   onAssetChange,
+  onAmountChange,
 }) => {
   const { tradable } = useAssets()
   const { control } = useFormContext<XcSwapFormValues>()
@@ -56,7 +58,10 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({
         onAssetChange?.(asset, previousAsset)
       }}
       value={amountField.value}
-      onChange={amountField.onChange}
+      onChange={(value) => {
+        amountField.onChange(value)
+        onAmountChange?.(value)
+      }}
       assetError={assetFieldState.error?.message}
       amountError={amountFieldState.error?.message}
       maxBalanceFallback="0"

@@ -1,3 +1,4 @@
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { isH160Address } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
@@ -12,7 +13,10 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useDebounce } from "react-use"
 
+import { healthFactorQuery } from "@/api/aave"
 import {
+  bestBuyQuery,
+  bestBuyTwapQuery,
   bestSellQuery,
   bestSellTwapQuery,
   Trade,
@@ -88,6 +92,8 @@ type XcSwapContextValue = {
   readonly quote: XcSwapQuote
   readonly isQuoteLoading: boolean
   readonly isTwapLoading: boolean
+  readonly healthFactor: HealthFactorResult | undefined
+  readonly isHealthFactorLoading: boolean
   readonly isSelectionLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
@@ -104,6 +110,8 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   quote: null,
   isQuoteLoading: false,
   isTwapLoading: false,
+  healthFactor: undefined,
+  isHealthFactorLoading: false,
   isSelectionLoading: true,
   onSubmit: () => {},
   isLoading: false,
@@ -308,7 +316,9 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     }
   }, [destChain, form])
 
+  const type = form.watch("type")
   const sellAmount = form.watch("sellAmount")
+  const buyAmount = form.watch("buyAmount")
   const destAddress = form.watch("destAddress")
   const recipient =
     destAddress.trim() ||
@@ -316,6 +326,9 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
 
   const [debouncedAmount, setDebouncedAmount] = useState("")
   useDebounce(() => setDebouncedAmount(sellAmount), 400, [sellAmount])
+
+  const [debouncedBuyAmount, setDebouncedBuyAmount] = useState("")
+  useDebounce(() => setDebouncedBuyAmount(buyAmount), 400, [buyAmount])
 
   const amountIn = useMemo(() => {
     if (!sellAsset || !debouncedAmount || Number(debouncedAmount) <= 0) {
@@ -369,11 +382,21 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     },
   })
 
-  const omnipoolQueryOptions = bestSellQuery(rpc, {
-    assetIn: sellAsset?.id ?? "",
-    assetOut: buyAsset?.id !== undefined ? String(buyAsset.id) : "",
-    amountIn: debouncedAmount,
-  })
+  const isOnChainBuy = !isCrossChain && type === TradeType.Buy
+  const omnipoolAssetIn = sellAsset?.id ?? ""
+  const omnipoolAssetOut = buyAsset?.id !== undefined ? String(buyAsset.id) : ""
+
+  const omnipoolQueryOptions = isOnChainBuy
+    ? bestBuyQuery(rpc, {
+        assetIn: omnipoolAssetIn,
+        assetOut: omnipoolAssetOut,
+        amountOut: debouncedBuyAmount,
+      })
+    : bestSellQuery(rpc, {
+        assetIn: omnipoolAssetIn,
+        assetOut: omnipoolAssetOut,
+        amountIn: debouncedAmount,
+      })
   const {
     data: omnipoolTrade,
     isFetching: isOmnipoolQuoteLoading,
@@ -384,15 +407,41 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
   })
 
   const { data: twap, isFetching: isTwapLoading } = useQuery(
-    bestSellTwapQuery(
-      rpc,
-      {
-        assetIn: sellAsset?.id ?? "",
-        assetOut: buyAsset?.id !== undefined ? String(buyAsset.id) : "",
-        amountIn: debouncedAmount,
-      },
-      !isCrossChain && isTwapEnabled(omnipoolTrade),
-    ),
+    isOnChainBuy
+      ? bestBuyTwapQuery(
+          rpc,
+          {
+            assetIn: omnipoolAssetIn,
+            assetOut: omnipoolAssetOut,
+            amountOut: debouncedBuyAmount,
+          },
+          !isCrossChain && isTwapEnabled(omnipoolTrade),
+        )
+      : bestSellTwapQuery(
+          rpc,
+          {
+            assetIn: omnipoolAssetIn,
+            assetOut: omnipoolAssetOut,
+            amountIn: debouncedAmount,
+          },
+          !isCrossChain && isTwapEnabled(omnipoolTrade),
+        ),
+  )
+
+  // OnChain only: resolve the Hydration buy asset (CrossChain has no Aave dest)
+  const healthFactorToAsset =
+    !isCrossChain && buyAsset?.id !== undefined
+      ? (getAsset(String(buyAsset.id)) ?? null)
+      : null
+
+  const { data: healthFactor, isLoading: isHealthFactorLoading } = useQuery(
+    healthFactorQuery(rpc, {
+      fromAsset: sellAsset,
+      fromAmount: debouncedAmount,
+      toAsset: healthFactorToAsset,
+      toAmount: debouncedBuyAmount,
+      address: account?.address ?? "",
+    }),
   )
 
   const quote = useMemo<XcSwapQuote>(() => {
@@ -410,20 +459,38 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
       form.setValue("buyAmount", quote.trade.amountOut.toDecimal(), {
         shouldValidate: true,
       })
+    } else if (quote?.kind === "oc" && type === TradeType.Buy && sellAsset) {
+      // Buy: derive the required sellAmount from the quote's amountIn
+      const amountIn = isSingleTrade
+        ? quote.trade.amountIn
+        : quote.twap?.amountIn
+      const nextSellAmount = amountIn
+        ? scaleHuman(amountIn, sellAsset.decimals)
+        : ""
+
+      if (form.getValues("sellAmount") !== nextSellAmount) {
+        form.setValue("sellAmount", nextSellAmount, { shouldValidate: true })
+      }
     } else if (quote?.kind === "oc" && buyAsset) {
+      // Sell: derive buyAmount from the quote's amountOut
       const amountOut = isSingleTrade
         ? quote.trade.amountOut
         : quote.twap?.amountOut
+      const nextBuyAmount = amountOut
+        ? scaleHuman(amountOut, buyAsset.decimals)
+        : ""
 
-      form.setValue(
-        "buyAmount",
-        amountOut ? scaleHuman(amountOut, buyAsset.decimals) : "",
-        { shouldValidate: true },
-      )
+      if (form.getValues("buyAmount") !== nextBuyAmount) {
+        form.setValue("buyAmount", nextBuyAmount, { shouldValidate: true })
+      }
+    } else if (type === TradeType.Buy) {
+      if (form.getValues("sellAmount")) {
+        form.setValue("sellAmount", "", { shouldValidate: true })
+      }
     } else if (form.getValues("buyAmount")) {
       form.setValue("buyAmount", "", { shouldValidate: true })
     }
-  }, [quote, buyAsset, form, isSingleTrade])
+  }, [quote, buyAsset, sellAsset, form, isSingleTrade, type])
 
   const sellAssetUnsupported =
     !!sellAsset && originAssetMap.size > 0 && !originAssetMap.has(sellAsset.id)
@@ -456,7 +523,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         ? (getAsset(String(values.buyAsset.id)) ?? null)
         : null,
     buyAmount: values.buyAmount,
-    type: TradeType.Sell,
+    type: values.type,
     isSingleTrade: values.isSingleTrade,
   })
 
@@ -482,6 +549,8 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         quote,
         isQuoteLoading,
         isTwapLoading,
+        healthFactor,
+        isHealthFactorLoading,
         isSelectionLoading,
         onSubmit,
         isLoading:
