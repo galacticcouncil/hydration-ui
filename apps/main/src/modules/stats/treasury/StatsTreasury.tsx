@@ -65,6 +65,8 @@ import {
   getResolvedCompositionMobileBlockLayout,
 } from "./compositionGridLayout"
 import {
+  SCompactAssetIdentity,
+  SCompactAssetLabel,
   SComposition,
   SCompositionBlock,
   SCompositionBlockIdentity,
@@ -377,7 +379,13 @@ const TreasuryBalanceAmount = ({
   </Flex>
 )
 
-const SuppliedAmount = ({ item }: { item: TreasuryAssetBalance }) => {
+const SuppliedAmount = ({
+  item,
+  align = "start",
+}: {
+  item: TreasuryAssetBalance
+  align?: "start" | "end"
+}) => {
   const supplied = item.breakdown.moneyMarketSupply
 
   if (!supplied || !hasBreakdownPartValue(supplied)) {
@@ -389,7 +397,10 @@ const SuppliedAmount = ({ item }: { item: TreasuryAssetBalance }) => {
   }
 
   return (
-    <Flex direction="column" align="flex-start">
+    <Flex
+      direction="column"
+      align={align === "end" ? "flex-end" : "flex-start"}
+    >
       <Amount
         value={formatTokenAmount(supplied.balance)}
         displayValue={formatCurrency(supplied.valueUsd)}
@@ -1244,6 +1255,68 @@ const AssetCompositionBlock = ({
   )
 }
 
+const CompactAssetLabel = ({
+  asset,
+}: {
+  asset: GroupedTreasuryAssetBalance["asset"]
+}) => (
+  <SCompactAssetLabel>
+    <AssetLogo id={asset.id} size="extra-small" />
+    <SCompactAssetIdentity>
+      <Text fs="p5" fw={600} lh={1} color="text.high" truncate>
+        {asset.symbol}
+      </Text>
+      <Text fs="p7" lh={1} color="text.medium" truncate>
+        {asset.name}
+      </Text>
+    </SCompactAssetIdentity>
+  </SCompactAssetLabel>
+)
+
+const MobileAssetDetails = ({
+  item,
+}: {
+  item: GroupedTreasuryAssetBalance
+}) => (
+  <SCompositionTooltipShell>
+    <STooltipLegend $compact>
+      <STooltipHeader>
+        <STooltipAsset>
+          <AssetLogo id={item.asset.id} size="extra-small" />
+          <STooltipAssetIdentity>
+            <Text fs="p6" fw={600} lh={1.1} color="text.high">
+              {item.asset.symbol}
+            </Text>
+            <Text fs="p7" lh={1.1} color="text.high">
+              {item.asset.name}
+            </Text>
+          </STooltipAssetIdentity>
+        </STooltipAsset>
+        <Text fs="p7" fw={600} color="text.high">
+          {getAssetCompositionLabel(item)}
+        </Text>
+      </STooltipHeader>
+      <STooltipTitle>Details</STooltipTitle>
+      <STooltipSection>
+        <STooltipRow $compact>
+          <TooltipLabel>Balance</TooltipLabel>
+          <TreasuryBalanceAmount item={item} align="end" />
+        </STooltipRow>
+        <STooltipRow $compact>
+          <TooltipLabel>Of which supplied</TooltipLabel>
+          <SuppliedAmount item={item} align="end" />
+        </STooltipRow>
+        <STooltipRow $compact>
+          <TooltipLabel>Composition</TooltipLabel>
+          <Text fs="p7" fw={600} color="text.high" sx={{ textAlign: "right" }}>
+            {getAssetCompositionLabel(item)}
+          </Text>
+        </STooltipRow>
+      </STooltipSection>
+    </STooltipLegend>
+  </SCompositionTooltipShell>
+)
+
 const AssetRow = ({
   item,
   showComposition,
@@ -1255,16 +1328,53 @@ const AssetRow = ({
   isCompact?: boolean
   balanceAlign?: "start" | "end"
 }) => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
   if (isCompact) {
     return (
-      <SInteractiveTableRow>
-        <TableCell>
-          <AssetLabelFull asset={item.asset} />
-        </TableCell>
-        <TableCell sx={{ textAlign: "right", whiteSpace: "nowrap" }}>
-          <TreasuryBalanceAmount item={item} align="end" />
-        </TableCell>
-      </SInteractiveTableRow>
+      <>
+        <SInteractiveTableRow
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsDrawerOpen(true)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault()
+              setIsDrawerOpen(true)
+            }
+          }}
+        >
+          <TableCell
+            sx={{
+              minWidth: 0,
+              maxWidth: 0,
+              overflow: "hidden",
+              width: "62%",
+            }}
+          >
+            <CompactAssetLabel asset={item.asset} />
+          </TableCell>
+          <TableCell
+            sx={{
+              textAlign: "right",
+              whiteSpace: "nowrap",
+              width: "38%",
+            }}
+          >
+            <TreasuryBalanceAmount item={item} align="end" />
+          </TableCell>
+        </SInteractiveTableRow>
+        <Drawer
+          open={isDrawerOpen}
+          onOpenChange={setIsDrawerOpen}
+          customTitle={<AssetLabelFull asset={item.asset} />}
+          title={item.asset.symbol}
+        >
+          <DrawerBody>
+            <MobileAssetDetails item={item} />
+          </DrawerBody>
+        </Drawer>
+      </>
     )
   }
 
@@ -1587,6 +1697,28 @@ export const StatsTreasury = () => {
     [data?.assets, data?.borrowPositions],
   )
 
+  const assetSearchControl = (
+    <SPanelSearch>
+      <Input
+        id={searchInputId}
+        value={assetSearch}
+        placeholder="Search assets"
+        leadingElement={
+          <Label asChild htmlFor={searchInputId}>
+            <Icon
+              as="label"
+              sx={{ cursor: "text" }}
+              size="m"
+              component={Search}
+              mr="base"
+            />
+          </Label>
+        }
+        onChange={(event) => setAssetSearch(event.target.value)}
+      />
+    </SPanelSearch>
+  )
+
   return (
     <STreasuryGrid>
       <STreasuryOverview>
@@ -1713,35 +1845,23 @@ export const StatsTreasury = () => {
       <STablesGrid>
         <SectionHeader
           title="All treasury assets"
-          actions={
-            <SPanelSearch>
-              <Input
-                id={searchInputId}
-                value={assetSearch}
-                placeholder="Search assets"
-                leadingElement={
-                  <Label asChild htmlFor={searchInputId}>
-                    <Icon
-                      as="label"
-                      sx={{ cursor: "text" }}
-                      size="m"
-                      component={Search}
-                      mr="base"
-                    />
-                  </Label>
-                }
-                onChange={(event) => setAssetSearch(event.target.value)}
-              />
-            </SPanelSearch>
-          }
+          actions={isCompactTable ? undefined : assetSearchControl}
         />
+        {isCompactTable ? assetSearchControl : null}
         <TableContainer as={Paper}>
-          <Table size="small">
+          <Table
+            size="small"
+            sx={isCompactTable ? { tableLayout: "fixed" } : undefined}
+          >
             <TableHeader>
               <tr>
-                <TableHead>Asset</TableHead>
+                <TableHead sx={isCompactTable ? { width: "62%" } : undefined}>
+                  Asset
+                </TableHead>
                 {isCompactTable ? (
-                  <TableHead sx={{ textAlign: "right" }}>Balance</TableHead>
+                  <TableHead sx={{ textAlign: "right", width: "38%" }}>
+                    Balance
+                  </TableHead>
                 ) : (
                   <>
                     <TableHead>Balance</TableHead>

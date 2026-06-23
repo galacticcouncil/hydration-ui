@@ -932,6 +932,34 @@ export const SPanelSearch = styled.div(
     > * {
       width: 100%;
     }
+
+    @media (width < ${MOBILE_BREAKPOINT}) {
+      align-self: stretch;
+      justify-content: stretch;
+      margin-left: 0;
+      margin-bottom: ${theme.space.base};
+      max-width: none;
+    }
+  `,
+)
+
+export const SCompactAssetLabel = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.space.s};
+    min-width: 0;
+    overflow: hidden;
+  `,
+)
+
+export const SCompactAssetIdentity = styled.div(
+  ({ theme }) => css`
+    display: grid;
+    gap: ${theme.space.xs};
+    min-width: 0;
+    overflow: hidden;
+    line-height: 1.1;
   `,
 )
 
