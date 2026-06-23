@@ -5,10 +5,13 @@ import React from "react"
 
 import { UserMenu } from "@/modules/layout/components/UserMenu"
 import { SSplitContainer } from "@/modules/layout/components/UserMenu/UserMenu.styled"
+import { useRecentProviderAccountSync } from "@/states/recentProviderAccounts"
 
 export const HeaderWeb3ConnectButton: React.FC<
   React.ComponentPropsWithoutRef<typeof Web3ConnectButton>
 > = (props) => {
+  useRecentProviderAccountSync()
+
   const isCrossChainPage = !!useMatch({
     from: "/cross-chain/",
     shouldThrow: false,

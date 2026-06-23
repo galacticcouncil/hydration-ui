@@ -1,5 +1,19 @@
-import { Button } from "@galacticcouncil/ui/components"
+import { Button, Flex, MenuSelectionItem } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
+
+// Revealed on tile hover for pointer devices; always visible on touch.
+export const SHoverActions = styled(Flex)(
+  () => css`
+    @media (hover: hover) {
+      opacity: 0;
+      transition: opacity 0.15s ease-in-out;
+
+      ${MenuSelectionItem}:hover & {
+        opacity: 1;
+      }
+    }
+  `,
+)
 
 export const SSplitContainer = styled.div(
   ({ theme }) => css`

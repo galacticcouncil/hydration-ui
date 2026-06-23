@@ -67,9 +67,9 @@ export const MultisigSignatory: React.FC<MultisigSignatoryProps> = ({
   }
 
   return (
-    <Flex align="center" gap="s" width="100%">
-      <AccountAvatar address={address} size={32} />
-      <Stack flex={1}>
+    <Flex align="center" gap="s" width="100%" minWidth={0}>
+      <AccountAvatar address={address} size={32} sx={{ flexShrink: 0 }} />
+      <Stack flex={1} minWidth={0}>
         <EditableText
           value={displayName}
           placeholder={t("multisig.detail.noName")}
@@ -84,7 +84,7 @@ export const MultisigSignatory: React.FC<MultisigSignatoryProps> = ({
         </Text>
       </Stack>
       {isConnected && (
-        <Chip size="small" variant="tertiary">
+        <Chip size="small" variant="tertiary" sx={{ flexShrink: 0 }}>
           {t("you")}
         </Chip>
       )}
