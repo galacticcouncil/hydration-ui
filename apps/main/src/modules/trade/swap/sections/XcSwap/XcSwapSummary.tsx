@@ -21,6 +21,7 @@ import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/use
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
+import { maxBalanceError } from "@/utils/validators"
 
 export const XcSwapSummary = () => {
   const { quote } = useXcSwap()
@@ -53,7 +54,8 @@ const OnChainSummary = ({
   readonly trade: Trade
   readonly twap: TradeOrder | undefined
 }) => {
-  const { watch } = useFormContext<XcSwapFormValues>()
+  const { healthFactor } = useXcSwap()
+  const { watch, formState } = useFormContext<XcSwapFormValues>()
 
   const isSingleTrade = watch("isSingleTrade")
 
@@ -61,7 +63,15 @@ const OnChainSummary = ({
     return <MarketSummaryTwap swap={trade} twap={twap} />
   }
 
-  return <MarketSummarySwap swap={trade} healthFactor={undefined} />
+  const isHealthFactorShown =
+    formState.errors.sellAmount?.message !== maxBalanceError
+
+  return (
+    <MarketSummarySwap
+      swap={trade}
+      healthFactor={isHealthFactorShown ? healthFactor : undefined}
+    />
+  )
 }
 
 const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
