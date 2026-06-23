@@ -849,7 +849,8 @@ const getReceiptTokenSupplyFallbacks = (
 
   for (const item of supplyAssets) {
     const existing = remainingSupplyByAssetId.get(item.asset.id) ?? new Big(0)
-    const supplyBalance = item.breakdown.moneyMarketSupply?.balance ?? item.balance
+    const supplyBalance =
+      item.breakdown.moneyMarketSupply?.balance ?? item.balance
 
     remainingSupplyByAssetId.set(
       item.asset.id,
