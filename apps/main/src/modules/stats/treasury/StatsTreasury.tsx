@@ -157,19 +157,6 @@ type TooltipBreakdownRow = {
   negative?: boolean
 }
 
-const DESKTOP_SKELETON_SPECS: CompositionGridBlockSpec[] = [
-  { colSpan: 6, rowSpan: 2 },
-  { colSpan: 3, rowSpan: 2 },
-  { colSpan: 3, rowSpan: 2 },
-  ...Array.from({ length: 18 }, () => ({ colSpan: 2, rowSpan: 1 })),
-]
-
-const MOBILE_SKELETON_SPECS: CompositionGridBlockSpec[] = [
-  { colSpan: 2, rowSpan: 2 },
-  { colSpan: 2, rowSpan: 2 },
-  ...Array.from({ length: 10 }, () => ({ colSpan: 1, rowSpan: 1 })),
-]
-
 const shouldForceAssetIntoOthers = (asset: TreasuryAssetBalance["asset"]) =>
   FORCE_OTHERS_ASSET_SYMBOLS.has(asset.symbol.trim().toLowerCase())
 
@@ -1487,6 +1474,7 @@ export const StatsTreasury = () => {
   const isCompactTable = useCompositionMobileLayout
   const [assetPage, setAssetPage] = useState(1)
   const [assetSearch, setAssetSearch] = useState("")
+  const lastCompositionGridSpecsRef = useRef<CompositionGridBlockSpec[]>([])
 
   const assets = useMemo(() => {
     const assetMap = new Map(
@@ -1639,13 +1627,17 @@ export const StatsTreasury = () => {
     [compositionGridSpecs, compositionLayoutAssets.length],
   )
 
+  useEffect(() => {
+    if (compositionGridSpecs.length) {
+      lastCompositionGridSpecsRef.current = compositionGridSpecs
+    }
+  }, [compositionGridSpecs])
+
   const compositionSkeletonSpecs = useMemo(() => {
     if (compositionGridSpecs.length) return compositionGridSpecs
 
-    return useCompositionMobileLayout
-      ? MOBILE_SKELETON_SPECS
-      : DESKTOP_SKELETON_SPECS
-  }, [compositionGridSpecs, useCompositionMobileLayout])
+    return lastCompositionGridSpecsRef.current
+  }, [compositionGridSpecs])
 
   const relatedPositionsBySymbol = useMemo(() => {
     const positionsBySymbol = new Map<string, TreasuryAssetBalance[]>()
@@ -1776,7 +1768,7 @@ export const StatsTreasury = () => {
 
         <SComposition>
           <SCompositionGrid data-composition-grid="">
-            {isCompositionLoading ? (
+            {isCompositionLoading && compositionSkeletonSpecs.length ? (
               compositionSkeletonSpecs.map((spec, index) => (
                 <Skeleton
                   key={index}
