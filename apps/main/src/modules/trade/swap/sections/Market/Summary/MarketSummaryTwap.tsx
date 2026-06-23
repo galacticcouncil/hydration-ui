@@ -3,7 +3,9 @@ import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   CollapsibleContent,
   CollapsibleRoot,
+  Flex,
   Summary,
+  SummaryRowDisplayValue,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -82,6 +84,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
   const [transactionCostsDisplay] = useDisplayAssetPrice(
     transactionFee?.feeAssetId ?? "",
     transactionCosts,
+    { maximumFractionDigits: null },
   )
 
   const [twapPrice, swapPrice, twapPriceHuman, twapPriceAsset] = (() => {
@@ -132,7 +135,6 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
 
   const twapDiff = math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
   const twapDiffAbs = Math.abs(twapDiff)
-  const twapSymbol = twapDiff >= 0 ? "+" : "-"
 
   return (
     <CollapsibleRoot
@@ -158,12 +160,12 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
                 symbol: twapPriceAsset.symbol,
               })}
             </span>
-            <span sx={{ color: getToken("colors.skyBlue.500") }}>
-              {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
+            <span sx={{ color: getToken("text.tint.quart") }}>
+              {` (${t("percent", { value: twapDiffAbs, signDisplay: "always" })})`}
             </span>
           </SummaryRowValue>
         }
-        amountDisplay={twapPriceDisplay}
+        amountDisplay={twapPriceDisplay ? `(${twapPriceDisplay})` : undefined}
         isLoading={twapPriceDisplayLoading}
         isExpanded={isSummaryExpanded}
         onIsExpandedChange={changeSummaryExpanded}
@@ -187,14 +189,17 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
             label={t("trade:market.summary.transactionCosts")}
             loading={isTransactionFeeLoading}
             content={
-              <SummaryRowValue>
-                {transactionCostsDisplay} (
-                {t("currency", {
-                  value: transactionCosts,
-                  symbol: transactionFeeAsset.symbol,
-                })}
-                )
-              </SummaryRowValue>
+              <Flex gap="s" align="center" justify="flex-end">
+                <SummaryRowValue>
+                  {t("currency", {
+                    value: transactionCosts,
+                    symbol: transactionFeeAsset.symbol,
+                  })}
+                </SummaryRowValue>
+                <SummaryRowDisplayValue>
+                  ({transactionCostsDisplay})
+                </SummaryRowDisplayValue>
+              </Flex>
             }
             tooltip={t("trade:market.summary.transactionCosts.tooltip")}
           />

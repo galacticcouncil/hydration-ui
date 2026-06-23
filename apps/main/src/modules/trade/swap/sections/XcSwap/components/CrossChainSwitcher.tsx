@@ -23,7 +23,7 @@ export const CrossChainSwitcher: FC<Props> = ({ swap }) => {
   const { t } = useTranslation()
   const { watch } = useFormContext<XcSwapFormValues>()
   const { isQuoteLoading } = useXcSwap()
-  const [srcAsset, destAsset] = watch(["srcAsset", "destAsset"])
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
   const [view, setView] = useState<"default" | "reversed">("reversed")
 
   const price = (() => {
@@ -35,16 +35,16 @@ export const CrossChainSwitcher: FC<Props> = ({ swap }) => {
   })()
 
   const isPriceReady = !isQuoteLoading
-  const isPriceDisabled = !srcAsset || !destAsset || !price || price.lte(0)
+  const isPriceDisabled = !sellAsset || !buyAsset || !price || price.lte(0)
 
   const [shownAssetIn, shownAssetOut, shownPrice] = (() => {
-    if (!srcAsset || !destAsset || !price || price.lte(0)) {
+    if (!sellAsset || !buyAsset || !price || price.lte(0)) {
       return [null, null, Big(0)] as const
     }
 
     return view === "reversed"
-      ? ([destAsset, srcAsset, Big(1).div(price)] as const)
-      : ([srcAsset, destAsset, price] as const)
+      ? ([buyAsset, sellAsset, Big(1).div(price)] as const)
+      : ([sellAsset, buyAsset, price] as const)
   })()
 
   return (

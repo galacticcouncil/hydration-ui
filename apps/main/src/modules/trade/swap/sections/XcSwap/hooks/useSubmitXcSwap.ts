@@ -16,48 +16,42 @@ export const useSubmitXcSwap = () => {
 
   return useMutation({
     mutationFn: async ([values, trade]: [XcSwapFormValues, XcSwapTrade]) => {
-      const { srcAsset, srcAmount, destChain, destAsset, destAddress } = values
+      const { sellAsset, sellAmount, destChain, buyAsset, destAddress } = values
 
-      if (!srcAsset) throw new Error("Source asset is required")
+      if (!sellAsset) throw new Error("Source asset is required")
       if (!destChain) throw new Error("Destination chain is required")
-      if (!destAsset) throw new Error("Destination asset is required")
+      if (!buyAsset) throw new Error("Destination asset is required")
       if (!destAddress) throw new Error("Destination address is required")
 
-      // Firm quote — network call that yields the deposit address + calls.
       const { calls, depositAddress, intentId, correlationId } =
         await trade.buildCall()
 
-      // calls = [approve?, swapAndBridge]; approve is omitted when the emitter
-      // already has allowance over the source asset.
       const swapAndBridge = calls[calls.length - 1]
       if (!swapAndBridge) throw new Error("Failed to build the swap call")
       const approve = calls.length > 1 ? calls[0] : undefined
 
       const i18nVars = {
-        amount: t("currency", {
-          value: srcAmount,
-          symbol: srcAsset.symbol,
-        }),
-        srcSymbol: srcAsset.symbol,
-        dstSymbol: destAsset.symbol,
+        amount: sellAmount,
+        symbol: sellAsset.symbol,
+        srcSymbol: sellAsset.symbol,
+        dstSymbol: buyAsset.symbol,
         dstChain: destChain.name,
       }
 
       const toasts = {
-        submitted: t("trade:xcSwap.swap.toast.submitted", i18nVars),
-        success: t("trade:xcSwap.swap.toast.success", i18nVars),
-        error: t("trade:xcSwap.swap.toast.error", i18nVars),
+        submitted: t("trade:xc.swap.toast.submitted", i18nVars),
+        success: t("trade:xc.swap.toast.success", i18nVars),
       }
 
       const meta: TransactionXcSwapMeta = {
         type: TransactionType.XcSwap,
         srcChainKey: HYDRATION_CHAIN_KEY,
-        srcAssetSymbol: srcAsset.symbol,
-        srcAmount,
+        srcAssetSymbol: sellAsset.symbol,
+        srcAmount: sellAmount,
         srcChainFee: trade.fee.amount.toDecimal(),
         srcChainFeeSymbol: trade.fee.amount.symbol,
         dstChainKey: destChain.key,
-        dstAssetSymbol: destAsset.symbol,
+        dstAssetSymbol: buyAsset.symbol,
         dstAmount: trade.amountOut.toDecimal(),
         dstAddress: destAddress,
         intentId,
@@ -65,8 +59,6 @@ export const useSubmitXcSwap = () => {
         correlationId,
       }
 
-      // Sequence approve → swapAndBridge so the allowance lands first (it's
-      // per-asset, so a prior approve of another asset doesn't carry over).
       if (approve) {
         return createTransaction({
           tx: [

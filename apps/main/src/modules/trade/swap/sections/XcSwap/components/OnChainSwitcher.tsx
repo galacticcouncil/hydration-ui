@@ -6,10 +6,9 @@ import { useFormContext } from "react-hook-form"
 import { isNumber } from "remeda"
 
 import { Trade } from "@/api/trade"
-import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
+import { TradeAssetSwitcher } from "@/components/AssetSwitcher/TradeAssetSwitcher"
 import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
-import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -18,8 +17,7 @@ type Props = {
 
 export const OnChainSwitcher: FC<Props> = ({ swap }) => {
   const { watch } = useFormContext<XcSwapFormValues>()
-  const { isQuoteLoading } = useXcSwap()
-  const [srcAsset, destAsset] = watch(["srcAsset", "destAsset"])
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
   const switchAssets = useSwitchXcAssets()
 
@@ -31,17 +29,15 @@ export const OnChainSwitcher: FC<Props> = ({ swap }) => {
     return Big(scaleHuman(swap.spotPrice, RUNTIME_DECIMALS)).toString()
   })()
 
-  const srcAssetId = isNumber(srcAsset?.id) ? String(srcAsset.id) : ""
+  const sellAssetId = sellAsset?.id ?? ""
 
   return (
-    <AssetSwitcher
-      defaultView="reversed"
-      assetInId={srcAssetId}
-      assetOutId={isNumber(destAsset?.id) ? String(destAsset.id) : ""}
-      fallbackPrice={price ?? undefined}
-      isFallbackPriceLoading={isQuoteLoading}
-      disabled={!!srcAssetId && SELL_ONLY_ASSETS.includes(srcAssetId)}
-      onSwitchAssets={switchAssets}
+    <TradeAssetSwitcher
+      assetInId={sellAssetId}
+      assetOutId={isNumber(buyAsset?.id) ? String(buyAsset.id) : ""}
+      price={price}
+      disabled={!!sellAssetId && SELL_ONLY_ASSETS.includes(sellAssetId)}
+      onSwitch={switchAssets}
     />
   )
 }

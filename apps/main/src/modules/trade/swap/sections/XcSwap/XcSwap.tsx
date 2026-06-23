@@ -5,6 +5,7 @@ import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { XcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/XcSwapAlerts"
 import { XcSwapFields } from "@/modules/trade/swap/sections/XcSwap/XcSwapFields"
+import { XcSwapOptions } from "@/modules/trade/swap/sections/XcSwap/XcSwapOptions"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSummary } from "@/modules/trade/swap/sections/XcSwap/XcSwapSummary"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
@@ -21,24 +22,30 @@ export const XcSwap: React.FC = () => {
   } = useXcSwap()
   const form = useFormContext<XcSwapFormValues>()
 
-  const [srcAmount, destAddress] = form.watch(["srcAmount", "destAddress"])
+  const [sellAmount, destAddress, isSingleTrade] = form.watch([
+    "sellAmount",
+    "destAddress",
+    "isSingleTrade",
+  ])
+
   const canSubmit =
     form.formState.isValid && !alerts.length && !!quote && !isQuoteLoading
 
   const submitLabel = (() => {
-    if (!srcAmount) return "Enter an amount"
+    if (!sellAmount) return "Enter an amount"
     if (alerts.length) return "Swap unavailable"
     if (isCrossChain && !destAddress.trim()) return "Enter recipient address"
-    if (canSubmit) return "Swap"
+    if (canSubmit) return isSingleTrade ? "Swap" : "Place trades"
     return "Swap unavailable"
   })()
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
       <XcSwapFields destChainAssetPairs={destChainAssetPairs} />
+      <XcSwapOptions />
       <SwapSectionSeparator />
       <XcSwapAlerts />
-      <Box py="xl">
+      <Box py="m">
         <AuthorizedAction size="large" width="100%">
           <LoadingButton
             type="submit"
@@ -56,7 +63,6 @@ export const XcSwap: React.FC = () => {
           </LoadingButton>
         </AuthorizedAction>
       </Box>
-      <SwapSectionSeparator />
       <XcSwapSummary />
     </form>
   )
