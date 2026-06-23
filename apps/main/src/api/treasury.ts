@@ -202,8 +202,11 @@ const getAssetHubDotBalance = async (address: string) => {
     if (!assetHub) return 0n
 
     const assetHubClient = new clients.AssethubClient(assetHub as Parachain)
+    const {
+      data: { free, reserved },
+    } = await assetHubClient.api().query.System.Account.getValue(address)
 
-    return assetHubClient.getSystemAccountBalance(address)
+    return free + reserved
   } catch {
     return 0n
   }
