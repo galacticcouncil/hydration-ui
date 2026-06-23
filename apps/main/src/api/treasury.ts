@@ -1,12 +1,16 @@
+import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import {
-  calculate_liquidity_lrna_out,
-  calculate_liquidity_out,
-} from "@galacticcouncil/math-omnipool"
-import {
+  DOT_ASSET_ID,
   getAssetIdFromAddress,
+  HUSDC_ASSET_ID,
+  HUSDE_ASSET_ID,
+  HUSDS_ASSET_ID,
+  HUSDT_ASSET_ID,
   isH160Address,
   safeConvertH160toSS58,
 } from "@galacticcouncil/utils"
+import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
+import type { Parachain } from "@galacticcouncil/xc-core"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -23,7 +27,7 @@ import { getSpotPrice } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
 import { isBond, TAsset } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { scale, scaleHuman } from "@/utils/formatting"
 import {
   getOmnipoolMiningPositions,
@@ -94,6 +98,36 @@ const TREASURY_STATS_ACCOUNTS = [
   },
 ] satisfies TreasuryAccount[]
 
+const TREASURY_ASSETHUB_DOT_ACCOUNTS = [
+  {
+    address: "13RSNAx31mcP5H5KYf12cP5YChq6JeD8Hi64twhhxKtHqBkg",
+    label: "Polkadot Asset Hub staking address",
+  },
+  {
+    address: "14kovW62mmGZBRvbNT1w5J7m9SQskd5JTRTLKZLpkpjmZBJ8",
+    label: "Polkadot Asset Hub rewards address",
+  },
+] as const
+
+const HOLLAR_POOL_LABELS_BY_ID = new Map<string, string>([
+  [HUSDC_ASSET_ID, "HUSDC"],
+  [HUSDT_ASSET_ID, "HUSDT"],
+  [HUSDS_ASSET_ID, "HUSDS"],
+  [HUSDE_ASSET_ID, "HUSDE"],
+])
+
+const normalizeTreasuryAsset = (asset: TAsset): TAsset => {
+  const hollarPoolLabel = HOLLAR_POOL_LABELS_BY_ID.get(asset.id)
+
+  return hollarPoolLabel
+    ? {
+        ...asset,
+        symbol: hollarPoolLabel,
+        name: hollarPoolLabel,
+      }
+    : asset
+}
+
 const isPositive = (value: string) => {
   try {
     return new Big(value).gt(0)
@@ -145,6 +179,20 @@ const getPositionPrice = (balance: string, valueUsd: string) => {
 
 const getBalanceAccountAddress = (address: string) =>
   isH160Address(address) ? safeConvertH160toSS58(address) : address
+
+const getAssetHubDotBalance = async (address: string) => {
+  try {
+    const assetHub = chainsMap.get("assethub")
+
+    if (!assetHub) return 0n
+
+    const assetHubClient = new clients.AssethubClient(assetHub as Parachain)
+
+    return assetHubClient.getSystemAccountBalance(address)
+  } catch {
+    return 0n
+  }
+}
 
 const getAssetBalance = async (
   { papi }: TProviderContext,
@@ -203,7 +251,7 @@ const createWalletAssetBalance = async (
   )
 
   return {
-    asset,
+    asset: normalizeTreasuryAsset(asset),
     balance,
     balanceRaw,
     price,
@@ -234,7 +282,7 @@ const createLiquidityAssetBalance = async (
   )
 
   return {
-    asset,
+    asset: normalizeTreasuryAsset(asset),
     balance,
     balanceRaw,
     price,
@@ -279,10 +327,7 @@ const getOmnipoolPositionLiquidity = (
     "0",
   ] as Parameters<typeof calculate_liquidity_out>
 
-  return {
-    liquidity: calculate_liquidity_out(...params),
-    hubLiquidity: calculate_liquidity_lrna_out(...params),
-  }
+  return calculate_liquidity_out(...params)
 }
 
 const getTreasuryOmnipoolPositions = async (
@@ -455,10 +500,7 @@ const expandOmnipoolPosition = async (
 
   if (!asset || !omnipoolData) return undefined
 
-  const { liquidity, hubLiquidity } = getOmnipoolPositionLiquidity(
-    omnipoolData,
-    position,
-  )
+  const liquidity = getOmnipoolPositionLiquidity(omnipoolData, position)
   const balance = scaleHuman(liquidity, asset.decimals)
   const { price, valueUsd } = await getAssetValueUsd(
     rpc,
@@ -466,36 +508,19 @@ const expandOmnipoolPosition = async (
     balance,
     displayAssetId,
   )
-  const hubAsset = assetMap.get(HUB_ID)
-  const hubValueUsd =
-    hubAsset && Big(hubLiquidity).gt(0)
-      ? (
-          await getAssetValueUsd(
-            rpc,
-            hubAsset.id,
-            scaleHuman(hubLiquidity, hubAsset.decimals),
-            displayAssetId,
-          )
-        ).valueUsd
-      : null
-  const totalValueUsd = valueUsd
-    ? sumBigStrings(valueUsd, hubValueUsd).toString()
-    : null
-  const totalBalance =
-    price && totalValueUsd ? Big(totalValueUsd).div(price).toString() : balance
 
   return {
-    asset,
-    balance: totalBalance,
+    asset: normalizeTreasuryAsset(asset),
+    balance,
     balanceRaw: liquidity,
     price,
-    valueUsd: totalValueUsd,
+    valueUsd,
     share: 0,
     source: "wallet" as const,
     breakdown: {
       liquidity: {
-        balance: totalBalance,
-        valueUsd: totalValueUsd,
+        balance,
+        valueUsd,
       },
     },
   }
@@ -509,7 +534,18 @@ export const treasuryStatsQuery = (
   const { isApiLoaded } = rpc
   const displayAssetId = ENV.VITE_DISPLAY_ASSET_ID
   const assetIds = assets.map((asset) => asset.id).join(",")
-  const accountAddresses = accounts.map((account) => account.address).join(",")
+  const hydrationAccountAddresses = accounts
+    .map((account) => account.address)
+    .join(",")
+  const assetHubDotAccountAddresses = TREASURY_ASSETHUB_DOT_ACCOUNTS.map(
+    (account) => account.address,
+  ).join(",")
+  const accountAddresses = [
+    hydrationAccountAddresses,
+    assetHubDotAccountAddresses,
+  ]
+    .filter(Boolean)
+    .join(",")
 
   return queryOptions({
     queryKey: ["stats", "treasury", accountAddresses, displayAssetId, assetIds],
@@ -518,6 +554,7 @@ export const treasuryStatsQuery = (
         (account) => account.includeWalletBalances,
       )
       const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
+      const dotAsset = assetMap.get(DOT_ASSET_ID)
       const shareAssetsByPoolAddress = new Map(
         assets
           .filter(isXYKShareAsset)
@@ -633,12 +670,34 @@ export const treasuryStatsQuery = (
         }),
       ).then((items) => items.flat(2))
 
+      const assetHubDotAssets = dotAsset
+        ? await Promise.all(
+            TREASURY_ASSETHUB_DOT_ACCOUNTS.map(async (account) => {
+              const balanceRaw = await getAssetHubDotBalance(account.address)
+              const balance = scaleHuman(balanceRaw, dotAsset.decimals)
+
+              if (!isPositive(balance)) return undefined
+
+              return createWalletAssetBalance(
+                rpc,
+                dotAsset,
+                balance,
+                balanceRaw.toString(),
+                displayAssetId,
+              )
+            }),
+          ).then((items) =>
+            items.filter((item): item is TreasuryAssetBalance => !!item),
+          )
+        : []
+
       const pricedAssets = mergePositivePositions(
         [],
         [
           ...walletAssets,
           ...omnipoolLiquidityAssets,
           ...xykMiningLiquidityAssets,
+          ...assetHubDotAssets,
         ],
       )
 
@@ -795,7 +854,7 @@ export const useTreasuryStats = (assets: TAsset[]) => {
             if (!asset) return undefined
 
             return {
-              asset,
+              asset: normalizeTreasuryAsset(asset),
               balance: position.underlyingBalance,
               balanceRaw: position.underlyingBalance,
               price: getPositionPrice(
@@ -839,7 +898,7 @@ export const useTreasuryStats = (assets: TAsset[]) => {
             if (!isPositive(valueUsd)) return undefined
 
             return {
-              asset,
+              asset: normalizeTreasuryAsset(asset),
               balance,
               balanceRaw: balance,
               price: getPositionPrice(balance, valueUsd),
