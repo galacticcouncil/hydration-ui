@@ -157,6 +157,70 @@ type TooltipBreakdownRow = {
   negative?: boolean
 }
 
+const DESKTOP_INITIAL_SKELETON_SPECS: CompositionGridBlockSpec[] = [
+  { colSpan: 6, rowSpan: 2 },
+  { colSpan: 4, rowSpan: 2 },
+  { colSpan: 2, rowSpan: 2 },
+  { colSpan: 4, rowSpan: 2 },
+  { colSpan: 3, rowSpan: 2 },
+  { colSpan: 3, rowSpan: 2 },
+  ...Array.from({ length: 8 }, () => ({ colSpan: 2, rowSpan: 1 })),
+]
+
+const MOBILE_INITIAL_SKELETON_SPECS: CompositionGridBlockSpec[] = [
+  { colSpan: 2, rowSpan: 2 },
+  { colSpan: 2, rowSpan: 2 },
+  ...Array.from({ length: 10 }, () => ({ colSpan: 1, rowSpan: 1 })),
+]
+
+const COMPOSITION_GRID_SPECS_STORAGE_KEY =
+  "hydration:stats:treasury:compositionGridSpecs"
+
+const isCompositionGridBlockSpec = (
+  value: unknown,
+): value is CompositionGridBlockSpec =>
+  typeof value === "object" &&
+  value !== null &&
+  "colSpan" in value &&
+  "rowSpan" in value &&
+  Number.isFinite(Number(value.colSpan)) &&
+  Number.isFinite(Number(value.rowSpan))
+
+const getCompositionGridSpecsStorageKey = (isMobileLayout: boolean) =>
+  `${COMPOSITION_GRID_SPECS_STORAGE_KEY}:${isMobileLayout ? "mobile" : "desktop"}`
+
+const readStoredCompositionGridSpecs = (isMobileLayout: boolean) => {
+  if (typeof window === "undefined") return []
+
+  try {
+    const stored = window.localStorage.getItem(
+      getCompositionGridSpecsStorageKey(isMobileLayout),
+    )
+    const parsed = stored ? JSON.parse(stored) : null
+
+    return Array.isArray(parsed) && parsed.every(isCompositionGridBlockSpec)
+      ? parsed.map(({ colSpan, rowSpan }) => ({
+          colSpan: Number(colSpan),
+          rowSpan: Number(rowSpan),
+        }))
+      : []
+  } catch {
+    return []
+  }
+}
+
+const writeStoredCompositionGridSpecs = (
+  isMobileLayout: boolean,
+  specs: CompositionGridBlockSpec[],
+) => {
+  if (typeof window === "undefined") return
+
+  window.localStorage.setItem(
+    getCompositionGridSpecsStorageKey(isMobileLayout),
+    JSON.stringify(specs),
+  )
+}
+
 const shouldForceAssetIntoOthers = (asset: TreasuryAssetBalance["asset"]) =>
   FORCE_OTHERS_ASSET_SYMBOLS.has(asset.symbol.trim().toLowerCase())
 
@@ -1474,6 +1538,10 @@ export const StatsTreasury = () => {
   const isCompactTable = useCompositionMobileLayout
   const [assetPage, setAssetPage] = useState(1)
   const [assetSearch, setAssetSearch] = useState("")
+  const storedCompositionGridSpecs = useMemo(
+    () => readStoredCompositionGridSpecs(useCompositionMobileLayout),
+    [useCompositionMobileLayout],
+  )
   const lastCompositionGridSpecsRef = useRef<CompositionGridBlockSpec[]>([])
 
   const assets = useMemo(() => {
@@ -1630,14 +1698,30 @@ export const StatsTreasury = () => {
   useEffect(() => {
     if (compositionGridSpecs.length) {
       lastCompositionGridSpecsRef.current = compositionGridSpecs
+      writeStoredCompositionGridSpecs(
+        useCompositionMobileLayout,
+        compositionGridSpecs,
+      )
     }
-  }, [compositionGridSpecs])
+  }, [compositionGridSpecs, useCompositionMobileLayout])
 
   const compositionSkeletonSpecs = useMemo(() => {
     if (compositionGridSpecs.length) return compositionGridSpecs
 
-    return lastCompositionGridSpecsRef.current
-  }, [compositionGridSpecs])
+    if (storedCompositionGridSpecs.length) return storedCompositionGridSpecs
+
+    if (lastCompositionGridSpecsRef.current.length) {
+      return lastCompositionGridSpecsRef.current
+    }
+
+    return useCompositionMobileLayout
+      ? MOBILE_INITIAL_SKELETON_SPECS
+      : DESKTOP_INITIAL_SKELETON_SPECS
+  }, [
+    compositionGridSpecs,
+    storedCompositionGridSpecs,
+    useCompositionMobileLayout,
+  ])
 
   const relatedPositionsBySymbol = useMemo(() => {
     const positionsBySymbol = new Map<string, TreasuryAssetBalance[]>()
