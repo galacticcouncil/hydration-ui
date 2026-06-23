@@ -25,7 +25,10 @@ import {
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDecodedMultisigTx } from "@/api/multisig"
+import {
+  extractMultisigProposalCallFromTx,
+  useDecodedMultisigTx,
+} from "@/api/multisig"
 import { MultisigSummary } from "@/modules/transactions/review/ReviewMultisig/components/MultisigSummary"
 import { ReviewMultisigAction } from "@/modules/transactions/review/ReviewMultisig/components/ReviewMultisigAction"
 import {
@@ -34,6 +37,7 @@ import {
 } from "@/modules/transactions/review/ReviewMultisig/ReviewMultisig.utils"
 import { ReviewTransactionJsonContent } from "@/modules/transactions/review/ReviewTransactionJsonView"
 import { JsonViewContainer } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.styled"
+import { decodeCallData } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 
 type ReviewMultisigProps = {
@@ -46,6 +50,7 @@ export const ReviewMultisig: FC<ReviewMultisigProps> = ({ tx, multisig }) => {
   const { account } = useAccount()
   const configs = useMultisigConfigs()
   const { data: decodedTx } = useDecodedMultisigTx(tx)
+  const proposalCall = extractMultisigProposalCallFromTx(decodedTx?.tx ?? null)
 
   const normalizedApprovals = useMemo(() => getNormalizedApprovals(tx), [tx])
 
@@ -77,6 +82,9 @@ export const ReviewMultisig: FC<ReviewMultisigProps> = ({ tx, multisig }) => {
               <ReviewTransactionJsonContent
                 tx={decodedTx.tx}
                 jsonPath="value.value.call"
+                decodedOverride={
+                  proposalCall ? decodeCallData(proposalCall) : undefined
+                }
                 srcChainKey={HYDRATION_CHAIN_KEY}
               />
             </JsonViewContainer>

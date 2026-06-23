@@ -389,6 +389,7 @@
   "multisig.detail.history.column.name": "Call",
   "multisig.detail.history.column.status": "Status",
   "multisig.detail.history.status.executed": "Executed",
+  "multisig.detail.history.status.proposed": "Proposed",
   "multisig.detail.history.status.rejected": "Rejected",
   "multisig.detail.history.empty.title": "No past transactions",
   "multisig.detail.history.empty.description": "There is no completed multisig activity for this account yet.",

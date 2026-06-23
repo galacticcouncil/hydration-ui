@@ -11,7 +11,11 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { sortBy } from "remeda"
 
-import { decodedMultisigTxQuery, useMultisigPendingTxs } from "@/api/multisig"
+import {
+  decodedMultisigTxQuery,
+  parseMultisigProposalMethodName,
+  useMultisigPendingTxs,
+} from "@/api/multisig"
 import { EmptyState } from "@/components/EmptyState/EmptyState"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import {
@@ -19,7 +23,6 @@ import {
   useMultisigDetailTransactionsColumns,
 } from "@/modules/multisig/MultisigDetailTransactions.columns"
 import type { AnyPapiTx } from "@/modules/transactions/types"
-import { parseTxMethodName } from "@/modules/transactions/utils/tx"
 import { useMultisigContext } from "@/providers/MultisigProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -56,7 +59,7 @@ export const MultisigDetailTransactions: React.FC<Props> = ({ config }) => {
           const query = results[i]
           const decoded = (query?.data ?? null) as DecodedResult | null
           const methodName = decoded?.tx
-            ? (parseTxMethodName(decoded.tx, "value.value.call") ?? "")
+            ? parseMultisigProposalMethodName(decoded.tx)
             : ""
           return {
             tx,

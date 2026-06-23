@@ -15,6 +15,7 @@ import {
   buildApproveAsMulti,
   buildAsMulti,
   buildCancelAsMulti,
+  extractMultisigProposalCallFromTx,
   getDecodedProposalTx,
 } from "@/api/multisig"
 import type { AnyPapiTx } from "@/modules/transactions/types"
@@ -112,7 +113,10 @@ export const useApproveMultisigMutation = ({
 
       const papiTx = (async () => {
         if (isFinalApproval && proposalTx) {
-          const call = proposalTx.decodedCall.value.value.call
+          const call = extractMultisigProposalCallFromTx(proposalTx)
+          if (!call) {
+            throw new Error("Unable to decode multisig proposal call")
+          }
           const decodedTx = await getDecodedProposalTx(papi, call)
           const { weight } = await decodedTx.getPaymentInfo(multisigAddress)
 

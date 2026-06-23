@@ -13,9 +13,11 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { useTranslation } from "react-i18next"
 
-import { useDecodedMultisigTx } from "@/api/multisig"
+import {
+  parseMultisigProposalMethodName,
+  useDecodedMultisigTx,
+} from "@/api/multisig"
 import { ReviewMultisig } from "@/modules/transactions/review/ReviewMultisig/ReviewMultisig"
-import { parseTxMethodName } from "@/modules/transactions/utils/tx"
 
 type MultisigNotificationProps = {
   tx: MultisigPendingTx
@@ -30,7 +32,7 @@ export const MultisigNotification: React.FC<MultisigNotificationProps> = ({
   const { data: decodedTx } = useDecodedMultisigTx(tx)
 
   const method = decodedTx?.tx
-    ? parseTxMethodName(decodedTx?.tx, "value.value.call")
+    ? parseMultisigProposalMethodName(decodedTx.tx)
     : ""
 
   const approvedCount = tx.approvals.length

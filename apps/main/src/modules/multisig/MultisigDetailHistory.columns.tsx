@@ -6,6 +6,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import type { MultisigHistoryStatus } from "@/api/multisig"
 import { MultisigCallNameCell } from "@/modules/multisig/MultisigCallNameCell"
 import type { AnyPapiTx } from "@/modules/transactions/types"
 
@@ -17,7 +18,7 @@ export type MultisigDetailHistoryRow = {
   decodedTx: AnyPapiTx | null
   methodName: string
   timestamp: number | null
-  isRejected: boolean
+  status: MultisigHistoryStatus
   isLoading: boolean
 }
 
@@ -82,11 +83,23 @@ export const useMultisigDetailHistoryColumns = () => {
           return <Skeleton sx={{ width: "3xl" }} />
         }
 
-        return row.original.isRejected ? (
-          <Chip variant="red" size="small">
-            {t("multisig.detail.history.status.rejected")}
-          </Chip>
-        ) : (
+        if (row.original.status === "rejected") {
+          return (
+            <Chip variant="red" size="small">
+              {t("multisig.detail.history.status.rejected")}
+            </Chip>
+          )
+        }
+
+        if (row.original.status === "proposed") {
+          return (
+            <Chip variant="info" size="small">
+              {t("multisig.detail.history.status.proposed")}
+            </Chip>
+          )
+        }
+
+        return (
           <Chip variant="green" size="small">
             {t("multisig.detail.history.status.executed")}
           </Chip>

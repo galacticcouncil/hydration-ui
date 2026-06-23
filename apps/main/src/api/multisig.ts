@@ -22,7 +22,8 @@ import { isNumber } from "remeda"
 import { toHex } from "viem"
 
 import type { WsPolkadotClient } from "@/api/provider"
-import type { AnyPapiTx } from "@/modules/transactions/types"
+import type { AnyPapiTx, DecodedCallEnum } from "@/modules/transactions/types"
+import { isDecodedCallEnum } from "@/modules/transactions/utils/polkadot"
 import { useAssets } from "@/providers/assetsProvider"
 import type { Papi } from "@/providers/rpcProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -168,11 +169,147 @@ const getMultisigTimepoint = (tx: AnyPapiTx): MultisigCallTimepoint | null => {
   return { height: timepoint.height, index: timepoint.index }
 }
 
+const getUtilityBatchCalls = (
+  call: DecodedCallEnum,
+): DecodedCallEnum[] | null => {
+  if (call.type !== "Utility" || !isDecodedCallEnum(call.value)) return null
+
+  const batchType = call.value.type
+  if (
+    batchType !== "batch_all" &&
+    batchType !== "batch" &&
+    batchType !== "force_batch"
+  ) {
+    return null
+  }
+
+  const calls = (call.value.value as { calls?: DecodedCallEnum[] })?.calls
+  return Array.isArray(calls) ? calls : null
+}
+
+type MultisigVariantCall = {
+  variant: string
+  args: Record<string, unknown> | undefined
+}
+
+const findMultisigVariantCall = (
+  call: DecodedCallEnum | undefined,
+): MultisigVariantCall | null => {
+  if (!isDecodedCallEnum(call)) return null
+
+  if (call.type === "Multisig" && typeof call.value?.type === "string") {
+    return {
+      variant: call.value.type,
+      args: call.value.value as Record<string, unknown> | undefined,
+    }
+  }
+
+  const batchCalls = getUtilityBatchCalls(call)
+  if (batchCalls) {
+    for (const innerCall of batchCalls) {
+      const found = findMultisigVariantCall(innerCall)
+      if (found) return found
+    }
+  }
+
+  if (call.type === "Proxy" && call.value?.type === "proxy") {
+    const innerCall = call.value.value?.call
+    if (isDecodedCallEnum(innerCall)) {
+      return findMultisigVariantCall(innerCall)
+    }
+  }
+
+  return null
+}
+
+const isMultisigMaybeTimepointSet = (
+  args: Record<string, unknown> | undefined,
+): boolean => {
+  const maybeTimepoint = args?.maybe_timepoint ?? args?.timepoint
+  if (!maybeTimepoint) return false
+
+  if (typeof maybeTimepoint === "object" && maybeTimepoint !== null) {
+    if ("type" in maybeTimepoint) {
+      if (maybeTimepoint.type === "None") return false
+      if (maybeTimepoint.type === "Some" && "value" in maybeTimepoint) {
+        const timepoint = maybeTimepoint.value as
+          | { height?: unknown; index?: unknown }
+          | undefined
+        return isNumber(timepoint?.height) && isNumber(timepoint?.index)
+      }
+    }
+
+    const timepoint = maybeTimepoint as { height?: unknown; index?: unknown }
+    return isNumber(timepoint.height) && isNumber(timepoint.index)
+  }
+
+  return false
+}
+
+export type MultisigHistoryStatus = "proposed" | "rejected" | "executed"
+
+export const getMultisigHistoryStatus = (
+  tx: AnyPapiTx | null | undefined,
+): MultisigHistoryStatus => {
+  const multisigCall = findMultisigVariantCall(tx?.decodedCall)
+  if (!multisigCall) return "executed"
+
+  if (multisigCall.variant === "cancel_as_multi") return "rejected"
+  if (
+    multisigCall.variant === "as_multi" &&
+    !isMultisigMaybeTimepointSet(multisigCall.args)
+  ) {
+    return "proposed"
+  }
+
+  return "executed"
+}
+
 export const getOuterMultisigCallType = (
   tx: AnyPapiTx | null | undefined,
-): string | null => {
-  const value = tx?.decodedCall?.value
-  return typeof value?.type === "string" ? value.type : null
+): string | null => findMultisigVariantCall(tx?.decodedCall)?.variant ?? null
+
+const getAsMultiEmbeddedCall = (call: DecodedCallEnum): TxCallData | null => {
+  if (call.type !== "Multisig" || call.value?.type !== "as_multi") return null
+  return call.value.value?.call ?? null
+}
+
+export const extractMultisigProposalCall = (
+  call: DecodedCallEnum | undefined,
+): TxCallData | null => {
+  if (!isDecodedCallEnum(call)) return null
+
+  const fromAsMulti = getAsMultiEmbeddedCall(call)
+  if (fromAsMulti) return fromAsMulti
+
+  const batchCalls = getUtilityBatchCalls(call)
+  if (batchCalls) {
+    for (const innerCall of batchCalls) {
+      const found = extractMultisigProposalCall(innerCall)
+      if (found) return found
+    }
+  }
+
+  if (call.type === "Proxy" && call.value?.type === "proxy") {
+    const innerCall = call.value.value?.call
+    if (isDecodedCallEnum(innerCall)) {
+      return extractMultisigProposalCall(innerCall) ?? innerCall
+    }
+  }
+
+  return null
+}
+
+export const extractMultisigProposalCallFromTx = (
+  tx: AnyPapiTx | null | undefined,
+): TxCallData | null => extractMultisigProposalCall(tx?.decodedCall)
+
+export const parseMultisigProposalMethodName = (
+  tx: AnyPapiTx | null | undefined,
+): string => {
+  const call = extractMultisigProposalCallFromTx(tx)
+  if (!call?.type || !call.value?.type) return ""
+  return `${call.type}.${call.value.type}`
 }
 
 const decodeExtrinsicAtTimepoint = async (
@@ -273,6 +410,9 @@ export const useMultisigSignerBalance = () => {
 }
 
 export const getDecodedProposalTx = async (papi: Papi, call: TxCallData) => {
+  if (!call?.type || !call.value?.type) {
+    throw new Error("Invalid multisig proposal call")
+  }
   const txPallets = papi.tx as Record<
     string,
     Record<string, (args?: unknown) => AnyPapiTx>
