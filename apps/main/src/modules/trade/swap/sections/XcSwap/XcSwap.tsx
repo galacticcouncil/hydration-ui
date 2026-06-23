@@ -1,5 +1,9 @@
+import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { Box, LoadingButton } from "@galacticcouncil/ui/components"
+import Big from "big.js"
+import { useEffect, useState } from "react"
 import { useFormContext } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
@@ -19,8 +23,10 @@ export const XcSwap: React.FC = () => {
     isQuoteLoading,
     isLoading,
     isCrossChain,
+    healthFactor,
   } = useXcSwap()
   const form = useFormContext<XcSwapFormValues>()
+  const { t } = useTranslation()
 
   const [sellAmount, destAddress, isSingleTrade] = form.watch([
     "sellAmount",
@@ -28,15 +34,49 @@ export const XcSwap: React.FC = () => {
     "isSingleTrade",
   ])
 
-  const canSubmit =
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
+  const { watch } = form
+  useEffect(() => {
+    const subscription = watch((_, { type }) => {
+      if (type !== "change") {
+        return
+      }
+
+      setHealthFactorRiskAccepted(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [watch])
+
+  // OnChain-only: gate submit on accepting the health-factor risk (mirror Market)
+  const isHealthFactorConsentRequired =
+    !isCrossChain &&
+    !!healthFactor &&
+    healthFactor.isUserConsentRequired &&
+    healthFactor.future < healthFactor.current
+
+  const isFormValid =
     form.formState.isValid && !alerts.length && !!quote && !isQuoteLoading
+
+  const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired
+    ? healthFactorRiskAccepted
+    : true
+
+  const canSubmit = isFormValid && isHealthFactorCheckSatisfied
+
+  const shouldRenderHealthFactorWarning =
+    isHealthFactorConsentRequired && Big(healthFactor.future).gt(1)
 
   const submitLabel = (() => {
     if (!sellAmount) return "Enter an amount"
-    if (alerts.length) return "Swap unavailable"
     if (isCrossChain && !destAddress.trim()) return "Enter recipient address"
-    if (canSubmit) return isSingleTrade ? "Swap" : "Place trades"
-    return "Swap unavailable"
+    if (alerts.length) return "Swap unavailable"
+    if (!isHealthFactorCheckSatisfied) return "Accept health factor change"
+    return isSingleTrade ? "Swap" : "Place trades"
   })()
 
   return (
@@ -45,6 +85,17 @@ export const XcSwap: React.FC = () => {
       <XcSwapOptions />
       <SwapSectionSeparator />
       <XcSwapAlerts />
+      {healthFactor && shouldRenderHealthFactorWarning && (
+        <Box mt="base">
+          <HealthFactorRiskWarning
+            canContinue={isFormValid}
+            message={t("healthFactor.warning")}
+            accepted={healthFactorRiskAccepted}
+            isUserConsentRequired={healthFactor.isUserConsentRequired}
+            onAcceptedChange={setHealthFactorRiskAccepted}
+          />
+        </Box>
+      )}
       <Box py="m">
         <AuthorizedAction size="large" width="100%">
           <LoadingButton
