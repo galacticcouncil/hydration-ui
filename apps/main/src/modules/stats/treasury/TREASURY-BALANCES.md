@@ -79,6 +79,15 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 - Tooltip amounts are intentionally rounded/compacted earlier than table values so very large balances remain scannable.
 - The `Others` tile groups tiny/forced assets for layout readability.
 
+### Local Visual Token Rules
+
+- Prefer shared app tokens for spacing, radius, typography, surfaces, separators, and text colors.
+- Keep treasury-only composition tile tuning local to `StatsTreasury.styled.ts` unless the shared UI token schema is also updated and regenerated.
+- Do not read unpublished theme paths such as `theme.charts.colors.treasury.*`; CI build type-checks the generated theme schema and will fail if the key is not generated.
+- Keep color mixing in OKLCH for composition tile fills and borders so light/dark contrast stays predictable.
+- Store known asset tile base colors in `compositionAssetColors.json`; logo color extraction is only a fallback for new assets.
+- When changing local visual tokens, run `yarn build` in addition to `yarn lint` because build catches generated-theme type mismatches.
+
 ### All Treasury Assets Table
 
 - Shows asset-level rows, not symbol-grouped rows.

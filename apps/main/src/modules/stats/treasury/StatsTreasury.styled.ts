@@ -129,6 +129,265 @@ export const SComposition = styled.div(
 
 type CompositionBlockTier = "hero" | "major" | "mid" | "minor" | "dust"
 
+type CompositionColorMixTokens = {
+  assetMix: string
+  lighten: string
+  lightenMix: string
+}
+
+type CompositionAssetOverrideTokens = {
+  fill: CompositionColorMixTokens
+  border: CompositionColorMixTokens
+  light?: {
+    assetMix: string
+    borderAssetMix: string
+    borderAssetMixActive?: string
+    borderOpacityBoost?: string
+    colorMixAsset: string
+  }
+  fillOpacityBoost: string
+  borderOpacityBoost: string
+  brightnessBoost: string
+  borderBrightnessBoost: string
+}
+
+type CompositionTokens = {
+  fill: CompositionColorMixTokens
+  border: CompositionColorMixTokens
+  hover: {
+    fillOpacityBoost: string
+    borderOpacityBoost: string
+    saturationBoost: string
+    brightnessBoost: string
+  }
+  light: {
+    assetMix: string
+    colorMixAsset: string
+    fillOpacityScale: string
+    minFillOpacity: string
+    hoverFillOpacityBoost: string
+    saturationBoost: string
+    hoverSaturationBoost: string
+    brightnessScale: string
+    minBrightness: string
+    hoverBrightnessScale: string
+    maxHoverBrightness: string
+  }
+  tiers: Record<
+    CompositionBlockTier,
+    {
+      fillOpacity: string
+      borderOpacity: string
+      saturation: string
+      brightness: string
+    }
+  >
+  assets: Record<string, CompositionAssetOverrideTokens>
+}
+
+// Page-local composition tokens. Keep these here unless the shared UI theme
+// schema is updated and generated; reading unpublished theme keys breaks CI
+// type checks during build.
+const compositionTokens: CompositionTokens = {
+  fill: {
+    assetMix: "82",
+    lighten: "white",
+    lightenMix: "0",
+  },
+  border: {
+    assetMix: "82",
+    lighten: "white",
+    lightenMix: "0",
+  },
+  hover: {
+    fillOpacityBoost: "0.12",
+    borderOpacityBoost: "0.06",
+    saturationBoost: "0.25",
+    brightnessBoost: "0.08",
+  },
+  light: {
+    assetMix: "72",
+    colorMixAsset: "62",
+    fillOpacityScale: "0.62",
+    minFillOpacity: "0.28",
+    hoverFillOpacityBoost: "0.1",
+    saturationBoost: "0.12",
+    hoverSaturationBoost: "0.2",
+    brightnessScale: "0.98",
+    minBrightness: "0.9",
+    hoverBrightnessScale: "1.04",
+    maxHoverBrightness: "1.08",
+  },
+  tiers: {
+    hero: {
+      fillOpacity: "0.62",
+      borderOpacity: "0.74",
+      saturation: "0.98",
+      brightness: "0.96",
+    },
+    major: {
+      fillOpacity: "0.58",
+      borderOpacity: "0.7",
+      saturation: "0.92",
+      brightness: "0.95",
+    },
+    mid: {
+      fillOpacity: "0.54",
+      borderOpacity: "0.66",
+      saturation: "0.84",
+      brightness: "0.94",
+    },
+    minor: {
+      fillOpacity: "0.46",
+      borderOpacity: "0.58",
+      saturation: "0.72",
+      brightness: "0.93",
+    },
+    dust: {
+      fillOpacity: "0.36",
+      borderOpacity: "0.48",
+      saturation: "0.58",
+      brightness: "0.92",
+    },
+  },
+  assets: {
+    tBTC: {
+      fill: {
+        assetMix: "66",
+        lighten: "white",
+        lightenMix: "34",
+      },
+      border: {
+        assetMix: "72",
+        lighten: "white",
+        lightenMix: "52",
+      },
+      light: {
+        assetMix: "84",
+        borderAssetMix: "90",
+        colorMixAsset: "38",
+      },
+      fillOpacityBoost: "0.06",
+      borderOpacityBoost: "0.36",
+      brightnessBoost: "0.1",
+      borderBrightnessBoost: "0.22",
+    },
+    SIGIL: {
+      fill: {
+        assetMix: "66",
+        lighten: "white",
+        lightenMix: "34",
+      },
+      border: {
+        assetMix: "72",
+        lighten: "white",
+        lightenMix: "52",
+      },
+      light: {
+        assetMix: "84",
+        borderAssetMix: "90",
+        colorMixAsset: "38",
+      },
+      fillOpacityBoost: "0.06",
+      borderOpacityBoost: "0.36",
+      brightnessBoost: "0.1",
+      borderBrightnessBoost: "0.22",
+    },
+    PAXG: {
+      fill: {
+        assetMix: "82",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      border: {
+        assetMix: "96",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      light: {
+        assetMix: "72",
+        borderAssetMix: "24",
+        borderAssetMixActive: "14",
+        borderOpacityBoost: "0.14",
+        colorMixAsset: "62",
+      },
+      fillOpacityBoost: "0",
+      borderOpacityBoost: "0.12",
+      brightnessBoost: "0",
+      borderBrightnessBoost: "0",
+    },
+    SKY: {
+      fill: {
+        assetMix: "82",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      border: {
+        assetMix: "92",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      light: {
+        assetMix: "72",
+        borderAssetMix: "40",
+        borderAssetMixActive: "28",
+        borderOpacityBoost: "0.1",
+        colorMixAsset: "62",
+      },
+      fillOpacityBoost: "0",
+      borderOpacityBoost: "0.12",
+      brightnessBoost: "0",
+      borderBrightnessBoost: "0",
+    },
+    PRIME: {
+      fill: {
+        assetMix: "82",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      border: {
+        assetMix: "92",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      light: {
+        assetMix: "72",
+        borderAssetMix: "40",
+        borderAssetMixActive: "28",
+        borderOpacityBoost: "0.1",
+        colorMixAsset: "62",
+      },
+      fillOpacityBoost: "0",
+      borderOpacityBoost: "0.12",
+      brightnessBoost: "0",
+      borderBrightnessBoost: "0",
+    },
+    HOLLAR: {
+      fill: {
+        assetMix: "82",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      border: {
+        assetMix: "92",
+        lighten: "white",
+        lightenMix: "0",
+      },
+      light: {
+        assetMix: "72",
+        borderAssetMix: "40",
+        borderAssetMixActive: "28",
+        borderOpacityBoost: "0.1",
+        colorMixAsset: "62",
+      },
+      fillOpacityBoost: "0",
+      borderOpacityBoost: "0.12",
+      brightnessBoost: "0",
+      borderBrightnessBoost: "0",
+    },
+  },
+}
+
 const parseCompositionToken = (value: string) => Number(value)
 
 const getCompositionColorMix = ({
@@ -164,7 +423,7 @@ export const SCompositionBlock = styled.div<{
   readonly rowSpan: number
 }>(
   ({ color, darkColor, lightColor, symbol, tier, colSpan, rowSpan, theme }) => {
-    const composition = theme.charts.colors.treasury.composition
+    const composition = compositionTokens
     const assetOverrides =
       symbol && symbol in composition.assets
         ? composition.assets[symbol as keyof typeof composition.assets]
@@ -231,13 +490,31 @@ export const SCompositionBlock = styled.div<{
       baseTierBorderOpacity * lightFillOpacityScale,
       lightMinFillOpacity,
     )
-    const lightColorMix =
+    const defaultLightColorMix =
       lightColor ??
       `color-mix(
       in oklch,
       var(--composition-color) ${lightTokens.colorMixAsset}%,
       white
     )`
+    const overrideLightColorMix = assetOverrides?.light
+      ? `color-mix(
+      in oklch,
+      var(--composition-color) ${assetOverrides.light.colorMixAsset}%,
+      white
+    )`
+      : undefined
+    const lightColorMix = overrideLightColorMix ?? defaultLightColorMix
+    const lightAssetMix =
+      assetOverrides?.light?.assetMix ?? lightTokens.assetMix
+    const lightBorderAssetMix =
+      assetOverrides?.light?.borderAssetMix ??
+      `${Math.min(parseCompositionToken(lightTokens.assetMix) + 8, 100)}`
+    const lightBorderAssetMixActive =
+      assetOverrides?.light?.borderAssetMixActive ?? lightBorderAssetMix
+    const lightBorderOpacityBoost = parseCompositionToken(
+      assetOverrides?.light?.borderOpacityBoost ?? "0",
+    )
     const background = theme.surfaces.themeBasePalette.background
     const fillColor = assetOverrides
       ? getCompositionColorMix({
@@ -264,6 +541,7 @@ export const SCompositionBlock = styled.div<{
       --composition-color: ${color};
       --composition-fill-color: ${fillColor};
       --composition-border-color: ${borderColor};
+      --composition-border-color-active: var(--composition-border-color);
       --fill-opacity: ${tierFillOpacity};
       --fill-opacity-active: ${Math.min(
         tierFillOpacity + hoverFillOpacityBoost,
@@ -313,13 +591,17 @@ export const SCompositionBlock = styled.div<{
       html.light & {
         --composition-fill-color: color-mix(
           in oklch,
-          ${lightColorMix} ${lightTokens.assetMix}%,
+          ${lightColorMix} ${lightAssetMix}%,
           var(--composition-color)
         );
         --composition-border-color: color-mix(
           in oklch,
-          ${lightColorMix}
-            ${Math.min(parseCompositionToken(lightTokens.assetMix) + 8, 100)}%,
+          ${lightColorMix} ${lightBorderAssetMix}%,
+          var(--composition-color)
+        );
+        --composition-border-color-active: color-mix(
+          in oklch,
+          ${lightColorMix} ${lightBorderAssetMixActive}%,
           var(--composition-color)
         );
         --fill-opacity: ${lightFillOpacity};
@@ -328,11 +610,15 @@ export const SCompositionBlock = styled.div<{
             parseCompositionToken(lightTokens.hoverFillOpacityBoost),
           0.5,
         )};
-        --border-opacity: ${lightBorderOpacity};
+        --border-opacity: ${Math.min(
+          lightBorderOpacity + lightBorderOpacityBoost,
+          0.7,
+        )};
         --border-opacity-active: ${Math.min(
           lightBorderOpacity +
+            lightBorderOpacityBoost +
             parseCompositionToken(lightTokens.hoverFillOpacityBoost),
-          0.58,
+          0.78,
         )};
         --saturation: ${Math.min(
           tierSaturation + parseCompositionToken(lightTokens.saturationBoost),
@@ -386,6 +672,8 @@ export const SCompositionBlock = styled.div<{
         transition:
           opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
             ${COMPOSITION_BLOCK_HOVER_EASING},
+          border-color ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING},
           filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
             ${COMPOSITION_BLOCK_HOVER_EASING};
         z-index: 1;
@@ -411,11 +699,14 @@ export const SCompositionBlock = styled.div<{
         }
 
         &::after {
+          border-color: var(--composition-border-color-active);
           opacity: var(--border-opacity-active);
           filter: saturate(var(--saturation-active))
             brightness(var(--border-brightness-active));
           transition:
             opacity ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+              ${COMPOSITION_BLOCK_HOVER_EASING},
+            border-color ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
               ${COMPOSITION_BLOCK_HOVER_EASING},
             filter ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
               ${COMPOSITION_BLOCK_HOVER_EASING};
