@@ -5,7 +5,9 @@ import {
   Box,
   CollapsibleContent,
   CollapsibleRoot,
+  Flex,
   Summary,
+  SummaryRowDisplayValue,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
 import { produce } from "immer"
@@ -13,7 +15,6 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData } from "@/api/assets"
 import { TradeType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
@@ -33,16 +34,9 @@ import { getTradeFeeIntervals } from "@/utils/trade"
 type Props = {
   readonly swap: Trade
   readonly healthFactor: HealthFactorResult | undefined
-  readonly sellAssetOverride?: TAssetData | null
-  readonly buyAssetOverride?: TAssetData | null
 }
 
-export const MarketSummarySwap: FC<Props> = ({
-  swap,
-  healthFactor,
-  sellAssetOverride,
-  buyAssetOverride,
-}) => {
+export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
 
@@ -65,9 +59,7 @@ export const MarketSummarySwap: FC<Props> = ({
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form
-  const [formSellAsset, formBuyAsset] = watch(["sellAsset", "buyAsset"])
-  const sellAsset = sellAssetOverride ?? formSellAsset
-  const buyAsset = buyAssetOverride ?? formBuyAsset
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
   const { data: transactionFee, isLoading: isTransactionFeeLoading } =
     useSwapFee(swap)
@@ -180,14 +172,17 @@ export const MarketSummarySwap: FC<Props> = ({
               label={t("trade:market.summary.transactionCosts")}
               loading={isTransactionFeeLoading}
               content={
-                <SummaryRowValue>
-                  {transactionCostsDisplay} (
-                  {t("currency", {
-                    value: transactionCosts,
-                    symbol: transactionFeeAsset.symbol,
-                  })}
-                  )
-                </SummaryRowValue>
+                <Flex gap="s" align="center" justify="flex-end">
+                  <SummaryRowValue>
+                    {t("currency", {
+                      value: transactionCosts,
+                      symbol: transactionFeeAsset.symbol,
+                    })}
+                  </SummaryRowValue>
+                  <SummaryRowDisplayValue>
+                    ({transactionCostsDisplay})
+                  </SummaryRowDisplayValue>
+                </Flex>
               }
               tooltip={t("trade:market.summary.transactionCosts.tooltip")}
             />

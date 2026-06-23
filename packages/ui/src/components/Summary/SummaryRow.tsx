@@ -110,7 +110,7 @@ export const SummaryRowValue = (props: TextProps) => (
 )
 
 export const SummaryRowDisplayValue = (props: TextProps) => (
-  <Text fs="p6" fw={500} lh={1.2} color={getToken("text.medium")} {...props} />
+  <Text fs="p5" fw={500} lh={1.2} color={getToken("text.medium")} {...props} />
 )
 
 export const SummaryRowLabel = (props: TextProps) => (

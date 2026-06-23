@@ -2,19 +2,17 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { isNumber } from "remeda"
 import * as z from "zod/v4"
 
+import { TAssetData } from "@/api/assets"
 import i18n from "@/i18n"
 import {
   XcAsset,
   XcChain,
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
-import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import {
-  positive,
-  required,
+  positiveOptional,
   requiredObject,
   useValidateFormMaxBalance,
 } from "@/utils/validators"
@@ -22,12 +20,13 @@ import {
 const schema = z
   .object({
     srcChain: requiredObject<XcChain>(),
-    srcAsset: requiredObject<XcAsset>(),
-    srcAmount: required.pipe(positive),
+    sellAsset: requiredObject<TAssetData>(),
+    sellAmount: positiveOptional,
     destChain: requiredObject<XcChain>(),
-    destAsset: requiredObject<XcAsset>(),
-    destAmount: required.pipe(positive),
+    buyAsset: requiredObject<XcAsset>(),
+    buyAmount: positiveOptional,
     destAddress: z.string(),
+    isSingleTrade: z.boolean(),
   })
   .superRefine((data, ctx) => {
     const isCrossChain = data.destChain?.platform !== "hydration"
@@ -49,20 +48,11 @@ const schema = z
           message: "Invalid destination address",
         })
       }
-    } else if (data.srcAsset && data.destAsset) {
-      if (data.srcAsset.id === data.destAsset.id) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["destAsset"],
-          message: "Select a different asset",
-        })
-      }
     }
   })
 
 const useSchema = () => {
   const { account } = useAccount()
-  const { getAsset } = useAssets()
   const refineMaxBalance = useValidateFormMaxBalance()
 
   if (!account) {
@@ -70,18 +60,11 @@ const useSchema = () => {
   }
 
   return schema.check(
-    refineMaxBalance("srcAmount", (form) => {
-      const xcAsset = form.srcAsset
-      const asset = isNumber(xcAsset?.id)
-        ? (getAsset(xcAsset.id) ?? null)
-        : null
-
-      return [asset, form.srcAmount]
-    }),
+    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
   )
 }
 
-export type XcSwapFormValues = z.infer<typeof schema>
+export type XcSwapFormValues = z.infer<ReturnType<typeof useSchema>>
 
 export const useXcSwapForm = () => {
   const { account } = useAccount()
@@ -89,12 +72,13 @@ export const useXcSwapForm = () => {
 
   const defaultValues: XcSwapFormValues = {
     srcChain: null,
-    srcAsset: null,
-    srcAmount: "",
+    sellAsset: null,
+    sellAmount: "",
     destChain: null,
-    destAsset: null,
-    destAmount: "",
+    buyAsset: null,
+    buyAmount: "",
     destAddress: "",
+    isSingleTrade: true,
   }
 
   const form = useForm<XcSwapFormValues>({
@@ -105,20 +89,20 @@ export const useXcSwapForm = () => {
 
   const { trigger, getValues, getFieldState } = form
   useEffect(() => {
-    const { srcAsset } = getValues()
+    const { sellAsset } = getValues()
 
-    if (!account || !isNumber(srcAsset?.id)) {
+    if (!account || !sellAsset) {
       return
     }
 
-    if (isBalanceLoaded(String(srcAsset.id)) || !isBalanceLoading) {
-      const srcAmountState = getFieldState("srcAmount")
+    if (isBalanceLoaded(sellAsset.id) || !isBalanceLoading) {
+      const sellAmountState = getFieldState("sellAmount")
 
-      if (!srcAmountState.isDirty && !srcAmountState.isTouched) {
+      if (!sellAmountState.isDirty && !sellAmountState.isTouched) {
         return
       }
 
-      trigger("srcAmount")
+      trigger("sellAmount")
     }
   }, [
     account,
