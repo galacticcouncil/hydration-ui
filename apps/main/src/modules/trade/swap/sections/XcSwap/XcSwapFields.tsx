@@ -8,7 +8,8 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AddressBookModal } from "@galacticcouncil/web3-connect"
-import { useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
+import { useCallback, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
@@ -22,7 +23,9 @@ import {
   XcChain,
   XcChainAssetPair,
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { getXcSwapBuyAssetOutId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
 import { useAccountBalances } from "@/states/account"
@@ -53,26 +56,88 @@ const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
 
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common"])
-  const { watch, setValue } = useFormContext<XcSwapFormValues>()
+  const navigate = useNavigate()
+  const { watch, setValue, getValues } = useFormContext<XcSwapFormValues>()
   const { isCrossChain, isSelectionLoading, isQuoteLoading } = useXcSwap()
+  const switchAssets = useSwitchXcAssets()
   const { getTransferableBalance } = useAccountBalances()
   const [isContactsOpen, setIsContactsOpen] = useState(false)
 
-  const [srcChain, destChain, destAsset, destAmount] = watch([
+  const handleSellAssetChange = useCallback(
+    (
+      sellAsset: NonNullable<XcSwapFormValues["sellAsset"]>,
+      previousSellAsset: XcSwapFormValues["sellAsset"],
+    ) => {
+      const { buyAsset } = getValues()
+      const isSwitch =
+        buyAsset?.id !== undefined && sellAsset.id === String(buyAsset.id)
+
+      if (isSwitch) {
+        setValue("sellAsset", previousSellAsset)
+        switchAssets()
+        return
+      }
+
+      navigate({
+        to: ".",
+        search: (search) => ({
+          ...search,
+          assetIn: sellAsset.id,
+          assetOut: getXcSwapBuyAssetOutId(buyAsset) ?? search.assetOut,
+        }),
+        resetScroll: false,
+      })
+    },
+    [getValues, navigate, setValue, switchAssets],
+  )
+
+  const handleBuySelectionChange = useCallback(
+    (selection: XcChainAssetPair, previousSelection: XcChainAssetPair) => {
+      const { sellAsset } = getValues()
+      const isSwitch =
+        sellAsset &&
+        selection.asset.id !== undefined &&
+        sellAsset.id === String(selection.asset.id)
+
+      if (isSwitch) {
+        setValue("destChain", previousSelection.chain)
+        setValue("buyAsset", previousSelection.asset)
+        switchAssets()
+        return
+      }
+
+      const assetOut = getXcSwapBuyAssetOutId(selection.asset)
+
+      if (assetOut) {
+        navigate({
+          to: ".",
+          search: (search) => ({
+            ...search,
+            assetIn: sellAsset?.id,
+            assetOut,
+          }),
+          resetScroll: false,
+        })
+      }
+    },
+    [getValues, navigate, setValue, switchAssets],
+  )
+
+  const [srcChain, destChain, buyAsset, buyAmount] = watch([
     "srcChain",
     "destChain",
-    "destAsset",
-    "destAmount",
+    "buyAsset",
+    "buyAmount",
   ])
   const onChainDestAssetId =
-    !isCrossChain && isNumber(destAsset?.id) ? String(destAsset.id) : ""
+    !isCrossChain && isNumber(buyAsset?.id) ? String(buyAsset.id) : ""
   const [destDisplayValue, { isLoading: isDestDisplayValueLoading }] =
-    useDisplayAssetPrice(onChainDestAssetId, destAmount || "0")
+    useDisplayAssetPrice(onChainDestAssetId, buyAmount || "0")
   const destMaxBalance =
-    onChainDestAssetId && destAsset
+    onChainDestAssetId && buyAsset
       ? scaleHuman(
           getTransferableBalance(onChainDestAssetId),
-          destAsset.decimals,
+          buyAsset.decimals,
         )
       : undefined
 
@@ -81,14 +146,15 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
       <XcSrcAssetSelectField
         label={<ChainLabel label={t("from")} chain={srcChain} />}
         loading={isSelectionLoading}
+        onAssetChange={handleSellAssetChange}
       />
 
       <XcSwapSwitcher />
 
       <XcChainAssetSelectFormField<XcSwapFormValues>
         chainFieldName="destChain"
-        assetFieldName="destAsset"
-        amountFieldName="destAmount"
+        assetFieldName="buyAsset"
+        amountFieldName="buyAmount"
         label={<ChainLabel label={t("to")} chain={destChain} />}
         chainAssetPairs={destChainAssetPairs}
         modalTitle="Destination chain & asset"
@@ -103,6 +169,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         displayValueLoading={
           !isCrossChain && (isQuoteLoading || isDestDisplayValueLoading)
         }
+        onSelectionChange={handleBuySelectionChange}
       />
 
       {isCrossChain && (

@@ -10,52 +10,58 @@ import { produce } from "immer"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { Trade } from "@/api/trade"
+import { Trade, TradeOrder } from "@/api/trade"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/CalculatedAmountSummaryRow"
 import { MarketSummarySwap } from "@/modules/trade/swap/sections/Market/Summary/MarketSummarySwap"
+import { MarketSummaryTwap } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryTwap"
 import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useAssets } from "@/providers/assetsProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 export const XcSwapSummary = () => {
   const { quote } = useXcSwap()
 
   if (quote?.kind === "oc") {
-    return <OnChainSummary trade={quote.trade} />
+    return (
+      <>
+        <SwapSectionSeparator />
+        <OnChainSummary trade={quote.trade} twap={quote.twap} />
+      </>
+    )
   }
 
   if (quote?.kind === "xc") {
-    return <CrossChainSummary trade={quote.trade} />
+    return (
+      <>
+        <SwapSectionSeparator />
+        <CrossChainSummary trade={quote.trade} />
+      </>
+    )
   }
 
   return null
 }
 
-const OnChainSummary = ({ trade }: { readonly trade: Trade }) => {
-  const { getAsset } = useAssets()
+const OnChainSummary = ({
+  trade,
+  twap,
+}: {
+  readonly trade: Trade
+  readonly twap: TradeOrder | undefined
+}) => {
   const { watch } = useFormContext<XcSwapFormValues>()
 
-  const [srcAsset, destAsset] = watch(["srcAsset", "destAsset"])
-  const sellAsset =
-    srcAsset?.id !== undefined ? (getAsset(String(srcAsset.id)) ?? null) : null
-  const buyAsset =
-    destAsset?.id !== undefined
-      ? (getAsset(String(destAsset.id)) ?? null)
-      : null
+  const isSingleTrade = watch("isSingleTrade")
 
-  return (
-    <MarketSummarySwap
-      swap={trade}
-      healthFactor={undefined}
-      sellAssetOverride={sellAsset}
-      buyAssetOverride={buyAsset}
-    />
-  )
+  if (!isSingleTrade && twap) {
+    return <MarketSummaryTwap swap={trade} twap={twap} />
+  }
+
+  return <MarketSummarySwap swap={trade} healthFactor={undefined} />
 }
 
 const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
@@ -74,13 +80,11 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
       }),
     )
 
-  const destAsset = watch("destAsset")
+  const buyAsset = watch("buyAsset")
   const minAmountOut = trade.minAmountOut.toDecimal()
+  const buyAssetId = buyAsset?.id !== undefined ? String(buyAsset.id) : ""
   const [minAmountOutDisplay, { isLoading: isMinAmountOutDisplayLoading }] =
-    useDisplayAssetPrice(
-      destAsset?.id !== undefined ? String(destAsset.id) : "",
-      minAmountOut,
-    )
+    useDisplayAssetPrice(buyAssetId, minAmountOut)
 
   const feeUsd = t("currency", {
     value: trade.fee.usd,
@@ -104,8 +108,8 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
         label={t("trade:market.summary.minReceived")}
         tooltip={t("trade:market.summary.minReceived.tooltip")}
         amount={formattedMinAmountOut}
-        amountDisplay={destAsset?.id !== undefined ? minAmountOutDisplay : null}
-        isLoading={destAsset?.id !== undefined && isMinAmountOutDisplayLoading}
+        amountDisplay={buyAssetId ? minAmountOutDisplay : null}
+        isLoading={!!buyAssetId && isMinAmountOutDisplayLoading}
         isExpanded={isSummaryExpanded}
         onIsExpandedChange={changeSummaryExpanded}
       />

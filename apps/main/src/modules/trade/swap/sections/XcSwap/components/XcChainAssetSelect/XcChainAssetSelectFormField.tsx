@@ -28,7 +28,10 @@ type Props<TFormValues extends FieldValues> = Omit<
   readonly chainFieldName: FieldPathByValue<TFormValues, XcChain | null>
   readonly assetFieldName: FieldPathByValue<TFormValues, XcAsset | null>
   readonly amountFieldName: FieldPathByValue<TFormValues, string>
-  readonly onSelectionChange?: (selection: XcChainAssetPair) => void
+  readonly onSelectionChange?: (
+    selection: XcChainAssetPair,
+    previousSelection: XcChainAssetPair,
+  ) => void
   readonly onAmountChange?: (amount: string) => void
   readonly disabledAssetSelector?: boolean
 }
@@ -59,12 +62,17 @@ export const XcChainAssetSelectFormField = <TFormValues extends FieldValues>({
   })
 
   const handleSelectionChange = (selection: XcChainAssetPair) => {
+    const previousSelection = {
+      chain: chainField.value,
+      asset: assetField.value,
+    }
+
     if (!disabledAssetSelector) {
       chainField.onChange(selection.chain)
       assetField.onChange(selection.asset)
     }
 
-    onSelectionChange?.(selection)
+    onSelectionChange?.(selection, previousSelection)
   }
 
   return (

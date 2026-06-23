@@ -11,16 +11,23 @@ import { useQuery } from "@tanstack/react-query"
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useDebounce } from "react-use"
-import { isNumber } from "remeda"
 
-import { bestSellQuery, Trade, TradeType } from "@/api/trade"
+import {
+  bestSellQuery,
+  bestSellTwapQuery,
+  Trade,
+  TradeOrder,
+  TradeType,
+} from "@/api/trade"
 import {
   getXcSwapChainLogoUrl,
   XC_SWAP_CONFIG,
   XC_SWAP_RECIPIENT_PLACEHOLDERS,
 } from "@/config/xcSwap"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
+import { useSubmitTwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitTwap"
 import {
   addressValidatorFor,
   XcAsset,
@@ -37,6 +44,11 @@ import {
   XcSwapFormValues,
 } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { assertXcSwapQuoteParams } from "@/modules/trade/swap/sections/XcSwap/lib/assertXcSwapQuoteParams"
+import {
+  findXcChainAssetPair,
+  isXcDestAsset,
+  sellAssetToXcAsset,
+} from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -63,7 +75,7 @@ const getDefaultChainAssetPair = (
 
 export type XcSwapQuote =
   | { kind: "xc"; trade: XcSwapTrade }
-  | { kind: "oc"; trade: Trade }
+  | { kind: "oc"; trade: Trade; twap: TradeOrder | undefined }
   | null
 
 type XcSwapContextValue = {
@@ -75,6 +87,7 @@ type XcSwapContextValue = {
   readonly refundTo: string | null
   readonly quote: XcSwapQuote
   readonly isQuoteLoading: boolean
+  readonly isTwapLoading: boolean
   readonly isSelectionLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
@@ -90,6 +103,7 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   refundTo: null,
   quote: null,
   isQuoteLoading: false,
+  isTwapLoading: false,
   isSelectionLoading: true,
   onSubmit: () => {},
   isLoading: false,
@@ -100,9 +114,15 @@ export const useXcSwap = () => useContext(XcSwapContext)
 
 type XcSwapProviderProps = {
   children: React.ReactNode
+  assetIn: string
+  assetOut: string
 }
 
-export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
+export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
+  children,
+  assetIn,
+  assetOut,
+}) => {
   const rpc = useRpcProvider()
   const { sdk, isApiLoaded } = rpc
   const { getAsset } = useAssets()
@@ -110,6 +130,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
   const form = useXcSwapForm()
   const submit = useSubmitXcSwap()
   const submitOmnipool = useSubmitSwap()
+  const submitTwap = useSubmitTwap()
   const {
     swap: {
       single: { swapSlippage },
@@ -226,45 +247,60 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
 
   const isSelectionDataReady =
     !isOriginLoading && !isDestLoading && sourceChainAssetPairs.length > 0
-  const srcAsset = form.watch("srcAsset")
-  const destAsset = form.watch("destAsset")
-  const isSelectionLoading = !isSelectionDataReady || !srcAsset || !destAsset
+  const sellAsset = form.watch("sellAsset")
+  const buyAsset = form.watch("buyAsset")
+  const isSelectionLoading = !isSelectionDataReady || !sellAsset || !buyAsset
 
   useEffect(() => {
     if (!isSelectionDataReady) return
 
     const source =
+      findXcChainAssetPair(sourceChainAssetPairs, assetIn) ??
       getDefaultChainAssetPair(
         sourceChainAssetPairs,
         XC_SWAP_CONFIG.defaults.source,
-      ) ?? sourceChainAssetPairs[0]
-    const { srcChain, srcAsset } = form.getValues()
+      ) ??
+      sourceChainAssetPairs[0]
+    const { srcChain, sellAsset } = form.getValues()
 
-    if (source && (!srcChain || !srcAsset)) {
-      form.setValue("srcChain", source.chain)
-      form.setValue("srcAsset", source.asset)
+    if (source && (!srcChain || !sellAsset)) {
+      const asset = getAsset(String(source.asset.id))
+
+      if (asset) {
+        form.setValue("srcChain", source.chain)
+        form.setValue("sellAsset", asset)
+      }
     }
-  }, [isSelectionDataReady, sourceChainAssetPairs, form])
+  }, [isSelectionDataReady, sourceChainAssetPairs, form, getAsset, assetIn])
 
   useEffect(() => {
     if (!isSelectionDataReady) return
 
     const dest =
+      findXcChainAssetPair(destChainAssetPairs, assetOut) ??
       getDefaultChainAssetPair(
         destChainAssetPairs,
         XC_SWAP_CONFIG.defaults.destination,
-      ) ?? destChainAssetPairs[0]
-    const { destChain, destAsset } = form.getValues()
+      ) ??
+      destChainAssetPairs[0]
+    const { destChain, buyAsset } = form.getValues()
 
-    if (dest && (!destChain || !destAsset)) {
+    if (dest && (!destChain || !buyAsset)) {
       form.setValue("destChain", dest.chain)
-      form.setValue("destAsset", dest.asset)
+      form.setValue("buyAsset", dest.asset)
     }
-  }, [isSelectionDataReady, destChainAssetPairs, form])
+  }, [isSelectionDataReady, destChainAssetPairs, form, assetOut])
 
   const destChain = form.watch("destChain")
   const isCrossChain = destChain?.platform !== "hydration"
   const alerts = useXcSwapAlerts(isCrossChain)
+  const isSingleTrade = form.watch("isSingleTrade")
+
+  useEffect(() => {
+    if (isCrossChain && !form.getValues("isSingleTrade")) {
+      form.setValue("isSingleTrade", true)
+    }
+  }, [isCrossChain, form])
 
   useEffect(() => {
     if (form.getValues("destAddress")) {
@@ -272,29 +308,29 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
     }
   }, [destChain, form])
 
-  const srcAmount = form.watch("srcAmount")
+  const sellAmount = form.watch("sellAmount")
   const destAddress = form.watch("destAddress")
   const recipient =
     destAddress.trim() ||
     (destChain ? XC_SWAP_RECIPIENT_PLACEHOLDERS[destChain.key] : undefined)
 
   const [debouncedAmount, setDebouncedAmount] = useState("")
-  useDebounce(() => setDebouncedAmount(srcAmount), 400, [srcAmount])
+  useDebounce(() => setDebouncedAmount(sellAmount), 400, [sellAmount])
 
   const amountIn = useMemo(() => {
-    if (!srcAsset || !debouncedAmount || Number(debouncedAmount) <= 0) {
+    if (!sellAsset || !debouncedAmount || Number(debouncedAmount) <= 0) {
       return null
     }
-    return BigInt(scale(debouncedAmount, srcAsset.decimals))
-  }, [debouncedAmount, srcAsset])
+    return BigInt(scale(debouncedAmount, sellAsset.decimals))
+  }, [debouncedAmount, sellAsset])
 
   const xcQuoteEnabled =
     isCrossChain &&
     isApiLoaded &&
     !!refundTo &&
     !!recipient &&
-    isNumber(srcAsset?.id) &&
-    !!destAsset?.oneClickId &&
+    !!sellAsset &&
+    isXcDestAsset(buyAsset) &&
     amountIn !== null &&
     amountIn > 0n
 
@@ -308,29 +344,34 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
     queryKey: [
       "xcSwap",
       "quote",
-      srcAsset?.id,
+      sellAsset?.id,
       amountIn?.toString(),
-      destAsset?.oneClickId,
+      isXcDestAsset(buyAsset) ? buyAsset.oneClickId : undefined,
       recipient,
       refundTo,
       swapSlippage,
     ],
-    queryFn: () =>
-      xcSwap.swap(
+    queryFn: () => {
+      if (!sellAsset) {
+        throw new Error("Source asset is required")
+      }
+
+      return xcSwap.swap(
         assertXcSwapQuoteParams({
-          srcAsset,
+          srcAsset: sellAssetToXcAsset(sellAsset, originAssetMap),
           amountIn,
-          destAsset,
+          destAsset: buyAsset,
           recipient,
           refundTo,
           slippage: swapSlippage,
         }),
-      ),
+      )
+    },
   })
 
   const omnipoolQueryOptions = bestSellQuery(rpc, {
-    assetIn: isNumber(srcAsset?.id) ? String(srcAsset.id) : "",
-    assetOut: isNumber(destAsset?.id) ? String(destAsset.id) : "",
+    assetIn: sellAsset?.id ?? "",
+    assetOut: buyAsset?.id !== undefined ? String(buyAsset.id) : "",
     amountIn: debouncedAmount,
   })
   const {
@@ -342,10 +383,22 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
     enabled: !isCrossChain && omnipoolQueryOptions.enabled,
   })
 
+  const { data: twap, isFetching: isTwapLoading } = useQuery(
+    bestSellTwapQuery(
+      rpc,
+      {
+        assetIn: sellAsset?.id ?? "",
+        assetOut: buyAsset?.id !== undefined ? String(buyAsset.id) : "",
+        amountIn: debouncedAmount,
+      },
+      !isCrossChain && isTwapEnabled(omnipoolTrade),
+    ),
+  )
+
   const quote = useMemo<XcSwapQuote>(() => {
     if (isCrossChain) return xcTrade ? { kind: "xc", trade: xcTrade } : null
-    return omnipoolTrade ? { kind: "oc", trade: omnipoolTrade } : null
-  }, [isCrossChain, xcTrade, omnipoolTrade])
+    return omnipoolTrade ? { kind: "oc", trade: omnipoolTrade, twap } : null
+  }, [isCrossChain, xcTrade, omnipoolTrade, twap])
 
   const isQuoteLoading = isCrossChain
     ? isXcQuoteLoading
@@ -354,28 +407,30 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (quote?.kind === "xc") {
-      form.setValue("destAmount", quote.trade.amountOut.toDecimal(), {
+      form.setValue("buyAmount", quote.trade.amountOut.toDecimal(), {
         shouldValidate: true,
       })
-    } else if (quote?.kind === "oc" && destAsset) {
+    } else if (quote?.kind === "oc" && buyAsset) {
+      const amountOut = isSingleTrade
+        ? quote.trade.amountOut
+        : quote.twap?.amountOut
+
       form.setValue(
-        "destAmount",
-        scaleHuman(quote.trade.amountOut, destAsset.decimals),
+        "buyAmount",
+        amountOut ? scaleHuman(amountOut, buyAsset.decimals) : "",
         { shouldValidate: true },
       )
-    } else if (form.getValues("destAmount")) {
-      form.setValue("destAmount", "", { shouldValidate: true })
+    } else if (form.getValues("buyAmount")) {
+      form.setValue("buyAmount", "", { shouldValidate: true })
     }
-  }, [quote, destAsset, form])
+  }, [quote, buyAsset, form, isSingleTrade])
 
-  const srcAssetUnsupported =
-    !!srcAsset &&
-    originAssetMap.size > 0 &&
-    !originAssetMap.has(String(srcAsset.id))
+  const sellAssetUnsupported =
+    !!sellAsset && originAssetMap.size > 0 && !originAssetMap.has(sellAsset.id)
 
   const allAlerts = useMemo<XcSwapAlert[]>(() => {
     const result = [...alerts]
-    if (srcAssetUnsupported) {
+    if (sellAssetUnsupported) {
       result.push({
         key: "src-asset-unsupported",
         message:
@@ -391,26 +446,27 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
       })
     }
     return result
-  }, [alerts, quoteError, srcAssetUnsupported])
+  }, [alerts, quoteError, sellAssetUnsupported])
 
   const toMarketFormValues = (values: XcSwapFormValues): MarketFormValues => ({
-    sellAsset: values.srcAsset
-      ? (getAsset(String(values.srcAsset.id)) ?? null)
-      : null,
-    sellAmount: values.srcAmount,
-    buyAsset: values.destAsset
-      ? (getAsset(String(values.destAsset.id)) ?? null)
-      : null,
-    buyAmount: values.destAmount,
+    sellAsset: values.sellAsset,
+    sellAmount: values.sellAmount,
+    buyAsset:
+      values.buyAsset?.id !== undefined
+        ? (getAsset(String(values.buyAsset.id)) ?? null)
+        : null,
+    buyAmount: values.buyAmount,
     type: TradeType.Sell,
-    isSingleTrade: true,
+    isSingleTrade: values.isSingleTrade,
   })
 
   const onSubmit = (values: XcSwapFormValues) => {
     if (quote?.kind === "xc") {
       submit.mutate([values, quote.trade])
-    } else if (quote?.kind === "oc") {
+    } else if (quote?.kind === "oc" && values.isSingleTrade) {
       submitOmnipool.mutate([toMarketFormValues(values), quote.trade])
+    } else if (quote?.kind === "oc" && quote.twap) {
+      submitTwap.mutate([toMarketFormValues(values), quote.twap])
     }
   }
 
@@ -425,13 +481,15 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({ children }) => {
         refundTo,
         quote,
         isQuoteLoading,
+        isTwapLoading,
         isSelectionLoading,
         onSubmit,
         isLoading:
           isOriginLoading ||
           isDestLoading ||
           submit.isPending ||
-          submitOmnipool.isPending,
+          submitOmnipool.isPending ||
+          submitTwap.isPending,
         alerts: allAlerts,
       }}
     >
