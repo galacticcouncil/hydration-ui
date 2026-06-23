@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
 
+import { getSortedRpcUrlList } from "@/api/provider"
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
@@ -32,6 +33,7 @@ import {
 import {
   getChainPriority,
   isAccountValidOnChain,
+  withCustomChainRpcUrls,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
 import {
@@ -39,6 +41,7 @@ import {
   getTransferStatus,
   getXcmTransferArgs,
 } from "@/modules/xcm/transfer/utils/transfer"
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
   children: React.ReactNode
@@ -48,6 +51,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
+  const { rpcUrl, rpcUrlList } = useProviderRpcUrlStore()
 
   const form = useXcmForm(transfer)
 
@@ -231,6 +235,14 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     destChainKey,
   )
 
+  const registryChain = useMemo(() => {
+    const chain = chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain
+    return withCustomChainRpcUrls(
+      chain,
+      getSortedRpcUrlList(rpcUrlList, rpcUrl),
+    )
+  }, [rpcUrl, rpcUrlList])
+
   useTrackApprovals(srcChainKey)
 
   const isLoading =
@@ -251,7 +263,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         transfer,
         call,
         dryRunError,
-        registryChain: chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain,
+        registryChain,
         status: getTransferStatus(form.getValues(), transfer, call, alerts),
       }}
     >

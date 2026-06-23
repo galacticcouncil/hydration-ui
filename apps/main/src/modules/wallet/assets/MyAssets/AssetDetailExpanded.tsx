@@ -30,7 +30,7 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
   const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
 
-  const { price: assetPrice } = useAssetPrice(asset.id)
+  const { price: assetPrice, isValid } = useAssetPrice(asset.id)
 
   return (
     <Flex direction="column" gap="xl">
@@ -47,9 +47,13 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
         value={t("common:number", {
           value: dcaAmountHuman,
         })}
-        displayValue={t("common:currency", {
-          value: Big(dcaAmountHuman).times(assetPrice).toString(),
-        })}
+        displayValue={
+          isValid
+            ? t("common:currency", {
+                value: Big(dcaAmountHuman).times(assetPrice).toString(),
+              })
+            : "-"
+        }
       />
       {otc > 0n && (
         <>
@@ -61,9 +65,13 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: otcAmountHuman,
             })}
-            displayValue={t("common:currency", {
-              value: Big(otcAmountHuman).times(assetPrice).toString(),
-            })}
+            displayValue={
+              isValid
+                ? t("common:currency", {
+                    value: Big(otcAmountHuman).times(assetPrice).toString(),
+                  })
+                : "-"
+            }
           />
         </>
       )}
@@ -78,9 +86,13 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: xcmAmountHuman,
             })}
-            displayValue={t("common:currency", {
-              value: Big(xcmAmountHuman).times(assetPrice).toString(),
-            })}
+            displayValue={
+              isValid
+                ? t("common:currency", {
+                    value: Big(xcmAmountHuman).times(assetPrice).toString(),
+                  })
+                : "-"
+            }
           />
         </>
       )}
