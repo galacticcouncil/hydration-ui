@@ -22,7 +22,15 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { formatCurrency as formatUsdValue } from "@galacticcouncil/utils"
+import {
+  formatCurrency as formatUsdValue,
+  GDOT_ASSET_ID,
+  GDOT_ERC20_ID,
+  GETH_ASSET_ID,
+  GETH_ERC20_ID,
+  GSOL_ASSET_ID,
+  GSOL_ERC20_ID,
+} from "@galacticcouncil/utils"
 import { Portal, Root, Trigger } from "@radix-ui/react-tooltip"
 import Big from "big.js"
 import {
@@ -133,6 +141,11 @@ const COMPOSITION_COLOR_FALLBACK: CompositionTileColors = {
 }
 const CURSOR_TOOLTIP_OFFSET = 14
 const CURSOR_TOOLTIP_VIEWPORT_PADDING = 12
+const TREASURY_SINGLE_LOGO_ASSET_IDS = new Map<string, string>([
+  [GDOT_ASSET_ID, GDOT_ERC20_ID],
+  [GETH_ASSET_ID, GETH_ERC20_ID],
+  [GSOL_ASSET_ID, GSOL_ERC20_ID],
+])
 
 type GroupedTreasuryAssetBalance = TreasuryAssetBalance & {
   groupedAssets?: TreasuryAssetBalance[]
@@ -159,6 +172,12 @@ const MOBILE_SKELETON_SPECS: CompositionGridBlockSpec[] = [
 
 const shouldForceAssetIntoOthers = (asset: TreasuryAssetBalance["asset"]) =>
   FORCE_OTHERS_ASSET_SYMBOLS.has(asset.symbol.trim().toLowerCase())
+
+const getTreasuryAssetLogoId = (asset: TreasuryAssetBalance["asset"]) =>
+  TREASURY_SINGLE_LOGO_ASSET_IDS.get(asset.id) ?? asset.id
+
+const hasTreasurySingleLogo = (asset: TreasuryAssetBalance["asset"]) =>
+  TREASURY_SINGLE_LOGO_ASSET_IDS.has(asset.id)
 
 const formatCompositionUsd = (value: string | number | null | undefined) =>
   formatUsdValue(value, "en-US", {
@@ -654,7 +673,7 @@ const AssetDetailsTooltipContent = ({
         <STooltipHeader>
           <STooltipAsset>
             <AssetLogo
-              id={item.asset.id}
+              id={getTreasuryAssetLogoId(item.asset)}
               size="extra-small"
               hideChain={isGroupedAsset}
             />
@@ -678,7 +697,10 @@ const AssetDetailsTooltipContent = ({
               {groupedAssets.map((groupedAsset) => (
                 <STooltipRow key={groupedAsset.asset.id} $compact>
                   <STooltipAsset>
-                    <AssetLogo id={groupedAsset.asset.id} size="extra-small" />
+                    <AssetLogo
+                      id={getTreasuryAssetLogoId(groupedAsset.asset)}
+                      size="extra-small"
+                    />
                     <STooltipAssetIdentity>
                       <Text fs="p7" fw={600} lh={1.1} color="text.high">
                         {groupedAsset.asset.symbol}
@@ -915,7 +937,7 @@ const CompositionTooltipRow = ({
 }) => (
   <STooltipRow $compact>
     <STooltipAsset>
-      <AssetLogo id={item.asset.id} size="extra-small" />
+      <AssetLogo id={getTreasuryAssetLogoId(item.asset)} size="extra-small" />
       <Text
         fs="p7"
         fw={500}
@@ -1075,7 +1097,7 @@ const OthersCompositionBlock = ({
           {block.items.slice(0, 4).map((item) => (
             <AssetLogo
               key={item.asset.id}
-              id={item.asset.id}
+              id={getTreasuryAssetLogoId(item.asset)}
               size="extra-small"
             />
           ))}
@@ -1178,7 +1200,7 @@ const AssetCompositionBlock = ({
       logo={
         <SCompositionBlockLogo $isMultiple={isMultipleLogo}>
           <AssetLogo
-            id={block.asset.id}
+            id={getTreasuryAssetLogoId(block.asset)}
             size="extra-small"
             hideChain={(block.groupedAssets?.length ?? 0) > 1}
           />
@@ -1261,7 +1283,7 @@ const CompactAssetLabel = ({
   asset: GroupedTreasuryAssetBalance["asset"]
 }) => (
   <SCompactAssetLabel>
-    <AssetLogo id={asset.id} size="extra-small" />
+    <AssetLogo id={getTreasuryAssetLogoId(asset)} size="extra-small" />
     <SCompactAssetIdentity>
       <Text fs="p5" fw={600} lh={1} color="text.high" truncate>
         {asset.symbol}
@@ -1277,45 +1299,55 @@ const MobileAssetDetails = ({
   item,
 }: {
   item: GroupedTreasuryAssetBalance
-}) => (
-  <SCompositionTooltipShell>
-    <STooltipLegend $compact>
-      <STooltipHeader>
-        <STooltipAsset>
-          <AssetLogo id={item.asset.id} size="extra-small" />
-          <STooltipAssetIdentity>
-            <Text fs="p6" fw={600} lh={1.1} color="text.high">
-              {item.asset.symbol}
-            </Text>
-            <Text fs="p7" lh={1.1} color="text.high">
-              {item.asset.name}
-            </Text>
-          </STooltipAssetIdentity>
-        </STooltipAsset>
-        <Text fs="p7" fw={600} color="text.high">
-          {getAssetCompositionLabel(item)}
-        </Text>
-      </STooltipHeader>
-      <STooltipTitle>Details</STooltipTitle>
-      <STooltipSection>
-        <STooltipRow $compact>
-          <TooltipLabel>Balance</TooltipLabel>
-          <TreasuryBalanceAmount item={item} align="end" />
-        </STooltipRow>
-        <STooltipRow $compact>
-          <TooltipLabel>Of which supplied</TooltipLabel>
-          <SuppliedAmount item={item} align="end" />
-        </STooltipRow>
-        <STooltipRow $compact>
-          <TooltipLabel>Composition</TooltipLabel>
-          <Text fs="p7" fw={600} color="text.high" sx={{ textAlign: "right" }}>
+}) => {
+  return (
+    <SCompositionTooltipShell>
+      <STooltipLegend $compact>
+        <STooltipHeader>
+          <STooltipAsset>
+            <AssetLogo
+              id={getTreasuryAssetLogoId(item.asset)}
+              size="extra-small"
+            />
+            <STooltipAssetIdentity>
+              <Text fs="p6" fw={600} lh={1.1} color="text.high">
+                {item.asset.symbol}
+              </Text>
+              <Text fs="p7" lh={1.1} color="text.high">
+                {item.asset.name}
+              </Text>
+            </STooltipAssetIdentity>
+          </STooltipAsset>
+          <Text fs="p7" fw={600} color="text.high">
             {getAssetCompositionLabel(item)}
           </Text>
-        </STooltipRow>
-      </STooltipSection>
-    </STooltipLegend>
-  </SCompositionTooltipShell>
-)
+        </STooltipHeader>
+        <STooltipTitle>Details</STooltipTitle>
+        <STooltipSection>
+          <STooltipRow $compact>
+            <TooltipLabel>Balance</TooltipLabel>
+            <TreasuryBalanceAmount item={item} align="end" />
+          </STooltipRow>
+          <STooltipRow $compact>
+            <TooltipLabel>Of which supplied</TooltipLabel>
+            <SuppliedAmount item={item} align="end" />
+          </STooltipRow>
+          <STooltipRow $compact>
+            <TooltipLabel>Composition</TooltipLabel>
+            <Text
+              fs="p7"
+              fw={600}
+              color="text.high"
+              sx={{ textAlign: "right" }}
+            >
+              {getAssetCompositionLabel(item)}
+            </Text>
+          </STooltipRow>
+        </STooltipSection>
+      </STooltipLegend>
+    </SCompositionTooltipShell>
+  )
+}
 
 const AssetRow = ({
   item,
@@ -1367,7 +1399,12 @@ const AssetRow = ({
         <Drawer
           open={isDrawerOpen}
           onOpenChange={setIsDrawerOpen}
-          customTitle={<AssetLabelFull asset={item.asset} />}
+          customTitle={
+            <AssetLabelFull
+              asset={item.asset}
+              logoId={getTreasuryAssetLogoId(item.asset)}
+            />
+          }
           title={item.asset.symbol}
         >
           <DrawerBody>
@@ -1381,7 +1418,10 @@ const AssetRow = ({
   return (
     <SInteractiveTableRow>
       <TableCell>
-        <AssetLabelFull asset={item.asset} />
+        <AssetLabelFull
+          asset={item.asset}
+          logoId={getTreasuryAssetLogoId(item.asset)}
+        />
       </TableCell>
       <TableCell
         sx={balanceAlign === "end" ? { textAlign: "right" } : undefined}
@@ -1824,7 +1864,10 @@ export const StatsTreasury = () => {
                     isLiquidityAsset={
                       isShareToken(block.asset) || isStableSwap(block.asset)
                     }
-                    isMultipleLogo={isStableSwap(block.asset)}
+                    isMultipleLogo={
+                      isStableSwap(block.asset) &&
+                      !hasTreasurySingleLogo(block.asset)
+                    }
                     useDrawer={useCompositionMobileLayout}
                   />
                 )

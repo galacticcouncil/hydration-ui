@@ -144,10 +144,17 @@ const isPositive = (value: string) => {
   }
 }
 
-const isReceiptToken = (asset: TAsset) =>
+const isReceiptToken = (
+  asset: TAsset,
+): asset is TAsset & { underlyingAssetId: string } =>
   asset.type === AssetType.ERC20 &&
   "underlyingAssetId" in asset &&
   !!asset.underlyingAssetId
+
+const getReceiptTokenUnderlyingAssetId = (asset: TAsset) =>
+  isReceiptToken(asset) && typeof asset.underlyingAssetId === "string"
+    ? asset.underlyingAssetId
+    : undefined
 
 const isStableSwapAsset = (asset: TAsset) => asset.type === AssetType.STABLESWAP
 
@@ -242,7 +249,9 @@ const getAssetValueUsd = async (
 }
 
 const getTreasuryPricingAssetId = (asset: TAsset) =>
-  isBond(asset) ? asset.underlyingAssetId : asset.id
+  isBond(asset)
+    ? asset.underlyingAssetId
+    : (getReceiptTokenUnderlyingAssetId(asset) ?? asset.id)
 
 const createWalletAssetBalance = async (
   rpc: TProviderContext,
@@ -806,6 +815,79 @@ const mergePositivePositions = (
   return Array.from(positionMap.values())
 }
 
+const getScaledFallbackPart = (
+  item: TreasuryAssetBalance,
+  balance: Big,
+): TreasuryAssetBreakdownPart => {
+  const valueUsd =
+    item.valueUsd && isPositive(item.balance)
+      ? balance.times(item.valueUsd).div(item.balance).toString()
+      : item.valueUsd
+
+  return {
+    balance: balance.toString(),
+    valueUsd,
+  }
+}
+
+const getReceiptTokenSupplyFallbacks = (
+  receiptAssets: TreasuryAssetBalance[],
+  supplyAssets: TreasuryAssetBalance[],
+  assetMap: Map<string, TAsset>,
+) => {
+  const remainingSupplyByAssetId = new Map<string, Big>()
+
+  for (const item of supplyAssets) {
+    const existing = remainingSupplyByAssetId.get(item.asset.id) ?? new Big(0)
+    remainingSupplyByAssetId.set(
+      item.asset.id,
+      existing.plus(item.balance || 0),
+    )
+  }
+
+  return receiptAssets
+    .map((item): TreasuryAssetBalance | undefined => {
+      const underlyingAssetId = getReceiptTokenUnderlyingAssetId(item.asset)
+      const asset = underlyingAssetId ? assetMap.get(underlyingAssetId) : null
+
+      if (!asset) return undefined
+
+      const suppliedBalance =
+        remainingSupplyByAssetId.get(asset.id) ?? new Big(0)
+      const receiptBalance = new Big(item.balance || 0)
+      const fallbackBalance = receiptBalance.minus(
+        suppliedBalance.lt(receiptBalance) ? suppliedBalance : receiptBalance,
+      )
+
+      remainingSupplyByAssetId.set(
+        asset.id,
+        suppliedBalance.minus(receiptBalance).gt(0)
+          ? suppliedBalance.minus(receiptBalance)
+          : new Big(0),
+      )
+
+      if (fallbackBalance.lte(0)) return undefined
+
+      const fallbackPart = getScaledFallbackPart(item, fallbackBalance)
+
+      return {
+        ...item,
+        asset: normalizeTreasuryAsset(asset),
+        balance: fallbackPart.balance,
+        balanceRaw: fallbackPart.balance,
+        valueUsd: fallbackPart.valueUsd,
+        price: fallbackPart.valueUsd
+          ? getPositionPrice(fallbackPart.balance, fallbackPart.valueUsd)
+          : item.price,
+        source: "moneyMarketSupply",
+        breakdown: {
+          moneyMarketSupply: fallbackPart,
+        },
+      }
+    })
+    .filter((item): item is TreasuryAssetBalance => !!item)
+}
+
 const withCompositionShares = (
   assets: TreasuryAssetBalance[],
   totalValueUsd: Big,
@@ -842,6 +924,9 @@ export const useTreasuryStats = (assets: TAsset[]) => {
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
     const directWalletAssets = treasury.data.assets.filter(
       (item) => !isReceiptToken(item.asset),
+    )
+    const receiptWalletAssets = treasury.data.assets.filter((item) =>
+      isReceiptToken(item.asset),
     )
     const borrowSummaries = [
       hydrationBorrowSummary,
@@ -924,10 +1009,15 @@ export const useTreasuryStats = (assets: TAsset[]) => {
           .filter((item): item is TreasuryAssetBalance => !!item) ?? [],
     )
 
-    const positiveAssets = mergePositivePositions(
-      directWalletAssets,
+    const receiptSupplyFallbacks = getReceiptTokenSupplyFallbacks(
+      receiptWalletAssets,
       supplyAssets,
+      assetMap,
     )
+    const positiveAssets = mergePositivePositions(directWalletAssets, [
+      ...supplyAssets,
+      ...receiptSupplyFallbacks,
+    ])
     const holdingsValueUsd = positiveAssets.reduce(
       (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
       new Big(0),
