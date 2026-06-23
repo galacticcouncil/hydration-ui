@@ -774,15 +774,12 @@ const CursorAssetDetailsTooltip = ({
     const preferredX = clientX + CURSOR_TOOLTIP_OFFSET
     const preferredY = clientY + CURSOR_TOOLTIP_OFFSET
     const flippedX = clientX - CURSOR_TOOLTIP_OFFSET - tooltipWidth
-    const flippedY = clientY - CURSOR_TOOLTIP_OFFSET - tooltipHeight
     const centeredX = clientX - tooltipWidth / 2
-    const centeredY = clientY - tooltipHeight / 2
     const hasRoomRight = preferredX <= maxX
     const hasRoomLeft = flippedX >= minX
     const hasRoomBelow = preferredY <= maxY
-    const hasRoomAbove = flippedY >= minY
     const x = hasRoomRight ? preferredX : hasRoomLeft ? flippedX : centeredX
-    const y = hasRoomBelow ? preferredY : hasRoomAbove ? flippedY : centeredY
+    const y = hasRoomBelow ? preferredY : maxY
 
     return {
       clientX,
