@@ -1,7 +1,11 @@
 import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import {
   DOT_ASSET_ID,
+  GDOT_ASSET_ID,
   getAssetIdFromAddress,
+  GETH_ASSET_ID,
+  GSOL_ASSET_ID,
+  HEURC_ASSET_ID,
   HUSDC_ASSET_ID,
   HUSDE_ASSET_ID,
   HUSDS_ASSET_ID,
@@ -114,6 +118,10 @@ const HOLLAR_POOL_LABELS_BY_ID = new Map<string, string>([
   [HUSDT_ASSET_ID, "HUSDT"],
   [HUSDS_ASSET_ID, "HUSDS"],
   [HUSDE_ASSET_ID, "HUSDE"],
+  [HEURC_ASSET_ID, "HEURC"],
+  [GDOT_ASSET_ID, "GDOT"],
+  [GETH_ASSET_ID, "GETH"],
+  [GSOL_ASSET_ID, "GSOL"],
 ])
 
 const normalizeTreasuryAsset = (asset: TAsset): TAsset => {

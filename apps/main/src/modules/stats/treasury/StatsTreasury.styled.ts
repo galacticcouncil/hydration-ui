@@ -129,144 +129,301 @@ export const SComposition = styled.div(
 
 type CompositionBlockTier = "hero" | "major" | "mid" | "minor" | "dust"
 
-const compositionTierStyles: Record<
-  CompositionBlockTier,
-  {
-    fillOpacity: number
-    saturation: number
-    brightness: number
-  }
-> = {
-  hero: { fillOpacity: 0.62, saturation: 0.98, brightness: 0.96 },
-  major: { fillOpacity: 0.58, saturation: 0.92, brightness: 0.95 },
-  mid: { fillOpacity: 0.54, saturation: 0.84, brightness: 0.94 },
-  minor: { fillOpacity: 0.46, saturation: 0.72, brightness: 0.93 },
-  dust: { fillOpacity: 0.36, saturation: 0.58, brightness: 0.92 },
+const parseCompositionToken = (value: string) => Number(value)
+
+const getCompositionColorMix = ({
+  assetMix,
+  lighten,
+  lightenMix,
+  background,
+}: {
+  assetMix: string
+  lighten: string
+  lightenMix: string
+  background: string
+}) => {
+  const mixBase =
+    parseCompositionToken(lightenMix) > 0
+      ? `color-mix(in oklch, ${lighten} ${lightenMix}%, ${background})`
+      : background
+
+  return `color-mix(
+    in oklch,
+    var(--composition-color) ${assetMix}%,
+    ${mixBase}
+  )`
 }
 
 export const SCompositionBlock = styled.div<{
   readonly color: string
   readonly darkColor?: string
   readonly lightColor?: string
+  readonly symbol?: string
   readonly tier: CompositionBlockTier
   readonly colSpan: number
   readonly rowSpan: number
-}>(({ color, darkColor, lightColor, tier, colSpan, rowSpan, theme }) => {
-  const tierStyle = compositionTierStyles[tier]
-  const lightFillOpacity = Math.max(tierStyle.fillOpacity * 0.62, 0.28)
-  const lightColorMix =
-    lightColor ??
-    `color-mix(
+}>(
+  ({ color, darkColor, lightColor, symbol, tier, colSpan, rowSpan, theme }) => {
+    const composition = theme.charts.colors.treasury.composition
+    const assetOverrides =
+      symbol && symbol in composition.assets
+        ? composition.assets[symbol as keyof typeof composition.assets]
+        : undefined
+    const tierTokens = composition.tiers[tier]
+    const assetFillOpacityBoost = parseCompositionToken(
+      assetOverrides?.fillOpacityBoost ?? "0",
+    )
+    const assetBorderOpacityBoost = parseCompositionToken(
+      assetOverrides?.borderOpacityBoost ?? "0",
+    )
+    const assetBrightnessBoost = parseCompositionToken(
+      assetOverrides?.brightnessBoost ?? "0",
+    )
+    const assetBorderBrightnessBoost = parseCompositionToken(
+      assetOverrides?.borderBrightnessBoost ?? "0",
+    )
+    const baseTierFillOpacity = parseCompositionToken(tierTokens.fillOpacity)
+    const baseTierBorderOpacity = parseCompositionToken(
+      tierTokens.borderOpacity,
+    )
+    const baseTierBrightness = parseCompositionToken(tierTokens.brightness)
+    const tierFillOpacity = Math.min(
+      baseTierFillOpacity + assetFillOpacityBoost,
+      1,
+    )
+    const tierBorderOpacity = Math.min(
+      baseTierBorderOpacity + assetBorderOpacityBoost,
+      1,
+    )
+    const tierSaturation = parseCompositionToken(tierTokens.saturation)
+    const tierBrightness = Math.min(
+      baseTierBrightness + assetBrightnessBoost,
+      1.2,
+    )
+    const tierBorderBrightness = Math.min(
+      baseTierBrightness + assetBorderBrightnessBoost,
+      1.25,
+    )
+    const hoverFillOpacityBoost = parseCompositionToken(
+      composition.hover.fillOpacityBoost,
+    )
+    const hoverBorderOpacityBoost = parseCompositionToken(
+      composition.hover.borderOpacityBoost,
+    )
+    const hoverSaturationBoost = parseCompositionToken(
+      composition.hover.saturationBoost,
+    )
+    const hoverBrightnessBoost = parseCompositionToken(
+      composition.hover.brightnessBoost,
+    )
+    const lightTokens = composition.light
+    const lightFillOpacityScale = parseCompositionToken(
+      lightTokens.fillOpacityScale,
+    )
+    const lightMinFillOpacity = parseCompositionToken(
+      lightTokens.minFillOpacity,
+    )
+    const lightFillOpacity = Math.max(
+      baseTierFillOpacity * lightFillOpacityScale,
+      lightMinFillOpacity,
+    )
+    const lightBorderOpacity = Math.max(
+      baseTierBorderOpacity * lightFillOpacityScale,
+      lightMinFillOpacity,
+    )
+    const lightColorMix =
+      lightColor ??
+      `color-mix(
       in oklch,
-      var(--composition-color) 62%,
+      var(--composition-color) ${lightTokens.colorMixAsset}%,
       white
     )`
+    const background = theme.surfaces.themeBasePalette.background
+    const fillColor = assetOverrides
+      ? getCompositionColorMix({
+          ...assetOverrides.fill,
+          background,
+        })
+      : (darkColor ??
+        getCompositionColorMix({
+          ...composition.fill,
+          background,
+        }))
+    const borderColor = assetOverrides
+      ? getCompositionColorMix({
+          ...assetOverrides.border,
+          background,
+        })
+      : (darkColor ??
+        getCompositionColorMix({
+          ...composition.border,
+          background,
+        }))
 
-  return css`
-    --composition-color: ${color};
-    --composition-fill-color: ${darkColor ??
-    `color-mix(
-        in srgb,
-        var(--composition-color) 82%,
-        ${theme.surfaces.themeBasePalette.background}
-      )`};
-    --fill-opacity: ${tierStyle.fillOpacity};
-    --fill-opacity-active: ${Math.min(tierStyle.fillOpacity + 0.12, 1)};
-    --saturation: ${tierStyle.saturation};
-    --saturation-active: ${Math.min(tierStyle.saturation + 0.25, 1.15)};
-    --brightness: ${tierStyle.brightness};
-    --brightness-active: ${Math.min(tierStyle.brightness + 0.08, 1.12)};
-    --composition-block-padding: ${COMPOSITION_BLOCK_PADDING};
+    return css`
+      --composition-color: ${color};
+      --composition-fill-color: ${fillColor};
+      --composition-border-color: ${borderColor};
+      --fill-opacity: ${tierFillOpacity};
+      --fill-opacity-active: ${Math.min(
+        tierFillOpacity + hoverFillOpacityBoost,
+        1,
+      )};
+      --border-opacity: ${tierBorderOpacity};
+      --border-opacity-active: ${Math.min(
+        tierBorderOpacity + hoverBorderOpacityBoost,
+        1,
+      )};
+      --saturation: ${tierSaturation};
+      --saturation-active: ${Math.min(
+        tierSaturation + hoverSaturationBoost,
+        1.15,
+      )};
+      --brightness: ${tierBrightness};
+      --brightness-active: ${Math.min(
+        tierBrightness + hoverBrightnessBoost,
+        1.12,
+      )};
+      --border-brightness: ${tierBorderBrightness};
+      --border-brightness-active: ${Math.min(
+        tierBorderBrightness + hoverBrightnessBoost,
+        1.18,
+      )};
+      --composition-block-padding: ${COMPOSITION_BLOCK_PADDING};
 
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    grid-column: span ${Math.min(colSpan, COMPOSITION_GRID_COLUMNS)};
-    grid-row: span ${rowSpan};
-    padding: var(--composition-block-padding);
-    border-radius: ${COMPOSITION_BLOCK_RADIUS};
-    cursor: pointer;
-    overflow: hidden;
-    isolation: isolate;
-    animation: ${theme.animations.fadeIn} 180ms ease-out both;
-
-    @media (width < ${MOBILE_BREAKPOINT}) {
-      grid-column: span ${Math.min(colSpan, COMPOSITION_GRID_COLUMNS_MOBILE)};
-      --composition-block-padding: ${COMPOSITION_BLOCK_PADDING_MOBILE};
-    }
-
-    html.light & {
-      --composition-fill-color: color-mix(
-        in oklch,
-        ${lightColorMix} 72%,
-        var(--composition-color)
-      );
-      --fill-opacity: ${lightFillOpacity};
-      --fill-opacity-active: ${Math.min(lightFillOpacity + 0.1, 0.5)};
-      --saturation: ${Math.min(tierStyle.saturation + 0.12, 1.1)};
-      --saturation-active: ${Math.min(tierStyle.saturation + 0.2, 1.18)};
-      --brightness: ${Math.max(tierStyle.brightness * 0.98, 0.9)};
-      --brightness-active: ${Math.min(tierStyle.brightness * 1.04, 1.08)};
-    }
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: var(--composition-fill-color);
-      opacity: var(--fill-opacity);
-      filter: saturate(var(--saturation)) brightness(var(--brightness));
-      transition:
-        opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
-          ${COMPOSITION_BLOCK_HOVER_EASING},
-        filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
-          ${COMPOSITION_BLOCK_HOVER_EASING};
-      z-index: 0;
-    }
-
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      border: ${COMPOSITION_BLOCK_BORDER_WIDTH}px solid
-        var(--composition-fill-color);
-      opacity: var(--fill-opacity);
-      filter: saturate(var(--saturation)) brightness(var(--brightness));
-      pointer-events: none;
-      transition:
-        opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
-          ${COMPOSITION_BLOCK_HOVER_EASING},
-        filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
-          ${COMPOSITION_BLOCK_HOVER_EASING};
-      z-index: 1;
-    }
-
-    & > * {
       position: relative;
-      z-index: 2;
-    }
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      grid-column: span ${Math.min(colSpan, COMPOSITION_GRID_COLUMNS)};
+      grid-row: span ${rowSpan};
+      padding: var(--composition-block-padding);
+      border-radius: ${COMPOSITION_BLOCK_RADIUS};
+      cursor: pointer;
+      overflow: hidden;
+      isolation: isolate;
+      animation: ${theme.animations.fadeIn} 180ms ease-out both;
 
-    &:hover {
-      z-index: 2;
-
-      &::before,
-      &::after {
-        opacity: var(--fill-opacity-active);
-        filter: saturate(var(--saturation-active))
-          brightness(var(--brightness-active));
-        transition:
-          opacity ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
-            ${COMPOSITION_BLOCK_HOVER_EASING},
-          filter ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
-            ${COMPOSITION_BLOCK_HOVER_EASING};
+      @media (width < ${MOBILE_BREAKPOINT}) {
+        grid-column: span ${Math.min(colSpan, COMPOSITION_GRID_COLUMNS_MOBILE)};
+        --composition-block-padding: ${COMPOSITION_BLOCK_PADDING_MOBILE};
       }
-    }
-  `
-})
+
+      html.light & {
+        --composition-fill-color: color-mix(
+          in oklch,
+          ${lightColorMix} ${lightTokens.assetMix}%,
+          var(--composition-color)
+        );
+        --composition-border-color: color-mix(
+          in oklch,
+          ${lightColorMix}
+            ${Math.min(parseCompositionToken(lightTokens.assetMix) + 8, 100)}%,
+          var(--composition-color)
+        );
+        --fill-opacity: ${lightFillOpacity};
+        --fill-opacity-active: ${Math.min(
+          lightFillOpacity +
+            parseCompositionToken(lightTokens.hoverFillOpacityBoost),
+          0.5,
+        )};
+        --border-opacity: ${lightBorderOpacity};
+        --border-opacity-active: ${Math.min(
+          lightBorderOpacity +
+            parseCompositionToken(lightTokens.hoverFillOpacityBoost),
+          0.58,
+        )};
+        --saturation: ${Math.min(
+          tierSaturation + parseCompositionToken(lightTokens.saturationBoost),
+          1.1,
+        )};
+        --saturation-active: ${Math.min(
+          tierSaturation +
+            parseCompositionToken(lightTokens.hoverSaturationBoost),
+          1.18,
+        )};
+        --brightness: ${Math.max(
+          baseTierBrightness *
+            parseCompositionToken(lightTokens.brightnessScale),
+          parseCompositionToken(lightTokens.minBrightness),
+        )};
+        --brightness-active: ${Math.min(
+          baseTierBrightness *
+            parseCompositionToken(lightTokens.hoverBrightnessScale),
+          parseCompositionToken(lightTokens.maxHoverBrightness),
+        )};
+        --border-brightness: var(--brightness);
+        --border-brightness-active: var(--brightness-active);
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: var(--composition-fill-color);
+        opacity: var(--fill-opacity);
+        filter: saturate(var(--saturation)) brightness(var(--brightness));
+        transition:
+          opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING},
+          filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING};
+        z-index: 0;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        border: ${COMPOSITION_BLOCK_BORDER_WIDTH}px solid
+          var(--composition-border-color);
+        opacity: var(--border-opacity);
+        filter: saturate(var(--saturation)) brightness(var(--border-brightness));
+        pointer-events: none;
+        transition:
+          opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING},
+          filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING};
+        z-index: 1;
+      }
+
+      & > * {
+        position: relative;
+        z-index: 2;
+      }
+
+      &:hover {
+        z-index: 2;
+
+        &::before {
+          opacity: var(--fill-opacity-active);
+          filter: saturate(var(--saturation-active))
+            brightness(var(--brightness-active));
+          transition:
+            opacity ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+              ${COMPOSITION_BLOCK_HOVER_EASING},
+            filter ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+              ${COMPOSITION_BLOCK_HOVER_EASING};
+        }
+
+        &::after {
+          opacity: var(--border-opacity-active);
+          filter: saturate(var(--saturation-active))
+            brightness(var(--border-brightness-active));
+          transition:
+            opacity ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+              ${COMPOSITION_BLOCK_HOVER_EASING},
+            filter ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+              ${COMPOSITION_BLOCK_HOVER_EASING};
+        }
+      }
+    `
+  },
+)
 
 export const SCompositionGrid = styled.div(
   () => css`
