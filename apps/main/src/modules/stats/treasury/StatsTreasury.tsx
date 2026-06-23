@@ -551,6 +551,11 @@ const getAssetBreakdownRows = (
       part: item.breakdown.moneyMarketSupply,
     },
     {
+      label: "Debt-backed portion",
+      part: item.breakdown.moneyMarketBorrow,
+      negative: true,
+    },
+    {
       label: "Supplied as liquidity",
       part: getAssetLiquidityBreakdown(item, isLiquidityAsset),
     },
@@ -559,6 +564,9 @@ const getAssetBreakdownRows = (
       part: getAssetOffchainBreakdown(item, isLiquidityAsset),
     },
   ].filter(isTooltipBreakdownRow)
+
+const getAssetTotalBalanceLabel = (item: TreasuryAssetBalance) =>
+  item.breakdown.moneyMarketBorrow ? "Net balance" : "Total balance"
 
 const BreakdownValue = ({
   part,
@@ -623,14 +631,27 @@ const getTreasuryHoldingsBreakdown = (
     assets,
     (item) => item.breakdown.moneyMarketSupply,
   )
-  const borrowed = sumBreakdownUsd(
+  const borrowedFromNettedAssets = sumBreakdownUsd(
+    assets,
+    (item) => item.breakdown.moneyMarketBorrow,
+  )
+  const borrowedFromPositions = sumBreakdownUsd(
     borrowPositions,
     (item) => item.breakdown.moneyMarketBorrow,
   )
-  const holdings = sumDecimalStrings(regular, liquidity, supplied).toString()
+  const borrowed = sumDecimalStrings(
+    borrowedFromNettedAssets,
+    borrowedFromPositions,
+  ).toString()
+  const holdings = sumDecimalStrings(
+    regular,
+    liquidity,
+    supplied,
+    Big(borrowedFromNettedAssets).times(-1).toString(),
+  ).toString()
   const net = sumDecimalStrings(
     holdings,
-    Big(borrowed).times(-1).toString(),
+    Big(borrowedFromPositions).times(-1).toString(),
   ).toString()
 
   return {
@@ -781,7 +802,7 @@ const AssetDetailsTooltipContent = ({
         <STooltipTitle>Breakdown</STooltipTitle>
         <STooltipSection>
           <STooltipRow $compact>
-            <TooltipLabel>Total balance</TooltipLabel>
+            <TooltipLabel>{getAssetTotalBalanceLabel(item)}</TooltipLabel>
             <BreakdownValue
               part={{
                 balance: item.balance,
@@ -790,10 +811,10 @@ const AssetDetailsTooltipContent = ({
               negative={item.source === "moneyMarketBorrow"}
             />
           </STooltipRow>
-          {breakdownRows.map(({ label, part }) => (
+          {breakdownRows.map(({ label, part, negative }) => (
             <STooltipRow key={label} $compact>
               <TooltipLabel>{label}</TooltipLabel>
-              <BreakdownValue part={part} />
+              <BreakdownValue part={part} negative={negative} />
             </STooltipRow>
           ))}
         </STooltipSection>

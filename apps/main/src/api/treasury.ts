@@ -61,6 +61,7 @@ type TreasuryAccount = {
   address: string
   label: string
   includeWalletBalances?: boolean
+  netMoneyMarketBorrows?: boolean
 }
 
 export type TreasuryAssetBalance = {
@@ -99,6 +100,7 @@ const TREASURY_STATS_ACCOUNTS = [
     address: "15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA",
     label: "PRIME looped position",
     includeWalletBalances: true,
+    netMoneyMarketBorrows: true,
   },
   {
     address: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
@@ -847,9 +849,11 @@ const getReceiptTokenSupplyFallbacks = (
 
   for (const item of supplyAssets) {
     const existing = remainingSupplyByAssetId.get(item.asset.id) ?? new Big(0)
+    const supplyBalance = item.breakdown.moneyMarketSupply?.balance ?? item.balance
+
     remainingSupplyByAssetId.set(
       item.asset.id,
-      existing.plus(item.balance || 0),
+      existing.plus(supplyBalance || 0),
     )
   }
 
@@ -896,6 +900,102 @@ const getReceiptTokenSupplyFallbacks = (
     .filter((item): item is TreasuryAssetBalance => !!item)
 }
 
+const scaleBreakdownPart = (
+  part: TreasuryAssetBreakdownPart,
+  ratio: Big,
+): TreasuryAssetBreakdownPart => ({
+  balance: Big(part.balance).times(ratio).toString(),
+  valueUsd: part.valueUsd ? Big(part.valueUsd).times(ratio).toString() : null,
+})
+
+const scaleTreasuryAssetBalance = (
+  item: TreasuryAssetBalance,
+  ratio: Big,
+): TreasuryAssetBalance => {
+  const balance = Big(item.balance).times(ratio).toString()
+  const valueUsd = item.valueUsd
+    ? Big(item.valueUsd).times(ratio).toString()
+    : null
+
+  return {
+    ...item,
+    balance,
+    balanceRaw: balance,
+    valueUsd,
+    price: valueUsd ? getPositionPrice(balance, valueUsd) : item.price,
+    breakdown: {
+      wallet: item.breakdown.wallet
+        ? scaleBreakdownPart(item.breakdown.wallet, ratio)
+        : undefined,
+      moneyMarketSupply: item.breakdown.moneyMarketSupply
+        ? scaleBreakdownPart(item.breakdown.moneyMarketSupply, ratio)
+        : undefined,
+      liquidity: item.breakdown.liquidity
+        ? scaleBreakdownPart(item.breakdown.liquidity, ratio)
+        : undefined,
+      moneyMarketBorrow: item.breakdown.moneyMarketBorrow
+        ? scaleBreakdownPart(item.breakdown.moneyMarketBorrow, ratio)
+        : undefined,
+    },
+  }
+}
+
+const getAssetValue = (item: TreasuryAssetBalance) => Big(item.valueUsd ?? 0)
+
+const applyLoopedMoneyMarketNetting = (
+  supplyAssets: TreasuryAssetBalance[],
+  borrowPositions: TreasuryAssetBalance[],
+) => {
+  const suppliedValue = supplyAssets.reduce(
+    (acc, item) => acc.plus(getAssetValue(item)),
+    Big(0),
+  )
+  const borrowedValue = borrowPositions.reduce(
+    (acc, item) => acc.plus(getAssetValue(item)),
+    Big(0),
+  )
+
+  if (suppliedValue.lte(0) || borrowedValue.lte(0)) {
+    return { supplyAssets, borrowPositions }
+  }
+
+  const supplyRatio = suppliedValue.gt(borrowedValue)
+    ? suppliedValue.minus(borrowedValue).div(suppliedValue)
+    : Big(0)
+  const borrowOffsetRatio = suppliedValue.gt(0)
+    ? Big(1).minus(supplyRatio)
+    : Big(0)
+  const residualBorrowRatio = borrowedValue.gt(suppliedValue)
+    ? borrowedValue.minus(suppliedValue).div(borrowedValue)
+    : Big(0)
+
+  return {
+    supplyAssets: supplyAssets
+      .map((item) => {
+        const netItem = scaleTreasuryAssetBalance(item, supplyRatio)
+        const supplyPart = item.breakdown.moneyMarketSupply
+
+        return {
+          ...netItem,
+          breakdown: {
+            ...netItem.breakdown,
+            moneyMarketSupply: supplyPart,
+            moneyMarketBorrow:
+              supplyPart && borrowOffsetRatio.gt(0)
+                ? scaleBreakdownPart(supplyPart, borrowOffsetRatio)
+                : undefined,
+          },
+        }
+      })
+      .filter((item) => getAssetValue(item).gt(0)),
+    borrowPositions: residualBorrowRatio.gt(0)
+      ? borrowPositions.map((item) =>
+          scaleTreasuryAssetBalance(item, residualBorrowRatio),
+        )
+      : [],
+  }
+}
+
 const withCompositionShares = (
   assets: TreasuryAssetBalance[],
   totalValueUsd: Big,
@@ -938,86 +1038,108 @@ export const useTreasuryStats = (assets: TAsset[]) => {
     const receiptWalletAssets = treasury.data.assets.filter((item) =>
       isReceiptToken(item.asset),
     )
-    const borrowSummaries = [
-      hydrationBorrowSummary,
-      hollarBorrowSummary,
-      primeBorrowSummary,
-      moneyMarketBorrowSummary,
+    const borrowSummaryEntries = [
+      {
+        account: TREASURY_STATS_ACCOUNTS[0]!,
+        summary: hydrationBorrowSummary,
+      },
+      {
+        account: TREASURY_STATS_ACCOUNTS[1]!,
+        summary: hollarBorrowSummary,
+      },
+      {
+        account: TREASURY_STATS_ACCOUNTS[2]!,
+        summary: primeBorrowSummary,
+      },
+      {
+        account: TREASURY_STATS_ACCOUNTS[3]!,
+        summary: moneyMarketBorrowSummary,
+      },
     ]
 
-    const supplyAssets = borrowSummaries.flatMap(
-      (summary) =>
-        summary?.userReservesData
-          ?.filter((position) => isPositive(position.underlyingBalanceUSD))
-          .map((position): TreasuryAssetBalance | undefined => {
-            const assetId = getAssetIdFromAddress(
-              position.reserve.underlyingAsset,
-            )
-            const asset = assetMap.get(assetId)
+    const moneyMarketPositions = borrowSummaryEntries.map(
+      ({ account, summary }) => {
+        const supplyAssets =
+          summary?.userReservesData
+            ?.filter((position) => isPositive(position.underlyingBalanceUSD))
+            .map((position): TreasuryAssetBalance | undefined => {
+              const assetId = getAssetIdFromAddress(
+                position.reserve.underlyingAsset,
+              )
+              const asset = assetMap.get(assetId)
 
-            if (!asset) return undefined
+              if (!asset) return undefined
 
-            return {
-              asset: normalizeTreasuryAsset(asset),
-              balance: position.underlyingBalance,
-              balanceRaw: position.underlyingBalance,
-              price: getPositionPrice(
-                position.underlyingBalance,
-                position.underlyingBalanceUSD,
-              ),
-              valueUsd: position.underlyingBalanceUSD,
-              share: 0,
-              source: "moneyMarketSupply",
-              breakdown: {
-                moneyMarketSupply: {
-                  balance: position.underlyingBalance,
-                  valueUsd: position.underlyingBalanceUSD,
+              return {
+                asset: normalizeTreasuryAsset(asset),
+                balance: position.underlyingBalance,
+                balanceRaw: position.underlyingBalance,
+                price: getPositionPrice(
+                  position.underlyingBalance,
+                  position.underlyingBalanceUSD,
+                ),
+                valueUsd: position.underlyingBalanceUSD,
+                share: 0,
+                source: "moneyMarketSupply",
+                breakdown: {
+                  moneyMarketSupply: {
+                    balance: position.underlyingBalance,
+                    valueUsd: position.underlyingBalanceUSD,
+                  },
                 },
-              },
-            }
-          })
-          .filter((item): item is TreasuryAssetBalance => !!item) ?? [],
+              }
+            })
+            .filter((item): item is TreasuryAssetBalance => !!item) ?? []
+
+        const borrowPositions =
+          summary?.userReservesData
+            ?.map((position): TreasuryAssetBalance | undefined => {
+              const assetId = getAssetIdFromAddress(
+                position.reserve.underlyingAsset,
+              )
+              const asset = assetMap.get(assetId)
+
+              if (!asset) return undefined
+
+              const balance = sumBigStrings(
+                position.variableBorrows,
+                position.stableBorrows,
+              ).toString()
+              const valueUsd = sumBigStrings(
+                position.variableBorrowsUSD,
+                position.stableBorrowsUSD,
+              ).toString()
+
+              if (!isPositive(valueUsd)) return undefined
+
+              return {
+                asset: normalizeTreasuryAsset(asset),
+                balance,
+                balanceRaw: balance,
+                price: getPositionPrice(balance, valueUsd),
+                valueUsd,
+                share: 0,
+                source: "moneyMarketBorrow",
+                breakdown: {
+                  moneyMarketBorrow: {
+                    balance,
+                    valueUsd,
+                  },
+                },
+              }
+            })
+            .filter((item): item is TreasuryAssetBalance => !!item) ?? []
+
+        return account.netMoneyMarketBorrows
+          ? applyLoopedMoneyMarketNetting(supplyAssets, borrowPositions)
+          : { supplyAssets, borrowPositions }
+      },
     )
-
-    const borrowPositions = borrowSummaries.flatMap(
-      (summary) =>
-        summary?.userReservesData
-          ?.map((position): TreasuryAssetBalance | undefined => {
-            const assetId = getAssetIdFromAddress(
-              position.reserve.underlyingAsset,
-            )
-            const asset = assetMap.get(assetId)
-
-            if (!asset) return undefined
-
-            const balance = sumBigStrings(
-              position.variableBorrows,
-              position.stableBorrows,
-            ).toString()
-            const valueUsd = sumBigStrings(
-              position.variableBorrowsUSD,
-              position.stableBorrowsUSD,
-            ).toString()
-
-            if (!isPositive(valueUsd)) return undefined
-
-            return {
-              asset: normalizeTreasuryAsset(asset),
-              balance,
-              balanceRaw: balance,
-              price: getPositionPrice(balance, valueUsd),
-              valueUsd,
-              share: 0,
-              source: "moneyMarketBorrow",
-              breakdown: {
-                moneyMarketBorrow: {
-                  balance,
-                  valueUsd,
-                },
-              },
-            }
-          })
-          .filter((item): item is TreasuryAssetBalance => !!item) ?? [],
+    const supplyAssets = moneyMarketPositions.flatMap(
+      (position) => position.supplyAssets,
+    )
+    const borrowPositions = moneyMarketPositions.flatMap(
+      (position) => position.borrowPositions,
     )
 
     const receiptSupplyFallbacks = getReceiptTokenSupplyFallbacks(

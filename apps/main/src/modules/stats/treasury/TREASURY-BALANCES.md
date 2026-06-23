@@ -38,9 +38,9 @@ Data is live at fetch time, but not streamed every block. React Query refetches 
 | Field | Meaning |
 |---|---|
 | `assets` | Treasury holdings: wallet balances + liquidity positions + supplied collateral merged by asset id |
-| `borrowPositions` | Borrow exposure, kept separate and subtracted from totals |
+| `borrowPositions` | Borrow exposure kept separate and subtracted from totals; looped-account borrows are only listed here when they exceed supplied collateral |
 | `holdingsValueUsd` | Wallet + liquidity positions + supplied collateral |
-| `borrowValueUsd` | Sum of borrow positions |
+| `borrowValueUsd` | Sum of borrow positions that still need to be subtracted from holdings |
 | `totalValueUsd` | Net value: holdings minus borrow |
 
 Each `TreasuryAssetBalance` carries a `breakdown`:
@@ -57,6 +57,8 @@ Wallet-held XYK share tokens, farmed XYK share positions, stablepool shares, and
 Omnipool position value uses only `calculate_liquidity_out` for the deposited asset leg. The H2O/LRNA hub leg from `calculate_liquidity_lrna_out` is intentionally not added to Treasury holdings.
 
 Borrow positions are kept separate from holdings and subtracted from `totalValueUsd`. Receipt tokens with an `underlyingAssetId` are ignored in wallet holdings, so supplied collateral comes from money-market data once instead of being double-counted through receipt balances.
+
+The PRIME pure proxy is treated as a looped money-market position. Its supplied collateral is reduced by its borrow value before it enters treasury holdings, composition tiles, and the All treasury assets table. Tooltips still expose the gross supplied collateral and the debt-backed portion, but the displayed asset value is the net contribution so the loop does not inflate treasury composition.
 
 Hollar pool assets `110`-`113` are displayed as `HUSDC`, `HUSDT`, `HUSDS`, and `HUSDE` in Treasury stats instead of their raw `2-Pool-*` registry names.
 
