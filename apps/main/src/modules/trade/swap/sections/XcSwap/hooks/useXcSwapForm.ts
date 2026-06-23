@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { TradeType } from "@/api/trade"
 import i18n from "@/i18n"
 import {
   XcAsset,
@@ -25,6 +26,7 @@ const schema = z
     destChain: requiredObject<XcChain>(),
     buyAsset: requiredObject<XcAsset>(),
     buyAmount: positiveOptional,
+    type: z.custom<TradeType>(),
     destAddress: z.string(),
     isSingleTrade: z.boolean(),
   })
@@ -77,6 +79,7 @@ export const useXcSwapForm = () => {
     destChain: null,
     buyAsset: null,
     buyAmount: "",
+    type: TradeType.Sell,
     destAddress: "",
     isSingleTrade: true,
   }

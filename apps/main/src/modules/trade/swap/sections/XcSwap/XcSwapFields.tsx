@@ -14,6 +14,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
 
+import { TradeType } from "@/api/trade"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
@@ -123,12 +124,14 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     [getValues, navigate, setValue, switchAssets],
   )
 
-  const [srcChain, destChain, buyAsset, buyAmount] = watch([
+  const [srcChain, destChain, buyAsset, buyAmount, type] = watch([
     "srcChain",
     "destChain",
     "buyAsset",
     "buyAmount",
+    "type",
   ])
+  const isSell = type === TradeType.Sell
   const onChainDestAssetId =
     !isCrossChain && isNumber(buyAsset?.id) ? String(buyAsset.id) : ""
   const [destDisplayValue, { isLoading: isDestDisplayValueLoading }] =
@@ -147,6 +150,11 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         label={<ChainLabel label={t("from")} chain={srcChain} />}
         loading={isSelectionLoading}
         onAssetChange={handleSellAssetChange}
+        onAmountChange={() => {
+          if (!isSell) {
+            setValue("type", TradeType.Sell)
+          }
+        }}
       />
 
       <XcSwapSwitcher />
@@ -163,13 +171,18 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         ignoreDisplayValue={isCrossChain}
         maxBalance={destMaxBalance}
         displayValue={!isCrossChain ? destDisplayValue : undefined}
-        disabledInput
+        disabledInput={isCrossChain}
         loading={isSelectionLoading}
-        valueLoading={isQuoteLoading}
+        valueLoading={isSell && isQuoteLoading}
         displayValueLoading={
           !isCrossChain && (isQuoteLoading || isDestDisplayValueLoading)
         }
         onSelectionChange={handleBuySelectionChange}
+        onAmountChange={() => {
+          if (isSell) {
+            setValue("type", TradeType.Buy)
+          }
+        }}
       />
 
       {isCrossChain && (
