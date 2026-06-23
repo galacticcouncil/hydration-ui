@@ -96,6 +96,11 @@ const TREASURY_STATS_ACCOUNTS = [
     includeWalletBalances: true,
   },
   {
+    address: "15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA",
+    label: "PRIME looped position",
+    includeWalletBalances: true,
+  },
+  {
     address: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
     label: "Money market treasury",
     includeWalletBalances: true,
@@ -916,10 +921,12 @@ export const useTreasuryStats = (assets: TAsset[]) => {
     useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[0]!.address)
   const { data: hollarBorrowSummary, isLoading: isHollarBorrowLoading } =
     useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[1]!.address)
+  const { data: primeBorrowSummary, isLoading: isPrimeBorrowLoading } =
+    useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[2]!.address)
   const {
     data: moneyMarketBorrowSummary,
     isLoading: isMoneyMarketBorrowLoading,
-  } = useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[2]!.address)
+  } = useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[3]!.address)
 
   const data = useMemo(() => {
     if (!treasury.data) return undefined
@@ -934,6 +941,7 @@ export const useTreasuryStats = (assets: TAsset[]) => {
     const borrowSummaries = [
       hydrationBorrowSummary,
       hollarBorrowSummary,
+      primeBorrowSummary,
       moneyMarketBorrowSummary,
     ]
 
@@ -1047,6 +1055,7 @@ export const useTreasuryStats = (assets: TAsset[]) => {
     hollarBorrowSummary,
     hydrationBorrowSummary,
     moneyMarketBorrowSummary,
+    primeBorrowSummary,
     treasury.data,
   ])
 
@@ -1057,6 +1066,7 @@ export const useTreasuryStats = (assets: TAsset[]) => {
       treasury.isLoading ||
       isHydrationBorrowLoading ||
       isHollarBorrowLoading ||
+      isPrimeBorrowLoading ||
       isMoneyMarketBorrowLoading,
   }
 }

@@ -721,7 +721,6 @@ export const SCompositionGrid = styled.div(
     display: grid;
     grid-template-columns: repeat(${COMPOSITION_GRID_COLUMNS}, minmax(0, 1fr));
     grid-auto-rows: ${COMPOSITION_ROW_HEIGHT};
-    grid-auto-flow: dense;
     gap: ${COMPOSITION_GRID_GAP};
 
     @media (width < ${MOBILE_BREAKPOINT}) {

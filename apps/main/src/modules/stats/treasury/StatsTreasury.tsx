@@ -59,14 +59,13 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
+  COMPOSITION_MAX_ROWS_MOBILE,
   type CompositionBlockLayout,
   type CompositionGridBlockSpec,
   estimateCompositionGridRows,
   getCompositionGridBlockSpecs,
   getCompositionGridContext,
   getCompositionMobileGridBlockSpecs,
-  getCompositionMobilePrimaryBlockSpecs,
-  getCompositionPrimaryBlockSpecs,
   getOthersCompositionBlockLayout,
   getOthersCompositionMobileBlockLayout,
   getResolvedCompositionBlockLayout,
@@ -127,6 +126,7 @@ const ASSET_PAGE_SIZE = 20
 const COMPOSITION_PRIMARY_MIN_VALUE_USD = 15_000
 const OTHERS_GROUP_ID = "others"
 const FORCE_OTHERS_ASSET_SYMBOLS = new Set(["ibtc", "wsteth"])
+const FORCE_PRIMARY_COMPOSITION_SYMBOLS = new Set(["eurc", "gdot"])
 
 const OTHERS_BLOCK_COLOR = "#5a6270"
 const OTHERS_BLOCK_COLORS: CompositionTileColors = {
@@ -172,6 +172,10 @@ const MOBILE_SKELETON_SPECS: CompositionGridBlockSpec[] = [
 
 const shouldForceAssetIntoOthers = (asset: TreasuryAssetBalance["asset"]) =>
   FORCE_OTHERS_ASSET_SYMBOLS.has(asset.symbol.trim().toLowerCase())
+
+const shouldForceAssetIntoPrimaryComposition = (
+  asset: TreasuryAssetBalance["asset"],
+) => FORCE_PRIMARY_COMPOSITION_SYMBOLS.has(asset.symbol.trim().toLowerCase())
 
 const getTreasuryAssetLogoId = (asset: TreasuryAssetBalance["asset"]) =>
   TREASURY_SINGLE_LOGO_ASSET_IDS.get(asset.id) ?? asset.id
@@ -1483,10 +1487,6 @@ export const StatsTreasury = () => {
   const isCompactTable = useCompositionMobileLayout
   const [assetPage, setAssetPage] = useState(1)
   const [assetSearch, setAssetSearch] = useState("")
-  const compositionGridContext = getCompositionGridContext(
-    useCompositionMobileLayout,
-  )
-  const compositionMaxRows = compositionGridContext.maxRows
 
   const assets = useMemo(() => {
     const assetMap = new Map(
@@ -1534,49 +1534,40 @@ export const StatsTreasury = () => {
 
     const primaryAssets = pricedAssets.filter(
       (item) =>
-        Number(item.valueUsd) >= COMPOSITION_PRIMARY_MIN_VALUE_USD &&
+        (Number(item.valueUsd) >= COMPOSITION_PRIMARY_MIN_VALUE_USD ||
+          shouldForceAssetIntoPrimaryComposition(item.asset)) &&
         !shouldForceAssetIntoOthers(item.asset),
     )
     let othersAssets = pricedAssets.filter(
       (item) =>
-        Number(item.valueUsd) < COMPOSITION_PRIMARY_MIN_VALUE_USD ||
+        (Number(item.valueUsd) < COMPOSITION_PRIMARY_MIN_VALUE_USD &&
+          !shouldForceAssetIntoPrimaryComposition(item.asset)) ||
         shouldForceAssetIntoOthers(item.asset),
     )
 
-    while (primaryAssets.length > 0) {
-      const othersShare = othersAssets.reduce(
-        (acc, item) => acc + item.share,
-        0,
-      )
-      const layoutAssets = primaryAssets.map((item) => ({
-        share: item.share,
-        ...getCompositionLayoutOptions(item.asset, item.valueUsd),
-      }))
-      const gridSpecs = useCompositionMobileLayout
-        ? getCompositionMobileGridBlockSpecs(
-            layoutAssets,
-            othersAssets.length ? othersShare : undefined,
-          )
-        : getCompositionGridBlockSpecs(
-            layoutAssets,
-            othersAssets.length ? othersShare : undefined,
-          )
+    if (useCompositionMobileLayout) {
+      while (primaryAssets.length > 1) {
+        const othersShare =
+          othersAssets.reduce((acc, item) => acc + item.share, 0) || undefined
+        const rows = estimateCompositionGridRows(
+          getCompositionMobileGridBlockSpecs(
+            primaryAssets.map((item) => ({
+              id: item.asset.id,
+              share: item.share,
+              ...getCompositionLayoutOptions(item.asset, item.valueUsd),
+            })),
+            othersShare,
+          ),
+          getCompositionGridContext(true),
+        )
 
-      if (
-        estimateCompositionGridRows(gridSpecs, compositionGridContext) <=
-        compositionMaxRows
-      ) {
-        break
-      }
+        if (rows <= COMPOSITION_MAX_ROWS_MOBILE) break
 
-      if (primaryAssets.length === 1) {
-        break
-      }
+        const [asset] = primaryAssets.splice(-1, 1)
 
-      const overflowAsset = primaryAssets.pop()
+        if (!asset) break
 
-      if (overflowAsset) {
-        othersAssets = [...othersAssets, overflowAsset]
+        othersAssets = [asset, ...othersAssets]
       }
     }
 
@@ -1601,13 +1592,7 @@ export const StatsTreasury = () => {
     return {
       compositionBlocks: blocks,
     }
-  }, [
-    compositionAssetColors,
-    compositionAssets,
-    compositionGridContext,
-    compositionMaxRows,
-    useCompositionMobileLayout,
-  ])
+  }, [compositionAssetColors, compositionAssets, useCompositionMobileLayout])
 
   const compositionLayoutAssets = useMemo(
     () =>
@@ -1629,26 +1614,8 @@ export const StatsTreasury = () => {
     return othersBlock?.share
   }, [compositionBlocks])
 
-  const compositionPrimarySpecs = useMemo(
+  const compositionGridSpecs = useMemo(
     () =>
-      useCompositionMobileLayout
-        ? getCompositionMobilePrimaryBlockSpecs(
-            compositionLayoutAssets,
-            compositionOthersShare,
-          )
-        : getCompositionPrimaryBlockSpecs(
-            compositionLayoutAssets,
-            compositionOthersShare,
-          ),
-    [
-      compositionLayoutAssets,
-      compositionOthersShare,
-      useCompositionMobileLayout,
-    ],
-  )
-
-  const compositionSkeletonSpecs = useMemo(() => {
-    const specs =
       compositionLayoutAssets.length || compositionOthersShare
         ? useCompositionMobileLayout
           ? getCompositionMobileGridBlockSpecs(
@@ -1659,18 +1626,26 @@ export const StatsTreasury = () => {
               compositionLayoutAssets,
               compositionOthersShare,
             )
-        : []
+        : [],
+    [
+      compositionLayoutAssets,
+      compositionOthersShare,
+      useCompositionMobileLayout,
+    ],
+  )
 
-    if (specs.length) return specs
+  const compositionPrimarySpecs = useMemo(
+    () => compositionGridSpecs.slice(0, compositionLayoutAssets.length),
+    [compositionGridSpecs, compositionLayoutAssets.length],
+  )
+
+  const compositionSkeletonSpecs = useMemo(() => {
+    if (compositionGridSpecs.length) return compositionGridSpecs
 
     return useCompositionMobileLayout
       ? MOBILE_SKELETON_SPECS
       : DESKTOP_SKELETON_SPECS
-  }, [
-    compositionLayoutAssets,
-    compositionOthersShare,
-    useCompositionMobileLayout,
-  ])
+  }, [compositionGridSpecs, useCompositionMobileLayout])
 
   const relatedPositionsBySymbol = useMemo(() => {
     const positionsBySymbol = new Map<string, TreasuryAssetBalance[]>()
@@ -1813,9 +1788,9 @@ export const StatsTreasury = () => {
                 />
               ))
             ) : compositionBlocks.length ? (
-              compositionBlocks.map((block) => {
+              compositionBlocks.map((block, blockIndex) => {
                 if (block.kind === "others") {
-                  const layout = useCompositionMobileLayout
+                  const baseLayout = useCompositionMobileLayout
                     ? getOthersCompositionMobileBlockLayout(
                         block.share,
                         compositionPrimarySpecs,
@@ -1824,6 +1799,12 @@ export const StatsTreasury = () => {
                         block.share,
                         compositionPrimarySpecs,
                       )
+                  const spec = compositionGridSpecs[blockIndex]
+                  const layout = {
+                    ...baseLayout,
+                    colSpan: spec?.colSpan ?? baseLayout.colSpan,
+                    rowSpan: spec?.rowSpan ?? baseLayout.rowSpan,
+                  }
 
                   return (
                     <OthersCompositionBlock
@@ -1837,7 +1818,7 @@ export const StatsTreasury = () => {
                 const assetIndex = compositionLayoutAssets.findIndex(
                   (asset) => asset.id === block.asset.id,
                 )
-                const layout = useCompositionMobileLayout
+                const baseLayout = useCompositionMobileLayout
                   ? getResolvedCompositionMobileBlockLayout(
                       block.share,
                       getCompositionLayoutOptions(block.asset, block.valueUsd),
@@ -1852,6 +1833,12 @@ export const StatsTreasury = () => {
                       assetIndex,
                       compositionOthersShare,
                     )
+                const spec = compositionGridSpecs[blockIndex]
+                const layout = {
+                  ...baseLayout,
+                  colSpan: spec?.colSpan ?? baseLayout.colSpan,
+                  rowSpan: spec?.rowSpan ?? baseLayout.rowSpan,
+                }
 
                 return (
                   <AssetCompositionBlock

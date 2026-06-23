@@ -10,6 +10,7 @@ The page tracks these hardcoded treasury accounts in `apps/main/src/api/treasury
 |---|---|---|
 | Hydration treasury | `13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
 | HOLLAR collector treasury | `0x8C0f3b9602374198974d2B2679d14a386f5b108e` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
+| PRIME looped position | `15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
 | Money market treasury | `0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9` | Wallet balances, omnipool liquidity positions, money-market supply, money-market borrow |
 | Polkadot Asset Hub staking address | `13RSNAx31mcP5H5KYf12cP5YChq6JeD8Hi64twhhxKtHqBkg` | Asset Hub native DOT balance |
 | Polkadot Asset Hub rewards address | `14kovW62mmGZBRvbNT1w5J7m9SQskd5JTRTLKZLpkpjmZBJ8` | Asset Hub native DOT balance |
