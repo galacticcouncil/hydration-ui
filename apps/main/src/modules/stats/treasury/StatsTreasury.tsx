@@ -335,6 +335,12 @@ const formatTooltipCurrency = (value: string | number | null | undefined) => {
   }).format(numericValue)
 }
 
+const hasPricedValue = (item: TreasuryAssetBalance) => {
+  const value = Number(item.valueUsd ?? 0)
+
+  return Number.isFinite(value) && value > 0
+}
+
 const getTreasuryBalanceAmountProps = (item: TreasuryAssetBalance) => ({
   value: formatTokenAmount(item.balance),
   displayValue:
@@ -1429,12 +1435,14 @@ export const StatsTreasury = () => {
         (position) => !holdingAssetIds.has(position.asset.id),
       ) ?? []
 
-    return [...assets, ...borrowOnlyAssets].sort((a, b) => {
-      const valueA = Number(a.valueUsd ?? 0)
-      const valueB = Number(b.valueUsd ?? 0)
+    return [...assets, ...borrowOnlyAssets]
+      .filter(hasPricedValue)
+      .sort((a, b) => {
+        const valueA = Number(a.valueUsd ?? 0)
+        const valueB = Number(b.valueUsd ?? 0)
 
-      return valueB - valueA
-    })
+        return valueB - valueA
+      })
   }, [data?.assets, data?.borrowPositions])
   const filteredTreasuryAssets = useMemo(() => {
     const search = assetSearch.trim().toLowerCase()
@@ -1536,10 +1544,7 @@ export const StatsTreasury = () => {
                 const layout = useCompositionMobileLayout
                   ? getResolvedCompositionMobileBlockLayout(
                       block.share,
-                      getCompositionLayoutOptions(
-                        block.asset,
-                        block.valueUsd,
-                      ),
+                      getCompositionLayoutOptions(block.asset, block.valueUsd),
                       compositionLayoutAssets,
                       assetIndex,
                       compositionOthersShare,

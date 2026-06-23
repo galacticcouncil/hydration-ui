@@ -17,7 +17,7 @@ import { useUserBorrowSummary } from "@/api/borrow"
 import { OmniPoolToken, PoolToken, PoolType } from "@/api/pools"
 import { getSpotPrice } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
-import { TAsset } from "@/providers/assetsProvider"
+import { isBond, TAsset } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { scale, scaleHuman } from "@/utils/formatting"
@@ -180,6 +180,9 @@ const getAssetValueUsd = async (
   }
 }
 
+const getTreasuryPricingAssetId = (asset: TAsset) =>
+  isBond(asset) ? asset.underlyingAssetId : asset.id
+
 const createWalletAssetBalance = async (
   rpc: TProviderContext,
   asset: TAsset,
@@ -189,7 +192,7 @@ const createWalletAssetBalance = async (
 ): Promise<TreasuryAssetBalance> => {
   const { price, valueUsd } = await getAssetValueUsd(
     rpc,
-    asset.id,
+    getTreasuryPricingAssetId(asset),
     balance,
     displayAssetId,
   )
@@ -220,7 +223,7 @@ const createLiquidityAssetBalance = async (
   const balance = scaleHuman(balanceRaw, asset.decimals)
   const { price, valueUsd } = await getAssetValueUsd(
     rpc,
-    asset.id,
+    getTreasuryPricingAssetId(asset),
     balance,
     displayAssetId,
   )

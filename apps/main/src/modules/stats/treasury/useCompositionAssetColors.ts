@@ -32,7 +32,7 @@ const compositionAssetColorMap = compositionAssetColors.assets as Record<
 const deriveThemeTileColors = (base: string): CompositionTileColors => ({
   base,
   dark: `color-mix(in srgb, ${base} 82%, #08111f)`,
-  light: `color-mix(in srgb, ${base} 58%, white)`,
+  light: `color-mix(in oklch, ${base} 62%, white)`,
 })
 
 const isHollarSymbol = (symbol: string) =>
@@ -377,7 +377,7 @@ export const useCompositionAssetColors = (
     queries: colorSpecs.map(({ id, spec }) => ({
       queryKey: [
         "compositionAssetColor",
-        "v5",
+        "v6",
         id,
         spec.type,
         spec.type === "logo"

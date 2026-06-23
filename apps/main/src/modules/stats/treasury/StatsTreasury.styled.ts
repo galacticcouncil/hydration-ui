@@ -10,9 +10,13 @@ import {
 const COMPOSITION_ROW_HEIGHT = pxToRem(48 * 1.3)
 const COMPOSITION_ROW_HEIGHT_MOBILE = pxToRem(52)
 const COMPOSITION_GRID_GAP = pxToRem(4)
+const COMPOSITION_BLOCK_BORDER_WIDTH = 1
 const COMPOSITION_BLOCK_RADIUS = pxToRem(8)
 const COMPOSITION_BLOCK_PADDING = pxToRem(8)
 const COMPOSITION_BLOCK_PADDING_MOBILE = pxToRem(6)
+const COMPOSITION_BLOCK_HOVER_IN_DURATION = "480ms"
+const COMPOSITION_BLOCK_HOVER_OUT_DURATION = "720ms"
+const COMPOSITION_BLOCK_HOVER_EASING = "cubic-bezier(0.4, 0, 0.2, 1)"
 const MOBILE_BREAKPOINT = "768px"
 
 const tooltipRowDivider = (theme: { text: { low: string } }) =>
@@ -136,7 +140,14 @@ export const SCompositionBlock = styled.div<{
   readonly rowSpan: number
 }>(({ color, darkColor, lightColor, tier, colSpan, rowSpan, theme }) => {
   const tierStyle = compositionTierStyles[tier]
-  const lightFillOpacity = Math.max(tierStyle.fillOpacity * 0.5, 0.2)
+  const lightFillOpacity = Math.max(tierStyle.fillOpacity * 0.62, 0.28)
+  const lightColorMix =
+    lightColor ??
+    `color-mix(
+      in oklch,
+      var(--composition-color) 62%,
+      white
+    )`
 
   return css`
     --composition-color: ${color};
@@ -174,18 +185,17 @@ export const SCompositionBlock = styled.div<{
     }
 
     html.light & {
-      --composition-fill-color: ${lightColor ??
-      `color-mix(
-          in srgb,
-          var(--composition-color) 58%,
-          white
-        )`};
+      --composition-fill-color: color-mix(
+        in oklch,
+        ${lightColorMix} 72%,
+        var(--composition-color)
+      );
       --fill-opacity: ${lightFillOpacity};
-      --fill-opacity-active: ${Math.min(lightFillOpacity + 0.08, 0.42)};
+      --fill-opacity-active: ${Math.min(lightFillOpacity + 0.1, 0.5)};
       --saturation: ${Math.min(tierStyle.saturation + 0.12, 1.1)};
       --saturation-active: ${Math.min(tierStyle.saturation + 0.2, 1.18)};
-      --brightness: ${Math.min(tierStyle.brightness * 1.08, 1.1)};
-      --brightness-active: ${Math.min(tierStyle.brightness * 1.14, 1.16)};
+      --brightness: ${Math.max(tierStyle.brightness * 0.98, 0.9)};
+      --brightness-active: ${Math.min(tierStyle.brightness * 1.04, 1.08)};
     }
 
     &::before {
@@ -197,23 +207,49 @@ export const SCompositionBlock = styled.div<{
       opacity: var(--fill-opacity);
       filter: saturate(var(--saturation)) brightness(var(--brightness));
       transition:
-        opacity 240ms ease,
-        filter 240ms ease;
+        opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+          ${COMPOSITION_BLOCK_HOVER_EASING},
+        filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+          ${COMPOSITION_BLOCK_HOVER_EASING};
       z-index: 0;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: ${COMPOSITION_BLOCK_BORDER_WIDTH}px solid
+        var(--composition-fill-color);
+      opacity: var(--fill-opacity);
+      filter: saturate(var(--saturation)) brightness(var(--brightness));
+      pointer-events: none;
+      transition:
+        opacity ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+          ${COMPOSITION_BLOCK_HOVER_EASING},
+        filter ${COMPOSITION_BLOCK_HOVER_OUT_DURATION}
+          ${COMPOSITION_BLOCK_HOVER_EASING};
+      z-index: 1;
     }
 
     & > * {
       position: relative;
-      z-index: 1;
+      z-index: 2;
     }
 
     &:hover {
       z-index: 2;
 
-      &::before {
+      &::before,
+      &::after {
         opacity: var(--fill-opacity-active);
         filter: saturate(var(--saturation-active))
           brightness(var(--brightness-active));
+        transition:
+          opacity ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING},
+          filter ${COMPOSITION_BLOCK_HOVER_IN_DURATION}
+            ${COMPOSITION_BLOCK_HOVER_EASING};
       }
     }
   `

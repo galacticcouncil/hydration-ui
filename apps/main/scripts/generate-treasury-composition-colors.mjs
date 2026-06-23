@@ -342,7 +342,7 @@ const getIconColor = (iconSrc) =>
 const getThemeColors = (base) => ({
   base,
   dark: mixHex(base, "#08111f", 0.82),
-  light: mixHex(base, "#ffffff", 0.58),
+  light: `color-mix(in oklch, ${base} 62%, white)`,
 })
 
 const main = async () => {
