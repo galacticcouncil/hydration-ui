@@ -5,5 +5,5 @@ import { SwapPageSkeleton } from "@/modules/trade/swap/SwapPageSkeleton"
 
 export const Route = createFileRoute("/")({
   pendingComponent: SwapPageSkeleton,
-  component: () => <Navigate to={LINKS.swapXc} />,
+  component: () => <Navigate to={LINKS.swapMarket} />,
 })

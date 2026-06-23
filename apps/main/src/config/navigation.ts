@@ -28,7 +28,6 @@ export const LINKS = {
   swap: "/trade/swap",
   swapMarket: "/trade/swap/market",
   swapDca: "/trade/swap/dca",
-  swapXc: "/trade/swap/xc",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
@@ -73,7 +72,7 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "trade",
     to: LINKS.trade,
-    defaultChild: LINKS.swapXc,
+    defaultChild: LINKS.swapMarket,
     icon: Repeat2Icon,
     children: [
       {
@@ -81,7 +80,6 @@ export const NAVIGATION: NavigationItem[] = [
         to: LINKS.swap,
         icon: Repeat2Icon,
         children: [
-          { key: "swapXc", to: LINKS.swapXc },
           { key: "swapMarket", to: LINKS.swapMarket },
           { key: "swapDca", to: LINKS.swapDca },
         ],
@@ -231,10 +229,6 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     swapDca: {
       title: t("navigation.swapDca.title"),
-      description: "",
-    },
-    swapXc: {
-      title: "XC",
       description: "",
     },
     otc: {
