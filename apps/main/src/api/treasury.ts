@@ -11,7 +11,11 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
-import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
+import {
+  OmnipoolDepositFull,
+  OmnipoolPosition,
+  XykDeposit,
+} from "@/api/account"
 import { AssetType } from "@/api/assets"
 import { useUserBorrowSummary } from "@/api/borrow"
 import { OmniPoolToken, PoolToken, PoolType } from "@/api/pools"
@@ -24,6 +28,7 @@ import { scale, scaleHuman } from "@/utils/formatting"
 import {
   getOmnipoolMiningPositions,
   getOmnipoolPositions,
+  getXykMiningPositions,
 } from "@/utils/uniques"
 
 export type TreasuryAssetSource =
@@ -317,6 +322,21 @@ const getTreasuryOmnipoolPositions = async (
   )
 }
 
+const getTreasuryXykMiningPositions = async (
+  rpc: TProviderContext,
+  address: string,
+) => {
+  const xykMiningNftId =
+    await rpc.papi.constants.XYKLiquidityMining.NFTCollectionId()
+  const entries = await rpc.papi.query.Uniques.Account.getEntries(
+    address,
+    xykMiningNftId,
+    { at: "best" },
+  )
+
+  return entries.length ? getXykMiningPositions(rpc.papi, entries) : []
+}
+
 const expandXYKShareToken = async (
   rpc: TProviderContext,
   pools: TreasuryPool[],
@@ -357,6 +377,26 @@ const expandXYKShareToken = async (
     }),
   ).then((items) =>
     items.filter((item): item is TreasuryAssetBalance => !!item),
+  )
+}
+
+const expandXYKMiningPosition = async (
+  rpc: TProviderContext,
+  pools: TreasuryPool[],
+  shareAssetsByPoolAddress: Map<string, TAsset & { poolAddress: string }>,
+  position: XykDeposit,
+  displayAssetId: string,
+): Promise<TreasuryAssetBalance[]> => {
+  const asset = shareAssetsByPoolAddress.get(position.amm_pool_id)
+
+  if (!asset) return []
+
+  return expandXYKShareToken(
+    rpc,
+    pools,
+    asset,
+    position.shares.toString(),
+    displayAssetId,
   )
 }
 
@@ -478,6 +518,11 @@ export const treasuryStatsQuery = (
         (account) => account.includeWalletBalances,
       )
       const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
+      const shareAssetsByPoolAddress = new Map(
+        assets
+          .filter(isXYKShareAsset)
+          .map((asset) => [asset.poolAddress, asset]),
+      )
       const pools = await rpc.sdk.api.router.getPools()
       const omnipoolTokens = pools.flatMap((pool) =>
         pool.type === PoolType.Omni ? (pool.tokens as OmniPoolToken[]) : [],
@@ -566,9 +611,35 @@ export const treasuryStatsQuery = (
         items.flat().filter((item): item is TreasuryAssetBalance => !!item),
       )
 
+      const xykMiningLiquidityAssets = await Promise.all(
+        walletAccounts.flatMap((account) => {
+          const address = getBalanceAccountAddress(account.address)
+
+          if (!address) return []
+
+          return getTreasuryXykMiningPositions(rpc, address).then((positions) =>
+            Promise.all(
+              positions.map((position) =>
+                expandXYKMiningPosition(
+                  rpc,
+                  pools,
+                  shareAssetsByPoolAddress,
+                  position,
+                  displayAssetId,
+                ),
+              ),
+            ),
+          )
+        }),
+      ).then((items) => items.flat(2))
+
       const pricedAssets = mergePositivePositions(
         [],
-        [...walletAssets, ...omnipoolLiquidityAssets],
+        [
+          ...walletAssets,
+          ...omnipoolLiquidityAssets,
+          ...xykMiningLiquidityAssets,
+        ],
       )
 
       const totalValueUsd = pricedAssets.reduce(

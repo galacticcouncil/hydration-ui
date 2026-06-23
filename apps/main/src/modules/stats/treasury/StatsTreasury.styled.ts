@@ -51,7 +51,7 @@ export const SLoadedContent = styled.div(
 export const SKpiGrid = styled.div(
   ({ theme }) => css`
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: ${theme.space.xl};
 
     @media (width < ${MOBILE_BREAKPOINT}) {
@@ -61,6 +61,19 @@ export const SKpiGrid = styled.div(
       & > * {
         min-width: 0;
       }
+    }
+  `,
+)
+
+export const SKpiTooltipTrigger = styled.div(
+  ({ theme }) => css`
+    min-width: 0;
+    cursor: help;
+    border-radius: ${theme.radii.m};
+
+    &:focus-visible {
+      outline: 2px solid ${theme.text.medium};
+      outline-offset: ${theme.space.xs};
     }
   `,
 )

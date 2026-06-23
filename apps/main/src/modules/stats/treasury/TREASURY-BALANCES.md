@@ -22,6 +22,7 @@ Data is live at fetch time, but not streamed every block. React Query refetches 
 |---|---|
 | Substrate RPC (`papi`) | `System.Account` for HDX, `Tokens.Accounts` for other wallet balances |
 | Substrate RPC (`papi`) | Treasury-owned omnipool position NFTs and omnipool liquidity-mining NFTs |
+| Substrate RPC (`papi`) | Treasury-owned XYK liquidity-mining NFTs |
 | SDK router spot price | USD value for wallet balances |
 | `useUserBorrowSummary` | Money-market supplied collateral and borrow positions |
 | `compositionAssetColors.json` | Saved tile colors for known assets; logo extraction is only a fallback for new assets |
@@ -47,9 +48,11 @@ Each `TreasuryAssetBalance` carries a `breakdown`:
 | `liquidity` | Underlying value expanded from wallet-held LP/share tokens and treasury-owned omnipool positions |
 | `moneyMarketBorrow` | Borrowed exposure |
 
-Wallet-held XYK share tokens, stablepool shares, and treasury-owned omnipool positions are expanded before merging. The original share token row is omitted when expansion succeeds, so assets like PAXG inside a treasury LP position contribute to the PAXG tile/table row as `Supplied as liquidity` instead of being hidden behind the LP token.
+Wallet-held XYK share tokens, farmed XYK share positions, stablepool shares, and treasury-owned omnipool positions are expanded before merging. The original share token row is omitted when expansion succeeds, so assets like PAXG inside a treasury LP position contribute to the PAXG tile/table row as `Supplied as liquidity` instead of being hidden behind the LP token.
 
 Borrow positions are kept separate from holdings and subtracted from `totalValueUsd`. Receipt tokens with an `underlyingAssetId` are ignored in wallet holdings, so supplied collateral comes from money-market data once instead of being double-counted through receipt balances.
+
+This differs from the connected wallet balance card. The wallet `Asset balance` card is for the active account only and only sums token + ERC20 wallet balances; liquidity is shown in a separate wallet card and supplied collateral is not included there. Treasury stats aggregate all tracked treasury accounts and include wallet balances, expanded liquidity, and supplied collateral. Borrow is aggregated for those tracked accounts and deducted only in `totalValueUsd`.
 
 ## UI Rules
 
@@ -76,7 +79,6 @@ Borrow positions are kept separate from holdings and subtracted from `totalValue
 - Mobile columns: `Asset`, `Balance`.
 - Uses the shared pagination control with 20 assets per page.
 - Header search filters by asset symbol or name.
-- Borrow-only assets are included so the table count matches the Assets held KPI.
 
 ## Key Files
 

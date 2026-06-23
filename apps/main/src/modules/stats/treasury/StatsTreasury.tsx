@@ -83,6 +83,7 @@ import {
   SCursorAssetTooltipContent,
   SInteractiveTableRow,
   SKpiGrid,
+  SKpiTooltipTrigger,
   SLoadedContent,
   SMuted,
   SPanelSearch,
@@ -506,6 +507,114 @@ const TooltipLabel = ({ children }: { children: ReactNode }) => (
   <Text fs="p7" fw={500} color="text.high">
     {children}
   </Text>
+)
+
+type TreasuryHoldingsBreakdown = {
+  regular: string
+  liquidity: string
+  supplied: string
+  borrowed: string
+  holdings: string
+  net: string
+}
+
+const sumBreakdownUsd = (
+  items: TreasuryAssetBalance[],
+  getPart: (
+    item: TreasuryAssetBalance,
+  ) => TreasuryAssetBreakdownPart | undefined,
+) =>
+  items
+    .reduce((acc, item) => acc.plus(getPartValueUsd(getPart(item))), Big(0))
+    .toString()
+
+const getTreasuryHoldingsBreakdown = (
+  assets: TreasuryAssetBalance[] = [],
+  borrowPositions: TreasuryAssetBalance[] = [],
+): TreasuryHoldingsBreakdown => {
+  const regular = sumBreakdownUsd(assets, (item) => item.breakdown.wallet)
+  const liquidity = sumBreakdownUsd(assets, (item) => item.breakdown.liquidity)
+  const supplied = sumBreakdownUsd(
+    assets,
+    (item) => item.breakdown.moneyMarketSupply,
+  )
+  const borrowed = sumBreakdownUsd(
+    borrowPositions,
+    (item) => item.breakdown.moneyMarketBorrow,
+  )
+  const holdings = sumDecimalStrings(regular, liquidity, supplied).toString()
+  const net = sumDecimalStrings(
+    holdings,
+    Big(borrowed).times(-1).toString(),
+  ).toString()
+
+  return {
+    regular,
+    liquidity,
+    supplied,
+    borrowed,
+    holdings,
+    net,
+  }
+}
+
+const TreasuryHoldingsTooltipRow = ({
+  label,
+  value,
+  negative,
+}: {
+  label: string
+  value: string
+  negative?: boolean
+}) => (
+  <STooltipRow $compact>
+    <TooltipLabel>{label}</TooltipLabel>
+    <Text fs="p7" fw={600} color="text.high" sx={{ textAlign: "right" }}>
+      {negative && isPositiveNumberString(value) ? "-" : ""}
+      {formatTooltipCurrency(value)}
+    </Text>
+  </STooltipRow>
+)
+
+const TreasuryHoldingsTooltipContent = ({
+  breakdown,
+}: {
+  breakdown: TreasuryHoldingsBreakdown
+}) => (
+  <SCompositionTooltipShell>
+    <STooltipLegend $compact>
+      <STooltipTitle>Treasury holdings breakdown</STooltipTitle>
+      <STooltipSection>
+        <TreasuryHoldingsTooltipRow
+          label="Asset balance"
+          value={breakdown.regular}
+        />
+        <TreasuryHoldingsTooltipRow
+          label="Supplied as liquidity"
+          value={breakdown.liquidity}
+        />
+        <TreasuryHoldingsTooltipRow
+          label="Supplied as collateral"
+          value={breakdown.supplied}
+        />
+        <TreasuryHoldingsTooltipRow
+          label="Borrowed"
+          value={breakdown.borrowed}
+          negative
+        />
+      </STooltipSection>
+      <STooltipSection>
+        <TreasuryHoldingsTooltipRow
+          label="Total holdings"
+          value={breakdown.holdings}
+        />
+        <TreasuryHoldingsTooltipRow
+          label="Net treasury value"
+          value={breakdown.net}
+        />
+      </STooltipSection>
+    </STooltipLegend>
+  </SCompositionTooltipShell>
 )
 
 const AssetDetailsTooltipContent = ({
@@ -1474,30 +1583,46 @@ export const StatsTreasury = () => {
     setAssetPage(1)
   }, [assetSearch])
 
+  const holdingsBreakdown = useMemo(
+    () => getTreasuryHoldingsBreakdown(data?.assets, data?.borrowPositions),
+    [data?.assets, data?.borrowPositions],
+  )
+
   return (
     <STreasuryGrid>
       <STreasuryOverview>
         <SLoadedContent key={isLoading ? "stats-loading" : "stats-loaded"}>
           <SKpiGrid>
-            <ValueStats
-              wrap
-              size="medium"
-              label="Treasury holdings"
-              value={formatTreasuryValue(data?.holdingsValueUsd)}
-              isLoading={isLoading}
-            />
+            <Root delayDuration={0}>
+              <Trigger asChild>
+                <SKpiTooltipTrigger tabIndex={0}>
+                  <ValueStats
+                    wrap
+                    size="medium"
+                    label="Treasury holdings"
+                    value={formatTreasuryValue(data?.holdingsValueUsd)}
+                    isLoading={isLoading}
+                  />
+                </SKpiTooltipTrigger>
+              </Trigger>
+              <Portal>
+                <SCompositionOthersTooltipContent
+                  side="top"
+                  align="start"
+                  sideOffset={8}
+                  collisionPadding={12}
+                >
+                  <TreasuryHoldingsTooltipContent
+                    breakdown={holdingsBreakdown}
+                  />
+                </SCompositionOthersTooltipContent>
+              </Portal>
+            </Root>
             <ValueStats
               wrap
               size="medium"
               label="Net treasury value"
               value={formatTreasuryValue(data?.totalValueUsd)}
-              isLoading={isLoading}
-            />
-            <ValueStats
-              wrap
-              size="medium"
-              label="Assets held"
-              value={data ? allTreasuryAssets.length.toString() : "-"}
               isLoading={isLoading}
             />
           </SKpiGrid>
