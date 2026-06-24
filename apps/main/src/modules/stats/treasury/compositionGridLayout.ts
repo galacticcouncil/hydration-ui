@@ -48,6 +48,8 @@ const MOBILE_GRID: CompositionGridContext = {
 
 const MOBILE_MIN_COL_SPAN = 1
 const STANDARD_DESKTOP_COL_SPAN = 2
+const WIDE_SINGLE_ROW_MIN_VALUE_USD = 700_000
+const WIDE_SINGLE_ROW_MAX_VALUE_USD = 900_000
 
 const getLayoutValueUsd = (valueUsd?: string | number | null) => {
   const value = Number(valueUsd ?? 0)
@@ -62,23 +64,20 @@ const isCompositionRange = (
   minValueUsd: number,
 ) => share >= minShare || valueUsd >= minValueUsd
 
-const isPrimeSymbol = (symbol?: string) =>
-  symbol?.toUpperCase().includes("PRIME")
-
-const DESKTOP_ROW_ANCHOR_COL_SPANS = [
-  { symbol: "HUSDT", colSpan: 4 },
-  { symbol: "HUSDC", colSpan: 4 },
-  { symbol: "PAXG", colSpan: 3 },
-  { symbol: "GSOL", colSpan: 3 },
-] as const
-
-const getDesktopRowAnchorColSpan = (symbol?: string) => {
+const isTallMidSymbol = (symbol?: string) => {
   const normalizedSymbol = symbol?.toUpperCase()
 
-  return DESKTOP_ROW_ANCHOR_COL_SPANS.find(({ symbol: anchor }) =>
-    normalizedSymbol?.includes(anchor),
-  )?.colSpan
+  return (
+    normalizedSymbol?.includes("PRIME") || normalizedSymbol?.includes("SIGIL")
+  )
 }
+
+const isSigilSymbol = (symbol?: string) =>
+  symbol?.toUpperCase().includes("SIGIL")
+
+const isWideSingleRowRange = (valueUsd: number) =>
+  valueUsd >= WIDE_SINGLE_ROW_MIN_VALUE_USD &&
+  valueUsd < WIDE_SINGLE_ROW_MAX_VALUE_USD
 
 export const getCompositionBlockLayout = (
   share: number,
@@ -86,11 +85,13 @@ export const getCompositionBlockLayout = (
 ): CompositionBlockLayout => {
   let layout: CompositionBlockLayout
   const valueUsd = getLayoutValueUsd(options?.valueUsd)
-  const isPrime = isPrimeSymbol(options?.symbol)
 
-  if (isPrime) {
+  if (isTallMidSymbol(options?.symbol)) {
     layout = {
-      colSpan: 4,
+      colSpan:
+        isSigilSymbol(options?.symbol) || valueUsd < 1_000_000 || share < 5
+          ? 2
+          : 3,
       rowSpan: 2,
       tier: "major",
       shareSize: "large",
@@ -140,16 +141,25 @@ export const getCompositionBlockLayout = (
       logoSize: "small",
       symbolSize: "medium",
     }
-  } else if (share >= 4 || valueUsd >= 3_000_000) {
+  } else if (valueUsd >= 1_100_000) {
     layout = {
-      colSpan: 3,
+      colSpan: 4,
       rowSpan: 1,
       tier: "mid",
       shareSize: "medium",
       logoSize: "small",
       symbolSize: "medium",
     }
-  } else if (isCompositionRange(share, valueUsd, 1.25, 750_000)) {
+  } else if (isWideSingleRowRange(valueUsd)) {
+    layout = {
+      colSpan: 3,
+      rowSpan: 1,
+      tier: "mid",
+      shareSize: "medium",
+      logoSize: "extra-small",
+      symbolSize: "small",
+    }
+  } else if (isCompositionRange(share, valueUsd, 1.25, 250_000)) {
     layout = {
       colSpan: 2,
       rowSpan: 1,
@@ -398,12 +408,14 @@ const getBalancedMaxColSpan = (
   grid: CompositionGridContext,
 ) => {
   const valueUsd = getLayoutValueUsd(asset.valueUsd)
-  const isPrime = isPrimeSymbol(asset.symbol)
-
   if (spec.rowSpan > 1) {
     if (grid.columns === COMPOSITION_GRID_COLUMNS_MOBILE) return spec.colSpan
 
-    if (isPrime || valueUsd >= 3_000_000 || asset.share >= 10) {
+    if (isTallMidSymbol(asset.symbol)) {
+      return spec.colSpan
+    }
+
+    if (valueUsd >= 3_000_000 || asset.share >= 10) {
       return Math.max(spec.colSpan, 5)
     }
 
@@ -424,11 +436,11 @@ const getBalancedMaxColSpan = (
       : spec.colSpan
   }
 
-  if (valueUsd >= 1_100_000 || asset.share >= 3) {
+  if (valueUsd >= 1_100_000) {
     return Math.max(spec.colSpan, 4)
   }
 
-  if (valueUsd >= 500_000 || asset.share >= 1.25) {
+  if (isWideSingleRowRange(valueUsd)) {
     return Math.max(spec.colSpan, 3)
   }
 
@@ -451,6 +463,10 @@ const getCompactMinColSpan = (
   }
 
   const valueUsd = getLayoutValueUsd(asset.valueUsd)
+
+  if (isWideSingleRowRange(valueUsd)) {
+    return Math.min(spec.colSpan, 3)
+  }
 
   if (valueUsd >= 500_000 || asset.share >= 1.25) {
     return Math.min(spec.colSpan, STANDARD_DESKTOP_COL_SPAN)
@@ -481,7 +497,7 @@ const balanceCompositionGridSpecs = (
     if (occupied.length <= grid.maxRows) break
 
     const candidates = placements
-      .filter((placement) => placement.index < balancedSpecs.length)
+      .filter((placement) => placement.index < assets.length)
       .map((placement) => {
         const spec = balancedSpecs[placement.index]!
         const asset = assets[placement.index]!
@@ -528,7 +544,7 @@ const balanceCompositionGridSpecs = (
       const candidates = placements
         .filter(
           (placement) =>
-            placement.index < balancedSpecs.length &&
+            placement.index < assets.length &&
             placement.row <= rowGap.row &&
             rowGap.row < placement.row + placement.rowSpan,
         )
@@ -599,103 +615,58 @@ const fillFinalRowSpecs = (
   }
 
   const filledSpecs = specs.map((spec) => ({ ...spec }))
+  const getLastRowFreeColumns = (
+    candidateSpecs: ReadonlyArray<CompositionGridBlockSpec>,
+  ) => {
+    const { occupied } = packCompositionGrid(candidateSpecs, grid)
+    const lastRow = occupied[occupied.length - 1]
 
-  for (let step = 0; step < grid.columns; step++) {
-    const { occupied, placements } = packCompositionGrid(filledSpecs, grid)
-    const othersPlacement = placements.find(
-      (placement) =>
-        placement.index >= assets.length &&
-        placement.rowSpan === 1 &&
-        filledSpecs[placement.index]!.colSpan < grid.columns,
-    )
-    const lastRowIndex = othersPlacement?.row ?? occupied.length - 1
-    const lastRow = occupied[lastRowIndex]
-    const freeColumns = grid.columns - (lastRow?.filter(Boolean).length ?? 0)
+    return grid.columns - (lastRow?.filter(Boolean).length ?? 0)
+  }
 
-    if (freeColumns <= 0) break
+  let remainingFreeColumns = getLastRowFreeColumns(filledSpecs)
+  const resizedIndexes = new Set<number>()
 
-    const candidates = placements
-      .filter(
-        (placement) =>
-          placement.row === lastRowIndex &&
-          placement.rowSpan === 1 &&
-          filledSpecs[placement.index]!.colSpan < grid.columns,
-      )
-      .map((placement) => {
-        const asset = assets[placement.index]
-        const valueUsd = asset ? getLayoutValueUsd(asset.valueUsd) : 0
-        const isTailAsset =
-          placement.index < assets.length && valueUsd > 0 && valueUsd < 205_000
-        const isOthers = placement.index >= assets.length
+  while (remainingFreeColumns > 0) {
+    const candidates = assets
+      .map((asset, index) => {
+        const spec = filledSpecs[index]!
+        const valueUsd = getLayoutValueUsd(asset.valueUsd)
 
         return {
-          ...placement,
-          priority: isTailAsset ? 0 : isOthers ? 1 : 2,
+          index,
           valueUsd,
+          share: asset.share,
+          canGrow:
+            spec.rowSpan === 1 &&
+            spec.colSpan === STANDARD_DESKTOP_COL_SPAN &&
+            !resizedIndexes.has(index) &&
+            isWideSingleRowRange(valueUsd),
         }
       })
-      .sort(
-        (a, b) =>
-          a.priority - b.priority ||
-          a.valueUsd - b.valueUsd ||
-          b.index - a.index,
-      )
+      .filter(({ canGrow }) => canGrow)
+      .sort((a, b) => b.valueUsd - a.valueUsd || b.share - a.share)
 
-    let didResize = false
+    const candidate = candidates.find(({ index }) => {
+      filledSpecs[index]!.colSpan += 1
 
-    for (const candidate of candidates) {
-      for (let increment = freeColumns; increment > 0; increment--) {
-        filledSpecs[candidate.index]!.colSpan += increment
+      const isValid =
+        packCompositionGrid(filledSpecs, grid).occupied.length <= grid.maxRows
 
-        if (
-          packCompositionGrid(filledSpecs, grid).occupied.length <= grid.maxRows
-        ) {
-          didResize = true
-          break
-        }
-
-        filledSpecs[candidate.index]!.colSpan -= increment
+      if (!isValid) {
+        filledSpecs[index]!.colSpan -= 1
       }
 
-      if (didResize) break
-    }
+      return isValid
+    })
 
-    if (!didResize) break
+    if (!candidate) break
+
+    resizedIndexes.add(candidate.index)
+    remainingFreeColumns -= 1
   }
 
   return filledSpecs
-}
-
-const applyDesktopRowAnchors = (
-  specs: ReadonlyArray<CompositionGridBlockSpec>,
-  assets: ReadonlyArray<CompositionGridAsset>,
-  grid: CompositionGridContext,
-) => {
-  if (grid.columns !== COMPOSITION_GRID_COLUMNS) {
-    return specs.map((spec) => ({ ...spec }))
-  }
-
-  const anchoredSpecs = specs.map((spec) => ({ ...spec }))
-
-  for (const [index, asset] of assets.entries()) {
-    const desiredColSpan = getDesktopRowAnchorColSpan(asset.symbol)
-    const spec = anchoredSpecs[index]
-
-    if (!desiredColSpan || !spec || spec.colSpan >= desiredColSpan) continue
-
-    for (let colSpan = desiredColSpan; colSpan > spec.colSpan; colSpan--) {
-      const candidateSpecs = anchoredSpecs.map((item) => ({ ...item }))
-
-      candidateSpecs[index]!.colSpan = colSpan
-
-      if (estimateCompositionGridRows(candidateSpecs, grid) <= grid.maxRows) {
-        anchoredSpecs[index]!.colSpan = colSpan
-        break
-      }
-    }
-  }
-
-  return anchoredSpecs
 }
 
 const getCompositionPrimaryBlockSpecsForGrid = (
@@ -815,9 +786,7 @@ const getCompositionGridBlockSpecsForGrid = (
     specs.push({ colSpan, rowSpan })
   }
 
-  const anchoredSpecs = applyDesktopRowAnchors(specs, assets, grid)
-
-  return fillFinalRowSpecs(anchoredSpecs, assets, grid)
+  return fillFinalRowSpecs(specs, assets, grid)
 }
 
 export const getCompositionGridBlockSpecs = (

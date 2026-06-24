@@ -623,7 +623,7 @@ const sumBreakdownUsd = (
 
 const getTreasuryHoldingsBreakdown = (
   assets: TreasuryAssetBalance[] = [],
-  borrowPositions: TreasuryAssetBalance[] = [],
+  borrowValueUsd = "0",
 ): TreasuryHoldingsBreakdown => {
   const regular = sumBreakdownUsd(assets, (item) => item.breakdown.wallet)
   const liquidity = sumBreakdownUsd(assets, (item) => item.breakdown.liquidity)
@@ -635,10 +635,7 @@ const getTreasuryHoldingsBreakdown = (
     assets,
     (item) => item.breakdown.moneyMarketBorrow,
   )
-  const borrowedFromPositions = sumBreakdownUsd(
-    borrowPositions,
-    (item) => item.breakdown.moneyMarketBorrow,
-  )
+  const borrowedFromPositions = borrowValueUsd
   const borrowed = sumDecimalStrings(
     borrowedFromNettedAssets,
     borrowedFromPositions,
@@ -1805,8 +1802,8 @@ export const StatsTreasury = () => {
   }, [assetSearch])
 
   const holdingsBreakdown = useMemo(
-    () => getTreasuryHoldingsBreakdown(data?.assets, data?.borrowPositions),
-    [data?.assets, data?.borrowPositions],
+    () => getTreasuryHoldingsBreakdown(data?.assets, data?.borrowValueUsd),
+    [data?.assets, data?.borrowValueUsd],
   )
 
   const assetSearchControl = (

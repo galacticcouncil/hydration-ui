@@ -946,18 +946,18 @@ const getAssetValue = (item: TreasuryAssetBalance) => Big(item.valueUsd ?? 0)
 const applyLoopedMoneyMarketNetting = (
   supplyAssets: TreasuryAssetBalance[],
   borrowPositions: TreasuryAssetBalance[],
+  borrowedValueUsd?: Big,
 ) => {
   const suppliedValue = supplyAssets.reduce(
     (acc, item) => acc.plus(getAssetValue(item)),
     Big(0),
   )
-  const borrowedValue = borrowPositions.reduce(
-    (acc, item) => acc.plus(getAssetValue(item)),
-    Big(0),
-  )
+  const borrowedValue =
+    borrowedValueUsd ??
+    borrowPositions.reduce((acc, item) => acc.plus(getAssetValue(item)), Big(0))
 
   if (suppliedValue.lte(0) || borrowedValue.lte(0)) {
-    return { supplyAssets, borrowPositions }
+    return { supplyAssets, borrowPositions, borrowValueUsd: borrowedValue }
   }
 
   const supplyRatio = suppliedValue.gt(borrowedValue)
@@ -994,6 +994,9 @@ const applyLoopedMoneyMarketNetting = (
           scaleTreasuryAssetBalance(item, residualBorrowRatio),
         )
       : [],
+    borrowValueUsd: borrowedValue.gt(suppliedValue)
+      ? borrowedValue.minus(suppliedValue)
+      : Big(0),
   }
 }
 
@@ -1130,10 +1133,25 @@ export const useTreasuryStats = (assets: TAsset[]) => {
               }
             })
             .filter((item): item is TreasuryAssetBalance => !!item) ?? []
+        const borrowedValueUsd =
+          summary?.userReservesData?.reduce(
+            (acc, position) =>
+              acc.plus(
+                sumBigStrings(
+                  position.variableBorrowsUSD,
+                  position.stableBorrowsUSD,
+                ),
+              ),
+            Big(0),
+          ) ?? Big(0)
 
         return account.netMoneyMarketBorrows
-          ? applyLoopedMoneyMarketNetting(supplyAssets, borrowPositions)
-          : { supplyAssets, borrowPositions }
+          ? applyLoopedMoneyMarketNetting(
+              supplyAssets,
+              borrowPositions,
+              borrowedValueUsd,
+            )
+          : { supplyAssets, borrowPositions, borrowValueUsd: borrowedValueUsd }
       },
     )
     const supplyAssets = moneyMarketPositions.flatMap(
@@ -1156,8 +1174,8 @@ export const useTreasuryStats = (assets: TAsset[]) => {
       (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
       new Big(0),
     )
-    const borrowValueUsd = borrowPositions.reduce(
-      (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
+    const borrowValueUsd = moneyMarketPositions.reduce(
+      (acc, item) => acc.plus(item.borrowValueUsd),
       new Big(0),
     )
 
