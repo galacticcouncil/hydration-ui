@@ -26,6 +26,12 @@ export const getXcSwapBuyAssetOutId = (
 ): string | undefined =>
   asset?.id !== undefined ? String(asset.id) : undefined
 
+export const getXcAssetKey = (asset: XcAsset): string =>
+  asset.id !== undefined ? String(asset.id) : (asset.oneClickId ?? asset.key)
+
+export const isSameXcAsset = (a: XcAsset, b: XcAsset): boolean =>
+  getXcAssetKey(a) === getXcAssetKey(b)
+
 export const isXcDestAsset = (
   asset: TAssetData | XcAsset | null | undefined,
 ): asset is XcAsset => !!asset && "oneClickId" in asset && !!asset.oneClickId
