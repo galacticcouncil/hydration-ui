@@ -38,7 +38,7 @@ Data is live at fetch time, but not streamed every block. React Query refetches 
 | Field | Meaning |
 |---|---|
 | `assets` | Treasury holdings: wallet balances + liquidity positions + supplied collateral merged by asset id |
-| `borrowPositions` | Borrow exposure kept separate and subtracted from totals; looped-account borrows are only listed here when they exceed supplied collateral |
+| `borrowPositions` | Borrow exposure kept separate and subtracted from totals; debt-netted account borrows are only listed here when they exceed supplied collateral |
 | `holdingsValueUsd` | Wallet + liquidity positions + supplied collateral |
 | `borrowValueUsd` | Raw money-market borrow value that still needs to be subtracted from holdings |
 | `totalValueUsd` | Net value: holdings minus borrow |
@@ -65,14 +65,14 @@ Borrow accounting rule:
 - `totalValueUsd = holdingsValueUsd - borrowValueUsd`.
 - The treasury holdings KPI tooltip also uses raw residual borrow value, not the sum of displayable borrow rows.
 
-Looped account rule:
+Debt-netted money-market rule:
 
-- Accounts with `netMoneyMarketBorrows: true` are treated as looped/leverage positions.
-- The PRIME pure proxy currently uses this rule.
-- Its supplied collateral is reduced by the account's raw borrow value before entering `assets`, composition tiles, and the All treasury assets table.
+- Accounts with `netMoneyMarketBorrows: true` pro-rata their raw money-market debt across supplied collateral.
+- All tracked Hydration treasury wallets currently use this rule: main treasury, HOLLAR collector treasury, PRIME pure proxy, and money market treasury.
+- Their supplied collateral is reduced by the account's raw borrow value before entering `assets`, composition tiles, and the All treasury assets table.
 - If supplied collateral is larger than debt, the remaining supplied value is shown as the asset's net contribution. The tooltip still shows gross `Supplied as collateral` and the negative `Debt-backed portion`.
 - If debt is larger than supplied collateral, supplied assets are removed and only the residual raw debt remains in `borrowValueUsd`; mapped borrow rows are scaled for display when possible.
-- This prevents debt-backed loops, including HOLLAR debt that may not map to a local asset row, from inflating treasury composition.
+- This prevents debt-backed collateral, including HOLLAR debt that may not map to a local asset row, from inflating treasury composition.
 
 Hollar pool assets `110`-`113` are displayed as `HUSDC`, `HUSDT`, `HUSDS`, and `HUSDE` in Treasury stats instead of their raw `2-Pool-*` registry names.
 

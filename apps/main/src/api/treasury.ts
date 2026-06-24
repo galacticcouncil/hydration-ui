@@ -90,11 +90,13 @@ const TREASURY_STATS_ACCOUNTS = [
     address: "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
     label: "Hydration treasury",
     includeWalletBalances: true,
+    netMoneyMarketBorrows: true,
   },
   {
     address: "0x8C0f3b9602374198974d2B2679d14a386f5b108e",
     label: "HOLLAR collector treasury",
     includeWalletBalances: true,
+    netMoneyMarketBorrows: true,
   },
   {
     address: "15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA",
@@ -106,6 +108,7 @@ const TREASURY_STATS_ACCOUNTS = [
     address: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
     label: "Money market treasury",
     includeWalletBalances: true,
+    netMoneyMarketBorrows: true,
   },
 ] satisfies TreasuryAccount[]
 
@@ -943,7 +946,7 @@ const scaleTreasuryAssetBalance = (
 
 const getAssetValue = (item: TreasuryAssetBalance) => Big(item.valueUsd ?? 0)
 
-const applyLoopedMoneyMarketNetting = (
+const applyMoneyMarketDebtNetting = (
   supplyAssets: TreasuryAssetBalance[],
   borrowPositions: TreasuryAssetBalance[],
   borrowedValueUsd?: Big,
@@ -1146,7 +1149,7 @@ export const useTreasuryStats = (assets: TAsset[]) => {
           ) ?? Big(0)
 
         return account.netMoneyMarketBorrows
-          ? applyLoopedMoneyMarketNetting(
+          ? applyMoneyMarketDebtNetting(
               supplyAssets,
               borrowPositions,
               borrowedValueUsd,

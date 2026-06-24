@@ -48,7 +48,7 @@ const MOBILE_GRID: CompositionGridContext = {
 
 const MOBILE_MIN_COL_SPAN = 1
 const STANDARD_DESKTOP_COL_SPAN = 2
-const WIDE_SINGLE_ROW_MIN_VALUE_USD = 700_000
+const WIDE_SINGLE_ROW_MIN_VALUE_USD = 500_000
 const WIDE_SINGLE_ROW_MAX_VALUE_USD = 900_000
 
 const getLayoutValueUsd = (valueUsd?: string | number | null) => {
@@ -64,16 +64,13 @@ const isCompositionRange = (
   minValueUsd: number,
 ) => share >= minShare || valueUsd >= minValueUsd
 
-const isTallMidSymbol = (symbol?: string) => {
+const isTallAnchorSymbol = (symbol?: string) => {
   const normalizedSymbol = symbol?.toUpperCase()
 
   return (
-    normalizedSymbol?.includes("PRIME") || normalizedSymbol?.includes("SIGIL")
+    normalizedSymbol?.includes("PRIME") || normalizedSymbol?.includes("TBTC")
   )
 }
-
-const isSigilSymbol = (symbol?: string) =>
-  symbol?.toUpperCase().includes("SIGIL")
 
 const isWideSingleRowRange = (valueUsd: number) =>
   valueUsd >= WIDE_SINGLE_ROW_MIN_VALUE_USD &&
@@ -86,12 +83,9 @@ export const getCompositionBlockLayout = (
   let layout: CompositionBlockLayout
   const valueUsd = getLayoutValueUsd(options?.valueUsd)
 
-  if (isTallMidSymbol(options?.symbol)) {
+  if (isTallAnchorSymbol(options?.symbol)) {
     layout = {
-      colSpan:
-        isSigilSymbol(options?.symbol) || valueUsd < 1_000_000 || share < 5
-          ? 2
-          : 3,
+      colSpan: 2,
       rowSpan: 2,
       tier: "major",
       shareSize: "large",
@@ -411,7 +405,7 @@ const getBalancedMaxColSpan = (
   if (spec.rowSpan > 1) {
     if (grid.columns === COMPOSITION_GRID_COLUMNS_MOBILE) return spec.colSpan
 
-    if (isTallMidSymbol(asset.symbol)) {
+    if (isTallAnchorSymbol(asset.symbol)) {
       return spec.colSpan
     }
 
