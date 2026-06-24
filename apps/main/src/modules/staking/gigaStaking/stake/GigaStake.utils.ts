@@ -60,10 +60,16 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
   const maxStakeHuman = toDecimal(maxStake, native.decimals)
   const minStakeHuman = toDecimal(minStake, native.decimals)
 
-  const availableHDXReserveCap = Big(hdxReserve.supplyCap)
-    .minus(hdxReserve.totalLiquidity)
-    .times(exchangeRate?.toString() || 1)
-    .toString()
+  // In Aave a supplyCap of 0 means "no cap" (unlimited). Treat it as such:
+  // otherwise `supplyCap - totalLiquidity` evaluates to 0 and the stake form
+  // wrongly reports "Maximum value to stake is 0".
+  const isReserveCapUnlimited = Big(hdxReserve.supplyCap).lte(0)
+  const availableHDXReserveCap = isReserveCapUnlimited
+    ? ""
+    : Big(hdxReserve.supplyCap)
+        .minus(hdxReserve.totalLiquidity)
+        .times(exchangeRate?.toString() || 1)
+        .toString()
 
   const {
     data: accountFeePaymentAssetId,
@@ -140,7 +146,9 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         .check(
           z.refine<GigaStakeFormValues>(
             ({ amount }) =>
-              amount === "" || Big(amount).lte(availableHDXReserveCap),
+              amount === "" ||
+              isReserveCapUnlimited ||
+              Big(amount).lte(availableHDXReserveCap),
             {
               error: t("staking:stake.stake.reserveCapError", {
                 amount: t("currency", {
