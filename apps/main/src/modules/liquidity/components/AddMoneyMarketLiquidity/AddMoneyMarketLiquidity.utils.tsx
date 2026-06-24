@@ -905,6 +905,7 @@ export const useAddMoneyMarketLiquidity = ({
     minReceiveAmount,
     healthFactor: Big(debouncedAmountIn).gt(0) ? healthFactor : undefined,
     isAddableToOmnipool: false,
+    swap: split ? undefined : trade?.swap,
     ...formData,
   }
 }

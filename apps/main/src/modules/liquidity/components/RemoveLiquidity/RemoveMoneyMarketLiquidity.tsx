@@ -22,8 +22,10 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { spotPriceQuery } from "@/api/spotPrice"
+import { Trade } from "@/api/trade"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TradeLimitRow,
@@ -90,6 +92,8 @@ const RemoveMoneyMarketLiquidityForm = (
     receiveAssetsProportionally,
     meta,
     tradeMinReceive,
+    swap,
+    isTradePending,
     mutation,
     healthFactor,
     isLoadingMaxBalance,
@@ -192,7 +196,6 @@ const RemoveMoneyMarketLiquidityForm = (
             {split ? (
               <div>
                 <TradeLimitRow type={TradeLimitType.Liquidity} />
-
                 {healthFactor ? (
                   <>
                     <ModalContentDivider />
@@ -209,6 +212,8 @@ const RemoveMoneyMarketLiquidityForm = (
                 minReceive={tradeMinReceive}
                 erc20={meta}
                 healthFactor={healthFactor}
+                swap={swap}
+                isTradePending={isTradePending}
               />
             )}
 
@@ -245,13 +250,17 @@ const TradeSummary = ({
   minReceive,
   erc20,
   healthFactor,
+  swap,
+  isTradePending,
 }: {
   receiveAsset: TSelectedAsset
   minReceive: string
   erc20: TAssetData
   healthFactor: HealthFactorResult | undefined
+  swap?: Trade
+  isTradePending: boolean
 }) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
@@ -261,6 +270,19 @@ const TradeSummary = ({
   return (
     <div>
       <TradeLimitRow type={TradeLimitType.Trade} />
+
+      <ModalContentDivider />
+      <SummaryRow
+        label={t("trade:market.summary.estTradeFees")}
+        content={
+          <TradeFee
+            swap={swap}
+            receiveAsset={receiveAsset}
+            isLoading={isTradePending}
+          />
+        }
+      />
+
       <ModalContentDivider />
       <Summary
         separator={<ModalContentDivider />}

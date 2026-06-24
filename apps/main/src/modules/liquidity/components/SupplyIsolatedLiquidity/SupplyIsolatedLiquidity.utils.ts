@@ -220,6 +220,7 @@ export const useSupplyIsolatedLiquidity = ({
     spotPriceData,
     isPriceLoading,
     isAaveSupply,
+    swap: trade?.swap,
   }
 }
 

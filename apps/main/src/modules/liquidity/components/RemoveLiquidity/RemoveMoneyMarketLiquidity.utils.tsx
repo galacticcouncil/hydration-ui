@@ -80,7 +80,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   const removeAmount = Big(scale(removeAmountShifted, meta.decimals))
 
   const [debouncedAmount] = useDebounce(removeAmountShifted, 300)
-  const { data: trade } = useQuery(
+  const { data: trade, isLoading: isTradePending } = useQuery(
     bestSellWithTxQuery(rpc, {
       assetIn: erc20Id,
       assetOut: split ? stableswapId : receiveAsset.id,
@@ -339,6 +339,8 @@ export const useRemoveMoneyMarketLiquidity = ({
     mutation,
     healthFactor,
     isLoadingMaxBalance,
+    isTradePending,
+    swap: trade?.swap,
   }
 }
 
