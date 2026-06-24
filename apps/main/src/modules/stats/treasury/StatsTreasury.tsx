@@ -18,6 +18,7 @@ import {
   TableHead,
   TableHeader,
   Text,
+  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -96,11 +97,11 @@ import {
   SCompositionTooltipShell,
   SCursorAssetTooltipContent,
   SInteractiveTableRow,
-  SKpiGrid,
   SKpiTooltipTrigger,
   SLoadedContent,
   SMuted,
   SPanelSearch,
+  STableHeadTooltipTrigger,
   STablesGrid,
   STooltipAsset,
   STooltipAssetIdentity,
@@ -511,7 +512,7 @@ const getAssetBreakdownRows = (
       part: item.breakdown.moneyMarketSupply,
     },
     {
-      label: "Debt-backed portion",
+      label: "Debt offset",
       part: item.breakdown.moneyMarketBorrow,
       negative: true,
     },
@@ -527,6 +528,30 @@ const getAssetBreakdownRows = (
 
 const getAssetTotalBalanceLabel = (item: TreasuryAssetBalance) =>
   item.breakdown.moneyMarketBorrow ? "Net balance" : "Total balance"
+
+const getDebtOffsetRateLabel = (assets: TreasuryAssetBalance[] = []) => {
+  const supplied = sumBreakdownUsd(
+    assets,
+    (item) => item.breakdown.moneyMarketSupply,
+  )
+  const covered = sumBreakdownUsd(
+    assets,
+    (item) => item.breakdown.moneyMarketBorrow,
+  )
+
+  try {
+    const suppliedValue = Big(supplied)
+    const coveredValue = Big(covered)
+
+    if (suppliedValue.lte(0) || coveredValue.lte(0)) return null
+
+    return `≈ ${formatSharePercent(
+      coveredValue.div(suppliedValue).times(100).toNumber(),
+    )}`
+  } catch {
+    return null
+  }
+}
 
 const BreakdownValue = ({
   part,
@@ -740,6 +765,22 @@ const TreasuryHoldingsTooltipContent = ({
       </STooltipSection>
     </STooltipLegend>
   </SCompositionTooltipShell>
+)
+
+const DebtOffsetTooltipContent = () => (
+  <Flex direction="column" gap="xs">
+    <Text fs="p6" fw={600} lh={1.2} color="text.high">
+      Debt offset
+    </Text>
+    <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
+      Some supplied collateral is backing borrowed assets. We count that part as
+      debt offset, then subtract it from the asset net balance.
+    </Text>
+    <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
+      The percentage shows how much of all supplied collateral is used this way.
+      It is not the asset treasury share.
+    </Text>
+  </Flex>
 )
 
 const AssetDetailsTooltipContent = ({
@@ -1912,6 +1953,10 @@ export const StatsTreasury = () => {
     () => getTreasuryHoldingsBreakdown(data?.assets, data?.borrowValueUsd),
     [data?.assets, data?.borrowValueUsd],
   )
+  const debtOffsetRateLabel = useMemo(
+    () => getDebtOffsetRateLabel(data?.assets),
+    [data?.assets],
+  )
 
   const assetSearchControl = (
     <SPanelSearch>
@@ -1939,40 +1984,29 @@ export const StatsTreasury = () => {
     <STreasuryGrid>
       <STreasuryOverview>
         <SLoadedContent key={isLoading ? "stats-loading" : "stats-loaded"}>
-          <SKpiGrid>
-            <Root delayDuration={0}>
-              <Trigger asChild>
-                <SKpiTooltipTrigger tabIndex={0}>
-                  <ValueStats
-                    wrap
-                    size="medium"
-                    label="Treasury holdings"
-                    value={formatTreasuryValue(data?.holdingsValueUsd)}
-                    isLoading={isLoading}
-                  />
-                </SKpiTooltipTrigger>
-              </Trigger>
-              <Portal>
-                <SCompositionOthersTooltipContent
-                  side="top"
-                  align="start"
-                  sideOffset={8}
-                  collisionPadding={12}
-                >
-                  <TreasuryHoldingsTooltipContent
-                    breakdown={holdingsBreakdown}
-                  />
-                </SCompositionOthersTooltipContent>
-              </Portal>
-            </Root>
-            <ValueStats
-              wrap
-              size="medium"
-              label="Net treasury value"
-              value={formatTreasuryValue(data?.totalValueUsd)}
-              isLoading={isLoading}
-            />
-          </SKpiGrid>
+          <Root delayDuration={0}>
+            <Trigger asChild>
+              <SKpiTooltipTrigger tabIndex={0}>
+                <ValueStats
+                  wrap
+                  size="medium"
+                  label="Net treasury value"
+                  value={formatTreasuryValue(holdingsBreakdown.net)}
+                  isLoading={isLoading}
+                />
+              </SKpiTooltipTrigger>
+            </Trigger>
+            <Portal>
+              <SCompositionOthersTooltipContent
+                side="top"
+                align="start"
+                sideOffset={8}
+                collisionPadding={12}
+              >
+                <TreasuryHoldingsTooltipContent breakdown={holdingsBreakdown} />
+              </SCompositionOthersTooltipContent>
+            </Portal>
+          </Root>
         </SLoadedContent>
 
         <SComposition>
@@ -2099,7 +2133,21 @@ export const StatsTreasury = () => {
                     <TableHead sx={{ textAlign: "right" }}>
                       Collateral
                     </TableHead>
-                    <TableHead sx={{ textAlign: "right" }}>Debt</TableHead>
+                    <TableHead sx={{ textAlign: "right" }}>
+                      <Tooltip
+                        text={<DebtOffsetTooltipContent />}
+                        side="top"
+                        align="end"
+                        asChild
+                      >
+                        <STableHeadTooltipTrigger tabIndex={0}>
+                          Debt offset
+                          {debtOffsetRateLabel
+                            ? ` (${debtOffsetRateLabel})`
+                            : ""}
+                        </STableHeadTooltipTrigger>
+                      </Tooltip>
+                    </TableHead>
                     <TableHead sx={{ textAlign: "right" }}>Liquidity</TableHead>
                     {showOffchainColumn && (
                       <TableHead sx={{ textAlign: "right" }}>

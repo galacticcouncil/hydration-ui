@@ -48,28 +48,28 @@ export const SLoadedContent = styled.div(
   `,
 )
 
-export const SKpiGrid = styled.div(
-  ({ theme }) => css`
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: ${theme.space.xl};
-
-    @media (width < ${MOBILE_BREAKPOINT}) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: ${theme.space.l} ${theme.space.base};
-
-      & > * {
-        min-width: 0;
-      }
-    }
-  `,
-)
-
 export const SKpiTooltipTrigger = styled.div(
   ({ theme }) => css`
     min-width: 0;
     cursor: help;
     border-radius: ${theme.radii.m};
+
+    &:focus-visible {
+      outline: 2px solid ${theme.text.medium};
+      outline-offset: ${theme.space.xs};
+    }
+  `,
+)
+
+export const STableHeadTooltipTrigger = styled.span(
+  ({ theme }) => css`
+    display: inline-flex;
+    justify-content: flex-end;
+    max-width: 100%;
+    cursor: help;
+    border-radius: ${theme.radii.m};
+    text-decoration: underline dotted ${theme.text.low};
+    text-underline-offset: ${theme.space.xs};
 
     &:focus-visible {
       outline: 2px solid ${theme.text.medium};
@@ -933,9 +933,14 @@ export const SCompositionOthersLogos = styled.div(
 )
 
 export const STablesGrid = styled.div(
-  () => css`
+  ({ theme }) => css`
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    margin-top: calc(-1 * ${theme.space.m});
+
+    @media (width < ${MOBILE_BREAKPOINT}) {
+      margin-top: calc(-1 * ${theme.space.base});
+    }
   `,
 )
 

@@ -39,7 +39,7 @@ Data is live at fetch time, but not streamed every block. React Query refetches 
 |---|---|
 | `assets` | Treasury holdings: wallet balances + liquidity positions + supplied collateral merged by asset id |
 | `borrowPositions` | Borrow exposure kept separate and subtracted from totals; debt-netted account borrows are only listed here when they exceed supplied collateral |
-| `holdingsValueUsd` | Wallet + liquidity positions + supplied collateral |
+| `holdingsValueUsd` | Gross treasury assets: wallet + liquidity positions + supplied collateral, before residual borrow subtraction |
 | `borrowValueUsd` | Raw money-market borrow value that still needs to be subtracted from holdings |
 | `totalValueUsd` | Net value: holdings minus borrow |
 
@@ -63,14 +63,14 @@ Borrow accounting rule:
 - Raw money-market borrow USD totals are the accounting source of truth.
 - Mapped `borrowPositions` are presentation rows only. They can miss debts whose reserve asset is not present in the local asset registry, so they must not be the source of `borrowValueUsd`.
 - `totalValueUsd = holdingsValueUsd - borrowValueUsd`.
-- The treasury holdings KPI tooltip also uses raw residual borrow value, not the sum of displayable borrow rows.
+- The net treasury value KPI tooltip also uses raw residual borrow value, not the sum of displayable borrow rows.
 
 Debt-netted money-market rule:
 
 - Accounts with `netMoneyMarketBorrows: true` pro-rata their raw money-market debt across supplied collateral.
 - All tracked Hydration treasury wallets currently use this rule: main treasury, HOLLAR collector treasury, PRIME pure proxy, and money market treasury.
 - Their supplied collateral is reduced by the account's raw borrow value before entering `assets`, composition tiles, and the All treasury assets table.
-- If supplied collateral is larger than debt, the remaining supplied value is shown as the asset's net contribution. The tooltip still shows gross `Supplied as collateral` and the negative `Debt-backed portion`.
+- If supplied collateral is larger than debt, the remaining supplied value is shown as the asset's net contribution. The tooltip/table details still show gross `Supplied as collateral` and the negative `Debt offset`.
 - If debt is larger than supplied collateral, supplied assets are removed and only the residual raw debt remains in `borrowValueUsd`; mapped borrow rows are scaled for display when possible.
 - This prevents debt-backed collateral, including HOLLAR debt that may not map to a local asset row, from inflating treasury composition.
 
@@ -79,6 +79,20 @@ Hollar pool assets `110`-`113` are displayed as `HUSDC`, `HUSDT`, `HUSDS`, and `
 This differs from the connected wallet balance card. The wallet `Asset balance` card is for the active account only and only sums token + ERC20 wallet balances; liquidity is shown in a separate wallet card and supplied collateral is not included there. Treasury stats aggregate all tracked treasury accounts and include wallet balances, expanded liquidity, and supplied collateral. Borrow is aggregated for those tracked accounts and deducted only in `totalValueUsd`.
 
 ## UI Rules
+
+### Top KPI
+
+- The visible header KPI is `Net treasury value`.
+- `Net treasury value = holdingsValueUsd - borrowValueUsd`.
+- Gross assets are not shown as a separate top KPI. If needed, `holdingsValueUsd` is the gross asset figure and excludes borrow because borrow is a liability.
+- The KPI tooltip expands the accounting into:
+  - `Asset balance` for plain treasury wallet holdings
+  - `Supplied as liquidity`
+  - `Supplied as collateral`
+  - `Borrowed`
+  - `Total holdings`
+  - `Net treasury value`
+- `Asset balance` in this tooltip means treasury wallet balances only; it does not include liquidity positions, supplied collateral, or borrows.
 
 ### Composition Tiles
 
@@ -93,7 +107,8 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
   - `Supplied as collateral`
   - `Supplied as liquidity`
   - `Offchain`
-- Tooltip amounts are intentionally rounded/compacted earlier than table values so very large balances remain scannable.
+- Tile USD values use compact currency formatting with at most 2 decimals.
+- Tooltip and drawer token amounts compact at 1k+ and use up to 2 decimals for normal values, with extra precision only for values below 1.
 - The `Others` tile groups tiny/forced assets for layout readability.
 
 ### Local Visual Token Rules
@@ -108,8 +123,12 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 ### All Treasury Assets Table
 
 - Shows asset-level rows, not symbol-grouped rows.
-- Desktop columns: `Asset`, `Balance`, `Of which supplied`, `Composition`.
-- Mobile columns: `Asset`, `Balance`.
+- Desktop columns: `Asset`, `Net balance`, `Collateral`, `Debt offset`, `Liquidity`, `Offchain`.
+- The `Debt offset` header can include the current aggregate debt-offset rate when both supplied collateral and offset debt are present.
+- Tablet-sized layouts hide `Offchain` first.
+- Smartphone layouts show only `Asset` and `Net balance`; tapping a row opens the same asset detail drawer body used by composition tile details.
+- `Net balance` uses the same shared `Amount` component as the rest of the app.
+- Table token values compact at 1k+ and show at most 2 decimals. Table USD display values use compact currency formatting with at most 2 decimals, matching composition tiles.
 - Uses the shared pagination control with 20 assets per page.
 - Header search filters by asset symbol or name.
 
