@@ -26,7 +26,11 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
-import { getXcSwapBuyAssetOutId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { useXcSwapFormReset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapFormReset"
+import {
+  getXcSwapBuyAssetOutId,
+  isSameXcAsset,
+} from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
 import { useAccountBalances } from "@/states/account"
@@ -61,6 +65,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { watch, setValue, getValues } = useFormContext<XcSwapFormValues>()
   const { isCrossChain, isSelectionLoading, isQuoteLoading } = useXcSwap()
   const switchAssets = useSwitchXcAssets()
+  const resetForm = useXcSwapFormReset()
   const { getTransferableBalance } = useAccountBalances()
   const [isContactsOpen, setIsContactsOpen] = useState(false)
 
@@ -79,6 +84,10 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         return
       }
 
+      if (getValues("type") === TradeType.Sell) {
+        resetForm()
+      }
+
       navigate({
         to: ".",
         search: (search) => ({
@@ -89,7 +98,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         resetScroll: false,
       })
     },
-    [getValues, navigate, setValue, switchAssets],
+    [getValues, navigate, resetForm, setValue, switchAssets],
   )
 
   const handleBuySelectionChange = useCallback(
@@ -107,6 +116,18 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         return
       }
 
+      const chainChanged = selection.chain.key !== previousSelection.chain.key
+      const assetChanged = !isSameXcAsset(
+        selection.asset,
+        previousSelection.asset,
+      )
+
+      if (chainChanged) {
+        resetForm({ clearDestAddress: true })
+      } else if (getValues("type") === TradeType.Buy && assetChanged) {
+        resetForm()
+      }
+
       const assetOut = getXcSwapBuyAssetOutId(selection.asset)
 
       if (assetOut) {
@@ -121,7 +142,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         })
       }
     },
-    [getValues, navigate, setValue, switchAssets],
+    [getValues, navigate, resetForm, setValue, switchAssets],
   )
 
   const [srcChain, destChain, buyAsset, buyAmount, type] = watch([
