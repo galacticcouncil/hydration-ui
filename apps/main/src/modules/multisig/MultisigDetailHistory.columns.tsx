@@ -1,4 +1,4 @@
-import { Chip, Skeleton, Text } from "@galacticcouncil/ui/components"
+import { Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { HYDRATION_CHAIN_KEY, subscan } from "@galacticcouncil/utils"
 import { MultisigHistoryByAccountIdQuery } from "@galacticcouncil/web3-connect"
@@ -8,21 +8,39 @@ import { useTranslation } from "react-i18next"
 
 import type { MultisigHistoryStatus } from "@/api/multisig"
 import { MultisigCallNameCell } from "@/modules/multisig/MultisigCallNameCell"
+import { getMultisigHistoryGroupSubscanHref } from "@/modules/multisig/MultisigDetailHistory.utils"
+import { MultisigHistoryStatusChip } from "@/modules/multisig/MultisigHistoryStatusChip"
 import type { AnyPapiTx } from "@/modules/transactions/types"
 
 export type MultisigHistoryCall =
   MultisigHistoryByAccountIdQuery["multisigCalls"][number]
 
-export type MultisigDetailHistoryRow = {
+export type MultisigDetailHistoryRawEvent = {
   call: MultisigHistoryCall
+  proposalKey: string
   decodedTx: AnyPapiTx | null
-  methodName: string
   timestamp: number | null
-  status: MultisigHistoryStatus
+  signerAddress: string | null
+  methodName: string
   isLoading: boolean
 }
 
-export type MultisigDetailHistoryTableRow = MultisigDetailHistoryRow | Date
+export type MultisigDetailHistoryEvent = MultisigDetailHistoryRawEvent & {
+  status: MultisigHistoryStatus
+}
+
+export type MultisigDetailHistoryGroup = {
+  id: string
+  methodName: string
+  status: MultisigHistoryStatus
+  approvalCount: number
+  threshold: number
+  timestamp: number | null
+  events: MultisigDetailHistoryEvent[]
+  isLoading: boolean
+}
+
+export type MultisigDetailHistoryTableRow = MultisigDetailHistoryGroup | Date
 
 const columnHelper = createColumnHelper<MultisigDetailHistoryTableRow>()
 
@@ -50,10 +68,10 @@ export const useMultisigDetailHistoryColumns = () => {
           )
         }
 
-        const subscanHref = subscan.block(
-          HYDRATION_CHAIN_KEY,
-          row.original.call.blockHash,
-        )
+        const blockHash = getMultisigHistoryGroupSubscanHref(row.original)
+        const subscanHref = blockHash
+          ? subscan.block(HYDRATION_CHAIN_KEY, blockHash)
+          : undefined
 
         return (
           <MultisigCallNameCell
@@ -79,30 +97,13 @@ export const useMultisigDetailHistoryColumns = () => {
           return null
         }
 
-        if (row.original.isLoading) {
-          return <Skeleton sx={{ width: "3xl" }} />
-        }
-
-        if (row.original.status === "rejected") {
-          return (
-            <Chip variant="red" size="small">
-              {t("multisig.detail.history.status.rejected")}
-            </Chip>
-          )
-        }
-
-        if (row.original.status === "proposed") {
-          return (
-            <Chip variant="info" size="small">
-              {t("multisig.detail.history.status.proposed")}
-            </Chip>
-          )
-        }
-
         return (
-          <Chip variant="green" size="small">
-            {t("multisig.detail.history.status.executed")}
-          </Chip>
+          <MultisigHistoryStatusChip
+            status={row.original.status}
+            approvalCount={row.original.approvalCount}
+            threshold={row.original.threshold}
+            isLoading={row.original.isLoading}
+          />
         )
       },
     })
@@ -110,3 +111,7 @@ export const useMultisigDetailHistoryColumns = () => {
     return [nameColumn, statusColumn]
   }, [t])
 }
+
+export const isMultisigDetailHistoryGroup = (
+  row: MultisigDetailHistoryTableRow,
+): row is MultisigDetailHistoryGroup => !(row instanceof Date)

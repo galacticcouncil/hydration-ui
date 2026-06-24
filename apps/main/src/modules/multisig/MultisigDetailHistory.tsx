@@ -13,13 +13,21 @@ import { useTranslation } from "react-i18next"
 import {
   decodedMultisigCallQuery,
   type DecodedMultisigCallResult,
-  getMultisigHistoryStatus,
+  getMultisigCallerAddress,
+  getMultisigProposalTimepointKey,
   parseMultisigProposalMethodName,
 } from "@/api/multisig"
 import { EmptyState } from "@/components/EmptyState/EmptyState"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
-import { useMultisigDetailHistoryColumns } from "@/modules/multisig/MultisigDetailHistory.columns"
-import { groupMultisigHistoryByDate } from "@/modules/multisig/MultisigDetailHistory.utils"
+import {
+  isMultisigDetailHistoryGroup,
+  useMultisigDetailHistoryColumns,
+} from "@/modules/multisig/MultisigDetailHistory.columns"
+import {
+  groupMultisigHistoryByDate,
+  groupMultisigHistoryByProposal,
+} from "@/modules/multisig/MultisigDetailHistory.utils"
+import { MultisigDetailHistoryTimeline } from "@/modules/multisig/MultisigDetailHistoryTimeline"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
@@ -52,18 +60,16 @@ export const MultisigDetailHistory: React.FC<Props> = ({ config }) => {
     multisigHistoryByAccountIdQuery(multixSdk, accountId),
   )
 
-  const pageStart = paginationProps.pagination.pageIndex * PAGE_SIZE
-  const pageEnd = pageStart + PAGE_SIZE
   const calls = useMemo(() => data?.multisigCalls ?? [], [data?.multisigCalls])
+  const signatories = useMemo(() => config.signers, [config.signers])
 
   const rows = useQueries({
-    queries: calls.map((call, index) => ({
-      ...decodedMultisigCallQuery(papi, papiClient, call, isLoaded),
-      enabled: index >= pageStart && index < pageEnd,
-    })),
+    queries: calls.map((call) =>
+      decodedMultisigCallQuery(papi, papiClient, call, isLoaded),
+    ),
     combine: useCallback(
       (results: QueriesResults<Array<DecodedMultisigCallResult>>) => {
-        const rows = calls.map((call, i) => {
+        const events = calls.map((call, i) => {
           const query = results[i]
           const decoded = (query?.data ??
             null) as DecodedMultisigCallResult | null
@@ -72,16 +78,25 @@ export const MultisigDetailHistory: React.FC<Props> = ({ config }) => {
 
           return {
             call,
+            proposalKey: getMultisigProposalTimepointKey(
+              decoded?.blockHeight ?? null,
+              call.callIndex,
+              decoded?.tx,
+              call.id,
+            ),
             decodedTx: decoded?.tx ?? null,
             timestamp: parseTimestamp(call.timestamp),
             methodName,
-            status: getMultisigHistoryStatus(decoded?.tx),
+            signerAddress: getMultisigCallerAddress(decoded?.tx, signatories),
             isLoading: !!query?.isLoading,
           }
         })
-        return groupMultisigHistoryByDate(rows)
+
+        return groupMultisigHistoryByDate(
+          groupMultisigHistoryByProposal(events, config.threshold),
+        )
       },
-      [calls],
+      [calls, config.threshold, signatories],
     ),
   })
 
@@ -89,10 +104,16 @@ export const MultisigDetailHistory: React.FC<Props> = ({ config }) => {
     <TableContainer borderRadius="xl">
       <DataTable
         paginated
+        expandable
         {...paginationProps}
         data={rows}
         columns={columns}
         size="small"
+        getIsExpandable={isMultisigDetailHistoryGroup}
+        renderSubComponent={(row) => {
+          if (!isMultisigDetailHistoryGroup(row)) return <></>
+          return <MultisigDetailHistoryTimeline group={row} />
+        }}
         emptyState={
           <EmptyState
             sx={{ py: "xxxl" }}

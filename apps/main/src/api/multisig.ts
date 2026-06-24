@@ -43,6 +43,7 @@ type MultisigCallPointer = {
 export type DecodedMultisigCallResult = {
   tx: AnyPapiTx | null
   proposalTx: AnyPapiTx | null
+  blockHeight: number | null
 }
 
 type MultisigCallTimepoint = {
@@ -222,52 +223,84 @@ const findMultisigVariantCall = (
   return null
 }
 
-const isMultisigMaybeTimepointSet = (
+const getMultisigMaybeTimepoint = (
   args: Record<string, unknown> | undefined,
-): boolean => {
+): MultisigCallTimepoint | null => {
   const maybeTimepoint = args?.maybe_timepoint ?? args?.timepoint
-  if (!maybeTimepoint) return false
+  if (!maybeTimepoint) return null
 
   if (typeof maybeTimepoint === "object" && maybeTimepoint !== null) {
     if ("type" in maybeTimepoint) {
-      if (maybeTimepoint.type === "None") return false
+      if (maybeTimepoint.type === "None") return null
       if (maybeTimepoint.type === "Some" && "value" in maybeTimepoint) {
         const timepoint = maybeTimepoint.value as
           | { height?: unknown; index?: unknown }
           | undefined
-        return isNumber(timepoint?.height) && isNumber(timepoint?.index)
+        if (isNumber(timepoint?.height) && isNumber(timepoint?.index)) {
+          return { height: timepoint.height, index: timepoint.index }
+        }
+        return null
       }
     }
 
     const timepoint = maybeTimepoint as { height?: unknown; index?: unknown }
-    return isNumber(timepoint.height) && isNumber(timepoint.index)
+    if (isNumber(timepoint.height) && isNumber(timepoint.index)) {
+      return { height: timepoint.height, index: timepoint.index }
+    }
   }
 
-  return false
+  return null
 }
 
-export type MultisigHistoryStatus = "proposed" | "rejected" | "executed"
+export type MultisigHistoryStatus =
+  | "proposed"
+  | "approved"
+  | "rejected"
+  | "executed"
 
-export const getMultisigHistoryStatus = (
+export const isMultisigHistoryRejection = (
   tx: AnyPapiTx | null | undefined,
-): MultisigHistoryStatus => {
-  const multisigCall = findMultisigVariantCall(tx?.decodedCall)
-  if (!multisigCall) return "executed"
-
-  if (multisigCall.variant === "cancel_as_multi") return "rejected"
-  if (
-    multisigCall.variant === "as_multi" &&
-    !isMultisigMaybeTimepointSet(multisigCall.args)
-  ) {
-    return "proposed"
-  }
-
-  return "executed"
-}
+): boolean =>
+  findMultisigVariantCall(tx?.decodedCall)?.variant === "cancel_as_multi"
 
 export const getOuterMultisigCallType = (
   tx: AnyPapiTx | null | undefined,
 ): string | null => findMultisigVariantCall(tx?.decodedCall)?.variant ?? null
+
+export const getMultisigProposalTimepointKey = (
+  blockHeight: number | null,
+  callIndex: number,
+  tx: AnyPapiTx | null | undefined,
+  callId: string,
+): string => {
+  const multisigCall = findMultisigVariantCall(tx?.decodedCall)
+  const timepoint = getMultisigMaybeTimepoint(multisigCall?.args)
+  if (timepoint) return `${timepoint.height}-${timepoint.index}`
+  if (blockHeight !== null) return `${blockHeight}-${callIndex}`
+  return callId
+}
+
+export const getMultisigCallerAddress = (
+  tx: AnyPapiTx | null | undefined,
+  signatories: string[],
+): string | null => {
+  const multisigCall = findMultisigVariantCall(tx?.decodedCall)
+  const otherSignatories = multisigCall?.args?.other_signatories
+  if (!Array.isArray(otherSignatories)) return null
+
+  const normalizedOthers = new Set(
+    otherSignatories
+      .map((signatory) => safeConvertAddressSS58(String(signatory)))
+      .filter(Boolean),
+  )
+
+  return (
+    signatories
+      .map((signatory) => safeConvertAddressSS58(signatory))
+      .find((signatory) => signatory && !normalizedOthers.has(signatory)) ??
+    null
+  )
+}
 
 const getAsMultiEmbeddedCall = (call: DecodedCallEnum): TxCallData | null => {
   if (call.type !== "Multisig" || call.value?.type !== "as_multi") return null
@@ -355,8 +388,14 @@ export const decodedMultisigCallQuery = (
         return {
           tx: null,
           proposalTx: null,
+          blockHeight: null,
         }
       }
+
+      const block = await papiClient._request<{
+        block: { header: { number: string } }
+      }>("chain_getBlock", [call.blockHash])
+      const blockHeight = Number.parseInt(block.block.header.number, 16)
 
       const decodedExtrinsic = decoder(extrinsic)
       const tx = await papi.txFromCallData(decodedExtrinsic.callData)
@@ -375,6 +414,7 @@ export const decodedMultisigCallQuery = (
       return {
         tx,
         proposalTx,
+        blockHeight: Number.isNaN(blockHeight) ? null : blockHeight,
       }
     },
   })
