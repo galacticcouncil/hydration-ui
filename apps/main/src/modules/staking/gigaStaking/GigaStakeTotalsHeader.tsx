@@ -220,7 +220,7 @@ export const GigaStakeTotalsHeader: FC = () => {
 
 export const ProjectedAPRTooltipContent = () => {
   const { t } = useTranslation("staking")
-  const lines = t("dashboard.projectedAPR.tooltip", {
+  const lines = t("dashboard.projectedAPR.gigaStaking.tooltip", {
     returnObjects: true,
   }) as Array<string>
 

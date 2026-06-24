@@ -137,7 +137,7 @@ export const DashboardStats: FC<Props> = ({
               </Text>
               <Tooltip
                 text={(
-                  t("staking:dashboard.projectedAPR.tooltip", {
+                  t("staking:dashboard.projectedAPR.legacyStaking.tooltip", {
                     returnObjects: true,
                   }) as Array<string>
                 ).map((line, index) => (

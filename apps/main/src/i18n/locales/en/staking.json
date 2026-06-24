@@ -137,12 +137,17 @@
   "dashboard.projectedAPR": "Projected APR",
   "dashboard.projectedAPR.summ": "{{ base, percent }} base + {{ voting, percent }} voting",
   "dashboard.projectedAPR.tooltip.docs": "Go to docs",
-  "dashboard.projectedAPR.tooltip": [
+  "dashboard.projectedAPR.gigaStaking.tooltip": [
     "Annualised return from the past 60 days of activity (capped at chain age).",
     "Base APR is measured from HDX flowing into the GIGAHDX reward pot — every GIGAHDX holder shares it proportionally to their balance, no action required.",
     "Voting APR is conditional: it only applies if you vote. The figure assumes maximum conviction (Locked6x — 8× reward multiplier, 224-day lock). Dilution is sized to your existing position; if you don't have one yet, it's sized to a typical 1,000 HDX new-staker entry.",
     "Your actual share scales with your stake, your chosen conviction, and the number of other voters on each referendum.",
     "Past performance does not guarantee future results."
+  ],
+  "dashboard.projectedAPR.legacyStaking.tooltip": [
+    "Estimated rewards based on your stakeable HDX balance.",
+    "This is a rough estimate subject to continuous change.",
+    "It is determined by your share in the stake pool, as well as variable rewards streams."
   ],
   "dashboard.balance": "Staked balance",
 
