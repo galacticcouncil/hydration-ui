@@ -35,6 +35,7 @@ import { Portal, Root, Trigger } from "@radix-ui/react-tooltip"
 import Big from "big.js"
 import {
   cloneElement,
+  Fragment,
   isValidElement,
   type MouseEvent,
   type ReactElement,
@@ -56,6 +57,10 @@ import {
 } from "@/api/treasury"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
+import {
+  SAssetDetailMobileSeparator,
+  SAssetDetailModalBody,
+} from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
@@ -240,21 +245,6 @@ const formatCompositionUsd = (value: string | number | null | undefined) =>
     maximumFractionDigits: 2,
   })
 
-const formatCurrency = (value: string | number | null | undefined) => {
-  if (!value) return "-"
-
-  const numericValue = Number(value)
-
-  if (!Number.isFinite(numericValue)) return "-"
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: numericValue >= 1_000_000 ? "compact" : "standard",
-    maximumFractionDigits: numericValue >= 1 ? 2 : 6,
-  }).format(numericValue)
-}
-
 const formatTreasuryValue = (value: string | number | null | undefined) => {
   if (!value) return "-"
 
@@ -375,14 +365,14 @@ const groupCompositionAssets = (items: TreasuryAssetBalance[]) =>
       .values(),
   ).sort((a, b) => Number(b.valueUsd ?? 0) - Number(a.valueUsd ?? 0))
 
-const formatTokenAmount = (value: string) => {
+const formatTableTokenAmount = (value: string) => {
   const numericValue = Number(value)
 
   if (!Number.isFinite(numericValue)) return "-"
 
   return new Intl.NumberFormat("en-US", {
-    notation: numericValue >= 1_000_000 ? "compact" : "standard",
-    maximumFractionDigits: numericValue >= 1 ? 4 : 8,
+    notation: numericValue >= 1_000 ? "compact" : "standard",
+    maximumFractionDigits: 2,
   }).format(numericValue)
 }
 
@@ -419,11 +409,11 @@ const hasPricedValue = (item: TreasuryAssetBalance) => {
 }
 
 const getTreasuryBalanceAmountProps = (item: TreasuryAssetBalance) => ({
-  value: formatTokenAmount(item.balance),
+  value: formatTableTokenAmount(item.balance),
   displayValue:
     item.source === "moneyMarketBorrow"
-      ? `-${formatCurrency(item.valueUsd)}`
-      : formatCurrency(item.valueUsd),
+      ? `-${formatCompositionUsd(item.valueUsd)}`
+      : formatCompositionUsd(item.valueUsd),
 })
 
 const getPartValueUsd = (part?: TreasuryAssetBreakdownPart) => {
@@ -452,36 +442,6 @@ const TreasuryBalanceAmount = ({
     <Amount {...getTreasuryBalanceAmountProps(item)} />
   </Flex>
 )
-
-const SuppliedAmount = ({
-  item,
-  align = "start",
-}: {
-  item: TreasuryAssetBalance
-  align?: "start" | "end"
-}) => {
-  const supplied = item.breakdown.moneyMarketSupply
-
-  if (!supplied || !hasBreakdownPartValue(supplied)) {
-    return (
-      <Text fs="p6" color="text.low">
-        -
-      </Text>
-    )
-  }
-
-  return (
-    <Flex
-      direction="column"
-      align={align === "end" ? "flex-end" : "flex-start"}
-    >
-      <Amount
-        value={formatTokenAmount(supplied.balance)}
-        displayValue={formatCurrency(supplied.valueUsd)}
-      />
-    </Flex>
-  )
-}
 
 const formatSharePercent = (share: number) => {
   if (!Number.isFinite(share) || share <= 0) return "0%"
@@ -595,6 +555,68 @@ const BreakdownValue = ({
     </STooltipValues>
   )
 }
+
+const BreakdownTableValue = ({
+  part,
+  negative,
+}: {
+  part?: TreasuryAssetBreakdownPart
+  negative?: boolean
+}) => {
+  if (!part || !hasBreakdownPartValue(part)) {
+    return (
+      <Text fs="p6" color="text.low">
+        -
+      </Text>
+    )
+  }
+
+  return (
+    <Flex direction="column" align="flex-end">
+      <Amount
+        value={formatTableTokenAmount(part.balance)}
+        displayValue={`${negative ? "-" : ""}${formatCompositionUsd(part.valueUsd)}`}
+      />
+    </Flex>
+  )
+}
+
+const MobileAmountRow = ({
+  label,
+  value,
+  displayValue,
+}: {
+  label: string
+  value: string
+  displayValue?: string
+}) => (
+  <Amount
+    variant="horizontalLabel"
+    label={label}
+    value={value}
+    displayValue={displayValue}
+  />
+)
+
+const MobileBreakdownRow = ({
+  label,
+  part,
+  negative,
+}: {
+  label: string
+  part?: TreasuryAssetBreakdownPart
+  negative?: boolean
+}) => (
+  <MobileAmountRow
+    label={label}
+    value={part ? formatTooltipTokenAmount(part.balance) : "-"}
+    displayValue={
+      part
+        ? `${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`
+        : "-"
+    }
+  />
+)
 
 const TooltipLabel = ({ children }: { children: ReactNode }) => (
   <Text fs="p7" fw={500} color="text.high">
@@ -990,7 +1012,6 @@ type CompositionDisplayBlock =
   | CompositionOthersBlock
 
 const OTHERS_TOOLTIP_MAX_COLUMNS = 3
-const OTHERS_TOOLTIP_MAX_COLUMNS_MOBILE = 2
 const OTHERS_TOOLTIP_ITEMS_PER_COLUMN = 12
 const OTHERS_TOOLTIP_MIN_DISPLAY_USD = 20
 
@@ -1212,11 +1233,8 @@ const OthersCompositionBlock = ({
           customTitle=" "
           title="Other assets"
         >
-          <DrawerBody>
-            <CompositionTooltip
-              items={block.items}
-              maxColumns={OTHERS_TOOLTIP_MAX_COLUMNS_MOBILE}
-            />
+          <DrawerBody p={0}>
+            <MobileCompositionAssetsDetails items={block.items} />
           </DrawerBody>
         </Drawer>
       </>
@@ -1313,11 +1331,16 @@ const AssetCompositionBlock = ({
         <Drawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
-          customTitle=" "
+          customTitle={
+            <AssetLabelFull
+              asset={block.asset}
+              logoId={getTreasuryAssetLogoId(block.asset)}
+            />
+          }
           title={block.asset.symbol}
         >
-          <DrawerBody>
-            <AssetDetailsTooltipContent
+          <DrawerBody p={0}>
+            <MobileAssetDetails
               item={block}
               relatedPositions={relatedPositions}
               isLiquidityAsset={isLiquidityAsset}
@@ -1370,66 +1393,135 @@ const CompactAssetLabel = ({
 
 const MobileAssetDetails = ({
   item,
+  relatedPositions = [],
+  isLiquidityAsset,
 }: {
   item: GroupedTreasuryAssetBalance
+  relatedPositions?: TreasuryAssetBalance[]
+  isLiquidityAsset?: boolean
 }) => {
+  const groupedAssets = item.groupedAssets ?? []
+  const isGroupedAsset = groupedAssets.length > 1
+  const breakdownRows = getAssetBreakdownRows(item, isLiquidityAsset)
+  const drawerPositions = relatedPositions.filter(
+    (position) =>
+      getCompositionGroupKey(position) === getCompositionGroupKey(item) &&
+      (position.source !== item.source ||
+        position.balance !== item.balance ||
+        position.valueUsd !== item.valueUsd),
+  )
+
   return (
-    <SCompositionTooltipShell>
-      <STooltipLegend $compact>
-        <STooltipHeader>
-          <STooltipAsset>
-            <AssetLogo
-              id={getTreasuryAssetLogoId(item.asset)}
-              size="extra-small"
-            />
-            <STooltipAssetIdentity>
-              <Text fs="p6" fw={600} lh={1.1} color="text.high">
-                {item.asset.symbol}
-              </Text>
-              <Text fs="p7" lh={1.1} color="text.high">
-                {item.asset.name}
-              </Text>
-            </STooltipAssetIdentity>
-          </STooltipAsset>
-          <Text fs="p7" fw={600} color="text.high">
-            {getAssetCompositionLabel(item)}
+    <SAssetDetailModalBody>
+      {isGroupedAsset ? (
+        <Flex direction="column" gap="base">
+          <Text fs="p6" fw={600} color="text.high">
+            Consisting of
           </Text>
-        </STooltipHeader>
-        <STooltipTitle>Details</STooltipTitle>
-        <STooltipSection>
-          <STooltipRow $compact>
-            <TooltipLabel>Balance</TooltipLabel>
-            <TreasuryBalanceAmount item={item} align="end" />
-          </STooltipRow>
-          <STooltipRow $compact>
-            <TooltipLabel>Of which supplied</TooltipLabel>
-            <SuppliedAmount item={item} align="end" />
-          </STooltipRow>
-          <STooltipRow $compact>
-            <TooltipLabel>Composition</TooltipLabel>
-            <Text
-              fs="p7"
-              fw={600}
-              color="text.high"
-              sx={{ textAlign: "right" }}
-            >
-              {getAssetCompositionLabel(item)}
+          {groupedAssets.map((groupedAsset, index) => (
+            <Fragment key={groupedAsset.asset.id}>
+              {index > 0 ? <SAssetDetailMobileSeparator /> : null}
+              <MobileAmountRow
+                label={groupedAsset.asset.symbol}
+                value={formatTooltipTokenAmount(groupedAsset.balance)}
+                displayValue={formatTooltipCurrency(groupedAsset.valueUsd)}
+              />
+            </Fragment>
+          ))}
+        </Flex>
+      ) : null}
+      {isGroupedAsset ? <SAssetDetailMobileSeparator /> : null}
+      <Flex direction="column" gap="base">
+        <MobileBreakdownRow
+          label={getAssetTotalBalanceLabel(item)}
+          part={{
+            balance: item.balance,
+            valueUsd: item.valueUsd,
+          }}
+          negative={item.source === "moneyMarketBorrow"}
+        />
+        {breakdownRows.map(({ label, part, negative }) => (
+          <Fragment key={label}>
+            <SAssetDetailMobileSeparator />
+            <MobileBreakdownRow label={label} part={part} negative={negative} />
+          </Fragment>
+        ))}
+        <SAssetDetailMobileSeparator />
+        <MobileAmountRow
+          label="Composition"
+          value={getAssetCompositionLabel(item)}
+          displayValue={formatTooltipCurrency(item.valueUsd)}
+        />
+      </Flex>
+      {drawerPositions.length ? (
+        <>
+          <SAssetDetailMobileSeparator />
+          <Flex direction="column" gap="base">
+            <Text fs="p6" fw={600} color="text.high">
+              Related positions
             </Text>
-          </STooltipRow>
-        </STooltipSection>
-      </STooltipLegend>
-    </SCompositionTooltipShell>
+            {drawerPositions.map((position, index) => (
+              <Fragment key={position.source}>
+                {index > 0 ? <SAssetDetailMobileSeparator /> : null}
+                <MobileAmountRow
+                  label={getPositionGroupLabel(position)}
+                  value={formatTooltipTokenAmount(position.balance)}
+                  displayValue={`${position.source === "moneyMarketBorrow" ? "-" : ""}${formatTooltipCurrency(position.valueUsd)}`}
+                />
+              </Fragment>
+            ))}
+          </Flex>
+        </>
+      ) : null}
+    </SAssetDetailModalBody>
+  )
+}
+
+const MobileCompositionAssetsDetails = ({
+  items,
+}: {
+  items: Array<TreasuryAssetBalance & { color: string }>
+}) => {
+  const { visibleItems, hiddenCount, hiddenTotalUsd } =
+    partitionOthersTooltipItems(items)
+
+  return (
+    <SAssetDetailModalBody>
+      <Flex direction="column" gap="base">
+        {visibleItems.map((item, index) => (
+          <Fragment key={item.asset.id}>
+            {index > 0 ? <SAssetDetailMobileSeparator /> : null}
+            <MobileAmountRow
+              label={item.asset.symbol}
+              value={formatCompositionUsd(item.valueUsd)}
+              displayValue={formatSharePercent(item.share)}
+            />
+          </Fragment>
+        ))}
+        {hiddenCount > 0 ? (
+          <>
+            {visibleItems.length ? <SAssetDetailMobileSeparator /> : null}
+            <MobileAmountRow
+              label={`+ ${hiddenCount} more ${hiddenCount === 1 ? "asset" : "assets"}`}
+              value={formatCompositionUsd(hiddenTotalUsd)}
+            />
+          </>
+        ) : null}
+      </Flex>
+    </SAssetDetailModalBody>
   )
 }
 
 const AssetRow = ({
   item,
-  showComposition,
+  showBreakdown,
+  showOffchain,
   isCompact,
   balanceAlign = "start",
 }: {
   item: GroupedTreasuryAssetBalance
-  showComposition?: boolean
+  showBreakdown?: boolean
+  showOffchain?: boolean
   isCompact?: boolean
   balanceAlign?: "start" | "end"
 }) => {
@@ -1480,7 +1572,7 @@ const AssetRow = ({
           }
           title={item.asset.symbol}
         >
-          <DrawerBody>
+          <DrawerBody p={0}>
             <MobileAssetDetails item={item} />
           </DrawerBody>
         </Drawer>
@@ -1501,14 +1593,27 @@ const AssetRow = ({
       >
         <TreasuryBalanceAmount item={item} align={balanceAlign} />
       </TableCell>
-      {showComposition && (
-        <TableCell sx={{ textAlign: "left" }}>
-          <SuppliedAmount item={item} />
+      {showBreakdown && (
+        <TableCell sx={{ textAlign: "right" }}>
+          <BreakdownTableValue part={item.breakdown.moneyMarketSupply} />
         </TableCell>
       )}
-      {showComposition && (
+      {showBreakdown && (
         <TableCell sx={{ textAlign: "right" }}>
-          {getAssetCompositionLabel(item)}
+          <BreakdownTableValue
+            part={item.breakdown.moneyMarketBorrow}
+            negative
+          />
+        </TableCell>
+      )}
+      {showBreakdown && (
+        <TableCell sx={{ textAlign: "right" }}>
+          <BreakdownTableValue part={getAssetLiquidityBreakdown(item)} />
+        </TableCell>
+      )}
+      {showBreakdown && showOffchain && (
+        <TableCell sx={{ textAlign: "right" }}>
+          <BreakdownTableValue part={getAssetOffchainBreakdown(item)} />
         </TableCell>
       )}
     </SInteractiveTableRow>
@@ -1553,7 +1658,9 @@ export const StatsTreasury = () => {
   const { isMobile, isTablet } = useBreakpoints()
   const searchInputId = useId()
   const useCompositionMobileLayout = isMobile || isTablet
-  const isCompactTable = useCompositionMobileLayout
+  const isCompactTable = isMobile
+  const showOffchainColumn = !isTablet
+  const assetTableColumnCount = isCompactTable ? 2 : showOffchainColumn ? 6 : 5
   const [assetPage, setAssetPage] = useState(1)
   const [assetSearch, setAssetSearch] = useState("")
   const storedCompositionGridSpecs = useMemo(
@@ -1984,35 +2091,40 @@ export const StatsTreasury = () => {
                 </TableHead>
                 {isCompactTable ? (
                   <TableHead sx={{ textAlign: "right", width: "38%" }}>
-                    Balance
+                    Net balance
                   </TableHead>
                 ) : (
                   <>
-                    <TableHead>Balance</TableHead>
-                    <TableHead sx={{ textAlign: "left" }}>
-                      Of which supplied
-                    </TableHead>
+                    <TableHead>Net balance</TableHead>
                     <TableHead sx={{ textAlign: "right" }}>
-                      Composition
+                      Collateral
                     </TableHead>
+                    <TableHead sx={{ textAlign: "right" }}>Debt</TableHead>
+                    <TableHead sx={{ textAlign: "right" }}>Liquidity</TableHead>
+                    {showOffchainColumn && (
+                      <TableHead sx={{ textAlign: "right" }}>
+                        Offchain
+                      </TableHead>
+                    )}
                   </>
                 )}
               </tr>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <SkeletonRows colSpan={isCompactTable ? 2 : 4} />
+                <SkeletonRows colSpan={assetTableColumnCount} />
               ) : paginatedAssets.length ? (
                 paginatedAssets.map((item) => (
                   <AssetRow
                     key={`${item.source}-${item.asset.id}`}
                     item={item}
-                    showComposition
+                    showBreakdown={!isCompactTable}
+                    showOffchain={showOffchainColumn}
                     isCompact={isCompactTable}
                   />
                 ))
               ) : (
-                <EmptyRow colSpan={isCompactTable ? 2 : 4}>
+                <EmptyRow colSpan={assetTableColumnCount}>
                   {assetSearch
                     ? "No treasury assets match your search."
                     : "No treasury assets found."}

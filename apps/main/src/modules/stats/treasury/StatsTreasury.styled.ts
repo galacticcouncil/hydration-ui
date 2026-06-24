@@ -362,6 +362,27 @@ const compositionTokens: CompositionTokens = {
       brightnessBoost: "0",
       borderBrightnessBoost: "0",
     },
+    ENA: {
+      fill: {
+        assetMix: "56",
+        lighten: "white",
+        lightenMix: "44",
+      },
+      border: {
+        assetMix: "62",
+        lighten: "white",
+        lightenMix: "56",
+      },
+      light: {
+        assetMix: "78",
+        borderAssetMix: "84",
+        colorMixAsset: "42",
+      },
+      fillOpacityBoost: "0.08",
+      borderOpacityBoost: "0.32",
+      brightnessBoost: "0.12",
+      borderBrightnessBoost: "0.2",
+    },
     HOLLAR: {
       fill: {
         assetMix: "82",
