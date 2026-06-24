@@ -30,6 +30,7 @@ export const useSwitchXcAssets = () => {
           name: sellAsset.name,
           decimals: sellAsset.decimals,
           logo: sellAsset.iconSrc ?? "",
+          logoId: sellAsset.id,
           id: Number(sellAsset.id),
         })
       : null

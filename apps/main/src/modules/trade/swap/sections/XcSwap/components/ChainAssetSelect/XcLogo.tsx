@@ -12,8 +12,11 @@ export const XcAssetLogo: React.FC<{
   asset: XcAsset
   size?: LogoProps["size"]
 }> = ({ asset, size = "medium" }) => {
-  if (asset.logoId) {
-    return <AssetLogo id={asset.logoId} size={size} />
+  const logoId =
+    asset.logoId ?? (asset.id !== undefined ? String(asset.id) : undefined)
+
+  if (logoId) {
+    return <AssetLogo id={logoId} size={size} />
   }
 
   const logo = getXcSwapAssetLogoUrl(asset.key) || asset.logo

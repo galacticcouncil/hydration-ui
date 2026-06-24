@@ -208,6 +208,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
           name: meta?.name ?? asset.symbol,
           decimals: asset.decimals,
           logo: meta?.iconSrc ?? "",
+          logoId: id,
           id: asset.id,
           address: asset.address,
         },

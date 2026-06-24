@@ -40,5 +40,6 @@ export const sellAssetToXcAsset = (
     name: asset.name,
     decimals: asset.decimals,
     logo: asset.iconSrc ?? "",
+    logoId: asset.id,
     id: Number(asset.id),
   }
