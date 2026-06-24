@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 
 import { healthFactorQuery } from "@/api/aave"
@@ -53,6 +54,7 @@ import {
   isXcDestAsset,
   sellAssetToXcAsset,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { getXcSwapErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapErrorMessages"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -131,6 +133,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
   assetIn,
   assetOut,
 }) => {
+  const { t } = useTranslation("trade")
   const rpc = useRpcProvider()
   const { sdk, isApiLoaded } = rpc
   const { getAsset } = useAssets()
@@ -513,8 +516,17 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         severity: "error",
       })
     }
+    if (quote?.kind === "xc") {
+      for (const error of quote.trade.errors) {
+        result.push({
+          key: `xc-trade-error-${error}`,
+          message: getXcSwapErrorMessage(error, t),
+          severity: "error",
+        })
+      }
+    }
     return result
-  }, [alerts, quoteError, sellAssetUnsupported])
+  }, [alerts, quote, quoteError, sellAssetUnsupported, t])
 
   const toMarketFormValues = (values: XcSwapFormValues): MarketFormValues => ({
     sellAsset: values.sellAsset,
