@@ -21,7 +21,7 @@ import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
-import { naturally, numericallyStr, sortBy } from "@/utils/sort"
+import { naturally, numericallyStr, sortBy, undefinedLast } from "@/utils/sort"
 
 export enum MyAssetsTableColumn {
   Asset = "asset",
@@ -34,9 +34,9 @@ export enum MyAssetsTableColumn {
 export type MyAsset = TAssetData & {
   readonly origin: AnyChain | null
   readonly total: string
-  readonly totalDisplay: string
+  readonly totalDisplay: string | undefined
   readonly transferable: string
-  readonly transferableDisplay: string
+  readonly transferableDisplay: string | undefined
   readonly canStake: boolean
 }
 
@@ -66,7 +66,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       header: t("myAssets.header.total"),
       sortingFn: sortBy({
         select: (row) => row.original.totalDisplay,
-        compare: numericallyStr,
+        compare: undefinedLast(numericallyStr),
       }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
@@ -90,7 +90,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       header: t("myAssets.header.transferable"),
       sortingFn: sortBy({
         select: (row) => row.original.transferableDisplay,
-        compare: numericallyStr,
+        compare: undefinedLast(numericallyStr),
       }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
@@ -185,7 +185,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       },
       sortingFn: sortBy({
         select: (row) => row.original.totalDisplay,
-        compare: numericallyStr,
+        compare: undefinedLast(numericallyStr),
       }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(

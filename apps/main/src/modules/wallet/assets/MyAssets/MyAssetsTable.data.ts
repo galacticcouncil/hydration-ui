@@ -62,10 +62,10 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           -meta.decimals,
         )
 
-        const totalDisplay = price ? total.times(price).toString() : "0"
+        const totalDisplay = price ? total.times(price).toString() : undefined
         const transferableDisplay = price
           ? transferable.times(price).toString()
-          : "0"
+          : undefined
 
         return {
           ...meta,
