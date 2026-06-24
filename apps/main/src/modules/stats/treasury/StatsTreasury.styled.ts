@@ -50,6 +50,9 @@ export const SLoadedContent = styled.div(
 
 export const SKpiTooltipTrigger = styled.div(
   ({ theme }) => css`
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
     min-width: 0;
     cursor: help;
     border-radius: ${theme.radii.m};

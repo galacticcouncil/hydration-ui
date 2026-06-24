@@ -529,30 +529,6 @@ const getAssetBreakdownRows = (
 const getAssetTotalBalanceLabel = (item: TreasuryAssetBalance) =>
   item.breakdown.moneyMarketBorrow ? "Net balance" : "Total balance"
 
-const getDebtOffsetRateLabel = (assets: TreasuryAssetBalance[] = []) => {
-  const supplied = sumBreakdownUsd(
-    assets,
-    (item) => item.breakdown.moneyMarketSupply,
-  )
-  const covered = sumBreakdownUsd(
-    assets,
-    (item) => item.breakdown.moneyMarketBorrow,
-  )
-
-  try {
-    const suppliedValue = Big(supplied)
-    const coveredValue = Big(covered)
-
-    if (suppliedValue.lte(0) || coveredValue.lte(0)) return null
-
-    return `≈ ${formatSharePercent(
-      coveredValue.div(suppliedValue).times(100).toNumber(),
-    )}`
-  } catch {
-    return null
-  }
-}
-
 const BreakdownValue = ({
   part,
   negative,
@@ -773,12 +749,8 @@ const DebtOffsetTooltipContent = () => (
       Debt offset
     </Text>
     <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
-      Some supplied collateral is backing borrowed assets. We count that part as
-      debt offset, then subtract it from the asset net balance.
-    </Text>
-    <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
-      The percentage shows how much of all supplied collateral is used this way.
-      It is not the asset treasury share.
+      Some supplied collateral is backing borrowed assets. We subtract that part
+      from the asset net balance.
     </Text>
   </Flex>
 )
@@ -1953,11 +1925,6 @@ export const StatsTreasury = () => {
     () => getTreasuryHoldingsBreakdown(data?.assets, data?.borrowValueUsd),
     [data?.assets, data?.borrowValueUsd],
   )
-  const debtOffsetRateLabel = useMemo(
-    () => getDebtOffsetRateLabel(data?.assets),
-    [data?.assets],
-  )
-
   const assetSearchControl = (
     <SPanelSearch>
       <Input
@@ -2142,9 +2109,6 @@ export const StatsTreasury = () => {
                       >
                         <STableHeadTooltipTrigger tabIndex={0}>
                           Debt offset
-                          {debtOffsetRateLabel
-                            ? ` (${debtOffsetRateLabel})`
-                            : ""}
                         </STableHeadTooltipTrigger>
                       </Tooltip>
                     </TableHead>

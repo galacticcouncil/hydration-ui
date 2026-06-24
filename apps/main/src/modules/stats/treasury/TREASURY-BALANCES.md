@@ -124,7 +124,7 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 
 - Shows asset-level rows, not symbol-grouped rows.
 - Desktop columns: `Asset`, `Net balance`, `Collateral`, `Debt offset`, `Liquidity`, `Offchain`.
-- The `Debt offset` header can include the current aggregate debt-offset rate when both supplied collateral and offset debt are present.
+- `Debt offset` shows the asset's supplied collateral value that is backing borrow and is subtracted from net balance.
 - Tablet-sized layouts hide `Offchain` first.
 - Smartphone layouts show only `Asset` and `Net balance`; tapping a row opens the same asset detail drawer body used by composition tile details.
 - `Net balance` uses the same shared `Amount` component as the rest of the app.
