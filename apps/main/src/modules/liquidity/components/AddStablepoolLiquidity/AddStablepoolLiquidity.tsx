@@ -170,7 +170,6 @@ export const AddStablepoolLiquidityForm = ({
   isAddableToOmnipool,
   title,
   swap,
-
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -463,6 +462,7 @@ const AddStablepoolLiquiditySummary = ({
         healthFactor={healthFactor}
         stablepoolId={erc20Meta.underlyingAssetId}
         borrowApyData={borrowApyData}
+        swap={swap}
       />
     )
   }
@@ -482,14 +482,14 @@ const AddStablepoolLiquiditySummary = ({
           label: t("common:tradeLimit"),
           content: <TradeLimit key={limitType} type={limitType} />,
         },
-        ...(swap
+        ...(swap && erc20Meta
           ? [
               {
                 label: t("trade:market.summary.estTradeFees"),
                 content: (
                   <TradeFee
                     swap={swap}
-                    receiveAsset={poolMeta}
+                    receiveAsset={erc20Meta}
                     isLoading={false}
                   />
                 ),

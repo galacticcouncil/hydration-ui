@@ -635,6 +635,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     healthFactor,
     poolShare: omnipoolShares?.poolShare,
     isAddableToOmnipool: true,
+    swap: trade?.swap,
     ...formData,
     meta,
   }
