@@ -466,8 +466,9 @@ const AddStablepoolLiquiditySummary = ({
       rows={[
         {
           label: t("common:minimumReceived"),
-          content: t("common:number", {
+          content: t("common:currency", {
             value: minReceiveAmount,
+            symbol: erc20Meta?.symbol ?? poolMeta.symbol,
           }),
         },
         {

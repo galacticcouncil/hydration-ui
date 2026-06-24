@@ -339,9 +339,8 @@ const useStablepoolAddLiquidityFormResolver = (
         })
         .refine(
           (field) => {
-            const maxBalance = accountReserveBalances.get(field.assetId)
+            const maxBalance = accountReserveBalances.get(field.assetId) ?? "0"
 
-            if (!maxBalance) return false
             return validateMaxBalance(maxBalance, field.amount || "0")
           },
           {

@@ -85,7 +85,7 @@ export const SuppliedAssetsTable = () => {
           <RemoveMoneyMarketLiquidity
             {...modalProps}
             closable
-            title={t("withdraw")}
+            title={modalProps.title ?? t("withdraw")}
             onSubmitted={() => setModalProps(undefined)}
           />
         )}

@@ -22,6 +22,7 @@ export type AssetInputProps = {
   displayValue?: string
   displayValueLoading?: boolean
   maxBalance?: string
+  maxBalanceLoading?: boolean
   maxButtonBalance?: string
   ignoreBalance?: boolean
   ignoreDisplayValue?: boolean
@@ -48,6 +49,7 @@ export const AssetInput = ({
   label,
   balanceLabel,
   maxBalance,
+  maxBalanceLoading,
   maxButtonBalance,
   ignoreBalance,
   ignoreDisplayValue,
@@ -108,7 +110,7 @@ export const AssetInput = ({
               }}
             >
               <span>{balanceLabel ?? "Balance"}: </span>
-              {loading ? (
+              {loading || maxBalanceLoading ? (
                 <span sx={{ height: 12, lineHeight: 1 }}>
                   <Skeleton width={48} height={12} />
                 </span>
@@ -123,6 +125,7 @@ export const AssetInput = ({
                 disabled={
                   Big(usedMaxBalance || "0").lte(0) ||
                   loading ||
+                  maxBalanceLoading ||
                   !onChange ||
                   !!disabled
                 }

@@ -164,7 +164,7 @@ export const useSuppliedAssetsTableColumns = ({
       cell: ({ row }) => {
         const { reserve, underlyingAsset } = row.original
 
-        const { isActive, isPaused } = reserve
+        const { isActive, isPaused, symbol } = reserve
 
         const isDisabled = !isActive || isPaused
 
@@ -181,6 +181,7 @@ export const useSuppliedAssetsTableColumns = ({
                   getRelatedAToken,
                   onRemove,
                   openWithdraw,
+                  t("common:withdraw.symbol", { symbol }),
                 )
               }}
             >
@@ -202,7 +203,7 @@ export const useSuppliedAssetsTableColumns = ({
       cell: ({ row }) => {
         const { reserve, underlyingAsset } = row.original
 
-        const { isActive, isPaused } = reserve
+        const { isActive, isPaused, symbol } = reserve
 
         const isDisabled = !isActive || isPaused
 
@@ -219,6 +220,7 @@ export const useSuppliedAssetsTableColumns = ({
                   getRelatedAToken,
                   onRemove,
                   openWithdraw,
+                  t("common:withdraw.symbol", { symbol }),
                 )
               }}
             >
@@ -264,6 +266,7 @@ const handleWithdrawClick = (
     props: Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted">,
   ) => void,
   openWithdraw: ReturnType<typeof useModalContext>["openWithdraw"],
+  title: string,
 ) => {
   const assetId = getAssetIdFromAddress(underlyingAsset)
   const aTokenId = getRelatedAToken(assetId)?.id
@@ -273,6 +276,7 @@ const handleWithdrawClick = (
       poolId: assetId,
       erc20Id: aTokenId,
       stableswapId: assetId,
+      title,
     })
   } else {
     openWithdraw(underlyingAsset)
