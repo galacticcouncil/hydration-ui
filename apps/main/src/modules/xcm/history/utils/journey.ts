@@ -5,9 +5,11 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
-import { isH160Address } from "@galacticcouncil/utils"
+import { isH160Address, stringEquals } from "@galacticcouncil/utils"
 import { XcJourney } from "@galacticcouncil/xc-scan"
 import { isNonNullish, sortBy } from "remeda"
+
+import { XC_SWAP_CONFIG } from "@/config/xcSwap"
 
 export type TJourneyStatus = XcJourney["status"]
 
@@ -97,6 +99,14 @@ export function getFormattedAddresses(journey: XcJourney) {
 }
 
 export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
+
+export function isXcSwapReceiverJourney(journey: XcJourney): boolean {
+  return stringEquals(journey.to ?? "", XC_SWAP_CONFIG.receiver)
+}
+
+export function getVisibleJourneys(journeys: XcJourney[]): XcJourney[] {
+  return journeys.filter((j) => !isXcSwapReceiverJourney(j))
+}
 
 export function mergeJourneys(
   existing: XcJourney[],
