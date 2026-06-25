@@ -1,62 +1,53 @@
 import { Button, Flex, Logo } from "@galacticcouncil/ui/components"
 
-import { WalletMode } from "@/hooks/useWeb3Connect"
-import { getWalletModeIcon } from "@/utils/wallet"
+import {
+  WalletAccountFilterOption,
+  WalletAccountFilterOptionOverride,
+  WalletMode,
+} from "@/config/wallet"
+import { getWalletModeIcon, getWalletModeName } from "@/utils/wallet"
 
-export const allAccountFilterOptions = [
-  WalletMode.Substrate,
-  WalletMode.SubstrateH160,
-  WalletMode.EVM,
-  WalletMode.Solana,
-  WalletMode.Sui,
-] as const satisfies Array<WalletMode>
-
-export type AccountFilterOptionOverride =
-  (typeof allAccountFilterOptions)[number]
-
-export type AccountFilterOption =
-  | AccountFilterOptionOverride
-  | WalletMode.Default
-
-const modeData: Record<
-  AccountFilterOptionOverride,
+type ModeData = Record<
+  WalletAccountFilterOptionOverride,
   [name: string, icon: string]
-> = {
-  [WalletMode.Substrate]: ["Polkadot", getWalletModeIcon(WalletMode.Substrate)],
-  [WalletMode.EVM]: ["EVM", getWalletModeIcon(WalletMode.EVM)],
-  [WalletMode.Solana]: ["Solana", getWalletModeIcon(WalletMode.Solana)],
-  [WalletMode.Sui]: ["Sui", getWalletModeIcon(WalletMode.Sui)],
+>
+
+const MODE_DATA: ModeData = {
+  [WalletMode.Substrate]: [
+    getWalletModeName(WalletMode.Substrate),
+    getWalletModeIcon(WalletMode.Substrate),
+  ],
+  [WalletMode.EVM]: [
+    getWalletModeName(WalletMode.EVM),
+    getWalletModeIcon(WalletMode.EVM),
+  ],
+  [WalletMode.Solana]: [
+    getWalletModeName(WalletMode.Solana),
+    getWalletModeIcon(WalletMode.Solana),
+  ],
+  [WalletMode.Sui]: [
+    getWalletModeName(WalletMode.Sui),
+    getWalletModeIcon(WalletMode.Sui),
+  ],
   [WalletMode.SubstrateH160]: [
-    "Substrate H160",
+    getWalletModeName(WalletMode.SubstrateH160),
     getWalletModeIcon(WalletMode.Substrate),
   ],
 }
 
-const defaultBlacklist: ReadonlyArray<AccountFilterOptionOverride> = [
-  WalletMode.Solana,
-  WalletMode.Sui,
-  WalletMode.SubstrateH160,
-]
-
 export type AccountFilterProps = {
-  readonly active: AccountFilterOption
-  readonly whitelist?: ReadonlyArray<AccountFilterOptionOverride>
-  readonly blacklist?: ReadonlyArray<AccountFilterOptionOverride>
-  readonly onSetActive: (mode: AccountFilterOption) => void
+  readonly active: WalletAccountFilterOption
+  readonly whitelist?: ReadonlyArray<WalletAccountFilterOptionOverride>
+  readonly onSetActive: (mode: WalletAccountFilterOption) => void
 }
 
 export const AccountFilter: React.FC<AccountFilterProps> = ({
   active,
   whitelist,
-  blacklist,
   onSetActive,
 }) => {
-  const fullBlacklist = blacklist
-    ? [...defaultBlacklist, ...blacklist]
-    : defaultBlacklist
-
   return (
-    <Flex gap="base">
+    <Flex gap="base" wrap>
       <Button
         variant={active === WalletMode.Default ? "secondary" : "muted"}
         outline={active !== WalletMode.Default}
@@ -65,16 +56,12 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
       >
         All
       </Button>
-      {Object.entries(modeData)
+      {Object.entries(MODE_DATA)
         .filter(
           ([mode]) =>
             !whitelist ||
-            whitelist.includes(mode as AccountFilterOptionOverride),
-        )
-        .filter(
-          ([mode]) =>
-            !fullBlacklist ||
-            !fullBlacklist.includes(mode as AccountFilterOptionOverride),
+            whitelist.length === 0 ||
+            whitelist.includes(mode as WalletAccountFilterOptionOverride),
         )
         .map(([mode, [name, icon]]) => (
           <Button
@@ -82,7 +69,7 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
             outline={active !== mode}
             size="small"
             key={mode}
-            onClick={() => onSetActive(mode as AccountFilterOption)}
+            onClick={() => onSetActive(mode as WalletAccountFilterOption)}
             sx={{ position: "relative", pl: "s", py: "s", gap: "s" }}
           >
             <Logo size="medium" src={icon} alt={name} />
