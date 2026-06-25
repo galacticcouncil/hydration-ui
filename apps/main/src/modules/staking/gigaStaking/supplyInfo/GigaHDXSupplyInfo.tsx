@@ -75,100 +75,114 @@ export const GigaHDXSupplyInfo = () => {
   ]
 
   return (
-    <Flex gap="xl" align="start" p="xl">
-      <Flex
-        height={[45, 45, 115]}
-        width={[45, 45, 115]}
-        bg={getToken("details.separatorsOnDim")}
-        borderRadius="full"
-        justify="center"
-        align="center"
+    <>
+      <Text
+        font="primary"
+        fw={500}
+        fs={["p6", "base"]}
+        lh={1}
+        color={getToken("text.high")}
+        px="xl"
       >
-        <PieChart
-          height={isMobile || isTablet ? 35 : 90}
-          width={isMobile || isTablet ? 35 : 90}
-          sx={{ pointerEvents: "none" }}
+        {t("gigaStaking.supply.label")}
+      </Text>
+
+      <Flex gap="xl" align="center" p="xl">
+        <Flex
+          height={[45, 45, 115]}
+          width={[45, 45, 115]}
+          bg={getToken("details.separatorsOnDim")}
+          borderRadius="full"
+          justify="center"
+          align="center"
         >
-          <Pie
-            data={pieData}
-            dataKey="value"
-            nameKey="name"
-            innerRadius={isMobile || isTablet ? 7 : 25}
-            outerRadius={isMobile || isTablet ? 15 : 45}
-            startAngle={PIE_START_ANGLE}
-            endAngle={PIE_START_ANGLE - 360}
-            stroke="none"
-          />
-        </PieChart>
-      </Flex>
-
-      <Flex direction="column" gap="s" flex={1}>
-        <Text fs="p6" fw={500} color={getToken("text.high")}>
-          {t("gigaStaking.supply.label")}
-        </Text>
-
-        <Stack
-          direction={["row", "row", "row", "row"]}
-          gap={["xxl", "xxl", "xxl", pxToRem(48), pxToRem(78)]}
-          justify={["space-between", "space-between", "space-between", "start"]}
-          separated
-        >
-          <Flex direction="column" gap="xs">
-            <LegendItem
-              color={getToken("controls.solid.activeHover")}
-              label={t("gigaStaking.supply.legacy.label")}
+          <PieChart
+            height={isMobile || isTablet ? 35 : 90}
+            width={isMobile || isTablet ? 35 : 90}
+            sx={{ pointerEvents: "none" }}
+          >
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={isMobile || isTablet ? 7 : 25}
+              outerRadius={isMobile || isTablet ? 15 : 45}
+              startAngle={PIE_START_ANGLE}
+              endAngle={PIE_START_ANGLE - 360}
+              stroke="none"
             />
+          </PieChart>
+        </Flex>
 
-            <Text
-              font="primary"
-              fs="h7"
-              fw={500}
-              lh={1}
-              color={getToken("text.high")}
-            >
-              {t("common:percent", { value: supplyStakedPercent })}
-            </Text>
+        <Flex direction="column" gap="s" flex={1}>
+          <Stack
+            direction={["row", "row", "row", "row"]}
+            gap={["xxl", "xxl", "xxl", pxToRem(48), pxToRem(78)]}
+            justify={[
+              "space-between",
+              "space-between",
+              "space-between",
+              "start",
+            ]}
+            separated
+          >
+            <Flex direction="column" gap="xs">
+              <LegendItem
+                color={getToken("controls.solid.activeHover")}
+                label={t("gigaStaking.supply.legacy.label")}
+              />
 
-            <Text fs="p6" color={getToken("text.medium")}>
-              {t("common:currency", {
-                value: supplyStaked,
-                symbol: native.symbol,
-              })}
-            </Text>
-          </Flex>
+              <Text
+                font="primary"
+                fs="h7"
+                fw={500}
+                lh={1}
+                color={getToken("text.high")}
+              >
+                {t("common:percent", { value: supplyStakedPercent })}
+              </Text>
 
-          <Flex direction="column" gap="xs">
-            <LegendItem
-              color={getToken("text.tint.primary")}
-              label={t("gigaStaking.supply.gigaHdx.label")}
-            />
+              <Text fs="p6" color={getToken("text.medium")}>
+                {t("common:currency", {
+                  value: supplyStaked,
+                  symbol: native.symbol,
+                })}
+              </Text>
+            </Flex>
 
-            <Text
-              font="primary"
-              fs="h7"
-              fw={500}
-              lh={1}
-              color={getToken("text.high")}
-            >
-              {t("common:percent", { value: totalGigaSuppliedPercent })}
-            </Text>
+            <Flex direction="column" gap="xs">
+              <LegendItem
+                color={getToken("text.tint.primary")}
+                label={t("gigaStaking.supply.gigaHdx.label")}
+              />
 
-            <Text fs="p6" color={getToken("text.medium")}>
-              {t("common:currency", {
-                value: totalGigaSupplied,
-                symbol: native.symbol,
-              })}
-            </Text>
-          </Flex>
-        </Stack>
+              <Text
+                font="primary"
+                fs="h7"
+                fw={500}
+                lh={1}
+                color={getToken("text.high")}
+              >
+                {t("common:percent", { value: totalGigaSuppliedPercent })}
+              </Text>
 
-        <Text fs="p5" color={getToken("text.high")}>
-          {t("gigaStaking.supply.liquidity.value", {
-            value: circulatingSupply,
-          })}
-        </Text>
+              <Text fs="p6" color={getToken("text.medium")}>
+                {t("common:currency", {
+                  value: totalGigaSupplied,
+                  symbol: native.symbol,
+                })}
+              </Text>
+            </Flex>
+          </Stack>
+
+          <Text fs="p5" color={getToken("text.high")}>
+            {t("gigaStaking.supply.liquidity.value", {
+              value: circulatingSupply,
+            })}
+          </Text>
+        </Flex>
       </Flex>
-    </Flex>
+    </>
   )
 }
 
