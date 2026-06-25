@@ -162,8 +162,8 @@ export const NAVIGATION: NavigationItem[] = [
     defaultChild: LINKS.stakingGigaStake,
     icon: GemIcon,
     children: [
-      { key: "stakingOverview", to: LINKS.stakingOverview, icon: ChartPieIcon },
       { key: "stakingGigaStake", to: LINKS.stakingGigaStake, icon: HDXClassic },
+      { key: "stakingOverview", to: LINKS.stakingOverview, icon: ChartPieIcon },
     ],
   },
   {
