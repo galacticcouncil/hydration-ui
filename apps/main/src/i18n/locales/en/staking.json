@@ -136,6 +136,7 @@
   "dashboard.supplyStaked.ofSupply": "<0>of {{ amount }}</0> liquid supply",
   "dashboard.projectedAPR": "Projected APR",
   "dashboard.projectedAPR.summ": "{{ base, percent }} base + {{ voting, percent }} voting",
+  "dashboard.projectedAPR.summ.baseOnly": "{{ base, percent }} base",
   "dashboard.projectedAPR.tooltip.docs": "Go to docs",
   "dashboard.projectedAPR.gigaStaking.tooltip": [
     "Annualised return from the past 60 days of activity (capped at chain age).",

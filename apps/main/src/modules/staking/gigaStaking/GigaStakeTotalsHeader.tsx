@@ -102,6 +102,18 @@ export const GigaStakeTotalsHeader: FC = () => {
     isLoading: isAprLoading,
   } = useGigaApr(aprReferenceStake)
 
+  // Hide the "+ X% voting" part of the breakdown when the calculated voting APR
+  // rounds to 0 (e.g. no referenda with reward pools yet) — show base only.
+  const basePct = Number(aprPassive.toFixed(2))
+  const votingPct = Number(aprVoting.toFixed(2))
+  const aprBreakdown =
+    votingPct > 0
+      ? t("staking:dashboard.projectedAPR.summ", {
+          base: basePct,
+          voting: votingPct,
+        })
+      : t("staking:dashboard.projectedAPR.summ.baseOnly", { base: basePct })
+
   const cooldownPeriodDays =
     millisecondsToHours((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) /
     24
@@ -182,10 +194,7 @@ export const GigaStakeTotalsHeader: FC = () => {
           }
           customBottomLabel={
             <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
-              {t("staking:dashboard.projectedAPR.summ", {
-                voting: Number(aprVoting.toFixed(2)),
-                base: Number(aprPassive.toFixed(2)),
-              })}
+              {aprBreakdown}
             </Text>
           }
         />
