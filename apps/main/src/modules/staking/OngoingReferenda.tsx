@@ -134,7 +134,7 @@ export const OngoingReferenda: FC<Props> = ({
             (referenda.length && tracksData ? (
               <SReferendaList ref={gridRef}>
                 {referenda.map((item) => {
-                  const track = tracksData.get(item.track)!
+                  const track = tracksData.get(item.track)
                   const vote = votes.find((vote) => vote.id === item.id)
 
                   return (

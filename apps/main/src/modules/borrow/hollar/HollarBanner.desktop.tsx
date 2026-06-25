@@ -134,13 +134,9 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
           zIndex: 1,
           background: getToken("icons.onSurface"),
         }}
+        onClick={() => setBannerVisible("hollar-banner", false, Date.now())}
       >
-        <Icon
-          component={Close}
-          size={12}
-          color={getToken("text.high")}
-          onClick={() => setBannerVisible("hollar-banner", false, Date.now())}
-        />
+        <Icon component={Close} size={12} color={getToken("text.high")} />
       </ButtonIcon>
     </SContainer>
   )

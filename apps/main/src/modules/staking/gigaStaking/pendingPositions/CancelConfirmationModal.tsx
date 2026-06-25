@@ -25,7 +25,12 @@ export const CancelConfirmationModal = ({
 
   return (
     <Modal open={open} onOpenChange={onClose}>
-      <ModalHeader title="Confirmation" customTitle={<></>} closable hidden />
+      <ModalHeader
+        title={t("common:confirmation")}
+        customTitle={<></>}
+        closable
+        hidden
+      />
       <ModalBody noPadding scrollable={false} sx={{ pb: pxToRem(40) }}>
         <Flex
           direction="column"

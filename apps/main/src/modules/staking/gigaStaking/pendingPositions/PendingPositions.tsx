@@ -8,7 +8,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { gigaUnstakePositionsQuery } from "@/api/gigaStake"
@@ -31,18 +31,21 @@ export const PendingPositions: FC = () => {
     gigaUnstakePositionsQuery(rpc, account?.address ?? ""),
   )
 
-  const visiblePositions =
-    pendingPositions.slice(
-      (currentPage - 1) * MAX_ITEMS_PER_PAGE,
-      currentPage * MAX_ITEMS_PER_PAGE,
-    ) ?? []
+  const visiblePositions = pendingPositions.slice(
+    (currentPage - 1) * MAX_ITEMS_PER_PAGE,
+    currentPage * MAX_ITEMS_PER_PAGE,
+  )
+
+  const visiblePositionsLength = visiblePositions.length
+
+  useEffect(() => {
+    if (visiblePositionsLength === 0) {
+      setCurrentPage(Math.max(1, currentPage - 1))
+    }
+  }, [visiblePositionsLength, currentPage])
 
   if (!pendingPositions.length) {
     return null
-  }
-
-  if (visiblePositions.length === 0) {
-    setCurrentPage(Math.max(1, currentPage - 1))
   }
 
   return (

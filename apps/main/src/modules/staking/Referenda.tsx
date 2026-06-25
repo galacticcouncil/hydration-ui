@@ -26,7 +26,7 @@ import { toDecimal } from "@/utils/formatting"
 type Props = {
   readonly id: number
   readonly item: OngoingGovReferenda
-  readonly track: ReferendaTrack
+  readonly track: ReferendaTrack | undefined
   readonly totalIssuance: bigint | undefined
   readonly vote: TAccountVote | undefined
   readonly isGigaStaking?: boolean
@@ -84,6 +84,10 @@ export const Referenda: FC<Props> = ({
   )
 
   const voted = !!vote
+
+  if (!track) {
+    return null
+  }
 
   return (
     <SReferenda voted={voted}>

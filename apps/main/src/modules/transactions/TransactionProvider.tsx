@@ -103,9 +103,12 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const feeAssetBalance =
     transaction.executedAmount &&
     transaction.executedAmount.assetId === feeAssetId
-      ? Big(fee?.feeAssetBalance ?? "0")
-          .minus(transaction.executedAmount.amount)
-          .toString()
+      ? Big.max(
+          Big(fee?.feeAssetBalance ?? "0")
+            .minus(transaction.executedAmount.amount)
+            .toString(),
+          "0",
+        ).toString()
       : fee?.feeAssetBalance
 
   const {

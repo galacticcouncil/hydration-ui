@@ -40,7 +40,7 @@ export const LINKS = {
   staking: "/staking",
   stakingOverview: "/staking/overview",
   stakingGigaStake: "/staking/giga-stake",
-  governance: "/governance",
+  //governance: "/governance",
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
@@ -275,10 +275,10 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.stakingGigaStake.title"),
       description: t("navigation.staking.description"),
     },
-    governance: {
-      title: t("navigation.governance.title"),
-      description: t("navigation.governance.description"),
-    },
+    // governance: {
+    //   title: t("navigation.governance.title"),
+    //   description: t("navigation.governance.description"),
+    // },
     // stakingGovernance: {
     //   title: t("navigation.stakingGovernance.title"),
     //   description: "",
@@ -379,7 +379,7 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
-  "governance",
+  //"governance",
   // "referrals",
   // "memepad",
 ]
@@ -391,7 +391,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
-  "governance",
+  //"governance",
   // "referrals",
   // "memepad",
 ]

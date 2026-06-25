@@ -134,7 +134,7 @@ export const GigaStakeTotalsHeader: FC = () => {
     useFacilitatorBucket(hollarReserve?.aTokenAddress ?? "")
 
   const { data: gigaLockedHDX, isLoading: isGigaLockedHDXLoading } = useQuery(
-    gigaTotalLockedQuery(useRpcProvider()),
+    gigaTotalLockedQuery(rpc),
   )
 
   const totalGigaSupplied = scaleHuman(gigaLockedHDX ?? 0n, native.decimals)

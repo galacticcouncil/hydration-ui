@@ -8,7 +8,7 @@
   "gigaStake.header.totalStake": "Total GIGA Stake",
   "gigaStake.section.gigaStakingDashboard": "GIGA staking dashboard",
   "gigaStakingMigration.title": "GIGA staking migration",
-  "gigaStakingMigration.lead": "You have <0>{{amount, number}} HDX</0> staked in Legacy Staking, you can maximize your staking rewards with GIGAHDX.<1/>Your position will have minimum lock of <0>{{days}} days</0> to unstake.",
+  "gigaStakingMigration.lead": "You have <0>{{amount, number}} HDX</0> staked in Legacy Staking, you can maximize your staking rewards with GIGAHDX.<br/>Your position will have minimum lock of <0>{{days}} days</0> to unstake.",
   "gigaStakingMigration.followUp": "With one click of a button you can migrate Legacy HDX  and start earning those rewards. ",
   "gigaStakingMigration.cta": "Migrate to GIGAHDX",
   "gigaStaking.unstakingPositions.title": "Unstaking positions",
@@ -58,7 +58,9 @@
   "gigaStaking.borrow.label": "Available to borrow",
   "gigaStaking.borrowed.label": "Borrowed",
   "gigaStaking.borrow.error.borrowLimit": "You can't borrow more than the available borrow amount.",
+  "gigaStaking.borrow.healthFactorRiskWarning": "Borrowing this amount will reduce your health factor and increase risk of liquidation.",
   "gigaStaking.repay.error.repayLimit": "You can't repay more than your borrowed amount.",
+  "gigaStaking.repay.remainingDebt": "Remaining debt",
   "gigaStaking.unstake.error.unstakeLimit": "You can't unstake more than your safe unstake limit.",
   "gigaStaking.unstake.error.maxPendingPositions": "Max unstaking positions is {{ max }}",
   "gigaHdxDescription.points": [

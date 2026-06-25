@@ -98,7 +98,7 @@ export const GigaHDXBorrowForm = ({
 
           {healthFactor?.isUserConsentRequired && (
             <HealthFactorRiskWarning
-              message="Borrowing this amount will reduce your health factor and increase risk of liquidation."
+              message={t("staking:gigaStaking.borrow.healthFactorRiskWarning")}
               accepted={healthFactorRiskCheckboxAccepted}
               onAcceptedChange={setHealthFactorRiskCheckboxAccepted}
               isUserConsentRequired

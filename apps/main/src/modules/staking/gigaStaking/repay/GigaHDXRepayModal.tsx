@@ -71,7 +71,7 @@ const GigaHDXRepayForm = ({ onClose }: GigaHDXRepayModalProps) => {
             separator={<ModalContentDivider />}
             rows={[
               {
-                label: "Remaining debt",
+                label: t("staking:gigaStaking.repay.remainingDebt"),
                 content: (
                   <Amount
                     value={t("currency", {

@@ -78,9 +78,8 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
                 as="span"
                 fs="p2"
                 lh="m"
-                color={getToken("colors.azureBlue.400")}
+                color={getToken("text.tint.quart")}
               />,
-              <br key="giga-migration-br" />,
             ]}
           />
         </Text>
