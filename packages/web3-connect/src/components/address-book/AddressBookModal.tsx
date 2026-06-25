@@ -1,75 +1,61 @@
-import { ModalBody, Stack } from "@galacticcouncil/ui/components"
-import {
-  normalizeSS58Address,
-  safeConvertSS58toPublicKey,
-} from "@galacticcouncil/utils"
-import {
-  getWalletModeByAddress,
-  PROVIDERS_BY_WALLET_MODE,
-  WalletMode,
-  Web3ConnectAccount,
-} from "@galacticcouncil/web3-connect"
-import { FC, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { ModalBody, VirtualizedList } from "@galacticcouncil/ui/components"
+import { FC, useState } from "react"
 import { filter, pipe, sortBy } from "remeda"
 
-import {
-  AccountFilter,
-  AccountFilterOption,
-  AccountFilterOptionOverride,
-  allAccountFilterOptions,
-} from "@/components/account/AccountFilter"
+import { AccountFilter } from "@/components/account/AccountFilter"
 import { AccountRemoveModal } from "@/components/account/AccountRemoveModal"
 import {
   Address,
+  useAddresses,
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
 import { AddressBookEmptyState } from "@/components/address-book/AddressBookEmptyState"
+import { AddressBookEntry } from "@/components/address-book/AddressBookEntry"
 import { AddressBookSearch } from "@/components/address-book/AddressBookSearch"
-import i18n from "@/i18n"
+import {
+  WALLET_ACCOUNT_FILTER_OPTIONS,
+  WalletAccountFilterOption,
+  WalletAccountFilterOptionOverride,
+  WalletMode,
+} from "@/config/wallet"
+import { addressToPublicKey } from "@/utils/publicKey"
+import { getWalletModeByAddress } from "@/utils/wallet"
 
 type Props = {
   readonly header?: React.ReactNode
   readonly align?: "default" | "center"
-  readonly whitelist?: ReadonlyArray<AccountFilterOptionOverride>
-  readonly blacklist?: ReadonlyArray<AccountFilterOptionOverride>
+  readonly whitelist?: ReadonlyArray<WalletAccountFilterOptionOverride>
   readonly onSelect?: (address: Address) => void
 }
+
+const ADDRESS_BOOK_ENTRY_HEIGHT = 48
+const MAX_VISIBLE_ADDRESS_BOOK_ENTRIES = 6
 
 export const AddressBookModal: FC<Props> = ({
   header,
   align = "default",
-  whitelist,
-  blacklist,
+  whitelist = WALLET_ACCOUNT_FILTER_OPTIONS,
   onSelect,
 }) => {
-  const { t } = useTranslation("translations", { i18n })
   const [publicKeyToRemove, setPublicKeyToRemove] = useState("")
   const [searchPhrase, setSearchPhrase] = useState("")
 
-  const [accountFilter, setAccountFilter] = useState<AccountFilterOption>(
-    whitelist ? (whitelist[0] ?? WalletMode.Default) : WalletMode.Default,
+  const [accountFilter, setAccountFilter] = useState<WalletAccountFilterOption>(
+    whitelist.length === 1
+      ? (whitelist[0] ?? WalletMode.Default)
+      : WalletMode.Default,
   )
 
-  const { addresses: allAddresses, add, edit, remove } = useAddressStore()
-
-  const allAddressesProviders = new Set(
-    allAddresses.map((address) => address.provider),
-  )
-
-  const validFilterOptions = whitelist ?? allAccountFilterOptions
-
-  const filterOptions = validFilterOptions.filter((mode) =>
-    PROVIDERS_BY_WALLET_MODE[mode].some((provider) =>
-      allAddressesProviders.has(provider),
-    ),
-  )
-
-  const validProviders = PROVIDERS_BY_WALLET_MODE[accountFilter]
+  const { add, edit, remove } = useAddressStore()
+  const allAddresses = useAddresses()
 
   const filteredAddresses = pipe(
     allAddresses,
-    filter((address) => validProviders.includes(address.provider)),
+    filter((address) =>
+      accountFilter === WalletMode.Default
+        ? whitelist.includes(address.mode)
+        : address.mode === accountFilter,
+    ),
     sortBy(
       [(address) => address.isCustom || false, "desc"],
       [(address) => address.name.toLocaleLowerCase(), "asc"],
@@ -84,24 +70,13 @@ export const AddressBookModal: FC<Props> = ({
   )
 
   const addressProvider = getWalletModeByAddress(searchPhrase)
-  const addressPublicKey = safeConvertSS58toPublicKey(
-    normalizeSS58Address(searchPhrase),
-  )
+  const addressPublicKey = addressToPublicKey(searchPhrase)
 
   const canAdd =
     !searchedAddresses.length &&
     !!addressProvider &&
     !allAddresses.find((address) => address.publicKey === addressPublicKey) &&
-    validFilterOptions.includes(addressProvider)
-
-  useEffect(() => {
-    if (
-      accountFilter !== WalletMode.Default &&
-      !filterOptions.includes(accountFilter)
-    ) {
-      setAccountFilter(WalletMode.Default)
-    }
-  }, [filterOptions, accountFilter])
+    whitelist.includes(addressProvider)
 
   if (publicKeyToRemove) {
     return (
@@ -125,8 +100,6 @@ export const AddressBookModal: FC<Props> = ({
     add({
       address: searchPhrase,
       name: "",
-      provider: PROVIDERS_BY_WALLET_MODE[addressProvider][0],
-      publicKey: addressPublicKey,
       isCustom: true,
     })
 
@@ -140,35 +113,40 @@ export const AddressBookModal: FC<Props> = ({
   return (
     <>
       {header}
-      <ModalBody sx={{ display: "flex", flexDirection: "column", gap: "xl" }}>
+      <ModalBody
+        scrollable={false}
+        sx={{ display: "flex", flexDirection: "column", gap: "base" }}
+      >
         <AddressBookSearch
           canAdd={canAdd}
           searchPhrase={searchPhrase}
           onSearchPhraseChange={setSearchPhrase}
           onAdd={addNewAddress}
         />
-        {filterOptions.length > 1 && (
+        {whitelist.length > 1 && (
           <AccountFilter
             active={accountFilter}
-            whitelist={filterOptions}
-            blacklist={blacklist}
+            whitelist={whitelist}
             onSetActive={setAccountFilter}
           />
         )}
+      </ModalBody>
+      <ModalBody scrollable={false} noPadding>
         {searchedAddresses.length === 0 ? (
           <AddressBookEmptyState canAdd={canAdd} />
         ) : (
-          <Stack gap="base">
-            {searchedAddresses.map((address) => (
-              <Web3ConnectAccount
+          <VirtualizedList
+            items={searchedAddresses}
+            itemSize={ADDRESS_BOOK_ENTRY_HEIGHT}
+            maxVisibleItems={MAX_VISIBLE_ADDRESS_BOOK_ENTRIES}
+            separated
+            getItemKey={(index) => searchedAddresses[index]?.publicKey ?? index}
+            renderItem={(address) => (
+              <AddressBookEntry
                 key={address.publicKey}
-                rawAddress={address.address}
-                publicKey={address.publicKey}
-                name={address.name || t("addressBook.defaultName")}
                 address={address.address}
-                displayAddress={address.address}
-                provider={address.provider}
-                // TODO disable selecting
+                mode={address.mode}
+                name={address.name}
                 {...(onSelect && { onSelect: () => onSelect(address) })}
                 {...(address.isCustom && {
                   onEdit: (name: string) => {
@@ -180,8 +158,8 @@ export const AddressBookModal: FC<Props> = ({
                   onDelete: () => setPublicKeyToRemove(address.publicKey),
                 })}
               />
-            ))}
-          </Stack>
+            )}
+          />
         )}
       </ModalBody>
     </>
