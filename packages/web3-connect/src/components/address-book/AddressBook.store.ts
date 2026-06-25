@@ -1,6 +1,7 @@
 import {
   createZustandStorage,
   isH160Address,
+  NearAddr,
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
 import { useMemo } from "react"
@@ -28,6 +29,8 @@ export const modeSchema = z.enum([
   WalletMode.EVM,
   WalletMode.Solana,
   WalletMode.Sui,
+  WalletMode.Near,
+  WalletMode.Zcash,
 ])
 
 const addressSchemaV2 = z.object({
@@ -83,6 +86,7 @@ function normalizeAddress(input: AddressInput): Address | null {
 
   return {
     ...input,
+    name: input.name || NearAddr.parseAccountName(input.address),
     publicKey,
     mode: parsedMode.data,
     savedBy: input.savedBy ?? [],

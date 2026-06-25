@@ -9,6 +9,8 @@ const walletModeNames = {
   [WalletMode.Solana]: "Solana",
   [WalletMode.Sui]: "Sui",
   [WalletMode.SubstrateH160]: "Substrate H160",
+  [WalletMode.Near]: "NEAR",
+  [WalletMode.Zcash]: "Zcash",
 } satisfies Record<WalletAccountFilterOptionOverride, string>
 
 export const getWalletModeName = (

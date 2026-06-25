@@ -33,6 +33,14 @@ const MODE_DATA: ModeData = {
     getWalletModeName(WalletMode.SubstrateH160),
     getWalletModeIcon(WalletMode.Substrate),
   ],
+  [WalletMode.Near]: [
+    getWalletModeName(WalletMode.Near),
+    getWalletModeIcon(WalletMode.Near),
+  ],
+  [WalletMode.Zcash]: [
+    getWalletModeName(WalletMode.Zcash),
+    getWalletModeIcon(WalletMode.Zcash),
+  ],
 }
 
 export type AccountFilterProps = {

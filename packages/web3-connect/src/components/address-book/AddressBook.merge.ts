@@ -1,3 +1,5 @@
+import { NearAddr } from "@galacticcouncil/utils"
+
 import { getWalletModeName } from "@/utils/walletMode"
 
 import type { Address } from "./AddressBook.store"
@@ -8,6 +10,11 @@ export function getAllAddresses(addresses: Address[]): Address[] {
   return addresses.map((address) => {
     if (address.name) {
       return address
+    }
+
+    const nearName = NearAddr.parseAccountName(address.address)
+    if (nearName) {
+      return { ...address, name: nearName }
     }
 
     const index = (indices.get(address.mode) ?? 0) + 1
