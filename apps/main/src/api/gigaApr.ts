@@ -22,7 +22,7 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
  *
  *   totalAPR = baseAPR + votingAPR
  *
- * Both components are backward-looking over a sliding window (default 60d,
+ * Both components are backward-looking over a sliding window (default 28d,
  * capped at chain age). Both work whether the user has a position or not:
  * baseAPR is position-size-independent (rate is universal across all
  * GIGAHDX holders), votingAPR degrades cleanly at stakeValue = 0 to a fleet
@@ -36,7 +36,7 @@ const getBlocksPerDay = (blockSeconds: number) => {
 
 /** Locked6x conviction multiplier / REWARD_MULTIPLIER_SCALE = 800/100. */
 const LOCKED_6X_MULTIPLIER = 8n
-const DEFAULT_WINDOW_DAYS = 60
+const DEFAULT_WINDOW_DAYS = 28
 
 const APR_QUERY_OPTS = {
   staleTime: Infinity,
@@ -104,6 +104,11 @@ export const passiveAprQuery = (
       // gigapot was just swept to ~0 (exchange rate GIGAHDX:HDX = 1), so it's 0
       // by definition — no historical read needed. Otherwise (launch older than
       // the window) read the gigapot balance at the trailing-window start.
+      //
+      // If that historical state isn't available (e.g. a pruned RPC that no
+      // longer retains ~windowDays of history), bail out with 0% rather than
+      // letting the baseline default to 0 — a 0 baseline would treat the ENTIRE
+      // current pot as window yield and massively overstate the APR.
       let gpT0 = 0n
       if (t0Block > GIGAHDX_LAUNCH_BLOCK) {
         const t0HashStr: string = await rpc.papiClient._request(
@@ -113,8 +118,9 @@ export const passiveAprQuery = (
         const gpT0Acct = await rpc.papi.query.System.Account.getValue(
           STAKE_GIGAPOT_ADDRESS,
           { at: t0HashStr },
-        ).catch(() => undefined)
-        gpT0 = gpT0Acct?.data?.free ?? 0n
+        ).catch(() => null)
+        if (gpT0Acct === null) return Big(0)
+        gpT0 = gpT0Acct.data?.free ?? 0n
       }
 
       const totalStake = tlNow + gpNow
