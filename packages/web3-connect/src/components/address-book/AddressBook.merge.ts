@@ -1,0 +1,113 @@
+import { getWalletModeName } from "@/utils/walletMode"
+
+import type { Address } from "./AddressBook.store"
+
+export function getAllAddresses(addresses: Address[]): Address[] {
+  const indices = new Map<Address["mode"], number>()
+
+  return addresses.map((address) => {
+    if (address.name) {
+      return address
+    }
+
+    const index = (indices.get(address.mode) ?? 0) + 1
+    indices.set(address.mode, index)
+
+    return {
+      ...address,
+      name: `${getWalletModeName(address.mode)} ${index}`,
+    }
+  })
+}
+
+export type AddressFilter = {
+  mode?: Address["mode"]
+  isCustom?: boolean
+  related?: boolean
+}
+
+export function selectAddresses(
+  addresses: Address[],
+  filter: AddressFilter,
+  connectedPublicKey: string | null,
+): Address[] {
+  return addresses.filter((a) => {
+    if (filter.mode !== undefined && a.mode !== filter.mode) {
+      return false
+    }
+    if (
+      filter.isCustom !== undefined &&
+      Boolean(a.isCustom) !== filter.isCustom
+    ) {
+      return false
+    }
+    if (filter.related !== undefined) {
+      const isGlobal = a.savedBy.length === 0
+      const isSavedByPubKey =
+        !!connectedPublicKey && a.savedBy.includes(connectedPublicKey)
+      const related = isGlobal || isSavedByPubKey
+      if (related !== filter.related) return false
+    }
+    return true
+  })
+}
+
+export function isVisibleToWallet(
+  address: Pick<Address, "isCustom" | "savedBy">,
+  connectedPublicKey: string | null,
+): boolean {
+  if (!address.isCustom) return true
+  if (address.savedBy.length === 0) return true
+  return (
+    connectedPublicKey !== null && address.savedBy.includes(connectedPublicKey)
+  )
+}
+
+export function deriveSavedBy(
+  entry: Pick<Address, "isCustom" | "savedBy">,
+  connectedPublicKey: string | null,
+): string[] {
+  if (!entry.isCustom) return entry.savedBy
+  return connectedPublicKey ? [connectedPublicKey] : []
+}
+
+export function buildAddresses(
+  existing: Address[],
+  normalized: Address[],
+  connectedPublicKey: string | null,
+): Address[] {
+  return mergeAddresses(
+    existing,
+    normalized.map((entry) => ({
+      ...entry,
+      savedBy: deriveSavedBy(entry, connectedPublicKey),
+    })),
+  )
+}
+
+function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
+  const incomingByKey = new Map(incoming.map((a) => [a.publicKey, a]))
+  const existingKeys = new Set(existing.map((a) => a.publicKey))
+
+  const updated = existing.map((entry) => {
+    const match = incomingByKey.get(entry.publicKey)
+    if (!match) return entry
+
+    const savedBy = [...new Set([...entry.savedBy, ...match.savedBy])]
+    const name =
+      !entry.isCustom && entry.name !== match.name ? match.name : entry.name
+
+    const changed =
+      savedBy.length !== entry.savedBy.length || name !== entry.name
+    return changed ? { ...entry, name, savedBy } : entry
+  })
+
+  const added = [...incomingByKey.values()].filter(
+    (a) => !existingKeys.has(a.publicKey),
+  )
+
+  const hasChanges =
+    added.length > 0 || updated.some((a, i) => a !== existing[i])
+
+  return hasChanges ? [...updated, ...added] : existing
+}

@@ -1,0 +1,38 @@
+## Codebase Patterns
+- Address book entries use `mode` (WalletMode enum) instead of `chainKey`; provider is optional on stored entries
+- `getWalletModeByAddress(address)` derives mode; explicit `input.mode` overrides on add
+- `AccountFilter` is whitelist-only: non-empty whitelist shows only those mode chips; empty/absent shows all five
+- `AccountOption` renders ProviderLogo when provider is set, else chain icon via `getWalletModeIcon(mode)` (SubstrateH160 → Substrate icon)
+- AddressBookModal filters by `address.mode` against whitelist (Default) or exact mode match; no PROVIDERS_BY_WALLET_MODE indirection
+- Runnable self-checks live in `AddressBook.selfcheck.ts` and `AddressBook.store.selfcheck.ts` (esbuild + node, documented in file headers)
+- Use fnm yarn at `~/.local/share/fnm/aliases/default/bin/yarn` when shell PATH lacks yarn
+- Commit format for Ralph stories: `feat: [Story ID] - [Story Title]`
+- Connect/account-select flows must pass explicit `whitelist={[WalletMode.Substrate, WalletMode.EVM]}` to AccountFilter to preserve pre-refactor chip set (Substrate + EVM only)
+- Build `@galacticcouncil/web3-connect` before linting `apps/main` when address-book types change (`yarn workspace @galacticcouncil/web3-connect build`)
+
+## 2025-06-25 - US-006
+- AddressBookModal: removed blacklist prop, switched filtering from provider-based to mode-based, add contacts without provider, pass mode to AccountOption
+- Files changed: `packages/web3-connect/src/components/address-book/AddressBookModal.tsx`
+- **Learnings for future iterations:**
+  - `blacklist` was declared in Props but never destructured — safe to remove without touching call sites
+  - `canAdd` already used `getWalletModeByAddress` + `whitelist.includes`; variable name `addressProvider` is legacy but refers to mode
+  - No browser tools available; manual verification needed in Settings → Contacts and transfer recipient flows
+---
+
+## 2025-06-25 - US-007
+- Added explicit `whitelist={[WalletMode.Substrate, WalletMode.EVM]}` to AccountFilter in ProviderSelect and AccountSelectContent
+- Files changed: `packages/web3-connect/src/components/provider/ProviderSelect.tsx`, `packages/web3-connect/src/components/content/AccountSelectContent.tsx`
+- **Learnings for future iterations:**
+  - Both call sites already imported `WalletMode` from `@/hooks/useWeb3Connect`; no new imports needed
+  - Without explicit whitelist, AccountFilter shows all five mode chips after US-004 removed defaultBlacklist
+  - Manual browser verification needed: wallet connect modal should still show only Substrate + EVM filter chips
+---
+
+## 2025-06-25 - US-008
+- RecipientCustomAddressForm: removed PROVIDERS_BY_WALLET_MODE provider lookup; add contact with `{ address, name: '', isCustom: true }` (mode derived in store)
+- Files changed: `apps/main/src/modules/xcm/transfer/components/Recipient/RecipientCustomAddressForm.tsx`
+- **Learnings for future iterations:**
+  - `onSubmit(address)` flow unchanged — add to address book and confirm recipient in one step
+  - `apps/main` tsc fails with stale web3-connect types until `yarn workspace @galacticcouncil/web3-connect build` is run
+  - Manual browser verification needed: XCM transfer → custom recipient → confirm saves contact without provider
+---

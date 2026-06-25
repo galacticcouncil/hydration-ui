@@ -11,7 +11,8 @@ import {
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
-import { getUniqueAccountKey } from "@/utils"
+import { WalletMode } from "@/config/wallet"
+import { getUniqueAccountKey } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
@@ -22,16 +23,7 @@ export enum WalletProviderStatus {
   Error = "error",
 }
 
-export enum WalletMode {
-  Default = "default",
-  EVM = "evm",
-  Substrate = "substrate",
-  SubstrateEVM = "substrate-evm",
-  SubstrateH160 = "substrate-h160",
-  Solana = "solana",
-  Sui = "sui",
-  Unknown = "unknown",
-}
+export { WalletMode } from "@/config/wallet"
 
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
   ...SUBSTRATE_PROVIDERS,

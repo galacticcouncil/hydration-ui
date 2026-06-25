@@ -12,7 +12,7 @@ import {
   SProviderButton,
   SProviderLink,
 } from "@/components/provider/ProviderButton.styled"
-import { WalletMode } from "@/hooks/useWeb3Connect"
+import { WalletMode } from "@/config/wallet"
 import { WalletData } from "@/types/wallet"
 import { getWalletModeIcon, getWalletModesByProviderType } from "@/utils/wallet"
 
