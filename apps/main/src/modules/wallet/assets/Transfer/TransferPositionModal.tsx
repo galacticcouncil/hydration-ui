@@ -23,6 +23,7 @@ import {
   getWalletModeByAddress,
   PROVIDERS_BY_WALLET_MODE,
   useAccount,
+  WalletMode,
 } from "@galacticcouncil/web3-connect"
 import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
@@ -123,12 +124,8 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   if (isMyContactsOpen) {
     return (
       <AddressBookModal
-        header={
-          <ModalHeader
-            title={t("common:addressBook.modal.title")}
-            onBack={() => setIsMyContactsOpen(false)}
-          />
-        }
+        whitelist={[WalletMode.Substrate, WalletMode.EVM]}
+        onBack={() => setIsMyContactsOpen(false)}
         onSelect={(address) => {
           form.setValue("address", address.address, { shouldValidate })
           setIsMyContactsOpen(false)

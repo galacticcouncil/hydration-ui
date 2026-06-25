@@ -176,7 +176,15 @@ function custom(key: string): Address {
     mode: "solana" as Address["mode"],
   }
 
+  const unnamedNear = {
+    ...custom("crypthor.near"),
+    name: "",
+    address: "crypthor.near",
+    mode: "near" as Address["mode"],
+  }
+
   assert.equal(getAllAddresses([named])[0]?.name, "test")
+  assert.equal(getAllAddresses([unnamedNear])[0]?.name, "crypthor")
   assert.equal(getAllAddresses([unnamedSui])[0]?.name, "Sui 1")
   assert.deepEqual(
     getAllAddresses([unnamedSui, unnamedSui2, unnamedSolana]).map(

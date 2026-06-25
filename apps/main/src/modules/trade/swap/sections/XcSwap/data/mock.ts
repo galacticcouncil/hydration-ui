@@ -1,3 +1,5 @@
+import { NearAddr, ZcashAddr } from "@galacticcouncil/utils"
+
 export type XcAsset = {
   key: string
   symbol: string
@@ -32,15 +34,14 @@ export type XcChainAssetPair = {
 const nonEmpty = (addr: string) => addr.trim().length > 0
 
 // Picks the recipient validator for a destination chain's platform.
-// @TODO: Implement actual validators for each platform.
 export const addressValidatorFor = (
   platform: string,
 ): ((addr: string) => boolean) => {
   switch (platform) {
     case "near":
-      return nonEmpty
+      return NearAddr.isValid
     case "zec":
-      return nonEmpty
+      return ZcashAddr.isValid
     default:
       return nonEmpty
   }

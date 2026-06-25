@@ -17,6 +17,8 @@ export enum WalletMode {
   SubstrateH160 = "substrate-h160",
   Solana = "solana",
   Sui = "sui",
+  Near = "near",
+  Zcash = "zcash",
   Unknown = "unknown",
 }
 
@@ -26,6 +28,8 @@ export const WALLET_ACCOUNT_FILTER_OPTIONS = [
   WalletMode.EVM,
   WalletMode.Solana,
   WalletMode.Sui,
+  WalletMode.Near,
+  WalletMode.Zcash,
 ] as const satisfies Array<WalletMode>
 
 export type WalletAccountFilterOptionOverride =

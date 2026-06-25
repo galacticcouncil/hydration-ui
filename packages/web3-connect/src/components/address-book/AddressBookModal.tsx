@@ -1,5 +1,10 @@
-import { ModalBody, VirtualizedList } from "@galacticcouncil/ui/components"
+import {
+  ModalBody,
+  ModalHeader,
+  VirtualizedList,
+} from "@galacticcouncil/ui/components"
 import { FC, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { filter, pipe, sortBy } from "remeda"
 
 import { AccountFilter } from "@/components/account/AccountFilter"
@@ -9,7 +14,10 @@ import {
   useAddresses,
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
-import { AddressBookEmptyState } from "@/components/address-book/AddressBookEmptyState"
+import {
+  AddressBookEmptyState,
+  AddressBookEmptyStateReason,
+} from "@/components/address-book/AddressBookEmptyState"
 import { AddressBookEntry } from "@/components/address-book/AddressBookEntry"
 import { AddressBookSearch } from "@/components/address-book/AddressBookSearch"
 import {
@@ -18,11 +26,13 @@ import {
   WalletAccountFilterOptionOverride,
   WalletMode,
 } from "@/config/wallet"
+import i18n from "@/i18n"
 import { addressToPublicKey } from "@/utils/publicKey"
-import { getWalletModeByAddress } from "@/utils/wallet"
+import { getWalletModeByAddress, getWalletModeName } from "@/utils/wallet"
 
 type Props = {
   readonly header?: React.ReactNode
+  readonly onBack?: () => void
   readonly align?: "default" | "center"
   readonly whitelist?: ReadonlyArray<WalletAccountFilterOptionOverride>
   readonly onSelect?: (address: Address) => void
@@ -33,10 +43,12 @@ const MAX_VISIBLE_ADDRESS_BOOK_ENTRIES = 6
 
 export const AddressBookModal: FC<Props> = ({
   header,
+  onBack,
   align = "default",
   whitelist = WALLET_ACCOUNT_FILTER_OPTIONS,
   onSelect,
 }) => {
+  const { t } = useTranslation("translations", { i18n })
   const [publicKeyToRemove, setPublicKeyToRemove] = useState("")
   const [searchPhrase, setSearchPhrase] = useState("")
 
@@ -49,6 +61,10 @@ export const AddressBookModal: FC<Props> = ({
   const { add, edit, remove } = useAddressStore()
   const allAddresses = useAddresses()
 
+  const addressOrder = new Map(
+    allAddresses.map((address, index) => [address.publicKey, index]),
+  )
+
   const filteredAddresses = pipe(
     allAddresses,
     filter((address) =>
@@ -58,7 +74,7 @@ export const AddressBookModal: FC<Props> = ({
     ),
     sortBy(
       [(address) => address.isCustom || false, "desc"],
-      [(address) => address.name.toLocaleLowerCase(), "asc"],
+      [(address) => addressOrder.get(address.publicKey) ?? 0, "desc"],
     ),
   )
 
@@ -77,6 +93,34 @@ export const AddressBookModal: FC<Props> = ({
     !!addressProvider &&
     !allAddresses.find((address) => address.publicKey === addressPublicKey) &&
     whitelist.includes(addressProvider)
+
+  const emptyStateReason = ((): AddressBookEmptyStateReason => {
+    const hasSearch = searchPhrase.trim().length > 0
+
+    if (hasSearch) {
+      return canAdd
+        ? AddressBookEmptyStateReason.SearchNotInList
+        : AddressBookEmptyStateReason.SearchNoResults
+    }
+
+    if (allAddresses.length === 0) {
+      return AddressBookEmptyStateReason.NoContacts
+    }
+
+    return AddressBookEmptyStateReason.NoFilterContacts
+  })()
+
+  const emptyStateFilterName =
+    accountFilter !== WalletMode.Default
+      ? getWalletModeName(accountFilter)
+      : undefined
+
+  const selectTitle =
+    accountFilter === WalletMode.Default
+      ? t("addressBook.selectAccount")
+      : t("addressBook.selectModeAccount", {
+          mode: getWalletModeName(accountFilter),
+        })
 
   if (publicKeyToRemove) {
     return (
@@ -112,10 +156,13 @@ export const AddressBookModal: FC<Props> = ({
 
   return (
     <>
-      {header}
+      {header ??
+        (onBack && (
+          <ModalHeader title={selectTitle} align={align} onBack={onBack} />
+        ))}
       <ModalBody
         scrollable={false}
-        sx={{ display: "flex", flexDirection: "column", gap: "base" }}
+        sx={{ display: "flex", flexDirection: "column", gap: "xl" }}
       >
         <AddressBookSearch
           canAdd={canAdd}
@@ -133,7 +180,15 @@ export const AddressBookModal: FC<Props> = ({
       </ModalBody>
       <ModalBody scrollable={false} noPadding>
         {searchedAddresses.length === 0 ? (
-          <AddressBookEmptyState canAdd={canAdd} />
+          <AddressBookEmptyState
+            reason={emptyStateReason}
+            filterName={emptyStateFilterName}
+            {...(canAdd && {
+              address: searchPhrase,
+              addressMode: addressProvider,
+              onAdd: addNewAddress,
+            })}
+          />
         ) : (
           <VirtualizedList
             items={searchedAddresses}

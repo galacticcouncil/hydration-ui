@@ -3,6 +3,7 @@ import {
   EvmAddr,
   isEvmParachainAccount,
   isH160Address,
+  NearAddr,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
   safeConvertSolanaAddressToSS58,
@@ -13,6 +14,7 @@ import {
   Ss58Addr,
   stringEquals,
   SuiAddr,
+  ZcashAddr,
 } from "@galacticcouncil/utils"
 
 import {
@@ -137,6 +139,10 @@ export const getWalletModeByAddress = (address: string) => {
       return WalletMode.Solana
     case SuiAddr.isValid(address):
       return WalletMode.Sui
+    case NearAddr.isValid(address):
+      return WalletMode.Near
+    case ZcashAddr.isValid(address):
+      return WalletMode.Zcash
     default:
       return null
   }
@@ -220,6 +226,10 @@ export function getWalletModeIcon(mode: WalletMode) {
       return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
     case WalletMode.Sui:
       return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
+    case WalletMode.Near:
+      return "https://s2.coinmarketcap.com/static/img/coins/64x64/6535.png"
+    case WalletMode.Zcash:
+      return "https://s2.coinmarketcap.com/static/img/coins/64x64/1437.png"
     default:
       return ""
   }
