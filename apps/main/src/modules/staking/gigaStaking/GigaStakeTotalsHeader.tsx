@@ -102,17 +102,16 @@ export const GigaStakeTotalsHeader: FC = () => {
     isLoading: isAprLoading,
   } = useGigaApr(aprReferenceStake)
 
-  // Hide the "+ X% voting" part of the breakdown when the calculated voting APR
-  // rounds to 0 (e.g. no referenda with reward pools yet) — show base only.
+  // The base + voting breakdown is only meaningful when there's a voting
+  // component. When the voting APR rounds to 0 (e.g. no referenda with reward
+  // pools yet) the total IS the base, so the breakdown row is hidden entirely.
   const basePct = Number(aprPassive.toFixed(2))
   const votingPct = Number(aprVoting.toFixed(2))
-  const aprBreakdown =
-    votingPct > 0
-      ? t("staking:dashboard.projectedAPR.summ", {
-          base: basePct,
-          voting: votingPct,
-        })
-      : t("staking:dashboard.projectedAPR.summ.baseOnly", { base: basePct })
+  const showAprBreakdown = votingPct > 0
+  const aprBreakdown = t("staking:dashboard.projectedAPR.summ", {
+    base: basePct,
+    voting: votingPct,
+  })
 
   const cooldownPeriodDays =
     millisecondsToHours((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) /
@@ -187,11 +186,11 @@ export const GigaStakeTotalsHeader: FC = () => {
           isLoading={isAprLoading}
           customValue={
             <ValueStatsValue size="medium">
-              {total ? t("percent", { value: Number(total.toFixed(2)) }) : "—"}
+              {t("percent", { value: Number(total.toFixed(2)) })}
             </ValueStatsValue>
           }
           customBottomLabel={
-            total ? (
+            showAprBreakdown ? (
               <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
                 {aprBreakdown}
               </Text>
