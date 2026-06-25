@@ -1,6 +1,5 @@
 import {
   formatGhoReserveData,
-  formatGhoUserData,
   FormattedGhoReserveData,
   FormattedGhoUserData,
   formatUserSummaryWithDiscount,
@@ -33,6 +32,7 @@ import { ExternalApyData } from "@/types"
 import { getUserApyValues } from "@/utils"
 import {
   formatGhoReserve,
+  formatGhoUserDataPatched,
   GHO_SUPPORTED_MARKETS,
   GHO_SYMBOL,
   isGho,
@@ -114,7 +114,7 @@ export const AppDataProvider: React.FC<{
       ghoReserveData,
     },
   )
-  const formattedGhoUserData: FormattedGhoUserData = formatGhoUserData({
+  const formattedGhoUserData: FormattedGhoUserData = formatGhoUserDataPatched({
     ghoReserveData,
     ghoUserData,
     currentTimestamp,

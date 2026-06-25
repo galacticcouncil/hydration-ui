@@ -1,4 +1,12 @@
-import { FormattedGhoReserveData } from "@aave/math-utils"
+import {
+  FormattedGhoReserveData,
+  FormattedGhoUserData,
+  getCompoundedBalance,
+  GhoReserveData,
+  GhoUserData,
+  normalize,
+  rayMul,
+} from "@aave/math-utils"
 import Big from "big.js"
 
 import { ComputedReserveData } from "@/hooks/commonTypes"
@@ -129,4 +137,64 @@ export const getGhoBorrowApyRange = (
   const isSameDisplayValue = normalizedLowValue === normalizedHighValue
 
   return isSameDisplayValue ? minVal * 100 : [minVal * 100, maxVal * 100]
+}
+
+export function formatGhoUserDataPatched({
+  ghoReserveData,
+  ghoUserData,
+  currentTimestamp,
+}: {
+  ghoReserveData: GhoReserveData
+  ghoUserData: GhoUserData
+  currentTimestamp: number
+}): FormattedGhoUserData {
+  const formattedUserDiscountTokenBalance = Number(
+    normalize(ghoUserData.userDiscountTokenBalance, 18),
+  )
+
+  const formattedRequiredTokenBalanceForDiscount = Number(
+    normalize(ghoReserveData.ghoMinDiscountTokenBalanceForDiscount, 18),
+  )
+
+  let userGhoAvailableToBorrowAtDiscount =
+    Number(normalize(ghoReserveData.ghoDiscountedPerToken, 18)) *
+    formattedUserDiscountTokenBalance
+
+  if (
+    formattedUserDiscountTokenBalance < formattedRequiredTokenBalanceForDiscount
+  ) {
+    userGhoAvailableToBorrowAtDiscount = 0
+  }
+
+  const userBalancePreDiscount = getCompoundedBalance({
+    principalBalance: ghoUserData.userGhoScaledBorrowBalance,
+    reserveIndex: ghoReserveData.ghoCurrentBorrowIndex,
+    reserveRate: ghoReserveData.ghoBaseVariableBorrowRate,
+    lastUpdateTimestamp: Number(ghoReserveData.ghoReserveLastUpdateTimestamp),
+    currentTimestamp,
+  })
+  const accruedInterest = userBalancePreDiscount.minus(
+    rayMul(
+      ghoUserData.userGhoScaledBorrowBalance,
+      ghoUserData.userPreviousGhoBorrowIndex,
+    ),
+  )
+
+  /**
+   * Patched discount logic to use the userGhoDiscountPercent instead of the 1 - userGhoDiscountPercent
+   */
+  const discount = accruedInterest.multipliedBy(
+    Number(normalize(ghoUserData.userGhoDiscountPercent, 4)),
+  )
+
+  const userBorrowBalance = userBalancePreDiscount.minus(discount)
+  return {
+    userGhoDiscountPercent: Number(
+      normalize(ghoUserData.userGhoDiscountPercent, 4),
+    ),
+    userDiscountTokenBalance: formattedUserDiscountTokenBalance,
+    userGhoBorrowBalance: Number(normalize(userBorrowBalance, 18)),
+    userDiscountedGhoInterest: Number(normalize(discount, 18)),
+    userGhoAvailableToBorrowAtDiscount,
+  }
 }
