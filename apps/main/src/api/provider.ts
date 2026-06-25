@@ -116,6 +116,8 @@ const getProviderData = async (
     sdk.ctx.pool.withHsm()
   }
 
+  sdk.ctx.pool.withV3()
+
   const evm = createPublicClient({
     transport: custom({
       request: ({ method, params }) =>
