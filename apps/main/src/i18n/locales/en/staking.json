@@ -135,6 +135,7 @@
   "dashboard.supplyStaked.title": "{{ symbol }} Supply Staked",
   "dashboard.supplyStaked.ofSupply": "<0>of {{ amount }}</0> liquid supply",
   "dashboard.projectedAPR": "Projected APR",
+  "dashboard.recentAPR": "Recent APR",
   "dashboard.projectedAPR.summ": "{{ base, percent }} base + {{ voting, percent }} voting",
   "dashboard.projectedAPR.summ.baseOnly": "{{ base, percent }} base",
   "dashboard.projectedAPR.tooltip.docs": "Go to docs",

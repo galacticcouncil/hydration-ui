@@ -183,7 +183,7 @@ export const GigaStakeTotalsHeader: FC = () => {
         <ValueStats
           wrap
           size="medium"
-          label={t("staking:dashboard.projectedAPR")}
+          label={t("staking:dashboard.recentAPR")}
           isLoading={isAprLoading}
           customValue={
             <ValueStatsValue size="medium">
