@@ -187,15 +187,15 @@ export const GigaStakeTotalsHeader: FC = () => {
           isLoading={isAprLoading}
           customValue={
             <ValueStatsValue size="medium">
-              {t("percent", {
-                value: Number(total.toFixed(2)),
-              })}
+              {total ? t("percent", { value: Number(total.toFixed(2)) }) : "—"}
             </ValueStatsValue>
           }
           customBottomLabel={
-            <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
-              {aprBreakdown}
-            </Text>
+            total ? (
+              <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
+                {aprBreakdown}
+              </Text>
+            ) : undefined
           }
         />
       </Tooltip>

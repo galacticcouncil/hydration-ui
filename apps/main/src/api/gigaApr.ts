@@ -106,9 +106,9 @@ export const passiveAprQuery = (
       // the window) read the gigapot balance at the trailing-window start.
       //
       // If that historical state isn't available (e.g. a pruned RPC that no
-      // longer retains ~windowDays of history), bail out with 0% rather than
-      // letting the baseline default to 0 — a 0 baseline would treat the ENTIRE
-      // current pot as window yield and massively overstate the APR.
+      // longer retains ~windowDays of history), return null — the consumer
+      // renders "—". Defaulting the baseline to 0 instead would treat the
+      // ENTIRE current pot as window yield and massively overstate the APR.
       let gpT0 = 0n
       if (t0Block > GIGAHDX_LAUNCH_BLOCK) {
         const t0HashStr: string = await rpc.papiClient._request(
@@ -119,7 +119,7 @@ export const passiveAprQuery = (
           STAKE_GIGAPOT_ADDRESS,
           { at: t0HashStr },
         ).catch(() => null)
-        if (gpT0Acct === null) return Big(0)
+        if (gpT0Acct === null) return null
         gpT0 = gpT0Acct.data?.free ?? 0n
       }
 
@@ -278,10 +278,14 @@ export const useGigaApr = (stakeValueHdxPlanck: bigint = 0n) => {
   const passiveQuery = useQuery(passiveAprQuery(rpc))
   const votingQueryResult = useQuery(votingAprQuery(rpc, stakeValueHdxPlanck))
 
+  // passiveQuery.data === null → the baseline state is unavailable (e.g. pruned
+  // RPC); the recent APR can't be computed, so `total` is null and the UI shows
+  // "—". (undefined = still loading, handled via isLoading.)
+  const isUnavailable = passiveQuery.data === null
   const passive = passiveQuery.data ?? Big(0)
   const voting = votingQueryResult.data ?? Big(0)
-  const total = passive.plus(voting)
+  const total = isUnavailable ? null : passive.plus(voting)
   const isLoading = passiveQuery.isLoading || votingQueryResult.isLoading
 
-  return { passive, voting, total, isLoading }
+  return { passive, voting, total, isLoading, isUnavailable }
 }
