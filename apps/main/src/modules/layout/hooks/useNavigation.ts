@@ -14,7 +14,18 @@ export const useNavigation = (): NavigationItem[] => {
         }
 
         return item.enabled !== false
+      }).map((item) => {
+        if (item.key === "staking" && !featureFlags.gigaStakingEnabled) {
+          return {
+            ...item,
+            children: item.children?.filter(
+              (child) => child.key !== "stakingGigaStake",
+            ),
+          }
+        }
+
+        return item
       }),
-    [featureFlags.hollarBondsEnabled],
+    [featureFlags.hollarBondsEnabled, featureFlags.gigaStakingEnabled],
   )
 }

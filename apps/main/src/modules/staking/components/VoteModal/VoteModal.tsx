@@ -292,7 +292,9 @@ const VoteForm = ({
                         ))}
                       </Flex>
 
-                      <RewardMultiplierCard multiplier={field.value} />
+                      {isGigaStaking && (
+                        <RewardMultiplierCard multiplier={field.value} />
+                      )}
                     </Stack>
                   )}
                 />

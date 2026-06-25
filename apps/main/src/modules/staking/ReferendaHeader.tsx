@@ -142,7 +142,7 @@ export const ReferendaHeader: FC<Props> = ({
 
   return (
     <Box>
-      <ReferendaRewardBadge id={id} trackId={trackId} />
+      {isGigaStaking && <ReferendaRewardBadge id={id} trackId={trackId} />}
       <Flex align="center" justify="space-between" py="m" px="l">
         <Flex align="center" gap="s" wrap>
           {trackFormatted && (

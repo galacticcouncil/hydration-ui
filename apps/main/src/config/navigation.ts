@@ -159,10 +159,13 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "staking",
     to: LINKS.staking,
-    defaultChild: LINKS.stakingGigaStake,
     icon: GemIcon,
     children: [
-      { key: "stakingGigaStake", to: LINKS.stakingGigaStake, icon: HDXClassic },
+      {
+        key: "stakingGigaStake",
+        to: LINKS.stakingGigaStake,
+        icon: HDXClassic,
+      },
       { key: "stakingOverview", to: LINKS.stakingOverview, icon: ChartPieIcon },
     ],
   },

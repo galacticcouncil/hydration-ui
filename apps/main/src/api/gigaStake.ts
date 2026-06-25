@@ -85,7 +85,8 @@ export const gigaAccountStakesQuery = (
 ) =>
   queryOptions({
     queryKey: [...gigaQueryKey(address), "stakes"],
-    enabled: !!address && rpc.isApiLoaded,
+    enabled:
+      !!address && rpc.isApiLoaded && rpc.featureFlags.gigaStakingEnabled,
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any

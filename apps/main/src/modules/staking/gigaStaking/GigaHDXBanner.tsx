@@ -17,6 +17,7 @@ import { LINKS } from "@/config/navigation"
 import { SGigaHDXBanner } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
 import { MigrateConfirmationModal } from "@/modules/staking/gigaStaking/MigrateConfirmationModal"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useBannersStore } from "@/states/banners"
 
 export type GigaHDXBannerProps = {
@@ -30,6 +31,7 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
 }) => {
   const [isMigrateConfirmationModalOpen, setIsMigrateConfirmationModalOpen] =
     useState(false)
+  const { featureFlags } = useRpcProvider()
   const { t } = useTranslation("staking")
   const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
   const banner = useBannersStore(
@@ -39,7 +41,7 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
 
   const mutation = useGigaStakingMigration()
 
-  if (banner.visible === false) return null
+  if (banner.visible === false || !featureFlags.gigaStakingEnabled) return null
 
   return (
     <SGigaHDXBanner direction={["row-reverse", "row-reverse", "row"]}>

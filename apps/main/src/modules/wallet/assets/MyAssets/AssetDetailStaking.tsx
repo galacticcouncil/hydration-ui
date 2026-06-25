@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { LINKS } from "@/config/navigation"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly asset: MyAsset
@@ -13,10 +14,17 @@ type Props = {
 
 export const AssetDetailStaking: FC<Props> = ({ asset }) => {
   const { t } = useTranslation("wallet")
+  const { featureFlags } = useRpcProvider()
 
   return (
     <Button type="button" variant="emphasis" outline asChild>
-      <Link to={LINKS.stakingGigaStake}>
+      <Link
+        to={
+          featureFlags.gigaStakingEnabled
+            ? LINKS.stakingGigaStake
+            : LINKS.stakingOverview
+        }
+      >
         <StylizedAdd />
         {t("myAssets.actions.staking", {
           symbol: asset.symbol,
