@@ -62,6 +62,73 @@ const APR_QUERY_OPTS = {
  */
 const MIN_REAL_VOTE_WEIGHTED = 100n * 10n ** 12n
 
+/**
+ * Block at which the GIGAHDX launch proposal was enacted — i.e. the block where
+ * `gigaHdx.GigaHdxPoolContract` was first set. That happens in the same atomic
+ * batch that sweeps the gigapot to ~0, so it's the exact point after which the
+ * gigapot balance reflects only post-launch yield.
+ *
+ * Used to anchor the passive-APR window: without it the trailing lookback
+ * reaches back to the pre-launch gigapot balance, the launch sweep makes the
+ * windowed delta negative, and the cap-at-0 then shows a misleading 0% APR for
+ * the first ~windowDays of the market's life.
+ *
+ * The search is bounded to the last `DEFAULT_WINDOW_DAYS` of blocks — the only
+ * regime where the anchor matters (once launch is older than the window, the
+ * plain trailing window is already post-launch). That also keeps every read on
+ * recent, un-pruned state. Returns `null` (→ no anchoring) when not launched,
+ * launched longer ago than the window, or historical state can't be read.
+ * Cached forever: the answer never changes once launched.
+ */
+export const gigaLaunchBlockQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    ...APR_QUERY_OPTS,
+    queryKey: ["gigaApr", "launchBlock"],
+    enabled: rpc.isApiLoaded,
+    queryFn: async (): Promise<number | null> => {
+      // GigaHdx pallet storage isn't in the typed descriptors — use the unsafe
+      // API, same as gigaStake.ts (Stakes / TotalLocked / PendingUnstakes).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
+      const isSetAt = async (block: number) => {
+        const hash: string = await rpc.papiClient._request(
+          "chain_getBlockHash",
+          [block],
+        )
+        const v = await unsafeApi.query.GigaHdx.GigaHdxPoolContract.getValue({
+          at: hash,
+        })
+        return v != null
+      }
+      try {
+        const blocksPerDay = getBlocksPerDay(
+          millisecondsToSeconds(rpc.slotDurationMs),
+        )
+        const head = (await rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)))
+          .parachainBlockNumber
+        const lowerBound = Math.max(1, head - DEFAULT_WINDOW_DAYS * blocksPerDay)
+
+        // Not set at head → launch hasn't happened; nothing to anchor to.
+        if (!(await isSetAt(head))) return null
+        // Already set a full window ago → launch predates the window; the plain
+        // trailing window is already post-launch, so no anchoring is needed.
+        if (await isSetAt(lowerBound)) return null
+
+        // Launch is within (lowerBound, head] — binary-search the first set block.
+        let lo = lowerBound
+        let hi = head
+        while (lo < hi) {
+          const mid = Math.floor((lo + hi) / 2)
+          if (await isSetAt(mid)) hi = mid
+          else lo = mid + 1
+        }
+        return lo
+      } catch {
+        return null
+      }
+    },
+  })
+
 export const passiveAprQuery = (
   rpc: TProviderContext,
   windowDays: number = DEFAULT_WINDOW_DAYS,
@@ -80,8 +147,16 @@ export const passiveAprQuery = (
       )
       const parachainBlockNumber = bestNumber.parachainBlockNumber
 
+      // Anchor the trailing window to the launch block so the baseline can never
+      // predate the launch sweep (which would otherwise show 0% for ~windowDays).
+      const launchBlock =
+        (await rpc.queryClient.ensureQueryData(gigaLaunchBlockQuery(rpc))) ?? 1
       const windowBlocks = windowDays * blocksPerDay
-      const t0Block = Math.max(1, parachainBlockNumber - windowBlocks)
+      const t0Block = Math.max(
+        1,
+        launchBlock,
+        parachainBlockNumber - windowBlocks,
+      )
 
       const t0HashStr: string = await rpc.papiClient._request(
         "chain_getBlockHash",
