@@ -1,9 +1,11 @@
 import {
   EvmAddr,
+  NearAddr,
   safeConvertSS58toPublicKey,
   SolanaAddr,
   Ss58Addr,
   SuiAddr,
+  ZcashAddr,
 } from "@galacticcouncil/utils"
 
 /**
@@ -27,6 +29,10 @@ export const addressToPublicKey = (address: string): string => {
     case SolanaAddr.isValid(address):
       return address.toLowerCase()
     case SuiAddr.isValid(address):
+      return address.toLowerCase()
+    case NearAddr.isValid(address):
+      return address.toLowerCase()
+    case ZcashAddr.isValid(address):
       return address.toLowerCase()
     default:
       return ""

@@ -35,6 +35,8 @@ export const AddressBookEntry: FC<AddressBookEntryProps> = ({
   onDelete,
 }) => {
   const modeIcon = getWalletModeIcon(mode)
+  const displayAddress =
+    mode === WalletMode.Near ? address : shortenAccountAddress(address)
 
   return (
     <SAddressBookEntry
@@ -53,6 +55,7 @@ export const AddressBookEntry: FC<AddressBookEntryProps> = ({
                 borderWidth: 1,
                 borderStyle: "solid",
                 borderColor: getToken("surfaces.themeBasePalette.surfaceHigh"),
+                overflow: "hidden",
               }}
               borderRadius="full"
             >
@@ -67,19 +70,19 @@ export const AddressBookEntry: FC<AddressBookEntryProps> = ({
               fw={500}
               truncate={120}
               value={name}
-              placeholder={shortenAccountAddress(address)}
+              placeholder={displayAddress}
               onChange={onEdit}
             />
           </Box>
         ) : (
           <Text fs="p4" fw={500} truncate={120}>
-            {name || shortenAccountAddress(address)}
+            {name || displayAddress}
           </Text>
         )}
       </Flex>
       <Flex align="center" gap="base" pl="m" ml="auto">
         <Text fs="p5" fw={500} color={getToken("text.medium")}>
-          {shortenAccountAddress(address)}
+          {displayAddress}
         </Text>
         <SAddressBookEntryCopyButton aria-label="Copy address" text={address} />
         {onDelete && (

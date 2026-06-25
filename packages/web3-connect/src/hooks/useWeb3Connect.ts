@@ -41,6 +41,8 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
   [WalletMode.Solana]: SOLANA_PROVIDERS,
   [WalletMode.Sui]: SUI_PROVIDERS,
+  [WalletMode.Near]: [],
+  [WalletMode.Zcash]: [],
   [WalletMode.Unknown]: [],
 }
 
