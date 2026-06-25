@@ -1,13 +1,12 @@
 import {
   Flex,
   Modal,
-  ModalHeader,
   Separator,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { AddressBookModal } from "@galacticcouncil/web3-connect"
+import { AddressBookModal, WalletMode } from "@galacticcouncil/web3-connect"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
 import { useFormContext } from "react-hook-form"
@@ -153,6 +152,12 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     "type",
   ])
   const isSell = type === TradeType.Sell
+  const contactsWhitelist =
+    destChain?.platform === "near"
+      ? ([WalletMode.Near] as const)
+      : destChain?.platform === "zec"
+        ? ([WalletMode.Zcash] as const)
+        : undefined
   const onChainDestAssetId =
     !isCrossChain && isNumber(buyAsset?.id) ? String(buyAsset.id) : ""
   const [destDisplayValue, { isLoading: isDestDisplayValueLoading }] =
@@ -221,12 +226,8 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
             onOpenChange={setIsContactsOpen}
           >
             <AddressBookModal
-              header={
-                <ModalHeader
-                  title={t("addressBook.modal.title")}
-                  onBack={() => setIsContactsOpen(false)}
-                />
-              }
+              whitelist={contactsWhitelist}
+              onBack={() => setIsContactsOpen(false)}
               onSelect={(address) => {
                 setValue("destAddress", address.address, {
                   shouldValidate: true,
