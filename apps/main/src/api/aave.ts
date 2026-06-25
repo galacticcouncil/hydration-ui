@@ -1,14 +1,30 @@
-import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { aave, SdkCtx } from "@galacticcouncil/sdk-next"
+import type { ComputedUserReserveData } from "@galacticcouncil/money-market/hooks"
 import {
-  getAssetIdFromAddress,
+  calculateMaxWithdrawAmount,
+  formatHealthFactorResult,
+  GhoService,
+  UiIncentiveDataProvider,
+  UiPoolDataProvider,
+} from "@galacticcouncil/money-market/utils"
+import { aave } from "@galacticcouncil/sdk-next"
+import {
+  getAddressFromAssetId,
   QUERY_KEY_BLOCK_PREFIX,
+  safeConvertAnyToH160,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TAssetData } from "@/api/assets"
+import {
+  borrowReserveQuery,
+  lendingPoolAddressProvider,
+  useBorrowIncentivesContract,
+  useBorrowPoolDataContract,
+  useGhoServiceContract,
+  userBorrowSummaryQuery,
+} from "@/api/borrow"
 import { isErc20AToken } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -187,73 +203,21 @@ export const aaveSummaryQuery = (
     enabled: isApiLoaded && enabled && !!address,
   })
 
-type AaveSummary = Awaited<ReturnType<SdkCtx["api"]["aave"]["getSummary"]>>
-type AaveReserveData = AaveSummary["reserves"][number]
-
 const TARGET_WITHDRAW_HF = 1.01
 const SWAP_AMOUNT_THRESHOLD = 0.98 // 2% slippage + fee
 
 const calculateSwapToAmount = (
   fromAmount: string,
-  reserveIn: AaveReserveData,
-  reserveOut: AaveReserveData,
+  reserveIn: ComputedUserReserveData,
+  reserveOut: ComputedUserReserveData,
   amountOutRatio: string,
 ) =>
   Big(fromAmount || "0")
-    .mul(reserveIn.priceInRef.toString())
-    .div(reserveOut.priceInRef.toString())
+    .mul(reserveIn.reserve.formattedPriceInMarketReferenceCurrency)
+    .div(reserveOut.reserve.formattedPriceInMarketReferenceCurrency)
     .mul(SWAP_AMOUNT_THRESHOLD)
     .mul(amountOutRatio)
-    .toFixed(reserveOut.decimals, Big.roundDown)
-
-const calculateWithdrawMax = (
-  reserve: AaveReserveData,
-  totalDebt: bigint,
-  currentHF: number,
-) => {
-  const {
-    aTokenBalance,
-    availableLiquidity,
-    decimals,
-    priceInRef,
-    reserveLiquidationThreshold,
-    isCollateral,
-  } = reserve
-
-  let maxWithdrawableTokens = aTokenBalance
-
-  // If the asset is used as collateral and user has debt, compute HF-limited max
-  if (isCollateral && totalDebt > 0n) {
-    const excessHF = currentHF - TARGET_WITHDRAW_HF
-
-    if (excessHF > 0) {
-      const maxCollateralToWithdrawInRef = Big(excessHF)
-        .mul(totalDebt.toString())
-        .div(reserveLiquidationThreshold)
-        .toFixed(0, Big.roundDown)
-
-      const hfCapped = Big(maxCollateralToWithdrawInRef)
-        .div(priceInRef.toString())
-        .mul(10 ** decimals)
-        .toFixed(0, Big.roundDown)
-
-      maxWithdrawableTokens =
-        aTokenBalance < BigInt(hfCapped) ? aTokenBalance : BigInt(hfCapped)
-    } else {
-      maxWithdrawableTokens = 0n
-    }
-  }
-
-  const maxOrCap =
-    maxWithdrawableTokens < availableLiquidity
-      ? maxWithdrawableTokens
-      : availableLiquidity
-
-  return {
-    amount: maxOrCap,
-    decimals,
-  }
-}
+    .toFixed(reserveOut.reserve.decimals, Big.roundDown)
 
 const getWithdrawHF = (
   currentHF: number,
@@ -277,6 +241,9 @@ export const getTransfarebleATokenBalance = (
   assetIn: TAssetData,
   assetOut: TAssetData | null,
   amountOutRatio: string,
+  poolDataContract: UiPoolDataProvider | null,
+  ghoServiceContract: GhoService | null,
+  incentivesContract: UiIncentiveDataProvider | null,
   onSuccess?: (maxBalance: string) => void,
 ) =>
   queryOptions({
@@ -295,30 +262,54 @@ export const getTransfarebleATokenBalance = (
       let maxBalance = balanceShifted
 
       if (isSwappingATokens) {
-        const aaveSummary = await rpc.queryClient.fetchQuery(
-          aaveSummaryQuery(rpc, address),
+        const evmAddress = safeConvertAnyToH160(address)
+        const underlyingAsset = getAddressFromAssetId(assetIn.underlyingAssetId)
+
+        const [user, poolReserve] = await Promise.all([
+          rpc.queryClient.ensureQueryData(
+            userBorrowSummaryQuery(
+              evmAddress,
+              rpc,
+              lendingPoolAddressProvider,
+              poolDataContract,
+              ghoServiceContract,
+              incentivesContract,
+            ),
+          ),
+          rpc.queryClient.ensureQueryData(
+            borrowReserveQuery(
+              rpc,
+              lendingPoolAddressProvider,
+              poolDataContract,
+              incentivesContract,
+              underlyingAsset,
+            ),
+          ),
+        ])
+
+        const underlyingAssetOut = getAddressFromAssetId(
+          assetOut.underlyingAssetId,
         )
-        let reserveIn: AaveReserveData | undefined
-        let reserveOut: AaveReserveData | undefined
 
-        for (const reserve of aaveSummary.reserves) {
-          const assetId = getAssetIdFromAddress(reserve.reserveAsset)
+        let userReserveIn: ComputedUserReserveData | undefined
+        let userReserveOut: ComputedUserReserveData | undefined
 
-          if (assetId === assetIn.underlyingAssetId) {
-            reserveIn = reserve
+        for (const reserve of user.userReservesData) {
+          if (reserve.underlyingAsset === underlyingAsset) {
+            userReserveIn = reserve
           }
-          if (assetId === assetOut.underlyingAssetId) {
-            reserveOut = reserve
+          if (reserve.underlyingAsset === underlyingAssetOut) {
+            userReserveOut = reserve
           }
-          if (reserveIn && reserveOut) break
+          if (userReserveIn && userReserveOut) break
         }
 
         const toAmount =
-          reserveIn && reserveOut
+          userReserveIn && userReserveOut
             ? calculateSwapToAmount(
                 balanceShifted,
-                reserveIn,
-                reserveOut,
+                userReserveIn,
+                userReserveOut,
                 amountOutRatio ?? "1",
               )
             : "0"
@@ -333,14 +324,15 @@ export const getTransfarebleATokenBalance = (
           }),
         )
 
-        if (reserveIn && aaveSummary) {
-          const { amount, decimals } = calculateWithdrawMax(
-            reserveIn,
-            aaveSummary.totalDebt,
+        if (userReserveIn && poolReserve) {
+          const maxWithdrawableAmount = calculateMaxWithdrawAmount(
+            user,
+            userReserveIn,
+            poolReserve,
             getWithdrawHF(Number(current), Number(future), true),
           )
 
-          maxBalance = scaleHuman(amount.toString(), decimals)
+          maxBalance = maxWithdrawableAmount.toString()
         } else {
           maxBalance = balanceShifted
         }
@@ -366,6 +358,9 @@ export const useTransfarebleATokenBalance = ({
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
+  const poolDataContract = useBorrowPoolDataContract()
+  const ghoServiceContract = useGhoServiceContract()
+  const incentivesContract = useBorrowIncentivesContract()
   const address = account?.address ?? ""
 
   const balance = getTransferableBalance(assetIn.id)
@@ -379,6 +374,9 @@ export const useTransfarebleATokenBalance = ({
       assetIn,
       assetOut,
       amountOutRatio ?? "1",
+      poolDataContract,
+      ghoServiceContract,
+      incentivesContract,
       onSuccess,
     ),
   )
