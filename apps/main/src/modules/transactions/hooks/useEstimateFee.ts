@@ -16,7 +16,6 @@ import { getSpotPrice } from "@/api/spotPrice"
 import { AnyTransaction } from "@/modules/transactions/types"
 import {
   estimatePermitFee,
-  getPermitFeeQueryKeyPart,
   isPermitFeeEstimation,
 } from "@/modules/transactions/utils/permitFee"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
@@ -86,7 +85,7 @@ export const useEstimateFee = (
       feeAssetId,
       address,
       isUsingPermitFee,
-      safeStringify(getPermitFeeQueryKeyPart(anyTx) ?? tx?.decodedCall),
+      safeStringify(tx?.decodedCall),
     ],
     queryFn: async () => {
       if (!anyTx) throw new Error("Invalid transaction")
@@ -125,7 +124,7 @@ export const useEstimateFee = (
       if (spot?.spotPrice) {
         const feeEstimate = Big(feeEstimateNative)
           .mul(spot.spotPrice)
-          .toString()
+          .toFixed(feeAsset.decimals)
 
         return {
           feeEstimateNative,

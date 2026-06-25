@@ -57,10 +57,20 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const initialReceiveAsset = reserves[0]?.meta
 
-  const form = useRemoveStablepoolLiquidityForm({
+  const { data: feeEstimateTrade } = useQuery(
+    bestSellWithTxQuery(rpc, {
+      assetIn: erc20Id,
+      assetOut: stableswapId,
+      amountIn: "1",
+      slippage: swapSlippage,
+      address: account?.address ?? "",
+    }),
+  )
+
+  const { form, getMaxBalance } = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset!,
-    balance: balanceShifted,
     asset: { ...meta, iconId: meta.id },
+    tx: feeEstimateTrade?.tx ?? null,
   })
 
   const [removeAmountShifted = "0", receiveAsset, split, receiveAmount] =
@@ -300,6 +310,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   return {
     form,
     balance: balanceShifted,
+    getMaxBalance,
     meta,
     reserves: reserves,
     receiveAssetsProportionally,

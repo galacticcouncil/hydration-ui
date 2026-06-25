@@ -83,6 +83,7 @@ export const RemoveMoneyMarketLiquidityForm = (
   const {
     form,
     balance,
+    getMaxBalance,
     receiveAssetsProportionally,
     meta,
     tradeMinReceive,
@@ -97,7 +98,7 @@ export const RemoveMoneyMarketLiquidityForm = (
     watch,
   } = form
 
-  const [receiveAsset, split] = watch(["receiveAsset", "split"])
+  const [asset, receiveAsset, split] = watch(["asset", "receiveAsset", "split"])
 
   const onSubmit = () => {
     mutation.mutate()
@@ -117,7 +118,7 @@ export const RemoveMoneyMarketLiquidityForm = (
               assetFieldName="asset"
               amountFieldName="amount"
               label={t("common:amount")}
-              maxBalance={balance}
+              maxBalance={getMaxBalance(asset)}
               assets={[]}
               sx={{ py: 0 }}
               disabledAssetSelector

@@ -12,7 +12,6 @@ import { EstimateGasParameters, formatEther, Hex } from "viem"
 import { getSpotPrice, spotPriceQuery } from "@/api/spotPrice"
 import { paymentInfoQuery } from "@/api/transaction"
 import { AnyTransaction } from "@/modules/transactions/types"
-import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { TAsset } from "@/providers/assetsProvider"
@@ -135,28 +134,6 @@ export const isPermitFeeEstimation = (
   feeAssetId: string,
   isEthereumWallet: boolean,
 ) => isEthereumWallet && feeAssetId !== NATIVE_EVM_ASSET_ID
-
-export const getPermitFeeQueryKeyPart = (anyTx: AnyTransaction | null) => {
-  if (!anyTx) return null
-
-  if (isEvmCall(anyTx)) {
-    return {
-      type: "evm" as const,
-      from: anyTx.from,
-      to: anyTx.to,
-      data: anyTx.data,
-    }
-  }
-
-  if (isPapiTransaction(anyTx)) {
-    return {
-      type: "papi" as const,
-      call: anyTx.decodedCall,
-    }
-  }
-
-  return null
-}
 
 export const estimatePermitFee = async (
   rpc: TProviderContext,

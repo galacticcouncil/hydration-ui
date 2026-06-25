@@ -2,6 +2,7 @@ import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
+import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { TAsset } from "@/providers/assetsProvider"
@@ -17,7 +18,7 @@ export const useFormMaxBalanceWithFee = (
   const { getTransferableBalance } = useAccountBalances()
   const maxBalanceWithFee = useMaxBalanceWithFee(tx, feePctBuffer)
 
-  const getMaxBalance = (asset: TAsset | null) => {
+  const getMaxBalance = (asset: TAsset | TSelectedAsset | null) => {
     if (!asset) {
       return "0"
     }
@@ -31,7 +32,9 @@ export const useFormMaxBalanceWithFee = (
 
   const validateBalance = <TFormValues extends FieldValues>(
     path: Path<NoInfer<TFormValues>>,
-    selectData: (form: TFormValues) => [asset: TAsset | null, amount: string],
+    selectData: (
+      form: TFormValues,
+    ) => [asset: TAsset | TSelectedAsset | null, amount: string],
   ) =>
     z.refine<TFormValues>(
       (form) => {

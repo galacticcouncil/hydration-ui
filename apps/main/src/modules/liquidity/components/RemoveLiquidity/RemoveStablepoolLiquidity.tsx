@@ -137,7 +137,6 @@ const RemoveStablepoolLiquidityJSX = ({
                 assetFieldName="asset"
                 amountFieldName="amount"
                 label={t("common:amount")}
-                maxBalance={balance}
                 assets={[]}
                 sx={{ py: 0 }}
                 disabledAssetSelector
