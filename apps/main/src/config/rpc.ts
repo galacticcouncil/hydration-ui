@@ -63,6 +63,7 @@ export const PROVIDERS: ProviderProps[] = [
   //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
   createProvider("sin", "wss://rpc.sin.hydration.cloud"),
   createProvider("coke", "wss://rpc.coke.hydration.cloud"),
+  createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
   // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
   createProvider(
     "Testnet",
