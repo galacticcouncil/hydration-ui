@@ -1,3 +1,4 @@
+import { h160 } from "@galacticcouncil/common"
 import { MultiSignature } from "@galacticcouncil/descriptors"
 import { DOT_ASSET_ID } from "@galacticcouncil/utils"
 import {
@@ -11,7 +12,7 @@ import { Binary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isBigInt, isNumber, pick, prop, unique, zip } from "remeda"
+import { isBigInt, isNullish, isNumber, pick, prop, unique, zip } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { useAccountInfo } from "@/api/account"
@@ -22,7 +23,7 @@ import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
+import { NATIVE_ASSET_ID, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 import { allPools } from "./pools"
 
@@ -82,6 +83,7 @@ export const useAcceptedFeePaymentAssets = (ids: string[]) => {
     },
   })
 }
+const { isEvmAccount, isEvmAddress } = h160
 
 export const useAccountFeePaymentAssetId = (
   options?: UseBaseObservableQueryOptions,
@@ -93,7 +95,15 @@ export const useAccountFeePaymentAssetId = (
     "MultiTransactionPayment.AccountCurrencyMap",
     [address, { at: "best" }],
     {
-      select: (assetId) => assetId || Number(NATIVE_ASSET_ID),
+      select: (assetId) => {
+        if (!isNullish(assetId)) {
+          return assetId
+        }
+
+        const isEvm = isEvmAddress(address) || isEvmAccount(address)
+
+        return Number(isEvm ? NATIVE_EVM_ASSET_ID : NATIVE_ASSET_ID)
+      },
       ...options,
     },
   )
