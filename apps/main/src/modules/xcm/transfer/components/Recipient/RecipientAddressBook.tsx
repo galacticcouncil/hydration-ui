@@ -1,4 +1,5 @@
 import { Box, Modal, ScrollArea, Stack } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import {
   AddressBookEntry,
   useAddressStore,
@@ -22,7 +23,7 @@ export const RecipientAddressBook: FC<RecipientAddressBookProps> = ({
   return (
     <>
       <Box mx="var(--modal-content-inset)">
-        <ScrollArea height={200}>
+        <ScrollArea height={pxToRem(200)}>
           <Stack separated>
             {addresses.map((address) => (
               <AddressBookEntry
