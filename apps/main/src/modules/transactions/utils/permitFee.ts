@@ -19,10 +19,30 @@ import { TProviderContext } from "@/providers/rpcProvider"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
-type PermitFeeEstimate = {
+type FeeEstimate = {
   feeEstimateNative: string
   feeEstimate: string
   feeAssetId: string
+}
+
+const getEvmGasFeeWei = async (
+  rpc: TProviderContext,
+  address: string,
+  anyTx: AnyTransaction,
+): Promise<bigint> => {
+  const weight = await getPermitWeight(rpc, address, anyTx)
+
+  const [gas, gasPriceBase] = await Promise.all([
+    getPermitGas(rpc, address, anyTx, weight),
+    rpc.evm.getGasPrice(),
+  ])
+
+  const gasLimit = getPermitGasLimit(gas, weight)
+  const gasPrice = getPermitGasPrice(gasPriceBase)
+
+  // Wallets validate balance against gasLimit × gasPrice before signing.
+  // On-chain, only gas_used × gas_price is charged.
+  return gasLimit * gasPrice
 }
 
 const getPermitWeight = async (
@@ -130,10 +150,26 @@ const convertNativeFeeToFeeAsset = async (
   return Big(1).div(assetPaymentValueAdjusted).mul(feeEstimateNative).toString()
 }
 
-export const isPermitFeeEstimation = (
-  feeAssetId: string,
-  isEthereumWallet: boolean,
-) => isEthereumWallet && feeAssetId !== NATIVE_EVM_ASSET_ID
+export const isPermitFeeEstimation = (feeAssetId: string) =>
+  feeAssetId !== NATIVE_EVM_ASSET_ID
+
+export const estimateEvmFee = async (
+  rpc: TProviderContext,
+  address: string,
+  anyTx: AnyTransaction,
+  feeAsset: TAsset,
+  native: TAsset,
+): Promise<FeeEstimate> => {
+  const wei = await getEvmGasFeeWei(rpc, address, anyTx)
+
+  const feeEstimateNative = await evmWeiToNativeFee(rpc, wei, native.id)
+
+  return {
+    feeEstimateNative,
+    feeEstimate: formatEther(wei),
+    feeAssetId: feeAsset.id,
+  }
+}
 
 export const estimatePermitFee = async (
   rpc: TProviderContext,
@@ -141,24 +177,10 @@ export const estimatePermitFee = async (
   anyTx: AnyTransaction,
   feeAsset: TAsset,
   native: TAsset,
-): Promise<PermitFeeEstimate> => {
-  const weight = await getPermitWeight(rpc, address, anyTx)
+): Promise<FeeEstimate> => {
+  const wei = await getEvmGasFeeWei(rpc, address, anyTx)
 
-  const [gas, gasPriceBase] = await Promise.all([
-    getPermitGas(rpc, address, anyTx, weight),
-    rpc.evm.getGasPrice(),
-  ])
-
-  const gasLimit = getPermitGasLimit(gas, weight)
-  const gasPrice = getPermitGasPrice(gasPriceBase)
-
-  // MetaMask validates balance against gasLimit × gasPrice before signing the permit.
-  // On-chain, only gas_used × gas_price is charged.
-  const feeEstimateNative = await evmWeiToNativeFee(
-    rpc,
-    gasLimit * gasPrice,
-    native.id,
-  )
+  const feeEstimateNative = await evmWeiToNativeFee(rpc, wei, native.id)
 
   const feeEstimate = await convertNativeFeeToFeeAsset(
     rpc,

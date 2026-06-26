@@ -15,6 +15,7 @@ import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
 import { AnyTransaction } from "@/modules/transactions/types"
 import {
+  estimateEvmFee,
   estimatePermitFee,
   isPermitFeeEstimation,
 } from "@/modules/transactions/utils/permitFee"
@@ -56,10 +57,7 @@ export const useEstimateFee = (
 
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
-  const isUsingPermitFee = isPermitFeeEstimation(
-    feeAssetId ?? "",
-    isEthereumSigner(wallet?.signer),
-  )
+  const isEthereumWallet = isEthereumSigner(wallet?.signer)
 
   const feeAssetBalance = feeAsset
     ? scaleHuman(getTransferableBalance(feeAsset.id), feeAsset.decimals)
@@ -84,21 +82,30 @@ export const useEstimateFee = (
       "estimateFee",
       feeAssetId,
       address,
-      isUsingPermitFee,
       safeStringify(tx?.decodedCall),
     ],
     queryFn: async () => {
       if (!anyTx) throw new Error("Invalid transaction")
       if (!feeAsset) throw new Error(`Asset ${feeAssetId} is not valid`)
 
-      if (isUsingPermitFee) {
-        try {
-          return await estimatePermitFee(rpc, address, anyTx, feeAsset, native)
-        } catch {
-          // Fall back to substrate-only estimate for PAPI txs if EVM simulation fails.
-          if (!isPapiTransaction(anyTx))
-            throw new Error("Permit fee estimation failed")
+      if (isEthereumWallet) {
+        if (isPermitFeeEstimation(feeAssetId ?? "")) {
+          try {
+            return await estimatePermitFee(
+              rpc,
+              address,
+              anyTx,
+              feeAsset,
+              native,
+            )
+          } catch {
+            // Fall back to substrate-only estimate for PAPI txs if EVM simulation fails.
+            if (!isPapiTransaction(anyTx))
+              throw new Error("Permit fee estimation failed")
+          }
         }
+
+        return estimateEvmFee(rpc, address, anyTx, feeAsset, native)
       }
 
       if (!tx) throw new Error("Invalid transaction")
