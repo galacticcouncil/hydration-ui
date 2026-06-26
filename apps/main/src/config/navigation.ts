@@ -38,8 +38,9 @@ export const LINKS = {
   trade: "/trade",
   otc: "/trade/otc",
   staking: "/staking",
-  stakingOverview: "/staking/overview",
-  stakingGigaStake: "/staking/giga-stake",
+  stakingOld: "/staking-old",
+  // stakingOverview: "/staking/overview",
+  stakingGigaStake: "/staking",
   //governance: "/governance",
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
@@ -163,10 +164,10 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       {
         key: "stakingGigaStake",
-        to: LINKS.stakingGigaStake,
+        to: LINKS.staking,
         icon: HDXClassic,
       },
-      { key: "stakingOverview", to: LINKS.stakingOverview, icon: ChartPieIcon },
+      { key: "stakingOld", to: LINKS.stakingOld, icon: ChartPieIcon },
     ],
   },
   {
@@ -267,7 +268,7 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.staking.title"),
       description: t("navigation.staking.description"),
     },
-    stakingOverview: {
+    stakingOld: {
       title: t("navigation.stakingOverview.title"),
       description: t("navigation.staking.description"),
     },

@@ -1,16 +1,15 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 
-import { LINKS } from "@/config/navigation"
-import { useRpcProvider } from "@/providers/rpcProvider"
-
-const StakingComponent = () => {
-  const { featureFlags } = useRpcProvider()
-  if (featureFlags.gigaStakingEnabled) {
-    return <Navigate to={LINKS.stakingGigaStake} />
-  }
-  return <Navigate to={LINKS.stakingOverview} />
-}
+import { getPageMeta } from "@/config/navigation"
+import { GigaStakePage } from "@/modules/staking/gigaStaking/GigaStakePage"
 
 export const Route = createFileRoute("/staking/")({
-  component: StakingComponent,
+  component: GigaStakePage,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("staking", i18n.t),
+  }),
 })
