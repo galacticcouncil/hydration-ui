@@ -1,6 +1,6 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { TradeOrder } from "@galacticcouncil/sdk-next/sor"
+import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import { Alert, Flex, Modal, TextButton } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import Big from "big.js"
@@ -13,6 +13,7 @@ import { useTradeSettings } from "@/states/tradeSettings"
 type Props = {
   readonly isFormValid: boolean
   readonly isSingleTrade: boolean
+  readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
   readonly healthFactor: HealthFactorResult | undefined
   readonly healthFactorRiskAccepted: boolean
@@ -22,6 +23,7 @@ type Props = {
 export const MarketWarnings: FC<Props> = ({
   isFormValid,
   isSingleTrade,
+  swap,
   twap,
   healthFactor,
   healthFactorRiskAccepted,
@@ -43,7 +45,8 @@ export const MarketWarnings: FC<Props> = ({
     Math.abs(twap.tradeImpactPct) < 5 &&
     Number(twapSlippage) < Math.abs(twap.tradeImpactPct)
 
-  const shouldRenderDcaWarning = hasTwap && Math.abs(twap.tradeImpactPct) > 5
+  const shouldRenderDcaWarning =
+    hasTwap && Math.abs(swap?.priceImpactPct ?? twap.tradeImpactPct) > 5
 
   const shouldRenderHealthFactorWarning =
     !!healthFactor &&
