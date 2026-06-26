@@ -39,7 +39,6 @@ export const LINKS = {
   otc: "/trade/otc",
   staking: "/staking",
   stakingOld: "/staking-old",
-  // stakingOverview: "/staking/overview",
   stakingGigaStake: "/staking",
   //governance: "/governance",
   // stakingGovernance: "/staking/governance",
@@ -269,7 +268,7 @@ export const getMenuTranslations = (t: TFunction) =>
       description: t("navigation.staking.description"),
     },
     stakingOld: {
-      title: t("navigation.stakingOverview.title"),
+      title: t("navigation.stakingOld.title"),
       description: t("navigation.staking.description"),
     },
     stakingGigaStake: {

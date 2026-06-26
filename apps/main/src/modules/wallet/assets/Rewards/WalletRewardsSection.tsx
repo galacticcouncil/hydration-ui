@@ -86,7 +86,7 @@ export const WalletRewardsSection: FC = () => {
             link={
               featureFlags.gigaStakingEnabled
                 ? LINKS.stakingGigaStake
-                : LINKS.stakingOverview
+                : LINKS.stakingOld
             }
           >
             {t("rewards.allocated.empty")}

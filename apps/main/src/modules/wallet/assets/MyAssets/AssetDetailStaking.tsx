@@ -22,7 +22,7 @@ export const AssetDetailStaking: FC<Props> = ({ asset }) => {
         to={
           featureFlags.gigaStakingEnabled
             ? LINKS.stakingGigaStake
-            : LINKS.stakingOverview
+            : LINKS.stakingOld
         }
       >
         <StylizedAdd />
