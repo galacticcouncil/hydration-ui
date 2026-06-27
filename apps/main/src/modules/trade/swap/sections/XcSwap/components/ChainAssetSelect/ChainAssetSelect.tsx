@@ -9,13 +9,13 @@ import {
   ModalHeader,
   ModalRoot,
   ModalTrigger,
-  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
+import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetList } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/AssetList"
 import { ChainAssetSelectButton } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/ChainAssetSelectButton"
 import { ChainList } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/ChainList"
@@ -94,6 +94,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   currentSelection,
   onAssetSelect,
 }) => {
+  const { t } = useTranslation()
   const { isMobile } = useBreakpoints()
   const [chainSearch, setChainSearch] = useState("")
   const [assetSearch, setAssetSearch] = useState("")
@@ -143,7 +144,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
         p="base"
       >
         <Input
-          placeholder="Search chains"
+          placeholder={t("search.placeholder.chains")}
           iconStart={Search}
           value={chainSearch}
           onChange={(e) => setChainSearch(e.target.value)}
@@ -151,7 +152,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
           autoComplete="off"
         />
         <Input
-          placeholder="Search assets"
+          placeholder={t("search.placeholder.assets")}
           iconStart={Search}
           value={assetSearch}
           onChange={(e) => setAssetSearch(e.target.value)}
@@ -182,10 +183,8 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
               }}
             />
           ) : (
-            <Flex flex={1} align="center" justify="center" asChild>
-              <Text align="center" fs="p5" color={getToken("text.medium")}>
-                No assets found
-              </Text>
+            <Flex flex={1} align="center" justify="center">
+              <AssetSelectEmptyState />
             </Flex>
           )}
         </Flex>

@@ -69,10 +69,14 @@ export const useSubmitXcSwap = () => {
           tx: [
             {
               tx: approve,
-              stepTitle: "Approve",
+              stepTitle: t("trade:xc.swap.step.approve"),
               toasts: {
-                submitted: `Approving ${i18nVars.srcSymbol}`,
-                success: `${i18nVars.srcSymbol} approved`,
+                submitted: t("trade:xc.swap.approve.toast.submitted", {
+                  symbol: i18nVars.srcSymbol,
+                }),
+                success: t("trade:xc.swap.approve.toast.success", {
+                  symbol: i18nVars.srcSymbol,
+                }),
               },
               meta: {
                 type: TransactionType.EvmApprove,
@@ -81,7 +85,7 @@ export const useSubmitXcSwap = () => {
             },
             {
               tx: swapEndBridgeCall,
-              stepTitle: "Swap",
+              stepTitle: t("swap"),
               toasts,
               meta,
             },
