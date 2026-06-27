@@ -37,6 +37,7 @@ export const XcSwapOptions = () => {
         <MarketWarnings
           isFormValid={isFormValid}
           isSingleTrade={isSingleTrade}
+          swap={onChainQuote.trade}
           twap={onChainQuote.twap}
           healthFactor={undefined}
           healthFactorRiskAccepted={false}
