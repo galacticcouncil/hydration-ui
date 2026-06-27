@@ -64,16 +64,16 @@ export const PROVIDERS: ProviderProps[] = [
   createProvider("sin", "wss://rpc.sin.hydration.cloud"),
   createProvider("coke", "wss://rpc.coke.hydration.cloud"),
   // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
-  // BIL Vault lives on lark-2 — default dev RPC on this branch.
+  // BIL Vault + market live on node0.lark — default dev RPC on this branch.
   // `DataProviderResolver` picks the dev candidate with the freshest
-  // latest-block timestamp from `getBestRpcs`, so to make lark-2 the
+  // latest-block timestamp from `getBestRpcs`, so to make node0.lark the
   // deterministic default we keep it as the ONLY `["development"]` entry
   // (nice has been moved off the dev tag below; it's still reachable via
-  // the manual RPC picker). See `aave-v3-deploy/bil-vault/deployments/
-  // lark-2.md` for the matching contract manifest.
+  // the manual RPC picker). Contract manifest: see
+  // `aave-v3-deploy/deployments/bil/_addresses.md`.
   createProvider(
-    "Lark-2 (BIL)",
-    "wss://2.lark.hydration.cloud",
+    "node0.lark (BIL)",
+    "wss://node0.lark.hydration.cloud",
     "https://archive.nice.hydration.cloud/graphql",
     "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql",
     ["development"],

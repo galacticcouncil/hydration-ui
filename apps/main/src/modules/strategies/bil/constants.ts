@@ -1,14 +1,14 @@
 import { type Hex } from "viem"
 
 // ════════════════════════════════════════════════════════════════════════
-//  BIL Vault — lark-2 deployment
+//  BIL Vault — node0.lark deployment ("bil" network, mainnet-style)
 //  ─────────────────────────────────────────────────────────────────────
-//  Reference: aave-v3-deploy/bil-vault/deployments/lark-2.md
-//  Network:   Hydration lark testnet (`2.lark.hydration.cloud`, chain 222222)
+//  Reference: aave-v3-deploy/deployments/bil/_addresses.md
+//  Network:   Hydration node0.lark (`node0.lark.hydration.cloud`, chain 222222)
 //  Surface:   ERC-4626 (deposit/mint) + ERC-7540 (async redeem)
 // ════════════════════════════════════════════════════════════════════════
 
-export const VAULT_ADDRESS: Hex = "0xbDAFEB92440d8696d6C143bc7e6B086d461e3502"
+export const VAULT_ADDRESS: Hex = "0x12aa558500c9c8f3857d6caed841651a168baf6e"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 
 // Decentral pool the vault deploys HOLLAR into. Surfaced here only so the
@@ -19,11 +19,11 @@ export const DECENTRAL_POOL_ADDRESS: Hex =
   "0x207a626c07b73E76134177D1f44B0f32e94ADB5a"
 
 // ────────────────────────────────────────────────────────────────────────
-// BIL Aave V3 money-market layer — live on lark-2.
+// BIL Aave V3 money-market layer — live on node0.lark.
 //
-// Deployed against the lark-2 vault and enacted via governance ref #383
-// (Root track, block 222762). The Aave pool, deposit-zap, and aToken below
-// power the borrow / supply / instant-redeem flows.
+// Deployed via scripts/bil/deploy-all.sh and enacted via Root referendum
+// #362 on node0.lark. The Aave pool, deposit-zap, and aToken below power
+// the borrow / supply / instant-redeem flows.
 //
 // Aave layer endpoints:
 //   - Supply BIL  → pool.supply(DCL_PRECOMPILE, ..., user, 0)
@@ -34,11 +34,11 @@ export const DECENTRAL_POOL_ADDRESS: Hex =
 export const BIL_HAS_AAVE_LAYER = true
 
 export const BIL_POOL_ADDRESS: Hex =
-  "0xEAb87D2aAc4C70AF63D2d9E85876665060e117E2"
+  "0xd2A1cB0423559939c2656a8f394A32EDFa340800"
 export const BIL_DEPOSIT_ZAP_ADDRESS: Hex =
-  "0x146F6C43a0070F42cB532C74c412A34bb55A5729"
+  "0x3799457f3a8494C002988c092D401Fc106c52EEb"
 export const BIL_ATOKEN_ADDRESS: Hex =
-  "0x8912ff2164655A3406902ee9e802EBb16ec881D9"
+  "0xdb3254582b483a21a70dabc190f352d352f5f415"
 
 /** Substrate asset id for BIL (vault share / aToken receipt). */
 export const BIL_ASSET_ID = "55"
@@ -57,18 +57,18 @@ export const DCL_PRECOMPILE_ADDRESS: Hex =
 // Aave V3 interestRateMode for borrows: 2 = variable (GhoAToken path).
 export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
 
-// First block at which the lark-2 vault proxy emitted a log. Used as
+// First block at which the node0.lark vault proxy emitted a log. Used as
 // `fromBlock` for getLogs queries — public RPCs reject scans from genesis.
 // Update on every fresh lark deploy.
-//   2.lark proxy deploy: tx in block 138433
-export const VAULT_DEPLOY_BLOCK = 138433n
+//   node0.lark proxy Upgraded log: block 31798
+export const VAULT_DEPLOY_BLOCK = 31798n
 
 // BIL/HOLLAR stableswap pool — share-asset id 10055. Used by the
 // instant-redeem path which swaps the aToken receipt for HOLLAR via
-// the substrate stableswap. Live on lark-2 since ref #399.
+// the substrate stableswap. Live on node0.lark since ref #362.
 export const STABLESWAP_POOL_ID = 10055n
 // Asset id of BIL inside the stableswap pair (the aToken receipt users
-// hold). Under the mainnet-aligned naming applied by ref #383, BIL =
+// hold). Under the mainnet-aligned naming applied by ref #362, BIL =
 // asset 55. The substrate stableswap pair is (55, 222) = (BIL, HOLLAR).
 export const STABLESWAP_BIL_ASSET_ID = 55n
 
@@ -570,8 +570,7 @@ export const STRATEGY = {
 } as const
 
 // Minimal Aave V3 Pool ABI subset — only the calls the BIL-strategy page
-// actually makes. Inactive on lark-2 until the Aave layer is redeployed
-// (BIL_HAS_AAVE_LAYER = false).
+// actually makes. Active on node0.lark (BIL_HAS_AAVE_LAYER = true).
 export const BIL_POOL_ABI = [
   {
     type: "function",
