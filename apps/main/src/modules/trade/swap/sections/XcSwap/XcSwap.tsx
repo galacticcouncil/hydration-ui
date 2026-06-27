@@ -74,7 +74,7 @@ export const XcSwap: React.FC = () => {
   const submitLabel = (() => {
     if (!sellAmount) return "Enter an amount"
     if (isCrossChain && !destAddress.trim()) return "Enter recipient address"
-    if (alerts.length) return "Swap unavailable"
+    if (alerts.length || !form.formState.isValid) return "Swap unavailable"
     if (!isHealthFactorCheckSatisfied) return "Accept health factor change"
     return isSingleTrade ? "Swap" : "Place trades"
   })()
