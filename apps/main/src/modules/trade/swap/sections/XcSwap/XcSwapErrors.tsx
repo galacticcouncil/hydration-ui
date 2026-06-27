@@ -10,5 +10,5 @@ export const XcSwapErrors = () => {
     return null
   }
 
-  return <MarketErrors swap={onChainQuote.trade} />
+  return <MarketErrors swap={onChainQuote.swap} />
 }
