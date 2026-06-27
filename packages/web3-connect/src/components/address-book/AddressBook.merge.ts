@@ -1,4 +1,4 @@
-import { NearAddr } from "@galacticcouncil/utils"
+import { NearAddr, stringEquals } from "@galacticcouncil/utils"
 
 import { getWalletModeName } from "@/utils/walletMode"
 
@@ -51,7 +51,8 @@ export function selectAddresses(
     if (filter.related !== undefined) {
       const isGlobal = a.savedBy.length === 0
       const isSavedByPubKey =
-        !!connectedPublicKey && a.savedBy.includes(connectedPublicKey)
+        !!connectedPublicKey &&
+        a.savedBy.some((pk) => stringEquals(pk, connectedPublicKey))
       const related = isGlobal || isSavedByPubKey
       if (related !== filter.related) return false
     }
@@ -66,7 +67,8 @@ export function isVisibleToWallet(
   if (!address.isCustom) return true
   if (address.savedBy.length === 0) return true
   return (
-    connectedPublicKey !== null && address.savedBy.includes(connectedPublicKey)
+    connectedPublicKey !== null &&
+    address.savedBy.some((pk) => stringEquals(pk, connectedPublicKey))
   )
 }
 
@@ -93,11 +95,13 @@ export function buildAddresses(
 }
 
 function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
-  const incomingByKey = new Map(incoming.map((a) => [a.publicKey, a]))
-  const existingKeys = new Set(existing.map((a) => a.publicKey))
+  const incomingByKey = new Map(
+    incoming.map((a) => [a.publicKey.toLowerCase(), a]),
+  )
+  const existingKeys = new Set(existing.map((a) => a.publicKey.toLowerCase()))
 
   const updated = existing.map((entry) => {
-    const match = incomingByKey.get(entry.publicKey)
+    const match = incomingByKey.get(entry.publicKey.toLowerCase())
     if (!match) return entry
 
     const savedBy = [...new Set([...entry.savedBy, ...match.savedBy])]
@@ -110,7 +114,7 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
   })
 
   const added = [...incomingByKey.values()].filter(
-    (a) => !existingKeys.has(a.publicKey),
+    (a) => !existingKeys.has(a.publicKey.toLowerCase()),
   )
 
   const hasChanges =
