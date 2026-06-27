@@ -30,7 +30,7 @@ export const XcSwapSummary = () => {
     return (
       <>
         <SwapSectionSeparator />
-        <OnChainSummary trade={quote.trade} twap={quote.twap} />
+        <OnChainSummary swap={quote.swap} twap={quote.twap} />
       </>
     )
   }
@@ -39,7 +39,7 @@ export const XcSwapSummary = () => {
     return (
       <>
         <SwapSectionSeparator />
-        <CrossChainSummary trade={quote.trade} />
+        <CrossChainSummary swap={quote.swap} />
       </>
     )
   }
@@ -48,10 +48,10 @@ export const XcSwapSummary = () => {
 }
 
 const OnChainSummary = ({
-  trade,
+  swap,
   twap,
 }: {
-  readonly trade: Trade
+  readonly swap: Trade
   readonly twap: TradeOrder | undefined
 }) => {
   const { healthFactor } = useXcSwap()
@@ -60,7 +60,7 @@ const OnChainSummary = ({
   const isSingleTrade = watch("isSingleTrade")
 
   if (!isSingleTrade && twap) {
-    return <MarketSummaryTwap swap={trade} twap={twap} />
+    return <MarketSummaryTwap swap={swap} twap={twap} />
   }
 
   const isHealthFactorShown =
@@ -68,13 +68,13 @@ const OnChainSummary = ({
 
   return (
     <MarketSummarySwap
-      swap={trade}
+      swap={swap}
       healthFactor={isHealthFactorShown ? healthFactor : undefined}
     />
   )
 }
 
-const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
+const CrossChainSummary = ({ swap }: { readonly swap: XcSwapTrade }) => {
   const { t } = useTranslation(["common", "trade"])
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
   const { watch } = useFormContext<XcSwapFormValues>()
@@ -91,22 +91,22 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
     )
 
   const buyAsset = watch("buyAsset")
-  const minAmountOut = trade.minAmountOut.toDecimal()
+  const minAmountOut = swap.minAmountOut.toDecimal()
   const buyAssetId = buyAsset?.id !== undefined ? String(buyAsset.id) : ""
   const [minAmountOutDisplay, { isLoading: isMinAmountOutDisplayLoading }] =
     useDisplayAssetPrice(buyAssetId, minAmountOut)
 
   const feeUsd = t("currency", {
-    value: trade.fee.usd,
+    value: swap.fee.usd,
     maximumFractionDigits: null,
   })
-  const feePct = t("percent", { value: trade.fee.pct })
+  const feePct = t("percent", { value: swap.fee.pct })
 
-  const eta = t("interval.short", { value: trade.timeEstimate.quote * 1000 })
+  const eta = t("interval.short", { value: swap.timeEstimate.quote * 1000 })
 
   const formattedMinAmountOut = t("currency", {
     value: minAmountOut,
-    symbol: trade.minAmountOut.symbol,
+    symbol: swap.minAmountOut.symbol,
   })
 
   return (
@@ -128,7 +128,7 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
         sx={{ overflow: "hidden", mx: "-xl", px: "xl" }}
       >
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
-          <PriceImpactSummaryRow priceImpact={trade.priceImpactPct} />
+          <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
           <SwapSummaryRow
             label={t("trade:market.summary.estTradeFees")}
             tooltip={t("trade:market.summary.estTradeFees.tooltip")}

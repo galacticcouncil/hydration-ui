@@ -6,10 +6,10 @@ export const XcSwapSwitcher = () => {
   const { quote, isCrossChain } = useXcSwap()
 
   if (!isCrossChain) {
-    const swap = quote?.kind === "oc" ? quote.trade : undefined
+    const swap = quote?.kind === "oc" ? quote.swap : undefined
     return <OnChainSwitcher swap={swap} />
   }
 
-  const swap = quote?.kind === "xc" ? quote.trade : undefined
+  const swap = quote?.kind === "xc" ? quote.swap : undefined
   return <CrossChainSwitcher swap={swap} />
 }

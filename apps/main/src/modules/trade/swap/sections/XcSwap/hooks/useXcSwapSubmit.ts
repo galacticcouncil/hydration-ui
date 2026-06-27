@@ -30,9 +30,9 @@ export const useXcSwapSubmit = ({ quote }: UseXcSwapSubmitParams) => {
 
   const onSubmit = (values: XcSwapFormValues) => {
     if (quote?.kind === "xc") {
-      submit.mutate([values, quote.trade])
+      submit.mutate([values, quote.swap])
     } else if (quote?.kind === "oc" && values.isSingleTrade) {
-      submitOmnipool.mutate([toMarketFormValues(values), quote.trade])
+      submitOmnipool.mutate([toMarketFormValues(values), quote.swap])
     } else if (quote?.kind === "oc" && quote.twap) {
       submitTwap.mutate([toMarketFormValues(values), quote.twap])
     }
