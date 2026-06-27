@@ -1,6 +1,7 @@
 import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useTranslation } from "react-i18next"
 
 import {
   XcAssetLogo,
@@ -20,6 +21,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const { t } = useTranslation("trade")
   return (
     <SButton
       variant={currentSelection ? "tertiary" : "secondary"}
@@ -37,7 +39,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
         </Flex>
       ) : (
         <Text fs="p3" fw={600}>
-          Select chain &amp; asset
+          {t("xc.swap.select.placeholder")}
         </Text>
       )}
       <Icon size="m" component={ChevronDown} sx={{ flexShrink: 0 }} />

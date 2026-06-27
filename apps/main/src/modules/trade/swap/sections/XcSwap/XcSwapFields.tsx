@@ -59,7 +59,7 @@ const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
 )
 
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["common", "trade"])
   const navigate = useNavigate()
   const { watch, setValue, getValues } = useFormContext<XcSwapFormValues>()
   const { isCrossChain, isSelectionLoading, isQuoteLoading } = useXcSwap()
@@ -191,7 +191,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         amountFieldName="buyAmount"
         label={<ChainLabel label={t("to")} chain={destChain} />}
         chainAssetPairs={destChainAssetPairs}
-        modalTitle="Destination chain & asset"
+        modalTitle={t("trade:xc.swap.field.destTitle")}
         hideMaxBalanceAction
         ignoreBalance={isCrossChain}
         ignoreDisplayValue={isCrossChain}

@@ -141,7 +141,10 @@ const CrossChainSummary = ({ trade }: { readonly trade: XcSwapTrade }) => {
               </Text>
             }
           />
-          <SwapSummaryRow label="Estimated time" content={eta} />
+          <SwapSummaryRow
+            label={t("trade:xc.swap.summary.estimatedTime")}
+            content={eta}
+          />
         </Summary>
       </CollapsibleContent>
     </CollapsibleRoot>

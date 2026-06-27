@@ -1,3 +1,4 @@
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { XcSwapAsset, XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
@@ -90,7 +91,12 @@ export const useXcSwapAssetPairs = (
       [],
     )
 
-    return [...crossChain, ...sourceChainAssetPairs]
+    const onChainDestPairs = sourceChainAssetPairs.filter(
+      ({ asset }) =>
+        asset.id === undefined || !SELL_ONLY_ASSETS.includes(String(asset.id)),
+    )
+
+    return [...crossChain, ...onChainDestPairs]
   }, [chains, destAssets, sourceChainAssetPairs])
 
   return {

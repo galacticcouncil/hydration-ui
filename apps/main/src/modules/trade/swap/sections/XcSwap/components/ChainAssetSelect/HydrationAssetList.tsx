@@ -1,7 +1,8 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Flex } from "@galacticcouncil/ui/components"
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
+import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import {
   TAssetWithBalance,
   useAssetSelectModalAssets,
@@ -50,8 +51,13 @@ export const HydrationAssetList: React.FC<Props> = ({
   const { tradable } = useAssets()
   const { originAssetMap } = useXcSwap()
 
+  const buyableAssets = useMemo(
+    () => tradable.filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id)),
+    [tradable],
+  )
+
   const { sortedAssets } = useAssetSelectModalAssets({
-    assets: tradable,
+    assets: buyableAssets,
     search,
     selectedAssetId:
       selectedAsset?.id !== undefined ? String(selectedAsset.id) : undefined,
@@ -69,10 +75,8 @@ export const HydrationAssetList: React.FC<Props> = ({
       setSelectedAsset={(asset) => onAssetSelect({ chain, asset })}
     />
   ) : (
-    <Flex flex={1} align="center" justify="center" asChild>
-      <Text align="center" fs="p5" color={getToken("text.medium")}>
-        No assets found
-      </Text>
+    <Flex flex={1} align="center" justify="center">
+      <AssetSelectEmptyState />
     </Flex>
   )
 }
