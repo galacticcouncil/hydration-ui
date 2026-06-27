@@ -53,19 +53,13 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 }))
 
 export const PROVIDERS: ProviderProps[] = [
-  createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
-  //createProvider("Dotters", "wss://hydration.dotters.network"),
-  // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
-  createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
-  // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
-  // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
-  // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
-  //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
-  createProvider("sin", "wss://rpc.sin.hydration.cloud"),
-  createProvider("coke", "wss://rpc.coke.hydration.cloud"),
-  createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
-  createProvider("sparrow", "wss://node-sparrow-1.sparrow.shadow-senate.com"),
-  // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
+  // EXPERIMENT (do not merge): route mainnet RPC through wsmux, a chainHead
+  // multiplexer/cache. Single endpoint so the app keeps the chainHead_v1_*
+  // protocol end-to-end (no legacy state_* downgrade); fan-in + cross-client
+  // cache happen at the proxy. wsmux fans N client follows into ~N/4 upstream
+  // follows to the archive node. Throwaway lark infra; mainnet indexer/squid
+  // kept (defaults). See PR description.
+  createProvider("wsmux (chainHead, test)", "wss://wsmuxmain.lark.hydration.cloud"),
   createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",
