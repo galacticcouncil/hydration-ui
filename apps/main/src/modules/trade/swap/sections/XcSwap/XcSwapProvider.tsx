@@ -9,8 +9,10 @@ import {
   XcAsset,
   XcChainAssetPair,
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
-import { XcSwapAlert } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
-import { useXcSwapAllAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAllAlerts"
+import {
+  useXcSwapAlerts,
+  XcSwapAlert,
+} from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { useXcSwapAssetPairs } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAssetPairs"
 import { useXcSwapClient } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapClient"
 import {
@@ -126,7 +128,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     swapSlippage,
   })
 
-  const alerts = useXcSwapAllAlerts({
+  const alerts = useXcSwapAlerts({
     form,
     originAssetMap,
     isCrossChain,

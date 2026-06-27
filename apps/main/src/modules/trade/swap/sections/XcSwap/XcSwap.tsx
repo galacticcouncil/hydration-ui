@@ -26,7 +26,7 @@ export const XcSwap: React.FC = () => {
     healthFactor,
   } = useXcSwap()
   const form = useFormContext<XcSwapFormValues>()
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "trade"])
 
   const [sellAmount, destAddress, isSingleTrade] = form.watch([
     "sellAmount",
@@ -72,11 +72,14 @@ export const XcSwap: React.FC = () => {
     isHealthFactorConsentRequired && Big(healthFactor.future).gt(1)
 
   const submitLabel = (() => {
-    if (!sellAmount) return "Enter an amount"
-    if (isCrossChain && !destAddress.trim()) return "Enter recipient address"
-    if (alerts.length || !form.formState.isValid) return "Swap unavailable"
-    if (!isHealthFactorCheckSatisfied) return "Accept health factor change"
-    return isSingleTrade ? "Swap" : "Place trades"
+    if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
+    if (isCrossChain && !destAddress.trim())
+      return t("trade:xc.swap.cta.enterRecipient")
+    if (alerts.length || !form.formState.isValid)
+      return t("trade:xc.swap.cta.unavailable")
+    if (!isHealthFactorCheckSatisfied)
+      return t("trade:xc.swap.cta.acceptHealthFactor")
+    return isSingleTrade ? t("swap") : t("trade:market.twap.cta")
   })()
 
   return (

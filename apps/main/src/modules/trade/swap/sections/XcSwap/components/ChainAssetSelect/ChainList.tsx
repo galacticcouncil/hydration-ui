@@ -10,7 +10,7 @@ import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAss
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 
 const CHAIN_ITEM_HEIGHT = 40
-const MAX_VISIBLE_CHAIN_ITEMS = 10
+const MAX_VISIBLE_CHAIN_ITEMS = 12
 
 export type ChainListProps = {
   items: XcChain[]

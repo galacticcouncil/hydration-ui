@@ -47,7 +47,7 @@ const schema = z
         ctx.addIssue({
           code: "custom",
           path: ["destAddress"],
-          message: "Invalid destination address",
+          message: i18n.t("trade:xc.swap.error.destAddressInvalid"),
         })
       }
     }
