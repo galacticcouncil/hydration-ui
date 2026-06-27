@@ -3,6 +3,7 @@ import {
   ModalHeader,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
+import { stringEquals } from "@galacticcouncil/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { filter, pipe, sortBy } from "remeda"
@@ -41,11 +42,15 @@ type Props = {
 const ADDRESS_BOOK_ENTRY_HEIGHT = 48
 const MAX_VISIBLE_ADDRESS_BOOK_ENTRIES = 6
 
+const defaultWhitelist = WALLET_ACCOUNT_FILTER_OPTIONS.filter(
+  (option) => option !== WalletMode.SubstrateH160,
+)
+
 export const AddressBookModal: FC<Props> = ({
   header,
   onBack,
   align = "default",
-  whitelist = WALLET_ACCOUNT_FILTER_OPTIONS,
+  whitelist = defaultWhitelist,
   onSelect,
 }) => {
   const { t } = useTranslation("translations", { i18n })
@@ -91,7 +96,9 @@ export const AddressBookModal: FC<Props> = ({
   const canAdd =
     !searchedAddresses.length &&
     !!addressProvider &&
-    !allAddresses.find((address) => address.publicKey === addressPublicKey) &&
+    !allAddresses.find((address) =>
+      stringEquals(address.publicKey, addressPublicKey),
+    ) &&
     whitelist.includes(addressProvider)
 
   const emptyStateReason = ((): AddressBookEmptyStateReason => {

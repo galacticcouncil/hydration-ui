@@ -195,6 +195,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         hideMaxBalanceAction
         ignoreBalance={isCrossChain}
         ignoreDisplayValue={isCrossChain}
+        ignoreErrors={isCrossChain}
         maxBalance={destMaxBalance}
         displayValue={!isCrossChain ? destDisplayValue : undefined}
         disabledInput={isCrossChain}

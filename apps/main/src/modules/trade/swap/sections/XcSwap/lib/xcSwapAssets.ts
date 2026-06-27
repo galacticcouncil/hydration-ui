@@ -21,6 +21,24 @@ export const findXcChainAssetPair = (
   return matching.find(({ chain }) => chain.key === chainKey) ?? matching[0]
 }
 
+export type XcSwapDefaultSelection = {
+  readonly chainKey: string
+  readonly assetId: string
+}
+
+export const getDefaultChainAssetPair = (
+  pairs: XcChainAssetPair[],
+  defaultSelection: XcSwapDefaultSelection,
+) =>
+  pairs.find(
+    ({ chain, asset }) =>
+      chain.key === defaultSelection.chainKey &&
+      ((asset.id !== undefined &&
+        String(asset.id) === defaultSelection.assetId) ||
+        asset.key === defaultSelection.assetId ||
+        asset.oneClickId === defaultSelection.assetId),
+  )
+
 export const getXcSwapBuyAssetOutId = (
   asset: XcAsset | null | undefined,
 ): string | undefined =>

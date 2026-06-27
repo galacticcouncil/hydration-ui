@@ -76,8 +76,6 @@ export const AssetInput = ({
     }
   }
 
-  const errorMessage = assetError ?? amountError
-
   const isLoading = valueLoading || displayValueLoading || loading
 
   return (
@@ -195,24 +193,34 @@ export const AssetInput = ({
                 />
               )}
 
-              {!ignoreDisplayValue && (
-                <Text
-                  color={getToken("text.low")}
-                  fs="p6"
-                  fw={400}
-                  truncate
-                  width="100%"
-                  align="right"
-                >
-                  {displayValueLoading ? <Skeleton width={48} /> : displayValue}
-                </Text>
+              {amountError && !isLoading ? (
+                <FormError lh={1} truncate width="100%" align="right">
+                  {amountError}
+                </FormError>
+              ) : (
+                !ignoreDisplayValue && (
+                  <Text
+                    color={getToken("text.low")}
+                    fs="p6"
+                    fw={400}
+                    truncate
+                    width="100%"
+                    align="right"
+                  >
+                    {displayValueLoading ? (
+                      <Skeleton width={48} />
+                    ) : (
+                      displayValue
+                    )}
+                  </Text>
+                )
               )}
             </Flex>
           )}
         </Flex>
-        {errorMessage && !isLoading && (
+        {assetError && !isLoading && (
           <FormError lh={1} ml="auto">
-            {errorMessage}
+            {assetError}
           </FormError>
         )}
       </Flex>

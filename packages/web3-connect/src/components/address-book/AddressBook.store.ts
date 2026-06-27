@@ -3,6 +3,7 @@ import {
   isH160Address,
   NearAddr,
   safeConvertSS58toPublicKey,
+  stringEquals,
 } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 import { z } from "zod/v4"
@@ -136,13 +137,15 @@ export const useAddressStore = create<AddressStore>()(
       edit: (address) =>
         set((state) => ({
           addresses: state.addresses.map((a) =>
-            a.publicKey === address.publicKey ? address : a,
+            stringEquals(a.publicKey, address.publicKey) ? address : a,
           ),
         })),
 
       remove: (publicKey) =>
         set((state) => ({
-          addresses: state.addresses.filter((a) => a.publicKey !== publicKey),
+          addresses: state.addresses.filter(
+            (a) => !stringEquals(a.publicKey, publicKey),
+          ),
         })),
     }),
     createZustandStorage({
