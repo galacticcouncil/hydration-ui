@@ -26,8 +26,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 export type XcSwapQuote =
-  | { kind: "xc"; trade: XcSwapTrade }
-  | { kind: "oc"; trade: Trade; twap: TradeOrder | undefined }
+  | { kind: "xc"; swap: XcSwapTrade }
+  | { kind: "oc"; swap: Trade; twap: TradeOrder | undefined }
   | null
 
 type UseXcSwapQuoteParams = {
@@ -176,9 +176,9 @@ export const useXcSwapQuote = ({
   const quote = useMemo<XcSwapQuote>(() => {
     if (isCrossChain) {
       if (!xcQuoteEnabled) return null
-      return xcTrade ? { kind: "xc", trade: xcTrade } : null
+      return xcTrade ? { kind: "xc", swap: xcTrade } : null
     }
-    return omnipoolTrade ? { kind: "oc", trade: omnipoolTrade, twap } : null
+    return omnipoolTrade ? { kind: "oc", swap: omnipoolTrade, twap } : null
   }, [isCrossChain, xcQuoteEnabled, xcTrade, omnipoolTrade, twap])
 
   const isQuoteLoading = isCrossChain
@@ -188,13 +188,13 @@ export const useXcSwapQuote = ({
 
   useEffect(() => {
     if (quote?.kind === "xc") {
-      form.setValue("buyAmount", quote.trade.amountOut.toDecimal(), {
+      form.setValue("buyAmount", quote.swap.amountOut.toDecimal(), {
         shouldValidate: true,
       })
     } else if (quote?.kind === "oc" && type === TradeType.Buy && sellAsset) {
       // Buy: derive the required sellAmount from the quote's amountIn
       const amountIn = isSingleTrade
-        ? quote.trade.amountIn
+        ? quote.swap.amountIn
         : quote.twap?.amountIn
       const nextSellAmount = amountIn
         ? scaleHuman(amountIn, sellAsset.decimals)
@@ -206,7 +206,7 @@ export const useXcSwapQuote = ({
     } else if (quote?.kind === "oc" && buyAsset) {
       // Sell: derive buyAmount from the quote's amountOut
       const amountOut = isSingleTrade
-        ? quote.trade.amountOut
+        ? quote.swap.amountOut
         : quote.twap?.amountOut
       const nextBuyAmount = amountOut
         ? scaleHuman(amountOut, buyAsset.decimals)
