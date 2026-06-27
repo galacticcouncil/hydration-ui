@@ -335,8 +335,7 @@ export const useOmnipoolStablepools = () => {
         : stablepoolInOmnipool?.borrowApyData
 
       const allFarms = omnipoolFarms?.[poolId] ?? []
-      const farms =
-        omnipoolFarms?.[poolId]?.filter((farm) => farm.apr !== "0") ?? []
+      const farms = allFarms.filter((farm) => farm.apr !== "0")
 
       const isFarms = farms?.length > 0
       const totalApr = farms
