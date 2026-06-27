@@ -14,7 +14,7 @@ export const XcSwapOptions = () => {
   const isSingleTrade = form.watch("isSingleTrade")
   const onChainQuote = quote?.kind === "oc" ? quote : null
   const swapErrors =
-    onChainQuote?.trade.swaps.flatMap((swap) => swap.errors) ?? []
+    onChainQuote?.swap.swaps.flatMap((swap) => swap.errors) ?? []
   const isTradeEnabled = isSingleTrade
     ? !!quote && (!onChainQuote || !swapErrors.length)
     : !!onChainQuote?.twap && !onChainQuote.twap.errors.length
@@ -28,7 +28,7 @@ export const XcSwapOptions = () => {
   return (
     <Box pt="base" pb="m">
       <MarketTradeOptions
-        swap={onChainQuote?.trade}
+        swap={onChainQuote?.swap}
         twap={onChainQuote?.twap}
         isSwapLoading={isQuoteLoading}
         isTwapLoading={isTwapLoading}
@@ -37,7 +37,7 @@ export const XcSwapOptions = () => {
         <MarketWarnings
           isFormValid={isFormValid}
           isSingleTrade={isSingleTrade}
-          swap={onChainQuote.trade}
+          swap={onChainQuote.swap}
           twap={onChainQuote.twap}
           healthFactor={undefined}
           healthFactorRiskAccepted={false}

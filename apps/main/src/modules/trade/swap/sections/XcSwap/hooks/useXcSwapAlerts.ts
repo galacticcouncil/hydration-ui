@@ -73,7 +73,7 @@ export const useXcSwapAlerts = ({
       })
     }
     if (quote?.kind === "xc") {
-      for (const error of quote.trade.errors) {
+      for (const error of quote.swap.errors) {
         alerts.push({
           key: `xc-trade-error-${error}`,
           message: getXcSwapErrorMessage(error, t),
