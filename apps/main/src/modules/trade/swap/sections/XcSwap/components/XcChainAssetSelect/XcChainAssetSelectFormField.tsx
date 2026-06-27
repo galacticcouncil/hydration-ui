@@ -34,6 +34,7 @@ type Props<TFormValues extends FieldValues> = Omit<
   ) => void
   readonly onAmountChange?: (amount: string) => void
   readonly disabledAssetSelector?: boolean
+  readonly ignoreErrors?: boolean
 }
 
 export const XcChainAssetSelectFormField = <TFormValues extends FieldValues>({
@@ -43,6 +44,7 @@ export const XcChainAssetSelectFormField = <TFormValues extends FieldValues>({
   onSelectionChange,
   onAmountChange,
   disabledAssetSelector = false,
+  ignoreErrors = false,
   ...assetSelectProps
 }: Props<TFormValues>) => {
   const { control } = useFormContext<TFormValues>()
@@ -85,8 +87,8 @@ export const XcChainAssetSelectFormField = <TFormValues extends FieldValues>({
         amountField.onChange(value)
         onAmountChange?.(value)
       }}
-      assetError={assetFieldState.error?.message}
-      amountError={amountFieldState.error?.message}
+      assetError={ignoreErrors ? undefined : assetFieldState.error?.message}
+      amountError={ignoreErrors ? undefined : amountFieldState.error?.message}
       disabledAssetSelector={disabledAssetSelector}
       onSelectionChange={handleSelectionChange}
     />

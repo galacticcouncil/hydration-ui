@@ -12,9 +12,10 @@ import type { Address } from "./AddressBook.store"
 //   ../../node_modules/.bin/esbuild \
 //     src/components/address-book/AddressBook.selfcheck.ts \
 //     --bundle --platform=node --format=cjs \
+//     '--external:@galacticcouncil/sdk-next' '--external:@galacticcouncil/math-*' \
 //     --outfile=.selfcheck.cjs && node .selfcheck.cjs && rm .selfcheck.cjs
-// AddressBook.merge has no heavy deps (Address is a type-only import), so no
-// externals are needed here.
+// AddressBook.merge imports normalizePublicKey from @/utils/publicKey, which
+// pulls @galacticcouncil/utils (xc-core) transitively — hence the externals.
 
 const WALLET_1 = "wallet-1-pubkey"
 const WALLET_2 = "wallet-2-pubkey"

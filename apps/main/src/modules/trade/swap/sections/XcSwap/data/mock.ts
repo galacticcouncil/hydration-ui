@@ -1,4 +1,5 @@
 import { NearAddr, ZcashAddr } from "@galacticcouncil/utils"
+import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 
 export type XcAsset = {
   key: string
@@ -34,15 +35,19 @@ export type XcChainAssetPair = {
 const nonEmpty = (addr: string) => addr.trim().length > 0
 
 // Picks the recipient validator for a destination chain's platform.
+// Exhaustive over XcSwapPlatform so a newly-added bridge destination fails to
+// compile here instead of silently accepting any recipient string.
 export const addressValidatorFor = (
-  platform: string,
+  platform: XcSwapPlatform,
 ): ((addr: string) => boolean) => {
   switch (platform) {
     case "near":
       return NearAddr.isValid
     case "zec":
       return ZcashAddr.isValid
-    default:
+    case "hydration":
+      // Same-chain swaps skip destination-address validation upstream
+      // (useXcSwapForm: isCrossChain === false), so this is never exercised.
       return nonEmpty
   }
 }
