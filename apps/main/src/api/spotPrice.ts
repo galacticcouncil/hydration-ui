@@ -36,6 +36,11 @@ import { toDecimal } from "@/utils/formatting"
 import { TradeRouter } from "./trade"
 import { xykPoolWithLiquidityQuery } from "./xyk"
 
+// staleness budget for display spot prices (ms). prices refresh on this cadence
+// rather than on every block; ~10s matches the implicit budget of the existing
+// displayPrices subscriber.
+export const SPOT_PRICE_STALE_TIME = 10_000
+
 export const usePriceSubscriber = () => {
   const { isApiLoaded, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
@@ -73,7 +78,7 @@ export const usePriceSubscriber = () => {
     },
     enabled: isApiLoaded && !isNullish(stableCoinId),
     notifyOnChangeProps: [],
-    staleTime: 10000,
+    staleTime: SPOT_PRICE_STALE_TIME,
   })
 }
 
@@ -92,6 +97,13 @@ export const spotPriceQuery = (
 
       return spotPrice
     },
+    // display spot prices do not need per-block freshness. useInvalidateOnBlock
+    // skips this domain; instead it self-refreshes on a ~10s cadence (matching the
+    // displayPrices subscriber budget), cutting router.getSpotPrice calls from
+    // once-per-asset-per-block (~6s) to once-per-asset-per-10s.
+    staleTime: SPOT_PRICE_STALE_TIME,
+    refetchInterval: SPOT_PRICE_STALE_TIME,
+    refetchIntervalInBackground: false,
   })
 }
 
