@@ -46,6 +46,16 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
+// money-market reserve reads are ~5-8 eth_call per reserve. They carry no
+// staleTime, so any observer churn / mount refetches the full reserve set every
+// render, driving ~50-100 eth_call/block on the borrow dashboard. The underlying
+// data (rates, liquidity) moves at most once per block, so a one-block staleness
+// budget collapses the read fan-out while staying fresh; user-specific reserves
+// move only on the user's own tx, so they get a longer budget and are invalidated
+// explicitly on supply/borrow/repay/withdraw (see api/borrow/hooks tx flows).
+const RESERVES_STALE_TIME = 12_000
+const USER_RESERVES_STALE_TIME = 30_000
+
 export const borrowIncentivesQuery = (
   lendingPoolAddressProvider: string,
   incentivesContract: UiIncentiveDataProvider | null,
@@ -147,6 +157,7 @@ export const borrowReservesQuery = (
       }
     },
     retry: false,
+    staleTime: RESERVES_STALE_TIME,
     enabled:
       !!lendingPoolAddressProvider && !!poolDataContract && rpc.isApiLoaded,
   })
@@ -187,6 +198,7 @@ export const userBorrowReservesQuery = (
       })
     },
     retry: false,
+    staleTime: USER_RESERVES_STALE_TIME,
     enabled: !!evmAddress && !!lendingPoolAddressProvider && !!poolDataContract,
   })
 
@@ -409,6 +421,7 @@ export const userBorrowSummaryQuery = (
       return extendedUser
     },
     retry: false,
+    staleTime: USER_RESERVES_STALE_TIME,
     enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isApiLoaded,
   })
 
