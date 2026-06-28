@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsInMinute } from "date-fns/constants"
+import { millisecondsInDay, millisecondsInMinute } from "date-fns/constants"
 import { number, string, z } from "zod/v4"
 
 import { bestNumberQuery } from "@/api/chain"
@@ -33,24 +33,43 @@ export type TUnlockableVote = {
   classId: number
 }
 
-const CONVICTIONS_BLOCKS: { [key: string]: number } = {
-  none: 0,
-  locked1x: 100800,
-  locked2x: 201600,
-  locked3x: 403200,
-  locked4x: 806400,
-  locked5x: 1612800,
-  locked6x: 3225600,
+const LOCKED_DAYS_BY_INDEX = {
+  0: 0,
+  1: 7,
+  2: 14,
+  3: 28,
+  4: 56,
+  5: 112,
+  6: 224,
+} as const
+
+type ConvictionIndex = keyof typeof LOCKED_DAYS_BY_INDEX
+
+const LOCKED_DAYS_BY_NAME: { [key: string]: number } = {
+  none: LOCKED_DAYS_BY_INDEX[0],
+  locked1x: LOCKED_DAYS_BY_INDEX[1],
+  locked2x: LOCKED_DAYS_BY_INDEX[2],
+  locked3x: LOCKED_DAYS_BY_INDEX[3],
+  locked4x: LOCKED_DAYS_BY_INDEX[4],
+  locked5x: LOCKED_DAYS_BY_INDEX[5],
+  locked6x: LOCKED_DAYS_BY_INDEX[6],
 }
 
-const CONVICTIONS_BLOCKS_BY_INDEX: { [key: string]: number } = {
-  0: 0,
-  1: 100800,
-  2: 201600,
-  3: 403200,
-  4: 806400,
-  5: 1612800,
-  6: 3225600,
+const getConvictionBlocks = (
+  slotDurationMs: number,
+  conviction: string | number,
+) => {
+  if (typeof conviction === "number") {
+    if (!(conviction in LOCKED_DAYS_BY_INDEX)) return undefined
+
+    const lockedDays = LOCKED_DAYS_BY_INDEX[conviction as ConvictionIndex]
+    return (lockedDays * millisecondsInDay) / slotDurationMs
+  }
+
+  const lockedDays = LOCKED_DAYS_BY_NAME[conviction]
+  if (lockedDays === undefined) return undefined
+
+  return (lockedDays * millisecondsInDay) / slotDurationMs
 }
 
 const CONVICTION_NAMES = [
@@ -241,8 +260,10 @@ export const openGovUnlockedTokensQuery = (
       for (const vote of subsquareAccountVotes.items) {
         const status = vote.proposal.state.name
         if (status === SubsquareVoteState.Executed) {
-          const convictionBlockNumber =
-            CONVICTIONS_BLOCKS_BY_INDEX[vote.conviction]
+          const convictionBlockNumber = getConvictionBlocks(
+            rpc.slotDurationMs,
+            vote.conviction,
+          )
 
           if (convictionBlockNumber === undefined) {
             filteredVotes.push({
@@ -317,8 +338,10 @@ export const openGovUnlockedTokensQuery = (
               referendumInfo.type === "Killed"
                 ? referendumInfo.value
                 : referendumInfo.value[0]
-            const convictionBlockNumber =
-              CONVICTIONS_BLOCKS[accountVote.conviction]
+            const convictionBlockNumber = getConvictionBlocks(
+              rpc.slotDurationMs,
+              accountVote.conviction,
+            )
 
             if (convictionBlockNumber === undefined) {
               throw new Error("Invalid conviction")

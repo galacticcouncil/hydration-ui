@@ -15,6 +15,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
+import { millisecondsInSecond } from "date-fns/constants"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -24,8 +25,8 @@ import {
   SRpcRadioThumb,
 } from "@/components/DataProviderSelect/components/rpc/RpcListItem.styled"
 import { useBlockHeightStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useSquidListStore } from "@/states/provider"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { SSquidIndexerListItem } from "./SquidIndexerListItem.styled"
 
@@ -75,12 +76,14 @@ export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
   const [isEdit, setIsEdit] = useState(false)
 
   const squidSdk = getSquidSdk(url)
+  const rpc = useRpcProvider()
+  const refetchInterval = (rpc.slotDurationMs || millisecondsInSecond) / 2
 
   const {
     data: blockHeight,
     isLoading: isBlockHeightLoading,
     isError: isBlockHeightError,
-  } = useQuery(latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2))
+  } = useQuery(latestBlockHeightQuery(squidSdk, url, refetchInterval))
 
   const { blockDiffText, statusText, color } = useBlockHeightStatus(
     blockHeight ?? null,

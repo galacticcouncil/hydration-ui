@@ -8,7 +8,7 @@ import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_ID, PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useNativeAssetLocks = () => {
@@ -88,13 +88,13 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
 
   const [displayValue] = useDisplayAssetPrice(native.id, value)
 
-  const lockedSeconds =
-    (unlockedTokens?.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
+  const lockedMilliseconds =
+    (unlockedTokens?.maxLockedBlock ?? 0) * rpc.slotDurationMs
 
   return {
     value,
     displayValue,
-    lockedSeconds,
+    lockedMilliseconds,
     unlockableIds: [],
     votesToRemove: unlockedTokens?.votesToRemove ?? [],
     classIds: unlockedTokens?.classIds ?? [],

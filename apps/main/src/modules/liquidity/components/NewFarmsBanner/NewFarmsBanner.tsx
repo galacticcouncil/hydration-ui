@@ -11,15 +11,14 @@ import { useBannersStore } from "@/states/banners"
 
 export const NewFarmsBannerWrapper = () => {
   const banner = useBannersStore((state) => state.banners["new-farms"])
+  const isTimestampExpired =
+    !banner.timestamp ||
+    sub(Date.now(), { days: NEW_YIELD_FARMS_DAYS }).getTime() > banner.timestamp
 
-  if (
-    banner.visible === false ||
-    (banner.timestamp &&
-      sub(Date.now(), { days: NEW_YIELD_FARMS_DAYS }).getTime() >
-        banner.timestamp)
-  ) {
+  if (banner.visible === false && !isTimestampExpired) {
     return null
   }
+
   return <NewFarmsBanner />
 }
 
@@ -33,10 +32,12 @@ export const NewFarmsBanner = () => {
   const { data: newFarms, isSuccess } = useNewFarms()
 
   useEffect(() => {
-    if (isSuccess && newFarms.length > 0 && !banner.visible) {
-      const timestamp = Date.now()
-
-      setBannerVisible("new-farms", true, timestamp)
+    if (isSuccess) {
+      if (newFarms.length > 0 && !banner.visible) {
+        setBannerVisible("new-farms", true, Date.now())
+      } else if (newFarms.length === 0 && banner.visible) {
+        setBannerVisible("new-farms", false, Date.now())
+      }
     }
   }, [newFarms, isSuccess, getAsset, banner.visible, setBannerVisible])
 
@@ -54,7 +55,7 @@ export const NewFarmsBanner = () => {
       message={t("banners.newFarms.title", { assetSymbols })}
       actionLabel={t("banners.newFarms.cta")}
       onAction={() => navigate({ to: LINKS.liquidity })}
-      onClose={() => setBannerVisible("new-farms", false)}
+      onClose={() => setBannerVisible("new-farms", false, Date.now())}
     />
   )
 }

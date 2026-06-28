@@ -136,8 +136,10 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           })}
           displayValue={unlockable.displayValue}
           descriptionCustom={
-            unlockable.lockedSeconds > 0 && (
-              <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
+            unlockable.lockedMilliseconds > 0 && (
+              <FullExpiration
+                initialLockedMilliseconds={unlockable.lockedMilliseconds}
+              />
             )
           }
         />

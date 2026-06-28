@@ -120,10 +120,10 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             })}
             displayValue={locks.lockedInDemocracyDisplayPrice}
             descriptionCustom={
-              unlockable.lockedSeconds > 0 && (
+              unlockable.lockedMilliseconds > 0 && (
                 <FullExpiration
                   sx={{ width: "fit-content" }}
-                  initialLockedSeconds={unlockable.lockedSeconds}
+                  initialLockedMilliseconds={unlockable.lockedMilliseconds}
                 />
               )
             }
@@ -156,10 +156,10 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
           })}
           displayValue={unlockable.displayValue}
           descriptionCustom={
-            unlockable.lockedSeconds > 0 && (
+            unlockable.lockedMilliseconds > 0 && (
               <FullExpiration
                 sx={{ width: "fit-content" }}
-                initialLockedSeconds={unlockable.lockedSeconds}
+                initialLockedMilliseconds={unlockable.lockedMilliseconds}
               />
             )
           }

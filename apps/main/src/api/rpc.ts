@@ -5,12 +5,13 @@ import {
   useQueries,
   useQuery,
 } from "@tanstack/react-query"
+import { millisecondsInSecond } from "date-fns/constants"
 import { useRef } from "react"
 
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { pingWorker } from "@/workers/ping"
 
-export const rpcStatusQueryOptions = (url: string) =>
+export const rpcStatusQueryOptions = (url: string, refetchInterval: number) =>
   queryOptions({
     enabled: !!url,
     queryKey: ["rpcStatus", url],
@@ -26,13 +27,16 @@ export const rpcStatusQueryOptions = (url: string) =>
       }
     },
     retry: 0,
-    refetchInterval: PARACHAIN_BLOCK_TIME / 2,
+    refetchInterval,
     placeholderData: keepPreviousData,
     refetchIntervalInBackground: true,
   })
 
 export const useRpcStatus = (url: string) => {
-  return useQuery(rpcStatusQueryOptions(url))
+  const rpc = useRpcProvider()
+  const refetchInterval = (rpc.slotDurationMs || millisecondsInSecond) / 2
+
+  return useQuery(rpcStatusQueryOptions(url, refetchInterval))
 }
 
 type RpcsStatusOptions = {
@@ -43,11 +47,13 @@ export const useRpcsStatus = (
   urls: string[],
   options: RpcsStatusOptions = {},
 ) => {
+  const rpc = useRpcProvider()
+  const refetchInterval = (rpc.slotDurationMs || millisecondsInSecond) / 2
   const pingCacheRef = useRef<Map<string, PingResponse["ping"][]>>(new Map())
 
   return useQueries({
     queries: urls.map((url, index) => ({
-      ...rpcStatusQueryOptions(url),
+      ...rpcStatusQueryOptions(url, refetchInterval),
       queryFn: async () => {
         const delay = index * 150 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)

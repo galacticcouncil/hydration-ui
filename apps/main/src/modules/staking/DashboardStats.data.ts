@@ -1,6 +1,8 @@
 import { calculate_accumulated_rps } from "@galacticcouncil/math-staking"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { millisecondsToSeconds } from "date-fns"
+import { secondsInWeek, secondsInYear } from "date-fns/constants"
 import { useMemo } from "react"
 
 import { HDXStakingBalanceQuery } from "@/api/balances"
@@ -57,8 +59,11 @@ export const useStakingSupply = () => {
   }
 }
 
-const lengthOfStaking = 100800 // min. amount of block for how long we want to calculate APR from = one week
-const blocksPerYear = 5256000 // blocks per year with 6s block period
+// min. amount of block for how long we want to calculate APR from = one week
+const getLengthOfStaking = (slotDurationMs: number) =>
+  secondsInWeek / millisecondsToSeconds(slotDurationMs)
+const getBlocksPerYear = (slotDurationMs: number) =>
+  secondsInYear / millisecondsToSeconds(slotDurationMs)
 
 export const useStakingAPR = (positionId: bigint) => {
   const rpc = useRpcProvider()
@@ -108,6 +113,8 @@ export const useStakingAPR = (positionId: bigint) => {
       return undefined
     }
 
+    const blocksPerYear = getBlocksPerYear(rpc.slotDurationMs)
+
     const stakingInitialized = initializedEvents.length
       ? initializedEvents[0]
       : undefined
@@ -122,7 +129,7 @@ export const useStakingAPR = (positionId: bigint) => {
     const pendingRewards = Big(potBalance.transferable.toString()).minus(
       pot_reserved_balance.toString(),
     )
-
+    const lengthOfStaking = getLengthOfStaking(rpc.slotDurationMs)
     const {
       filteredAccumulatedRpsUpdatedBefore,
       filteredAccumulatedRpsUpdatedAfter,
@@ -252,6 +259,7 @@ export const useStakingAPR = (positionId: bigint) => {
     initializedEvents,
     positionId,
     potBalance,
+    rpc.slotDurationMs,
     stakeValue,
   ])
 

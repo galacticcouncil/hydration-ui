@@ -10,7 +10,7 @@ import {
   useBlockHeightStatus,
   useFullSquidUrlList,
 } from "@/components/DataProviderSelect/DataProviderSelect.utils"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type SquidIndexerStatusProps = {
   url: string
@@ -19,10 +19,11 @@ export type SquidIndexerStatusProps = {
 export const SquidIndexerStatus: React.FC<SquidIndexerStatusProps> = ({
   url,
 }) => {
+  const rpcProvider = useRpcProvider()
   const squidSdk = getSquidSdk(url)
 
   const { data: blockHeight } = useQuery(
-    latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME),
+    latestBlockHeightQuery(squidSdk, url, rpcProvider.slotDurationMs),
   )
 
   const { color, statusText, statusDescription } = useBlockHeightStatus(
