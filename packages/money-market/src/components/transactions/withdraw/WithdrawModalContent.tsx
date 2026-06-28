@@ -10,12 +10,14 @@ import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useModalContext } from "@/hooks/useModal"
 import { formatHealthFactorResult } from "@/utils"
-import { calculateHFAfterWithdraw } from "@/utils/hfUtils"
+import {
+  calculateHFAfterWithdraw,
+  calculateMaxWithdrawAmount,
+} from "@/utils/hfUtils"
 import { zeroLTVBlockingWithdraw } from "@/utils/transactions"
 
 import { WithdrawActions } from "./WithdrawActions"
 import { useWithdrawError } from "./WithdrawError"
-import { calculateMaxWithdrawAmount } from "./WithdrawModalContent.utils"
 
 export enum ErrorType {
   CAN_NOT_WITHDRAW_THIS_AMOUNT,

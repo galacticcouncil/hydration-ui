@@ -52,6 +52,8 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
+  strategies: "/strategies",
+  strategiesHdcl: "/strategies/hdcl-vault",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -96,6 +98,14 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
+    ],
+  },
+  {
+    key: "strategies",
+    to: LINKS.strategies,
+    icon: CoinsIcon,
+    children: [
+      { key: "strategiesHdcl", to: LINKS.strategiesHdcl, icon: GoalIcon },
     ],
   },
   {
@@ -157,11 +167,6 @@ export const NAVIGATION: NavigationItem[] = [
     key: "staking",
     to: LINKS.staking,
     icon: GemIcon,
-  },
-  {
-    key: "strategiesHollarBonds",
-    to: LINKS.strategiesHollarBonds,
-    icon: GoalIcon,
   },
   // {
   //   key: "referrals",
@@ -307,6 +312,14 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
+    strategies: {
+      title: t("navigation.strategies.title"),
+      description: "",
+    },
+    strategiesHdcl: {
+      title: t("navigation.strategiesHdcl.title"),
+      description: "",
+    },
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
       description: "",
@@ -350,6 +363,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "strategies",
   "liquidity",
   "wallet",
   "crossChain",
@@ -363,6 +377,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "liquidity",
   "borrow",
+  "strategies",
   "crossChain",
   "stats",
   "staking",

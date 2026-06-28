@@ -7,6 +7,7 @@ export type PaperProps = BoxProps & {
   variant?: "plain" | "bordered"
   bg?: "high" | "dim"
   shadow?: boolean
+  hoverable?: boolean
 }
 
 export const Paper: FC<PaperProps & { ref?: Ref<HTMLElement> }> = ({

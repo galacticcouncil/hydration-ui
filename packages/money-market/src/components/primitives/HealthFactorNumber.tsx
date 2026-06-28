@@ -17,15 +17,10 @@ export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(value)
 
   return (
-    <Flex>
+    <Flex align="center">
       {value === "-1" ? (
-        <Text
-          fw={500}
-          fs={fontSize}
-          lh={1.5}
-          color={getToken("accents.success.emphasis")}
-        >
-          <InfinityIcon />
+        <Text lh={1} fs={fontSize} color={getToken("accents.success.emphasis")}>
+          <InfinityIcon sx={{ size: "1em", scale: 1.25 }} />
         </Text>
       ) : (
         <Text fw={700} fs={fontSize} lh={1.5} sx={{ color: healthFactorColor }}>
