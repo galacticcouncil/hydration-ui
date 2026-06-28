@@ -10,7 +10,17 @@ import { useRef } from "react"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { pingWorker } from "@/workers/ping"
 
-export const rpcStatusQueryOptions = (url: string) =>
+type RpcStatusOptions = {
+  // keep the ~3s health ping running. defaults to false so the query only pings
+  // while actively observed (e.g. the provider modal is open). callers that show
+  // a live latency readout pass true.
+  poll?: boolean
+}
+
+export const rpcStatusQueryOptions = (
+  url: string,
+  { poll = false }: RpcStatusOptions = {},
+) =>
   queryOptions({
     enabled: !!url,
     queryKey: ["rpcStatus", url],
@@ -26,17 +36,21 @@ export const rpcStatusQueryOptions = (url: string) =>
       }
     },
     retry: 0,
-    refetchInterval: PARACHAIN_BLOCK_TIME / 2,
+    // only poll when asked, and never while the tab is hidden
+    refetchInterval: poll ? PARACHAIN_BLOCK_TIME / 2 : false,
     placeholderData: keepPreviousData,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
   })
 
-export const useRpcStatus = (url: string) => {
-  return useQuery(rpcStatusQueryOptions(url))
+export const useRpcStatus = (url: string, options: RpcStatusOptions = {}) => {
+  return useQuery(rpcStatusQueryOptions(url, options))
 }
 
 type RpcsStatusOptions = {
   calculateAvgPing?: boolean
+  // see rpcStatusQueryOptions: defaults to false; the provider modal passes true
+  // so the latency list refreshes live while it is open.
+  poll?: boolean
 }
 
 export const useRpcsStatus = (
@@ -47,7 +61,7 @@ export const useRpcsStatus = (
 
   return useQueries({
     queries: urls.map((url, index) => ({
-      ...rpcStatusQueryOptions(url),
+      ...rpcStatusQueryOptions(url, { poll: options.poll }),
       queryFn: async () => {
         const delay = index * 150 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)

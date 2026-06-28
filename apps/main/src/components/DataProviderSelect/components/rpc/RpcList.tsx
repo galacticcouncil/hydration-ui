@@ -45,6 +45,8 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
 
   const rpcsStatusQueries = useRpcsStatus(providerListUrls, {
     calculateAvgPing: true,
+    // modal is open while this list is mounted -> poll for a live latency readout
+    poll: true,
   })
 
   const handleSwitchRpc = (url: string) => {
