@@ -29,3 +29,5 @@ yarn-error.log*
 *storybook.log
 .cursor
 .claude
+# agent task tracking
+TODO.md

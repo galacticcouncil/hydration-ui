@@ -87,19 +87,21 @@ export const SupplyAssetsTable = () => {
         </Paper>
       ) : (
         <TableContainer as={TablePaper}>
-          <DataTable
-            skeletonRowCount={4}
-            isLoading={isLoading}
-            onRowClick={(row) =>
-              navigate({
-                to: `/borrow/markets/${row.underlyingAsset}`,
-              })
-            }
-            fixedLayout
-            data={strategyAssets}
-            columns={strategyColumns}
-            {...gSorting}
-          />
+          {strategyAssets.length > 0 && (
+            <DataTable
+              skeletonRowCount={4}
+              isLoading={isLoading}
+              onRowClick={(row) =>
+                navigate({
+                  to: `/borrow/markets/${row.underlyingAsset}`,
+                })
+              }
+              fixedLayout
+              data={strategyAssets}
+              columns={strategyColumns}
+              {...gSorting}
+            />
+          )}
           <DataTable
             skeletonRowCount={4}
             isLoading={isLoading}

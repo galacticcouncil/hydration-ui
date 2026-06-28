@@ -95,25 +95,41 @@ export const getUserApyValues = (
         }
         if (value.variableBorrowsUSD !== "0") {
           if (isGho(reserve)) {
-            const borrowRateAfterDiscount = weightedAverageAPY(
-              ghoReserve.ghoVariableBorrowAPY,
-              ghoUserData.userGhoBorrowBalance,
-              ghoUserData.userGhoAvailableToBorrowAtDiscount,
-              ghoReserve.ghoBorrowAPYWithMaxDiscount,
-            )
-            acc.negativeProportion = acc.negativeProportion.plus(
-              Big(borrowRateAfterDiscount).mul(
+            const hasGhoFacilitatorBalance =
+              ghoUserData.userGhoBorrowBalance > 0
+
+            if (hasGhoFacilitatorBalance) {
+              const borrowRateAfterDiscount = weightedAverageAPY(
+                ghoReserve.ghoVariableBorrowAPY,
                 ghoUserData.userGhoBorrowBalance,
-              ),
-            )
-            if (!hasExternalApy && reserve.vIncentivesData) {
-              reserve.vIncentivesData.forEach((incentive) => {
-                acc.positiveProportion = acc.positiveProportion.plus(
-                  Big(incentive.incentiveAPR).mul(
-                    ghoUserData.userGhoBorrowBalance,
-                  ),
-                )
-              })
+                ghoUserData.userGhoAvailableToBorrowAtDiscount,
+                ghoReserve.ghoBorrowAPYWithMaxDiscount,
+              )
+              acc.negativeProportion = acc.negativeProportion.plus(
+                Big(borrowRateAfterDiscount).mul(
+                  ghoUserData.userGhoBorrowBalance,
+                ),
+              )
+              if (!hasExternalApy && reserve.vIncentivesData) {
+                reserve.vIncentivesData.forEach((incentive) => {
+                  acc.positiveProportion = acc.positiveProportion.plus(
+                    Big(incentive.incentiveAPR).mul(
+                      ghoUserData.userGhoBorrowBalance,
+                    ),
+                  )
+                })
+              }
+            } else {
+              acc.negativeProportion = acc.negativeProportion.plus(
+                Big(reserve.variableBorrowAPY).mul(value.variableBorrowsUSD),
+              )
+              if (!hasExternalApy && reserve.vIncentivesData) {
+                reserve.vIncentivesData.forEach((incentive) => {
+                  acc.positiveProportion = acc.positiveProportion.plus(
+                    Big(incentive.incentiveAPR).mul(value.variableBorrowsUSD),
+                  )
+                })
+              }
             }
           } else {
             acc.negativeProportion = acc.negativeProportion.plus(
