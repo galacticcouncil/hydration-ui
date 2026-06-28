@@ -179,7 +179,11 @@ export const RpcListItemActive: React.FC<
 > = (props) => {
   const provider = useRpcProvider()
   const { data: bestNumber, isLoading } = useQuery(bestNumberQuery(provider))
-  const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "")
+  const { data: status } = useRpcStatus(
+    !props?.ping ? provider.endpoint : "",
+    // active row inside the open provider modal -> poll for live latency
+    { poll: true },
+  )
 
   return (
     <RpcListItemLayout
