@@ -64,6 +64,7 @@ export const PROVIDERS: ProviderProps[] = [
   createProvider("sin", "wss://subway.sin.hydration.cloud"),
   createProvider("coke", "wss://subway.coke.hydration.cloud"),
   createProvider("kril", "wss://rpc.kril.hydration.cloud"),
+  createProvider("shellfish", "wss://subway.shellfish.hydration.cloud"),
   createProvider("sparrow", "wss://node-sparrow-1.sparrow.shadow-senate.com"),
   // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
   createProvider(
