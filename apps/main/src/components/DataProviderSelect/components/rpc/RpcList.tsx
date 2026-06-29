@@ -15,9 +15,13 @@ import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 export type RpcListProps = {
   className?: string
+  poll?: boolean
 }
 
-export const RpcList: React.FC<RpcListProps> = ({ className }) => {
+export const RpcList: React.FC<RpcListProps> = ({
+  className,
+  poll = false,
+}) => {
   const { t } = useTranslation()
   const { rpcList, removeRpc } = useRpcListStore()
   const { setRpcUrl, rpcUrl } = useProviderRpcUrlStore()
@@ -45,6 +49,7 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
 
   const rpcsStatusQueries = useRpcsStatus(providerListUrls, {
     calculateAvgPing: true,
+    poll,
   })
 
   const handleSwitchRpc = (url: string) => {

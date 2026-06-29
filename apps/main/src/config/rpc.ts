@@ -54,16 +54,17 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
-  createProvider("Dotters", "wss://hydration.dotters.network"),
-  createProvider("IBP", "wss://hydration.ibp.network"),
-  createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
-  createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
-  createProvider("roach", "wss://rpc.roach.hydration.cloud"),
-  createProvider("lait", "wss://rpc.lait.hydration.cloud"),
+  //createProvider("Dotters", "wss://hydration.dotters.network"),
+  // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
+  createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
+  // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
+  // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
+  // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
   //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
   createProvider("sin", "wss://rpc.sin.hydration.cloud"),
   createProvider("coke", "wss://rpc.coke.hydration.cloud"),
-  // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
+  createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
+  createProvider("shellfish", "wss://hdx.shellfish.hydration.cloud"),
   // BIL Vault + market live on node0.lark — default dev RPC on this branch.
   // `DataProviderResolver` picks the dev candidate with the freshest
   // latest-block timestamp from `getBestRpcs`, so to make node0.lark the
@@ -71,14 +72,7 @@ export const PROVIDERS: ProviderProps[] = [
   // (nice has been moved off the dev tag below; it's still reachable via
   // the manual RPC picker). Contract manifest: see
   // `aave-v3-deploy/deployments/bil/_addresses.md`.
-  createProvider(
-    "node0.lark (BIL)",
-    "wss://node0.lark.hydration.cloud",
-    "https://archive.nice.hydration.cloud/graphql",
-    "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql",
-    ["development"],
-    "testnet",
-  ),
+  createProvider("node0.lark (BIL)", "wss://node0.lark.hydration.cloud"),
   createProvider(
     "Nice testnet",
     "wss://rpc.nice.hydration.cloud",

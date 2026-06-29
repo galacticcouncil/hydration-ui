@@ -49,6 +49,13 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
+export const getSortedRpcUrlList = (
+  rpcUrlList: string[],
+  priorityRpcUrl?: string,
+): string[] => {
+  return priorityRpcUrl ? unique([priorityRpcUrl, ...rpcUrlList]) : rpcUrlList
+}
+
 export const getProviderProps = (rpcUrl: string) =>
   PROVIDERS.find((p) => p.url === rpcUrl)
 
@@ -92,9 +99,7 @@ const getProviderData = async (
     setMetadata: doNothing,
   })
 
-  const urls = priorityRpcUrl
-    ? unique([priorityRpcUrl, ...rpcUrlList])
-    : rpcUrlList
+  const urls = getSortedRpcUrlList(rpcUrlList, priorityRpcUrl)
 
   const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 
