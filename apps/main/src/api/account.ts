@@ -184,9 +184,11 @@ export const useAccountXykMiningPositions = () => {
   return useQuery(xykMiningPositionsQuery(provider, account?.address ?? ""))
 }
 
-export const useAccountPermitNonce = () => {
+export const useAccountPermitNonce = (
+  options?: UseBaseObservableQueryOptions,
+) => {
   const { account } = useAccount()
-  return usePermitNonce(account?.address ?? "")
+  return usePermitNonce(account?.address ?? "", options)
 }
 
 export const useAccountPendingPermit = () => {
