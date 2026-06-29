@@ -309,7 +309,7 @@
   "transaction.status.success.title": "Transaction successful",
   "transaction.status.success.description": "Your transaction has been submitted successfully.",
   "transaction.status.error.title": "Failed to submit transaction",
-  "transaction.status.error.description": "Unfortunately there was an issue while submitted your transaction. Please try again later.",
+  "transaction.status.error.description": "Unfortunately there was an issue while submitting your transaction. Please try again later.",
   "transaction.status.error.tryAgain": "Try again",
   "transaction.status.submitted.title": "Submitting...",
   "transaction.status.submitted.description": "Fantastic! Data has been broadcasted and awaits confirmation on the blockchain.",
@@ -376,5 +376,6 @@
   "banners.hollarb.title": "Introducing Fixed Yield HOLLAR Bonds",
   "banners.hollarb.description": "Earn {{ apr, percent }} APR with fixed-term HOLLAR bonds.",
   "gigaNews": "GIGA News",
-  "closeAll": "Close all"
+  "closeAll": "Close all",
+  "externalApy.alert": "The external APY is not available"
 }

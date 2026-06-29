@@ -1,5 +1,6 @@
 import { PRIME_ASSET_ID } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { isNullish } from "remeda"
 import { formatUnits, getContract, type Hex } from "viem"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
@@ -198,10 +199,10 @@ export function usePropellerApy(
   const mainLtv = subLoop?.mainLtv ?? null
   const borrowRate = subLoop?.borrowRate ?? null
   if (
-    loopLeverage === null ||
-    mainLtv === null ||
-    borrowRate === null ||
-    primeSupplyApy === undefined
+    isNullish(loopLeverage) ||
+    isNullish(mainLtv) ||
+    isNullish(borrowRate) ||
+    isNullish(primeSupplyApy)
   ) {
     return null
   }
