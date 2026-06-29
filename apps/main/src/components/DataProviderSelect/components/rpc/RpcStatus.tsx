@@ -49,7 +49,8 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const { status, color } = useElapsedTimeStatus(timestamp ?? 0)
+  const elapsedTimestamp = isNumber(blockNumber) && timestamp ? timestamp : null
+  const { status, color } = useElapsedTimeStatus(elapsedTimestamp)
 
   const statusComponent = (() => {
     switch (status) {
@@ -62,6 +63,8 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
         return <RpcStatusOffline />
     }
   })()
+
+  const isPingValid = isNumber(ping) && ping < Infinity
 
   return (
     <Box>
@@ -76,7 +79,9 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
         {statusComponent}
       </Flex>
 
-      {ping && ping < Infinity && <RpcPing ping={ping} />}
+      {status !== DataProviderStatus.OFFLINE && isPingValid && (
+        <RpcPing ping={ping} />
+      )}
     </Box>
   )
 }

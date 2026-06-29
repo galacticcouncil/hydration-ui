@@ -1,3 +1,4 @@
+import { useStableArray } from "@galacticcouncil/utils"
 import { useCallback, useMemo } from "react"
 import { isNonNullish } from "remeda"
 import { create } from "zustand"
@@ -48,6 +49,12 @@ export const useDisplaySpotPriceStore = create<Store>(
   combine({ assets: {} as TStoredAssetPrice }, (set) => ({
     setAssets: (assets) => {
       set((state) => {
+        const hasChanges = assets.some(
+          (asset) => state.assets[asset.id] !== asset.price,
+        )
+
+        if (!hasChanges) return state
+
         const newValues = { ...state.assets }
 
         assets.forEach((asset) => (newValues[asset.id] = asset.price))
@@ -59,9 +66,11 @@ export const useDisplaySpotPriceStore = create<Store>(
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
+  const stableAssetIds = useStableArray(assetIds)
+
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>
-      assetIds.reduce<Record<string, string | null | undefined>>(
+      stableAssetIds.reduce<Record<string, string | null | undefined>>(
         (acc, assetId) => {
           acc[assetId] = state.assets[assetId]
           return acc
@@ -72,7 +81,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
   )
 
   // subscribe to price changes by asset id
-  useSubscribedPriceKeys(assetIds)
+  useSubscribedPriceKeys(stableAssetIds)
 
   const [prices, isLoading] = useMemo(
     () =>
@@ -104,10 +113,11 @@ export const useAssetsPrice = (assetIds: string[]) => {
 }
 
 export const useAssetPrice = (assetId?: string): AssetPrice => {
+  const stableAssetIds = useStableArray(assetId ? [assetId] : [])
   const price = useDisplaySpotPriceStore((state) => state.assets[assetId ?? ""])
 
   // subscribe to price changes by asset id
-  useSubscribedPriceKeys(assetId ? [assetId] : [])
+  useSubscribedPriceKeys(stableAssetIds)
 
   return {
     price: price ?? "",

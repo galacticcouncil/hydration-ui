@@ -63,8 +63,6 @@ export function useAccountBalanceSubscription() {
     )
       return
 
-    console.log("Subscribe to balances")
-
     const subscribeSystemBalance = () =>
       balance.watchSystemBalance(accountAddress).subscribe({
         next: ({ balance }) => {
@@ -175,7 +173,6 @@ export function useAccountBalanceSubscription() {
     const ercSubscription = subscribeErc20Balance()
 
     return () => {
-      console.log("Unsubscribe of balances")
       systemSubscription.unsubscribe()
       tokenSubscription.unsubscribe()
       ercSubscription.unsubscribe()
