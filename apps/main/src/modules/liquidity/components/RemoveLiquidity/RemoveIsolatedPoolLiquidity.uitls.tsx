@@ -4,9 +4,12 @@ import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
-import { useShallow } from "zustand/shallow"
 
-import { XykDeposit, xykMiningPositionsKey } from "@/api/account"
+import {
+  useAccountXykMiningPositions,
+  XykDeposit,
+  xykMiningPositionsKey,
+} from "@/api/account"
 import { useIsolatedPoolFarms } from "@/api/farms"
 import { useShareTokenPrices } from "@/api/spotPrice"
 import { useXYKPoolWithLiquidity, XYKPoolWithLiquidity } from "@/api/xyk"
@@ -17,7 +20,7 @@ import {
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances, useAccountData } from "@/states/account"
+import { useAccountBalances } from "@/states/account"
 import { TransactionToasts, useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
@@ -55,7 +58,7 @@ export const useRemoveSelectableXYKPositions = ({
   const [selectedPositionIds, setSelectedPositionIds] = useState<Set<string>>(
     new Set(),
   )
-  const positions = useAccountData(useShallow(prop("xykMining")))
+  const { data: positions = [] } = useAccountXykMiningPositions()
   const { data: shareTokenPrices } = useShareTokenPrices([poolId])
   const { data: pool } = useXYKPoolWithLiquidity(poolId)
   const { data: farms } = useIsolatedPoolFarms(poolId)
