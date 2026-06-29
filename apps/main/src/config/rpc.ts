@@ -53,19 +53,10 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 }))
 
 export const PROVIDERS: ProviderProps[] = [
-  createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
-  //createProvider("Dotters", "wss://hydration.dotters.network"),
-  // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
-  createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
-  // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
-  // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
-  // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
-  //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
-  createProvider("sin", "wss://rpc.sin.hydration.cloud"),
-  createProvider("coke", "wss://rpc.coke.hydration.cloud"),
-  createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
-  createProvider("sparrow", "wss://node-sparrow-1.sparrow.shadow-senate.com"),
-  // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
+  createProvider("coke", "wss://subway.coke.hydration.cloud"),
+  createProvider("sin", "wss://subway.sin.hydration.cloud"),
+  createProvider("tarn", "wss://subway.tarn.hydration.cloud"),
+  createProvider("shellfish", "wss://subway.shellfish.hydration.cloud"),
   createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",
