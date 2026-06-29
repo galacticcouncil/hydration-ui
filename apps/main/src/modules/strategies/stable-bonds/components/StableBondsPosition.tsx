@@ -1,7 +1,7 @@
 import {
   Box,
   Paper,
-  ResponsiveScope,
+  PositionCard,
   Separator,
   Text,
   ValueStats,
@@ -14,12 +14,6 @@ import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { BondRedeemButton } from "@/components/BondRedeemButton"
-import {
-  SActionColumn,
-  SNameColumn,
-  SRowContainer,
-  SValuesColumn,
-} from "@/modules/strategies/stable-bonds/components/StableBondsPosition.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
@@ -44,70 +38,64 @@ const PositionRow = () => {
   )
 
   return (
-    <ResponsiveScope>
-      <Paper p="l" shadow={false} bg="dim" borderRadius="m">
-        <SRowContainer gap="l">
-          <SNameColumn align="center" gap="s">
-            <AssetLogo id={config.bondId} size="medium" />
-            <Text fs="p3" fw={500} color={getToken("text.high")}>
-              {asset.symbol}
-            </Text>
-          </SNameColumn>
-
-          <SValuesColumn align="center" justify="space-between" gap="xxl">
+    <PositionCard
+      logo={<AssetLogo id={config.bondId} size="medium" />}
+      symbol={asset.symbol}
+      stats={
+        <>
+          <ValueStats
+            wrap
+            size="small"
+            font="secondary"
+            label={t("strategies:bonds.position.value")}
+            isLoading={isAccountBalanceLoading}
+            customValue={
+              <Text fs="p3" fw={500} lh={1}>
+                {t("currency", {
+                  value: balanceHuman,
+                  symbol: underlyingAsset.symbol,
+                })}
+              </Text>
+            }
+            bottomLabel={balanceUsdDisplay}
+          />
+          {maturity > 0 && (
             <ValueStats
               wrap
               size="small"
               font="secondary"
-              label={t("strategies:bonds.position.value")}
-              isLoading={isAccountBalanceLoading}
+              label={t("strategies:bonds.position.maturityDate")}
               customValue={
                 <Text fs="p3" fw={500} lh={1}>
-                  {t("currency", {
-                    value: balanceHuman,
-                    symbol: underlyingAsset.symbol,
+                  {t("date.date", {
+                    value: new Date(maturity),
                   })}
                 </Text>
               }
-              bottomLabel={balanceUsdDisplay}
+              bottomLabel={
+                timeLeft > 0
+                  ? t("interval.remaining", {
+                      value: timeLeft,
+                      largest: 1,
+                      ...(timeLeft > millisecondsInDay && { unit: "d" }),
+                    })
+                  : undefined
+              }
             />
-            {maturity > 0 && (
-              <ValueStats
-                wrap
-                size="small"
-                font="secondary"
-                label={t("strategies:bonds.position.maturityDate")}
-                customValue={
-                  <Text fs="p3" fw={500} lh={1}>
-                    {t("date.date", {
-                      value: new Date(maturity),
-                    })}
-                  </Text>
-                }
-                bottomLabel={
-                  timeLeft > 0
-                    ? t("interval.remaining", {
-                        value: timeLeft,
-                        largest: 1,
-                        ...(timeLeft > millisecondsInDay && { unit: "d" }),
-                      })
-                    : undefined
-                }
-              />
-            )}
-          </SValuesColumn>
-
-          <SActionColumn direction="column" align="flex-end" gap="xs">
-            <BondRedeemButton bondId={config.bondId} />
-            {!isMatured && (
-              <Text fs="p6" color={getToken("text.low")}>
-                {t("strategies:bonds.position.availableAtMaturity")}
-              </Text>
-            )}
-          </SActionColumn>
-        </SRowContainer>
-      </Paper>
-    </ResponsiveScope>
+          )}
+        </>
+      }
+      cta={
+        <>
+          <BondRedeemButton bondId={config.bondId} />
+          {!isMatured && (
+            <Text fs="p6" color={getToken("text.low")}>
+              {t("strategies:bonds.position.availableAtMaturity")}
+            </Text>
+          )}
+        </>
+      }
+    />
   )
 }
 

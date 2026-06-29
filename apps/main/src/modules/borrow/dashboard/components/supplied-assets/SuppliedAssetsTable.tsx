@@ -9,7 +9,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,6 +17,7 @@ import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { SuppliedAssetsHeader } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsHeader"
 import { useSuppliedAssetsTableColumns } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsTable.columns"
+import { useNavigateToReserve } from "@/modules/borrow/hooks/useNavigateToReserve"
 import {
   RemoveMoneyMarketLiquidity,
   TRemoveMoneyMarketLiquidityProps,
@@ -30,7 +30,7 @@ export const SuppliedAssetsTable = () => {
   >()
   const columns = useSuppliedAssetsTableColumns({ onRemove: setModalProps })
   const { data, isLoading } = useSuppliedAssetsData()
-  const navigate = useNavigate()
+  const navigateToReserve = useNavigateToReserve()
   const { isMobile } = useBreakpoints()
 
   const sort = useDataTableUrlSorting("/borrow/dashboard", "suppliedSort")
@@ -62,11 +62,7 @@ export const SuppliedAssetsTable = () => {
             <DataTable
               skeletonRowCount={4}
               isLoading={isLoading}
-              onRowClick={(row) =>
-                navigate({
-                  to: `/borrow/markets/${row.underlyingAsset}`,
-                })
-              }
+              onRowClick={(row) => navigateToReserve(row.underlyingAsset)}
               fixedLayout
               data={data}
               columns={columns}
