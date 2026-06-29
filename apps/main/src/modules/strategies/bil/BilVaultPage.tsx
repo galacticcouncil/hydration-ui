@@ -6,8 +6,8 @@ import { type Hex, parseUnits } from "viem"
 
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/bil/components/AboutCard"
-import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
 import { BilDeposit } from "@/modules/strategies/bil/components/BilDeposit"
+import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
 import { MyBorrowsCard } from "@/modules/strategies/bil/components/MyBorrowsCard"
 import { MyPositionsCard } from "@/modules/strategies/bil/components/MyPositionsCard"
 import { RepayHollarModal } from "@/modules/strategies/bil/components/RepayHollarModal"
@@ -65,13 +65,10 @@ export const BilVaultPage = () => {
   const { data: stats } = useVaultStats()
   const { data: balances } = useUserBalances(evmAddress)
   const { data: queueData } = useRedemptionQueue(evmAddress)
-  const { data: historyData, isLoading: isHistoryLoading } =
-    useRedemptionHistory(evmAddress)
+  const { data: historyData } = useRedemptionHistory(evmAddress)
   const { data: poolPosition } = useBilPoolPosition(evmAddress)
   const { data: reserveConfig } = useBilReserveConfig()
   const { data: bilMetrics } = useBilStrategyMetrics()
-
-  console.log({ historyData, isHistoryLoading, evmAddress })
 
   const depositMutation = useDeposit()
   const redeemMutation = useRequestRedeem()

@@ -7,8 +7,6 @@ import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 export const useSuppliedAssetsData = () => {
   const { user, loading, externalApyData } = useAppDataContext()
 
-  console.log({ user })
-
   const data = useMemo(() => {
     if (!user?.userReservesData) return []
     return user.userReservesData

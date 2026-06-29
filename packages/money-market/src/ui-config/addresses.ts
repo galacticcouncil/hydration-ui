@@ -24,9 +24,9 @@ export const AaveV3HydrationMainnet = {
   COLLECTOR: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
 }
 
-export const AaveV3BILVaultLark = {
-  POOL_ADDRESSES_PROVIDER: "0xB0fa53A6cBaF88eDD90aD27a6c396D99d272FE64",
-  POOL: "0x7d78C0d9c8F6635b2bc481b674bd74E2917392e8",
+export const AaveV3BILVaultMainnet = {
+  POOL_ADDRESSES_PROVIDER: "0x21310531fc68ea2f4cc8dfd675ce9df5926d3d8d",
+  POOL: "0xd2A1cB0423559939c2656a8f394A32EDFa340800",
   WETH_GATEWAY: "",
   FAUCET: "",
   WALLET_BALANCE_PROVIDER: "0x3C12207eae008a6596EF7e3EC6CeddD44E948De2",
@@ -36,6 +36,3 @@ export const AaveV3BILVaultLark = {
   GHO_UI_DATA_PROVIDER: "0x5A31E4a57212eB5ad02a1b9fd736A1fDd9Caa05D",
   COLLECTOR: "",
 }
-
-/** @deprecated Use `AaveV3BILVaultLark` — kept for money-market market config imports. */
-export const AaveV3HDCLVault = AaveV3BILVaultLark

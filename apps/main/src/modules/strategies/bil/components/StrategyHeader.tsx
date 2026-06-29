@@ -1,6 +1,6 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { DCL_ASSET_ID } from "@galacticcouncil/utils"
+import { BIL_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -11,7 +11,7 @@ export const StrategyHeader = () => {
   return (
     <Flex justify="space-between" align="center" gap="s">
       <Flex align="center" gap="base">
-        <AssetLogo id={DCL_ASSET_ID} size="large" />
+        <AssetLogo id={BIL_ASSET_ID} size="large" />
         <Flex direction="column">
           <Text
             font="primary"

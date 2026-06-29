@@ -12,10 +12,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  BIL_STABLESWAP_ASSET_ID,
-  HOLLAR_ASSET_ID,
-} from "@galacticcouncil/utils"
+import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -98,7 +95,7 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
             <AssetInput
               label={t("bil.deposit.youReceive")}
               symbol="BIL"
-              selectedAssetIcon={<AssetLogo id={BIL_STABLESWAP_ASSET_ID} />}
+              selectedAssetIcon={<AssetLogo id={BIL_ERC20_ID} />}
               modalDisabled
               disabledInput
               ignoreBalance

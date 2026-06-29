@@ -1,5 +1,5 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
-import { DCL_ASSET_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
+import { BIL_ASSET_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -34,7 +34,7 @@ export const StrategiesPage = () => {
         gap="xl"
       >
         <StrategyCard
-          logoId={DCL_ASSET_ID}
+          logoId={BIL_ASSET_ID}
           title={t("strategies:cards.bil.title")}
           stats={[
             {
@@ -59,10 +59,7 @@ export const StrategiesPage = () => {
                   : "-",
             },
           ]}
-          badges={[
-            StrategyBadgeType.Leverage,
-            StrategyBadgeType.NoLiquidation,
-          ]}
+          badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
           description={t("strategies:cards.propeller.description")}
           link="/strategies/propeller"
         />

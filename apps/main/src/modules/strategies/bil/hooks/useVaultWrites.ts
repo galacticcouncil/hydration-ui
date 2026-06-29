@@ -6,21 +6,20 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
-import { evmAccountBindingQuery } from "@/api/evm"
 import {
-  DCL_PRECOMPILE_ADDRESS,
-  ERC20_ABI,
-  EVM_CALL_GAS,
   BIL_DEPOSIT_ZAP_ABI,
   BIL_DEPOSIT_ZAP_ADDRESS,
   BIL_HAS_AAVE_LAYER,
   BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
+  DCL_PRECOMPILE_ADDRESS,
+  ERC20_ABI,
+  EVM_CALL_GAS,
   HOLLAR_ADDRESS,
   STABLESWAP_BIL_ASSET_ID,
   VAULT_ABI,
@@ -71,12 +70,8 @@ function useVaultEvmCall() {
 
   const { account } = useAccount()
   const { createTransaction } = useTransactionsStore()
-  const queryClient = useQueryClient()
 
-  const address = account?.address ?? ""
-  const evmAddress = safeConvertSS58toH160(address) as Hex
-
-  const { data: isBound } = useQuery(evmAccountBindingQuery(rpc, address))
+  const evmAddress = safeConvertSS58toH160(account?.address ?? "") as Hex
 
   const submitTx = useCallback(
     async (
@@ -102,35 +97,13 @@ function useVaultEvmCall() {
         abi: safeStringify(abi),
       }
 
-      // If account not yet bound to EVM, batch bind + evm call. The binding
-      // query can't go through `invalidateQueries` (it's a full filter, not a
-      // plain key), so it stays in `onSuccess`.
-      if (isBound === false) {
-        const bindTx = rpc.papi.tx.EVMAccounts.bind_evm_address()
-        const evmPapiTx = transformEvmCallToPapiTx(rpc.papi, evmCall)
-        const batchTx = rpc.papi.tx.Utility.batch_all({
-          calls: [bindTx.decodedCall, evmPapiTx.decodedCall],
-        })
-
-        return createTransaction(
-          { tx: batchTx, toasts, invalidateQueries: invalidateKeys },
-          {
-            onSuccess: () => {
-              queryClient.invalidateQueries(
-                evmAccountBindingQuery(rpc, address),
-              )
-            },
-          },
-        )
-      }
-
       return createTransaction({
         tx: evmCall,
         toasts,
         invalidateQueries: invalidateKeys,
       })
     },
-    [evmAddress, isBound, rpc, address, createTransaction, queryClient],
+    [evmAddress, rpc, createTransaction],
   )
 
   const buildBatchCalls = useCallback(
@@ -159,11 +132,9 @@ function useVaultEvmCall() {
         (c) => transformEvmCallToPapiTx(rpc.papi, c).decodedCall,
       )
 
-      return isBound === false
-        ? [rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall, ...papiCalls]
-        : papiCalls
+      return papiCalls
     },
-    [evmAddress, isBound, rpc],
+    [evmAddress, rpc],
   )
 
   const buildBatchTx = useCallback(
@@ -182,22 +153,9 @@ function useVaultEvmCall() {
     ) => {
       const batchTx = await buildBatchTx(calls)
 
-      return createTransaction(
-        { tx: batchTx, toasts, invalidateQueries },
-        // The binding query can't go through `invalidateQueries` (it's a full
-        // filter, not a plain key), so it stays in `onSuccess`.
-        isBound === false
-          ? {
-              onSuccess: () => {
-                queryClient.invalidateQueries(
-                  evmAccountBindingQuery(rpc, address),
-                )
-              },
-            }
-          : undefined,
-      )
+      return createTransaction({ tx: batchTx, toasts, invalidateQueries })
     },
-    [buildBatchTx, isBound, rpc, address, createTransaction, queryClient],
+    [buildBatchTx, createTransaction],
   )
 
   return { evmAddress, submitTx, submitBatch, buildBatchTx, buildBatchCalls }

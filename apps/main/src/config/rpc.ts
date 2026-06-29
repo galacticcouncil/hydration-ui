@@ -53,18 +53,18 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 }))
 
 export const PROVIDERS: ProviderProps[] = [
-  createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
+  // createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   //createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
-  createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
+  // createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
   // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
   // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
   // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
   //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
-  createProvider("sin", "wss://rpc.sin.hydration.cloud"),
-  createProvider("coke", "wss://rpc.coke.hydration.cloud"),
-  createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
-  createProvider("shellfish", "wss://hdx.shellfish.hydration.cloud"),
+  // createProvider("sin", "wss://rpc.sin.hydration.cloud"),
+  // createProvider("coke", "wss://rpc.coke.hydration.cloud"),
+  // createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
+  // createProvider("shellfish", "wss://hdx.shellfish.hydration.cloud"),
   // BIL Vault + market live on node0.lark — default dev RPC on this branch.
   // `DataProviderResolver` picks the dev candidate with the freshest
   // latest-block timestamp from `getBestRpcs`, so to make node0.lark the

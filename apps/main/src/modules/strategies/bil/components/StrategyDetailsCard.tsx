@@ -13,7 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
-  DCL_ASSET_ID,
+  BIL_ASSET_ID,
   HOLLAR_ASSET_ID,
   HYDRATION_CHAIN_KEY,
   shortenAccountAddress,
@@ -48,7 +48,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             {t("bil.strategy.tvl")}
           </Text>
           <Flex align="center" gap="s" mt="xs">
-            <AssetLogo id={DCL_ASSET_ID} size="medium" />
+            <AssetLogo id={BIL_ASSET_ID} size="medium" />
             <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
               {t("common:currency.compact", { value: metrics.tvl })}
             </Text>
@@ -95,7 +95,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             label={t("bil.strategy.collateralAssetLabel")}
             content={
               <Flex align="center" gap="s">
-                <AssetLogo id={DCL_ASSET_ID} size="small" />
+                <AssetLogo id={BIL_ASSET_ID} size="small" />
                 <Text fs="p4" lh={1.5}>
                   {t("bil.strategy.collateralAsset")}
                 </Text>

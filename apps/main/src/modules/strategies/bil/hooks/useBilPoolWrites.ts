@@ -5,22 +5,20 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
-import { evmAccountBindingQuery } from "@/api/evm"
 import i18n from "@/i18n"
 import {
   AAVE_INTEREST_RATE_MODE_VARIABLE,
-  EVM_CALL_GAS,
   BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
+  EVM_CALL_GAS,
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/bil/constants"
 import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
-import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -30,21 +28,13 @@ import { useTransactionsStore } from "@/states/transactions"
  * project's `useTransactionsStore`. Mirrors the pattern in `useVaultWrites`
  * but invalidates the pool-position query keys on success rather than the
  * vault keys.
- *
- * If the connected account isn't yet bound to its EVM mapping, the EVM
- * call is wrapped in a substrate `Utility.batch_all([bind, evm_call])` so
- * the binding happens atomically with the first borrow / supply.
  */
 function useBilPoolEvmCall() {
   const { evm } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useTransactionsStore()
-  const rpc = useRpcProvider()
 
-  const address = account?.address ?? ""
-  const evmAddress = safeConvertSS58toH160(address) as Hex
-
-  const { data: isBound } = useQuery(evmAccountBindingQuery(rpc, address))
+  const evmAddress = safeConvertSS58toH160(account?.address ?? "") as Hex
 
   const submitTx = useCallback(
     async (data: Hex, toasts: { submitted: string; success: string }) => {
@@ -63,32 +53,13 @@ function useBilPoolEvmCall() {
         abi: safeStringify([...BIL_POOL_ABI]),
       }
 
-      if (isBound === false) {
-        const bindTx = rpc.papi.tx.EVMAccounts.bind_evm_address()
-        const evmPapiTx = transformEvmCallToPapiTx(rpc.papi, evmCall)
-        const batchTx = rpc.papi.tx.Utility.batch_all({
-          calls: [bindTx.decodedCall, evmPapiTx.decodedCall],
-        })
-        return createTransaction({
-          tx: batchTx,
-          toasts,
-          invalidateQueries: [
-            [BIL_QUERY_KEY_PREFIX],
-            evmAccountBindingQuery(rpc, address).queryKey,
-          ],
-        })
-      }
-
       return createTransaction({
         tx: evmCall,
         toasts,
-        invalidateQueries: [
-          [BIL_QUERY_KEY_PREFIX],
-          evmAccountBindingQuery(rpc, address).queryKey,
-        ],
+        invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
       })
     },
-    [evmAddress, isBound, rpc, address, createTransaction, evm],
+    [evmAddress, createTransaction, evm],
   )
 
   return { evmAddress, submitTx }

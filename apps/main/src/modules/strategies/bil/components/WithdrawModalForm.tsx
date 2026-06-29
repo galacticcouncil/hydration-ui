@@ -15,7 +15,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { BIL_STABLESWAP_ASSET_ID } from "@galacticcouncil/utils"
+import { BIL_ERC20_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -62,7 +62,7 @@ export const WithdrawModalForm = ({
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
   const { getAssetWithFallback } = useAssets()
-  const bil = getAssetWithFallback(BIL_STABLESWAP_ASSET_ID)
+  const bil = getAssetWithFallback(BIL_ERC20_ID)
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
   const hfContextEnabled =
@@ -142,7 +142,7 @@ export const WithdrawModalForm = ({
                 sx={{ pt: 0 }}
                 label={t("common:amount")}
                 symbol="BIL"
-                selectedAssetIcon={<AssetLogo id={BIL_STABLESWAP_ASSET_ID} />}
+                selectedAssetIcon={<AssetLogo id={BIL_ERC20_ID} />}
                 modalDisabled
                 value={field.value}
                 onChange={field.onChange}

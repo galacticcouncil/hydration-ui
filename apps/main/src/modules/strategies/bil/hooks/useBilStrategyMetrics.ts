@@ -8,9 +8,9 @@ export type BilStrategyMetrics = {
   tvl: number
   maxLtvPct: number
   liquidationLtvPct: number
-  borrowApyPct: number | null
+  borrowApyPct: number
   maxLeverage: number
-  maxNetApyPct: number | null
+  maxNetApyPct: number
 }
 
 export function useBilStrategyMetrics() {
@@ -30,11 +30,10 @@ export function useBilStrategyMetrics() {
   // (see useVaultReads: getAPYWad / 1e16). Falls back to the raw vault yield
   // until the borrow rate query lands.
   const vaultApyPct = vaultStats.apr
-  const borrowApyPct = reserveConfig?.borrowApyPct || null
+  const borrowApyPct = reserveConfig?.borrowApyPct || 10
   const maxLeverage = maxLtvPct < 100 ? 100 / (100 - maxLtvPct) : 1
-  const maxNetApyPct = borrowApyPct
-    ? maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
-    : null
+  const maxNetApyPct =
+    maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
 
   const metrics: BilStrategyMetrics = {
     tvl,

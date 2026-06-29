@@ -1,10 +1,7 @@
 import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  BIL_STABLESWAP_ASSET_ID,
-  HOLLAR_ASSET_ID,
-} from "@galacticcouncil/utils"
+import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { hoursToMilliseconds } from "date-fns"
 import { useMemo } from "react"
@@ -72,7 +69,7 @@ export const useWithdrawalColumns = ({
       header: t("common:amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
-          <AssetLogo id={BIL_STABLESWAP_ASSET_ID} size="small" />
+          <AssetLogo id={BIL_ERC20_ID} size="small" />
           <Text fs="p4" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.original.amountBil,

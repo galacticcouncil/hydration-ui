@@ -9,7 +9,7 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { DCL_ASSET_ID } from "@galacticcouncil/utils"
+import { BIL_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -105,7 +105,7 @@ export const MyPositionsCard = ({
         {rows.map((row) => (
           <PositionCard
             key={row.id}
-            logo={<AssetLogo id={DCL_ASSET_ID} size="medium" />}
+            logo={<AssetLogo id={BIL_ASSET_ID} size="medium" />}
             symbol={row.label}
             stats={
               <>

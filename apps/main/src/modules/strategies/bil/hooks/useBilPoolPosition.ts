@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
 import {
-  DCL_PRECOMPILE_ADDRESS,
   BIL_HAS_AAVE_LAYER,
   BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
+  DCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/bil/constants"
 import { useBilPoolContract } from "@/modules/strategies/bil/hooks/useBilPoolContract"

@@ -11,7 +11,6 @@ import {
   ISOLATED_MODE_ASSETS,
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
-import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { sortBy } from "remeda"
@@ -20,6 +19,7 @@ import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable.columns"
+import { useNavigateToReserve } from "@/modules/borrow/hooks/useNavigateToReserve"
 import {
   AddStablepoolLiquidityProps,
   AddStablepoolLiquidityWrapper,
@@ -40,7 +40,7 @@ export const SupplyAssetsTable = () => {
   const strategyColumns = useSupplyAssetsTableColumns("strategy", setModalProps)
 
   const { data, isLoading } = useSupplyAssetsData({ showAll: true })
-  const navigate = useNavigate()
+  const navigateToReserve = useNavigateToReserve()
   const { isMobile } = useBreakpoints()
 
   const { baseAssets, strategyAssets } = useMemo(() => {
@@ -91,11 +91,7 @@ export const SupplyAssetsTable = () => {
             <DataTable
               skeletonRowCount={4}
               isLoading={isLoading}
-              onRowClick={(row) =>
-                navigate({
-                  to: `/borrow/markets/${row.underlyingAsset}`,
-                })
-              }
+              onRowClick={(row) => navigateToReserve(row.underlyingAsset)}
               fixedLayout
               data={strategyAssets}
               columns={strategyColumns}
@@ -105,11 +101,7 @@ export const SupplyAssetsTable = () => {
           <DataTable
             skeletonRowCount={4}
             isLoading={isLoading}
-            onRowClick={(row) =>
-              navigate({
-                to: `/borrow/markets/${row.underlyingAsset}`,
-              })
-            }
+            onRowClick={(row) => navigateToReserve(row.underlyingAsset)}
             fixedLayout
             data={baseAssets}
             columns={baseColumns}
