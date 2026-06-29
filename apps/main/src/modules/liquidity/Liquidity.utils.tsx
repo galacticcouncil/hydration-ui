@@ -14,6 +14,7 @@ import {
 import { pool } from "@galacticcouncil/sdk-next"
 import {
   GIGA_ASSETS,
+  HOLLAR_ASSET_ID,
   HOLLAR_ASSETS,
   PRIME_STABLESWAP_ASSET_ID,
 } from "@galacticcouncil/utils"
@@ -849,7 +850,8 @@ export const useIsLiquidityProvided = () => {
 
       if (asset) {
         return (
-          asset.type === AssetType.STABLESWAP || asset.type === AssetType.ERC20
+          asset.type === AssetType.STABLESWAP ||
+          (asset.type === AssetType.ERC20 && asset.id !== HOLLAR_ASSET_ID)
         )
       }
 
