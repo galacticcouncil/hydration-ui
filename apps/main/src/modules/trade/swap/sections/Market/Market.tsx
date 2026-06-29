@@ -114,6 +114,7 @@ export const Market: FC = () => {
               isTwapLoading={isTwapLoading}
             />
             <MarketWarnings
+              swap={swap}
               isFormValid={isFormValid}
               isSingleTrade={isSingleTrade}
               twap={twap}
