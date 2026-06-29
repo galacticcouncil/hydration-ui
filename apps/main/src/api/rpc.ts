@@ -7,11 +7,19 @@ import {
 } from "@tanstack/react-query"
 import { useRef } from "react"
 
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { pingWorker } from "@/workers/ping"
 
-export const rpcStatusQueryOptions = (url: string) =>
-  queryOptions({
+const RPC_STATUS_POLL_INTERVAL = 10_000
+
+export type RpcStatusQueryOptions = {
+  poll?: boolean
+}
+
+export const rpcStatusQueryOptions = (
+  url: string,
+  { poll = false }: RpcStatusQueryOptions = {},
+) => {
+  return queryOptions({
     enabled: !!url,
     queryKey: ["rpcStatus", url],
     queryFn: async () => {
@@ -26,17 +34,19 @@ export const rpcStatusQueryOptions = (url: string) =>
       }
     },
     retry: 0,
-    refetchInterval: PARACHAIN_BLOCK_TIME / 2,
+    refetchInterval: poll ? RPC_STATUS_POLL_INTERVAL : false,
     placeholderData: keepPreviousData,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: poll,
   })
+}
 
-export const useRpcStatus = (url: string) => {
-  return useQuery(rpcStatusQueryOptions(url))
+export const useRpcStatus = (url: string, options?: RpcStatusQueryOptions) => {
+  return useQuery(rpcStatusQueryOptions(url, options))
 }
 
 type RpcsStatusOptions = {
   calculateAvgPing?: boolean
+  poll?: boolean
 }
 
 export const useRpcsStatus = (
@@ -47,7 +57,9 @@ export const useRpcsStatus = (
 
   return useQueries({
     queries: urls.map((url, index) => ({
-      ...rpcStatusQueryOptions(url),
+      ...rpcStatusQueryOptions(url, {
+        poll: options.poll,
+      }),
       queryFn: async () => {
         const delay = index * 150 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)
