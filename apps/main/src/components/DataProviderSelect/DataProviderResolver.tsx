@@ -66,6 +66,14 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
     fetchBestProvider()
   }, [fetchBestProvider, isBestProviderFound])
 
+  useEffect(() => {
+    return useProviderRpcUrlStore.subscribe((state, prevState) => {
+      if (prevState.autoMode || !state.autoMode) return
+
+      fetchBestProvider()
+    })
+  }, [fetchBestProvider])
+
   if (!isBestProviderFound) return null
 
   return children

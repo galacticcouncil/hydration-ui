@@ -14,6 +14,7 @@ import { Farm } from "@/api/farms"
 import { useSquidClient } from "@/api/provider"
 import { AssetLogo } from "@/components/AssetLogo"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 export const AddLiquidityYield = ({
   omnipoolId,
@@ -53,19 +54,21 @@ export const AddLiquidityYield = ({
   const isFarms = !!farms.length
   const omnipoolFee = omnipoolYieldMetrics?.fee?.toString()
   const stablepoolFee = stablepoolYieldMetrics?.projectedAprPerc
-  const totalApr = farms
-    .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
-    .plus(omnipoolFee ?? 0)
-    .plus(stablepoolFee ?? 0)
-    .plus(borrowApyData?.supplyMMApy ?? 0)
-    .toNumber()
+  const borrowSupplyMMApy = borrowApyData?.supplyMMApy
+  const totalApr =
+    borrowSupplyMMApy === null && borrowApyData
+      ? null
+      : farms
+          .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
+          .plus(omnipoolFee ?? 0)
+          .plus(stablepoolFee ?? 0)
+          .plus(borrowSupplyMMApy ?? 0)
+          .toNumber()
 
   if (!isFarms && !borrowApyData)
     return (
       <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-        {t("percent", {
-          value: totalApr,
-        })}
+        {formatApyPercent(t, totalApr)}
       </Text>
     )
 
@@ -84,9 +87,7 @@ export const AddLiquidityYield = ({
     >
       <Flex align="center" gap="s">
         <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-          {t("percent", {
-            value: totalApr,
-          })}
+          {formatApyPercent(t, totalApr)}
         </Text>
         {!!incentivesLogoIds?.length && (
           <AssetLogo size="small" id={incentivesLogoIds} />

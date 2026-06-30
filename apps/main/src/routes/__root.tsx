@@ -3,7 +3,6 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
-import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useSquidClient } from "@/api/provider"
@@ -98,10 +97,8 @@ function ApiSubscriptions() {
 
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
-  useAccountUniques()
   usePriceSubscriber()
   useSuspenseQuery(assetsQuery(rpcProvider, queryClient))
-  useAccountPermitNonce()
 
   return null
 }

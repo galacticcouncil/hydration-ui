@@ -83,6 +83,9 @@ export type GigaBorrowableHollar = {
   totalDebtBase: string
 }
 
+const RESERVES_STALE_TIME = 12_000
+const USER_RESERVES_STALE_TIME = 30_000
+
 export const borrowIncentivesQuery = (
   lendingPoolAddressProvider: string,
   incentivesContract: UiIncentiveDataProvider | null,
@@ -191,6 +194,7 @@ export const borrowReservesQuery = (
       }
     },
     retry: false,
+    staleTime: RESERVES_STALE_TIME,
     enabled:
       !!lendingPoolAddressProvider && !!poolDataContract && rpc.isApiLoaded,
   })
@@ -231,6 +235,7 @@ export const userBorrowReservesQuery = (
       })
     },
     retry: false,
+    staleTime: USER_RESERVES_STALE_TIME,
     enabled: !!evmAddress && !!lendingPoolAddressProvider && !!poolDataContract,
   })
 
@@ -442,7 +447,6 @@ export const userBorrowSummaryQuery = (
         ...summary,
         ...getUserApyValues(
           summary,
-          formattedReserves,
           formattedGhoUserData,
           formattedGhoReserveData,
         ),
@@ -453,6 +457,7 @@ export const userBorrowSummaryQuery = (
       return extendedUser
     },
     retry: false,
+    staleTime: USER_RESERVES_STALE_TIME,
     enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isApiLoaded,
   })
 

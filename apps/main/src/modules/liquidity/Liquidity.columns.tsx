@@ -24,6 +24,7 @@ import { AssetPrice } from "@/components/AssetPrice"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import { useUserPositionsTotal } from "@/modules/liquidity/components/PositionsTable/PositionsTable.utils"
 import { isStableSwap } from "@/providers/assetsProvider"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 import { numericallyStrDesc } from "@/utils/sort"
 
 import { OmnipoolAssetTable } from "./Liquidity.utils"
@@ -129,13 +130,7 @@ export const usePoolColumns = () => {
           }
 
           if (!original.borrowApyData && !original.isFarms) {
-            return (
-              <Text>
-                {t("percent", {
-                  value: Number(original.totalFee),
-                })}
-              </Text>
-            )
+            return <Text>{formatApyPercent(t, original.totalFee)}</Text>
           }
 
           const incentivesIcons: string[] = []
@@ -162,9 +157,7 @@ export const usePoolColumns = () => {
                   <AssetLogo id={incentivesIcons} size="extra-small" />
                 )}
                 <Text color={getToken("text.tint.secondary")}>
-                  {t("percent", {
-                    value: Number(original.totalFee),
-                  })}
+                  {formatApyPercent(t, original.totalFee)}
                 </Text>
               </Flex>
             </TooltipAPR>

@@ -43,17 +43,19 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts }, options, withExtraGas) => {
+      const invalidateQueries = [["borrow"]]
       if (Array.isArray(tx)) {
         createBatchTx({
           txs: tx.map((evmTx) => transformEvmCallToPapiTx(papi, evmTx)),
           transaction: {
             toasts,
             withExtraGas,
+            invalidateQueries,
           },
           options,
         })
       } else {
-        createTransaction({ tx, toasts }, options)
+        createTransaction({ tx, toasts, invalidateQueries }, options)
       }
     },
     [createTransaction, createBatchTx, papi],

@@ -35,8 +35,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type UnderlyingAssetApy = {
   id: string
   apyType?: ExternalApyType
-  supplyApy: number
-  borrowApy: number
+  supplyApy: number | null
+  borrowApy: number | null
 }
 
 export type ApyType = "supply" | "borrow"
@@ -47,12 +47,12 @@ export type BorrowAssetApyData = {
   incentivesNetAPR: number
   incentives: ReserveIncentiveResponse[]
   underlyingAssetsApyData: UnderlyingAssetApy[]
-  underlyingSupplyApy: number
-  underlyingBorrowApy: number
-  totalSupplyApy: number
-  totalBorrowApy: number
-  supplyMMApy: number
-  borrowMMApy: number
+  underlyingSupplyApy: number | null
+  underlyingBorrowApy: number | null
+  totalSupplyApy: number | null
+  totalBorrowApy: number | null
+  supplyMMApy: number | null
+  borrowMMApy: number | null
   stablepoolData: TStablepoolDetails | undefined
 }
 
@@ -196,25 +196,42 @@ const calculateIncentivesNetAPR = (incentives: ReserveIncentiveResponse[]) => {
   return percent
 }
 
+type UnderlyingAssetApyDefined = UnderlyingAssetApy & {
+  supplyApy: number
+  borrowApy: number
+}
+const hasDefinedApy = (
+  assets: UnderlyingAssetApy[],
+): assets is UnderlyingAssetApyDefined[] =>
+  assets.every((asset) => asset.supplyApy !== null && asset.borrowApy !== null)
+
 const calculateTotalSupplyAndBorrowApy = (
   underlyingAssetsApyData: UnderlyingAssetApy[],
   incentivesNetAPR: number,
   lpAPY: number,
-  farmsAPR: number,
 ) => {
-  const underlyingSupplyApy = underlyingAssetsApyData.reduce(
-    (total, asset) => total + asset.supplyApy,
-    0,
-  )
+  if (!hasDefinedApy(underlyingAssetsApyData)) {
+    return {
+      underlyingSupplyApy: null,
+      underlyingBorrowApy: null,
+      supplyMMApy: null,
+      borrowMMApy: null,
+      totalSupplyApy: null,
+      totalBorrowApy: null,
+    }
+  }
 
-  const underlyingBorrowApy = underlyingAssetsApyData.reduce(
-    (total, asset) => total + asset.borrowApy,
-    0,
-  )
+  let underlyingSupplyApy: number = 0
+  let underlyingBorrowApy: number = 0
+
+  for (const asset of underlyingAssetsApyData) {
+    underlyingSupplyApy += asset.supplyApy
+    underlyingBorrowApy += asset.borrowApy
+  }
 
   const supplyMMApy = underlyingSupplyApy + incentivesNetAPR
   const borrowMMApy = underlyingBorrowApy + incentivesNetAPR
-  const totalSupplyApy = supplyMMApy + lpAPY + farmsAPR
+  const totalSupplyApy = supplyMMApy + lpAPY
   const totalBorrowApy = borrowMMApy + lpAPY
 
   return {
@@ -258,7 +275,10 @@ const calculateAssetApyTotals = (
   stableSwapAssetIds: string[],
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
-  externalApysMap: Map<string, { apyType: ExternalApyType; apy?: number }>,
+  externalApysMap: Map<
+    string,
+    { apyType: ExternalApyType; apy?: number | null }
+  >,
   stablepoolData: TStablepoolDetails | undefined,
   lpAPY: number,
   getRelatedAToken: TAssetsContext["getRelatedAToken"],
@@ -288,27 +308,29 @@ const calculateAssetApyTotals = (
   for (const id of stableSwapAssetIds) {
     const externalApy = externalApysMap.get(id)
 
-    if (externalApy?.apy) {
+    if (externalApy && externalApy.apy !== undefined) {
       const proportion =
         calculateAssetProportionInStablepool(id, stablepoolData) ||
         1 / assetCount
 
+      const apy =
+        externalApy.apy === null
+          ? null
+          : Big(externalApy.apy).times(proportion).toNumber()
+
       underlyingAssetsApyData.push({
         id,
         apyType: externalApy.apyType,
-        supplyApy: Big(externalApy.apy).times(proportion).toNumber(),
-        borrowApy: Big(externalApy.apy).times(proportion).toNumber(),
+        supplyApy: apy,
+        borrowApy: apy,
       })
     }
   }
-
-  const farmsAPR = 0 // @TODO farmsAPR
 
   const apySums = calculateTotalSupplyAndBorrowApy(
     underlyingAssetsApyData,
     incentivesNetAPR,
     lpAPY,
-    farmsAPR,
   )
 
   return {

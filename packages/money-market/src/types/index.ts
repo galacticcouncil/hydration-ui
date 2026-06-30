@@ -43,7 +43,7 @@ export type ReserveFormatterFn = <T extends ReserveDataHumanized>(
 export type ExternalApyData = Map<
   string,
   {
-    borrowApy: string
-    supplyApy: string
+    borrowApy: string | null
+    supplyApy: string | null
   }
 >
