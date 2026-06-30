@@ -1,17 +1,8 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
-import {
-  Flex,
-  Icon,
-  Input,
-  Label,
-  Select,
-  SelectItem,
-} from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
+import { Flex, Icon, Input, Label } from "@galacticcouncil/ui/components"
 import { FC, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { walletAssetFiltersItems } from "@/modules/wallet/assets/WalletAssetFilters.items"
 import { WalletAssetsCategory } from "@/routes/wallet/assets"
 
 type Props = {
@@ -21,44 +12,16 @@ type Props = {
 }
 
 export const WalletAssetFiltersMobile: FC<Props> = ({
-  category,
   searchPhrase,
   onSearchPhraseChange,
 }) => {
   const inputId = useId()
   const { t } = useTranslation()
-  const navigate = useNavigate()
 
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
 
-  const selectItems = walletAssetFiltersItems.map<SelectItem<string>>(
-    (item) => ({
-      key: item.search.category,
-      label: item.title,
-    }),
-  )
-
   return (
-    <Flex pt="m" justify="space-between">
-      {!isSearchExpanded && (
-        <Select
-          items={selectItems}
-          value={category}
-          onValueChange={(category) => {
-            const item = walletAssetFiltersItems.find(
-              (item) => item.search.category === category,
-            )
-
-            if (item) {
-              navigate({
-                to: item.to,
-                search: item.search,
-                resetScroll: item.resetScroll,
-              })
-            }
-          }}
-        />
-      )}
+    <Flex pt="m" justify="flex-end">
       <Input
         id={inputId}
         sx={{ width: isSearchExpanded ? "100%" : 42 }}

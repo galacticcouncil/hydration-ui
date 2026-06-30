@@ -7,7 +7,11 @@ import {
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
 import { WalletProviderType } from "@/config/providers"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
+import {
+  PROVIDERS_BY_WALLET_MODE,
+  useWeb3Connect,
+  WalletProviderStatus,
+} from "@/hooks/useWeb3Connect"
 import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
@@ -22,9 +26,18 @@ const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
 ]
 
 export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
-  const { setStatus, setError, disconnect, setAccounts } = useWeb3Connect(
-    useShallow(pick(["setStatus", "setError", "disconnect", "setAccounts"])),
-  )
+  const { setStatus, setError, disconnect, setAccounts, setAccount } =
+    useWeb3Connect(
+      useShallow(
+        pick([
+          "setStatus",
+          "setError",
+          "disconnect",
+          "setAccounts",
+          "setAccount",
+        ]),
+      ),
+    )
 
   const { add: addToAddressBook } = useAddressStore()
 
@@ -38,8 +51,21 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
     retry: false,
     onMutate: (type) => setStatus(type, WalletProviderStatus.Pending),
     onSuccess: (data, type) => {
-      setAccounts(data.map(toStoredAccount), type)
+      const accounts = data.map(toStoredAccount)
+      setAccounts(accounts, type)
       setStatus(type, WalletProviderStatus.Connected)
+
+      const [defaultAccount] = accounts
+      if (defaultAccount) {
+        const { account, mode } = useWeb3Connect.getState()
+        const modeProviders = PROVIDERS_BY_WALLET_MODE[mode]
+        const isProviderInActiveMode =
+          !modeProviders.length || modeProviders.includes(type)
+
+        if (!account || isProviderInActiveMode) {
+          setAccount(defaultAccount)
+        }
+      }
 
       const addresses = data
         .map(

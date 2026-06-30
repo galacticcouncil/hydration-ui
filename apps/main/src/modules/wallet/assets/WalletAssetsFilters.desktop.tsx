@@ -9,11 +9,13 @@ import { walletAssetFiltersItems } from "@/modules/wallet/assets/WalletAssetFilt
 type Props = {
   readonly searchPhrase: string
   readonly onSearchPhraseChange: (searchPhrase: string) => void
+  readonly showSearch?: boolean
 }
 
 export const WalletAssetFiltersDesktop: FC<Props> = ({
   searchPhrase,
   onSearchPhraseChange,
+  showSearch = true,
 }) => {
   const inputId = useId()
   const { t } = useTranslation()
@@ -21,23 +23,25 @@ export const WalletAssetFiltersDesktop: FC<Props> = ({
   return (
     <Flex align="flex-end" justify="space-between">
       <TabMenu items={walletAssetFiltersItems} size="medium" />
-      <Input
-        id={inputId}
-        value={searchPhrase}
-        placeholder={t("search.placeholder.assets")}
-        leadingElement={
-          <Label asChild htmlFor={inputId}>
-            <Icon
-              as="label"
-              sx={{ cursor: "text" }}
-              size="m"
-              component={Search}
-              mr="base"
-            />
-          </Label>
-        }
-        onChange={(e) => onSearchPhraseChange(e.target.value)}
-      />
+      {showSearch && (
+        <Input
+          id={inputId}
+          value={searchPhrase}
+          placeholder={t("search.placeholder.assets")}
+          leadingElement={
+            <Label asChild htmlFor={inputId}>
+              <Icon
+                as="label"
+                sx={{ cursor: "text" }}
+                size="m"
+                component={Search}
+                mr="base"
+              />
+            </Label>
+          }
+          onChange={(e) => onSearchPhraseChange(e.target.value)}
+        />
+      )}
     </Flex>
   )
 }
