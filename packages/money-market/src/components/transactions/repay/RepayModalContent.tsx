@@ -99,14 +99,16 @@ export const RepayModalContent: React.FC<
   const repayAssetId = isGho(poolReserve)
     ? GHO_ASSET_ID
     : getAssetIdFromAddress(tokenToRepayWith.address)
-  console.log(repayAssetId)
+
   const maxBalanceWithFee = useMaxBalance({
     tx: repayEstimationTx ?? null,
     assetId: repayAssetId,
     feePctBuffer: 0.1,
   })
 
-  const balanceWithFee = maxBalanceWithFee?.maxBalanceHuman
+  const balanceWithFee = Big(maxBalanceWithFee?.maxBalanceHuman ?? "0")
+    .round(poolReserve.decimals, BigNumber.ROUND_UP)
+    .toString()
 
   // calculate max amount abailable to repay
   let maxAmountToRepay: BigNumber
@@ -122,7 +124,7 @@ export const RepayModalContent: React.FC<
         : "0",
     )
 
-    const walletBalance = balanceWithFee ?? normalizedWalletBalance.toString()
+    const walletBalance = balanceWithFee || normalizedWalletBalance.toString()
     balance = walletBalance
 
     maxAmountToRepay = BigNumber.min(walletBalance, debt)
