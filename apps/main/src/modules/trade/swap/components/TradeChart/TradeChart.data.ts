@@ -125,7 +125,7 @@ export const useTradeChartData = ({
   return {
     prices,
     isError,
-    isLoading,
+    isLoading: isLoading || isSpotPriceLoading,
     isSuccess,
   }
 }
