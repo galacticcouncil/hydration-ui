@@ -10,7 +10,9 @@ export const useNonce = (feeAssetId: string) => {
     isEthereumSigner(wallet?.signer) && feeAssetId !== NATIVE_EVM_ASSET_ID
 
   const { data: permitNonce, isLoading: isLoadingPermitNonce } =
-    useAccountPermitNonce()
+    useAccountPermitNonce({
+      enabled: isUsingPermit,
+    })
   const { data: accountInfo, isLoading: isLoadingAccountInfo } =
     useAccountInfo()
 
