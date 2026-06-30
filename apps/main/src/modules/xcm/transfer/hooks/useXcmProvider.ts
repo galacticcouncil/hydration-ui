@@ -1,4 +1,3 @@
-import { DryRunError } from "@galacticcouncil/utils"
 import { AssetRoute, EvmParachain } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { createContext, useContext } from "react"
@@ -24,7 +23,6 @@ type XcmContextValue = {
   readonly transfer: Transfer | null
   readonly transferArgs: XcmTransferArgs | null
   readonly call: Call | null
-  readonly dryRunError: DryRunError | null
   readonly alerts: XcmAlert[]
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
@@ -41,7 +39,6 @@ export const XcmContext = createContext<XcmContextValue>({
   transfer: null,
   transferArgs: null,
   call: null,
-  dryRunError: null,
   alerts: [],
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],

@@ -32,7 +32,6 @@ export const Dca: FC = () => {
   const {
     order,
     orderTx,
-    dryRunError,
     healthFactor: initialHealthFactor,
     isLoading,
   } = useDcaTradeOrder(form)
@@ -150,11 +149,7 @@ export const Dca: FC = () => {
           }
           isLoading={isLoading}
         />
-        <DcaErrors
-          priceImpact={order?.tradeImpactPct ?? 0}
-          errors={errors}
-          dryRunError={dryRunError}
-        />
+        <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
         <DcaWarnings
           isFormValid={isFormValid}
           order={order}

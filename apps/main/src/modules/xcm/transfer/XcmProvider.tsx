@@ -207,7 +207,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     isLoadingTransfer,
     isLoadingCall,
     call,
-    dryRunError,
+
     report,
   } = useXcmTransfer(form, transferArgs)
 
@@ -262,7 +262,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         alerts,
         transfer,
         call,
-        dryRunError,
         registryChain,
         status: getTransferStatus(form.getValues(), transfer, call, alerts),
       }}

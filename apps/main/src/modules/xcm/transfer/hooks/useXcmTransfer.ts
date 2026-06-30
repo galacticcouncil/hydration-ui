@@ -8,15 +8,12 @@ import {
   xcmTransferQuery,
   xcmTransferReportQuery,
 } from "@/api/xcm"
-import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useXcmTransfer = (
   form: UseFormReturn<XcmFormValues>,
   transferArgs: XcmTransferArgs | null,
 ) => {
-  const rpc = useRpcProvider()
   const wallet = useCrossChainWallet()
 
   const values = form.watch()
@@ -31,13 +28,7 @@ export const useXcmTransfer = (
         form.formState.isValid && transfer ? transfer : null,
         transferArgs,
       ),
-      xcmTransferCallQuery(
-        rpc,
-        transfer ?? null,
-        values.srcAmount,
-        transferArgs,
-        form.formState.isValid && ENV.VITE_DRY_RUN_ENABLED,
-      ),
+      xcmTransferCallQuery(transfer ?? null, values.srcAmount, transferArgs),
     ],
   })
 
@@ -50,7 +41,6 @@ export const useXcmTransfer = (
     report: report ?? null,
     isLoadingReport,
     call: callData?.call ?? null,
-    dryRunError: callData?.dryRunError ?? null,
     isLoadingCall,
   }
 }
