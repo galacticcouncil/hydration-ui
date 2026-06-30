@@ -140,7 +140,9 @@ const SupplyIsolatedLiquidityBody = ({
   return (
     <FormProvider {...form}>
       <ModalHeader
-        title={t("borrow:supply.withSymbol", { symbol: initialAsset.symbol })}
+        title={t("borrow:supply.withSymbol", {
+          symbol: userReserve.reserve.symbol,
+        })}
         closable
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
@@ -267,7 +269,9 @@ const SupplyIsolatedLiquidityBody = ({
             width="100%"
             disabled={isBlockedSupply || !form.formState.isValid}
           >
-            {t("borrow:supply")}
+            {t("borrow:supply.withSymbol", {
+              symbol: userReserve.reserve.symbol,
+            })}
           </Button>
         </ModalFooter>
       </form>
