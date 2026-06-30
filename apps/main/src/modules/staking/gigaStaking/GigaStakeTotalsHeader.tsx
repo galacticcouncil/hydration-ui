@@ -1,13 +1,16 @@
 import { isGho } from "@galacticcouncil/money-market/utils"
 import {
   Flex,
+  Grid,
   LinkTextButton,
+  Separator,
   Stack,
   Text,
   Tooltip,
   ValueStats,
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -55,7 +58,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   const { data: constants, isLoading: isConstantsLoading } = useQuery(
     gigaStakeConstantsQuery(rpc),
   )
-
+  const { isMobile, isTablet } = useBreakpoints()
   const { data: exchangeRate } = useGigaStakeExchangeRate()
 
   const { data: gigaBorrowSummary, isSuccess } = useUserGigaBorrowSummary()
@@ -157,71 +160,106 @@ export const GigaStakeTotalsHeader: FC = () => {
     .toString()
   const hollarSymbol = hollarReserve?.symbol
 
+  const totalStakeStat = (
+    <ValueStats
+      wrap
+      size="medium"
+      label={t("staking:gigaStake.header.totalStake")}
+      isLoading={isGigaLockedHDXLoading || isTotalGigaSuppliedUsdLoading}
+      value={
+        isSuccess
+          ? t("currency.compact", {
+              value: totalGigaSupplied,
+              symbol: native.symbol,
+            })
+          : "-"
+      }
+      bottomLabel={isSuccess ? totalGigaSuppliedUsd : "-"}
+    />
+  )
+
+  const projectedAprStat = (
+    <Tooltip asChild={false} text={<ProjectedAPRTooltipContent />}>
+      <ValueStats
+        wrap
+        size="medium"
+        label={t("staking:dashboard.recentAPR")}
+        isLoading={isAprLoading}
+        customValue={
+          <ValueStatsValue size="medium">
+            {t("percent", { value: Number(total.toFixed(2)) })}
+          </ValueStatsValue>
+        }
+        customBottomLabel={
+          showAprBreakdown ? (
+            <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
+              {aprBreakdown}
+            </Text>
+          ) : undefined
+        }
+      />
+    </Tooltip>
+  )
+
+  const minimumLockPeriodStat = (
+    <ValueStats
+      wrap
+      size="medium"
+      label={t("staking:gigaStake.header.minimumLockPeriod")}
+      isLoading={isConstantsLoading}
+      value={t("staking:gigaStake.header.valueDays", {
+        value: cooldownPeriodDays,
+      })}
+    />
+  )
+
+  const availableToBorrowStat = (
+    <ValueStats
+      wrap
+      size="medium"
+      label={t("staking:gigaStake.header.availableToBorrow")}
+      isLoading={isGigaPoolReservesLoading || isFacilitatorBucketLoading}
+      value={
+        isSuccess
+          ? t("currency", {
+              value: availableToBorrow,
+              symbol: hollarSymbol,
+            })
+          : "-"
+      }
+    />
+  )
+
+  if (isMobile || isTablet) {
+    return (
+      <Grid columnTemplate="1fr auto 1fr" gap="l" width="100%">
+        {totalStakeStat}
+        <Separator
+          orientation="vertical"
+          sx={{ alignSelf: "center", height: "60%" }}
+        />
+        {projectedAprStat}
+        <Separator sx={{ gridColumn: "1 / -1" }} />
+        {minimumLockPeriodStat}
+        <Separator
+          orientation="vertical"
+          sx={{ alignSelf: "center", height: "60%" }}
+        />
+        {availableToBorrowStat}
+      </Grid>
+    )
+  }
+
   return (
     <Stack
       direction={["column", null, "row"]}
       gap={["base", null, "xxxl", "3.75rem"]}
       separated
     >
-      <ValueStats
-        wrap
-        size="medium"
-        label={t("staking:gigaStake.header.totalStake")}
-        isLoading={isGigaLockedHDXLoading || isTotalGigaSuppliedUsdLoading}
-        value={
-          isSuccess
-            ? t("currency.compact", {
-                value: totalGigaSupplied,
-                symbol: native.symbol,
-              })
-            : "-"
-        }
-        bottomLabel={isSuccess ? totalGigaSuppliedUsd : "-"}
-      />
-      <Tooltip asChild={false} text={<ProjectedAPRTooltipContent />}>
-        <ValueStats
-          wrap
-          size="medium"
-          label={t("staking:dashboard.recentAPR")}
-          isLoading={isAprLoading}
-          customValue={
-            <ValueStatsValue size="medium">
-              {t("percent", { value: Number(total.toFixed(2)) })}
-            </ValueStatsValue>
-          }
-          customBottomLabel={
-            showAprBreakdown ? (
-              <Text fs="p7" lh={1} color={getToken("accents.success.emphasis")}>
-                {aprBreakdown}
-              </Text>
-            ) : undefined
-          }
-        />
-      </Tooltip>
-
-      <ValueStats
-        wrap
-        size="medium"
-        label={t("staking:gigaStake.header.minimumLockPeriod")}
-        isLoading={isConstantsLoading}
-        value={t("staking:gigaStake.header.valueDays", {
-          value: cooldownPeriodDays,
-        })}
-      />
-      <ValueStats
-        wrap
-        size="medium"
-        label={t("staking:gigaStake.header.availableToBorrow")}
-        isLoading={isGigaPoolReservesLoading || isFacilitatorBucketLoading}
-        value={
-          isSuccess
-            ? t("currency", {
-                value: availableToBorrow,
-                symbol: hollarSymbol,
-              })
-            : "-"
-        }
-      />
+      {totalStakeStat}
+      {projectedAprStat}
+      {minimumLockPeriodStat}
+      {availableToBorrowStat}
     </Stack>
   )
 }
