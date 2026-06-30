@@ -27,7 +27,7 @@ import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRepayEstimationTx } from "@/hooks/useRepayEstimationTx"
 import { useRootStore } from "@/store/root"
 import { useSharedDependencies } from "@/ui-config/SharedDependenciesProvider"
-import { formatHealthFactorResult } from "@/utils"
+import { formatHealthFactorResult, GHO_ASSET_ID, isGho } from "@/utils"
 import { getNetworkConfig } from "@/utils/marketsAndNetworksConfig"
 
 import { RepayActions } from "./RepayActions"
@@ -96,15 +96,16 @@ export const RepayModalContent: React.FC<
     decimals: poolReserve.decimals,
     enabled: !repayWithATokens,
   })
-  const repayAssetId = getAssetIdFromAddress(
-    tokenToRepayWith.address ?? poolReserve.underlyingAsset,
-  )
-
+  const repayAssetId = isGho(poolReserve)
+    ? GHO_ASSET_ID
+    : getAssetIdFromAddress(tokenToRepayWith.address)
+  console.log(repayAssetId)
   const maxBalanceWithFee = useMaxBalance({
     tx: repayEstimationTx ?? null,
     assetId: repayAssetId,
     feePctBuffer: 0.1,
   })
+
   const balanceWithFee = maxBalanceWithFee?.maxBalanceHuman
 
   // calculate max amount abailable to repay
