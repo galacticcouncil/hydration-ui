@@ -39,16 +39,15 @@ export const getDefaultChainAssetPair = (
         asset.oneClickId === defaultSelection.assetId),
   )
 
-export const getXcSwapBuyAssetOutId = (
-  asset: XcAsset | null | undefined,
-): string | undefined =>
-  asset?.id !== undefined ? String(asset.id) : undefined
-
-export const getXcAssetKey = (asset: XcAsset): string =>
+export const getNormalizedXcAssetId = (asset: XcAsset): string =>
   asset.id !== undefined ? String(asset.id) : (asset.oneClickId ?? asset.key)
 
+export const getXcAssetId = (
+  asset: XcAsset | null | undefined,
+): string | undefined => (asset ? getNormalizedXcAssetId(asset) : undefined)
+
 export const isSameXcAsset = (a: XcAsset, b: XcAsset): boolean =>
-  getXcAssetKey(a) === getXcAssetKey(b)
+  getNormalizedXcAssetId(a) === getNormalizedXcAssetId(b)
 
 export const isXcDestAsset = (
   asset: TAssetData | XcAsset | null | undefined,

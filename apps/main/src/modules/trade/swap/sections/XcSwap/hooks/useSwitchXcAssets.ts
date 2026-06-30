@@ -1,10 +1,11 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
-import { getXcSwapBuyAssetOutId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { getXcAssetId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -48,7 +49,8 @@ export const useSwitchXcAssets = () => {
       search: (search) => ({
         ...search,
         assetIn: newSellAsset?.id,
-        assetOut: getXcSwapBuyAssetOutId(newBuyAsset) ?? search.assetOut,
+        assetOut: getXcAssetId(newBuyAsset) ?? search.assetOut,
+        destPlatform: HYDRATION_CHAIN_KEY,
       }),
       resetScroll: false,
     })

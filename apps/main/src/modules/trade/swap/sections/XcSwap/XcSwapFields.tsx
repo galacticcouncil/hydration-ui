@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AddressBookModal, WalletMode } from "@galacticcouncil/web3-connect"
+import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
 import { useFormContext } from "react-hook-form"
@@ -27,7 +28,7 @@ import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/us
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { useXcSwapFormReset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapFormReset"
 import {
-  getXcSwapBuyAssetOutId,
+  getXcAssetId,
   isSameXcAsset,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
@@ -92,7 +93,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         search: (search) => ({
           ...search,
           assetIn: sellAsset.id,
-          assetOut: getXcSwapBuyAssetOutId(buyAsset) ?? search.assetOut,
+          assetOut: getXcAssetId(buyAsset) ?? search.assetOut,
         }),
         resetScroll: false,
       })
@@ -127,19 +128,16 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         resetForm()
       }
 
-      const assetOut = getXcSwapBuyAssetOutId(selection.asset)
-
-      if (assetOut) {
-        navigate({
-          to: ".",
-          search: (search) => ({
-            ...search,
-            assetIn: sellAsset?.id,
-            assetOut,
-          }),
-          resetScroll: false,
-        })
-      }
+      navigate({
+        to: ".",
+        search: (search) => ({
+          ...search,
+          assetIn: sellAsset?.id,
+          assetOut: getXcAssetId(selection.asset) ?? search.assetOut,
+          destPlatform: selection.chain.platform as XcSwapPlatform,
+        }),
+        resetScroll: false,
+      })
     },
     [getValues, navigate, resetForm, setValue, switchAssets],
   )

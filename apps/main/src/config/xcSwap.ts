@@ -1,4 +1,5 @@
 import { HOLLAR_ASSET_ID, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { WRAP_NEAR_ASSET, ZEC_ASSET } from "@galacticcouncil/xc-swap"
 
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
@@ -11,9 +12,17 @@ export const XC_SWAP_CHAIN_CMC_IDS = {
 } as const
 
 export const XC_SWAP_ASSET_CMC_IDS = {
-  "nep141:zec.omft.near": 1437,
-  "nep141:wrap.near": 6535,
+  [ZEC_ASSET]: 1437,
+  [WRAP_NEAR_ASSET]: 6535,
 } as const
+
+export const XC_SWAP_ASSET_META: Record<
+  string,
+  { name: string; symbol: string }
+> = {
+  [WRAP_NEAR_ASSET]: { name: "NEAR", symbol: "NEAR" },
+  [ZEC_ASSET]: { name: "Zcash", symbol: "ZEC" },
+}
 
 export const XC_SWAP_RECIPIENT_PLACEHOLDERS: Record<string, string> = {
   zec: "t1PKtYdJJHhc3Pxowmznkg7vdTwnhEsCvR4",
