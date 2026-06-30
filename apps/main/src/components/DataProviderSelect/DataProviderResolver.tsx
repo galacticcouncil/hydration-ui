@@ -1,16 +1,27 @@
-import { getBestRpcs } from "@galacticcouncil/utils"
+import { PingResponse } from "@galacticcouncil/utils"
 import { useQueryClient } from "@tanstack/react-query"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
-import { first, prop } from "remeda"
+import { prop } from "remeda"
 
 import { PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { ENV } from "@/config/env"
 import { SQUID_URLS } from "@/config/rpc"
 import { useProviderRpcUrlStore } from "@/states/provider"
+import { pingWorker } from "@/workers/ping"
 
-import { fetchIndexerInfo, getBestIndexer } from "./DataProviderResolver.utils"
+import {
+  fetchIndexerInfo,
+  getBestIndexer,
+  getBestRpc,
+} from "./DataProviderResolver.utils"
+
+declare global {
+  interface Window {
+    __HYDRATION_BEST_RPCS__?: PingResponse[]
+  }
+}
 
 export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
@@ -22,16 +33,13 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   )
 
   const [, fetchBestProvider] = useAsyncFn(async () => {
-    const indexerInfoPromises = SQUID_URLS.map((indexer) =>
-      fetchIndexerInfo(indexer),
-    )
+    const bestRpcs =
+      window.__HYDRATION_BEST_RPCS__ ??
+      (await pingWorker.getBestRpcs(PROVIDER_URLS))
 
-    const [bestRpcs, ...indexerInfos] = await Promise.all([
-      getBestRpcs(PROVIDER_URLS),
-      ...indexerInfoPromises,
-    ])
+    delete window.__HYDRATION_BEST_RPCS__
 
-    const bestRpc = first(bestRpcs)
+    const bestRpc = getBestRpc(bestRpcs)
 
     if (bestRpc) {
       queryClient.setQueryData(
@@ -40,10 +48,23 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
       )
     }
 
-    // top RPC results are added to the top of the list
     const bestRpcsUrls = bestRpcs.map(prop("url"))
     const sortedRpcList = Array.from(
       new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
+    )
+
+    const bestRpcUrl = bestRpc?.url ?? ENV.VITE_PROVIDER_URL
+
+    useProviderRpcUrlStore.setState({
+      rpcUrl: bestRpcUrl,
+      rpcUrlList: sortedRpcList,
+      updatedAt: Date.now(),
+    })
+
+    setIsBestProviderFound(true)
+
+    const indexerInfos = await Promise.all(
+      SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer)),
     )
 
     const bestIndexer = getBestIndexer(
@@ -51,15 +72,12 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
       bestRpc?.blockNumber ?? null,
     )
 
-    useProviderRpcUrlStore.setState({
-      rpcUrl: bestRpc?.url ?? ENV.VITE_PROVIDER_URL,
-      rpcUrlList: sortedRpcList,
-      updatedAt: Date.now(),
-      ...(bestIndexer ? { squidUrl: bestIndexer.config.graphqlUrl } : {}),
-    })
-
-    setIsBestProviderFound(true)
-  }, [])
+    if (bestIndexer) {
+      useProviderRpcUrlStore.setState({
+        squidUrl: bestIndexer.config.graphqlUrl,
+      })
+    }
+  }, [queryClient])
 
   useEffect(() => {
     if (isBestProviderFound) return
