@@ -69,9 +69,6 @@ export const PROVIDERS: ProviderProps[] = [
   createProvider("catfish-2", "wss://rpc-catfish-2.catfish.hydration.cloud"),
   createProvider("catfish-3", "wss://rpc-catfish-3.catfish.hydration.cloud"),
   createProvider("catfish-4", "wss://rpc-catfish-4.catfish.hydration.cloud"),
-  createProvider("sparrow", "wss://node-sparrow-1.sparrow.shadow-senate.com"),
-  createProvider("shellfish", "wss://hdx.shellfish.hydration.cloud"),
-  // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
   createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",
