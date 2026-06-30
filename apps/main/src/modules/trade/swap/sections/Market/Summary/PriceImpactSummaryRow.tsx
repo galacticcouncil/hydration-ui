@@ -18,7 +18,9 @@ export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact }) => {
       content={
         <SummaryRowValue
           color={
-            priceImpact <= -1 ? getToken("alarmRed.400") : getToken("text.high")
+            priceImpact <= -1
+              ? getToken("accents.danger.emphasis")
+              : getToken("text.high")
           }
         >
           {t("percent", { value: priceImpact })}

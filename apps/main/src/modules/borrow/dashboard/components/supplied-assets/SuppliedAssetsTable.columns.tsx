@@ -47,7 +47,7 @@ export const useSuppliedAssetsTableColumns = ({
   const { isMobile } = useBreakpoints()
   const { getRelatedAToken } = useAssets()
   const { user } = useMoneyMarketData()
-  const { openWithdraw, openCollateralChange } = useModalContext()
+  const { openWithdraw, openCollateralChange, openSwap } = useModalContext()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("reserve.symbol", {
@@ -156,6 +156,7 @@ export const useSuppliedAssetsTableColumns = ({
 
     const actionsColumn = columnHelper.display({
       id: "actions",
+      size: 180,
       meta: {
         sx: {
           textAlign: "right",
@@ -170,6 +171,17 @@ export const useSuppliedAssetsTableColumns = ({
 
         return (
           <Flex justify="flex-end" align="center" gap="s">
+            <Button
+              disabled={isDisabled}
+              variant="tertiary"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                openSwap(underlyingAsset, reserve.symbol)
+              }}
+            >
+              {t("borrow:swap")}
+            </Button>
             <Button
               disabled={isDisabled}
               variant="tertiary"
@@ -214,6 +226,18 @@ export const useSuppliedAssetsTableColumns = ({
               width="100%"
               onClick={(e) => {
                 e.stopPropagation()
+                openSwap(underlyingAsset, reserve.symbol)
+              }}
+            >
+              {t("borrow:swap")}
+            </Button>
+            <Button
+              disabled={isDisabled}
+              variant="tertiary"
+              size="large"
+              width="100%"
+              onClick={(e) => {
+                e.stopPropagation()
                 handleWithdrawClick(
                   underlyingAsset,
                   getRelatedAToken,
@@ -247,6 +271,7 @@ export const useSuppliedAssetsTableColumns = ({
   }, [
     isMobile,
     openCollateralChange,
+    openSwap,
     openWithdraw,
     t,
     user.isInIsolationMode,

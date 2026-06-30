@@ -1,17 +1,9 @@
-import { Icon, Separator, Skeleton, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { AssetSwitcher as AssetSwitcherPrimitive } from "@galacticcouncil/ui/components"
 import Big from "big.js"
-import { ArrowDown } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAssets } from "@/providers/assetsProvider"
-
-import {
-  SAssetSwitcher,
-  SPriceContainer,
-  SSwitchContainer,
-} from "./AssetSwitcher.styled"
 
 type ViewType = "default" | "reversed"
 
@@ -72,39 +64,26 @@ export const AssetSwitcher = ({
     switcherDisabled || disabled || !assetInId || !assetOutId
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
+  const value = isPriceReady
+    ? isPriceDisabled
+      ? t("unknownExchangeRate")
+      : `1 ${shownAssetIn.symbol} = ${t("currency", {
+          value: shownPrice,
+          symbol: shownAssetOut.symbol,
+        })}`
+    : undefined
+
   return (
-    <SAssetSwitcher sx={{ alignItems: "center", mx: "-xl" }}>
-      <Separator />
-      {onSwitchAssets && (
-        <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
-          <Icon
-            size="m"
-            component={ArrowDown}
-            color={getToken("icons.primary")}
-          />
-        </SSwitchContainer>
-      )}
-      <>
-        <Separator />
-        <SPriceContainer
-          disabled={isPriceDisabled}
-          onClick={() =>
-            setView((view) => (view === "default" ? "reversed" : "default"))
-          }
-        >
-          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
-            {!isPriceReady && <Skeleton width={120} />}
-            {isPriceReady &&
-              (isPriceDisabled
-                ? t("unknownExchangeRate")
-                : `1 ${shownAssetIn.symbol} = ${t("currency", {
-                    value: shownPrice,
-                    symbol: shownAssetOut.symbol,
-                  })}`)}
-          </Text>
-        </SPriceContainer>
-      </>
-      <Separator />
-    </SAssetSwitcher>
+    <AssetSwitcherPrimitive
+      sx={{ mx: "-xl" }}
+      onSwitchClick={onSwitchAssets ? switchAssets : undefined}
+      onValueClick={() =>
+        setView((view) => (view === "default" ? "reversed" : "default"))
+      }
+      switchDisabled={isSwitcherDisabled}
+      valueDisabled={isPriceDisabled}
+      isLoading={!isPriceReady}
+      value={value}
+    />
   )
 }

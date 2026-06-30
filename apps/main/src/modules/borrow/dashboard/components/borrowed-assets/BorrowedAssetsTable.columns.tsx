@@ -24,7 +24,7 @@ const columnHelper = createColumnHelper<TBorrowedAssetsRow>()
 export const useBorrowedAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
 
-  const { openRepay } = useModalContext()
+  const { openRepay, openDebtSwitch } = useModalContext()
 
   const { isMobile } = useBreakpoints()
 
@@ -87,6 +87,7 @@ export const useBorrowedAssetsTableColumns = () => {
 
     const actionsColumn = columnHelper.display({
       id: "actions",
+      size: 210,
       meta: {
         sx: {
           textAlign: "right",
@@ -98,6 +99,17 @@ export const useBorrowedAssetsTableColumns = () => {
         const isDisabled = !reserve.isActive || reserve.isPaused
         return (
           <Flex justify="flex-end" align="center" gap="s">
+            <Button
+              variant="tertiary"
+              size="small"
+              disabled={isDisabled}
+              onClick={(e) => {
+                e.stopPropagation()
+                openDebtSwitch(underlyingAsset, borrowRateMode, reserve.symbol)
+              }}
+            >
+              {t("borrow:swap")}
+            </Button>
             <Button
               variant="tertiary"
               size="small"
@@ -129,6 +141,18 @@ export const useBorrowedAssetsTableColumns = () => {
         return (
           <Flex gap="l" width="100%">
             <Button
+              variant="tertiary"
+              width="100%"
+              size="large"
+              disabled={isDisabled}
+              onClick={(e) => {
+                e.stopPropagation()
+                openDebtSwitch(underlyingAsset, borrowRateMode, reserve.symbol)
+              }}
+            >
+              {t("borrow:swap")}
+            </Button>
+            <Button
               width="100%"
               size="large"
               disabled={isDisabled}
@@ -158,5 +182,5 @@ export const useBorrowedAssetsTableColumns = () => {
       apyColumn,
       isMobile ? actionsColumnMobile : actionsColumn,
     ]
-  }, [isMobile, openRepay, t])
+  }, [isMobile, openDebtSwitch, openRepay, t])
 }

@@ -8,6 +8,8 @@ import {
   AppFormattersProvider,
   AppFormattersProvidersContextType,
 } from "@/hooks/app-data-provider/useAppFormatters"
+import type { SwapRateProvider as SwapRateProviderApi } from "@/hooks/paraswap/common"
+import { SwapRateProvider } from "@/hooks/paraswap/useSwapRateProvider"
 import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
@@ -52,6 +54,16 @@ const ClaimRewardsModal = lazy(async () => ({
     .ClaimRewardsModal,
 }))
 
+const SwapModal = lazy(async () => ({
+  default: (await import("@/components/transactions/Swap/SwapModal")).SwapModal,
+}))
+
+const DebtSwitchModal = lazy(async () => ({
+  default: (
+    await import("@/components/transactions/DebtSwitch/DebtSwitchModal")
+  ).DebtSwitchModal,
+}))
+
 export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
   provider: ExternalProvider
@@ -59,6 +71,9 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   squidClient: SquidSdk
   onCreateTransaction: MoneyMarketTxFn
   externalApyData: ExternalApyData
+  swapSlippage: number
+  onSwapModalOpenChange: (open: boolean) => void
+  swapRateProvider?: SwapRateProviderApi
 }
 
 export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
@@ -68,6 +83,9 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   provider: externalProvider,
   squidClient,
   externalApyData,
+  swapSlippage,
+  onSwapModalOpenChange,
+  swapRateProvider,
   ...formatters
 }) => {
   const provider = useRootStore((state) => state.provider)
@@ -98,16 +116,24 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
             <ModalContextProvider>
               <AppDataProvider externalApyData={externalApyData}>
                 <SharedDependenciesProvider squidClient={squidClient}>
-                  {children}
-                  <Suspense>
-                    <SupplyModal />
-                    <WithdrawModal />
-                    <BorrowModal />
-                    <RepayModal />
-                    <CollateralChangeModal />
-                    <EmodeModal />
-                    <ClaimRewardsModal />
-                  </Suspense>
+                  <SwapRateProvider
+                    swapRateProvider={swapRateProvider}
+                    swapSlippage={swapSlippage}
+                    onSwapModalOpenChange={onSwapModalOpenChange}
+                  >
+                    {children}
+                    <Suspense>
+                      <SupplyModal />
+                      <WithdrawModal />
+                      <BorrowModal />
+                      <RepayModal />
+                      <CollateralChangeModal />
+                      <EmodeModal />
+                      <ClaimRewardsModal />
+                      <SwapModal />
+                      <DebtSwitchModal />
+                    </Suspense>
+                  </SwapRateProvider>
                 </SharedDependenciesProvider>
               </AppDataProvider>
             </ModalContextProvider>
