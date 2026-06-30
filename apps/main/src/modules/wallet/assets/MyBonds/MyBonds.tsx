@@ -11,28 +11,33 @@ type Props = {
   readonly searchPhrase: string
   readonly paginationProps: PaginationProps
   readonly sortingProps: SortingProps
+  readonly embedded?: boolean
+  readonly showAllAssets?: boolean
 }
 
 export const MyBonds: FC<Props> = ({
   searchPhrase,
   paginationProps,
   sortingProps,
+  embedded = false,
+  showAllAssets = false,
 }) => {
   const { t } = useTranslation("wallet")
 
-  const { data, isLoading } = useMyBondsTableData()
+  const { data, isLoading } = useMyBondsTableData(showAllAssets)
 
-  if (!isLoading && data.length === 0) return null
+  if (!embedded && !isLoading && data.length === 0) return null
 
   return (
     <>
-      <SectionHeader title={t("myBonds.header.title")} />
+      {!embedded && <SectionHeader title={t("myBonds.header.title")} />}
       <MyBondsTable
         data={data}
         isLoading={isLoading}
         searchPhrase={searchPhrase}
         paginationProps={paginationProps}
         sortingProps={sortingProps}
+        embedded={embedded}
       />
     </>
   )

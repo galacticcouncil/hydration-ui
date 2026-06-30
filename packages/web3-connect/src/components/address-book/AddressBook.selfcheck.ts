@@ -63,6 +63,22 @@ function custom(key: string): Address {
   assert.deepEqual(third[0]!.savedBy, [WALLET_1, WALLET_2])
 }
 
+// 3b. Manually saving an existing synced address promotes it to custom so
+// filtered views such as tracked wallets can display it.
+{
+  const synced: Address = {
+    ...custom("a"),
+    name: "Synced account",
+    isCustom: false,
+    savedBy: [],
+  }
+  const [entry] = buildAddresses([synced], [custom("a")], WALLET_1)
+
+  assert.equal(entry!.isCustom, true)
+  assert.equal(entry!.name, "Synced account")
+  assert.deepEqual(entry!.savedBy, [WALLET_1])
+}
+
 // selectAddresses: each filter axis + combinations.
 {
   // Cast literals via the indexed type to avoid importing the enum value.

@@ -105,12 +105,17 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
     if (!match) return entry
 
     const savedBy = [...new Set([...entry.savedBy, ...match.savedBy])]
+    const isCustom = entry.isCustom || match.isCustom
     const name =
-      !entry.isCustom && entry.name !== match.name ? match.name : entry.name
+      !entry.isCustom && match.name && entry.name !== match.name
+        ? match.name
+        : entry.name
 
     const changed =
-      savedBy.length !== entry.savedBy.length || name !== entry.name
-    return changed ? { ...entry, name, savedBy } : entry
+      savedBy.length !== entry.savedBy.length ||
+      name !== entry.name ||
+      isCustom !== entry.isCustom
+    return changed ? { ...entry, name, savedBy, isCustom } : entry
   })
 
   const added = [...incomingByKey.values()].filter(

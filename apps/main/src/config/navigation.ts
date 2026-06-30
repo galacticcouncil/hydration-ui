@@ -30,6 +30,7 @@ export const LINKS = {
   swapDca: "/trade/swap/dca",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
+  walletTracked: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
@@ -123,7 +124,16 @@ export const NAVIGATION: NavigationItem[] = [
     icon: WalletCardsIcon,
     defaultChild: LINKS.walletAssets,
     children: [
-      { key: "walletAssets", to: LINKS.walletAssets },
+      {
+        key: "walletAssets",
+        to: LINKS.walletAssets,
+        search: { category: "all" },
+      },
+      {
+        key: "walletTracked",
+        to: LINKS.walletTracked,
+        search: { category: "tracked" },
+      },
       // { key: "walletTransactions", to: LINKS.walletTransactions },
     ],
   },
@@ -197,6 +207,10 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     walletAssets: {
       title: t("navigation.walletAssets.title"),
+      description: "",
+    },
+    walletTracked: {
+      title: t("navigation.walletTracked.title"),
       description: "",
     },
     walletTransactions: {

@@ -33,11 +33,18 @@ import { getAccountAvatarTheme } from "@/utils"
 export type Web3ConnectButtonProps = ButtonProps & {
   allowIncompatibleAccounts?: boolean
   mode?: WalletMode
+  hideCaret?: boolean
 }
 
 export const Web3ConnectButton: FC<
   Web3ConnectButtonProps & { ref?: Ref<HTMLButtonElement> }
-> = ({ ref, allowIncompatibleAccounts = false, mode, ...props }) => {
+> = ({
+  ref,
+  allowIncompatibleAccounts = false,
+  mode,
+  hideCaret = false,
+  ...props
+}) => {
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
 
@@ -62,6 +69,7 @@ export const Web3ConnectButton: FC<
         ref={ref}
         onClick={() => toggle(mode)}
         account={account}
+        hideCaret={hideCaret}
         {...props}
       />
     )
@@ -106,12 +114,14 @@ const ConnectWalletButton: FC<ConnectButtonProps> = ({
 
 type ConnectedMultisigAccountButtonProps = ConnectButtonProps & {
   account: Account
+  hideCaret?: boolean
 }
 
 const ConnectedAccountButton: React.FC<ConnectedMultisigAccountButtonProps> = ({
   ref,
   onClick,
   account,
+  hideCaret = false,
   ...props
 }) => {
   const { t } = useTranslation("translations", { i18n })
@@ -166,7 +176,7 @@ const ConnectedAccountButton: React.FC<ConnectedMultisigAccountButtonProps> = ({
           )
         )}
       </Flex>
-      <Icon size={pxToRem(8)} component={CaretDown} />
+      {!hideCaret && <Icon size={pxToRem(8)} component={CaretDown} />}
     </SConnectedButton>
   )
 }

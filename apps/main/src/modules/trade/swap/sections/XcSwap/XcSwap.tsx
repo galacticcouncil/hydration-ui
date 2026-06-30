@@ -1,5 +1,11 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { Box, LoadingButton } from "@galacticcouncil/ui/components"
+import {
+  useAccount,
+  useWeb3ConnectModal,
+  WalletMode,
+} from "@galacticcouncil/web3-connect"
+import { EVM_PROVIDERS } from "@galacticcouncil/web3-connect/src/config/providers"
 import Big from "big.js"
 import { useEffect, useState } from "react"
 import { useFormContext } from "react-hook-form"
@@ -26,6 +32,8 @@ export const XcSwap: React.FC = () => {
     healthFactor,
   } = useXcSwap()
   const form = useFormContext<XcSwapFormValues>()
+  const { account, isConnected } = useAccount()
+  const { toggle: toggleWalletModal } = useWeb3ConnectModal()
   const { t } = useTranslation(["common", "trade"])
 
   const [sellAmount, destAddress, isSingleTrade] = form.watch([
@@ -65,6 +73,11 @@ export const XcSwap: React.FC = () => {
   const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired
     ? healthFactorRiskAccepted
     : true
+  const isNonEvmCrossChainWallet =
+    isCrossChain &&
+    isConnected &&
+    !!account?.provider &&
+    !EVM_PROVIDERS.includes(account.provider)
 
   const canSubmit = isFormValid && isHealthFactorCheckSatisfied
 
@@ -75,6 +88,7 @@ export const XcSwap: React.FC = () => {
     if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
     if (isCrossChain && !destAddress.trim())
       return t("trade:xc.swap.cta.enterRecipient")
+    if (isNonEvmCrossChainWallet) return t("trade:xc.swap.cta.connectEvmWallet")
     if (alerts.length || !form.formState.isValid)
       return t("trade:xc.swap.cta.unavailable")
     if (!isHealthFactorCheckSatisfied)
@@ -100,22 +114,43 @@ export const XcSwap: React.FC = () => {
         </Box>
       )}
       <Box py="m">
-        <AuthorizedAction size="large" width="100%">
+        {isNonEvmCrossChainWallet ? (
           <LoadingButton
-            type="submit"
+            type="button"
             size="large"
             width="100%"
-            isLoading={isLoading}
-            disabled={!canSubmit || isLoading}
-            variant={canSubmit ? "primary" : "muted"}
-            loadingVariant="muted"
-            sx={{
-              "&:disabled": { cursor: "auto", opacity: 1 },
-            }}
+            isLoading={false}
+            onClick={() =>
+              toggleWalletModal(WalletMode.EVM, {
+                title: t("trade:xc.swap.connectEvm.title"),
+                description: t("trade:xc.swap.connectEvm.description"),
+              })
+            }
           >
             {submitLabel}
           </LoadingButton>
-        </AuthorizedAction>
+        ) : (
+          <AuthorizedAction
+            size="large"
+            width="100%"
+            mode={isCrossChain ? WalletMode.EVM : undefined}
+          >
+            <LoadingButton
+              type="submit"
+              size="large"
+              width="100%"
+              isLoading={isLoading}
+              disabled={!canSubmit || isLoading}
+              variant={canSubmit ? "primary" : "muted"}
+              loadingVariant="muted"
+              sx={{
+                "&:disabled": { cursor: "auto", opacity: 1 },
+              }}
+            >
+              {submitLabel}
+            </LoadingButton>
+          </AuthorizedAction>
+        )}
       </Box>
       <XcSwapSummary />
     </form>

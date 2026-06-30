@@ -2,6 +2,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { TAssetData, TStableswap } from "@/api/assets"
+import { hasVisibleDisplayValue } from "@/modules/wallet/assets/WalletAssets.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
@@ -53,7 +54,7 @@ export type OmnipoolLiquidityByAsset = {
   >
 }
 
-export const useMyLiquidityTableData = () => {
+export const useMyLiquidityTableData = (showAllAssets = true) => {
   const { getAssetWithFallback } = useAssets()
   const { data, isLoading: isLoadingOmnipoolPositions } =
     useAccountOmnipoolPositionsData()
@@ -65,10 +66,14 @@ export const useMyLiquidityTableData = () => {
   const groupedData = useMemo<Array<OmnipoolLiquidityByAsset>>(() => {
     if (isLoading) return []
 
-    const groupedByAssetId = Object.groupBy(
-      [...(stableswapLiquidity ?? []), ...(data?.all ?? [])],
-      (p) => p.assetId,
-    )
+    const positions = [...(stableswapLiquidity ?? []), ...(data?.all ?? [])]
+    const visiblePositions = showAllAssets
+      ? positions
+      : positions.filter((position) =>
+          hasVisibleDisplayValue(position.data.currentTotalDisplay),
+        )
+
+    const groupedByAssetId = Object.groupBy(visiblePositions, (p) => p.assetId)
 
     return Object.entries(groupedByAssetId).map(([assetId, positions = []]) => {
       const totals = positions.reduce(
@@ -96,7 +101,13 @@ export const useMyLiquidityTableData = () => {
         positions,
       }
     })
-  }, [data, isLoading, stableswapLiquidity, getAssetWithFallback])
+  }, [
+    data,
+    isLoading,
+    showAllAssets,
+    stableswapLiquidity,
+    getAssetWithFallback,
+  ])
 
   return { data: groupedData, isLoading }
 }

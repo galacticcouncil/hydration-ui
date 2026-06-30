@@ -1,5 +1,8 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { EVM_PROVIDERS } from "@galacticcouncil/web3-connect/src/config/providers"
+import {
+  EVM_PROVIDERS,
+  SUBSTRATE_PROVIDERS,
+} from "@galacticcouncil/web3-connect/src/config/providers"
 import { useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 
@@ -11,12 +14,12 @@ export const MarketSwap: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { account, isConnected } = useAccount()
 
-  const isEvmWallet =
-    isConnected &&
-    !!account?.provider &&
-    EVM_PROVIDERS.includes(account.provider)
+  const canRenderXcSwap =
+    !isConnected ||
+    (!!account?.provider &&
+      [...EVM_PROVIDERS, ...SUBSTRATE_PROVIDERS].includes(account.provider))
 
-  if (isEvmWallet) {
+  if (canRenderXcSwap) {
     return (
       <XcSwapProvider assetIn={assetIn} assetOut={assetOut}>
         <XcSwap />

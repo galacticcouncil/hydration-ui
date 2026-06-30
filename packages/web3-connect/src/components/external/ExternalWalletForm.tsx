@@ -7,11 +7,18 @@ import {
   Separator,
   Stack,
 } from "@galacticcouncil/ui/components"
+import {
+  isEvmParachainAccount,
+  safeConvertAddressH160,
+  safeConvertAddressSS58,
+  safeConvertSS58toH160,
+} from "@galacticcouncil/utils"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { first, pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { useAddressStore } from "@/components/address-book/AddressBook.store"
 import { AddressBookButton } from "@/components/address-book/AddressBookButton"
 import { ExternalWalletFormValues } from "@/components/external/ExternalWalletForm.form"
 import { WalletProviderType } from "@/config/providers"
@@ -33,6 +40,7 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
   )
 
   const form = useFormContext<ExternalWalletFormValues>()
+  const { add: addToAddressBook } = useAddressStore()
 
   const wallet = getWallet(WalletProviderType.ExternalWallet)
 
@@ -41,7 +49,16 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
 
     if (!isExternalWallet) return
 
-    wallet.setAccount(values.address, true)
+    const normalizedAddress = normalizeExternalWalletAddress(values.address)
+    const isAccountSet = wallet.setAccount(normalizedAddress, true)
+    if (!isAccountSet) return
+
+    addToAddressBook({
+      address: normalizedAddress,
+      name: "",
+      isCustom: true,
+    })
+
     await enable(WalletProviderType.ExternalWallet)
 
     const accounts = await wallet.getAccounts()
@@ -83,3 +100,9 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
     </form>
   )
 }
+
+const normalizeExternalWalletAddress = (address: string) =>
+  safeConvertAddressH160(address) ||
+  (isEvmParachainAccount(address) ? safeConvertSS58toH160(address) : "") ||
+  safeConvertAddressSS58(address) ||
+  address
