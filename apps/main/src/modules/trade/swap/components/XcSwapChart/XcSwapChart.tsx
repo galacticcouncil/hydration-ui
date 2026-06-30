@@ -20,7 +20,7 @@ import {
   OhlcData,
 } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { getToken } from "@galacticcouncil/ui/utils"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
@@ -38,6 +38,8 @@ import {
 } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart.data"
 
 type XcSwapChartType = "line" | "candles"
+
+export type { XcSwapChartType }
 
 const CHART_TYPE_OPTIONS: ReadonlyArray<{
   key: XcSwapChartType
@@ -94,6 +96,8 @@ const invertChartPoint = (point: OhlcData): OhlcData => {
 
 type XcSwapChartProps = {
   readonly height: number
+  readonly chartType: XcSwapChartType
+  readonly setChartType: (type: XcSwapChartType) => void
   // Hydration source asset (priced against USDT on the indexer).
   readonly sellAssetId: string
   readonly sellSymbol: string
@@ -104,6 +108,8 @@ type XcSwapChartProps = {
 
 export const XcSwapChart: React.FC<XcSwapChartProps> = ({
   height,
+  chartType,
+  setChartType,
   sellAssetId,
   sellSymbol,
   destPlatform,
@@ -114,7 +120,6 @@ export const XcSwapChart: React.FC<XcSwapChartProps> = ({
   const chartRef = useRef<TradingViewChartRef>(null)
   const [isInverted, setIsInverted] = useState(false)
   const [interval, setInterval] = useState<XcSwapChartTimeFrame>("week")
-  const [chartType, setChartType] = useState<XcSwapChartType>("line")
   const [crosshair, setCrosshair] = useState<
     BaselineChartData | OhlcData | null
   >(null)
@@ -137,12 +142,6 @@ export const XcSwapChart: React.FC<XcSwapChartProps> = ({
   const selectedChartType =
     chartType === "candles" && hasCandleData ? "candles" : "line"
   const isEmpty = isSuccess && !data.length
-
-  useEffect(() => {
-    if (!hasCandleData && chartType === "candles") {
-      setChartType("line")
-    }
-  }, [chartType, hasCandleData])
 
   // value is shown in `valueSymbol` and prices 1 `subjectSymbol`.
   // Default: "1 buyAsset (Q) = value sellAsset (X)" — matches on-chain.
@@ -229,7 +228,7 @@ export const XcSwapChart: React.FC<XcSwapChartProps> = ({
             <Icon component={ArrowLeftRight} size="m" />
             {subjectSymbol}/{valueSymbol}
           </SChartInvertButton>
-          {hasCandleData && (
+          {(hasCandleData || chartType === "candles") && (
             <>
               <Separator
                 orientation="vertical"

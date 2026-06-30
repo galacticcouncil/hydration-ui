@@ -1,11 +1,14 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React from "react"
+import React, { useState } from "react"
 
 import { krakenPairForPlatform } from "@/api/external/kraken"
 import { XC_SWAP_ASSET_META } from "@/config/xcSwap"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
-import { XcSwapChart } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart"
+import {
+  XcSwapChart,
+  XcSwapChartType,
+} from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart"
 import { useAssets } from "@/providers/assetsProvider"
 
 type SwapChartProps = {
@@ -17,21 +20,24 @@ export const SwapChart: React.FC<SwapChartProps> = ({ height }) => {
   const { assetIn, assetOut, destPlatform } = useSearch({
     from: "/trade/_history",
   })
+  const [chartType, setChartType] = useState<XcSwapChartType>("line")
 
   const sellAsset = getAsset(assetIn)
   const destMeta = XC_SWAP_ASSET_META[assetOut]
 
   const isCrossChain = destPlatform !== HYDRATION_CHAIN_KEY
-
-  if (
+  const showXcSwapChart =
     isCrossChain &&
-    krakenPairForPlatform(destPlatform) &&
-    destMeta &&
-    sellAsset
-  ) {
+    !!krakenPairForPlatform(destPlatform) &&
+    !!destMeta &&
+    !!sellAsset
+
+  if (showXcSwapChart) {
     return (
       <XcSwapChart
         height={height}
+        chartType={chartType}
+        setChartType={setChartType}
         sellAssetId={assetIn}
         sellSymbol={sellAsset.symbol}
         destPlatform={destPlatform}
