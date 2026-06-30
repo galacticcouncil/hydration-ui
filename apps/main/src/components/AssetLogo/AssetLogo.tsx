@@ -30,6 +30,7 @@ type LogoMetadata = {
 type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   id: string | string[]
   isLoading?: boolean
+  hideChain?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
@@ -39,6 +40,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
   size = "medium",
   className,
   isLoading,
+  hideChain,
 }) => {
   const { getAssetWithFallback } = useAssets()
 
@@ -70,7 +72,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
             key={`${data.id}-${index}`}
             alt={data.alt}
             src={data.assetSrc}
-            chainSrc={data.chainSrc}
+            chainSrc={hideChain ? undefined : data.chainSrc}
             decoration={data.decoration}
           />
         ))}
@@ -85,7 +87,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
       className={className}
       alt={singleIconMetadata?.alt}
       src={singleIconMetadata?.assetSrc}
-      chainSrc={singleIconMetadata?.chainSrc}
+      chainSrc={hideChain ? undefined : singleIconMetadata?.chainSrc}
       size={size}
       decoration={singleIconMetadata?.decoration}
     />
