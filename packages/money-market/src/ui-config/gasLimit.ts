@@ -10,6 +10,10 @@ export const gasLimitRecommendations: GasRecommendationType = {
     limit: "1000000",
     recommended: "1000000",
   },
+  [ProtocolAction.supply]: {
+    limit: "1000000",
+    recommended: "1000000",
+  },
   [ProtocolAction.borrow]: {
     limit: "1300000",
     recommended: "1300000",
