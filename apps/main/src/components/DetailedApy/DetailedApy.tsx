@@ -46,7 +46,7 @@ export const ApyRow: React.FC<ApyRowProps> = ({ assetId, value, label }) => {
 
 type DetailedApyProps = FlexProps & {
   children: React.ReactNode
-  description?: string
+  description?: React.ReactNode
   apyData: BorrowAssetApyData
 }
 

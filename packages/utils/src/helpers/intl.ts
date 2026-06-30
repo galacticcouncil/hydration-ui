@@ -12,6 +12,7 @@ import {
 import {
   HumanizeDuration,
   HumanizeDurationLanguage,
+  UnitName,
 } from "humanize-duration-ts"
 import { isDate, isNumber, isString } from "remeda"
 
@@ -282,8 +283,6 @@ langService.addLanguage("shortEn", {
   decimal: "2",
 })
 
-const humanizer = new HumanizeDuration(langService)
-
 export const formatDate = (
   value: FormatValue,
   options: Record<string, unknown> = {},
@@ -357,9 +356,23 @@ export const formatInterval = (
 
   const isShort = options.format === "short"
 
-  return humanizer.humanize(value, {
+  const defaultLargest = 2
+  const largest = (() => {
+    const value = options.largest
+    if (isNumber(value) && Number.isFinite(value)) {
+      return value
+    }
+    if (isString(value) && value.trim() !== "") {
+      const parsed = Number(value)
+      return Number.isFinite(parsed) ? parsed : defaultLargest
+    }
+    return defaultLargest
+  })()
+
+  return new HumanizeDuration(langService).humanize(value, {
     round: true,
-    largest: 2,
+    largest,
+    ...(isString(options.unit) ? { units: [options.unit as UnitName] } : {}),
     ...(isShort && { language: "shortEn", conjunction: " ", spacer: "" }),
   })
 }

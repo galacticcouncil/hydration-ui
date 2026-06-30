@@ -1,8 +1,13 @@
 import { useUserData } from "@galacticcouncil/money-market/hooks"
-import { Flex, ValueStats } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  SValueStatsValue,
+  ValueStats,
+} from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
 
 export const BorrowedAssetsHeader = () => {
@@ -36,9 +41,19 @@ export const BorrowedAssetsHeader = () => {
         size="small"
         label={t("apy")}
         isLoading={loading || isApyLoading}
-        value={t("percent", {
-          value: Number.isFinite(user.debtAPY) ? user.debtAPY * 100 : 0,
-        })}
+        customValue={
+          user.debtAPY !== null ? (
+            <SValueStatsValue size="small">
+              {t("percent", {
+                value: Number.isFinite(user.debtAPY) ? user.debtAPY * 100 : 0,
+              })}
+            </SValueStatsValue>
+          ) : (
+            <SValueStatsValue size="small">
+              <UnavailableApy />
+            </SValueStatsValue>
+          )
+        }
       />
       <ValueStats
         wrap

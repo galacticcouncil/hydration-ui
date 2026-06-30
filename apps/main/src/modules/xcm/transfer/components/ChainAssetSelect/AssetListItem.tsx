@@ -19,7 +19,7 @@ import { isBigInt } from "remeda"
 
 import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetBridgeTags"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
-import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
+import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssets } from "@/providers/assetsProvider"
 import { toDecimal } from "@/utils/formatting"
 

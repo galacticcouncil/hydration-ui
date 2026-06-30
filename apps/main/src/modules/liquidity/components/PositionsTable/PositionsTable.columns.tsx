@@ -35,6 +35,7 @@ import {
 import { AssetLogo } from "@/components/AssetLogo"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 import {
   BalanceTableData,
@@ -177,9 +178,7 @@ export const useOmnipoolPositionsTableColumns = () => {
           if (!isOmnipool || !original.apr.aprsByRewardAsset.length) {
             return (
               <Text color={getToken("text.tint.secondary")}>
-                {t("percent", {
-                  value: Number(original.totalApr),
-                })}
+                {formatApyPercent(t, original.totalApr)}
               </Text>
             )
           }
@@ -203,9 +202,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                   />
                 )}
                 <Text color={getToken("text.tint.secondary")}>
-                  {t("percent", {
-                    value: Number(original.totalApr),
-                  })}
+                  {formatApyPercent(t, original.totalApr)}
                 </Text>
               </Flex>
             </TooltipAPR>
@@ -462,9 +459,7 @@ export const useBalanceTableColumns = () => {
                   />
                 )}
                 <Text color={getToken("text.tint.secondary")}>
-                  {t("percent", {
-                    value: Number(totalApr),
-                  })}
+                  {formatApyPercent(t, totalApr)}
                 </Text>
               </Flex>
             </TooltipAPR>
@@ -685,9 +680,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
               />
             )}
             <Text color={getToken("text.tint.secondary")}>
-              {t("percent", {
-                value: Number(totalApr),
-              })}
+              {formatApyPercent(t, totalApr)}
             </Text>
           </Flex>
         ),

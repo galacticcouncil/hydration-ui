@@ -134,13 +134,10 @@ export const useSuppliedAssetsTableColumns = ({
             (reserve.isIsolated &&
               user.totalCollateralMarketReferenceCurrency === "0"))
 
-        const isChecked =
-          usageAsCollateralEnabledOnUser && canBeEnabledAsCollateral
-
         return (
           <Flex direction="column" justify="center" align="center">
             <Toggle
-              checked={isChecked}
+              checked={usageAsCollateralEnabledOnUser}
               disabled={isPaused || !canBeEnabledAsCollateral}
               onClick={(e) => e.stopPropagation()}
               onCheckedChange={() => openCollateralChange(underlyingAsset)}

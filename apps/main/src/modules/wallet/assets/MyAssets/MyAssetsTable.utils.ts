@@ -1,6 +1,6 @@
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
-import { Compare, numericallyStrDesc } from "@/utils/sort"
+import { Compare, numericallyStrDesc, undefinedLast } from "@/utils/sort"
 
 const nativeFirst =
   <TProp>(
@@ -20,10 +20,10 @@ const nativeFirst =
 
 export const myAssetsSorter = nativeFirst(
   (asset) => asset.transferableDisplay,
-  numericallyStrDesc,
+  undefinedLast(numericallyStrDesc),
 )
 
 export const myAssetsMobileSorter = nativeFirst(
   (asset) => asset.totalDisplay,
-  numericallyStrDesc,
+  undefinedLast(numericallyStrDesc),
 )

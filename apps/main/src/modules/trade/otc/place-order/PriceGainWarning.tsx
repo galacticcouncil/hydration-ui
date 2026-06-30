@@ -1,4 +1,4 @@
-import { Alert, Checkbox, Flex, Label } from "@galacticcouncil/ui/components"
+import { Alert, Flex, Text, Toggle } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
 import { useController, useFormContext } from "react-hook-form"
@@ -48,23 +48,21 @@ export const PriceGainWarning: FC<Props> = ({
             percentage: t("percent", { value: Big(priceGain).abs() }),
           },
         )}
+        action={
+          <Flex align="center" as="label" gap="base">
+            <Toggle
+              size="large"
+              checked={priceConfirmationField.value.confirmed}
+              onCheckedChange={(confirmed) =>
+                priceConfirmationField.onChange({ confirmed })
+              }
+            />
+            <Text fs="p4" lh={1.3} fw={600}>
+              {t("trade:otc.placeOrder.priceGainWarning.confirmation")}
+            </Text>
+          </Flex>
+        }
       />
-      <Label
-        sx={{
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "base",
-        }}
-      >
-        <Checkbox
-          checked={priceConfirmationField.value.confirmed}
-          onCheckedChange={(confirmed) =>
-            priceConfirmationField.onChange({ confirmed })
-          }
-        />
-        {t("trade:otc.placeOrder.priceGainWarning.confirmation")}
-      </Label>
     </Flex>
   )
 }

@@ -172,9 +172,9 @@ export const AppDataProvider: React.FC<{
 
   const userApyValues = getUserApyValues(
     user,
-    formattedPoolReserves,
     formattedGhoUserData,
     formattedGhoReserveData,
+    externalApyData,
   )
 
   return (

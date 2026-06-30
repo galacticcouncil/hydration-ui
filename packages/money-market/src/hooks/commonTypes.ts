@@ -24,9 +24,9 @@ export type ComputedUserReserveData = ComputedUserReserve<ComputedReserveData>
 
 export type ExtendedFormattedUser =
   FormatUserSummaryAndIncentivesResponse<ComputedReserveData> & {
-    earnedAPY: number
-    debtAPY: number
-    netAPY: number
+    earnedAPY: number | null
+    debtAPY: number | null
+    netAPY: number | null
     isInEmode: boolean
     userEmodeCategoryId: number
   }

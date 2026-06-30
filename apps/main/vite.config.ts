@@ -1,9 +1,12 @@
 /* eslint-disable no-restricted-imports */
 import fs from "node:fs"
 
+import mdx from "@mdx-js/rollup"
 import babel from "@rolldown/plugin-babel"
+import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
+import remarkGfm from "remark-gfm"
 import { defineConfig } from "vite"
 import { createHtmlPlugin } from "vite-plugin-html"
 import svgr from "vite-plugin-svgr"
@@ -11,19 +14,16 @@ import wasm from "vite-plugin-wasm"
 
 import { SEO_CONFIG } from "./src/config/seo"
 
-const headInlineScript =  fs.readFileSync("./src/utils/head.js", "utf-8")
+const headInlineScript = fs.readFileSync("./src/utils/head.js", "utf-8")
 
 const loaderHtml = fs.readFileSync(
   "./src/components/Loader/loader.html",
   "utf-8",
 )
 
-const headCriticalCss = fs.readFileSync(
-  "./src/styles/critical.css",
-  "utf-8",
-)
+const headCriticalCss = fs.readFileSync("./src/styles/critical.css", "utf-8")
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   resolve: {
     tsconfigPaths: true,
   },
@@ -37,6 +37,8 @@ export default defineConfig({
     },
   },
   plugins: [
+    ...(mode !== "production" ? [devtools()] : []),
+    mdx({ remarkPlugins: [remarkGfm], providerImportSource: "@mdx-js/react" }),
     tanstackRouter({
       autoCodeSplitting: true,
     }),
@@ -78,4 +80,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

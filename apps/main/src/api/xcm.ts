@@ -1,7 +1,12 @@
-import { formatSourceChainAddress } from "@galacticcouncil/utils"
+import {
+  formatSourceChainAddress,
+  HYDRATION_CHAIN_KEY,
+  isEvmParachain,
+  QUERY_KEY_BLOCK_PREFIX,
+} from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
+import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
+import { AnyChain, Asset, AssetAmount } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
@@ -11,10 +16,12 @@ import {
   UseQueryOptions,
   useSuspenseQuery,
 } from "@tanstack/react-query"
-import { secondsToMilliseconds } from "date-fns"
+import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
+import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { toDecimal } from "@/utils/formatting"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -26,6 +33,20 @@ export const useCrossChainConfig = () => {
       createXcContext({
         poolCtx: sdk.ctx.pool,
       }),
+  })
+}
+
+const useHydrationClient = () => {
+  return useSuspenseQuery({
+    queryKey: ["xcm", "hydrationClient"],
+    queryFn: () => {
+      const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
+      if (!hydration || !isEvmParachain(hydration))
+        throw new Error("Invalid chain for HydrationClient")
+      return new clients.HydrationClient(hydration)
+    },
+    staleTime: Infinity,
+    gcTime: Infinity,
   })
 }
 
@@ -138,9 +159,15 @@ export type XcmTransferArgs = {
   readonly bridgeTag?: string
 }
 
+const hasAssetOnChain = (assetKey: string, chainKey: string) =>
+  !!chainsMap.get(chainKey)?.assetsData.has(assetKey)
+
 export const xcmTransferQuery = (
   wallet: Wallet,
-  {
+  transferArgs: XcmTransferArgs | null,
+  options?: Partial<UseQueryOptions<Transfer>>,
+) => {
+  const {
     srcAddress,
     srcAsset,
     srcChain,
@@ -148,9 +175,8 @@ export const xcmTransferQuery = (
     destChain,
     destAsset,
     bridgeTag,
-  }: XcmTransferArgs,
-  options?: UseQueryOptions<Transfer>,
-) => {
+  } = transferArgs ?? {}
+
   return queryOptions({
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
@@ -167,42 +193,63 @@ export const xcmTransferQuery = (
       bridgeTag,
     ],
     queryFn: async () => {
+      if (!transferArgs) throw new Error("Invalid transfer args")
+
       const builder = TransferBuilder(wallet)
-        .withAsset(srcAsset)
-        .withSource(srcChain)
-        .withDestination(destChain)
+        .withAsset(transferArgs.srcAsset)
+        .withSource(transferArgs.srcChain)
+        .withDestination(transferArgs.destChain)
 
-      // Do not pass invalid/stale dest asset
-      const validDstAsset = builder.routes.some(
-        (r) => r.destination.asset.key === destAsset,
+      const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
+        builder.routes,
+        transferArgs.destAsset,
+        transferArgs.bridgeTag,
       )
-        ? destAsset
-        : undefined
 
-      return builder.build({
-        srcAddress,
-        dstAddress: destAddress,
-        dstAsset: validDstAsset,
-        tag: bridgeTag,
+      const transfer = await builder.build({
+        srcAddress: transferArgs.srcAddress,
+        dstAddress: transferArgs.destAddress,
+        dstAsset,
+        tag,
       })
+
+      const { balance, fee, max } = transfer.source
+      if (balance.isSame(fee) && max.amount > 0n) {
+        try {
+          const atMaxFee = await transfer.estimateFee(
+            toDecimal(max.amount, max.decimals),
+          )
+          const delta = atMaxFee.amount - fee.amount
+          if (delta > 0n) {
+            transfer.source.max = max.copyWith({ amount: max.amount - delta })
+          }
+        } catch {
+          // keep original max if re-pricing fails
+        }
+      }
+
+      return transfer
     },
+    ...options,
     enabled:
       !!srcAddress &&
       !!destAddress &&
       !!srcAsset &&
       !!destAsset &&
       !!srcChain &&
-      !!destChain,
-    ...options,
+      !!destChain &&
+      hasAssetOnChain(srcAsset, srcChain) &&
+      hasAssetOnChain(destAsset, destChain) &&
+      Boolean(options?.enabled ?? true),
   })
 }
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
-    enabled: !!transfer,
+    enabled: !!transfer && !!transferArgs,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "report", transferArgs],
     queryFn: async () => {
@@ -211,13 +258,28 @@ export const xcmTransferReportQuery = (
     },
   })
 
+export const xcmDestinationFeeQuery = (
+  transfer: Transfer | null,
+  amount: string,
+  transferArgs: XcmTransferArgs | null,
+) =>
+  queryOptions({
+    enabled: !!transfer && !!transferArgs && !!amount && Number(amount) > 0,
+    placeholderData: keepPreviousData,
+    queryKey: ["xcm", "destFee", amount, transferArgs],
+    queryFn: async () => {
+      if (!transfer) throw new Error("Invalid transfer")
+      return transfer.estimateDestinationFee(amount)
+    },
+  })
+
 export const xcmTransferCallQuery = (
   transfer: Transfer | null,
   amount: string,
-  transferArgs: XcmTransferArgs,
+  transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
-    enabled: !!transfer && !!amount,
+    enabled: !!transfer && !!transferArgs && !!amount,
     placeholderData: keepPreviousData,
     queryKey: ["xcm", "call", amount, transferArgs],
     queryFn: async () => {
@@ -227,3 +289,26 @@ export const xcmTransferCallQuery = (
       return { call }
     },
   })
+
+export const useCrossChainDepositLimit = (asset: Asset | null) => {
+  const { data: client } = useHydrationClient()
+
+  return useQuery({
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "xcm", "depositLimit", asset?.key],
+    queryFn: () => {
+      if (!asset) throw new Error("Asset is required")
+      return client.getAssetDepositLimit(asset)
+    },
+    enabled: !!asset,
+  })
+}
+
+export const useCrossChainGlobalWithdrawLimit = () => {
+  const { data: client } = useHydrationClient()
+
+  return useQuery({
+    queryKey: ["xcm", "globalWithdrawLimit"],
+    staleTime: minutesToMilliseconds(5),
+    queryFn: () => client.getGlobalWithdrawLimit(),
+  })
+}

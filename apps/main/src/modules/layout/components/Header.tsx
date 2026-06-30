@@ -41,7 +41,7 @@ export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
         justify="start"
         asChild
       >
-        <Link to={LINKS.swap} disabled={hasTopNavbar}>
+        <Link to={LINKS.swap}>
           <Logo sx={{ width: "auto", height: "100%" }} />
         </Link>
       </Flex>

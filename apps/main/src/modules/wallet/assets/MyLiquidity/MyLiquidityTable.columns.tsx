@@ -25,7 +25,7 @@ export enum MyLiquidityTableColumnId {
 
 const columnHelper = createColumnHelper<LiquidityPositionByAsset>()
 
-export const useMyLiquidityColumns = (isEmpty: boolean) => {
+export const useMyLiquidityColumns = () => {
   const { isShareToken } = useAssets()
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
@@ -104,7 +104,6 @@ export const useMyLiquidityColumns = (isEmpty: boolean) => {
       meta: {
         sx: {
           textAlign: "right",
-          ...(isEmpty && { pr: "0 !important" }),
         },
       },
       cell: ({ row: { original } }) => {
@@ -185,5 +184,5 @@ export const useMyLiquidityColumns = (isEmpty: boolean) => {
           positionsColumn,
           actionsColumn,
         ] as ColumnDef<LiquidityPositionByAsset>[])
-  }, [t, isEmpty, isMobile, format, isShareToken])
+  }, [t, isMobile, format, isShareToken])
 }

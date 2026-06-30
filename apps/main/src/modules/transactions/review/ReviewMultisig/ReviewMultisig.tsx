@@ -15,6 +15,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   HYDRATION_CHAIN_KEY,
+  multix,
   safeConvertAddressSS58,
   safeConvertPublicKeyToSS58,
   shortenAccountAddress,
@@ -154,9 +155,7 @@ export const ReviewMultisig: FC<ReviewMultisigProps> = ({ tx, multisig }) => {
           variant={hasApproved ? "secondary" : "primary"}
           asChild
         >
-          <ExternalLink
-            href={`https://multix.cloud/?network=hydration&address=${multisigAddress}`}
-          >
+          <ExternalLink href={multix.account(multisigAddress)}>
             {hasApproved
               ? t("multisig.modal.viewOnMultix")
               : t("multisig.modal.approveOnMultix")}

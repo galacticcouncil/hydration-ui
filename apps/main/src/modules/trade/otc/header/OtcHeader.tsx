@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useOtcHeaderData } from "@/modules/trade/otc/header/OtcHeader.data"
 import { SOtcHeader } from "@/modules/trade/otc/header/OtcHeader.styled"
 import { OtcValue } from "@/modules/trade/otc/header/OtcValue"
+import { PlaceOrder } from "@/modules/trade/otc/place-order/PlaceOrder"
 
 export const OtcHeader: FC = () => {
   const { t } = useTranslation("trade")
@@ -16,6 +17,7 @@ export const OtcHeader: FC = () => {
         price={otcValue}
         isLoading={isLoading}
       />
+      <PlaceOrder />
     </SOtcHeader>
   )
 }

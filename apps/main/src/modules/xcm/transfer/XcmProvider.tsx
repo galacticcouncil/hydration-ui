@@ -4,13 +4,18 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { ConfigBuilder, EvmParachain } from "@galacticcouncil/xc-core"
+import {
+  AssetRoute,
+  ConfigBuilder,
+  EvmParachain,
+} from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
 
+import { getSortedRpcUrlList } from "@/api/provider"
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
@@ -22,16 +27,21 @@ import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
+  resolveValidBridgeProvider,
+  shouldPreserveSnowbridgeSubSelection,
+} from "@/modules/xcm/transfer/utils/bridge"
+import {
   getChainPriority,
   isAccountValidOnChain,
+  withCustomChainRpcUrls,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
 import {
   calculateTransferDestAmount,
-  getPrimaryBridgeTag,
   getTransferStatus,
+  getXcmTransferArgs,
 } from "@/modules/xcm/transfer/utils/transfer"
-import { XcmTag } from "@/states/transactions"
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
   children: React.ReactNode
@@ -41,12 +51,15 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
+  const { rpcUrl, rpcUrlList } = useProviderRpcUrlStore()
 
   const form = useXcmForm(transfer)
 
   const configService = useCrossChainConfigService()
 
-  const [
+  const values = form.watch()
+
+  const {
     srcChain,
     srcAsset,
     destChain,
@@ -54,15 +67,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     srcAmount,
     destAddress,
     bridgeProvider,
-  ] = form.watch([
-    "srcChain",
-    "srcAsset",
-    "destChain",
-    "destAsset",
-    "srcAmount",
-    "destAddress",
-    "bridgeProvider",
-  ])
+  } = values
 
   const config = useMemo(
     () => ConfigBuilder(configService).assets(),
@@ -114,21 +119,41 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     (p) => p.chain.key === destChain?.key,
   )
 
+  // The SDK only sets isTagSelect when every route in the pair delivers the
+  // same destination asset (e.g. outbound Snowbridge V2/Fast/V1, all → ETH).
+  // Inbound, Snowbridge and Wormhole deliver *different* assets, so the pair
+  // is isAssetSelect and isTagSelect is false — yet once a destination asset
+  // is picked there can still be multiple bridge variants for it (Snowbridge
+  // V2 + V1). Surface those by falling back to the routes matching the
+  // selected destination asset.
+  const availableBridgeRoutes = useMemo<AssetRoute[]>(() => {
+    if (!destPair) return []
+    if (destPair.isTagSelect) return destPair.routes
+    const forDestAsset = destPair.routes.filter(
+      (r) => r.destination.asset.key === destAsset?.key,
+    )
+    return forDestAsset.length > 1 ? forDestAsset : []
+  }, [destPair, destAsset?.key])
+
   useEffect(() => {
-    if (!destPair?.isTagSelect) {
-      form.setValue("bridgeProvider", null)
-      return
+    if (!destPair || !destAsset) return
+
+    const matchingRoutes = destPair.routes.filter(
+      (r) => r.destination.asset.key === destAsset.key,
+    )
+
+    if (!matchingRoutes.length) return
+
+    if (shouldPreserveSnowbridgeSubSelection(bridgeProvider, destPair)) return
+
+    const validProvider = resolveValidBridgeProvider(
+      bridgeProvider,
+      matchingRoutes,
+    )
+    if (validProvider !== bridgeProvider) {
+      form.setValue("bridgeProvider", validProvider)
     }
-
-    if (destPair.routes.some((r) => getPrimaryBridgeTag(r) === bridgeProvider))
-      return
-
-    const defaultRoute =
-      destPair.routes.find((r) => getPrimaryBridgeTag(r) === XcmTag.Basejump) ??
-      destPair.routes[0]
-    if (defaultRoute)
-      form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))
-  }, [destPair, bridgeProvider, form])
+  }, [bridgeProvider, destPair, destAsset, form])
 
   useEffect(() => {
     const validRoutes = pipe(
@@ -172,6 +197,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
+  const transferArgs = useMemo(
+    () => getXcmTransferArgs(account, values),
+    [account, values],
+  )
+
   const {
     transfer: xcmTransfer,
     isLoadingTransfer,
@@ -179,9 +209,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     call,
 
     report,
-  } = useXcmTransfer(form)
+  } = useXcmTransfer(form, transferArgs)
 
-  const alerts = useXcmTransferAlerts(report)
+  const alerts = useXcmTransferAlerts(form, report)
 
   useEffect(() => {
     setTransfer(xcmTransfer)
@@ -205,6 +235,14 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     destChainKey,
   )
 
+  const registryChain = useMemo(() => {
+    const chain = chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain
+    return withCustomChainRpcUrls(
+      chain,
+      getSortedRpcUrlList(rpcUrlList, rpcUrl),
+    )
+  }, [rpcUrl, rpcUrlList])
+
   useTrackApprovals(srcChainKey)
 
   const isLoading =
@@ -219,11 +257,12 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
-        availableBridgeRoutes: destPair?.isTagSelect ? destPair.routes : [],
+        availableBridgeRoutes,
+        transferArgs,
         alerts,
         transfer,
         call,
-        registryChain: chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain,
+        registryChain,
         status: getTransferStatus(form.getValues(), transfer, call, alerts),
       }}
     >

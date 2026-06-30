@@ -1,5 +1,3 @@
-import { h160 } from "@galacticcouncil/common"
-import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useEffect, useRef, useState } from "react"
 import { useMount, usePrevious } from "react-use"
 import { pick } from "remeda"
@@ -11,8 +9,6 @@ import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { toStoredAccount } from "@/utils"
 import { ExternalWallet, getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
-
-const { isEvmAccount } = h160
 
 export const useWeb3EagerEnable = (enabled = true) => {
   const { enable, disconnect } = useWeb3Enable()
@@ -48,37 +44,19 @@ export const useWeb3EagerEnable = (enabled = true) => {
 
       for (const { type, status } of providers) {
         const wallet = getWallet(type)
+
+        // Skip external wallet, it is handled separately based on `acocunt` query param
+        if (wallet instanceof ExternalWallet) continue
+
         if (!wallet || status !== WalletProviderStatus.Connected) {
           disconnect(type)
-          continue
-        }
-
-        const isExternal = wallet instanceof ExternalWallet
-        const isSubstrate = wallet instanceof BaseSubstrateWallet
-        const isExternalConnected =
-          account?.provider === WalletProviderType.ExternalWallet
-
-        if (isExternal && !isExternalConnected) {
-          disconnect(wallet.provider)
-          continue
-        }
-
-        if (isExternal && account) {
-          const address = isEvmAccount(account.address)
-            ? safeConvertSS58toH160(account.address)
-            : account.address
-
-          if (!wallet.account) {
-            wallet.setAccount(address)
-            await enable(wallet.provider)
-          }
-
           continue
         }
 
         if (wallet.installed && !wallet.enabled) {
           await enable(wallet.provider)
 
+          const isSubstrate = wallet instanceof BaseSubstrateWallet
           if (isSubstrate && account) {
             const signerAddress = account.isMultisig
               ? (account.multisigSignerAddress ?? account.address)
@@ -106,10 +84,12 @@ export const useWeb3EagerEnable = (enabled = true) => {
 
     if (!address) return
 
-    const externalWallet = getWallet(WalletProviderType.ExternalWallet)
-    if (!(externalWallet instanceof ExternalWallet)) return
+    const wallet = getWallet(WalletProviderType.ExternalWallet)
 
-    const isValid = externalWallet.setAccount(address)
+    const isExternalWallet = wallet instanceof ExternalWallet
+    if (!isExternalWallet) return
+
+    const isValid = wallet.setAccount(address)
     if (!isValid) return
 
     enable(WalletProviderType.ExternalWallet).then(([account]) => {

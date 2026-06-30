@@ -5,15 +5,12 @@ import {
   hydrationNext,
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
-import {
-  getSnowbridgeSdk,
-  SnowbridgeSdk,
-} from "@galacticcouncil/indexer/snowbridge"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
+  HOLLAR_BOND_25_08_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { createWsClient } from "polkadot-api/ws"
@@ -26,7 +23,9 @@ import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
-export type TFeatureFlags = object
+export type TFeatureFlags = {
+  hollarBondsEnabled: boolean
+}
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
 
@@ -49,6 +48,13 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
+
+export const getSortedRpcUrlList = (
+  rpcUrlList: string[],
+  priorityRpcUrl?: string,
+): string[] => {
+  return priorityRpcUrl ? unique([priorityRpcUrl, ...rpcUrlList]) : rpcUrlList
+}
 
 export const getProviderProps = (rpcUrl: string) =>
   PROVIDERS.find((p) => p.url === rpcUrl)
@@ -93,9 +99,7 @@ const getProviderData = async (
     setMetadata: doNothing,
   })
 
-  const urls = priorityRpcUrl
-    ? unique([priorityRpcUrl, ...rpcUrlList])
-    : rpcUrlList
+  const urls = getSortedRpcUrlList(rpcUrlList, priorityRpcUrl)
 
   const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 
@@ -104,9 +108,10 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration] = await Promise.all([
+  const [sdk, slotDuration, hollarBond] = await Promise.all([
     createSdkContext(papiClient),
     papi.constants.Aura.SlotDuration(),
+    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
@@ -132,7 +137,9 @@ const getProviderData = async (
     sdk,
     rpcUrlList,
     slotDurationMs: Number(slotDuration),
-    featureFlags: {},
+    featureFlags: {
+      hollarBondsEnabled: !!hollarBond,
+    },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }
@@ -153,10 +160,6 @@ export const useProxyUrl = (): string => {
 
 export const useIndexerUrl = (): string => {
   return useState(() => ENV.VITE_INDEXER_URL)[0]
-}
-
-export const useSnowbridgeUrl = (): string => {
-  return useState(() => ENV.VITE_SNOWBRIDGE_URL)[0]
 }
 
 export const useActiveProviderProps = (): ProviderProps | null => {
@@ -182,19 +185,6 @@ export const useIndexerClient = (): IndexerSdk => {
 
   useEffect(() => {
     setClient(getIndexerSdk(url))
-  }, [url])
-
-  return client
-}
-
-export const useSnowbridgeClient = (): SnowbridgeSdk => {
-  const url = useSnowbridgeUrl()
-  const [client, setClient] = useState<SnowbridgeSdk>(() =>
-    getSnowbridgeSdk(url),
-  )
-
-  useEffect(() => {
-    setClient(getSnowbridgeSdk(url))
   }, [url])
 
   return client

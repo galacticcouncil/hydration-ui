@@ -12,6 +12,7 @@ import {
 import { TypedApi } from "polkadot-api"
 import { StatusChange, WsEvent } from "polkadot-api/ws"
 import { createContext, ReactNode, useContext, useEffect } from "react"
+import { isFunction } from "remeda"
 
 import {
   getProviderDataEnv,
@@ -41,7 +42,9 @@ const defaultData: TProviderContext = {
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
-  featureFlags: {} as TProviderData["featureFlags"],
+  featureFlags: {
+    hollarBondsEnabled: true,
+  },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
   isLoaded: false,
@@ -85,13 +88,24 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       wsProviderOpts: {
         onStatusChanged: (status) => {
           logWsStatusChange(status)
-          if (status.type === WsEvent.CONNECTED) {
+          if (status.type === WsEvent.CONNECTED && status.uri !== rpcUrl) {
             setRpcUrl(status.uri)
           }
         },
       },
     }),
   )
+
+  useEffect(() => {
+    const client = data.papiClient
+    if (!isFunction(client?.switch)) return
+
+    // switch to best rpc when auto mode is enabled
+    return useProviderRpcUrlStore.subscribe((state, prevState) => {
+      if (!state.autoMode || state.rpcUrl === prevState.rpcUrl) return
+      client.switch(state.rpcUrl)
+    })
+  }, [data.papiClient])
 
   useEffect(() => {
     if (!Object.keys(data.sdk).length) return

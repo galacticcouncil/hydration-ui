@@ -1,22 +1,13 @@
 import { ExternalApyData } from "@galacticcouncil/money-market/types"
-import { PRIME_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
-import {
-  GIGA_ASSETS,
-  HOLLAR_ASSETS,
-  USDT_POOL_ASSET_ID,
-  VDOT_ASSET_ID,
-} from "@galacticcouncil/utils"
+import { EXTERNAL_APY_ASSET_IDS } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
 
-const EXTERNAL_APY_ASSET_IDS = [
-  USDT_POOL_ASSET_ID,
-  VDOT_ASSET_ID,
-  PRIME_ASSET_ID,
-  ...HOLLAR_ASSETS,
-  ...GIGA_ASSETS,
+type ExternalApyEntry = [
+  string,
+  { supplyApy: string | null; borrowApy: string | null },
 ]
 
 export const useExternalApyData = (): ExternalApyData => {
@@ -24,18 +15,22 @@ export const useExternalApyData = (): ExternalApyData => {
 
   return useMemo(() => {
     if (!apy) return new Map()
-    const entries = apy.map(({ assetId, totalSupplyApy, totalBorrowApy }) => {
-      const supplyApy = Big(totalSupplyApy).div(100)
-      const borrowApy = Big(totalBorrowApy).div(100)
 
-      return [
-        assetId,
-        {
-          supplyApy: supplyApy.toString(),
-          borrowApy: borrowApy.toString(),
-        },
-      ] as const
-    })
+    const entries: ExternalApyEntry[] = apy.map(
+      ({ assetId, totalSupplyApy, totalBorrowApy }) => {
+        if (totalSupplyApy === null || totalBorrowApy === null) {
+          return [assetId, { supplyApy: null, borrowApy: null }]
+        }
+
+        return [
+          assetId,
+          {
+            supplyApy: Big(totalSupplyApy).div(100).toString(),
+            borrowApy: Big(totalBorrowApy).div(100).toString(),
+          },
+        ]
+      },
+    )
 
     return new Map(entries)
   }, [apy])
