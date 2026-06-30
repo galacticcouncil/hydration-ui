@@ -21,6 +21,7 @@ import {
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAssetPrice } from "@/states/displayAsset"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import { CurrencyReserves } from "./CurrencyReserves"
@@ -91,7 +92,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
 
       <ValueStats
         label={t("liquidity:details.values.feeFarmApr")}
-        value={t("percent", { value: data.totalFee })}
+        value={formatApyPercent(t, data.totalFee)}
         wrap
       />
 

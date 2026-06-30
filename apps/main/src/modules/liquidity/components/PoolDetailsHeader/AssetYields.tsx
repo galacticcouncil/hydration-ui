@@ -3,6 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import {
   isIsolatedPool,
@@ -33,9 +34,19 @@ export const AssetYields = ({
   let apy = Big(0)
   let incentivesApr = Big(0)
 
-  if (data.borrowApyData?.underlyingSupplyApy)
+  const underlyingSupplyApy = data.borrowApyData?.underlyingSupplyApy
+
+  if (underlyingSupplyApy === null) {
+    return (
+      <Chip variant="green" size="small">
+        <UnavailableApy />
+      </Chip>
+    )
+  }
+
+  if (underlyingSupplyApy)
     apy = apy
-      .plus(data.borrowApyData.underlyingSupplyApy)
+      .plus(underlyingSupplyApy)
       .plus(data.lpFeeOmnipool ?? 0)
       .plus(data.lpFeeStablepool ?? 0)
 

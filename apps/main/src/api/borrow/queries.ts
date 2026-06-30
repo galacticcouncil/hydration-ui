@@ -403,7 +403,6 @@ export const userBorrowSummaryQuery = (
         ...summary,
         ...getUserApyValues(
           summary,
-          formattedReserves,
           formattedGhoUserData,
           formattedGhoReserveData,
         ),

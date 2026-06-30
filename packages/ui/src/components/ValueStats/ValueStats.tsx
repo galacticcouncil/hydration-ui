@@ -51,6 +51,30 @@ export const ValueStats: FC<ValueStatsProps> = ({
 }) => {
   const shouldWrap = useResponsiveValue(wrap, false)
 
+  const renderBottomValues = () => {
+    if (isLoading && (bottomLabel || customBottomLabel)) {
+      return (
+        <SValueStatsBottomValue isFloating={floatingBottomLabel}>
+          <Skeleton width={120} height="100%" />
+        </SValueStatsBottomValue>
+      )
+    }
+
+    if (customBottomLabel) {
+      return customBottomLabel
+    }
+
+    if (bottomLabel) {
+      return (
+        <SValueStatsBottomValue isFloating={floatingBottomLabel}>
+          {bottomLabel}
+        </SValueStatsBottomValue>
+      )
+    }
+
+    return null
+  }
+
   return (
     <SValueStats shouldWrap={shouldWrap} size={size} className={className}>
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
@@ -67,17 +91,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
           ))
         )}
 
-        {isLoading && (bottomLabel || customBottomLabel) ? (
-          <SValueStatsBottomValue isFloating={floatingBottomLabel}>
-            <Skeleton width={120} height="100%" />
-          </SValueStatsBottomValue>
-        ) : (
-          (customBottomLabel ?? (
-            <SValueStatsBottomValue isFloating={floatingBottomLabel}>
-              {bottomLabel}
-            </SValueStatsBottomValue>
-          ))
-        )}
+        {renderBottomValues()}
       </SValueStatsValueContainer>
     </SValueStats>
   )
