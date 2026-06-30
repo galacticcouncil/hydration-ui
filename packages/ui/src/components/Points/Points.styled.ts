@@ -1,5 +1,6 @@
 import styled from "@emotion/styled"
 
+import { mq } from "@/theme"
 import { createVariants, css, pxToRem } from "@/utils"
 
 export type PointsSize = "m" | "l"
@@ -13,9 +14,13 @@ const pointsSizes = createVariants<PointsSize>((theme) => ({
   `,
   l: css`
     display: flex;
-    gap: ${theme.space.xl};
+    gap: ${theme.space.m};
 
     padding-block: ${theme.containers.paddings.secondary};
+
+    ${mq("sm")} {
+      gap: ${theme.space.xl};
+    }
   `,
 }))
 
@@ -29,8 +34,13 @@ const pointsNumberContainerSizes = createVariants<PointsSize>(() => ({
     height: ${pxToRem(25)};
   `,
   l: css`
-    width: ${pxToRem(33)};
-    height: ${pxToRem(33)};
+    width: ${pxToRem(18)};
+    height: ${pxToRem(18)};
+
+    ${mq("sm")} {
+      width: ${pxToRem(33)};
+      height: ${pxToRem(33)};
+    }
   `,
 }))
 
@@ -61,9 +71,13 @@ const pointsNumberSizes = createVariants<PointsSize>((theme) => ({
   l: css`
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 700;
-    font-size: ${theme.fontSizes.base};
+    font-size: ${theme.fontSizes.p7};
     line-height: 1.3;
     color: ${theme.text.high};
+
+    ${mq("sm")} {
+      font-size: ${theme.fontSizes.base};
+    }
   `,
 }))
 
@@ -99,9 +113,13 @@ const pointsTitleSizes = createVariants<PointsSize>((theme) => ({
   l: css`
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 700;
-    font-size: ${theme.fontSizes.base};
+    font-size: ${theme.fontSizes.p3};
     line-height: 1.3;
     color: ${theme.text.high};
+
+    ${mq("sm")} {
+      font-size: ${theme.fontSizes.base};
+    }
   `,
 }))
 
@@ -120,9 +138,13 @@ const pointsDescriptionSizes = createVariants<PointsSize>((theme) => ({
   l: css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
-    font-size: ${theme.fontSizes.p3};
+    font-size: ${theme.fontSizes.p5};
     line-height: 1.4;
     color: ${theme.text.medium};
+
+    ${mq("sm")} {
+      font-size: ${theme.fontSizes.p3};
+    }
   `,
 }))
 
