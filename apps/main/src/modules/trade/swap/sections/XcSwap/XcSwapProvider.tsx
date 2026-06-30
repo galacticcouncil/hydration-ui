@@ -1,6 +1,6 @@
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { isH160Address } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { useAccount, WalletMode } from "@galacticcouncil/web3-connect"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useSearch } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
@@ -10,10 +10,6 @@ import {
   XcAsset,
   XcChainAssetPair,
 } from "@/modules/trade/swap/sections/XcSwap/data/mock"
-import {
-  useXcSwapAlerts,
-  XcSwapAlert,
-} from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { useXcSwapAssetPairs } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAssetPairs"
 import { useXcSwapClient } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapClient"
 import {
@@ -25,6 +21,7 @@ import {
   useXcSwapQuote,
   XcSwapQuote,
 } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapQuote"
+import { useXcSwapRequiredWalletMode } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapRequiredWalletMode"
 import { useXcSwapSelection } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSelection"
 import { useXcSwapSubmit } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSubmit"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -47,7 +44,9 @@ type XcSwapContextValue = {
   readonly isSelectionLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
-  readonly alerts: XcSwapAlert[]
+  readonly quoteError: Error | null
+  readonly requiredWalletMode: WalletMode | null
+  readonly isWalletCompatible: boolean
 }
 
 const XcSwapContext = createContext<XcSwapContextValue>({
@@ -65,7 +64,9 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   isSelectionLoading: true,
   onSubmit: () => {},
   isLoading: false,
-  alerts: [],
+  quoteError: null,
+  requiredWalletMode: null,
+  isWalletCompatible: true,
 })
 
 export const useXcSwap = () => useContext(XcSwapContext)
@@ -131,13 +132,8 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     swapSlippage,
   })
 
-  const alerts = useXcSwapAlerts({
-    form,
-    originAssetMap,
-    isCrossChain,
-    quote,
-    quoteError,
-  })
+  const { requiredWalletMode, isWalletCompatible } =
+    useXcSwapRequiredWalletMode({ form, isCrossChain })
 
   const { onSubmit, isSubmitting } = useXcSwapSubmit({ quote })
 
@@ -158,7 +154,9 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         isSelectionLoading,
         onSubmit,
         isLoading: isOriginLoading || isDestLoading || isSubmitting,
-        alerts,
+        quoteError,
+        requiredWalletMode,
+        isWalletCompatible,
       }}
     >
       <FormProvider {...form}>{children}</FormProvider>

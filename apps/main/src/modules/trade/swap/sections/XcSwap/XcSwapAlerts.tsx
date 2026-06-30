@@ -1,9 +1,9 @@
 import { Alert, Flex } from "@galacticcouncil/ui/components"
 
-import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
+import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 
 export const XcSwapAlerts = () => {
-  const { alerts } = useXcSwap()
+  const alerts = useXcSwapAlerts()
 
   if (!alerts.length) {
     return null

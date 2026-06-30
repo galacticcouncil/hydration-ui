@@ -1,13 +1,10 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { EVM_PROVIDERS } from "@galacticcouncil/web3-connect/src/config/providers"
 import { useMemo } from "react"
-import { UseFormReturn } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
-import { XcSwapQuote } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapQuote"
 import { getXcSwapErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapErrorMessages"
+import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 
 export type XcSwapAlertSeverity = "error" | "warning" | "info"
 
@@ -17,25 +14,17 @@ export type XcSwapAlert = {
   severity: XcSwapAlertSeverity
 }
 
-type UseXcSwapAlertsParams = {
-  form: UseFormReturn<XcSwapFormValues>
-  originAssetMap: Map<string, XcAsset>
-  isCrossChain: boolean
-  quote: XcSwapQuote
-  quoteError: Error | null
-}
-
-export const useXcSwapAlerts = ({
-  form,
-  originAssetMap,
-  isCrossChain,
-  quote,
-  quoteError,
-}: UseXcSwapAlertsParams): XcSwapAlert[] => {
+export const useXcSwapAlerts = (): XcSwapAlert[] => {
   const { t } = useTranslation("trade")
-  const { account, isConnected } = useAccount()
-
-  const sellAsset = form.watch("sellAsset")
+  const {
+    originAssetMap,
+    quote,
+    quoteError,
+    requiredWalletMode,
+    isWalletCompatible,
+  } = useXcSwap()
+  const { watch } = useFormContext<XcSwapFormValues>()
+  const sellAsset = watch("sellAsset")
 
   const sellAssetUnsupported =
     !!sellAsset && originAssetMap.size > 0 && !originAssetMap.has(sellAsset.id)
@@ -43,16 +32,11 @@ export const useXcSwapAlerts = ({
   return useMemo<XcSwapAlert[]>(() => {
     const alerts: XcSwapAlert[] = []
 
-    if (
-      isCrossChain &&
-      isConnected &&
-      account?.provider &&
-      !EVM_PROVIDERS.includes(account.provider)
-    ) {
+    if (requiredWalletMode && !isWalletCompatible) {
       alerts.push({
-        key: "non-evm-wallet",
+        key: "wallet-incompatible",
         message: t("xc.swap.alert.nonEvmWallet"),
-        severity: "error",
+        severity: "info",
       })
 
       return alerts
@@ -83,11 +67,10 @@ export const useXcSwapAlerts = ({
     }
     return alerts
   }, [
-    account?.provider,
-    isConnected,
-    isCrossChain,
+    isWalletCompatible,
     quote,
     quoteError,
+    requiredWalletMode,
     sellAssetUnsupported,
     t,
   ])
