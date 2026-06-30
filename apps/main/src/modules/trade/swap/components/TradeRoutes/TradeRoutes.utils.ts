@@ -1,3 +1,4 @@
+import { PoolType } from "@galacticcouncil/sdk-next/pool"
 import { BuySwap, SellSwap, Swap } from "@galacticcouncil/sdk-next/sor"
 import {
   GDOT_ASSET_ID,
@@ -54,6 +55,7 @@ export const mapRoutes = (
           asset: tradeFeeAsset,
         },
       ],
+      pools: [route.pool],
     }
   })
 
@@ -68,6 +70,7 @@ export const mapRoutes = (
     previousRoute.assetOut = route.assetOut
     previousRoute.amountOut = route.amountOut
     previousRoute.tradeFees.push(...route.tradeFees)
+    previousRoute.pools.push(...route.pools)
 
     // accumulates percentage fee loss
     previousRoute.tradeFeePct = Big(1)
@@ -92,3 +95,16 @@ const HIDDEN_HOP_ASSET_IDS = [
 
 export type TradeRoute = ReturnType<typeof mapRoutes>[number]
 export type TradeRouteFee = TradeRoute["tradeFees"][number]
+
+const POOL_TYPE_LABEL: Record<PoolType, string> = {
+  [PoolType.Omni]: "Omnipool",
+  [PoolType.Stable]: "Stableswap",
+  [PoolType.XYK]: "XYK",
+  [PoolType.LBP]: "LBP",
+  [PoolType.Aave]: "Aave",
+  [PoolType.HSM]: "HSM",
+  [PoolType.V3]: "Uniswap V3",
+}
+
+export const formatPoolTypes = (pools: ReadonlyArray<PoolType>): string =>
+  [...new Set(pools)].map((pool) => POOL_TYPE_LABEL[pool] ?? pool).join(" + ")
