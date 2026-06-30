@@ -12,7 +12,12 @@ import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
 import { useRootStore } from "@/store/root"
-import { ExternalApyData, MoneyMarketEnv, MoneyMarketTxFn } from "@/types"
+import {
+  ExternalApyData,
+  MoneyMarketEnv,
+  MoneyMarketTxFn,
+  UseMaxBalanceFn,
+} from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
 import { CustomMarket } from "@/utils"
 
@@ -58,6 +63,8 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   env: MoneyMarketEnv
   squidClient: SquidSdk
   onCreateTransaction: MoneyMarketTxFn
+  useMaxBalance: UseMaxBalanceFn
+  getRelatedATokenId: (id: string) => string | undefined
   externalApyData: ExternalApyData
 }
 
@@ -65,6 +72,8 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   children,
   env,
   onCreateTransaction,
+  useMaxBalance,
+  getRelatedATokenId,
   provider: externalProvider,
   squidClient,
   externalApyData,
@@ -97,7 +106,11 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
           <PermissionProvider>
             <ModalContextProvider>
               <AppDataProvider externalApyData={externalApyData}>
-                <SharedDependenciesProvider squidClient={squidClient}>
+                <SharedDependenciesProvider
+                  squidClient={squidClient}
+                  useMaxBalance={useMaxBalance}
+                  getRelatedATokenId={getRelatedATokenId}
+                >
                   {children}
                   <Suspense>
                     <SupplyModal />

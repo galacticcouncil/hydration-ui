@@ -1,20 +1,27 @@
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { AnyTransaction } from "@/modules/transactions/types"
-import { TAsset } from "@/providers/assetsProvider"
+import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
-export const useMaxBalance = (
-  asset: TAsset | null,
-  tx: AnyTransaction | null,
-  feePctBuffer?: number,
-) => {
+export const useMaxBalance = ({
+  assetId,
+  tx,
+  feePctBuffer,
+  balance,
+}: {
+  assetId?: string
+  tx: AnyTransaction | null
+  balance?: string
+  feePctBuffer?: number
+}) => {
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
+  const { getAssetWithFallback } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
 
-  const isFeePaymentAsset = asset
-    ? accountFeePaymentAssetId === Number(asset.id)
+  const isFeePaymentAsset = assetId
+    ? accountFeePaymentAssetId === Number(assetId)
     : false
 
   const maxBalanceWithFee = useMaxBalanceWithFee(
@@ -22,7 +29,7 @@ export const useMaxBalance = (
     feePctBuffer,
   )
 
-  if (!asset) {
+  if (!assetId) {
     return {
       maxBalanceHuman: "0",
     }
@@ -31,8 +38,8 @@ export const useMaxBalance = (
   if (!isFeePaymentAsset) {
     return {
       maxBalanceHuman: scaleHuman(
-        getTransferableBalance(asset.id),
-        asset.decimals,
+        balance ?? getTransferableBalance(assetId),
+        getAssetWithFallback(assetId).decimals,
       ),
     }
   }

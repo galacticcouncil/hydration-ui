@@ -26,6 +26,21 @@ export type MoneyMarketTxFn = (
   withExtraGas?: boolean,
 ) => void
 
+type MaxBalanceResult = {
+  maxBalanceHuman: string
+}
+
+type MaxBalanceParams = {
+  assetId?: string
+  tx: ExtendedEvmCall | null
+  feePctBuffer?: number
+  balance?: string
+}
+
+export type UseMaxBalanceFn = (
+  params: MaxBalanceParams,
+) => MaxBalanceResult | undefined
+
 export interface ExtendedEvmCall extends EvmCall {
   nonce?: bigint
   gasLimit?: bigint
