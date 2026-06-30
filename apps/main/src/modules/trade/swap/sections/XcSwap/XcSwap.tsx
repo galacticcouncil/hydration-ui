@@ -85,10 +85,10 @@ export const XcSwap: React.FC = () => {
     isHealthFactorConsentRequired && Big(healthFactor.future).gt(1)
 
   const submitLabel = (() => {
+    if (isNonEvmCrossChainWallet) return t("trade:xc.swap.cta.connectEvmWallet")
     if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
     if (isCrossChain && !destAddress.trim())
       return t("trade:xc.swap.cta.enterRecipient")
-    if (isNonEvmCrossChainWallet) return t("trade:xc.swap.cta.connectEvmWallet")
     if (alerts.length || !form.formState.isValid)
       return t("trade:xc.swap.cta.unavailable")
     if (!isHealthFactorCheckSatisfied)
@@ -120,6 +120,7 @@ export const XcSwap: React.FC = () => {
             size="large"
             width="100%"
             isLoading={false}
+            variant="secondary"
             onClick={() =>
               toggleWalletModal(WalletMode.EVM, {
                 title: t("trade:xc.swap.connectEvm.title"),

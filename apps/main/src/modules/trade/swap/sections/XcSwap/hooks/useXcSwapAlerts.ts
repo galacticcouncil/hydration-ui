@@ -52,7 +52,7 @@ export const useXcSwapAlerts = ({
       alerts.push({
         key: "non-evm-wallet",
         message: t("xc.swap.alert.nonEvmWallet"),
-        severity: "error",
+        severity: "info",
       })
 
       return alerts
