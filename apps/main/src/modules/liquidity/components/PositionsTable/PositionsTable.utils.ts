@@ -43,7 +43,7 @@ export type IsolatedPositionTableData = {
     lpFee: string
     aprsByRewardAsset: TAprByRewardAsset[]
   }
-  totalApr: string
+  totalApr: string | null
 }
 
 export type BalanceTableData = {
@@ -60,7 +60,7 @@ export type BalanceTableData = {
     borrowApyData?: BorrowAssetApyData
     lpFeeStablepool?: string
   }
-  totalApr: string
+  totalApr: string | null
 }
 
 export type OmnipoolPositionTableData = {
@@ -79,7 +79,7 @@ export type OmnipoolPositionTableData = {
     lpFeeOmnipool?: string
     lpFeeStablepool?: string
   }
-  totalApr: string
+  totalApr: string | null
 } & AccountOmnipoolPosition
 
 export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
@@ -315,12 +315,16 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
           lpFeeStablepool,
         }
 
-        const totalApr = aprsByRewardAsset
-          .reduce((acc, { apr }) => acc.plus(apr), Big(0))
-          .plus(lpFeeOmnipool ?? 0)
-          .plus(lpFeeStablepool ?? 0)
-          .plus(borrowApyData?.supplyMMApy ?? 0)
-          .toString()
+        const borrowSupplyMMApy = borrowApyData?.supplyMMApy
+        const totalApr =
+          borrowSupplyMMApy === null && borrowApyData
+            ? null
+            : aprsByRewardAsset
+                .reduce((acc, { apr }) => acc.plus(apr), Big(0))
+                .plus(lpFeeOmnipool ?? 0)
+                .plus(lpFeeStablepool ?? 0)
+                .plus(borrowSupplyMMApy ?? 0)
+                .toString()
 
         return {
           poolId: id,

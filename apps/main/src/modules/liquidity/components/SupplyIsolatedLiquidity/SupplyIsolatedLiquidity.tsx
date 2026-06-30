@@ -39,6 +39,7 @@ import {
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useAssets } from "@/providers/assetsProvider"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 export const SupplyIsolatedLiquidity = ({
   assetId,
@@ -159,9 +160,7 @@ const SupplyIsolatedLiquidityBody = ({
               <SummaryRow
                 key={index}
                 label={getApyLabel(apy.apyType, true)}
-                content={t("percent", {
-                  value: apy.apy,
-                })}
+                content={formatApyPercent(t, apy.apy)}
                 sx={{ my: 0 }}
               />
             ))}

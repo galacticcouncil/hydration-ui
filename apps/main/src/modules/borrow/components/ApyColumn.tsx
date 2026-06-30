@@ -40,15 +40,28 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
 
   const shouldRenderDetailedApy = hasMultipleUnderlying || hasIncentives
 
-  return shouldRenderDetailedApy ? (
-    <ApyBreakdown apyData={apyData} {...props} justify="end" />
-  ) : (
+  if (shouldRenderDetailedApy) {
+    return <ApyBreakdown apyData={apyData} {...props} justify="end" />
+  }
+
+  if (
+    apyData &&
+    (props.type === "supply"
+      ? apyData.totalSupplyApy
+      : apyData.totalBorrowApy) === null
+  ) {
+    return <ApyBreakdown apyData={apyData} {...props} justify="end" />
+  }
+
+  const apy =
+    props.type === "supply"
+      ? Number(reserve.supplyAPY)
+      : Number(reserve.variableBorrowAPY)
+
+  return (
     <Amount
       value={t("percent", {
-        value:
-          props.type === "supply"
-            ? Number(reserve.supplyAPY) * 100
-            : Number(reserve.variableBorrowAPY) * 100,
+        value: apy * 100,
       })}
     />
   )

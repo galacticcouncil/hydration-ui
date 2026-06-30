@@ -372,5 +372,6 @@
   "banners.hollarb.title": "Introducing Fixed Yield HOLLAR Bonds",
   "banners.hollarb.description": "Earn {{ apr, percent }} APR with fixed-term HOLLAR bonds.",
   "gigaNews": "GIGA News",
-  "closeAll": "Close all"
+  "closeAll": "Close all",
+  "externalApy.alert": "The external APY is not available"
 }

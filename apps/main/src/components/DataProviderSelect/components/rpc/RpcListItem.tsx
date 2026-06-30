@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
 
 import { bestNumberQuery } from "@/api/chain"
-import { useRpcStatus } from "@/api/rpc"
+import { RpcStatusQueryOptions, useRpcStatus } from "@/api/rpc"
 import { ListItemEditForm } from "@/components/DataProviderSelect/components/ListItemEditForm"
 import { RpcRemoveModal } from "@/components/DataProviderSelect/components/rpc/RpcRemoveModal"
 import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
@@ -175,11 +175,13 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
 }
 
 export const RpcListItemActive: React.FC<
-  RpcListItemProps & Partial<PingResponse>
-> = (props) => {
+  RpcListItemProps & Partial<PingResponse> & RpcStatusQueryOptions
+> = ({ poll, ...props }) => {
   const provider = useRpcProvider()
   const { data: bestNumber, isLoading } = useQuery(bestNumberQuery(provider))
-  const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "")
+  const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "", {
+    poll,
+  })
 
   return (
     <RpcListItemLayout
