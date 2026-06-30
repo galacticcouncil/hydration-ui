@@ -52,6 +52,7 @@
   "change": "Change",
   "connect": "Connect",
   "connectWallet": "Connect Wallet",
+  "connectWallet.evm": "Connect EVM Wallet",
   "notConnected": "Not connected",
   "description": "Description",
   "edit": "Edit",

@@ -1,11 +1,18 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
-import { Box, LoadingButton } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Button,
+  LoadingButton,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { useWeb3ConnectModal, WalletMode } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { useEffect, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { XcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/XcSwapAlerts"
 import { XcSwapFields } from "@/modules/trade/swap/sections/XcSwap/XcSwapFields"
@@ -18,15 +25,19 @@ export const XcSwap: React.FC = () => {
   const {
     destChainAssetPairs,
     onSubmit,
-    alerts,
     quote,
     isQuoteLoading,
     isLoading,
     isCrossChain,
     healthFactor,
+    requiredWalletMode,
+    isWalletCompatible,
   } = useXcSwap()
+  const alerts = useXcSwapAlerts()
   const form = useFormContext<XcSwapFormValues>()
   const { t } = useTranslation(["common", "trade"])
+  const { toggle } = useWeb3ConnectModal()
+  const isWalletConnectRequired = !!requiredWalletMode && !isWalletCompatible
 
   const [sellAmount, destAddress, isSingleTrade] = form.watch([
     "sellAmount",
@@ -100,22 +111,37 @@ export const XcSwap: React.FC = () => {
         </Box>
       )}
       <Box py="m">
-        <AuthorizedAction size="large" width="100%">
-          <LoadingButton
-            type="submit"
+        {isWalletConnectRequired ? (
+          <Button
             size="large"
+            variant="secondary"
             width="100%"
-            isLoading={isLoading}
-            disabled={!canSubmit || isLoading}
-            variant={canSubmit ? "primary" : "muted"}
-            loadingVariant="muted"
-            sx={{
-              "&:disabled": { cursor: "auto", opacity: 1 },
-            }}
+            onClick={() => toggle(requiredWalletMode)}
           >
-            {submitLabel}
-          </LoadingButton>
-        </AuthorizedAction>
+            <Text fs="p3">
+              {requiredWalletMode === WalletMode.EVM
+                ? t("connectWallet.evm")
+                : t("connectWallet")}
+            </Text>
+          </Button>
+        ) : (
+          <AuthorizedAction size="large" width="100%">
+            <LoadingButton
+              type="submit"
+              size="large"
+              width="100%"
+              isLoading={isLoading}
+              disabled={!canSubmit || isLoading}
+              variant={canSubmit ? "primary" : "muted"}
+              loadingVariant="muted"
+              sx={{
+                "&:disabled": { cursor: "auto", opacity: 1 },
+              }}
+            >
+              {submitLabel}
+            </LoadingButton>
+          </AuthorizedAction>
+        )}
       </Box>
       <XcSwapSummary />
     </form>
