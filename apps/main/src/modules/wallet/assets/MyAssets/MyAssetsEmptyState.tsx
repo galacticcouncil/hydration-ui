@@ -1,8 +1,11 @@
+import { ArrowDownUp } from "@galacticcouncil/ui/assets/icons"
 import NoFunds from "@galacticcouncil/ui/assets/images/NoFunds.png"
+import { Icon } from "@galacticcouncil/ui/components"
+import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EmptyState } from "@/components/EmptyState"
+import { EmptyState, EmptyStateAction } from "@/components/EmptyState"
 
 export const MyAssetsEmptyState: FC = () => {
   const { t } = useTranslation(["wallet"])
@@ -13,16 +16,14 @@ export const MyAssetsEmptyState: FC = () => {
       image={NoFunds}
       header={t("wallet:myAssets.emptyState.header")}
       description={t("wallet:myAssets.emptyState.description")}
-      // TODO show when XCM is ready
-      // then also update description text to "Looks like you don’t have any assets on Hydration yet. Click below to add them through cross-chain transfers."
-      // action={
-      //   <Button variant="secondary" asChild>
-      //     <Link to="/cross-chain">
-      //       <ArrowDownUp />
-      //       {t("wallet:myAssets.emptyState.cta")}
-      //     </Link>
-      //   </Button>
-      // }
+      action={
+        <EmptyStateAction asChild>
+          <Link to="/cross-chain">
+            <Icon size="xs" component={ArrowDownUp} />
+            {t("wallet:myAssets.emptyState.cta")}
+          </Link>
+        </EmptyStateAction>
+      }
     />
   )
 }

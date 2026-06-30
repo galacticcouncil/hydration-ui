@@ -1,9 +1,18 @@
-import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "@galacticcouncil/utils"
+import {
+  EvmAddr,
+  NearAddr,
+  SolanaAddr,
+  Ss58Addr,
+  SuiAddr,
+  ZcashAddr,
+} from "@galacticcouncil/utils"
 import { lazy, Suspense } from "react"
 
 import { EmptyIdenticon } from "@/components/AccountAvatar/identicons/EmptyIdenticon"
+import { NearIdenticon } from "@/components/AccountAvatar/identicons/NearIdenticon"
 import { SolanaIdenticon } from "@/components/AccountAvatar/identicons/SolanaIdenticon"
 import { SuiIdenticon } from "@/components/AccountAvatar/identicons/SuiIdenticon"
+import { ZcashIdenticon } from "@/components/AccountAvatar/identicons/ZcashIdenticon"
 import { Box, BoxProps } from "@/components/Box"
 import { useUiScale } from "@/styles/media"
 import { getToken } from "@/utils"
@@ -33,6 +42,8 @@ export type AccountAvatarTheme =
   | "talisman"
   | "solana"
   | "sui"
+  | "near"
+  | "zcash"
 export type AccountAvatarProps = BoxProps & {
   address: string
   size?: number
@@ -72,6 +83,10 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
         <SolanaIdenticon size={scaledSize} {...props} />
       )}
       {chosenTheme === "sui" && <SuiIdenticon size={scaledSize} {...props} />}
+      {chosenTheme === "near" && <NearIdenticon size={scaledSize} {...props} />}
+      {chosenTheme === "zcash" && (
+        <ZcashIdenticon size={scaledSize} {...props} />
+      )}
     </Suspense>
   )
 }
@@ -86,6 +101,10 @@ function getAutoTheme(address: string): AccountAvatarTheme | null {
       return "solana"
     case SuiAddr.isValid(address):
       return "sui"
+    case NearAddr.isValid(address):
+      return "near"
+    case ZcashAddr.isValid(address):
+      return "zcash"
     default:
       return null
   }

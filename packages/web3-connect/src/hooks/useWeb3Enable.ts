@@ -1,17 +1,17 @@
-import {
-  isH160Address,
-  safeConvertSS58toPublicKey,
-} from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import {
-  Address,
+  AddressInput,
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
 import { WalletProviderType } from "@/config/providers"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
+import {
+  PROVIDERS_BY_WALLET_MODE,
+  useWeb3Connect,
+  WalletProviderStatus,
+} from "@/hooks/useWeb3Connect"
 import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
@@ -26,9 +26,18 @@ const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
 ]
 
 export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
-  const { setStatus, setError, disconnect, setAccounts } = useWeb3Connect(
-    useShallow(pick(["setStatus", "setError", "disconnect", "setAccounts"])),
-  )
+  const { setStatus, setError, disconnect, setAccounts, setAccount } =
+    useWeb3Connect(
+      useShallow(
+        pick([
+          "setStatus",
+          "setError",
+          "disconnect",
+          "setAccounts",
+          "setAccount",
+        ]),
+      ),
+    )
 
   const { add: addToAddressBook } = useAddressStore()
 
@@ -42,22 +51,34 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
     retry: false,
     onMutate: (type) => setStatus(type, WalletProviderStatus.Pending),
     onSuccess: (data, type) => {
-      setAccounts(data.map(toStoredAccount), type)
+      const accounts = data.map(toStoredAccount)
+      setAccounts(accounts, type)
       setStatus(type, WalletProviderStatus.Connected)
+
+      const [defaultAccount] = accounts
+      if (defaultAccount) {
+        const { account, mode } = useWeb3Connect.getState()
+        const modeProviders = PROVIDERS_BY_WALLET_MODE[mode]
+        const isProviderInActiveMode =
+          !modeProviders.length || modeProviders.includes(type)
+
+        if (!account || isProviderInActiveMode) {
+          setAccount(defaultAccount)
+        }
+      }
 
       const addresses = data
         .map(
-          (account): Address => ({
+          (account): AddressInput => ({
             address: account.address,
             name: account.name,
             provider: account.provider,
-            publicKey: isH160Address(account.address)
-              ? account.address
-              : safeConvertSS58toPublicKey(account.address),
           }),
         )
         .filter(
-          ({ provider }) => !ADDRESS_BOOK_PROVIDER_BLACKLIST.includes(provider),
+          ({ provider }) =>
+            provider !== undefined &&
+            !ADDRESS_BOOK_PROVIDER_BLACKLIST.includes(provider),
         )
 
       addToAddressBook(addresses)

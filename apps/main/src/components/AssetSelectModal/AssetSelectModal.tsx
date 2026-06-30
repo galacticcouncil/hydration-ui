@@ -130,7 +130,7 @@ export const AssetSelectModalContent = ({
 
   const searchInput = (
     <Input
-      placeholder={t("assetSelector.input.placeholder")}
+      placeholder={t("search.placeholder.assets")}
       customSize="medium"
       iconStart={Search}
       value={search}

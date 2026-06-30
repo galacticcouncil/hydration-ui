@@ -36,6 +36,7 @@ type Props = {
   readonly sortingProps: SortingProps
   readonly data: Array<LiquidityPositionByAsset>
   readonly isLoading: boolean
+  readonly embedded?: boolean
 }
 
 type ModalType = {
@@ -78,6 +79,7 @@ export const MyLiquidityTable: FC<Props> = ({
   sortingProps,
   data,
   isLoading,
+  embedded = false,
 }) => {
   const { isMobile } = useBreakpoints()
   const columns = useMyLiquidityColumns()
@@ -85,10 +87,11 @@ export const MyLiquidityTable: FC<Props> = ({
   const [isDetailOpen, setIsDetailOpen] = useState<ModalType | null>(null)
 
   return (
-    <TableContainer as={Paper}>
+    <TableContainer as={embedded ? "div" : Paper}>
       <DataTable
         data={data}
         columns={columns}
+        size={embedded ? "small" : "medium"}
         paginated
         {...paginationProps}
         {...sortingProps}

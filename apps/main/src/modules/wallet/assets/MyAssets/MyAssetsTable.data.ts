@@ -9,6 +9,7 @@ import {
   myAssetsMobileSorter,
   myAssetsSorter,
 } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
+import { hasVisibleDisplayValue } from "@/modules/wallet/assets/WalletAssets.utils"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import {
   Balance,
@@ -54,31 +55,35 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
       assetsToDisplay = allAssetsWithPrice
     }
 
-    return assetsToDisplay
-      .map<MyAsset>(({ meta, balance, price }) => {
-        const total = bigShift(balance?.total.toString() ?? "0", -meta.decimals)
-        const transferable = bigShift(
-          balance?.transferable.toString() ?? "0",
-          -meta.decimals,
-        )
+    const assets = assetsToDisplay.map<MyAsset>(({ meta, balance, price }) => {
+      const total = bigShift(balance?.total.toString() ?? "0", -meta.decimals)
+      const transferable = bigShift(
+        balance?.transferable.toString() ?? "0",
+        -meta.decimals,
+      )
 
-        const totalDisplay = price ? total.times(price).toString() : undefined
-        const transferableDisplay = price
-          ? transferable.times(price).toString()
-          : undefined
+      const totalDisplay = price ? total.times(price).toString() : undefined
+      const transferableDisplay = price
+        ? transferable.times(price).toString()
+        : undefined
 
-        return {
-          ...meta,
-          origin: getAssetOrigin(meta),
-          total: total.toString(),
-          totalDisplay,
-          transferable: transferable.toString(),
-          transferableDisplay,
-          canStake: meta.id === native.id,
-          rugCheckData: undefined,
-        }
-      })
-      .sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)
+      return {
+        ...meta,
+        origin: getAssetOrigin(meta),
+        total: total.toString(),
+        totalDisplay,
+        transferable: transferable.toString(),
+        transferableDisplay,
+        canStake: meta.id === native.id,
+        rugCheckData: undefined,
+      }
+    })
+
+    return (
+      showAllAssets
+        ? assets
+        : assets.filter((asset) => hasVisibleDisplayValue(asset.totalDisplay))
+    ).sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)
   }, [
     isLoading,
     balancesWithPrice?.tokenBalances,
