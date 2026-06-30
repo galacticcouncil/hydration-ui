@@ -602,7 +602,6 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
         ...summary,
         ...getUserApyValues(
           summary,
-          formattedReserves,
           formattedGhoUserData,
           formattedGhoReserveData,
         ),
