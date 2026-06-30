@@ -1,6 +1,14 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
+import { Close } from "@galacticcouncil/ui/assets/icons"
 import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
-import { Button, Text, ValueStats } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  ButtonIcon,
+  Icon,
+  Text,
+  ValueStats,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC } from "react"
@@ -9,6 +17,7 @@ import { isArray } from "remeda"
 
 import { useGhoReserveData } from "@/api/borrow"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useBannersStore } from "@/states/banners"
 
 import {
   SContainer,
@@ -27,11 +36,15 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
   isLoadingReserves,
 }) => {
   const { t } = useTranslation()
+  const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
+  const banner = useBannersStore((state) => state.banners["hollar-banner"])
 
   const { isLoaded } = useRpcProvider()
   const { data: gho, isLoading: isLoadingGhoReserveData } = useGhoReserveData()
 
   const { ghoBorrowApyRange } = gho ?? {}
+
+  if (banner.visible === false) return null
 
   const isLoading = !isLoaded || isLoadingReserves || isLoadingGhoReserveData
 
@@ -112,6 +125,19 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
           )}
         </SValuesContainer>
       </SContent>
+      <ButtonIcon
+        sx={{
+          position: "absolute",
+          top: -5,
+          right: -5,
+          p: "s",
+          zIndex: 1,
+          background: getToken("icons.onSurface"),
+        }}
+        onClick={() => setBannerVisible("hollar-banner", false, Date.now())}
+      >
+        <Icon component={Close} size={12} color={getToken("text.high")} />
+      </ButtonIcon>
     </SContainer>
   )
 }

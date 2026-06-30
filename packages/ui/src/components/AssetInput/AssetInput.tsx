@@ -36,6 +36,7 @@ export type AssetInputProps = {
   selectedAssetIcon?: ReactNode
   onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
+  onMaxButtonClick?: (value: string) => void
   className?: string
 }
 
@@ -49,6 +50,7 @@ export const AssetInput = ({
   balanceLabel,
   maxBalance,
   maxButtonBalance,
+  onMaxButtonClick,
   ignoreBalance,
   ignoreDisplayValue,
   hideMaxBalanceAction,
@@ -65,8 +67,11 @@ export const AssetInput = ({
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
 
-  const onMaxButtonClick = () => {
-    if (usedMaxBalance) onChange?.(usedMaxBalance)
+  const handleMaxButtonClick = () => {
+    if (usedMaxBalance) {
+      onChange?.(usedMaxBalance)
+      onMaxButtonClick?.(usedMaxBalance)
+    }
   }
 
   const errorMessage = assetError ?? amountError
@@ -119,7 +124,7 @@ export const AssetInput = ({
             {!hideMaxBalanceAction && (
               <MicroButton
                 aria-label="Max balance button"
-                onClick={onMaxButtonClick}
+                onClick={handleMaxButtonClick}
                 disabled={
                   Big(usedMaxBalance || "0").lte(0) ||
                   loading ||

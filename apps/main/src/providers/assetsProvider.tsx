@@ -1,3 +1,4 @@
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import {
   createContext,
@@ -22,6 +23,7 @@ import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
 
 const bannedAssets = ["1000042"]
+const blacklistedErc20AssetIds = new Set([HDX_ERC20_ASSET_ID])
 
 type TAssetsState = {
   all: Map<string, TAsset>
@@ -173,7 +175,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
           // } else if (asset.externalId) {
           //   acc.externalInvalid.push(asset)
           // }
-        } else if (isErc20(asset)) {
+        } else if (isErc20(asset) && !blacklistedErc20AssetIds.has(asset.id)) {
           acc.erc20.push(asset)
         }
 

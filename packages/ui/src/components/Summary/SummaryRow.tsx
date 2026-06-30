@@ -64,6 +64,7 @@ export const SummaryRow = ({
       sx={{ ...(onClick && { cursor: "pointer" }) }}
       align={align}
       justify="space-between"
+      gap="m"
       my="base"
       className={className}
       onClick={onClick}
@@ -98,7 +99,14 @@ export const SummaryRowContent = (props: TextProps) => (
 )
 
 export const SummaryRowValue = (props: TextProps) => (
-  <Text fs="p5" fw={500} lh={1.2} color={getToken("text.high")} {...props} />
+  <Text
+    fs="p5"
+    fw={500}
+    lh={1.2}
+    color={getToken("text.high")}
+    sx={{ flexShrink: 0 }}
+    {...props}
+  />
 )
 
 export const SummaryRowDisplayValue = (props: TextProps) => (
