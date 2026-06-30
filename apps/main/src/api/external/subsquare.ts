@@ -15,6 +15,7 @@ export enum SubsquareVoteState {
   Deciding = "Deciding",
   Approved = "Approved",
   Preparing = "Preparing",
+  Cancelled = "Cancelled",
 }
 
 const schema = z.object({
