@@ -1,3 +1,4 @@
+import { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
 
@@ -7,6 +8,7 @@ import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/use
 import {
   findXcChainAssetPair,
   getDefaultChainAssetPair,
+  getNormalizedXcAssetId,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -16,6 +18,7 @@ type UseXcSwapSelectionParams = {
   destChainAssetPairs: XcChainAssetPair[]
   assetIn: string
   assetOut: string
+  destPlatform: XcSwapPlatform
   isOriginLoading: boolean
   isDestLoading: boolean
 }
@@ -26,6 +29,7 @@ export const useXcSwapSelection = ({
   destChainAssetPairs,
   assetIn,
   assetOut,
+  destPlatform,
   isOriginLoading,
   isDestLoading,
 }: UseXcSwapSelectionParams) => {
@@ -63,6 +67,11 @@ export const useXcSwapSelection = ({
     if (!isSelectionDataReady) return
 
     const dest =
+      destChainAssetPairs.find(
+        (p) =>
+          p.chain.platform === destPlatform &&
+          getNormalizedXcAssetId(p.asset) === assetOut,
+      ) ??
       findXcChainAssetPair(destChainAssetPairs, assetOut) ??
       getDefaultChainAssetPair(
         destChainAssetPairs,
@@ -75,7 +84,7 @@ export const useXcSwapSelection = ({
       form.setValue("destChain", dest.chain)
       form.setValue("buyAsset", dest.asset)
     }
-  }, [isSelectionDataReady, destChainAssetPairs, form, assetOut])
+  }, [isSelectionDataReady, destChainAssetPairs, form, assetOut, destPlatform])
 
   const destChain = form.watch("destChain")
   const isCrossChain = destChain?.platform !== "hydration"

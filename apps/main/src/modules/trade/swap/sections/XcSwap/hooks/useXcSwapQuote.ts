@@ -51,14 +51,25 @@ export const useXcSwapQuote = ({
 }: UseXcSwapQuoteParams) => {
   const { isApiLoaded } = rpc
 
-  const sellAsset = form.watch("sellAsset")
-  const buyAsset = form.watch("buyAsset")
-  const destChain = form.watch("destChain")
-  const isSingleTrade = form.watch("isSingleTrade")
-  const type = form.watch("type")
-  const sellAmount = form.watch("sellAmount")
-  const buyAmount = form.watch("buyAmount")
-  const destAddress = form.watch("destAddress")
+  const [
+    sellAsset,
+    buyAsset,
+    destChain,
+    isSingleTrade,
+    type,
+    sellAmount,
+    buyAmount,
+    destAddress,
+  ] = form.watch([
+    "sellAsset",
+    "buyAsset",
+    "destChain",
+    "isSingleTrade",
+    "type",
+    "sellAmount",
+    "buyAmount",
+    "destAddress",
+  ])
 
   const recipientPlaceholder = destChain
     ? XC_SWAP_RECIPIENT_PLACEHOLDERS[destChain.key]

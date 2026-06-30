@@ -2,6 +2,7 @@ import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { isH160Address } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
+import { useSearch } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 import { FormProvider } from "react-hook-form"
 
@@ -83,6 +84,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const form = useXcSwapForm()
+  const { destPlatform } = useSearch({ from: "/trade/_history" })
   const {
     swap: {
       single: { swapSlippage },
@@ -107,6 +109,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     destChainAssetPairs,
     assetIn,
     assetOut,
+    destPlatform,
     isOriginLoading,
     isDestLoading,
   })
