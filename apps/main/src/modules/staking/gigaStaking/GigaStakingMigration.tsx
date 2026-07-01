@@ -5,6 +5,7 @@ import {
   Icon,
   Paper,
   Separator,
+  Spinner,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -103,7 +104,7 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
           disabled={mutation.isPending}
           onClick={() => setIsMigrateConfirmationModalOpen(true)}
         >
-          {t("gigaStakingMigration.cta")}
+          {mutation.isPending ? <Spinner /> : t("gigaStakingMigration.cta")}
         </Button>
       </Flex>
       <MigrateConfirmationModal
