@@ -3,14 +3,10 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
-import { accountOpenGovVotesQuery } from "@/api/democracy"
+import { openGovUnlockedTokensQuery } from "@/api/democracy"
 import { evmAccountBindingQuery } from "@/api/evm"
-import {
-  HDXSupplyQueryKey,
-  processedVotesQuery,
-  stakingPositionsQuery,
-} from "@/api/staking"
-import { getProcessedVoteIds } from "@/modules/staking/Stake.data"
+import { useProxyUrl } from "@/api/provider"
+import { HDXSupplyQueryKey, stakingPositionsQuery } from "@/api/staking"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -23,6 +19,7 @@ export const useGigaStakingMigration = () => {
   const { papi } = rpc
   const { account } = useAccount()
   const createBatch = useCreateBatchTx()
+  const indexerUrl = useProxyUrl()
 
   return useMutation({
     mutationFn: async (stakeAmount: string) => {
@@ -32,16 +29,19 @@ export const useGigaStakingMigration = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const [{ votes }, processedVotes, isBound] = await Promise.all([
-        rpc.queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
-        rpc.queryClient.ensureQueryData(
-          processedVotesQuery(rpc, address, true),
-        ),
+      const [isBound, openGovUnlocked] = await Promise.all([
         rpc.queryClient.ensureQueryData(evmAccountBindingQuery(rpc, address)),
+        rpc.queryClient.ensureQueryData(
+          openGovUnlockedTokensQuery(rpc, address, indexerUrl),
+        ),
       ])
 
-      const { newProcessedVotesIds, oldProcessedVotesIds } =
-        getProcessedVoteIds(votes, processedVotes)
+      const removeVotesTxs = openGovUnlocked.votesToRemove.map((vote) =>
+        papi.tx.ConvictionVoting.remove_vote({
+          class: vote.classId,
+          index: vote.voteId,
+        }),
+      )
 
       const migrateTx = unsafeApi.tx.GigaHdx.migrate()
 
@@ -49,21 +49,9 @@ export const useGigaStakingMigration = () => {
         ? [papi.tx.EVMAccounts.bind_evm_address(), migrateTx]
         : [migrateTx]
 
-      const txs =
-        !newProcessedVotesIds.length && !oldProcessedVotesIds.length
-          ? mainTxs
-          : [
-              ...oldProcessedVotesIds.map((id) =>
-                papi.tx.Democracy.remove_vote({ index: id }),
-              ),
-              ...newProcessedVotesIds.map(({ classId, id }) =>
-                papi.tx.ConvictionVoting.remove_vote({
-                  class: classId,
-                  index: id,
-                }),
-              ),
-              ...mainTxs,
-            ]
+      const txs = !removeVotesTxs.length
+        ? mainTxs
+        : [...removeVotesTxs, ...mainTxs]
 
       const stakedAmountHuman = toDecimal(stakeAmount, native.decimals)
 
