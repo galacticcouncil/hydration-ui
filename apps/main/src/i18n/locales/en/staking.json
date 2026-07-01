@@ -19,7 +19,7 @@
   "gigaStaking.gigaStake.input.label": "Amount to stake",
   "gigaStaking.gigaStake.minStake.label": "Minimum stake",
   "gigaStaking.gigaStake.receive.label": "Estimated receive",
-  "gigaStaking.gigaStake.cta": "Giga Stake",
+  "gigaStaking.gigaStake.cta": "Stake as GIGAHDX",
   "gigaStaking.gigaUnstake.input.label": "Amount to unstake",
   "gigaStaking.gigaUnstake.receive.label": "Estimated receive",
   "gigaStaking.gigaUnstake.frozen.alert": "{{ value, number }} GHDX of your stake is locked under ongoing referenda. Available again once the referenda end or you remove your vote",
