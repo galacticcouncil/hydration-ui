@@ -13,7 +13,7 @@ import {
   Stack,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { bigShift } from "@galacticcouncil/utils"
+import { bigShift, getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big, { BigSource } from "big.js"
 import BigNumber from "bignumber.js"
 import { useEffect, useRef, useState } from "react"
@@ -24,8 +24,10 @@ import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrap
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
+import { useRepayEstimationTx } from "@/hooks/useRepayEstimationTx"
 import { useRootStore } from "@/store/root"
-import { formatHealthFactorResult } from "@/utils"
+import { useSharedDependencies } from "@/ui-config/SharedDependenciesProvider"
+import { formatHealthFactorResult, GHO_ASSET_ID, isGho } from "@/utils"
 import { getNetworkConfig } from "@/utils/marketsAndNetworksConfig"
 
 import { RepayActions } from "./RepayActions"
@@ -83,6 +85,31 @@ export const RepayModalContent: React.FC<
     .mul("1.0025")
     .round(poolReserve.decimals, BigNumber.ROUND_UP)
 
+  const { useMaxBalance } = useSharedDependencies()
+  const { data: repayEstimationTx } = useRepayEstimationTx({
+    poolAddress: repayWithATokens
+      ? poolReserve.underlyingAsset
+      : (tokenToRepayWith.address ?? ""),
+    debtType,
+    repayWithATokens,
+    amount: safeAmountToRepayAll.toString(),
+    decimals: poolReserve.decimals,
+    enabled: !repayWithATokens,
+  })
+  const repayAssetId = isGho(poolReserve)
+    ? GHO_ASSET_ID
+    : getAssetIdFromAddress(tokenToRepayWith.address)
+
+  const maxBalanceWithFee = useMaxBalance({
+    tx: repayEstimationTx ?? null,
+    assetId: repayAssetId,
+    feePctBuffer: 0.1,
+  })
+
+  const balanceWithFee = Big(maxBalanceWithFee?.maxBalanceHuman ?? "0")
+    .round(poolReserve.decimals, BigNumber.ROUND_UP)
+    .toString()
+
   // calculate max amount abailable to repay
   let maxAmountToRepay: BigNumber
   let balance: string
@@ -96,8 +123,11 @@ export const RepayModalContent: React.FC<
         ? minRemainingBaseTokenBalance
         : "0",
     )
-    balance = normalizedWalletBalance.toString()
-    maxAmountToRepay = BigNumber.min(normalizedWalletBalance, debt)
+
+    const walletBalance = balanceWithFee || normalizedWalletBalance.toString()
+    balance = walletBalance
+
+    maxAmountToRepay = BigNumber.min(walletBalance, debt)
   }
 
   const isMaxSelected =

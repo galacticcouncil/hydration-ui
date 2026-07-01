@@ -15,7 +15,9 @@ import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
+import { useMaxBalance } from "@/modules/transactions/hooks/useMaxBalance"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -37,6 +39,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const createBatchTx = useCreateBatchTx()
   const { evm, dataEnv, papi } = useRpcProvider()
   const squidClient = useSquidClient()
+  const { getRelatedAToken } = useAssets()
   const { market } = useSearch({ from: "/borrow" })
 
   const selectedMarket = market || defaultMarketByEnv[dataEnv]
@@ -61,6 +64,11 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
     [createTransaction, createBatchTx, papi],
   )
 
+  const getRelatedATokenId = useCallback(
+    (id: string) => getRelatedAToken(id)?.id,
+    [getRelatedAToken],
+  )
+
   return (
     <ApyProvider>
       <MoneyMarketProvider
@@ -68,11 +76,13 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
         provider={evm.transport}
         squidClient={squidClient}
         onCreateTransaction={createTx}
+        useMaxBalance={useMaxBalance}
         formatCurrency={createFormatterFn(t, "currency")}
         formatNumber={createFormatterFn(t, "number")}
         formatPercent={createFormatterFn(t, "percent")}
         formatReserve={useFormatReserve()}
         externalApyData={useExternalApyData()}
+        getRelatedATokenId={getRelatedATokenId}
       >
         {children}
       </MoneyMarketProvider>

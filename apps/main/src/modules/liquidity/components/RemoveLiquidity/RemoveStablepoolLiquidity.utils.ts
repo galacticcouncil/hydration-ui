@@ -14,13 +14,15 @@ import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { TRemoveLiquidityFormValues } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquidity.utils"
 import { calculatePoolFee, TReserve } from "@/modules/liquidity/Liquidity.utils"
+import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman, toBigInt, toDecimal } from "@/utils/formatting"
-import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
+import { positive, required } from "@/utils/validators"
 
 export type TRemoveStablepoolLiquidityFormValues =
   TRemoveLiquidityFormValues & {
@@ -57,10 +59,10 @@ export const useStablepoolRemoveLiquidity = ({
     meta.decimals,
   )
 
-  const form = useRemoveStablepoolLiquidityForm({
+  const { form, getMaxBalance } = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset,
-    balance: balanceShifted,
     asset: { ...meta, iconId: meta.underlyingAssetId },
+    tx: null,
   })
 
   const removeAmountShifted = form.watch("amount") || "0"
@@ -181,6 +183,7 @@ export const useStablepoolRemoveLiquidity = ({
   return {
     form,
     balance: balanceShifted,
+    getMaxBalance,
     fee,
     receiveAssetsProportionally,
     mutation,
@@ -191,14 +194,16 @@ export const useStablepoolRemoveLiquidity = ({
 
 export const useRemoveStablepoolLiquidityForm = ({
   asset,
-  balance,
   receiveAsset,
+  tx,
 }: {
   asset?: TSelectedAsset
   receiveAsset: TAssetData
-  balance: string
+  tx: AnyTransaction | null
 }) => {
-  return useForm<TRemoveStablepoolLiquidityFormValues>({
+  const { validateBalance, getMaxBalance } = useFormMaxBalanceWithFee(tx, 3)
+
+  const form = useForm<TRemoveStablepoolLiquidityFormValues>({
     mode: "onChange",
     defaultValues: {
       amount: "",
@@ -208,13 +213,17 @@ export const useRemoveStablepoolLiquidityForm = ({
       receiveAmount: "",
     },
     resolver: standardSchemaResolver(
-      z.object({
-        amount: required.pipe(positive).check(validateFieldMaxBalance(balance)),
-        asset: z.custom<TSelectedAsset>(),
-        split: z.boolean(),
-        receiveAsset: z.custom<TAssetData>(),
-        receiveAmount: z.string(),
-      }),
+      z
+        .object({
+          amount: required.pipe(positive),
+          asset: z.custom<TSelectedAsset>(),
+          split: z.boolean(),
+          receiveAsset: z.custom<TAssetData>(),
+          receiveAmount: z.string(),
+        })
+        .check(validateBalance("amount", (form) => [form.asset, form.amount])),
     ),
   })
+
+  return { form, getMaxBalance }
 }

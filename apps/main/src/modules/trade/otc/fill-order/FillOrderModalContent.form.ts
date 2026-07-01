@@ -8,21 +8,26 @@ import { type infer as Infer, object, refine } from "zod/v4"
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
 import { getOtcBuyAmountAfterFee } from "@/modules/trade/otc/fill-order/FillOrder.utils"
+import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
+import {
+  useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   positiveOptional,
-  useValidateFormMaxBalance,
   validateFieldExistentialDeposit,
 } from "@/utils/validators"
 
-const useSchema = (offer: OtcOfferTabular) => {
+const useSchema = (
+  offer: OtcOfferTabular,
+  validateBalance: ValidateFormMaxBalanceWithFee,
+) => {
   const rpc = useRpcProvider()
   const { data: existentialDepositMultiplier } = useQuery(
     otcExistentialDepositorMultiplierQuery(rpc),
   )
-
-  const refineMaxBalance = useValidateFormMaxBalance()
 
   return object({
     sellAmount: positiveOptional.check(
@@ -42,7 +47,7 @@ const useSchema = (offer: OtcOfferTabular) => {
       ),
     ),
   }).check(
-    refineMaxBalance("sellAmount", (form) => [offer.assetIn, form.sellAmount]),
+    validateBalance("sellAmount", (form) => [offer.assetIn, form.sellAmount]),
   )
 }
 
@@ -53,6 +58,8 @@ export const useFillOrderForm = (
   isUsersOffer: boolean,
   feePrice: string,
 ) => {
+  const { papi } = useRpcProvider()
+
   const defaultValues: FillOrderFormValues =
     !isUsersOffer && otcOffer.isPartiallyFillable
       ? {
@@ -70,11 +77,20 @@ export const useFillOrderForm = (
           ),
         }
 
-  const schema = useSchema(otcOffer)
+  const { validateBalance, getMaxBalance } = useFormMaxBalanceWithFee(
+    getOtcFillOrderTx(papi, otcOffer, "1"),
+  )
 
-  return useForm<FillOrderFormValues>({
+  const schema = useSchema(otcOffer, validateBalance)
+
+  const form = useForm<FillOrderFormValues>({
     defaultValues,
     resolver: isUsersOffer ? undefined : standardSchemaResolver(schema),
     mode: "onChange",
   })
+
+  return {
+    form,
+    getMaxBalance,
+  }
 }

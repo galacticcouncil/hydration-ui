@@ -28,6 +28,7 @@ import {
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import { useAddableStablepoolTokens } from "@/modules/liquidity/Liquidity.utils"
+import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -44,14 +45,14 @@ export type TAddMoneyMarketLiquidityWrapperReturn = Omit<
 >
 
 export const useAddMoneyMarketLiquidityWrapper = ({
-  stablepoolDetails: { reserves },
+  stablepoolDetails: { reserves, pool },
   stableswapId,
   erc20Id,
   initialOption,
   split: initialSplit,
 }: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
-  const { balances } = useAccountBalances()
+  const { papi } = useRpcProvider()
   const addableReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { data: omnipoolIds } = useOmnipoolIds()
   const isAddableToOmnipool = omnipoolIds?.includes(erc20Id)
@@ -67,15 +68,16 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserve.asset_id.toString(),
   )
 
-  const accountBalances = new Map(
-    Object.values(balances).map((balance) => [
-      balance.assetId,
-      scaleHuman(
-        balance.transferable,
-        getAssetWithFallback(balance.assetId).decimals,
-      ),
-    ]),
-  )
+  const addLiquidityTx = papi.tx.Stableswap.add_assets_liquidity({
+    pool_id: pool.id,
+    assets: addableReserves.map((reserve) => ({
+      asset_id: reserve.asset_id,
+      amount: BigInt(scale("1", reserve.meta.decimals)),
+    })),
+    min_shares: 0n,
+  })
+
+  const { getMaxBalance } = useFormMaxBalanceWithFee(addLiquidityTx, 5)
 
   const defaultOption =
     initialOption || (isAddableToOmnipool ? "omnipool" : "stablepool")
@@ -95,7 +97,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     stablepoolId: stableswapId,
     omnipoolId: isAddableToOmnipool ? erc20Id : stableswapId,
     selectedAssetId: initialAssetIdToAdd ?? "",
-    accountBalances,
+    getMaxBalance,
     option: defaultOption,
     activeFieldIds: reserveIds,
     split: !enabledSplit ? false : initialSplit,
@@ -126,7 +128,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 
   return {
     form,
-    accountBalances,
+    getMaxBalance,
     assetsToSelect: split ? [] : assetsToSelect,
     meta,
     reserveIds,
