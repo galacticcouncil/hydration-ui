@@ -337,13 +337,15 @@ export const openGovUnlockedTokensQuery = (
       const indexedVotes: TIndexedVotes[] = []
       for (const vote of subsquareAccountVotes.items) {
         const status = vote.proposal.state.name
+
+        const balance = vote.balance ?? vote.abstainBalance ?? "0"
         if (status === SubsquareVoteState.Executed) {
           const convictionBlockNumber =
             CONVICTIONS_BLOCKS_BY_INDEX[vote.conviction]
 
           if (convictionBlockNumber === undefined) {
             indexedVotes.push({
-              amount: BigInt(vote.balance),
+              amount: BigInt(balance),
               id: vote.referendumIndex,
               locked: true,
               diffBlockNumber: undefined,
@@ -358,7 +360,7 @@ export const openGovUnlockedTokensQuery = (
 
           indexedVotes.push({
             id: vote.referendumIndex,
-            amount: BigInt(vote.balance),
+            amount: BigInt(balance),
             locked: Big(unlockBlockNumber).gt(currentBlock),
             diffBlockNumber,
           })
@@ -370,7 +372,7 @@ export const openGovUnlockedTokensQuery = (
         ) {
           indexedVotes.push({
             id: vote.referendumIndex,
-            amount: BigInt(vote.balance),
+            amount: BigInt(balance),
             locked: true,
             diffBlockNumber: undefined,
           })

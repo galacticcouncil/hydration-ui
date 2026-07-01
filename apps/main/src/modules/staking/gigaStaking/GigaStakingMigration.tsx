@@ -14,6 +14,7 @@ import { FC, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
+import { useStakingRewards } from "@/hooks/data/useStakingRewards"
 import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
 import { MigrateConfirmationModal } from "@/modules/staking/gigaStaking/MigrateConfirmationModal"
 import { useAssets } from "@/providers/assetsProvider"
@@ -39,7 +40,13 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
     ? millisecondsToHours(cooldownPeriod * rpc.slotDurationMs) / 24
     : undefined
 
+  const { data: stakingRewards } = useStakingRewards()
+
   const stakedAmountHuman = toDecimal(stakeAmount.toString(), native.decimals)
+  const allocatedRewards = toDecimal(
+    stakingRewards?.maxRewards || "0",
+    native.decimals,
+  )
 
   const mutation = useGigaStakingMigration()
 
@@ -71,6 +78,7 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
             values={{
               amount: stakedAmountHuman,
               days: cooldownPeriodDays ?? "-",
+              rewards: allocatedRewards,
             }}
             components={[
               <Text
