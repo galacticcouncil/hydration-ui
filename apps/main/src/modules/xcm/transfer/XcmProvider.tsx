@@ -120,7 +120,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   )
 
   // The SDK only sets isTagSelect when every route in the pair delivers the
-  // same destination asset (e.g. outbound Snowbridge V2/Fast/V1, all → ETH).
+  // same destination asset (e.g. outbound Snowbridge V2/V1, all → ETH).
   // Inbound, Snowbridge and Wormhole deliver *different* assets, so the pair
   // is isAssetSelect and isTagSelect is false — yet once a destination asset
   // is picked there can still be multiple bridge variants for it (Snowbridge
