@@ -26,10 +26,7 @@ export const useCancelPendingPosition = () => {
       amount: bigint
     }) => {
       const accountAddress = account?.address ?? ""
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const tx = unsafeApi.tx.GigaHdx.cancel_unstake({
+      const tx = rpc.papi.tx.GigaHdx.cancel_unstake({
         position_id: voteAtBlock,
       })
 
@@ -74,10 +71,7 @@ export const useClaimPendingPosition = () => {
       amount: bigint
     }) => {
       const accountAddress = account?.address ?? ""
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const tx = unsafeApi.tx.GigaHdx.unlock({
+      const tx = rpc.papi.tx.GigaHdx.unlock({
         position_id: voteAtBlock,
       })
 
