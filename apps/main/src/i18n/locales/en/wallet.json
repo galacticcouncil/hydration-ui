@@ -48,7 +48,7 @@
   "myAssets.expandedNative.lockedInXCM": "Locked in Cross-chain",
   "myAssets.expandedNative.lockedInXCM.description": "Large transfers temporarily locked for security; unlockable after review period.",
   "myAssets.expandedNative.lockedInVesting": "Locked in Vesting",
-  "myAssets.expandedNative.lockedInGigaStaking": "Locked in Giga Staking",
+  "myAssets.expandedNative.lockedInGigaStaking": "Locked in GIGAHDX",
   "myAssets.expandedNative.lockedInReferenda": "Locked in Referenda",
   "myAssets.expandedNative.actions.unlockAvailableAssets": "Unlock assets",
   "myAssets.expandedNative.actions.clearLocks": "Clear locks",

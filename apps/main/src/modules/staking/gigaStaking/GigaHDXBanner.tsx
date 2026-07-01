@@ -8,8 +8,9 @@ import {
   Icon,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,6 +34,8 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
     useState(false)
   const { featureFlags } = useRpcProvider()
   const { t } = useTranslation("staking")
+  const { isMobile, isTablet } = useBreakpoints()
+  const navigate = useNavigate()
   const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
   const banner = useBannersStore(
     (state) =>
@@ -43,12 +46,26 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
 
   if (banner.visible === false || !featureFlags.gigaStakingEnabled) return null
 
+  const isMobileView = isMobile || isTablet
+
   return (
-    <SGigaHDXBanner direction={["row-reverse", "row-reverse", "row"]}>
+    <SGigaHDXBanner
+      as={isMobileView ? "button" : "div"}
+      direction={["row-reverse", "row-reverse", "row"]}
+      onClick={
+        isMobileView
+          ? () => {
+              type === "stake"
+                ? navigate({ to: LINKS.stakingGigaStake })
+                : setIsMigrateConfirmationModalOpen(true)
+            }
+          : undefined
+      }
+    >
       <img
         sx={{
           mt: "-m",
-          ml: "l",
+          ml: ["none", "none", "l"],
           zIndex: 1,
         }}
         src={gigaHDXBannerCans}
@@ -69,8 +86,11 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
             color={getToken("text.high")}
             fs={["p3", "p3", "p2"]}
           >
-            {t("gigaStaking.banner.title")}
+            {isMobileView
+              ? t("gigaStaking.banner.title.mob")
+              : t("gigaStaking.banner.title")}
           </Text>
+
           <Text fs={["p5", "p5", "p4"]} lh="m" color={getToken("text.high")}>
             {type === "stake"
               ? t("gigaStaking.banner.description.stake")
