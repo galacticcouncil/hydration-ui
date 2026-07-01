@@ -158,10 +158,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   const mutation = useMutation({
     mutationFn: async (amount: string) => {
       if (!account) throw new Error("No account connected")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const unstakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
+      const unstakeTx = rpc.papi.tx.GigaHdx.giga_unstake({
         gigahdx_amount: toBigInt(amount, meta.decimals),
       })
 

@@ -26,8 +26,6 @@ export const useGigaStakingMigration = () => {
       if (!account) throw new Error("No account connected")
 
       const { address } = account
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
       const [isBound, openGovUnlocked] = await Promise.all([
         rpc.queryClient.ensureQueryData(evmAccountBindingQuery(rpc, address)),
@@ -43,7 +41,7 @@ export const useGigaStakingMigration = () => {
         }),
       )
 
-      const migrateTx = unsafeApi.tx.GigaHdx.migrate()
+      const migrateTx = papi.tx.GigaHdx.migrate()
 
       const mainTxs = !isBound
         ? [papi.tx.EVMAccounts.bind_evm_address(), migrateTx]
