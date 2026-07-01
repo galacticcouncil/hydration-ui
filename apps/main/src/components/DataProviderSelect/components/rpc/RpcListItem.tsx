@@ -3,7 +3,7 @@ import {
   Box,
   Flex,
   Icon,
-  Spinner,
+  SpinnerIcon,
   Text,
   TextButton,
   Tooltip,
@@ -21,7 +21,7 @@ import { ListItemEditForm } from "@/components/DataProviderSelect/components/Lis
 import { RpcRemoveModal } from "@/components/DataProviderSelect/components/rpc/RpcRemoveModal"
 import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useRpcListStore } from "@/states/provider"
+import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 import { SRpcListItem, SRpcRadio, SRpcRadioThumb } from "./RpcListItem.styled"
 
@@ -110,9 +110,9 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
           {getHostnameFromUrl(url)}
         </Text>
       </Box>
-      <Box>
+      <Flex height="xl" align="center">
         {isLoading ? (
-          <Spinner size="xs" />
+          <SpinnerIcon size="xs" />
         ) : (
           <RpcStatus
             url={url}
@@ -122,7 +122,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
             ping={ping}
           />
         )}
-      </Box>
+      </Flex>
       <Flex
         color={getToken("text.medium")}
         gap="s"
@@ -162,11 +162,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
         )}
         {!!onClick && (
           <Box sx={{ ml: "base" }}>
-            {isLoading ? (
-              <Spinner size="xs" />
-            ) : (
-              <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
-            )}
+            <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
           </Box>
         )}
       </Flex>
@@ -178,18 +174,34 @@ export const RpcListItemActive: React.FC<
   RpcListItemProps & Partial<PingResponse> & RpcStatusQueryOptions
 > = ({ poll, ...props }) => {
   const provider = useRpcProvider()
-  const { data: bestNumber, isLoading } = useQuery(bestNumberQuery(provider))
+  const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const connectedRpcUrl = useProviderRpcUrlStore(
+    (state) => state.connectedRpcUrl,
+  )
+
+  const isSwitching = rpcUrl !== connectedRpcUrl
+  const { data: bestNumber, isLoading: isBestNumberLoading } = useQuery(
+    bestNumberQuery(provider),
+  )
   const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "", {
     poll,
   })
+
+  const blockNumber = isSwitching
+    ? props.blockNumber
+    : bestNumber?.parachainBlockNumber
+  const timestamp = isSwitching ? props.timestamp : bestNumber?.timestamp
+
+  const isLoading =
+    !provider.isLoaded || isSwitching || (isBestNumberLoading && !isSwitching)
 
   return (
     <RpcListItemLayout
       {...props}
       ping={props?.ping ?? status?.ping}
-      blockNumber={bestNumber?.parachainBlockNumber}
-      timestamp={bestNumber?.timestamp}
-      isLoading={!provider.isLoaded || isLoading}
+      blockNumber={blockNumber}
+      timestamp={timestamp}
+      isLoading={isLoading}
     />
   )
 }
