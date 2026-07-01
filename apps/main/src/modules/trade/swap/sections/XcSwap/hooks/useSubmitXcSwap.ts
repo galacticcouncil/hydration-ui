@@ -1,4 +1,3 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { XcSwapTrade } from "@galacticcouncil/xc-swap"
 import { useMutation } from "@tanstack/react-query"
@@ -30,10 +29,6 @@ export const useSubmitXcSwap = () => {
       const swapAndBridge = calls[calls.length - 1]
       if (!swapAndBridge) throw new Error("Failed to build the swap call")
       const approve = calls.length > 1 ? calls[0] : undefined
-      const swapEndBridgeCall: ExtendedEvmCall = {
-        ...swapAndBridge,
-        gasLimit: 5_000_000n,
-      }
 
       const i18nVars = {
         amount: sellAmount,
@@ -84,7 +79,7 @@ export const useSubmitXcSwap = () => {
               },
             },
             {
-              tx: swapEndBridgeCall,
+              tx: swapAndBridge,
               stepTitle: t("swap"),
               toasts,
               meta,
@@ -93,7 +88,7 @@ export const useSubmitXcSwap = () => {
         })
       }
 
-      return createTransaction({ tx: swapEndBridgeCall, toasts, meta })
+      return createTransaction({ tx: swapAndBridge, toasts, meta })
     },
   })
 }

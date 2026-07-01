@@ -23,7 +23,7 @@ import { HydrationAssetList } from "@/modules/trade/swap/sections/XcSwap/compone
 import {
   XcChain,
   XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
+} from "@/modules/trade/swap/sections/XcSwap/types"
 import { numericallyStrDesc } from "@/utils/sort"
 
 export type ChainAssetSelectModalProps = {

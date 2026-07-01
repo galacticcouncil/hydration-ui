@@ -15,7 +15,7 @@ type UseXcSwapRequiredWalletModeParams = {
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { WalletMode } from "@galacticcouncil/web3-connect"
 
-import { XcChain } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 
 export const getXcSwapRequiredWalletMode = (
   isCrossChain: boolean,

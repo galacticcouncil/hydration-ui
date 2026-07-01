@@ -1,11 +1,11 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { createXcSwap, XcSwapChain } from "@galacticcouncil/xc-swap"
 import { useMemo } from "react"
 
-import { getXcSwapChainLogoUrl, XC_SWAP_CONFIG } from "@/config/xcSwap"
-import {
-  addressValidatorFor,
-  XcChain,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XC_SWAP_CONFIG } from "@/config/xcSwap"
+import { getXcSwapChainLogoUrl } from "@/modules/trade/swap/sections/XcSwap/config/meta"
+import { addressValidatorForPlatform } from "@/modules/trade/swap/sections/XcSwap/lib/addressValidatorForPlatform"
+import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
@@ -32,11 +32,11 @@ export const useXcSwapClient = () => {
           key: chain.key,
           name: chain.name,
           logo:
-            chain.platform === "hydration"
+            chain.platform === HYDRATION_CHAIN_KEY
               ? hydrationLogo
               : getXcSwapChainLogoUrl(chain.key),
           platform: chain.platform,
-          addressValidator: addressValidatorFor(chain.platform),
+          addressValidator: addressValidatorForPlatform(chain.platform),
         },
       ]),
     )

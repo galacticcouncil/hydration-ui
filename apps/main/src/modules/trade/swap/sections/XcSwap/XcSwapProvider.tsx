@@ -6,10 +6,6 @@ import { useSearch } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 import { FormProvider } from "react-hook-form"
 
-import {
-  XcAsset,
-  XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { useXcSwapAssetPairs } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAssetPairs"
 import { useXcSwapClient } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapClient"
 import {
@@ -24,6 +20,10 @@ import {
 import { useXcSwapRequiredWalletMode } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapRequiredWalletMode"
 import { useXcSwapSelection } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSelection"
 import { useXcSwapSubmit } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSubmit"
+import {
+  XcAsset,
+  XcChainAssetPair,
+} from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 

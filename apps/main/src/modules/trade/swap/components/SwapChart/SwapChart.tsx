@@ -3,12 +3,12 @@ import { useSearch } from "@tanstack/react-router"
 import React, { useState } from "react"
 
 import { krakenPairForPlatform } from "@/api/external/kraken"
-import { XC_SWAP_ASSET_META } from "@/config/xcSwap"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import {
   XcSwapChart,
   XcSwapChartType,
 } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart"
+import { XC_SWAP_ASSET_META } from "@/modules/trade/swap/sections/XcSwap/config/meta"
 import { useAssets } from "@/providers/assetsProvider"
 
 type SwapChartProps = {

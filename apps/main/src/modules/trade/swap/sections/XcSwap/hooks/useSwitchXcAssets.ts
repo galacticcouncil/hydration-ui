@@ -3,9 +3,9 @@ import { useNavigate } from "@tanstack/react-router"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { getXcAssetId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -31,7 +31,7 @@ export const useSwitchXcAssets = () => {
           name: sellAsset.name,
           decimals: sellAsset.decimals,
           logo: sellAsset.iconSrc ?? "",
-          logoId: sellAsset.id,
+          chain: HYDRATION_CHAIN_KEY,
           id: Number(sellAsset.id),
         })
       : null

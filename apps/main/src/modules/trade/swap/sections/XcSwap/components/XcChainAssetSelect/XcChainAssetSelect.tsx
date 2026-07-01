@@ -7,7 +7,7 @@ import {
   XcAsset,
   XcChain,
   XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
+} from "@/modules/trade/swap/sections/XcSwap/types"
 
 export type XcChainAssetSelectProps = Omit<
   AssetInputProps,

@@ -4,7 +4,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { XcAssetLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 
 import { SAssetListItem } from "./AssetListItem.styled"
 

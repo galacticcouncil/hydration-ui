@@ -7,7 +7,7 @@ import {
   XcAsset,
   XcChain,
   XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
+} from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -48,7 +48,7 @@ export const useXcSwapAssetPairs = (
           name: meta?.name ?? asset.symbol,
           decimals: asset.decimals,
           logo: meta?.iconSrc ?? "",
-          logoId: id,
+          chain: asset.chain,
           id: asset.id,
           address: asset.address,
         },
@@ -83,6 +83,7 @@ export const useXcSwapAssetPairs = (
             name: asset.symbol,
             decimals: asset.decimals,
             logo: "",
+            chain: asset.chain,
             oneClickId: asset.oneClickId,
           },
         })
