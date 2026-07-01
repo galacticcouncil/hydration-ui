@@ -7,6 +7,7 @@ import { AddressBookModal } from "@/components/address-book"
 import { ExternalWalletForm } from "@/components/external/ExternalWalletForm"
 import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.form"
 import { Web3ConnectModalPage } from "@/config/modal"
+import { WalletMode } from "@/config/wallet"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 
 export const ExternalWalletContent = () => {
@@ -18,12 +19,8 @@ export const ExternalWalletContent = () => {
   if (isAddressBookOpen) {
     return (
       <AddressBookModal
-        header={
-          <ModalHeader
-            title={t("external.selectAccount")}
-            onBack={() => setIsAddressBookOpen(false)}
-          />
-        }
+        whitelist={[WalletMode.Substrate, WalletMode.EVM]}
+        onBack={() => setIsAddressBookOpen(false)}
         onSelect={(address) => {
           form.setValue("address", address.address, { shouldValidate: true })
           setIsAddressBookOpen(false)

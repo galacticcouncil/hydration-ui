@@ -15,4 +15,5 @@ export const SSwapFormContainer = styled(Paper)(
 
 export const SwapSectionSeparator = styled(Separator)`
   margin-inline: var(--swap-section-inset-inline);
+  flex-shrink: 0;
 `
