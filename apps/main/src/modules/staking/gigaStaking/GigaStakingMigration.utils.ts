@@ -3,31 +3,67 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
+import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { evmAccountBindingQuery } from "@/api/evm"
-import { stakingPositionsQuery } from "@/api/staking"
+import {
+  HDXSupplyQueryKey,
+  processedVotesQuery,
+  stakingPositionsQuery,
+} from "@/api/staking"
+import { getProcessedVoteIds } from "@/modules/staking/Stake.data"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export const useGigaStakingMigration = () => {
   const { t } = useTranslation("staking")
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { papi } = rpc
   const { account } = useAccount()
-  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const createBatch = useCreateBatchTx()
 
   return useMutation({
     mutationFn: async (stakeAmount: string) => {
       if (!account) throw new Error("No account connected")
+
+      const { address } = account
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const isBound = await rpc.queryClient.fetchQuery(
-        evmAccountBindingQuery(rpc, account.address),
-      )
+      const [{ votes }, processedVotes, isBound] = await Promise.all([
+        rpc.queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
+        rpc.queryClient.ensureQueryData(
+          processedVotesQuery(rpc, address, true),
+        ),
+        rpc.queryClient.ensureQueryData(evmAccountBindingQuery(rpc, address)),
+      ])
+
+      const { newProcessedVotesIds, oldProcessedVotesIds } =
+        getProcessedVoteIds(votes, processedVotes)
 
       const migrateTx = unsafeApi.tx.GigaHdx.migrate()
+
+      const mainTxs = !isBound
+        ? [papi.tx.EVMAccounts.bind_evm_address(), migrateTx]
+        : [migrateTx]
+
+      const txs =
+        !newProcessedVotesIds.length && !oldProcessedVotesIds.length
+          ? mainTxs
+          : [
+              ...oldProcessedVotesIds.map((id) =>
+                papi.tx.Democracy.remove_vote({ index: id }),
+              ),
+              ...newProcessedVotesIds.map(({ classId, id }) =>
+                papi.tx.ConvictionVoting.remove_vote({
+                  class: classId,
+                  index: id,
+                }),
+              ),
+              ...mainTxs,
+            ]
 
       const stakedAmountHuman = toDecimal(stakeAmount, native.decimals)
 
@@ -42,20 +78,16 @@ export const useGigaStakingMigration = () => {
         }),
       }
 
-      return createTransaction({
-        tx: !isBound
-          ? rpc.papi.tx.Utility.batch_all({
-              calls: [
-                rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
-                migrateTx.decodedCall,
-              ],
-            })
-          : migrateTx,
-        invalidateQueries: [
-          userGigaBorrowSummaryQueryKey(account.address),
-          stakingPositionsQuery(rpc, account.address).queryKey,
-        ],
-        toasts,
+      await createBatch({
+        txs,
+        transaction: {
+          invalidateQueries: [
+            userGigaBorrowSummaryQueryKey(address),
+            stakingPositionsQuery(rpc, address).queryKey,
+            HDXSupplyQueryKey,
+          ],
+          toasts,
+        },
       })
     },
   })
