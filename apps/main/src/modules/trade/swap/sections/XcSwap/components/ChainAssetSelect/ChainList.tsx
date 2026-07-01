@@ -7,7 +7,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
-import { XcChain } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 
 const CHAIN_ITEM_HEIGHT = 40
 const MAX_VISIBLE_CHAIN_ITEMS = 12

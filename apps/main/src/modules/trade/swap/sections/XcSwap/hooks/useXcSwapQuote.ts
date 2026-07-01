@@ -13,17 +13,18 @@ import {
   TradeOrder,
   TradeType,
 } from "@/api/trade"
-import { XC_SWAP_RECIPIENT_PLACEHOLDERS } from "@/config/xcSwap"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XC_SWAP_RECIPIENT_PLACEHOLDERS } from "@/modules/trade/swap/sections/XcSwap/config/meta"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { assertXcSwapQuoteParams } from "@/modules/trade/swap/sections/XcSwap/lib/assertXcSwapQuoteParams"
+import { getQuoteFormUpdate } from "@/modules/trade/swap/sections/XcSwap/lib/getQuoteFormUpdate"
 import {
   isXcDestAsset,
   sellAssetToXcAsset,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scale, scaleHuman } from "@/utils/formatting"
+import { scale } from "@/utils/formatting"
 
 export type XcSwapQuote =
   | { kind: "xc"; swap: XcSwapTrade }
@@ -198,40 +199,16 @@ export const useXcSwapQuote = ({
   const quoteError = isCrossChain ? xcQuoteError : omnipoolQuoteError
 
   useEffect(() => {
-    if (quote?.kind === "xc") {
-      form.setValue("buyAmount", quote.swap.amountOut.toDecimal(), {
-        shouldValidate: true,
-      })
-    } else if (quote?.kind === "oc" && type === TradeType.Buy && sellAsset) {
-      // Buy: derive the required sellAmount from the quote's amountIn
-      const amountIn = isSingleTrade
-        ? quote.swap.amountIn
-        : quote.twap?.amountIn
-      const nextSellAmount = amountIn
-        ? scaleHuman(amountIn, sellAsset.decimals)
-        : ""
+    const { field, value } = getQuoteFormUpdate({
+      quote,
+      type,
+      sellAsset,
+      buyAsset,
+      isSingleTrade,
+    })
 
-      if (form.getValues("sellAmount") !== nextSellAmount) {
-        form.setValue("sellAmount", nextSellAmount, { shouldValidate: true })
-      }
-    } else if (quote?.kind === "oc" && buyAsset) {
-      // Sell: derive buyAmount from the quote's amountOut
-      const amountOut = isSingleTrade
-        ? quote.swap.amountOut
-        : quote.twap?.amountOut
-      const nextBuyAmount = amountOut
-        ? scaleHuman(amountOut, buyAsset.decimals)
-        : ""
-
-      if (form.getValues("buyAmount") !== nextBuyAmount) {
-        form.setValue("buyAmount", nextBuyAmount, { shouldValidate: true })
-      }
-    } else if (type === TradeType.Buy) {
-      if (form.getValues("sellAmount")) {
-        form.setValue("sellAmount", "", { shouldValidate: true })
-      }
-    } else if (form.getValues("buyAmount")) {
-      form.setValue("buyAmount", "", { shouldValidate: true })
+    if (form.getValues(field) !== value) {
+      form.setValue(field, value, { shouldValidate: true })
     }
   }, [quote, buyAsset, sellAsset, form, isSingleTrade, type])
 

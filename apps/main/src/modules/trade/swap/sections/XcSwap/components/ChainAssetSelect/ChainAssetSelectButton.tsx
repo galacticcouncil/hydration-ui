@@ -7,7 +7,7 @@ import {
   XcAssetLogo,
   XcLogo,
 } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
-import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/types"
 
 import { SButton } from "./ChainAssetSelectButton.styled"
 

@@ -4,8 +4,11 @@ import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
 
 import { AssetHeader } from "@/components/AssetHeader"
-import { getXcSwapAssetLogoUrl, XC_SWAP_ASSET_META } from "@/config/xcSwap"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
+import {
+  getXcSwapAssetLogoUrl,
+  XC_SWAP_ASSET_META,
+} from "@/modules/trade/swap/sections/XcSwap/config/meta"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const PageHeader = () => {

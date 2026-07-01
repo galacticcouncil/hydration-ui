@@ -7,7 +7,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AddressBookModal, WalletMode } from "@galacticcouncil/web3-connect"
-import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
 import { useFormContext } from "react-hook-form"
@@ -20,10 +19,6 @@ import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { XcChainAssetSelectFormField } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
 import { XcSrcAssetSelectField } from "@/modules/trade/swap/sections/XcSwap/components/XcSrcAssetSelectField"
-import {
-  XcChain,
-  XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { useXcSwapFormReset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapFormReset"
@@ -31,6 +26,10 @@ import {
   getXcAssetId,
   isSameXcAsset,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import {
+  XcChain,
+  XcChainAssetPair,
+} from "@/modules/trade/swap/sections/XcSwap/types"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
 import { useAccountBalances } from "@/states/account"
@@ -134,7 +133,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           ...search,
           assetIn: sellAsset?.id,
           assetOut: getXcAssetId(selection.asset) ?? search.assetOut,
-          destPlatform: selection.chain.platform as XcSwapPlatform,
+          destPlatform: selection.chain.platform,
         }),
         resetScroll: false,
       })

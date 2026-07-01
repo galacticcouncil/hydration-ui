@@ -1,5 +1,5 @@
 import { Flex } from "@galacticcouncil/ui/components"
-import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
@@ -12,7 +12,7 @@ import {
   XcAsset,
   XcChain,
   XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
+} from "@/modules/trade/swap/sections/XcSwap/types"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -34,9 +34,9 @@ const toXcAsset = (
       name: asset.name,
       decimals: asset.decimals,
       logo: asset.iconSrc ?? "",
+      chain: HYDRATION_CHAIN_KEY,
       id: Number(asset.id),
     }),
-    logoId: asset.id,
     balance: asset.balance,
     balanceUsd: asset.balanceDisplay,
   }

@@ -1,6 +1,6 @@
 import { isNumber } from "remeda"
 
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 
 export type XcSwapQuoteParams = {
   assetIn: number

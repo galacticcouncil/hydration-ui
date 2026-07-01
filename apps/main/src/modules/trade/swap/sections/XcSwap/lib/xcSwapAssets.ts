@@ -4,7 +4,7 @@ import { TAssetData } from "@/api/assets"
 import {
   XcAsset,
   XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/data/mock"
+} from "@/modules/trade/swap/sections/XcSwap/types"
 
 export const findXcChainAssetPair = (
   pairs: XcChainAssetPair[],
@@ -63,6 +63,6 @@ export const sellAssetToXcAsset = (
     name: asset.name,
     decimals: asset.decimals,
     logo: asset.iconSrc ?? "",
-    logoId: asset.id,
+    chain: HYDRATION_CHAIN_KEY,
     id: Number(asset.id),
   }

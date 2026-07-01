@@ -3,13 +3,13 @@ import { useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
 
 import { XC_SWAP_CONFIG } from "@/config/xcSwap"
-import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/data/mock"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import {
   findXcChainAssetPair,
   getDefaultChainAssetPair,
   getNormalizedXcAssetId,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
 
 type UseXcSwapSelectionParams = {

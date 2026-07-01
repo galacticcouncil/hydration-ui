@@ -4,7 +4,7 @@ import {
 } from "@galacticcouncil/ui/components"
 
 import { AssetListItem } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/AssetListItem"
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/data/mock"
+import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 
 const ASSET_ITEM_HEIGHT = 50
 const MAX_VISIBLE_ASSET_ITEMS = 8
