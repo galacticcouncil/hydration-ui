@@ -9,6 +9,7 @@ import { ExternalWallet } from "@/wallets/ExternalWallet"
 import { FearlessWallet } from "@/wallets/FearlessWallet"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask } from "@/wallets/MetaMask"
+import { Nightly } from "@/wallets/Nightly"
 import { NovaWallet, NovaWalletEvm, NovaWalletH160 } from "@/wallets/NovaWallet"
 import { Phantom, PhantomSui } from "@/wallets/Phantom"
 import { PolkadotJS } from "@/wallets/PolkadotJS"
@@ -30,6 +31,7 @@ export {
   FearlessWallet,
   MantaWallet,
   MetaMask,
+  Nightly,
   NovaWallet,
   NovaWalletEvm,
   NovaWalletH160,
@@ -74,6 +76,7 @@ const wallets = [
   new TalismanEvm(),
   new SubWalletEvm(),
   new RabbyWallet(),
+  new Nightly(),
 
   // Solana
   new Phantom(),
