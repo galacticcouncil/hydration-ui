@@ -1,15 +1,19 @@
-import { Plus } from "@galacticcouncil/ui/assets/icons"
+import { Plus, Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Button,
+  Flex,
   Grid,
   Icon,
+  Input,
   ModalBody,
   ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
-import { useCallback } from "react"
+import { arraySearch } from "@galacticcouncil/utils"
+import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useDebounce } from "react-use"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -26,6 +30,25 @@ export const MultisigConfigSelectContent = () => {
     useShallow(pick(["setActive", "remove", "add", "update"])),
   )
   const configs = useMultisigConfigs()
+
+  const [searchVal, setSearchVal] = useState("")
+  const [search, setSearch] = useState("")
+
+  useDebounce(
+    () => {
+      setSearch(searchVal ?? "")
+    },
+    100,
+    [searchVal],
+  )
+
+  const filteredConfigs = useMemo(() => {
+    if (!search) return configs
+
+    return arraySearch(configs, search, ["name", "address"])
+  }, [configs, search])
+
+  const shouldRenderSearch = configs.length > 1
 
   const handleMultisigSelect = useCallback(
     (config: MultisigConfig) => {
@@ -59,10 +82,23 @@ export const MultisigConfigSelectContent = () => {
         title={t("multisig.configSelect.title")}
         align="center"
         onBack={() => setPage(Web3ConnectModalPage.ProviderSelect)}
+        customHeader={
+          shouldRenderSearch && (
+            <Flex direction="column" gap="xl" mt="base">
+              <Input
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                customSize="large"
+                iconStart={Search}
+                placeholder={t("account.searchPlaceholder")}
+              />
+            </Flex>
+          )
+        }
       />
       <ModalBody scrollable>
-        <Grid gap="base">
-          {configs.map((config) => (
+        <Grid gap="base" maxHeight="5xl">
+          {filteredConfigs.map((config) => (
             <AccountMultisigOption
               key={config.id}
               config={config}
@@ -71,7 +107,7 @@ export const MultisigConfigSelectContent = () => {
               onDelete={remove}
             />
           ))}
-          {!configs.length && (
+          {!filteredConfigs.length && (
             <Alert
               variant="info"
               title={t("multisig.configSelect.empty.title")}

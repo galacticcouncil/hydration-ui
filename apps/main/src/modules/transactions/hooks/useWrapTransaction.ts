@@ -1,33 +1,31 @@
 import {
-  safeConvertAddressSS58,
-  safeConvertPublicKeyToSS58,
+  safeConvertSS58toPublicKey,
+  stringEquals,
 } from "@galacticcouncil/utils"
 import {
   useAccount,
+  useAccountMultisigs,
   useActiveMultisigConfig,
 } from "@galacticcouncil/web3-connect"
-import {
-  AccountId,
-  sortMultisigSignatories,
-} from "@polkadot-api/substrate-bindings"
 import { useQuery } from "@tanstack/react-query"
-import { toHex } from "polkadot-api/utils"
 import { useCallback, useMemo } from "react"
 import { isBigInt } from "remeda"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { evmAccountBindingQuery } from "@/api/evm"
+import { buildAsMulti } from "@/api/multisig"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
   containsEvmCall,
   prependEvmBindingTx,
+  transformAnyToPapiTx,
   transformEvmCallToPapiTx,
 } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"
 
-export const useWrapEvmTransaction = (
+const useWrapEvmTransaction = (
   transaction: SingleTransaction,
 ): SingleTransaction => {
   const rpc = useRpcProvider()
@@ -52,8 +50,7 @@ export const useWrapEvmTransaction = (
       }
     }
 
-    // Account is bound - no binding needed
-    if (isEvmAccountBound) return transaction
+    if (isEvmAccountBound !== false) return transaction
 
     // Prepend bind_evm_address for native EVM calls when not bound
     if (isEvmCall(transaction.tx)) {
@@ -80,53 +77,40 @@ export const useWrapEvmTransaction = (
 const useWrapMultisigTransaction = () => {
   const { papi } = useRpcProvider()
   const config = useActiveMultisigConfig()
+  const { data: multisigs } = useAccountMultisigs()
 
   const wrapInMultisig = useCallback(
     (
       transaction: SingleTransaction,
       multisigSignerAddress: string,
     ): SingleTransaction => {
-      if (!config) {
+      const multisigAccount =
+        config &&
+        multisigs?.accounts.find(({ pubKey }) =>
+          stringEquals(pubKey, safeConvertSS58toPublicKey(config.address)),
+        )
+
+      if (!multisigAccount) {
         return transaction
       }
 
-      const tx = isPapiTransaction(transaction.tx)
-        ? transaction.tx
-        : isEvmCall(transaction.tx)
-          ? transformEvmCallToPapiTx(papi, transaction.tx)
-          : null
+      const tx = transformAnyToPapiTx(papi, transaction.tx)
 
       if (!tx) {
         return transaction
       }
 
-      const otherSignatories = config.signers.filter(
-        (s) =>
-          safeConvertAddressSS58(s) !==
-          safeConvertAddressSS58(multisigSignerAddress),
-      )
-
-      const sortedOtherSignatories = sortMultisigSignatories(
-        otherSignatories.map((s) => AccountId().enc(s)),
-      )
-
       return {
         ...transaction,
-        tx: papi.tx.Multisig.as_multi({
-          threshold: config.threshold,
-          other_signatories: sortedOtherSignatories.map((s) =>
-            safeConvertPublicKeyToSS58(toHex(s)),
-          ),
-          maybe_timepoint: undefined,
-          call: tx.decodedCall,
-          max_weight: {
-            ref_time: 0n,
-            proof_size: 0n,
-          },
-        }),
+        tx: buildAsMulti(
+          papi,
+          multisigSignerAddress,
+          multisigAccount,
+          tx.decodedCall,
+        ),
       }
     },
-    [config, papi],
+    [config, multisigs?.accounts, papi],
   )
 
   return { wrapInMultisig }
@@ -140,7 +124,14 @@ export const useWrapTransaction = (
 
   const tx = useWrapEvmTransaction(transaction)
 
-  return account?.isMultisig && account.multisigSignerAddress
-    ? wrapInMultisig(tx, account.multisigSignerAddress)
+  const multisigSigner = account?.isMultisig
+    ? account.multisigSignerAddress
+    : undefined
+
+  const isMultisigType =
+    isPapiTransaction(tx.tx) && tx.tx.decodedCall?.type === "Multisig"
+
+  return multisigSigner && !isMultisigType
+    ? wrapInMultisig(tx, multisigSigner)
     : tx
 }

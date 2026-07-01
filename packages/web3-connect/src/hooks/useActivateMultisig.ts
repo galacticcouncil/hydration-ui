@@ -17,8 +17,8 @@ import { StoredAccount, useWeb3Connect } from "@/hooks/useWeb3Connect"
 export function useActivateMultisig() {
   const { t } = useTranslation()
   const { setActive } = useMultisigStore()
-  const { accounts, toggle, setAccount } = useWeb3Connect(
-    useShallow(pick(["accounts", "toggle", "setAccount"])),
+  const { accounts, setAccount } = useWeb3Connect(
+    useShallow(pick(["accounts", "setAccount"])),
   )
 
   const activate = useCallback(
@@ -41,9 +41,8 @@ export function useActivateMultisig() {
 
       setActive(config.id, signerAddress)
       setAccount(multisigAccount)
-      toggle()
     },
-    [accounts, setActive, setAccount, toggle, t],
+    [accounts, setActive, setAccount, t],
   )
 
   return { activate }

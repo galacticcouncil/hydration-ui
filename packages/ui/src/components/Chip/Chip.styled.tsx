@@ -13,6 +13,7 @@ export type ChipVariant =
   | "warning"
   | "danger"
   | "green"
+  | "red"
   | "accent"
 
 export type ChipSize = "extra-small" | "small" | "medium" | "large"
@@ -45,12 +46,13 @@ const variants = createVariants(({ buttons, accents }) => ({
   warning: variantStyles(accents.alertAlt.onPrimary, accents.alertAlt.primary),
   danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
   green: variantStyles(accents.success.emphasis, accents.success.dim),
+  red: variantStyles(accents.danger.emphasis, accents.danger.dimBg),
 }))
 
 const sizes = createVariants((theme) => ({
   "extra-small": css`
     font-size: ${theme.fontSizes.p6};
-    padding-block: ${theme.space.xs};
+    padding-block: ${theme.space.base};
     padding-inline: ${theme.space.s};
     height: 1rem;
   `,
@@ -86,7 +88,7 @@ export const SChip = styled(Box, {
       font-weight: 500;
       line-height: 1;
 
-      border-radius: ${rounded ? theme.radii.full : theme.radii.m};
+      border-radius: ${rounded ? theme.radii.full : theme.radii.base};
     `,
   ],
 )

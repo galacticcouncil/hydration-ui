@@ -5,6 +5,7 @@ import {
   safeParse,
   safeStringify,
 } from "@galacticcouncil/utils"
+import { TxCallData } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
@@ -48,6 +49,15 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
     }
   } catch {
     return {}
+  }
+}
+
+export const decodeCallData = (call: TxCallData): object | JsonValue => {
+  const txJson = safeStringify(call)
+  try {
+    return formatTypeValueJson(safeParse(txJson))
+  } catch {
+    return safeParse(txJson)
   }
 }
 

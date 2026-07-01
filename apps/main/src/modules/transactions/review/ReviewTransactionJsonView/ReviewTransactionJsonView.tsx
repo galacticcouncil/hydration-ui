@@ -5,7 +5,11 @@ import {
   TabsContent,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HYDRATION_CHAIN_KEY, safeStringify } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  JsonValue,
+  safeStringify,
+} from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
@@ -35,16 +39,17 @@ type JsonContentProps = {
   tx: AnyTransaction
   srcChainKey: string
   jsonPath?: string
+  decodedOverride?: object | JsonValue
 }
 
 const JSON_MAX_HEIGHT = 200
 
 export const ReviewTransactionJsonContent: React.FC<
   Omit<JsonContentProps, "mode">
-> = ({ tx, srcChainKey, jsonPath }) => {
+> = ({ tx, srcChainKey, jsonPath, decodedOverride }) => {
   const { t } = useTranslation("common")
 
-  const txJson = decodeTx(tx, jsonPath)
+  const txJson = decodedOverride ?? decodeTx(tx, jsonPath)
   const { data: txCallHash = "" } = useQuery({
     queryKey: ["txCallHash", safeStringify(tx)],
     queryFn: () => getTxCallHash(tx),

@@ -10,6 +10,7 @@ import { createContext, ReactNode, useContext, useEffect, useMemo } from "react"
 import { merge } from "rxjs"
 import { distinctUntilChanged, map, skip } from "rxjs/operators"
 
+import { multisigPendingTxsQuery } from "@/api/multisig"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type MultisigContextValue = {
@@ -44,18 +45,9 @@ export const MultisigProvider = ({ children }: { children: ReactNode }) => {
   }, [accountMultisigs?.accounts])
 
   const pendingTxQueries = useQueries({
-    queries: multisigAddresses.map((address) => ({
-      enabled: isApiLoaded && !!address,
-      queryKey: ["multisig", "pendingTxs", address],
-      staleTime: Infinity,
-      queryFn: async () => {
-        const entries = await papi.query.Multisig.Multisigs.getEntries(
-          address,
-          { at: "best" },
-        )
-        return entries.map(normalizeMultisigEntry)
-      },
-    })),
+    queries: multisigAddresses.map((address) =>
+      multisigPendingTxsQuery(papi, address, isApiLoaded),
+    ),
   })
 
   const allSuccess = pendingTxQueries.every((q) => q.isSuccess)

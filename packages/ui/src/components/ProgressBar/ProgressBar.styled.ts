@@ -65,8 +65,9 @@ export const SProgressBar = styled.div(
 
 export const SProgressBarFill = styled.div<{
   readonly value: number
+  readonly animated?: boolean
 }>(
-  ({ theme, value }) => css`
+  ({ theme, value, animated = true }) => css`
     position: absolute;
     top: 0;
     left: 0;
@@ -76,10 +77,13 @@ export const SProgressBarFill = styled.div<{
 
     background: ${theme.controls.solid.accent};
 
-    transition: width 0.2s;
-    @starting-style {
-      width: 0%;
-    }
+    ${animated &&
+    css`
+      transition: width 0.2s;
+      @starting-style {
+        width: 0%;
+      }
+    `}
   `,
 )
 

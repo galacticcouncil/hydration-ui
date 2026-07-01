@@ -55,6 +55,36 @@ export const MultisigsByAccountIdsDocument = `
 }
     `;
 
+export const MultisigHistoryByAccountIdDocument = `
+    query MultisigHistoryByAccountId($accountId: String!, $limit: Int = 50, $offset: Int = 0) {
+  multisigCalls(
+    limit: $limit
+    offset: $offset
+    orderBy: [timestamp_DESC]
+    where: {multisig: {id_eq: $accountId}}
+  ) {
+    id
+    timestamp
+    blockHash
+    callIndex
+    multisig {
+      id
+      pubKey
+      isMultisig
+      isPureProxy
+      threshold
+      signatories {
+        id
+        signatory {
+          id
+          pubKey
+        }
+      }
+    }
+  }
+}
+    `;
+
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
 
@@ -64,6 +94,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     MultisigsByAccountIds(variables?: Types.MultisigsByAccountIdsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.MultisigsByAccountIdsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.MultisigsByAccountIdsQuery>({ document: MultisigsByAccountIdsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'MultisigsByAccountIds', 'query', variables);
+    },
+    MultisigHistoryByAccountId(variables: Types.MultisigHistoryByAccountIdQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.MultisigHistoryByAccountIdQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.MultisigHistoryByAccountIdQuery>({ document: MultisigHistoryByAccountIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'MultisigHistoryByAccountId', 'query', variables);
     }
   };
 }
