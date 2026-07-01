@@ -12,7 +12,11 @@ export const GHO_ASSET_ID = "222"
  * @returns {bool} - If the GHO token is available for minting
  */
 
-export const GHO_SUPPORTED_MARKETS = ["hydration_v3", "hydration_testnet_v3"]
+export const GHO_SUPPORTED_MARKETS = [
+  "hydration_v3",
+  "hydration_testnet_v3",
+  "gigahdx_v3",
+]
 
 export const isGho = (reserve: ComputedReserveData) => {
   return reserve.symbol === GHO_SYMBOL

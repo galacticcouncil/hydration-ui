@@ -2,6 +2,8 @@ import { queryOptions } from "@tanstack/react-query"
 import { millisecondsInMinute } from "date-fns/constants"
 import z from "zod"
 
+import { Conviction } from "@/api/democracy"
+
 export const getSubsquareEndpoint = (address: string, indexerUrl: string) =>
   `${indexerUrl}/subsquare/users/${address}/referenda/votes?page_size=100&includes_title=1`
 
@@ -24,7 +26,7 @@ const schema = z.object({
       referendumIndex: z.number(),
       balance: z.string(),
       aye: z.boolean(),
-      conviction: z.number(),
+      conviction: z.custom<Conviction>(),
       queryAt: z.number(),
       proposal: z.object({
         state: z.object({

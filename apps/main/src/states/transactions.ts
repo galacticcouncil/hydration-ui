@@ -35,6 +35,11 @@ export type TransactionAlert = Pick<
   requiresUserConsent?: boolean | string
 }
 
+export type TExecutedAmount = {
+  amount: string
+  assetId: string
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
@@ -45,6 +50,7 @@ export type TransactionCommon = {
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
+  executedAmount?: TExecutedAmount
 }
 
 interface SingleTransactionInput extends TransactionCommon {

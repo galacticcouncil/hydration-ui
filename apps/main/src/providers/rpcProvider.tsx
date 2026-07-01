@@ -44,6 +44,7 @@ const defaultData: TProviderContext = {
   evm: {} as TProviderData["evm"],
   featureFlags: {
     hollarBondsEnabled: true,
+    gigaStakingEnabled: false,
   },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,

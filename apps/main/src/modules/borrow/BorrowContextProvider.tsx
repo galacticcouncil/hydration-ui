@@ -3,11 +3,14 @@ import {
   FormatterFn,
   MoneyMarketTxFn,
 } from "@galacticcouncil/money-market/types"
+import { CustomMarket } from "@galacticcouncil/money-market/utils"
+import { useSearch } from "@tanstack/react-router"
 import { TFunction } from "i18next"
 import { PropsWithChildren, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSquidClient } from "@/api/provider"
+import { TDataEnv } from "@/config/rpc"
 import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
@@ -15,6 +18,11 @@ import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
+
+const defaultMarketByEnv: Record<TDataEnv, CustomMarket> = {
+  mainnet: CustomMarket.hydration_v3,
+  testnet: CustomMarket.hydration_testnet_v3,
+}
 
 const createFormatterFn =
   (t: TFunction, type: "currency" | "number" | "percent"): FormatterFn =>
@@ -29,6 +37,9 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const createBatchTx = useCreateBatchTx()
   const { evm, dataEnv, papi } = useRpcProvider()
   const squidClient = useSquidClient()
+  const { market } = useSearch({ from: "/borrow" })
+
+  const selectedMarket = market || defaultMarketByEnv[dataEnv]
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts }, options, withExtraGas) => {
@@ -53,7 +64,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   return (
     <ApyProvider>
       <MoneyMarketProvider
-        env={dataEnv}
+        market={selectedMarket}
         provider={evm.transport}
         squidClient={squidClient}
         onCreateTransaction={createTx}

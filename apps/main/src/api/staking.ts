@@ -97,7 +97,7 @@ export const stakingPositionsQuery = (
         return null
       }
 
-      const positions = await papi.query.Staking.Positions.getValue(
+      const positions = await rpc.papi.query.Staking.Positions.getValue(
         stakePositionId,
         { at: "best" },
       )
