@@ -5,9 +5,11 @@ import { useQuery } from "@tanstack/react-query"
 import { FC, useState } from "react"
 
 import { accountOpenGovVotesQuery } from "@/api/democracy"
+import { stakingPositionsQuery } from "@/api/staking"
 import i18n from "@/i18n"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { GigaAction } from "@/modules/staking/gigaStaking/GigaAction"
+import { GigaHDXBanner } from "@/modules/staking/gigaStaking/GigaHDXBanner"
 import { GigaStakeTotalsHeader } from "@/modules/staking/gigaStaking/GigaStakeTotalsHeader"
 import { GigaStakingDashboard } from "@/modules/staking/gigaStaking/GigaStakingDashboard"
 import { OngoingReferenda } from "@/modules/staking/OngoingReferenda"
@@ -29,11 +31,21 @@ export const GigaStakePage: FC = () => {
     accountOpenGovVotesQuery(rpc, address),
   )
 
+  const { data: stakingPositionsData } = useQuery(
+    stakingPositionsQuery(rpc, address),
+  )
+
   const votesData = accountVotes?.votes ?? []
 
   if (isMobile || isTablet) {
     return (
       <Flex direction="column" gap="xl">
+        {!!stakingPositionsData?.stake && (
+          <GigaHDXBanner
+            stakeAmount={stakingPositionsData.stake}
+            type="migration"
+          />
+        )}
         <GigaStakeTotalsHeader />
 
         <SliderTabs
