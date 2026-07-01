@@ -24,8 +24,8 @@ const schema = z.object({
   items: z.array(
     z.object({
       referendumIndex: z.number(),
-      balance: z.string(),
-      aye: z.boolean(),
+      balance: z.string().optional(),
+      abstainBalance: z.string().optional(),
       conviction: z.custom<Conviction>(),
       queryAt: z.number(),
       proposal: z.object({
@@ -46,6 +46,7 @@ export const accountVotesQuery = (address: string, indexerUrl: string) =>
     queryFn: async () => {
       const res = await fetch(getSubsquareEndpoint(address, indexerUrl))
       const data = await res.json()
+
       const parsed = schema.parse(data)
       return parsed
     },
