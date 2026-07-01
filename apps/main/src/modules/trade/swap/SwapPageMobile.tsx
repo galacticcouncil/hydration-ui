@@ -3,8 +3,10 @@ import { Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
+import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
@@ -18,7 +20,9 @@ export const SwapPageMobile: FC = () => {
         <Separator mx={-20} />
         <Outlet />
       </SSwapFormContainer>
+      <TradeChartGrafana height={TRADE_CHART_MOBILE_HEIGHT} />
       <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
+      <TradeOrdersHistory />
       <TradeOrders />
     </Flex>
   )
