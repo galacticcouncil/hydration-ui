@@ -8,8 +8,6 @@ export enum CapType {
   "borrowCap" = "borrowCap",
 }
 
-export type MoneyMarketEnv = "mainnet" | "testnet"
-
 export type ToastsConfig = {
   submitted: string
   success: string

@@ -1,4 +1,6 @@
 import {
+  Alert,
+  Box,
   Button,
   Grid,
   Separator,
@@ -41,7 +43,7 @@ export const StakeForm: FC<Props> = ({
   const { t } = useTranslation(["common", "staking"])
 
   const { native } = useAssets()
-  const { form, minStake, maxBalanceHuman, mutation } = useStake(
+  const { form, minStake, maxBalanceHuman, mutation, hasGigaStakes } = useStake(
     balance,
     staked || "0",
     positionId,
@@ -114,24 +116,37 @@ export const StakeForm: FC<Props> = ({
             />
           )}
         </Summary>
+
         <Separator />
-        {
-          <Grid px="xl" py="xl">
-            <AuthorizedAction size="large">
-              <Button
-                type="submit"
-                size="large"
-                disabled={
-                  isLoading ||
-                  form.formState.isSubmitting ||
-                  !form.formState.isValid
-                }
-              >
-                {t("staking:stake.stake.cta")}
-              </Button>
-            </AuthorizedAction>
-          </Grid>
-        }
+
+        {hasGigaStakes && (
+          <>
+            <Box m="xl" asChild>
+              <Alert
+                variant="warning"
+                title={t("staking:gigaStaking.stake.gigaStakes")}
+              />
+            </Box>
+            <Separator />
+          </>
+        )}
+
+        <Grid px="xl" py="xl">
+          <AuthorizedAction size="large">
+            <Button
+              type="submit"
+              size="large"
+              disabled={
+                isLoading ||
+                form.formState.isSubmitting ||
+                !form.formState.isValid ||
+                hasGigaStakes
+              }
+            >
+              {t("staking:stake.stake.cta")}
+            </Button>
+          </AuthorizedAction>
+        </Grid>
       </form>
     </FormProvider>
   )

@@ -94,7 +94,7 @@ export const useValidateFormMaxBalance = () => {
           return true
         }
 
-        const balance = getTransferableBalance(asset.id).toString()
+        const balance = getTransferableBalance(asset.id)
         const balanceHuman = scaleHuman(balance, asset.decimals)
 
         return validateMaxBalance(balanceHuman, amount)

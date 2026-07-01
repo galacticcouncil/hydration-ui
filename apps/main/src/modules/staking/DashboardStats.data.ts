@@ -15,8 +15,8 @@ import {
   stakingInitializedEventsQuery,
 } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_DECIMALS } from "@/utils/consts"
 import { toDecimal } from "@/utils/formatting"
 
 const BIG_0 = Big(0)
@@ -25,6 +25,7 @@ const BIG_QUINTILL = BIG_10.pow(18)
 
 export const useStakingSupply = () => {
   const rpc = useRpcProvider()
+  const { native } = useAssets()
 
   const { data: stakeData, isLoading: stakeLoading } = useQuery(stakeQuery(rpc))
 
@@ -35,7 +36,7 @@ export const useStakingSupply = () => {
 
   const supplyStaked = toDecimal(
     stakeData?.total_stake.toString() ?? "0",
-    NATIVE_ASSET_DECIMALS,
+    native.decimals,
   )
 
   const supplyStakedPercent =
@@ -49,10 +50,7 @@ export const useStakingSupply = () => {
   return {
     supplyStaked,
     supplyStakedPercent,
-    circulatingSupply: toDecimal(
-      circulatingSupply.toString(),
-      NATIVE_ASSET_DECIMALS,
-    ),
+    circulatingSupply: toDecimal(circulatingSupply.toString(), native.decimals),
     isLoading: stakeLoading,
   }
 }

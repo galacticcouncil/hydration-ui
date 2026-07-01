@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -7,6 +8,7 @@ import { refine, z } from "zod/v4"
 
 import { stakingConstsQuery } from "@/api/constants"
 import { TAccountVote } from "@/api/democracy"
+import { gigaAccountStakesQuery } from "@/api/gigaStake"
 import { HDXSupplyQueryKey, useInvalidateStakeData } from "@/api/staking"
 import i18n from "@/i18n"
 import { useProcessedVotes } from "@/modules/staking/Stake.data"
@@ -49,11 +51,16 @@ export const useStake = (
   const rpc = useRpcProvider()
   const { papi } = rpc
   const { native } = useAssets()
+  const { account } = useAccount()
   const createBatch = useCreateBatchTx()
 
   const { data: stakingConsts, isLoading: minStakeLoading } = useQuery(
     stakingConstsQuery(rpc),
   )
+  const { data: gigaStakes } = useQuery(
+    gigaAccountStakesQuery(rpc, account?.address ?? ""),
+  )
+  const hasGigaStakes = !!gigaStakes
 
   const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
     votes,
@@ -179,5 +186,6 @@ export const useStake = (
     maxBalanceHuman,
     minStake: minStakeUsed,
     form,
+    hasGigaStakes,
   }
 }
