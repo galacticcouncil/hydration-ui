@@ -92,7 +92,7 @@ export const RepayModalContent: React.FC<
       : (tokenToRepayWith.address ?? ""),
     debtType,
     repayWithATokens,
-    amount: safeAmountToRepayAll.toString(),
+    amount: tokenBalance,
     decimals: poolReserve.decimals,
     enabled: !repayWithATokens,
   })
