@@ -47,7 +47,8 @@ Each `TreasuryAssetBalance` carries a `breakdown`:
 
 | Breakdown key | Meaning |
 |---|---|
-| `wallet` | Not supplied; shown as `Offchain` unless the asset itself is a liquidity/share token |
+| `wallet` | Treasury wallet balance; included in `Net balance` unless the asset itself is a liquidity/share token |
+| `offchain` | Treasury balances held outside Hydration, currently Asset Hub DOT accounts |
 | `moneyMarketSupply` | Supplied as collateral |
 | `liquidity` | Underlying value expanded from wallet-held LP/share tokens and treasury-owned omnipool positions |
 | `moneyMarketBorrow` | Borrowed exposure |
@@ -87,6 +88,7 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 - Gross assets are not shown as a separate top KPI. If needed, `holdingsValueUsd` is the gross asset figure and excludes borrow because borrow is a liability.
 - The KPI tooltip expands the accounting into:
   - `Asset balance` for plain treasury wallet holdings
+  - `Offchain` for treasury balances outside Hydration
   - `Supplied as liquidity`
   - `Supplied as collateral`
   - `Borrowed`
@@ -125,6 +127,7 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 - Shows asset-level rows, not symbol-grouped rows.
 - Desktop columns: `Asset`, `Net balance`, `Collateral`, `Debt offset`, `Liquidity`, `Offchain`.
 - `Debt offset` shows the asset's supplied collateral value that is backing borrow and is subtracted from net balance.
+- `Offchain` shows only balances held outside Hydration, not normal Hydration wallet balances.
 - Tablet-sized layouts hide `Offchain` first.
 - Smartphone layouts show only `Asset` and `Net balance`; tapping a row opens the same asset detail drawer body used by composition tile details.
 - `Net balance` uses the same shared `Amount` component as the rest of the app.
