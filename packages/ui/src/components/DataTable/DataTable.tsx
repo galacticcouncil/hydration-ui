@@ -75,6 +75,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
     rowCount?: number
     isMultiSort?: boolean
     getIsExpandable?: (item: TData) => boolean
+    showExpandColumn?: boolean
     getIsClickable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
@@ -117,6 +118,7 @@ const DataTable = <TData,>({
   rowCount,
   isMultiSort,
   getIsExpandable,
+  showExpandColumn = true,
   getIsClickable,
   renderSubComponent,
   renderOverride,
@@ -296,7 +298,7 @@ const DataTable = <TData,>({
                         )
                       })}
 
-                      {isRowExpandable && (
+                      {isRowExpandable && showExpandColumn && (
                         <TableCell sx={{ pl: "0 !important" }}>
                           <Flex justify="end" align="center">
                             <Icon
@@ -313,14 +315,20 @@ const DataTable = <TData,>({
                   </DataTableExternalLink>
                   {override && (
                     <TableRowOverride
-                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      colSpan={
+                        table.getVisibleLeafColumns().length +
+                        (showExpandColumn ? 1 : 0)
+                      }
                     >
                       {override}
                     </TableRowOverride>
                   )}
                   {isRowExpandable && renderSubComponent && (
                     <DataTableCollapsibleRow
-                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      colSpan={
+                        table.getVisibleLeafColumns().length +
+                        (showExpandColumn ? 1 : 0)
+                      }
                       isExpanded={isRowExpanded}
                     >
                       {renderSubComponent(row.original)}
@@ -438,7 +446,9 @@ export const DataTableExpandTrigger: FC<{
 
   return (
     <Box
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation()
+
         if (expandable === "single" && !row.getIsExpanded()) {
           table.resetExpanded()
         }

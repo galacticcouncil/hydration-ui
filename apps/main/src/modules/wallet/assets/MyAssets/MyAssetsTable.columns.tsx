@@ -1,6 +1,7 @@
 import { LockOpen } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
+  ButtonTransparent,
   DataTableExpandTrigger,
   Flex,
   Icon,
@@ -12,6 +13,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -20,7 +22,6 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
-import { useAssets } from "@/providers/assetsProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { naturally, numericallyStr, sortBy, undefinedLast } from "@/utils/sort"
 
@@ -47,12 +48,12 @@ export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
 export const useMyAssetsColumns = (isEmpty: boolean) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { native } = useAssets()
   const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       id: MyAssetsTableColumn.Asset,
+      size: 320,
       header: t("common:asset"),
       sortingFn: sortBy({
         select: (row) => row.original.symbol,
@@ -65,6 +66,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     const totalColumn = columnHelper.accessor("total", {
       id: MyAssetsTableColumn.Total,
+      size: 200,
       header: t("myAssets.header.total"),
       sortingFn: sortBy({
         select: (row) => row.original.totalDisplay,
@@ -89,6 +91,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     const transferableColumn = columnHelper.accessor("transferable", {
       id: MyAssetsTableColumn.Transferable,
+      size: 200,
       header: t("myAssets.header.transferable"),
       sortingFn: sortBy({
         select: (row) => row.original.transferableDisplay,
@@ -111,17 +114,9 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       },
     })
 
-    const stakingColumn = columnHelper.display({
-      id: MyAssetsTableColumn.Staking,
-      cell: ({ row }) => {
-        return row.original.id === native.id ? (
-          <AssetDetailStaking asset={row.original} />
-        ) : null
-      },
-    })
-
     const actionsColumn = columnHelper.display({
       id: MyAssetsTableColumn.Actions,
+      size: 680,
       header: t("common:actions"),
       meta: {
         sx: {
@@ -133,14 +128,21 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
 
         return (
-          <Flex gap="base" justify="flex-end" sx={{ width: "100%" }}>
+          <Flex
+            gap="base"
+            justify="flex-end"
+            sx={{ width: "100%", "& > *": { flexShrink: 0 } }}
+          >
             {row.original.id === NATIVE_ASSET_ID && (
-              <DataTableExpandTrigger>
-                <TableRowAction variant="accent">
-                  <Icon component={LockOpen} size="xs" />
-                  {t("myAssets.locks")}
-                </TableRowAction>
-              </DataTableExpandTrigger>
+              <>
+                <AssetDetailStaking asset={row.original} />
+                <DataTableExpandTrigger>
+                  <TableRowAction variant="accent">
+                    <Icon component={LockOpen} size="xs" />
+                    {t("myAssets.locks")}
+                  </TableRowAction>
+                </DataTableExpandTrigger>
+              </>
             )}
             <TableRowAction onClick={() => setModal("transfer")}>
               {t("common:send")}
@@ -154,6 +156,21 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
                 {t("common:trade")}
               </Link>
             </TableRowAction>
+            <DataTableExpandTrigger>
+              <ButtonTransparent
+                sx={{ flexShrink: 0, size: "m" }}
+                aria-label={
+                  row.getIsExpanded()
+                    ? "Collapse asset details"
+                    : "Expand asset details"
+                }
+              >
+                <Icon
+                  component={row.getIsExpanded() ? ChevronUp : ChevronDown}
+                  size="m"
+                />
+              </ButtonTransparent>
+            </DataTableExpandTrigger>
             <Modal
               variant="popup"
               open={modal !== null}
@@ -219,12 +236,8 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     return isMobile
       ? ([assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyAsset>>)
-      : ([
-          assetColumn,
-          totalColumn,
-          transferableColumn,
-          stakingColumn,
-          actionsColumn,
-        ] as Array<ColumnDef<MyAsset>>)
-  }, [isMobile, isEmpty, t, native.id])
+      : ([assetColumn, totalColumn, transferableColumn, actionsColumn] as Array<
+          ColumnDef<MyAsset>
+        >)
+  }, [isMobile, isEmpty, t])
 }

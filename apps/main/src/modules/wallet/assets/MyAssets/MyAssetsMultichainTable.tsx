@@ -89,7 +89,6 @@ import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNati
 import { MyAssetsEmptyState } from "@/modules/wallet/assets/MyAssets/MyAssetsEmptyState"
 import {
   MyAsset,
-  MyAssetsTableColumn,
   useMyAssetsColumns,
 } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.claim"
@@ -1493,7 +1492,7 @@ const TrackedWalletTableHeader = () => {
         height: 30,
         px: getToken("containers.paddings.primary"),
         display: "grid",
-        gridTemplateColumns: "minmax(220px, 1fr) 180px minmax(220px, auto)",
+        gridTemplateColumns: externalWalletTableGridColumns,
         alignItems: "center",
         borderTop: "1px solid",
         borderColor: getToken("details.separators"),
@@ -1938,7 +1937,6 @@ const GroupChainLogo: FC<{ readonly group: AssetGroup }> = ({ group }) => {
 const AssetGroupTable: FC<{ readonly group: AssetGroup }> = ({ group }) => {
   const { native } = useAssets()
   const columns = useMyAssetsColumns(false)
-  const isHydrationGroup = group.id === HYDRATION_GROUP_ID
 
   return (
     <Box
@@ -1958,7 +1956,12 @@ const AssetGroupTable: FC<{ readonly group: AssetGroup }> = ({ group }) => {
           height: 54,
           px: getToken("containers.paddings.primary"),
         },
-        ...tableActionAlignmentSx,
+        "& thead th:last-of-type, & tbody td:last-of-type": {
+          textAlign: "right",
+        },
+        "& tbody td:last-of-type > div": {
+          justifyContent: "flex-end",
+        },
         "& tbody tr": {
           borderTopColor: getToken("details.separators"),
         },
@@ -1975,14 +1978,8 @@ const AssetGroupTable: FC<{ readonly group: AssetGroup }> = ({ group }) => {
         columns={columns}
         size="small"
         expandable="single"
-        columnVisibility={
-          isHydrationGroup
-            ? undefined
-            : {
-                [MyAssetsTableColumn.Transferable]: false,
-                [MyAssetsTableColumn.Staking]: false,
-              }
-        }
+        fixedLayout
+        showExpandColumn={false}
         renderSubComponent={(asset) =>
           asset.id === native.id ? (
             <ExpandedNativeRow asset={asset} />
@@ -2176,11 +2173,9 @@ const inactiveTabSx = {
   boxShadow: "inset 0 0 0 1px transparent",
 }
 
-const tableSkeletonGridColumns =
-  "minmax(220px, 1fr) 180px 220px minmax(260px, auto) 40px"
+const tableSkeletonGridColumns = "320px 200px 200px minmax(520px, 1fr)"
 
-const externalWalletTableGridColumns =
-  "minmax(220px, 1fr) 180px minmax(120px, auto)"
+const externalWalletTableGridColumns = "320px 200px minmax(120px, 1fr)"
 
 const externalWalletTableHeaderSx: BoxProps["sx"] = {
   height: 34,
