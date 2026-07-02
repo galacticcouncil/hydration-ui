@@ -297,6 +297,7 @@
   "contacts": "Contacts",
   "approvals": "Approvals",
   "userMenu.openMenu": "Open account menu",
+  "userMenu.changeAccount": "Change Account",
   "userMenu.copyAddress": "Copy address",
   "userMenu.connectedWallets": "Connected wallets",
   "userMenu.goToWallet": "GO TO PORTFOLIO",

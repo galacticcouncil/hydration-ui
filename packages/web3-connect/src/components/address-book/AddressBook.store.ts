@@ -106,6 +106,7 @@ const defaultState: State = {
 
 export type AddressStore = State & {
   readonly add: (address: AddressInput | AddressInput[]) => void
+  readonly addGlobal: (address: AddressInput | AddressInput[]) => void
   readonly edit: (address: Address) => void
   readonly remove: (publicKey: string) => void
   readonly selectAddresses: (filter?: AddressFilter) => Address[]
@@ -133,6 +134,28 @@ export const useAddressStore = create<AddressStore>()(
             useWeb3Connect.getState().account?.publicKey ?? null,
           ),
         })),
+
+      addGlobal: (address) =>
+        set((state) => {
+          const normalized = (Array.isArray(address) ? address : [address])
+            .map(normalizeAddress)
+            .filter((a) => a !== null)
+            .map((entry) => ({ ...entry, savedBy: [] }))
+          const globalPublicKeys = new Set(
+            normalized.map((entry) => entry.publicKey.toLowerCase()),
+          )
+          const addresses = buildAddresses(
+            state.addresses,
+            normalized,
+            null,
+          ).map((entry) =>
+            globalPublicKeys.has(entry.publicKey.toLowerCase())
+              ? { ...entry, savedBy: [] }
+              : entry,
+          )
+
+          return { addresses }
+        }),
 
       edit: (address) =>
         set((state) => ({

@@ -11,6 +11,7 @@ export type EditableTextProps = Omit<TextProps, "children" | "onChange"> & {
   placeholder?: string
   disabled?: boolean
   editLabel?: string
+  editingHint?: string
   onChange: (value: string) => void
 }
 
@@ -20,6 +21,7 @@ export const EditableText: FC<EditableTextProps> = ({
   disabled = false,
   onChange,
   editLabel = "Edit",
+  editingHint = "Hit Enter to save",
   ...textProps
 }) => {
   const [isEditing, setIsEditing] = useState(false)
@@ -75,22 +77,29 @@ export const EditableText: FC<EditableTextProps> = ({
   return (
     <Flex align="center" gap="s" sx={typography}>
       {isEditing ? (
-        <SEditableTextInput
-          ref={inputRef}
-          autoFocus
-          defaultValue={value}
-          placeholder={placeholder}
-          sx={typography}
-          onFocus={(e) => e.currentTarget.select()}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur()
-          }}
-          onBlur={(e) => {
-            const next = e.currentTarget.value.trim()
-            if (next && next !== value) onChange(next)
-            setIsEditing(false)
-          }}
-        />
+        <Flex direction="column" gap={1} sx={{ minWidth: 0, flex: 1 }}>
+          <SEditableTextInput
+            ref={inputRef}
+            autoFocus
+            defaultValue={value}
+            placeholder={placeholder}
+            sx={typography}
+            onFocus={(e) => e.currentTarget.select()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur()
+            }}
+            onBlur={(e) => {
+              const next = e.currentTarget.value.trim()
+              if (next && next !== value) onChange(next)
+              setIsEditing(false)
+            }}
+          />
+          {editingHint && (
+            <Text fs="p6" color={getToken("text.medium")} lh={1}>
+              {editingHint}
+            </Text>
+          )}
+        </Flex>
       ) : (
         <Text
           truncate

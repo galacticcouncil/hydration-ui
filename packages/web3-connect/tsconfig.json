@@ -6,15 +6,14 @@
     { "path": "../utils" },
     { "path": "../indexer" }
   ],
-  "compilerOptions": {
+    "compilerOptions": {
     "composite": true,
     "outDir": "./build",
-    "baseUrl": ".",
     "jsxImportSource": "@galacticcouncil/ui/jsx",
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]
-    },
+    }
   }
 }

@@ -72,7 +72,7 @@ const sizes = createVariants((theme) => ({
 }))
 
 export const SChip = styled(Box, {
-  shouldForwardProp: (prop) => !["variant", "size"].includes(prop),
+  shouldForwardProp: (prop) => !["variant", "size", "rounded"].includes(prop),
 })<SChipProps>(
   ({ theme, variant = "primary", size = "medium", rounded = false }) => [
     variants(variant),

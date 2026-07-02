@@ -19,6 +19,8 @@ import {
 
 import {
   SOLANA_PROVIDERS,
+  SUBSTRATE_H160_PROVIDERS,
+  SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
@@ -37,6 +39,16 @@ import {
 import { Wallet, WalletAccount } from "@/types/wallet"
 
 export { getWalletModeName } from "@/utils/walletMode"
+
+const SUBSTRATE_WALLET_ACCOUNT_AVATAR_PROVIDERS = new Set<WalletProviderType>([
+  ...SUBSTRATE_PROVIDERS.filter(
+    (provider) => provider !== WalletProviderType.WalletConnect,
+  ),
+  ...SUBSTRATE_H160_PROVIDERS,
+  WalletProviderType.NovaWalletEvm,
+  WalletProviderType.SubwalletEvm,
+  WalletProviderType.TalismanEvm,
+])
 
 const toStoredSolanaAccount = ({
   address,
@@ -118,15 +130,34 @@ export const toAccount = (account: StoredAccount): Account => {
 }
 
 export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
-  if (
-    account.provider === WalletProviderType.Talisman ||
-    account.provider === WalletProviderType.TalismanEvm ||
-    account.provider === WalletProviderType.TalismanH160
-  ) {
-    return "talisman"
+  if (SUBSTRATE_WALLET_ACCOUNT_AVATAR_PROVIDERS.has(account.provider)) {
+    return "auto"
   }
 
-  return "auto"
+  switch (account.provider) {
+    case WalletProviderType.BraveWallet:
+    case WalletProviderType.BraveWalletSol:
+      return "bravewallet"
+    case WalletProviderType.ExternalWallet:
+      return "external"
+    case WalletProviderType.MetaMask:
+      return "metamask"
+    case WalletProviderType.Phantom:
+    case WalletProviderType.PhantomSui:
+      return "phantom"
+    case WalletProviderType.RabbyWallet:
+      return "rabby-wallet"
+    case WalletProviderType.Slush:
+      return "slush"
+    case WalletProviderType.Solflare:
+      return "solflare"
+    case WalletProviderType.Suiet:
+      return "suiet"
+    case WalletProviderType.WalletConnect:
+      return "walletconnect"
+    default:
+      return "auto"
+  }
 }
 
 export const getWalletModeByAddress = (address: string) => {

@@ -9,13 +9,12 @@
     { "path": "../../packages/indexer" }
   ],
   "compilerOptions": {
-    "baseUrl": ".",
     "jsxImportSource": "@galacticcouncil/ui/jsx",
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
         "./src/*"
-      ],
+      ]
     },
     "declaration": false,
     "declarationMap": false,

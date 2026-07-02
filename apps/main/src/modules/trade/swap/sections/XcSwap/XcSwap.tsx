@@ -125,6 +125,7 @@ export const XcSwap: React.FC = () => {
               toggleWalletModal(WalletMode.EVM, {
                 title: t("trade:xc.swap.connectEvm.title"),
                 description: t("trade:xc.swap.connectEvm.description"),
+                hideExternalWallet: true,
               })
             }
           >
@@ -134,6 +135,7 @@ export const XcSwap: React.FC = () => {
           <AuthorizedAction
             size="large"
             width="100%"
+            variant="secondary"
             mode={isCrossChain ? WalletMode.EVM : undefined}
           >
             <LoadingButton

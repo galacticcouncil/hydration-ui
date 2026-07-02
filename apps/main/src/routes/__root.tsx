@@ -14,6 +14,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { useWalletManagementCrossChainBalances } from "@/modules/wallet/hooks/useWalletManagementCrossChainBalances"
 import {
   useBasejumpScanSubscription,
   useXcScanSubscription,
@@ -121,7 +122,11 @@ function Services() {
   return (
     <>
       <TransactionManager />
-      <Web3ConnectModal squidSdk={squidSdk} papi={papi} />
+      <Web3ConnectModal
+        squidSdk={squidSdk}
+        papi={papi}
+        useExtraAccountBalances={useWalletManagementCrossChainBalances}
+      />
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>

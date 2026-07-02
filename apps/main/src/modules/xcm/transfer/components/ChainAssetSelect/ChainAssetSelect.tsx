@@ -189,6 +189,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
                   description: t("xcm:connect.modal.description", {
                     chain: pendingChain.name,
                   }),
+                  hideExternalWallet: true,
                 })
               }
             />
