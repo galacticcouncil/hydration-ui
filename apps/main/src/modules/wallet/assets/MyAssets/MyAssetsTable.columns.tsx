@@ -144,6 +144,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
         return (
           <Flex
             gap={isWideDesktop ? "base" : "s"}
+            align="center"
             justify="flex-end"
             sx={{ width: "100%", "& > *": { flexShrink: 0 } }}
           >
@@ -151,30 +152,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
               <>
                 {isWideDesktop ? (
                   <AssetDetailStaking asset={row.original} />
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <TableRowAction aria-label={t("common:more")}>
-                        <Icon component={MoreHorizontal} size="xs" />
-                        {t("common:more")}
-                      </TableRowAction>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <MenuItem asChild>
-                          <Link to={stakingTo}>
-                            <MenuItemIcon component={StylizedAdd} />
-                            <MenuItemLabel>
-                              {t("myAssets.actions.staking", {
-                                symbol: row.original.symbol,
-                              })}
-                            </MenuItemLabel>
-                          </Link>
-                        </MenuItem>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                ) : null}
                 <DataTableExpandTrigger>
                   <TableRowAction variant="accent">
                     <Icon component={LockOpen} size="xs" />
@@ -195,9 +173,41 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
                 {t("common:trade")}
               </Link>
             </TableRowAction>
+            {row.original.id === NATIVE_ASSET_ID && !isWideDesktop && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <TableRowAction
+                    aria-label={t("common:more")}
+                    sx={{ width: 30, minWidth: 30, px: 0 }}
+                  >
+                    <Icon component={MoreHorizontal} size="xs" />
+                  </TableRowAction>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <MenuItem asChild>
+                      <Link to={stakingTo}>
+                        <MenuItemIcon component={StylizedAdd} />
+                        <MenuItemLabel>
+                          {t("myAssets.actions.staking", {
+                            symbol: row.original.symbol,
+                          })}
+                        </MenuItemLabel>
+                      </Link>
+                    </MenuItem>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <DataTableExpandTrigger>
               <ButtonTransparent
-                sx={{ flexShrink: 0, size: "m" }}
+                sx={{
+                  flexShrink: 0,
+                  size: "m",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
                 aria-label={
                   row.getIsExpanded()
                     ? "Collapse asset details"
