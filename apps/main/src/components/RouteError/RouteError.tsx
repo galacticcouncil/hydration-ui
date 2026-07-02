@@ -1,6 +1,7 @@
 import { DiscordLogo } from "@galacticcouncil/ui/assets/icons"
 import Caution3D from "@galacticcouncil/ui/assets/images/Caution3D.webp"
 import {
+  Alert,
   Button,
   ExternalLink,
   Flex,
@@ -8,6 +9,7 @@ import {
   Image,
   Stack,
   Text,
+  TextButton,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useCopy } from "@galacticcouncil/utils"
@@ -19,6 +21,7 @@ import { isNumber } from "remeda"
 
 import { useBestNumber, useChainSpecData } from "@/api/chain"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
+import { ENV } from "@/config/env"
 import { DISCORD_INVITE_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { stringifyErrorContext } from "@/utils/errors"
@@ -50,13 +53,14 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
       <Stack gap="l" align="center" maxWidth="6xl">
         <Image
           src={Caution3D}
-          alt="Something went wrong"
+          alt={t("routeError.title")}
           sx={{ size: ["2xl", null, "3xl"] }}
         />
         <Stack gap="base">
           <Text as="h1" font="primary" fs="h6" align="center">
             {t("routeError.title")}
           </Text>
+
           <Text
             align="center"
             fs="p4"
@@ -68,6 +72,7 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
             </Trans>
           </Text>
         </Stack>
+
         <Flex gap="base">
           <Button
             variant="tertiary"
@@ -90,14 +95,15 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
             </ExternalLink>
           </Button>
         </Flex>
-        <Button
-          variant="muted"
-          outline
-          onClick={() => window.location.reload()}
-        >
-          <Icon component={RefreshCwIcon} size="s" />
+
+        {import.meta.env.DEV && error instanceof Error && (
+          <Alert variant="error" description={error.toString()} />
+        )}
+
+        <TextButton onClick={() => window.location.reload()}>
+          <Icon component={RefreshCwIcon} size="s" sx={{ mr: "s" }} />
           {t("routeError.reloadPage")}
-        </Button>
+        </TextButton>
       </Stack>
     </Flex>
   )

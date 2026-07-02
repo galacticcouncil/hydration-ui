@@ -356,7 +356,7 @@
   "tradeLimit": "Trade limit",
   "healthFactor": "Health factor",
   "routeError.title": "Something went wrong",
-  "routeError.description": "To report the issue, visit our <0>Discord</0> server and open a ticket in the <0>#support</0> channel. Please <0>copy the error message</0> and include a brief description of what you were trying to do.",
+  "routeError.description": "To report the issue, visit our <0>Discord</0> server and open a ticket in the <0>#support-ticket</0> channel. Please <0>copy the error message</0> and include a brief description of what you were trying to do.",
   "routeError.reportDiscord": "Report on Discord",
   "routeError.reloadPage": "Reload page",
   "page404.title": "404 - Not Found",
