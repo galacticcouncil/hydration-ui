@@ -7,7 +7,7 @@ import {
 import { QueriesResults, useQueries } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo } from "react"
 import { useLocalStorage } from "react-use"
-import { pick, pipe, sortBy } from "remeda"
+import { pick, pipe, sortBy, uniqueBy } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { WalletProviderType } from "@/config/providers"
@@ -78,14 +78,14 @@ export const getFilteredAccounts = (
 
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()
-  const { squidSdk } = useWeb3ConnectContext()
+  const { squidSdk, useExtraAccountBalances } = useWeb3ConnectContext()
   const { setBalances } = useWeb3Connect(
     useShallow(pick(["accounts", "setBalances"])),
   )
 
   const [accountBalancesStorage, setAccountBalancesStorage] = useLocalStorage<
     ReadonlyMap<string, number>
-  >("account-balances", new Map(), {
+  >("account-balances-v2", new Map(), {
     raw: false,
     serializer: (map) => JSON.stringify(Array.from(map.entries())),
     deserializer: (entries) => {
@@ -97,48 +97,71 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
     },
   })
 
+  const balanceQueryAccounts = useMemo(
+    () => uniqueBy(accounts, (account) => account.publicKey),
+    [accounts],
+  )
   const hasAllBalancesPreloaded =
     !!accountBalancesStorage &&
-    accounts.every(
+    balanceQueryAccounts.every(
       (account) => accountBalancesStorage.get(account.publicKey) !== undefined,
     )
 
-  const { accountBalances: balancesMap, isLoading: areBalancesLoading } =
-    useQueries({
-      queries: accounts.map((account) =>
-        latestAccountBalanceQuery(squidSdk, account.publicKey),
-      ),
-      combine: useCallback(
-        (
-          queries: QueriesResults<
-            Array<ReturnType<typeof latestAccountBalanceQuery>>
-          >,
-        ) => {
-          const isLoading = queries.some((query) => query.isLoading)
-          const accountBalances = isLoading
-            ? new Map<string, number>()
-            : new Map(
-                accounts.map((account, index) => {
-                  const data = queries[index]?.data
-                  const balances =
-                    data?.accountTotalBalanceHistoricalData?.nodes.at(0)
-                  const transferable =
-                    Number(balances?.totalTransferableNorm) || 0
-                  const locked = Number(balances?.totalLockedNorm) || 0
-                  const balance = transferable + locked
+  const {
+    accountBalances: hydrationBalancesMap,
+    isLoading: areHydrationBalancesLoading,
+  } = useQueries({
+    queries: balanceQueryAccounts.map((account) =>
+      latestAccountBalanceQuery(squidSdk, account.publicKey),
+    ),
+    combine: useCallback(
+      (
+        queries: QueriesResults<
+          Array<ReturnType<typeof latestAccountBalanceQuery>>
+        >,
+      ) => {
+        const isLoading = queries.some((query) => query.isLoading)
+        const accountBalances = isLoading
+          ? new Map<string, number>()
+          : new Map(
+              balanceQueryAccounts.map((account, index) => {
+                const data = queries[index]?.data
+                const balances =
+                  data?.accountTotalBalanceHistoricalData?.nodes.at(0)
+                const transferable =
+                  Number(balances?.totalTransferableNorm) || 0
+                const locked = Number(balances?.totalLockedNorm) || 0
+                const balance = transferable + locked
 
-                  return [account.publicKey, balance]
-                }),
-              )
+                return [account.publicKey, balance]
+              }),
+            )
 
-          return {
-            isLoading,
-            accountBalances,
-          }
-        },
-        [accounts],
-      ),
-    })
+        return {
+          isLoading,
+          accountBalances,
+        }
+      },
+      [balanceQueryAccounts],
+    ),
+  })
+  const {
+    accountBalances: extraBalancesMap,
+    isLoading: areExtraBalancesLoading,
+  } = useExtraAccountBalances(balanceQueryAccounts)
+  const balancesMap = useMemo(() => {
+    return new Map(
+      balanceQueryAccounts.map((account) => {
+        const hydrationBalance =
+          hydrationBalancesMap.get(account.publicKey) ?? 0
+        const extraBalance = extraBalancesMap.get(account.publicKey) ?? 0
+
+        return [account.publicKey, hydrationBalance + extraBalance]
+      }),
+    )
+  }, [balanceQueryAccounts, extraBalancesMap, hydrationBalancesMap])
+  const areBalancesLoading =
+    areHydrationBalancesLoading || areExtraBalancesLoading
 
   useEffect(() => {
     if (!areBalancesLoading) {

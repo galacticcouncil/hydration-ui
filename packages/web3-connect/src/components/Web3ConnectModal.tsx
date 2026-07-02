@@ -2,21 +2,22 @@ import { hydration } from "@galacticcouncil/descriptors"
 import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { Modal } from "@galacticcouncil/ui/components"
 import { TypedApi } from "polkadot-api"
-import { FC, useMemo } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import { I18nextProvider } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { AccountSelectContent } from "@/components/content/AccountSelectContent"
 import { ErrorContent } from "@/components/content/ErrorContent"
 import { ExternalWalletContent } from "@/components/content/ExternalWalletContent"
 import { MultisigConfigSelectContent } from "@/components/content/MultisigConfigSelectContent"
 import { MultisigSetupContent } from "@/components/content/MultisigSetupContent"
 import { MultisigSignerSelectContent } from "@/components/content/MultisigSignerSelectContent"
-import { ProviderSelectContent } from "@/components/content/ProviderSelectContent"
+import { WalletManagementContent } from "@/components/content/WalletManagementContent"
 import { AccountActionsFooter } from "@/components/footer/AccountActionsFooter"
 import { Web3ConnectModalPage } from "@/config/modal"
 import {
+  useEmptyExtraAccountBalances,
+  UseExtraAccountBalances,
   Web3ConnectContextType,
   Web3ConnectProvider,
 } from "@/context/Web3ConnectContext"
@@ -28,9 +29,9 @@ import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
 import i18n from "@/i18n"
 
 const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
-  [Web3ConnectModalPage.ProviderSelect]: <ProviderSelectContent />,
+  [Web3ConnectModalPage.ProviderSelect]: <WalletManagementContent />,
   [Web3ConnectModalPage.ExternalWallet]: <ExternalWalletContent />,
-  [Web3ConnectModalPage.AccountSelect]: <AccountSelectContent />,
+  [Web3ConnectModalPage.AccountSelect]: <WalletManagementContent />,
   [Web3ConnectModalPage.Error]: <ErrorContent />,
   [Web3ConnectModalPage.MultisigSetup]: <MultisigSetupContent />,
   [Web3ConnectModalPage.MultisigConfigSelect]: <MultisigConfigSelectContent />,
@@ -40,6 +41,7 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
 type ControlledProps = {
   readonly squidSdk: SquidSdk
   readonly papi: TypedApi<typeof hydration>
+  readonly useExtraAccountBalances?: UseExtraAccountBalances
   readonly open: boolean
   readonly mode: WalletMode
   readonly onOpenChange: (open: boolean) => void
@@ -49,12 +51,22 @@ type ControlledProps = {
 type UncontrolledProps = {
   readonly squidSdk: SquidSdk
   readonly papi: TypedApi<typeof hydration>
+  readonly useExtraAccountBalances?: UseExtraAccountBalances
 }
 
 type Props = ControlledProps | UncontrolledProps
 
-const Web3ConnectModalContent: FC<Props> = (props) => {
-  const { squidSdk, papi } = props
+type Web3ConnectModalContentProps = Props & {
+  readonly setModalContentWidth: (width: string) => void
+}
+
+const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
+  const { setModalContentWidth } = props
+  const {
+    squidSdk,
+    papi,
+    useExtraAccountBalances = useEmptyExtraAccountBalances,
+  } = props
 
   const isControlled =
     "open" in props &&
@@ -73,6 +85,17 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
     mode,
   })
 
+  useEffect(() => {
+    if (
+      ![
+        Web3ConnectModalPage.ProviderSelect,
+        Web3ConnectModalPage.AccountSelect,
+      ].includes(page)
+    ) {
+      setModalContentWidth("650px")
+    }
+  }, [page, setModalContentWidth])
+
   const context = useMemo<Web3ConnectContextType>(
     () => ({
       isControlled,
@@ -80,16 +103,30 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
       setPage,
       squidSdk,
       papi,
+      useExtraAccountBalances,
       onAccountSelect,
       mode,
+      setModalContentWidth,
     }),
-    [page, setPage, squidSdk, onAccountSelect, isControlled, mode, papi],
+    [
+      page,
+      setPage,
+      squidSdk,
+      useExtraAccountBalances,
+      onAccountSelect,
+      isControlled,
+      mode,
+      papi,
+      setModalContentWidth,
+    ],
   )
   return (
     <Web3ConnectProvider value={context}>
       {contentMap[page]}
       {![
         Web3ConnectModalPage.ProviderSelect,
+        Web3ConnectModalPage.ExternalWallet,
+        Web3ConnectModalPage.AccountSelect,
         Web3ConnectModalPage.MultisigSetup,
         Web3ConnectModalPage.MultisigConfigSelect,
         Web3ConnectModalPage.MultisigSignerSelect,
@@ -106,6 +143,7 @@ export const Web3ConnectModal: FC<Props> = (props) => {
   useWalletSubscriptions()
 
   const modalState = useWeb3ConnectModal()
+  const [modalContentWidth, setModalContentWidth] = useState("650px")
 
   const open = isControlled ? props.open : modalState.open
   const onOpenChange = isControlled
@@ -119,8 +157,12 @@ export const Web3ConnectModal: FC<Props> = (props) => {
         open={open}
         onOpenChange={onOpenChange}
         disableInteractOutside
+        contentWidth={modalContentWidth}
       >
-        <Web3ConnectModalContent {...props} />
+        <Web3ConnectModalContent
+          {...props}
+          setModalContentWidth={setModalContentWidth}
+        />
       </Modal>
     </I18nextProvider>
   )

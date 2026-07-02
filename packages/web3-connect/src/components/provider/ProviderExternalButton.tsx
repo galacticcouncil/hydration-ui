@@ -34,17 +34,16 @@ export const ProviderExternalButton = () => {
       walletData={walletData}
       as="button"
       onClick={() => {
-        if (isConnected) {
-          disconnect(provider)
-        } else {
-          setPage(Web3ConnectModalPage.ExternalWallet)
-        }
+        setPage(Web3ConnectModalPage.ExternalWallet)
       }}
       isConnected={isConnected}
       accountCount={accountCount}
       actionLabel={
-        isConnected ? t("provider.disconnect") : t("provider.continue")
+        isConnected ? t("provider.disconnect") : t("provider.connect")
       }
+      {...(isConnected && {
+        onActionClick: () => disconnect(provider),
+      })}
     />
   )
 }

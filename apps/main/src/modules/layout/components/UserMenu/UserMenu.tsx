@@ -27,9 +27,14 @@ import {
   WalletProviderStatus,
 } from "@galacticcouncil/web3-connect"
 import { ProviderLogo } from "@galacticcouncil/web3-connect/src/components/provider/ProviderLogo"
-import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
+import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
+import {
+  isEip1193Provider,
+  requestAccounts,
+} from "@galacticcouncil/web3-connect/src/utils"
+import { getWallet, MetaMask } from "@galacticcouncil/web3-connect/src/wallets"
 import { Link } from "@tanstack/react-router"
-import { LogOut, Plus } from "lucide-react"
+import { LogOut, Plus, RefreshCw } from "lucide-react"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useShallow } from "zustand/react/shallow"
@@ -141,12 +146,18 @@ export const UserMenu: FC<Props> = ({
             ? account.name
             : recentAccount.name
           const shortAddress = shortenAccountAddress(address)
+          const isExternalWallet = type === WalletProviderType.ExternalWallet
           const hasDistinctName =
             accountName && !stringEquals(accountName, shortAddress)
           const copyLabel = t("userMenu.copyAddress")
+          const changeAccountLabel = t("userMenu.changeAccount")
           const disconnectLabel = t("userMenu.disconnect", {
             provider: wallet.title,
           })
+          const metaMaskExtension =
+            wallet instanceof MetaMask && isEip1193Provider(wallet.extension)
+              ? wallet.extension
+              : undefined
 
           return (
             <MenuSelectionItem
@@ -174,16 +185,30 @@ export const UserMenu: FC<Props> = ({
                   )}
                 </Flex>
               </MenuItemLabel>
-              {providerAccounts.length > 1 && (
+              {(isExternalWallet || providerAccounts.length > 1) && (
                 <MenuItemDescription>
-                  {t("userMenu.accountsCount", {
-                    count: providerAccounts.length,
-                  })}
+                  {isExternalWallet
+                    ? shortAddress
+                    : t("userMenu.accountsCount", {
+                        count: providerAccounts.length,
+                      })}
                 </MenuItemDescription>
               )}
               <MenuItemAction>
                 <Flex align="center" gap="s">
                   <SHoverActions align="center">
+                    {metaMaskExtension && (
+                      <ButtonIcon
+                        title={changeAccountLabel}
+                        aria-label={changeAccountLabel}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          requestAccounts(metaMaskExtension)
+                        }}
+                      >
+                        <Icon size="s" component={RefreshCw} />
+                      </ButtonIcon>
+                    )}
                     <ButtonIcon asChild>
                       <CopyButton
                         text={address}

@@ -11,6 +11,7 @@ import {
   Box,
   Button,
   DataTable,
+  EditableText,
   Flex,
   Icon,
   Image,
@@ -41,6 +42,7 @@ import {
 } from "@galacticcouncil/utils"
 import {
   getWalletModeByAddress,
+  getWalletModeIcon,
   useAccount,
   useAddresses,
   useAddressStore,
@@ -131,7 +133,7 @@ const SOLANA_WALLET_CHAIN_KEYS = ["solana"] as const
 const TRACKED_WALLET_FILTER = { isCustom: true, related: true }
 const TRACKED_WALLET_GLYPH_COLORS = [
   { bg: "#53A4F3", color: "#030816" },
-  { bg: "#DFB1F3", color: "#240E32" },
+  { bg: "#F9AFCA", color: "#240E32" },
   { bg: "#74C742", color: "#050905" },
   { bg: "#F7BF06", color: "#0C0900" },
   { bg: "#FF9C73", color: "#100400" },
@@ -1195,9 +1197,21 @@ const TrackedWalletsSection: FC<{
     [account, relatedTrackedWallets],
   )
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [shouldFocusModalInput, setShouldFocusModalInput] = useState(false)
   const [refreshNonce, setRefreshNonce] = useState(0)
   const refreshTrackedWallets = () => {
     setRefreshNonce((nonce) => nonce + 1)
+  }
+  const openManageModal = (focusInput = false) => {
+    setShouldFocusModalInput(focusInput)
+    setIsModalOpen(true)
+  }
+  const handleManageModalOpenChange = (open: boolean) => {
+    setIsModalOpen(open)
+
+    if (!open) {
+      setShouldFocusModalInput(false)
+    }
   }
 
   return (
@@ -1211,18 +1225,15 @@ const TrackedWalletsSection: FC<{
           pb: getToken("containers.paddings.secondary"),
         }}
       >
-        <Flex align="center" gap="s">
-          <WalletGlyph size={20} iconSize={11} />
-          <Text as="h2" font="primary" fs="h7" fw={500} color="text.high">
-            {t("myAssets.redesign.tracked.title")}
-          </Text>
-        </Flex>
+        <TrackedWalletSectionTitle variant="page">
+          {t("myAssets.redesign.tracked.title")}
+        </TrackedWalletSectionTitle>
         <Flex align="center" gap="base">
           <Button
             size="small"
             variant="muted"
             outline
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => openManageModal()}
             sx={trackedManageButtonSx}
           >
             <Icon size="xs" component={ClassicWallet} />
@@ -1252,14 +1263,17 @@ const TrackedWalletsSection: FC<{
             />
           ))
         ) : (
-          <TrackedWalletSectionEmpty onManage={() => setIsModalOpen(true)} />
+          <TrackedWalletSectionEmpty
+            onAddAddress={() => openManageModal(true)}
+          />
         )}
       </Box>
 
       <ManageTrackedWalletsModal
         open={isModalOpen}
+        focusInputOnOpen={shouldFocusModalInput}
         trackedWallets={trackedWallets}
-        onOpenChange={setIsModalOpen}
+        onOpenChange={handleManageModalOpenChange}
         onSaved={refreshTrackedWallets}
       />
     </Flex>
@@ -1497,8 +1511,8 @@ const TrackedWalletTableHeader = () => {
 }
 
 const TrackedWalletSectionEmpty: FC<{
-  readonly onManage: () => void
-}> = ({ onManage }) => {
+  readonly onAddAddress: () => void
+}> = ({ onAddAddress }) => {
   const { t } = useTranslation("wallet")
 
   return (
@@ -1524,8 +1538,8 @@ const TrackedWalletSectionEmpty: FC<{
           {t("myAssets.redesign.tracked.empty.description")}
         </Text>
       </Flex>
-      <Button size="small" variant="muted" outline onClick={onManage}>
-        {t("myAssets.redesign.tracked.manage")}
+      <Button size="medium" variant="secondary" onClick={onAddAddress}>
+        {t("myAssets.redesign.tracked.empty.addAddress")}
       </Button>
     </Flex>
   )
@@ -1533,12 +1547,14 @@ const TrackedWalletSectionEmpty: FC<{
 
 const ManageTrackedWalletsModal: FC<{
   readonly open: boolean
+  readonly focusInputOnOpen: boolean
   readonly trackedWallets: Array<TrackedWallet>
   readonly onOpenChange: (open: boolean) => void
   readonly onSaved: () => void
-}> = ({ open, trackedWallets, onOpenChange, onSaved }) => {
+}> = ({ open, focusInputOnOpen, trackedWallets, onOpenChange, onSaved }) => {
   const { t } = useTranslation("wallet")
   const [address, setAddress] = useState("")
+  const addressInputRef = useRef<HTMLInputElement | null>(null)
   const { account } = useAccount()
   const { add, edit, remove } = useAddressStore()
   const trimmedAddress = address.trim()
@@ -1547,7 +1563,17 @@ const ManageTrackedWalletsModal: FC<{
     ? getWalletModeByAddress(normalizedAddress)
     : null
   const canSave = !!account && !!trackedWalletMode
-  const isAddressFormStacked = trimmedAddress.length > 42
+
+  useEffect(() => {
+    if (!open || !focusInputOnOpen) return
+
+    const frame = requestAnimationFrame(() => {
+      addressInputRef.current?.focus({ preventScroll: true })
+      addressInputRef.current?.select()
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [focusInputOnOpen, open])
 
   const saveAddress = () => {
     if (!canSave || !account || !normalizedAddress || !trackedWalletMode) return
@@ -1578,6 +1604,13 @@ const ManageTrackedWalletsModal: FC<{
     remove(wallet.publicKey)
   }
 
+  const renameTrackedWallet = (wallet: TrackedWallet, name: string) => {
+    edit({
+      ...wallet,
+      name,
+    })
+  }
+
   return (
     <Modal
       variant="popup"
@@ -1590,56 +1623,39 @@ const ManageTrackedWalletsModal: FC<{
         title={t("myAssets.redesign.tracked.modal.title")}
         sx={{ border: 0, borderBottom: 0 }}
       />
-      <ModalBody
-        scrollable={false}
-        sx={{
-          pt: 0,
-          borderTop: 0,
-          minHeight: 420,
-          display: "flex",
-          flexDirection: "column",
-          gap: getToken("containers.paddings.tertiary"),
-        }}
-      >
-        <Flex
-          align="center"
-          gap="s"
-          sx={trackedWalletAddressFormSx}
-          data-stack={isAddressFormStacked ? "true" : undefined}
-        >
-          <Box sx={trackedWalletAddressInputSx}>
-            <Input
-              value={address}
-              customSize="large"
-              iconStart={Search}
-              placeholder={t("myAssets.redesign.tracked.modal.placeholder")}
-              onChange={(e) => setAddress(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  saveAddress()
-                }
-              }}
-            />
-          </Box>
-          {canSave && (
-            <Button
-              size="small"
-              variant="secondary"
-              onClick={saveAddress}
-              sx={trackedWalletAddressSaveButtonSx}
-            >
-              {t("myAssets.redesign.tracked.modal.save")}
-            </Button>
-          )}
-        </Flex>
+      <ModalBody scrollable={false} sx={trackedWalletModalBodySx}>
+        <Box sx={trackedWalletAddressInputSx}>
+          <Input
+            ref={addressInputRef}
+            value={address}
+            customSize="large"
+            iconStart={Search}
+            placeholder={t("myAssets.redesign.tracked.modal.placeholder")}
+            trailingElement={
+              canSave ? (
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={saveAddress}
+                  sx={trackedWalletAddressSaveButtonSx}
+                >
+                  {t("myAssets.redesign.tracked.modal.save")}
+                </Button>
+              ) : null
+            }
+            onChange={(e) => setAddress(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                saveAddress()
+              }
+            }}
+          />
+        </Box>
 
         <Flex direction="column" gap="base">
-          <Flex align="center" gap="xs">
-            <WalletGlyph size={16} iconSize={8} />
-            <Text fs="p5" fw={500} color="text.high">
-              {t("myAssets.redesign.tracked.title")}
-            </Text>
-          </Flex>
+          <TrackedWalletSectionTitle variant="modal">
+            {t("myAssets.redesign.tracked.title")}
+          </TrackedWalletSectionTitle>
 
           {trackedWallets.length ? (
             <Flex direction="column" gap="base">
@@ -1647,6 +1663,7 @@ const ManageTrackedWalletsModal: FC<{
                 <TrackedWalletModalTile
                   key={wallet.publicKey}
                   wallet={wallet}
+                  onRename={(name) => renameTrackedWallet(wallet, name)}
                   onRemove={() => removeTrackedWallet(wallet)}
                 />
               ))}
@@ -1662,19 +1679,38 @@ const ManageTrackedWalletsModal: FC<{
 
 const TrackedWalletModalTile: FC<{
   readonly wallet: TrackedWallet
+  readonly onRename: (name: string) => void
   readonly onRemove: () => void
-}> = ({ wallet, onRemove }) => {
+}> = ({ wallet, onRename, onRemove }) => {
   const { t } = useTranslation("wallet")
+  const displayAddress = shortenAccountAddress(wallet.address, 10)
+  const trackedWalletMode =
+    wallet.mode ?? getWalletModeByAddress(wallet.address)
+  const modeIcon = trackedWalletMode ? getWalletModeIcon(trackedWalletMode) : ""
 
   return (
     <Flex align="center" gap="base" sx={trackedWalletModalTileSx}>
       <AccountAvatar address={wallet.address} size={32} />
       <Flex direction="column" gap="xs" sx={{ minWidth: 0, flex: 1 }}>
-        <Text fs="p5" fw={500} color="text.high" truncate={200}>
-          {wallet.name || t("myAssets.redesign.tracked.modal.accountName")}
-        </Text>
+        <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
+          {modeIcon && (
+            <Image
+              src={modeIcon}
+              alt=""
+              sx={{ size: "xs", flexShrink: 0, borderRadius: "full" }}
+            />
+          )}
+          <EditableText
+            fs="p5"
+            fw={500}
+            truncate={200}
+            value={wallet.name}
+            placeholder={t("myAssets.redesign.tracked.modal.accountName")}
+            onChange={onRename}
+          />
+        </Flex>
         <Text fs="p5" color="text.medium" truncate={320}>
-          {shortenAccountAddress(wallet.address, 10)}
+          {displayAddress}
         </Text>
       </Flex>
       <Button
@@ -1811,6 +1847,20 @@ const getTrackedWalletGlyphColors = (address?: string) => {
   )
 }
 
+const hexToRgba = (hex: string, alpha: number) => {
+  const value = hex.replace("#", "")
+  const channels =
+    value.length === 3
+      ? value.split("").map((char) => parseInt(`${char}${char}`, 16))
+      : [
+          parseInt(value.slice(0, 2), 16),
+          parseInt(value.slice(2, 4), 16),
+          parseInt(value.slice(4, 6), 16),
+        ]
+
+  return `rgba(${channels[0]}, ${channels[1]}, ${channels[2]}, ${alpha})`
+}
+
 const WalletGlyph: FC<{
   readonly size: number
   readonly iconSize: WalletGlyphIconSize
@@ -1831,11 +1881,30 @@ const WalletGlyph: FC<{
         overflow: "hidden",
       }}
     >
-      <Icon
-        size={iconSize}
-        component={WalletExtension}
-        sx={{ transform: "rotate(180deg)" }}
-      />
+      <Icon size={iconSize} component={WalletExtension} />
+    </Flex>
+  )
+}
+
+const TrackedWalletSectionTitle: FC<{
+  readonly children: ReactNode
+  readonly variant: "page" | "modal"
+}> = ({ children, variant }) => {
+  const colors = TRACKED_WALLET_GLYPH_COLORS[0]
+  const isPage = variant === "page"
+
+  return (
+    <Flex align="center" gap="xs" sx={trackedWalletSectionTitleSx(colors.bg)}>
+      <WalletGlyph size={isPage ? 20 : 16} iconSize={isPage ? 11 : 8} />
+      <Text
+        as={isPage ? "h2" : "div"}
+        font="primary"
+        fs={isPage ? "h7" : "p5"}
+        fw={500}
+        color="inherit"
+      >
+        {children}
+      </Text>
     </Flex>
   )
 }
@@ -2101,6 +2170,17 @@ const trackedManageButtonSx = {
   borderColor: getToken("buttons.secondary.low.borderRest"),
 }
 
+const trackedWalletSectionTitleSx = (accent: string): FlexProps["sx"] => ({
+  width: "fit-content",
+  minWidth: 0,
+  px: getToken("containers.paddings.quart"),
+  py: 4,
+  borderRadius: getToken("containers.cornerRadius.buttonsPrimary"),
+  color: hexToRgba(accent, 0.86),
+  bg: hexToRgba(accent, 0.1),
+  boxShadow: `inset 0 0 0 1px ${hexToRgba(accent, 0.18)}`,
+})
+
 const refreshIconButtonSx = {
   ...trackedManageButtonSx,
   minWidth: 30,
@@ -2208,23 +2288,21 @@ const trackedWalletModalTileSx: FlexProps["sx"] = {
   bg: getToken("controls.dim.base"),
 }
 
-const trackedWalletAddressFormSx: FlexProps["sx"] = {
-  width: "100%",
-  minWidth: 0,
-  flexWrap: "wrap",
-  "&[data-stack='true']": {
-    alignItems: "stretch",
-  },
-  "&[data-stack='true'] > div": {
-    flexBasis: "100%",
-  },
-  "&[data-stack='true'] > button": {
-    ml: "auto",
+const trackedWalletModalBodySx: BoxProps["sx"] = {
+  pt: 0,
+  minHeight: 420,
+  display: "flex",
+  flexDirection: "column",
+  gap: getToken("containers.paddings.tertiary"),
+  "&&": {
+    borderWidth: 0,
+    borderTopWidth: 0,
+    borderTopStyle: "none",
   },
 }
 
 const trackedWalletAddressInputSx: BoxProps["sx"] = {
-  flex: "1 1 360px",
+  width: "100%",
   minWidth: 0,
   "& > div": {
     width: "100%",

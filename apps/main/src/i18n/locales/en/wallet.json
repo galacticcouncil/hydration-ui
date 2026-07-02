@@ -50,6 +50,7 @@
   "myAssets.redesign.tracked.manage": "Manage tracked wallets",
   "myAssets.redesign.tracked.empty.title": "No tracked wallets",
   "myAssets.redesign.tracked.empty.description": "Add wallets to track balances for this active wallet.",
+  "myAssets.redesign.tracked.empty.addAddress": "Add address",
   "myAssets.redesign.tracked.empty.modalDescription": "Tracked wallets are saved only for the active wallet. Switch wallets to manage a different list.\n\nPaste address above to save it here.",
   "myAssets.redesign.tracked.empty.balance": "No tracked balances loaded yet",
   "myAssets.redesign.tracked.externalBalances": "External balances",

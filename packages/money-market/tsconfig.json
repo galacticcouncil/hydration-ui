@@ -6,14 +6,13 @@
     { "path": "../utils" },
     { "path": "../web3-connect" }
   ],
-  "compilerOptions": {
+    "compilerOptions": {
     "composite": true,
     "outDir": "./build",
-    "baseUrl": ".",
     "jsxImportSource": "@galacticcouncil/ui/jsx",
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
-    },
+    }
   }
 }

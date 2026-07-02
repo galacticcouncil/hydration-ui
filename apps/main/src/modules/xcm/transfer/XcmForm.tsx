@@ -107,6 +107,7 @@ export const XcmForm = () => {
       description: t("xcm:connect.modal.description", {
         chain: srcChain.name,
       }),
+      hideExternalWallet: true,
     })
   }
 

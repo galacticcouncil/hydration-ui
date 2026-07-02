@@ -21,6 +21,7 @@ export type ProviderButtonOwnProps = {
   isConnected?: boolean
   accountCount?: number
   actionLabel?: string
+  onActionClick?: React.MouseEventHandler
 }
 
 type AsButtonProps = {
@@ -54,6 +55,7 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
   isConnected,
   accountCount = 0,
   actionLabel,
+  onActionClick,
   ...props
 }) => {
   const { logo, title, installed, provider } = walletData
@@ -86,6 +88,12 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
         color={getToken(isConnected ? "text.medium" : "text.tint.primary")}
         gap="s"
         align="center"
+        sx={onActionClick ? { cursor: "pointer" } : undefined}
+        onClick={(e) => {
+          if (!onActionClick) return
+          e.stopPropagation()
+          onActionClick(e)
+        }}
       >
         <Text fs="p5">{actionLabel}</Text>
         <Icon

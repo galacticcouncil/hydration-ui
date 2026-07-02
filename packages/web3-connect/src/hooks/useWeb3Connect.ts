@@ -67,6 +67,7 @@ export type Account = StoredAccount & {
 type Web3ConnectModalMeta = {
   title?: string
   description?: string
+  hideExternalWallet?: boolean
 }
 
 export type WalletProviderEntry = {
@@ -78,6 +79,7 @@ export type WalletProviderState = {
   open: boolean
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
+  recentlyDisconnectedProviders: WalletProviderType[]
   account: StoredAccount | null
   accounts: StoredAccount[]
   mode: WalletMode
@@ -105,6 +107,7 @@ const initialState: WalletProviderState = {
   open: false,
   providers: [],
   recentProvider: null,
+  recentlyDisconnectedProviders: [],
   account: null,
   accounts: [],
   mode: WalletMode.Default,
@@ -222,6 +225,12 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             ? state.providers.filter((p) => p.type !== provider)
             : [],
           recentProvider: null,
+          recentlyDisconnectedProviders: provider
+            ? uniqueBy(
+                [provider, ...state.recentlyDisconnectedProviders],
+                (type) => type,
+              ).slice(0, 3)
+            : [],
           mode: state.mode,
           open: state.open,
         }))

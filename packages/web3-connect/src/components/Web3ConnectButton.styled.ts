@@ -20,23 +20,38 @@ export const SHoverText = styled(Text)(
     & > span {
       transition: ${theme.transitions.opacity};
     }
-    & > span:nth-child(1) {
+    & > span:nth-of-type(1) {
       opacity: 1;
     }
-    & > span:nth-child(2) {
+    & > span:nth-of-type(2) {
       position: absolute;
       top: 0;
       left: 0;
       opacity: 0;
     }
 
-    &:hover {
-      & > span:nth-child(1) {
+    &:hover,
+    [data-web3-connect-connected-button="true"]:hover & {
+      & > span:nth-of-type(1) {
         opacity: 0;
       }
-      & > span:nth-child(2) {
+      & > span:nth-of-type(2) {
         opacity: 1;
       }
+    }
+  `,
+)
+
+export const SAddressHoverText = styled(SHoverText)(
+  () => css`
+    max-width: 220px;
+
+    & > span {
+      display: block;
+      max-width: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   `,
 )
