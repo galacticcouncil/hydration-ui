@@ -7,3 +7,5 @@ export const STAKING_DOCS_LINK = "https://docs.hydration.net/products/staking"
 
 export const GIGA_STAKING_DOCS_LINK =
   "https://docs.hydration.net/quick_start/staking"
+
+export const DISCORD_INVITE_LINK = "https://discord.com/invite/hydration-net"

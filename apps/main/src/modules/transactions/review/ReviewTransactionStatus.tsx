@@ -26,24 +26,19 @@ const ErrorCopyButton = () => {
   const pjsUrl = usePolkadotJSExtrinsicUrl(tx)
   const evmTxData = isEvmCall(tx) ? tx.data : undefined
 
+  const errorMessage = stringifyErrorContext({
+    message: error ?? "",
+    address: account?.rawAddress ?? "",
+    wallet: account?.provider ?? "",
+    feePaymentAsset: `${getAssetWithFallback(feeAssetId).symbol} (${feeAssetId})`,
+    specVersion: chain?.lastRuntimeUpgrade?.spec_version?.toString() ?? "",
+    blockNumber: bestNumber?.parachainBlockNumber?.toString() ?? "",
+    path: window.location.pathname,
+    transaction: pjsUrl || evmTxData,
+  })
+
   return (
-    <MicroButton
-      onClick={() =>
-        copy(
-          stringifyErrorContext({
-            message: error ?? "",
-            address: account?.rawAddress ?? "",
-            wallet: account?.provider ?? "",
-            feePaymentAsset: `${getAssetWithFallback(feeAssetId).symbol} (${feeAssetId})`,
-            specVersion:
-              chain?.lastRuntimeUpgrade?.spec_version?.toString() ?? "",
-            blockNumber: bestNumber?.parachainBlockNumber?.toString() ?? "",
-            path: window.location.pathname,
-            transaction: pjsUrl || evmTxData,
-          }),
-        )
-      }
-    >
+    <MicroButton onClick={() => copy(errorMessage)} title={errorMessage}>
       <Flex gap="s" color={copied && getToken("accents.success.emphasis")}>
         {copied && <Icon size="xs" component={Check} />}
         <Text>{copied ? t("copied") : t("copyError")}</Text>
