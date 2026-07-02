@@ -236,15 +236,90 @@ export const passiveAprQuery = (
 // ---------------------------------------------------------------------------
 // Voting APR (active — referendum reward shares)
 // ---------------------------------------------------------------------------
-/**
- * Assumed annual referendum throughput used by `votingAprQuery` to annualise
- * the per-ref snapshot into a yearly rate. Mainnet mid-2026 has been running
- * ~770 finished refs/yr (steady across the trailing 30d/60d/90d windows).
- * APR scales linearly with this constant — revisit if governance cadence
- * meaningfully shifts. If measured falls below the ref-358 guaranteed floor
- * `54M / totalStake`, that floor takes over.
+
+/** Window (days) used to observe on-chain referendum cadence for the voting-
+ * APR annualisation. Longer = smoother, more resistant to weekly bursts;
+ * shorter = more responsive to a cadence shift. 60d matches the 60d/90d
+ * mainnet trend (both landed at ~773–775 finished refs/yr as of mid-2026).
  */
-const REFS_PER_YEAR = 750
+const REFS_PER_YEAR_LOOKBACK_DAYS = 60
+
+/** Floor for `refsPerYear` — if governance activity dies down, don't zero
+ * out the display. 50/yr matches "one every ~7 days" — a plausible minimum
+ * for an active parachain. */
+const REFS_PER_YEAR_MIN = 50
+
+/** Ceiling — sanity guard against pathological readings (e.g. a spammy week
+ * or bogus indexer). 2000/yr = ~5.5/day is well above any observed activity. */
+const REFS_PER_YEAR_MAX = 2000
+
+/**
+ * Observed annual referendum cadence, derived from on-chain state.
+ *
+ * Counts finished referenda (Approved / Rejected / Cancelled / TimedOut /
+ * Killed) whose end block falls within the trailing
+ * `REFS_PER_YEAR_LOOKBACK_DAYS` window, then annualises to a yearly rate.
+ * Clamped to `[REFS_PER_YEAR_MIN, REFS_PER_YEAR_MAX]` to keep the display
+ * bounded when the sample is sparse (chain reset, pallet freshly enabled)
+ * or bogus.
+ *
+ * `voting APR` uses this instead of a hardcoded constant so the display
+ * self-tunes as governance activity evolves without a UI redeploy.
+ *
+ * Cost: one `Referenda.ReferendumInfoFor.getEntries()` per session. Cached
+ * with `staleTime: Infinity` — subsequent renders hit the react-query cache.
+ */
+export const refsPerYearQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    ...APR_QUERY_OPTS,
+    queryKey: ["gigaApr", "refsPerYear", REFS_PER_YEAR_LOOKBACK_DAYS],
+    enabled: rpc.isApiLoaded,
+    queryFn: async () => {
+      const blocksPerDay = getBlocksPerDay(
+        millisecondsToSeconds(rpc.slotDurationMs),
+      )
+      const bestNumber = await rpc.queryClient.ensureQueryData(
+        bestNumberQuery(rpc),
+      )
+      const head = bestNumber.parachainBlockNumber
+      const cutoff = head - REFS_PER_YEAR_LOOKBACK_DAYS * blocksPerDay
+
+      const entries =
+        await rpc.papi.query.Referenda.ReferendumInfoFor.getEntries({
+          at: "best",
+        })
+
+      let count = 0
+      for (const { value } of entries) {
+        if (!value) continue
+        // Terminal states carry the end block as first tuple element (or as
+        // the whole value for `Killed`). `Ongoing` doesn't count.
+        let endBlock: number | null = null
+        switch (value.type) {
+          case "Approved":
+          case "Rejected":
+          case "Cancelled":
+          case "TimedOut":
+            endBlock = value.value[0]
+            break
+          case "Killed":
+            endBlock = value.value as unknown as number
+            break
+          default:
+            continue
+        }
+        if (endBlock !== null && endBlock > cutoff) count++
+      }
+
+      const annualised = Math.round(
+        (count * daysInYear) / REFS_PER_YEAR_LOOKBACK_DAYS,
+      )
+      return Math.max(
+        REFS_PER_YEAR_MIN,
+        Math.min(REFS_PER_YEAR_MAX, annualised),
+      )
+    },
+  })
 
 /**
  * Voting APR — annualised share of referendum reward pools at max
@@ -286,16 +361,21 @@ export const votingAprQuery = (
     queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString()],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      const [allocatedEntries, liveEntries, rewardPotAcct, tlNow, gpNow] =
-        await Promise.all([
-          rpc.queryClient.ensureQueryData(referendaRewardPoolQuery(rpc)),
-          rpc.queryClient.ensureQueryData(
-            referendaTotalWeightedVotesQuery(rpc),
-          ),
-          rpc.queryClient.fetchQuery(accumulatorPotBalanceQuery(rpc)),
-          rpc.queryClient.ensureQueryData(gigaTotalLockedQuery(rpc)),
-          rpc.queryClient.ensureQueryData(gigapotBalanceQuery(rpc)),
-        ])
+      const [
+        allocatedEntries,
+        liveEntries,
+        rewardPotAcct,
+        tlNow,
+        gpNow,
+        refsPerYear,
+      ] = await Promise.all([
+        rpc.queryClient.ensureQueryData(referendaRewardPoolQuery(rpc)),
+        rpc.queryClient.ensureQueryData(referendaTotalWeightedVotesQuery(rpc)),
+        rpc.queryClient.fetchQuery(accumulatorPotBalanceQuery(rpc)),
+        rpc.queryClient.ensureQueryData(gigaTotalLockedQuery(rpc)),
+        rpc.queryClient.ensureQueryData(gigapotBalanceQuery(rpc)),
+        rpc.queryClient.ensureQueryData(refsPerYearQuery(rpc)),
+      ])
 
       // Governance-guaranteed voting-APR floor: 54M HDX/yr from ref 358
       // divided by live `totalStake`. Mirrors base APR's `guaranteed`
@@ -376,7 +456,7 @@ export const votingAprQuery = (
       const measured =
         countedRefs === 0
           ? Big(0)
-          : sumPerStakeUnit.div(countedRefs).times(REFS_PER_YEAR).times(100)
+          : sumPerStakeUnit.div(countedRefs).times(refsPerYear).times(100)
 
       return measured.gt(guaranteed) ? measured : guaranteed
     },
