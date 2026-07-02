@@ -253,21 +253,30 @@ const REFS_PER_YEAR_MIN = 50
  * or bogus indexer). 2000/yr = ~5.5/day is well above any observed activity. */
 const REFS_PER_YEAR_MAX = 2000
 
+/** Number of most-recent ref ids to sample per query. Sized to cover the
+ * `REFS_PER_YEAR_MAX` ceiling — 2000/yr × 60d/365 ≈ 329 finished refs in
+ * a 60d window. 400 buffers for ongoing refs and edge cases; if actual
+ * activity exceeds this we clamp at MAX anyway. */
+const REFS_PER_YEAR_SAMPLE_SIZE = 400
+
 /**
  * Observed annual referendum cadence, derived from on-chain state.
  *
- * Counts finished referenda (Approved / Rejected / Cancelled / TimedOut /
- * Killed) whose end block falls within the trailing
- * `REFS_PER_YEAR_LOOKBACK_DAYS` window, then annualises to a yearly rate.
- * Clamped to `[REFS_PER_YEAR_MIN, REFS_PER_YEAR_MAX]` to keep the display
- * bounded when the sample is sparse (chain reset, pallet freshly enabled)
- * or bogus.
+ * Reads `Referenda.ReferendumCount` (1 call), then fetches the last
+ * `REFS_PER_YEAR_SAMPLE_SIZE` ref ids in parallel and counts those in
+ * Approved / Rejected / Cancelled / TimedOut / Killed state whose end block
+ * falls within the trailing `REFS_PER_YEAR_LOOKBACK_DAYS` window. Annualises
+ * `count × 365 / lookback`. Clamped to `[REFS_PER_YEAR_MIN, MAX]`.
+ *
+ * Scales with `REFS_PER_YEAR_SAMPLE_SIZE` (constant), NOT chain age —
+ * `.getEntries()` would pull every historical ref, `.getValue` × N stays
+ * bounded even after years of governance activity.
  *
  * `voting APR` uses this instead of a hardcoded constant so the display
- * self-tunes as governance activity evolves without a UI redeploy.
+ * self-tunes as governance cadence evolves without a UI redeploy.
  *
- * Cost: one `Referenda.ReferendumInfoFor.getEntries()` per session. Cached
- * with `staleTime: Infinity` — subsequent renders hit the react-query cache.
+ * Cost: 1 storage read for the count + N parallel reads for the sample.
+ * Cached `staleTime: Infinity` — one round-trip per session.
  */
 export const refsPerYearQuery = (rpc: TProviderContext) =>
   queryOptions({
@@ -284,13 +293,23 @@ export const refsPerYearQuery = (rpc: TProviderContext) =>
       const head = bestNumber.parachainBlockNumber
       const cutoff = head - REFS_PER_YEAR_LOOKBACK_DAYS * blocksPerDay
 
-      const entries =
-        await rpc.papi.query.Referenda.ReferendumInfoFor.getEntries({
+      const refCount = Number(
+        await rpc.papi.query.Referenda.ReferendumCount.getValue({
           at: "best",
-        })
+        }),
+      )
+      const start = Math.max(0, refCount - REFS_PER_YEAR_SAMPLE_SIZE)
+
+      const infos = await Promise.all(
+        Array.from({ length: refCount - start }, (_, k) =>
+          rpc.papi.query.Referenda.ReferendumInfoFor.getValue(start + k, {
+            at: "best",
+          }),
+        ),
+      )
 
       let count = 0
-      for (const { value } of entries) {
+      for (const value of infos) {
         if (!value) continue
         // Terminal states carry the end block as first tuple element (or as
         // the whole value for `Killed`). `Ongoing` doesn't count.
