@@ -21,7 +21,6 @@ import { isNumber } from "remeda"
 
 import { useBestNumber, useChainSpecData } from "@/api/chain"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
-import { ENV } from "@/config/env"
 import { DISCORD_INVITE_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { stringifyErrorContext } from "@/utils/errors"
