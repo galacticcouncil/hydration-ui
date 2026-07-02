@@ -4,7 +4,12 @@ import { GigaHDXPosition } from "@/modules/staking/gigaStaking/GigaHDXPosition"
 
 export const GigaStakingDashboard = () => {
   const { data: gigaAccountBalance } = useGigaAccountBalance()
-  const transferable = gigaAccountBalance?.transferable ?? 0n
+  // Check `total`, not `transferable`. A fully-staked user has all their
+  // GIGAHDX (aToken) locked by the lock-manager (`Stakes.gigahdx`), so
+  // `transferable` is 0 even though they hold a real position. Gating on
+  // `transferable` hides `GigaHDXPosition` — which contains the claim-
+  // rewards CTA and yield/borrow readouts — from every staked user.
+  const total = gigaAccountBalance?.total ?? 0n
 
-  return transferable > 0n ? <GigaHDXPosition /> : <GigaHDXDescription />
+  return total > 0n ? <GigaHDXPosition /> : <GigaHDXDescription />
 }
