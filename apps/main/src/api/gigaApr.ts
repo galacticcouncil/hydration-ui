@@ -469,8 +469,10 @@ export const votingAprQuery = (
       // cadence. `typicalPool` uses the live accumulator (which reflects
       // scheduler + fees inflow to date); real allocations at future ref
       // completions will use whatever accumulator balance exists then.
-      const typicalPool = (potFree * BigInt(medianPct)) / 100n
-      const denom = Big(medianWeighted.toString()).plus(myWeighted.toString())
+      const typicalPool = (potFree * BigInt(medianPct ?? 0)) / 100n
+      const denom = Big(medianWeighted?.toString() ?? "0").plus(
+        myWeighted.toString(),
+      )
       const measured = denom.lte(0)
         ? Big(0)
         : Big(typicalPool.toString())
