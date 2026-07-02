@@ -1,4 +1,9 @@
-import { GIGAHDX_LAUNCH_BLOCK } from "@galacticcouncil/money-market/ui-config"
+import {
+  GIGAHDX_ANNUAL_BASE_INCENTIVES_HDX,
+  //GIGAHDX_ANNUAL_VOTING_INCENTIVES_HDX,
+  GIGAHDX_LAUNCH_BLOCK,
+  STHDX_ASSET_ID,
+} from "@galacticcouncil/money-market/ui-config"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsToSeconds } from "date-fns"
@@ -34,6 +39,34 @@ const getBlocksPerDay = (blockSeconds: number) => {
   return Math.floor(secondsInDay / blockSeconds)
 }
 
+/**
+ * Pallet age (days since `GIGAHDX_LAUNCH_BLOCK`) required before the measured
+ * rate-delta signal is considered stable enough to display. Below this,
+ * `passiveAprQuery` returns the governance-guaranteed constant alone — 1-2d
+ * of rate delta annualises to wildly noisy launch-burst numbers (30%+
+ * headline for a signal that will settle around 10-13% within a week).
+ */
+const MEASURED_MIN_AGE_DAYS = 7
+
+/** stHDX asset id as a `number` — matches how `Tokens.TotalIssuance` is keyed. */
+const STHDX_ASSET_ID_NUM = Number(STHDX_ASSET_ID)
+
+/**
+ * Annual HDX committed via ref 358, in planck. Encodes the scheduler's
+ * `4,109.59 HDX × 8,760 hours` cadence to `gigahdx!`. Divided by live
+ * `totalStake` to give the governance-guaranteed base-APR floor.
+ */
+const ANNUAL_HDX_TO_BASE_POT_PLANCK =
+  BigInt(GIGAHDX_ANNUAL_BASE_INCENTIVES_HDX) * 10n ** 12n
+
+/**
+ * Annual HDX committed to the voting-rewards accumulator (`gigarwd!`) via
+ * ref 358. Divided by live `totalStake` to give the voting-APR guaranteed
+ * floor (mirrors `ANNUAL_HDX_TO_BASE_POT_PLANCK` for the base component).
+ */
+// const ANNUAL_HDX_TO_VOTING_POT_PLANCK =
+//   BigInt(GIGAHDX_ANNUAL_VOTING_INCENTIVES_HDX) * 10n ** 12n
+
 /** Locked6x conviction multiplier / REWARD_MULTIPLIER_SCALE = 800/100. */
 const LOCKED_6X_MULTIPLIER = 8n
 const DEFAULT_WINDOW_DAYS = 28
@@ -63,6 +96,32 @@ const APR_QUERY_OPTS = {
  */
 const MIN_REAL_VOTE_WEIGHTED = 100n * 10n ** 12n
 
+/**
+ * Base APR. Displays `max(guaranteed, measured)`.
+ *
+ *   guaranteed = `GIGAHDX_ANNUAL_BASE_INCENTIVES_HDX / totalStake × 100`
+ *                (ref-358 scheduler commitment ÷ live stake). Position-
+ *                independent; strictly a function of the current stake pool.
+ *
+ *   measured   = `(rate_now / rate_t0 − 1) × 365 / windowDays × 100`
+ *                where `rate = (TotalLocked + gigapot.free) / stHDX_supply`.
+ *                Captures every inflow source (scheduler + fees) via the
+ *                exchange-rate improvement between the two block hashes —
+ *                immune to `realize_yield` drain (which moves `gp → TL`,
+ *                leaving `TL + gp` unchanged). Only used once the pallet is
+ *                ≥ `MEASURED_MIN_AGE_DAYS` old — below that the annualised
+ *                signal is dominated by launch-burst noise.
+ *
+ * `t0` is `max(GIGAHDX_LAUNCH_BLOCK, head − windowDays)` — the window can't
+ * predate the sweep-to-zero at enactment. Historical reads use `.at(hash)`
+ * with `.catch(() => null)` to survive pruned RPCs; when a required historical
+ * read is missing, `measured` reduces to `0` and the `max()` returns the
+ * guaranteed floor.
+ *
+ * At ref 358's scheduled expiry (year 1 without renewal) `measured` will start
+ * reflecting the drop in inflow — display naturally decays over the trailing
+ * window instead of pretending the incentive continues.
+ */
 export const passiveAprQuery = (
   rpc: TProviderContext,
   windowDays: number = DEFAULT_WINDOW_DAYS,
@@ -72,6 +131,8 @@ export const passiveAprQuery = (
     queryKey: ["gigaApr", "passive", windowDays],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
       const blocksPerDay = getBlocksPerDay(
         millisecondsToSeconds(rpc.slotDurationMs),
       )
@@ -81,68 +142,91 @@ export const passiveAprQuery = (
       )
       const parachainBlockNumber = bestNumber.parachainBlockNumber
 
-      // Anchor the trailing window to the launch block so the baseline can never
-      // predate the launch sweep (which would otherwise show 0% for ~windowDays).
-      // Once launch is older than the window the `max` falls through to the plain
-      // trailing window and GIGAHDX_LAUNCH_BLOCK stops mattering.
-      const windowBlocks = windowDays * blocksPerDay
-      let t0Block = Math.max(
-        1,
-        GIGAHDX_LAUNCH_BLOCK,
-        parachainBlockNumber - windowBlocks,
-      )
-
-      const [tlNowRaw, gpNowAcct] = await Promise.all([
+      const [tlNowRaw, gpNow, supplyNow] = await Promise.all([
         rpc.queryClient.ensureQueryData(gigaTotalLockedQuery(rpc)),
         rpc.queryClient.ensureQueryData(gigapotBalanceQuery(rpc)),
+        rpc.papi.query.Tokens.TotalIssuance.getValue(STHDX_ASSET_ID_NUM, {
+          at: "best",
+        }),
       ])
-
       const tlNow = tlNowRaw ?? 0n
-      const gpNow = gpNowAcct ?? 0n
-
-      // Baseline gigapot balance at t0. When anchored to the launch block the
-      // gigapot was just swept to ~0 (exchange rate GIGAHDX:HDX = 1), so it's 0
-      // by definition — no historical read needed. Otherwise (launch older than
-      // the window) read the gigapot balance at the trailing-window start.
-      //
-      // If that historical state isn't available (e.g. a pruned RPC that no
-      // longer retains ~windowDays of history), fall back to the launch block,
-      // where the gigapot was swept to ~0 — gpT0 = 0 by definition, no read
-      // needed. That yields a since-launch average APR instead of a trailing
-      // 28-day one, which still beats a 0 baseline (treats the ENTIRE current
-      // pot as window yield → massive overstatement) or showing nothing.
-      let gpT0 = 0n
-      if (t0Block > GIGAHDX_LAUNCH_BLOCK) {
-        const t0HashStr: string = await rpc.papiClient._request(
-          "chain_getBlockHash",
-          [t0Block],
-        )
-        const gpT0Acct = await rpc.papi.query.System.Account.getValue(
-          STAKE_GIGAPOT_ADDRESS,
-          { at: t0HashStr },
-        ).catch(() => null)
-        if (gpT0Acct === null) {
-          t0Block = GIGAHDX_LAUNCH_BLOCK
-        } else {
-          gpT0 = gpT0Acct.data?.free ?? 0n
-        }
-      }
+      const supNow = supplyNow ?? 0n
 
       const totalStake = tlNow + gpNow
       if (totalStake === 0n) return Big(0)
 
-      // Cap negative deltas at 0 — pot can only shrink via privileged ops or
-      // yield-paying user flows (already-earned HDX leaving the pot); neither
-      // represents anti-yield.
-      const dgp = gpNow > gpT0 ? gpNow - gpT0 : 0n
-      const actualWindowBlocks = parachainBlockNumber - t0Block
-      const actualWindowDays = Math.max(1, actualWindowBlocks / blocksPerDay)
-
-      return Big(dgp.toString())
+      const guaranteed = Big(ANNUAL_HDX_TO_BASE_POT_PLANCK.toString())
         .div(totalStake.toString())
-        .times(daysInYear)
-        .div(actualWindowDays)
         .times(100)
+
+      // Pallet too young → measured is noise, return the guaranteed floor.
+      const palletAgeDays =
+        (parachainBlockNumber - GIGAHDX_LAUNCH_BLOCK) / blocksPerDay
+      if (palletAgeDays < MEASURED_MIN_AGE_DAYS) return guaranteed
+
+      // Window = min(windowDays, palletAge). Anchored so t0 can never predate
+      // the launch sweep (`gigapot = 0`, `stHDX supply = 0` → rate = 1 by
+      // runtime clamp).
+      const windowBlocks = windowDays * blocksPerDay
+      const t0Block = Math.max(
+        GIGAHDX_LAUNCH_BLOCK,
+        parachainBlockNumber - windowBlocks,
+      )
+      const actualWindowDays = Math.max(
+        1,
+        (parachainBlockNumber - t0Block) / blocksPerDay,
+      )
+
+      const t0HashStr: string = await rpc.papiClient._request(
+        "chain_getBlockHash",
+        [t0Block],
+      )
+      const [tlT0Raw, gpT0Acct, supplyT0Raw] = await Promise.all([
+        unsafeApi.query.GigaHdx.TotalLocked.getValue({ at: t0HashStr }).catch(
+          () => null,
+        ) as Promise<bigint | null>,
+        rpc.papi.query.System.Account.getValue(STAKE_GIGAPOT_ADDRESS, {
+          at: t0HashStr,
+        }).catch(() => null),
+        rpc.papi.query.Tokens.TotalIssuance.getValue(STHDX_ASSET_ID_NUM, {
+          at: t0HashStr,
+        }).catch(() => null),
+      ])
+
+      // rate = (TL + gp) / stHDX_supply, floored at 1 to match runtime clamp.
+      // Any missing historical read → `measured` collapses to 0 and the
+      // `max()` below returns the guaranteed floor.
+      const tlT0 = tlT0Raw ?? 0n
+      const gpT0 = gpT0Acct?.data?.free ?? 0n
+      const supT0 = supplyT0Raw ?? 0n
+
+      const rateNow =
+        supNow === 0n
+          ? Big(1)
+          : Big.max(
+              1,
+              Big(tlNow.toString())
+                .plus(gpNow.toString())
+                .div(supNow.toString()),
+            )
+      const rateT0 =
+        supT0 === 0n
+          ? Big(1)
+          : Big.max(
+              1,
+              Big(tlT0.toString()).plus(gpT0.toString()).div(supT0.toString()),
+            )
+
+      const measured = rateT0.eq(0)
+        ? Big(0)
+        : rateNow
+            .div(rateT0)
+            .minus(1)
+            .times(daysInYear)
+            .div(actualWindowDays)
+            .times(100)
+
+      return measured.gt(guaranteed) ? measured : guaranteed
     },
   })
 
