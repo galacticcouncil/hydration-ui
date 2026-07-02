@@ -7,6 +7,7 @@ import {
 import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWallet.png"
 import {
   AccountAvatar,
+  Amount,
   AssetLabel,
   Box,
   Button,
@@ -21,6 +22,7 @@ import {
   ModalBody,
   ModalHeader,
   Skeleton,
+  TableRowAction,
   Text,
   Toggle,
   ToggleLabel,
@@ -61,6 +63,7 @@ import {
   ChainEcosystem,
   EvmParachain,
 } from "@galacticcouncil/xc-core"
+import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { ChevronDown, RefreshCw } from "lucide-react"
 import {
@@ -151,6 +154,7 @@ type ExternalWalletAssetRow = {
   readonly amountDisplay: string
   readonly valueDisplay: string
   readonly valueUsd: Big
+  readonly hydrationAssetKey?: string
   readonly registryAsset?: ReturnType<ReturnType<typeof useAssets>["getAsset"]>
 }
 
@@ -614,6 +618,7 @@ const ExternalWalletChainGroup: FC<{
   readonly refreshNonce?: number
   readonly showAllAssets: boolean
 }> = ({ address, chain, refreshNonce = 0, showAllAssets }) => {
+  const { account } = useAccount()
   const [isOpen, setIsOpen] = useState(true)
   const [localRefreshNonce, setLocalRefreshNonce] = useState(0)
   const { rows, hasPositiveBalance, isLoading, totalDisplay } =
@@ -623,6 +628,10 @@ const ExternalWalletChainGroup: FC<{
       refreshKey: `${refreshNonce}:${localRefreshNonce}`,
       showAllAssets,
     })
+  const canDepositToHydration =
+    !!account &&
+    stringEquals(account.rawAddress, address) &&
+    chain.key !== HYDRATION_CHAIN_KEY
 
   if (!isLoading && !hasPositiveBalance) return null
 
@@ -641,6 +650,7 @@ const ExternalWalletChainGroup: FC<{
           chain={chain}
           rows={rows}
           isLoading={isLoading}
+          canDepositToHydration={canDepositToHydration}
         />
       </SmoothCollapse>
     </>
@@ -705,7 +715,8 @@ const ExternalWalletAssetTable: FC<{
   readonly chain: AnyChain
   readonly rows: Array<ExternalWalletAssetRow>
   readonly isLoading: boolean
-}> = ({ chain, rows, isLoading }) => {
+  readonly canDepositToHydration?: boolean
+}> = ({ chain, rows, isLoading, canDepositToHydration = false }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   if (isLoading) {
@@ -739,6 +750,7 @@ const ExternalWalletAssetTable: FC<{
           key={row.asset.key}
           chain={chain}
           row={row}
+          canDepositToHydration={canDepositToHydration}
         />
       ))}
     </Flex>
@@ -754,10 +766,13 @@ const ExternalWalletTableHeader = () => {
         {t("common:asset")}
       </Text>
       <Text fs="p5" fw={500} color="text.low">
-        {t("myAssets.header.total")}
+        {t("common:balance")}
+      </Text>
+      <Text fs="p5" fw={500} color="text.low">
+        {t("myAssets.redesign.value")}
       </Text>
       <Text fs="p5" fw={500} color="text.low" sx={{ textAlign: "right" }}>
-        {t("myAssets.redesign.value")}
+        {t("common:actions")}
       </Text>
     </Box>
   )
@@ -766,8 +781,9 @@ const ExternalWalletTableHeader = () => {
 const ExternalWalletAssetTableRow: FC<{
   readonly chain: AnyChain
   readonly row: ExternalWalletAssetRow
-}> = ({ chain, row }) => {
-  const { t } = useTranslation(["common"])
+  readonly canDepositToHydration: boolean
+}> = ({ chain, row, canDepositToHydration }) => {
+  const { t } = useTranslation(["common", "wallet"])
   const meta = row.registryAsset
     ? {
         symbol: row.registryAsset.symbol,
@@ -777,6 +793,10 @@ const ExternalWalletAssetTableRow: FC<{
         symbol: row.asset.originSymbol,
         name: row.asset.originSymbol,
       }
+  const showDepositButton =
+    canDepositToHydration &&
+    !!row.hydrationAssetKey &&
+    (row.balance?.amount ?? 0n) > 0n
 
   return (
     <Box sx={externalWalletTableRowSx}>
@@ -784,17 +804,27 @@ const ExternalWalletAssetTableRow: FC<{
         <ExternalWalletAssetLogo chain={chain} asset={row.asset} />
         <AssetLabel symbol={meta.symbol} name={meta.name} />
       </Flex>
-      <Flex direction="column" gap="xs">
-        <Text fs="p4" fw={500} color="text.high">
-          {t("number", {
-            value: row.amountDisplay,
-            symbol: row.asset.originSymbol,
-          })}
-        </Text>
-      </Flex>
-      <Text fs="p5" fw={500} color="text.medium" sx={{ textAlign: "right" }}>
+      <Amount value={t("number", { value: row.amountDisplay })} />
+      <Text fs="p5" fw={500} color="text.medium">
         {row.valueDisplay}
       </Text>
+      <Flex justify="flex-end">
+        {showDepositButton && (
+          <TableRowAction asChild>
+            <Link
+              to="/cross-chain"
+              search={{
+                srcChain: chain.key,
+                srcAsset: row.asset.key,
+                destChain: HYDRATION_CHAIN_KEY,
+                destAsset: row.hydrationAssetKey,
+              }}
+            >
+              {t("wallet:myAssets.emptyState.cta")}
+            </Link>
+          </TableRowAction>
+        )}
+      </Flex>
     </Box>
   )
 }
@@ -816,6 +846,7 @@ const ExternalWalletAssetSkeleton: FC = () => (
     <Box sx={externalWalletTableHeaderSx}>
       <Skeleton width={54} height={14} />
       <Skeleton width={96} height={14} />
+      <Skeleton width={58} height={14} />
       <Skeleton width={58} height={14} sx={{ justifySelf: "end" }} />
     </Box>
     {Array.from({ length: 3 }).map((_, index) => (
@@ -828,7 +859,8 @@ const ExternalWalletAssetSkeleton: FC = () => (
           </Flex>
         </Flex>
         <Skeleton width={96} height={16} />
-        <Skeleton width={64} height={16} sx={{ justifySelf: "end" }} />
+        <Skeleton width={64} height={16} />
+        <Skeleton width={96} height={16} sx={{ justifySelf: "end" }} />
       </Box>
     ))}
   </Flex>
@@ -893,6 +925,9 @@ const useExternalWalletAssetRows = ({
       .map((asset): ExternalWalletAssetRow => {
         const registryId = registryChain.getBalanceAssetId(asset)
         const registryAsset = getAsset(registryId.toString())
+        const hydrationAssetKey =
+          registryChain.assetsData.get(registryId.toString())?.asset.key ??
+          registryChain.assetsData.get(asset.key)?.asset.key
         const balance = balances?.get(asset.key)
         const amountDisplay = balance
           ? toDecimal(balance.amount, balance.decimals)
@@ -911,6 +946,7 @@ const useExternalWalletAssetRows = ({
             currency: "USD",
             maximumFractionDigits: 2,
           }).format(Number(valueUsd.toString())),
+          hydrationAssetKey,
           registryAsset,
         }
       })
@@ -1468,17 +1504,11 @@ const TrackedHydrationAssetTableRow: FC<{
       <Flex align="center" gap="base" sx={{ minWidth: 0 }}>
         <AssetLabelFull asset={row.asset} />
       </Flex>
-      <Flex direction="column" gap="xs">
-        <Text fs="p4" fw={500} color="text.high">
-          {t("number", {
-            value: row.amountDisplay,
-            symbol: row.asset.symbol,
-          })}
-        </Text>
-      </Flex>
-      <Text fs="p5" fw={500} color="text.medium" sx={{ textAlign: "right" }}>
+      <Amount value={t("number", { value: row.amountDisplay })} />
+      <Text fs="p5" fw={500} color="text.medium">
         {row.valueDisplay}
       </Text>
+      <Box />
     </Box>
   )
 }
@@ -1502,11 +1532,12 @@ const TrackedWalletTableHeader = () => {
         {t("common:asset")}
       </Text>
       <Text fs="p5" fw={500} color="text.low">
-        {t("myAssets.header.total")}
+        {t("common:balance")}
       </Text>
-      <Text fs="p5" fw={500} color="text.low" sx={{ textAlign: "right" }}>
-        {t("common:actions")}
+      <Text fs="p5" fw={500} color="text.low">
+        {t("myAssets.redesign.value")}
       </Text>
+      <Box />
     </Box>
   )
 }
@@ -1978,7 +2009,6 @@ const AssetGroupTable: FC<{ readonly group: AssetGroup }> = ({ group }) => {
         columns={columns}
         size="small"
         expandable="single"
-        fixedLayout
         showExpandColumn={false}
         renderSubComponent={(asset) =>
           asset.id === native.id ? (
@@ -2173,9 +2203,10 @@ const inactiveTabSx = {
   boxShadow: "inset 0 0 0 1px transparent",
 }
 
-const tableSkeletonGridColumns = "320px 200px 200px minmax(520px, 1fr)"
+const tableSkeletonGridColumns =
+  "minmax(220px, 1.35fr) minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(180px, 1fr)"
 
-const externalWalletTableGridColumns = "320px 200px minmax(120px, 1fr)"
+const externalWalletTableGridColumns = tableSkeletonGridColumns
 
 const externalWalletTableHeaderSx: BoxProps["sx"] = {
   height: 34,
@@ -2286,18 +2317,9 @@ const tableActionAlignmentSx: BoxProps["sx"] = {
     textAlign: "right",
   },
   "& tbody td:last-of-type": {
-    width: 40,
-    minWidth: 40,
-    maxWidth: 40,
-    px: getToken("containers.paddings.quart"),
-  },
-  "& tbody td:last-of-type, & tbody td:nth-last-of-type(2)": {
     textAlign: "right",
   },
-  "& tbody td:nth-last-of-type(2) > *": {
-    marginLeft: "auto",
-  },
-  "& tbody td:last-of-type > div, & tbody td:nth-last-of-type(2) > div": {
+  "& tbody td:last-of-type > div": {
     justifyContent: "flex-end",
   },
 }

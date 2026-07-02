@@ -1,10 +1,17 @@
-import { LockOpen } from "@galacticcouncil/ui/assets/icons"
+import { LockOpen, StylizedAdd } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   ButtonTransparent,
   DataTableExpandTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Flex,
   Icon,
+  MenuItem,
+  MenuItemIcon,
+  MenuItemLabel,
   Modal,
   TableRowAction,
   TableRowDetailsExpand,
@@ -13,15 +20,17 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { LINKS } from "@/config/navigation"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { naturally, numericallyStr, sortBy, undefinedLast } from "@/utils/sort"
 
@@ -48,12 +57,14 @@ export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
 export const useMyAssetsColumns = (isEmpty: boolean) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { isMobile } = useBreakpoints()
+  const { featureFlags } = useRpcProvider()
+  const { isMobile, gte } = useBreakpoints()
+  const isWideDesktop = gte("xl")
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       id: MyAssetsTableColumn.Asset,
-      size: 320,
+      size: isWideDesktop ? 320 : 280,
       header: t("common:asset"),
       sortingFn: sortBy({
         select: (row) => row.original.symbol,
@@ -66,7 +77,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     const totalColumn = columnHelper.accessor("total", {
       id: MyAssetsTableColumn.Total,
-      size: 200,
+      size: isWideDesktop ? 200 : 170,
       header: t("myAssets.header.total"),
       sortingFn: sortBy({
         select: (row) => row.original.totalDisplay,
@@ -91,7 +102,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     const transferableColumn = columnHelper.accessor("transferable", {
       id: MyAssetsTableColumn.Transferable,
-      size: 200,
+      size: isWideDesktop ? 200 : 170,
       header: t("myAssets.header.transferable"),
       sortingFn: sortBy({
         select: (row) => row.original.transferableDisplay,
@@ -116,7 +127,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     const actionsColumn = columnHelper.display({
       id: MyAssetsTableColumn.Actions,
-      size: 680,
+      size: isWideDesktop ? 560 : 360,
       header: t("common:actions"),
       meta: {
         sx: {
@@ -126,16 +137,44 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       },
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
+        const stakingTo = featureFlags.gigaStakingEnabled
+          ? LINKS.stakingGigaStake
+          : LINKS.stakingOld
 
         return (
           <Flex
-            gap="base"
+            gap={isWideDesktop ? "base" : "s"}
             justify="flex-end"
             sx={{ width: "100%", "& > *": { flexShrink: 0 } }}
           >
             {row.original.id === NATIVE_ASSET_ID && (
               <>
-                <AssetDetailStaking asset={row.original} />
+                {isWideDesktop ? (
+                  <AssetDetailStaking asset={row.original} />
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <TableRowAction aria-label={t("common:more")}>
+                        <Icon component={MoreHorizontal} size="xs" />
+                        {t("common:more")}
+                      </TableRowAction>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <MenuItem asChild>
+                          <Link to={stakingTo}>
+                            <MenuItemIcon component={StylizedAdd} />
+                            <MenuItemLabel>
+                              {t("myAssets.actions.staking", {
+                                symbol: row.original.symbol,
+                              })}
+                            </MenuItemLabel>
+                          </Link>
+                        </MenuItem>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
                 <DataTableExpandTrigger>
                   <TableRowAction variant="accent">
                     <Icon component={LockOpen} size="xs" />
@@ -239,5 +278,5 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       : ([assetColumn, totalColumn, transferableColumn, actionsColumn] as Array<
           ColumnDef<MyAsset>
         >)
-  }, [isMobile, isEmpty, t])
+  }, [featureFlags.gigaStakingEnabled, isWideDesktop, isMobile, isEmpty, t])
 }
