@@ -61,7 +61,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   const { isMobile, isTablet } = useBreakpoints()
   const { data: exchangeRate } = useGigaStakeExchangeRate()
 
-  const { data: gigaBorrowSummary, isSuccess } = useUserGigaBorrowSummary()
+  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
   const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
 
   const { getBalance } = useAccountBalances()
@@ -133,8 +133,11 @@ export const GigaStakeTotalsHeader: FC = () => {
   const hollarReserve = gigaPoolReserves?.formattedReserves.find((reserve) =>
     isGho(reserve),
   )
-  const { data: facilitatorBucketData, isLoading: isFacilitatorBucketLoading } =
-    useFacilitatorBucket(hollarReserve?.aTokenAddress ?? "")
+  const {
+    data: facilitatorBucketData,
+    isLoading: isFacilitatorBucketLoading,
+    isSuccess: isFacilitatorBucketSuccess,
+  } = useFacilitatorBucket(hollarReserve?.aTokenAddress ?? "")
 
   const { data: gigaLockedHDX, isLoading: isGigaLockedHDXLoading } = useQuery(
     gigaTotalLockedQuery(rpc),
@@ -166,15 +169,11 @@ export const GigaStakeTotalsHeader: FC = () => {
       size="medium"
       label={t("staking:gigaStake.header.totalStake")}
       isLoading={isGigaLockedHDXLoading || isTotalGigaSuppliedUsdLoading}
-      value={
-        isSuccess
-          ? t("currency.compact", {
-              value: totalGigaSupplied,
-              symbol: native.symbol,
-            })
-          : "-"
-      }
-      bottomLabel={isSuccess ? totalGigaSuppliedUsd : "-"}
+      value={t("currency.compact", {
+        value: totalGigaSupplied,
+        symbol: native.symbol,
+      })}
+      bottomLabel={totalGigaSuppliedUsd}
     />
   )
 
@@ -220,7 +219,7 @@ export const GigaStakeTotalsHeader: FC = () => {
       label={t("staking:gigaStake.header.availableToBorrow")}
       isLoading={isGigaPoolReservesLoading || isFacilitatorBucketLoading}
       value={
-        isSuccess
+        isFacilitatorBucketSuccess
           ? t("currency", {
               value: availableToBorrow,
               symbol: hollarSymbol,
