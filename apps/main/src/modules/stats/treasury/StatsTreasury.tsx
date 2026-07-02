@@ -314,6 +314,7 @@ const mergeBreakdowns = (
   second: TreasuryAssetBreakdown,
 ): TreasuryAssetBreakdown => ({
   wallet: mergeBreakdownPart(first.wallet, second.wallet),
+  offchain: mergeBreakdownPart(first.offchain, second.offchain),
   moneyMarketSupply: mergeBreakdownPart(
     first.moneyMarketSupply,
     second.moneyMarketSupply,
@@ -483,15 +484,6 @@ const getTooltipAssetName = (
   isGroupedAsset: boolean,
 ) => (isGroupedAsset ? "Aggregated balances" : item.asset.name)
 
-const getAssetOffchainBreakdown = (
-  item: TreasuryAssetBalance,
-  isLiquidityAsset?: boolean,
-): TreasuryAssetBreakdownPart | undefined => {
-  if (isLiquidityAsset) return undefined
-
-  return item.breakdown.wallet
-}
-
 const getAssetLiquidityBreakdown = (
   item: TreasuryAssetBalance,
   isLiquidityAsset?: boolean,
@@ -501,6 +493,9 @@ const getAssetLiquidityBreakdown = (
 
   return item.breakdown.wallet
 }
+
+const getAssetOffchainBreakdown = (item: TreasuryAssetBalance) =>
+  item.breakdown.offchain
 
 const getAssetBreakdownRows = (
   item: TreasuryAssetBalance,
@@ -522,7 +517,7 @@ const getAssetBreakdownRows = (
     },
     {
       label: "Offchain",
-      part: getAssetOffchainBreakdown(item, isLiquidityAsset),
+      part: getAssetOffchainBreakdown(item),
     },
   ].filter(isTooltipBreakdownRow)
 
@@ -627,6 +622,7 @@ const TooltipLabel = ({ children }: { children: ReactNode }) => (
 
 type TreasuryHoldingsBreakdown = {
   regular: string
+  offchain: string
   liquidity: string
   supplied: string
   borrowed: string
@@ -649,6 +645,7 @@ const getTreasuryHoldingsBreakdown = (
   borrowValueUsd = "0",
 ): TreasuryHoldingsBreakdown => {
   const regular = sumBreakdownUsd(assets, (item) => item.breakdown.wallet)
+  const offchain = sumBreakdownUsd(assets, (item) => item.breakdown.offchain)
   const liquidity = sumBreakdownUsd(assets, (item) => item.breakdown.liquidity)
   const supplied = sumBreakdownUsd(
     assets,
@@ -665,6 +662,7 @@ const getTreasuryHoldingsBreakdown = (
   ).toString()
   const holdings = sumDecimalStrings(
     regular,
+    offchain,
     liquidity,
     supplied,
     Big(borrowedFromNettedAssets).times(-1).toString(),
@@ -676,6 +674,7 @@ const getTreasuryHoldingsBreakdown = (
 
   return {
     regular,
+    offchain,
     liquidity,
     supplied,
     borrowed,
@@ -714,6 +713,10 @@ const TreasuryHoldingsTooltipContent = ({
         <TreasuryHoldingsTooltipRow
           label="Asset balance"
           value={breakdown.regular}
+        />
+        <TreasuryHoldingsTooltipRow
+          label="Offchain"
+          value={breakdown.offchain}
         />
         <TreasuryHoldingsTooltipRow
           label="Supplied as liquidity"

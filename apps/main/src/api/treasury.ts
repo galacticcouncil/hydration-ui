@@ -52,6 +52,7 @@ export type TreasuryAssetBreakdownPart = {
 
 export type TreasuryAssetBreakdown = {
   wallet?: TreasuryAssetBreakdownPart
+  offchain?: TreasuryAssetBreakdownPart
   moneyMarketSupply?: TreasuryAssetBreakdownPart
   liquidity?: TreasuryAssetBreakdownPart
   moneyMarketBorrow?: TreasuryAssetBreakdownPart
@@ -272,6 +273,7 @@ const createWalletAssetBalance = async (
   balance: string,
   balanceRaw: string,
   displayAssetId: string,
+  breakdownKey: "wallet" | "offchain" = "wallet",
 ): Promise<TreasuryAssetBalance> => {
   const { price, valueUsd } = await getAssetValueUsd(
     rpc,
@@ -289,7 +291,7 @@ const createWalletAssetBalance = async (
     share: 0,
     source: "wallet" as const,
     breakdown: {
-      wallet: {
+      [breakdownKey]: {
         balance,
         valueUsd,
       },
@@ -714,6 +716,7 @@ export const treasuryStatsQuery = (
                 balance,
                 balanceRaw.toString(),
                 displayAssetId,
+                "offchain",
               )
             }),
           ).then((items) =>
@@ -784,6 +787,7 @@ const mergeAssetBreakdowns = (
   second: TreasuryAssetBreakdown,
 ): TreasuryAssetBreakdown => ({
   wallet: mergeBreakdownPart(first.wallet, second.wallet),
+  offchain: mergeBreakdownPart(first.offchain, second.offchain),
   moneyMarketSupply: mergeBreakdownPart(
     first.moneyMarketSupply,
     second.moneyMarketSupply,
@@ -930,6 +934,9 @@ const scaleTreasuryAssetBalance = (
     breakdown: {
       wallet: item.breakdown.wallet
         ? scaleBreakdownPart(item.breakdown.wallet, ratio)
+        : undefined,
+      offchain: item.breakdown.offchain
+        ? scaleBreakdownPart(item.breakdown.offchain, ratio)
         : undefined,
       moneyMarketSupply: item.breakdown.moneyMarketSupply
         ? scaleBreakdownPart(item.breakdown.moneyMarketSupply, ratio)
