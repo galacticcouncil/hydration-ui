@@ -74,7 +74,7 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
     "onAccountSelect" in props &&
     "mode" in props
 
-  const store = useWeb3Connect(useShallow(pick(["setAccount", "mode"])))
+  const store = useWeb3Connect(useShallow(pick(["setAccount", "mode", "meta"])))
 
   const mode = isControlled ? props.mode : store.mode
   const onAccountSelect = isControlled
@@ -83,6 +83,7 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
 
   const { page, setPage } = useWeb3ConnectInit({
     mode,
+    initialPage: store.meta?.initialPage,
   })
 
   useEffect(() => {

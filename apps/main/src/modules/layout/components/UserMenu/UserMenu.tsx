@@ -25,6 +25,7 @@ import {
   useWeb3Connect,
   useWeb3ConnectModal,
   WalletProviderStatus,
+  Web3ConnectModalPage,
 } from "@galacticcouncil/web3-connect"
 import { ProviderLogo } from "@galacticcouncil/web3-connect/src/components/provider/ProviderLogo"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
@@ -204,6 +205,21 @@ export const UserMenu: FC<Props> = ({
                         onClick={(e) => {
                           e.stopPropagation()
                           requestAccounts(metaMaskExtension)
+                        }}
+                      >
+                        <Icon size="s" component={RefreshCw} />
+                      </ButtonIcon>
+                    )}
+                    {isExternalWallet && (
+                      <ButtonIcon
+                        title={changeAccountLabel}
+                        aria-label={changeAccountLabel}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onOpenChange(false)
+                          toggle(undefined, {
+                            initialPage: Web3ConnectModalPage.ExternalWallet,
+                          })
                         }}
                       >
                         <Icon size="s" component={RefreshCw} />

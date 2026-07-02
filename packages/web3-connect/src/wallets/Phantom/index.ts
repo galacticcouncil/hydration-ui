@@ -1,11 +1,15 @@
 import { getWallets } from "@mysten/wallet-standard"
 
 import { WalletProviderType } from "@/config/providers"
+import { SolanaInjectedWindowProvider } from "@/types/solana"
 import { isPhantom } from "@/utils/solana"
 import { BaseSolanaWallet } from "@/wallets/BaseSolanaWallet"
 import { BaseSuiWallet } from "@/wallets/BaseSuiWallet"
 
 import logo from "./logo.svg"
+
+const getPhantomSolanaProvider = (): SolanaInjectedWindowProvider | undefined =>
+  [window?.phantom?.solana, window?.solana].find(isPhantom)
 
 export class Phantom extends BaseSolanaWallet {
   provider = WalletProviderType.Phantom
@@ -14,11 +18,11 @@ export class Phantom extends BaseSolanaWallet {
   logo = logo
 
   get installed() {
-    return isPhantom(window?.phantom?.solana)
+    return !!getPhantomSolanaProvider()
   }
 
   get rawExtension() {
-    return window?.phantom?.solana
+    return getPhantomSolanaProvider()
   }
 
   transformError = () => {

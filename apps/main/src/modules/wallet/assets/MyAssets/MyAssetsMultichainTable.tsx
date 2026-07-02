@@ -28,6 +28,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import type { BoxProps } from "@galacticcouncil/ui/components/Box"
 import type { FlexProps } from "@galacticcouncil/ui/components/Flex"
+import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   getChainAssetId,
@@ -99,6 +100,8 @@ import { Balance } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
+import trackedWalletAccentTokens from "./trackedWalletAccentTokens.json"
+
 type Props = {
   readonly data: Array<MyAsset>
   readonly isLoading: boolean
@@ -132,19 +135,17 @@ const HYDRATION_GROUP_ID = "hydration"
 const EVM_WALLET_CHAIN_KEYS = ["ethereum", "base"] as const
 const SOLANA_WALLET_CHAIN_KEYS = ["solana"] as const
 const TRACKED_WALLET_FILTER = { isCustom: true, related: true }
-const TRACKED_WALLET_GLYPH_COLORS = [
-  { bg: "#53A4F3", color: "#030816" },
-  { bg: "#F9AFCA", color: "#240E32" },
-  { bg: "#74C742", color: "#050905" },
-  { bg: "#F7BF06", color: "#0C0900" },
-  { bg: "#FF9C73", color: "#100400" },
-  { bg: "#64D7D9", color: "#031011" },
-  { bg: "#B8D987", color: "#080E03" },
-  { bg: "#F083C5", color: "#14020C" },
-] as const
 
 type TrackedWallet = ReturnType<typeof useAddresses>[number]
+type TrackedWalletAccentTheme = keyof typeof trackedWalletAccentTokens
+type TrackedWalletAccent =
+  (typeof trackedWalletAccentTokens)[TrackedWalletAccentTheme][number]
 type WalletGlyphIconSize = number | "xs" | "s" | "m" | "l"
+const DEFAULT_TRACKED_WALLET_ACCENT = {
+  background: "oklch(70.26% 0.1410 250.00)",
+  icon: "oklch(13.68% 0.0333 262.20)",
+  text: "oklch(70.26% 0.1410 250.00)",
+} satisfies TrackedWalletAccent
 type ExternalWalletAssetRow = {
   readonly asset: Asset
   readonly balance?: AssetAmount
@@ -1278,10 +1279,15 @@ const TrackedWalletGroup: FC<{
   readonly showAllAssets: boolean
 }> = ({ wallet, refreshNonce, onRefresh, showAllAssets }) => {
   const { t } = useTranslation("wallet")
+  const { theme } = useTheme()
   const [isOpen, setIsOpen] = useState(true)
   const trackedAddress = useMemo(
     () => getTrackedWalletFetchAddress(wallet.address),
     [wallet.address],
+  )
+  const trackedWalletAccent = useMemo(
+    () => getTrackedWalletAccent(trackedAddress, theme),
+    [theme, trackedAddress],
   )
   const hydrationAddress = useMemo(
     () => getTrackedHydrationAddress(trackedAddress),
@@ -1304,8 +1310,13 @@ const TrackedWalletGroup: FC<{
         sx={trackedWalletHeaderSx}
       >
         <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
-          <WalletGlyph size={20} iconSize={10} address={trackedAddress} />
-          <Text fs="p6" fw={500} color="text.medium" truncate={300}>
+          <WalletGlyph size={20} iconSize={10} accent={trackedWalletAccent} />
+          <Text
+            fs="p6"
+            fw={500}
+            color={trackedWalletAccent.text}
+            truncate={300}
+          >
             {shortenAccountAddress(trackedAddress, 12)}
           </Text>
         </Flex>
@@ -1644,8 +1655,7 @@ const ManageTrackedWalletsModal: FC<{
         </Box>
 
         <Flex direction="column" gap="base">
-          <Flex align="center" gap="xs">
-            <WalletGlyph size={16} iconSize={8} />
+          <Flex align="center">
             <Text fs="p5" fw={500} color="text.high">
               {t("myAssets.redesign.tracked.title")}
             </Text>
@@ -1832,26 +1842,30 @@ const getChainsByKeys = (keys: readonly string[]) =>
     return chain ? [chain] : []
   })
 
-const getTrackedWalletGlyphColors = (address?: string) => {
-  if (!address) return TRACKED_WALLET_GLYPH_COLORS[0]
+const getTrackedWalletAccent = (
+  address: string | undefined,
+  theme: TrackedWalletAccentTheme,
+): TrackedWalletAccent => {
+  const tokens = trackedWalletAccentTokens[theme]
+  const fallback = tokens[0] ?? DEFAULT_TRACKED_WALLET_ACCENT
+  if (!address) return fallback
 
   const index = Array.from(address).reduce(
     (hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0,
     0,
   )
 
-  return (
-    TRACKED_WALLET_GLYPH_COLORS[index % TRACKED_WALLET_GLYPH_COLORS.length] ??
-    TRACKED_WALLET_GLYPH_COLORS[0]
-  )
+  return tokens[index % tokens.length] ?? fallback
 }
 
 const WalletGlyph: FC<{
   readonly size: number
   readonly iconSize: WalletGlyphIconSize
   readonly address?: string
-}> = ({ size, iconSize, address }) => {
-  const colors = getTrackedWalletGlyphColors(address)
+  readonly accent?: TrackedWalletAccent
+}> = ({ size, iconSize, address, accent }) => {
+  const { theme } = useTheme()
+  const colors = accent ?? getTrackedWalletAccent(address, theme)
 
   return (
     <Flex
@@ -1861,8 +1875,8 @@ const WalletGlyph: FC<{
         size,
         flexShrink: 0,
         borderRadius: "full",
-        bg: colors.bg,
-        color: colors.color,
+        bg: colors.background,
+        color: colors.icon,
         overflow: "hidden",
       }}
     >
@@ -2247,7 +2261,8 @@ const trackedWalletModalBodySx: BoxProps["sx"] = {
   gap: getToken("containers.paddings.tertiary"),
   "&&": {
     borderWidth: 0,
-    borderTopWidth: 0,
+    borderTop: "0 !important",
+    borderTopWidth: "0 !important",
     borderTopStyle: "none",
   },
 }

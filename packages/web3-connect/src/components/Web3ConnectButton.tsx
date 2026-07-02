@@ -32,6 +32,7 @@ export type Web3ConnectButtonProps = ButtonProps & {
   allowIncompatibleAccounts?: boolean
   mode?: WalletMode
   hideCaret?: boolean
+  forceConnectWallet?: boolean
 }
 
 export const Web3ConnectButton: FC<
@@ -41,6 +42,7 @@ export const Web3ConnectButton: FC<
   allowIncompatibleAccounts = false,
   mode,
   hideCaret = false,
+  forceConnectWallet = false,
   ...props
 }) => {
   const { account } = useAccount()
@@ -54,6 +56,12 @@ export const Web3ConnectButton: FC<
   })
 
   const isIncompatible = !allowIncompatibleAccounts && !!account?.isIncompatible
+
+  if (forceConnectWallet) {
+    return (
+      <ConnectWalletButton ref={ref} onClick={() => toggle(mode)} {...props} />
+    )
+  }
 
   if (isIncompatible || isConnectedWithoutAccount) {
     return (

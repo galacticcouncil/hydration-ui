@@ -4,6 +4,7 @@ export { AccountOption as Web3ConnectAccount } from "@/components/account/Accoun
 export * from "@/components/address-book"
 export { Web3ConnectButton } from "@/components/Web3ConnectButton"
 export { Web3ConnectModal } from "@/components/Web3ConnectModal"
+export { Web3ConnectModalPage } from "@/config/modal"
 export type { UseExtraAccountBalances } from "@/context/Web3ConnectContext"
 export * from "@/hooks"
 export type { MultisigConfig, MultisigStore } from "@/hooks/useMultisigStore"

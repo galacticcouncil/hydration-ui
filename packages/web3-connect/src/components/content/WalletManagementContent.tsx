@@ -19,7 +19,13 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { formatCurrency, shortenAccountAddress } from "@galacticcouncil/utils"
-import { ChevronDown, ChevronRight, ChevronUp, LogOut } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Download,
+  LogOut,
+} from "lucide-react"
 import {
   ComponentType,
   useCallback,
@@ -406,22 +412,16 @@ export const WalletManagementContent = () => {
         align="center"
         sx={modalHeaderSx(showAccountPanel)}
       />
-      <ModalBody
-        noPadding
-        scrollable={false}
-        sx={modalBodySx(showAccountPanel)}
-      >
+      <ModalBody noPadding scrollable={false} sx={modalBodySx}>
         <Grid sx={layoutGridSx(showAccountPanel)}>
           <Flex direction="column" sx={sourceColumnSx(showAccountPanel)}>
-            {showAccountPanel && (
-              <Input
-                value={walletSearchValue}
-                onChange={(event) => setWalletSearchValue(event.target.value)}
-                customSize="large"
-                iconStart={Search}
-                placeholder={t("provider.searchWallets")}
-              />
-            )}
+            <Input
+              value={walletSearchValue}
+              onChange={(event) => setWalletSearchValue(event.target.value)}
+              customSize="large"
+              iconStart={Search}
+              placeholder={t("provider.searchWallets")}
+            />
 
             <Text fs="p5" fw={500} color="text.low" sx={sourceSectionLabelSx}>
               {showAccountPanel
@@ -429,7 +429,7 @@ export const WalletManagementContent = () => {
                 : t("provider.suggestedWalletsFirstConnection")}
             </Text>
 
-            <Box sx={sourceScrollFrameSx(showAccountPanel)}>
+            <Box sx={sourceScrollFrameSx}>
               <ScrollArea>
                 <Flex
                   direction="column"
@@ -704,7 +704,8 @@ const WalletProviderSourceButton: React.FC<{
   if (!wallet) return null
 
   const isConnected = status === WalletProviderStatus.Connected
-  const chainModes = getWalletSourceModes(wallet.provider)
+  const chainModes =
+    variant === "management" ? undefined : getWalletSourceModes(wallet.provider)
 
   return (
     <WalletSourceButton
@@ -766,26 +767,43 @@ const WalletConnectState: React.FC<{
             {wallet.title}
           </Text>
           <Text fs="p5" lh="m" color="text.medium" align="center">
-            {isConnecting
-              ? t("provider.connectingWalletDescription")
-              : t("provider.walletNotConnectedDescription")}
+            {!wallet.installed
+              ? t("provider.walletNotInstalledDescription", {
+                  wallet: wallet.title,
+                })
+              : isConnecting
+                ? t("provider.connectingWalletDescription")
+                : t("provider.walletNotConnectedDescription")}
           </Text>
         </Flex>
         <Button
           variant="secondary"
           size="small"
-          disabled={isConnecting}
-          onClick={onConnect}
+          disabled={isConnecting || (!wallet.installed && !wallet.installUrl)}
+          onClick={() => {
+            if (!wallet.installed) {
+              if (wallet.installUrl) {
+                window.open(wallet.installUrl, "_blank", "noopener,noreferrer")
+              }
+              return
+            }
+
+            onConnect()
+          }}
           sx={walletConnectButtonSx}
         >
           {isConnecting ? (
             <Spinner size="xs" />
+          ) : !wallet.installed ? (
+            <Icon size="xs" component={Download} />
           ) : (
             <Icon size="xs" component={WalletIcon} />
           )}
-          {isConnecting
-            ? t("provider.connectingWallet")
-            : t("provider.connectWallet")}
+          {!wallet.installed
+            ? t("provider.installWallet", { wallet: wallet.title })
+            : isConnecting
+              ? t("provider.connectingWallet")
+              : t("provider.connectWallet")}
         </Button>
       </Flex>
     </Flex>
@@ -1090,7 +1108,7 @@ const walletManagementShellSx = (
 ): BoxProps["sx"] => ({
   width: ["100%", null, showAccountPanel ? 650 : 452],
   maxWidth: "100%",
-  height: ["100dvh", null, showAccountPanel ? "min(720px, 80vh)" : "auto"],
+  height: ["100dvh", null, showAccountPanel ? "min(720px, 80vh)" : "80vh"],
   maxHeight: ["100dvh", null, "80vh"],
   display: "flex",
   flexDirection: "column",
@@ -1103,17 +1121,17 @@ const modalHeaderSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
   flexShrink: 0,
 })
 
-const modalBodySx = (showAccountPanel: boolean): BoxProps["sx"] => ({
+const modalBodySx: BoxProps["sx"] = {
   pt: 0,
   px: ["base", null, "m"],
   pb: ["base", null, "m"],
   borderTop: 0,
-  flex: [1, null, showAccountPanel ? 1 : "0 0 auto"],
+  flex: 1,
   display: "flex",
   flexDirection: "column",
   minHeight: 0,
-  overflow: ["auto", null, "hidden"],
-})
+  overflow: "hidden",
+}
 
 const layoutGridSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
   display: "grid",
@@ -1125,10 +1143,10 @@ const layoutGridSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
   gap: ["base", null, showAccountPanel ? 20 : 0],
   width: "100%",
   maxWidth: "100%",
-  flex: [1, null, showAccountPanel ? 1 : "0 0 auto"],
-  height: ["100%", null, showAccountPanel ? "100%" : "auto"],
+  flex: 1,
+  height: "100%",
   minHeight: 0,
-  overflow: ["visible", null, "hidden"],
+  overflow: "hidden",
   transition: "grid-template-columns 180ms ease, gap 180ms ease",
 })
 
@@ -1137,7 +1155,7 @@ const sourceColumnSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
   minWidth: 0,
   minHeight: 0,
   maxHeight: ["none", null, "100%"],
-  overflow: ["visible", null, "hidden"],
+  overflow: "hidden",
   pl: 0,
   pr: 0,
 })
@@ -1153,12 +1171,12 @@ const sourceOtherSectionLabelSx = (
   pt: showAccountPanel ? 0 : "l",
 })
 
-const sourceScrollFrameSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
-  flex: ["0 0 auto", null, showAccountPanel ? 1 : "0 0 auto"],
-  minHeight: ["auto", null, 0],
-  height: ["auto", null, showAccountPanel ? "100%" : "auto"],
-  overflow: ["visible", null, "hidden"],
-})
+const sourceScrollFrameSx: BoxProps["sx"] = {
+  flex: 1,
+  minHeight: 0,
+  height: "100%",
+  overflow: "hidden",
+}
 
 const sourceScrollContentSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
   display: "flex",

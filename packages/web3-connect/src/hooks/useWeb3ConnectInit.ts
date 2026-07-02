@@ -14,7 +14,12 @@ const MULTISIG_PAGES: Web3ConnectModalPage[] = [
   Web3ConnectModalPage.MultisigSignerSelect,
 ]
 
-const getInitialPage = (mode: WalletMode) => {
+const getInitialPage = (
+  mode: WalletMode,
+  initialPage?: Web3ConnectModalPage,
+) => {
+  if (initialPage) return initialPage
+
   const { getConnectedProviders, accounts } = useWeb3Connect.getState()
 
   const connectedProviders = getConnectedProviders(mode)
@@ -31,9 +36,15 @@ const getInitialPage = (mode: WalletMode) => {
   return Web3ConnectModalPage.ProviderSelect
 }
 
-export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
+export const useWeb3ConnectInit = ({
+  mode,
+  initialPage,
+}: {
+  mode: WalletMode
+  initialPage?: Web3ConnectModalPage
+}) => {
   const [page, setPage] = useState<Web3ConnectModalPage>(() =>
-    getInitialPage(mode),
+    getInitialPage(mode, initialPage),
   )
 
   const pageRef = useRef(page)

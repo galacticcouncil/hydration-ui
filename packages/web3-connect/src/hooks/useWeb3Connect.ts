@@ -3,6 +3,7 @@ import { omit, uniqueBy } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import { Web3ConnectModalPage } from "@/config/modal"
 import {
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
@@ -68,6 +69,7 @@ type Web3ConnectModalMeta = {
   title?: string
   description?: string
   hideExternalWallet?: boolean
+  initialPage?: Web3ConnectModalPage
 }
 
 export type WalletProviderEntry = {
