@@ -342,28 +342,31 @@ export const refsPerYearQuery = (rpc: TProviderContext) =>
 
 /**
  * Voting APR — annualised share of referendum reward pools at max
- * conviction (Locked6x = 8×).
+ * conviction (Locked6x = 8×). Displays `max(guaranteed, measured)`.
  *
- *   votingAPR = Σ [ 8 × pool_r / (weighted_r + 8 × stakeValue) ]
- *               × (365 / windowDays) × 100
+ *   measured = 8 × typicalPool / (medianWeighted + 8 × stakeValue)
+ *                × refsPerYear × 100
  *
- * Per-referendum pool sourcing (mirrors `claimableVotingRewardsQuery` and
- * the `gigahdx-voting-rewards-estimate.mjs` test script):
- *   - Allocated:    `ReferendaRewardPool[ref].total_reward` (exact)
- *   - Pre-alloc:    `accumulator_pot × track_pct[track_id] / 100` (estimate)
+ * "Typical" values come from the median of the historical sample (allocated
+ * refs still in `ReferendaRewardPool` + currently-ongoing pre-alloc refs).
+ * Median > mean here because most refs are Default-track (2%) — using mean
+ * would over-project by giving atypical Root refs (10%) too much weight.
  *
- * Pre-alloc refs only count when someone has already voted — we need a
- * `ReferendaTotalWeightedVotes` entry to know the dilution and a
- * `ReferendumTracks` cache hit to know the track. Refs no-one has voted on
- * yet contribute nothing (denominator would be 0 for the fleet case anyway).
+ *   typicalPool     = accumulator × medianTrackPct / 100
+ *   medianTrackPct  = median of track pcts across the sample
+ *                     (Root 10%, Whitelisted 8%, Treasurer/Economic 5%,
+ *                      default 2%)
+ *   medianWeighted  = median of `total_weighted_votes` across the sample
  *
- * Behaviour at stakeValue = 0: denominator collapses to `weighted_r`, giving
- * the fleet-level "per-stake-unit" projection — the natural answer for
- * users without a position considering whether to stake.
+ * The `refsPerYear` multiplier (annualised cadence) comes from
+ * `refsPerYearQuery` — real 60d count from chain, not a hardcoded constant.
  *
- * On long-lived chains, refs whose entries have been deleted after the last
- * voter claimed will be silently excluded — fixing that needs an indexer.
- * Until then this slightly under-estimates on mature mainnet.
+ * Behaviour at stakeValue = 0: denominator collapses to `medianWeighted`,
+ * giving the fleet-level "per-stake-unit" projection.
+ *
+ * Falls back to the guaranteed floor when the sample is empty (no allocated
+ * refs still in flight AND no ongoing refs with any votes yet). Also falls
+ * back when the sample is dust-only (below `MIN_REAL_VOTE_WEIGHTED`).
  *
  * NOTE: `stakeValue` is in HDX planck (the locked HDX backing the user's
  * position). For a connected user with a position, pass `gigahdx × rate` so
@@ -409,73 +412,72 @@ export const votingAprQuery = (
               .times(100)
 
       const potFree = rewardPotAcct.free
-
       const myWeighted = stakeValueHdxPlanck * LOCKED_6X_MULTIPLIER
-      const myWeightedBig = Big(myWeighted.toString())
-      const multBig = Big(LOCKED_6X_MULTIPLIER.toString())
 
-      // Iterate the union of refs that have any pool we can size — either
-      // an exact allocation or a live tally we can estimate against.
-      const refIds = new Set<number>([
-        ...allocatedEntries.keys(),
-        ...liveEntries.keys(),
-      ])
+      // Build historical sample: (track pct, weighted) tuples from both
+      // recently-allocated refs (in-flight claims — auto-cleaned as voters
+      // finish claiming, so this is naturally a "recent" window) AND
+      // currently-ongoing pre-alloc refs that already have any votes cast.
+      const sample: Array<{ pct: number; weighted: bigint }> = []
+      for (const alloc of allocatedEntries.values()) {
+        sample.push({
+          pct: getRewardTrackPercentage(alloc.track_id),
+          weighted: alloc.total_weighted_votes,
+        })
+      }
+      const preAllocTracks = await Promise.all(
+        Array.from(liveEntries.keys())
+          .filter((refId) => !allocatedEntries.has(refId))
+          .map(async (refId) => ({
+            refId,
+            trackId: await rpc.queryClient.ensureQueryData(
+              referendumTracksQuery(rpc, refId),
+            ),
+          })),
+      )
+      for (const { refId, trackId } of preAllocTracks) {
+        if (trackId === null) continue
+        sample.push({
+          pct: getRewardTrackPercentage(trackId),
+          weighted: liveEntries.get(refId)?.total_weighted ?? 0n,
+        })
+      }
 
-      const promises = Array.from(refIds).map(async (refId) => {
-        let pool: bigint
-        let weighted: bigint
-
-        const alloc = allocatedEntries.get(refId)
-
-        if (alloc) {
-          pool = alloc.total_reward
-          weighted = alloc.total_weighted_votes
-        } else {
-          const trackId = await rpc.queryClient.ensureQueryData(
-            referendumTracksQuery(rpc, refId),
-          )
-          if (trackId === null) return { contrib: Big(0), countedRefs: false }
-          const pct = getRewardTrackPercentage(trackId)
-          pool = (potFree * BigInt(pct)) / 100n
-          weighted = liveEntries.get(refId)?.total_weighted ?? 0n
-        }
-
-        if (weighted < MIN_REAL_VOTE_WEIGHTED) {
-          return { contrib: Big(0), countedRefs: false }
-        }
-
-        const denom = Big(weighted.toString()).plus(myWeightedBig)
-        if (denom.lte(0)) {
-          return { contrib: Big(0), countedRefs: false }
-        }
-
-        return {
-          contrib: Big(pool.toString()).times(multBig).div(denom),
-          countedRefs: true,
-        }
-      })
-
-      const promisesRes = await Promise.all(promises)
-
-      const { countedRefs, sumPerStakeUnit } = promisesRes.reduce(
-        (acc, curr) => {
-          if (curr.countedRefs) {
-            acc.countedRefs += 1
-            acc.sumPerStakeUnit = acc.sumPerStakeUnit.plus(curr.contrib)
-          }
-          return acc
-        },
-        { countedRefs: 0, sumPerStakeUnit: Big(0) },
+      // Drop dust weighted — they'd blow up the fleet APR calc and don't
+      // represent real governance activity.
+      const validSample = sample.filter(
+        (s) => s.weighted >= MIN_REAL_VOTE_WEIGHTED,
       )
 
-      // Project forward: treat the current snapshot as a representative
-      // cross-section, average per ref, scale by assumed annual cadence.
-      // Falls back to 0 when no refs contribute — the max() with
-      // guaranteed then keeps the display honest.
-      const measured =
-        countedRefs === 0
-          ? Big(0)
-          : sumPerStakeUnit.div(countedRefs).times(refsPerYear).times(100)
+      // No usable sample → guaranteed floor is our only signal.
+      if (validSample.length === 0) return guaranteed
+
+      // Median of track pct: "typical ref pays this fraction of accumulator."
+      // Sort a copy, take middle element.
+      const sortedPcts = validSample.map((s) => s.pct).sort((a, b) => a - b)
+      const medianPct = sortedPcts[Math.floor(sortedPcts.length / 2)]
+
+      // Median of weighted: "typical ref has this much voter weight against
+      // the pool." bigint sort by comparator.
+      const sortedWeighted = validSample
+        .map((s) => s.weighted)
+        .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      const medianWeighted =
+        sortedWeighted[Math.floor(sortedWeighted.length / 2)]
+
+      // Typical per-ref share at max conviction, annualised by observed
+      // cadence. `typicalPool` uses the live accumulator (which reflects
+      // scheduler + fees inflow to date); real allocations at future ref
+      // completions will use whatever accumulator balance exists then.
+      const typicalPool = (potFree * BigInt(medianPct)) / 100n
+      const denom = Big(medianWeighted.toString()).plus(myWeighted.toString())
+      const measured = denom.lte(0)
+        ? Big(0)
+        : Big(typicalPool.toString())
+            .times(LOCKED_6X_MULTIPLIER.toString())
+            .div(denom)
+            .times(refsPerYear)
+            .times(100)
 
       return measured.gt(guaranteed) ? measured : guaranteed
     },
