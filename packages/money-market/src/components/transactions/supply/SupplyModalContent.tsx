@@ -74,10 +74,11 @@ export const SupplyModalContent = React.memo(
       amount: walletBalance,
       decimals: poolReserve.decimals,
     })
+
     const maxBalanceWithFee = useMaxBalance({
       tx: supplyEstimationTx ?? null,
       assetId: supplyAssetId,
-      feePctBuffer: 0.1,
+      feePctBuffer: 0.5,
     })
     const walletBalanceWithFee =
       maxBalanceWithFee?.maxBalanceHuman ?? walletBalance

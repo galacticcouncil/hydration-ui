@@ -61,7 +61,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const maxBalance = useMaxBalance({
     tx: withdrawEstimationTx ?? null,
     assetId: relatedATokenId,
-    feePctBuffer: 0.1,
+    feePctBuffer: 0.5,
   })
   const maxAmountToWithdrawWithFee =
     maxBalance?.maxBalanceHuman ?? maxAmountToWithdraw.toString()

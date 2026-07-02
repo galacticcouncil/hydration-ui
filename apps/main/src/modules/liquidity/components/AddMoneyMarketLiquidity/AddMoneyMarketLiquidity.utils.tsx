@@ -4,7 +4,7 @@ import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { first } from "remeda"
+import { first, isNullish } from "remeda"
 import { useDebounce } from "use-debounce"
 
 import {
@@ -13,6 +13,7 @@ import {
   healthFactorQuery,
 } from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
+import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useOmnipoolIds } from "@/api/pools"
 import { bestSellWithTxQuery } from "@/api/trade"
 import {
@@ -45,14 +46,22 @@ export type TAddMoneyMarketLiquidityWrapperReturn = Omit<
 >
 
 export const useAddMoneyMarketLiquidityWrapper = ({
-  stablepoolDetails: { reserves, pool },
+  stablepoolDetails: { reserves },
   stableswapId,
   erc20Id,
   initialOption,
   split: initialSplit,
 }: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
-  const { papi } = useRpcProvider()
+  const { account } = useAccount()
+  const { sdk, isApiLoaded } = useRpcProvider()
+  const { getTransferableBalance } = useAccountBalances()
+  const {
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
+  const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const addableReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { data: omnipoolIds } = useOmnipoolIds()
   const isAddableToOmnipool = omnipoolIds?.includes(erc20Id)
@@ -68,16 +77,36 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserve.asset_id.toString(),
   )
 
-  const addLiquidityTx = papi.tx.Stableswap.add_assets_liquidity({
-    pool_id: pool.id,
-    assets: addableReserves.map((reserve) => ({
-      asset_id: reserve.asset_id,
-      amount: BigInt(scale("1", reserve.meta.decimals)),
-    })),
-    min_shares: 0n,
+  const { data: feeEstimationSwapTx } = useQuery({
+    enabled:
+      isApiLoaded && !!account?.address && !isNullish(accountFeePaymentAssetId),
+    queryKey: [
+      "addMoneyMarketLiquidityFeeEstimation",
+      accountFeePaymentAssetId,
+    ],
+    queryFn: async () => {
+      const swap = await sdk.api.router.getBestSell(
+        accountFeePaymentAssetId ?? 0,
+        Number(erc20Id),
+        scaleHuman(
+          getTransferableBalance(accountFeePaymentAssetId?.toString() ?? ""),
+          getAssetWithFallback(accountFeePaymentAssetId?.toString() ?? "")
+            .decimals,
+        ),
+      )
+
+      return sdk.tx
+        .trade(swap)
+        .withSlippage(swapSlippage)
+        .withBeneficiary(account?.address ?? "")
+        .build()
+        .then((tx) => tx.get())
+    },
   })
 
-  const { getMaxBalance } = useFormMaxBalanceWithFee(addLiquidityTx, 5)
+  const { getMaxBalance } = useFormMaxBalanceWithFee(
+    feeEstimationSwapTx ?? null,
+  )
 
   const defaultOption =
     initialOption || (isAddableToOmnipool ? "omnipool" : "stablepool")

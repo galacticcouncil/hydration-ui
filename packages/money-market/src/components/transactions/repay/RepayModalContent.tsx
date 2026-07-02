@@ -103,7 +103,7 @@ export const RepayModalContent: React.FC<
   const maxBalanceWithFee = useMaxBalance({
     tx: repayEstimationTx ?? null,
     assetId: repayAssetId,
-    feePctBuffer: 0.1,
+    feePctBuffer: 0.5,
   })
 
   const balanceWithFee = Big(maxBalanceWithFee?.maxBalanceHuman ?? "0")
