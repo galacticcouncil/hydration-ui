@@ -55,6 +55,7 @@
   "trade.cancelDcaOrder.error": "Termination of DCA schedule failed",
   "trade.cancelDcaOrder.loading": "Terminating DCA schedule",
   "trade.orders.pastExecutions.title": "Past executions",
+  "trade.orders.pastExecutions.loadAll": "Load all ({{count, number}})",
   "swap.settings.modal.title": "Swap settings",
   "swap.settings.modal.description": "Reduce cost for bigger orders with high price",
   "swap.settings.modal.option.single": "Single Trade",
