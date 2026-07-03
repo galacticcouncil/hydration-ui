@@ -33,19 +33,17 @@ import {
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { bestSellWithTxQuery } from "@/api/trade"
-import i18n from "@/i18n"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import {
-  GetMaxBalanceWithFee,
   useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
 } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
-import { validateMaxBalance } from "@/utils/validators"
 
 export type TSupplyIsolatedLiquidityFormValues = {
   amount: string
@@ -132,13 +130,13 @@ export const useSupplyIsolatedLiquidity = ({
     },
   })
 
-  const { getMaxBalance } = useFormMaxBalanceWithFee(
+  const { getMaxBalance, validateBalance } = useFormMaxBalanceWithFee(
     feeEstimationSwapTx ?? null,
   )
 
   const form = useSupplyIsolatedLiquidityForm({
     asset: initialAsset,
-    getMaxBalance,
+    validateBalance,
   })
   const getMinimumTradeAmount = useMinimumTradeAmount()
   const getDisableCollateralsTxs = useBorrowDisableCollateralTxs()
@@ -295,10 +293,10 @@ export const useSupplyIsolatedLiquidity = ({
 
 const useSupplyIsolatedLiquidityForm = ({
   asset,
-  getMaxBalance,
+  validateBalance,
 }: {
   asset: TAssetData
-  getMaxBalance: GetMaxBalanceWithFee
+  validateBalance: ValidateFormMaxBalanceWithFee
 }) => {
   return useForm<TSupplyIsolatedLiquidityFormValues>({
     mode: "onChange",
@@ -312,17 +310,7 @@ const useSupplyIsolatedLiquidityForm = ({
           amount: z.string(),
           asset: z.custom<TAssetData>(),
         })
-        .refine(
-          (formValues) =>
-            validateMaxBalance(
-              getMaxBalance(formValues.asset),
-              formValues.amount,
-            ),
-          {
-            message: i18n.t("error.maxBalance"),
-            path: ["amount"],
-          },
-        ),
+        .check(validateBalance("amount", (form) => [form.asset, form.amount])),
     ),
   })
 }

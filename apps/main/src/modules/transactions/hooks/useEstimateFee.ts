@@ -21,6 +21,7 @@ import {
 } from "@/modules/transactions/utils/permitFee"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
+  containsEvmCall,
   getExtraTxFeeByWeight,
   transformAnyToPapiTx,
 } from "@/modules/transactions/utils/tx"
@@ -109,7 +110,7 @@ export const useEstimateFee = (
       }
 
       if (!tx) throw new Error("Invalid transaction")
-      const isEvmTx = isEvmCall(anyTx)
+      const hasEvmCall = isEvmCall(anyTx) || containsEvmCall(anyTx)
 
       const getSpotPriceFn = getSpotPrice(
         sdk.api.router,
@@ -120,12 +121,12 @@ export const useEstimateFee = (
       const [fees, spot, extraFee] = await Promise.all([
         tx.getEstimatedFees(address),
         getSpotPriceFn(),
-        isEvmTx ? getExtraTxFeeByWeight(rpc, address, tx, native.id) : null,
+        hasEvmCall ? getExtraTxFeeByWeight(rpc, address, tx, native.id) : null,
       ])
 
       const feeEstimateNativeBase = scaleHuman(fees, native.decimals)
       const feeEstimateNative = isValidBigSource(extraFee)
-        ? Big(extraFee).add(feeEstimateNativeBase).toString()
+        ? Big(extraFee).add(feeEstimateNativeBase).toFixed(native.decimals)
         : feeEstimateNativeBase
 
       if (spot?.spotPrice) {
@@ -157,7 +158,7 @@ export const useEstimateFee = (
       const feeEstimate = Big(1)
         .div(assetPaymentValueAdjusted)
         .mul(feeEstimateNative)
-        .toString()
+        .toFixed(feeAsset.decimals)
 
       return {
         feeEstimateNative,

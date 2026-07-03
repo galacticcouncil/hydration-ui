@@ -12,7 +12,11 @@ import { EstimateGasParameters, formatEther, Hex } from "viem"
 import { getSpotPrice, spotPriceQuery } from "@/api/spotPrice"
 import { paymentInfoQuery } from "@/api/transaction"
 import { AnyTransaction } from "@/modules/transactions/types"
-import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
+import {
+  containsEvmCall,
+  getNestedEvmCallsFeeWei,
+  transformAnyToPapiTx,
+} from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { TAsset } from "@/providers/assetsProvider"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -42,7 +46,12 @@ const getEvmGasFeeWei = async (
 
   // Wallets validate balance against gasLimit × gasPrice before signing.
   // On-chain, only gas_used × gas_price is charged.
-  return gasLimit * gasPrice
+  const dispatchFeeWei = gasLimit * gasPrice
+  const nestedEvmFeeWei = containsEvmCall(anyTx)
+    ? getNestedEvmCallsFeeWei(anyTx)
+    : 0n
+
+  return dispatchFeeWei + nestedEvmFeeWei
 }
 
 const getPermitWeight = async (
@@ -130,7 +139,7 @@ const convertNativeFeeToFeeAsset = async (
   const spot = await getSpotPrice(rpc.sdk.api.router, native.id, feeAsset.id)()
 
   if (spot?.spotPrice) {
-    return Big(feeEstimateNative).mul(spot.spotPrice).toString()
+    return Big(feeEstimateNative).mul(spot.spotPrice).toFixed(feeAsset.decimals)
   }
 
   const assetPaymentValue =
@@ -147,7 +156,10 @@ const convertNativeFeeToFeeAsset = async (
     feeAsset.decimals,
   )
 
-  return Big(1).div(assetPaymentValueAdjusted).mul(feeEstimateNative).toString()
+  return Big(1)
+    .div(assetPaymentValueAdjusted)
+    .mul(feeEstimateNative)
+    .toFixed(feeAsset.decimals)
 }
 
 export const isPermitFeeEstimation = (feeAssetId: string) =>
