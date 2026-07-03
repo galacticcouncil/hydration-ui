@@ -22,7 +22,7 @@ const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
 }
 
 const ELAPSED_TIME_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
-  { max: 32_000, status: DataProviderStatus.HEALTHY },
+  { max: 45_000, status: DataProviderStatus.HEALTHY },
   { max: 120_000, status: DataProviderStatus.LAGGING },
   { max: Infinity, status: DataProviderStatus.DEGRADED },
 ]

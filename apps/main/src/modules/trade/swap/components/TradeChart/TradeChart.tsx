@@ -28,6 +28,7 @@ import {
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+import { TradeChartValuesSkeleton } from "@/modules/trade/swap/components/TradeChart/TradeChartValuesSkeleton"
 import { useAssets } from "@/providers/assetsProvider"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
@@ -86,7 +87,12 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const assetA = isInverted ? assetOut : assetIn
   const assetB = isInverted ? assetIn : assetOut
 
-  const { prices, isLoading, isSuccess, isError } = useTradeChartData({
+  const {
+    prices,
+    isLoading: isChartLoading,
+    isSuccess,
+    isError,
+  } = useTradeChartData({
     assetInId: assetA,
     assetOutId: assetB,
     timeFrame: interval === "all" ? null : interval,
@@ -109,38 +115,39 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const assetAMeta = getAssetWithFallback(assetA)
   const assetBMeta = getAssetWithFallback(assetB)
 
-  const chartValue =
-    !isEmpty && !isError ? (
-      <Text>
-        <AnimatedValue
-          value={value}
-          format={(value) =>
-            t("currency", { value, symbol: assetAMeta.symbol })
-          }
-        />
-      </Text>
-    ) : undefined
+  const isValuesLoading =
+    isChartLoading || isAssetPriceLoading || isVolumePriceLoading
 
-  const chartDisplayValue =
-    !isEmpty && !isError ? (
-      <Box>
-        <Box>
-          {t("price")}: {formattedAssetPrice}
-        </Box>
-        <Box visibility={volume > 0 ? "visible" : "hidden"}>
-          {t("vol")}: {formattedVolumePrice}
-        </Box>
-      </Box>
-    ) : undefined
+  const showValues = !isEmpty && !isError
+
+  const chartValue = showValues ? (
+    <Text fs={["p3", "p1"]} fw={600}>
+      <AnimatedValue
+        value={value}
+        format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
+      />
+    </Text>
+  ) : undefined
+
+  const chartDisplayValue = showValues ? (
+    <Box>
+      <Text fs="p5">
+        {t("price")}: {formattedAssetPrice}
+      </Text>
+      <Text fs="p5" visibility={volume > 0 ? "visible" : "hidden"}>
+        {t("vol")}: {formattedVolumePrice}
+      </Text>
+    </Box>
+  ) : undefined
 
   return (
     <Paper p="xl">
       <Flex align="flex-start" gap="base" justify="space-between">
-        <ChartValues
-          value={chartValue}
-          displayValue={chartDisplayValue}
-          isLoading={isLoading || isAssetPriceLoading || isVolumePriceLoading}
-        />
+        {showValues && isValuesLoading ? (
+          <TradeChartValuesSkeleton />
+        ) : (
+          <ChartValues value={chartValue} displayValue={chartDisplayValue} />
+        )}
         <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
           <SChartInvertButton
             size="small"
@@ -171,20 +178,22 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           />
         </Flex>
       </Flex>
-      <ChartState
-        sx={{ height }}
-        isError={isError}
-        isLoading={isLoading}
-        isEmpty={isEmpty}
-      >
-        <TradingViewChart
-          ref={chartRef}
-          height={height}
-          data={prices}
-          hidePriceIndicator
-          onCrosshairMove={onCrosshairMove}
-        />
-      </ChartState>
+      <Box sx={{ height }}>
+        <ChartState
+          sx={{ height }}
+          isError={isError}
+          isLoading={isChartLoading}
+          isEmpty={isEmpty}
+        >
+          <TradingViewChart
+            ref={chartRef}
+            height={height}
+            data={prices}
+            hidePriceIndicator
+            onCrosshairMove={onCrosshairMove}
+          />
+        </ChartState>
+      </Box>
     </Paper>
   )
 }

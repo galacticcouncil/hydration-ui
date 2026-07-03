@@ -24,7 +24,7 @@ export const RpcList: React.FC<RpcListProps> = ({
 }) => {
   const { t } = useTranslation()
   const { rpcList, removeRpc } = useRpcListStore()
-  const { setRpcUrl, rpcUrl } = useProviderRpcUrlStore()
+  const { rpcUrl, rpcUrlList, connectedRpcUrl } = useProviderRpcUrlStore()
   const { papiClient } = useRpcProvider()
 
   const providerList = useMemo(() => {
@@ -42,8 +42,14 @@ export const RpcList: React.FC<RpcListProps> = ({
       })),
     ]
 
-    return uniqueBy(list, prop("url"))
-  }, [rpcList, t])
+    const urlOrder = new Map(rpcUrlList.map((url, index) => [url, index]))
+
+    return uniqueBy(list, prop("url")).sort((a, b) => {
+      const aIndex = urlOrder.get(a.url) ?? Number.MAX_SAFE_INTEGER
+      const bIndex = urlOrder.get(b.url) ?? Number.MAX_SAFE_INTEGER
+      return aIndex - bIndex
+    })
+  }, [rpcList, rpcUrlList, t])
 
   const providerListUrls = providerList.map(prop("url"))
 
@@ -53,11 +59,14 @@ export const RpcList: React.FC<RpcListProps> = ({
   })
 
   const handleSwitchRpc = (url: string) => {
+    if (url === rpcUrl) return
+
+    useProviderRpcUrlStore.setState({ rpcUrl: url, isRpcConnecting: true })
+
     if (isFunction(papiClient.switch)) {
       unsubscribeAllTxs()
       papiClient.switch(url)
     } else {
-      setRpcUrl(url)
       window.location.reload()
     }
   }
@@ -71,11 +80,14 @@ export const RpcList: React.FC<RpcListProps> = ({
         itemSize={56}
         renderItem={(props, { index }) => {
           const rpcStatusQuery = rpcsStatusQueries[index]
+          const isQueryLoading = !!rpcStatusQuery?.isLoading
+          const isConnecting =
+            rpcUrl === props.url && rpcUrl !== connectedRpcUrl
           return (
             <RpcListItem
               {...props}
               {...rpcStatusQuery?.data}
-              isLoading={!!rpcStatusQuery?.isLoading}
+              isLoading={isConnecting || isQueryLoading}
               isActive={rpcUrl === props.url}
               onClick={handleSwitchRpc}
               onRemove={removeRpc}
