@@ -4925,6 +4925,265 @@ type AccountMmPositionHistoricalDatumVarianceSampleAggregates {
   paraBlockHeight: BigFloat
 }
 
+type AccountOwnedAsset {
+  accountId: String!
+  assetId: String!
+  firstSeenParaBlockHeight: Int!
+  id: String!
+}
+
+type AccountOwnedAssetAggregates {
+  """
+  Mean average aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  average: AccountOwnedAssetAverageAggregates
+  """
+  Distinct count aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  distinctCount: AccountOwnedAssetDistinctCountAggregates
+  keys: [String!]
+  """
+  Maximum aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  max: AccountOwnedAssetMaxAggregates
+  """
+  Minimum aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  min: AccountOwnedAssetMinAggregates
+  """
+  Population standard deviation aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  stddevPopulation: AccountOwnedAssetStddevPopulationAggregates
+  """
+  Sample standard deviation aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  stddevSample: AccountOwnedAssetStddevSampleAggregates
+  """
+  Sum aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  sum: AccountOwnedAssetSumAggregates
+  """
+  Population variance aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  variancePopulation: AccountOwnedAssetVariancePopulationAggregates
+  """
+  Sample variance aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  varianceSample: AccountOwnedAssetVarianceSampleAggregates
+}
+
+type AccountOwnedAssetAverageAggregates {
+  """
+  Mean average of firstSeenParaBlockHeight across the matching connection
+  """
+  firstSeenParaBlockHeight: BigFloat
+}
+
+"""
+A condition to be used against `AccountOwnedAsset` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input AccountOwnedAssetCondition {
+  """Checks for equality with the object’s `accountId` field."""
+  accountId: String
+  """Checks for equality with the object’s `assetId` field."""
+  assetId: String
+  """
+  Checks for equality with the object’s `firstSeenParaBlockHeight` field.
+  """
+  firstSeenParaBlockHeight: Int
+  """Checks for equality with the object’s `id` field."""
+  id: String
+}
+
+type AccountOwnedAssetDistinctCountAggregates {
+  """Distinct count of accountId across the matching connection"""
+  accountId: BigInt
+  """Distinct count of assetId across the matching connection"""
+  assetId: BigInt
+  """
+  Distinct count of firstSeenParaBlockHeight across the matching connection
+  """
+  firstSeenParaBlockHeight: BigInt
+  """Distinct count of id across the matching connection"""
+  id: BigInt
+}
+
+"""
+A filter to be used against `AccountOwnedAsset` object types. All fields are combined with a logical ‘and.’
+"""
+input AccountOwnedAssetFilter {
+  """Filter by the object’s `accountId` field."""
+  accountId: StringFilter
+  """Checks for all expressions in this list."""
+  and: [AccountOwnedAssetFilter!]
+  """Filter by the object’s `assetId` field."""
+  assetId: StringFilter
+  """Filter by the object’s `firstSeenParaBlockHeight` field."""
+  firstSeenParaBlockHeight: IntFilter
+  """Filter by the object’s `id` field."""
+  id: StringFilter
+  """Negates the expression."""
+  not: AccountOwnedAssetFilter
+  """Checks for any expressions in this list."""
+  or: [AccountOwnedAssetFilter!]
+}
+
+"""Grouping methods for `AccountOwnedAsset` for usage during aggregation."""
+enum AccountOwnedAssetGroupBy {
+  ACCOUNT_ID
+  ASSET_ID
+  FIRST_SEEN_PARA_BLOCK_HEIGHT
+}
+
+input AccountOwnedAssetHavingAverageInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingDistinctCountInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+"""Conditions for `AccountOwnedAsset` aggregates."""
+input AccountOwnedAssetHavingInput {
+  AND: [AccountOwnedAssetHavingInput!]
+  OR: [AccountOwnedAssetHavingInput!]
+  average: AccountOwnedAssetHavingAverageInput
+  distinctCount: AccountOwnedAssetHavingDistinctCountInput
+  max: AccountOwnedAssetHavingMaxInput
+  min: AccountOwnedAssetHavingMinInput
+  stddevPopulation: AccountOwnedAssetHavingStddevPopulationInput
+  stddevSample: AccountOwnedAssetHavingStddevSampleInput
+  sum: AccountOwnedAssetHavingSumInput
+  variancePopulation: AccountOwnedAssetHavingVariancePopulationInput
+  varianceSample: AccountOwnedAssetHavingVarianceSampleInput
+}
+
+input AccountOwnedAssetHavingMaxInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingMinInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingStddevPopulationInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingStddevSampleInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingSumInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingVariancePopulationInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+input AccountOwnedAssetHavingVarianceSampleInput {
+  firstSeenParaBlockHeight: HavingIntFilter
+}
+
+type AccountOwnedAssetMaxAggregates {
+  """Maximum of firstSeenParaBlockHeight across the matching connection"""
+  firstSeenParaBlockHeight: Int
+}
+
+type AccountOwnedAssetMinAggregates {
+  """Minimum of firstSeenParaBlockHeight across the matching connection"""
+  firstSeenParaBlockHeight: Int
+}
+
+type AccountOwnedAssetStddevPopulationAggregates {
+  """
+  Population standard deviation of firstSeenParaBlockHeight across the matching connection
+  """
+  firstSeenParaBlockHeight: BigFloat
+}
+
+type AccountOwnedAssetStddevSampleAggregates {
+  """
+  Sample standard deviation of firstSeenParaBlockHeight across the matching connection
+  """
+  firstSeenParaBlockHeight: BigFloat
+}
+
+type AccountOwnedAssetSumAggregates {
+  """Sum of firstSeenParaBlockHeight across the matching connection"""
+  firstSeenParaBlockHeight: BigInt!
+}
+
+type AccountOwnedAssetVariancePopulationAggregates {
+  """
+  Population variance of firstSeenParaBlockHeight across the matching connection
+  """
+  firstSeenParaBlockHeight: BigFloat
+}
+
+type AccountOwnedAssetVarianceSampleAggregates {
+  """
+  Sample variance of firstSeenParaBlockHeight across the matching connection
+  """
+  firstSeenParaBlockHeight: BigFloat
+}
+
+"""A connection to a list of `AccountOwnedAsset` values."""
+type AccountOwnedAssetsConnection {
+  """
+  Aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  aggregates: AccountOwnedAssetAggregates
+  """
+  A list of edges which contains the `AccountOwnedAsset` and cursor to aid in pagination.
+  """
+  edges: [AccountOwnedAssetsEdge!]!
+  """
+  Grouped aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  groupedAggregates(
+    """
+    The method to use when grouping `AccountOwnedAsset` for these aggregates.
+    """
+    groupBy: [AccountOwnedAssetGroupBy!]!
+    """Conditions on the grouped aggregates."""
+    having: AccountOwnedAssetHavingInput
+  ): [AccountOwnedAssetAggregates!]
+  """A list of `AccountOwnedAsset` objects."""
+  nodes: [AccountOwnedAsset]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """
+  The count of *all* `AccountOwnedAsset` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `AccountOwnedAsset` edge in the connection."""
+type AccountOwnedAssetsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `AccountOwnedAsset` at the end of the edge."""
+  node: AccountOwnedAsset
+}
+
+"""Methods to use when ordering `AccountOwnedAsset`."""
+enum AccountOwnedAssetsOrderBy {
+  ACCOUNT_ID_ASC
+  ACCOUNT_ID_DESC
+  ASSET_ID_ASC
+  ASSET_ID_DESC
+  FIRST_SEEN_PARA_BLOCK_HEIGHT_ASC
+  FIRST_SEEN_PARA_BLOCK_HEIGHT_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
 type AccountProcessingStatus {
   balancesAggregatedAtParaBlock: Int
   id: String!
@@ -55610,6 +55869,319 @@ type PageInfo {
   startCursor: Cursor
 }
 
+type PendingRedisTsCommit {
+  createdAt: Datetime!
+  id: String!
+  jobName: String!
+  paraBlockHeight: Int!
+  payload: JSON!
+  sampleTimestampMs: BigFloat!
+}
+
+type PendingRedisTsCommitAggregates {
+  """
+  Mean average aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  average: PendingRedisTsCommitAverageAggregates
+  """
+  Distinct count aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  distinctCount: PendingRedisTsCommitDistinctCountAggregates
+  keys: [String!]
+  """
+  Maximum aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  max: PendingRedisTsCommitMaxAggregates
+  """
+  Minimum aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  min: PendingRedisTsCommitMinAggregates
+  """
+  Population standard deviation aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  stddevPopulation: PendingRedisTsCommitStddevPopulationAggregates
+  """
+  Sample standard deviation aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  stddevSample: PendingRedisTsCommitStddevSampleAggregates
+  """
+  Sum aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  sum: PendingRedisTsCommitSumAggregates
+  """
+  Population variance aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  variancePopulation: PendingRedisTsCommitVariancePopulationAggregates
+  """
+  Sample variance aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  varianceSample: PendingRedisTsCommitVarianceSampleAggregates
+}
+
+type PendingRedisTsCommitAverageAggregates {
+  """Mean average of paraBlockHeight across the matching connection"""
+  paraBlockHeight: BigFloat
+  """Mean average of sampleTimestampMs across the matching connection"""
+  sampleTimestampMs: BigFloat
+}
+
+"""
+A condition to be used against `PendingRedisTsCommit` object types. All fields
+are tested for equality and combined with a logical ‘and.’
+"""
+input PendingRedisTsCommitCondition {
+  """Checks for equality with the object’s `createdAt` field."""
+  createdAt: Datetime
+  """Checks for equality with the object’s `id` field."""
+  id: String
+  """Checks for equality with the object’s `jobName` field."""
+  jobName: String
+  """Checks for equality with the object’s `paraBlockHeight` field."""
+  paraBlockHeight: Int
+  """Checks for equality with the object’s `payload` field."""
+  payload: JSON
+  """Checks for equality with the object’s `sampleTimestampMs` field."""
+  sampleTimestampMs: BigFloat
+}
+
+type PendingRedisTsCommitDistinctCountAggregates {
+  """Distinct count of createdAt across the matching connection"""
+  createdAt: BigInt
+  """Distinct count of id across the matching connection"""
+  id: BigInt
+  """Distinct count of jobName across the matching connection"""
+  jobName: BigInt
+  """Distinct count of paraBlockHeight across the matching connection"""
+  paraBlockHeight: BigInt
+  """Distinct count of payload across the matching connection"""
+  payload: BigInt
+  """Distinct count of sampleTimestampMs across the matching connection"""
+  sampleTimestampMs: BigInt
+}
+
+"""
+A filter to be used against `PendingRedisTsCommit` object types. All fields are combined with a logical ‘and.’
+"""
+input PendingRedisTsCommitFilter {
+  """Checks for all expressions in this list."""
+  and: [PendingRedisTsCommitFilter!]
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+  """Filter by the object’s `id` field."""
+  id: StringFilter
+  """Filter by the object’s `jobName` field."""
+  jobName: StringFilter
+  """Negates the expression."""
+  not: PendingRedisTsCommitFilter
+  """Checks for any expressions in this list."""
+  or: [PendingRedisTsCommitFilter!]
+  """Filter by the object’s `paraBlockHeight` field."""
+  paraBlockHeight: IntFilter
+  """Filter by the object’s `payload` field."""
+  payload: JSONFilter
+  """Filter by the object’s `sampleTimestampMs` field."""
+  sampleTimestampMs: BigFloatFilter
+}
+
+"""
+Grouping methods for `PendingRedisTsCommit` for usage during aggregation.
+"""
+enum PendingRedisTsCommitGroupBy {
+  CREATED_AT
+  CREATED_AT_TRUNCATED_TO_DAY
+  CREATED_AT_TRUNCATED_TO_HOUR
+  JOB_NAME
+  PARA_BLOCK_HEIGHT
+  PAYLOAD
+  SAMPLE_TIMESTAMP_MS
+}
+
+input PendingRedisTsCommitHavingAverageInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingDistinctCountInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+"""Conditions for `PendingRedisTsCommit` aggregates."""
+input PendingRedisTsCommitHavingInput {
+  AND: [PendingRedisTsCommitHavingInput!]
+  OR: [PendingRedisTsCommitHavingInput!]
+  average: PendingRedisTsCommitHavingAverageInput
+  distinctCount: PendingRedisTsCommitHavingDistinctCountInput
+  max: PendingRedisTsCommitHavingMaxInput
+  min: PendingRedisTsCommitHavingMinInput
+  stddevPopulation: PendingRedisTsCommitHavingStddevPopulationInput
+  stddevSample: PendingRedisTsCommitHavingStddevSampleInput
+  sum: PendingRedisTsCommitHavingSumInput
+  variancePopulation: PendingRedisTsCommitHavingVariancePopulationInput
+  varianceSample: PendingRedisTsCommitHavingVarianceSampleInput
+}
+
+input PendingRedisTsCommitHavingMaxInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingMinInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingStddevPopulationInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingStddevSampleInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingSumInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingVariancePopulationInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+input PendingRedisTsCommitHavingVarianceSampleInput {
+  createdAt: HavingDatetimeFilter
+  paraBlockHeight: HavingIntFilter
+  sampleTimestampMs: HavingBigfloatFilter
+}
+
+type PendingRedisTsCommitMaxAggregates {
+  """Maximum of paraBlockHeight across the matching connection"""
+  paraBlockHeight: Int
+  """Maximum of sampleTimestampMs across the matching connection"""
+  sampleTimestampMs: BigFloat
+}
+
+type PendingRedisTsCommitMinAggregates {
+  """Minimum of paraBlockHeight across the matching connection"""
+  paraBlockHeight: Int
+  """Minimum of sampleTimestampMs across the matching connection"""
+  sampleTimestampMs: BigFloat
+}
+
+type PendingRedisTsCommitStddevPopulationAggregates {
+  """
+  Population standard deviation of paraBlockHeight across the matching connection
+  """
+  paraBlockHeight: BigFloat
+  """
+  Population standard deviation of sampleTimestampMs across the matching connection
+  """
+  sampleTimestampMs: BigFloat
+}
+
+type PendingRedisTsCommitStddevSampleAggregates {
+  """
+  Sample standard deviation of paraBlockHeight across the matching connection
+  """
+  paraBlockHeight: BigFloat
+  """
+  Sample standard deviation of sampleTimestampMs across the matching connection
+  """
+  sampleTimestampMs: BigFloat
+}
+
+type PendingRedisTsCommitSumAggregates {
+  """Sum of paraBlockHeight across the matching connection"""
+  paraBlockHeight: BigInt!
+  """Sum of sampleTimestampMs across the matching connection"""
+  sampleTimestampMs: BigFloat!
+}
+
+type PendingRedisTsCommitVariancePopulationAggregates {
+  """Population variance of paraBlockHeight across the matching connection"""
+  paraBlockHeight: BigFloat
+  """
+  Population variance of sampleTimestampMs across the matching connection
+  """
+  sampleTimestampMs: BigFloat
+}
+
+type PendingRedisTsCommitVarianceSampleAggregates {
+  """Sample variance of paraBlockHeight across the matching connection"""
+  paraBlockHeight: BigFloat
+  """Sample variance of sampleTimestampMs across the matching connection"""
+  sampleTimestampMs: BigFloat
+}
+
+"""A connection to a list of `PendingRedisTsCommit` values."""
+type PendingRedisTsCommitsConnection {
+  """
+  Aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  aggregates: PendingRedisTsCommitAggregates
+  """
+  A list of edges which contains the `PendingRedisTsCommit` and cursor to aid in pagination.
+  """
+  edges: [PendingRedisTsCommitsEdge!]!
+  """
+  Grouped aggregates across the matching connection (ignoring before/after/first/last/offset)
+  """
+  groupedAggregates(
+    """
+    The method to use when grouping `PendingRedisTsCommit` for these aggregates.
+    """
+    groupBy: [PendingRedisTsCommitGroupBy!]!
+    """Conditions on the grouped aggregates."""
+    having: PendingRedisTsCommitHavingInput
+  ): [PendingRedisTsCommitAggregates!]
+  """A list of `PendingRedisTsCommit` objects."""
+  nodes: [PendingRedisTsCommit]!
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """
+  The count of *all* `PendingRedisTsCommit` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `PendingRedisTsCommit` edge in the connection."""
+type PendingRedisTsCommitsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+  """The `PendingRedisTsCommit` at the end of the edge."""
+  node: PendingRedisTsCommit
+}
+
+"""Methods to use when ordering `PendingRedisTsCommit`."""
+enum PendingRedisTsCommitsOrderBy {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  ID_ASC
+  ID_DESC
+  JOB_NAME_ASC
+  JOB_NAME_DESC
+  NATURAL
+  PARA_BLOCK_HEIGHT_ASC
+  PARA_BLOCK_HEIGHT_DESC
+  PAYLOAD_ASC
+  PAYLOAD_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  SAMPLE_TIMESTAMP_MS_ASC
+  SAMPLE_TIMESTAMP_MS_DESC
+}
+
 type PlatformTotalTvl {
   mmSupplyTvlNorm: String!
   omnipoolTvlNorm: String!
@@ -56809,6 +57381,33 @@ type Query {
     orderBy: [AccountMmPositionHistoricalDataOrderBy!] = [PRIMARY_KEY_ASC]
   ): AccountMmPositionHistoricalDataConnection
   accountMmPositionHistoricalDatum(id: String!): AccountMmPositionHistoricalDatum
+  accountOwnedAsset(id: String!): AccountOwnedAsset
+  """Reads and enables pagination through a set of `AccountOwnedAsset`."""
+  accountOwnedAssets(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: AccountOwnedAssetCondition
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: AccountOwnedAssetFilter
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `AccountOwnedAsset`."""
+    orderBy: [AccountOwnedAssetsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): AccountOwnedAssetsConnection
   accountProcessingStatus(id: String!): AccountProcessingStatus
   """
   Reads and enables pagination through a set of `AccountProcessingStatus`.
@@ -58878,6 +59477,33 @@ type Query {
     """The method to use when ordering `OtcOrder`."""
     orderBy: [OtcOrdersOrderBy!] = [PRIMARY_KEY_ASC]
   ): OtcOrdersConnection
+  pendingRedisTsCommit(id: String!): PendingRedisTsCommit
+  """Reads and enables pagination through a set of `PendingRedisTsCommit`."""
+  pendingRedisTsCommits(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PendingRedisTsCommitCondition
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PendingRedisTsCommitFilter
+    """Only read the first `n` values of the set."""
+    first: Int
+    """Only read the last `n` values of the set."""
+    last: Int
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+    """The method to use when ordering `PendingRedisTsCommit`."""
+    orderBy: [PendingRedisTsCommitsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PendingRedisTsCommitsConnection
   platformTotalTvl: PlatformTotalTvlResponse!
   platformTotalVolumesByPeriod(filter: PlatformTotalVolumesByPeriodFilter): PlatformTotalVolumesByPeriodResponse!
   preprocessedDataBucket(id: String!): PreprocessedDataBucket
