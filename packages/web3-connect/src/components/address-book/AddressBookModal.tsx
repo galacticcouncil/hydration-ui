@@ -1,7 +1,8 @@
 import {
   ModalBody,
   ModalHeader,
-  VirtualizedList,
+  ScrollArea,
+  Stack,
 } from "@galacticcouncil/ui/components"
 import { stringEquals } from "@galacticcouncil/utils"
 import { FC, useState } from "react"
@@ -39,7 +40,6 @@ type Props = {
   readonly onSelect?: (address: Address) => void
 }
 
-const ADDRESS_BOOK_ENTRY_HEIGHT = 48
 const MAX_VISIBLE_ADDRESS_BOOK_ENTRIES = 6
 
 const defaultWhitelist = WALLET_ACCOUNT_FILTER_OPTIONS.filter(
@@ -197,31 +197,34 @@ export const AddressBookModal: FC<Props> = ({
             })}
           />
         ) : (
-          <VirtualizedList
-            items={searchedAddresses}
-            itemSize={ADDRESS_BOOK_ENTRY_HEIGHT}
-            maxVisibleItems={MAX_VISIBLE_ADDRESS_BOOK_ENTRIES}
-            separated
-            getItemKey={(index) => searchedAddresses[index]?.publicKey ?? index}
-            renderItem={(address) => (
-              <AddressBookEntry
-                key={address.publicKey}
-                address={address.address}
-                mode={address.mode}
-                name={address.name}
-                {...(onSelect && { onSelect: () => onSelect(address) })}
-                {...(address.isCustom && {
-                  onEdit: (name: string) => {
-                    edit({
-                      ...address,
-                      name,
-                    })
-                  },
-                  onDelete: () => setPublicKeyToRemove(address.publicKey),
-                })}
-              />
-            )}
-          />
+          <ScrollArea
+            height={
+              searchedAddresses.length <= MAX_VISIBLE_ADDRESS_BOOK_ENTRIES
+                ? "auto"
+                : "45vh"
+            }
+          >
+            <Stack separated>
+              {searchedAddresses.map((address) => (
+                <AddressBookEntry
+                  key={address.publicKey}
+                  address={address.address}
+                  mode={address.mode}
+                  name={address.name}
+                  {...(onSelect && { onSelect: () => onSelect(address) })}
+                  {...(address.isCustom && {
+                    onEdit: (name: string) => {
+                      edit({
+                        ...address,
+                        name,
+                      })
+                    },
+                    onDelete: () => setPublicKeyToRemove(address.publicKey),
+                  })}
+                />
+              ))}
+            </Stack>
+          </ScrollArea>
         )}
       </ModalBody>
     </>

@@ -2,6 +2,7 @@ import {
   ModalCloseTrigger,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 
 import { AssetListItem } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/AssetListItem"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
@@ -29,6 +30,7 @@ export const AssetList: React.FC<AssetListProps> = ({
 
   return (
     <VirtualizedList
+      sx={{ height: pxToRem(ASSET_ITEM_HEIGHT * MAX_VISIBLE_ASSET_ITEMS) }}
       items={items}
       itemSize={ASSET_ITEM_HEIGHT}
       maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
