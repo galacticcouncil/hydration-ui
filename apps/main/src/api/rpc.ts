@@ -1,15 +1,17 @@
-import { PingResponse, pingRpc, sleep, wsToHttp } from "@galacticcouncil/utils"
+import { PingResponse, sleep } from "@galacticcouncil/utils"
 import {
   keepPreviousData,
   queryOptions,
   useQueries,
   useQuery,
+  useQueryClient,
 } from "@tanstack/react-query"
 import { useRef } from "react"
 
 import { pingWorker } from "@/workers/ping"
 
 const RPC_STATUS_POLL_INTERVAL = 10_000
+const RPC_PING_TIMEOUT_MS = 10_000
 
 export type RpcStatusQueryOptions = {
   poll?: boolean
@@ -22,16 +24,17 @@ export const rpcStatusQueryOptions = (
   return queryOptions({
     enabled: !!url,
     queryKey: ["rpcStatus", url],
-    queryFn: async () => {
-      const [ping, status] = await Promise.all([
-        pingWorker.getPing(wsToHttp(url)),
-        pingRpc(url),
-      ])
+    queryFn: async ({ client }) => {
+      const result = await pingWorker.getBlock(url, RPC_PING_TIMEOUT_MS)
+      const previous = client.getQueryData<PingResponse>(["rpcStatus", url])
+      const isInvalid = result.ping === Infinity
+      const isPrevInvalid = !previous || previous.ping === Infinity
 
-      return {
-        ...status,
-        ping,
+      if (!isInvalid || isPrevInvalid) {
+        return result
       }
+
+      return previous
     },
     retry: 0,
     refetchInterval: poll ? RPC_STATUS_POLL_INTERVAL : false,
@@ -53,6 +56,7 @@ export const useRpcsStatus = (
   urls: string[],
   options: RpcsStatusOptions = {},
 ) => {
+  const queryClient = useQueryClient()
   const pingCacheRef = useRef<Map<string, PingResponse["ping"][]>>(new Map())
 
   return useQueries({
@@ -61,50 +65,80 @@ export const useRpcsStatus = (
         poll: options.poll,
       }),
       queryFn: async () => {
-        const delay = index * 150 // stagger queries for more accurate measurements
+        const delay = index * 200 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)
-        const [ping, status] = await Promise.all([
-          pingWorker.getPing(wsToHttp(url)),
-          pingRpc(url),
+        const result = await pingWorker.getBlock(url, RPC_PING_TIMEOUT_MS)
+        const previous = queryClient.getQueryData<PingResponse>([
+          "rpcStatus",
+          url,
         ])
+        const isInvalid = result.ping === Infinity
+        const isPrevInvalid = !previous || previous.ping === Infinity
 
-        const result: PingResponse = {
-          ...status,
-          ping,
+        if (!options.calculateAvgPing) {
+          if (!isInvalid || isPrevInvalid) {
+            return result
+          }
+
+          return { ...previous, ping: result.ping ?? previous.ping }
         }
 
-        if (!options.calculateAvgPing) return result
+        if (!isInvalid) {
+          const cache = pingCacheRef.current
+          const prevPingArr = cache.get(url) ?? []
+          const newPingArr = [...prevPingArr, result.ping]
+
+          cache.set(url, newPingArr)
+
+          const sortedPings = [...newPingArr]
+            .filter(
+              (ping): ping is number =>
+                typeof ping === "number" && ping > 0 && ping < Infinity,
+            )
+            .sort((a, b) => a - b)
+
+          const trimmedPings = sortedPings.slice(
+            0,
+            sortedPings.length > 1 ? -1 : sortedPings.length,
+          )
+
+          const avgPing =
+            trimmedPings.length > 0
+              ? trimmedPings.reduce((acc, curr) => acc + curr, 0) /
+                trimmedPings.length
+              : null
+
+          return {
+            ...result,
+            ping: avgPing,
+          }
+        }
 
         const cache = pingCacheRef.current
         const prevPingArr = cache.get(url) ?? []
-        const newPingArr = [...prevPingArr, result.ping]
-
-        cache.set(url, newPingArr)
-
-        // Sort and remove invalid values
-        const sortedPings = [...newPingArr]
+        const sortedPings = [...prevPingArr]
           .filter(
             (ping): ping is number =>
               typeof ping === "number" && ping > 0 && ping < Infinity,
           )
           .sort((a, b) => a - b)
-
-        // Remove outlier
         const trimmedPings = sortedPings.slice(
           0,
           sortedPings.length > 1 ? -1 : sortedPings.length,
         )
-
         const avgPing =
           trimmedPings.length > 0
             ? trimmedPings.reduce((acc, curr) => acc + curr, 0) /
               trimmedPings.length
             : null
 
-        return {
-          ...result,
-          ping: avgPing,
+        const failedResult = { ...result, ping: avgPing }
+
+        if (!isInvalid || isPrevInvalid) {
+          return failedResult
         }
+
+        return previous
       },
     })),
   })

@@ -1,6 +1,5 @@
 import { SubScan } from "@galacticcouncil/ui/assets/icons"
 import {
-  Box,
   ButtonIcon,
   ExternalLink,
   Flex,
@@ -80,8 +79,8 @@ export const TransactionItemMobile: FC<Props> = ({
           )}
         </Flex>
       </Flex>
-      <TransactionItemMobileAction>
-        {link && (
+      {link && (
+        <TransactionItemMobileAction>
           <ButtonIcon asChild>
             <ExternalLink href={link}>
               <Icon
@@ -91,8 +90,8 @@ export const TransactionItemMobile: FC<Props> = ({
               />
             </ExternalLink>
           </ButtonIcon>
-        )}
-      </TransactionItemMobileAction>
+        </TransactionItemMobileAction>
+      )}
     </TransactionItemMobileContainer>
   )
 }
@@ -103,7 +102,7 @@ export const TransactionItemMobileContainer = ({
   readonly children: ReactNode
 }) => {
   return (
-    <Flex align="center" gap="xxl">
+    <Flex align="center" gap="xl">
       {children}
     </Flex>
   )
@@ -114,5 +113,9 @@ export const TransactionItemMobileAction = ({
 }: {
   readonly children?: ReactNode
 }) => {
-  return <Box size={34}>{children}</Box>
+  return (
+    <Flex width="2xl" align="center" justify="center">
+      {children}
+    </Flex>
+  )
 }

@@ -1,16 +1,12 @@
 import { Box, Grid, Skeleton, Stack } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 
-import { HollarBannerDesktop } from "@/modules/borrow/hollar/HollarBanner.desktop"
 import { HeaderValuesSkeleton } from "@/modules/layout/components/LayoutSkeleton/HeaderValuesSkeleton"
 import { TableSkeleton } from "@/modules/layout/components/LayoutSkeleton/TableSkeleton"
 
 export const BorrowDashboardSkeletonPage: FC = () => {
-  const { isDesktop } = useBreakpoints()
   return (
     <Stack gap="xxl">
-      {isDesktop && <HollarBannerDesktop isLoadingReserves reserve={null} />}
       <HeaderValuesSkeleton
         size="large"
         count={3}

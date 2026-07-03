@@ -19,7 +19,7 @@ export const SwapPageDesktop = () => {
         <TradeChart height={TRADE_CHART_DESKTOP_HEIGHT} />
         <SSwapFormContainer gridColumn={2} gridRow={[null, null, null, "1/-1"]}>
           <FormHeader />
-          <Separator mx={-20} />
+          <Separator mx="-xl" />
           <Outlet />
         </SSwapFormContainer>
         <TradeOrders gridColumn={[null, null, "1/-1", "1"]} />
