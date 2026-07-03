@@ -113,6 +113,7 @@ const SupplyIsolatedLiquidityBody = ({
   const { t } = useTranslation(["common", "liquidity", "borrow"])
   const {
     form,
+    maxBalance,
     onSubmit,
     collateralType,
     healthFactor,
@@ -126,6 +127,7 @@ const SupplyIsolatedLiquidityBody = ({
     apys,
     spotPriceData,
     isPriceLoading,
+    isTradeLoading,
     isAaveSupply,
   } = useSupplyIsolatedLiquidity({
     initialAsset,
@@ -150,6 +152,7 @@ const SupplyIsolatedLiquidityBody = ({
             amountFieldName="amount"
             sortedAssets={selectabledAssets}
             assets={[]}
+            maxBalance={maxBalance}
             sx={{ pt: 0 }}
           />
 
@@ -248,7 +251,9 @@ const SupplyIsolatedLiquidityBody = ({
             type="submit"
             size="large"
             width="100%"
-            disabled={isBlockedSupply || !form.formState.isValid}
+            disabled={
+              isBlockedSupply || !form.formState.isValid || isTradeLoading
+            }
           >
             {t("borrow:supply")}
           </Button>
