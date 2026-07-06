@@ -40,13 +40,13 @@ export const MarketWarnings: FC<Props> = ({
 
   const hasTwap = !isSingleTrade && !!twap
 
+  const priceImpact = Math.abs(
+    swap?.priceImpactPct ?? twap?.tradeImpactPct ?? 0,
+  )
   const shouldRenderSlippageWarning =
-    hasTwap &&
-    Math.abs(twap.tradeImpactPct) < 5 &&
-    Number(twapSlippage) < Math.abs(twap.tradeImpactPct)
+    hasTwap && priceImpact < 5 && Number(twapSlippage) < priceImpact
 
-  const shouldRenderDcaWarning =
-    hasTwap && Math.abs(swap?.priceImpactPct ?? twap.tradeImpactPct) > 5
+  const shouldRenderDcaWarning = hasTwap && priceImpact > 5
 
   const shouldRenderHealthFactorWarning =
     !!healthFactor &&
