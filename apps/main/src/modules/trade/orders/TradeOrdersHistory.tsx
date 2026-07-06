@@ -68,7 +68,7 @@ export const TradeOrdersHistory: FC<PaperProps> = (props) => {
             onClick={() => setFilter(value)}
           >
             {t(filterLabelKeys[value])}
-            {value === "open" && (
+            {value === "open" && openOrders.length > 0 && (
               <TabMenuBadge>{openOrders.length}</TabMenuBadge>
             )}
           </Button>

@@ -1,21 +1,14 @@
-import {
-  Paper,
-  Separator,
-  Stack,
-  Toggle,
-  ToggleLabel,
-  ToggleRoot,
-} from "@galacticcouncil/ui/components"
+import { Separator, Stack } from "@galacticcouncil/ui/components"
 import { DataProviderStatus } from "@galacticcouncil/utils"
 import { Outlet } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { SquidIndexerStatus } from "@/components/DataProviderSelect/components/squid/SquidIndexerStatus"
 import { useActiveIndexerStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
+import { LegacyDataPanel } from "@/modules/trade/swap/components/LegacyDataPanel/LegacyDataPanel"
 import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
@@ -37,19 +30,13 @@ export const SwapPageDesktop = () => {
   return (
     <Stack gap="xl">
       <PageHeader />
-      <Paper p="xl" maxWidth="4xl">
-        <ToggleRoot>
-          <ToggleLabel>Legacy Data</ToggleLabel>
-          <Toggle
-            sx={{ ml: "auto" }}
-            disabled={isIndexerDegraded}
-            checked={isUsingLegacyData}
-            onCheckedChange={setLegacyDataEnabled}
-          />
-        </ToggleRoot>
-        <Separator my="l" />
-        <SquidIndexerStatus sx={{ fontSize: "p5" }} />
-      </Paper>
+      {import.meta.env.DEV && (
+        <LegacyDataPanel
+          isIndexerDegraded={isIndexerDegraded}
+          isUsingLegacyData={isUsingLegacyData}
+          onLegacyDataChange={setLegacyDataEnabled}
+        />
+      )}
       <TwoColumnGrid template="sidebar">
         {isUsingLegacyData ? (
           <TradeChartGrafana height={TRADE_CHART_DESKTOP_HEIGHT} />
