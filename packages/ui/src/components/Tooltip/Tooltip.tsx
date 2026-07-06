@@ -67,7 +67,14 @@ export const Tooltip = ({
             e.preventDefault()
             e.stopPropagation()
           }}
-          sx={{ p: 0, height: "auto", width: "auto" }}
+          sx={{
+            p: 0,
+            height: "auto",
+            width: "auto",
+            justifyContent: "start",
+            color: iconColor,
+            "&:hover": { background: "transparent" },
+          }}
         >
           {children || <TooltipIcon color={iconColor} />}
         </ButtonIcon>

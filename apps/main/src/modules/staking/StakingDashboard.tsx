@@ -1,12 +1,11 @@
-import { Box, Flex, Paper, SectionHeader } from "@galacticcouncil/ui/components"
+import { Box, Flex, Paper } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
 
-import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
+import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { stakingPositionsQuery } from "@/api/staking"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -14,6 +13,7 @@ import { ActiveDashboard } from "@/modules/staking/ActiveDashboard"
 import { ActiveDashboardSkeleton } from "@/modules/staking/ActiveDashboardSkeleton"
 import { DashboardStats } from "@/modules/staking/DashboardStats"
 import { DashboardStatsSkeleton } from "@/modules/staking/DashboardStatsSkeleton"
+import { GigaHDXBanner } from "@/modules/staking/gigaStaking/GigaHDXBanner"
 import { HowToStake } from "@/modules/staking/HowToStake"
 import { OngoingReferenda } from "@/modules/staking/OngoingReferenda"
 import { Stake } from "@/modules/staking/Stake"
@@ -23,7 +23,6 @@ import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 export const StakingDashboard: FC = () => {
-  const { t } = useTranslation("staking")
   const rpc = useRpcProvider()
 
   const { native } = useAssets()
@@ -46,24 +45,18 @@ export const StakingDashboard: FC = () => {
     : undefined
 
   const positionId = stakingPositionsData?.stakePositionId ?? 0n
-  const hasPosition = !!positionId
+  const hasPosition = !!stakingPositionsData?.stake
 
   const { getBalance } = useAccountBalances()
 
-  const { data: locksData = [], isLoading: locksLoading } = useQuery(
-    nativeTokenLocksQuery(rpc, address),
-  )
+  const { data: locksData, isLoading: locksLoading } = useNativeTokenLocks()
 
-  const vested = locksData
-    .reduce(
-      (acc, lock) =>
-        lock.type === TokenLockType.Vesting ? acc.plus(lock.amount) : acc,
-      Big(0),
-    )
-    .toString()
+  const vested = locksData?.get(TokenLockType.Vesting) ?? 0n
+  const gigaStaked = locksData?.get(TokenLockType.GigaStaking) ?? 0n
 
   const rawAvailableBalance = Big(getBalance(native.id)?.free.toString() || "0")
-    .minus(vested)
+    .minus(vested.toString())
+    .minus(gigaStaked.toString())
     .minus(stakingPositionsData?.stake?.toString() || "0")
     .minus(stakingPositionsData?.accumulated_locked_rewards?.toString() || "0")
 
@@ -79,10 +72,15 @@ export const StakingDashboard: FC = () => {
   if (isMobile || isTablet) {
     return (
       <Flex direction="column" gap="base">
+        {!!stakingPositionsData?.stake && (
+          <GigaHDXBanner
+            stakeAmount={stakingPositionsData.stake}
+            type="migration"
+          />
+        )}
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap="xl">
           <Box>
-            <SectionHeader title={t("dashboard.title")} />
             <Stake
               key={address}
               staked={staked}
@@ -125,12 +123,13 @@ export const StakingDashboard: FC = () => {
 
   return (
     <Flex direction="column" gap="xl">
-      <TwoColumnGrid template="sidebar">
-        <SectionHeader
-          noTopPadding
-          sx={{ gridColumn: "1/-1" }}
-          title={t("dashboard.title")}
+      {!!stakingPositionsData?.stake && (
+        <GigaHDXBanner
+          stakeAmount={stakingPositionsData.stake}
+          type="migration"
         />
+      )}
+      <TwoColumnGrid template="sidebar">
         <Paper>
           {isLoading ? (
             <>

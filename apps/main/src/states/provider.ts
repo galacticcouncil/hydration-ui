@@ -87,6 +87,8 @@ type ProviderRpcUrlStoreState = {
   rpcUrlList: string[]
   updatedAt: number
   autoMode: boolean
+  connectedRpcUrl: string
+  isRpcConnecting: boolean
 }
 
 type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
@@ -95,20 +97,26 @@ type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
   setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
   getDataEnv: () => TDataEnv
   setAutoMode: (state: boolean) => void
+  setConnectedRpcUrl: (connectedRpcUrl: string) => void
+  setIsRpcConnecting: (isRpcConnecting: boolean) => void
 }
 
 export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
   persist(
     (set, get) => ({
       rpcUrl: ENV.VITE_PROVIDER_URL,
+      connectedRpcUrl: ENV.VITE_PROVIDER_URL,
       squidUrl: ENV.VITE_SQUID_URL,
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
+      isRpcConnecting: false,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setSquidUrl: (squidUrl) => set({ squidUrl }),
       setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
+      setConnectedRpcUrl: (connectedRpcUrl) => set({ connectedRpcUrl }),
+      setIsRpcConnecting: (isRpcConnecting) => set({ isRpcConnecting }),
       getDataEnv: () => {
         const { rpcUrl } = get()
         return getProviderDataEnv(rpcUrl)
@@ -117,7 +125,7 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
     {
       name: "rpcUrl",
       version: 4.2,
-      partialize: omit(["rpcUrlList"]),
+      partialize: omit(["rpcUrlList", "isRpcConnecting", "connectedRpcUrl"]),
     },
   ),
 )
