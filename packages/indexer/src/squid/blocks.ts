@@ -6,7 +6,6 @@ export const latestBlockHeightQuery = (squidSdk: SquidSdk, url: string) =>
   queryOptions({
     queryKey: ["latestBlockHeight", url],
     queryFn: async () => {
-      console.log("FETCH", url)
       try {
         const result = await squidSdk.LatestBlockHeightQuery()
         return result.blocks?.edges?.[0]?.node?.height ?? null

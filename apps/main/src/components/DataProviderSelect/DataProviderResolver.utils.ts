@@ -83,8 +83,11 @@ export function getIndexerStatus(
   blockHeight: number | null,
   referenceBlock: number | null,
 ): Pick<IndexerInfo, "status" | "blockDiff"> {
-  if (referenceBlock === null || blockHeight === null)
+  if (blockHeight === null)
     return { status: DataProviderStatus.OFFLINE, blockDiff: null }
+
+  if (referenceBlock === null)
+    return { status: DataProviderStatus.HEALTHY, blockDiff: 0 }
 
   const blockDiff = referenceBlock - blockHeight
   const status = getDataProviderStatus(blockDiff, INDEXER_STATUS_THRESHOLDS)
