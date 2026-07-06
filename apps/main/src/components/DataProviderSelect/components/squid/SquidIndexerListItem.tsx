@@ -25,7 +25,6 @@ import {
 } from "@/components/DataProviderSelect/components/rpc/RpcListItem.styled"
 import { useBlockHeightStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { useSquidListStore } from "@/states/provider"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { SSquidIndexerListItem } from "./SquidIndexerListItem.styled"
 
@@ -80,7 +79,7 @@ export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
     data: blockHeight,
     isLoading: isBlockHeightLoading,
     isError: isBlockHeightError,
-  } = useQuery(latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2))
+  } = useQuery(latestBlockHeightQuery(squidSdk, url))
 
   const { blockDiffText, statusText, color } = useBlockHeightStatus(
     blockHeight ?? null,

@@ -13,7 +13,6 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -373,7 +372,6 @@ const ClaimableRewards = ({
 }) => {
   const { t } = useTranslation(["staking", "common"])
   const { native, getAssetWithFallback } = useAssets()
-  const { isMobile, isTablet } = useBreakpoints()
   const { account } = useAccount()
   const rpc = useRpcProvider()
 
@@ -433,9 +431,9 @@ const ClaimableRewards = ({
                 <Amount
                   label={
                     <Text
-                      fs={["p6", "p6", "p4"]}
+                      fs={["p6", "p6", "p5"]}
                       lh={1}
-                      color={getToken("text.medium")}
+                      color={getToken("text.high")}
                     >
                       {t("gigaStaking.claim.label")}
                     </Text>
@@ -443,7 +441,7 @@ const ClaimableRewards = ({
                   value={
                     <Text
                       font="primary"
-                      fs={["p3", "p1", "h5"]}
+                      fs={["p3", "p1", "h7"]}
                       fw={500}
                       lh={1}
                       color={getToken("text.tint.primary")}
@@ -462,7 +460,7 @@ const ClaimableRewards = ({
 
                 <Button
                   variant="secondary"
-                  size={isMobile || isTablet ? "medium" : "large"}
+                  size="medium"
                   disabled={!hasClaimable || claimMutation.isPending}
                   onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
                 >
@@ -474,7 +472,7 @@ const ClaimableRewards = ({
             </>
           )}
 
-          <Text fs={["p5", "p5", "p2"]} lh="m" color={getToken("text.medium")}>
+          <Text fs={["p5", "p5", "p4"]} lh="m" color={getToken("text.medium")}>
             {t("staking:gigaStaking.rewards.desc")}
           </Text>
         </Flex>
