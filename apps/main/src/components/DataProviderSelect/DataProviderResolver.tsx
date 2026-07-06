@@ -1,3 +1,7 @@
+import {
+  getSquidSdk,
+  latestBlockHeightQuery,
+} from "@galacticcouncil/indexer/squid"
 import { PingResponse } from "@galacticcouncil/utils"
 import { useQueryClient } from "@tanstack/react-query"
 import { PropsWithChildren, useEffect, useState } from "react"
@@ -61,8 +65,6 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
       updatedAt: Date.now(),
     })
 
-    setIsBestProviderFound(true)
-
     const indexerInfos = await Promise.all(
       SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer)),
     )
@@ -73,10 +75,17 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
     )
 
     if (bestIndexer) {
+      const url = bestIndexer.config.graphqlUrl
+      queryClient.setQueryData(
+        latestBlockHeightQuery(getSquidSdk(url), url).queryKey,
+        bestIndexer.blockHeight,
+      )
       useProviderRpcUrlStore.setState({
-        squidUrl: bestIndexer.config.graphqlUrl,
+        squidUrl: url,
       })
     }
+
+    setIsBestProviderFound(true)
   }, [queryClient])
 
   useEffect(() => {
