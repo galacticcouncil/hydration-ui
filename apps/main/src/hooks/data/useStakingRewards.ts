@@ -1,7 +1,7 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
-import { openGovReferendaQuery } from "@/api/democracy"
+import { ongoingReferendaQuery } from "@/api/democracy"
 import { stakingRewardsQuery } from "@/api/staking"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -10,7 +10,7 @@ export const useStakingRewards = () => {
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const { data: openGovReferendas } = useQuery(openGovReferendaQuery(rpc))
+  const { data: openGovReferendas } = useQuery(ongoingReferendaQuery(rpc))
 
   return useQuery({
     ...stakingRewardsQuery(

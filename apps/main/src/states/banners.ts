@@ -54,6 +54,17 @@ type BannerType = "top" | "flow"
 type BannersState = {
   banners: {
     ["new-farms"]: { visible?: boolean; type: BannerType; timestamp?: number }
+    ["giga-stake"]: { visible?: boolean; type: BannerType; timestamp?: number }
+    ["hollar-banner"]: {
+      visible?: boolean
+      type: BannerType
+      timestamp?: number
+    }
+    ["giga-migration"]: {
+      visible?: boolean
+      type: BannerType
+      timestamp?: number
+    }
   }
   closedGigaNewsIds: string[]
 }
@@ -74,8 +85,37 @@ type BannersStore = BannersState & BannersActions
 const defaultState: BannersState = {
   banners: {
     ["new-farms"]: { visible: undefined, type: "top" },
+    ["giga-stake"]: { visible: undefined, type: "flow" },
+    ["hollar-banner"]: { visible: undefined, type: "flow" },
+    ["giga-migration"]: { visible: undefined, type: "flow" },
   },
   closedGigaNewsIds: [],
+}
+
+const bannerIds = Object.keys(
+  defaultState.banners,
+) as (keyof BannersState["banners"])[]
+
+function mergePersistedWithDefaults(
+  persistedState: unknown,
+  currentState: BannersStore,
+): BannersStore {
+  const p = persistedState as Partial<BannersState> | undefined
+  const banners = Object.fromEntries(
+    bannerIds.map((id) => [
+      id,
+      {
+        ...defaultState.banners[id],
+        ...(p?.banners?.[id] ?? {}),
+      },
+    ]),
+  ) as BannersState["banners"]
+
+  return {
+    ...currentState,
+    banners,
+    closedGigaNewsIds: p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds,
+  }
 }
 
 export const useBannersStore = create<BannersStore>()(
@@ -119,6 +159,11 @@ export const useBannersStore = create<BannersStore>()(
     {
       name: "banners",
       version: 2,
+      merge: mergePersistedWithDefaults,
+      partialize: (state) => ({
+        banners: state.banners,
+        closedGigaNewsIds: state.closedGigaNewsIds,
+      }),
     },
   ),
 )

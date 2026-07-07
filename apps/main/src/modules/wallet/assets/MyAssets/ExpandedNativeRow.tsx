@@ -17,7 +17,6 @@ import {
   useUnlockableNativeTokens,
 } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
 import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
-import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -94,8 +93,25 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
         value={t("common:number", {
           value: locks.lockedInStaking,
         })}
-        displayValue={locks.lockedInStakingDisplayPrice}
+        displayValue={t("common:currency", {
+          value: locks.lockedInStakingDisplay,
+        })}
       />
+      {new Big(locks.lockedInGigaStaking).gt(0) && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInGigaStaking")}
+            value={t("common:number", {
+              value: locks.lockedInGigaStaking,
+            })}
+            displayValue={t("common:currency", {
+              value: locks.lockedInGigaStakingDisplay,
+            })}
+          />
+        </>
+      )}
       {Big(locks.lockedInDemocracy).gt(0) && (
         <>
           <ExpandedRowSeparator />
@@ -105,7 +121,9 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInDemocracy,
             })}
-            displayValue={locks.lockedInDemocracyDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInDemocracyDisplay,
+            })}
           />
         </>
       )}
@@ -118,7 +136,9 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInOpenGov,
             })}
-            displayValue={locks.lockedInOpenGovDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInOpenGovDisplay,
+            })}
           />
         </>
       )}
@@ -132,19 +152,15 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           label={t("myAssets.expandedNative.unlockable")}
           labelIcon={LockOpen}
           value={t("common:number", {
-            value: unlockable.value,
+            value: unlockable.maxUnlockable,
           })}
-          displayValue={unlockable.displayValue}
-          descriptionCustom={
-            unlockable.lockedSeconds > 0 && (
-              <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
-            )
-          }
+          displayValue={unlockable.displayMaxUnlockable}
         />
         <AssetDetailUnlock
           votesToRemove={unlockable.votesToRemove}
+          pendingPositions={unlockable.unlockableGigaPendingPositions}
           classIds={unlockable.classIds}
-          value={unlockable.value}
+          value={unlockable.maxUnlockable}
         />
       </Flex>
 
@@ -157,7 +173,9 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInVesting,
             })}
-            displayValue={locks.lockedInVestingDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInVestingDisplay,
+            })}
           />
         </>
       )}

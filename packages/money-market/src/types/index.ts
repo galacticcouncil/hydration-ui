@@ -8,8 +8,6 @@ export enum CapType {
   "borrowCap" = "borrowCap",
 }
 
-export type MoneyMarketEnv = "mainnet" | "testnet"
-
 export type ToastsConfig = {
   submitted: string
   success: string
@@ -45,7 +43,7 @@ export type ReserveFormatterFn = <T extends ReserveDataHumanized>(
 export type ExternalApyData = Map<
   string,
   {
-    borrowApy: string
-    supplyApy: string
+    borrowApy: string | null
+    supplyApy: string | null
   }
 >
