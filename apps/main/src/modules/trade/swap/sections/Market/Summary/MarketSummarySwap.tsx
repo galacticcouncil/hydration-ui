@@ -8,6 +8,7 @@ import {
   Summary,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { produce } from "immer"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
@@ -150,6 +151,14 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
         />
         <CollapsibleContent asChild>
           <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
+            <SwapSummaryRow
+              label={t("trade:dca.summary.slippage")}
+              content={
+                <SummaryRowValue color={getToken("colors.azureBlue.300")}>
+                  {t("percent", { value: swapSlippage })}
+                </SummaryRowValue>
+              }
+            />
             <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
             <SwapSummaryRow
               label={t("trade:market.summary.estTradeFees")}

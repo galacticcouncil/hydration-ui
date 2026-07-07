@@ -170,6 +170,14 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
       />
       <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
+          <SwapSummaryRow
+            label={t("trade:dca.summary.slippage")}
+            content={
+              <SummaryRowValue color={getToken("colors.azureBlue.300")}>
+                {t("percent", { value: twapSlippage })}
+              </SummaryRowValue>
+            }
+          />
           <PriceImpactSummaryRow priceImpact={twap.tradeImpactPct} />
           <SwapSummaryRow
             label={t("trade:market.summary.estTradeFees")}

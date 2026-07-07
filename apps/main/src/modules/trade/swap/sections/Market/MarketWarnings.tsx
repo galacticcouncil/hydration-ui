@@ -1,13 +1,15 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
-import { Alert, Flex, Modal, TextButton } from "@galacticcouncil/ui/components"
-import { Link } from "@tanstack/react-router"
+import { Pencil } from "@galacticcouncil/ui/assets/icons"
+import { Alert, Flex, Icon, TextButton } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { Link, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { FC, useState } from "react"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
+import { LINKS } from "@/config/navigation"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
@@ -20,7 +22,7 @@ type Props = {
   readonly setHealthFactorRiskAccepted: (accepted: boolean) => void
 }
 
-const SLIPPAGE_WARNING_THRESHOLD = 0.1
+const SLIPPAGE_WARNING_THRESHOLD = 1
 
 export const MarketWarnings: FC<Props> = ({
   isFormValid,
@@ -31,25 +33,48 @@ export const MarketWarnings: FC<Props> = ({
   healthFactorRiskAccepted,
   setHealthFactorRiskAccepted,
 }) => {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const { t } = useTranslation(["common", "trade"])
+  const search = useSearch({ from: "/trade/_history/swap" })
 
+  const { update, ...tradeSettings } = useTradeSettings()
   const {
     swap: {
+      single: { swapSlippage },
       split: { twapSlippage },
     },
-  } = useTradeSettings()
-
-  const hasTwap = !isSingleTrade && !!twap
+  } = tradeSettings
 
   const priceImpact =
     Math.abs(swap?.priceImpactPct ?? twap?.tradeImpactPct ?? 0) +
     SLIPPAGE_WARNING_THRESHOLD
 
-  const shouldRenderSlippageWarning =
-    hasTwap && priceImpact < 5 && Number(twapSlippage) < priceImpact
+  const validSlippage = priceImpact
 
-  const shouldRenderDcaWarning = hasTwap && priceImpact > 5
+  const handleChangeSlippage = () => {
+    if (isSingleTrade) {
+      update({
+        ...tradeSettings,
+        swap: {
+          ...tradeSettings.swap,
+          single: { swapSlippage: validSlippage },
+        },
+      })
+    } else {
+      update({
+        ...tradeSettings,
+        swap: {
+          ...tradeSettings.swap,
+          split: {
+            ...tradeSettings.swap.split,
+            twapSlippage: validSlippage,
+          },
+        },
+      })
+    }
+  }
+
+  const shouldRenderSlippageWarning =
+    Number(isSingleTrade ? swapSlippage : twapSlippage) < priceImpact
 
   const shouldRenderHealthFactorWarning =
     !!healthFactor &&
@@ -57,11 +82,7 @@ export const MarketWarnings: FC<Props> = ({
     healthFactor.isUserConsentRequired &&
     healthFactor.future < healthFactor.current
 
-  if (
-    !shouldRenderSlippageWarning &&
-    !shouldRenderDcaWarning &&
-    !shouldRenderHealthFactorWarning
-  ) {
+  if (!shouldRenderSlippageWarning && !shouldRenderHealthFactorWarning) {
     return null
   }
 
@@ -70,30 +91,45 @@ export const MarketWarnings: FC<Props> = ({
       {shouldRenderSlippageWarning && (
         <Alert
           variant="warning"
-          description={t("trade:market.warn.changeSlippage")}
+          description={t(
+            isSingleTrade
+              ? "trade:market.warnings.slippage.swap.desc"
+              : "trade:market.warnings.slippage.twap.desc",
+            {
+              value: validSlippage,
+            },
+          )}
           action={
-            <TextButton
-              variant="underline"
-              onClick={() => setIsSettingsOpen(true)}
-            >
-              {t("trade:market.warn.changeSlippage.cta")}
-            </TextButton>
-          }
-        />
-      )}
-      {shouldRenderDcaWarning && (
-        <Alert
-          variant="warning"
-          description={t("trade:market.warn.useDca")}
-          action={
-            <Link to="/trade/swap/dca">
-              <TextButton variant="underline">
-                {t("trade:market.warn.useDca.cta")}
+            <Flex justify="space-between" align="center" width="100%">
+              <TextButton direction="internal" variant="plain">
+                <Link
+                  to={LINKS.swapDca}
+                  search={search}
+                  sx={{ textDecoration: "none" }}
+                >
+                  {t("trade:market.warnings.dca.cta")}
+                </Link>
               </TextButton>
-            </Link>
+
+              <TextButton
+                onClick={handleChangeSlippage}
+                icon={
+                  <Pencil
+                    size={12}
+                    strokeWidth={2}
+                    sx={{ alignSelf: "baseline", ml: "xs" }}
+                  />
+                }
+              >
+                {t("trade:market.warnings.slippage.cta", {
+                  value: validSlippage,
+                })}
+              </TextButton>
+            </Flex>
           }
         />
       )}
+
       {shouldRenderHealthFactorWarning && (
         <HealthFactorRiskWarning
           canContinue={isFormValid}
@@ -103,13 +139,6 @@ export const MarketWarnings: FC<Props> = ({
           onAcceptedChange={setHealthFactorRiskAccepted}
         />
       )}
-      <Modal
-        variant="popup"
-        open={isSettingsOpen}
-        onOpenChange={() => setIsSettingsOpen(false)}
-      >
-        <SettingsModal />
-      </Modal>
     </Flex>
   )
 }
