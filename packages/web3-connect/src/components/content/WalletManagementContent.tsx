@@ -57,6 +57,7 @@ import { WalletAccountFilterOption, WalletMode } from "@/config/wallet"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import {
+  COMPATIBLE_WALLET_PROVIDERS,
   PROVIDERS_BY_WALLET_MODE,
   useWeb3Connect,
   WalletProviderStatus,
@@ -90,6 +91,8 @@ const ACCOUNT_FILTERS: WalletAccountFilterOption[] = [
   WalletMode.Solana,
 ]
 
+const CONNECT_ALL_PROVIDER_BLACKLIST = [WalletProviderType.WalletConnect]
+
 const getWalletSourceModes = (provider: WalletProviderType) =>
   uniqueBy(
     getWalletModesByProviderType(provider).filter(
@@ -105,6 +108,9 @@ export const WalletManagementContent = () => {
   const { mode, onAccountSelect, isControlled, setModalContentWidth } =
     useWeb3ConnectContext()
   const { enable, disconnect } = useWeb3Enable()
+  const { enable: enableConnectAll } = useWeb3Enable({
+    disconnectOnError: true,
+  })
   const {
     accounts,
     toggle,
@@ -264,6 +270,20 @@ export const WalletManagementContent = () => {
     recentProvider,
     recentlyDisconnectedProviderTypes,
   ])
+  const connectAllProviderTypes = useMemo(
+    () =>
+      sortedWallets
+        .filter(
+          ({ installed, provider }) =>
+            installed &&
+            COMPATIBLE_WALLET_PROVIDERS.includes(provider) &&
+            !CONNECT_ALL_PROVIDER_BLACKLIST.includes(provider) &&
+            !connectedProviderTypes.includes(provider) &&
+            !pendingProviderTypes.includes(provider),
+        )
+        .map(prop("provider")),
+    [connectedProviderTypes, pendingProviderTypes, sortedWallets],
+  )
   const visibleWallets = useMemo(() => {
     const phrase = walletSearch.toLowerCase().trim()
     if (!phrase) return sortedWallets
@@ -367,6 +387,17 @@ export const WalletManagementContent = () => {
     }
   }
 
+  const handleConnectAllWallets = async () => {
+    for (const provider of connectAllProviderTypes) {
+      try {
+        await enableConnectAll(provider)
+      } catch (error) {
+        console.error(error)
+        continue
+      }
+    }
+  }
+
   if (isAddressBookOpen) {
     return (
       <AddressBookModal
@@ -424,9 +455,7 @@ export const WalletManagementContent = () => {
             />
 
             <Text fs="p5" fw={500} color="text.low" sx={sourceSectionLabelSx}>
-              {showAccountPanel
-                ? t("provider.installedAndRecent")
-                : t("provider.suggestedWalletsFirstConnection")}
+              {t("provider.installedAndRecent")}
             </Text>
 
             <Box sx={sourceScrollFrameSx}>
@@ -457,6 +486,18 @@ export const WalletManagementContent = () => {
                           showAccountPanel ? "management" : "firstConnection"
                         }
                         onClick={handleRecentWalletsConnect}
+                      />
+                    )}
+
+                    {connectAllProviderTypes.length > 0 && (
+                      <WalletSourceButton
+                        title={t("provider.connectAll")}
+                        subtitle={t("provider.connect")}
+                        logos={connectAllProviderTypes}
+                        variant={
+                          showAccountPanel ? "management" : "firstConnection"
+                        }
+                        onClick={handleConnectAllWallets}
                       />
                     )}
 
