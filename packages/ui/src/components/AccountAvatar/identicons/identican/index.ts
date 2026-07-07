@@ -16,12 +16,20 @@ export interface IdenticanOptions {
   lightness?: number
   /** Optional color pools. When provided, colors are selected deterministically from these palettes. */
   palette?: IdenticanPalette
+  /** Optional square crop applied through the SVG viewBox. x/y are preview-style percentages. */
+  crop?: IdenticanCrop
 }
 
 export interface IdenticanPalette {
   backgrounds?: string[]
   cans?: string[]
   patterns?: string[]
+}
+
+export interface IdenticanCrop {
+  scale?: number
+  x?: number
+  y?: number
 }
 
 // FNV-1a 32-bit
@@ -168,6 +176,25 @@ const paletteRoleRand = (
   role: string,
   colors: string[] | undefined,
 ): Rand => mulberry32(fnv1a(`${seed}|${role}|${colors?.join(",") ?? ""}`))
+
+const cropSignature = (crop?: IdenticanCrop): string => {
+  if (!crop) return "none"
+
+  return `${crop.scale ?? 1}|${crop.x ?? 0}|${crop.y ?? 0}`
+}
+
+const getCropViewBox = (crop?: IdenticanCrop) => {
+  const scale = Math.max(1, crop?.scale ?? 1)
+  const size = 1524 / scale
+  const xOffset = crop?.x ?? 0
+  const yOffset = crop?.y ?? 0
+
+  return {
+    x: (0.5 - 0.5 / scale - xOffset / 100) * 1524,
+    y: (0.5 - 0.5 / scale + yOffset / 100) * 1524,
+    size,
+  }
+}
 
 // All geometry is in the template's coordinate space (soda-can.svg, 906×1524),
 // centered in a 1524×1524 square viewBox via translate(309 0).
@@ -535,6 +562,7 @@ export function identican(
     saturation = 1,
     lightness = 1,
     palette,
+    crop,
   } = options
   const sizeN = Number(size)
   const sizeAttr = Number.isFinite(sizeN) ? sizeN : 128
@@ -542,7 +570,8 @@ export function identican(
   const rand = mulberry32(hash)
   // normalize hue mod 360 to match hsl()'s wraparound, so e.g. hue: 360 hashes the same as hue: 0
   const hueNorm = ((hue % 360) + 360) % 360
-  const id = `ci${hash.toString(36)}-${fnv1a(`${background}|${hueNorm}|${saturation}|${lightness}|${paletteSignature(palette)}`).toString(36)}`
+  const id = `ci${hash.toString(36)}-${fnv1a(`${background}|${hueNorm}|${saturation}|${lightness}|${paletteSignature(palette)}|${cropSignature(crop)}`).toString(36)}`
+  const viewBox = getCropViewBox(crop)
 
   // every color funnels through this, so the three knobs shift the whole
   // palette together; render-time only, no PRNG draws involved
@@ -599,7 +628,7 @@ export function identican(
 
   const bgFill = background === "gradient" ? `url(#${id}-bg)` : bgA
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${sizeAttr}" height="${sizeAttr}" viewBox="0 0 1524 1524" role="img" ${
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${sizeAttr}" height="${sizeAttr}" viewBox="${n(viewBox.x)} ${n(viewBox.y)} ${n(viewBox.size)} ${n(viewBox.size)}" role="img" ${
       title ? `aria-label="${esc(String(title))}"` : `aria-hidden="true"`
     }>` +
     `<defs>` +
@@ -619,7 +648,7 @@ export function identican(
     `</defs>` +
     (background === "none"
       ? ""
-      : `<rect width="1524" height="1524" fill="${bgFill}"/>`) +
+      : `<rect x="${n(viewBox.x)}" y="${n(viewBox.y)}" width="${n(viewBox.size)}" height="${n(viewBox.size)}" fill="${bgFill}"/>`) +
     `<g transform="translate(${n(762 * (1 - CAN_SCALE))} ${n(762 * (1 - CAN_SCALE))}) scale(${CAN_SCALE}) translate(309 0)">` +
     `<path d="${SILHOUETTE_D}" fill="${canColor}"/>` +
     `<ellipse cx="458" cy="242" rx="267" ry="70" fill="${canColor}"/>` +

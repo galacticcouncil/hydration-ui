@@ -66,6 +66,7 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
         aria-hidden="true"
         height={scaledSize}
         src={identicanDataUri(address, {
+          crop: { scale: 1.4, x: 0, y: -15 },
           palette: getHydrationIdenticanPalette(theme),
           size: scaledSize,
         })}
