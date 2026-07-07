@@ -3,6 +3,7 @@ import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import { Pencil } from "@galacticcouncil/ui/assets/icons"
 import { Alert, Flex, TextButton } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC } from "react"
@@ -100,7 +101,11 @@ export const MarketWarnings: FC<Props> = ({
           )}
           action={
             <Flex justify="space-between" align="center" width="100%">
-              <TextButton direction="internal" variant="plain">
+              <TextButton
+                direction="internal"
+                variant="plain"
+                sx={{ color: getToken("accents.alertAlt.primary") }}
+              >
                 <Link
                   to={LINKS.swapDca}
                   search={search}
@@ -112,6 +117,7 @@ export const MarketWarnings: FC<Props> = ({
 
               <TextButton
                 onClick={handleChangeSlippage}
+                sx={{ color: getToken("accents.alertAlt.primary") }}
                 icon={
                   <Pencil
                     size={12}

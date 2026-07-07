@@ -173,7 +173,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
           <SwapSummaryRow
             label={t("trade:dca.summary.slippage")}
             content={
-              <SummaryRowValue color={getToken("colors.azureBlue.300")}>
+              <SummaryRowValue color={getToken("text.tint.quart")}>
                 {t("percent", { value: twapSlippage })}
               </SummaryRowValue>
             }
