@@ -25,6 +25,7 @@ export type OhlcData = {
 }
 
 export type BaselineChartData = SingleValueData & { volume?: number }
+export { SingleValueData }
 
 export type ChartDataExtended =
   | { type: "Candlestick"; data: OhlcData }
