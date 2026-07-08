@@ -63,7 +63,7 @@ function PlatformOverview() {
 
   const stats = [
     {
-      label: "Total Value Locked",
+      label: "Total TVL",
       value: formatUSD(aggregatedStats.totalTvl),
       isLoading,
     },
@@ -78,7 +78,7 @@ function PlatformOverview() {
       isLoading,
     },
     {
-      label: "Revenue Annualized",
+      label: "Protocol Annualised",
       value: formatUSD(revenueAnnualized),
       tooltip: revenueAnnualizedTooltip,
       isLoading,

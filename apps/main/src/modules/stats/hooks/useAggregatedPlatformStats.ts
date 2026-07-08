@@ -7,7 +7,9 @@ import {
 } from "@galacticcouncil/indexer/squid"
 import { getGhoReserve } from "@galacticcouncil/money-market/utils"
 import {
+  HOLLAR_ASSET_ID,
   isValidBigSource,
+  QUERY_KEY_BLOCK_PREFIX,
   safeConvertPublicKeyToSS58,
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
@@ -21,11 +23,8 @@ import { gigaTotalLockedQuery } from "@/api/gigaStake"
 import { useXykPools } from "@/api/pools"
 import { useSquidClient } from "@/api/provider"
 import {
-  calculateTotalTVL,
   defillamaHydrationTvlHistoryQuery,
   useFeesChartsData,
-  useOmnipoolTVL,
-  useXYKPools,
 } from "@/api/stats"
 import { useStakingSupply } from "@/modules/staking/DashboardStats.data"
 import { useAssets } from "@/providers/assetsProvider"
@@ -35,19 +34,30 @@ import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 const getNumber = (value?: string | null) => Number(value ?? 0) || 0
+const PALLET_ACCOUNT_PREFIX = "0x6d6f646c"
+const PALLET_ACCOUNT_PADDING = "00".repeat(20)
+
+const getPalletAccount = (palletId: string) => {
+  const normalizedPalletId = palletId.startsWith("0x")
+    ? palletId.slice(2)
+    : palletId
+
+  return safeConvertPublicKeyToSS58(
+    `${PALLET_ACCOUNT_PREFIX}${normalizedPalletId}${PALLET_ACCOUNT_PADDING}`,
+  )
+}
 
 export const useAggregatedPlatformStats = () => {
   const rpc = useRpcProvider()
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const squidClient = useSquidClient()
   const displayAssetId = useDisplayAssetStore((state) => state.stableCoinId)
+  const hollarMeta = getAssetWithFallback(HOLLAR_ASSET_ID)
 
   // TVL sources
   const { data: platformTotal, isLoading: isPlatformTotalLoading } = useQuery(
     platformTotalQuery(squidClient),
   )
-  const { data: omnipoolData, isLoading: isOmniLoading } = useOmnipoolTVL(1000)
-  const { data: xykData, isLoading: isXykLoading } = useXYKPools(50)
   const { data: borrowReserves, isLoading: isReservesLoading } =
     useBorrowReserves()
   const { data: defillamaTvlHistory, isLoading: isDefillamaTvlLoading } =
@@ -125,6 +135,27 @@ export const useAggregatedPlatformStats = () => {
     timeRange: "1W",
   })
 
+  // Hollar supply
+  const { data: hsmHollarBalance, isLoading: isHsmHollarBalanceLoading } =
+    useQuery({
+      queryKey: [QUERY_KEY_BLOCK_PREFIX, "hsmHollarBalance"],
+      enabled: rpc.isApiLoaded,
+      queryFn: async () => {
+        const palletId = await rpc.papi.constants.HSM.PalletId()
+        const hsmAccount = getPalletAccount(palletId)
+        const { free, reserved } =
+          await rpc.papi.query.Tokens.Accounts.getValue(
+            hsmAccount,
+            Number(HOLLAR_ASSET_ID),
+            {
+              at: "best",
+            },
+          )
+
+        return free + reserved
+      },
+    })
+
   // HDX Price
   const { price: hdxSpotPrice, isLoading: isPriceLoading } =
     useAssetPrice(NATIVE_ASSET_ID)
@@ -166,8 +197,6 @@ export const useAggregatedPlatformStats = () => {
 
   const isLoading =
     isPlatformTotalLoading ||
-    isOmniLoading ||
-    isXykLoading ||
     isReservesLoading ||
     isDefillamaTvlLoading ||
     isXykPoolsLoading ||
@@ -176,6 +205,7 @@ export const useAggregatedPlatformStats = () => {
     isStablepoolVolumes7dLoading ||
     isXykVolumes7dLoading ||
     isFeesLoading ||
+    isHsmHollarBalanceLoading ||
     isPriceLoading ||
     isHdxPriceDataLoading ||
     isGigaAprLoading ||
@@ -184,19 +214,6 @@ export const useAggregatedPlatformStats = () => {
 
   const stats = useMemo(() => {
     // 1. Calculate TVL
-    let omnipoolTvl = 0
-    if (omnipoolData) {
-      omnipoolTvl = calculateTotalTVL(omnipoolData)
-    }
-
-    let xykTvl = 0
-    if (xykData) {
-      xykTvl = xykData.reduce(
-        (acc, pool) => acc + parseFloat(pool.tvlInRefAssetNorm || "0"),
-        0,
-      )
-    }
-
     const reservesBorrowTvl =
       borrowReserves?.formattedReserves.reduce(
         (acc, r) => acc + parseFloat(r.totalLiquidityUSD),
@@ -205,19 +222,18 @@ export const useAggregatedPlatformStats = () => {
     const borrowTvl =
       getNumber(platformTotal?.mmSupplyTvlNorm) || reservesBorrowTvl
 
-    const platformTvl =
+    const platformAmmTvl =
       getNumber(platformTotal?.omnipoolTvlNorm) +
       getNumber(platformTotal?.stablepoolsTvlNorm)
+    const xykTvl = getNumber(platformTotal?.xykpoolsTvlNorm)
 
     // Trading / AMM TVL
-    const tradingTvl =
-      platformTvl + getNumber(platformTotal?.xykpoolsTvlNorm) ||
-      omnipoolTvl + xykTvl
+    const tradingTvl = platformAmmTvl + xykTvl
     const defillamaTvl = defillamaTvlHistory?.at(-1)?.value ?? 0
     const totalTvl =
-      defillamaTvl ||
+      tradingTvl + borrowTvl ||
       getNumber(platformTotal?.totalTvlDecoratedNorm) ||
-      tradingTvl + borrowTvl
+      defillamaTvl
 
     // 2. 24h Volume
     const platformTotalVolume = getNumber(platformTotal?.totalVolNorm)
@@ -231,7 +247,7 @@ export const useAggregatedPlatformStats = () => {
         0,
       ) ??
         0)
-    const totalVolume = platformTotalVolume || platformVolume + xykVolume
+    const totalVolume = platformVolume + xykVolume || platformTotalVolume
 
     const omnipoolVolume7d =
       omnipoolVolumes7d?.reduce(
@@ -288,12 +304,15 @@ export const useAggregatedPlatformStats = () => {
         : 0
 
     // 6. Hollar Supply & Peg
-    let hollarSupply = 0
+    const hsmHollarSupply = Number(
+      scaleHuman(hsmHollarBalance ?? 0n, hollarMeta.decimals),
+    )
+    let hollarSupply = hsmHollarSupply
     let hollarPeg = 1.0
     if (borrowReserves?.formattedReserves) {
       const ghoReserve = getGhoReserve(borrowReserves.formattedReserves)
       if (ghoReserve) {
-        hollarSupply = parseFloat(ghoReserve.totalDebtUSD)
+        hollarSupply += parseFloat(ghoReserve.totalDebtUSD)
         hollarPeg = parseFloat(ghoReserve.priceInUSD)
       }
     }
@@ -339,8 +358,6 @@ export const useAggregatedPlatformStats = () => {
       gigaHdxStakedPercent,
     }
   }, [
-    omnipoolData,
-    xykData,
     platformTotal,
     defillamaTvlHistory,
     borrowReserves,
@@ -349,6 +366,8 @@ export const useAggregatedPlatformStats = () => {
     stablepoolVolumes7d,
     xykVolumes7d,
     feesChartsData,
+    hsmHollarBalance,
+    hollarMeta.decimals,
     hdxSpotPrice,
     hdxPriceData,
     isAssetInFirst,
