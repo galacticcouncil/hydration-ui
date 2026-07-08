@@ -6,11 +6,9 @@ import { useEffect, useMemo, useState } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { AssetType } from "@/api/assets"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { Balance, useAccountData } from "@/states/account"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 const ERC20_THRESHOLD = 0.01
 
@@ -20,7 +18,7 @@ export function useAccountBalanceSubscription() {
   const accountAddress =
     account && !account.isIncompatible ? account.address : ""
   const queryClient = useQueryClient()
-  const { all, erc20, getErc20AToken, native, xykShareTokens } = useAssets()
+  const { erc20, tokens, getErc20AToken, native, xykShareTokens } = useAssets()
 
   const { setBalance, resetBalances, balancesLoaded } = useAccountData(
     useShallow(pick(["setBalance", "resetBalances", "balancesLoaded"])),
@@ -44,18 +42,17 @@ export function useAccountBalanceSubscription() {
   }, [accountAddress, balancesLoaded, resetBalances])
 
   const followedAssetIds = useMemo(() => {
-    if (!xykShareTokens) return new Set()
+    if (!xykShareTokens) return new Set<number>()
 
-    return new Set([
-      ...Array.from(all.values())
-        .filter(
-          (token) =>
-            token.type !== AssetType.ERC20 && token.id !== NATIVE_ASSET_ID,
-        )
-        .map((token) => Number(token.id)),
+    const ids = new Set([
+      ...tokens.map((token) => Number(token.id)),
       ...xykShareTokens.map((token) => Number(token.id)),
     ])
-  }, [all, xykShareTokens])
+
+    ids.delete(Number(native.id))
+
+    return ids
+  }, [tokens, xykShareTokens, native.id])
 
   const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
 
