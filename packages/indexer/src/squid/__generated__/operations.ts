@@ -54,7 +54,7 @@ export type MoneyMarketEventsQuery = { __typename?: 'Query', moneyMarketEvents?:
 export type PlatformTotalQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type PlatformTotalQuery = { __typename?: 'Query', platformTotalTvl: { __typename?: 'PlatformTotalTvlResponse', nodes: Array<{ __typename?: 'PlatformTotalTvl', omnipoolTvlNorm: string, stablepoolsTvlNorm: string } | null> }, platformTotalVolumesByPeriod: { __typename?: 'PlatformTotalVolumesByPeriodResponse', nodes: Array<{ __typename?: 'PlatformTotalVolumesByPeriod', omnipoolVolNorm: string, stableswapVolNorm: string } | null> } };
+export type PlatformTotalQuery = { __typename?: 'Query', platformTotalTvl: { __typename?: 'PlatformTotalTvlResponse', nodes: Array<{ __typename?: 'PlatformTotalTvl', mmSupplyTvlNorm: string, omnipoolTvlNorm: string, stablepoolsTvlNorm: string, totalTvlDecoratedNorm: string, xykpoolsTvlNorm: string } | null> }, platformTotalVolumesByPeriod: { __typename?: 'PlatformTotalVolumesByPeriodResponse', nodes: Array<{ __typename?: 'PlatformTotalVolumesByPeriod', omnipoolVolNorm: string, stableswapVolNorm: string, totalVolNorm: string, xykpoolVolNorm: string } | null> } };
 
 export type OmnipoolYieldMetricsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 

@@ -145,10 +145,10 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "stats",
     to: LINKS.stats,
-    defaultChild: LINKS.statsTreasury,
+    defaultChild: LINKS.statsOverview,
     icon: ChartPieIcon,
     children: [
-      // { key: "statsOverview", to: LINKS.statsOverview },
+      { key: "statsOverview", to: LINKS.statsOverview },
       { key: "statsTreasury", to: LINKS.statsTreasury },
       // { key: "statsMoneyMarket", to: LINKS.statsMoneyMarket },
       // { key: "statsHollar", to: LINKS.statsHollar },
