@@ -234,6 +234,26 @@ const shouldForceAssetIntoPrimaryComposition = (
   asset: TreasuryAssetBalance["asset"],
 ) => FORCE_PRIMARY_COMPOSITION_SYMBOLS.has(asset.symbol.trim().toLowerCase())
 
+const getCompositionPlacementAsset = (item: GroupedTreasuryAssetBalance) => ({
+  id: item.asset.id,
+  share: item.share,
+  ...getCompositionLayoutOptions(item.asset, item.valueUsd),
+})
+
+const getDemotableCompositionAssetIndex = (
+  items: ReadonlyArray<GroupedTreasuryAssetBalance>,
+) => {
+  for (let index = items.length - 1; index >= 0; index--) {
+    const item = items[index]
+
+    if (item && !shouldForceAssetIntoPrimaryComposition(item.asset)) {
+      return index
+    }
+  }
+
+  return -1
+}
+
 const getTreasuryAssetLogoId = (asset: TreasuryAssetBalance["asset"]) =>
   TREASURY_SINGLE_LOGO_ASSET_IDS.get(asset.id) ?? asset.id
 
@@ -1760,11 +1780,7 @@ export const StatsTreasury = () => {
           othersAssets.reduce((acc, item) => acc + item.share, 0) || undefined
         const rows = estimateCompositionGridRows(
           getCompositionMobileGridBlockSpecs(
-            primaryAssets.map((item) => ({
-              id: item.asset.id,
-              share: item.share,
-              ...getCompositionLayoutOptions(item.asset, item.valueUsd),
-            })),
+            primaryAssets.map(getCompositionPlacementAsset),
             othersShare,
           ),
           getCompositionGridContext(true),
@@ -1772,7 +1788,11 @@ export const StatsTreasury = () => {
 
         if (rows <= COMPOSITION_MAX_ROWS_MOBILE) break
 
-        const [asset] = primaryAssets.splice(-1, 1)
+        const assetIndex = getDemotableCompositionAssetIndex(primaryAssets)
+
+        if (assetIndex === -1) break
+
+        const [asset] = primaryAssets.splice(assetIndex, 1)
 
         if (!asset) break
 

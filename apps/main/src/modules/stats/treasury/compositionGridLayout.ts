@@ -48,8 +48,11 @@ const MOBILE_GRID: CompositionGridContext = {
 
 const MOBILE_MIN_COL_SPAN = 1
 const STANDARD_DESKTOP_COL_SPAN = 2
-const WIDE_SINGLE_ROW_MIN_VALUE_USD = 500_000
-const WIDE_SINGLE_ROW_MAX_VALUE_USD = 900_000
+const TALL_DESKTOP_MIN_SHARE = 6
+const TALL_DESKTOP_MIN_VALUE_USD = 1_100_000
+const WIDE_SINGLE_ROW_MIN_VALUE_USD = 400_000
+const WIDE_SINGLE_ROW_MAX_VALUE_USD = 1_100_000
+const GAP_FILL_SINGLE_ROW_MAX_COL_SPAN = 4
 
 const getLayoutValueUsd = (valueUsd?: string | number | null) => {
   const value = Number(valueUsd ?? 0)
@@ -120,6 +123,8 @@ export const getCompositionBlockLayout = (
       symbolSize: "medium",
     }
   } else if (share >= 6) {
+    const shouldUseTallMidTile =
+      share >= TALL_DESKTOP_MIN_SHARE || valueUsd >= TALL_DESKTOP_MIN_VALUE_USD
     const colSpan =
       valueUsd >= 2_000_000 || share >= 10
         ? 4
@@ -129,18 +134,18 @@ export const getCompositionBlockLayout = (
 
     layout = {
       colSpan,
-      rowSpan: 2,
-      tier: "major",
-      shareSize: "large",
+      rowSpan: shouldUseTallMidTile ? 2 : 1,
+      tier: shouldUseTallMidTile ? "major" : "mid",
+      shareSize: shouldUseTallMidTile ? "large" : "medium",
       logoSize: "small",
       symbolSize: "medium",
     }
   } else if (valueUsd >= 1_100_000) {
     layout = {
       colSpan: 4,
-      rowSpan: 1,
-      tier: "mid",
-      shareSize: "medium",
+      rowSpan: 2,
+      tier: "major",
+      shareSize: "large",
       logoSize: "small",
       symbolSize: "medium",
     }
@@ -309,26 +314,14 @@ const packCompositionGrid = (
     }
   }
 
-  let cursorRow = 0
-  let cursorCol = 0
-
   for (const [index, { colSpan, rowSpan }] of blocks.entries()) {
     let placed = false
 
-    for (let row = cursorRow; !placed; row++) {
-      const startCol = row === cursorRow ? cursorCol : 0
-
-      for (let col = startCol; col <= columns - colSpan; col++) {
+    for (let row = 0; !placed; row++) {
+      for (let col = 0; col <= columns - colSpan; col++) {
         if (fits(row, col, colSpan, rowSpan)) {
           occupy(row, col, colSpan, rowSpan)
           placements.push({ index, row, col, colSpan, rowSpan })
-          cursorRow = row
-          cursorCol = col + colSpan
-
-          if (cursorCol >= columns) {
-            cursorRow += 1
-            cursorCol = 0
-          }
 
           placed = true
           break
@@ -435,6 +428,10 @@ const getBalancedMaxColSpan = (
   }
 
   if (isWideSingleRowRange(valueUsd)) {
+    return Math.max(spec.colSpan, GAP_FILL_SINGLE_ROW_MAX_COL_SPAN)
+  }
+
+  if (valueUsd >= 250_000 || asset.share >= 1.25) {
     return Math.max(spec.colSpan, 3)
   }
 
@@ -546,13 +543,26 @@ const balanceCompositionGridSpecs = (
           const spec = balancedSpecs[placement.index]!
           const asset = assets[placement.index]!
           const valueUsd = getLayoutValueUsd(asset.valueUsd)
+          const balancedMax = getBalancedMaxColSpan(asset, spec, grid)
+          const canFillRowGap =
+            spec.rowSpan === 1 &&
+            grid.columns === COMPOSITION_GRID_COLUMNS &&
+            (valueUsd >= 15_000 || asset.share >= 0.5)
           const maxColSpan =
             rowGap.row === occupied.length - 1 &&
             grid.columns === COMPOSITION_GRID_COLUMNS &&
             valueUsd > 0 &&
             valueUsd < 205_000
               ? Math.max(spec.colSpan, 2)
-              : getBalancedMaxColSpan(asset, spec, grid)
+              : canFillRowGap
+                ? Math.max(
+                    balancedMax,
+                    Math.min(
+                      spec.colSpan + rowGap.freeColumns,
+                      GAP_FILL_SINGLE_ROW_MAX_COL_SPAN,
+                    ),
+                  )
+                : balancedMax
 
           return {
             index: placement.index,
@@ -619,7 +629,6 @@ const fillFinalRowSpecs = (
   }
 
   let remainingFreeColumns = getLastRowFreeColumns(filledSpecs)
-  const resizedIndexes = new Set<number>()
 
   while (remainingFreeColumns > 0) {
     const candidates = assets
@@ -633,9 +642,10 @@ const fillFinalRowSpecs = (
           share: asset.share,
           canGrow:
             spec.rowSpan === 1 &&
-            spec.colSpan === STANDARD_DESKTOP_COL_SPAN &&
-            !resizedIndexes.has(index) &&
-            isWideSingleRowRange(valueUsd),
+            spec.colSpan < GAP_FILL_SINGLE_ROW_MAX_COL_SPAN &&
+            (isWideSingleRowRange(valueUsd) ||
+              valueUsd >= 250_000 ||
+              asset.share >= 1.25),
         }
       })
       .filter(({ canGrow }) => canGrow)
@@ -656,8 +666,7 @@ const fillFinalRowSpecs = (
 
     if (!candidate) break
 
-    resizedIndexes.add(candidate.index)
-    remainingFreeColumns -= 1
+    remainingFreeColumns = getLastRowFreeColumns(filledSpecs)
   }
 
   return filledSpecs
