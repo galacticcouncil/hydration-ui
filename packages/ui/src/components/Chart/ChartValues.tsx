@@ -1,6 +1,6 @@
 import { ReactNode } from "react"
 
-import { Flex, FlexProps, Skeleton, Text } from "@/components"
+import { Box, Flex, FlexProps, Skeleton, Text } from "@/components"
 import { getToken } from "@/utils"
 
 export type ChartValuesProps = {
@@ -19,18 +19,25 @@ export const ChartValues: React.FC<ChartValuesProps> = ({
     <Flex direction="column" {...props}>
       {(value || isLoading) && (
         <Text fs={["p3", "p1"]} fw={600} asChild={typeof value !== "string"}>
-          {isLoading ? <Skeleton width={100} /> : value}
+          {isLoading ? <Skeleton width={100} height="1em" /> : value}
         </Text>
       )}
-      {(displayValue || isLoading) && (
-        <Text
-          fs="p5"
-          color={getToken("text.medium")}
-          asChild={typeof displayValue !== "string"}
-        >
-          {isLoading ? <Skeleton width={50} /> : displayValue}
-        </Text>
-      )}
+      {(displayValue || isLoading) &&
+        (isLoading && !displayValue ? (
+          <Box>
+            <Text fs="p5" color={getToken("text.medium")}>
+              <Skeleton width={80} height="1em" />
+            </Text>
+          </Box>
+        ) : (
+          <Text
+            fs="p5"
+            color={getToken("text.medium")}
+            asChild={typeof displayValue !== "string"}
+          >
+            {isLoading ? <Skeleton width={50} height="1em" /> : displayValue}
+          </Text>
+        ))}
     </Flex>
   )
 }
