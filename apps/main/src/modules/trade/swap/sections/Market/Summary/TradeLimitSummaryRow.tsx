@@ -6,11 +6,12 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
-import { PRICE_IMPACT_SLIPPAGE_THRESHOLD } from "@/modules/trade/swap/sections/Market/MarketWarnings"
+import { getMaxSlippageThreshold } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 
 type Props = {
   readonly tradeLimit: number
@@ -26,7 +27,8 @@ export const TradeLimitSummaryRow: FC<Props> = ({
   const { t } = useTranslation(["common", "trade"])
 
   const absPriceImpact = Math.abs(priceImpact)
-  const validSlippage = absPriceImpact * (1 + PRICE_IMPACT_SLIPPAGE_THRESHOLD)
+  const threshold = getMaxSlippageThreshold(absPriceImpact)
+  const validSlippage = Big(absPriceImpact).plus(threshold).toNumber()
 
   const isWarning =
     tradeLimit > WARING_TRADE_LIMIT && tradeLimit > validSlippage

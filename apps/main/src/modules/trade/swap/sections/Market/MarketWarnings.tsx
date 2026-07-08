@@ -25,7 +25,14 @@ type Props = {
   readonly setHealthFactorRiskAccepted: (accepted: boolean) => void
 }
 
-export const PRICE_IMPACT_SLIPPAGE_THRESHOLD = 0.1
+const PRICE_IMPACT_SLIPPAGE_THRESHOLD = 0.25
+
+export const getMaxSlippageThreshold = (priceImpact: number) => {
+  return Big.min(
+    Big.max(priceImpact * PRICE_IMPACT_SLIPPAGE_THRESHOLD, 0.01),
+    1,
+  ).toFixed(2)
+}
 
 export const MarketWarnings: FC<Props> = ({
   isFormValid,
@@ -53,7 +60,8 @@ export const MarketWarnings: FC<Props> = ({
     swap?.priceImpactPct ?? twap?.tradeImpactPct ?? 0,
   )
 
-  const validSlippage = priceImpact * (1 + PRICE_IMPACT_SLIPPAGE_THRESHOLD)
+  const threshold = getMaxSlippageThreshold(priceImpact)
+  const validSlippage = Big(priceImpact).plus(threshold).toNumber()
 
   const handleChangeSlippage = () => {
     if (isSingleTrade) {
