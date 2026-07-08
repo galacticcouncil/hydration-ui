@@ -1,4 +1,3 @@
-import { AccountAvatarTheme } from "@galacticcouncil/ui/components"
 import {
   EvmAddr,
   isEvmParachainAccount,
@@ -110,18 +109,6 @@ export const toAccount = (account: StoredAccount): Account => {
       !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider) &&
       account.provider !== WalletProviderType.ExternalWallet,
   }
-}
-
-export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
-  if (
-    account.provider === WalletProviderType.Talisman ||
-    account.provider === WalletProviderType.TalismanEvm ||
-    account.provider === WalletProviderType.TalismanH160
-  ) {
-    return "talisman"
-  }
-
-  return "auto"
 }
 
 export const getWalletModeByAddress = (address: string) => {
