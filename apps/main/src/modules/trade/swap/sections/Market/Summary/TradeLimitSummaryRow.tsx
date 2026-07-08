@@ -10,7 +10,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
-import { SLIPPAGE_WARNING_THRESHOLD } from "@/modules/trade/swap/sections/Market/MarketWarnings"
+import { PRICE_IMPACT_SLIPPAGE_THRESHOLD } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 
 type Props = {
   readonly tradeLimit: number
@@ -25,9 +25,11 @@ export const TradeLimitSummaryRow: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "trade"])
 
-  const absPriceImpact = Math.abs(priceImpact) + SLIPPAGE_WARNING_THRESHOLD
+  const absPriceImpact = Math.abs(priceImpact)
+  const validSlippage = absPriceImpact * (1 + PRICE_IMPACT_SLIPPAGE_THRESHOLD)
+
   const isWarning =
-    tradeLimit > WARING_TRADE_LIMIT && tradeLimit > absPriceImpact
+    tradeLimit > WARING_TRADE_LIMIT && tradeLimit > validSlippage
 
   return (
     <SwapSummaryRow
