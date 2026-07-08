@@ -23,6 +23,7 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { useTwapFee } from "@/modules/trade/swap/sections/Market/lib/useTwapFee"
 import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/CalculatedAmountSummaryRow"
 import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
+import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/TradeLimitSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -170,15 +171,19 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
       />
       <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
-          <SwapSummaryRow
-            label={t("trade:dca.summary.slippage")}
-            content={
-              <SummaryRowValue color={getToken("text.tint.quart")}>
-                {t("percent", { value: twapSlippage })}
-              </SummaryRowValue>
-            }
+          <TradeLimitSummaryRow
+            tradeLimit={twapSlippage}
+            priceImpact={swap.priceImpactPct}
           />
-          <PriceImpactSummaryRow priceImpact={twap.tradeImpactPct} />
+
+          <PriceImpactSummaryRow
+            label={t("trade:market.summary.priceImpact.single")}
+            priceImpact={twap.tradeImpactPct}
+          />
+          <PriceImpactSummaryRow
+            label={t("trade:market.summary.priceImpact.split")}
+            priceImpact={swap.priceImpactPct}
+          />
           <SwapSummaryRow
             label={t("trade:market.summary.estTradeFees")}
             content={

@@ -22,7 +22,7 @@ type Props = {
   readonly setHealthFactorRiskAccepted: (accepted: boolean) => void
 }
 
-const SLIPPAGE_WARNING_THRESHOLD = 1
+export const SLIPPAGE_WARNING_THRESHOLD = 1
 
 export const MarketWarnings: FC<Props> = ({
   isFormValid,
