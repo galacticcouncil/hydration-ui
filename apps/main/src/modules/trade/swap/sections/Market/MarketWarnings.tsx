@@ -4,13 +4,16 @@ import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import { Pencil } from "@galacticcouncil/ui/assets/icons"
 import { Alert, Flex, TextButton } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { CallType } from "@galacticcouncil/xc-core"
 import { Link, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { LINKS } from "@/config/navigation"
+import { useToasts } from "@/states/toasts"
 import { useTradeSettings } from "@/states/tradeSettings"
+import { TransactionType } from "@/states/transactions"
 
 type Props = {
   readonly isFormValid: boolean
@@ -37,6 +40,8 @@ export const MarketWarnings: FC<Props> = ({
   const search = useSearch({ from: "/trade/_history/swap" })
 
   const { update, ...tradeSettings } = useTradeSettings()
+  const { success } = useToasts()
+
   const {
     swap: {
       single: { swapSlippage },
@@ -71,6 +76,23 @@ export const MarketWarnings: FC<Props> = ({
         },
       })
     }
+
+    success({
+      title: t(
+        isSingleTrade
+          ? "trade:swap.settings.single.toast"
+          : "trade:swap.settings.split.toast",
+        {
+          value: validSlippage,
+        },
+      ),
+      meta: {
+        txHash: "",
+        ecosystem: CallType.Substrate,
+        srcChainKey: "",
+        type: TransactionType.Onchain,
+      },
+    })
   }
 
   const shouldRenderSlippageWarning =

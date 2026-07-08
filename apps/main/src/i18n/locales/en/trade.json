@@ -71,6 +71,8 @@
   "swap.settings.modal.single.slippage.help": "TODO",
   "swap.settings.modal.single.slippage.description": "Here you can control the maximum allowed deviation between your desired price and the actual execution price. Such deviation can be caused by protocol fees, price impact (trade size vs liquidity), or price changes due to trading activity.",
   "swap.settings.modal.split.maxRetries": "Max retries",
+  "swap.settings.single.toast": "Single swap slippage was set to {{value, percent}}",
+  "swap.settings.split.toast": "Split swap slippage was set to {{value, percent}}",
   "market.form.type.single": "Single trade",
   "market.form.type.single.instant": "Instant execution",
   "market.form.type.split": "Split trade",
