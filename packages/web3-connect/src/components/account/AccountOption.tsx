@@ -22,7 +22,6 @@ import {
 } from "@/components/account/AccountOption.styled"
 import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import { Account } from "@/hooks/useWeb3Connect"
-import { getAccountAvatarTheme } from "@/utils"
 import { getWallet } from "@/wallets"
 
 export type AccountOptionProps = Account & {
@@ -69,10 +68,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
     >
       <Flex align="center" gap="m">
         <Box sx={{ flexShrink: 0 }}>
-          <AccountAvatar
-            address={account.displayAddress}
-            theme={getAccountAvatarTheme(account)}
-          />
+          <AccountAvatar address={account.displayAddress} />
         </Box>
         <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
           <Flex align="center" justify="space-between" height="l">

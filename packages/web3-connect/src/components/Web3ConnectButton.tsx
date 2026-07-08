@@ -1,6 +1,5 @@
 import { CaretDown, Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
-  AccountAvatar,
   Button,
   ButtonProps,
   Chip,
@@ -14,6 +13,7 @@ import { FC, Ref } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountAddressBookIdentity } from "@/components/account/AccountIdentity"
+import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import {
   SConnectedButton,
   SHoverText,
@@ -28,7 +28,7 @@ import { useAccount } from "@/hooks/useAccount"
 import { useActiveMultisigConfig } from "@/hooks/useMultisigConfigs"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import i18n from "@/i18n"
-import { getAccountAvatarTheme } from "@/utils"
+import { getWallet } from "@/wallets"
 
 export type Web3ConnectButtonProps = ButtonProps & {
   allowIncompatibleAccounts?: boolean
@@ -116,6 +116,7 @@ const ConnectedAccountButton: React.FC<ConnectedMultisigAccountButtonProps> = ({
 }) => {
   const { t } = useTranslation("translations", { i18n })
   const activeMultisigConfig = useActiveMultisigConfig()
+  const wallet = getWallet(account.provider)
 
   const signerLabel =
     account.isMultisig && activeMultisigConfig
@@ -128,11 +129,7 @@ const ConnectedAccountButton: React.FC<ConnectedMultisigAccountButtonProps> = ({
 
   return (
     <SConnectedButton ref={ref} onClick={onClick} {...props} variant="tertiary">
-      <AccountAvatar
-        size={24}
-        address={account.displayAddress}
-        theme={getAccountAvatarTheme(account)}
-      />
+      {wallet && <ProviderLogo wallet={wallet} size={pxToRem(24)} />}
       <Flex direction="column">
         <Flex gap="xs" align="flex-end">
           <Text fs="p3" lh={1.2} truncate={pxToRem(140)}>

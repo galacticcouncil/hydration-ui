@@ -9118,6 +9118,11 @@ idb-keyval@^6.2.1:
   resolved "https://registry.yarnpkg.com/idb-keyval/-/idb-keyval-6.2.2.tgz#b0171b5f73944854a3291a5cdba8e12768c4854a"
   integrity sha512-yjD9nARJ/jb1g+CvD0tlhUHOrJ9Sy0P8T9MF3YaLlHnSRpwPfpTX0XIvpmw3gAJUmEu3FiICLBDPXVwyEvrleg==
 
+identican@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/identican/-/identican-0.4.0.tgz#086adcd511f69192a3ad07c35be7b06205a7640a"
+  integrity sha512-aKSGFqQIq6aPfBDqqG75qI20OEqFPBRqkwYLhwP1R3pHU0r7xZOIK0z56EwAyeez1Nt3mvayzdqBO1jPeTaVlg==
+
 ieee754@^1.1.13, ieee754@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
