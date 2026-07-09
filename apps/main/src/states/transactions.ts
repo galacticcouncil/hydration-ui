@@ -144,6 +144,7 @@ export interface TransactionActions {
 
 export interface TransactionOptions extends TransactionActions {
   onBack?: () => void
+  resolveOn?: "submitted" | "success"
 }
 
 export type SingleTransaction = SingleTransactionInput &
@@ -189,7 +190,15 @@ export type PendingTransaction = {
   id: string
   meta: TransactionMeta
   nonce: number
+  address: string
+  isPermit: boolean
 }
+
+const PendingTxChannel = new BroadcastChannel("hydration:pending-tx")
+
+type PendingTxMessage =
+  | { type: "add"; transaction: PendingTransaction }
+  | { type: "remove"; id: string }
 
 interface TransactionsStore {
   transactions: Transaction[]
@@ -197,13 +206,9 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TSuccessResult>
+  ) => Promise<TSuccessResult | void>
   cancelTransaction: (id: string) => void
-  addPendingTransaction: (
-    id: string,
-    nonce: number,
-    meta: TransactionMeta,
-  ) => void
+  addPendingTransaction: (transaction: PendingTransaction) => void
   removePendingTransaction: (id: string) => void
 }
 
@@ -211,7 +216,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   pendingTransactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TSuccessResult>((resolve, reject) => {
+    return new Promise<TSuccessResult | void>((resolve, reject) => {
       set((state) => {
         const meta: TransactionMeta =
           "meta" in transaction && transaction.meta
@@ -224,7 +229,12 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
           id: uuid(),
           ...transaction,
           meta,
-          onSubmitted: options?.onSubmitted,
+          onSubmitted: (txHash) => {
+            options?.onSubmitted?.(txHash)
+            if (!options?.resolveOn || options?.resolveOn === "submitted") {
+              resolve()
+            }
+          },
           onSuccess: (event) => {
             options?.onSuccess?.(event)
             resolve(event)
@@ -251,14 +261,41 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
       ),
     }))
   },
-  addPendingTransaction: (id, nonce, meta) => {
+  addPendingTransaction: (transaction) => {
     set((state) => ({
-      pendingTransactions: [...state.pendingTransactions, { id, meta, nonce }],
+      pendingTransactions: [...state.pendingTransactions, transaction],
     }))
+    PendingTxChannel.postMessage({ type: "add", transaction })
   },
   removePendingTransaction: (id) => {
     set((state) => ({
       pendingTransactions: state.pendingTransactions.filter((p) => p.id !== id),
     }))
+    PendingTxChannel.postMessage({ type: "remove", id })
   },
 }))
+
+PendingTxChannel.onmessage = (event: MessageEvent<PendingTxMessage>) => {
+  const message = event.data
+  switch (message.type) {
+    case "add":
+      useTransactionsStore.setState((state) =>
+        state.pendingTransactions.some((p) => p.id === message.transaction.id)
+          ? state
+          : {
+              pendingTransactions: [
+                ...state.pendingTransactions,
+                message.transaction,
+              ],
+            },
+      )
+      break
+    case "remove":
+      useTransactionsStore.setState((state) => ({
+        pendingTransactions: state.pendingTransactions.filter(
+          (p) => p.id !== message.id,
+        ),
+      }))
+      break
+  }
+}

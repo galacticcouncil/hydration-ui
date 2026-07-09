@@ -2,7 +2,7 @@ import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Box,
-  Button,
+  LoadingButton,
   Separator,
   Summary,
   Text,
@@ -73,6 +73,7 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
     minStakeHuman,
     meta,
     onSubmit,
+    isSubmitting,
     maxStakeHuman,
     amountInGigaHdx,
     gigaHdxMeta,
@@ -130,14 +131,15 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
         <Separator />
 
         <Box p="l">
-          <Button
+          <LoadingButton
+            isLoading={isSubmitting}
             type="submit"
             size="large"
             width="100%"
-            disabled={!form.formState.isValid}
+            disabled={!form.formState.isValid || isSubmitting}
           >
             {t("gigaStaking.gigaStake.cta")}
-          </Button>
+          </LoadingButton>
         </Box>
       </form>
     </FormProvider>
