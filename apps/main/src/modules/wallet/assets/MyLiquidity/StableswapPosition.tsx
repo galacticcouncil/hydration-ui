@@ -54,6 +54,7 @@ export const StableswapLiquidityPosition = ({
       <div />
 
       <Amount
+        className="liquidity-position-amount"
         label={t("common:currentValue")}
         value={format(position.data)}
         displayValue={t("common:currency", {

@@ -52,6 +52,7 @@ export const XYKDeposit: FC<Props> = ({
       </Text>
 
       <Amount
+        className="liquidity-position-amount"
         value={t("common:currency", {
           value: sharesHuman,
           symbol: "Shares",

@@ -5,6 +5,7 @@ export const SLiquidityPosition = styled.div(
     display: grid;
     grid-template-columns: subgrid;
     align-items: center;
+    column-gap: inherit;
 
     grid-column: 1 / -1;
 
@@ -14,5 +15,21 @@ export const SLiquidityPosition = styled.div(
     background: ${theme.controls.dim.base};
     border: 1px solid ${theme.details.borders};
     border-radius: ${theme.containers.cornerRadius.containersPrimary};
+
+    & > :first-child {
+      justify-self: start;
+      text-align: start;
+    }
+
+    .liquidity-position-amount {
+      justify-self: start;
+      width: max-content;
+      max-width: 100%;
+      text-align: start;
+
+      & > div {
+        align-items: flex-start;
+      }
+    }
   `,
 )

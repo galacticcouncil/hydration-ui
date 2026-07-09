@@ -50,6 +50,7 @@ export const XYKSharesPositions = ({
       </Text>
 
       <Amount
+        className="liquidity-position-amount"
         value={t("common:currency", {
           value: sharesHuman.toString(),
           symbol: t("common:shares"),

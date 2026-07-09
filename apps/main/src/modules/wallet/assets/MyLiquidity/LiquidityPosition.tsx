@@ -52,6 +52,7 @@ export const LiquidityPosition: FC<Props> = ({
       </Text>
 
       <Amount
+        className="liquidity-position-amount"
         label={t("common:initialValue")}
         value={t("common:currency", {
           value: position.data.initialValueHuman,
@@ -63,6 +64,7 @@ export const LiquidityPosition: FC<Props> = ({
       />
 
       <Amount
+        className="liquidity-position-amount"
         label={t("common:currentValue")}
         value={format(position.data)}
         displayValue={t("common:currency", {
