@@ -140,42 +140,43 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
       open={isSummaryExpanded}
       onOpenChange={changeSummaryExpanded}
     >
-      <CalculatedAmountSummaryRow
-        label={
-          isBuy
-            ? t("trade:market.summary.maxSent")
-            : t("trade:market.summary.minReceived")
-        }
-        tooltip={
-          isBuy
-            ? t("trade:market.summary.maxSent.tooltip")
-            : t("trade:market.summary.minReceived.tooltip")
-        }
-        amount={
-          <SummaryRowValue>
-            <span>
-              {t("currency", {
-                value: twapPriceHuman,
-                symbol: twapPriceAsset.symbol,
-              })}
-            </span>
-            <span sx={{ color: getToken("colors.skyBlue.500") }}>
-              {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
-            </span>
-          </SummaryRowValue>
-        }
-        amountDisplay={twapPriceDisplay}
-        isLoading={twapPriceDisplayLoading}
-        isExpanded={isSummaryExpanded}
-        onIsExpandedChange={changeSummaryExpanded}
-      />
+      <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
+        <CalculatedAmountSummaryRow
+          label={
+            isBuy
+              ? t("trade:market.summary.maxSent")
+              : t("trade:market.summary.minReceived")
+          }
+          tooltip={
+            isBuy
+              ? t("trade:market.summary.maxSent.tooltip")
+              : t("trade:market.summary.minReceived.tooltip")
+          }
+          amount={
+            <SummaryRowValue>
+              <span>
+                {t("currency", {
+                  value: twapPriceHuman,
+                  symbol: twapPriceAsset.symbol,
+                })}
+              </span>
+              <span sx={{ color: getToken("colors.skyBlue.500") }}>
+                {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
+              </span>
+            </SummaryRowValue>
+          }
+          amountDisplay={twapPriceDisplay}
+          isLoading={twapPriceDisplayLoading}
+          isExpanded={isSummaryExpanded}
+          onIsExpandedChange={changeSummaryExpanded}
+        />
+        <TradeLimitSummaryRow
+          tradeLimit={twapSlippage}
+          priceImpact={swap.priceImpactPct}
+        />
+      </Summary>
       <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
-          <TradeLimitSummaryRow
-            tradeLimit={twapSlippage}
-            priceImpact={swap.priceImpactPct}
-          />
-
           <PriceImpactSummaryRow
             label={t("trade:market.summary.priceImpact.single")}
             priceImpact={twap.tradeImpactPct}

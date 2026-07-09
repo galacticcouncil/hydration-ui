@@ -129,33 +129,34 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
         open={isSummaryExpanded}
         onOpenChange={changeSummaryExpanded}
       >
-        <CalculatedAmountSummaryRow
-          label={
-            isBuy
-              ? t("trade:market.summary.maxSent")
-              : t("trade:market.summary.minReceived")
-          }
-          tooltip={
-            isBuy
-              ? t("trade:market.summary.maxSent.tooltip")
-              : t("trade:market.summary.minReceived.tooltip")
-          }
-          amount={t("currency", {
-            value: minSummaryValue,
-            symbol: minSummaryAsset.symbol,
-          })}
-          amountDisplay={minSummaryValueDisplay}
-          isLoading={minSummaryValueDisplayLoading}
-          isExpanded={isSummaryExpanded}
-          onIsExpandedChange={changeSummaryExpanded}
-        />
+        <Summary separator={<SwapSectionSeparator />}>
+          <CalculatedAmountSummaryRow
+            label={
+              isBuy
+                ? t("trade:market.summary.maxSent")
+                : t("trade:market.summary.minReceived")
+            }
+            tooltip={
+              isBuy
+                ? t("trade:market.summary.maxSent.tooltip")
+                : t("trade:market.summary.minReceived.tooltip")
+            }
+            amount={t("currency", {
+              value: minSummaryValue,
+              symbol: minSummaryAsset.symbol,
+            })}
+            amountDisplay={minSummaryValueDisplay}
+            isLoading={minSummaryValueDisplayLoading}
+            isExpanded={isSummaryExpanded}
+            onIsExpandedChange={changeSummaryExpanded}
+          />
+          <TradeLimitSummaryRow
+            tradeLimit={swapSlippage}
+            priceImpact={swap.priceImpactPct}
+          />
+        </Summary>
         <CollapsibleContent asChild>
           <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
-            <TradeLimitSummaryRow
-              tradeLimit={swapSlippage}
-              priceImpact={swap.priceImpactPct}
-            />
-
             <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
             <SwapSummaryRow
               label={t("trade:market.summary.estTradeFees")}

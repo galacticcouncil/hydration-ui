@@ -18,7 +18,7 @@ type Props = {
   readonly priceImpact: number
 }
 
-const WARING_TRADE_LIMIT = 5
+const WARING_TRADE_LIMIT = 3
 
 export const TradeLimitSummaryRow: FC<Props> = ({
   tradeLimit,
