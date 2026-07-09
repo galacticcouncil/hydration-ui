@@ -116,7 +116,7 @@ export const useStrategyGroupedPositions = () => {
             position.suppliedSummaryData.underlyingBalanceUSD,
           suppliedSymbol: position.suppliedSummaryData.reserve.symbol,
           createdAt: position.proxyCreatedAt,
-          netApy: position.userBorrowSummary.netAPY,
+          netApy: position.userBorrowSummary.netAPY ?? 0,
           netWorth: position.userBorrowSummary.netWorthUSD,
           healthFactor: position.userBorrowSummary.healthFactor,
           debtReserve: position.debtSummaryData?.reserve,

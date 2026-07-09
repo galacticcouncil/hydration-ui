@@ -1,7 +1,12 @@
 import {
+  UiIncentiveDataProvider,
+  UiPoolDataProvider,
+} from "@galacticcouncil/money-market/utils"
+import {
   bigShift,
   getAddressFromAssetId,
   QUERY_KEY_BLOCK_PREFIX,
+  useStableArray,
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
@@ -15,7 +20,12 @@ import Big from "big.js"
 import { isNonNullish, isNullish, prop, unique, zipWith } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { borrowReserveQuery } from "@/api/borrow"
+import {
+  borrowReserveQuery,
+  lendingPoolAddressProvider,
+  useBorrowIncentivesContract,
+  useBorrowPoolDataContract,
+} from "@/api/borrow"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -143,6 +153,8 @@ export const spotPriceKeyQuery = (
 
 export const scSpotPriceKeyQuery = (
   rpc: TProviderContext,
+  poolDataContract: UiPoolDataProvider | null,
+  incentivesContract: UiIncentiveDataProvider | null,
   assetId: string,
   reserveId: string,
 ) => {
@@ -153,7 +165,13 @@ export const scSpotPriceKeyQuery = (
     queryKey: spotPriceQueryKey(assetId),
     queryFn: async () => {
       const reserve = await rpc.queryClient.ensureQueryData(
-        borrowReserveQuery(rpc, reserveId),
+        borrowReserveQuery(
+          rpc,
+          lendingPoolAddressProvider,
+          poolDataContract,
+          incentivesContract,
+          reserveId,
+        ),
       )
 
       const price = reserve?.priceInUSD ?? null
@@ -172,14 +190,23 @@ const SC_ASSETS = new Map<string, string>([
 ])
 
 export const useSubscribedPriceKeys = (assetIds: string[]) => {
+  const stableAssetIds = useStableArray(assetIds)
   const rpc = useRpcProvider()
+  const poolDataContract = useBorrowPoolDataContract()
+  const incentivesContract = useBorrowIncentivesContract()
 
   return useQueries({
-    queries: assetIds.map((assetId) => {
+    queries: stableAssetIds.map((assetId) => {
       const reserveId = SC_ASSETS.get(assetId)
 
       if (reserveId) {
-        return scSpotPriceKeyQuery(rpc, assetId, reserveId)
+        return scSpotPriceKeyQuery(
+          rpc,
+          poolDataContract,
+          incentivesContract,
+          assetId,
+          reserveId,
+        )
       }
       return spotPriceKeyQuery(rpc, assetId)
     }),

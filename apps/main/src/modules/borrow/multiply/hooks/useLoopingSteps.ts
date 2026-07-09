@@ -98,12 +98,14 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
       const liquidationLtvBig = new Big(liquidationLtv || "0")
       const supplyExternalApy = apyMap.get(supplyAssetId)
       const borrowExternalApy = apyMap.get(borrowAssetId)
-      const supplyApyBig = supplyExternalApy
-        ? new Big(supplyExternalApy.totalSupplyApy).div(100)
-        : new Big(supplyReserve.supplyAPY || "0")
-      const borrowApyBig = borrowExternalApy
-        ? new Big(borrowExternalApy.totalBorrowApy).div(100)
-        : new Big(borrowReserve.variableBorrowAPY || "0")
+      const supplyApyBig =
+        supplyExternalApy && supplyExternalApy.totalSupplyApy !== null
+          ? new Big(supplyExternalApy.totalSupplyApy).div(100)
+          : new Big(supplyReserve.supplyAPY || "0")
+      const borrowApyBig =
+        borrowExternalApy && borrowExternalApy.totalBorrowApy !== null
+          ? new Big(borrowExternalApy.totalBorrowApy).div(100)
+          : new Big(borrowReserve.variableBorrowAPY || "0")
       const slippageFactor = new Big(1).minus(new Big(slippage).div(100))
 
       const initialCollateral = amountBig.times(supplyOraclePrice)
