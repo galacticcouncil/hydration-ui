@@ -2,9 +2,12 @@ import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
 import {
   DOT_ASSET_ID,
   GDOT_ASSET_ID,
+  GDOT_ERC20_ID,
   getAssetIdFromAddress,
   GETH_ASSET_ID,
+  GETH_ERC20_ID,
   GSOL_ASSET_ID,
+  GSOL_ERC20_ID,
   HEURC_ASSET_ID,
   HUSDC_ASSET_ID,
   HUSDE_ASSET_ID,
@@ -133,6 +136,12 @@ const HOLLAR_POOL_LABELS_BY_ID = new Map<string, string>([
   [GDOT_ASSET_ID, "GDOT"],
   [GETH_ASSET_ID, "GETH"],
   [GSOL_ASSET_ID, "GSOL"],
+])
+
+const OMNIPOOL_DISPLAY_ASSET_BY_ID = new Map<string, string>([
+  [GDOT_ERC20_ID, GDOT_ASSET_ID],
+  [GETH_ERC20_ID, GETH_ASSET_ID],
+  [GSOL_ERC20_ID, GSOL_ASSET_ID],
 ])
 
 const normalizeTreasuryAsset = (asset: TAsset): TAsset => {
@@ -339,6 +348,16 @@ type TreasuryPool = Awaited<
 
 type TreasuryOmnipoolPosition = OmnipoolPosition | OmnipoolDepositFull
 
+const getTreasuryOmnipoolDisplayAsset = (
+  assetMap: Map<string, TAsset>,
+  positionAssetId: string,
+) => {
+  const displayAssetId =
+    OMNIPOOL_DISPLAY_ASSET_BY_ID.get(positionAssetId) ?? positionAssetId
+
+  return assetMap.get(displayAssetId) ?? assetMap.get(positionAssetId)
+}
+
 const getOmnipoolPositionLiquidity = (
   omnipoolData: OmniPoolToken,
   position: TreasuryOmnipoolPosition,
@@ -525,7 +544,7 @@ const expandOmnipoolPosition = async (
   position: TreasuryOmnipoolPosition,
   displayAssetId: string,
 ): Promise<TreasuryAssetBalance | undefined> => {
-  const asset = assetMap.get(position.assetId)
+  const asset = getTreasuryOmnipoolDisplayAsset(assetMap, position.assetId)
   const omnipoolData = omnipoolTokens.find(
     (token) => token.id.toString() === position.assetId,
   )

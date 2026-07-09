@@ -47,13 +47,23 @@ Each `TreasuryAssetBalance` carries a `breakdown`:
 
 | Breakdown key | Meaning |
 |---|---|
-| `wallet` | Treasury wallet balance; included in `Net balance` unless the asset itself is a liquidity/share token |
+| `wallet` | Plain treasury wallet balance; shown as `Asset balance` in UI details unless the asset itself is a liquidity/share token |
 | `offchain` | Treasury balances held outside Hydration, currently Asset Hub DOT accounts |
 | `moneyMarketSupply` | Supplied as collateral |
 | `liquidity` | Underlying value expanded from wallet-held LP/share tokens and treasury-owned omnipool positions |
 | `moneyMarketBorrow` | Borrowed exposure |
 
 Wallet-held XYK share tokens, farmed XYK share positions, stablepool shares, and treasury-owned omnipool positions are expanded before merging. The original share token row is omitted when expansion succeeds, so assets like PAXG inside a treasury LP position contribute to the PAXG tile/table row as `Supplied as liquidity` instead of being hidden behind the LP token.
+
+Treasury-owned Omnipool positions for Giga assets are normalized from the position asset id into the displayed treasury asset id before merging:
+
+| Omnipool position asset | Display/merge asset |
+|---|---|
+| `GDOT_ERC20_ID` | `GDOT_ASSET_ID` |
+| `GETH_ERC20_ID` | `GETH_ASSET_ID` |
+| `GSOL_ERC20_ID` | `GSOL_ASSET_ID` |
+
+This matters because the NFT position can be recorded against the ERC20 leg, while the Treasury UI displays and totals the Giga stableswap/display asset. Without this mapping, assets such as GETH can show their collateral but miss the Omnipool liquidity bucket.
 
 Omnipool position value uses only `calculate_liquidity_out` for the deposited asset leg. The H2O/LRNA hub leg from `calculate_liquidity_lrna_out` is intentionally not added to Treasury holdings.
 
@@ -71,11 +81,11 @@ Debt-netted money-market rule:
 - Accounts with `netMoneyMarketBorrows: true` pro-rata their raw money-market debt across supplied collateral.
 - All tracked Hydration treasury wallets currently use this rule: main treasury, HOLLAR collector treasury, PRIME pure proxy, and money market treasury.
 - Their supplied collateral is reduced by the account's raw borrow value before entering `assets`, composition tiles, and the All treasury assets table.
-- If supplied collateral is larger than debt, the remaining supplied value is shown as the asset's net contribution. The tooltip/table details still show gross `Supplied as collateral` and the negative `Debt offset`.
+- If supplied collateral is larger than debt, the remaining supplied value is shown as the asset's net contribution. The tooltip/table details still show gross `Supplied as collateral` and the negative `Collateral used by debt`.
 - If debt is larger than supplied collateral, supplied assets are removed and only the residual raw debt remains in `borrowValueUsd`; mapped borrow rows are scaled for display when possible.
 - This prevents debt-backed collateral, including HOLLAR debt that may not map to a local asset row, from inflating treasury composition.
 
-Hollar pool assets `110`-`113` are displayed as `HUSDC`, `HUSDT`, `HUSDS`, and `HUSDE` in Treasury stats instead of their raw `2-Pool-*` registry names.
+Hollar and Giga pool assets are displayed with short stable labels in Treasury stats instead of raw registry names. This includes Hollar pool assets such as `HUSDC`, `HUSDT`, `HUSDS`, `HUSDE`, and also `HEURC`, `GDOT`, `GETH`, and `GSOL`.
 
 This differs from the connected wallet balance card. The wallet `Asset balance` card is for the active account only and only sums token + ERC20 wallet balances; liquidity is shown in a separate wallet card and supplied collateral is not included there. Treasury stats aggregate all tracked treasury accounts and include wallet balances, expanded liquidity, and supplied collateral. Borrow is aggregated for those tracked accounts and deducted only in `totalValueUsd`.
 
@@ -106,6 +116,7 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 - The grouped tooltip shows each underlying asset with its origin chain badge, amount, and USD value.
 - On mobile/tablet, composition tiles open the same detail content in a drawer instead of relying on hover.
 - Supplied/liquidity/offchain details are summarized once in the grouped asset breakdown below the constituent list:
+  - `Asset balance`
   - `Supplied as collateral`
   - `Supplied as liquidity`
   - `Offchain`
@@ -125,12 +136,20 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
 ### All Treasury Assets Table
 
 - Shows asset-level rows, not symbol-grouped rows.
-- Desktop columns: `Asset`, `Net balance`, `Collateral`, `Debt offset`, `Liquidity`, `Offchain`.
-- `Debt offset` shows the asset's supplied collateral value that is backing borrow and is subtracted from net balance.
+- Desktop columns: `Asset`, `Total net value`, `Composition`, and a chevron affordance.
+- Rows expand on whole-row click and use the same active row state and unfold/fold pattern as wallet asset rows.
+- Expanded desktop details are grouped into:
+  - an untitled top row with `Total balance` or `Total net value`
+  - `Collateral / debt`
+  - `Breakdown` or `Other balances`
+- `Total balance` is used when the asset has no debt-offset row. `Total net value` is used when money-market debt has reduced the asset contribution.
+- `Collateral used by debt` replaces the old `Debt offset` wording. It shows the supplied-collateral value reserved against account borrows and is displayed as USD-only because the borrowed assets can come from the full collateral basket, not necessarily the same asset.
+- `Breakdown` is used when visible non-money-market buckets (`Asset balance`, `Supplied as liquidity`, `Offchain`) fully explain the asset total, or when one of those buckets is the whole balance.
+- `Other balances` is used when those buckets are extra balance sources beside collateral/debt, for example a row that has both net collateral and Omnipool liquidity.
+- `Asset balance` shows only normal Hydration wallet-held tokens.
 - `Offchain` shows only balances held outside Hydration, not normal Hydration wallet balances.
-- Tablet-sized layouts hide `Offchain` first.
-- Smartphone layouts show only `Asset` and `Net balance`; tapping a row opens the same asset detail drawer body used by composition tile details.
-- `Net balance` uses the same shared `Amount` component as the rest of the app.
+- Smartphone layouts show only `Asset` and `Total net value`; tapping a row opens the same asset detail drawer body used by composition tile details.
+- `Total net value` uses the same shared `Amount` component as the rest of the app.
 - Table token values compact at 1k+ and show at most 2 decimals. Table USD display values use compact currency formatting with at most 2 decimals, matching composition tiles.
 - Uses the shared pagination control with 20 assets per page.
 - Header search filters by asset symbol or name.

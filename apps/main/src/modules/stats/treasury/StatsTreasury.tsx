@@ -1,6 +1,8 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
+  CollapsibleContent,
+  CollapsibleRoot,
   Drawer,
   DrawerBody,
   Flex,
@@ -34,6 +36,7 @@ import {
 } from "@galacticcouncil/utils"
 import { Portal, Root, Trigger } from "@radix-ui/react-tooltip"
 import Big from "big.js"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import {
   cloneElement,
   Fragment,
@@ -62,6 +65,7 @@ import {
   SAssetDetailMobileSeparator,
   SAssetDetailModalBody,
 } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
+import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
@@ -101,7 +105,7 @@ import {
   SLoadedContent,
   SMuted,
   SPanelSearch,
-  STableHeadTooltipTrigger,
+  STableAssetDetails,
   STablesGrid,
   STooltipAsset,
   STooltipAssetIdentity,
@@ -161,6 +165,17 @@ type TooltipBreakdownRow = {
   label: string
   part: TreasuryAssetBreakdownPart
   negative?: boolean
+  withDebtInfo?: boolean
+  valueDisplay?: "asset" | "currency"
+}
+
+type TooltipBreakdownRowCandidate = Omit<TooltipBreakdownRow, "part"> & {
+  part?: TreasuryAssetBreakdownPart
+}
+
+type TooltipBreakdownSection = {
+  title?: string
+  rows: TooltipBreakdownRow[]
 }
 
 const DESKTOP_INITIAL_SKELETON_SPECS: CompositionGridBlockSpec[] = [
@@ -459,11 +474,9 @@ const getPartValueUsd = (part?: TreasuryAssetBreakdownPart) => {
 const hasBreakdownPartValue = (part?: TreasuryAssetBreakdownPart) =>
   !!part && (isPositiveNumberString(part.balance) || getPartValueUsd(part) > 0)
 
-const isTooltipBreakdownRow = (row: {
-  label: string
-  part?: TreasuryAssetBreakdownPart
-  negative?: boolean
-}): row is TooltipBreakdownRow => hasBreakdownPartValue(row.part)
+const isTooltipBreakdownRow = (
+  row: TooltipBreakdownRowCandidate,
+): row is TooltipBreakdownRow => hasBreakdownPartValue(row.part)
 
 const TreasuryBalanceAmount = ({
   item,
@@ -526,25 +539,71 @@ const getAssetLiquidityBreakdown = (
   return item.breakdown.wallet
 }
 
+const getAssetWalletBreakdown = (item: TreasuryAssetBalance) =>
+  item.breakdown.wallet
+
 const getAssetOffchainBreakdown = (item: TreasuryAssetBalance) =>
   item.breakdown.offchain
 
-const hasAssetOffchainBreakdown = (item: TreasuryAssetBalance) =>
-  hasBreakdownPartValue(getAssetOffchainBreakdown(item))
-
-const getAssetBreakdownRows = (
+const getAssetNetCollateralBreakdown = (
   item: TreasuryAssetBalance,
-  isLiquidityAsset?: boolean,
-): TooltipBreakdownRow[] =>
-  [
+): TreasuryAssetBreakdownPart | undefined => {
+  const supply = item.breakdown.moneyMarketSupply
+  const borrow = item.breakdown.moneyMarketBorrow
+
+  if (!supply || !borrow) return undefined
+
+  return {
+    balance: Big(supply.balance).minus(borrow.balance).toString(),
+    valueUsd:
+      supply.valueUsd && borrow.valueUsd
+        ? Big(supply.valueUsd).minus(borrow.valueUsd).toString()
+        : null,
+  }
+}
+
+const getAssetTotalBalancePart = (
+  item: TreasuryAssetBalance,
+): TreasuryAssetBreakdownPart => ({
+  balance: item.balance,
+  valueUsd: item.valueUsd,
+})
+
+const getAssetTotalBalanceLabel = (item: TreasuryAssetBalance) =>
+  item.breakdown.moneyMarketBorrow ? "Total net value" : "Total balance"
+
+const getAssetMoneyMarketBreakdownRows = (
+  item: TreasuryAssetBalance,
+): TooltipBreakdownRow[] => {
+  const rows: TooltipBreakdownRowCandidate[] = [
+    {
+      label: "Net collateral",
+      part: getAssetNetCollateralBreakdown(item),
+    },
     {
       label: "Supplied as collateral",
       part: item.breakdown.moneyMarketSupply,
     },
     {
-      label: "Debt offset",
+      label: "Collateral used by debt",
       part: item.breakdown.moneyMarketBorrow,
       negative: true,
+      withDebtInfo: true,
+      valueDisplay: "currency",
+    },
+  ]
+
+  return rows.filter(isTooltipBreakdownRow)
+}
+
+const getAssetBalanceBreakdownRows = (
+  item: TreasuryAssetBalance,
+  isLiquidityAsset?: boolean,
+): TooltipBreakdownRow[] => {
+  const rows: TooltipBreakdownRowCandidate[] = [
+    {
+      label: "Asset balance",
+      part: getAssetWalletBreakdown(item),
     },
     {
       label: "Supplied as liquidity",
@@ -554,19 +613,101 @@ const getAssetBreakdownRows = (
       label: "Offchain",
       part: getAssetOffchainBreakdown(item),
     },
-  ].filter(isTooltipBreakdownRow)
+  ]
 
-const getAssetTotalBalanceLabel = (item: TreasuryAssetBalance) =>
-  item.breakdown.moneyMarketBorrow ? "Net balance" : "Total balance"
+  return rows.filter(isTooltipBreakdownRow)
+}
+
+const isSameBreakdownBalance = (
+  first?: TreasuryAssetBreakdownPart,
+  second?: TreasuryAssetBreakdownPart,
+) => {
+  if (!first || !second) return false
+
+  try {
+    return Big(first.balance).eq(second.balance)
+  } catch {
+    return false
+  }
+}
+
+const doBreakdownRowsMatchTotal = (
+  rows: TooltipBreakdownRow[],
+  totalPart: TreasuryAssetBreakdownPart,
+) => {
+  try {
+    return rows
+      .reduce((sum, row) => sum.plus(row.part.balance), Big(0))
+      .eq(totalPart.balance)
+  } catch {
+    return false
+  }
+}
+
+const getAssetBalanceBreakdownTitle = (
+  item: TreasuryAssetBalance,
+  rows: TooltipBreakdownRow[],
+  hasMoneyMarketRows: boolean,
+) => {
+  const totalPart = getAssetTotalBalancePart(item)
+  const singleBreakdownPart = rows.length === 1 ? rows[0]?.part : undefined
+
+  return (!hasMoneyMarketRows && doBreakdownRowsMatchTotal(rows, totalPart)) ||
+    isSameBreakdownBalance(singleBreakdownPart, totalPart)
+    ? "Breakdown"
+    : "Other balances"
+}
+
+const getAssetBreakdownSections = (
+  item: TreasuryAssetBalance,
+  isLiquidityAsset?: boolean,
+): TooltipBreakdownSection[] => {
+  const moneyMarketRows = getAssetMoneyMarketBreakdownRows(item)
+  const balanceRows = getAssetBalanceBreakdownRows(item, isLiquidityAsset)
+
+  return [
+    {
+      rows: [
+        {
+          label: getAssetTotalBalanceLabel(item),
+          part: getAssetTotalBalancePart(item),
+          negative: item.source === "moneyMarketBorrow",
+        },
+      ],
+    },
+    {
+      title: "Collateral / debt",
+      rows: moneyMarketRows,
+    },
+    {
+      title: getAssetBalanceBreakdownTitle(
+        item,
+        balanceRows,
+        moneyMarketRows.length > 0,
+      ),
+      rows: balanceRows,
+    },
+  ].filter((section) => section.rows.length)
+}
+
+const getAssetBreakdownRows = (
+  item: TreasuryAssetBalance,
+  isLiquidityAsset?: boolean,
+): TooltipBreakdownRow[] => [
+  ...getAssetMoneyMarketBreakdownRows(item),
+  ...getAssetBalanceBreakdownRows(item, isLiquidityAsset),
+]
 
 const BreakdownValue = ({
   part,
   negative,
   symbol,
+  valueDisplay = "asset",
 }: {
   part?: TreasuryAssetBreakdownPart
   negative?: boolean
   symbol?: string
+  valueDisplay?: TooltipBreakdownRow["valueDisplay"]
 }) => {
   if (!part || !hasBreakdownPartValue(part)) {
     return (
@@ -578,39 +719,22 @@ const BreakdownValue = ({
 
   return (
     <STooltipValues $compact>
-      <Text fs="p7" fw={600} color="text.high">
-        {formatTooltipTokenAmountWithSymbol(part.balance, symbol, negative)}
-      </Text>
-      <Text fs="p7" color={getToken("text.medium")}>
+      {valueDisplay === "asset" ? (
+        <Text fs="p7" fw={600} color="text.high">
+          {formatTooltipTokenAmountWithSymbol(part.balance, symbol, negative)}
+        </Text>
+      ) : null}
+      <Text
+        fs="p7"
+        fw={valueDisplay === "currency" ? 600 : undefined}
+        color={
+          valueDisplay === "currency" ? "text.high" : getToken("text.medium")
+        }
+      >
         {negative ? "-" : ""}
         {formatTooltipCurrency(part.valueUsd)}
       </Text>
     </STooltipValues>
-  )
-}
-
-const BreakdownTableValue = ({
-  part,
-  negative,
-}: {
-  part?: TreasuryAssetBreakdownPart
-  negative?: boolean
-}) => {
-  if (!part || !hasBreakdownPartValue(part)) {
-    return (
-      <Text fs="p6" color="text.low">
-        -
-      </Text>
-    )
-  }
-
-  return (
-    <Flex direction="column" align="flex-end">
-      <Amount
-        value={formatTableTokenAmount(part.balance)}
-        displayValue={`${negative ? "-" : ""}${formatCompositionUsd(part.valueUsd)}`}
-      />
-    </Flex>
   )
 }
 
@@ -656,6 +780,119 @@ const MobileBreakdownRow = ({
     }
   />
 )
+
+const DebtOffsetTooltipContent = () => (
+  <Flex direction="column" gap="xs">
+    <Text fs="p6" fw={600} lh={1.2} color="text.high">
+      Collateral used by debt
+    </Text>
+    <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
+      Part of supplied collateral backing account borrows. Shown in USD because
+      debt uses the full collateral basket.
+    </Text>
+  </Flex>
+)
+
+const BreakdownLabel = ({
+  label,
+  withDebtInfo,
+  variant = "table",
+}: {
+  label: string
+  withDebtInfo?: boolean
+  variant?: "table" | "tooltip"
+}) => (
+  <Flex align="center" gap="xs">
+    <Text
+      fs={variant === "tooltip" ? "p7" : "p4"}
+      fw={variant === "tooltip" ? 500 : undefined}
+      lh="s"
+      color={variant === "tooltip" ? "text.high" : getToken("text.low")}
+    >
+      {label}
+    </Text>
+    {withDebtInfo && variant === "table" ? (
+      <Tooltip
+        text={<DebtOffsetTooltipContent />}
+        side="top"
+        align="start"
+        preventDefault
+      />
+    ) : null}
+  </Flex>
+)
+
+const TableDetailAmount = ({
+  label,
+  part,
+  negative,
+  symbol,
+  withDebtInfo,
+  valueDisplay = "asset",
+}: {
+  label: string
+  part: TreasuryAssetBreakdownPart
+  negative?: boolean
+  symbol?: string
+  withDebtInfo?: boolean
+  valueDisplay?: TooltipBreakdownRow["valueDisplay"]
+}) => (
+  <Flex align="center" justify="space-between" gap="base">
+    <BreakdownLabel label={label} withDebtInfo={withDebtInfo} />
+    <Flex direction="column" align="flex-end">
+      {valueDisplay === "currency" ? (
+        <Amount
+          value={`${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`}
+        />
+      ) : (
+        <Amount
+          value={formatTooltipTokenAmountWithSymbol(
+            part.balance,
+            symbol,
+            negative,
+          )}
+          displayValue={`${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`}
+        />
+      )}
+    </Flex>
+  </Flex>
+)
+
+const TableAssetDetailsRow = ({
+  isExpanded,
+  colSpan,
+  children,
+}: {
+  isExpanded: boolean
+  colSpan: number
+  children: ReactNode
+}) => {
+  const [isVisible, setIsVisible] = useState(isExpanded)
+
+  useEffect(() => {
+    if (isExpanded) {
+      setIsVisible(true)
+    }
+  }, [isExpanded])
+
+  return (
+    <SInteractiveTableRow sx={{ display: isVisible ? "table-row" : "none" }}>
+      <TableCell colSpan={colSpan} sx={{ p: "0!important", height: "auto" }}>
+        <CollapsibleRoot open={isExpanded}>
+          <CollapsibleContent
+            onAnimationEnd={() => {
+              if (!isExpanded) {
+                setIsVisible(false)
+              }
+            }}
+          >
+            {children}
+          </CollapsibleContent>
+        </CollapsibleRoot>
+      </TableCell>
+    </SInteractiveTableRow>
+  )
+}
 
 const TooltipLabel = ({ children }: { children: ReactNode }) => (
   <Text fs="p7" fw={500} color="text.high">
@@ -789,30 +1026,6 @@ const TreasuryHoldingsTooltipContent = ({
   </SCompositionTooltipShell>
 )
 
-const DebtOffsetTooltipContent = () => (
-  <Flex direction="column" gap="xs">
-    <Text fs="p6" fw={600} lh={1.2} color="text.high">
-      Debt offset
-    </Text>
-    <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
-      Some supplied collateral is backing borrowed assets. We subtract that part
-      from the asset net balance.
-    </Text>
-  </Flex>
-)
-
-const OffchainTooltipContent = () => (
-  <Flex direction="column" gap="xs">
-    <Text fs="p6" fw={600} lh={1.2} color="text.high">
-      Offchain
-    </Text>
-    <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
-      Treasury funds held outside Hydration, like DOT on Asset Hub. Normal
-      Hydration wallet balances, including H2O, stay in net balance.
-    </Text>
-  </Flex>
-)
-
 const AssetDetailsTooltipContent = ({
   item,
   relatedPositions = [],
@@ -824,7 +1037,7 @@ const AssetDetailsTooltipContent = ({
 }) => {
   const groupedAssets = item.groupedAssets ?? []
   const isGroupedAsset = groupedAssets.length > 1
-  const breakdownRows = getAssetBreakdownRows(item, isLiquidityAsset)
+  const breakdownSections = getAssetBreakdownSections(item, isLiquidityAsset)
   const tooltipPositions = relatedPositions.filter(
     (position) =>
       getCompositionGroupKey(position) === getCompositionGroupKey(item) &&
@@ -892,30 +1105,32 @@ const AssetDetailsTooltipContent = ({
             </STooltipSection>
           </>
         ) : null}
-        <STooltipTitle>Breakdown</STooltipTitle>
-        <STooltipSection>
-          <STooltipRow $compact>
-            <TooltipLabel>{getAssetTotalBalanceLabel(item)}</TooltipLabel>
-            <BreakdownValue
-              part={{
-                balance: item.balance,
-                valueUsd: item.valueUsd,
-              }}
-              negative={item.source === "moneyMarketBorrow"}
-              symbol={item.asset.symbol}
-            />
-          </STooltipRow>
-          {breakdownRows.map(({ label, part, negative }) => (
-            <STooltipRow key={label} $compact>
-              <TooltipLabel>{label}</TooltipLabel>
-              <BreakdownValue
-                part={part}
-                negative={negative}
-                symbol={item.asset.symbol}
-              />
-            </STooltipRow>
-          ))}
-        </STooltipSection>
+        {breakdownSections.map((section, sectionIndex) => (
+          <Fragment key={section.title ?? `summary-${sectionIndex}`}>
+            {section.title ? (
+              <STooltipTitle>{section.title}</STooltipTitle>
+            ) : null}
+            <STooltipSection>
+              {section.rows.map(
+                ({ label, part, negative, withDebtInfo, valueDisplay }) => (
+                  <STooltipRow key={label} $compact>
+                    <BreakdownLabel
+                      label={label}
+                      withDebtInfo={withDebtInfo}
+                      variant="tooltip"
+                    />
+                    <BreakdownValue
+                      part={part}
+                      negative={negative}
+                      symbol={item.asset.symbol}
+                      valueDisplay={valueDisplay}
+                    />
+                  </STooltipRow>
+                ),
+              )}
+            </STooltipSection>
+          </Fragment>
+        ))}
         {tooltipPositions.length ? (
           <>
             <STooltipTitle>Related positions</STooltipTitle>
@@ -1610,18 +1825,22 @@ const MobileCompositionAssetsDetails = ({
 
 const AssetRow = ({
   item,
-  showBreakdown,
-  showOffchain,
   isCompact,
   balanceAlign = "start",
 }: {
   item: GroupedTreasuryAssetBalance
-  showBreakdown?: boolean
-  showOffchain?: boolean
   isCompact?: boolean
   balanceAlign?: "start" | "end"
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const detailSections = getAssetBreakdownSections(item)
+  const canExpand = getAssetBreakdownRows(item).length > 0
+  const toggleExpanded = () => {
+    if (canExpand) {
+      setIsExpanded((open) => !open)
+    }
+  }
 
   if (isCompact) {
     return (
@@ -1677,42 +1896,91 @@ const AssetRow = ({
   }
 
   return (
-    <SInteractiveTableRow>
-      <TableCell>
-        <AssetLabelFull
-          asset={item.asset}
-          logoId={getTreasuryAssetLogoId(item.asset)}
-        />
-      </TableCell>
-      <TableCell
-        sx={balanceAlign === "end" ? { textAlign: "right" } : undefined}
+    <>
+      <SInteractiveTableRow
+        data-expanded={isExpanded}
+        isExpandable={canExpand}
+        role={canExpand ? "button" : undefined}
+        tabIndex={canExpand ? 0 : undefined}
+        aria-expanded={canExpand ? isExpanded : undefined}
+        onClick={toggleExpanded}
+        onKeyDown={(event) => {
+          if (!canExpand) return
+
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault()
+            toggleExpanded()
+          }
+        }}
       >
-        <TreasuryBalanceAmount item={item} align={balanceAlign} />
-      </TableCell>
-      {showBreakdown && (
-        <TableCell sx={{ textAlign: "right" }}>
-          <BreakdownTableValue part={item.breakdown.moneyMarketSupply} />
-        </TableCell>
-      )}
-      {showBreakdown && (
-        <TableCell sx={{ textAlign: "right" }}>
-          <BreakdownTableValue
-            part={item.breakdown.moneyMarketBorrow}
-            negative
+        <TableCell>
+          <AssetLabelFull
+            asset={item.asset}
+            logoId={getTreasuryAssetLogoId(item.asset)}
           />
         </TableCell>
-      )}
-      {showBreakdown && (
-        <TableCell sx={{ textAlign: "right" }}>
-          <BreakdownTableValue part={getAssetLiquidityBreakdown(item)} />
+        <TableCell
+          sx={balanceAlign === "end" ? { textAlign: "right" } : undefined}
+        >
+          <TreasuryBalanceAmount item={item} align={balanceAlign} />
         </TableCell>
-      )}
-      {showBreakdown && showOffchain && (
         <TableCell sx={{ textAlign: "right" }}>
-          <BreakdownTableValue part={getAssetOffchainBreakdown(item)} />
+          <Text fs="p6" fw={500} color="text.high">
+            {getAssetCompositionLabel(item)}
+          </Text>
         </TableCell>
-      )}
-    </SInteractiveTableRow>
+        <TableCell sx={{ pl: "0 !important", textAlign: "right", width: 40 }}>
+          {canExpand ? (
+            <Icon
+              size="m"
+              color={getToken("icons.onSurface")}
+              component={isExpanded ? ChevronUp : ChevronDown}
+            />
+          ) : null}
+        </TableCell>
+      </SInteractiveTableRow>
+      {canExpand ? (
+        <TableAssetDetailsRow colSpan={4} isExpanded={isExpanded}>
+          <STableAssetDetails>
+            {detailSections.map((section, sectionIndex) => (
+              <Fragment key={section.title ?? `summary-${sectionIndex}`}>
+                {sectionIndex > 0 ? <ExpandedRowSeparator /> : null}
+                <Flex direction="column" gap="base">
+                  {section.title ? (
+                    <Text
+                      fs="p7"
+                      fw={600}
+                      color={getToken("text.medium")}
+                      sx={{ textTransform: "uppercase" }}
+                    >
+                      {section.title}
+                    </Text>
+                  ) : null}
+                  {section.rows.map(
+                    (
+                      { label, part, negative, withDebtInfo, valueDisplay },
+                      index,
+                    ) => (
+                      <Fragment key={label}>
+                        {index > 0 ? <ExpandedRowSeparator /> : null}
+                        <TableDetailAmount
+                          label={label}
+                          part={part}
+                          negative={negative}
+                          symbol={item.asset.symbol}
+                          withDebtInfo={withDebtInfo}
+                          valueDisplay={valueDisplay}
+                        />
+                      </Fragment>
+                    ),
+                  )}
+                </Flex>
+              </Fragment>
+            ))}
+          </STableAssetDetails>
+        </TableAssetDetailsRow>
+      ) : null}
+    </>
   )
 }
 
@@ -1972,12 +2240,7 @@ export const StatsTreasury = () => {
         return valueB - valueA
       })
   }, [data?.assets, data?.borrowPositions])
-  const offchainAssetCount = useMemo(
-    () => allTreasuryAssets.filter(hasAssetOffchainBreakdown).length,
-    [allTreasuryAssets],
-  )
-  const showOffchainColumn = !isTablet && offchainAssetCount > 1
-  const assetTableColumnCount = isCompactTable ? 2 : showOffchainColumn ? 6 : 5
+  const assetTableColumnCount = isCompactTable ? 2 : 4
   const filteredTreasuryAssets = useMemo(() => {
     const search = assetSearch.trim().toLowerCase()
 
@@ -2179,41 +2442,15 @@ export const StatsTreasury = () => {
                 </TableHead>
                 {isCompactTable ? (
                   <TableHead sx={{ textAlign: "right", width: "38%" }}>
-                    Net balance
+                    Total net value
                   </TableHead>
                 ) : (
                   <>
-                    <TableHead>Net balance</TableHead>
+                    <TableHead>Total net value</TableHead>
                     <TableHead sx={{ textAlign: "right" }}>
-                      Collateral
+                      Composition
                     </TableHead>
-                    <TableHead sx={{ textAlign: "right" }}>
-                      <Tooltip
-                        text={<DebtOffsetTooltipContent />}
-                        side="top"
-                        align="end"
-                        asChild
-                      >
-                        <STableHeadTooltipTrigger tabIndex={0}>
-                          Debt offset
-                        </STableHeadTooltipTrigger>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead sx={{ textAlign: "right" }}>Liquidity</TableHead>
-                    {showOffchainColumn && (
-                      <TableHead sx={{ textAlign: "right" }}>
-                        <Tooltip
-                          text={<OffchainTooltipContent />}
-                          side="top"
-                          align="end"
-                          asChild
-                        >
-                          <STableHeadTooltipTrigger tabIndex={0}>
-                            Offchain
-                          </STableHeadTooltipTrigger>
-                        </Tooltip>
-                      </TableHead>
-                    )}
+                    <TableHead sx={{ width: 40 }} />
                   </>
                 )}
               </tr>
@@ -2226,8 +2463,6 @@ export const StatsTreasury = () => {
                   <AssetRow
                     key={`${item.source}-${item.asset.id}`}
                     item={item}
-                    showBreakdown={!isCompactTable}
-                    showOffchain={showOffchainColumn}
                     isCompact={isCompactTable}
                   />
                 ))

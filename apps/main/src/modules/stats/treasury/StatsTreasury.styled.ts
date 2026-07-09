@@ -996,9 +996,24 @@ export const SInteractiveTableRow = styled(TableRow)(
   ({ theme }) => css`
     animation: ${theme.animations.fadeIn} 160ms ease-out both;
 
+    &[data-expanded="true"],
+    &[data-expanded="true"] + tr {
+      background: ${theme.surfaces.containers.high.hover};
+      transition: ${theme.transitions.colors};
+    }
+
     &:last-of-type {
       border-bottom: 1px solid ${theme.details.separators};
     }
+  `,
+)
+
+export const STableAssetDetails = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.space.xl};
+    padding: var(--table-column-padding-x);
   `,
 )
 
@@ -1027,7 +1042,7 @@ export const SCursorAssetTooltipContent = styled.div(
     position: fixed;
     z-index: ${theme.zIndices.tooltip};
     width: max-content;
-    max-width: min(28rem, calc(100vw - ${theme.space.xl} * 2));
+    max-width: min(24rem, calc(100vw - ${theme.space.xl} * 2));
     font-size: ${theme.fontSizes.p5};
     line-height: ${theme.lineHeights.m};
     padding: ${theme.space.base};
@@ -1132,7 +1147,7 @@ export const STooltipRow = styled.div<{
 }>(
   ({ $compact, $noDivider, theme }) => css`
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(7rem, auto);
+    grid-template-columns: minmax(0, 1fr) minmax(6.5rem, auto);
     align-items: start;
     gap: ${$compact ? theme.space.s : theme.space.base};
     padding: ${$compact ? `${theme.space.xs} 0` : `${theme.space.s} 0`};
@@ -1180,7 +1195,7 @@ export const STooltipValues = styled.div<{ readonly $compact?: boolean }>(
     justify-content: flex-start;
     gap: ${theme.space.xs};
     text-align: right;
-    min-width: ${theme.sizes["4xl"]};
+    min-width: ${theme.sizes["3xl"]};
     white-space: nowrap;
     line-height: 1.1;
   `,
