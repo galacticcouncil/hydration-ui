@@ -31,6 +31,7 @@
     "@galacticcouncil/utils": "*",
     "@galacticcouncil/web3-connect": "*",
     "@hookform/resolvers": "^5.0.1",
+    "@solana/web3.js": "^1.98.0",
     "@tanstack/react-query": "^5.100.14",
     "@tanstack/react-router": "^1.170.10",
     "@tanstack/router-plugin": "^1.168.13",

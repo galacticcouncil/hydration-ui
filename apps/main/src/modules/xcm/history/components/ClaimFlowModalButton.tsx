@@ -58,6 +58,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
   const walletMode = chain ? getWalletModeByChain(chain) : WalletMode.EVM
 
   const { mutate, isPending, error, reset } = mutation
+  const signatureCount = type === "withdraw" ? mutation.signatureCount : null
 
   const transferAsset = getTransferAsset(journey)
 
@@ -123,7 +124,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
               }
             />
           ) : (
-            <ClaimPendingModalContent />
+            <ClaimPendingModalContent signatureCount={signatureCount} />
           )}
         </ModalBody>
       </Modal>

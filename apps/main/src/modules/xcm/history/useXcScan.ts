@@ -3,11 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
-import { mergeJourneys } from "@/modules/xcm/history/utils/journey"
 import {
-  isOptimisticJourneyForTxHash,
-  shouldIgnoreNewJourney,
-} from "@/modules/xcm/history/utils/optimistic"
+  journeysShareOriginTx,
+  mergeJourneys,
+} from "@/modules/xcm/history/utils/journey"
+import { shouldIgnoreNewJourney } from "@/modules/xcm/history/utils/optimistic"
 
 import { useBasejumpScan } from "./useBasejumpScan"
 import { xcStore } from "./xcScanStore"
@@ -91,23 +91,16 @@ export const useXcScanSubscription = (address: string) => {
             if (shouldIgnoreNewJourney(old, journey)) {
               return old
             }
-            const prev = old.filter((item) => {
-              const isOptimisticPrimary = isOptimisticJourneyForTxHash(
-                item,
-                journey.originTxPrimary ?? "",
-              )
-              const isOptimisticSecondary = isOptimisticJourneyForTxHash(
-                item,
-                journey.originTxSecondary ?? "",
-              )
-              const isSameCorrelationId =
-                item.correlationId === journey.correlationId
-              return (
-                !isOptimisticPrimary &&
-                !isOptimisticSecondary &&
-                !isSameCorrelationId
-              )
-            })
+
+            // the indexer may re-key a journey to a new correlation id
+            // mid-flight (e.g. when the wormhole leg starts on Moonbeam)
+            // - drop any entry sharing an origin transaction (including
+            // the optimistic one) to avoid duplicates
+            const prev = old.filter(
+              (item) =>
+                item.correlationId !== journey.correlationId &&
+                !journeysShareOriginTx(item, journey),
+            )
 
             return [journey, ...prev]
           })
@@ -115,9 +108,21 @@ export const useXcScanSubscription = (address: string) => {
         onUpdate(journey, prev) {
           queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
             if (!old) return old
-            return old.map((item) =>
-              item.correlationId === prev.correlationId ? journey : item,
-            )
+
+            const seen = new Set<string>()
+            return old
+              .map((item) =>
+                item.correlationId === prev.correlationId ||
+                item.correlationId === journey.correlationId ||
+                journeysShareOriginTx(item, journey)
+                  ? journey
+                  : item,
+              )
+              .filter((item) => {
+                if (seen.has(item.correlationId)) return false
+                seen.add(item.correlationId)
+                return true
+              })
           })
         },
         onError() {

@@ -89,6 +89,8 @@
   "claim.toast.error": "Failed to claim your {{ value, currency }} on {{ chainName }}",
   "claim.pending.title": "Waiting for signature",
   "claim.pending.description": "Please sign the transaction using your wallet.",
+  "claim.pending.title.multi": "Waiting for signatures",
+  "claim.pending.description.multi": "This claim consists of {{ count }} transactions. Please sign each of them using your wallet.",
   "showAll": "Show All",
   "showMore": "Show More",
   "showLess": "Show less",
