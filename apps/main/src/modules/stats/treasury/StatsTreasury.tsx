@@ -409,6 +409,18 @@ const formatTooltipTokenAmount = (value: string) => {
   }).format(numericValue)
 }
 
+const formatTooltipTokenAmountWithSymbol = (
+  value: string,
+  symbol?: string,
+  negative?: boolean,
+) => {
+  const amount = formatTooltipTokenAmount(value)
+
+  if (amount === "-") return amount
+
+  return `${negative ? "-" : ""}${amount}${symbol ? ` ${symbol}` : ""}`
+}
+
 const formatTooltipCurrency = (value: string | number | null | undefined) => {
   if (!value) return "-"
 
@@ -517,6 +529,9 @@ const getAssetLiquidityBreakdown = (
 const getAssetOffchainBreakdown = (item: TreasuryAssetBalance) =>
   item.breakdown.offchain
 
+const hasAssetOffchainBreakdown = (item: TreasuryAssetBalance) =>
+  hasBreakdownPartValue(getAssetOffchainBreakdown(item))
+
 const getAssetBreakdownRows = (
   item: TreasuryAssetBalance,
   isLiquidityAsset?: boolean,
@@ -547,9 +562,11 @@ const getAssetTotalBalanceLabel = (item: TreasuryAssetBalance) =>
 const BreakdownValue = ({
   part,
   negative,
+  symbol,
 }: {
   part?: TreasuryAssetBreakdownPart
   negative?: boolean
+  symbol?: string
 }) => {
   if (!part || !hasBreakdownPartValue(part)) {
     return (
@@ -562,7 +579,7 @@ const BreakdownValue = ({
   return (
     <STooltipValues $compact>
       <Text fs="p7" fw={600} color="text.high">
-        {formatTooltipTokenAmount(part.balance)}
+        {formatTooltipTokenAmountWithSymbol(part.balance, symbol, negative)}
       </Text>
       <Text fs="p7" color={getToken("text.medium")}>
         {negative ? "-" : ""}
@@ -618,14 +635,20 @@ const MobileBreakdownRow = ({
   label,
   part,
   negative,
+  symbol,
 }: {
   label: string
   part?: TreasuryAssetBreakdownPart
   negative?: boolean
+  symbol?: string
 }) => (
   <MobileAmountRow
     label={label}
-    value={part ? formatTooltipTokenAmount(part.balance) : "-"}
+    value={
+      part
+        ? formatTooltipTokenAmountWithSymbol(part.balance, symbol, negative)
+        : "-"
+    }
     displayValue={
       part
         ? `${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`
@@ -855,7 +878,10 @@ const AssetDetailsTooltipContent = ({
                   </STooltipAsset>
                   <STooltipValues $compact>
                     <Text fs="p7" fw={600} color="text.high">
-                      {formatTooltipTokenAmount(groupedAsset.balance)}
+                      {formatTooltipTokenAmountWithSymbol(
+                        groupedAsset.balance,
+                        groupedAsset.asset.symbol,
+                      )}
                     </Text>
                     <Text fs="p7" color={getToken("text.medium")}>
                       {formatTooltipCurrency(groupedAsset.valueUsd)}
@@ -876,12 +902,17 @@ const AssetDetailsTooltipContent = ({
                 valueUsd: item.valueUsd,
               }}
               negative={item.source === "moneyMarketBorrow"}
+              symbol={item.asset.symbol}
             />
           </STooltipRow>
           {breakdownRows.map(({ label, part, negative }) => (
             <STooltipRow key={label} $compact>
               <TooltipLabel>{label}</TooltipLabel>
-              <BreakdownValue part={part} negative={negative} />
+              <BreakdownValue
+                part={part}
+                negative={negative}
+                symbol={item.asset.symbol}
+              />
             </STooltipRow>
           ))}
         </STooltipSection>
@@ -893,7 +924,11 @@ const AssetDetailsTooltipContent = ({
                 <TooltipLabel>{getPositionGroupLabel(position)}</TooltipLabel>
                 <STooltipValues $compact>
                   <Text fs="p7" fw={600} color="text.high">
-                    {formatTooltipTokenAmount(position.balance)}
+                    {formatTooltipTokenAmountWithSymbol(
+                      position.balance,
+                      position.asset.symbol,
+                      position.source === "moneyMarketBorrow",
+                    )}
                   </Text>
                   <Text fs="p7" color={getToken("text.medium")}>
                     {position.source === "moneyMarketBorrow" ? "-" : ""}
@@ -1471,7 +1506,10 @@ const MobileAssetDetails = ({
               {index > 0 ? <SAssetDetailMobileSeparator /> : null}
               <MobileAmountRow
                 label={groupedAsset.asset.symbol}
-                value={formatTooltipTokenAmount(groupedAsset.balance)}
+                value={formatTooltipTokenAmountWithSymbol(
+                  groupedAsset.balance,
+                  groupedAsset.asset.symbol,
+                )}
                 displayValue={formatTooltipCurrency(groupedAsset.valueUsd)}
               />
             </Fragment>
@@ -1487,11 +1525,17 @@ const MobileAssetDetails = ({
             valueUsd: item.valueUsd,
           }}
           negative={item.source === "moneyMarketBorrow"}
+          symbol={item.asset.symbol}
         />
         {breakdownRows.map(({ label, part, negative }) => (
           <Fragment key={label}>
             <SAssetDetailMobileSeparator />
-            <MobileBreakdownRow label={label} part={part} negative={negative} />
+            <MobileBreakdownRow
+              label={label}
+              part={part}
+              negative={negative}
+              symbol={item.asset.symbol}
+            />
           </Fragment>
         ))}
         <SAssetDetailMobileSeparator />
@@ -1513,7 +1557,11 @@ const MobileAssetDetails = ({
                 {index > 0 ? <SAssetDetailMobileSeparator /> : null}
                 <MobileAmountRow
                   label={getPositionGroupLabel(position)}
-                  value={formatTooltipTokenAmount(position.balance)}
+                  value={formatTooltipTokenAmountWithSymbol(
+                    position.balance,
+                    position.asset.symbol,
+                    position.source === "moneyMarketBorrow",
+                  )}
                   displayValue={`${position.source === "moneyMarketBorrow" ? "-" : ""}${formatTooltipCurrency(position.valueUsd)}`}
                 />
               </Fragment>
@@ -1707,8 +1755,6 @@ export const StatsTreasury = () => {
   const searchInputId = useId()
   const useCompositionMobileLayout = isMobile || isTablet
   const isCompactTable = isMobile
-  const showOffchainColumn = !isTablet
-  const assetTableColumnCount = isCompactTable ? 2 : showOffchainColumn ? 6 : 5
   const [assetPage, setAssetPage] = useState(1)
   const [assetSearch, setAssetSearch] = useState("")
   const storedCompositionGridSpecs = useMemo(
@@ -1926,6 +1972,12 @@ export const StatsTreasury = () => {
         return valueB - valueA
       })
   }, [data?.assets, data?.borrowPositions])
+  const offchainAssetCount = useMemo(
+    () => allTreasuryAssets.filter(hasAssetOffchainBreakdown).length,
+    [allTreasuryAssets],
+  )
+  const showOffchainColumn = !isTablet && offchainAssetCount > 1
+  const assetTableColumnCount = isCompactTable ? 2 : showOffchainColumn ? 6 : 5
   const filteredTreasuryAssets = useMemo(() => {
     const search = assetSearch.trim().toLowerCase()
 
