@@ -23,6 +23,7 @@ import { useClaimTxOptions } from "./useClaimTxOptions"
 
 export function useWithdrawClaim(journey: XcJourney) {
   const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
+  const [signatureCount, setSignatureCount] = useState<number | null>(null)
   const { addPendingCorrelationId, removePendingCorrelationId } =
     usePendingClaimsStore()
 
@@ -52,6 +53,8 @@ export function useWithdrawClaim(journey: XcJourney) {
       if (!result) {
         throw new Error("Failed to build claim call")
       }
+
+      setSignatureCount(Array.isArray(result.call) ? result.call.length : 1)
 
       const commonCallbacks = {
         onSubmitted: () => {
@@ -112,5 +115,5 @@ export function useWithdrawClaim(journey: XcJourney) {
 
   const isPending = mutation.isPending || isWaitingForSignature
 
-  return { ...mutation, isPending }
+  return { ...mutation, isPending, signatureCount }
 }

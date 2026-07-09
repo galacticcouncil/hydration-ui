@@ -6,6 +6,8 @@ import {
   safeConvertSS58toPublicKey,
   shorten,
   shortenAccountAddress,
+  SolanaAddr,
+  solexplorer,
   stringEquals,
   subscan,
 } from "@galacticcouncil/utils"
@@ -70,13 +72,14 @@ export const AccountAddressBookIdentity: React.FC<
     ? shorten(addressBookName, MAX_DISPLAY_NAME_LENGTH)
     : shortenAccountAddress(address)
 
+  const explorerUrl = SolanaAddr.isValid(address)
+    ? solexplorer.account(address)
+    : subscan.account(HYDRATION_CHAIN_KEY, address)
+
   return (
     <Text {...props}>
       {withSubscanLink ? (
-        <ExternalLink
-          href={subscan.account(HYDRATION_CHAIN_KEY, address)}
-          underlined={false}
-        >
+        <ExternalLink href={explorerUrl} underlined={false}>
           {displayName}
         </ExternalLink>
       ) : (

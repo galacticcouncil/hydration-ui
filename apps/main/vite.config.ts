@@ -7,7 +7,7 @@ import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
 import remarkGfm from "remark-gfm"
-import { defineConfig, loadEnv } from "vite"
+import { defineConfig, loadEnv, ProxyOptions } from "vite"
 import { createHtmlPlugin } from "vite-plugin-html"
 import svgr from "vite-plugin-svgr"
 import wasm from "vite-plugin-wasm"
@@ -26,6 +26,30 @@ const loaderHtml = fs.readFileSync(
 
 const headCriticalCss = fs.readFileSync("./src/styles/critical.css", "utf-8")
 
+// The Solana RPC endpoint authorizes by Origin whitelist, which blocks
+// direct requests from localhost. The dev/preview server forwards them
+// with a whitelisted Origin instead (see src/utils/solanaRpcProxy.ts).
+const SOLANA_RPC_WHITELISTED_ORIGIN = "https://app.hydration.net"
+
+const solanaRpcProxy: Record<string, ProxyOptions> = {
+  "/solana-rpc": {
+    target: "https://wispy-palpable-market.solana-mainnet.quiknode.pro",
+    changeOrigin: true,
+    ws: true,
+    rewrite: (path) => path.replace(/^\/solana-rpc/, ""),
+    configure: (proxy) => {
+      const setOrigin = (proxyReq: {
+        setHeader: (name: string, value: string) => void
+      }) => {
+        proxyReq.setHeader("origin", SOLANA_RPC_WHITELISTED_ORIGIN)
+        proxyReq.setHeader("referer", `${SOLANA_RPC_WHITELISTED_ORIGIN}/`)
+      }
+      proxy.on("proxyReq", setOrigin)
+      proxy.on("proxyReqWs", setOrigin)
+    },
+  },
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const rpcUrls = PROVIDERS.filter((provider) =>
@@ -39,6 +63,12 @@ export default defineConfig(({ mode }) => {
   return {
     resolve: {
       tsconfigPaths: true,
+    },
+    server: {
+      proxy: solanaRpcProxy,
+    },
+    preview: {
+      proxy: solanaRpcProxy,
     },
     build: {
       target: "es2022",

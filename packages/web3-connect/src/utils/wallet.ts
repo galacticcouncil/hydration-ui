@@ -116,7 +116,8 @@ export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
   if (
     account.provider === WalletProviderType.Talisman ||
     account.provider === WalletProviderType.TalismanEvm ||
-    account.provider === WalletProviderType.TalismanH160
+    account.provider === WalletProviderType.TalismanH160 ||
+    account.provider === WalletProviderType.TalismanSol
   ) {
     return "talisman"
   }

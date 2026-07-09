@@ -3,7 +3,7 @@ import { toHex } from "@polkadot-api/utils"
 import { AccountId } from "polkadot-api"
 
 const SOLANA_EXPLORER_URL = "https://explorer.solana.com"
-type SolanaExplorerLinkPath = "tx"
+type SolanaExplorerLinkPath = "tx" | "address"
 
 export const solexplorer = {
   link: (path: SolanaExplorerLinkPath, data: string | number): string => {
@@ -11,6 +11,9 @@ export const solexplorer = {
   },
   tx: (txHash: string) => {
     return solexplorer.link("tx", txHash)
+  },
+  account: (address: string) => {
+    return solexplorer.link("address", address)
   },
 }
 

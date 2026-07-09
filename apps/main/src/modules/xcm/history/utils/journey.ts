@@ -98,6 +98,22 @@ export function getFormattedAddresses(journey: XcJourney) {
 
 export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
 
+const getJourneyOriginTxHashes = (journey: XcJourney): string[] => {
+  return [journey.originTxPrimary, journey.originTxSecondary].filter(
+    (hash): hash is string => !!hash,
+  )
+}
+
+/**
+ * Journeys submitted by the same origin transaction are the same logical
+ * journey - the indexer re-keys a journey to a new correlation id
+ * mid-flight (e.g. when the wormhole leg starts on Moonbeam).
+ */
+export function journeysShareOriginTx(a: XcJourney, b: XcJourney): boolean {
+  const hashes = getJourneyOriginTxHashes(a)
+  return getJourneyOriginTxHashes(b).some((hash) => hashes.includes(hash))
+}
+
 export function mergeJourneys(
   existing: XcJourney[],
   incoming: XcJourney[],

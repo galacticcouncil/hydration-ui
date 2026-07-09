@@ -1,13 +1,6 @@
-import { ExternalLinkIcon } from "@galacticcouncil/ui/assets/icons"
-import {
-  ExternalLink,
-  Flex,
-  Icon,
-  Stack,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Flex, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { basejumpscan, stringEquals, xcscan } from "@galacticcouncil/utils"
+import { stringEquals } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
@@ -15,15 +8,14 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountIdentity } from "@/components/AccountIdentity"
-import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
+import { JourneyActions } from "@/modules/xcm/history/components/JourneyActions"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
+import { JourneyDisplayStatus } from "@/modules/xcm/history/components/JourneyDisplayStatus"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
-import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
-import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
+import { JourneyToAccount } from "@/modules/xcm/history/components/JourneyToAccount"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
-import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
 import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { toDecimal } from "@/utils/formatting"
 
@@ -43,7 +35,6 @@ export enum XcScanHistoryTableColumnId {
 
 export const useXcScanHistoryColumns = () => {
   const { t } = useTranslation(["common"])
-  const { pendingCorrelationIds } = usePendingClaimsStore()
 
   return useMemo(() => {
     const fromColumn = columnHelper.accessor("from", {
@@ -67,19 +58,7 @@ export const useXcScanHistoryColumns = () => {
     const toColumn = columnHelper.accessor("to", {
       id: XcScanHistoryTableColumnId.To,
       header: t("to"),
-      cell: ({ row }) => {
-        const { to } = getFormattedAddresses(row.original)
-        return (
-          <Flex gap="base" align="center">
-            <JourneyChainLogo networkUrn={row.original.destination} />
-            <AccountIdentity
-              fw={500}
-              color={getToken("text.high")}
-              address={to}
-            />
-          </Flex>
-        )
-      },
+      cell: ({ row }) => <JourneyToAccount journey={row.original} />,
     })
 
     const assetsColumn = columnHelper.accessor("assets", {
@@ -134,10 +113,7 @@ export const useXcScanHistoryColumns = () => {
     const statusColumn = columnHelper.accessor("status", {
       id: XcScanHistoryTableColumnId.Status,
       header: t("status"),
-      cell: ({ row }) => {
-        const status = row.original.status
-        return <JourneyStatus status={status} />
-      },
+      cell: ({ row }) => <JourneyDisplayStatus journey={row.original} />,
     })
 
     const protocolColumn = columnHelper.accessor("originProtocol", {
@@ -202,30 +178,7 @@ export const useXcScanHistoryColumns = () => {
 
     const actionColumn = columnHelper.display({
       id: XcScanHistoryTableColumnId.Action,
-      cell: ({ row }) => {
-        const { correlationId, originProtocol } = row.original
-        const link =
-          originProtocol === "basejump"
-            ? basejumpscan.tx(correlationId)
-            : xcscan.tx(correlationId)
-
-        const isNotPending = !pendingCorrelationIds.includes(correlationId)
-        const isClaimable = isNotPending && isJourneyClaimable(row.original)
-
-        return (
-          <Flex
-            gap="base"
-            align="center"
-            justify="end"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {isClaimable && <ClaimButton journey={row.original} />}
-            <ExternalLink href={link}>
-              <Icon size="m" component={ExternalLinkIcon} />
-            </ExternalLink>
-          </Flex>
-        )
-      },
+      cell: ({ row }) => <JourneyActions journey={row.original} />,
     })
 
     return [
@@ -238,5 +191,5 @@ export const useXcScanHistoryColumns = () => {
       durationColumn,
       actionColumn,
     ]
-  }, [t, pendingCorrelationIds])
+  }, [t])
 }

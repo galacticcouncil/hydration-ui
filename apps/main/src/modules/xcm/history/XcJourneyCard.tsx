@@ -25,15 +25,14 @@ import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
+import { JourneyDisplayStatus } from "@/modules/xcm/history/components/JourneyDisplayStatus"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
-import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
-import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
+import { useJourneyAddresses } from "@/modules/xcm/history/hooks/useJourneyAddresses"
+import { useJourneyClaimable } from "@/modules/xcm/history/hooks/useJourneyClaimable"
 import {
   getTransferAsset,
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
-import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
-import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
@@ -43,25 +42,22 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
     destination,
     sentAt,
     correlationId,
-    status,
     totalUsd,
     originProtocol,
   } = journey
   const { t } = useTranslation(["common", "xcm"])
-  const { pendingCorrelationIds } = usePendingClaimsStore()
 
   const originNetwork = resolveNetwork(origin)
   const destinationNetwork = resolveNetwork(destination)
   const transferAsset = getTransferAsset(journey)
-  const { from, to } = getFormattedAddresses(journey)
+  const { from, to } = useJourneyAddresses(journey)
 
   const link =
     originProtocol === "basejump"
       ? basejumpscan.tx(correlationId)
       : xcscan.tx(correlationId)
 
-  const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
-  const isClaimable = isNotPending && isJourneyClaimable(journey)
+  const isClaimable = useJourneyClaimable(journey)
 
   const usdValue = Big(totalUsd || transferAsset?.usd || 0)
 
@@ -97,7 +93,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         />
 
         <Flex align="center" justify="space-between">
-          <JourneyStatus status={status} fs="p5" />
+          <JourneyDisplayStatus journey={journey} fs="p5" />
         </Flex>
 
         {sentAt && (
