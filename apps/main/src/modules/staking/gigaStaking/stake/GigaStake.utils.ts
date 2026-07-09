@@ -82,10 +82,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     enabled: !!address && isAccountFeePaymentAssetIdSuccess,
     queryKey: ["feeCost", "gigaStake", address],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const stakeTx = unsafeApi.tx.GigaHdx.giga_stake({
+      const stakeTx = rpc.papi.tx.GigaHdx.giga_stake({
         amount: toBigInt(1, native.decimals),
       })
 
@@ -101,7 +98,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
       if (accountFeePaymentAssetId === Number(native.id)) {
         const fees = (await tx.getEstimatedFees(address)) || 0
         const feeEstimateNativeBase = scaleHuman(
-          Big(fees).plus(native.existentialDeposit).toString(),
+          Big(fees.toString()).plus(native.existentialDeposit).toString(),
           native.decimals,
         )
 
@@ -179,10 +176,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
 
   const mutation = useMutation({
     mutationFn: async (amount: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const stakeTx = unsafeApi.tx.GigaHdx.giga_stake({
+      const stakeTx = rpc.papi.tx.GigaHdx.giga_stake({
         amount: toBigInt(amount, native.decimals),
       })
 
