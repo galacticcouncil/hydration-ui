@@ -1131,7 +1131,7 @@ export const useStrategyPositions = () => {
         !!incentivesContract,
       queryFn: async () => {
         const accountProxies = await queryClient.ensureQueryData(
-          getAccountProxies(rpc, accountAddress),
+          getAccountProxies(rpc, queryClient, accountAddress),
         )
 
         const bestNumber = await queryClient.ensureQueryData(
