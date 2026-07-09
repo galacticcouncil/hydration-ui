@@ -1,5 +1,4 @@
 import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
-import { SnowbridgeSdk } from "@galacticcouncil/indexer/snowbridge"
 import { CallType } from "@galacticcouncil/xc-core"
 import { QueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
@@ -9,14 +8,14 @@ import {
   processors,
   ToastProcessorFn,
 } from "@/modules/transactions/utils/toasts/processors"
+import { xcScanHttpClient } from "@/modules/xcm/history/xcScanStore"
 import { ToastData, ToastMeta } from "@/states/toasts"
 import { TransactionType, XcmTag } from "@/states/transactions"
 
 enum ToastProcessorType {
   Evm = "Evm",
   Substrate = "Substrate",
-  Wormhole = "Wormhole",
-  Snowbridge = "Snowbridge",
+  XcScan = "XcScan",
   Basejump = "Basejump",
   Unknown = "Unknown",
 }
@@ -24,8 +23,7 @@ enum ToastProcessorType {
 const MAX_TOAST_MINUTE_AGE = {
   [ToastProcessorType.Evm]: 60,
   [ToastProcessorType.Substrate]: 60,
-  [ToastProcessorType.Wormhole]: 70,
-  [ToastProcessorType.Snowbridge]: 70,
+  [ToastProcessorType.XcScan]: 60,
   [ToastProcessorType.Basejump]: 60,
   [ToastProcessorType.Unknown]: 0,
 } as const
@@ -64,14 +62,11 @@ const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
     case type === TransactionType.Onchain && ecosystem === CallType.Substrate:
       return ToastProcessorType.Substrate
 
-    case type === TransactionType.Xcm && tags.includes(XcmTag.Wormhole):
-      return ToastProcessorType.Wormhole
-
-    case type === TransactionType.Xcm && tags.includes(XcmTag.Snowbridge):
-      return ToastProcessorType.Snowbridge
-
     case type === TransactionType.Xcm && tags.includes(XcmTag.Basejump):
       return ToastProcessorType.Basejump
+
+    case type === TransactionType.Xcm:
+      return ToastProcessorType.XcScan
 
     default:
       return ToastProcessorType.Unknown
@@ -82,13 +77,11 @@ export const createToastProcessorFn = (
   address: string,
   queryClient: QueryClient,
   indexerSdk: IndexerSdk,
-  snowbridgeSdk: SnowbridgeSdk,
   evm: PublicClient,
 ): ToastProcessorFn => {
   const substrateProcessor = processors.substrate(queryClient, indexerSdk)
   const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
-  const wormholeProcessor = processors.wormhole(queryClient, indexerSdk, evm)
-  const snowbridgeProcessor = processors.snowbridge(queryClient, snowbridgeSdk)
+  const xcscanProcessor = processors.xcscan(xcScanHttpClient)
   const basejumpProcessor = processors.basejump(address, queryClient)
   const invalidProcessor = processors.invalid()
 
@@ -105,10 +98,8 @@ export const createToastProcessorFn = (
         return substrateProcessor(toast)
       case ToastProcessorType.Evm:
         return evmProcessor(toast)
-      case ToastProcessorType.Wormhole:
-        return wormholeProcessor(toast)
-      case ToastProcessorType.Snowbridge:
-        return snowbridgeProcessor(toast)
+      case ToastProcessorType.XcScan:
+        return xcscanProcessor(toast)
       case ToastProcessorType.Basejump:
         return basejumpProcessor(toast)
       case ToastProcessorType.Unknown:

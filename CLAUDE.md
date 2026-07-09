@@ -94,7 +94,7 @@ packages/
   utils/                 # Cross-package TS utilities (helpers, hooks, constants, lib)
   web3-connect/          # Wallet connectors: Substrate, EVM (Reown AppKit), Solana, Sui
   money-market/          # Aave SDK integration (borrow/lending UI logic)
-  indexer/               # GraphQL clients + codegen for indexer / squid / snowbridge / multix
+  indexer/               # GraphQL clients + codegen for indexer / squid / multix
   eslint-config/         # Shared ESLint + inline Prettier rules
   typescript-config/     # Shared tsconfig (base.json, vite.json)
 ```
@@ -120,7 +120,7 @@ Turborepo (`turbo.json`) handles ordering via `dependsOn: ["^build"]`. Within a 
 - **Path alias `@/*` → `apps/main/src/*`.** Enforced by `tsconfig.json` `paths` and `vite-tsconfig-paths`. Combined with the `no-restricted-imports` rule, this is the only way to do non-package-relative imports inside the app.
 - **TanStack Router file-based routes.** Routes live in `apps/main/src/routes/`. The plugin generates `routeTree.gen.ts` (gitignored via `*.gen.*`) at dev/build time; never edit it by hand.
 - **Design tokens are generated.** `packages/ui/style-dictionary/build.mjs` consumes `tokens/` and emits theme files. Re-run `yarn workspace @galacticcouncil/ui theme` after editing tokens.
-- **GraphQL clients are generated.** `packages/indexer` exposes `codegen:indexer`, `codegen:squid`, `codegen:snowbridge`, `codegen:multix` scripts (graphql-codegen). Edit `*.graphql` queries, then re-run codegen.
+- **GraphQL clients are generated.** `packages/indexer` exposes `codegen:indexer`, `codegen:squid`, `codegen:multix` scripts (graphql-codegen). Edit `*.graphql` queries, then re-run codegen.
 - **WASM in the browser.** `vite-plugin-wasm` is enabled in both `apps/main` and `packages/ui` to load the SDK math binaries (from `@galacticcouncil/sdk-next`).
 - **Yarn resolutions are load-bearing.** Root `package.json` pins `polkadot-api: ^2.1.0` and `strip-ansi: 6.0.1` across the tree; `apps/main` pins ESLint/Prettier. Don't relax these without checking what they were added to fix.
 
@@ -203,7 +203,7 @@ Deployments to Netlify are configured outside this repo (Netlify project setting
 - Reusable visuals come from `@galacticcouncil/ui` (`packages/ui/src/components/`); reusable behavior from `@galacticcouncil/utils`.
 - Wallet flows: `@galacticcouncil/web3-connect` → consumed by `apps/main/src/modules/wallet/` and `submit-transaction/`.
 - Lending flows: `@galacticcouncil/money-market` → consumed by `apps/main/src/modules/borrow/` (and `api/borrow/`, `api/aave.ts`).
-- GraphQL data: `@galacticcouncil/indexer` exports per-backend clients (`/indexer`, `/squid`, `/snowbridge`, `/multix`); the app consumes them via `apps/main/src/api/`.
+- GraphQL data: `@galacticcouncil/indexer` exports per-backend clients (`/indexer`, `/squid`, `/multix`); the app consumes them via `apps/main/src/api/`.
 - Cross-chain: external `@galacticcouncil/xc*` SDK + the app's `apps/main/src/modules/xcm/`.
 
 ### Validating changes

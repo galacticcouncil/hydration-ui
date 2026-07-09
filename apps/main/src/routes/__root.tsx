@@ -1,18 +1,13 @@
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { lazy } from "react"
+import { lazy, Suspense } from "react"
 
-import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
-import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
-import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
+import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
@@ -21,6 +16,7 @@ import {
   useXcScanSubscription,
 } from "@/modules/xcm/history"
 import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
+import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
@@ -42,6 +38,12 @@ const Web3ConnectModal = lazy(async () => ({
     (m) => m.Web3ConnectModal,
   ),
 }))
+
+const Devtools = import.meta.env.DEV
+  ? lazy(async () => ({
+      default: await import("@/components/Devtools").then((m) => m.Devtools),
+    }))
+  : lazy(async () => ({ default: () => null }))
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
@@ -72,29 +74,28 @@ function RootComponent() {
       <AssetsProvider>
         <RpcProvider>
           <MultisigProvider>
-            <MainLayout />
-            <Services />
-            <DataProviderSelect />
-            {!hasTopNavbar && <MobileTabBar />}
+            <AssetRegistryGate>
+              <MainLayout />
+              <Services />
+              <Footer />
+              {!hasTopNavbar && <MobileTabBar />}
+            </AssetRegistryGate>
           </MultisigProvider>
         </RpcProvider>
       </AssetsProvider>
-      {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
-      {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
+      {hasTopNavbar && (
+        <Suspense>
+          <Devtools />
+        </Suspense>
+      )}
     </>
   )
 }
 
 function ApiSubscriptions() {
-  const rpcProvider = useRpcProvider()
-  const queryClient = useQueryClient()
-
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
-  useAccountUniques()
   usePriceSubscriber()
-  useSuspenseQuery(assetsQuery(rpcProvider, queryClient))
-  useAccountPermitNonce()
 
   return null
 }

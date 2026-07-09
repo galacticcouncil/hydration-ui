@@ -336,7 +336,7 @@ export const UserOpenOrdersCountDocument = `
 }
     `;
 export const DcaScheduleExecutionsDocument = `
-    query DcaScheduleExecutions($scheduleId: String!) {
+    query DcaScheduleExecutions($scheduleId: String!, $first: Int) {
   dcaSchedule(id: $scheduleId) {
     id
     assetIn {
@@ -346,8 +346,11 @@ export const DcaScheduleExecutionsDocument = `
       assetRegistryId
     }
     dcaScheduleExecutionsByScheduleId(
+      first: $first
+      orderBy: ID_DESC
       filter: {status: {in: ["Executed", "Failed"]}}
     ) {
+      totalCount
       nodes {
         id
         status

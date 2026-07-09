@@ -22,6 +22,7 @@ export type AssetInputProps = {
   displayValue?: string
   displayValueLoading?: boolean
   maxBalance?: string
+  maxBalanceLoading?: boolean
   maxButtonBalance?: string
   ignoreBalance?: boolean
   ignoreDisplayValue?: boolean
@@ -36,6 +37,7 @@ export type AssetInputProps = {
   selectedAssetIcon?: ReactNode
   onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
+  onMaxButtonClick?: (value: string) => void
   className?: string
 }
 
@@ -48,7 +50,9 @@ export const AssetInput = ({
   label,
   balanceLabel,
   maxBalance,
+  maxBalanceLoading,
   maxButtonBalance,
+  onMaxButtonClick,
   ignoreBalance,
   ignoreDisplayValue,
   hideMaxBalanceAction,
@@ -65,8 +69,11 @@ export const AssetInput = ({
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
 
-  const onMaxButtonClick = () => {
-    if (usedMaxBalance) onChange?.(usedMaxBalance)
+  const handleMaxButtonClick = () => {
+    if (usedMaxBalance) {
+      onChange?.(usedMaxBalance)
+      onMaxButtonClick?.(usedMaxBalance)
+    }
   }
 
   const errorMessage = assetError ?? amountError
@@ -108,7 +115,7 @@ export const AssetInput = ({
               }}
             >
               <span>{balanceLabel ?? "Balance"}: </span>
-              {loading ? (
+              {loading || maxBalanceLoading ? (
                 <span sx={{ height: 12, lineHeight: 1 }}>
                   <Skeleton width={48} height={12} />
                 </span>
@@ -119,10 +126,11 @@ export const AssetInput = ({
             {!hideMaxBalanceAction && (
               <MicroButton
                 aria-label="Max balance button"
-                onClick={onMaxButtonClick}
+                onClick={handleMaxButtonClick}
                 disabled={
                   Big(usedMaxBalance || "0").lte(0) ||
                   loading ||
+                  maxBalanceLoading ||
                   !onChange ||
                   !!disabled
                 }

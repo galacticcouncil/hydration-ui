@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next"
 
 import { HDXIssuanceQuery } from "@/api/balances"
 import { referendaTracksQuery } from "@/api/constants"
-import { openGovReferendaQuery, TAccountVote } from "@/api/democracy"
+import { ongoingReferendaQuery, TAccountVote } from "@/api/democracy"
 import { OngoingReferendaEmptyState } from "@/modules/staking/OngoingReferendaEmptyState"
 import { Referenda } from "@/modules/staking/Referenda"
 import { SReferendaList } from "@/modules/staking/Referenda.styled"
@@ -28,9 +28,14 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type Props = {
   readonly votes: ReadonlyArray<TAccountVote>
   readonly isVotesLoading: boolean
+  readonly isGigaStaking?: boolean
 }
 
-export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
+export const OngoingReferenda: FC<Props> = ({
+  votes,
+  isVotesLoading,
+  isGigaStaking,
+}) => {
   const { t } = useTranslation(["common", "staking"])
   const { isMobile } = useBreakpoints()
 
@@ -39,7 +44,7 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
   const [isCollapsed, setIsCollapsed] = useState(isMobile)
 
   const { data: referenda = [], isPending: referendaLoading } = useQuery(
-    openGovReferendaQuery(rpc),
+    ongoingReferendaQuery(rpc),
   )
 
   const { data: tracksData, isLoading: tracksLoading } = useQuery(
@@ -55,62 +60,65 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
   const isLoading =
     referendaLoading || tracksLoading || isVotesLoading || totalIssuanceLoading
 
-  // TODO use open gov referenda here
-
   return (
     <CollapsibleRoot open={!isCollapsed}>
       <Flex direction="column" gap="m">
         <Box>
           <Flex
-            align={isMobile ? "center" : "flex-end"}
+            align={["center", "center"]}
             pt={[null, null, "xl"]}
             justify="space-between"
+            asChild
           >
-            <SectionHeader
-              title={t("staking:referenda.title", {
-                count: referenda.length,
-              })}
-              hasDescription
-              noTopPadding
-            />
-            {!isLoading && referenda.length > 0 && (
-              <MicroButton
-                asChild
-                sx={{ display: "flex", alignItems: "center", gap: "s" }}
-              >
-                <CollapsibleTrigger
-                  sx={{ cursor: "pointer" }}
-                  onClick={() => {
-                    setIsCollapsed((prev) => !prev)
+            <CollapsibleTrigger
+              asChild
+              sx={{ cursor: "pointer", width: "100%" }}
+              onClick={() => {
+                setIsCollapsed((prev) => !prev)
 
-                    if (!isMobile) {
-                      setTimeout(() => {
-                        gridRef.current?.scrollIntoView({ behavior: "smooth" })
-                      }, 0)
-                    }
-                  }}
-                >
-                  <Text
-                    fw={500}
-                    fs="p6"
-                    lh={1.4}
-                    color={getToken("text.medium")}
-                    transform="uppercase"
+                if (!isMobile) {
+                  setTimeout(() => {
+                    gridRef.current?.scrollIntoView({ behavior: "smooth" })
+                  }, 0)
+                }
+              }}
+            >
+              <Box>
+                <SectionHeader
+                  title={t("staking:referenda.title", {
+                    count: referenda.length,
+                  })}
+                  hasDescription
+                  noTopPadding
+                />
+                {!isLoading && referenda.length > 0 && (
+                  <MicroButton
+                    sx={{ display: "flex", alignItems: "center", gap: "s" }}
                   >
-                    {isCollapsed ? t("show") : t("hide")}
-                  </Text>
-                  <Icon
-                    size="xs"
-                    component={isCollapsed ? ChevronDown : ChevronUp}
-                    color={getToken("icons.onContainer")}
-                  />
-                </CollapsibleTrigger>
-              </MicroButton>
-            )}
+                    <Text
+                      fw={500}
+                      fs="p6"
+                      lh={1.4}
+                      color={getToken("text.medium")}
+                      transform="uppercase"
+                    >
+                      {isCollapsed ? t("show") : t("hide")}
+                    </Text>
+                    <Icon
+                      size="xs"
+                      component={isCollapsed ? ChevronDown : ChevronUp}
+                      color={getToken("icons.onContainer")}
+                    />
+                  </MicroButton>
+                )}
+              </Box>
+            </CollapsibleTrigger>
           </Flex>
-          <Text fs="p6" lh="s" color={getToken("text.medium")}>
-            {t("staking:referenda.participate")}
-          </Text>
+          {!isCollapsed && (
+            <Text fs="p6" lh="s" color={getToken("text.medium")}>
+              {t("staking:referenda.participate")}
+            </Text>
+          )}
         </Box>
         <CollapsibleContent>
           {isLoading && (
@@ -123,11 +131,11 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
             </SReferendaList>
           )}
           {!isLoading &&
-            (referenda.length ? (
+            (referenda.length && tracksData ? (
               <SReferendaList ref={gridRef}>
                 {referenda.map((item) => {
-                  const track = tracksData?.get(item.track)
-                  const voted = !!votes.some((vote) => vote.id === item.id)
+                  const track = tracksData.get(item.track)
+                  const vote = votes.find((vote) => vote.id === item.id)
 
                   return (
                     <Referenda
@@ -136,7 +144,8 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                       item={item}
                       track={track}
                       totalIssuance={totalIssuance}
-                      voted={voted}
+                      vote={vote}
+                      isGigaStaking={isGigaStaking}
                     />
                   )
                 })}

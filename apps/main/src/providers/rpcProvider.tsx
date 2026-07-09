@@ -12,6 +12,7 @@ import {
 import { TypedApi } from "polkadot-api"
 import { StatusChange, WsEvent } from "polkadot-api/ws"
 import { createContext, ReactNode, useContext, useEffect } from "react"
+import { isFunction } from "remeda"
 
 import {
   getProviderDataEnv,
@@ -41,7 +42,10 @@ const defaultData: TProviderContext = {
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
-  featureFlags: {} as TProviderData["featureFlags"],
+  featureFlags: {
+    hollarBondsEnabled: true,
+    gigaStakingEnabled: false,
+  },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
   isLoaded: false,
@@ -74,24 +78,45 @@ const logWsStatusChange = (status: StatusChange) => {
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
   const { assets } = useAssetRegistry()
-  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
+  const {
+    rpcUrl,
+    connectedRpcUrl,
+    rpcUrlList,
+    setRpcUrl,
+    setConnectedRpcUrl,
+    setIsRpcConnecting,
+  } = useProviderRpcUrlStore()
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
-      priorityRpcUrl: !autoMode ? rpcUrl : undefined,
+      priorityRpcUrl: rpcUrl,
       probeConfig: {
         enabled: false,
       },
       wsProviderOpts: {
         onStatusChanged: (status) => {
           logWsStatusChange(status)
+          if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
-            setRpcUrl(status.uri)
+            if (status.uri !== connectedRpcUrl) setConnectedRpcUrl(status.uri)
+            if (status.uri !== rpcUrl) setRpcUrl(status.uri)
+            setIsRpcConnecting(false)
           }
         },
       },
     }),
   )
+
+  useEffect(() => {
+    const client = data.papiClient
+    if (!isFunction(client?.switch)) return
+
+    // switch to best rpc when auto mode is enabled
+    return useProviderRpcUrlStore.subscribe((state, prevState) => {
+      if (!state.autoMode || state.rpcUrl === prevState.rpcUrl) return
+      client.switch(state.rpcUrl)
+    })
+  }, [data.papiClient])
 
   useEffect(() => {
     if (!Object.keys(data.sdk).length) return
@@ -101,7 +126,8 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   }, [data?.sdk])
 
   const isLoaded = assets.length > 0
-  const isApiLoaded = Object.keys(data.papi).length > 0
+  const isApiLoaded =
+    Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
 
   return (
     <ProviderContext.Provider

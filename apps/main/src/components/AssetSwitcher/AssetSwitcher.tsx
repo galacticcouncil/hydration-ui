@@ -67,13 +67,15 @@ export const AssetSwitcher = ({
     onSwitchAssets?.()
   }
 
-  const isPriceReady = canCalculatePrice || !isFallbackPriceLoading
+  const isPriceReady =
+    canCalculatePrice || !!fallbackPrice || !isFallbackPriceLoading
+
   const isSwitcherDisabled =
     switcherDisabled || disabled || !assetInId || !assetOutId
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
   return (
-    <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
+    <SAssetSwitcher sx={{ alignItems: "center", mx: "-xl" }}>
       <Separator />
       {onSwitchAssets && (
         <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>

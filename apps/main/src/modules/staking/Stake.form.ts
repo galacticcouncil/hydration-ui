@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -5,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { refine, z } from "zod/v4"
 
 import { stakingConstsQuery } from "@/api/constants"
+import { gigaAccountStakesQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -34,11 +36,16 @@ export type StakeFormValues = z.infer<ReturnType<typeof getSchema>>
 
 export const useStakeForm = (balance: string, stakedBalance: string) => {
   const rpc = useRpcProvider()
+  const { account } = useAccount()
   const { native } = useAssets()
 
   const { data: stakingConsts, isLoading: minStakeLoading } = useQuery(
     stakingConstsQuery(rpc),
   )
+  const { data: gigaStakes } = useQuery(
+    gigaAccountStakesQuery(rpc, account?.address ?? ""),
+  )
+  const hasGigaStakes = !!gigaStakes
 
   const defaultValues: StakeFormValues = {
     amount: "",
@@ -66,5 +73,6 @@ export const useStakeForm = (balance: string, stakedBalance: string) => {
   return {
     form,
     minStake: minStakeUsed,
+    hasGigaStakes,
   }
 }

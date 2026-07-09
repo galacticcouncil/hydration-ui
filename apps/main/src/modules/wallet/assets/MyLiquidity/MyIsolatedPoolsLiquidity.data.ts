@@ -1,10 +1,10 @@
 import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
-import { pick, prop } from "remeda"
+import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { XykDeposit } from "@/api/account"
+import { useAccountXykMiningPositions, XykDeposit } from "@/api/account"
 import { useShareTokenPrices } from "@/api/spotPrice"
 import {
   isShareToken,
@@ -50,7 +50,8 @@ export const isXYKPositionDeposit = (
 
 export const useMyIsolatedPoolsLiquidity = () => {
   const { getShareToken, getShareTokenByAddress } = useAssets()
-  const xykMining = useAccountData(useShallow(prop("xykMining")))
+  const { data: xykMining = [], isLoading: isXykMiningLoading } =
+    useAccountXykMiningPositions()
   const { balances, isBalanceLoading } = useAccountData(
     useShallow(pick(["balances", "isBalanceLoading"])),
   )
@@ -130,6 +131,7 @@ export const useMyIsolatedPoolsLiquidity = () => {
 
   return {
     data: groupedXykData,
-    isLoading: isShareTokenPricesLoading || isBalanceLoading,
+    isLoading:
+      isShareTokenPricesLoading || isBalanceLoading || isXykMiningLoading,
   }
 }

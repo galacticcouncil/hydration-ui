@@ -19,6 +19,7 @@ import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk"
 
@@ -68,12 +69,18 @@ export const DashboardHeader = () => {
           isLoading={loading || isApyLoading}
           label={t("borrow:netApy")}
           wrap={[false, false, true]}
-          value={
-            isConnected
-              ? t("percent", {
+          customValue={
+            user.netAPY !== null ? (
+              <SValueStatsValue size="large">
+                {t("percent", {
                   value: user.netAPY * 100,
-                })
-              : "-"
+                })}
+              </SValueStatsValue>
+            ) : (
+              <SValueStatsValue size="large">
+                <UnavailableApy />
+              </SValueStatsValue>
+            )
           }
         />
         <ValueStats

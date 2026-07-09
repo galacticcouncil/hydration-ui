@@ -9,6 +9,7 @@ import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
+import { MyBonds } from "@/modules/wallet/assets/MyBonds/MyBonds"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
@@ -41,12 +42,19 @@ export const WalletAssetsPage = () => {
     10,
   )
 
+  const bondsPagination = useDataTableUrlPagination(
+    "/wallet/assets",
+    "bondsPage",
+    10,
+  )
+
   const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
     "/wallet/assets",
     "search",
     {
       onChange: () => {
         assetsPagination.onPageClick(1)
+        bondsPagination.onPageClick(1)
         liquidityPagination.onPageClick(1)
       },
     },
@@ -62,9 +70,14 @@ export const WalletAssetsPage = () => {
     { onChange: () => liquidityPagination.onPageClick(1) },
   )
 
+  const bondsSorting = useDataTableUrlSorting("/wallet/assets", "bondsSort", {
+    onChange: () => bondsPagination.onPageClick(1),
+  })
+
   const changeSearch = (phrase: string): void => {
     setSearchPhrase(phrase)
     assetsPagination.onPageClick(1)
+    bondsPagination.onPageClick(1)
     liquidityPagination.onPageClick(1)
   }
 
@@ -109,6 +122,14 @@ export const WalletAssetsPage = () => {
             searchPhrase={searchPhrase}
             paginationProps={assetsPagination}
             sortingProps={assetsSorting}
+          />
+        )}
+        {(category === "all" || category === "assets") && (
+          <MyBonds
+            key={account.address + "_bonds"}
+            searchPhrase={searchPhrase}
+            paginationProps={bondsPagination}
+            sortingProps={bondsSorting}
           />
         )}
         {(category === "all" || category === "liquidity") && (

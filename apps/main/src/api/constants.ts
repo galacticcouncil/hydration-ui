@@ -83,10 +83,10 @@ export const stakingConstsQuery = ({ papi, isApiLoaded }: TProviderContext) =>
 export const referendaTracksQuery = ({
   isApiLoaded,
   papi,
-  dataEnv,
+  endpoint,
 }: TProviderContext) =>
   queryOptions({
-    queryKey: ["referendaTracks", dataEnv],
+    queryKey: ["referendaTracks", endpoint],
     queryFn: async () => {
       const tracks = await papi.constants.Referenda.Tracks()
 

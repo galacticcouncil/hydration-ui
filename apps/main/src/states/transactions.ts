@@ -35,6 +35,11 @@ export type TransactionAlert = Pick<
   requiresUserConsent?: boolean | string
 }
 
+export type TExecutedAmount = {
+  amount: string
+  assetId: string
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
@@ -46,6 +51,7 @@ export type TransactionCommon = {
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
   successMode?: "best" | "finalized"
+  executedAmount?: TExecutedAmount
 }
 
 interface SingleTransactionInput extends TransactionCommon {

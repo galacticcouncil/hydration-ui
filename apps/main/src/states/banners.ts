@@ -1,12 +1,72 @@
+import { type PromoteBannerItem } from "@galacticcouncil/ui/components"
+import { useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+
+import { LINKS } from "@/config/navigation"
+import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+export type BannerConfig = PromoteBannerItem & {
+  to?: string
+  priority: number
+  enabled: boolean
+}
+
+const bannerEntries: BannerConfig[] = [
+  {
+    id: "hollarb",
+    backgroundImage: "/images/hollarb.webp",
+    backgroundImageMobile: "/images/hollarbMobile.webp",
+    title: "banners.hollarb.title",
+    description: "banners.hollarb.description",
+    textColor: "#FFF",
+    ctaColor: "#B3D7FA",
+    ctaTextColor: "#0D1525",
+    cta: "Get HOLLARb",
+    to: LINKS.strategiesHollarBonds,
+    priority: 1,
+    enabled: false,
+  },
+]
+
+export const useEnabledBanners = () => {
+  const { featureFlags } = useRpcProvider()
+  const hasFillableStableBondsOrders = useHasFillableStableBondsOrders()
+
+  return useMemo(() => {
+    return bannerEntries.filter((banner) => {
+      if (banner.id === "hollarb") {
+        return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
+      }
+
+      return banner.enabled
+    })
+  }, [featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders])
+}
+
+export const bannerConfig: BannerConfig[] = [...bannerEntries].sort(
+  (a, b) => a.priority - b.priority,
+)
 
 type BannerType = "top" | "flow"
 
 type BannersState = {
   banners: {
     ["new-farms"]: { visible?: boolean; type: BannerType; timestamp?: number }
+    ["giga-stake"]: { visible?: boolean; type: BannerType; timestamp?: number }
+    ["hollar-banner"]: {
+      visible?: boolean
+      type: BannerType
+      timestamp?: number
+    }
+    ["giga-migration"]: {
+      visible?: boolean
+      type: BannerType
+      timestamp?: number
+    }
   }
+  closedGigaNewsIds: string[]
 }
 
 type BannersActions = {
@@ -15,6 +75,9 @@ type BannersActions = {
     visible: boolean,
     timestamp?: number,
   ) => void
+  closeGigaNews: (id: string) => void
+  openAllGigaNews: () => void
+  closeAllGigaNews: () => void
 }
 
 type BannersStore = BannersState & BannersActions
@@ -22,7 +85,37 @@ type BannersStore = BannersState & BannersActions
 const defaultState: BannersState = {
   banners: {
     ["new-farms"]: { visible: undefined, type: "top" },
+    ["giga-stake"]: { visible: undefined, type: "flow" },
+    ["hollar-banner"]: { visible: undefined, type: "flow" },
+    ["giga-migration"]: { visible: undefined, type: "flow" },
   },
+  closedGigaNewsIds: [],
+}
+
+const bannerIds = Object.keys(
+  defaultState.banners,
+) as (keyof BannersState["banners"])[]
+
+function mergePersistedWithDefaults(
+  persistedState: unknown,
+  currentState: BannersStore,
+): BannersStore {
+  const p = persistedState as Partial<BannersState> | undefined
+  const banners = Object.fromEntries(
+    bannerIds.map((id) => [
+      id,
+      {
+        ...defaultState.banners[id],
+        ...(p?.banners?.[id] ?? {}),
+      },
+    ]),
+  ) as BannersState["banners"]
+
+  return {
+    ...currentState,
+    banners,
+    closedGigaNewsIds: p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds,
+  }
 }
 
 export const useBannersStore = create<BannersStore>()(
@@ -32,16 +125,45 @@ export const useBannersStore = create<BannersStore>()(
       setBannerVisible: (id, visible, timestamp) =>
         set((state) => {
           return {
+            ...state,
             banners: {
               ...state.banners,
               [id]: { ...state.banners[id], visible, timestamp },
             },
           }
         }),
+      closeGigaNews: (id) =>
+        set((state) => {
+          if (state.closedGigaNewsIds.includes(id)) return state
+
+          return {
+            ...state,
+            closedGigaNewsIds: [...state.closedGigaNewsIds, id],
+          }
+        }),
+      openAllGigaNews: () =>
+        set((state) => {
+          return {
+            ...state,
+            closedGigaNewsIds: [],
+          }
+        }),
+      closeAllGigaNews: () =>
+        set((state) => {
+          return {
+            ...state,
+            closedGigaNewsIds: bannerConfig.map((banner) => banner.id),
+          }
+        }),
     }),
     {
       name: "banners",
-      version: 1,
+      version: 2,
+      merge: mergePersistedWithDefaults,
+      partialize: (state) => ({
+        banners: state.banners,
+        closedGigaNewsIds: state.closedGigaNewsIds,
+      }),
     },
   ),
 )

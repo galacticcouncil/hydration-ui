@@ -14,6 +14,7 @@ import {
 import { pool } from "@galacticcouncil/sdk-next"
 import {
   GIGA_ASSETS,
+  HOLLAR_ASSET_ID,
   HOLLAR_ASSETS,
   PRIME_STABLESWAP_ASSET_ID,
 } from "@galacticcouncil/utils"
@@ -67,7 +68,7 @@ export type OmnipoolAssetTable = {
   tvlDisplay: string | undefined
   lpFeeOmnipool?: string
   lpFeeStablepool?: string
-  totalFee?: string
+  totalFee?: string | null
   isFeeLoading: boolean
   isNative: boolean
   isPositions: boolean
@@ -331,8 +332,7 @@ export const useOmnipoolStablepools = () => {
         : stablepoolInOmnipool?.borrowApyData
 
       const allFarms = omnipoolFarms?.[poolId] ?? []
-      const farms =
-        omnipoolFarms?.[poolId]?.filter((farm) => farm.apr !== "0") ?? []
+      const farms = allFarms.filter((farm) => farm.apr !== "0")
 
       const isFarms = farms?.length > 0
       const totalApr = farms
@@ -366,7 +366,9 @@ export const useOmnipoolStablepools = () => {
           .toString()
       }
 
-      if (borrowApyData?.totalSupplyApy) {
+      if (borrowApyData?.totalSupplyApy === null) {
+        totalFee = undefined
+      } else if (borrowApyData?.totalSupplyApy) {
         totalFee = Big(borrowApyData.totalSupplyApy)
           .plus(totalFee ?? 0)
           .minus(lpFeeStablepool ?? 0)
@@ -803,7 +805,8 @@ export const useIsLiquidityProvided = () => {
 
       if (asset) {
         return (
-          asset.type === AssetType.STABLESWAP || asset.type === AssetType.ERC20
+          asset.type === AssetType.STABLESWAP ||
+          (asset.type === AssetType.ERC20 && asset.id !== HOLLAR_ASSET_ID)
         )
       }
 

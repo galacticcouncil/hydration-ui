@@ -33,7 +33,9 @@ import { Farm } from "@/api/farms"
 import { spotPriceQuery } from "@/api/spotPrice"
 import type { TStablepoolDetails } from "@/api/stableswap"
 import { useStableSwapTradability } from "@/api/stableswap"
+import { Trade } from "@/api/trade"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddLiquiditySummary } from "@/modules/liquidity/components/AddLiquidity/AddLiquidity"
 import { AddLiquidityYield } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityYield"
@@ -165,6 +167,7 @@ export const AddStablepoolLiquidityForm = ({
   enabledSplit,
   isAddableToOmnipool,
   title,
+  swap,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -355,6 +358,7 @@ export const AddStablepoolLiquidityForm = ({
           erc20Id={erc20Id}
           option={option}
           poolShare={poolShare}
+          swap={swap}
         />
 
         {customErrors?.cap ? (
@@ -418,6 +422,7 @@ const AddStablepoolLiquiditySummary = ({
   erc20Id,
   option,
   poolShare,
+  swap,
 }: {
   farms: Farm[]
   minReceiveAmount: string
@@ -428,10 +433,11 @@ const AddStablepoolLiquiditySummary = ({
   erc20Id?: string
   option: TAddStablepoolLiquidityOption
   poolShare?: string
+  swap?: Trade
 }) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback, getErc20AToken } = useAssets()
-  const { t } = useTranslation(["liquidity", "common"])
+  const { t } = useTranslation(["liquidity", "common", "trade"])
 
   const { data: spotPriceData, isLoading: isPriceLoading } = useQuery(
     spotPriceQuery(rpc, erc20Id ?? poolMeta.id, selectedAssetId ?? ""),
@@ -454,6 +460,7 @@ const AddStablepoolLiquiditySummary = ({
         healthFactor={healthFactor}
         stablepoolId={erc20Meta.underlyingAssetId}
         borrowApyData={borrowApyData}
+        swap={swap}
       />
     )
   }
@@ -464,14 +471,29 @@ const AddStablepoolLiquiditySummary = ({
       rows={[
         {
           label: t("common:minimumReceived"),
-          content: t("common:number", {
+          content: t("common:currency", {
             value: minReceiveAmount,
+            symbol: erc20Meta?.symbol ?? poolMeta.symbol,
           }),
         },
         {
           label: t("common:tradeLimit"),
           content: <TradeLimit key={limitType} type={limitType} />,
         },
+        ...(swap && erc20Meta
+          ? [
+              {
+                label: t("trade:market.summary.estTradeFees"),
+                content: (
+                  <TradeFee
+                    swap={swap}
+                    receiveAsset={erc20Meta}
+                    isLoading={false}
+                  />
+                ),
+              },
+            ]
+          : []),
         {
           label: t("common:yield"),
           content: (

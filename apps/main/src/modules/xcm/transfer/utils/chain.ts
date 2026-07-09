@@ -3,6 +3,7 @@ import {
   isEvmParachain,
   isH160Address,
   isParachain,
+  wsToHttp,
 } from "@galacticcouncil/utils"
 import {
   Account,
@@ -15,9 +16,15 @@ import {
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
+  WalletProviderType,
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
+import {
+  AnyChain,
+  Asset,
+  ChainEcosystem,
+  EvmParachain,
+} from "@galacticcouncil/xc-core"
 import { filter, first, pipe, sortBy } from "remeda"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
@@ -135,7 +142,24 @@ export const isAccountValidOnChain = (
   chain: AnyChain,
 ): account is Account => {
   if (!account) return false
-  const walletMode = getWalletModeByChain(chain)
+  if (account.provider === WalletProviderType.ExternalWallet) return true
 
+  const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+}
+
+export const withCustomChainRpcUrls = (
+  chain: EvmParachain,
+  wsUrls: string[],
+): EvmParachain => {
+  const httpUrls = wsUrls.map(wsToHttp)
+  // @ts-expect-error - mutating readonly property
+  chain.ws = wsUrls
+  // @ts-expect-error - mutating readonly property
+  chain.rpcs = httpUrls
+  chain.evmChain.rpcUrls = {
+    default: { http: httpUrls, webSocket: wsUrls },
+    public: { http: httpUrls, webSocket: wsUrls },
+  }
+  return chain
 }

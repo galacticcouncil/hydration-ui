@@ -5,7 +5,11 @@ import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { useAssetsPrice, useDisplayAssetStore } from "@/states/displayAsset"
+import {
+  useAssetPrice,
+  useAssetsPrice,
+  useDisplayAssetStore,
+} from "@/states/displayAsset"
 
 type AssetPriceProps = {
   assetId: string
@@ -43,7 +47,28 @@ export const useDisplayAssetPrice = (
   value: string | number,
   options?: HookOptions,
 ) => {
-  return useDisplayAssetsPrice([[assetId, value]], options)
+  const { t } = useTranslation("common")
+  const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
+    useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
+  )
+  const isDollar = isRealUSD || isStableCoin
+  const { price, isValid, isLoading } = useAssetPrice(assetId)
+
+  const displayValue = Big(price || "0")
+    .times(value || "0")
+    .toString()
+  const maximumFractionDigits = options?.maximumFractionDigits
+
+  const formattedPrice = isValid
+    ? t(options?.compact ? "currency.compact" : "currency", {
+        value: displayValue,
+        ...(!isDollar
+          ? { currency: symbol, maximumFractionDigits }
+          : { maximumFractionDigits }),
+      })
+    : "-"
+
+  return [formattedPrice, { price: displayValue, isLoading }] as const
 }
 
 export const useDisplayAssetsPrice = (
