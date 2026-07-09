@@ -142,7 +142,7 @@ export const isAccountValidOnChain = (
   chain: AnyChain,
 ): account is Account => {
   if (!account) return false
-  if (account.provider === WalletProviderType.ExternalWallet) return true
+  if (account.provider === WalletProviderType.ExternalWallet) return false
 
   const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)

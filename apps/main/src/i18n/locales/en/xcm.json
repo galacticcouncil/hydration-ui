@@ -12,8 +12,6 @@
   "chainAssetSelect.button.selectAssetChain": "Select asset & chain",
   "chainAssetSelect.emptyState.noAssets": "No assets found",
   "chainAssetSelect.modal.title": "Chain & asset",
-  "chainAssetSelect.search.assets": "Search assets...",
-  "chainAssetSelect.search.chains": "Search chains...",
   "chainNotConnected": "{{ chainName }} account is not connected",
   "connect.modal.description": "Use available crypto wallets to connect to {{ chain }}.",
   "connect.modal.title": "Connect to {{ chain }}",

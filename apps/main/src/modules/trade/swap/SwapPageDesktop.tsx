@@ -8,7 +8,7 @@ import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeader"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { SwapChart } from "@/modules/trade/swap/components/SwapChart/SwapChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
@@ -28,7 +28,7 @@ export const SwapPageDesktop = () => {
         {isUsingLegacyData ? (
           <TradeChartGrafana height={TRADE_CHART_DESKTOP_HEIGHT} />
         ) : (
-          <TradeChart height={TRADE_CHART_DESKTOP_HEIGHT} />
+          <SwapChart height={TRADE_CHART_DESKTOP_HEIGHT} />
         )}
         <SSwapFormContainer gridColumn={2} gridRow={[null, null, null, "1/-1"]}>
           <FormHeader />

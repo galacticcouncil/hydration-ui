@@ -93,7 +93,7 @@ export const getAssetIdFromAddress = (address: string): string => {
 
   try {
     const addressBuffer = Buffer.from(strip0x(address), "hex")
-    const assetIdBuffer = addressBuffer.subarray(16)
+    const assetIdBuffer = Buffer.from(addressBuffer.subarray(16))
     return assetIdBuffer.readUIntBE(0, assetIdBuffer.length).toString()
   } catch {
     return ""

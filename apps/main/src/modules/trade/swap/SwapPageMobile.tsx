@@ -7,7 +7,7 @@ import { useActiveIndexerStatus } from "@/components/DataProviderSelect/DataProv
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { SwapChart } from "@/modules/trade/swap/components/SwapChart/SwapChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
@@ -31,7 +31,7 @@ export const SwapPageMobile: FC = () => {
       {isUsingLegacyData ? (
         <TradeChartGrafana height={TRADE_CHART_MOBILE_HEIGHT} />
       ) : (
-        <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
+        <SwapChart height={TRADE_CHART_MOBILE_HEIGHT} />
       )}
       {isUsingLegacyData ? <TradeOrdersHistory /> : <TradeOrders />}
     </Flex>

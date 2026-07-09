@@ -1,38 +1,38 @@
-import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "@galacticcouncil/utils"
-import { lazy, Suspense } from "react"
-
 import { EmptyIdenticon } from "@/components/AccountAvatar/identicons/EmptyIdenticon"
-import { SolanaIdenticon } from "@/components/AccountAvatar/identicons/SolanaIdenticon"
-import { SuiIdenticon } from "@/components/AccountAvatar/identicons/SuiIdenticon"
+import { getHydrationIdenticanPalette } from "@/components/AccountAvatar/identicons/hydrationIdenticanPalette"
+import { identicanDataUri } from "@/components/AccountAvatar/identicons/identican"
 import { Box, BoxProps } from "@/components/Box"
 import { useUiScale } from "@/styles/media"
-import { getToken } from "@/utils"
-
-const PolkadotIdenticon = lazy(async () => ({
-  default: await import(
-    "@/components/AccountAvatar/identicons/PolkadotIdenticon"
-  ).then((m) => m.PolkadotIdenticon),
-}))
-
-const TalismanIdenticon = lazy(async () => ({
-  default: await import(
-    "@/components/AccountAvatar/identicons/TalismanIdenticon"
-  ).then((m) => m.TalismanIdenticon),
-}))
-
-const EthereumIdenticon = lazy(async () => ({
-  default: await import(
-    "@/components/AccountAvatar/identicons/EthereumIdenticon"
-  ).then((m) => m.EthereumIdenticon),
-}))
+import { useTheme } from "@/theme"
 
 export type AccountAvatarTheme =
   | "auto"
+  | "default"
   | "polkadot"
   | "evm"
   | "talisman"
   | "solana"
   | "sui"
+  | "near"
+  | "zcash"
+  | "aleph-zero"
+  | "bravewallet"
+  | "enkrypt"
+  | "external"
+  | "fearless-wallet"
+  | "manta-wallet-js"
+  | "metamask"
+  | "nova-wallet"
+  | "phantom"
+  | "polkadot-js"
+  | "polkagate"
+  | "rabby-wallet"
+  | "slush"
+  | "solflare"
+  | "subwallet"
+  | "suiet"
+  | "walletconnect"
+
 export type AccountAvatarProps = BoxProps & {
   address: string
   size?: number
@@ -40,53 +40,39 @@ export type AccountAvatarProps = BoxProps & {
 }
 
 export const AccountAvatar: React.FC<AccountAvatarProps> = ({
+  address,
   size = 32,
-  theme = "auto",
+  sx,
+  theme: _theme = "auto",
   ...props
 }) => {
   const uiScale = useUiScale()
+  const { theme } = useTheme()
   const scaledSize = size * uiScale
-  const chosenTheme = theme === "auto" ? getAutoTheme(props.address) : theme
+
+  if (!address) {
+    return <EmptyIdenticon size={scaledSize} />
+  }
 
   return (
-    <Suspense
-      fallback={
-        <Box
-          size={scaledSize}
-          borderRadius="full"
-          bg={getToken("surfaces.containers.dim.dimOnHigh")}
-        />
-      }
+    <Box
+      borderRadius="full"
+      size={scaledSize}
+      sx={{ ...sx, overflow: "hidden" }}
+      {...props}
     >
-      {chosenTheme === null && <EmptyIdenticon size={scaledSize} />}
-      {chosenTheme === "evm" && (
-        <EthereumIdenticon size={scaledSize} {...props} />
-      )}
-      {chosenTheme === "talisman" && (
-        <TalismanIdenticon size={scaledSize} {...props} />
-      )}
-      {chosenTheme === "polkadot" && (
-        <PolkadotIdenticon size={scaledSize} {...props} />
-      )}
-      {chosenTheme === "solana" && (
-        <SolanaIdenticon size={scaledSize} {...props} />
-      )}
-      {chosenTheme === "sui" && <SuiIdenticon size={scaledSize} {...props} />}
-    </Suspense>
+      <img
+        alt=""
+        aria-hidden="true"
+        height={scaledSize}
+        src={identicanDataUri(address, {
+          crop: { scale: 1.4, x: 0, y: -15 },
+          palette: getHydrationIdenticanPalette(theme),
+          size: scaledSize,
+        })}
+        style={{ display: "block", height: "100%", width: "100%" }}
+        width={scaledSize}
+      />
+    </Box>
   )
-}
-
-function getAutoTheme(address: string): AccountAvatarTheme | null {
-  switch (true) {
-    case EvmAddr.isValid(address):
-      return "evm"
-    case Ss58Addr.isValid(address):
-      return "polkadot"
-    case SolanaAddr.isValid(address):
-      return "solana"
-    case SuiAddr.isValid(address):
-      return "sui"
-    default:
-      return null
-  }
 }

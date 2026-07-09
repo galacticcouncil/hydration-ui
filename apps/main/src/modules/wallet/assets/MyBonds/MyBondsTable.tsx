@@ -23,6 +23,7 @@ type Props = {
   readonly searchPhrase: string
   readonly paginationProps: PaginationProps
   readonly sortingProps: SortingProps
+  readonly embedded?: boolean
 }
 
 export const MyBondsTable: FC<Props> = ({
@@ -31,6 +32,7 @@ export const MyBondsTable: FC<Props> = ({
   searchPhrase,
   paginationProps,
   sortingProps,
+  embedded = false,
 }) => {
   const { isMobile } = useBreakpoints()
   const columns = useMyBondsColumns()
@@ -40,9 +42,10 @@ export const MyBondsTable: FC<Props> = ({
   } | null>(null)
 
   return (
-    <TableContainer as={Paper}>
+    <TableContainer as={embedded ? "div" : Paper}>
       <DataTable
         isLoading={isLoading}
+        size={embedded ? "small" : "medium"}
         paginated
         {...paginationProps}
         {...sortingProps}

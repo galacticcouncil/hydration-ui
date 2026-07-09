@@ -1,3 +1,4 @@
+import { Buffer } from "buffer"
 import { AccountId } from "polkadot-api"
 
 export const safeConvertSuiAddressToSS58 = (

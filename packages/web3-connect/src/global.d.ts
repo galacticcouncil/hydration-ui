@@ -11,6 +11,7 @@ declare global {
       ethereum: EIP1193Provider
       solana: SolanaInjectedWindowProvider
     }
+    solana?: SolanaInjectedWindowProvider
     solflare?: SolanaInjectedWindowProvider
     braveSolana?: SolanaInjectedWindowProvider
     injectedWeb3?: InjectedWeb3

@@ -4,7 +4,11 @@ import { useTranslation } from "react-i18next"
 
 import i18n from "@/i18n"
 
-export const AddressBookButton: React.FC<ButtonProps> = (props) => {
+export const AddressBookButton: React.FC<ButtonProps> = ({
+  children,
+  sx,
+  ...props
+}) => {
   const { t } = useTranslation("translations", { i18n })
   return (
     <Button
@@ -12,16 +16,31 @@ export const AddressBookButton: React.FC<ButtonProps> = (props) => {
       outline
       size="small"
       sx={{
-        gap: "s",
+        columnGap: "s",
         py: "s",
         px: "m",
         height: "auto",
-        textTransform: "uppercase",
+        "& [data-address-book-icon]": {
+          color: "currentColor",
+        },
+        "& [data-address-book-icon] svg": {
+          fill: "none",
+          stroke: "currentColor",
+        },
+        "& [data-address-book-icon] svg *": {
+          stroke: "currentColor",
+        },
+        ...sx,
       }}
       {...props}
     >
-      <Icon size="xs" component={BookOpen} />
-      {t("addressBook.myContacts")}
+      <Icon
+        data-address-book-icon
+        size="xs"
+        color="currentColor"
+        component={BookOpen}
+      />
+      {children ?? t("addressBook.myContacts")}
     </Button>
   )
 }

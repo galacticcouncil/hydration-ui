@@ -140,7 +140,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
         p="base"
       >
         <Input
-          placeholder={t("xcm:chainAssetSelect.search.chains")}
+          placeholder={t("search.placeholder.chains")}
           iconStart={Search}
           value={chainSearch}
           onChange={(e) => setChainSearch(e.target.value)}
@@ -148,7 +148,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
           autoComplete="off"
         />
         <Input
-          placeholder={t("xcm:chainAssetSelect.search.assets")}
+          placeholder={t("search.placeholder.assets")}
           iconStart={Search}
           value={assetSearch}
           onChange={(e) => setAssetSearch(e.target.value)}
@@ -189,6 +189,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
                   description: t("xcm:connect.modal.description", {
                     chain: pendingChain.name,
                   }),
+                  hideExternalWallet: true,
                 })
               }
             />

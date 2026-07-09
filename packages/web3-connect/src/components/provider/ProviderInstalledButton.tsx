@@ -30,7 +30,9 @@ export const ProviderInstalledButton: React.FC<ProviderButtonOwnProps> = ({
   const actionProps = (() => {
     if (isControlled) {
       return {
-        actionLabel: t("provider.continue"),
+        actionLabel: isConnected
+          ? t("provider.continue")
+          : t("provider.connect"),
         onClick: () =>
           isConnected
             ? setPage(Web3ConnectModalPage.AccountSelect)
@@ -44,7 +46,7 @@ export const ProviderInstalledButton: React.FC<ProviderButtonOwnProps> = ({
       }
     }
     return {
-      actionLabel: t("provider.continue"),
+      actionLabel: t("provider.connect"),
       onClick: () => enable(provider),
     }
   })()

@@ -14,12 +14,6 @@ import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
 
-const WalletAssetFiltersDesktop = lazy(async () => ({
-  default: await import(
-    "@/modules/wallet/assets/WalletAssetsFilters.desktop"
-  ).then((m) => m.WalletAssetFiltersDesktop),
-}))
-
 const WalletAssetFiltersMobile = lazy(async () => ({
   default: await import(
     "@/modules/wallet/assets/WalletAssetsFilters.mobile"
@@ -91,40 +85,45 @@ export const WalletAssetsPage = () => {
 
   return (
     <Flex direction="column">
-      <Grid
-        sx={{
-          overflowX: "auto",
-        }}
-        columnGap={["base", "xl"]}
-        columnTemplate="1fr minmax(0, 25rem)"
-        pb={isMobile ? "base" : "xxl"}
-      >
-        <WalletBalances />
-        <WalletRewards />
-      </Grid>
+      {isMobile && (
+        <Grid
+          sx={{
+            overflowX: "auto",
+          }}
+          columnGap={["base", "xl"]}
+          columnTemplate="1fr minmax(0, 25rem)"
+          pb="base"
+        >
+          <WalletBalances />
+          <WalletRewards />
+        </Grid>
+      )}
       {isMobile ? (
         <WalletAssetFiltersMobile
           category={category}
           searchPhrase={searchPhrase}
           onSearchPhraseChange={changeSearch}
         />
-      ) : (
-        <WalletAssetFiltersDesktop
-          searchPhrase={searchPhrase}
-          onSearchPhraseChange={changeSearch}
-        />
-      )}
+      ) : null}
 
       <Flex direction="column">
-        {(category === "all" || category === "assets") && (
+        {(category === "all" ||
+          category === "assets" ||
+          category === "tracked") && (
           <MyAssets
             key={account.address + "_assets"}
             searchPhrase={searchPhrase}
+            onSearchPhraseChange={changeSearch}
             paginationProps={assetsPagination}
             sortingProps={assetsSorting}
+            liquidityPaginationProps={liquidityPagination}
+            liquiditySortingProps={liquiditySorting}
+            bondsPaginationProps={bondsPagination}
+            bondsSortingProps={bondsSorting}
+            trackedOnly={category === "tracked"}
           />
         )}
-        {(category === "all" || category === "assets") && (
+        {isMobile && (category === "all" || category === "assets") && (
           <MyBonds
             key={account.address + "_bonds"}
             searchPhrase={searchPhrase}
@@ -132,14 +131,15 @@ export const WalletAssetsPage = () => {
             sortingProps={bondsSorting}
           />
         )}
-        {(category === "all" || category === "liquidity") && (
-          <MyLiquidity
-            key={account.address + "_liquidity"}
-            searchPhrase={searchPhrase}
-            paginationProps={liquidityPagination}
-            sortingProps={liquiditySorting}
-          />
-        )}
+        {(isMobile || category === "liquidity") &&
+          (category === "all" || category === "liquidity") && (
+            <MyLiquidity
+              key={account.address + "_liquidity"}
+              searchPhrase={searchPhrase}
+              paginationProps={liquidityPagination}
+              sortingProps={liquiditySorting}
+            />
+          )}
       </Flex>
     </Flex>
   )

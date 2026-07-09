@@ -82,6 +82,7 @@ export const useCrossChainBalanceSubscription = (
   address: string,
   chainKey: string,
   onSuccess?: (balances: AssetAmount[]) => void,
+  refreshKey?: unknown,
 ) => {
   const queryClient = useQueryClient()
   const wallet = useCrossChainWallet()
@@ -144,7 +145,7 @@ export const useCrossChainBalanceSubscription = (
     return () => {
       subscription?.unsubscribe()
     }
-  }, [address, chainKey, queryClient, wallet])
+  }, [address, chainKey, queryClient, refreshKey, wallet])
 
   return { isLoading, isError }
 }

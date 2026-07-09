@@ -15,7 +15,8 @@ const ERC20_THRESHOLD = 0.01
 export function useAccountBalanceSubscription() {
   const { isApiLoaded, sdk } = useRpcProvider()
   const { account } = useAccount()
-  const accountAddress = account?.address
+  const accountAddress =
+    account && !account.isIncompatible ? account.address : ""
   const queryClient = useQueryClient()
   const { erc20, tokens, getErc20AToken, native, xykShareTokens } = useAssets()
 
@@ -34,7 +35,11 @@ export function useAccountBalanceSubscription() {
     setIsSystemBalanceLoaded(false)
     setIsTokensBalanceLoaded(false)
     setIsErcBalanceLoaded(false)
-  }, [accountAddress, resetBalances])
+
+    if (!accountAddress) {
+      balancesLoaded()
+    }
+  }, [accountAddress, balancesLoaded, resetBalances])
 
   const followedAssetIds = useMemo(() => {
     if (!xykShareTokens) return new Set<number>()

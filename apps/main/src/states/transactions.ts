@@ -26,6 +26,7 @@ export enum TransactionType {
   Onchain = "Onchain",
   Xcm = "Xcm",
   EvmApprove = "EvmApprove",
+  XcSwap = "XcSwap",
 }
 
 export type TransactionAlert = Pick<
@@ -118,10 +119,28 @@ export type TransactionErc20ApproveMeta = TransactionMetaCommon & {
   type: TransactionType.EvmApprove
 }
 
+export type TransactionXcSwapMeta = TransactionMetaCommon & {
+  type: TransactionType.XcSwap
+  srcAssetSymbol: string
+  srcAmount: string
+  srcChainFee: string
+  srcChainFeeSymbol: string
+  dstChainKey: string
+  dstAssetSymbol: string
+  dstAmount: string
+  dstAddress: string
+  dstChainFee?: string
+  dstChainFeeSymbol?: string
+  intentId?: string
+  depositAddress?: string
+  correlationId?: string
+}
+
 export type TransactionMeta =
   | TransactionOnchainMeta
   | TransactionXcmMeta
   | TransactionErc20ApproveMeta
+  | TransactionXcSwapMeta
 
 export type TSuccessResult =
   | TxBestBlocksStateResult

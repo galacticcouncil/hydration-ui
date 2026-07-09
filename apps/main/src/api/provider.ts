@@ -12,7 +12,10 @@ import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
   HOLLAR_BOND_25_08_26_ID,
+  HYDRATION_CHAIN_KEY,
 } from "@galacticcouncil/utils"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { EvmParachain } from "@galacticcouncil/xc-core"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
@@ -21,6 +24,7 @@ import { createPublicClient, custom, PublicClient } from "viem"
 
 import { ENV } from "@/config/env"
 import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
+import { withCustomChainRpcUrls } from "@/modules/xcm/transfer/utils/chain"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -102,6 +106,8 @@ const getProviderData = async (
   })
 
   const urls = getSortedRpcUrlList(rpcUrlList, priorityRpcUrl)
+  const hydrationChain = chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain
+  withCustomChainRpcUrls(hydrationChain, urls)
 
   const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 

@@ -114,7 +114,7 @@ export const useMyBondsColumns = () => {
         const [isTransferOpen, setIsTransferOpen] = useState(false)
 
         return (
-          <Flex gap="base" justify="flex-end">
+          <Flex gap="base" justify="flex-end" sx={{ width: "100%" }}>
             <BondRedeemButton bondId={row.original.id} />
             <TableRowAction onClick={() => setIsTransferOpen(true)}>
               {t("common:send")}
