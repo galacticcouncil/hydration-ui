@@ -1703,10 +1703,10 @@
   dependencies:
     "@galacticcouncil/xc-core" "^1.2.1"
 
-"@galacticcouncil/xc@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-1.0.1.tgz#f544a648af507c630c0b183d98be5d3c7325f9c4"
-  integrity sha512-pBCyjtNu1r5S1kGAyjicSftL7+76f46b825sw3yBMZo/eQrYWckxo9iwoUCUYGwlOkVKmTZ0qqXkUf33QOmJ4w==
+"@galacticcouncil/xc@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-1.0.2.tgz#19d1c02139c8b5da498877a49f362ddbe6e0d32a"
+  integrity sha512-lOEVS+bXUikgpMO7+GMiQPZdPawrLQQvn2xv9H37GKUybt6tYnsHXJj3nEIfyI4bAxb4dJwLywOJ1oY7yoE5Lw==
 
 "@gql.tada/cli-utils@1.7.3":
   version "1.7.3"
