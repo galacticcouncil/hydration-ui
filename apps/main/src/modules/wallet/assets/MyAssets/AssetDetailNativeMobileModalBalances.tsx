@@ -12,12 +12,10 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
+import { useUnlockableNativeTokens } from "@/api/locks"
 import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
-import {
-  useNativeAssetLocks,
-  useUnlockableNativeTokens,
-} from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { useNativeAssetLocks } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
 import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -31,7 +29,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const locks = useNativeAssetLocks()
-  const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
+  const unlockable = useUnlockableNativeTokens()
   const { data: reserves } = useAccountTokenReserves(asset.id)
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
