@@ -8,6 +8,7 @@ import {
   GemIcon,
   GoalIcon,
   Grid2X2Icon,
+  HDXClassic,
   HistoryIcon,
   Repeat2Icon,
   WalletCardsIcon,
@@ -37,7 +38,9 @@ export const LINKS = {
   trade: "/trade",
   otc: "/trade/otc",
   staking: "/staking",
-  // stakingDashboard: "/staking/dashboard",
+  stakingOld: "/staking-old",
+  stakingGigaStake: "/staking",
+  //governance: "/governance",
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
@@ -173,7 +176,20 @@ export const NAVIGATION: NavigationItem[] = [
     key: "staking",
     to: LINKS.staking,
     icon: GemIcon,
+    children: [
+      {
+        key: "stakingGigaStake",
+        to: LINKS.staking,
+        icon: HDXClassic,
+      },
+      { key: "stakingOld", to: LINKS.stakingOld, icon: ChartPieIcon },
+    ],
   },
+  // {
+  //   key: "governance",
+  //   to: LINKS.governance,
+  //   icon: LandmarkIcon,
+  // },
   // {
   //   key: "referrals",
   //   to: LINKS.referrals,
@@ -262,9 +278,17 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.staking.title"),
       description: t("navigation.staking.description"),
     },
-    // stakingDashboard: {
-    //   title: t("navigation.stakingDashboard.title"),
-    //   description: "",
+    stakingOld: {
+      title: t("navigation.stakingOld.title"),
+      description: t("navigation.staking.description"),
+    },
+    stakingGigaStake: {
+      title: t("navigation.stakingGigaStake.title"),
+      description: t("navigation.staking.description"),
+    },
+    // governance: {
+    //   title: t("navigation.governance.title"),
+    //   description: t("navigation.governance.description"),
     // },
     // stakingGovernance: {
     //   title: t("navigation.stakingGovernance.title"),
@@ -379,6 +403,7 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
+  //"governance",
   // "referrals",
   // "memepad",
 ]
@@ -391,6 +416,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
+  //"governance",
   // "referrals",
   // "memepad",
 ]

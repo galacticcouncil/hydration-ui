@@ -44,6 +44,7 @@ const defaultData: TProviderContext = {
   evm: {} as TProviderData["evm"],
   featureFlags: {
     hollarBondsEnabled: true,
+    gigaStakingEnabled: false,
   },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
@@ -77,19 +78,29 @@ const logWsStatusChange = (status: StatusChange) => {
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
   const { assets } = useAssetRegistry()
-  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
+  const {
+    rpcUrl,
+    connectedRpcUrl,
+    rpcUrlList,
+    setRpcUrl,
+    setConnectedRpcUrl,
+    setIsRpcConnecting,
+  } = useProviderRpcUrlStore()
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
-      priorityRpcUrl: !autoMode ? rpcUrl : undefined,
+      priorityRpcUrl: rpcUrl,
       probeConfig: {
         enabled: false,
       },
       wsProviderOpts: {
         onStatusChanged: (status) => {
           logWsStatusChange(status)
-          if (status.type === WsEvent.CONNECTED && status.uri !== rpcUrl) {
-            setRpcUrl(status.uri)
+          if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
+          if (status.type === WsEvent.CONNECTED) {
+            if (status.uri !== connectedRpcUrl) setConnectedRpcUrl(status.uri)
+            if (status.uri !== rpcUrl) setRpcUrl(status.uri)
+            setIsRpcConnecting(false)
           }
         },
       },
@@ -115,7 +126,8 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   }, [data?.sdk])
 
   const isLoaded = assets.length > 0
-  const isApiLoaded = Object.keys(data.papi).length > 0
+  const isApiLoaded =
+    Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
 
   return (
     <ProviderContext.Provider

@@ -12,14 +12,10 @@ import {
   TradingViewChart,
   TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
-import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
-import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { funnel, last } from "remeda"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
 import {
   ChartTimeRange,
@@ -28,6 +24,7 @@ import {
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
@@ -47,7 +44,6 @@ type TradeChartProps = {
 
 export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const { t } = useTranslation()
-
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const chartRef = useRef<TradingViewChartRef>(null)
@@ -55,38 +51,16 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
     "week",
   )
-  const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
-  const { call: setCrosshairThrottled, cancel: cancelCrosshairThrottle } =
-    useMemo(
-      () =>
-        funnel(
-          (nextCrosshair: BaselineChartData | null) => {
-            setCrosshair(nextCrosshair)
-          },
-          {
-            minGapMs: 200,
-            triggerAt: "start",
-            reducer: (_, next: BaselineChartData | null) => next,
-          },
-        ),
-      [],
-    )
 
-  const onCrosshairMove = useCallback(
-    (nextCrosshair: BaselineChartData | null) => {
-      if (nextCrosshair === null) {
-        cancelCrosshairThrottle()
-        setCrosshair(null)
-        return
-      }
-      setCrosshairThrottled(nextCrosshair)
-    },
-    [cancelCrosshairThrottle, setCrosshairThrottled],
-  )
   const assetA = isInverted ? assetOut : assetIn
   const assetB = isInverted ? assetIn : assetOut
 
-  const { prices, isLoading, isSuccess, isError } = useTradeChartData({
+  const {
+    prices,
+    isLoading: isChartLoading,
+    isSuccess,
+    isError,
+  } = useTradeChartData({
     assetInId: assetA,
     assetOutId: assetB,
     timeFrame: interval === "all" ? null : interval,
@@ -94,44 +68,44 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const isEmpty = isSuccess && !prices.length
 
-  const lastDataPoint = last(prices)
-  const value = crosshair?.value ?? lastDataPoint?.close ?? 0
-  const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
-
-  const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(assetA, value, { maximumFractionDigits: null })
-
-  const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
-    useDisplayAssetPrice(USDT_ASSET_ID, volume)
+  const {
+    onCrosshairMove,
+    value,
+    volume,
+    formattedAssetPrice,
+    formattedVolumePrice,
+    shouldShowValues,
+    isLoadingValues,
+  } = useTradeChartValues({
+    prices,
+    priceAssetId: assetA,
+    isEmpty,
+    isError,
+    isLoading: isChartLoading,
+  })
 
   const { getAssetWithFallback } = useAssets()
 
   const assetAMeta = getAssetWithFallback(assetA)
   const assetBMeta = getAssetWithFallback(assetB)
 
-  const chartValue =
-    !isEmpty && !isError ? (
-      <Text>
-        <AnimatedValue
-          value={value}
-          format={(value) =>
-            t("currency", { value, symbol: assetAMeta.symbol })
-          }
-        />
-      </Text>
-    ) : undefined
+  const chartValue = shouldShowValues ? (
+    <AnimatedValue
+      value={value}
+      format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
+    />
+  ) : undefined
 
-  const chartDisplayValue =
-    !isEmpty && !isError ? (
-      <Box>
-        <Box>
-          {t("price")}: {formattedAssetPrice}
-        </Box>
-        <Box visibility={volume > 0 ? "visible" : "hidden"}>
-          {t("vol")}: {formattedVolumePrice}
-        </Box>
-      </Box>
-    ) : undefined
+  const chartDisplayValue = shouldShowValues ? (
+    <Box>
+      <Text fs="p5">
+        {t("price")}: {formattedAssetPrice}
+      </Text>
+      <Text fs="p5" visibility={volume > 0 ? "visible" : "hidden"}>
+        {t("vol")}: {formattedVolumePrice}
+      </Text>
+    </Box>
+  ) : undefined
 
   return (
     <Paper p="xl">
@@ -139,7 +113,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
         <ChartValues
           value={chartValue}
           displayValue={chartDisplayValue}
-          isLoading={isLoading || isAssetPriceLoading || isVolumePriceLoading}
+          isLoading={shouldShowValues && isLoadingValues}
         />
         <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
           <SChartInvertButton
@@ -171,20 +145,22 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           />
         </Flex>
       </Flex>
-      <ChartState
-        sx={{ height }}
-        isError={isError}
-        isLoading={isLoading}
-        isEmpty={isEmpty}
-      >
-        <TradingViewChart
-          ref={chartRef}
-          height={height}
-          data={prices}
-          hidePriceIndicator
-          onCrosshairMove={onCrosshairMove}
-        />
-      </ChartState>
+      <Box sx={{ height }}>
+        <ChartState
+          sx={{ height }}
+          isError={isError}
+          isLoading={isChartLoading}
+          isEmpty={isEmpty}
+        >
+          <TradingViewChart
+            ref={chartRef}
+            height={height}
+            data={prices}
+            hidePriceIndicator
+            onCrosshairMove={onCrosshairMove}
+          />
+        </ChartState>
+      </Box>
     </Paper>
   )
 }

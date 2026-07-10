@@ -16,6 +16,7 @@ export const GHO_SUPPORTED_MARKETS = [
   "hydration_v3",
   "hydration_testnet_v3",
   "bil_v3",
+  "gigahdx_v3",
 ]
 
 export const isGho = (reserve: ComputedReserveData) => {

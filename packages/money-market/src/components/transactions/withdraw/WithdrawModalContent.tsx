@@ -9,11 +9,9 @@ import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrap
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useModalContext } from "@/hooks/useModal"
-import { formatHealthFactorResult } from "@/utils"
-import {
-  calculateHFAfterWithdraw,
-  calculateMaxWithdrawAmount,
-} from "@/utils/hfUtils"
+import {} from "@/utils"
+import { calculateMaxWithdrawAmount, formatHealthFactorResult } from "@/utils"
+import { calculateHFAfterWithdraw } from "@/utils/hfUtils"
 import { zeroLTVBlockingWithdraw } from "@/utils/transactions"
 
 import { WithdrawActions } from "./WithdrawActions"

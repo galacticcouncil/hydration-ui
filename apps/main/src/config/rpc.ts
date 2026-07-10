@@ -53,26 +53,23 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 }))
 
 export const PROVIDERS: ProviderProps[] = [
+  createProvider("node0.lark (BIL)", "wss://node0.lark.hydration.cloud"),
   // createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
-  //createProvider("Dotters", "wss://hydration.dotters.network"),
+  // createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
   // createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
   // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
   // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
   // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
-  //createProvider("parm", "wss://rpc.parm.hydration.cloud"),
-  // createProvider("sin", "wss://rpc.sin.hydration.cloud"),
-  // createProvider("coke", "wss://rpc.coke.hydration.cloud"),
-  // createProvider("kril", "wss://node-dir.kril.hydration.cloud"),
-  // createProvider("shellfish", "wss://hdx.shellfish.hydration.cloud"),
-  // BIL Vault + market live on node0.lark — default dev RPC on this branch.
-  // `DataProviderResolver` picks the dev candidate with the freshest
-  // latest-block timestamp from `getBestRpcs`, so to make node0.lark the
-  // deterministic default we keep it as the ONLY `["development"]` entry
-  // (nice has been moved off the dev tag below; it's still reachable via
-  // the manual RPC picker). Contract manifest: see
-  // `aave-v3-deploy/deployments/bil/_addresses.md`.
-  createProvider("node0.lark (BIL)", "wss://node0.lark.hydration.cloud"),
+  // createProvider("parm", "wss://rpc.parm.hydration.cloud"),
+  // createProvider("sin", "wss://subway.sin.hydration.cloud"),
+  // createProvider("coke", "wss://subway.coke.hydration.cloud"),
+  // createProvider("kril", "wss://rpc.kril.hydration.cloud"),
+  // createProvider("shellfish", "wss://subway.shellfish.hydration.cloud"),
+  // createProvider("catfish-1", "wss://rpc-catfish-1.catfish.hydration.cloud"),
+  // createProvider("catfish-2", "wss://rpc-catfish-2.catfish.hydration.cloud"),
+  // createProvider("catfish-3", "wss://rpc-catfish-3.catfish.hydration.cloud"),
+  // createProvider("catfish-4", "wss://rpc-catfish-4.catfish.hydration.cloud"),
   createProvider(
     "Nice testnet",
     "wss://rpc.nice.hydration.cloud",

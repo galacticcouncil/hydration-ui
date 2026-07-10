@@ -13,7 +13,6 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
@@ -36,7 +35,7 @@ export const SwapDetailsModal = ({ details }: Props) => {
         align="center"
       />
       <ModalBody>
-        <Flex justify="space-between" align="center" pb="xxl">
+        <Flex justify="space-between" align="center" pb="xl">
           <SwapAmount
             fromAmount={details.fromAmount}
             from={details.from}
@@ -53,33 +52,25 @@ export const SwapDetailsModal = ({ details }: Props) => {
           )}
         </Flex>
         <ModalContentDivider />
-        <Grid columnTemplate="1fr auto 1fr" py="xxl">
-          <Flex direction="column" gap="s">
-            <Text fs="p4" lh={1} color={getToken("text.low")}>
-              {t("received")}
-            </Text>
-            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-              {t("currency", {
-                value: details.toAmount,
-                symbol: details.to.symbol,
-              })}
-            </Text>
-          </Flex>
+        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
+          <Amount
+            label={t("received")}
+            value={t("currency", {
+              value: details.toAmount,
+              symbol: details.to.symbol,
+            })}
+          />
           <Separator orientation="vertical" />
-          <Flex direction="column" gap="s" sx={{ justifySelf: "end" }}>
-            <Text fs="p4" lh={1} color={getToken("text.low")}>
-              {t("price")}
-            </Text>
-            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-              {t("currency", {
-                value: details.fillPrice,
-                symbol: `${details.from.symbol} / ${details.to.symbol}`,
-              })}
-            </Text>
-          </Flex>
+          <Amount
+            label={t("price")}
+            value={t("currency", {
+              value: details.fillPrice,
+              symbol: `${details.from.symbol} / ${details.to.symbol}`,
+            })}
+          />
         </Grid>
         <ModalContentDivider />
-        <Box py="xxl">
+        <Box py="xl">
           <Amount
             label={t("date")}
             value={t("date.datetime", {
@@ -90,7 +81,7 @@ export const SwapDetailsModal = ({ details }: Props) => {
         {"link" in details && details.link && (
           <>
             <ModalContentDivider />
-            <Flex justify="flex-end" pt="l" pb="xxl">
+            <Flex justify="flex-end" pt="l" pb="xl">
               <Button variant="tertiary" outline asChild>
                 <ExternalLink href={details.link}>
                   <Icon component={SubScan} size="xs" />

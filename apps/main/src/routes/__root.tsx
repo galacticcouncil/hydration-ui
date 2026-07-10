@@ -1,10 +1,7 @@
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
-import { useAccountPermitNonce } from "@/api/account"
-import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
@@ -19,6 +16,7 @@ import {
   useXcScanSubscription,
 } from "@/modules/xcm/history"
 import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
+import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
@@ -76,10 +74,12 @@ function RootComponent() {
       <AssetsProvider>
         <RpcProvider>
           <MultisigProvider>
-            <MainLayout />
-            <Services />
-            <Footer />
-            {!hasTopNavbar && <MobileTabBar />}
+            <AssetRegistryGate>
+              <MainLayout />
+              <Services />
+              <Footer />
+              {!hasTopNavbar && <MobileTabBar />}
+            </AssetRegistryGate>
           </MultisigProvider>
         </RpcProvider>
       </AssetsProvider>
@@ -93,14 +93,9 @@ function RootComponent() {
 }
 
 function ApiSubscriptions() {
-  const rpcProvider = useRpcProvider()
-  const queryClient = useQueryClient()
-
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
   usePriceSubscriber()
-  useSuspenseQuery(assetsQuery(rpcProvider, queryClient))
-  useAccountPermitNonce()
 
   return null
 }

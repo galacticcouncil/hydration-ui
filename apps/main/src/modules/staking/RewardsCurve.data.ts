@@ -6,9 +6,11 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { millisecondsToSeconds } from "date-fns"
+import { secondsInDay } from "date-fns/constants"
 
 import { stakingConstsQuery } from "@/api/constants"
-import { openGovReferendaQuery } from "@/api/democracy"
+import { ongoingReferendaQuery } from "@/api/democracy"
 import { stakingPositionsQuery, stakingRewardsQuery } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -27,7 +29,7 @@ export type RewardsCurvePoint = {
   readonly currentSecondary: boolean | undefined
   readonly currentThird: boolean | undefined
 }
-
+//@TODO: Improve this shit
 export const useRewardsCurveData = () => {
   const rpc = useRpcProvider()
 
@@ -42,7 +44,7 @@ export const useRewardsCurveData = () => {
     useQuery(stakingPositionsQuery(rpc, address))
 
   const { data: openGovReferendas, isLoading: openGovReferendasLoading } =
-    useQuery(openGovReferendaQuery(rpc))
+    useQuery(ongoingReferendaQuery(rpc))
 
   const { data: stakingRewards, isLoading: stakingRewardsLoading } = useQuery(
     stakingRewardsQuery(
@@ -139,8 +141,8 @@ export const useRewardsCurveData = () => {
         const x = Big.max(
           Big(stakingConsts.periodLength)
             .times(period)
-            .times(Big(rpc.slotDurationMs).div(1000))
-            .div(86400),
+            .times(millisecondsToSeconds(rpc.slotDurationMs))
+            .div(secondsInDay),
           0,
         ).toNumber()
 

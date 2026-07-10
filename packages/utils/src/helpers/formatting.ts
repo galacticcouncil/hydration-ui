@@ -85,7 +85,6 @@ export const durationInDaysAndHoursFromNow = (
   if (differenceInDays(end, now)) {
     return formatDistanceToNowStrict(end, {
       unit: "day",
-      roundingMethod: "floor",
     })
   }
 
