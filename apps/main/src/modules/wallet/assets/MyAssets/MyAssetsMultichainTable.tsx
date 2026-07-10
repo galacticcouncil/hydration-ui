@@ -12,8 +12,13 @@ import {
   Box,
   Button,
   DataTable,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EditableText,
   Flex,
+  FormError,
   Icon,
   Image,
   Input,
@@ -39,6 +44,7 @@ import {
   HYDRATION_PARACHAIN_ID,
   isEvmParachainAccount,
   safeConvertAddressH160,
+  safeConvertH160toSS58,
   safeConvertSS58toH160,
   shortenAccountAddress,
   stringEquals,
@@ -54,6 +60,7 @@ import {
 import {
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
+  WalletProviderType,
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
@@ -65,7 +72,7 @@ import {
 } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import Big from "big.js"
-import { ChevronDown, RefreshCw } from "lucide-react"
+import { ArrowDownUp, ChevronDown, RefreshCw } from "lucide-react"
 import {
   FC,
   ReactNode,
@@ -136,7 +143,7 @@ type AssetGroupDraft = Omit<AssetGroup, "totalDisplay"> & {
 const HYDRATION_GROUP_ID = "hydration"
 const EVM_WALLET_CHAIN_KEYS = ["ethereum", "base"] as const
 const SOLANA_WALLET_CHAIN_KEYS = ["solana"] as const
-const TRACKED_WALLET_FILTER = { isCustom: true, related: true }
+const TRACKED_WALLET_FILTER = { isCustom: true, purpose: "tracked" as const }
 
 type TrackedWallet = ReturnType<typeof useAddresses>[number]
 type TrackedWalletAccentTheme = keyof typeof trackedWalletAccentTokens
@@ -154,6 +161,8 @@ type ExternalWalletAssetRow = {
   readonly amountDisplay: string
   readonly valueDisplay: string
   readonly valueUsd: Big
+  readonly searchText: string
+  readonly sortLabel: string
   readonly hydrationAssetKey?: string
   readonly registryAsset?: ReturnType<ReturnType<typeof useAssets>["getAsset"]>
 }
@@ -164,6 +173,46 @@ type TrackedHydrationAssetRow = {
   readonly amountDisplay: string
   readonly valueDisplay: string
   readonly valueUsd: Big
+  readonly searchText: string
+  readonly sortLabel: string
+}
+
+type TrackedAssetSort = "value" | "balance" | "name"
+
+type TrackedAssetRow = {
+  readonly amountDisplay: string
+  readonly valueUsd: Big
+  readonly searchText: string
+  readonly sortLabel: string
+}
+
+const filterAndSortTrackedAssetRows = <T extends TrackedAssetRow>(
+  rows: T[],
+  searchPhrase: string,
+  sort: TrackedAssetSort,
+) => {
+  const normalizedSearch = searchPhrase.trim().toLowerCase()
+
+  return rows
+    .filter(
+      (row) => !normalizedSearch || row.searchText.includes(normalizedSearch),
+    )
+    .sort((a, b) => {
+      switch (sort) {
+        case "balance": {
+          const byBalance = Big(b.amountDisplay).cmp(a.amountDisplay)
+          if (byBalance !== 0) return byBalance
+          return b.valueUsd.cmp(a.valueUsd)
+        }
+        case "name":
+          return a.sortLabel.localeCompare(b.sortLabel)
+        case "value": {
+          const byValue = b.valueUsd.cmp(a.valueUsd)
+          if (byValue !== 0) return byValue
+          return Big(b.amountDisplay).cmp(a.amountDisplay)
+        }
+      }
+    })
 }
 
 export const MyAssetsMultichainTable: FC<Props> = ({
@@ -617,7 +666,16 @@ const ExternalWalletChainGroup: FC<{
   readonly chain: AnyChain
   readonly refreshNonce?: number
   readonly showAllAssets: boolean
-}> = ({ address, chain, refreshNonce = 0, showAllAssets }) => {
+  readonly searchPhrase?: string
+  readonly sort?: TrackedAssetSort
+}> = ({
+  address,
+  chain,
+  refreshNonce = 0,
+  showAllAssets,
+  searchPhrase = "",
+  sort = "value",
+}) => {
   const { account } = useAccount()
   const [isOpen, setIsOpen] = useState(true)
   const [localRefreshNonce, setLocalRefreshNonce] = useState(0)
@@ -627,6 +685,8 @@ const ExternalWalletChainGroup: FC<{
       chain,
       refreshKey: `${refreshNonce}:${localRefreshNonce}`,
       showAllAssets,
+      searchPhrase,
+      sort,
     })
   const canDepositToHydration =
     !!account &&
@@ -871,11 +931,15 @@ const useExternalWalletAssetRows = ({
   chain,
   refreshKey,
   showAllAssets,
+  searchPhrase,
+  sort,
 }: {
   readonly address: string
   readonly chain: AnyChain
   readonly refreshKey?: string
   readonly showAllAssets: boolean
+  readonly searchPhrase: string
+  readonly sort: TrackedAssetSort
 }) => {
   const { getAsset } = useAssets()
   const registryChain = chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain
@@ -921,7 +985,7 @@ const useExternalWalletAssetRows = ({
   )
 
   const rows = useMemo(() => {
-    return assets
+    const rows = assets
       .map((asset): ExternalWalletAssetRow => {
         const registryId = registryChain.getBalanceAssetId(asset)
         const registryAsset = getAsset(registryId.toString())
@@ -948,6 +1012,10 @@ const useExternalWalletAssetRows = ({
           }).format(Number(valueUsd.toString())),
           hydrationAssetKey,
           registryAsset,
+          searchText: `${registryAsset?.symbol ?? asset.key} ${
+            registryAsset?.name ?? asset.key
+          }`.toLowerCase(),
+          sortLabel: registryAsset?.symbol ?? asset.key,
         }
       })
       .filter(
@@ -956,14 +1024,18 @@ const useExternalWalletAssetRows = ({
           row.valueUsd.gt(0) ||
           (row.balance?.amount ?? 0n) > 0n,
       )
-      .sort((a, b) => {
-        const byValue = b.valueUsd.cmp(a.valueUsd)
-        if (byValue !== 0) return byValue
-        return b.amountDisplay.localeCompare(a.amountDisplay, undefined, {
-          numeric: true,
-        })
-      })
-  }, [assets, balances, getAsset, getAssetPrice, registryChain, showAllAssets])
+
+    return filterAndSortTrackedAssetRows(rows, searchPhrase, sort)
+  }, [
+    assets,
+    balances,
+    getAsset,
+    getAssetPrice,
+    registryChain,
+    searchPhrase,
+    showAllAssets,
+    sort,
+  ])
 
   const totalValue = useMemo(
     () => rows.reduce((total, row) => total.plus(row.valueUsd), Big(0)),
@@ -993,22 +1065,27 @@ const useTrackedHydrationAssetRows = ({
   address,
   refreshKey,
   showAllAssets,
+  searchPhrase,
+  sort,
 }: {
   readonly address: string
   readonly refreshKey: number
   readonly showAllAssets: boolean
+  readonly searchPhrase: string
+  readonly sort: TrackedAssetSort
 }) => {
   const { isApiLoaded, sdk } = useRpcProvider()
-  const { native, tokens, erc20, xykShareTokens } = useAssets()
+  const { native, tokens, stableswap, erc20, xykShareTokens } = useAssets()
   const [balances, setBalances] = useState(new Map<string, Balance>())
   const [isBalanceLoading, setIsBalanceLoading] = useState(false)
 
   const tokenAssets = useMemo(
     () => [
       ...tokens.filter((token) => token.id !== native.id),
+      ...stableswap,
       ...(xykShareTokens ?? []),
     ],
-    [native.id, tokens, xykShareTokens],
+    [native.id, stableswap, tokens, xykShareTokens],
   )
   const hydrationAssets = useMemo(
     () => [native, ...tokenAssets, ...erc20],
@@ -1120,7 +1197,7 @@ const useTrackedHydrationAssetRows = ({
   ])
 
   const rows = useMemo(() => {
-    return hydrationAssets
+    const rows = hydrationAssets
       .map((asset): TrackedHydrationAssetRow => {
         const balance = balances.get(asset.id)
         const amountDisplay = balance
@@ -1140,6 +1217,8 @@ const useTrackedHydrationAssetRows = ({
             currency: "USD",
             maximumFractionDigits: 2,
           }).format(Number(valueUsd.toString())),
+          searchText: `${asset.symbol} ${asset.name}`.toLowerCase(),
+          sortLabel: asset.symbol,
         }
       })
       .filter(
@@ -1148,14 +1227,16 @@ const useTrackedHydrationAssetRows = ({
           row.valueUsd.gt(0) ||
           (row.balance?.total ?? 0n) > 0n,
       )
-      .sort((a, b) => {
-        const byValue = b.valueUsd.cmp(a.valueUsd)
-        if (byValue !== 0) return byValue
-        return b.amountDisplay.localeCompare(a.amountDisplay, undefined, {
-          numeric: true,
-        })
-      })
-  }, [balances, getAssetPrice, hydrationAssets, showAllAssets])
+
+    return filterAndSortTrackedAssetRows(rows, searchPhrase, sort)
+  }, [
+    balances,
+    getAssetPrice,
+    hydrationAssets,
+    searchPhrase,
+    showAllAssets,
+    sort,
+  ])
 
   const totalValue = useMemo(
     () => rows.reduce((total, row) => total.plus(row.valueUsd), Big(0)),
@@ -1235,6 +1316,8 @@ const TrackedWalletsSection: FC<{
   )
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [refreshNonce, setRefreshNonce] = useState(0)
+  const [searchPhrase, setSearchPhrase] = useState("")
+  const [sort, setSort] = useState<TrackedAssetSort>("value")
   const refreshTrackedWallets = () => {
     setRefreshNonce((nonce) => nonce + 1)
   }
@@ -1279,6 +1362,34 @@ const TrackedWalletsSection: FC<{
         </Flex>
       </Flex>
 
+      {trackedWallets.length > 0 && (
+        <Flex justify="flex-end" gap="base">
+          <Input
+            value={searchPhrase}
+            placeholder={t("myAssets.redesign.tracked.search")}
+            leadingElement={<Icon size="xs" component={Search} />}
+            sx={{ width: 240 }}
+            onChange={(event) => setSearchPhrase(event.target.value)}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="small" variant="muted" outline>
+                <Icon size="xs" component={ArrowDownUp} />
+                {t(`myAssets.redesign.tracked.sort.${sort}`)}
+                <ChevronDown size={14} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {(["value", "balance", "name"] as const).map((option) => (
+                <DropdownMenuItem key={option} onSelect={() => setSort(option)}>
+                  {t(`myAssets.redesign.tracked.sort.${option}`)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </Flex>
+      )}
+
       <Box sx={trackedWalletShellSx}>
         {trackedWallets.length ? (
           trackedWallets.map((wallet) => (
@@ -1288,6 +1399,8 @@ const TrackedWalletsSection: FC<{
               refreshNonce={refreshNonce}
               onRefresh={refreshTrackedWallets}
               showAllAssets={showAllAssets}
+              searchPhrase={searchPhrase}
+              sort={sort}
             />
           ))
         ) : (
@@ -1312,7 +1425,16 @@ const TrackedWalletGroup: FC<{
   readonly refreshNonce: number
   readonly onRefresh: () => void
   readonly showAllAssets: boolean
-}> = ({ wallet, refreshNonce, onRefresh, showAllAssets }) => {
+  readonly searchPhrase: string
+  readonly sort: TrackedAssetSort
+}> = ({
+  wallet,
+  refreshNonce,
+  onRefresh,
+  showAllAssets,
+  searchPhrase,
+  sort,
+}) => {
   const { t } = useTranslation("wallet")
   const { theme } = useTheme()
   const [isOpen, setIsOpen] = useState(true)
@@ -1381,6 +1503,8 @@ const TrackedWalletGroup: FC<{
             address={hydrationAddress}
             refreshNonce={refreshNonce}
             showAllAssets={showAllAssets}
+            searchPhrase={searchPhrase}
+            sort={sort}
           />
         )}
         {chains.length
@@ -1391,6 +1515,8 @@ const TrackedWalletGroup: FC<{
                 chain={chain}
                 refreshNonce={refreshNonce}
                 showAllAssets={showAllAssets}
+                searchPhrase={searchPhrase}
+                sort={sort}
               />
             ))
           : null}
@@ -1422,12 +1548,16 @@ const TrackedHydrationChainGroup: FC<{
   readonly address: string
   readonly refreshNonce: number
   readonly showAllAssets: boolean
-}> = ({ address, refreshNonce, showAllAssets }) => {
+  readonly searchPhrase: string
+  readonly sort: TrackedAssetSort
+}> = ({ address, refreshNonce, showAllAssets, searchPhrase, sort }) => {
   const [isOpen, setIsOpen] = useState(true)
   const { rows, isLoading, totalDisplay } = useTrackedHydrationAssetRows({
     address,
     refreshKey: refreshNonce,
     showAllAssets,
+    searchPhrase,
+    sort,
   })
 
   const group = useMemo<AssetGroup>(
@@ -1590,10 +1720,18 @@ const ManageTrackedWalletsModal: FC<{
   const { add, edit, remove } = useAddressStore()
   const trimmedAddress = address.trim()
   const normalizedAddress = normalizeTrackedWalletAddress(trimmedAddress)
+  const isAlreadyTracked =
+    !!normalizedAddress &&
+    trackedWallets.some((wallet) =>
+      stringEquals(
+        getTrackedWalletFetchAddress(wallet.address),
+        getTrackedWalletFetchAddress(normalizedAddress),
+      ),
+    )
   const trackedWalletMode = normalizedAddress
     ? getWalletModeByAddress(normalizedAddress)
     : null
-  const canSave = !!account && !!trackedWalletMode
+  const canSave = !!account && !!trackedWalletMode && !isAlreadyTracked
   const focusAddressInput = useCallback(() => {
     addressInputRef.current?.focus({ preventScroll: true })
     addressInputRef.current?.select()
@@ -1616,6 +1754,7 @@ const ManageTrackedWalletsModal: FC<{
       isCustom: true,
       mode: trackedWalletMode,
       savedBy: [account.publicKey],
+      purpose: "tracked",
     })
     setAddress("")
     onSaved()
@@ -1633,7 +1772,7 @@ const ManageTrackedWalletsModal: FC<{
       return
     }
 
-    remove(wallet.publicKey)
+    remove(wallet.publicKey, "tracked")
   }
 
   const renameTrackedWallet = (wallet: TrackedWallet, name: string) => {
@@ -1656,13 +1795,14 @@ const ManageTrackedWalletsModal: FC<{
         sx={{ border: 0, borderBottom: 0 }}
       />
       <ModalBody scrollable={false} sx={trackedWalletModalBodySx}>
-        <Box sx={trackedWalletAddressInputSx}>
+        <Flex direction="column" gap="xs" sx={trackedWalletAddressInputSx}>
           <Input
             ref={addressInputRef}
             value={address}
             customSize="large"
             iconStart={Search}
             placeholder={t("myAssets.redesign.tracked.modal.placeholder")}
+            isError={isAlreadyTracked}
             trailingElement={
               canSave ? (
                 <Button
@@ -1682,7 +1822,12 @@ const ManageTrackedWalletsModal: FC<{
               }
             }}
           />
-        </Box>
+          {isAlreadyTracked && (
+            <FormError>
+              {t("myAssets.redesign.tracked.modal.alreadyAdded")}
+            </FormError>
+          )}
+        </Flex>
 
         <Flex direction="column" gap="base">
           <Flex align="center">
@@ -1831,7 +1976,8 @@ const getTrackedWalletEvmAddress = (address: string) =>
   (isEvmParachainAccount(address) ? safeConvertSS58toH160(address) : "")
 
 const getTrackedHydrationAddress = (address: string) => {
-  if (getTrackedWalletEvmAddress(address)) return ""
+  const h160 = getTrackedWalletEvmAddress(address)
+  if (h160) return safeConvertH160toSS58(h160)
   return getWalletModeByAddress(address) === WalletMode.Substrate ? address : ""
 }
 
@@ -1839,6 +1985,13 @@ const getExternalChainsForAccount = (
   account: ReturnType<typeof useAccount>["account"],
 ) => {
   if (!account) return []
+
+  if (
+    account.provider === WalletProviderType.ExternalWallet &&
+    getTrackedWalletEvmAddress(account.rawAddress)
+  ) {
+    return getChainsByKeys(EVM_WALLET_CHAIN_KEYS)
+  }
 
   if (EVM_PROVIDERS.includes(account.provider)) {
     return getChainsByKeys(EVM_WALLET_CHAIN_KEYS)

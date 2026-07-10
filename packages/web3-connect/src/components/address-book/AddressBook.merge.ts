@@ -2,7 +2,7 @@ import { NearAddr, stringEquals } from "@galacticcouncil/utils"
 
 import { getWalletModeName } from "@/utils/walletMode"
 
-import type { Address } from "./AddressBook.store"
+import type { Address, AddressPurpose } from "./AddressBook.store"
 
 export function getAllAddresses(addresses: Address[]): Address[] {
   const indices = new Map<Address["mode"], number>()
@@ -31,6 +31,7 @@ export type AddressFilter = {
   mode?: Address["mode"]
   isCustom?: boolean
   related?: boolean
+  purpose?: AddressPurpose
 }
 
 export function selectAddresses(
@@ -45,6 +46,12 @@ export function selectAddresses(
     if (
       filter.isCustom !== undefined &&
       Boolean(a.isCustom) !== filter.isCustom
+    ) {
+      return false
+    }
+    if (
+      filter.purpose !== undefined &&
+      !getAddressPurposes(a).includes(filter.purpose)
     ) {
       return false
     }
@@ -95,16 +102,17 @@ export function buildAddresses(
 }
 
 function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
-  const incomingByKey = new Map(
-    incoming.map((a) => [a.publicKey.toLowerCase(), a]),
-  )
-  const existingKeys = new Set(existing.map((a) => a.publicKey.toLowerCase()))
+  const incomingByKey = new Map(incoming.map((a) => [getAddressKey(a), a]))
+  const existingKeys = new Set(existing.map(getAddressKey))
 
   const updated = existing.map((entry) => {
-    const match = incomingByKey.get(entry.publicKey.toLowerCase())
+    const match = incomingByKey.get(getAddressKey(entry))
     if (!match) return entry
 
     const savedBy = [...new Set([...entry.savedBy, ...match.savedBy])]
+    const purposes = [
+      ...new Set([...getAddressPurposes(entry), ...getAddressPurposes(match)]),
+    ]
     const isCustom = entry.isCustom || match.isCustom
     const name =
       !entry.isCustom && match.name && entry.name !== match.name
@@ -113,9 +121,10 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
 
     const changed =
       savedBy.length !== entry.savedBy.length ||
+      purposes.length !== getAddressPurposes(entry).length ||
       name !== entry.name ||
       isCustom !== entry.isCustom
-    return changed ? { ...entry, name, savedBy, isCustom } : entry
+    return changed ? { ...entry, name, savedBy, isCustom, purposes } : entry
   })
 
   const added = [...incomingByKey.values()].filter(
@@ -126,4 +135,23 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
     added.length > 0 || updated.some((a, i) => a !== existing[i])
 
   return hasChanges ? [...updated, ...added] : existing
+}
+
+function getAddressKey(address: Pick<Address, "publicKey">) {
+  return address.publicKey.toLowerCase()
+}
+
+export function getAddressPurpose(
+  address: Pick<Address, "isCustom" | "savedBy" | "purpose" | "purposes">,
+): AddressPurpose {
+  return getAddressPurposes(address)[0] ?? "addressBook"
+}
+
+export function getAddressPurposes(
+  address: Pick<Address, "isCustom" | "savedBy" | "purpose" | "purposes">,
+): AddressPurpose[] {
+  if (address.purposes?.length) return address.purposes
+  if (address.purpose) return [address.purpose]
+  if (!address.isCustom) return ["addressBook"]
+  return [address.savedBy.length > 0 ? "tracked" : "viewAs"]
 }

@@ -66,6 +66,7 @@ export const useExternalWalletConnection = () => {
         address: normalizedAddress,
         name: "",
         isCustom: true,
+        purpose: "viewAs",
       })
 
       return normalizedAddress
@@ -114,7 +115,7 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
   const { t } = useTranslation()
   const form = useFormContext<ExternalWalletFormValues>()
   const { edit: editAddressBookEntry } = useAddressStore()
-  const addresses = useAddresses({ isCustom: true })
+  const addresses = useAddresses({ isCustom: true, purpose: "viewAs" })
   const { addExternalWalletAddress, connectExternalWallet } =
     useExternalWalletConnection()
 
@@ -122,9 +123,8 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
     () =>
       addresses.filter(
         (address) =>
-          address.savedBy.length === 0 &&
-          (address.mode === WalletMode.Substrate ||
-            address.mode === WalletMode.EVM),
+          address.mode === WalletMode.Substrate ||
+          address.mode === WalletMode.EVM,
       ),
     [addresses],
   )

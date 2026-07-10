@@ -19,6 +19,7 @@ import { getWalletModeByAddress } from "@/utils/wallet"
 import {
   type AddressFilter,
   buildAddresses,
+  getAddressPurposes,
   getAllAddresses,
   isVisibleToWallet,
   selectAddresses,
@@ -66,6 +67,8 @@ const addressSchema = z.object({
   mode: modeSchema,
   savedBy: z.array(z.string()).default([]),
   isCustom: z.boolean().optional(),
+  purpose: z.enum(["addressBook", "tracked", "viewAs"]).optional(),
+  purposes: z.array(z.enum(["addressBook", "tracked", "viewAs"])).optional(),
 })
 
 export type Address = z.infer<typeof addressSchema>
@@ -74,6 +77,8 @@ export type AddressInput = Omit<Address, "mode" | "savedBy" | "publicKey"> & {
   savedBy?: string[]
   mode?: z.infer<typeof modeSchema>
 }
+
+export type AddressPurpose = NonNullable<Address["purpose"]>
 
 function normalizeAddress(input: AddressInput): Address | null {
   const publicKey = addressToPublicKey(input.address)
@@ -91,6 +96,8 @@ function normalizeAddress(input: AddressInput): Address | null {
     publicKey,
     mode: parsedMode.data,
     savedBy: input.savedBy ?? [],
+    purpose: input.purpose ?? "addressBook",
+    purposes: input.purposes ?? [input.purpose ?? "addressBook"],
   }
 }
 
@@ -108,7 +115,7 @@ export type AddressStore = State & {
   readonly add: (address: AddressInput | AddressInput[]) => void
   readonly addGlobal: (address: AddressInput | AddressInput[]) => void
   readonly edit: (address: Address) => void
-  readonly remove: (publicKey: string) => void
+  readonly remove: (publicKey: string, purpose?: AddressPurpose) => void
   readonly selectAddresses: (filter?: AddressFilter) => Address[]
 }
 
@@ -141,20 +148,10 @@ export const useAddressStore = create<AddressStore>()(
             .map(normalizeAddress)
             .filter((a) => a !== null)
             .map((entry) => ({ ...entry, savedBy: [] }))
-          const globalPublicKeys = new Set(
-            normalized.map((entry) => entry.publicKey.toLowerCase()),
-          )
-          const addresses = buildAddresses(
-            state.addresses,
-            normalized,
-            null,
-          ).map((entry) =>
-            globalPublicKeys.has(entry.publicKey.toLowerCase())
-              ? { ...entry, savedBy: [] }
-              : entry,
-          )
 
-          return { addresses }
+          return {
+            addresses: buildAddresses(state.addresses, normalized, null),
+          }
         }),
 
       edit: (address) =>
@@ -164,16 +161,23 @@ export const useAddressStore = create<AddressStore>()(
           ),
         })),
 
-      remove: (publicKey) =>
+      remove: (publicKey, purpose) =>
         set((state) => ({
-          addresses: state.addresses.filter(
-            (a) => !stringEquals(a.publicKey, publicKey),
-          ),
+          addresses: state.addresses.flatMap((address) => {
+            if (!stringEquals(address.publicKey, publicKey)) return [address]
+            if (purpose === undefined) return []
+
+            const purposes = getAddressPurposes(address).filter(
+              (entryPurpose) => entryPurpose !== purpose,
+            )
+
+            return purposes.length ? [{ ...address, purposes }] : []
+          }),
         })),
     }),
     createZustandStorage({
       name: "address-book",
-      version: 4,
+      version: 5,
       schema: stateSchema,
       defaultState,
       migrate: (persistedState, storedVersion) => {
@@ -182,6 +186,8 @@ export const useAddressStore = create<AddressStore>()(
             return migrateLegacyAddressBookV2(persistedState)
           case 3:
             return migrateAddressBookV3toV4(persistedState)
+          case 4:
+            return migrateAddressBookV4toV5(persistedState)
           default:
             return persistedState as State
         }
@@ -199,7 +205,12 @@ export function useAddresses(filter: AddressFilter = {}): Address[] {
     () =>
       getAllAddresses(
         selectAddresses(
-          addresses.filter((a) => isVisibleToWallet(a, publicKey)),
+          addresses.filter(
+            (address) =>
+              isVisibleToWallet(address, publicKey) ||
+              (filter.purpose === "viewAs" &&
+                getAddressPurposes(address).includes("viewAs")),
+          ),
           filter,
           publicKey,
         ),
@@ -229,6 +240,40 @@ function migrateAddressBookV3toV4(persistedState: unknown): State {
       })
       .filter((address) => address !== null),
   }
+}
+
+function migrateAddressBookV4toV5(persistedState: unknown): State {
+  const parsed = stateSchema.safeParse(persistedState)
+
+  if (!parsed.success) return defaultState
+
+  const byPublicKey = new Map<string, Address>()
+
+  for (const address of parsed.data.addresses) {
+    const key = address.publicKey.toLowerCase()
+    const existing = byPublicKey.get(key)
+
+    if (!existing) {
+      byPublicKey.set(key, {
+        ...address,
+        purposes: getAddressPurposes(address),
+      })
+      continue
+    }
+
+    byPublicKey.set(key, {
+      ...existing,
+      savedBy: [...new Set([...existing.savedBy, ...address.savedBy])],
+      purposes: [
+        ...new Set([
+          ...getAddressPurposes(existing),
+          ...getAddressPurposes(address),
+        ]),
+      ],
+    })
+  }
+
+  return { addresses: [...byPublicKey.values()] }
 }
 
 function migrateLegacyAddressBookV2(persistedState: unknown): State {

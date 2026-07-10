@@ -18,7 +18,8 @@ export function useAccountBalanceSubscription() {
   const accountAddress =
     account && !account.isIncompatible ? account.address : ""
   const queryClient = useQueryClient()
-  const { erc20, tokens, getErc20AToken, native, xykShareTokens } = useAssets()
+  const { erc20, tokens, stableswap, getErc20AToken, native, xykShareTokens } =
+    useAssets()
 
   const { setBalance, resetBalances, balancesLoaded } = useAccountData(
     useShallow(pick(["setBalance", "resetBalances", "balancesLoaded"])),
@@ -46,13 +47,14 @@ export function useAccountBalanceSubscription() {
 
     const ids = new Set([
       ...tokens.map((token) => Number(token.id)),
+      ...stableswap.map((asset) => Number(asset.id)),
       ...xykShareTokens.map((token) => Number(token.id)),
     ])
 
     ids.delete(Number(native.id))
 
     return ids
-  }, [tokens, xykShareTokens, native.id])
+  }, [native.id, stableswap, tokens, xykShareTokens])
 
   const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
 

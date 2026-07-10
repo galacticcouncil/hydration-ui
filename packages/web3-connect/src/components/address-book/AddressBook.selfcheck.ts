@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 
 import {
   buildAddresses,
+  getAddressPurposes,
   getAllAddresses,
   isVisibleToWallet,
   selectAddresses,
@@ -61,6 +62,27 @@ function custom(key: string): Address {
   // re-adding from a wallet already in savedBy is a no-op (deduped union).
   const third = buildAddresses(second, [custom("a")], WALLET_1)
   assert.deepEqual(third[0]!.savedBy, [WALLET_1, WALLET_2])
+}
+
+// 3c. The same address can be saved for tracking and View as without a duplicate.
+{
+  const tracked = {
+    ...custom("a"),
+    purpose: "tracked" as const,
+    savedBy: [WALLET_1],
+  }
+  const viewAs = {
+    ...custom("a"),
+    purpose: "viewAs" as const,
+    savedBy: [],
+  }
+  const entries = buildAddresses([], [tracked, viewAs], WALLET_1)
+
+  assert.equal(entries.length, 1)
+  assert.deepEqual(getAddressPurposes(entries[0]!).sort(), [
+    "tracked",
+    "viewAs",
+  ])
 }
 
 // 3b. Manually saving an existing synced address promotes it to custom so
