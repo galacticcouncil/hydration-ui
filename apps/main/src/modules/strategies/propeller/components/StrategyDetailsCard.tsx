@@ -64,7 +64,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
             {t("strategy.tvl")}
           </Text>
           <Flex align="center" gap="s" mt="xs">
-            <PropellerLogo size={28} />
+            <PropellerLogo size="medium" />
             <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
               {t("common:currency", {
                 value: tvl,

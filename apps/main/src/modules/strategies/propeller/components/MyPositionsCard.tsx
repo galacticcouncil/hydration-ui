@@ -44,7 +44,7 @@ export const MyPositionsCard = ({
       <Separator />
       <Flex direction="column" gap="m" p="m">
         <PositionCard
-          logo={<PropellerLogo size={32} />}
+          logo={<PropellerLogo size="large" />}
           symbol={t("strategy.collateralAsset")}
           stats={
             <>

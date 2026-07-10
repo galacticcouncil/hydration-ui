@@ -29,7 +29,7 @@ export const StrategyHeader = ({ asset, onAssetChange }: Props) => {
   return (
     <Flex justify="space-between" align="center" gap="s" wrap>
       <Flex align="center" gap="base">
-        <PropellerLogo size={32} />
+        <PropellerLogo size="large" />
         <Flex direction="column">
           <Text
             font="primary"

@@ -45,7 +45,7 @@ export const useWithdrawalColumns = ({
       header: t("withdrawals.col.amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
-          <PropellerLogo size={20} />
+          <PropellerLogo size="small" />
           <Text fs="p4" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.original.amountShares,

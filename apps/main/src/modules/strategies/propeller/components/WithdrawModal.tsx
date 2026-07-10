@@ -100,7 +100,7 @@ export const WithdrawModal = ({
           <AssetInput
             label={t("withdraw.amount")}
             symbol={shareSymbol}
-            selectedAssetIcon={<PropellerLogo size={24} />}
+            selectedAssetIcon={<PropellerLogo size="medium" />}
             modalDisabled
             value={amount}
             onChange={setAmount}

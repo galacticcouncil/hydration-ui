@@ -116,7 +116,7 @@ export const DepositPanel = ({
         <AssetInput
           label={t("deposit.youReceive")}
           symbol={vault.shareSymbol}
-          selectedAssetIcon={<PropellerLogo size={24} />}
+          selectedAssetIcon={<PropellerLogo size="medium" />}
           modalDisabled
           disabledInput
           ignoreBalance
