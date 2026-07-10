@@ -130,6 +130,10 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
         onOpenChange={changeSummaryExpanded}
       >
         <Summary separator={<SwapSectionSeparator />}>
+          <TradeLimitSummaryRow
+            tradeLimit={swapSlippage}
+            priceImpact={swap.priceImpactPct}
+          />
           <CalculatedAmountSummaryRow
             label={
               isBuy
@@ -149,10 +153,6 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
             isLoading={minSummaryValueDisplayLoading}
             isExpanded={isSummaryExpanded}
             onIsExpandedChange={changeSummaryExpanded}
-          />
-          <TradeLimitSummaryRow
-            tradeLimit={swapSlippage}
-            priceImpact={swap.priceImpactPct}
           />
         </Summary>
         <CollapsibleContent asChild>
