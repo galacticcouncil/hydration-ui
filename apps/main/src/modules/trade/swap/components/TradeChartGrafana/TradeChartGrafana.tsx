@@ -1,10 +1,13 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
   AnimatedValue,
   Box,
   ChartValues,
   Flex,
+  Icon,
   Paper,
+  Separator,
   Text,
   TradingViewChart,
   TradingViewChartRef,
@@ -20,6 +23,7 @@ import {
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
 import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
 import { useTradeChartGrafanaData } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.data"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
@@ -44,13 +48,17 @@ export const TradeChartGrafana: React.FC<TradeChartGrafanaProps> = ({
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const chartRef = useRef<TradingViewChartRef>(null)
+  const [isInverted, setIsInverted] = useState(false)
   const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
     "week",
   )
 
+  const assetA = isInverted ? assetOut : assetIn
+  const assetB = isInverted ? assetIn : assetOut
+
   const { prices, isLoading, isSuccess, isError } = useTradeChartGrafanaData({
-    assetInId: assetIn,
-    assetOutId: assetOut,
+    assetInId: assetA,
+    assetOutId: assetB,
     timeFrame: interval,
   })
 
@@ -66,20 +74,21 @@ export const TradeChartGrafana: React.FC<TradeChartGrafanaProps> = ({
     isLoadingValues,
   } = useTradeChartValues({
     prices,
-    priceAssetId: assetIn,
+    priceAssetId: assetA,
     isEmpty,
     isError,
     isLoading,
   })
 
   const { getAssetWithFallback } = useAssets()
-  const assetInMeta = getAssetWithFallback(assetIn)
+  const assetAMeta = getAssetWithFallback(assetA)
+  const assetBMeta = getAssetWithFallback(assetB)
 
   const chartValue = shouldShowValues ? (
-    <Text>
+    <Text fs={["p3", "p1"]} fw={600}>
       <AnimatedValue
         value={value}
-        format={(value) => t("currency", { value, symbol: assetInMeta.symbol })}
+        format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
       />
     </Text>
   ) : undefined
@@ -103,14 +112,35 @@ export const TradeChartGrafana: React.FC<TradeChartGrafanaProps> = ({
           displayValue={chartDisplayValue}
           isLoading={isLoadingValues}
         />
-        <ChartTimeRange
-          options={intervalOptions}
-          selectedOption={interval}
-          onSelect={(option) => {
-            setInterval(option.key)
-            chartRef.current?.resetZoom()
-          }}
-        />
+        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
+          <SChartInvertButton
+            size="small"
+            variant="tertiary"
+            outline
+            onClick={() => setIsInverted((prev) => !prev)}
+          >
+            <Icon component={ArrowLeftRight} size="m" />
+            {assetBMeta.symbol}/{assetAMeta.symbol}
+          </SChartInvertButton>
+          <Separator
+            orientation="vertical"
+            mx="base"
+            sx={{
+              height: "l",
+              mt: "xs",
+              display: ["none", null, null, null, "block"],
+            }}
+          />
+          <ChartTimeRange
+            sx={{ ml: "auto" }}
+            options={intervalOptions}
+            selectedOption={interval}
+            onSelect={(option) => {
+              setInterval(option.key)
+              chartRef.current?.resetZoom()
+            }}
+          />
+        </Flex>
       </Flex>
       <ChartState
         sx={{ height }}
