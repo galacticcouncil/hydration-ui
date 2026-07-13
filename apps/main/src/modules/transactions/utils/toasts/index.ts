@@ -81,7 +81,7 @@ export const createToastProcessorFn = (
 ): ToastProcessorFn => {
   const substrateProcessor = processors.substrate(queryClient, indexerSdk)
   const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
-  const xcscanProcessor = processors.xcscan(xcScanHttpClient)
+  const xcscanProcessor = processors.xcscan(address, xcScanHttpClient)
   const basejumpProcessor = processors.basejump(address, queryClient)
   const invalidProcessor = processors.invalid()
 

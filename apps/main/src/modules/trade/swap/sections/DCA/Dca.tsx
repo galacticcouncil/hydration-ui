@@ -129,7 +129,6 @@ export const Dca: FC = () => {
                       ? { type, useSplitTrade: true }
                       : { type }),
                   },
-                  sellAmount: "",
                   duration: DEFAULT_DCA_DURATION,
                 })
 

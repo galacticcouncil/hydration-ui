@@ -38,10 +38,8 @@ export const useUnlockNativeLocks = (
         }),
       )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpcProvider.papiClient.getUnsafeApi() as any
       const pendingPositionsTxs = pendingPositions.map((position) =>
-        unsafeApi.tx.GigaHdx.unlock({
+        papi.tx.GigaHdx.unlock({
           position_id: position.voteAtBlock,
         }),
       )
