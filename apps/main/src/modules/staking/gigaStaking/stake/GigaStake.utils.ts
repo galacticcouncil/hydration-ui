@@ -230,5 +230,6 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     maxStakeHuman: maxBalanceWithFee,
     gigaHdxMeta: getAssetWithFallback(HDX_ERC20_ASSET_ID),
     onSubmit,
+    isSubmitting: mutation.isPending,
   }
 }

@@ -182,7 +182,15 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
-        addPendingTransaction(transaction.id, nonce, transaction.meta)
+        if (account) {
+          addPendingTransaction({
+            id: transaction.id,
+            nonce,
+            meta: transaction.meta,
+            address: account.address,
+            isPermit: isUsingPermit,
+          })
+        }
       },
       onSuccess: (event) => {
         if (successMode !== "best") return

@@ -5,8 +5,11 @@ import { useEffect, useMemo, useState } from "react"
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import { mergeJourneys } from "@/modules/xcm/history/utils/journey"
 import {
-  isOptimisticJourneyForTxHash,
-  shouldIgnoreNewJourney,
+  clearPendingHop,
+  isIndexedTransferJourney,
+  mergeLoadedJourneysWithOptimistic,
+  shouldIgnoreIncomingJourney,
+  shouldRemoveJourneyForIncoming,
 } from "@/modules/xcm/history/utils/optimistic"
 
 import { useBasejumpScan } from "./useBasejumpScan"
@@ -78,7 +81,9 @@ export const useXcScanSubscription = (address: string) => {
 
       xcStore.subscribe(address, {
         onLoad(journeys) {
-          queryClient.setQueryData(queryKey, journeys)
+          queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
+            mergeLoadedJourneysWithOptimistic(address, old, journeys),
+          )
           setIsLoading(false)
           setIsError(false)
         },
@@ -88,26 +93,23 @@ export const useXcScanSubscription = (address: string) => {
               return [journey]
             }
 
-            if (shouldIgnoreNewJourney(old, journey)) {
+            const ignore = shouldIgnoreIncomingJourney(old, journey, address)
+            if (ignore) {
               return old
             }
-            const prev = old.filter((item) => {
-              const isOptimisticPrimary = isOptimisticJourneyForTxHash(
-                item,
-                journey.originTxPrimary ?? "",
-              )
-              const isOptimisticSecondary = isOptimisticJourneyForTxHash(
-                item,
-                journey.originTxSecondary ?? "",
-              )
-              const isSameCorrelationId =
-                item.correlationId === journey.correlationId
-              return (
-                !isOptimisticPrimary &&
-                !isOptimisticSecondary &&
-                !isSameCorrelationId
-              )
-            })
+
+            const prev: XcJourney[] = []
+
+            for (const item of old) {
+              if (shouldRemoveJourneyForIncoming(item, journey, address)) {
+                // Pending hop is resolved once the indexed journey supersedes the hop leg.
+                if (item.originTxPrimary && isIndexedTransferJourney(journey)) {
+                  clearPendingHop(address, item.originTxPrimary)
+                }
+              } else {
+                prev.push(item)
+              }
+            }
 
             return [journey, ...prev]
           })

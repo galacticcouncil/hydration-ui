@@ -14,9 +14,13 @@ export type TextButtonProps = React.ComponentPropsWithoutRef<"button"> &
 
 const TextButtonIcon = ({
   direction,
+  icon,
 }: {
   direction: TextButtonProps["direction"]
+  icon?: React.ReactNode
 }) => {
+  if (icon) return icon
+
   if (direction === "internal")
     return <ChevronRight size={10} strokeWidth={3} />
 
@@ -27,10 +31,10 @@ const TextButtonIcon = ({
 
 export const TextButton: FC<
   TextButtonProps & { ref?: Ref<HTMLButtonElement> }
-> = ({ direction = "none", ref, ...props }) => (
+> = ({ direction = "none", ref, icon, ...props }) => (
   <STextButton ref={ref} type="button" {...props}>
     {props.children}
-    <TextButtonIcon direction={direction} />
+    <TextButtonIcon direction={direction} icon={icon} />
   </STextButton>
 )
 
@@ -39,7 +43,7 @@ export type LinkTextButtonProps = React.ComponentPropsWithoutRef<"a"> &
 
 export const LinkTextButton: FC<
   LinkTextButtonProps & { ref?: Ref<HTMLAnchorElement> }
-> = ({ direction = "external", variant = "plain", ref, ...props }) => (
+> = ({ direction = "external", variant = "plain", ref, icon, ...props }) => (
   <SLinkTextButton
     ref={ref}
     target="_blank"
@@ -49,6 +53,6 @@ export const LinkTextButton: FC<
     {...props}
   >
     {props.children}
-    <TextButtonIcon direction={direction} />
+    <TextButtonIcon direction={direction} icon={icon} />
   </SLinkTextButton>
 )
