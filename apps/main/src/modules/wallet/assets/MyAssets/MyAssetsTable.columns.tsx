@@ -39,6 +39,7 @@ export type MyAsset = TAssetData & {
   readonly transferable: string
   readonly transferableDisplay: string | undefined
   readonly canStake: boolean
+  readonly reserved: bigint | undefined
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
