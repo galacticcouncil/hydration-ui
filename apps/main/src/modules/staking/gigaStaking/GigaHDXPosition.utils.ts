@@ -36,8 +36,6 @@ export const useClaimAndCompound = () => {
       claimedRewardsHdxHuman,
     }: ClaimAndCompoundArgs) => {
       const accountAddress = argAccountAddress || account?.address || ""
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
       const hasUnstake =
         unstakeGigahdxAmount !== undefined && unstakeGigahdxAmount > 0n
 
@@ -64,19 +62,19 @@ export const useClaimAndCompound = () => {
           : []),
 
         hasAccruedYield
-          ? unsafeApi.tx.GigaHdx.realize_yield().decodedCall
+          ? rpc.papi.tx.GigaHdx.realize_yield().decodedCall
           : null,
 
         hasClaimableRewards
-          ? unsafeApi.tx.GigaHdxRewards.claim_rewards().decodedCall
+          ? rpc.papi.tx.GigaHdxRewards.claim_rewards().decodedCall
           : null,
 
         hasUnstake
-          ? unsafeApi.tx.GigaHdx.giga_unstake({
+          ? rpc.papi.tx.GigaHdx.giga_unstake({
               gigahdx_amount: unstakeGigahdxAmount,
             }).decodedCall
           : null,
-      ].filter(Boolean)
+      ].filter((call): call is NonNullable<typeof call> => call !== null)
 
       const tx = rpc.papi.tx.Utility.batch_all({ calls })
 

@@ -7,14 +7,15 @@ import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 
 type Props = {
   readonly priceImpact: number
+  readonly label?: string
 }
 
-export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact }) => {
+export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact, label }) => {
   const { t } = useTranslation(["common", "trade"])
 
   return (
     <SwapSummaryRow
-      label={t("trade:market.summary.priceImpact")}
+      label={label ?? t("trade:market.summary.priceImpact")}
       content={
         <SummaryRowValue
           color={

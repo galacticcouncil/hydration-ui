@@ -13,7 +13,15 @@ export const Crosshair: FC<
   const timestamp = data?.time ? parseTradingViewTime(data.time) : null
 
   return (
-    <div ref={ref} sx={{ display: "block", position: "absolute", zIndex: 2 }}>
+    <div
+      ref={ref}
+      sx={{
+        display: "block",
+        position: "absolute",
+        zIndex: 2,
+        pointerEvents: "none",
+      }}
+    >
       {timestamp && (
         <ChartCrosshair
           date={dateFormatter.format(timestamp)}

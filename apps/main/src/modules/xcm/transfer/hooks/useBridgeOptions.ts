@@ -18,8 +18,7 @@ export type BridgeEntry =
   | { kind: BridgeEntryKind.Default; tag: string }
   | {
       kind: BridgeEntryKind.Snowbridge
-      slow: AssetRoute | null
-      fast: AssetRoute | null
+      v2: AssetRoute | null
       v1: AssetRoute | null
     }
 
@@ -39,16 +38,15 @@ export const useBridgeOptions = (
     const snowbridgeRoutes = destAsset
       ? routes.filter((r) => r.destination.asset.key === destAsset.key)
       : routes
-    const { slow, fast, v1 } = pickSnowbridgeVariants(snowbridgeRoutes)
-    const hasSnowbridgeChoice =
-      [slow, fast, v1].filter(isNonNullish).length >= 2
+    const { v2, v1 } = pickSnowbridgeVariants(snowbridgeRoutes)
+    const hasSnowbridgeChoice = [v2, v1].filter(isNonNullish).length >= 2
 
     const options = pipe(
       tags,
       flatMap((tag): BridgeEntry[] => {
         if (tag === XcmTag.Snowbridge) {
           return hasSnowbridgeChoice
-            ? [{ kind: BridgeEntryKind.Snowbridge, slow, fast, v1 }]
+            ? [{ kind: BridgeEntryKind.Snowbridge, v2, v1 }]
             : []
         }
         return [{ kind: BridgeEntryKind.Default, tag }]

@@ -18,6 +18,10 @@ import { z } from "zod/v4"
 
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import i18n from "@/i18n"
+import {
+  getSharedSellAmount,
+  useSharedSellAmountSync,
+} from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -230,7 +234,7 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
-    sellAmount: "",
+    sellAmount: getSharedSellAmount(),
     buyAsset: getAsset(assetOut) ?? null,
     duration: DEFAULT_DCA_DURATION,
     orders: {
@@ -243,6 +247,8 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     defaultValues,
     resolver: standardSchemaResolver(useSchema(account)),
   })
+
+  useSharedSellAmountSync(form)
 
   const { trigger, getValues } = form
 

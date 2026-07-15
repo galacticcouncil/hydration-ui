@@ -125,6 +125,7 @@
   "initialValue": "Initial value",
   "currentValue": "Current value",
   "withdraw": "Withdraw",
+  "withdraw.symbol": "Withdraw {{ symbol }}",
   "deposit": "Deposit",
   "transfer": "Transfer",
   "balances": "Balances",
