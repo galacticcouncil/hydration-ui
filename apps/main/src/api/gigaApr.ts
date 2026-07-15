@@ -134,8 +134,6 @@ export const passiveAprQuery = (
     queryKey: ["gigaApr", "passive", windowDays],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
       const blocksPerDay = getBlocksPerDay(
         millisecondsToSeconds(rpc.slotDurationMs),
       )
@@ -185,9 +183,9 @@ export const passiveAprQuery = (
         [t0Block],
       )
       const [tlT0Raw, gpT0Acct, supplyT0Raw] = await Promise.all([
-        unsafeApi.query.GigaHdx.TotalLocked.getValue({ at: t0HashStr }).catch(
+        rpc.papi.query.GigaHdx.TotalLocked.getValue({ at: t0HashStr }).catch(
           () => null,
-        ) as Promise<bigint | null>,
+        ),
         rpc.papi.query.System.Account.getValue(STAKE_GIGAPOT_ADDRESS, {
           at: t0HashStr,
         }).catch(() => null),
@@ -322,7 +320,7 @@ export const refsPerYearQuery = (rpc: TProviderContext) =>
             endBlock = value.value[0]
             break
           case "Killed":
-            endBlock = value.value as unknown as number
+            endBlock = value.value
             break
           default:
             continue
