@@ -90,6 +90,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
     }
 
     if (twap.type === TradeOrderType.TwapBuy) {
+      // Buy-intent TWAP is a Buy with a guaranteed output — show the max spent.
       const twapPrice =
         twap.amountIn + calculateSlippage(twap.amountIn, twapSlippage)
       const twapPriceHuman = scaleHuman(twapPrice, sellAsset.decimals)
@@ -100,14 +101,11 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
       return [twapPrice, swapPrice, twapPriceHuman, sellAsset]
     }
 
-    const twapPrice =
-      twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage)
+    // Sell-intent settles at market with no fixed minimum (min_amount_out = 0).
+    const twapPrice = twap.amountOut
     const twapPriceHuman = scaleHuman(twapPrice, buyAsset.decimals)
 
-    const swapPrice =
-      swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage)
-
-    return [twapPrice, swapPrice, twapPriceHuman, buyAsset]
+    return [twapPrice, 0n, twapPriceHuman, buyAsset]
   })()
 
   const [twapPriceDisplay, { isLoading: twapPriceDisplayLoading }] =
@@ -130,7 +128,10 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
     mediumHigh = Number.MAX_SAFE_INTEGER,
   ] = getTradeFeeIntervals(0, 0)
 
-  const twapDiff = math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
+  // Buy-intent (guaranteed Buy): max-sent difference vs single trade, as before.
+  const twapDiff = isBuy
+    ? math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
+    : 0
   const twapDiffAbs = Math.abs(twapDiff)
   const twapSymbol = twapDiff >= 0 ? "+" : "-"
 
@@ -143,25 +144,32 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
         label={
           isBuy
             ? t("trade:market.summary.maxSent")
-            : t("trade:market.summary.minReceived")
+            : t("trade:market.summary.estReceived")
         }
         tooltip={
           isBuy
             ? t("trade:market.summary.maxSent.tooltip")
-            : t("trade:market.summary.minReceived.tooltip")
+            : t("trade:market.summary.estReceived.tooltip")
         }
         amount={
-          <SummaryRowValue>
-            <span>
-              {t("currency", {
-                value: twapPriceHuman,
-                symbol: twapPriceAsset.symbol,
-              })}
-            </span>
-            <span sx={{ color: getToken("colors.skyBlue.500") }}>
-              {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
-            </span>
-          </SummaryRowValue>
+          isBuy ? (
+            <SummaryRowValue>
+              <span>
+                {t("currency", {
+                  value: twapPriceHuman,
+                  symbol: twapPriceAsset.symbol,
+                })}
+              </span>
+              <span sx={{ color: getToken("colors.skyBlue.500") }}>
+                {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
+              </span>
+            </SummaryRowValue>
+          ) : (
+            `~${t("currency", {
+              value: twapPriceHuman,
+              symbol: twapPriceAsset.symbol,
+            })}`
+          )
         }
         amountDisplay={twapPriceDisplay}
         isLoading={twapPriceDisplayLoading}

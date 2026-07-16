@@ -10,7 +10,6 @@ import {
   Trade,
   TradeOrder,
   tradeOrderDurationQuery,
-  TradeOrderType,
   TradeType,
 } from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
@@ -63,7 +62,21 @@ export const MarketTradeOptions: FC<Props> = ({
 
   const price = scaleHuman(amount, asset.decimals)
   const twapPrice = twapAmount ? scaleHuman(twapAmount, asset.decimals) : "0"
-  const diff = Big(twapPrice).minus(price).toString()
+
+  // Buy-intent (guaranteed Buy) keeps the production behaviour: raw output diff
+  // vs the single trade. Sell-intent shows the guaranteed fee saving instead —
+  // the difference of the actual fees paid (same fee asset), clamped >= 0; small
+  // slices pay a smaller dynamic fee regardless of how the market moves. Kept
+  // identical to the "Save X on fees" figure in the split summary.
+  const feeSaving = twap
+    ? Math.max(
+        0,
+        Number(scaleHuman(swap.tradeFee, asset.decimals)) -
+          Number(scaleHuman(twap.tradeFee, asset.decimals)),
+      ).toString()
+    : "0"
+  const outputDiff = Big(twapPrice).minus(price).toString()
+  const splitDiff = isBuy ? outputDiff : feeSaving
 
   return (
     <Controller
@@ -87,8 +100,9 @@ export const MarketTradeOptions: FC<Props> = ({
             <TradeOption
               asset={asset}
               value={twapPrice}
-              diff={diff}
-              isBuy={twap.type === TradeOrderType.TwapBuy}
+              diff={splitDiff}
+              isBuy={isBuy}
+              approx={!isBuy}
               active={!field.value}
               onClick={(): void => {
                 field.onChange(false)
