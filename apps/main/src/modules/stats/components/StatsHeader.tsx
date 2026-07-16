@@ -1,8 +1,10 @@
 import {
+  Box,
   Flex,
   FlexProps,
   Separator,
   Tooltip,
+  TooltipIcon,
   ValueStats,
   ValueStatsLabel,
   ValueStatsSize,
@@ -64,23 +66,33 @@ export const StatsHeader: FC<StatsHeaderProps> = ({
         const customLabel = stat.tooltip ? (
           <Flex align="center" gap={getSpacingValue("s")}>
             <ValueStatsLabel>{stat.label}</ValueStatsLabel>
-            <Tooltip text={stat.tooltip} side="top" align="center" />
+            <TooltipIcon />
           </Flex>
         ) : undefined
 
+        const valueStats = (
+          <ValueStats
+            label={stat.label}
+            customLabel={customLabel}
+            size={size}
+            wrap={stat.wrap ?? true}
+            value={!customValue ? stat.value : undefined}
+            customValue={customValue}
+            bottomLabel={stat.bottomLabel}
+            customBottomLabel={stat.customBottomLabel}
+            isLoading={stat.isLoading}
+          />
+        )
+
         return (
           <Fragment key={`${stat.label}-${index}`}>
-            <ValueStats
-              label={stat.label}
-              customLabel={customLabel}
-              size={size}
-              wrap={stat.wrap ?? true}
-              value={!customValue ? stat.value : undefined}
-              customValue={customValue}
-              bottomLabel={stat.bottomLabel}
-              customBottomLabel={stat.customBottomLabel}
-              isLoading={stat.isLoading}
-            />
+            {stat.tooltip ? (
+              <Tooltip text={stat.tooltip} side="top" align="center" asChild>
+                <Box>{valueStats}</Box>
+              </Tooltip>
+            ) : (
+              valueStats
+            )}
             {index < stats.length - 1 && (
               <Separator
                 orientation="vertical"

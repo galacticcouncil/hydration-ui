@@ -1,6 +1,8 @@
 export const COMPOSITION_GRID_COLUMNS = 12
 export const COMPOSITION_GRID_COLUMNS_MOBILE = 2
 export const COMPOSITION_MAX_ROWS = 4
+// Tall composition anchors span two tracks but still belong to four visible bands.
+export const COMPOSITION_DESKTOP_MAX_GRID_ROWS = COMPOSITION_MAX_ROWS + 1
 export const COMPOSITION_MAX_ROWS_MOBILE = 10
 
 export type CompositionBlockTier = "hero" | "major" | "mid" | "minor" | "dust"
@@ -38,7 +40,7 @@ type CompositionGridPlacement = CompositionGridBlockSpec & {
 
 const DESKTOP_GRID: CompositionGridContext = {
   columns: COMPOSITION_GRID_COLUMNS,
-  maxRows: COMPOSITION_MAX_ROWS,
+  maxRows: COMPOSITION_DESKTOP_MAX_GRID_ROWS,
 }
 
 const MOBILE_GRID: CompositionGridContext = {
@@ -142,7 +144,7 @@ export const getCompositionBlockLayout = (
     }
   } else if (valueUsd >= 1_100_000) {
     layout = {
-      colSpan: 4,
+      colSpan: 2,
       rowSpan: 2,
       tier: "major",
       shareSize: "large",
@@ -314,14 +316,26 @@ const packCompositionGrid = (
     }
   }
 
+  let cursorRow = 0
+  let cursorCol = 0
+
   for (const [index, { colSpan, rowSpan }] of blocks.entries()) {
     let placed = false
 
-    for (let row = 0; !placed; row++) {
-      for (let col = 0; col <= columns - colSpan; col++) {
+    for (let row = cursorRow; !placed; row++) {
+      const startCol = row === cursorRow ? cursorCol : 0
+
+      for (let col = startCol; col <= columns - colSpan; col++) {
         if (fits(row, col, colSpan, rowSpan)) {
           occupy(row, col, colSpan, rowSpan)
           placements.push({ index, row, col, colSpan, rowSpan })
+          cursorRow = row
+          cursorCol = col + colSpan
+
+          if (cursorCol >= columns) {
+            cursorRow += 1
+            cursorCol = 0
+          }
 
           placed = true
           break
@@ -350,7 +364,7 @@ export const getOthersCompositionBlockLayout = (
       DESKTOP_GRID,
     )
 
-    if (rows > COMPOSITION_MAX_ROWS) break
+    if (rows > COMPOSITION_DESKTOP_MAX_GRID_ROWS) break
 
     colSpan = nextColSpan
   }
@@ -519,17 +533,9 @@ const balanceCompositionGridSpecs = (
         freeColumns: grid.columns - row.filter(Boolean).length,
       }))
       .filter(({ freeColumns }) => freeColumns > 0)
-      .sort((a, b) => b.row - a.row || b.freeColumns - a.freeColumns)
+      .sort((a, b) => a.row - b.row || b.freeColumns - a.freeColumns)
 
-    let freeColumns = 0
-    let candidate:
-      | {
-          index: number
-          valueUsd: number
-          share: number
-          remaining: number
-        }
-      | undefined
+    let didResize = false
 
     for (const rowGap of rowGaps) {
       const candidates = placements
@@ -574,33 +580,31 @@ const balanceCompositionGridSpecs = (
         .filter((item) => item.remaining > 0)
         .sort((a, b) => b.valueUsd - a.valueUsd || b.share - a.share)
 
-      if (candidates[0]) {
-        candidate = candidates[0]
-        freeColumns = rowGap.freeColumns
-        break
-      }
-    }
+      for (const candidate of candidates) {
+        for (
+          let increment = Math.min(rowGap.freeColumns, candidate.remaining);
+          increment > 0;
+          increment--
+        ) {
+          balancedSpecs[candidate.index]!.colSpan += increment
 
-    if (!candidate) break
+          if (
+            packCompositionGrid(getPackedSpecs(), grid).occupied.length <=
+            grid.maxRows
+          ) {
+            didResize = true
+            break
+          }
 
-    let didResize = false
+          balancedSpecs[candidate.index]!.colSpan -= increment
+        }
 
-    for (
-      let increment = Math.min(freeColumns, candidate.remaining);
-      increment > 0;
-      increment--
-    ) {
-      balancedSpecs[candidate.index]!.colSpan += increment
-
-      if (
-        packCompositionGrid(getPackedSpecs(), grid).occupied.length <=
-        grid.maxRows
-      ) {
-        didResize = true
-        break
+        if (didResize) break
       }
 
-      balancedSpecs[candidate.index]!.colSpan -= increment
+      if (didResize) {
+        break
+      }
     }
 
     if (!didResize) break

@@ -81,7 +81,7 @@ Debt-netted money-market rule:
 - Accounts with `netMoneyMarketBorrows: true` pro-rata their raw money-market debt across supplied collateral.
 - All tracked Hydration treasury wallets currently use this rule: main treasury, HOLLAR collector treasury, PRIME pure proxy, and money market treasury.
 - Their supplied collateral is reduced by the account's raw borrow value before entering `assets`, composition tiles, and the All treasury assets table.
-- If supplied collateral is larger than debt, the remaining supplied value is shown as the asset's net contribution. The tooltip/table details still show gross `Supplied as collateral` and the negative `Collateral used by debt`.
+- If supplied collateral is larger than debt, the remaining supplied value is shown as `Collateral value`. The tooltip/table details still show gross `Supplied as collateral` and the negative `Reserved for borrows`.
 - If debt is larger than supplied collateral, supplied assets are removed and only the residual raw debt remains in `borrowValueUsd`; mapped borrow rows are scaled for display when possible.
 - This prevents debt-backed collateral, including HOLLAR debt that may not map to a local asset row, from inflating treasury composition.
 
@@ -143,9 +143,9 @@ This differs from the connected wallet balance card. The wallet `Asset balance` 
   - `Collateral / debt`
   - `Breakdown` or `Other balances`
 - `Total balance` is used when the asset has no debt-offset row. `Total net value` is used when money-market debt has reduced the asset contribution.
-- `Collateral used by debt` replaces the old `Debt offset` wording. It shows the supplied-collateral value reserved against account borrows and is displayed as USD-only because the borrowed assets can come from the full collateral basket, not necessarily the same asset.
+- `Reserved for borrows` replaces the old `Debt offset` wording. It shows the supplied-collateral value reserved against account borrows and is displayed as USD-only because the borrowed assets can come from the full collateral basket, not necessarily the same asset.
 - `Breakdown` is used when visible non-money-market buckets (`Asset balance`, `Supplied as liquidity`, `Offchain`) fully explain the asset total, or when one of those buckets is the whole balance.
-- `Other balances` is used when those buckets are extra balance sources beside collateral/debt, for example a row that has both net collateral and Omnipool liquidity.
+- `Other balances` is used when those buckets are extra balance sources beside collateral/debt, for example a row that has both collateral value and Omnipool liquidity.
 - `Asset balance` shows only normal Hydration wallet-held tokens.
 - `Offchain` shows only balances held outside Hydration, not normal Hydration wallet balances.
 - Smartphone layouts show only `Asset` and `Total net value`; tapping a row opens the same asset detail drawer body used by composition tile details.

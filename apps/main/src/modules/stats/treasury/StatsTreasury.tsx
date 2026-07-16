@@ -69,6 +69,7 @@ import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedR
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
+  COMPOSITION_DESKTOP_MAX_GRID_ROWS,
   COMPOSITION_MAX_ROWS_MOBILE,
   type CompositionBlockLayout,
   type CompositionGridBlockSpec,
@@ -577,7 +578,7 @@ const getAssetMoneyMarketBreakdownRows = (
 ): TooltipBreakdownRow[] => {
   const rows: TooltipBreakdownRowCandidate[] = [
     {
-      label: "Net collateral",
+      label: "Collateral value",
       part: getAssetNetCollateralBreakdown(item),
     },
     {
@@ -585,7 +586,7 @@ const getAssetMoneyMarketBreakdownRows = (
       part: item.breakdown.moneyMarketSupply,
     },
     {
-      label: "Collateral used by debt",
+      label: "Reserved for borrows",
       part: item.breakdown.moneyMarketBorrow,
       negative: true,
       withDebtInfo: true,
@@ -760,23 +761,29 @@ const MobileBreakdownRow = ({
   part,
   negative,
   symbol,
+  valueDisplay = "asset",
 }: {
   label: string
   part?: TreasuryAssetBreakdownPart
   negative?: boolean
   symbol?: string
+  valueDisplay?: TooltipBreakdownRow["valueDisplay"]
 }) => (
   <MobileAmountRow
     label={label}
     value={
-      part
-        ? formatTooltipTokenAmountWithSymbol(part.balance, symbol, negative)
-        : "-"
+      part && valueDisplay === "currency"
+        ? `${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`
+        : part
+          ? formatTooltipTokenAmountWithSymbol(part.balance, symbol, negative)
+          : "-"
     }
     displayValue={
-      part
-        ? `${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`
-        : "-"
+      part && valueDisplay === "currency"
+        ? undefined
+        : part
+          ? `${negative ? "-" : ""}${formatTooltipCurrency(part.valueUsd)}`
+          : "-"
     }
   />
 )
@@ -784,11 +791,11 @@ const MobileBreakdownRow = ({
 const DebtOffsetTooltipContent = () => (
   <Flex direction="column" gap="xs">
     <Text fs="p6" fw={600} lh={1.2} color="text.high">
-      Collateral used by debt
+      Reserved for borrows
     </Text>
     <Text fs="p7" lh={1.4} color={getToken("text.medium")}>
-      Part of supplied collateral backing account borrows. Shown in USD because
-      debt uses the full collateral basket.
+      Part of this collateral&apos;s USD value is backing account borrows. Shown
+      in dollars because the borrowed assets may be different tokens.
     </Text>
   </Flex>
 )
@@ -1742,7 +1749,7 @@ const MobileAssetDetails = ({
           negative={item.source === "moneyMarketBorrow"}
           symbol={item.asset.symbol}
         />
-        {breakdownRows.map(({ label, part, negative }) => (
+        {breakdownRows.map(({ label, part, negative, valueDisplay }) => (
           <Fragment key={label}>
             <SAssetDetailMobileSeparator />
             <MobileBreakdownRow
@@ -1750,6 +1757,7 @@ const MobileAssetDetails = ({
               part={part}
               negative={negative}
               symbol={item.asset.symbol}
+              valueDisplay={valueDisplay}
             />
           </Fragment>
         ))}
@@ -2101,6 +2109,30 @@ export const StatsTreasury = () => {
         )
 
         if (rows <= COMPOSITION_MAX_ROWS_MOBILE) break
+
+        const assetIndex = getDemotableCompositionAssetIndex(primaryAssets)
+
+        if (assetIndex === -1) break
+
+        const [asset] = primaryAssets.splice(assetIndex, 1)
+
+        if (!asset) break
+
+        othersAssets = [asset, ...othersAssets]
+      }
+    } else {
+      while (primaryAssets.length > 1) {
+        const othersShare =
+          othersAssets.reduce((acc, item) => acc + item.share, 0) || undefined
+        const rows = estimateCompositionGridRows(
+          getCompositionGridBlockSpecs(
+            primaryAssets.map(getCompositionPlacementAsset),
+            othersShare,
+          ),
+          getCompositionGridContext(false),
+        )
+
+        if (rows <= COMPOSITION_DESKTOP_MAX_GRID_ROWS) break
 
         const assetIndex = getDemotableCompositionAssetIndex(primaryAssets)
 
