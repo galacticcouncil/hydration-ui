@@ -112,6 +112,12 @@ export interface BilReserveConfig {
    * per-second compounding (n = 31_536_000). What users typically see.
    */
   borrowApyPct: number
+  /**
+   * Whether HOLLAR borrowing is enabled on the pool. Disabled at launch
+   * (staged rollout) — governance flips it on later. Gates leverage: with
+   * borrowing off, the achievable Net APY is just the base vault yield.
+   */
+  borrowingEnabled: boolean
 }
 
 /**
@@ -155,11 +161,16 @@ export function useBilReserveConfig() {
       const borrowApr = Number(reserveData.currentVariableBorrowRate) / RAY
       const borrowApy =
         Math.pow(1 + borrowApr / SECONDS_PER_YEAR, SECONDS_PER_YEAR) - 1
+      // HOLLAR borrowing is disabled at launch (staged rollout); bit 58 of the
+      // HOLLAR reserve's config is the BORROWING_ENABLED flag. Leverage — and
+      // therefore the leveraged "Max Net APY" — is only real once it's on.
+      const borrowingEnabled = ((reserveData.configuration >> 58n) & 1n) === 1n
       return {
         maxLtvPct: ltvBps / 100,
         liquidationThresholdPct: liqThresholdBps / 100,
         borrowAprPct: borrowApr * 100,
         borrowApyPct: borrowApy * 100,
+        borrowingEnabled,
       }
     },
   })

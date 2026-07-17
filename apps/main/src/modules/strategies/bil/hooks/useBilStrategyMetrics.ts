@@ -31,7 +31,13 @@ export function useBilStrategyMetrics() {
   // until the borrow rate query lands.
   const vaultApyPct = vaultStats.apr
   const borrowApyPct = reserveConfig?.borrowApyPct || 10
-  const maxLeverage = maxLtvPct < 100 ? 100 / (100 - maxLtvPct) : 1
+  // Leverage requires borrowing HOLLAR. It's disabled at launch (staged
+  // rollout), so until governance enables it the max achievable is the plain
+  // (unleveraged) vault yield — otherwise we'd advertise a leveraged Net APY
+  // no one can actually reach. Default false while the config query is loading.
+  const borrowingEnabled = reserveConfig?.borrowingEnabled ?? false
+  const maxLeverage =
+    borrowingEnabled && maxLtvPct < 100 ? 100 / (100 - maxLtvPct) : 1
   const maxNetApyPct =
     maxLeverage * vaultApyPct - (maxLeverage - 1) * borrowApyPct
 
