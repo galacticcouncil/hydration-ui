@@ -8,7 +8,7 @@ import { type Hex } from "viem"
 //  Surface:   ERC-4626 (deposit/mint) + ERC-7540 (async redeem)
 // ════════════════════════════════════════════════════════════════════════
 
-export const VAULT_ADDRESS: Hex = "0x12aa558500c9c8f3857d6caed841651a168baf6e"
+export const VAULT_ADDRESS: Hex = "0x7a1FFcF0949C6cf85d16BA04221D650Db0dE41A5"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 
 // Decentral pool the vault deploys HOLLAR into. Surfaced here only so the
@@ -34,13 +34,13 @@ export const DECENTRAL_POOL_ADDRESS: Hex =
 export const BIL_HAS_AAVE_LAYER = true
 
 export const BIL_POOL_ADDRESS: Hex =
-  "0xd2A1cB0423559939c2656a8f394A32EDFa340800"
+  "0xd10b84Ee54dc5B81366b56bABBF4D32303629835"
 export const BIL_POOL_ADDRESSES_PROVIDER: Hex =
-  "0x21310531fc68ea2f4cc8dfd675ce9df5926d3d8d"
+  "0x08D80c63A87746487d673b488FF40386c68cE192"
 export const BIL_DEPOSIT_ZAP_ADDRESS: Hex =
-  "0x3799457f3a8494C002988c092D401Fc106c52EEb"
+  "0xFF14a4Bf1Fe038D23b68d738B81cF900FD6E9D8B"
 export const BIL_ATOKEN_ADDRESS: Hex =
-  "0xdb3254582b483a21a70dabc190f352d352f5f415"
+  "0xCc7Dc2433073ed4cf1daFd1A1b9c32e193cce5ce"
 
 /** Substrate asset id for BIL (vault share / aToken receipt). */
 export const BIL_ASSET_ID = "55"
@@ -62,8 +62,8 @@ export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
 // First block at which the node0.lark vault proxy emitted a log. Used as
 // `fromBlock` for getLogs queries — public RPCs reject scans from genesis.
 // Update on every fresh lark deploy.
-//   node0.lark proxy Upgraded log: block 31798
-export const VAULT_DEPLOY_BLOCK = 31798n
+//   node0.lark deploy: vault + adapter around block 6956.
+export const VAULT_DEPLOY_BLOCK = 6900n
 
 // BIL/HOLLAR stableswap pool — share-asset id 10055. Used by the
 // instant-redeem path which swaps the aToken receipt for HOLLAR via
