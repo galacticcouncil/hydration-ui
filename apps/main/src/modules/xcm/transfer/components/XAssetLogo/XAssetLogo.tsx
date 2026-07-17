@@ -33,7 +33,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
     )
   }
 
-  const registryId = registryChain.getBalanceAssetId(asset)
+  const registryId = registryChain.getAssetId(asset)
   const registryAsset = getAsset(registryId.toString())
 
   return (
