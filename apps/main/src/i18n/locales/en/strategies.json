@@ -38,8 +38,6 @@
   "bil.strategy.debtAsset": "Hollar",
   "bil.strategy.tvl": "TVL",
   "bil.strategy.maxNetApy": "Max Net APY",
-  "bil.strategy.yieldCycle": "Yield cycle",
-  "bil.strategy.yieldCycleValue": "Bi-monthly",
   "bil.strategy.collateralAssetLabel": "Collateral asset",
   "bil.strategy.debtAssetLabel": "Debt asset",
   "bil.strategy.contractAddress": "Contract address",

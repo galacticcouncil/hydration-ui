@@ -118,7 +118,7 @@ export const MyPositionsCard = ({
                     <Text fs="p3" fw={500} lh={1}>
                       {t("common:currency", {
                         value: row.amount,
-                        symbol: "aBIL",
+                        symbol: "BIL",
                       })}
                     </Text>
                   }

@@ -71,20 +71,6 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             })}
           </Text>
         </Box>
-        <Box>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("bil.strategy.yieldCycle")}
-          </Text>
-          <Text
-            font="primary"
-            fs="h6"
-            fw={500}
-            color={getToken("text.high")}
-            mt="xs"
-          >
-            {t("bil.strategy.yieldCycleValue")}
-          </Text>
-        </Box>
       </Flex>
 
       <Separator />

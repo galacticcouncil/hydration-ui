@@ -159,6 +159,12 @@ export const BilVaultPage = () => {
   const debtUsd = poolPosition?.totalDebtUsd ?? 0
   const netWorthUsd = Math.max(0, collateralUsd - debtUsd)
 
+  // HOLLAR borrowing is disabled at launch (staged rollout). Hide the borrow
+  // card outright — a visible card with disabled buttons still advertises a
+  // feature that doesn't exist yet. Keep it for anyone with outstanding debt
+  // (possible if governance disables borrowing later) so repay stays reachable.
+  const showBorrows = (reserveConfig?.borrowingEnabled ?? false) || debtUsd > 0
+
   const minDisplayBalance = stats.minRedeem
   const hasPositions =
     (userBalances.bilSupplied ?? 0) >= minDisplayBalance ||
@@ -199,17 +205,19 @@ export const BilVaultPage = () => {
             />
           )}
 
-          <MyBorrowsCard
-            poolPosition={poolPosition}
-            // Live APY: HOLLAR's currentVariableBorrowRate is decoded inside
-            // useBilReserveConfig (ray → APR → APY via per-second compounding).
-            // 10% is the launch fallback while the query is in flight.
-            borrowApyPercent={reserveConfig?.borrowApyPct ?? 10}
-            // vault APY drives the long-side of the leveraged Net APY display.
-            vaultApyPercent={stats.apr}
-            onBorrow={() => setShowBorrow(true)}
-            onRepay={() => setShowRepay(true)}
-          />
+          {showBorrows && (
+            <MyBorrowsCard
+              poolPosition={poolPosition}
+              // Live APY: HOLLAR's currentVariableBorrowRate is decoded inside
+              // useBilReserveConfig (ray → APR → APY via per-second compounding).
+              // 10% is the launch fallback while the query is in flight.
+              borrowApyPercent={reserveConfig?.borrowApyPct ?? 10}
+              // vault APY drives the long-side of the leveraged Net APY display.
+              vaultApyPercent={stats.apr}
+              onBorrow={() => setShowBorrow(true)}
+              onRepay={() => setShowRepay(true)}
+            />
+          )}
 
           <WithdrawalsCard
             rows={withdrawalRows}
