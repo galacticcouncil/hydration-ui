@@ -22,8 +22,11 @@ export const StrategyHeader = () => {
           >
             {t("bil.strategy.name")}
           </Text>
+          {/* Token symbol, mirroring the propeller header ("Propeller"/"ETH").
+              collateralAsset also resolves to "Decentral", which rendered the
+              title twice. */}
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("bil.strategy.collateralAsset")}
+            BIL
           </Text>
         </Flex>
       </Flex>
