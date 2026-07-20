@@ -58,7 +58,6 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
           vault.read.getEstimatedWaitTime([BigInt(i)]),
         ])
 
-        // Lark-2 5-tuple: (user, bilAmount, bilSettled, hollarOwed, active)
         const [user, bilAmount, bilSettled, hollarOwed, active] = reqResult
         if (!active) continue
 

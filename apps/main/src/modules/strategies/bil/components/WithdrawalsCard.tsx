@@ -4,6 +4,7 @@ import {
   Flex,
   Paper,
   Separator,
+  Stack,
   TableContainer,
   Text,
   Toggle,
@@ -13,13 +14,12 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
-
+import { WithdrawalRowMobile } from "@/modules/strategies/bil/components/WithdrawalRowMobile"
 import {
   useWithdrawalColumns,
   type WithdrawalColumnHandlers,
   type WithdrawalRow,
-} from "./Withdrawals.columns"
+} from "@/modules/strategies/bil/components/Withdrawals.columns"
 
 interface Props {
   rows: WithdrawalRow[]
@@ -128,9 +128,20 @@ export const WithdrawalsCard = ({
           </Text>
         </Box>
       ) : isMobile || isTablet ? (
-        <Box px="m" pb="m">
-          <StackedTable data={visibleRows} columns={columns} />
-        </Box>
+        <Stack gap="m" p="m">
+          {visibleRows.map((row) => (
+            <WithdrawalRowMobile
+              key={row.id}
+              row={row}
+              onCancel={onCancel}
+              isCancelling={isCancelling}
+              onClaim={onClaim}
+              isClaiming={isClaiming}
+              onInstantRedeem={onInstantRedeem}
+              isInstantRedeeming={isInstantRedeeming}
+            />
+          ))}
+        </Stack>
       ) : (
         <TableContainer borderRadius="xl">
           <DataTable data={visibleRows} columns={columns} />
