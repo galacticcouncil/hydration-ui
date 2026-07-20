@@ -67,7 +67,9 @@ export const AssetSwitcher = ({
     onSwitchAssets?.()
   }
 
-  const isPriceReady = canCalculatePrice || !isFallbackPriceLoading
+  const isPriceReady =
+    canCalculatePrice || !!fallbackPrice || !isFallbackPriceLoading
+
   const isSwitcherDisabled =
     switcherDisabled || disabled || !assetInId || !assetOutId
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)

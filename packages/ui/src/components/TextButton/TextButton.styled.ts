@@ -4,6 +4,7 @@ import styled from "@emotion/styled"
 export type CustomTextButtonProps = {
   variant?: "plain" | "underline"
   direction?: "none" | "internal" | "external"
+  icon?: React.ReactNode
 }
 
 export const STextButton = styled.button<CustomTextButtonProps>(
@@ -33,9 +34,6 @@ export const STextButton = styled.button<CustomTextButtonProps>(
 
     &:hover {
       color: ${theme.textButtons.small.hover};
-      border-bottom: ${variant === "underline"
-        ? `1px solid ${theme.textButtons.small.hover}`
-        : "transparent"};
     }
   `,
 )

@@ -1,4 +1,7 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import {
+  HealthFactorChange,
+  HealthFactorRiskWarning,
+} from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Button,
@@ -13,13 +16,16 @@ import {
   Toggle,
 } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { spotPriceQuery } from "@/api/spotPrice"
+import { Trade } from "@/api/trade"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TradeLimitRow,
@@ -72,7 +78,7 @@ export const RemoveMoneyMarketLiquidity = (
   )
 }
 
-export const RemoveMoneyMarketLiquidityForm = (
+const RemoveMoneyMarketLiquidityForm = (
   props: TRemoveMoneyMarketLiquidityProps & {
     initialReceiveAsset: TAssetWithBalance
     receiveAssets: TAssetWithBalance[]
@@ -82,12 +88,15 @@ export const RemoveMoneyMarketLiquidityForm = (
   const { t } = useTranslation(["liquidity", "common"])
   const {
     form,
-    balance,
+    maxBalance,
     receiveAssetsProportionally,
     meta,
     tradeMinReceive,
+    swap,
+    isTradePending,
     mutation,
     healthFactor,
+    isLoadingMaxBalance,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
   const { closable, onBack, receiveAssets, title } = props
 
@@ -98,6 +107,25 @@ export const RemoveMoneyMarketLiquidityForm = (
   } = form
 
   const [receiveAsset, split] = watch(["receiveAsset", "split"])
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
+  useEffect(() => {
+    const subscription = watch((_, args) => {
+      if (args.type !== "change") return
+
+      setHealthFactorRiskAccepted(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [watch])
+
+  const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
+    ? healthFactorRiskAccepted
+    : true
 
   const onSubmit = () => {
     mutation.mutate()
@@ -117,7 +145,8 @@ export const RemoveMoneyMarketLiquidityForm = (
               assetFieldName="asset"
               amountFieldName="amount"
               label={t("common:amount")}
-              maxBalance={balance}
+              maxBalance={maxBalance}
+              maxBalanceLoading={isLoadingMaxBalance}
               assets={[]}
               sx={{ py: 0 }}
               disabledAssetSelector
@@ -149,7 +178,7 @@ export const RemoveMoneyMarketLiquidityForm = (
                 label={t("common:get")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
-                maxBalance={balance}
+                maxBalance={maxBalance}
                 assets={[]}
                 sortedAssets={receiveAssets}
                 ignoreBalance
@@ -167,7 +196,6 @@ export const RemoveMoneyMarketLiquidityForm = (
             {split ? (
               <div>
                 <TradeLimitRow type={TradeLimitType.Liquidity} />
-
                 {healthFactor ? (
                   <>
                     <ModalContentDivider />
@@ -184,12 +212,30 @@ export const RemoveMoneyMarketLiquidityForm = (
                 minReceive={tradeMinReceive}
                 erc20={meta}
                 healthFactor={healthFactor}
+                swap={swap}
+                isTradePending={isTradePending}
+              />
+            )}
+
+            {healthFactor?.isUserConsentRequired && (
+              <HealthFactorRiskWarning
+                message={t("common:healthFactor.warning")}
+                accepted={healthFactorRiskAccepted}
+                onAcceptedChange={setHealthFactorRiskAccepted}
+                isUserConsentRequired={healthFactor.isUserConsentRequired}
               />
             )}
 
             <ModalContentDivider />
 
-            <Button type="submit" size="large" width="100%" disabled={!isValid}>
+            <Button
+              type="submit"
+              size="large"
+              width="100%"
+              disabled={
+                !isValid || !isHealthFactorCheckSatisfied || isLoadingMaxBalance
+              }
+            >
               {title ?? t("removeLiquidity")}
             </Button>
           </form>
@@ -204,13 +250,17 @@ const TradeSummary = ({
   minReceive,
   erc20,
   healthFactor,
+  swap,
+  isTradePending,
 }: {
   receiveAsset: TSelectedAsset
   minReceive: string
   erc20: TAssetData
   healthFactor: HealthFactorResult | undefined
+  swap?: Trade
+  isTradePending: boolean
 }) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
@@ -220,6 +270,19 @@ const TradeSummary = ({
   return (
     <div>
       <TradeLimitRow type={TradeLimitType.Trade} />
+
+      <ModalContentDivider />
+      <SummaryRow
+        label={t("trade:market.summary.estTradeFees")}
+        content={
+          <TradeFee
+            swap={swap}
+            receiveAsset={receiveAsset}
+            isLoading={isTradePending}
+          />
+        }
+      />
+
       <ModalContentDivider />
       <Summary
         separator={<ModalContentDivider />}

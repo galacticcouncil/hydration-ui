@@ -15,7 +15,7 @@
     "i18n": "turbo i18n"
   },
   "resolutions": {
-    "polkadot-api": "^2.1.0",
+    "polkadot-api": "^2.1.7",
     "strip-ansi": "6.0.1"
   },
   "dependencies": {

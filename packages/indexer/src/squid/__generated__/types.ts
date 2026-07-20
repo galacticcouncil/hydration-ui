@@ -2462,6 +2462,112 @@ export type AccountMmPositionHistoricalDatumFilter = {
 };
 
 /**
+ * A condition to be used against `AccountOwnedAsset` object types. All fields are
+ * tested for equality and combined with a logical ‘and.’
+ */
+export type AccountOwnedAssetCondition = {
+  /** Checks for equality with the object’s `accountId` field. */
+  accountId?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `assetId` field. */
+  assetId?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `firstSeenParaBlockHeight` field. */
+  firstSeenParaBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** A filter to be used against `AccountOwnedAsset` object types. All fields are combined with a logical ‘and.’ */
+export type AccountOwnedAssetFilter = {
+  /** Filter by the object’s `accountId` field. */
+  accountId?: InputMaybe<StringFilter>;
+  /** Checks for all expressions in this list. */
+  and?: InputMaybe<Array<AccountOwnedAssetFilter>>;
+  /** Filter by the object’s `assetId` field. */
+  assetId?: InputMaybe<StringFilter>;
+  /** Filter by the object’s `firstSeenParaBlockHeight` field. */
+  firstSeenParaBlockHeight?: InputMaybe<IntFilter>;
+  /** Filter by the object’s `id` field. */
+  id?: InputMaybe<StringFilter>;
+  /** Negates the expression. */
+  not?: InputMaybe<AccountOwnedAssetFilter>;
+  /** Checks for any expressions in this list. */
+  or?: InputMaybe<Array<AccountOwnedAssetFilter>>;
+};
+
+/** Grouping methods for `AccountOwnedAsset` for usage during aggregation. */
+export enum AccountOwnedAssetGroupBy {
+  AccountId = 'ACCOUNT_ID',
+  AssetId = 'ASSET_ID',
+  FirstSeenParaBlockHeight = 'FIRST_SEEN_PARA_BLOCK_HEIGHT'
+}
+
+export type AccountOwnedAssetHavingAverageInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingDistinctCountInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+/** Conditions for `AccountOwnedAsset` aggregates. */
+export type AccountOwnedAssetHavingInput = {
+  AND?: InputMaybe<Array<AccountOwnedAssetHavingInput>>;
+  OR?: InputMaybe<Array<AccountOwnedAssetHavingInput>>;
+  average?: InputMaybe<AccountOwnedAssetHavingAverageInput>;
+  distinctCount?: InputMaybe<AccountOwnedAssetHavingDistinctCountInput>;
+  max?: InputMaybe<AccountOwnedAssetHavingMaxInput>;
+  min?: InputMaybe<AccountOwnedAssetHavingMinInput>;
+  stddevPopulation?: InputMaybe<AccountOwnedAssetHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<AccountOwnedAssetHavingStddevSampleInput>;
+  sum?: InputMaybe<AccountOwnedAssetHavingSumInput>;
+  variancePopulation?: InputMaybe<AccountOwnedAssetHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<AccountOwnedAssetHavingVarianceSampleInput>;
+};
+
+export type AccountOwnedAssetHavingMaxInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingMinInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingStddevPopulationInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingStddevSampleInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingSumInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingVariancePopulationInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+export type AccountOwnedAssetHavingVarianceSampleInput = {
+  firstSeenParaBlockHeight?: InputMaybe<HavingIntFilter>;
+};
+
+/** Methods to use when ordering `AccountOwnedAsset`. */
+export enum AccountOwnedAssetsOrderBy {
+  AccountIdAsc = 'ACCOUNT_ID_ASC',
+  AccountIdDesc = 'ACCOUNT_ID_DESC',
+  AssetIdAsc = 'ASSET_ID_ASC',
+  AssetIdDesc = 'ASSET_ID_DESC',
+  FirstSeenParaBlockHeightAsc = 'FIRST_SEEN_PARA_BLOCK_HEIGHT_ASC',
+  FirstSeenParaBlockHeightDesc = 'FIRST_SEEN_PARA_BLOCK_HEIGHT_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  Natural = 'NATURAL',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC'
+}
+
+/**
  * A condition to be used against `AccountProcessingStatus` object types. All
  * fields are tested for equality and combined with a logical ‘and.’
  */
@@ -34425,6 +34531,146 @@ export enum OtcOrdersOrderBy {
   TotalFilledAmountInDesc = 'TOTAL_FILLED_AMOUNT_IN_DESC',
   TotalFilledAmountOutAsc = 'TOTAL_FILLED_AMOUNT_OUT_ASC',
   TotalFilledAmountOutDesc = 'TOTAL_FILLED_AMOUNT_OUT_DESC'
+}
+
+/**
+ * A condition to be used against `PendingRedisTsCommit` object types. All fields
+ * are tested for equality and combined with a logical ‘and.’
+ */
+export type PendingRedisTsCommitCondition = {
+  /** Checks for equality with the object’s `createdAt` field. */
+  createdAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Checks for equality with the object’s `id` field. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `jobName` field. */
+  jobName?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `paraBlockHeight` field. */
+  paraBlockHeight?: InputMaybe<Scalars['Int']['input']>;
+  /** Checks for equality with the object’s `payload` field. */
+  payload?: InputMaybe<Scalars['JSON']['input']>;
+  /** Checks for equality with the object’s `sampleTimestampMs` field. */
+  sampleTimestampMs?: InputMaybe<Scalars['BigFloat']['input']>;
+};
+
+/** A filter to be used against `PendingRedisTsCommit` object types. All fields are combined with a logical ‘and.’ */
+export type PendingRedisTsCommitFilter = {
+  /** Checks for all expressions in this list. */
+  and?: InputMaybe<Array<PendingRedisTsCommitFilter>>;
+  /** Filter by the object’s `createdAt` field. */
+  createdAt?: InputMaybe<DatetimeFilter>;
+  /** Filter by the object’s `id` field. */
+  id?: InputMaybe<StringFilter>;
+  /** Filter by the object’s `jobName` field. */
+  jobName?: InputMaybe<StringFilter>;
+  /** Negates the expression. */
+  not?: InputMaybe<PendingRedisTsCommitFilter>;
+  /** Checks for any expressions in this list. */
+  or?: InputMaybe<Array<PendingRedisTsCommitFilter>>;
+  /** Filter by the object’s `paraBlockHeight` field. */
+  paraBlockHeight?: InputMaybe<IntFilter>;
+  /** Filter by the object’s `payload` field. */
+  payload?: InputMaybe<JsonFilter>;
+  /** Filter by the object’s `sampleTimestampMs` field. */
+  sampleTimestampMs?: InputMaybe<BigFloatFilter>;
+};
+
+/** Grouping methods for `PendingRedisTsCommit` for usage during aggregation. */
+export enum PendingRedisTsCommitGroupBy {
+  CreatedAt = 'CREATED_AT',
+  CreatedAtTruncatedToDay = 'CREATED_AT_TRUNCATED_TO_DAY',
+  CreatedAtTruncatedToHour = 'CREATED_AT_TRUNCATED_TO_HOUR',
+  JobName = 'JOB_NAME',
+  ParaBlockHeight = 'PARA_BLOCK_HEIGHT',
+  Payload = 'PAYLOAD',
+  SampleTimestampMs = 'SAMPLE_TIMESTAMP_MS'
+}
+
+export type PendingRedisTsCommitHavingAverageInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingDistinctCountInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+/** Conditions for `PendingRedisTsCommit` aggregates. */
+export type PendingRedisTsCommitHavingInput = {
+  AND?: InputMaybe<Array<PendingRedisTsCommitHavingInput>>;
+  OR?: InputMaybe<Array<PendingRedisTsCommitHavingInput>>;
+  average?: InputMaybe<PendingRedisTsCommitHavingAverageInput>;
+  distinctCount?: InputMaybe<PendingRedisTsCommitHavingDistinctCountInput>;
+  max?: InputMaybe<PendingRedisTsCommitHavingMaxInput>;
+  min?: InputMaybe<PendingRedisTsCommitHavingMinInput>;
+  stddevPopulation?: InputMaybe<PendingRedisTsCommitHavingStddevPopulationInput>;
+  stddevSample?: InputMaybe<PendingRedisTsCommitHavingStddevSampleInput>;
+  sum?: InputMaybe<PendingRedisTsCommitHavingSumInput>;
+  variancePopulation?: InputMaybe<PendingRedisTsCommitHavingVariancePopulationInput>;
+  varianceSample?: InputMaybe<PendingRedisTsCommitHavingVarianceSampleInput>;
+};
+
+export type PendingRedisTsCommitHavingMaxInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingMinInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingStddevPopulationInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingStddevSampleInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingSumInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingVariancePopulationInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+export type PendingRedisTsCommitHavingVarianceSampleInput = {
+  createdAt?: InputMaybe<HavingDatetimeFilter>;
+  paraBlockHeight?: InputMaybe<HavingIntFilter>;
+  sampleTimestampMs?: InputMaybe<HavingBigfloatFilter>;
+};
+
+/** Methods to use when ordering `PendingRedisTsCommit`. */
+export enum PendingRedisTsCommitsOrderBy {
+  CreatedAtAsc = 'CREATED_AT_ASC',
+  CreatedAtDesc = 'CREATED_AT_DESC',
+  IdAsc = 'ID_ASC',
+  IdDesc = 'ID_DESC',
+  JobNameAsc = 'JOB_NAME_ASC',
+  JobNameDesc = 'JOB_NAME_DESC',
+  Natural = 'NATURAL',
+  ParaBlockHeightAsc = 'PARA_BLOCK_HEIGHT_ASC',
+  ParaBlockHeightDesc = 'PARA_BLOCK_HEIGHT_DESC',
+  PayloadAsc = 'PAYLOAD_ASC',
+  PayloadDesc = 'PAYLOAD_DESC',
+  PrimaryKeyAsc = 'PRIMARY_KEY_ASC',
+  PrimaryKeyDesc = 'PRIMARY_KEY_DESC',
+  SampleTimestampMsAsc = 'SAMPLE_TIMESTAMP_MS_ASC',
+  SampleTimestampMsDesc = 'SAMPLE_TIMESTAMP_MS_DESC'
 }
 
 export type PlatformTotalVolumesByPeriodFilter = {

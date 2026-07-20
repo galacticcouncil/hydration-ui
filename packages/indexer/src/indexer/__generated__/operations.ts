@@ -40,3 +40,31 @@ export type StakingInitializedEventsQueryVariables = Types.Exact<{ [key: string]
 
 
 export type StakingInitializedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, block: { __typename?: 'Block', height: number } }> };
+
+export type ScheduledOrdersQueryVariables = Types.Exact<{
+  who: Types.Scalars['String']['input'];
+}>;
+
+
+export type ScheduledOrdersQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null, call?: { __typename?: 'Call', args?: any | null } | null, block: { __typename?: 'Block', height: number, hash: string } }> };
+
+export type OrdersStatusQueryVariables = Types.Exact<{
+  who: Types.Scalars['String']['input'];
+}>;
+
+
+export type OrdersStatusQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null }> };
+
+export type OrderTradesQueryVariables = Types.Exact<{
+  id: Types.Scalars['Int']['input'];
+}>;
+
+
+export type OrderTradesQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null, block: { __typename?: 'Block', height: number, timestamp: string } }> };
+
+export type OrderPlannedExecutionQueryVariables = Types.Exact<{
+  id: Types.Scalars['Int']['input'];
+}>;
+
+
+export type OrderPlannedExecutionQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null }> };

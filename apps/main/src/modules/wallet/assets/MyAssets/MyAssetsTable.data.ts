@@ -76,6 +76,7 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           transferableDisplay,
           canStake: meta.id === native.id,
           rugCheckData: undefined,
+          reserved: balance?.reserved,
         }
       })
       .sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)
