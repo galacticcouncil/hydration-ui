@@ -76,8 +76,7 @@ export interface RedemptionHistoryEntry {
  *     event.
  *
  * Drives:
- *   - MyWithdrawals "Date" column (requestedAt)
- *   - MyWithdrawals time-remaining cell state ("Pending" / "Claimable" / "Redeemed")
+ *   - Withdrawals time-remaining cell state ("Pending" / "Claimable" / "Redeemed")
  *   - "Show Redeemed" toggle (filters on state)
  *   - History rows
  */

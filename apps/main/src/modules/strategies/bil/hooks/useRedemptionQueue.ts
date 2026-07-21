@@ -19,18 +19,6 @@ export interface QueueEntry {
   estTimeRemainingDays: number
 }
 
-export interface WithdrawalRequest {
-  id: number
-  amountBil: number
-  estHollar: number
-  /** Shares already settled and ready to claim. */
-  claimableBil: number
-  /** HOLLAR price-locked for those settled shares. */
-  claimableHollar: number
-  requestedDate: Date
-  maxTimeRemainingDays: number
-}
-
 export function useRedemptionQueue(evmAddress: Hex | undefined) {
   const { data: vault } = useBilVaultContract()
   return useQuery({
@@ -75,25 +63,8 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
         })
       }
 
-      const myWithdrawals: WithdrawalRequest[] = entries
-        .filter((e) => e.isUser)
-        .map((e) => ({
-          id: e.requestId,
-          amountBil: e.bilRemaining,
-          estHollar: e.bilRemaining,
-          claimableBil: e.bilSettled,
-          claimableHollar: e.hollarOwed,
-          // Sentinel value (epoch). The real `requestedAt` comes from the
-          // `RedemptionRequested` event log and is merged in at page level
-          // via useRedemptionHistory — the on-chain queue struct doesn't
-          // expose request timestamps.
-          requestedDate: new Date(0),
-          maxTimeRemainingDays: e.estTimeRemainingDays,
-        }))
-
       return {
         queue: entries,
-        myWithdrawals,
         totalQueuedBil,
       }
     },

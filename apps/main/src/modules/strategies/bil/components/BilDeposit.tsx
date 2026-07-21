@@ -141,9 +141,13 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
                     </Text>
                   </Flex>
                 }
-                content={t("bil.deposit.option.queueValue", {
-                  days: vaultStats.maxLockupDays,
-                })}
+                content={
+                  <Text sx={{ flex: 1 }}>
+                    {t("bil.deposit.option.queueValue", {
+                      days: vaultStats.maxLockupDays,
+                    })}
+                  </Text>
+                }
               />
             </Box>
             <SummaryRow
@@ -163,7 +167,11 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
                   </Text>
                 </Flex>
               }
-              content={t("bil.deposit.option.instantValue")}
+              content={
+                <Text align="right" sx={{ flex: 1 }}>
+                  {t("bil.deposit.option.instantValue")}
+                </Text>
+              }
             />
           </Summary>
 

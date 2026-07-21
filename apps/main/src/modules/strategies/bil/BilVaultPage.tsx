@@ -102,9 +102,8 @@ export const BilVaultPage = () => {
   }
   const queue = queueData?.queue ?? []
 
-  // Build the unified withdrawal-rows model. See BilVaultPage history pre-rework
-  // for full notes — queue is the primary source, history merges in timestamps
-  // and is the only source for completed rows.
+  // Build the unified withdrawal-rows model. Queue is the primary source;
+  // history merges in state and is the only source for completed rows.
   const historyByReqId = new Map(
     (historyData ?? []).map((h) => [h.requestId, h]),
   )
@@ -122,11 +121,8 @@ export const BilVaultPage = () => {
         id: e.requestId,
         amountBil: e.bilRemaining,
         estHollar: e.bilRemaining * stats.exchangeRate,
-        requestedDate: h?.requestedAt ?? new Date(0),
         state,
         timeRemainingDays: e.estTimeRemainingDays,
-        fulfilledDate: h?.fulfilledAt ?? undefined,
-        // Surfaced from the queue read — drives the per-row Claim button.
         claimableBil: e.bilSettled,
         claimableHollar: e.hollarOwed,
       }
@@ -146,9 +142,7 @@ export const BilVaultPage = () => {
         h.state === "fulfilled"
           ? h.hollarReceived
           : h.bilRequested * stats.exchangeRate,
-      requestedDate: h.requestedAt,
       state: h.state,
-      fulfilledDate: h.fulfilledAt ?? undefined,
     }))
 
   const withdrawalRows: WithdrawalRow[] = [...activeRows, ...completedRows]

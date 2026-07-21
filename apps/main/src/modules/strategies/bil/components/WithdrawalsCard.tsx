@@ -63,7 +63,7 @@ export const WithdrawalsCard = ({
   isAutoClaimUpdating,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
-  const { isMobile, isTablet } = useBreakpoints()
+  const { gte } = useBreakpoints()
 
   const visibleRows = useMemo(() => {
     const filtered = showRedeemed ? rows : rows.filter(isActionable)
@@ -72,8 +72,8 @@ export const WithdrawalsCard = ({
       const bActive = isActionable(b)
       if (aActive && !bActive) return -1
       if (!aActive && bActive) return 1
-      if (aActive) return a.requestedDate.getTime() - b.requestedDate.getTime()
-      return b.requestedDate.getTime() - a.requestedDate.getTime()
+      if (aActive) return a.id - b.id
+      return b.id - a.id
     })
   }, [rows, showRedeemed])
 
@@ -127,7 +127,11 @@ export const WithdrawalsCard = ({
               : t("bil.withdrawals.empty.pending")}
           </Text>
         </Box>
-      ) : isMobile || isTablet ? (
+      ) : gte("xl") ? (
+        <TableContainer borderRadius="xl">
+          <DataTable data={visibleRows} columns={columns} />
+        </TableContainer>
+      ) : (
         <Stack gap="m" p="m">
           {visibleRows.map((row) => (
             <WithdrawalRowMobile
@@ -142,10 +146,6 @@ export const WithdrawalsCard = ({
             />
           ))}
         </Stack>
-      ) : (
-        <TableContainer borderRadius="xl">
-          <DataTable data={visibleRows} columns={columns} />
-        </TableContainer>
       )}
     </Paper>
   )

@@ -20,10 +20,8 @@ export interface WithdrawalRow {
   id: number
   amountBil: number
   estHollar: number
-  requestedDate: Date
   state: WithdrawalRowState
   timeRemainingDays?: number
-  fulfilledDate?: Date
   /** Shares already queue-side-settled and ready for the user to claim. */
   claimableBil?: number
   /** HOLLAR price-locked at settlement, paid out when the user claims. */
@@ -94,22 +92,6 @@ export const useWithdrawalColumns = ({
           })}
         />
       ),
-    })
-
-    const dateColumn = columnHelper.accessor("requestedDate", {
-      header: t("common:date"),
-      cell: ({ row }) =>
-        row.original.requestedDate.getTime() === 0 ? (
-          <Text fs="p4" color={getToken("text.medium")}>
-            —
-          </Text>
-        ) : (
-          <Text fs="p4" color={getToken("text.medium")}>
-            {t("common:date.datetime.short", {
-              value: row.original.requestedDate,
-            })}
-          </Text>
-        ),
     })
 
     const timeRemainingColumn = columnHelper.display({
@@ -201,13 +183,7 @@ export const useWithdrawalColumns = ({
       },
     })
 
-    return [
-      amountColumn,
-      estValueColumn,
-      dateColumn,
-      timeRemainingColumn,
-      actionsColumn,
-    ]
+    return [amountColumn, estValueColumn, timeRemainingColumn, actionsColumn]
   }, [
     t,
     isMobile,

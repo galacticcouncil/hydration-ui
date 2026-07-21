@@ -10,6 +10,7 @@ import {
   Summary,
   SummaryRow,
   Text,
+  ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -42,35 +43,44 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
       </Box>
       <Separator />
 
-      <Flex justify="space-between" gap="l" p="l" wrap>
-        <Box>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("bil.strategy.tvl")}
-          </Text>
-          <Flex align="center" gap="s" mt="xs">
-            <AssetLogo id={BIL_ASSET_ID} size="medium" />
-            <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
-              {t("common:currency.compact", { value: metrics.tvl })}
+      <Flex gap={["s", null, "xxxl"]} p="l" wrap>
+        <ValueStats
+          sx={{ alignSelf: "center" }}
+          wrap
+          label={t("bil.strategy.tvl")}
+          customValue={
+            <Flex align="center" gap="s">
+              <AssetLogo id={BIL_ASSET_ID} size="medium" />
+              <Text
+                font="primary"
+                fs="h6"
+                fw={600}
+                color={getToken("text.high")}
+              >
+                {t("common:currency.compact", { value: metrics.tvl })}
+              </Text>
+            </Flex>
+          }
+        />
+        <Separator orientation="vertical" sx={{ alignSelf: "stretch" }} />
+        <ValueStats
+          sx={{ alignSelf: "center" }}
+          wrap
+          label={t("bil.strategy.maxNetApy")}
+          customValue={
+            <Text
+              font="primary"
+              fs="h6"
+              fw={600}
+              color={getToken("accents.success.emphasis")}
+            >
+              {t("common:percent", {
+                value: metrics.maxNetApyPct,
+                maximumFractionDigits: 1,
+              })}
             </Text>
-          </Flex>
-        </Box>
-        <Box>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("bil.strategy.maxNetApy")}
-          </Text>
-          <Text
-            font="primary"
-            fs="h6"
-            fw={600}
-            color={getToken("accents.success.emphasis")}
-            mt="xs"
-          >
-            {t("common:percent", {
-              value: metrics.maxNetApyPct,
-              maximumFractionDigits: 1,
-            })}
-          </Text>
-        </Box>
+          }
+        />
       </Flex>
 
       <Separator />

@@ -1,6 +1,8 @@
+import { XIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Flex,
+  Icon,
   Paper,
   Separator,
   Text,
@@ -71,21 +73,8 @@ export const WithdrawalRowMobile = ({
     )
   })()
 
-  const dateValue =
-    row.requestedDate.getTime() === 0 ? (
-      <Text fs="p6" color={getToken("text.low")}>
-        —
-      </Text>
-    ) : (
-      <Text fs="p6" color={getToken("text.low")}>
-        {t("common:date.datetime.short", {
-          value: row.requestedDate,
-        })}
-      </Text>
-    )
-
   return (
-    <Paper p="l" shadow={false} bg="dim" borderRadius="m">
+    <Paper p="l" shadow={false} bg="dim" borderRadius="l">
       <Flex align="center" justify="space-between" gap="m" wrap>
         <Flex align="center" gap="s" minWidth={0}>
           <AssetLogo id={BIL_ERC20_ID} size="small" />
@@ -124,7 +113,14 @@ export const WithdrawalRowMobile = ({
                   onClick={() => onCancel(row.id)}
                   disabled={isCancelling}
                 >
-                  {t("common:cancel")}
+                  <Text as="span" display={["none", "block"]}>
+                    {t("common:cancel")}
+                  </Text>
+                  <Icon
+                    component={XIcon}
+                    size="s"
+                    display={["block", "none"]}
+                  />
                 </Button>
               </>
             )}
@@ -132,7 +128,7 @@ export const WithdrawalRowMobile = ({
         )}
       </Flex>
       <Separator my="m" />
-      <Flex justify="space-between" gap="l" wrap>
+      <Flex justify="space-between" gap="l" align="start" wrap>
         <ValueStats
           wrap
           size="small"
@@ -157,7 +153,6 @@ export const WithdrawalRowMobile = ({
             font="secondary"
             label={t("bil.withdrawals.col.timeRemaining")}
             customValue={timeRemainingValue}
-            customBottomLabel={dateValue}
           />
         </Flex>
       </Flex>
