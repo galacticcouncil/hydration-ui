@@ -1,13 +1,12 @@
-import { XIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Flex,
-  Icon,
   Paper,
   Separator,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { hoursToMilliseconds } from "date-fns"
@@ -39,6 +38,7 @@ export const WithdrawalRowMobile = ({
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
   const { getAssetWithFallback } = useAssets()
+  const { isMobile } = useBreakpoints()
   const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
 
   const claimable = row.claimableBil ?? 0
@@ -73,61 +73,60 @@ export const WithdrawalRowMobile = ({
     )
   })()
 
+  const actions = (
+    <>
+      {claimable > 0 && (
+        <Button
+          variant="primary"
+          size="small"
+          onClick={() => onClaim(claimable)}
+          disabled={isClaiming}
+        >
+          {t("common:claim")}
+        </Button>
+      )}
+      {stillActive && (
+        <>
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => onInstantRedeem(row.id, row.amountBil)}
+            disabled={isInstantRedeeming || isCancelling}
+          >
+            {t("bil.withdrawals.action.instant")}
+          </Button>
+          <Button
+            variant="tertiary"
+            size="small"
+            onClick={() => onCancel(row.id)}
+            disabled={isCancelling}
+          >
+            {t("common:cancel")}
+          </Button>
+        </>
+      )}
+    </>
+  )
+
   return (
     <Paper p="l" shadow={false} bg="dim" borderRadius="l">
       <Flex align="center" justify="space-between" gap="m" wrap>
         <Flex align="center" gap="s" minWidth={0}>
           <AssetLogo id={BIL_ERC20_ID} size="small" />
-          <Text fs="p4" fw={500} color={getToken("text.high")}>
+          <Text fs="p3" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.amountBil,
               symbol: "BIL",
             })}
           </Text>
         </Flex>
-        {showActions && (
+        {showActions && !isMobile && (
           <Flex align="center" justify="flex-end" gap="base" wrap>
-            {claimable > 0 && (
-              <Button
-                variant="primary"
-                size="small"
-                onClick={() => onClaim(claimable)}
-                disabled={isClaiming}
-              >
-                {t("common:claim")}
-              </Button>
-            )}
-            {stillActive && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => onInstantRedeem(row.id, row.amountBil)}
-                  disabled={isInstantRedeeming || isCancelling}
-                >
-                  {t("bil.withdrawals.action.instant")}
-                </Button>
-                <Button
-                  variant="tertiary"
-                  size="small"
-                  onClick={() => onCancel(row.id)}
-                  disabled={isCancelling}
-                >
-                  <Text as="span" display={["none", "block"]}>
-                    {t("common:cancel")}
-                  </Text>
-                  <Icon
-                    component={XIcon}
-                    size="s"
-                    display={["block", "none"]}
-                  />
-                </Button>
-              </>
-            )}
+            {actions}
           </Flex>
         )}
       </Flex>
-      <Separator my="m" />
+      <Separator my="m" mx="-l" />
       <Flex justify="space-between" gap="l" align="start" wrap>
         <ValueStats
           wrap
@@ -156,6 +155,11 @@ export const WithdrawalRowMobile = ({
           />
         </Flex>
       </Flex>
+      {showActions && isMobile && (
+        <Flex gap="base" mt="l">
+          {actions}
+        </Flex>
+      )}
     </Paper>
   )
 }

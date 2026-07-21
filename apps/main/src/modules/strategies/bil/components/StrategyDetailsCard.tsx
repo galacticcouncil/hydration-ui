@@ -43,7 +43,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
       </Box>
       <Separator />
 
-      <Flex gap={["s", null, "xxxl"]} p="l" wrap>
+      <Flex gap={["l", null, "xxxl"]} p="l" wrap>
         <ValueStats
           sx={{ alignSelf: "center" }}
           wrap
@@ -112,7 +112,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
           <SummaryRow
             label={t("bil.strategy.contractAddress")}
             content={
-              <Text fs="p4" lh={1.5}>
+              <Text fs="p4" lh={1.5} whiteSpace="nowrap">
                 <ExternalLink
                   href={subscan.account(HYDRATION_CHAIN_KEY, VAULT_ADDRESS)}
                 >
