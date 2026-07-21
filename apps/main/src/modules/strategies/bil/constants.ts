@@ -42,9 +42,6 @@ export const BIL_DEPOSIT_ZAP_ADDRESS: Hex =
 export const BIL_ATOKEN_ADDRESS: Hex =
   "0xCc7Dc2433073ed4cf1daFd1A1b9c32e193cce5ce"
 
-/** Substrate asset id for BIL (vault share / aToken receipt). */
-export const BIL_ASSET_ID = "55"
-
 // Substrate-asset precompile aliases. Keyed off substrate asset ids, not the
 // EVM deploy — unchanged across lark generations.
 //   BIL (asset 55,  0x37 hex) — user-facing aToken receipt; what users hold.
@@ -64,15 +61,6 @@ export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
 // Update on every fresh lark deploy.
 //   node0.lark deploy: vault + adapter around block 6956.
 export const VAULT_DEPLOY_BLOCK = 6900n
-
-// BIL/HOLLAR stableswap pool — share-asset id 10055. Used by the
-// instant-redeem path which swaps the aToken receipt for HOLLAR via
-// the substrate stableswap. Live on node0.lark since ref #362.
-export const STABLESWAP_POOL_ID = 10055n
-// Asset id of BIL inside the stableswap pair (the aToken receipt users
-// hold). Under the mainnet-aligned naming applied by ref #362, BIL =
-// asset 55. The substrate stableswap pair is (55, 222) = (BIL, HOLLAR).
-export const STABLESWAP_BIL_ASSET_ID = 55n
 
 export const EVM_CALL_GAS = 2_000_000n
 

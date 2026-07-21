@@ -1,6 +1,5 @@
-import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
-
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 
 export type BilExchangeRateProps = {
   exchangeRate: number
@@ -12,10 +11,13 @@ export type BilExchangeRateProps = {
 // shouldn't leak into the deposit panel.
 export const BilExchangeRate: React.FC<BilExchangeRateProps> = ({
   exchangeRate,
-}) => (
-  <AssetSwitcher
-    assetInId={BIL_ERC20_ID}
-    assetOutId={HOLLAR_ASSET_ID}
-    fallbackPrice={exchangeRate > 0 ? exchangeRate.toString() : undefined}
-  />
-)
+}) => {
+  const { bil, hollar } = useBilStrategy()
+  return (
+    <AssetSwitcher
+      assetInId={bil.id}
+      assetOutId={hollar.id}
+      fallbackPrice={exchangeRate > 0 ? exchangeRate.toString() : undefined}
+    />
+  )
+}

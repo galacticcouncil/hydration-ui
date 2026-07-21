@@ -12,6 +12,8 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import type { ComponentType, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+
 import { SMethodCard } from "./WithdrawMethodPicker.styled"
 
 export type WithdrawMethod = "queue" | "instant"
@@ -69,6 +71,7 @@ export const WithdrawMethodPicker = ({
   instantQuote,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
+  const { hollar } = useBilStrategy()
 
   const projectedRate = projectRate(exchangeRate, aprPercent, worstCaseWaitDays)
   const queueHollarOut = amountBil * projectedRate
@@ -99,7 +102,7 @@ export const WithdrawMethodPicker = ({
               label={t("bil.method.queue.youReceive")}
               value={t("common:currency", {
                 value: queueHollarOut,
-                symbol: "HOLLAR",
+                symbol: hollar.symbol,
               })}
             />
             <DetailRow
@@ -146,7 +149,7 @@ export const WithdrawMethodPicker = ({
                   label={t("bil.method.instant.youReceiveNow")}
                   value={t("common:currency", {
                     value: instantQuote.expectedHollar,
-                    symbol: "HOLLAR",
+                    symbol: hollar.symbol,
                   })}
                 />
                 <DetailRow
@@ -155,7 +158,7 @@ export const WithdrawMethodPicker = ({
                   })}
                   value={t("common:currency", {
                     value: queueHollarOut,
-                    symbol: "HOLLAR",
+                    symbol: hollar.symbol,
                   })}
                 />
                 <DetailRow
@@ -164,7 +167,7 @@ export const WithdrawMethodPicker = ({
                     const delta = instantQuote.expectedHollar - queueHollarOut
                     return `${t("common:currency", {
                       value: delta,
-                      symbol: "HOLLAR",
+                      symbol: hollar.symbol,
                       signDisplay: "always",
                     })} (${t("common:percent", {
                       value: instantQuote.discountPct,

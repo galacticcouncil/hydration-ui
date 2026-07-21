@@ -1,7 +1,9 @@
+import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { secondsInDay } from "date-fns/constants"
 import { formatUnits, getContract, type Hex, parseUnits } from "viem"
 
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   BIL_ATOKEN_ADDRESS,
   BIL_HAS_AAVE_LAYER,
@@ -125,17 +127,17 @@ export function useVaultStats() {
       })
 
       return {
-        totalAssets: Number(formatUnits(totalAssets, 18)),
-        totalSupply: Number(formatUnits(totalSupply, 18)),
-        exchangeRate: Number(formatUnits(exchangeRateWad, 18)),
+        totalAssets: Number(formatUnits(totalAssets, EVM_DECIMALS)),
+        totalSupply: Number(formatUnits(totalSupply, EVM_DECIMALS)),
+        exchangeRate: Number(formatUnits(exchangeRateWad, EVM_DECIMALS)),
         worstCaseWaitDays: Math.round(Number(worstCaseWaitSec) / secondsInDay),
         nextMaturityDays: Math.round(Number(nextMaturitySec) / secondsInDay),
         maxLockupDays: Math.ceil(Number(investmentPeriodSec) / secondsInDay),
-        tvlCap: Number(formatUnits(tvlCap, 18)),
+        tvlCap: Number(formatUnits(tvlCap, EVM_DECIMALS)),
         paused,
         depositsPaused,
-        minDeposit: Number(formatUnits(minReinvest, 18)),
-        minRedeem: Number(formatUnits(minRedeem, 18)),
+        minDeposit: Number(formatUnits(minReinvest, EVM_DECIMALS)),
+        minRedeem: Number(formatUnits(minRedeem, EVM_DECIMALS)),
         apr: Number(formatUnits(apyWad, 16)),
       } satisfies VaultStats
     },
@@ -144,6 +146,7 @@ export function useVaultStats() {
 
 export function useUserBalances(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
+  const { hollar, bil } = useBilStrategy()
   return useQuery({
     queryKey: bilQueryKeys.vaultBalances(evmAddress),
     enabled: !!evmAddress,
@@ -204,12 +207,12 @@ export function useUserBalances(evmAddress: Hex | undefined) {
       ] as const)
 
       return {
-        hollar: Number(formatUnits(hollarBal, 18)),
-        bil: Number(formatUnits(vaultBal + aTokenBal, 18)),
+        hollar: Number(formatUnits(hollarBal, hollar.decimals)),
+        bil: Number(formatUnits(vaultBal + aTokenBal, bil.decimals)),
         // Surface the split so callers that need to know where it sits
         // (e.g. the future batched-withdraw flow) can branch on it.
-        bilRaw: Number(formatUnits(vaultBal, 18)),
-        bilSupplied: Number(formatUnits(aTokenBal, 18)),
+        bilRaw: Number(formatUnits(vaultBal, bil.decimals)),
+        bilSupplied: Number(formatUnits(aTokenBal, bil.decimals)),
       }
     },
   })
@@ -230,6 +233,7 @@ export function useUserBalances(evmAddress: Hex | undefined) {
  */
 export function usePreviewDeposit(hollarAmount: number) {
   const { evm } = useRpcProvider()
+  const { hollar, bil } = useBilStrategy()
   return useQuery({
     queryKey: bilQueryKeys.vaultPreviewDeposit(hollarAmount),
     enabled: hollarAmount > 0,
@@ -241,9 +245,9 @@ export function usePreviewDeposit(hollarAmount: number) {
       })
       try {
         const result = await vault.read.previewDeposit([
-          parseUnits(hollarAmount.toString(), 18),
+          parseUnits(hollarAmount.toString(), hollar.decimals),
         ])
-        return Number(formatUnits(result, 18))
+        return Number(formatUnits(result, bil.decimals))
       } catch {
         // Input below the dust threshold or vault empty — no preview to
         // show. Caller treats this as "fee unknown" and shows the
@@ -263,6 +267,7 @@ export function usePreviewDeposit(hollarAmount: number) {
  */
 export function usePreviewRedeem(bilAmount: number) {
   const { evm } = useRpcProvider()
+  const { hollar, bil } = useBilStrategy()
   return useQuery({
     queryKey: bilQueryKeys.vaultPreviewRedeem(bilAmount),
     enabled: bilAmount > 0,
@@ -273,9 +278,9 @@ export function usePreviewRedeem(bilAmount: number) {
         client: evm,
       })
       const result = await vault.read.previewRedeem([
-        parseUnits(bilAmount.toString(), 18),
+        parseUnits(bilAmount.toString(), bil.decimals),
       ])
-      return Number(formatUnits(result, 18))
+      return Number(formatUnits(result, hollar.decimals))
     },
     placeholderData: keepPreviousData,
     staleTime: 15_000,

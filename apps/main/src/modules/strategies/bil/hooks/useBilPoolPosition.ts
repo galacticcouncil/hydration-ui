@@ -1,4 +1,5 @@
 import { UINT256_MAX } from "@galacticcouncil/utils"
+import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
@@ -90,7 +91,7 @@ export function useBilPoolPosition(evmAddress: Hex | undefined) {
         healthFactor:
           healthFactor === UINT256_MAX
             ? Infinity
-            : Number(formatUnits(healthFactor, 18)),
+            : Number(formatUnits(healthFactor, EVM_DECIMALS)),
         hasCollateral: totalCollateralBase > 0n,
       }
     },

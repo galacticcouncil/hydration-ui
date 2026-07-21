@@ -1,14 +1,13 @@
 import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { hoursToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useAssets } from "@/providers/assetsProvider"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 
 export type WithdrawalRowState =
   | "pending"
@@ -58,20 +57,18 @@ export const useWithdrawalColumns = ({
   const { t } = useTranslation(["strategies", "common"])
   const { isMobile } = useBreakpoints()
 
-  const { getAssetWithFallback } = useAssets()
-
-  const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { bil, hollar } = useBilStrategy()
 
   return useMemo(() => {
     const amountColumn = columnHelper.accessor("amountBil", {
       header: t("common:amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
-          <AssetLogo id={BIL_ERC20_ID} size="small" />
+          <AssetLogo id={bil.id} size="small" />
           <Text fs="p4" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.original.amountBil,
-              symbol: "BIL",
+              symbol: bil.symbol,
             })}
           </Text>
         </Flex>
@@ -187,6 +184,8 @@ export const useWithdrawalColumns = ({
   }, [
     t,
     isMobile,
+    bil.id,
+    bil.symbol,
     hollar.symbol,
     isCancelling,
     onCancel,

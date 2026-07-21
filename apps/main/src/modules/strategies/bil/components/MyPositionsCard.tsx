@@ -9,10 +9,10 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { BIL_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 
 export type PositionRow = {
   /** Stable id for react-table key + filtering. */
@@ -60,6 +60,7 @@ export const MyPositionsCard = ({
   isDepositingRaw,
 }: Props) => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
+  const { bil, bilReserve } = useBilStrategy()
 
   const collateralLabel = t("bil.strategy.collateralAsset")
   const hasSupplied = bilSupplied >= minDisplayBalance
@@ -105,7 +106,7 @@ export const MyPositionsCard = ({
         {rows.map((row) => (
           <PositionCard
             key={row.id}
-            logo={<AssetLogo id={BIL_ASSET_ID} size="medium" />}
+            logo={<AssetLogo id={bilReserve.id} size="medium" />}
             symbol={row.label}
             stats={
               <>
@@ -118,7 +119,7 @@ export const MyPositionsCard = ({
                     <Text fs="p3" fw={500} lh={1}>
                       {t("common:currency", {
                         value: row.amount,
-                        symbol: "BIL",
+                        symbol: bil.symbol,
                       })}
                     </Text>
                   }

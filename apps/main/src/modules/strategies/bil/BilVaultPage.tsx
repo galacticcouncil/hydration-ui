@@ -5,6 +5,10 @@ import { useState } from "react"
 import { type Hex, parseUnits } from "viem"
 
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
+import {
+  BilStrategyProvider,
+  useBilStrategy,
+} from "@/modules/strategies/bil/BilStrategyProvider"
 import { AboutCard } from "@/modules/strategies/bil/components/AboutCard"
 import { BilDeposit } from "@/modules/strategies/bil/components/BilDeposit"
 import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
@@ -47,8 +51,15 @@ import {
   useSupplyRawBil,
 } from "@/modules/strategies/bil/hooks/useVaultWrites"
 
-export const BilVaultPage = () => {
+export const BilVaultPage = () => (
+  <BilStrategyProvider>
+    <BilVaultContent />
+  </BilStrategyProvider>
+)
+
+const BilVaultContent = () => {
   const { account } = useAccount()
+  const { bil } = useBilStrategy()
   const [showRedeemed, setShowRedeemed] = useState(false)
   const [showWithdraw, setShowWithdraw] = useState(false)
   const [showBorrow, setShowBorrow] = useState(false)
@@ -220,7 +231,7 @@ export const BilVaultPage = () => {
             onCancel={(id) => cancelMutation.mutate(id)}
             isCancelling={cancelMutation.isPending}
             onClaim={(claimableBil) => {
-              const shares = parseUnits(claimableBil.toString(), 18)
+              const shares = parseUnits(claimableBil.toString(), bil.decimals)
               claimMutation.mutate(shares)
             }}
             isClaiming={claimMutation.isPending}

@@ -1,14 +1,12 @@
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
 
 import { bestSellQuery } from "@/api/trade"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import type { InstantQuote } from "@/modules/strategies/bil/components/WithdrawMethodPicker"
-import { STABLESWAP_BIL_ASSET_ID } from "@/modules/strategies/bil/constants"
 import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
@@ -29,9 +27,7 @@ export function useInstantQuote(
   queueHollarOut: number,
 ): { quote: InstantQuote | undefined; isLoading: boolean } {
   const rpc = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-
-  const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { bil, hollar } = useBilStrategy()
   const [debouncedAmount] = useDebounce(bilAmount, 250)
 
   // The SDK's getBestSell takes amountIn as a HUMAN-readable string (the
@@ -40,8 +36,8 @@ export function useInstantQuote(
   // Mirrors apps/main/src/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount.ts.
   const { data: swap, isFetching } = useQuery(
     bestSellQuery(rpc, {
-      assetIn: STABLESWAP_BIL_ASSET_ID.toString(),
-      assetOut: HOLLAR_ASSET_ID,
+      assetIn: bil.id,
+      assetOut: hollar.id,
       amountIn: debouncedAmount > 0 ? debouncedAmount.toString() : "0",
     }),
   )
@@ -75,6 +71,7 @@ export function useInstantQuote(
  */
 export function useInstantRedeem() {
   const { t } = useTranslation(["common"])
+  const { bil, hollar } = useBilStrategy()
   const { sdk } = useRpcProvider()
   const { account } = useAccount()
   const {
@@ -90,10 +87,11 @@ export function useInstantRedeem() {
       // Same convention as useInstantQuote — SDK takes a human string for
       // amountIn, NOT wei.
       const swap = await sdk.api.router.getBestSell(
-        Number(STABLESWAP_BIL_ASSET_ID),
-        Number(HOLLAR_ASSET_ID),
+        Number(bil.id),
+        Number(hollar.id),
         bilAmount.toString(),
       )
+
       const tx = await sdk.tx
         .trade(swap)
         .withSlippage(swapSlippage)
@@ -102,7 +100,7 @@ export function useInstantRedeem() {
 
       const fmt = t("currency", {
         value: bilAmount,
-        symbol: "BIL",
+        symbol: bil.symbol,
         maximumFractionDigits: 2,
       })
       return createTransaction({

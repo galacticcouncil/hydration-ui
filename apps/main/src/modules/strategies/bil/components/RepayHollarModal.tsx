@@ -10,15 +10,14 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { getBilRepayHealthFactor } from "@/modules/strategies/bil/utils/hf"
-import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
   open: boolean
@@ -41,8 +40,7 @@ export const RepayHollarModal = ({
   const { t } = useTranslation(["strategies", "common"])
   const [amount, setAmount] = useState("")
 
-  const { getAssetWithFallback } = useAssets()
-  const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { hollar } = useBilStrategy()
 
   useEffect(() => {
     if (!open) setAmount("")

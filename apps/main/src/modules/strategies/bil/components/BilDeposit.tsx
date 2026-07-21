@@ -12,16 +12,15 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import { useBilDepositForm } from "@/modules/strategies/bil/components/BilDeposit.form"
 import { BilExchangeRate } from "@/modules/strategies/bil/components/BilExchangeRate"
 import { VaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
-import { useAssets } from "@/providers/assetsProvider"
 
 type BilDepositProps = {
   vaultStats: VaultStats
@@ -37,8 +36,7 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
   isPending,
 }) => {
   const { t } = useTranslation(["strategies", "common"])
-  const { getAssetWithFallback } = useAssets()
-  const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { bil, hollar } = useBilStrategy()
 
   const form = useBilDepositForm({
     maxBalance: balance.toString(),
@@ -75,8 +73,8 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
               render={({ field, fieldState }) => (
                 <AssetInput
                   label={t("bil.deposit.your")}
-                  symbol="HOLLAR"
-                  selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} />}
+                  symbol={hollar.symbol}
+                  selectedAssetIcon={<AssetLogo id={hollar.id} />}
                   modalDisabled
                   value={field.value}
                   onChange={field.onChange}
@@ -94,8 +92,8 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
 
             <AssetInput
               label={t("bil.deposit.youReceive")}
-              symbol="BIL"
-              selectedAssetIcon={<AssetLogo id={BIL_ERC20_ID} />}
+              symbol={bil.symbol}
+              selectedAssetIcon={<AssetLogo id={bil.id} />}
               modalDisabled
               disabledInput
               ignoreBalance

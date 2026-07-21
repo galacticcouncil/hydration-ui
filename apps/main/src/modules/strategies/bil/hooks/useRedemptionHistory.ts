@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex, parseAbiItem } from "viem"
 
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   VAULT_ADDRESS,
   VAULT_DEPLOY_BLOCK,
@@ -82,6 +83,7 @@ export interface RedemptionHistoryEntry {
  */
 export function useRedemptionHistory(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
+  const { bil, hollar } = useBilStrategy()
   return useQuery({
     queryKey: bilQueryKeys.vaultHistory(evmAddress),
     enabled: !!evmAddress,
@@ -160,7 +162,7 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
           requestId: Number(requestId),
           state: "pending",
           requestedAt: tsOf(l),
-          bilRequested: Number(formatUnits(l.args.bilAmount!, 18)),
+          bilRequested: Number(formatUnits(l.args.bilAmount!, bil.decimals)),
           bilFulfilled: 0,
           hollarReceived: 0,
           fulfilledAt: null,
@@ -175,12 +177,14 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
       ) => {
         const entry = byId.get(log.args.requestId!)
         if (!entry) return
-        const hollar = Number(formatUnits(log.args.hollarAmount!, 18))
-        const bilBurned = Number(formatUnits(log.args.bilBurned!, 18))
+        const hollarAmt = Number(
+          formatUnits(log.args.hollarAmount!, hollar.decimals),
+        )
+        const bilBurned = Number(formatUnits(log.args.bilBurned!, bil.decimals))
         const at = tsOf(log)
-        entry.hollarReceived += hollar
+        entry.hollarReceived += hollarAmt
         entry.bilFulfilled += bilBurned
-        entry.partials.push({ at, bilBurned, hollarReceived: hollar })
+        entry.partials.push({ at, bilBurned, hollarReceived: hollarAmt })
         if (!entry.fulfilledAt || at > entry.fulfilledAt) entry.fulfilledAt = at
         if (isFinal) entry.state = "fulfilled"
         else if (entry.state === "pending") entry.state = "partial"

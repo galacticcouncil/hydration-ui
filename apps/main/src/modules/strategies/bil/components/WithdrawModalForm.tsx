@@ -15,12 +15,12 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { BIL_ERC20_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   projectRate,
   WithdrawMethodPicker,
@@ -37,7 +37,6 @@ import {
   getBilMaxWithdrawable,
   getBilWithdrawHealthFactor,
 } from "@/modules/strategies/bil/utils/hf"
-import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
   vaultStats: VaultStats
@@ -61,8 +60,7 @@ export const WithdrawModalForm = ({
   isPending,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
-  const { getAssetWithFallback } = useAssets()
-  const bil = getAssetWithFallback(BIL_ERC20_ID)
+  const { bil } = useBilStrategy()
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
   const hfContextEnabled =
@@ -141,8 +139,8 @@ export const WithdrawModalForm = ({
               <AssetInput
                 sx={{ pt: 0 }}
                 label={t("common:amount")}
-                symbol="BIL"
-                selectedAssetIcon={<AssetLogo id={BIL_ERC20_ID} />}
+                symbol={bil.symbol}
+                selectedAssetIcon={<AssetLogo id={bil.id} />}
                 modalDisabled
                 value={field.value}
                 onChange={field.onChange}

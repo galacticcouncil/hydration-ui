@@ -1,16 +1,14 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import {
-  HOLLAR_ASSET_ID,
-  safeConvertSS58toH160,
-  safeStringify,
-} from "@galacticcouncil/utils"
+import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   BIL_DEPOSIT_ZAP_ABI,
   BIL_DEPOSIT_ZAP_ADDRESS,
@@ -21,7 +19,6 @@ import {
   ERC20_ABI,
   EVM_CALL_GAS,
   HOLLAR_ADDRESS,
-  STABLESWAP_BIL_ASSET_ID,
   VAULT_ABI,
   VAULT_ADDRESS,
 } from "@/modules/strategies/bil/constants"
@@ -178,12 +175,13 @@ function useVaultEvmCall() {
  */
 export function useDeposit() {
   const { t } = useTranslation(["common"])
+  const { hollar } = useBilStrategy()
   const { evm } = useRpcProvider()
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
   return useMutation({
     mutationFn: async (hollarAmount: number) => {
-      const hollarBig = parseUnits(hollarAmount.toString(), 18)
+      const hollarBig = parseUnits(hollarAmount.toString(), hollar.decimals)
       const calls: BatchEvmCall[] = []
 
       if (BIL_HAS_AAVE_LAYER) {
@@ -260,7 +258,7 @@ export function useDeposit() {
 
       const fmt = t("currency", {
         value: hollarAmount,
-        symbol: "HOLLAR",
+        symbol: hollar.symbol,
         maximumFractionDigits: 2,
       })
       return submitBatch(
@@ -287,11 +285,12 @@ export function useDeposit() {
  */
 export function useRequestRedeem() {
   const { t } = useTranslation(["common"])
+  const { bil } = useBilStrategy()
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
   return useMutation({
     mutationFn: (bilAmount: number) => {
-      const bilBig = parseUnits(bilAmount.toString(), 18)
+      const bilBig = parseUnits(bilAmount.toString(), bil.decimals)
 
       const calls: BatchEvmCall[] = []
       if (BIL_HAS_AAVE_LAYER) {
@@ -317,7 +316,7 @@ export function useRequestRedeem() {
 
       const fmt = t("currency", {
         value: bilAmount,
-        symbol: "BIL",
+        symbol: bil.symbol,
         maximumFractionDigits: 2,
       })
       return submitBatch(
@@ -344,6 +343,7 @@ export function useRequestRedeem() {
  */
 export function useSupplyRawBil() {
   const { t } = useTranslation(["common"])
+  const { bil } = useBilStrategy()
   const { evm } = useRpcProvider()
   const { evmAddress, submitTx } = useVaultEvmCall()
 
@@ -373,7 +373,7 @@ export function useSupplyRawBil() {
 
       const fmt = t("currency", {
         value: bilAmountHint,
-        symbol: "BIL",
+        symbol: bil.symbol,
         maximumFractionDigits: 2,
       })
       return submitTx(BIL_POOL_ADDRESS, data, [...BIL_POOL_ABI], {
@@ -394,6 +394,7 @@ export function useSupplyRawBil() {
  */
 export function useRequestRedeemRaw() {
   const { t } = useTranslation(["common"])
+  const { bil } = useBilStrategy()
   const { evmAddress, submitTx } = useVaultEvmCall()
 
   return useMutation({
@@ -401,12 +402,16 @@ export function useRequestRedeemRaw() {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseUnits(bilAmount.toString(), 18), evmAddress, evmAddress],
+        args: [
+          parseUnits(bilAmount.toString(), bil.decimals),
+          evmAddress,
+          evmAddress,
+        ],
       })
 
       const fmt = t("currency", {
         value: bilAmount,
-        symbol: "BIL",
+        symbol: bil.symbol,
         maximumFractionDigits: 2,
       })
       return submitTx(
@@ -498,6 +503,7 @@ export function useCancelRedeem() {
 
 export function useInstantRedeemFromQueue() {
   const { t } = useTranslation(["common"])
+  const { bil, hollar } = useBilStrategy()
   const { evm, sdk, papi } = useRpcProvider()
   const { account } = useAccount()
   const {
@@ -547,8 +553,8 @@ export function useInstantRedeemFromQueue() {
       const evmInner = await buildBatchCalls(cancelCalls)
 
       const swap = await sdk.api.router.getBestSell(
-        Number(STABLESWAP_BIL_ASSET_ID),
-        Number(HOLLAR_ASSET_ID),
+        Number(bil.id),
+        Number(hollar.id),
         bilAmount.toString(),
       )
       const swapTx = await sdk.tx
@@ -563,7 +569,7 @@ export function useInstantRedeemFromQueue() {
 
       const fmt = t("currency", {
         value: bilAmount,
-        symbol: "BIL",
+        symbol: bil.symbol,
         maximumFractionDigits: 2,
       })
 
@@ -591,6 +597,7 @@ export function useInstantRedeemFromQueue() {
  */
 export function useClaim() {
   const { t } = useTranslation(["common"])
+  const { bil } = useBilStrategy()
   const { evmAddress, submitTx } = useVaultEvmCall()
 
   return useMutation({
@@ -602,8 +609,8 @@ export function useClaim() {
       })
 
       const fmt = t("currency", {
-        value: Number(shares) / 1e18,
-        symbol: "BIL",
+        value: Number(shares) / 10 ** EVM_DECIMALS,
+        symbol: bil.symbol,
         maximumFractionDigits: 2,
       })
       return submitTx(

@@ -8,12 +8,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { hoursToMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useAssets } from "@/providers/assetsProvider"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 
 import {
   type WithdrawalColumnHandlers,
@@ -37,9 +36,8 @@ export const WithdrawalRowMobile = ({
   isInstantRedeeming,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
-  const { getAssetWithFallback } = useAssets()
   const { isMobile } = useBreakpoints()
-  const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { bil, hollar } = useBilStrategy()
 
   const claimable = row.claimableBil ?? 0
   const stillActive = isActive(row.state)
@@ -112,11 +110,11 @@ export const WithdrawalRowMobile = ({
     <Paper p="l" shadow={false} bg="dim" borderRadius="l">
       <Flex align="center" justify="space-between" gap="m" wrap>
         <Flex align="center" gap="s" minWidth={0}>
-          <AssetLogo id={BIL_ERC20_ID} size="small" />
+          <AssetLogo id={bil.id} size="small" />
           <Text fs="p3" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.amountBil,
-              symbol: "BIL",
+              symbol: bil.symbol,
             })}
           </Text>
         </Flex>

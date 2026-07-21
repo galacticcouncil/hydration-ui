@@ -14,8 +14,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
-  BIL_ASSET_ID,
-  HOLLAR_ASSET_ID,
   HYDRATION_CHAIN_KEY,
   shortenAccountAddress,
   subscan,
@@ -23,6 +21,7 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import { VAULT_ADDRESS } from "@/modules/strategies/bil/constants"
 import { BilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 
@@ -34,6 +33,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
   metrics,
 }) => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
+  const { hollar, bilReserve } = useBilStrategy()
   return (
     <Paper>
       <Box p="l">
@@ -50,7 +50,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
           label={t("bil.strategy.tvl")}
           customValue={
             <Flex align="center" gap="s">
-              <AssetLogo id={BIL_ASSET_ID} size="medium" />
+              <AssetLogo id={bilReserve.id} size="medium" />
               <Text
                 font="primary"
                 fs="h6"
@@ -91,7 +91,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             label={t("bil.strategy.collateralAssetLabel")}
             content={
               <Flex align="center" gap="s">
-                <AssetLogo id={BIL_ASSET_ID} size="small" />
+                <AssetLogo id={bilReserve.id} size="small" />
                 <Text fs="p4" lh={1.5}>
                   {t("bil.strategy.collateralAsset")}
                 </Text>
@@ -102,7 +102,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             label={t("bil.strategy.debtAssetLabel")}
             content={
               <Flex align="center" gap="s">
-                <AssetLogo id={HOLLAR_ASSET_ID} size="small" />
+                <AssetLogo id={hollar.id} size="small" />
                 <Text fs="p4" lh={1.5}>
                   {t("bil.strategy.debtAsset")}
                 </Text>

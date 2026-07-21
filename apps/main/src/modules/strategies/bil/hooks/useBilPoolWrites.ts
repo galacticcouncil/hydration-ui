@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
 import i18n from "@/i18n"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   AAVE_INTEREST_RATE_MODE_VARIABLE,
   BIL_POOL_ABI,
@@ -74,6 +75,7 @@ function useBilPoolEvmCall() {
  */
 export function useBorrowHollar() {
   const { t } = useTranslation(["common"])
+  const { hollar } = useBilStrategy()
   const { evmAddress, submitTx } = useBilPoolEvmCall()
 
   return useMutation({
@@ -83,7 +85,7 @@ export function useBorrowHollar() {
         functionName: "borrow",
         args: [
           HOLLAR_ADDRESS,
-          parseUnits(hollarAmount.toString(), 18),
+          parseUnits(hollarAmount.toString(), hollar.decimals),
           AAVE_INTEREST_RATE_MODE_VARIABLE,
           0, // referralCode
           evmAddress,
@@ -92,7 +94,7 @@ export function useBorrowHollar() {
 
       const fmt = t("common:currency", {
         value: hollarAmount,
-        symbol: "HOLLAR",
+        symbol: hollar.symbol,
         maximumFractionDigits: 2,
       })
       return submitTx(data, {
@@ -113,6 +115,7 @@ export function useBorrowHollar() {
  * sentinel) instead of a fixed wei amount that may drift with accrued interest.
  */
 export function useRepayHollar() {
+  const { hollar } = useBilStrategy()
   const { evmAddress, submitTx } = useBilPoolEvmCall()
 
   return useMutation({
@@ -128,7 +131,9 @@ export function useRepayHollar() {
         functionName: "repay",
         args: [
           HOLLAR_ADDRESS,
-          repayAll ? UINT256_MAX : parseUnits(amount.toString(), 18),
+          repayAll
+            ? UINT256_MAX
+            : parseUnits(amount.toString(), hollar.decimals),
           AAVE_INTEREST_RATE_MODE_VARIABLE,
           evmAddress,
         ],
@@ -136,7 +141,7 @@ export function useRepayHollar() {
 
       const fmt = i18n.t("common:currency", {
         value: amount,
-        symbol: "HOLLAR",
+        symbol: hollar.symbol,
         maximumFractionDigits: 2,
       })
       return submitTx(data, {

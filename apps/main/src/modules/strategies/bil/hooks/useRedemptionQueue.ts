@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, type Hex } from "viem"
 
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 
@@ -21,6 +22,7 @@ export interface QueueEntry {
 
 export function useRedemptionQueue(evmAddress: Hex | undefined) {
   const { data: vault } = useBilVaultContract()
+  const { bil, hollar } = useBilStrategy()
   return useQuery({
     enabled: !!vault && !!evmAddress,
     queryKey: bilQueryKeys.vaultQueue(evmAddress),
@@ -35,7 +37,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
 
       const queueLength = Number(length)
       const queueHead = Number(head)
-      const totalQueuedBil = Number(formatUnits(totalQueued, 18))
+      const totalQueuedBil = Number(formatUnits(totalQueued, bil.decimals))
 
       const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
@@ -49,13 +51,15 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
         const [user, bilAmount, bilSettled, hollarOwed, active] = reqResult
         if (!active) continue
 
-        const remaining = Number(formatUnits(bilAmount - bilSettled, 18))
+        const remaining = Number(
+          formatUnits(bilAmount - bilSettled, bil.decimals),
+        )
         entries.push({
           requestId: i,
           user,
-          bilAmount: Number(formatUnits(bilAmount, 18)),
-          bilSettled: Number(formatUnits(bilSettled, 18)),
-          hollarOwed: Number(formatUnits(hollarOwed, 18)),
+          bilAmount: Number(formatUnits(bilAmount, bil.decimals)),
+          bilSettled: Number(formatUnits(bilSettled, bil.decimals)),
+          hollarOwed: Number(formatUnits(hollarOwed, hollar.decimals)),
           bilRemaining: remaining,
           active,
           isUser: addr ? user.toLowerCase() === addr : false,

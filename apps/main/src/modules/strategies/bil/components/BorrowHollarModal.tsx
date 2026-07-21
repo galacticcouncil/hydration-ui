@@ -10,15 +10,14 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
-import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
   open: boolean
@@ -38,8 +37,7 @@ export const BorrowHollarModal = ({
   const { t } = useTranslation(["strategies", "borrow", "common"])
   const [amount, setAmount] = useState("")
 
-  const { getAssetWithFallback } = useAssets()
-  const hollar = getAssetWithFallback(HOLLAR_ASSET_ID)
+  const { hollar } = useBilStrategy()
 
   const inputNum = parseFloat(amount) || 0
 
@@ -81,8 +79,8 @@ export const BorrowHollarModal = ({
           sx={{ pt: 0 }}
           label={t("bil.borrow.selectAsset")}
           balanceLabel="Available"
-          symbol="HOLLAR"
-          selectedAssetIcon={<AssetLogo id={HOLLAR_ASSET_ID} size="medium" />}
+          symbol={hollar.symbol}
+          selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
           modalDisabled
           value={amount}
           onChange={setAmount}
