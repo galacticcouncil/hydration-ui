@@ -1,6 +1,7 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
 import { BIL_ASSET_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
 import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
@@ -20,7 +21,7 @@ export const StrategiesPage = () => {
   const bondApr = getBondApr(bondId, timeLeft)
   const ethApy = usePropellerApy(PROPELLER_VAULTS.eth)
   const tbtcApy = usePropellerApy(PROPELLER_VAULTS.tbtc)
-  const propellerApys = [ethApy, tbtcApy].filter((a): a is number => a !== null)
+  const propellerApys = [ethApy, tbtcApy].filter(isNumber)
   const propellerApy = propellerApys.length ? Math.max(...propellerApys) : null
 
   const { data: bilMetrics, isLoading: isBilMetricsLoading } =
@@ -28,7 +29,7 @@ export const StrategiesPage = () => {
 
   return (
     <>
-      <SectionHeader title="Strategies" noTopPadding />
+      <SectionHeader title={t("strategies:page.title")} noTopPadding />
       <Grid
         columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
         gap="xl"
@@ -74,7 +75,6 @@ export const StrategiesPage = () => {
                   bondApr !== null
                     ? t("common:percent", {
                         value: bondApr,
-                        minimumFractionDigits: 2,
                       })
                     : "-",
               },

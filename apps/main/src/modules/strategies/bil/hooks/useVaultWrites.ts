@@ -174,7 +174,7 @@ function useVaultEvmCall() {
  *      Batched call: [HOLLAR.approve(vault), vault.deposit].
  */
 export function useDeposit() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
   const { evm } = useRpcProvider()
   const { evmAddress, submitBatch } = useVaultEvmCall()
@@ -256,16 +256,17 @@ export function useDeposit() {
         })
       }
 
-      const fmt = t("currency", {
-        value: hollarAmount,
-        symbol: hollar.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitBatch(
         calls,
         {
-          submitted: `Depositing ${fmt}...`,
-          success: `${fmt} deposited`,
+          submitted: t("bil.deposit.toast.submitted", {
+            amount: hollarAmount,
+            symbol: hollar.symbol,
+          }),
+          success: t("bil.deposit.toast.success", {
+            amount: hollarAmount,
+            symbol: hollar.symbol,
+          }),
         },
         [[BIL_QUERY_KEY_PREFIX]],
       )
@@ -284,7 +285,7 @@ export function useDeposit() {
  *      hold the raw hDCL.
  */
 export function useRequestRedeem() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
@@ -314,16 +315,17 @@ export function useRequestRedeem() {
         abi: [...VAULT_ABI],
       })
 
-      const fmt = t("currency", {
-        value: bilAmount,
-        symbol: bil.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitBatch(
         calls,
         {
-          submitted: `Requesting ${fmt} withdrawal...`,
-          success: `${fmt} withdrawal requested`,
+          submitted: t("bil.withdraw.toast.submitted", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
+          success: t("bil.withdraw.toast.success", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
         },
         [[BIL_QUERY_KEY_PREFIX]],
       )
@@ -342,7 +344,7 @@ export function useRequestRedeem() {
  * Only meaningful when the Aave layer is live. Disabled in vault-only mode.
  */
 export function useSupplyRawBil() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
   const { evm } = useRpcProvider()
   const { evmAddress, submitTx } = useVaultEvmCall()
@@ -371,14 +373,15 @@ export function useSupplyRawBil() {
         args: [DCL_PRECOMPILE_ADDRESS, bilBig, evmAddress, 0],
       })
 
-      const fmt = t("currency", {
-        value: bilAmountHint,
-        symbol: bil.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitTx(BIL_POOL_ADDRESS, data, [...BIL_POOL_ABI], {
-        submitted: `Supplying ${fmt} as collateral...`,
-        success: `${fmt} supplied`,
+        submitted: t("bil.supply.toast.submitted", {
+          amount: bilAmountHint,
+          symbol: bil.symbol,
+        }),
+        success: t("bil.supply.toast.success", {
+          amount: bilAmountHint,
+          symbol: bil.symbol,
+        }),
       })
     },
   })
@@ -393,7 +396,7 @@ export function useSupplyRawBil() {
  * address fills both controller and owner.
  */
 export function useRequestRedeemRaw() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
   const { evmAddress, submitTx } = useVaultEvmCall()
 
@@ -409,18 +412,19 @@ export function useRequestRedeemRaw() {
         ],
       })
 
-      const fmt = t("currency", {
-        value: bilAmount,
-        symbol: bil.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitTx(
         VAULT_ADDRESS,
         data,
         [...VAULT_ABI],
         {
-          submitted: `Requesting ${fmt} withdrawal...`,
-          success: `${fmt} withdrawal requested`,
+          submitted: t("bil.withdraw.toast.submitted", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
+          success: t("bil.withdraw.toast.success", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
         },
         [[BIL_QUERY_KEY_PREFIX]],
       )
@@ -445,6 +449,7 @@ export function useRequestRedeemRaw() {
  *   by cancel.
  */
 export function useCancelRedeem() {
+  const { t } = useTranslation(["strategies"])
   const { evm } = useRpcProvider()
   const { evmAddress, submitTx, submitBatch } = useVaultEvmCall()
 
@@ -476,8 +481,8 @@ export function useCancelRedeem() {
           data,
           [...VAULT_ABI],
           {
-            submitted: "Cancelling withdrawal...",
-            success: "Withdrawal cancelled",
+            submitted: t("bil.cancelRedeem.toast.submitted"),
+            success: t("bil.cancelRedeem.toast.success"),
           },
           [[BIL_QUERY_KEY_PREFIX]],
         )
@@ -492,8 +497,8 @@ export function useCancelRedeem() {
       return submitBatch(
         calls,
         {
-          submitted: "Cancelling withdrawal...",
-          success: "Withdrawal cancelled",
+          submitted: t("bil.cancelRedeem.toast.submitted"),
+          success: t("bil.cancelRedeem.toast.success"),
         },
         [[BIL_QUERY_KEY_PREFIX]],
       )
@@ -502,7 +507,7 @@ export function useCancelRedeem() {
 }
 
 export function useInstantRedeemFromQueue() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { bil, hollar } = useBilStrategy()
   const { evm, sdk, papi } = useRpcProvider()
   const { account } = useAccount()
@@ -567,18 +572,17 @@ export function useInstantRedeemFromQueue() {
         calls: [...evmInner, swapTx.get().decodedCall],
       })
 
-      const fmt = t("currency", {
-        value: bilAmount,
-        symbol: bil.symbol,
-        maximumFractionDigits: 2,
-      })
-
       return createTransaction({
         tx: batchTx,
         toasts: {
-          submitted: `Instant-redeeming ${fmt} for HOLLAR...`,
-          success: `${fmt} redeemed for HOLLAR`,
-          error: `Instant redeem failed`,
+          submitted: t("bil.instantRedeem.toast.submitted", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
+          success: t("bil.instantRedeem.toast.success", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
         },
         invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
       })
@@ -596,30 +600,29 @@ export function useInstantRedeemFromQueue() {
  * `claimableRedeemRequest(requestId, controller)` for a single request.
  */
 export function useClaim() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
   const { evmAddress, submitTx } = useVaultEvmCall()
 
   return useMutation({
     mutationFn: (shares: bigint) => {
+      const amount = Number(shares) / 10 ** EVM_DECIMALS
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "redeem",
         args: [shares, evmAddress, evmAddress],
       })
 
-      const fmt = t("currency", {
-        value: Number(shares) / 10 ** EVM_DECIMALS,
-        symbol: bil.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitTx(
         VAULT_ADDRESS,
         data,
         [...VAULT_ABI],
         {
-          submitted: `Claiming ${fmt} → HOLLAR...`,
-          success: `Claim sent`,
+          submitted: t("bil.claim.toast.submitted", {
+            amount,
+            symbol: bil.symbol,
+          }),
+          success: t("bil.claim.toast.success"),
         },
         [[BIL_QUERY_KEY_PREFIX]],
       )
@@ -635,6 +638,7 @@ export function useClaim() {
  * funds are always paid to the controller's own address.
  */
 export function useSetAutoClaim() {
+  const { t } = useTranslation(["strategies"])
   const { submitTx } = useVaultEvmCall()
   return useMutation({
     mutationFn: (enabled: boolean) => {
@@ -649,9 +653,11 @@ export function useSetAutoClaim() {
         [...VAULT_ABI],
         {
           submitted: enabled
-            ? "Enabling auto-claim..."
-            : "Disabling auto-claim...",
-          success: enabled ? "Auto-claim enabled" : "Auto-claim disabled",
+            ? t("bil.autoClaim.toast.submitted.enable")
+            : t("bil.autoClaim.toast.submitted.disable"),
+          success: enabled
+            ? t("bil.autoClaim.toast.success.enable")
+            : t("bil.autoClaim.toast.success.disable"),
         },
         [[BIL_QUERY_KEY_PREFIX]],
       )

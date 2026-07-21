@@ -115,6 +115,11 @@ export const NAVIGATION: NavigationItem[] = [
         to: LINKS.strategiesPropeller,
         icon: GoalIcon,
       },
+      {
+        key: "strategiesHollarBonds",
+        to: LINKS.strategiesHollarBonds,
+        icon: GoalIcon,
+      },
     ],
   },
   {

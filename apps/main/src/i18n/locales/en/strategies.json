@@ -1,4 +1,5 @@
 {
+  "page.title": "Strategies",
   "about.title": "About {{ suffix }}",
   "details.title": "Strategy details",
   "position.title": "My position",
@@ -106,5 +107,26 @@
   "bil.repay.title": "Repay HOLLAR",
   "bil.repay.cta.exceeds": "Exceeds debt",
   "bil.repay.cta.insufficient": "Insufficient HOLLAR",
-  "bil.repay.cta.repay": "Repay HOLLAR"
+  "bil.repay.cta.repay": "Repay HOLLAR",
+
+  "bil.deposit.toast.submitted": "Depositing {{ amount, currency }}...",
+  "bil.deposit.toast.success": "{{ amount, currency }} deposited",
+  "bil.withdraw.toast.submitted": "Requesting {{ amount, currency }} withdrawal...",
+  "bil.withdraw.toast.success": "{{ amount, currency }} withdrawal requested",
+  "bil.supply.toast.submitted": "Supplying {{ amount, currency }} as collateral...",
+  "bil.supply.toast.success": "{{ amount, currency }} supplied",
+  "bil.cancelRedeem.toast.submitted": "Cancelling withdrawal...",
+  "bil.cancelRedeem.toast.success": "Withdrawal cancelled",
+  "bil.instantRedeem.toast.submitted": "Instantly redeeming {{ amount, currency }} for HOLLAR...",
+  "bil.instantRedeem.toast.success": "Instantly redeemed {{ amount, currency }} for HOLLAR",
+  "bil.claim.toast.submitted": "Claiming {{ amount, currency }} → HOLLAR...",
+  "bil.claim.toast.success": "Claim sent",
+  "bil.autoClaim.toast.submitted.enable": "Enabling auto-claim...",
+  "bil.autoClaim.toast.submitted.disable": "Disabling auto-claim...",
+  "bil.autoClaim.toast.success.enable": "Auto-claim enabled",
+  "bil.autoClaim.toast.success.disable": "Auto-claim disabled",
+  "bil.borrow.toast.submitted": "Borrowing {{ amount, currency }}...",
+  "bil.borrow.toast.success": "{{ amount, currency }} borrowed",
+  "bil.repay.toast.submitted": "Repaying {{ amount, currency }}...",
+  "bil.repay.toast.success": "{{ amount, currency }} repaid"
 }

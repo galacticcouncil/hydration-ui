@@ -10,7 +10,6 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
-import i18n from "@/i18n"
 import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   AAVE_INTEREST_RATE_MODE_VARIABLE,
@@ -74,7 +73,7 @@ function useBilPoolEvmCall() {
  * generally.
  */
 export function useBorrowHollar() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
   const { evmAddress, submitTx } = useBilPoolEvmCall()
 
@@ -92,14 +91,15 @@ export function useBorrowHollar() {
         ],
       })
 
-      const fmt = t("common:currency", {
-        value: hollarAmount,
-        symbol: hollar.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitTx(data, {
-        submitted: `Borrowing ${fmt}...`,
-        success: `${fmt} borrowed`,
+        submitted: t("bil.borrow.toast.submitted", {
+          amount: hollarAmount,
+          symbol: hollar.symbol,
+        }),
+        success: t("bil.borrow.toast.success", {
+          amount: hollarAmount,
+          symbol: hollar.symbol,
+        }),
       })
     },
   })
@@ -115,6 +115,7 @@ export function useBorrowHollar() {
  * sentinel) instead of a fixed wei amount that may drift with accrued interest.
  */
 export function useRepayHollar() {
+  const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
   const { evmAddress, submitTx } = useBilPoolEvmCall()
 
@@ -139,14 +140,15 @@ export function useRepayHollar() {
         ],
       })
 
-      const fmt = i18n.t("common:currency", {
-        value: amount,
-        symbol: hollar.symbol,
-        maximumFractionDigits: 2,
-      })
       return submitTx(data, {
-        submitted: `Repaying ${fmt}...`,
-        success: `${fmt} repaid`,
+        submitted: t("bil.repay.toast.submitted", {
+          amount,
+          symbol: hollar.symbol,
+        }),
+        success: t("bil.repay.toast.success", {
+          amount,
+          symbol: hollar.symbol,
+        }),
       })
     },
   })

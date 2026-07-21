@@ -70,7 +70,7 @@ export function useInstantQuote(
  * trade settings (same setting used by the Swap UI).
  */
 export function useInstantRedeem() {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["strategies", "common"])
   const { bil, hollar } = useBilStrategy()
   const { sdk } = useRpcProvider()
   const { account } = useAccount()
@@ -98,17 +98,17 @@ export function useInstantRedeem() {
         .withBeneficiary(address)
         .build()
 
-      const fmt = t("currency", {
-        value: bilAmount,
-        symbol: bil.symbol,
-        maximumFractionDigits: 2,
-      })
       return createTransaction({
         tx: tx.get(),
         toasts: {
-          submitted: `Instant-redeeming ${fmt} for HOLLAR...`,
-          success: `${fmt} redeemed for HOLLAR`,
-          error: `Instant redeem failed`,
+          submitted: t("bil.instantRedeem.toast.submitted", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
+          success: t("bil.instantRedeem.toast.success", {
+            amount: bilAmount,
+            symbol: bil.symbol,
+          }),
         },
         invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
       })

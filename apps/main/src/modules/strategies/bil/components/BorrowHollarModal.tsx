@@ -78,7 +78,7 @@ export const BorrowHollarModal = ({
         <AssetInput
           sx={{ pt: 0 }}
           label={t("bil.borrow.selectAsset")}
-          balanceLabel="Available"
+          balanceLabel={t("common:available")}
           symbol={hollar.symbol}
           selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
           modalDisabled
