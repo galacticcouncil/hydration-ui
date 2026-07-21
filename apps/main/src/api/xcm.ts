@@ -78,9 +78,39 @@ export const useCrossChainBalance = (address: string, chainKey: string) => {
   })
 }
 
+/**
+ * One-shot balance snapshot for a whole chain — no live subscription held.
+ * Used by the asset picker, which only needs balances while it is open and
+ * would otherwise subscribe every asset on every chain you highlight.
+ */
+export const useCrossChainBalancesFetch = (
+  address: string,
+  chainKey: string,
+) => {
+  const wallet = useCrossChainWallet()
+
+  return useQuery({
+    queryKey: ["xcm", "balanceSnapshot", chainKey, address],
+    enabled: !!wallet && !!address && !!chainKey,
+    // Reopening the picker inside this window reuses the snapshot; past it we
+    // re-fetch, which is the "re-fetch when you reopen the chain list" case.
+    staleTime: secondsToMilliseconds(30),
+    queryFn: async () => {
+      const chain = chainsMap.get(chainKey)
+      if (!chain) return new Map<string, AssetAmount>()
+      const balances = await wallet.getBalances(
+        formatSourceChainAddress(address, chain),
+        chain,
+      )
+      return new Map(balances.map((balance) => [balance.key, balance]))
+    },
+  })
+}
+
 export const useCrossChainBalanceSubscription = (
   address: string,
   chainKey: string,
+  asset: Asset | null,
   onSuccess?: (balances: AssetAmount[]) => void,
 ) => {
   const queryClient = useQueryClient()
@@ -93,13 +123,17 @@ export const useCrossChainBalanceSubscription = (
     onSuccessRef.current = onSuccess
   }, [onSuccess])
 
+  // Subscribe by key, not by the asset object — the key is what the effect can
+  // safely depend on, and the SDK resolves it against the chain's registry.
+  const assetKey = asset?.key ?? ""
+
   useEffect(() => {
     const chain = chainsMap.get(chainKey)
     const queryKey = createCrossChainBalanceQueryKey(chainKey, address)
     const formattedAddress =
       address && chain ? formatSourceChainAddress(address, chain) : ""
 
-    if (!wallet || !formattedAddress || !chain) {
+    if (!wallet || !formattedAddress || !chain || !assetKey) {
       setIsLoading(false)
       return
     }
@@ -118,14 +152,18 @@ export const useCrossChainBalanceSubscription = (
         subscription = await wallet.subscribeBalance(
           formattedAddress,
           chain,
+          [assetKey],
           (balances) => {
-            const balanceMap = new Map(
-              balances.map((balance) => [balance.key, balance]),
-            )
-
+            // Merge, don't replace. The cache key has no asset dimension, so
+            // the source and destination subscriptions would otherwise blank
+            // each other out whenever both sides sit on the same chain.
             queryClient.setQueryData<Map<string, AssetAmount>>(
               queryKey,
-              balanceMap,
+              (prev) => {
+                const next = new Map(prev)
+                for (const balance of balances) next.set(balance.key, balance)
+                return next
+              },
             )
 
             onSuccessRef.current?.(balances)
@@ -144,7 +182,7 @@ export const useCrossChainBalanceSubscription = (
     return () => {
       subscription?.unsubscribe()
     }
-  }, [address, chainKey, queryClient, wallet])
+  }, [address, chainKey, assetKey, queryClient, wallet])
 
   return { isLoading, isError }
 }

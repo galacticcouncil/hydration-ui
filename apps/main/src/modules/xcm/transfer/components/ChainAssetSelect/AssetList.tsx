@@ -4,12 +4,9 @@ import {
 } from "@galacticcouncil/ui/components"
 import { bigShift } from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 
-import {
-  useCrossChainBalance,
-  useCrossChainBalanceSubscription,
-} from "@/api/xcm"
+import { useCrossChainBalance, useCrossChainBalancesFetch } from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -47,14 +44,16 @@ export const AssetList: React.FC<AssetListProps> = ({
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
     useAssetsPrice(priceIds)
 
-  const { isLoading: isLoadingBalances } = useCrossChainBalanceSubscription(
-    address,
-    selectedChain?.key ?? "",
-  )
+  const { data: snapshot, isLoading: isLoadingBalances } =
+    useCrossChainBalancesFetch(address, selectedChain?.key ?? "")
 
-  const { data: balances } = useCrossChainBalance(
-    address,
-    selectedChain?.key ?? "",
+  const { data: live } = useCrossChainBalance(address, selectedChain?.key ?? "")
+
+  // The snapshot covers the whole chain, the live map only the asset currently
+  // selected for transfer — prefer the live value where we have one.
+  const getBalance = useCallback(
+    (key: string) => live?.get(key) ?? snapshot?.get(key),
+    [live, snapshot],
   )
 
   const itemSize = items.some(({ route }) => isBridgeAssetRoute(route))
@@ -66,7 +65,7 @@ export const AssetList: React.FC<AssetListProps> = ({
 
     const assetsWithBalances = items.map((item) => {
       const registryId = registryChain.getBalanceAssetId(item.asset)
-      const balance = balances?.get(item.asset.key)
+      const balance = getBalance(item.asset.key)
       const { price } = getAssetPrice(registryId.toString())
       return {
         ...item,
@@ -93,7 +92,7 @@ export const AssetList: React.FC<AssetListProps> = ({
       return 0
     })
   }, [
-    balances,
+    getBalance,
     getAssetPrice,
     isAssetPriceLoading,
     isLoadingBalances,
@@ -115,7 +114,7 @@ export const AssetList: React.FC<AssetListProps> = ({
       maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
       initialScrollIndex={initialScrollIndex}
       renderItem={(item) => {
-        const balance = balances?.get(item.asset.key)
+        const balance = getBalance(item.asset.key)
         const isLoading = isLoadingBalances || isAssetPriceLoading
         const isSelectedAsset = selectedAsset?.key === item.asset.key
 
