@@ -209,13 +209,10 @@ export const VAULT_ABI = [
     stateMutability: "view",
   },
   // Redemption queue -----------------------------------------------------
-  {
-    type: "function",
-    name: "getRedemptionQueueLength",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-  },
+  // getRedemptionQueueLength/getQueueHead/getTotalQueuedBil/getIdleHollar
+  // were dropped from the vault in the queue-fills upgrade (EIP-170 diet);
+  // the public storage vars are the getters now. They exist on the
+  // pre-upgrade vault too, so these reads work on both sides.
   {
     type: "function",
     name: "getRedemptionQueuePending",
@@ -225,7 +222,7 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
-    name: "getQueueHead",
+    name: "queueHead",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
@@ -257,14 +254,14 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
-    name: "getTotalQueuedBil",
+    name: "totalQueuedBil",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
-    name: "getIdleHollar",
+    name: "idleHollar",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
