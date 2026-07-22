@@ -5,11 +5,14 @@ export const GETH_ERC20_ASSET_ID = "420"
 export const VDOT_ASSET_ID = "15"
 export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
+export const ETH_ASSET_ID = "34"
 export const PRIME_ASSET_ID = "43"
 export const PRIME_STABLESWAP_ASSET_ID = "143"
 export const PRIME_ERC20_ASSET_ID = "1043"
 export const HDX_ERC20_ASSET_ID = "67"
 export const STHDX_ASSET_ID = "670"
+export const HOLLAR_ASSET_ID = "222"
+export const WBTC_ASSET_ID = "19"
 
 export const HEALTH_FACTOR_RISK_THRESHOLD = 1.1
 export const HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1

@@ -14,10 +14,26 @@ const variants = createVariants((theme) => ({
 }))
 
 export const SPaper = styled(Box, {
-  shouldForwardProp: (prop) => !["variant", "shadow", "bg"].includes(prop),
+  shouldForwardProp: (prop) =>
+    !["variant", "hoverable", "shadow", "bg"].includes(prop),
 })<PaperProps>(
-  ({ theme, variant = "bordered", shadow = true, bg = "high" }) => [
+  ({
+    theme,
+    variant = "bordered",
+    hoverable = false,
+    shadow = true,
+    bg = "high",
+  }) => [
     variants(variant),
+    hoverable &&
+      css`
+        transition: ${theme.transitions.transform};
+        transition-timing-function: ${theme.easings.outExpo};
+        transition-duration: 0.5s;
+        &:hover {
+          transform: translateY(-0.25rem);
+        }
+      `,
     shadow &&
       css`
         box-shadow:
@@ -25,6 +41,7 @@ export const SPaper = styled(Box, {
           0px 14px 37px 0px rgba(0, 0, 0, 0.04);
       `,
     css`
+      position: relative;
       background-color: ${bg === "high"
         ? theme.surfaces.themeBasePalette.surfaceHigh
         : theme.controls.dim.base};

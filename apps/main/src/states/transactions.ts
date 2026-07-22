@@ -50,6 +50,7 @@ export type TransactionCommon = {
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
+  successMode?: "best" | "finalized"
   executedAmount?: TExecutedAmount
 }
 
@@ -59,11 +60,11 @@ interface SingleTransactionInput extends TransactionCommon {
 
 type SingleTransactionInputDynamic = {
   tx: (
-    results: TSuccessResult[],
+    results: TTransactionResult[],
   ) => Promise<SingleTransactionInput> | SingleTransactionInput
 }
 
-type MultiTransactionConfig = (
+export type MultiTransactionConfig = (
   | SingleTransactionInput
   | SingleTransactionInputDynamic
 ) & {
@@ -125,6 +126,7 @@ export type TransactionMeta =
 
 export type TSuccessResult =
   | TxBestBlocksStateResult
+  | TxFinalizedResult
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
@@ -135,8 +137,10 @@ export type TFinalizedResult =
   | SolanaTxStatus
   | SuiTxStatus
 
+export type TTransactionResult = TSuccessResult | TFinalizedResult
+
 export interface TransactionActions {
-  onSuccess?: (event: TSuccessResult) => void
+  onSuccess?: (event: TTransactionResult) => void
   onSubmitted?: (txHash: string) => void
   onError?: (message: string) => void
   onClose?: () => void
@@ -176,7 +180,10 @@ export const isSingleTransaction = (
 export const isSubstrateTxResult = (
   result: TSuccessResult,
 ): result is TxBestBlocksStateResult => {
-  return "type" in result && result.type === "txBestBlocksState"
+  return (
+    "type" in result &&
+    (result.type === "txBestBlocksState" || result.type === "finalized")
+  )
 }
 
 export const isBridgeTransaction = (meta: TransactionMeta) => {
@@ -206,7 +213,7 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TSuccessResult | void>
+  ) => Promise<TTransactionResult | void>
   cancelTransaction: (id: string) => void
   addPendingTransaction: (transaction: PendingTransaction) => void
   removePendingTransaction: (id: string) => void
@@ -216,7 +223,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   pendingTransactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TSuccessResult | void>((resolve, reject) => {
+    return new Promise<TTransactionResult | void>((resolve, reject) => {
       set((state) => {
         const meta: TransactionMeta =
           "meta" in transaction && transaction.meta

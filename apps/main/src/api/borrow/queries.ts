@@ -4,10 +4,12 @@ import {
   transactionType,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
+import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
 import {
   ComputedUserReserveData,
   ExtendedFormattedUser,
 } from "@galacticcouncil/money-market/hooks"
+import { ExternalApyData } from "@galacticcouncil/money-market/types"
 import {
   AaveV3GIGAHDXPool,
   AaveV3HydrationMainnet,
@@ -30,16 +32,24 @@ import {
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
 import {
+  EXTERNAL_APY_ASSET_IDS,
   getAddressFromAssetId,
   QUERY_KEY_BLOCK_PREFIX,
   safeConvertAnyToH160,
+  safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
+import {
+  queryOptions,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import Big from "big.js"
 import { PopulatedTransaction } from "ethers"
+import { produce } from "immer"
 import { Binary, FixedSizeArray, SizedHex } from "polkadot-api"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 
 import {
   useBorrowIncentivesContract,
@@ -47,14 +57,24 @@ import {
   useBorrowPoolDataContract,
   useGhoServiceContract,
 } from "@/api/borrow/contracts"
-import { bestNumberQuery } from "@/api/chain"
+import { borrowAssetApyQuery } from "@/api/borrow/hooks"
+import { bestNumberQuery, useBlockTimestamp } from "@/api/chain"
 import {
   ASSET_ID_TO_DEFILLAMA_ID,
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { TProviderData, useProxyUrl } from "@/api/provider"
+import {
+  TProviderData,
+  useIndexerClient,
+  useProxyUrl,
+  useSquidClient,
+} from "@/api/provider"
+import { getAccountProxies } from "@/api/proxy"
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
+import { useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const lendingPoolAddressProvider =
@@ -379,9 +399,13 @@ export const userBorrowSummaryQuery = (
   poolDataContract: UiPoolDataProvider | null,
   ghoServiceContract: GhoService | null,
   incentivesContract: UiIncentiveDataProvider | null,
+  externalApyData?: ExternalApyData,
 ) =>
   queryOptions({
-    queryKey: userBorrowSummaryQueryKey(evmAddress, lendingPoolAddressProvider),
+    queryKey: [
+      ...userBorrowSummaryQueryKey(evmAddress, lendingPoolAddressProvider),
+      !!externalApyData,
+    ],
     queryFn: async () => {
       if (!poolDataContract || !ghoServiceContract)
         throw new Error("Invalid poolDataContract or ghoServiceContract")
@@ -425,8 +449,23 @@ export const userBorrowSummaryQuery = (
         ])
 
       const { userEmodeCategoryId, userReserves } = user
-      const { baseCurrencyData, formattedReserves } = reserves
+      const { baseCurrencyData } = reserves
       const { formattedGhoUserData, formattedGhoReserveData } = gho
+
+      const formattedReserves = externalApyData
+        ? produce(reserves.formattedReserves, (draft) => {
+            const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
+
+            for (const [assetId, data] of externalApyData.entries()) {
+              const reserve = reserveMap.get(getAddressFromAssetId(assetId))
+              if (reserve) {
+                reserve.supplyAPY = data.supplyApy ?? reserve.supplyAPY
+                reserve.variableBorrowAPY =
+                  data.borrowApy ?? reserve.variableBorrowAPY
+              }
+            }
+          })
+        : reserves.formattedReserves
 
       const currentTimestamp = Number(timestamp) / 1000
 
@@ -654,90 +693,89 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   })
 }
 
+export const getClaimAllBorrowRewardsTx = async (
+  rpc: TProviderContext,
+  user: ExtendedFormattedUser,
+  address: string,
+) => {
+  const evmAddress = safeConvertAnyToH160(address)
+  const incentivesTxBuilderV2 = new IncentivesControllerV2(
+    new Web3Provider(rpc.evm.transport),
+  )
+
+  const userIncentive = Object.values(user.calculatedUserIncentives)[0]
+  const incentivesControllerAddress = userIncentive?.incentiveControllerAddress
+
+  if (!evmAddress) throw new Error("Invalid EVM account address")
+  if (!user?.userReservesData) throw new Error("User reserves not found")
+  if (!incentivesControllerAddress)
+    throw new Error("Incentive controller address not found")
+
+  const assets = user.userReservesData.reduce<string[]>((acc, { reserve }) => {
+    return acc.concat(
+      reserve.aIncentivesData?.length ? [reserve.aTokenAddress] : [],
+      reserve.vIncentivesData?.length ? [reserve.variableDebtTokenAddress] : [],
+      reserve.sIncentivesData?.length ? [reserve.stableDebtTokenAddress] : [],
+    )
+  }, [])
+
+  const incentivesContract = incentivesTxBuilderV2.getContractInstance(
+    incentivesControllerAddress,
+  )
+
+  const txRaw = await incentivesContract.populateTransaction.claimAllRewards(
+    assets,
+    evmAddress,
+  )
+
+  const tx: transactionType = {
+    ...txRaw,
+    from: evmAddress,
+    value: DEFAULT_NULL_VALUE_ON_TX,
+  }
+
+  if (!tx || !tx.from || !tx.to || !tx.data) {
+    throw new Error("Invalid claim transaction")
+  }
+
+  const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+    await estimateGasLimit({
+      evm: rpc.evm,
+      gasLimit:
+        gasLimitRecommendations[ProtocolAction.claimRewards]?.recommended,
+      action: ProtocolAction.claimRewards,
+    })
+
+  const evmCall = rpc.papi.tx.EVM.call({
+    source: tx.from as SizedHex<20>,
+    target: tx.to as SizedHex<20>,
+    input: Binary.fromHex(tx.data),
+    value: [0n, 0n, 0n, 0n],
+    gas_limit: gasLimit,
+    max_fee_per_gas: maxFeePerGas,
+    max_priority_fee_per_gas: maxPriorityFeePerGas,
+    access_list: [],
+    authorization_list: [],
+    nonce: undefined,
+  })
+
+  return rpc.papi.tx.Dispatcher.dispatch_evm_call({
+    call: evmCall.decodedCall,
+  })
+}
+
 export const useGetClaimAllBorrowRewardsTx = () => {
-  const { papi, evm } = useRpcProvider()
+  const rpc = useRpcProvider()
   const { account } = useAccount()
   const { data: user } = useUserBorrowSummary()
 
   return useCallback(async () => {
     const address = account?.address || ""
-    const evmAddress = safeConvertAnyToH160(address)
 
-    const incentivesTxBuilderV2 = new IncentivesControllerV2(
-      new Web3Provider(evm.transport),
-    )
+    if (!user) throw new Error("User not found")
 
-    const userIncentive = user
-      ? Object.values(user.calculatedUserIncentives)[0]
-      : undefined
-
-    const incentivesControllerAddress =
-      userIncentive?.incentiveControllerAddress
-
-    if (!evmAddress) throw new Error("Invalid EVM account address")
-    if (!user?.userReservesData) throw new Error("User reserves not found")
-    if (!incentivesControllerAddress)
-      throw new Error("Incentive controller address not found")
-
-    const assets = user.userReservesData.reduce<string[]>(
-      (acc, { reserve }) => {
-        return acc.concat(
-          reserve.aIncentivesData?.length ? [reserve.aTokenAddress] : [],
-          reserve.vIncentivesData?.length
-            ? [reserve.variableDebtTokenAddress]
-            : [],
-          reserve.sIncentivesData?.length
-            ? [reserve.stableDebtTokenAddress]
-            : [],
-        )
-      },
-      [],
-    )
-
-    const incentivesContract = incentivesTxBuilderV2.getContractInstance(
-      incentivesControllerAddress,
-    )
-
-    const txRaw = await incentivesContract.populateTransaction.claimAllRewards(
-      assets,
-      evmAddress,
-    )
-
-    const tx: transactionType = {
-      ...txRaw,
-      from: evmAddress,
-      value: DEFAULT_NULL_VALUE_ON_TX,
-    }
-
-    if (!tx || !tx.from || !tx.to || !tx.data) {
-      throw new Error("Invalid claim transaction")
-    }
-
-    const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-      await estimateGasLimit({
-        evm,
-        gasLimit:
-          gasLimitRecommendations[ProtocolAction.claimRewards]?.recommended,
-        action: ProtocolAction.claimRewards,
-      })
-
-    const evmCall = papi.tx.EVM.call({
-      source: tx.from as SizedHex<20>,
-      target: tx.to as SizedHex<20>,
-      input: Binary.fromHex(tx.data),
-      value: [0n, 0n, 0n, 0n],
-      gas_limit: gasLimit,
-      max_fee_per_gas: maxFeePerGas,
-      max_priority_fee_per_gas: maxPriorityFeePerGas,
-      access_list: [],
-      authorization_list: [],
-      nonce: undefined,
-    })
-
-    return papi.tx.Dispatcher.dispatch_evm_call({
-      call: evmCall.decodedCall,
-    })
-  }, [account?.address, evm, papi, user])
+    return getClaimAllBorrowRewardsTx(rpc, user, address)
+  }, [account?.address, rpc, user])
 }
 
 export const convertEvmTxRawToPapiTx = async (
@@ -885,9 +923,16 @@ export const useSetUsageAsCollateralTx = () => {
   const { account } = useAccount()
 
   return useCallback(
-    async (reserve: string, usageAsCollateral: boolean) => {
-      const address = account?.address || ""
-      const evmAddress = safeConvertAnyToH160(address)
+    async (
+      reserve: string,
+      usageAsCollateral: boolean,
+      address?: string,
+      gasLimitOverride?: bigint,
+    ) => {
+      const evmAddress = safeConvertAnyToH160(address || account?.address || "")
+
+      if (!evmAddress) throw new Error("Invalid EVM address")
+      if (!poolContract) throw new Error("Invalid poolContract")
 
       const poolInstance = poolContract.getContractInstance(
         poolContract.poolAddress,
@@ -910,6 +955,56 @@ export const useSetUsageAsCollateralTx = () => {
           evm,
           gasLimit: tx.gasLimit?.toString(),
           action: ProtocolAction.setUsageAsCollateral,
+        })
+
+      const evmCall = papi.tx.EVM.call({
+        source: tx.from as SizedHex<20>,
+        target: tx.to as SizedHex<20>,
+        input: Binary.fromHex(tx.data),
+        value: [0n, 0n, 0n, 0n],
+        gas_limit: gasLimitOverride || gasLimit,
+        max_fee_per_gas: maxFeePerGas,
+        max_priority_fee_per_gas: maxPriorityFeePerGas,
+        access_list: [],
+        authorization_list: [],
+        nonce: undefined,
+      })
+
+      return evmCall
+    },
+    [poolContract, account?.address, evm, papi],
+  )
+}
+
+export const useSetUserEModeTx = () => {
+  const { papi, evm } = useRpcProvider()
+  const poolContract = useBorrowPoolContract()
+  const { account } = useAccount()
+
+  return useCallback(
+    async (categoryId: number, address?: string) => {
+      const evmAddress = safeConvertAnyToH160(address || account?.address || "")
+
+      if (!poolContract) throw new Error("Invalid poolContract")
+
+      const poolInstance = poolContract.getContractInstance(
+        poolContract.poolAddress,
+      )
+
+      const txRaw =
+        await poolInstance.populateTransaction.setUserEMode(categoryId)
+
+      const tx = {
+        ...txRaw,
+        from: evmAddress,
+        value: DEFAULT_NULL_VALUE_ON_TX,
+      }
+
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm,
+          gasLimit: tx.gasLimit?.toString(),
+          action: ProtocolAction.setEModeUsage,
         })
 
       const evmCall = papi.tx.EVM.call({
@@ -991,4 +1086,161 @@ export const useExternalApys = (assetIds: string[]) => {
       ] as const
     }),
   }
+}
+
+export const getStrategyPositionsQueryKey = (address: string) => [
+  "strategyPositions",
+  address,
+]
+
+export const useStrategyPositions = () => {
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
+  const indexerClient = useIndexerClient()
+  const squidClient = useSquidClient()
+  const indexerUrl = useProxyUrl()
+  const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
+  const rpc = useRpcProvider()
+  const poolDataContract = useBorrowPoolDataContract()
+  const ghoServiceContract = useGhoServiceContract()
+  const incentivesContract = useBorrowIncentivesContract()
+
+  const { data: timestamp } = useBlockTimestamp()
+
+  const accountAddress = account?.address || ""
+
+  const externalApyAssetIds = useMemo(() => {
+    const configAssets = new Set<string>()
+
+    for (const config of MULTIPLY_ASSETS_CONFIG) {
+      configAssets.add(config.collateralAssetId)
+      configAssets.add(config.debtAssetId)
+    }
+
+    return EXTERNAL_APY_ASSET_IDS.filter((assetId) => configAssets.has(assetId))
+  }, [])
+
+  return useQuery(
+    queryOptions({
+      queryKey: getStrategyPositionsQueryKey(accountAddress),
+      enabled:
+        !!accountAddress &&
+        !!timestamp &&
+        !!poolDataContract &&
+        !!ghoServiceContract &&
+        !!incentivesContract,
+      queryFn: async () => {
+        const accountProxies = await queryClient.ensureQueryData(
+          getAccountProxies(rpc, queryClient, accountAddress),
+        )
+
+        const bestNumber = await queryClient.ensureQueryData(
+          bestNumberQuery(rpc),
+        )
+
+        if (!bestNumber) throw new Error("Best number not found")
+
+        const parachainBlockNumber = bestNumber.parachainBlockNumber
+        const currentTimestampMs = bestNumber.timestamp
+
+        const apys = await Promise.all(
+          externalApyAssetIds.map((assetId) =>
+            queryClient.ensureQueryData(
+              borrowAssetApyQuery(
+                rpc,
+                poolDataContract,
+                incentivesContract,
+                queryClient,
+                squidClient,
+                indexerUrl,
+                assetId,
+                getAssetWithFallback,
+                getErc20AToken,
+                getRelatedAToken,
+                timestamp,
+              ),
+            ),
+          ),
+        )
+
+        const filteredApys = apys.filter((apy) => apy !== undefined)
+
+        const entries = filteredApys.map(
+          ({ assetId, underlyingSupplyApy, underlyingBorrowApy, lpAPY }) => {
+            const supplyApy = Big(underlyingSupplyApy)
+              .plus(lpAPY ?? 0)
+              .div(100)
+            const borrowApy = Big(underlyingBorrowApy)
+              .plus(lpAPY ?? 0)
+              .div(100)
+            return [
+              assetId,
+              {
+                supplyApy: supplyApy.toString(),
+                borrowApy: borrowApy.toString(),
+              },
+            ] as const
+          },
+        )
+
+        const positions = await Promise.all(
+          accountProxies.map(async (proxyAddress) => {
+            const evmAddress = safeConvertAnyToH160(proxyAddress)
+
+            const userBorrowSummary = await queryClient.fetchQuery(
+              userBorrowSummaryQuery(
+                evmAddress,
+                rpc,
+                lendingPoolAddressProvider,
+                poolDataContract,
+                ghoServiceContract,
+                incentivesContract,
+                new Map(entries),
+              ),
+            )
+
+            const suppliedSummaryData = userBorrowSummary.userReservesData.find(
+              (userReserve) => Big(userReserve.underlyingBalance).gt(0),
+            )
+
+            const debtSummaryData = userBorrowSummary.userReservesData.find(
+              (userReserve) => Big(userReserve.totalBorrows).gt(0),
+            )
+
+            if (!suppliedSummaryData) return undefined
+
+            const publicKey = safeConvertSS58toPublicKey(proxyAddress)
+
+            const { events } = await queryClient.fetchQuery(
+              pureCreatedEventsQuery(indexerClient, publicKey),
+            )
+
+            const event = events[0]
+
+            const proxyCreateData = {
+              blockHeight: event?.block.height ?? 64000,
+              extrinsicIndex: event?.extrinsic?.indexInBlock ?? 1,
+            }
+
+            const blocksAgo =
+              Number(parachainBlockNumber) - Number(proxyCreateData.blockHeight)
+            const deltaMs = blocksAgo * PARACHAIN_BLOCK_TIME
+            const proxyCreatedAt = new Date(currentTimestampMs - deltaMs)
+
+            return {
+              suppliedSummaryData,
+              debtSummaryData,
+              proxyCreateData,
+              proxyCreatedAt,
+              publicKey,
+              proxyAddress,
+              userBorrowSummary,
+            }
+          }),
+        )
+
+        return positions.filter((position) => position !== undefined)
+      },
+    }),
+  )
 }
