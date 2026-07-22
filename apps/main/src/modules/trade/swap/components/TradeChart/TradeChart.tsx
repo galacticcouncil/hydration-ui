@@ -90,10 +90,12 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const assetBMeta = getAssetWithFallback(assetB)
 
   const chartValue = shouldShowValues ? (
-    <AnimatedValue
-      value={value}
-      format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
-    />
+    <Text fs={["p3", "p1"]} fw={600}>
+      <AnimatedValue
+        value={value}
+        format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
+      />
+    </Text>
   ) : undefined
 
   const chartDisplayValue = shouldShowValues ? (

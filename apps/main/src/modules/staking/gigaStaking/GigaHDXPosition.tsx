@@ -29,6 +29,7 @@ import {
 } from "@/api/gigaStake"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetLogo } from "@/components/AssetLogo"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
@@ -71,8 +72,11 @@ export const GigaHDXPosition = () => {
   )
 
   const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+  const gigaHdxBalance = Big(gigaHdxBalanceHuman)
+    .times(exchangeRate?.toString() || "0")
+    .toString()
 
-  const gigaHdxBalanceUsd = hdxReserve?.underlyingBalanceUSD ?? "0"
+  const [gigaHdxBalanceUsd] = useDisplayAssetPrice(native.id, gigaHdxBalance)
 
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!userSummary || !hdxReserve || !hollarReserve) return null
@@ -160,9 +164,7 @@ export const GigaHDXPosition = () => {
             }
             displayValue={t("gigaStaking.position.underlying.value", {
               value: gigaHdxBalanceHuman,
-              displayValue: t("common:currency", {
-                value: gigaHdxBalanceUsd,
-              }),
+              displayValue: gigaHdxBalanceUsd,
               symbol: ghdxMeta.symbol,
             })}
             sx={{ ml: "auto", textAlign: "right" }}
