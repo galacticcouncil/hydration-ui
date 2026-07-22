@@ -14,11 +14,9 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
+import { useUnlockableNativeTokens } from "@/api/locks"
 import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
-import {
-  useNativeAssetLocks,
-  useUnlockableNativeTokens,
-} from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { useNativeAssetLocks } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
 import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -35,8 +33,10 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const { account } = useAccount()
 
   const locks = useNativeAssetLocks()
-  const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
-  const { data: reserves } = useAccountTokenReserves(asset.id, !!asset.reserved)
+  const unlockable = useUnlockableNativeTokens()
+
+  const { data: reserves } = useAccountTokenReserves(asset.id)
+  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
 
   const { data: identity } = useQuery({
     ...getIdentityQuery(rpc.papi, account?.address ?? ""),
@@ -44,7 +44,6 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   })
 
   const identityReserves = identity?.deposit ?? 0n
-  const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
   const { price: assetPrice } = useAssetPrice(asset.id)
 
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
