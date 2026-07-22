@@ -107,10 +107,10 @@ export const RepayModalContent: React.FC<
   })
 
   const balanceWithFee = Big(maxBalanceWithFee?.maxBalanceHuman ?? "0")
-    .round(poolReserve.decimals, BigNumber.ROUND_UP)
+    .round(poolReserve.decimals, BigNumber.ROUND_DOWN)
     .toString()
 
-  // calculate max amount abailable to repay
+  // calculate max amount available to repay
   let maxAmountToRepay: BigNumber
   let balance: string
   if (repayWithATokens) {

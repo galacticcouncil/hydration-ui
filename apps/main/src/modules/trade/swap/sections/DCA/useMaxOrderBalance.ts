@@ -33,7 +33,7 @@ export const useMaxOrderBalance = ({
 
   const { data: tx } = useQuery({
     enabled,
-    queryKey: ["maxOrderAmount", assetIn, assetOut],
+    queryKey: ["maxOrderAmount", assetIn, assetOut, slippage],
     queryFn: async () => {
       const minAmount = await rpc.queryClient.ensureQueryData(
         minimumOrderBudgetQuery(rpc, meta.id, meta.decimals),
