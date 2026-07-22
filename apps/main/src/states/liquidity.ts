@@ -128,7 +128,7 @@ export const useOmnipoolPositionData = (
 ) => {
   const { hub, getAssetWithFallback } = useAssets()
 
-  const { data: omnipoolTokensData = [], isLoading: isOmnipoolTokensLoading } =
+  const { dataMap, isLoading: isOmnipoolTokensLoading } =
     useOmnipoolAssetsData()
   const { data: ids } = useOmnipoolIds()
 
@@ -145,10 +145,7 @@ export const useOmnipoolPositionData = (
     ): OmnipoolPositionData | undefined => {
       const price = getAssetPrice(position.assetId).price
       const meta = getAssetWithFallback(position.assetId)
-      const omnipoolData = omnipoolTokensData.find(
-        (omnipoolTokenData) =>
-          omnipoolTokenData.id.toString() === position.assetId,
-      )
+      const omnipoolData = dataMap?.get(Number(position.assetId))
 
       if (omnipoolData && price) {
         const { liquidity, hubLiquidity } = calculateLiquidityOut(
@@ -216,7 +213,7 @@ export const useOmnipoolPositionData = (
         }
       }
     },
-    [getAssetPrice, getAssetWithFallback, hub, omnipoolTokensData],
+    [getAssetPrice, getAssetWithFallback, hub, dataMap],
   )
 
   return { getData, isLoading }

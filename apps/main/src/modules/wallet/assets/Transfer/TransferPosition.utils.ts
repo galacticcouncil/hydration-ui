@@ -1,57 +1,11 @@
 import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
 
-import { tokenBalanceQuery } from "@/api/balances"
-import { insufficientFeeQuery } from "@/api/constants"
 import { paymentInfoQuery } from "@/api/transaction"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale, scaleHuman } from "@/utils/formatting"
-
-export const useInsufficientTransferFee = (
-  assetId: string,
-  address: string,
-) => {
-  const rpc = useRpcProvider()
-  const { native, getAssetWithFallback } = useAssets()
-  const { isSufficient } = getAssetWithFallback(assetId)
-
-  const validAddress = safeConvertAddressSS58(address)
-
-  const { data: balanceData, isLoading: balanceIsLoading } = useQuery(
-    tokenBalanceQuery(rpc, assetId, !isSufficient ? validAddress : null),
-  )
-
-  const { data: fee, isLoading: feeIsLoading } = useQuery(
-    insufficientFeeQuery(rpc),
-  )
-
-  if (isSufficient) {
-    return { fee: undefined }
-  }
-
-  const isLoading = !rpc.isLoaded || balanceIsLoading || feeIsLoading
-
-  const balance = balanceData?.balance
-
-  if (!balance || new Big(balance).gt(0)) {
-    return { fee: undefined }
-  }
-
-  return isLoading
-    ? { fee: undefined, isLoading }
-    : {
-        fee: fee
-          ? {
-              value: fee,
-              displayValue: scaleHuman(fee, native.decimals),
-              symbol: native.symbol,
-            }
-          : undefined,
-      }
-}
 
 export function usePaymentFees({
   asset,

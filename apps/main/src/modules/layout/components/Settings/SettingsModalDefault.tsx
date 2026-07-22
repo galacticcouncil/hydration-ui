@@ -1,14 +1,14 @@
-import { ModalBody, ModalContentDivider } from "@galacticcouncil/ui/components"
+import { ModalBody } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 
 import { Contacts } from "@/modules/layout/components/Settings/Contacts"
+import { DocsLink } from "@/modules/layout/components/Settings/DocsLink"
 import { PaymentAsset } from "@/modules/layout/components/Settings/PaymentAsset"
 import {
   SSettingsContent,
   SSettingsSection,
 } from "@/modules/layout/components/Settings/Settings.styled"
-import { ThemePreference } from "@/modules/layout/components/Settings/ThemePreference"
 
 type Props = {
   readonly onPaymentAssetClick: () => void
@@ -27,10 +27,7 @@ export const SettingsModalDefault: FC<Props> = ({
         <SSettingsSection>
           {isConnected && <PaymentAsset onClick={onPaymentAssetClick} />}
           <Contacts onClick={onContactsClick} />
-        </SSettingsSection>
-        <ModalContentDivider />
-        <SSettingsSection>
-          <ThemePreference />
+          <DocsLink />
         </SSettingsSection>
       </SSettingsContent>
     </ModalBody>
