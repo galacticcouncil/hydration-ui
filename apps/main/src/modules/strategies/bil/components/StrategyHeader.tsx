@@ -7,12 +7,12 @@ import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 
 export const StrategyHeader = () => {
   const { t } = useTranslation("strategies")
-  const { bilReserve } = useBilStrategy()
+  const { bil } = useBilStrategy()
 
   return (
     <Flex justify="space-between" align="center" gap="s">
       <Flex align="center" gap="base">
-        <AssetLogo id={bilReserve.id} size="large" />
+        <AssetLogo id={bil.id} size="large" />
         <Flex direction="column">
           <Text
             font="primary"
@@ -22,6 +22,9 @@ export const StrategyHeader = () => {
             color={getToken("text.high")}
           >
             {t("bil.strategy.name")}
+          </Text>
+          <Text fs="p5" color={getToken("text.medium")}>
+            {bil.symbol}
           </Text>
         </Flex>
       </Flex>

@@ -60,9 +60,8 @@ export const MyPositionsCard = ({
   isDepositingRaw,
 }: Props) => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
-  const { bil, bilReserve } = useBilStrategy()
+  const { bil } = useBilStrategy()
 
-  const collateralLabel = t("bil.strategy.collateralAsset")
   const hasSupplied = bilSupplied >= minDisplayBalance
   const hasRaw = bilRaw >= minDisplayBalance
 
@@ -70,7 +69,7 @@ export const MyPositionsCard = ({
   if (hasSupplied) {
     rows.push({
       id: "supplied",
-      label: collateralLabel,
+      label: bil.symbol,
       amount: bilSupplied,
       usdValue: bilSupplied * exchangeRate,
       // Net worth = collateral USD - debt USD. We pass the post-borrow value
@@ -84,7 +83,7 @@ export const MyPositionsCard = ({
   if (hasRaw) {
     rows.push({
       id: "raw",
-      label: t("bil.positions.uncollateralised", { label: collateralLabel }),
+      label: t("bil.positions.uncollateralised", { label: bil.symbol }),
       amount: bilRaw,
       usdValue: bilRaw * exchangeRate,
       // Raw rows are not collateralised — net worth equals their face value.
@@ -106,7 +105,7 @@ export const MyPositionsCard = ({
         {rows.map((row) => (
           <PositionCard
             key={row.id}
-            logo={<AssetLogo id={bilReserve.id} size="medium" />}
+            logo={<AssetLogo id={bil.id} size="medium" />}
             symbol={row.label}
             stats={
               <>

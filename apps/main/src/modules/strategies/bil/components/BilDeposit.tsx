@@ -127,14 +127,10 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
                   <Flex
                     align="center"
                     gap="base"
-                    sx={{ color: getToken("text.tint.secondary") }}
+                    sx={{ color: getToken("text.tint.quart") }}
                   >
                     <Icon component={Hourglass} size="xs" />
-                    <Text
-                      fs="p5"
-                      fw={500}
-                      color={getToken("text.tint.secondary")}
-                    >
+                    <Text fs="p5" fw={500} color={getToken("text.tint.quart")}>
                       {t("bil.deposit.option.queue")}
                     </Text>
                   </Flex>

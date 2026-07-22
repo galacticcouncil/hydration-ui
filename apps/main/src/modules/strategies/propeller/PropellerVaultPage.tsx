@@ -1,6 +1,7 @@
 import { Stack } from "@galacticcouncil/ui/components"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { Navigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { type Hex } from "viem"
 
@@ -31,6 +32,7 @@ import {
   getPropellerVault,
   type PropellerAsset,
 } from "@/modules/strategies/propeller/vaults"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 /**
  * The single shared Propeller subpage. All collateral vaults (ETH, tBTC, …) live
@@ -40,7 +42,12 @@ import {
  * re-queries against the new vault).
  */
 export const PropellerVaultPage = () => {
+  const { featureFlags, isLoaded } = useRpcProvider()
   const [asset, setAsset] = useState<PropellerAsset>(DEFAULT_PROPELLER_ASSET)
+
+  if (isLoaded && !featureFlags.propellerEnabled) {
+    return <Navigate to="/strategies" />
+  }
 
   return (
     <PropellerVaultProvider vault={getPropellerVault(asset)}>

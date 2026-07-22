@@ -1,6 +1,7 @@
 import { Stack } from "@galacticcouncil/ui/components"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { Navigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { type Hex, parseUnits } from "viem"
 
@@ -50,15 +51,24 @@ import {
   useSetAutoClaim,
   useSupplyRawBil,
 } from "@/modules/strategies/bil/hooks/useVaultWrites"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
-export const BilVaultPage = () => (
-  <BilStrategyProvider>
-    <BilVaultContent />
-  </BilStrategyProvider>
-)
+export const BilVaultPage = () => {
+  const { featureFlags, isLoaded } = useRpcProvider()
+
+  if (isLoaded && !featureFlags.bilEnabled) {
+    return <Navigate to="/strategies" />
+  }
+
+  return (
+    <BilStrategyProvider>
+      <BilVaultContent />
+    </BilStrategyProvider>
+  )
+}
 
 const BilVaultContent = () => {
-  const { account } = useAccount()
+  const { account, isConnected } = useAccount()
   const { bil } = useBilStrategy()
   const [showRedeemed, setShowRedeemed] = useState(false)
   const [showWithdraw, setShowWithdraw] = useState(false)
@@ -224,28 +234,30 @@ const BilVaultContent = () => {
             />
           )}
 
-          <WithdrawalsCard
-            rows={withdrawalRows}
-            showRedeemed={showRedeemed}
-            onShowRedeemedChange={setShowRedeemed}
-            onCancel={(id) => cancelMutation.mutate(id)}
-            isCancelling={cancelMutation.isPending}
-            onClaim={(claimableBil) => {
-              const shares = parseUnits(claimableBil.toString(), bil.decimals)
-              claimMutation.mutate(shares)
-            }}
-            isClaiming={claimMutation.isPending}
-            onInstantRedeem={(id, amountBil) =>
-              instantRedeemQueueMutation.mutate({
-                requestId: id,
-                bilAmount: amountBil,
-              })
-            }
-            isInstantRedeeming={instantRedeemQueueMutation.isPending}
-            autoClaimEnabled={autoClaimOn ?? false}
-            onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
-            isAutoClaimUpdating={setAutoClaimMutation.isPending}
-          />
+          {isConnected && (
+            <WithdrawalsCard
+              rows={withdrawalRows}
+              showRedeemed={showRedeemed}
+              onShowRedeemedChange={setShowRedeemed}
+              onCancel={(id) => cancelMutation.mutate(id)}
+              isCancelling={cancelMutation.isPending}
+              onClaim={(claimableBil) => {
+                const shares = parseUnits(claimableBil.toString(), bil.decimals)
+                claimMutation.mutate(shares)
+              }}
+              isClaiming={claimMutation.isPending}
+              onInstantRedeem={(id, amountBil) =>
+                instantRedeemQueueMutation.mutate({
+                  requestId: id,
+                  bilAmount: amountBil,
+                })
+              }
+              isInstantRedeeming={instantRedeemQueueMutation.isPending}
+              autoClaimEnabled={autoClaimOn ?? false}
+              onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
+              isAutoClaimUpdating={setAutoClaimMutation.isPending}
+            />
+          )}
 
           <StrategyDetailsCard metrics={bilMetrics} />
 

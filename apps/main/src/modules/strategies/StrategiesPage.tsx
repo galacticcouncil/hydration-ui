@@ -1,5 +1,5 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
-import { BIL_ASSET_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
+import { BIL_ERC20_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
 
@@ -34,36 +34,43 @@ export const StrategiesPage = () => {
         columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
         gap="xl"
       >
-        <StrategyCard
-          logoId={BIL_ASSET_ID}
-          title={t("strategies:cards.bil.title")}
-          stats={[
-            {
-              label: t("apy"),
-              value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
-              isLoading: isBilMetricsLoading,
-            },
-          ]}
-          badges={[StrategyBadgeType.Partnership, StrategyBadgeType.RWA]}
-          description={t("strategies:cards.bil.description")}
-          link={LINKS.strategiesBil}
-        />
-        <StrategyCard
-          logoId="propeller"
-          title={t("strategies:cards.propeller.title")}
-          stats={[
-            {
-              label: t("apy"),
-              value:
-                propellerApy !== null
-                  ? t("common:percent", { value: propellerApy })
-                  : "-",
-            },
-          ]}
-          badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
-          description={t("strategies:cards.propeller.description")}
-          link="/strategies/propeller"
-        />
+        {featureFlags.bilEnabled && (
+          <StrategyCard
+            logoId={BIL_ERC20_ID}
+            title={t("strategies:cards.bil.title")}
+            stats={[
+              {
+                label: t("apy"),
+                value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
+                isLoading: isBilMetricsLoading,
+              },
+            ]}
+            badges={[StrategyBadgeType.Partnership, StrategyBadgeType.RWA]}
+            description={t("strategies:cards.bil.description")}
+            link={LINKS.strategiesBil}
+          />
+        )}
+        {featureFlags.propellerEnabled && (
+          <StrategyCard
+            logoId="propeller"
+            title={t("strategies:cards.propeller.title")}
+            stats={[
+              {
+                label: t("apy"),
+                value:
+                  propellerApy !== null
+                    ? t("common:percent", { value: propellerApy })
+                    : "-",
+              },
+            ]}
+            badges={[
+              StrategyBadgeType.Leverage,
+              StrategyBadgeType.NoLiquidation,
+            ]}
+            description={t("strategies:cards.propeller.description")}
+            link="/strategies/propeller"
+          />
+        )}
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard
             logoId={bondId}

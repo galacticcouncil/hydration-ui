@@ -33,7 +33,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
   metrics,
 }) => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
-  const { hollar, bilReserve } = useBilStrategy()
+  const { hollar, bil, bilReserve } = useBilStrategy()
   return (
     <Paper>
       <Box p="l">
@@ -50,7 +50,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
           label={t("bil.strategy.tvl")}
           customValue={
             <Flex align="center" gap="s">
-              <AssetLogo id={bilReserve.id} size="medium" />
+              <AssetLogo id={bil.id} size="medium" />
               <Text
                 font="primary"
                 fs="h6"
@@ -76,7 +76,6 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
             >
               {t("common:percent", {
                 value: metrics.maxNetApyPct,
-                maximumFractionDigits: 1,
               })}
             </Text>
           }
@@ -104,7 +103,7 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
               <Flex align="center" gap="s">
                 <AssetLogo id={hollar.id} size="small" />
                 <Text fs="p4" lh={1.5}>
-                  {t("bil.strategy.debtAsset")}
+                  {hollar.symbol}
                 </Text>
               </Flex>
             }
@@ -130,7 +129,6 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {
                   value: metrics.maxLtvPct,
-                  minimumFractionDigits: 0,
                 })}
               </Text>
             }
@@ -141,7 +139,6 @@ export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {
                   value: metrics.liquidationLtvPct,
-                  minimumFractionDigits: 0,
                 })}
               </Text>
             }

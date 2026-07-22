@@ -10,7 +10,7 @@
   "badge.leverage": "Leverage",
   "badge.noLiquidation": "No Liquidation",
 
-  "cards.bil.title": "Decentral",
+  "cards.bil.title": "BIL Vault",
   "cards.bil.description": "Decentral is revolutionizing the payment process for creators, influencers, agencies, and production companies in Brazil.",
   "cards.propeller.title": "Propeller",
   "cards.propeller.description": "Deposit ETH or tBTC and earn leveraged staking yield. Propeller loops your collateral automatically and self-deleverages to avoid liquidation. Exit any time via the async withdrawal queue.",
@@ -34,9 +34,8 @@
   "bonds.position.redeem": "Redeem",
   "bonds.position.availableAtMaturity": "Available at maturity",
 
-  "bil.strategy.name": "Decentral",
+  "bil.strategy.name": "BIL Vault",
   "bil.strategy.collateralAsset": "Decentral",
-  "bil.strategy.debtAsset": "Hollar",
   "bil.strategy.tvl": "TVL",
   "bil.strategy.maxNetApy": "Max Net APY",
   "bil.strategy.collateralAssetLabel": "Collateral asset",

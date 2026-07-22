@@ -353,15 +353,15 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     strategiesBil: {
       title: t("navigation.strategiesBil.title"),
-      description: "",
+      description: t("navigation.strategiesBil.description"),
     },
     strategiesPropeller: {
       title: t("navigation.strategiesPropeller.title"),
-      description: "",
+      description: t("navigation.strategiesPropeller.description"),
     },
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
-      description: "",
+      description: t("navigation.strategiesHollarBonds.description"),
     },
     // memepad: {
     //   title: t("navigation.memepad.title"),
