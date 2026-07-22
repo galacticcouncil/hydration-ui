@@ -58,10 +58,6 @@ export const StatsComposition = ({
     [colorQueries, others, othersComposition, useCompositionMobileLayout],
   )
 
-  if (!primary.length) {
-    return null
-  }
-
   const compositionSkeletonSpecs = useCompositionMobileLayout
     ? MOBILE_INITIAL_SKELETON_SPECS
     : DESKTOP_INITIAL_SKELETON_SPECS
