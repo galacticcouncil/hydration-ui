@@ -80,8 +80,8 @@ export function useVaultStats() {
         vault.read.minReinvestAmount(),
         vault.read.minRedeemAmount(),
         vault.read.getAPYWad(),
-        vault.read.getRedemptionQueueLength(),
-        vault.read.getIdleHollar(),
+        vault.read.queueTail(),
+        vault.read.idleHollar(),
         vault.read.getPositionCount(),
         vault.read.getPositionHead(),
       ])
