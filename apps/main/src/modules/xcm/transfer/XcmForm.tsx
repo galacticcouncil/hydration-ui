@@ -235,7 +235,10 @@ export const XcmForm = () => {
           </Stack>
         </Paper>
 
-        <ChainSwitch onClick={handleChainSwitch} />
+        <ChainSwitch
+          onClick={handleChainSwitch}
+          disabled={!!transfer && !transfer.reversible}
+        />
 
         <Paper>
           <Stack p={["l", "xl"]} gap="base">

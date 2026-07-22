@@ -99,12 +99,13 @@ export const tokenReservesQuery = (
   })
 }
 
-export const useAccountTokenReserves = (tokenId: string) => {
+export const useAccountTokenReserves = (tokenId: string, enabled?: boolean) => {
   const { account } = useAccount()
 
   return useQuery({
     ...tokenReservesQuery(useRpcProvider(), account?.address ?? "", tokenId),
     select: (reserves) => new Map(reserves.map((r) => [r.type, r.amount])),
+    enabled,
   })
 }
 
