@@ -142,6 +142,8 @@
   "nativeYieldApy": "Native Yield",
   "supplyApy": "Supply APY",
   "borrowApy": "Borrow APY",
+  "composition": "Composition",
+  "totalNetValue": "Total net value",
   "incentivesApr": "Incentives APR",
   "totalValue": "Total value",
   "joined": "Joined",

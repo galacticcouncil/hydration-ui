@@ -121,7 +121,7 @@ export const xykPoolQuery = (
     },
   })
 
-const xykPoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
+export const xykPoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
   queryOptions<PoolBase[]>({
     queryKey: ["pools", "xyk"],
     queryFn: async () => {

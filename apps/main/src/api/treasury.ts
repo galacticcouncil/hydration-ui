@@ -1,120 +1,104 @@
-import { calculate_liquidity_out } from "@galacticcouncil/math-omnipool"
+import { isGho } from "@galacticcouncil/money-market/utils"
 import {
   DOT_ASSET_ID,
-  GDOT_ASSET_ID,
-  GDOT_ERC20_ID,
   getAssetIdFromAddress,
-  GETH_ASSET_ID,
-  GETH_ERC20_ID,
-  GSOL_ASSET_ID,
-  GSOL_ERC20_ID,
-  HEURC_ASSET_ID,
-  HUSDC_ASSET_ID,
-  HUSDE_ASSET_ID,
-  HUSDS_ASSET_ID,
-  HUSDT_ASSET_ID,
+  GIGA_ASSETS,
+  HOLLAR_ASSET_ID,
   isH160Address,
+  MONEY_MARKET_STRATEGY_ASSETS,
+  safeConvertAnyToH160,
   safeConvertH160toSS58,
 } from "@galacticcouncil/utils"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
 import type { Parachain } from "@galacticcouncil/xc-core"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
+import { omnipoolPositionsQuery } from "@/api/account"
+import { allTokenBalancesQuery, tokenBalanceSDKQuery } from "@/api/balances"
 import {
-  OmnipoolDepositFull,
-  OmnipoolPosition,
-  XykDeposit,
-} from "@/api/account"
-import { AssetType } from "@/api/assets"
-import { useUserBorrowSummary } from "@/api/borrow"
-import { OmniPoolToken, PoolToken, PoolType } from "@/api/pools"
-import { getSpotPrice } from "@/api/spotPrice"
-import { ENV } from "@/config/env"
-import { isBond, TAsset } from "@/providers/assetsProvider"
-import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
-import { scale, scaleHuman } from "@/utils/formatting"
+  lendingPoolAddressProvider,
+  useBorrowIncentivesContract,
+  useBorrowPoolDataContract,
+  useGhoServiceContract,
+  userBorrowSummaryQuery,
+} from "@/api/borrow"
+import { omnipoolTokensQuery } from "@/api/pools"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAssetsPrice } from "@/states/displayAsset"
 import {
-  getOmnipoolMiningPositions,
-  getOmnipoolPositions,
-  getXykMiningPositions,
-} from "@/utils/uniques"
+  calculateLiquidityOut,
+  getLiquidityOutParams,
+} from "@/states/liquidity"
+import { scaleHuman, toBigInt } from "@/utils/formatting"
 
-export type TreasuryAssetSource =
-  | "wallet"
-  | "moneyMarketSupply"
-  | "moneyMarketBorrow"
-  | "mixed"
-
-export type TreasuryAssetBreakdownPart = {
-  balance: string
-  valueUsd: string | null
-}
-
-export type TreasuryAssetBreakdown = {
-  wallet?: TreasuryAssetBreakdownPart
-  offchain?: TreasuryAssetBreakdownPart
-  moneyMarketSupply?: TreasuryAssetBreakdownPart
-  liquidity?: TreasuryAssetBreakdownPart
-  moneyMarketBorrow?: TreasuryAssetBreakdownPart
-}
-
-type TreasuryAccount = {
-  address: string
-  label: string
-  includeWalletBalances?: boolean
-  netMoneyMarketBorrows?: boolean
-}
-
-export type TreasuryAssetBalance = {
+type TreasuryAssetBalance = {
   asset: TAsset
-  balance: string
-  balanceRaw: string
-  price: string | null
-  valueUsd: string | null
+  wallet: string
+  liquidity: string
+  offchain: string
+  netSupply?: string
+  supply?: string
+  debt?: string
+  price?: string
+}
+
+export type TreasuryCompositionAsset = TreasuryAssetBalance & {
+  price: string
+  totalBalance: string
+  totalValueDisplay: string
+  assetWalletDisplay: string
+  liquidityBalanceDisplay: string
+  offchainBalanceDisplay: string
+  netSupplyBalanceDisplay: string
+  supplyBalanceDisplay: string
+  debtBalanceDisplay: string
   share: number
-  source: TreasuryAssetSource
-  breakdown: TreasuryAssetBreakdown
 }
 
-export type TreasuryStatsData = {
-  address: string
-  totalValueUsd: string
-  holdingsValueUsd: string
-  borrowValueUsd: string
-  pricedAssetCount: number
-  assets: TreasuryAssetBalance[]
-  borrowPositions: TreasuryAssetBalance[]
+export type TreasuryData = {
+  totalValueDisplay: string
+  totalAssetWalletDisplay: string
+  totaLiquidityBalanceDisplay: string
+  totalOffchainBalanceDisplay: string
+  totalNetSupplyBalanceDisplay: string
+  totalSupplyBalanceDisplay: string
+  totalDebtBalanceDisplay: string
+  assets: {
+    primary: TreasuryCompositionAsset[]
+    others: TreasuryCompositionAsset[]
+  }
 }
 
-const TREASURY_STATS_ACCOUNTS = [
-  {
-    address: "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
-    label: "Hydration treasury",
-    includeWalletBalances: true,
-    netMoneyMarketBorrows: true,
-  },
-  {
-    address: "0x8C0f3b9602374198974d2B2679d14a386f5b108e",
-    label: "HOLLAR collector treasury",
-    includeWalletBalances: true,
-    netMoneyMarketBorrows: true,
-  },
-  {
-    address: "15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA",
-    label: "PRIME looped position",
-    includeWalletBalances: true,
-    netMoneyMarketBorrows: true,
-  },
-  {
-    address: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
-    label: "Money market treasury",
-    includeWalletBalances: true,
-    netMoneyMarketBorrows: true,
-  },
-] satisfies TreasuryAccount[]
+export type GroupedCompositionAsset = TreasuryCompositionAsset & {
+  groupedAssets?: TreasuryCompositionAsset[]
+}
+
+// fetch MM, wallet balances, bonds and omnipool liq positions
+const TREASURY_WALLET = {
+  address: "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+  label: "Hydration treasury",
+}
+
+// fetch only HOLLAR wallet balance
+const HOLLAR_COLLECTOR_TREASURY_WALLET = {
+  address: "0x8C0f3b9602374198974d2B2679d14a386f5b108e",
+  label: "HOLLAR collector treasury",
+}
+
+//fetch MM and wallet balances
+const PRIME_LOOPED_POSITION_TREASURY_WALLET = {
+  address: "15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA",
+  label: "PRIME looped position",
+}
+
+//fetch MM and wallet balances
+const MONEY_MARKET_TREASURY_WALLET = {
+  address: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
+  label: "Money market treasury",
+}
 
 const TREASURY_ASSETHUB_DOT_ACCOUNTS = [
   {
@@ -127,68 +111,6 @@ const TREASURY_ASSETHUB_DOT_ACCOUNTS = [
   },
 ] as const
 
-const HOLLAR_POOL_LABELS_BY_ID = new Map<string, string>([
-  [HUSDC_ASSET_ID, "HUSDC"],
-  [HUSDT_ASSET_ID, "HUSDT"],
-  [HUSDS_ASSET_ID, "HUSDS"],
-  [HUSDE_ASSET_ID, "HUSDE"],
-  [HEURC_ASSET_ID, "HEURC"],
-  [GDOT_ASSET_ID, "GDOT"],
-  [GETH_ASSET_ID, "GETH"],
-  [GSOL_ASSET_ID, "GSOL"],
-])
-
-const OMNIPOOL_DISPLAY_ASSET_BY_ID = new Map<string, string>([
-  [GDOT_ERC20_ID, GDOT_ASSET_ID],
-  [GETH_ERC20_ID, GETH_ASSET_ID],
-  [GSOL_ERC20_ID, GSOL_ASSET_ID],
-])
-
-const normalizeTreasuryAsset = (asset: TAsset): TAsset => {
-  const hollarPoolLabel = HOLLAR_POOL_LABELS_BY_ID.get(asset.id)
-
-  return hollarPoolLabel
-    ? {
-        ...asset,
-        symbol: hollarPoolLabel,
-        name: hollarPoolLabel,
-      }
-    : asset
-}
-
-const isPositive = (value: string) => {
-  try {
-    return new Big(value).gt(0)
-  } catch {
-    return false
-  }
-}
-
-const isReceiptToken = (
-  asset: TAsset,
-): asset is TAsset & { underlyingAssetId: string } =>
-  asset.type === AssetType.ERC20 &&
-  "underlyingAssetId" in asset &&
-  !!asset.underlyingAssetId
-
-const getReceiptTokenUnderlyingAssetId = (asset: TAsset) =>
-  isReceiptToken(asset) && typeof asset.underlyingAssetId === "string"
-    ? asset.underlyingAssetId
-    : undefined
-
-const isStableSwapAsset = (asset: TAsset) => asset.type === AssetType.STABLESWAP
-
-const isXYKShareAsset = (
-  asset: TAsset,
-): asset is TAsset & {
-  poolAddress: string
-  assets: [TAsset, TAsset]
-} =>
-  "poolAddress" in asset &&
-  typeof asset.poolAddress === "string" &&
-  "assets" in asset &&
-  Array.isArray(asset.assets)
-
 const sumBigStrings = (...values: Array<string | null | undefined>) =>
   values.reduce((acc, value) => {
     if (!value) return acc
@@ -199,18 +121,6 @@ const sumBigStrings = (...values: Array<string | null | undefined>) =>
       return acc
     }
   }, new Big(0))
-
-const getPositionPrice = (balance: string, valueUsd: string) => {
-  try {
-    const balanceValue = new Big(balance)
-
-    return balanceValue.gt(0)
-      ? new Big(valueUsd).div(balanceValue).toString()
-      : null
-  } catch {
-    return null
-  }
-}
 
 const getBalanceAccountAddress = (address: string) =>
   isH160Address(address) ? safeConvertH160toSS58(address) : address
@@ -232,1011 +142,516 @@ const getAssetHubDotBalance = async (address: string) => {
   }
 }
 
-const getAssetBalance = async (
-  { papi }: TProviderContext,
-  address: string,
-  asset: TAsset,
-) => {
-  if (asset.id === NATIVE_ASSET_ID) {
-    const {
-      data: { free, reserved },
-    } = await papi.query.System.Account.getValue(address)
+type WithAssetId = { readonly assetId: string }
 
-    return free + reserved
-  }
+const convertBalancesToMap = <T extends WithAssetId>(balances: readonly T[]) =>
+  new Map(balances.map((balance) => [balance.assetId, balance]))
 
-  const { free, reserved } = await papi.query.Tokens.Accounts.getValue(
-    address,
-    Number(asset.id),
-  )
+export const useTreasuryBalances = () => {
+  const {
+    tokens,
+    stableswap,
+    erc20,
+    hub,
+    getAssetWithFallback,
+    getAsset,
+    isErc20AToken,
+    getRelatedAToken,
+  } = useAssets()
+  const rpc = useRpcProvider()
+  const poolDataContract = useBorrowPoolDataContract()
+  const ghoServiceContract = useGhoServiceContract()
+  const incentivesContract = useBorrowIncentivesContract()
 
-  return free + reserved
-}
+  return useQuery({
+    queryKey: ["treasuryBalances"],
+    queryFn: async () => {
+      const hollarAsset = getAssetWithFallback(HOLLAR_ASSET_ID)
+      const fetchTreasuryWalletBalances = rpc.queryClient
+        .ensureQueryData(allTokenBalancesQuery(rpc, TREASURY_WALLET.address))
+        .then(convertBalancesToMap)
 
-const getAssetValueUsd = async (
-  { sdk }: TProviderContext,
-  assetId: string,
-  balance: string,
-  displayAssetId: string,
-) => {
-  const { spotPrice } = await getSpotPrice(
-    sdk.api.router,
-    assetId,
-    displayAssetId,
-  )()
-
-  return {
-    price: spotPrice,
-    valueUsd: spotPrice ? new Big(balance).times(spotPrice).toString() : null,
-  }
-}
-
-const getTreasuryPricingAssetId = (asset: TAsset) =>
-  isBond(asset)
-    ? asset.underlyingAssetId
-    : (getReceiptTokenUnderlyingAssetId(asset) ?? asset.id)
-
-const createWalletAssetBalance = async (
-  rpc: TProviderContext,
-  asset: TAsset,
-  balance: string,
-  balanceRaw: string,
-  displayAssetId: string,
-  breakdownKey: "wallet" | "offchain" = "wallet",
-): Promise<TreasuryAssetBalance> => {
-  const { price, valueUsd } = await getAssetValueUsd(
-    rpc,
-    getTreasuryPricingAssetId(asset),
-    balance,
-    displayAssetId,
-  )
-
-  return {
-    asset: normalizeTreasuryAsset(asset),
-    balance,
-    balanceRaw,
-    price,
-    valueUsd,
-    share: 0,
-    source: "wallet" as const,
-    breakdown: {
-      [breakdownKey]: {
-        balance,
-        valueUsd,
-      },
-    },
-  }
-}
-
-const createLiquidityAssetBalance = async (
-  rpc: TProviderContext,
-  asset: TAsset,
-  balanceRaw: string,
-  displayAssetId: string,
-): Promise<TreasuryAssetBalance> => {
-  const balance = scaleHuman(balanceRaw, asset.decimals)
-  const { price, valueUsd } = await getAssetValueUsd(
-    rpc,
-    getTreasuryPricingAssetId(asset),
-    balance,
-    displayAssetId,
-  )
-
-  return {
-    asset: normalizeTreasuryAsset(asset),
-    balance,
-    balanceRaw,
-    price,
-    valueUsd,
-    share: 0,
-    source: "wallet" as const,
-    breakdown: {
-      liquidity: {
-        balance,
-        valueUsd,
-      },
-    },
-  }
-}
-
-const getPoolTokenBalance = (poolToken: PoolToken, shares: string) =>
-  Big(poolToken.balance.toString()).times(shares)
-
-type TreasuryPool = Awaited<
-  ReturnType<TProviderContext["sdk"]["api"]["router"]["getPools"]>
->[number]
-
-type TreasuryOmnipoolPosition = OmnipoolPosition | OmnipoolDepositFull
-
-const getTreasuryOmnipoolDisplayAsset = (
-  assetMap: Map<string, TAsset>,
-  positionAssetId: string,
-) => {
-  const displayAssetId =
-    OMNIPOOL_DISPLAY_ASSET_BY_ID.get(positionAssetId) ?? positionAssetId
-
-  return assetMap.get(displayAssetId) ?? assetMap.get(positionAssetId)
-}
-
-const getOmnipoolPositionLiquidity = (
-  omnipoolData: OmniPoolToken,
-  position: TreasuryOmnipoolPosition,
-) => {
-  const [nom, denom] = position.price.map((value) => value.toString()) as [
-    string,
-    string,
-  ]
-  const positionPrice = Big(nom).div(denom).toString()
-  const params = [
-    omnipoolData.balance.toString(),
-    omnipoolData.hubReserves.toString(),
-    omnipoolData.shares.toString(),
-    position.amount.toString(),
-    position.shares.toString(),
-    Big(scale(positionPrice, "q")).toFixed(0),
-    position.shares.toString(),
-    "0",
-  ] as Parameters<typeof calculate_liquidity_out>
-
-  return calculate_liquidity_out(...params)
-}
-
-const getTreasuryOmnipoolPositions = async (
-  rpc: TProviderContext,
-  address: string,
-) => {
-  const [omnipoolNftId, miningNftId] = await Promise.all([
-    rpc.papi.constants.Omnipool.NFTCollectionId(),
-    rpc.papi.constants.OmnipoolLiquidityMining.NFTCollectionId(),
-  ])
-
-  const [omnipoolEntries, miningEntries] = await Promise.all([
-    rpc.papi.query.Uniques.Account.getEntries(address, omnipoolNftId, {
-      at: "best",
-    }),
-    rpc.papi.query.Uniques.Account.getEntries(address, miningNftId, {
-      at: "best",
-    }),
-  ])
-
-  const [omnipoolPositions, omnipoolMiningPositions] = await Promise.all([
-    omnipoolEntries.length
-      ? getOmnipoolPositions(rpc.papi, omnipoolEntries)
-      : [],
-    miningEntries.length
-      ? getOmnipoolMiningPositions(rpc.papi, miningEntries)
-      : [],
-  ])
-
-  return Array.from(
-    new Map(
-      [...omnipoolPositions, ...omnipoolMiningPositions].map((position) => [
-        position.positionId,
-        position,
-      ]),
-    ).values(),
-  )
-}
-
-const getTreasuryXykMiningPositions = async (
-  rpc: TProviderContext,
-  address: string,
-) => {
-  const xykMiningNftId =
-    await rpc.papi.constants.XYKLiquidityMining.NFTCollectionId()
-  const entries = await rpc.papi.query.Uniques.Account.getEntries(
-    address,
-    xykMiningNftId,
-    { at: "best" },
-  )
-
-  return entries.length ? getXykMiningPositions(rpc.papi, entries) : []
-}
-
-const expandXYKShareToken = async (
-  rpc: TProviderContext,
-  pools: TreasuryPool[],
-  asset: TAsset,
-  balanceRaw: string,
-  displayAssetId: string,
-): Promise<TreasuryAssetBalance[]> => {
-  if (!isXYKShareAsset(asset)) return []
-
-  const pool = pools.find((pool) => pool.address === asset.poolAddress)
-  const totalLiquidity = await rpc.papi.query.XYK.TotalLiquidity.getValue(
-    asset.poolAddress,
-  )
-
-  if (!pool || !totalLiquidity || Big(totalLiquidity.toString()).lte(0)) {
-    return []
-  }
-
-  const shareRatio = Big(balanceRaw).div(totalLiquidity.toString())
-  const poolTokens = pool.tokens.filter((token) =>
-    asset.assets.some((asset) => asset.id === token.id.toString()),
-  )
-
-  return Promise.all(
-    poolTokens.map((token) => {
-      const tokenAsset = asset.assets.find(
-        (asset) => asset.id === token.id.toString(),
-      )
-
-      if (!tokenAsset) return undefined
-
-      return createLiquidityAssetBalance(
-        rpc,
-        tokenAsset,
-        getPoolTokenBalance(token, shareRatio.toString()).toString(),
-        displayAssetId,
-      )
-    }),
-  ).then((items) =>
-    items.filter((item): item is TreasuryAssetBalance => !!item),
-  )
-}
-
-const expandXYKMiningPosition = async (
-  rpc: TProviderContext,
-  pools: TreasuryPool[],
-  shareAssetsByPoolAddress: Map<string, TAsset & { poolAddress: string }>,
-  position: XykDeposit,
-  displayAssetId: string,
-): Promise<TreasuryAssetBalance[]> => {
-  const asset = shareAssetsByPoolAddress.get(position.amm_pool_id)
-
-  if (!asset) return []
-
-  return expandXYKShareToken(
-    rpc,
-    pools,
-    asset,
-    position.shares.toString(),
-    displayAssetId,
-  )
-}
-
-const expandStableSwapAsset = async (
-  rpc: TProviderContext,
-  pools: TreasuryPool[],
-  asset: TAsset,
-  assetMap: Map<string, TAsset>,
-  balanceRaw: string,
-  displayAssetId: string,
-): Promise<TreasuryAssetBalance[]> => {
-  if (!isStableSwapAsset(asset)) return []
-
-  const pool = pools.find((pool) => pool.id?.toString() === asset.id)
-  const totalIssuance = await rpc.papi.query.Tokens.TotalIssuance.getValue(
-    Number(asset.id),
-  )
-
-  if (!pool || !totalIssuance || Big(totalIssuance.toString()).lte(0)) {
-    return []
-  }
-
-  const shareRatio = Big(balanceRaw).div(totalIssuance.toString())
-
-  return Promise.all(
-    pool.tokens
-      .filter((token) => token.id.toString() !== asset.id)
-      .map((token) => {
-        const tokenAsset = assetMap.get(token.id.toString())
-
-        if (!tokenAsset) return undefined
-
-        return createLiquidityAssetBalance(
-          rpc,
-          tokenAsset,
-          getPoolTokenBalance(token, shareRatio.toString()).toString(),
-          displayAssetId,
-        )
-      }),
-  ).then((items) =>
-    items.filter((item): item is TreasuryAssetBalance => !!item),
-  )
-}
-
-const expandOmnipoolPosition = async (
-  rpc: TProviderContext,
-  omnipoolTokens: OmniPoolToken[],
-  assetMap: Map<string, TAsset>,
-  position: TreasuryOmnipoolPosition,
-  displayAssetId: string,
-): Promise<TreasuryAssetBalance | undefined> => {
-  const asset = getTreasuryOmnipoolDisplayAsset(assetMap, position.assetId)
-  const omnipoolData = omnipoolTokens.find(
-    (token) => token.id.toString() === position.assetId,
-  )
-
-  if (!asset || !omnipoolData) return undefined
-
-  const liquidity = getOmnipoolPositionLiquidity(omnipoolData, position)
-  const balance = scaleHuman(liquidity, asset.decimals)
-  const { price, valueUsd } = await getAssetValueUsd(
-    rpc,
-    asset.id,
-    balance,
-    displayAssetId,
-  )
-
-  return {
-    asset: normalizeTreasuryAsset(asset),
-    balance,
-    balanceRaw: liquidity,
-    price,
-    valueUsd,
-    share: 0,
-    source: "wallet" as const,
-    breakdown: {
-      liquidity: {
-        balance,
-        valueUsd,
-      },
-    },
-  }
-}
-
-export const treasuryStatsQuery = (
-  rpc: TProviderContext,
-  assets: TAsset[],
-  accounts: TreasuryAccount[] = TREASURY_STATS_ACCOUNTS,
-) => {
-  const { isApiLoaded } = rpc
-  const displayAssetId = ENV.VITE_DISPLAY_ASSET_ID
-  const assetIds = assets.map((asset) => asset.id).join(",")
-  const hydrationAccountAddresses = accounts
-    .map((account) => account.address)
-    .join(",")
-  const assetHubDotAccountAddresses = TREASURY_ASSETHUB_DOT_ACCOUNTS.map(
-    (account) => account.address,
-  ).join(",")
-  const accountAddresses = [
-    hydrationAccountAddresses,
-    assetHubDotAccountAddresses,
-  ]
-    .filter(Boolean)
-    .join(",")
-
-  return queryOptions({
-    queryKey: ["stats", "treasury", accountAddresses, displayAssetId, assetIds],
-    queryFn: async (): Promise<TreasuryStatsData> => {
-      const walletAccounts = accounts.filter(
-        (account) => account.includeWalletBalances,
-      )
-      const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
-      const dotAsset = assetMap.get(DOT_ASSET_ID)
-      const shareAssetsByPoolAddress = new Map(
-        assets
-          .filter(isXYKShareAsset)
-          .map((asset) => [asset.poolAddress, asset]),
-      )
-      const pools = await rpc.sdk.api.router.getPools()
-      const omnipoolTokens = pools.flatMap((pool) =>
-        pool.type === PoolType.Omni ? (pool.tokens as OmniPoolToken[]) : [],
-      )
-      const balances = await Promise.all(
-        walletAccounts.flatMap((account) => {
-          const address = getBalanceAccountAddress(account.address)
-
-          if (!address) return []
-
-          return assets.map(async (asset) => {
-            const balanceRaw = await getAssetBalance(rpc, address, asset)
-            const balance = scaleHuman(balanceRaw, asset.decimals)
-
-            return {
-              asset,
-              balance,
-              balanceRaw: balanceRaw.toString(),
-            }
-          })
-        }),
-      )
-
-      const nonZeroBalances = balances.filter(({ balance }) =>
-        isPositive(balance),
-      )
-
-      const walletAssets = await Promise.all(
-        nonZeroBalances.map(async ({ asset, balance, balanceRaw }) => {
-          if (isXYKShareAsset(asset)) {
-            const liquidityAssets = await expandXYKShareToken(
-              rpc,
-              pools,
-              asset,
-              balanceRaw,
-              displayAssetId,
-            )
-
-            if (liquidityAssets.length) return liquidityAssets
-          }
-
-          if (isStableSwapAsset(asset)) {
-            const liquidityAssets = await expandStableSwapAsset(
-              rpc,
-              pools,
-              asset,
-              assetMap,
-              balanceRaw,
-              displayAssetId,
-            )
-
-            if (liquidityAssets.length) return liquidityAssets
-          }
-
-          return createWalletAssetBalance(
+      const fetchPrimeLoopedPositionTreasuryBalances = rpc.queryClient
+        .ensureQueryData(
+          allTokenBalancesQuery(
             rpc,
-            asset,
-            balance,
-            balanceRaw,
-            displayAssetId,
-          )
-        }),
-      ).then((items) => items.flat())
-
-      const omnipoolLiquidityAssets = await Promise.all(
-        walletAccounts.flatMap((account) => {
-          const address = getBalanceAccountAddress(account.address)
-
-          if (!address) return []
-
-          return getTreasuryOmnipoolPositions(rpc, address).then((positions) =>
-            Promise.all(
-              positions.map((position) =>
-                expandOmnipoolPosition(
-                  rpc,
-                  omnipoolTokens,
-                  assetMap,
-                  position,
-                  displayAssetId,
-                ),
-              ),
+            getBalanceAccountAddress(
+              PRIME_LOOPED_POSITION_TREASURY_WALLET.address,
             ),
-          )
-        }),
-      ).then((items) =>
-        items.flat().filter((item): item is TreasuryAssetBalance => !!item),
+          ),
+        )
+        .then(convertBalancesToMap)
+
+      const fetchMoneyMarketTreasuryBalances = rpc.queryClient
+        .ensureQueryData(
+          allTokenBalancesQuery(
+            rpc,
+            getBalanceAccountAddress(MONEY_MARKET_TREASURY_WALLET.address),
+          ),
+        )
+        .then(convertBalancesToMap)
+
+      const fetchHollarCollectorTreasuryBalances =
+        rpc.queryClient.ensureQueryData(
+          tokenBalanceSDKQuery(
+            rpc,
+            getBalanceAccountAddress(HOLLAR_COLLECTOR_TREASURY_WALLET.address),
+            hollarAsset,
+          ),
+        )
+
+      const fetchTreasuryOffchainBalances = Promise.all(
+        TREASURY_ASSETHUB_DOT_ACCOUNTS.map(
+          async (account) => await getAssetHubDotBalance(account.address),
+        ),
       )
 
-      const xykMiningLiquidityAssets = await Promise.all(
-        walletAccounts.flatMap((account) => {
-          const address = getBalanceAccountAddress(account.address)
-
-          if (!address) return []
-
-          return getTreasuryXykMiningPositions(rpc, address).then((positions) =>
-            Promise.all(
-              positions.map((position) =>
-                expandXYKMiningPosition(
-                  rpc,
-                  pools,
-                  shareAssetsByPoolAddress,
-                  position,
-                  displayAssetId,
-                ),
-              ),
-            ),
-          )
-        }),
-      ).then((items) => items.flat(2))
-
-      const assetHubDotAssets = dotAsset
-        ? await Promise.all(
-            TREASURY_ASSETHUB_DOT_ACCOUNTS.map(async (account) => {
-              const balanceRaw = await getAssetHubDotBalance(account.address)
-              const balance = scaleHuman(balanceRaw, dotAsset.decimals)
-
-              if (!isPositive(balance)) return undefined
-
-              return createWalletAssetBalance(
-                rpc,
-                dotAsset,
-                balance,
-                balanceRaw.toString(),
-                displayAssetId,
-                "offchain",
-              )
-            }),
-          ).then((items) =>
-            items.filter((item): item is TreasuryAssetBalance => !!item),
-          )
-        : []
-
-      const pricedAssets = mergePositivePositions(
-        [],
+      const fetchMoneyMarketData = Promise.all(
         [
-          ...walletAssets,
-          ...omnipoolLiquidityAssets,
-          ...xykMiningLiquidityAssets,
-          ...assetHubDotAssets,
-        ],
+          TREASURY_WALLET.address,
+          PRIME_LOOPED_POSITION_TREASURY_WALLET.address,
+          MONEY_MARKET_TREASURY_WALLET.address,
+        ].map(async (address) => {
+          const data = await rpc.queryClient.ensureQueryData(
+            userBorrowSummaryQuery(
+              safeConvertAnyToH160(address),
+              rpc,
+              lendingPoolAddressProvider,
+              poolDataContract,
+              ghoServiceContract,
+              incentivesContract,
+            ),
+          )
+
+          const hollarBalance = await rpc.queryClient.ensureQueryData(
+            tokenBalanceSDKQuery(
+              rpc,
+              getBalanceAccountAddress(address),
+              hollarAsset,
+            ),
+          )
+
+          return {
+            data,
+            hollarBalance,
+          }
+        }),
       )
 
-      const totalValueUsd = pricedAssets.reduce(
-        (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
-        new Big(0),
-      )
+      const supplyAssetsById = new Map<
+        string,
+        {
+          balance: string
+          debt: string
+          collateral: string
+          asset: TAsset
+          price: string
+        }
+      >()
 
-      return {
-        address: accountAddresses,
-        totalValueUsd: totalValueUsd.toString(),
-        holdingsValueUsd: totalValueUsd.toString(),
-        borrowValueUsd: "0",
-        pricedAssetCount: pricedAssets.filter((item) => item.valueUsd).length,
-        assets: pricedAssets
-          .map((item) => ({
-            ...item,
-            share:
-              item.valueUsd && totalValueUsd.gt(0)
-                ? new Big(item.valueUsd)
-                    .div(totalValueUsd)
-                    .times(100)
-                    .toNumber()
-                : 0,
-          }))
-          .sort((a, b) => {
-            const valueA = a.valueUsd ? Number(a.valueUsd) : 0
-            const valueB = b.valueUsd ? Number(b.valueUsd) : 0
+      const priceIds = new Set<string>()
+      let totalHollarBalance = Big(0)
 
-            return valueB - valueA
+      const assetBalances = await Promise.all([
+        rpc.queryClient
+          .ensureQueryData(omnipoolTokensQuery(rpc.sdk, rpc.queryClient))
+          .then((tokens) => {
+            return new Map(tokens.map((token) => [token.id, token]))
           }),
-        borrowPositions: [],
-      }
+        rpc.queryClient.ensureQueryData(
+          omnipoolPositionsQuery(rpc, TREASURY_WALLET.address),
+        ),
+        fetchTreasuryWalletBalances,
+        fetchTreasuryOffchainBalances,
+        fetchHollarCollectorTreasuryBalances,
+        fetchPrimeLoopedPositionTreasuryBalances,
+        fetchMoneyMarketTreasuryBalances,
+        fetchMoneyMarketData,
+      ]).then(
+        ([
+          omnipoolTokensData,
+          positions,
+          treasuryWalletBalances,
+          dotHubBalances,
+          hollarCollectorTreasuryBalance,
+          primeLoopedPositionTreasuryBalances,
+          moneyMarketTreasuryBalances,
+          moneyMarketData,
+        ]) => {
+          for (const { data, hollarBalance } of moneyMarketData) {
+            let totalSupplyUsd = Big(0)
+            let totalBorrowUsd = Big(0)
+            const supplyAssets = []
+
+            for (const reserve of data.userReservesData) {
+              const isHollar = isGho(reserve.reserve)
+              const assetId = isHollar
+                ? HOLLAR_ASSET_ID
+                : getAssetIdFromAddress(reserve.underlyingAsset)
+              const asset = getAsset(assetId)
+
+              if (!asset) continue
+
+              if (isHollar) {
+                totalHollarBalance = totalHollarBalance.plus(
+                  Big.max(
+                    Big(scaleHuman(hollarBalance.total, asset.decimals))
+                      .minus(reserve.variableBorrows)
+                      .minus(reserve.stableBorrows),
+                    0,
+                  ),
+                )
+              }
+
+              if (Big(reserve.underlyingBalanceUSD).gt(0)) {
+                const isCollateral = reserve.usageAsCollateralEnabledOnUser
+
+                if (isCollateral) {
+                  totalSupplyUsd = totalSupplyUsd.plus(
+                    Big(reserve.underlyingBalanceUSD),
+                  )
+                }
+
+                supplyAssets.push({
+                  balance: reserve.underlyingBalance,
+                  isCollateral,
+                  price: reserve.reserve.priceInUSD,
+                  asset,
+                })
+              }
+
+              const borrowedBalanceUsd = Big(reserve.variableBorrowsUSD).plus(
+                Big(reserve.stableBorrowsUSD),
+              )
+
+              if (borrowedBalanceUsd.gt(0)) {
+                totalBorrowUsd = totalBorrowUsd.plus(borrowedBalanceUsd)
+              }
+            }
+
+            const supplyRatio = totalSupplyUsd.gt(totalBorrowUsd)
+              ? totalSupplyUsd.minus(totalBorrowUsd).div(totalSupplyUsd)
+              : Big(0)
+
+            for (const supplyAsset of supplyAssets) {
+              let debt = Big(0)
+              const collateral = supplyAsset.balance
+              let balance = supplyAsset.balance
+
+              if (supplyAsset.isCollateral) {
+                balance = Big(collateral).times(supplyRatio).toString()
+                debt = Big(collateral).minus(balance)
+              }
+
+              const existing = supplyAssetsById.get(supplyAsset.asset.id)
+              supplyAssetsById.set(supplyAsset.asset.id, {
+                balance: existing
+                  ? sumBigStrings(existing.balance, balance).toString()
+                  : balance,
+                debt: existing
+                  ? sumBigStrings(existing.debt, debt.toString()).toString()
+                  : debt.toString(),
+                collateral: existing
+                  ? sumBigStrings(existing.collateral, collateral).toString()
+                  : collateral.toString(),
+                asset: supplyAsset.asset,
+                price: supplyAsset.price,
+              })
+            }
+          }
+
+          const liquidityBalanceByAssetId = positions.reduce((acc, pos) => {
+            const omnipoolToken = omnipoolTokensData.get(Number(pos.assetId))
+            if (!omnipoolToken) return acc
+
+            const { liquidity, hubLiquidity } = calculateLiquidityOut(
+              getLiquidityOutParams(omnipoolToken, pos),
+            )
+
+            const meta = getAssetWithFallback(pos.assetId)
+
+            if (isErc20AToken(meta)) {
+              const formatedAssetId = GIGA_ASSETS.includes(meta.id)
+                ? meta.id
+                : meta.underlyingAssetId
+              acc.set(
+                formatedAssetId,
+                (acc.get(formatedAssetId) ?? 0n) + BigInt(liquidity),
+              )
+            } else {
+              acc.set(
+                pos.assetId,
+                (acc.get(pos.assetId) ?? 0n) + BigInt(liquidity),
+              )
+            }
+
+            acc.set(hub.id, (acc.get(hub.id) ?? 0n) + BigInt(hubLiquidity))
+
+            return acc
+          }, new Map<string, bigint>())
+
+          const dotHubBalance = dotHubBalances.reduce((acc, balance) => {
+            return acc + BigInt(balance)
+          }, 0n)
+
+          return [...tokens, ...stableswap, ...erc20].reduce<
+            TreasuryAssetBalance[]
+          >((acc, asset) => {
+            const liquidityBalance = liquidityBalanceByAssetId.get(asset.id)
+            const isDot = DOT_ASSET_ID === asset.id
+            const isHollar = HOLLAR_ASSET_ID === asset.id
+            const treasuryWalletBalance =
+              treasuryWalletBalances.get(asset.id)?.total ?? 0n
+            const hollarBalance = isHollar
+              ? toBigInt(totalHollarBalance, asset.decimals) +
+                hollarCollectorTreasuryBalance.total
+              : 0n
+            const primeLoopedPositionTreasuryBalance =
+              primeLoopedPositionTreasuryBalances.get(asset.id)?.total ?? 0n
+            const moneyMarketTreasuryBalance =
+              moneyMarketTreasuryBalances.get(asset.id)?.total ?? 0n
+
+            const walletBalance =
+              treasuryWalletBalance +
+              hollarBalance +
+              primeLoopedPositionTreasuryBalance +
+              moneyMarketTreasuryBalance
+
+            const supplyAsset = supplyAssetsById.get(asset.id)
+
+            if (
+              !isDot &&
+              !liquidityBalance &&
+              walletBalance === 0n &&
+              !supplyAsset
+            ) {
+              return acc
+            }
+
+            if (!supplyAsset) {
+              priceIds.add(asset.id)
+            }
+
+            const formatedAsset = MONEY_MARKET_STRATEGY_ASSETS.includes(
+              asset.id,
+            )
+              ? (getRelatedAToken(asset.id) ?? asset)
+              : asset
+
+            acc.push({
+              asset: formatedAsset,
+              wallet: scaleHuman(walletBalance, asset.decimals),
+              liquidity: scaleHuman(liquidityBalance ?? 0n, asset.decimals),
+              offchain: scaleHuman(isDot ? dotHubBalance : 0n, asset.decimals),
+              netSupply: supplyAsset?.balance,
+              supply: supplyAsset?.collateral,
+              debt: supplyAsset?.debt,
+              price: supplyAsset?.price,
+            })
+
+            return acc
+          }, [])
+        },
+      )
+
+      return { assetBalances, priceIds }
     },
-    enabled: isApiLoaded && accountAddresses.length > 0 && assets.length > 0,
+    enabled: rpc.isApiLoaded && tokens.length > 0,
   })
 }
 
-const mergeBreakdownPart = (
-  first?: TreasuryAssetBreakdownPart,
-  second?: TreasuryAssetBreakdownPart,
-): TreasuryAssetBreakdownPart | undefined => {
+const COMPOSITION_PRIMARY_MIN_VALUE_USD = 600
+
+const getSymbolGroupKey = (item: TreasuryCompositionAsset) =>
+  item.asset.symbol.trim().toLowerCase()
+
+const mergeOptionalDecimalStrings = (first?: string, second?: string) => {
   if (!first) return second
   if (!second) return first
 
+  return sumBigStrings(first, second).toString()
+}
+
+const mergeGroupedCompositionAsset = (
+  current: GroupedCompositionAsset,
+  next: TreasuryCompositionAsset,
+): GroupedCompositionAsset => {
+  const currentValueUsd = Number(current.totalValueDisplay ?? 0)
+  const nextValueUsd = Number(next.totalValueDisplay ?? 0)
+  const representative = nextValueUsd > currentValueUsd ? next : current
+  const totalBalance = sumBigStrings(
+    current.totalBalance,
+    next.totalBalance,
+  ).toString()
+  const totalValueDisplay = sumBigStrings(
+    current.totalValueDisplay,
+    next.totalValueDisplay,
+  ).toString()
+  const groupedAssets = [...(current.groupedAssets ?? [current]), next].sort(
+    (a, b) =>
+      Number(b.totalValueDisplay ?? 0) - Number(a.totalValueDisplay ?? 0),
+  )
+
   return {
-    balance: sumBigStrings(first.balance, second.balance).toString(),
-    valueUsd: sumBigStrings(first.valueUsd, second.valueUsd).toString(),
+    ...representative,
+    groupedAssets,
+    wallet: mergeOptionalDecimalStrings(current.wallet, next.wallet) ?? "",
+    liquidity:
+      mergeOptionalDecimalStrings(current.liquidity, next.liquidity) ?? "",
+    offchain:
+      mergeOptionalDecimalStrings(current.offchain, next.offchain) ?? "",
+    netSupply: mergeOptionalDecimalStrings(current.netSupply, next.netSupply),
+    supply: mergeOptionalDecimalStrings(current.supply, next.supply),
+    debt: mergeOptionalDecimalStrings(current.debt, next.debt),
+    totalBalance,
+    totalValueDisplay,
+    share: current.share + next.share,
   }
 }
 
-const mergeAssetBreakdowns = (
-  first: TreasuryAssetBreakdown,
-  second: TreasuryAssetBreakdown,
-): TreasuryAssetBreakdown => ({
-  wallet: mergeBreakdownPart(first.wallet, second.wallet),
-  offchain: mergeBreakdownPart(first.offchain, second.offchain),
-  moneyMarketSupply: mergeBreakdownPart(
-    first.moneyMarketSupply,
-    second.moneyMarketSupply,
-  ),
-  liquidity: mergeBreakdownPart(first.liquidity, second.liquidity),
-  moneyMarketBorrow: mergeBreakdownPart(
-    first.moneyMarketBorrow,
-    second.moneyMarketBorrow,
-  ),
-})
+export const useTreasuryStatsData = () => {
+  const { data: treasuryBalances, isLoading } = useTreasuryBalances()
+  const { getAssetPrice, isLoading: isAssetsPriceLoading } = useAssetsPrice(
+    Array.from(treasuryBalances?.priceIds ?? []),
+  )
 
-const mergePositivePositions = (
-  walletAssets: TreasuryAssetBalance[],
-  supplyAssets: TreasuryAssetBalance[],
-) => {
-  const positionMap = new Map<string, TreasuryAssetBalance>()
+  const data = useMemo<TreasuryData | undefined>(() => {
+    if (!treasuryBalances) return undefined
 
-  for (const item of [...walletAssets, ...supplyAssets]) {
-    const existing = positionMap.get(item.asset.id)
+    let totalValueDisplayBig = Big(0)
+    let totalAssetWalletDisplay = Big(0)
+    let totaLiquidityBalanceDisplay = Big(0)
+    let totalOffchainBalanceDisplay = Big(0)
+    let totalNetSupplyBalanceDisplay = Big(0)
+    let totalSupplyBalanceDisplay = Big(0)
+    let totalDebtBalanceDisplay = Big(0)
 
-    if (!existing) {
-      positionMap.set(item.asset.id, item)
-      continue
+    const assets: TreasuryCompositionAsset[] = []
+
+    for (const asset of treasuryBalances.assetBalances) {
+      let price = asset.price
+
+      if (!price) {
+        const assetPrice = getAssetPrice(asset.asset.id)
+
+        if (assetPrice.isValid) {
+          price = assetPrice.price
+        }
+      }
+      if (!price) continue
+
+      const totalBalance = sumBigStrings(
+        asset.wallet,
+        asset.liquidity,
+        asset.offchain,
+        asset.netSupply,
+      ).toString()
+
+      const totalValueDisplay = Big(price).times(totalBalance).toString()
+
+      if (Big(totalValueDisplay).lt(1)) continue
+      const assetWalletDisplay = Big(price).times(asset.wallet).toString()
+      const liquidityBalanceDisplay = Big(price)
+        .times(asset.liquidity)
+        .toString()
+      const offchainBalanceDisplay = Big(price).times(asset.offchain).toString()
+      const netSupplyBalanceDisplay = Big(price)
+        .times(asset.netSupply ?? 0)
+        .toString()
+      const supplyBalanceDisplay = Big(price)
+        .times(asset.supply ?? 0)
+        .toString()
+      const debtBalanceDisplay = Big(price)
+        .times(asset.debt ?? 0)
+        .toString()
+
+      totalAssetWalletDisplay = totalAssetWalletDisplay.plus(assetWalletDisplay)
+      totaLiquidityBalanceDisplay = totaLiquidityBalanceDisplay.plus(
+        liquidityBalanceDisplay,
+      )
+      totalOffchainBalanceDisplay = totalOffchainBalanceDisplay.plus(
+        offchainBalanceDisplay,
+      )
+      totalNetSupplyBalanceDisplay = totalNetSupplyBalanceDisplay.plus(
+        netSupplyBalanceDisplay,
+      )
+      totalSupplyBalanceDisplay =
+        totalSupplyBalanceDisplay.plus(supplyBalanceDisplay)
+      totalDebtBalanceDisplay = totalDebtBalanceDisplay.plus(debtBalanceDisplay)
+
+      totalValueDisplayBig = totalValueDisplayBig.plus(totalValueDisplay)
+
+      const isSmallWalletBalance = Big(assetWalletDisplay).lt(1)
+      assets.push({
+        ...asset,
+        wallet: isSmallWalletBalance ? "0" : asset.wallet,
+        totalBalance,
+        price,
+        totalValueDisplay,
+        assetWalletDisplay: isSmallWalletBalance ? "0" : assetWalletDisplay,
+        liquidityBalanceDisplay,
+        offchainBalanceDisplay,
+        netSupplyBalanceDisplay,
+        supplyBalanceDisplay,
+        debtBalanceDisplay,
+        share: 0,
+      })
     }
 
-    const balance = sumBigStrings(existing.balance, item.balance).toString()
-    const valueUsd = sumBigStrings(existing.valueUsd, item.valueUsd).toString()
-    const breakdown = mergeAssetBreakdowns(existing.breakdown, item.breakdown)
+    const assetsWithShare = Array.from(
+      assets
+        .map((item) => ({
+          ...item,
+          share: item.totalValueDisplay
+            ? new Big(item.totalValueDisplay)
+                .div(totalValueDisplayBig)
+                .times(100)
+                .toNumber()
+            : 0,
+        }))
+        .reduce((groups, item) => {
+          const key = getSymbolGroupKey(item)
+          const existing = groups.get(key)
 
-    positionMap.set(item.asset.id, {
-      ...existing,
-      balance,
-      balanceRaw: balance,
-      valueUsd,
-      price: getPositionPrice(balance, valueUsd),
-      breakdown,
-      source:
-        existing.source === item.source ? existing.source : ("mixed" as const),
-    })
-  }
+          groups.set(
+            key,
+            existing ? mergeGroupedCompositionAsset(existing, item) : item,
+          )
 
-  return Array.from(positionMap.values())
-}
-
-const getScaledFallbackPart = (
-  item: TreasuryAssetBalance,
-  balance: Big,
-): TreasuryAssetBreakdownPart => {
-  const valueUsd =
-    item.valueUsd && isPositive(item.balance)
-      ? balance.times(item.valueUsd).div(item.balance).toString()
-      : item.valueUsd
-
-  return {
-    balance: balance.toString(),
-    valueUsd,
-  }
-}
-
-const getReceiptTokenSupplyFallbacks = (
-  receiptAssets: TreasuryAssetBalance[],
-  supplyAssets: TreasuryAssetBalance[],
-  assetMap: Map<string, TAsset>,
-) => {
-  const remainingSupplyByAssetId = new Map<string, Big>()
-
-  for (const item of supplyAssets) {
-    const existing = remainingSupplyByAssetId.get(item.asset.id) ?? new Big(0)
-    const supplyBalance =
-      item.breakdown.moneyMarketSupply?.balance ?? item.balance
-
-    remainingSupplyByAssetId.set(
-      item.asset.id,
-      existing.plus(supplyBalance || 0),
+          return groups
+        }, new Map<string, GroupedCompositionAsset>())
+        .values(),
     )
-  }
-
-  return receiptAssets
-    .map((item): TreasuryAssetBalance | undefined => {
-      const underlyingAssetId = getReceiptTokenUnderlyingAssetId(item.asset)
-      const asset = underlyingAssetId ? assetMap.get(underlyingAssetId) : null
-
-      if (!asset) return undefined
-
-      const suppliedBalance =
-        remainingSupplyByAssetId.get(asset.id) ?? new Big(0)
-      const receiptBalance = new Big(item.balance || 0)
-      const fallbackBalance = receiptBalance.minus(
-        suppliedBalance.lt(receiptBalance) ? suppliedBalance : receiptBalance,
-      )
-
-      remainingSupplyByAssetId.set(
-        asset.id,
-        suppliedBalance.minus(receiptBalance).gt(0)
-          ? suppliedBalance.minus(receiptBalance)
-          : new Big(0),
-      )
-
-      if (fallbackBalance.lte(0)) return undefined
-
-      const fallbackPart = getScaledFallbackPart(item, fallbackBalance)
-
-      return {
-        ...item,
-        asset: normalizeTreasuryAsset(asset),
-        balance: fallbackPart.balance,
-        balanceRaw: fallbackPart.balance,
-        valueUsd: fallbackPart.valueUsd,
-        price: fallbackPart.valueUsd
-          ? getPositionPrice(fallbackPart.balance, fallbackPart.valueUsd)
-          : item.price,
-        source: "moneyMarketSupply",
-        breakdown: {
-          moneyMarketSupply: fallbackPart,
+      .sort((a, b) => b.share - a.share)
+      .reduce<{
+        primary: GroupedCompositionAsset[]
+        others: GroupedCompositionAsset[]
+      }>(
+        (acc, item) => {
+          if (
+            Number(item.totalValueDisplay ?? 0) >=
+            COMPOSITION_PRIMARY_MIN_VALUE_USD
+          ) {
+            acc.primary.push(item)
+          } else {
+            acc.others.push(item)
+          }
+          return acc
         },
-      }
-    })
-    .filter((item): item is TreasuryAssetBalance => !!item)
-}
-
-const scaleBreakdownPart = (
-  part: TreasuryAssetBreakdownPart,
-  ratio: Big,
-): TreasuryAssetBreakdownPart => ({
-  balance: Big(part.balance).times(ratio).toString(),
-  valueUsd: part.valueUsd ? Big(part.valueUsd).times(ratio).toString() : null,
-})
-
-const scaleTreasuryAssetBalance = (
-  item: TreasuryAssetBalance,
-  ratio: Big,
-): TreasuryAssetBalance => {
-  const balance = Big(item.balance).times(ratio).toString()
-  const valueUsd = item.valueUsd
-    ? Big(item.valueUsd).times(ratio).toString()
-    : null
-
-  return {
-    ...item,
-    balance,
-    balanceRaw: balance,
-    valueUsd,
-    price: valueUsd ? getPositionPrice(balance, valueUsd) : item.price,
-    breakdown: {
-      wallet: item.breakdown.wallet
-        ? scaleBreakdownPart(item.breakdown.wallet, ratio)
-        : undefined,
-      offchain: item.breakdown.offchain
-        ? scaleBreakdownPart(item.breakdown.offchain, ratio)
-        : undefined,
-      moneyMarketSupply: item.breakdown.moneyMarketSupply
-        ? scaleBreakdownPart(item.breakdown.moneyMarketSupply, ratio)
-        : undefined,
-      liquidity: item.breakdown.liquidity
-        ? scaleBreakdownPart(item.breakdown.liquidity, ratio)
-        : undefined,
-      moneyMarketBorrow: item.breakdown.moneyMarketBorrow
-        ? scaleBreakdownPart(item.breakdown.moneyMarketBorrow, ratio)
-        : undefined,
-    },
-  }
-}
-
-const getAssetValue = (item: TreasuryAssetBalance) => Big(item.valueUsd ?? 0)
-
-const applyMoneyMarketDebtNetting = (
-  supplyAssets: TreasuryAssetBalance[],
-  borrowPositions: TreasuryAssetBalance[],
-  borrowedValueUsd?: Big,
-) => {
-  const suppliedValue = supplyAssets.reduce(
-    (acc, item) => acc.plus(getAssetValue(item)),
-    Big(0),
-  )
-  const borrowedValue =
-    borrowedValueUsd ??
-    borrowPositions.reduce((acc, item) => acc.plus(getAssetValue(item)), Big(0))
-
-  if (suppliedValue.lte(0) || borrowedValue.lte(0)) {
-    return { supplyAssets, borrowPositions, borrowValueUsd: borrowedValue }
-  }
-
-  const supplyRatio = suppliedValue.gt(borrowedValue)
-    ? suppliedValue.minus(borrowedValue).div(suppliedValue)
-    : Big(0)
-  const borrowOffsetRatio = suppliedValue.gt(0)
-    ? Big(1).minus(supplyRatio)
-    : Big(0)
-  const residualBorrowRatio = borrowedValue.gt(suppliedValue)
-    ? borrowedValue.minus(suppliedValue).div(borrowedValue)
-    : Big(0)
-
-  return {
-    supplyAssets: supplyAssets
-      .map((item) => {
-        const netItem = scaleTreasuryAssetBalance(item, supplyRatio)
-        const supplyPart = item.breakdown.moneyMarketSupply
-
-        return {
-          ...netItem,
-          breakdown: {
-            ...netItem.breakdown,
-            moneyMarketSupply: supplyPart,
-            moneyMarketBorrow:
-              supplyPart && borrowOffsetRatio.gt(0)
-                ? scaleBreakdownPart(supplyPart, borrowOffsetRatio)
-                : undefined,
-          },
-        }
-      })
-      .filter((item) => getAssetValue(item).gt(0)),
-    borrowPositions: residualBorrowRatio.gt(0)
-      ? borrowPositions.map((item) =>
-          scaleTreasuryAssetBalance(item, residualBorrowRatio),
-        )
-      : [],
-    borrowValueUsd: borrowedValue.gt(suppliedValue)
-      ? borrowedValue.minus(suppliedValue)
-      : Big(0),
-  }
-}
-
-const withCompositionShares = (
-  assets: TreasuryAssetBalance[],
-  totalValueUsd: Big,
-) =>
-  assets
-    .map((item) => ({
-      ...item,
-      share:
-        item.valueUsd && totalValueUsd.gt(0)
-          ? new Big(item.valueUsd).div(totalValueUsd).times(100).toNumber()
-          : 0,
-    }))
-    .sort((a, b) => {
-      const valueA = a.valueUsd ? Number(a.valueUsd) : 0
-      const valueB = b.valueUsd ? Number(b.valueUsd) : 0
-
-      return valueB - valueA
-    })
-
-export const useTreasuryStats = (assets: TAsset[]) => {
-  const treasury = useQuery(treasuryStatsQuery(useRpcProvider(), assets))
-  const { data: hydrationBorrowSummary, isLoading: isHydrationBorrowLoading } =
-    useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[0]!.address)
-  const { data: hollarBorrowSummary, isLoading: isHollarBorrowLoading } =
-    useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[1]!.address)
-  const { data: primeBorrowSummary, isLoading: isPrimeBorrowLoading } =
-    useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[2]!.address)
-  const {
-    data: moneyMarketBorrowSummary,
-    isLoading: isMoneyMarketBorrowLoading,
-  } = useUserBorrowSummary(TREASURY_STATS_ACCOUNTS[3]!.address)
-
-  const data = useMemo(() => {
-    if (!treasury.data) return undefined
-
-    const assetMap = new Map(assets.map((asset) => [asset.id, asset]))
-    const directWalletAssets = treasury.data.assets.filter(
-      (item) => !isReceiptToken(item.asset),
-    )
-    const receiptWalletAssets = treasury.data.assets.filter((item) =>
-      isReceiptToken(item.asset),
-    )
-    const borrowSummaryEntries = [
-      {
-        account: TREASURY_STATS_ACCOUNTS[0]!,
-        summary: hydrationBorrowSummary,
-      },
-      {
-        account: TREASURY_STATS_ACCOUNTS[1]!,
-        summary: hollarBorrowSummary,
-      },
-      {
-        account: TREASURY_STATS_ACCOUNTS[2]!,
-        summary: primeBorrowSummary,
-      },
-      {
-        account: TREASURY_STATS_ACCOUNTS[3]!,
-        summary: moneyMarketBorrowSummary,
-      },
-    ]
-
-    const moneyMarketPositions = borrowSummaryEntries.map(
-      ({ account, summary }) => {
-        const supplyAssets =
-          summary?.userReservesData
-            ?.filter((position) => isPositive(position.underlyingBalanceUSD))
-            .map((position): TreasuryAssetBalance | undefined => {
-              const assetId = getAssetIdFromAddress(
-                position.reserve.underlyingAsset,
-              )
-              const asset = assetMap.get(assetId)
-
-              if (!asset) return undefined
-
-              return {
-                asset: normalizeTreasuryAsset(asset),
-                balance: position.underlyingBalance,
-                balanceRaw: position.underlyingBalance,
-                price: getPositionPrice(
-                  position.underlyingBalance,
-                  position.underlyingBalanceUSD,
-                ),
-                valueUsd: position.underlyingBalanceUSD,
-                share: 0,
-                source: "moneyMarketSupply",
-                breakdown: {
-                  moneyMarketSupply: {
-                    balance: position.underlyingBalance,
-                    valueUsd: position.underlyingBalanceUSD,
-                  },
-                },
-              }
-            })
-            .filter((item): item is TreasuryAssetBalance => !!item) ?? []
-
-        const borrowPositions =
-          summary?.userReservesData
-            ?.map((position): TreasuryAssetBalance | undefined => {
-              const assetId = getAssetIdFromAddress(
-                position.reserve.underlyingAsset,
-              )
-              const asset = assetMap.get(assetId)
-
-              if (!asset) return undefined
-
-              const balance = sumBigStrings(
-                position.variableBorrows,
-                position.stableBorrows,
-              ).toString()
-              const valueUsd = sumBigStrings(
-                position.variableBorrowsUSD,
-                position.stableBorrowsUSD,
-              ).toString()
-
-              if (!isPositive(valueUsd)) return undefined
-
-              return {
-                asset: normalizeTreasuryAsset(asset),
-                balance,
-                balanceRaw: balance,
-                price: getPositionPrice(balance, valueUsd),
-                valueUsd,
-                share: 0,
-                source: "moneyMarketBorrow",
-                breakdown: {
-                  moneyMarketBorrow: {
-                    balance,
-                    valueUsd,
-                  },
-                },
-              }
-            })
-            .filter((item): item is TreasuryAssetBalance => !!item) ?? []
-        const borrowedValueUsd =
-          summary?.userReservesData?.reduce(
-            (acc, position) =>
-              acc.plus(
-                sumBigStrings(
-                  position.variableBorrowsUSD,
-                  position.stableBorrowsUSD,
-                ),
-              ),
-            Big(0),
-          ) ?? Big(0)
-
-        return account.netMoneyMarketBorrows
-          ? applyMoneyMarketDebtNetting(
-              supplyAssets,
-              borrowPositions,
-              borrowedValueUsd,
-            )
-          : { supplyAssets, borrowPositions, borrowValueUsd: borrowedValueUsd }
-      },
-    )
-    const supplyAssets = moneyMarketPositions.flatMap(
-      (position) => position.supplyAssets,
-    )
-    const borrowPositions = moneyMarketPositions.flatMap(
-      (position) => position.borrowPositions,
-    )
-
-    const receiptSupplyFallbacks = getReceiptTokenSupplyFallbacks(
-      receiptWalletAssets,
-      supplyAssets,
-      assetMap,
-    )
-    const positiveAssets = mergePositivePositions(directWalletAssets, [
-      ...supplyAssets,
-      ...receiptSupplyFallbacks,
-    ])
-    const holdingsValueUsd = positiveAssets.reduce(
-      (acc, item) => (item.valueUsd ? acc.plus(item.valueUsd) : acc),
-      new Big(0),
-    )
-    const borrowValueUsd = moneyMarketPositions.reduce(
-      (acc, item) => acc.plus(item.borrowValueUsd),
-      new Big(0),
-    )
+        { primary: [], others: [] },
+      )
 
     return {
-      ...treasury.data,
-      totalValueUsd: holdingsValueUsd.minus(borrowValueUsd).toString(),
-      holdingsValueUsd: holdingsValueUsd.toString(),
-      borrowValueUsd: borrowValueUsd.toString(),
-      pricedAssetCount: positiveAssets.filter((item) => item.valueUsd).length,
-      assets: withCompositionShares(positiveAssets, holdingsValueUsd),
-      borrowPositions: withCompositionShares(
-        mergePositivePositions([], borrowPositions),
-        borrowValueUsd,
-      ),
+      totalValueDisplay: totalValueDisplayBig.toString(),
+      totalAssetWalletDisplay: totalAssetWalletDisplay.toString(),
+      totaLiquidityBalanceDisplay: totaLiquidityBalanceDisplay.toString(),
+      totalOffchainBalanceDisplay: totalOffchainBalanceDisplay.toString(),
+      totalNetSupplyBalanceDisplay: totalNetSupplyBalanceDisplay.toString(),
+      totalSupplyBalanceDisplay: totalSupplyBalanceDisplay.toString(),
+      totalDebtBalanceDisplay: totalDebtBalanceDisplay.toString(),
+      assets: assetsWithShare,
     }
-  }, [
-    assets,
-    hollarBorrowSummary,
-    hydrationBorrowSummary,
-    moneyMarketBorrowSummary,
-    primeBorrowSummary,
-    treasury.data,
-  ])
+  }, [treasuryBalances, getAssetPrice])
 
-  return {
-    ...treasury,
-    data,
-    isLoading:
-      treasury.isLoading ||
-      isHydrationBorrowLoading ||
-      isHollarBorrowLoading ||
-      isPrimeBorrowLoading ||
-      isMoneyMarketBorrowLoading,
-  }
+  return { data, isLoading: isLoading || isAssetsPriceLoading }
 }

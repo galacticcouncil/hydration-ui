@@ -1,7 +1,17 @@
+import compositionAssetColors from "@/modules/stats/treasury/compositionAssetColors.json"
+
 const colorCache = new Map<string, string>()
 const pendingCache = new Map<string, Promise<string>>()
 
-const FALLBACK_COLOR = "#5a6270"
+export const FALLBACK_COLOR = "#5a6270"
+
+const compositionAssetColorMap = compositionAssetColors.assets as Record<
+  string,
+  string | undefined
+>
+
+export const getPrecomputedCompositionColor = (assetId: string) =>
+  compositionAssetColorMap[assetId]
 
 const rgbToHex = (r: number, g: number, b: number) =>
   `#${[r, g, b]
@@ -83,20 +93,6 @@ const enhanceColorForTile = (hex: string) => {
 }
 
 export { enhanceColorForTile }
-
-export const brightenHollarGreen = (hex: string) => {
-  const rgb = hexToRgb(hex)
-
-  if (!rgb) return "#C8E89A"
-
-  const { r, g, b } = rgb
-
-  return rgbToHex(
-    Math.min(255, Math.round(r * 0.92 + 20)),
-    Math.min(255, Math.round(g * 1.08 + 35)),
-    Math.min(255, Math.round(b * 0.88 + 15)),
-  )
-}
 
 const isAccentBadgeColor = (r: number, g: number, b: number) =>
   b > 150 && b > r * 1.35 && b > g * 1.1 && getSaturation(r, g, b) > 0.45

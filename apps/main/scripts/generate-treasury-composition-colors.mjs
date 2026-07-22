@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url"
 import { PNG } from "pngjs"
 
 const HYDRATION_PARACHAIN_ID = "2034"
+const FALLBACK_COLOR = "#5a6270"
 const METADATA_BASE_URL =
   "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
 const DEFAULT_ASSET_IDS = [
@@ -141,7 +142,7 @@ const scoreTileColor = (hex, weight = 1) => {
 const enhanceColorForTile = (hex) => {
   const rgb = hexToRgb(hex)
 
-  if (!rgb) return "#5a6270"
+  if (!rgb) return FALLBACK_COLOR
 
   const { r, g, b } = rgb
   const max = Math.max(r, g, b)
@@ -262,13 +263,13 @@ const getAssetLogoSrc = (assetPaths, assetId) => {
 }
 
 const getSvgColor = async (iconSrc) => {
-  if (!iconSrc.endsWith(".svg")) return "#5a6270"
+  if (!iconSrc.endsWith(".svg")) return FALLBACK_COLOR
 
   const svg = await getText(iconSrc)
   const colorWeights = parseSvgColorWeights(svg)
   const color = pickBestTileColor(Array.from(colorWeights.keys()), colorWeights)
 
-  return color ? enhanceColorForTile(color) : "#5a6270"
+  return color ? enhanceColorForTile(color) : FALLBACK_COLOR
 }
 
 const isBackgroundPixel = (r, g, b, a) => {
@@ -280,7 +281,7 @@ const isBackgroundPixel = (r, g, b, a) => {
 }
 
 const getPngColor = async (iconSrc) => {
-  if (!iconSrc.endsWith(".png")) return "#5a6270"
+  if (!iconSrc.endsWith(".png")) return FALLBACK_COLOR
 
   const png = PNG.sync.read(await getBuffer(iconSrc))
   const buckets = new Map()
@@ -319,7 +320,7 @@ const getPngColor = async (iconSrc) => {
     })
   }
 
-  if (!buckets.size) return "#5a6270"
+  if (!buckets.size) return FALLBACK_COLOR
 
   let dominant = { r: 0, g: 0, b: 0, weight: 0 }
 
@@ -339,11 +340,7 @@ const getPngColor = async (iconSrc) => {
 const getIconColor = (iconSrc) =>
   iconSrc.endsWith(".png") ? getPngColor(iconSrc) : getSvgColor(iconSrc)
 
-const getThemeColors = (base) => ({
-  base,
-  dark: mixHex(base, "#08111f", 0.82),
-  light: `color-mix(in oklch, ${base} 62%, white)`,
-})
+
 
 const main = async () => {
   const palette = JSON.parse(await readFile(palettePath, "utf8"))
@@ -368,7 +365,7 @@ const main = async () => {
         getIconColor(iconSrc).catch((error) => {
           console.warn(`Using fallback for ${assetId}: ${error.message}`)
 
-          return "#5a6270"
+          return FALLBACK_COLOR
         }),
       ),
     )
@@ -381,11 +378,11 @@ const main = async () => {
             firstColor,
           ),
         )
-      : "#5a6270"
+      : FALLBACK_COLOR
 
-    const safeBase = base || "#5a6270"
+    const safeBase = base || FALLBACK_COLOR
 
-    nextAssets[assetId] = getThemeColors(safeBase)
+    nextAssets[assetId] = safeBase
   }
 
   const nextPalette = {
