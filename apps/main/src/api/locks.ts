@@ -25,13 +25,13 @@ export const useUnlockableNativeTokens = () => {
   const { native } = useAssets()
   const indexerUrl = useProxyUrl()
   const address = account?.address ?? ""
-  const { data: locks } = useNativeTokenLocks()
+  const { data: locks, isSuccess } = useNativeTokenLocks()
 
   const referendaLock = locks?.get(TokenLockType.OpenGov) ?? 0n
   const gigaLock = locks?.get(TokenLockType.GigaStaking) ?? 0n
 
   const { data, isLoading } = useQuery({
-    enabled: rpc.isApiLoaded && !!address,
+    enabled: rpc.isApiLoaded && !!address && isSuccess,
     queryKey: [
       "unlockable-native-tokens",
       address,
