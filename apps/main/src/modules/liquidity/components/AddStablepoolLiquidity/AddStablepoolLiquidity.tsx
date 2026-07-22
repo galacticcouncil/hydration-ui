@@ -155,7 +155,7 @@ export const AddStablepoolLiquidityForm = ({
   stableswapId,
   closable,
   onBack,
-  accountBalances,
+  getMaxBalance,
   assetsToSelect,
   minReceiveAmount,
   meta,
@@ -299,7 +299,7 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
 
         {activeFields.map((field, index) => {
-          const balance = accountBalances.get(field.assetId) ?? "0"
+          const asset = getAssetWithFallback(field.assetId)
 
           return (
             <Fragment key={field.id}>
@@ -314,7 +314,7 @@ export const AddStablepoolLiquidityForm = ({
                     label={t("liquidity.add.modal.selectAsset")}
                     assets={[]}
                     sortedAssets={assetsToSelect}
-                    maxBalance={balance}
+                    maxBalance={getMaxBalance(asset)}
                     selectedAsset={getAssetWithFallback(value.assetId)}
                     amountError={error?.message}
                     value={value.amount}

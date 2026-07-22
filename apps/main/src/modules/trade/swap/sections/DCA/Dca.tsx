@@ -17,6 +17,7 @@ import {
   useDcaValidation,
   useOpenBudgetDcaHfValidation,
 } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
+import { useMaxOrderBalance } from "@/modules/trade/swap/sections/DCA/useMaxOrderBalance"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { maxBalanceError } from "@/utils/validators"
@@ -26,8 +27,18 @@ import { DcaOrdersMode, DEFAULT_DCA_DURATION, useDcaForm } from "./useDcaForm"
 export const Dca: FC = () => {
   const { t } = useTranslation(["trade"])
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
+  const { limitOrderMaxBalance, openBudgetOrderMaxBalance } =
+    useMaxOrderBalance({
+      assetIn,
+      assetOut,
+    })
 
-  const form = useDcaForm({ assetIn, assetOut })
+  const form = useDcaForm({
+    assetIn,
+    assetOut,
+    limitOrderMaxBalance,
+    openBudgetOrderMaxBalance,
+  })
 
   const {
     order,
@@ -137,7 +148,11 @@ export const Dca: FC = () => {
             />
           )}
         />
-        <DcaForm />
+        <DcaForm
+          maxBalance={
+            isOpenBudget ? openBudgetOrderMaxBalance : limitOrderMaxBalance
+          }
+        />
         <DcaSummary
           order={order}
           priceImpactLevel={

@@ -40,8 +40,6 @@ import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { isBond, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalance } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 
 export type StableBondsDepositProps = {
   orders: OtcOffer[]
@@ -60,7 +58,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
   )
-  const form = useStableBondsForm(orders)
+  const { form, getMaxBalance } = useStableBondsForm(orders)
 
   const depositAssets = useMemo(() => {
     return [
@@ -83,18 +81,13 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const isSelectedOrderFillable =
     !!selectedOrder?.id && Big(selectedOrder.assetAmountIn).gt(0)
 
-  const depositAssetId = selectedOrder?.assetIn.id ?? ""
   const receiveAsset = selectedOrder?.assetOut ?? null
 
   const underlyingAssetId =
     receiveAsset && isBond(receiveAsset) ? receiveAsset.underlyingAssetId : ""
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
 
-  const depositBalance = useAccountBalance(depositAssetId)
-  const depositAssetBalance =
-    selectedOrder && depositBalance
-      ? scaleHuman(depositBalance.transferable, selectedOrder.assetIn.decimals)
-      : "0"
+  const depositAssetBalance = selectedOrder ? getMaxBalance(depositAsset) : "0"
 
   const assetInMax = selectedOrder
     ? Big.min(selectedOrder.assetAmountIn, depositAssetBalance).toString()
@@ -127,6 +120,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
               assets={depositAssets}
               disabled={!isSelectedOrderFillable}
               maxButtonBalance={assetInMax}
+              maxBalance={depositAssetBalance}
             />
 
             <StableBondsExchangeRate order={selectedOrder} />

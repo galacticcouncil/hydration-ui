@@ -20,7 +20,7 @@ import { PartiallyFillableToggle } from "@/modules/trade/otc/place-order/Partial
 import {
   PlaceOrderFormValues,
   PriceSettings,
-  usePlaceOrderForm,
+  usePlaceOrder,
 } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
 import { useSubmitPlaceOrder } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.submit"
 import {
@@ -88,7 +88,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
   const { all } = useAssets()
 
-  const form = usePlaceOrderForm()
+  const { form, getMaxBalance } = usePlaceOrder()
   const { getValues, setValue, watch, control } = form
 
   const [offerAsset, offerAmount, buyAsset, buyAmount, priceSettings, view] =
@@ -406,6 +406,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 label={t("common:offer")}
                 assets={sufficientAssets}
                 maxBalanceFallback="0"
+                maxBalance={getMaxBalance(offerAsset)}
                 ignoreBalance={!areAssetsSelected}
                 ignoreDisplayValue={!areAssetsSelected}
                 disabledInput={!areAssetsSelected}

@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import type { StableBondsFormValues } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
-import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrderModalContent.submit"
+import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { type OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"

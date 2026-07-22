@@ -88,7 +88,7 @@ const RemoveMoneyMarketLiquidityForm = (
   const { t } = useTranslation(["liquidity", "common"])
   const {
     form,
-    maxBalance,
+    maxBalanceWithFee,
     receiveAssetsProportionally,
     meta,
     tradeMinReceive,
@@ -145,7 +145,7 @@ const RemoveMoneyMarketLiquidityForm = (
               assetFieldName="asset"
               amountFieldName="amount"
               label={t("common:amount")}
-              maxBalance={maxBalance}
+              maxBalance={maxBalanceWithFee}
               maxBalanceLoading={isLoadingMaxBalance}
               assets={[]}
               sx={{ py: 0 }}
@@ -178,7 +178,7 @@ const RemoveMoneyMarketLiquidityForm = (
                 label={t("common:get")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
-                maxBalance={maxBalance}
+                maxBalance={maxBalanceWithFee}
                 assets={[]}
                 sortedAssets={receiveAssets}
                 ignoreBalance

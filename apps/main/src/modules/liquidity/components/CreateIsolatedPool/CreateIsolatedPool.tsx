@@ -35,7 +35,7 @@ export const CreateIsolatedPool: FC<Props> = ({
 }) => {
   const { t } = useTranslation("liquidity")
 
-  const form = useIsolatedPoolForm()
+  const { form, getMaxBalance } = useIsolatedPoolForm()
   const [assetA, amountA, assetB, amountB] = form.watch([
     "assetA",
     "amountA",
@@ -100,6 +100,7 @@ export const CreateIsolatedPool: FC<Props> = ({
             amountFieldName="amountA"
             label={t("liquidity.createPool.modal.assetA")}
             assets={allowedAssetsA}
+            maxBalance={getMaxBalance(assetA)}
             disabled={!assetA}
             onAssetChange={() => form.trigger()}
           />
@@ -118,6 +119,7 @@ export const CreateIsolatedPool: FC<Props> = ({
             amountFieldName="amountB"
             label={t("liquidity.createPool.modal.assetB")}
             assets={allowedAssetsB}
+            maxBalance={getMaxBalance(assetB)}
             disabled={!assetB}
             onAssetChange={() => form.trigger()}
           />
