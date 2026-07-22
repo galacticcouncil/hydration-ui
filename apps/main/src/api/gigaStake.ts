@@ -28,24 +28,16 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["gigaStake", "constants"],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
       const [minStake, cooldownPeriod, maxPendingUnstakes] = await Promise.all([
-        unsafeApi.constants.GigaHdx.MinStake(),
-        unsafeApi.constants.GigaHdx.CooldownPeriod(),
-        unsafeApi.constants.GigaHdx.MaxPendingUnstakes(),
+        rpc.papi.constants.GigaHdx.MinStake(),
+        rpc.papi.constants.GigaHdx.CooldownPeriod(),
+        rpc.papi.constants.GigaHdx.MaxPendingUnstakes(),
       ])
 
       return {
         minStake,
         cooldownPeriod,
         maxPendingUnstakes,
-      } as {
-        minStake: bigint
-        maxPendingUnstakes: number
-        /** blocks number after unstaking */
-        cooldownPeriod: number
       }
     },
     staleTime: millisecondsInHour,
@@ -62,20 +54,15 @@ export const gigaUnstakePositionsQuery = (
     queryKey: [...gigaQueryKey(address), "pendingPositions"],
     enabled: !!address && rpc.isApiLoaded,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const entries = await unsafeApi.query.GigaHdx.PendingUnstakes.getEntries(
+      const entries = await rpc.papi.query.GigaHdx.PendingUnstakes.getEntries(
         address,
         { at: "best" },
       )
 
-      return entries.map(
-        ({ keyArgs, value }: { keyArgs: [string, number]; value: bigint }) => ({
-          amount: value,
-          voteAtBlock: keyArgs[1],
-        }),
-      ) as Array<{ amount: bigint; voteAtBlock: number }>
+      return entries.map(({ keyArgs, value }) => ({
+        amount: value,
+        voteAtBlock: keyArgs[1],
+      }))
     },
   })
 
@@ -88,19 +75,11 @@ export const gigaAccountStakesQuery = (
     enabled:
       !!address && rpc.isApiLoaded && rpc.featureFlags.gigaStakingEnabled,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const stakes = await unsafeApi.query.GigaHdx.Stakes.getValue(address, {
+      const stakes = await rpc.papi.query.GigaHdx.Stakes.getValue(address, {
         at: "best",
       })
 
-      return stakes as {
-        hdx: bigint
-        gigahdx: bigint
-        unstaking: bigint
-        unstakingCount: number
-      }
+      return stakes ?? null
     },
   })
 
@@ -135,14 +114,11 @@ export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const totalLocked = await unsafeApi.query.GigaHdx.TotalLocked.getValue({
+      const totalLocked = await rpc.papi.query.GigaHdx.TotalLocked.getValue({
         at: "best",
       })
 
-      return totalLocked as bigint
+      return totalLocked
     },
   })
 
@@ -175,13 +151,6 @@ export const gigapotBalanceQuery = (rpc: TProviderContext) =>
       return free
     },
   })
-export type ReferendaRewardPoolEntry = {
-  total_reward: bigint
-  remaining_reward: bigint
-  total_weighted_votes: bigint
-  track_id: number
-  voters_remaining: number
-}
 
 export const referendaRewardPoolQuery = (rpc: TProviderContext) =>
   queryOptions({
@@ -189,16 +158,10 @@ export const referendaRewardPoolQuery = (rpc: TProviderContext) =>
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
       const entries =
-        (await unsafeApi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
+        await rpc.papi.query.GigaHdxRewards.ReferendaRewardPool.getEntries({
           at: "best",
-        })) as Array<{
-          keyArgs: [number]
-          value: ReferendaRewardPoolEntry
-        }>
+        })
 
       return new Map(entries.map(({ keyArgs, value }) => [keyArgs[0], value]))
     },
@@ -215,18 +178,12 @@ export const referendaTotalWeightedVotesQuery = (rpc: TProviderContext) =>
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
       const entries =
-        (await unsafeApi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries(
+        await rpc.papi.query.GigaHdxRewards.ReferendaTotalWeightedVotes.getEntries(
           {
             at: "best",
           },
-        )) as Array<{
-          keyArgs: [number]
-          value: ReferendaTotalWeightedVotesEntry
-        }>
+        )
 
       return new Map(entries.map(({ keyArgs, value }) => [keyArgs[0], value]))
     },
@@ -348,14 +305,12 @@ export const referendumTracksQuery = (rpc: TProviderContext, refId: number) =>
     enabled: rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-      return (await unsafeApi.query.GigaHdxRewards.ReferendumTracks.getValue(
-        refId,
-        {
+      const data =
+        await rpc.papi.query.GigaHdxRewards.ReferendumTracks.getValue(refId, {
           at: "best",
-        },
-      )) as number | null
+        })
+
+      return data ?? null
     },
   })
 
@@ -409,23 +364,13 @@ export const claimableVotingRewardsQuery = (
     enabled: !!who && rpc.isApiLoaded,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
       const [pendingHdx, userVoteEntries] = await Promise.all([
-        unsafeApi.query.GigaHdxRewards.PendingRewards.getValue(who, {
+        rpc.papi.query.GigaHdxRewards.PendingRewards.getValue(who, {
           at: "best",
-        }) as bigint,
-        unsafeApi.query.GigaHdxRewards.UserVoteRecords.getEntries(who, {
+        }),
+        rpc.papi.query.GigaHdxRewards.UserVoteRecords.getEntries(who, {
           at: "best",
-        }) as Array<{
-          keyArgs: [string, number]
-          value: {
-            weighted: bigint
-            staked_vote_amount: bigint
-            conviction: string
-          }
-        }>,
+        }),
       ])
 
       if (userVoteEntries.length === 0) {
@@ -488,9 +433,7 @@ export const claimableVotingRewardsQuery = (
             referendumTracksQuery(rpc, refIndex),
           )
           const trackId =
-            referendumTrack !== null
-              ? referendumTrack
-              : (refToClassFromVotingFor.get(refIndex) ?? null)
+            referendumTrack ?? refToClassFromVotingFor.get(refIndex) ?? null
 
           if (allocated) {
             const totalReward = allocated.total_reward

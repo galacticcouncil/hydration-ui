@@ -4,9 +4,12 @@ import {
   Landmark,
   Layers,
   LockOpen,
+  User,
   Vote,
 } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
+import { getIdentityQuery, useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,6 +23,7 @@ import {
 } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
 import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -29,16 +33,26 @@ type Props = {
 
 export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
 
   const locks = useNativeAssetLocks()
   const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
-  const { data: reserves } = useAccountTokenReserves(asset.id)
+  const { data: reserves } = useAccountTokenReserves(asset.id, !!asset.reserved)
+
+  const { data: identity } = useQuery({
+    ...getIdentityQuery(rpc.papi, account?.address ?? ""),
+    enabled: !!account?.address && !!asset.reserved,
+  })
+
+  const identityReserves = identity?.deposit ?? 0n
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n
   const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
   const dcaAmountHuman = scaleHuman(dca, asset.decimals)
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
   const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
+  const identityAmountHuman = scaleHuman(identityReserves, asset.decimals)
   const { price: assetPrice } = useAssetPrice(asset.id)
 
   return (
@@ -77,6 +91,22 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             })}
             displayValue={t("common:currency", {
               value: Big(otcAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
+      {identityReserves > 0n && (
+        <>
+          <SAssetDetailMobileSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInIdentity")}
+            labelIcon={User}
+            value={t("common:number", {
+              value: identityAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(identityAmountHuman).times(assetPrice).toString(),
             })}
           />
         </>

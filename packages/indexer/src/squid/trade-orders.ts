@@ -179,6 +179,7 @@ export const userOpenOrdersCountQuery = (
 export const dcaScheduleExecutionsQuery = (
   squidSdk: SquidSdk,
   scheduleId: number,
+  first?: number,
 ) =>
   queryOptions({
     queryKey: [
@@ -187,10 +188,12 @@ export const dcaScheduleExecutionsQuery = (
       "dcaSchedule",
       "swaps",
       scheduleId,
+      first,
     ],
     queryFn: () =>
       squidSdk.DcaScheduleExecutions({
         scheduleId: scheduleId.toString(),
+        first,
       }),
     enabled: !!scheduleId,
   })

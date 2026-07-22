@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next"
 import { TAssetData } from "@/api/assets"
 import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
+import { Trade } from "@/api/trade"
+import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { AddLiquidityYield } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityYield"
 import {
@@ -141,6 +143,7 @@ export const AddLiquiditySummary = ({
   healthFactor,
   stablepoolId,
   borrowApyData,
+  swap,
 }: {
   meta: TAssetData
   poolShare?: string
@@ -149,8 +152,9 @@ export const AddLiquiditySummary = ({
   stablepoolId?: string
   healthFactor?: HealthFactorResult
   borrowApyData?: BorrowAssetApyData
+  swap?: Trade
 }) => {
-  const { t } = useTranslation(["liquidity", "common"])
+  const { t } = useTranslation(["liquidity", "common", "trade"])
   const { native } = useAssets()
   const { isMobile } = useBreakpoints()
 
@@ -176,6 +180,16 @@ export const AddLiquiditySummary = ({
           label: t("common:tradeLimit"),
           content: <TradeLimit type={TradeLimitType.Liquidity} />,
         },
+        ...(swap
+          ? [
+              {
+                label: t("trade:market.summary.estTradeFees"),
+                content: (
+                  <TradeFee swap={swap} receiveAsset={meta} isLoading={false} />
+                ),
+              },
+            ]
+          : []),
         {
           label: t("common:yield"),
           content:

@@ -273,6 +273,7 @@ export const useStablepoolAddLiquidity = ({
     poolShare: undefined,
     enabledSplit,
     isAddableToOmnipool,
+    swap: undefined,
   }
 }
 

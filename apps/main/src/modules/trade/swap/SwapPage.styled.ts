@@ -9,7 +9,7 @@ export const SSwapFormContainer = styled(Paper)(
 
     padding: 0 var(--swap-section-padding-inline);
 
-    overflow-x: hidden;
+    overflow: hidden;
   `,
 )
 

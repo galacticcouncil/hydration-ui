@@ -27,6 +27,7 @@ import {
   TAssetWithBalance,
   useAssetSelectModalAssets,
 } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { getApyLabel } from "@/modules/borrow/hooks/useApyBreakdownItems"
 import {
@@ -110,7 +111,7 @@ const SupplyIsolatedLiquidityBody = ({
   userReserve: ComputedUserReserveData
   onSubmitted: () => void
 }) => {
-  const { t } = useTranslation(["common", "liquidity", "borrow"])
+  const { t } = useTranslation(["common", "liquidity", "borrow", "trade"])
   const {
     form,
     maxBalance,
@@ -129,6 +130,7 @@ const SupplyIsolatedLiquidityBody = ({
     isPriceLoading,
     isTradeLoading,
     isAaveSupply,
+    swap,
   } = useSupplyIsolatedLiquidity({
     initialAsset,
     supplyAssetId: assetId,
@@ -141,7 +143,9 @@ const SupplyIsolatedLiquidityBody = ({
   return (
     <FormProvider {...form}>
       <ModalHeader
-        title={t("borrow:supply.withSymbol", { symbol: initialAsset.symbol })}
+        title={t("borrow:supply.withSymbol", {
+          symbol: userReserve.reserve.symbol,
+        })}
         closable
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
@@ -183,6 +187,20 @@ const SupplyIsolatedLiquidityBody = ({
               content={<TradeLimit type={TradeLimitType.Trade} />}
               sx={{ my: 0 }}
             />
+
+            {swap && (
+              <SummaryRow
+                label={t("trade:market.summary.estTradeFees")}
+                content={
+                  <TradeFee
+                    swap={swap}
+                    receiveAsset={aToken}
+                    isLoading={false}
+                  />
+                }
+                sx={{ my: 0 }}
+              />
+            )}
 
             {!isAaveSupply && (
               <SummaryRow
@@ -255,7 +273,9 @@ const SupplyIsolatedLiquidityBody = ({
               isBlockedSupply || !form.formState.isValid || isTradeLoading
             }
           >
-            {t("borrow:supply")}
+            {t("borrow:supply.withSymbol", {
+              symbol: userReserve.reserve.symbol,
+            })}
           </Button>
         </ModalFooter>
       </form>

@@ -22,6 +22,7 @@ import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPositi
 import { GigaUnstakeProps } from "@/modules/staking/gigaStaking/unstake/GigaUnstake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAssetPrice } from "@/states/displayAsset"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt } from "@/utils/formatting"
 import { positive } from "@/utils/validators"
@@ -32,7 +33,7 @@ export type GigaUnstakeFormValues = {
 }
 
 export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, native } = useAssets()
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -147,21 +148,20 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   })
 
   const amount = form.watch("amount") || "0"
-  const displayAmount = Big(amount)
-    .mul(hdxReserve.reserve.priceInUSD || 1)
-    .toString()
-
   const amountInHdx = exchangeRate
     ? Big(amount).mul(exchangeRate.toString()).toString()
     : undefined
 
+  const { price: hdxSpotPrice, isValid } = useAssetPrice(native.id)
+  const displayAmount =
+    isValid && amountInHdx
+      ? Big(amountInHdx).mul(hdxSpotPrice).toString()
+      : undefined
+
   const mutation = useMutation({
     mutationFn: async (amount: string) => {
       if (!account) throw new Error("No account connected")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
-
-      const unstakeTx = unsafeApi.tx.GigaHdx.giga_unstake({
+      const unstakeTx = rpc.papi.tx.GigaHdx.giga_unstake({
         gigahdx_amount: toBigInt(amount, meta.decimals),
       })
 

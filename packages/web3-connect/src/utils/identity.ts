@@ -15,6 +15,8 @@ const IDENTITY_INFO_FIELDS = [
 
 type IdentityInfo = {
   [K in (typeof IDENTITY_INFO_FIELDS)[number]]: string
+} & {
+  deposit: bigint
 }
 
 const DEFAULT_IDENTITY_INFO: IdentityInfo = {
@@ -23,10 +25,11 @@ const DEFAULT_IDENTITY_INFO: IdentityInfo = {
   web: "",
   email: "",
   twitter: "",
+  deposit: 0n,
 }
 
-const parseIdentityInfo = (identity: IdentityRaw): IdentityInfo =>
-  pipe(
+const parseIdentityInfo = (identity: IdentityRaw): IdentityInfo => ({
+  ...pipe(
     identity.info,
     pick(IDENTITY_INFO_FIELDS),
     mapValues((data) => {
@@ -36,7 +39,9 @@ const parseIdentityInfo = (identity: IdentityRaw): IdentityInfo =>
       }
       return data.value.toString()
     }),
-  )
+  ),
+  deposit: identity.deposit,
+})
 
 export const getIdentityQuery = (
   papi: TypedApi<typeof hydration>,

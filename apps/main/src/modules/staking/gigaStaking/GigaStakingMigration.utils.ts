@@ -3,9 +3,8 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
-import { openGovUnlockedTokensQuery } from "@/api/democracy"
+import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { evmAccountBindingQuery } from "@/api/evm"
-import { useProxyUrl } from "@/api/provider"
 import { HDXSupplyQueryKey, stakingPositionsQuery } from "@/api/staking"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
@@ -19,31 +18,26 @@ export const useGigaStakingMigration = () => {
   const { papi } = rpc
   const { account } = useAccount()
   const createBatch = useCreateBatchTx()
-  const indexerUrl = useProxyUrl()
 
   return useMutation({
     mutationFn: async (stakeAmount: string) => {
       if (!account) throw new Error("No account connected")
 
       const { address } = account
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const unsafeApi = rpc.papiClient.getUnsafeApi() as any
 
-      const [isBound, openGovUnlocked] = await Promise.all([
+      const [isBound, accountVotes] = await Promise.all([
         rpc.queryClient.ensureQueryData(evmAccountBindingQuery(rpc, address)),
-        rpc.queryClient.ensureQueryData(
-          openGovUnlockedTokensQuery(rpc, address, indexerUrl),
-        ),
+        rpc.queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
       ])
 
-      const removeVotesTxs = openGovUnlocked.votesToRemove.map((vote) =>
+      const removeVotesTxs = accountVotes.votes.map((vote) =>
         papi.tx.ConvictionVoting.remove_vote({
           class: vote.classId,
-          index: vote.voteId,
+          index: vote.id,
         }),
       )
 
-      const migrateTx = unsafeApi.tx.GigaHdx.migrate()
+      const migrateTx = papi.tx.GigaHdx.migrate()
 
       const mainTxs = !isBound
         ? [papi.tx.EVMAccounts.bind_evm_address(), migrateTx]

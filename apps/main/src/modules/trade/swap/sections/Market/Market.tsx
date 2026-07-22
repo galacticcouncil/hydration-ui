@@ -129,7 +129,9 @@ export const Market: FC = () => {
         <MarketSubmit
           isSingleTrade={isSingleTrade}
           isLoading={
-            isSwapLoading || submitSwap.isPending || submitTwap.isPending
+            isSingleTrade
+              ? isSwapLoading || submitSwap.isPending
+              : isTwapLoading || submitTwap.isPending
           }
           isEnabled={isSubmitEnabled}
         />

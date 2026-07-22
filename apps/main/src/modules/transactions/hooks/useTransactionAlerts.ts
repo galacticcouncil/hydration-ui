@@ -78,7 +78,10 @@ export const useTransactionAlerts = () => {
     )
 
   const isDispatchPermitBlocked = isUsingPermit
-    ? isPermitPending || pendingTransactions.some((tx) => nonce <= tx.nonce)
+    ? isPermitPending ||
+      pendingTransactions.some(
+        (tx) => tx.address === account?.address && nonce <= tx.nonce,
+      )
     : false
 
   const alerts: TransactionAlert[] = [
