@@ -2,12 +2,14 @@ import {
   Box,
   DataTable,
   Flex,
+  Label,
   Paper,
   Separator,
   Stack,
   TableContainer,
   Text,
   Toggle,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -94,9 +96,15 @@ export const WithdrawalsCard = ({
         </Text>
         <Flex align="center" gap="l" wrap>
           <Flex align="center" gap="base">
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("bil.withdrawals.autoClaim")}
-            </Text>
+            <Tooltip text={t("bil.withdrawals.autoClaim.tooltip")} asChild>
+              <Label
+                fs="p5"
+                color={getToken("text.medium")}
+                htmlFor="auto-claim"
+              >
+                {t("bil.withdrawals.autoClaim")}
+              </Label>
+            </Tooltip>
             <Toggle
               size="medium"
               checked={autoClaimEnabled}
@@ -106,9 +114,13 @@ export const WithdrawalsCard = ({
             />
           </Flex>
           <Flex align="center" gap="base">
-            <Text fs="p5" color={getToken("text.medium")}>
+            <Label
+              fs="p5"
+              color={getToken("text.medium")}
+              htmlFor="show-redeemed"
+            >
               {t("bil.withdrawals.showRedeemed")}
-            </Text>
+            </Label>
             <Toggle
               size="medium"
               checked={showRedeemed}

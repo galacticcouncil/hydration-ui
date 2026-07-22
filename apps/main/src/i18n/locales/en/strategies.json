@@ -10,7 +10,7 @@
   "badge.leverage": "Leverage",
   "badge.noLiquidation": "No Liquidation",
 
-  "cards.bil.title": "BIL Vault",
+  "cards.bil.title": "Brazilian Invoice Loans Vault",
   "cards.bil.description": "Decentral is revolutionizing the payment process for creators, influencers, agencies, and production companies in Brazil.",
   "cards.propeller.title": "Propeller",
   "cards.propeller.description": "Deposit ETH or tBTC and earn leveraged staking yield. Propeller loops your collateral automatically and self-deleverages to avoid liquidation. Exit any time via the async withdrawal queue.",
@@ -34,7 +34,7 @@
   "bonds.position.redeem": "Redeem",
   "bonds.position.availableAtMaturity": "Available at maturity",
 
-  "bil.strategy.name": "BIL Vault",
+  "bil.strategy.name": "Brazilian Invoice Loans Vault",
   "bil.strategy.collateralAsset": "Decentral",
   "bil.strategy.tvl": "TVL",
   "bil.strategy.maxNetApy": "Max Net APY",
@@ -54,6 +54,7 @@
   "bil.withdrawals.title": "Withdrawals",
   "bil.withdrawals.showRedeemed": "Show Redeemed",
   "bil.withdrawals.autoClaim": "Auto-claim",
+  "bil.withdrawals.autoClaim.tooltip": "Automatically claims HOLLAR when your withdrawal is ready.",
   "bil.withdrawals.col.estValue": "Est. Value",
   "bil.withdrawals.col.timeRemaining": "Time remaining",
   "bil.withdrawals.empty.all": "No withdrawals yet",
