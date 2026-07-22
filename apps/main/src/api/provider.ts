@@ -21,12 +21,15 @@ import { createPublicClient, custom, PublicClient } from "viem"
 
 import { ENV } from "@/config/env"
 import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
+import { BIL_POOL_ADDRESS } from "@/modules/strategies/bil/constants"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   gigaStakingEnabled: boolean
+  bilEnabled: boolean
+  propellerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -110,28 +113,30 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, hollarBond, gigaHDXAsset] = await Promise.all([
-    createSdkContext(papiClient),
-    papi.constants.Aura.SlotDuration(),
-    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
-    papi.query.AssetRegistry.Assets.getValue(Number(STHDX_ASSET_ID)),
-    metadata.fetchAssets(),
-    metadata.fetchChains(),
-    metadata.fetchMetadata(),
-  ])
-
-  const gigaStakingEnabled = !!gigaHDXAsset
-
-  if (ENV.VITE_HSM_ENABLED) {
-    sdk.ctx.pool.withHsm()
-  }
-
   const evm = createPublicClient({
     transport: custom({
       request: ({ method, params }) =>
         papiClient._request(method, params || []),
     }),
   })
+
+  const [sdk, slotDuration, hollarBond, gigaHDXAsset, bilPoolCode] =
+    await Promise.all([
+      createSdkContext(papiClient),
+      papi.constants.Aura.SlotDuration(),
+      papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
+      papi.query.AssetRegistry.Assets.getValue(Number(STHDX_ASSET_ID)),
+      evm.getCode({ address: BIL_POOL_ADDRESS }),
+      metadata.fetchAssets(),
+      metadata.fetchChains(),
+      metadata.fetchMetadata(),
+    ])
+
+  const gigaStakingEnabled = !!gigaHDXAsset
+
+  if (ENV.VITE_HSM_ENABLED) {
+    sdk.ctx.pool.withHsm()
+  }
 
   return {
     queryClient,
@@ -145,6 +150,8 @@ const getProviderData = async (
     featureFlags: {
       hollarBondsEnabled: !!hollarBond,
       gigaStakingEnabled,
+      bilEnabled: !!bilPoolCode && bilPoolCode !== "0x",
+      propellerEnabled: import.meta.env.DEV,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),

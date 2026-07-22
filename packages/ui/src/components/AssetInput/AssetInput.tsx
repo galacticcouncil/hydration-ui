@@ -83,35 +83,39 @@ export const AssetInput = ({
       direction="column"
       gap="m"
       py="l"
-      sx={{ position: "relative", overflow: "hidden" }}
+      width="100%"
+      sx={{ position: "relative", minWidth: 0, overflow: "hidden" }}
       className={className}
     >
-      <Flex align="center" gap="s" justify="space-between">
+      <Flex align="center" gap="s" justify="space-between" sx={{ minWidth: 0 }}>
         {label && (
           <Text
             color={getToken("text.medium")}
             fs="p5"
             fw={500}
+            truncate
             sx={{
-              width: "fit-content",
+              minWidth: 0,
               lineHeight: "120%",
-              whiteSpace: "nowrap",
             }}
           >
             {label}
           </Text>
         )}
         {!ignoreBalance && (
-          <Flex align="center" gap="s" sx={{ marginLeft: "auto" }}>
+          <Flex
+            align="center"
+            gap="s"
+            sx={{ marginLeft: "auto", flexShrink: 0 }}
+          >
             <Text
               as="div"
               color={getToken("text.low")}
               fs="p5"
               fw={500}
+              truncate
               sx={{
-                width: "fit-content",
                 lineHeight: "120%",
-                whiteSpace: "nowrap",
               }}
             >
               <span>{balanceLabel ?? "Balance"}: </span>
@@ -141,15 +145,21 @@ export const AssetInput = ({
           </Flex>
         )}
       </Flex>
-      <Flex direction="column">
+      <Flex direction="column" sx={{ minWidth: 0 }}>
         <Flex
-          sx={{ overflowX: "hidden" }}
+          width="100%"
           align="center"
-          justify="space-between"
           gap="m"
+          sx={{
+            minWidth: 0,
+            overflow: "hidden",
+            display: "grid",
+            gridTemplateColumns: hideInput
+              ? "minmax(0, 1fr)"
+              : "auto minmax(0, 1fr)",
+          }}
         >
           <AssetButton
-            sx={{ ...(hideInput && { flex: 1 }) }}
             symbol={symbol}
             icon={selectedAssetIcon}
             loading={loading}
@@ -163,7 +173,6 @@ export const AssetInput = ({
               height="2.375rem"
               justify="space-evenly"
               align="end"
-              flex={1}
               sx={{ minWidth: 0, overflow: "hidden" }}
             >
               <SAssetInput

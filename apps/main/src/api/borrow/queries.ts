@@ -7,6 +7,7 @@ import { Web3Provider } from "@ethersproject/providers"
 import {
   ComputedUserReserveData,
   ExtendedFormattedUser,
+  useProtocolDataContext,
 } from "@galacticcouncil/money-market/hooks"
 import {
   AaveV3GIGAHDXPool,
@@ -203,11 +204,12 @@ export const useBorrowReserves = () => {
   const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()
+  const { currentMarketData } = useProtocolDataContext()
 
   return useQuery(
     borrowReservesQuery(
       rpc,
-      lendingPoolAddressProvider,
+      currentMarketData.addresses.LENDING_POOL_ADDRESS_PROVIDER,
       poolDataContract,
       incentivesContract,
     ),
@@ -241,6 +243,7 @@ export const userBorrowReservesQuery = (
 
 export const useUserBorrowReserves = (givenAddress?: string) => {
   const poolDataContract = useBorrowPoolDataContract()
+  const { currentMarketData } = useProtocolDataContext()
 
   const { account } = useAccount()
 
@@ -250,7 +253,7 @@ export const useUserBorrowReserves = (givenAddress?: string) => {
   return useQuery(
     userBorrowReservesQuery(
       evmAddress,
-      lendingPoolAddressProvider,
+      currentMarketData.addresses.LENDING_POOL_ADDRESS_PROVIDER,
       poolDataContract,
     ),
   )
@@ -283,6 +286,7 @@ export const borrowUserIncentivesQuery = (
 
 export const useBorrowUserIncentives = (givenAddress?: string) => {
   const incentivesContract = useBorrowIncentivesContract()
+  const { currentMarketData } = useProtocolDataContext()
   const { account } = useAccount()
 
   const address = givenAddress || account?.address || ""
@@ -292,7 +296,7 @@ export const useBorrowUserIncentives = (givenAddress?: string) => {
   return useQuery(
     borrowUserIncentivesQuery(
       evmAddress,
-      lendingPoolAddressProvider,
+      currentMarketData.addresses.LENDING_POOL_ADDRESS_PROVIDER,
       incentivesContract,
     ),
   )
@@ -467,6 +471,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   const poolDataContract = useBorrowPoolDataContract()
   const ghoServiceContract = useGhoServiceContract()
   const incentivesContract = useBorrowIncentivesContract()
+  const { currentMarketData } = useProtocolDataContext()
 
   const address = givenAddress || account?.address || ""
   const evmAddress = safeConvertAnyToH160(address)
@@ -475,7 +480,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
     userBorrowSummaryQuery(
       evmAddress,
       rpc,
-      lendingPoolAddressProvider,
+      currentMarketData.addresses.LENDING_POOL_ADDRESS_PROVIDER,
       poolDataContract,
       ghoServiceContract,
       incentivesContract,

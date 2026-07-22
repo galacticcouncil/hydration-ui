@@ -27,7 +27,12 @@ export const LayoutSkeleton = () => {
     shouldThrow: false,
   })
 
-  const hasSubNav = !isLiqDetailPage && subNav.length > 1
+  const isStrategiesPage = useMatch({
+    from: "/strategies/",
+    shouldThrow: false,
+  })
+
+  const hasSubNav = !isLiqDetailPage && !isStrategiesPage && subNav.length > 1
 
   const PendingComponent = leafMatch
     ? router.routesById[leafMatch.routeId]?.options?.pendingComponent

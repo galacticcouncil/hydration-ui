@@ -15,6 +15,7 @@ export const GHO_ASSET_ID = "222"
 export const GHO_SUPPORTED_MARKETS = [
   "hydration_v3",
   "hydration_testnet_v3",
+  "bil_v3",
   "gigahdx_v3",
 ]
 

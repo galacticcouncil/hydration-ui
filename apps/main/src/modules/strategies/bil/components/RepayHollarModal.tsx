@@ -1,0 +1,134 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import {
+  AssetInput,
+  Button,
+  Modal,
+  ModalBody,
+  ModalContentDivider,
+  ModalFooter,
+  ModalHeader,
+  Summary,
+  SummaryRow,
+} from "@galacticcouncil/ui/components"
+import Big from "big.js"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { AssetLogo } from "@/components/AssetLogo"
+import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { getBilRepayHealthFactor } from "@/modules/strategies/bil/utils/hf"
+
+interface Props {
+  open: boolean
+  onClose: () => void
+  poolPosition: BilPoolPosition | undefined
+  /** User's wallet HOLLAR balance (caps the max repay). */
+  walletHollar: number
+  onRepay: (args: { amount: number; repayAll: boolean }) => void
+  isPending: boolean
+}
+
+export const RepayHollarModal = ({
+  open,
+  onClose,
+  poolPosition,
+  walletHollar,
+  onRepay,
+  isPending,
+}: Props) => {
+  const { t } = useTranslation(["strategies", "common"])
+  const [amount, setAmount] = useState("")
+
+  const { hollar } = useBilStrategy()
+
+  useEffect(() => {
+    if (!open) setAmount("")
+  }, [open])
+
+  const inputNum = parseFloat(amount) || 0
+  const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
+  const healthFactor = poolPosition
+    ? getBilRepayHealthFactor(poolPosition, inputNum)
+    : null
+  // Repay max = min(walletHollar, debt) — can't repay more than you owe
+  // and can't repay more than you hold.
+  const maxRepay = Math.min(walletHollar, totalDebtUsd)
+  const overDebt = inputNum > totalDebtUsd
+  const overWallet = inputNum > walletHollar
+
+  const canSubmit =
+    inputNum > 0 && !overDebt && !overWallet && !isPending && totalDebtUsd > 0
+
+  const ctaLabel = (() => {
+    if (overDebt) return t("bil.repay.cta.exceeds")
+    if (overWallet) return t("bil.repay.cta.insufficient")
+    return t("bil.repay.cta.repay")
+  })()
+
+  const amountError = overDebt
+    ? t("bil.repay.cta.exceeds")
+    : overWallet
+      ? t("bil.repay.cta.insufficient")
+      : undefined
+
+  return (
+    <Modal
+      variant="popup"
+      open={open}
+      onOpenChange={onClose}
+      disableInteractOutside
+    >
+      <ModalHeader title={t("bil.repay.title")} />
+
+      <ModalBody>
+        <AssetInput
+          sx={{ pt: 0 }}
+          label={t("common:amount")}
+          symbol={hollar.symbol}
+          selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
+          modalDisabled
+          value={amount}
+          onChange={setAmount}
+          displayValue={t("common:currency", {
+            value: inputNum,
+          })}
+          maxBalance={maxRepay.toString()}
+          maxButtonBalance={maxRepay.toString()}
+          amountError={amountError}
+        />
+
+        {healthFactor && totalDebtUsd > 0 && (
+          <Summary
+            withLeadingSeparator
+            separator={<ModalContentDivider />}
+            mb="var(--modal-content-inset)"
+          >
+            <SummaryRow
+              label={t("common:healthFactor")}
+              content={<HealthFactorChange {...healthFactor} />}
+            />
+          </Summary>
+        )}
+      </ModalBody>
+
+      <ModalFooter>
+        <Button
+          size="large"
+          width="100%"
+          disabled={!canSubmit}
+          onClick={() =>
+            canSubmit &&
+            onRepay({
+              amount: inputNum,
+              repayAll:
+                inputNum > 0 && Big(inputNum).gte(totalDebtUsd.toString()),
+            })
+          }
+        >
+          {ctaLabel}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  )
+}

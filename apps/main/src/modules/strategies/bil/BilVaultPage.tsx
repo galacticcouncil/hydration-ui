@@ -1,0 +1,323 @@
+import { Stack } from "@galacticcouncil/ui/components"
+import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { Navigate } from "@tanstack/react-router"
+import { useState } from "react"
+import { type Hex, parseUnits } from "viem"
+
+import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
+import {
+  BilStrategyProvider,
+  useBilStrategy,
+} from "@/modules/strategies/bil/BilStrategyProvider"
+import { AboutCard } from "@/modules/strategies/bil/components/AboutCard"
+import { BilDeposit } from "@/modules/strategies/bil/components/BilDeposit"
+import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
+import { MyBorrowsCard } from "@/modules/strategies/bil/components/MyBorrowsCard"
+import { MyPositionsCard } from "@/modules/strategies/bil/components/MyPositionsCard"
+import { RepayHollarModal } from "@/modules/strategies/bil/components/RepayHollarModal"
+import { StrategyDetailsCard } from "@/modules/strategies/bil/components/StrategyDetailsCard"
+import { StrategyHeader } from "@/modules/strategies/bil/components/StrategyHeader"
+import type {
+  WithdrawalRow,
+  WithdrawalRowState,
+} from "@/modules/strategies/bil/components/Withdrawals.columns"
+import { WithdrawalsCard } from "@/modules/strategies/bil/components/WithdrawalsCard"
+import { WithdrawModal } from "@/modules/strategies/bil/components/WithdrawModal"
+import {
+  useBilPoolPosition,
+  useBilReserveConfig,
+} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import {
+  useBorrowHollar,
+  useRepayHollar,
+} from "@/modules/strategies/bil/hooks/useBilPoolWrites"
+import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
+import { useRedemptionHistory } from "@/modules/strategies/bil/hooks/useRedemptionHistory"
+import { useRedemptionQueue } from "@/modules/strategies/bil/hooks/useRedemptionQueue"
+import { useInstantRedeem } from "@/modules/strategies/bil/hooks/useStableswap"
+import {
+  useAutoClaimEnabled,
+  useUserBalances,
+  useVaultStats,
+} from "@/modules/strategies/bil/hooks/useVaultReads"
+import {
+  useCancelRedeem,
+  useClaim,
+  useDeposit,
+  useInstantRedeemFromQueue,
+  useRequestRedeem,
+  useRequestRedeemRaw,
+  useSetAutoClaim,
+  useSupplyRawBil,
+} from "@/modules/strategies/bil/hooks/useVaultWrites"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+export const BilVaultPage = () => {
+  const { featureFlags, isLoaded } = useRpcProvider()
+
+  if (isLoaded && !featureFlags.bilEnabled) {
+    return <Navigate to="/strategies" />
+  }
+
+  return (
+    <BilStrategyProvider>
+      <BilVaultContent />
+    </BilStrategyProvider>
+  )
+}
+
+const BilVaultContent = () => {
+  const { account, isConnected } = useAccount()
+  const { bil } = useBilStrategy()
+  const [showRedeemed, setShowRedeemed] = useState(false)
+  const [showWithdraw, setShowWithdraw] = useState(false)
+  const [showBorrow, setShowBorrow] = useState(false)
+  const [showRepay, setShowRepay] = useState(false)
+  const [withdrawSource, setWithdrawSource] = useState<"supplied" | "raw">(
+    "supplied",
+  )
+
+  const address = account?.address ?? ""
+  const evmAddress = address
+    ? (safeConvertSS58toH160(address) as Hex)
+    : undefined
+
+  const { data: stats } = useVaultStats()
+  const { data: balances } = useUserBalances(evmAddress)
+  const { data: queueData } = useRedemptionQueue(evmAddress)
+  const { data: historyData } = useRedemptionHistory(evmAddress)
+  const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const { data: reserveConfig } = useBilReserveConfig()
+  const { data: bilMetrics } = useBilStrategyMetrics()
+
+  const depositMutation = useDeposit()
+  const redeemMutation = useRequestRedeem()
+  const redeemRawMutation = useRequestRedeemRaw()
+  const supplyRawMutation = useSupplyRawBil()
+  const cancelMutation = useCancelRedeem()
+  const claimMutation = useClaim()
+  const setAutoClaimMutation = useSetAutoClaim()
+  const borrowMutation = useBorrowHollar()
+  const repayMutation = useRepayHollar()
+  const instantRedeemMutation = useInstantRedeem()
+  const instantRedeemQueueMutation = useInstantRedeemFromQueue()
+
+  const { data: autoClaimOn } = useAutoClaimEnabled(evmAddress)
+
+  const isPending =
+    depositMutation.isPending ||
+    redeemMutation.isPending ||
+    redeemRawMutation.isPending ||
+    supplyRawMutation.isPending ||
+    borrowMutation.isPending ||
+    repayMutation.isPending ||
+    instantRedeemMutation.isPending ||
+    instantRedeemQueueMutation.isPending
+
+  const userBalances = balances ?? {
+    hollar: 0,
+    bil: 0,
+    bilRaw: 0,
+    bilSupplied: 0,
+  }
+  const queue = queueData?.queue ?? []
+
+  // Build the unified withdrawal-rows model. Queue is the primary source;
+  // history merges in state and is the only source for completed rows.
+  const historyByReqId = new Map(
+    (historyData ?? []).map((h) => [h.requestId, h]),
+  )
+
+  const activeRows: WithdrawalRow[] = queue
+    .filter((e) => e.isUser)
+    .map((e) => {
+      const h = historyByReqId.get(e.requestId)
+      const isStillActive =
+        h?.state === "partial" || h?.state === "pending" || !h
+      const state: WithdrawalRowState = isStillActive
+        ? (h?.state ?? "pending")
+        : "pending"
+      return {
+        id: e.requestId,
+        amountBil: e.bilRemaining,
+        estHollar: e.bilRemaining * stats.exchangeRate,
+        state,
+        timeRemainingDays: e.estTimeRemainingDays,
+        claimableBil: e.bilSettled,
+        claimableHollar: e.hollarOwed,
+      }
+    })
+
+  const activeIds = new Set(activeRows.map((r) => r.id))
+  const completedRows: WithdrawalRow[] = (historyData ?? [])
+    .filter(
+      (h) =>
+        !activeIds.has(h.requestId) &&
+        (h.state === "fulfilled" || h.state === "cancelled"),
+    )
+    .map((h) => ({
+      id: h.requestId,
+      amountBil: h.state === "fulfilled" ? h.bilFulfilled : h.bilRequested,
+      estHollar:
+        h.state === "fulfilled"
+          ? h.hollarReceived
+          : h.bilRequested * stats.exchangeRate,
+      state: h.state,
+    }))
+
+  const withdrawalRows: WithdrawalRow[] = [...activeRows, ...completedRows]
+
+  // Net worth in USD = collateral USD - debt USD. Used for the "Net worth /
+  // after borrow" cell in the positions table.
+  const collateralUsd = poolPosition?.totalCollateralUsd ?? 0
+  const debtUsd = poolPosition?.totalDebtUsd ?? 0
+  const netWorthUsd = Math.max(0, collateralUsd - debtUsd)
+
+  // HOLLAR borrowing is disabled at launch (staged rollout). Hide the borrow
+  // card outright — a visible card with disabled buttons still advertises a
+  // feature that doesn't exist yet. Keep it for anyone with outstanding debt
+  // (possible if governance disables borrowing later) so repay stays reachable.
+  const showBorrows = (reserveConfig?.borrowingEnabled ?? false) || debtUsd > 0
+
+  const minDisplayBalance = stats.minRedeem
+  const hasPositions =
+    (userBalances.bilSupplied ?? 0) >= minDisplayBalance ||
+    (userBalances.bilRaw ?? 0) >= minDisplayBalance
+
+  const handleWithdrawSupplied = () => {
+    setWithdrawSource("supplied")
+    setShowWithdraw(true)
+  }
+  const handleWithdrawRaw = () => {
+    setWithdrawSource("raw")
+    setShowWithdraw(true)
+  }
+  const handleWithdrawByRow = (id: "supplied" | "raw") => {
+    if (id === "raw") handleWithdrawRaw()
+    else handleWithdrawSupplied()
+  }
+
+  return (
+    <Stack gap="xxl">
+      <StrategyHeader />
+
+      <TwoColumnGrid template="sidebar">
+        <Stack gap="xl" sx={{ order: [1, null, 0] }}>
+          {hasPositions && (
+            <MyPositionsCard
+              bilSupplied={userBalances.bilSupplied ?? 0}
+              bilRaw={userBalances.bilRaw ?? 0}
+              exchangeRate={stats.exchangeRate}
+              apyPercent={stats.apr}
+              netWorthUsd={netWorthUsd}
+              minDisplayBalance={minDisplayBalance}
+              onWithdraw={handleWithdrawByRow}
+              onDepositRaw={() =>
+                supplyRawMutation.mutate(userBalances.bilRaw ?? 0)
+              }
+              isDepositingRaw={supplyRawMutation.isPending}
+            />
+          )}
+
+          {showBorrows && (
+            <MyBorrowsCard
+              poolPosition={poolPosition}
+              // Live APY: HOLLAR's currentVariableBorrowRate is decoded inside
+              // useBilReserveConfig (ray → APR → APY via per-second compounding).
+              // 10% is the launch fallback while the query is in flight.
+              borrowApyPercent={reserveConfig?.borrowApyPct ?? 10}
+              // vault APY drives the long-side of the leveraged Net APY display.
+              vaultApyPercent={stats.apr}
+              onBorrow={() => setShowBorrow(true)}
+              onRepay={() => setShowRepay(true)}
+            />
+          )}
+
+          {isConnected && (
+            <WithdrawalsCard
+              rows={withdrawalRows}
+              showRedeemed={showRedeemed}
+              onShowRedeemedChange={setShowRedeemed}
+              onCancel={(id) => cancelMutation.mutate(id)}
+              isCancelling={cancelMutation.isPending}
+              onClaim={(claimableBil) => {
+                const shares = parseUnits(claimableBil.toString(), bil.decimals)
+                claimMutation.mutate(shares)
+              }}
+              isClaiming={claimMutation.isPending}
+              onInstantRedeem={(id, amountBil) =>
+                instantRedeemQueueMutation.mutate({
+                  requestId: id,
+                  bilAmount: amountBil,
+                })
+              }
+              isInstantRedeeming={instantRedeemQueueMutation.isPending}
+              autoClaimEnabled={autoClaimOn ?? false}
+              onAutoClaimChange={(next) => setAutoClaimMutation.mutate(next)}
+              isAutoClaimUpdating={setAutoClaimMutation.isPending}
+            />
+          )}
+
+          <StrategyDetailsCard metrics={bilMetrics} />
+
+          <AboutCard />
+        </Stack>
+
+        <BilDeposit
+          vaultStats={stats}
+          balance={userBalances.hollar}
+          onDeposit={(amount) => depositMutation.mutate(amount)}
+          isPending={isPending}
+        />
+      </TwoColumnGrid>
+
+      <WithdrawModal
+        open={showWithdraw}
+        onClose={() => setShowWithdraw(false)}
+        vaultStats={stats}
+        withdrawSource={withdrawSource}
+        poolPosition={poolPosition}
+        reserveConfig={reserveConfig}
+        bilBalance={
+          withdrawSource === "raw"
+            ? (userBalances.bilRaw ?? 0)
+            : (userBalances.bilSupplied ?? 0)
+        }
+        onRequestRedeem={(amount) => {
+          if (withdrawSource === "raw") redeemRawMutation.mutate(amount)
+          else redeemMutation.mutate(amount)
+          setShowWithdraw(false)
+        }}
+        onInstantRedeem={(amount) => {
+          instantRedeemMutation.mutate(amount)
+          setShowWithdraw(false)
+        }}
+        isPending={isPending}
+      />
+
+      <BorrowHollarModal
+        open={showBorrow}
+        onClose={() => setShowBorrow(false)}
+        poolPosition={poolPosition}
+        onBorrow={(amount) => {
+          borrowMutation.mutate(amount)
+          setShowBorrow(false)
+        }}
+        isPending={isPending}
+      />
+
+      <RepayHollarModal
+        open={showRepay}
+        onClose={() => setShowRepay(false)}
+        poolPosition={poolPosition}
+        walletHollar={userBalances.hollar}
+        onRepay={(args) => {
+          repayMutation.mutate(args)
+          setShowRepay(false)
+        }}
+        isPending={isPending}
+      />
+    </Stack>
+  )
+}
