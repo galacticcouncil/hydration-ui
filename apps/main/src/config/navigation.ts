@@ -32,6 +32,7 @@ export const LINKS = {
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
+  balances: "/balances",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
@@ -217,6 +218,10 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     walletTransactions: {
       title: t("navigation.walletTransactions.title"),
+      description: "",
+    },
+    balances: {
+      title: t("navigation.balances.title"),
       description: "",
     },
     crossChain: {
