@@ -1,6 +1,8 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { lazy } from "react"
 
+import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
+
 const SwapPageDesktop = lazy(async () => ({
   default: await import("@/modules/trade/swap/SwapPageDesktop").then(
     (m) => m.SwapPageDesktop,
@@ -14,6 +16,8 @@ const SwapPageMobile = lazy(async () => ({
 }))
 
 export const SwapPage = () => {
+  useResetSharedSellAmountOnUnmount()
+
   const { gte } = useBreakpoints()
 
   if (!gte("lg")) {

@@ -10,10 +10,10 @@ import {
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
   AnyChain,
+  AnyParachain,
   CallType,
   ChainEcosystem,
   EvmChain,
-  Parachain,
   SolanaChain,
   SuiChain,
 } from "@galacticcouncil/xc-core"
@@ -150,7 +150,7 @@ type ClaimCallResult =
   | {
       type: CallType.Substrate
       call: SubstrateCall
-      chain: Parachain
+      chain: AnyParachain
     }
 
 export async function buildClaimCall(

@@ -6,7 +6,6 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/Summary/MarketSummarySkeleton"
 import { MarketSummarySwap } from "@/modules/trade/swap/sections/Market/Summary/MarketSummarySwap"
 import { MarketSummaryTwap } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryTwap"
-import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
   readonly swapType: TradeType
@@ -45,10 +44,7 @@ export const MarketSummary = ({
 
   if (twap) {
     return (
-      <>
-        <SwapSectionSeparator />
-        <MarketSummaryTwap swap={swap} twap={twap} />
-      </>
+      <MarketSummaryTwap swap={swap} twap={twap} healthFactor={healthFactor} />
     )
   }
 

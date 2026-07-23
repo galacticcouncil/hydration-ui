@@ -6,6 +6,10 @@ import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { TradeType } from "@/api/trade"
+import {
+  getSharedSellAmount,
+  useSharedSellAmountSync,
+} from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import {
@@ -51,7 +55,7 @@ export const useMarketForm = ({ assetIn, assetOut }: Args) => {
 
   const defaultValues: MarketFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
-    sellAmount: "",
+    sellAmount: getSharedSellAmount(),
     buyAsset: getAsset(assetOut) ?? null,
     buyAmount: "",
     type: TradeType.Sell,
@@ -63,6 +67,8 @@ export const useMarketForm = ({ assetIn, assetOut }: Args) => {
     mode: "onChange",
     resolver: standardSchemaResolver(useSchema()),
   })
+
+  useSharedSellAmountSync(form)
 
   const { trigger, getValues } = form
   useEffect(() => {

@@ -13,7 +13,6 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -30,6 +29,7 @@ import {
 } from "@/api/gigaStake"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetLogo } from "@/components/AssetLogo"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
@@ -72,8 +72,11 @@ export const GigaHDXPosition = () => {
   )
 
   const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+  const gigaHdxBalance = Big(gigaHdxBalanceHuman)
+    .times(exchangeRate?.toString() || "0")
+    .toString()
 
-  const gigaHdxBalanceUsd = hdxReserve?.underlyingBalanceUSD ?? "0"
+  const [gigaHdxBalanceUsd] = useDisplayAssetPrice(native.id, gigaHdxBalance)
 
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!userSummary || !hdxReserve || !hollarReserve) return null
@@ -161,9 +164,7 @@ export const GigaHDXPosition = () => {
             }
             displayValue={t("gigaStaking.position.underlying.value", {
               value: gigaHdxBalanceHuman,
-              displayValue: t("common:currency", {
-                value: gigaHdxBalanceUsd,
-              }),
+              displayValue: gigaHdxBalanceUsd,
               symbol: ghdxMeta.symbol,
             })}
             sx={{ ml: "auto", textAlign: "right" }}
@@ -373,7 +374,6 @@ const ClaimableRewards = ({
 }) => {
   const { t } = useTranslation(["staking", "common"])
   const { native, getAssetWithFallback } = useAssets()
-  const { isMobile, isTablet } = useBreakpoints()
   const { account } = useAccount()
   const rpc = useRpcProvider()
 
@@ -433,9 +433,9 @@ const ClaimableRewards = ({
                 <Amount
                   label={
                     <Text
-                      fs={["p6", "p6", "p4"]}
+                      fs={["p6", "p6", "p5"]}
                       lh={1}
-                      color={getToken("text.medium")}
+                      color={getToken("text.high")}
                     >
                       {t("gigaStaking.claim.label")}
                     </Text>
@@ -443,7 +443,7 @@ const ClaimableRewards = ({
                   value={
                     <Text
                       font="primary"
-                      fs={["p3", "p1", "h5"]}
+                      fs={["p3", "p1", "h7"]}
                       fw={500}
                       lh={1}
                       color={getToken("text.tint.primary")}
@@ -462,7 +462,7 @@ const ClaimableRewards = ({
 
                 <Button
                   variant="secondary"
-                  size={isMobile || isTablet ? "medium" : "large"}
+                  size="medium"
                   disabled={!hasClaimable || claimMutation.isPending}
                   onClick={() => claimMutation.mutate(claimAndCompoundArgs)}
                 >
@@ -474,7 +474,7 @@ const ClaimableRewards = ({
             </>
           )}
 
-          <Text fs={["p5", "p5", "p2"]} lh="m" color={getToken("text.medium")}>
+          <Text fs={["p5", "p5", "p4"]} lh="m" color={getToken("text.medium")}>
             {t("staking:gigaStaking.rewards.desc")}
           </Text>
         </Flex>

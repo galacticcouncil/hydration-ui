@@ -1601,10 +1601,10 @@
     big.js "^6.2.1"
     lru-cache "^11.2.2"
 
-"@galacticcouncil/descriptors@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-2.5.0.tgz#95188ecedb7bee3af4e97298d04a6f5d0f51a332"
-  integrity sha512-6wu0q3RK7JAa5weN6CkP5uC6aK8OIzAf/+0RNOv9270FyMbfgYN3tqCLSy2Ze9qfXJblc0PEbrF5XrFccH+xwg==
+"@galacticcouncil/descriptors@^2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-2.6.0.tgz#a8e33c043b68a1cf8662906821f4605e2993ce48"
+  integrity sha512-0Kx8eOitMh4ZqRNLbGsZlENzjeHSlMWOWQRqF9e53sg0awKsPLedLD7vpZMOYQ9F3xAWHdPSQ+RjHGrDJH9SxA==
 
 "@galacticcouncil/math-hsm@^1.2.0":
   version "1.2.0"
@@ -1641,10 +1641,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.3.0.tgz#96d3b3e63a93544c7e60d3fa9e1be9a576a20efe"
   integrity sha512-ZYVSyI5W2pQKCqpkaRM7t1AJqtPyxQ0P04T2+KpBEEABMRjSpQz2x44s1tk6r3DdFR8dICeZJEh5BI7eQYlT6w==
 
-"@galacticcouncil/sdk-next@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-1.5.0.tgz#05d995741c8c6965d9fcc59e44c7623cb12890a1"
-  integrity sha512-4bLdtYqDjvwux2j4UKSEx4j8TICgCpHfJ9uX0QKYCJRl8hqRLpGI++tFS9T6dd08gOLCUawlY1MJ6KuY24nWxg==
+"@galacticcouncil/sdk-next@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-1.5.1.tgz#6d54d6d180377dfcc9d0c5c2bb49b150f19fb7db"
+  integrity sha512-mteirWxQCvcrMMVWiRlLwNE0+fxuMVPj/oq2fAYo8U74QqkRiaJYg373TqCtkc/g8C59MlwPhwkyeyw9p24wAg==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.2.0"
     "@galacticcouncil/math-lbp" "^1.3.0"
@@ -1658,17 +1658,17 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-1.5.0.tgz#918b7158db61b7871985b212313303745a52cab5"
-  integrity sha512-mi5CjkUd43nkEiPFjX64IJilORZpKpyjxo+5yBbyIWVf5nmv5+d4HZmnXpW/UaqICBoW+HLcqBMyLjiI//nIeg==
+"@galacticcouncil/xc-cfg@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-1.7.0.tgz#656aeea6c1307520485eeab016226e92651e2d03"
+  integrity sha512-1HUGLpNqTAZtOpCYHazjxncZx/uKSN7BYrjASL9ibOMIgAafvHIdeHZ32rvtcXmYirpf53GY2DFlwLw/pvEYyg==
   dependencies:
-    "@galacticcouncil/xc-core" "^1.2.0"
+    "@galacticcouncil/xc-core" "^1.3.0"
 
-"@galacticcouncil/xc-core@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-1.2.0.tgz#a44dcc5acb0abbc9d912067269d0b58abdf3fb4b"
-  integrity sha512-5sUBQ2Bq01aLJRGXsrLnO4QB4XDPL6zVkJfE3zyunc3lCFiDSbpsrkgUdz2PUqQeoYXJnSPRXcuJTPvHvpFsgA==
+"@galacticcouncil/xc-core@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-1.3.0.tgz#6920f1a299048d8b99d8b6ff2e06aba2e0993857"
+  integrity sha512-+YPzXjqvS8i++S0inDMj/wA1VWnrNhnsqH0k4eTuKW5xrlfz0Xo7Vxg24y/CMaxE0AW6LxsiasHP8lr+z2kuZA==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -1689,12 +1689,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
   integrity sha512-OS/TfBaToyHSN6VqlfDxjXnBeI4Nx03OBGNrlS7a6qlutGF28lqGFiQgzqEGRYo5iQcTV2/WmKcBsWaMOl31fg==
 
-"@galacticcouncil/xc-sdk@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-1.2.0.tgz#b9de11650161df4c27ec02fc935ffc5046bedc1e"
-  integrity sha512-dukJV12pX3JENuutQftOAgKu3R81/eGnKNF+CGMcfNmX8+UzgtvA9tp5L5NAWAZom7cD2GBSsdOVlBJgAFOL0A==
+"@galacticcouncil/xc-sdk@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-1.3.0.tgz#77c84ba95a8a207e77d24922b8f6f475c1766edb"
+  integrity sha512-zBJh2eFrHsfsB0xYVCQWxDdqcv7KsSf1yM5KE7IHtRIiP+BBY/esGuglMQBFR7P9v2wiqrOHziHLzX4y87HP/g==
   dependencies:
-    "@galacticcouncil/xc-core" "^1.2.0"
+    "@galacticcouncil/xc-core" "^1.3.0"
 
 "@galacticcouncil/xc-swap@^0.4.0":
   version "0.4.0"
