@@ -15,6 +15,7 @@ import {
 } from "@/components/multisig/MultisigSetup.form"
 import { useActivateMultisig } from "@/hooks/useActivateMultisig"
 import { MultisigConfig, useMultisigStore } from "@/hooks/useMultisigStore"
+import { useWeb3Connect } from "@/hooks/useWeb3Connect"
 import { deriveMultisigAddress } from "@/utils/multisig"
 
 type Step = "signers" | "threshold" | "name" | "summary"
@@ -33,6 +34,7 @@ export const MultisigSetupNew: React.FC<Props> = ({
   const { t } = useTranslation()
   const { add, setActive } = useMultisigStore()
   const { activate } = useActivateMultisig()
+  const toggle = useWeb3Connect((s) => s.toggle)
 
   const [activeStep, setActiveStep] = useState<Step>("signers")
   const [completedSteps, setCompletedSteps] = useState<Set<Step>>(new Set())
@@ -124,6 +126,7 @@ export const MultisigSetupNew: React.FC<Props> = ({
 
     if (isSignerPrefilled) {
       activate(newConfig, signers[0].value)
+      toggle()
       onContinue()
       return
     }

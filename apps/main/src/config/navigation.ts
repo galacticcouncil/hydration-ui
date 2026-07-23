@@ -57,6 +57,7 @@ export const LINKS = {
   // memepad: "/memepad",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
+  multisigs: "/multisigs",
 } satisfies Record<string, Route>
 
 export type NavigationKey = keyof typeof LINKS
@@ -341,6 +342,10 @@ export const getMenuTranslations = (t: TFunction) =>
     // },
     submitTransaction: {
       title: t("navigation.submitTransaction.title"),
+      description: "",
+    },
+    multisigs: {
+      title: t("navigation.multisigs.title"),
       description: "",
     },
   }) satisfies Record<NavigationKey, { title: string; description: string }>

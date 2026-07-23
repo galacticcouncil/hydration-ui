@@ -5,7 +5,28 @@ export type TwoColumnGridProps = Omit<
   "columnTemplate" | "rowTemplate"
 > & {
   children: React.ReactNode
-  template?: "default" | "sidebar"
+  template?: "default" | "sidebar" | "sidebar-left"
+}
+
+const getColumnTemplate = (template: TwoColumnGridProps["template"]) => {
+  switch (template) {
+    case "sidebar":
+      return [
+        null,
+        null,
+        "minmax(24rem, 1fr) minmax(0, 25rem)",
+        "minmax(30rem, 1fr) minmax(0, 27rem)",
+      ]
+    case "sidebar-left":
+      return [
+        null,
+        null,
+        "minmax(0, 25rem) minmax(24rem, 1fr)",
+        "minmax(0, 27rem) minmax(30rem, 1fr)",
+      ]
+    default:
+      return [null, null, "repeat(2, 1fr)"]
+  }
 }
 
 export const TwoColumnGrid: React.FC<TwoColumnGridProps> = ({
@@ -15,19 +36,9 @@ export const TwoColumnGrid: React.FC<TwoColumnGridProps> = ({
   gap = "xl",
   ...props
 }) => {
-  const columnTemplate =
-    template === "default"
-      ? [null, null, "repeat(2, 1fr)"]
-      : [
-          null,
-          null,
-          "minmax(24rem, 1fr) minmax(0, 25rem)",
-          "minmax(30rem, 1fr) minmax(0, 27rem)",
-        ]
-
   return (
     <Grid
-      columnTemplate={columnTemplate}
+      columnTemplate={getColumnTemplate(template)}
       rowTemplate="auto auto"
       align={align}
       gap={gap}

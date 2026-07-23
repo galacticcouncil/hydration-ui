@@ -57,3 +57,35 @@ query MultisigsByAccountIds($accountIds: [String!]) {
     }
   }
 }
+
+query MultisigHistoryByAccountId(
+  $accountId: String!
+  $limit: Int = 50
+  $offset: Int = 0
+) {
+  multisigCalls(
+    limit: $limit
+    offset: $offset
+    orderBy: [timestamp_DESC]
+    where: { multisig: { id_eq: $accountId } }
+  ) {
+    id
+    timestamp
+    blockHash
+    callIndex
+    multisig {
+      id
+      pubKey
+      isMultisig
+      isPureProxy
+      threshold
+      signatories {
+        id
+        signatory {
+          id
+          pubKey
+        }
+      }
+    }
+  }
+}

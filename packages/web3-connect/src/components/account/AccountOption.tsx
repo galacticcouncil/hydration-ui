@@ -1,6 +1,7 @@
 import {
   AccountAvatar,
   Box,
+  EditableText,
   Flex,
   Skeleton,
   Text,
@@ -11,11 +12,8 @@ import {
   formatNumber,
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
-import { useState } from "react"
 
 import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
-import { AccountEditButton } from "@/components/account/AccountEditButton"
-import { AccountNameEdit } from "@/components/account/AccountNameEdit"
 import {
   SAccountOption,
   SCopyButton,
@@ -50,8 +48,6 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
   onDelete,
   ...account
 }) => {
-  const [isEditing, setIsEditing] = useState(false)
-
   const wallet = getWallet(account.provider)
 
   return (
@@ -59,7 +55,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
       className={className}
       data-active={isActive}
       data-proxy={isProxy}
-      {...(onSelect && !isEditing
+      {...(onSelect
         ? {
             onClick: () => onSelect(account),
           }
@@ -76,27 +72,17 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
         </Box>
         <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
           <Flex align="center" justify="space-between" height="l">
-            {isEditing ? (
-              <AccountNameEdit
-                name={account.name}
-                onChange={(name) => {
-                  onEdit?.(name)
-                  setIsEditing(false)
-                }}
-                onCancel={() => setIsEditing(false)}
+            <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
+              {wallet && <ProviderLogo size="xs" wallet={wallet} />}
+              <EditableText
+                fs="p3"
+                value={account.name}
+                disabled={!onEdit}
+                truncate={200}
+                onChange={(name) => onEdit?.(name)}
               />
-            ) : (
-              <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
-                {onEdit && (
-                  <AccountEditButton onClick={() => setIsEditing(true)} />
-                )}
-                {wallet && <ProviderLogo size="xs" wallet={wallet} />}
-                <Text fs="p3" truncate={200}>
-                  {account.name}
-                </Text>
-                {nameBadge}
-              </Flex>
-            )}
+              {nameBadge}
+            </Flex>
             {isBalanceLoading && balance === undefined ? (
               <Skeleton sx={{ width: 75, ml: "auto" }} />
             ) : (

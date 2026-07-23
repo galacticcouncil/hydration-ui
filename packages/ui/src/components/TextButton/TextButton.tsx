@@ -2,6 +2,7 @@ import { FC, Ref } from "react"
 
 import { ChevronRight } from "@/assets/icons"
 import { MoveUpRight } from "@/assets/icons"
+import { Icon } from "@/components/Icon"
 
 import {
   CustomTextButtonProps,
@@ -22,9 +23,10 @@ const TextButtonIcon = ({
   if (icon) return icon
 
   if (direction === "internal")
-    return <ChevronRight size={10} strokeWidth={3} />
+    return <Icon component={ChevronRight} size="xs" />
 
-  if (direction === "external") return <MoveUpRight size={10} strokeWidth={3} />
+  if (direction === "external")
+    return <Icon component={MoveUpRight} size="xs" />
 
   return null
 }

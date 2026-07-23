@@ -11,10 +11,12 @@ export { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 export * from "@/types"
 export * from "@/utils"
 export type {
+  MultisigHistoryByAccountIdQuery,
   MultisigsByAccountIdsQuery,
   MultixSdk,
 } from "@galacticcouncil/indexer/multix"
 export {
   getMultixSdk,
+  multisigHistoryByAccountIdQuery,
   multisigsByAccountIdsQuery,
 } from "@galacticcouncil/indexer/multix"

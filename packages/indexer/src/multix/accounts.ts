@@ -12,3 +12,24 @@ export const multisigsByAccountIdsQuery = (
     enabled: accountIds.length > 0,
   })
 }
+
+export const multisigHistoryByAccountIdQuery = (
+  multixSdk: MultixSdk,
+  accountId: string,
+  limit = 50,
+  offset = 0,
+) => {
+  return queryOptions({
+    queryKey: [
+      "multix",
+      "accounts",
+      "multisigHistory",
+      accountId,
+      limit,
+      offset,
+    ],
+    queryFn: () =>
+      multixSdk.MultisigHistoryByAccountId({ accountId, limit, offset }),
+    enabled: !!accountId,
+  })
+}

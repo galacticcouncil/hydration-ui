@@ -56,7 +56,10 @@ const StackedTable = <TData,>({
                 <Flex
                   flex={1}
                   justify={shouldRenderHeader ? "flex-end" : "flex-start"}
-                  sx={{ textAlign: shouldRenderHeader ? "right" : "left" }}
+                  sx={{
+                    textAlign: shouldRenderHeader ? "right" : "left",
+                    fontSize: "p4",
+                  }}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </Flex>
