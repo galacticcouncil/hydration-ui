@@ -60,7 +60,9 @@ const OnChainSummary = ({
   const isSingleTrade = watch("isSingleTrade")
 
   if (!isSingleTrade && twap) {
-    return <MarketSummaryTwap swap={swap} twap={twap} />
+    return (
+      <MarketSummaryTwap swap={swap} twap={twap} healthFactor={healthFactor} />
+    )
   }
 
   const isHealthFactorShown =

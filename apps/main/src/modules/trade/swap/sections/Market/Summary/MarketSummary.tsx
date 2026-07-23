@@ -34,12 +34,7 @@ export const MarketSummary = ({
   }
 
   if (isSingleTrade) {
-    return (
-      <>
-        <SwapSectionSeparator />
-        <MarketSummarySwap swap={swap} healthFactor={healthFactor} />
-      </>
-    )
+    return <MarketSummarySwap swap={swap} healthFactor={healthFactor} />
   }
 
   if (twap) {

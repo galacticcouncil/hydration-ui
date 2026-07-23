@@ -151,7 +151,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
               value: minSummaryValue,
               symbol: minSummaryAsset.symbol,
             })}
-            amountDisplay={minSummaryValueDisplay}
+            amountDisplay={`(${minSummaryValueDisplay})`}
             isLoading={minSummaryValueDisplayLoading}
             isExpanded={isSummaryExpanded}
             onIsExpandedChange={changeSummaryExpanded}

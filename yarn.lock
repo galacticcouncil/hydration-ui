@@ -1703,10 +1703,10 @@
   dependencies:
     "@defuse-protocol/one-click-sdk-typescript" "^0.1.17"
 
-"@galacticcouncil/xc@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-1.0.1.tgz#f544a648af507c630c0b183d98be5d3c7325f9c4"
-  integrity sha512-pBCyjtNu1r5S1kGAyjicSftL7+76f46b825sw3yBMZo/eQrYWckxo9iwoUCUYGwlOkVKmTZ0qqXkUf33QOmJ4w==
+"@galacticcouncil/xc@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-1.1.0.tgz#bc9848d13a15166a8a13c63180449d17b7d01799"
+  integrity sha512-yAf9YuruNoJlWUC+r6CgwwZ3NShVkpbXCn03Qhq27HglWTtrrtR1t5BW0dcE1eGBHOFrLfaYdZW11W0gSV6IiA==
 
 "@gql.tada/cli-utils@1.7.3":
   version "1.7.3"
