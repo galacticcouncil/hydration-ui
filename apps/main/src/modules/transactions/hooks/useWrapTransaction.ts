@@ -34,7 +34,7 @@ export const useWrapEvmTransaction = (
   const { papi } = rpc
   const { account } = useAccount()
 
-  const { data: isEvmAccountBound } = useQuery(
+  const { data: isEvmAccountBound, isPending: isLoadingEvmBinding } = useQuery(
     evmAccountBindingQuery(rpc, account?.address ?? ""),
   )
 
@@ -53,7 +53,7 @@ export const useWrapEvmTransaction = (
     }
 
     // Account is bound - no binding needed
-    if (isEvmAccountBound) return transaction
+    if (isLoadingEvmBinding || isEvmAccountBound) return transaction
 
     // Prepend bind_evm_address for native EVM calls when not bound
     if (isEvmCall(transaction.tx)) {
@@ -74,7 +74,7 @@ export const useWrapEvmTransaction = (
     }
 
     return transaction
-  }, [transaction, isEvmAccountBound, papi])
+  }, [transaction, isEvmAccountBound, isLoadingEvmBinding, papi])
 }
 
 const useWrapMultisigTransaction = () => {

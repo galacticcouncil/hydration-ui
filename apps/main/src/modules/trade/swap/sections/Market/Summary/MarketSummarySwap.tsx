@@ -5,7 +5,9 @@ import {
   Box,
   CollapsibleContent,
   CollapsibleRoot,
+  Flex,
   Summary,
+  SummaryRowDisplayValue,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
 import { produce } from "immer"
@@ -149,7 +151,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
               value: minSummaryValue,
               symbol: minSummaryAsset.symbol,
             })}
-            amountDisplay={minSummaryValueDisplay}
+            amountDisplay={`(${minSummaryValueDisplay})`}
             isLoading={minSummaryValueDisplayLoading}
             isExpanded={isSummaryExpanded}
             onIsExpandedChange={changeSummaryExpanded}
@@ -174,14 +176,17 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
               label={t("trade:market.summary.transactionCosts")}
               loading={isTransactionFeeLoading}
               content={
-                <SummaryRowValue>
-                  {transactionCostsDisplay} (
-                  {t("currency", {
-                    value: transactionCosts,
-                    symbol: transactionFeeAsset.symbol,
-                  })}
-                  )
-                </SummaryRowValue>
+                <Flex gap="s" align="center" justify="flex-end">
+                  <SummaryRowValue>
+                    {t("currency", {
+                      value: transactionCosts,
+                      symbol: transactionFeeAsset.symbol,
+                    })}
+                  </SummaryRowValue>
+                  <SummaryRowDisplayValue>
+                    ({transactionCostsDisplay})
+                  </SummaryRowDisplayValue>
+                </Flex>
               }
               tooltip={t("trade:market.summary.transactionCosts.tooltip")}
             />

@@ -106,6 +106,6 @@ export function getWalletData(wallet: Wallet): WalletData {
   ])
 }
 
-export function getWallet(type: WalletProviderType): Wallet | undefined {
+export function getWallet(type?: WalletProviderType): Wallet | undefined {
   return wallets.find((wallet) => wallet.provider === type)
 }

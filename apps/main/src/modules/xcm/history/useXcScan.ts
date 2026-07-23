@@ -3,7 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
-import { mergeJourneys } from "@/modules/xcm/history/utils/journey"
+import {
+  getVisibleJourneys,
+  isXcSwapReceiverJourney,
+  mergeJourneys,
+} from "@/modules/xcm/history/utils/journey"
 import {
   clearPendingHop,
   isIndexedTransferJourney,
@@ -45,7 +49,7 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
   const data = useMemo(() => {
     if (claimableOnly) return xcscan.data
     if (bjscan.isSuccess && xcscan.isSuccess)
-      return mergeJourneys(bjscan.data, xcscan.data)
+      return mergeJourneys(getVisibleJourneys(bjscan.data), xcscan.data)
     return xcscan.data
   }, [
     bjscan.data,
@@ -82,12 +86,18 @@ export const useXcScanSubscription = (address: string) => {
       xcStore.subscribe(address, {
         onLoad(journeys) {
           queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
-            mergeLoadedJourneysWithOptimistic(address, old, journeys),
+            mergeLoadedJourneysWithOptimistic(
+              address,
+              old,
+              getVisibleJourneys(journeys),
+            ),
           )
           setIsLoading(false)
           setIsError(false)
         },
         onNew(journey) {
+          if (isXcSwapReceiverJourney(journey)) return
+
           queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
             if (!old) {
               return [journey]
