@@ -1,40 +1,36 @@
-import { QUERY_KEY_BLOCK_PREFIX, safeStringify } from "@galacticcouncil/utils"
+import { safeStringify } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
+import { Enum } from "polkadot-api"
 
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
-import { AnyPapiTx } from "@/modules/transactions/types"
+import { AnyTransaction } from "@/modules/transactions/types"
+import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const papiDryRunErrorQuery = (
   { papi, dryRunErrorDecoder }: TProviderContext,
   address: string,
-  tx: AnyPapiTx,
+  tx: AnyTransaction,
   debug?: boolean,
 ) =>
   queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "dryRun",
-      "papi",
-      address,
-      safeStringify(tx.decodedCall),
-    ],
+    queryKey: ["dryRun", "papi", address, safeStringify(tx.decodedCall)],
     queryFn: async () => {
       try {
-        const json = decodeTx(tx)
+        if (!isPapiTransaction(tx)) {
+          return null
+        }
+
+        const rawOrigin = Enum("Signed", address)
+        const origin = Enum("system", rawOrigin)
+
         const result = await papi.apis.DryRunApi.dry_run_call(
-          {
-            type: "system",
-            value: {
-              type: "Signed",
-              value: address,
-            },
-          },
+          origin,
           // @ts-expect-error contains structured call data
-          json,
+          tx.decodedCall,
           1,
         )
-
+        console.log(result)
         if (!result.success || result.value.execution_result.success) {
           return null
         }
@@ -42,6 +38,8 @@ export const papiDryRunErrorQuery = (
         const error = await dryRunErrorDecoder.parseError(
           result.value.execution_result.value.error,
         )
+
+        const json = decodeTx(tx)
 
         if (debug && error) {
           console.log(new Date().toLocaleTimeString(), error.name, json)

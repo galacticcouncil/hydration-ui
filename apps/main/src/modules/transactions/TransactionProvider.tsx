@@ -1,4 +1,4 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { DryRunError, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
@@ -9,6 +9,7 @@ import { useLatest } from "react-use"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useNonce } from "@/modules/transactions/hooks/useNonce"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
+import { useTransactionDryRun } from "@/modules/transactions/hooks/useTransactionDryRun"
 import { useTransactionEcosystem } from "@/modules/transactions/hooks/useTransactionEcosystem"
 import { useTransactionPaymentInfo } from "@/modules/transactions/hooks/useTransactionPaymentInfo"
 import { useTransactionTip } from "@/modules/transactions/hooks/useTransactionTip"
@@ -51,6 +52,8 @@ export type TransactionContext = SingleTransaction &
 
     isLoading: boolean
     isUsingPermit: boolean
+
+    dryRunError?: DryRunError | null
 
     setTip: (tip: string) => void
     setStatus: (status: TxStatus) => void
@@ -110,6 +113,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
           "0",
         ).toString()
       : fee?.feeAssetBalance
+
+  const { data: dryRunError } = useTransactionDryRun(transaction.tx)
 
   const {
     nonce,
@@ -243,6 +248,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
         isLoading,
         isUsingPermit,
+
+        dryRunError,
 
         setTip,
         setFeePaymentModalOpen,
