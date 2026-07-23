@@ -33,9 +33,9 @@ const TransactionManager = lazy(async () => ({
   ),
 }))
 
-const Web3ConnectModal = lazy(async () => ({
+const Web3ConnectModalV2 = lazy(async () => ({
   default: await import("@galacticcouncil/web3-connect").then(
-    (m) => m.Web3ConnectModal,
+    (m) => m.Web3ConnectModalV2,
   ),
 }))
 
@@ -115,7 +115,7 @@ function Services() {
   return (
     <>
       <TransactionManager />
-      <Web3ConnectModal squidSdk={squidSdk} papi={papi} />
+      <Web3ConnectModalV2 squidSdk={squidSdk} papi={papi} />
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>
