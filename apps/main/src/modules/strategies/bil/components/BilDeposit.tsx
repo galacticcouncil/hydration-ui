@@ -38,10 +38,23 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
   const { t } = useTranslation(["strategies", "common"])
   const { bil, hollar } = useBilStrategy()
 
+  // Deposits must clear the *lower* of the vault tvlCap and the pool
+  // supplyCap — `remainingDepositHollar` is that binding ceiling, in HOLLAR.
+  // `tvlCap > 0` is our "stats loaded" signal: the query seeds default stats
+  // (remaining 0) before the first fetch, and we must not flash "at capacity"
+  // or block input during that window.
+  const capacityKnown = vaultStats.tvlCap > 0
+  const remaining = vaultStats.remainingDepositHollar
+  const atCapacity = capacityKnown && remaining <= 0
+  // The MAX button fills what's actually depositable: min(wallet, capacity).
+  const effectiveMax = capacityKnown ? Math.min(balance, remaining) : balance
+
   const form = useBilDepositForm({
     maxBalance: balance.toString(),
     minDeposit: vaultStats.minDeposit,
     symbol: hollar.symbol,
+    // Skip the capacity ceiling until stats load (Infinity = not enforced).
+    maxCapacity: capacityKnown ? remaining : Number.POSITIVE_INFINITY,
   })
 
   const { control, handleSubmit, watch, formState } = form
@@ -52,11 +65,13 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
     vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
 
   const canSubmit =
-    formState.isValid && !isPending && !vaultStats.depositsPaused
+    formState.isValid && !isPending && !vaultStats.depositsPaused && !atCapacity
 
   const ctaLabel = vaultStats.depositsPaused
     ? t("bil.deposit.cta.paused")
-    : t("common:deposit")
+    : atCapacity
+      ? t("bil.deposit.cta.full")
+      : t("common:deposit")
 
   const onSubmit = handleSubmit(({ amount }) => {
     onDeposit(parseFloat(amount) || 0)
@@ -82,7 +97,7 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
                     value: inputNum,
                   })}
                   maxBalance={balance.toString()}
-                  maxButtonBalance={balance.toString()}
+                  maxButtonBalance={effectiveMax.toString()}
                   amountError={fieldState.error?.message}
                 />
               )}
@@ -107,6 +122,15 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
           <Separator mx="-xl" />
 
           <Summary separator={<Separator mx="-xl" />}>
+            {capacityKnown && (
+              <SummaryRow
+                label={<Text fs="p5">{t("bil.deposit.remaining")}</Text>}
+                content={t("bil.deposit.remainingValue", {
+                  value: remaining,
+                  symbol: hollar.symbol,
+                })}
+              />
+            )}
             <SummaryRow
               label={
                 <Flex align="center" gap="base">

@@ -74,7 +74,11 @@
   "bil.deposit.option.instant": "Instant",
   "bil.deposit.option.instantValue": "Sell BIL on secondary market at slight discount",
   "bil.deposit.cta.paused": "Deposits paused",
+  "bil.deposit.cta.full": "Vault at capacity",
   "bil.deposit.cta.belowMin": "Minimum deposit amount is {{ value, currency }}",
+  "bil.deposit.cta.exceedsCap": "Exceeds remaining capacity of {{ value, number }} {{symbol}}",
+  "bil.deposit.remaining": "Remaining capacity",
+  "bil.deposit.remainingValue": "{{ value, number }} {{symbol}}",
 
   "bil.withdraw.title": "Withdraw BIL",
   "bil.withdraw.method": "Withdraw method",

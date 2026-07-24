@@ -14,7 +14,12 @@ const defaultValues: BilDepositFormValues = {
   amount: "",
 }
 
-const useSchema = (maxBalance: string, minDeposit: number, symbol: string) => {
+const useSchema = (
+  maxBalance: string,
+  minDeposit: number,
+  symbol: string,
+  maxCapacity: number,
+) => {
   const { t } = useTranslation(["strategies"])
 
   return z.object({
@@ -28,6 +33,23 @@ const useSchema = (maxBalance: string, minDeposit: number, symbol: string) => {
             symbol,
           }),
         }),
+      )
+      // Deposits must clear the lower of the vault tvlCap and the pool
+      // supplyCap (the zap does deposit + supply atomically). Reject anything
+      // above the remaining capacity so the user sees a clear message instead
+      // of an on-chain revert. Skipped while capacity is unknown (Infinity),
+      // both to allow input during load and because Big() rejects Infinity.
+      .check(
+        refine<string>(
+          (value) =>
+            !Number.isFinite(maxCapacity) || Big(value || "0").lte(maxCapacity),
+          {
+            error: t("bil.deposit.cta.exceedsCap", {
+              value: maxCapacity,
+              symbol,
+            }),
+          },
+        ),
       ),
   })
 }
@@ -36,16 +58,20 @@ type UseBilDepositFormParams = {
   maxBalance: string
   minDeposit: number
   symbol: string
+  maxCapacity: number
 }
 
 export const useBilDepositForm = ({
   maxBalance,
   minDeposit,
   symbol,
+  maxCapacity,
 }: UseBilDepositFormParams) => {
   return useForm<BilDepositFormValues>({
     defaultValues,
-    resolver: standardSchemaResolver(useSchema(maxBalance, minDeposit, symbol)),
+    resolver: standardSchemaResolver(
+      useSchema(maxBalance, minDeposit, symbol, maxCapacity),
+    ),
     mode: "onChange",
   })
 }
