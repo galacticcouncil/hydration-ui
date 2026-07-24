@@ -48,7 +48,7 @@ export const useEstimateFee = (
     enabled: !feePaymentAssetIdOverride,
   })
 
-  const { isBalanceLoading, getTransferableBalance } = useAccountBalances()
+  const { isBalanceLoading, getBalance } = useAccountBalances()
 
   const address = account?.address ?? ""
 
@@ -60,9 +60,19 @@ export const useEstimateFee = (
 
   const isEthereumWallet = isEthereumSigner(wallet?.signer)
 
-  const feeAssetBalance = feeAsset
-    ? scaleHuman(getTransferableBalance(feeAsset.id), feeAsset.decimals)
-    : "0"
+  const assetBalance = feeAsset ? getBalance(feeAsset.id) : null
+  const feeAssetBalance =
+    assetBalance && feeAsset
+      ? scaleHuman(
+          Big.max(
+            Big(assetBalance.free.toString()).minus(
+              assetBalance.frozen.toString(),
+            ),
+            0,
+          ).toString(),
+          feeAsset.decimals,
+        )
+      : "0"
 
   return useQuery({
     placeholderData: keepPreviousData,
