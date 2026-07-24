@@ -1,6 +1,8 @@
 import { ResponsiveStyleValue } from "@theme-ui/css"
 import { FC, ReactNode } from "react"
 
+import { Flex } from "@/components/Flex"
+import { Tooltip } from "@/components/Tooltip"
 import {
   SValueStats,
   SValueStatsBottomValue,
@@ -29,6 +31,7 @@ type ValueStatsProps = {
   readonly bottomLabel?: string
   readonly customBottomLabel?: ReactNode
   readonly floatingBottomLabel?: boolean
+  readonly tooltip?: ReactNode
   readonly isLoading?: boolean
   readonly className?: string
   readonly containerClassName?: string
@@ -45,6 +48,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   bottomLabel,
   customBottomLabel,
   floatingBottomLabel,
+  tooltip,
   isLoading,
   className,
   containerClassName,
@@ -75,9 +79,20 @@ export const ValueStats: FC<ValueStatsProps> = ({
     return null
   }
 
+  const labelContent =
+    customLabel ??
+    (tooltip ? (
+      <Flex align="center" gap="s">
+        <SValueStatsLabel>{label}</SValueStatsLabel>
+        <Tooltip text={tooltip} asChild />
+      </Flex>
+    ) : (
+      <SValueStatsLabel>{label}</SValueStatsLabel>
+    ))
+
   return (
     <SValueStats shouldWrap={shouldWrap} size={size} className={className}>
-      {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
+      {labelContent}
       <SValueStatsValueContainer size={size} className={containerClassName}>
         {isLoading ? (
           <SValueStatsValue font={font} size={size}>

@@ -1,9 +1,22 @@
-import { createQueryString } from "@galacticcouncil/utils"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import {
+  SquidSdk,
+  TimeSeriesBucketTimeRange,
+  tradePricesQuery,
+} from "@galacticcouncil/indexer/squid"
+import { createQueryString, isValidBigSource } from "@galacticcouncil/utils"
+import { QueryClient, queryOptions, useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { endOfDay, subDays } from "date-fns"
 import z from "zod/v4"
 
-import { GC_TIME, STALE_TIME } from "@/utils/consts"
+import { spotPriceQuery } from "@/api/spotPrice"
+import {
+  TimeRange as OverviewChartTimeRange,
+  VOLUME_BAR_SCALE_BY_RANGE,
+} from "@/modules/stats/overview/components/MultiMetricChart.utils"
+import { TProviderContext } from "@/providers/rpcProvider"
+import { GC_TIME, NATIVE_ASSET_ID, STALE_TIME } from "@/utils/consts"
+import { numerically, sortBy } from "@/utils/sort"
 
 const STATS_SQUID_URL = "https://orca-prod-pool-01.orca.hydration.cloud/graphql"
 const DEFILLAMA_HYDRATION_TVL_URL =
@@ -230,6 +243,330 @@ export const platformDailyVolumeHistoryQuery = (
     enabled: !!squidUrl && days > 0,
   })
 
+export type MultiMetricChartPoint = {
+  timestamp: number
+  tvl: number | null
+  volumeBar: number | null
+  volumeBarScaled: number | null
+  hdx: number | null
+}
+
+type HdxPricePoint = {
+  timestamp: number
+  price: number
+}
+
+const ROUND_DIGITS = 10
+const formatChartValue = (value: string) =>
+  Number(Big(value).round(ROUND_DIGITS, Big.roundDown).toString())
+
+const getOverviewChartRangeDays = (timeRange: OverviewChartTimeRange) => {
+  switch (timeRange) {
+    case "7D":
+      return 7
+    case "1M":
+      return 30
+    case "3M":
+      return 90
+    case "1Y":
+    case "ALL":
+      return 365
+  }
+}
+
+const getOverviewChartVolumeBucket = (
+  timeRange: OverviewChartTimeRange,
+): PlatformVolumeHistoryBucket => {
+  switch (timeRange) {
+    case "7D":
+      return {
+        durationMs: 60 * 60 * 1000,
+        period: "_1H_",
+      }
+    case "1M":
+      return {
+        durationMs: 12 * 60 * 60 * 1000,
+        period: "_12H_",
+      }
+    case "3M":
+    case "1Y":
+    case "ALL":
+      return {
+        durationMs: 24 * 60 * 60 * 1000,
+        period: "_24H_",
+      }
+  }
+}
+
+const getOverviewChartUtcBucketStart = (
+  timestamp: number,
+  durationMs: number,
+) => Math.floor(timestamp / durationMs) * durationMs
+
+const getHdxPointTimestamp = (
+  timestamp: number,
+  timeRange: OverviewChartTimeRange,
+) => {
+  switch (timeRange) {
+    case "1Y":
+    case "ALL":
+      return getOverviewChartUtcBucketStart(timestamp, 24 * 60 * 60 * 1000)
+    default:
+      return timestamp
+  }
+}
+
+const getHdxPriceRangeParams = (timeRange: OverviewChartTimeRange) => {
+  const now = Date.now()
+  const day = 24 * 60 * 60 * 1000
+
+  switch (timeRange) {
+    case "7D":
+      return {
+        startTimestamp: String(now - 7 * day),
+        endTimestamp: String(now),
+        bucketSize: TimeSeriesBucketTimeRange["30M"],
+      }
+    case "1M":
+      return {
+        startTimestamp: String(now - 30 * day),
+        endTimestamp: String(now),
+        bucketSize: TimeSeriesBucketTimeRange["1H"],
+      }
+    case "3M":
+      return {
+        startTimestamp: String(now - 90 * day),
+        endTimestamp: String(now),
+        bucketSize: TimeSeriesBucketTimeRange["4H"],
+      }
+    case "1Y":
+      return {
+        startTimestamp: String(now - 365 * day),
+        endTimestamp: String(now),
+        bucketSize: TimeSeriesBucketTimeRange["1D"],
+      }
+    case "ALL":
+      return {
+        startTimestamp: undefined,
+        endTimestamp: String(now),
+        bucketSize: TimeSeriesBucketTimeRange["7D"],
+      }
+  }
+}
+
+const fetchHdxPriceChartData = async (
+  queryClient: QueryClient,
+  rpc: TProviderContext,
+  squidClient: SquidSdk,
+  displayAssetId: string,
+  timeRange: OverviewChartTimeRange,
+): Promise<HdxPricePoint[]> => {
+  const rangeParams = getHdxPriceRangeParams(timeRange)
+  const assetInId = displayAssetId
+  const assetOutId = NATIVE_ASSET_ID
+
+  const sortedAssets =
+    Number(assetOutId) >= Number(assetInId)
+      ? ([assetInId, assetOutId] as const)
+      : ([assetOutId, assetInId] as const)
+
+  const isAssetInFirst = sortedAssets[0] === assetInId
+
+  const [tradePrices, spotPrice] = await Promise.all([
+    queryClient.ensureQueryData(
+      tradePricesQuery(
+        squidClient,
+        sortedAssets[0],
+        sortedAssets[1],
+        rangeParams.startTimestamp,
+        rangeParams.endTimestamp,
+        rangeParams.bucketSize,
+      ),
+    ),
+    queryClient.ensureQueryData(
+      spotPriceQuery(rpc, NATIVE_ASSET_ID, displayAssetId),
+    ),
+  ])
+
+  const prices = tradePrices.assetPairPricesAndVolumesByPeriod.nodes
+    .flatMap((node) => node?.buckets ?? [])
+    .filter((bucket) => isValidBigSource(bucket.priceAvrgNorm))
+    .map<HdxPricePoint>((bucket) => ({
+      timestamp: getHdxPointTimestamp(Number(bucket.timestamp) || 0, timeRange),
+      price: formatChartValue(
+        isAssetInFirst
+          ? Big(1).div(bucket.priceAvrgNorm).toString()
+          : bucket.priceAvrgNorm,
+      ),
+    }))
+
+  const hdxSpotPrice = spotPrice.spotPrice
+  const currentPrice =
+    hdxSpotPrice && isValidBigSource(hdxSpotPrice) && Big(hdxSpotPrice).gt(0)
+      ? formatChartValue(hdxSpotPrice)
+      : null
+
+  return [
+    ...prices,
+    ...(currentPrice
+      ? [
+          {
+            timestamp: getHdxPointTimestamp(Date.now(), timeRange),
+            price: currentPrice,
+          },
+        ]
+      : []),
+  ].toSorted(
+    sortBy({
+      select: (point) => point.timestamp,
+      compare: numerically,
+    }),
+  )
+}
+
+const distributeVolumeBars = (
+  points: MultiMetricChartPoint[],
+  volumeScale: number,
+) => {
+  const volumeIndexes = points.reduce<number[]>((acc, point, index) => {
+    if (point.volumeBar !== null) acc.push(index)
+    return acc
+  }, [])
+
+  if (!volumeIndexes.length) return points
+
+  const nextPoints: MultiMetricChartPoint[] = points.map((point) => ({
+    ...point,
+    volumeBar: null,
+    volumeBarScaled: null,
+  }))
+
+  volumeIndexes.forEach((volumeIndex, index) => {
+    const volume = points[volumeIndex]?.volumeBar ?? null
+    if (volume === null) return
+
+    const nextVolumeIndex = volumeIndexes[index + 1] ?? points.length
+    const bucketPointCount = Math.max(nextVolumeIndex - volumeIndex, 1)
+    const barValue = volume / bucketPointCount
+
+    for (let i = volumeIndex; i < nextVolumeIndex; i++) {
+      const point = nextPoints[i]
+      if (point) {
+        point.volumeBar = barValue
+        point.volumeBarScaled = barValue * volumeScale
+      }
+    }
+  })
+
+  return nextPoints
+}
+
+const generateMultiMetricData = (
+  tvlHistory: StatsHistoryPoint[],
+  volumeHistory: StatsHistoryPoint[],
+  hdxPrices: HdxPricePoint[],
+  volumeScale: number,
+): MultiMetricChartPoint[] => {
+  const points = new Map<number, MultiMetricChartPoint>()
+
+  const getPoint = (timestamp: number) => {
+    const existing = points.get(timestamp)
+    if (existing) return existing
+
+    const next = {
+      timestamp,
+      tvl: null,
+      volumeBar: null,
+      volumeBarScaled: null,
+      hdx: null,
+    }
+
+    points.set(timestamp, next)
+    return next
+  }
+
+  tvlHistory.forEach(({ timestamp, value }) => {
+    getPoint(timestamp).tvl = value
+  })
+
+  volumeHistory.forEach(({ timestamp, value }) => {
+    getPoint(timestamp).volumeBar = value
+  })
+
+  hdxPrices.forEach(({ timestamp, price }) => {
+    getPoint(timestamp).hdx = price
+  })
+
+  const sortedPoints = Array.from(points.values()).toSorted(
+    sortBy({
+      select: (point) => point.timestamp,
+      compare: numerically,
+    }),
+  )
+
+  let latestTvl: number | null = null
+
+  const filledPoints = sortedPoints.map((point) => {
+    latestTvl = point.tvl ?? latestTvl
+
+    return {
+      ...point,
+      tvl: point.tvl ?? latestTvl,
+    }
+  })
+
+  return distributeVolumeBars(filledPoints, volumeScale)
+}
+
+export const multiMetricChartDataQuery = (
+  queryClient: QueryClient,
+  rpc: TProviderContext,
+  squidClient: SquidSdk,
+  squidUrl: string,
+  displayAssetId: string,
+  timeRange: OverviewChartTimeRange,
+) => {
+  const rangeDays = getOverviewChartRangeDays(timeRange)
+  const volumeBucket = getOverviewChartVolumeBucket(timeRange)
+  const volumeScale = VOLUME_BAR_SCALE_BY_RANGE[timeRange]
+
+  return queryOptions({
+    queryKey: ["stats", "multiMetricChartData", timeRange],
+    queryFn: async () => {
+      const [tvlHistory, volumeHistory, hdxPrices] = await Promise.all([
+        queryClient.ensureQueryData(defillamaHydrationTvlHistoryQuery()),
+        queryClient.ensureQueryData(
+          platformDailyVolumeHistoryQuery(squidUrl, rangeDays, volumeBucket),
+        ),
+        displayAssetId
+          ? fetchHdxPriceChartData(
+              queryClient,
+              rpc,
+              squidClient,
+              displayAssetId,
+              timeRange,
+            )
+          : Promise.resolve([]),
+      ])
+
+      const chartData = generateMultiMetricData(
+        tvlHistory,
+        volumeHistory,
+        hdxPrices,
+        volumeScale,
+      )
+
+      if (timeRange === "ALL") return chartData
+
+      const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000
+      return chartData.filter((point) => point.timestamp >= cutoff)
+    },
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled: !!squidUrl && rpc.isApiLoaded,
+  })
+}
+
 const OMNIPOOL_TVL_QUERY = `
   query OmnipoolTVL($first: Int!) {
     omnipoolAssetHistoricalData(first: $first, orderBy: PARA_BLOCK_HEIGHT_DESC) {
@@ -314,6 +651,7 @@ export const calculateTotalTVL = (assets: OmnipoolAssetTVL[]): number => {
   }, 0)
 }
 
+//TODO: REMOVE THIS SHIT
 export const formatUSD = (value: number): string => {
   if (value >= 1_000_000_000) {
     return `$${(value / 1_000_000_000).toFixed(2)}B`

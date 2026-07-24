@@ -1,14 +1,11 @@
 import {
   AggregationTimeRange,
   platformTotalQuery,
-  TimeSeriesBucketTimeRange,
-  tradePricesQuery,
   xykVolumeQuery,
 } from "@galacticcouncil/indexer/squid"
 import { getGhoReserve } from "@galacticcouncil/money-market/utils"
 import {
   HOLLAR_ASSET_ID,
-  isValidBigSource,
   QUERY_KEY_BLOCK_PREFIX,
   safeConvertPublicKeyToSS58,
   safeConvertSS58toPublicKey,
@@ -29,8 +26,6 @@ import {
 import { useStakingSupply } from "@/modules/staking/DashboardStats.data"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAssetPrice, useDisplayAssetStore } from "@/states/displayAsset"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 const getNumber = (value?: string | null) => Number(value ?? 0) || 0
@@ -51,7 +46,6 @@ export const useAggregatedPlatformStats = () => {
   const rpc = useRpcProvider()
   const { native, getAssetWithFallback } = useAssets()
   const squidClient = useSquidClient()
-  const displayAssetId = useDisplayAssetStore((state) => state.stableCoinId)
   const hollarMeta = getAssetWithFallback(HOLLAR_ASSET_ID)
 
   // TVL sources
@@ -156,37 +150,6 @@ export const useAggregatedPlatformStats = () => {
       },
     })
 
-  // HDX Price
-  const { price: hdxSpotPrice, isLoading: isPriceLoading } =
-    useAssetPrice(NATIVE_ASSET_ID)
-  const hdxPriceRange = useMemo(() => {
-    const now = Date.now()
-    return {
-      startTimestamp: String(now - 24 * 60 * 60 * 1000),
-      endTimestamp: String(now),
-      bucketSize: TimeSeriesBucketTimeRange["1H"],
-    }
-  }, [])
-
-  const assetInId = displayAssetId ?? ""
-  const assetOutId = NATIVE_ASSET_ID
-  const sortedAssets =
-    Number(assetOutId) >= Number(assetInId)
-      ? ([assetInId, assetOutId] as const)
-      : ([assetOutId, assetInId] as const)
-  const isAssetInFirst = sortedAssets[0] === assetInId
-  const { data: hdxPriceData, isLoading: isHdxPriceDataLoading } = useQuery({
-    ...tradePricesQuery(
-      squidClient,
-      sortedAssets[0],
-      sortedAssets[1],
-      hdxPriceRange.startTimestamp,
-      hdxPriceRange.endTimestamp,
-      hdxPriceRange.bucketSize,
-    ),
-    enabled: !!displayAssetId,
-  })
-
   // GIGAHDX staking
   const { total: gigaProjectedApr, isLoading: isGigaAprLoading } = useGigaApr()
   const { data: gigaLockedHDX, isLoading: isGigaLockedHDXLoading } = useQuery(
@@ -206,8 +169,6 @@ export const useAggregatedPlatformStats = () => {
     isXykVolumes7dLoading ||
     isFeesLoading ||
     isHsmHollarBalanceLoading ||
-    isPriceLoading ||
-    isHdxPriceDataLoading ||
     isGigaAprLoading ||
     isGigaLockedHDXLoading ||
     isStakingSupplyLoading
@@ -278,32 +239,7 @@ export const useAggregatedPlatformStats = () => {
       : 0
     const protocolRevenue = weeklyProtocolRevenue / 7
 
-    // 5. HDX Price & 24h change
-    const hdxPriceValue = hdxSpotPrice ? parseFloat(hdxSpotPrice) : 0
-    const hdxPricePoints =
-      hdxPriceData?.assetPairPricesAndVolumesByPeriod.nodes
-        .flatMap((node) => node?.buckets ?? [])
-        .filter((bucket) => isValidBigSource(bucket.priceAvrgNorm))
-        .map((bucket) => ({
-          timestamp: Number(bucket.timestamp) || 0,
-          price: isAssetInFirst
-            ? Big(1).div(bucket.priceAvrgNorm).toNumber()
-            : getNumber(bucket.priceAvrgNorm),
-        }))
-        .filter((point) => Number.isFinite(point.price) && point.price > 0)
-        .sort((a, b) => a.timestamp - b.timestamp) ?? []
-    const previousHdxPrice = hdxPricePoints.at(0)?.price ?? 0
-    const hdxChange =
-      previousHdxPrice > 0 && hdxPriceValue > 0
-        ? Big(hdxPriceValue)
-            .minus(previousHdxPrice)
-            .div(previousHdxPrice)
-            .times(100)
-            .round(2)
-            .toNumber()
-        : 0
-
-    // 6. Hollar Supply & Peg
+    // 5. Hollar Supply & Peg
     const hsmHollarSupply = Number(
       scaleHuman(hsmHollarBalance ?? 0n, hollarMeta.decimals),
     )
@@ -329,7 +265,7 @@ export const useAggregatedPlatformStats = () => {
       borrowUtilization = (totalBorrows / borrowTvl) * 100
     }
 
-    // 7. GIGAHDX staking
+    // 6. GIGAHDX staking
     const gigaHdxStaked = Number(
       scaleHuman(gigaLockedHDX ?? 0n, native.decimals),
     )
@@ -349,8 +285,6 @@ export const useAggregatedPlatformStats = () => {
       tradingVolume7d,
       capitalEfficiency,
       protocolRevenue,
-      hdxPrice: hdxPriceValue,
-      hdxChange,
       hollarSupply,
       hollarPeg,
       gigaProjectedAprStr,
@@ -368,9 +302,6 @@ export const useAggregatedPlatformStats = () => {
     feesChartsData,
     hsmHollarBalance,
     hollarMeta.decimals,
-    hdxSpotPrice,
-    hdxPriceData,
-    isAssetInFirst,
     gigaProjectedApr,
     gigaLockedHDX,
     native.decimals,
