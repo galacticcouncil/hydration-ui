@@ -7,6 +7,7 @@ import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
+import { ENV } from "@/config/env"
 import { StepButton } from "@/modules/onramp/components/StepButton"
 import { OnrampScreen } from "@/modules/onramp/types"
 
@@ -41,12 +42,14 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
             title={t("withdraw.method.onchain.title")}
             description={t("withdraw.method.onchain.description")}
           />
-          <StepButton
-            icon={CreditCardIcon}
-            onClick={() => onSelect(OnrampScreen.WithdrawBank)}
-            title={t("withdraw.method.bank.title")}
-            description={t("withdraw.method.bank.description")}
-          />
+          {ENV.VITE_ENV !== "production" && (
+            <StepButton
+              icon={CreditCardIcon}
+              onClick={() => onSelect(OnrampScreen.WithdrawBank)}
+              title={t("withdraw.method.bank.title")}
+              description={t("withdraw.method.bank.description")}
+            />
+          )}
         </Stack>
       </ModalBody>
     </>

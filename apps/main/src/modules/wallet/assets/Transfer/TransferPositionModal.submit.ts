@@ -44,41 +44,45 @@ export const useSubmitTransferPosition = ({ onClose, onSuccess }: Props) => {
         ? safeConvertSS58toH160(normalizedDest)
         : normalizedDest
 
-      return createTransaction({
-        withExtraGas: isErc20(asset),
-        tx: papi.tx.Currencies.transfer({
-          currency_id: Number(asset.id),
-          dest: normalizedDest,
-          amount: BigInt(amountScaled),
-        }),
-        // TODO insufficient fee check
-        // overrides: insufficientFee
-        //   ? {
-        //       fee: currentFee,
-        //       feeExtra: insufficientFee.value,
-        //       currencyId: accountCurrencyMeta?.id,
-        //     }
-        //   : undefined,
-        toasts: {
-          submitted: t("transfer.modal.onLoading", {
-            amount,
-            symbol: asset.symbol,
-            address: shortenAccountAddress(formattedDest),
+      return createTransaction(
+        {
+          withExtraGas: isErc20(asset),
+          tx: papi.tx.Currencies.transfer({
+            currency_id: Number(asset.id),
+            dest: normalizedDest,
+            amount: BigInt(amountScaled),
           }),
-          success: t("transfer.modal.onSuccess", {
-            amount,
-            symbol: asset.symbol,
-            address: shortenAccountAddress(formattedDest),
-          }),
-          error: t("transfer.modal.onError", {
-            amount,
-            symbol: asset.symbol,
-            address: shortenAccountAddress(formattedDest),
-          }),
+          // TODO insufficient fee check
+          // overrides: insufficientFee
+          //   ? {
+          //       fee: currentFee,
+          //       feeExtra: insufficientFee.value,
+          //       currencyId: accountCurrencyMeta?.id,
+          //     }
+          //   : undefined,
+          toasts: {
+            submitted: t("transfer.modal.onLoading", {
+              amount,
+              symbol: asset.symbol,
+              address: shortenAccountAddress(formattedDest),
+            }),
+            success: t("transfer.modal.onSuccess", {
+              amount,
+              symbol: asset.symbol,
+              address: shortenAccountAddress(formattedDest),
+            }),
+            error: t("transfer.modal.onError", {
+              amount,
+              symbol: asset.symbol,
+              address: shortenAccountAddress(formattedDest),
+            }),
+          },
         },
-      })
+        {
+          onSubmitted: onClose,
+          onSuccess,
+        },
+      )
     },
-    onMutate: onClose,
-    onSuccess: onSuccess,
   })
 }

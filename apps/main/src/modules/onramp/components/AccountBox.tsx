@@ -21,12 +21,12 @@ import {
   createCexWithdrawalUrl,
   getCexConfigById,
 } from "@/modules/onramp/config/cex"
-import { AssetConfig } from "@/modules/onramp/types"
+import { AssetConfig, CexId } from "@/modules/onramp/types"
 
 export type AccountBoxProps = Account & {
   ss58Format: number
   error?: string
-  cexId: string
+  cexId: CexId
   asset: AssetConfig | null
   onToggleWeb3Modal: () => void
 }
@@ -97,7 +97,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
               onClick={() => window.open(cexUrl, "_blank")}
             >
               <ExternalLink />
-              {t("common:open")} {cex?.title}
+              {t("common:open")} {cex ? t(`cex.${cexId}.title`) : null}
             </Button>
           )}
         </Flex>

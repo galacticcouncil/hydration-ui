@@ -3,20 +3,21 @@ import {
   GridProps,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
+import { useTranslation } from "react-i18next"
 
 import { CexAssetSelectRow } from "@/modules/onramp/components/CexAssetSelect/CexAssetSelectRow"
 import { CexSelectRow } from "@/modules/onramp/components/CexAssetSelect/CexSelectRow"
 import { CEX_CONFIG, getCexConfigById } from "@/modules/onramp/config/cex"
-import { AssetConfig } from "@/modules/onramp/types"
+import { AssetConfig, CexId } from "@/modules/onramp/types"
 
 const ASSET_ROW_HEIGHT = 60
 const CEX_ROW_HEIGHT = 36
 const MAX_VISIBLE = 10
 
 export type CexAssetSelectProps = GridProps & {
-  activeCexId: string
+  activeCexId: CexId
   onAssetSelect: (asset: AssetConfig) => void
-  onCexSelect: (id: string) => void
+  onCexSelect: (id: CexId) => void
 }
 
 export const CexAssetSelect: React.FC<CexAssetSelectProps> = ({
@@ -25,6 +26,7 @@ export const CexAssetSelect: React.FC<CexAssetSelectProps> = ({
   onAssetSelect,
   ...props
 }) => {
+  const { t } = useTranslation(["onramp"])
   const cex = getCexConfigById(activeCexId)
 
   if (!cex) return null
@@ -43,7 +45,7 @@ export const CexAssetSelect: React.FC<CexAssetSelectProps> = ({
         renderItem={(cex, { key }) => (
           <CexSelectRow
             key={key}
-            title={cex.title}
+            title={t(`cex.${cex.id}.title`)}
             logo={cex.logo}
             isActive={cex.id === activeCexId}
             onClick={() => onCexSelect(cex.id)}

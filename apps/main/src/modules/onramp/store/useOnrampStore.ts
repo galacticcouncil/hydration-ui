@@ -4,23 +4,24 @@ import { persist } from "zustand/middleware"
 import { createDepositId } from "@/modules/onramp/config/cex"
 import {
   AssetConfig,
+  CexId,
   DepositConfig,
   OnrampScreen,
 } from "@/modules/onramp/types"
 
-const DEFAULT_CEX_ID = "kraken"
+const DEFAULT_CEX_ID = CexId.Kraken
 
 type TCreateDepositEntry = Omit<DepositConfig, "id" | "createdAt">
 
 type OnrampStore = {
   page: OnrampScreen
   asset: AssetConfig | null
-  cexId: string
+  cexId: CexId
   amount: string
   currentDeposit: DepositConfig | null
   pendingDeposits: DepositConfig[]
   setAsset: (asset: AssetConfig) => void
-  setCexId: (cexId: string) => void
+  setCexId: (cexId: CexId) => void
   setAmount: (amount: string) => void
   setCurrentDeposit: (deposit: TCreateDepositEntry | null) => void
   setPendingDeposit: (deposit: TCreateDepositEntry) => void

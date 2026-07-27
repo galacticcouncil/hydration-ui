@@ -32,7 +32,7 @@ import { AssetLogo } from "@/components/AssetLogo/AssetLogo"
 import { AccountBox } from "@/modules/onramp/components/AccountBox"
 import { CexDepositGuide } from "@/modules/onramp/components/CexDepositGuide"
 import {
-  CEX_DEPOSIT_LIMITS,
+  getCexAssetConfig,
   getCexConfigById,
 } from "@/modules/onramp/config/cex"
 import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
@@ -131,7 +131,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   const assetDetails = asset ? getAsset(asset.assetId) : null
 
-  const minDeposit = asset ? (CEX_DEPOSIT_LIMITS[asset.assetId] ?? 0) : 0
+  const minDeposit = asset
+    ? (getCexAssetConfig(cexId, asset.assetId)?.minDeposit ?? 0)
+    : 0
 
   const getAddressPrefix = (chainKey: string) => {
     // Get SS58 format - keep old hydration prefix for CEX compatibility
@@ -162,7 +164,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
             <Trans
               t={t}
               i18nKey="onramp:deposit.cex.asset.select.label"
-              values={{ name: activeCex.title }}
+              values={{ name: t(`cex.${cexId}.title`) }}
             >
               <Icon size={14} component={activeCex.logo} />
               <Text as="span" color={getToken("text.high")} />

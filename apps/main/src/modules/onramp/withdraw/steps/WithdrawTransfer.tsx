@@ -26,7 +26,6 @@ import { useTranslation } from "react-i18next"
 
 import { useCrossChainWallet, xcmTransferQuery } from "@/api/xcm"
 import { AssetLogo } from "@/components/AssetLogo"
-import { getCexConfigById } from "@/modules/onramp/config/cex"
 import { useSubmitCexWithdraw } from "@/modules/onramp/withdraw/hooks/useSubmitCexWithdraw"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
@@ -42,13 +41,12 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
   onTransferSuccess,
   onBack,
 }) => {
-  const { t } = useTranslation(["onramp", "common", "xcm"])
+  const { t } = useTranslation(["onramp", "common", "xcm", "wallet"])
   const { account } = useAccount()
   const { asset, cexId, setAmount: setWithdrawnAmount } = useWithdraw()
   const { getAsset } = useAssets()
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
 
-  const activeCex = getCexConfigById(cexId)
   const address = account?.address ?? ""
   const destChainKey = asset?.withdrawalChain ?? ""
   const assetKey = asset?.data?.asset?.key ?? ""
@@ -117,7 +115,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     <>
       <ModalHeader
         title={t("withdraw.cex.transfer.title", {
-          cex: activeCex?.title,
+          cex: t(`cex.${cexId}.title`),
         })}
         onBack={onBack}
         align="center"
@@ -162,7 +160,9 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
               render={({ field, fieldState }) => (
                 <Flex direction="column" gap="m">
                   <FormLabel asChild>
-                    <label htmlFor={field.name}>Destination address</label>
+                    <label htmlFor={field.name}>
+                      {t("wallet:transfer.modal.address.label")}
+                    </label>
                   </FormLabel>
                   <AccountInput
                     id={field.name}
@@ -182,7 +182,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
               <Alert
                 variant="warning"
                 description={t("withdraw.disclaimer.cex.title", {
-                  cex: activeCex?.title,
+                  cex: t(`cex.${cexId}.title`),
                   symbol: asset?.data.asset.originSymbol,
                 })}
                 action={
@@ -194,7 +194,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
                     />
                     <Text fs="p4" lh={1.3} fw={600}>
                       {t("withdraw.disclaimer.cex.description", {
-                        cex: activeCex?.title,
+                        cex: t(`cex.${cexId}.title`),
                         symbol: asset?.data.asset.originSymbol,
                       })}
                     </Text>

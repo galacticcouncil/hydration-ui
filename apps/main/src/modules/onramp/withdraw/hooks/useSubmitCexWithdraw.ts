@@ -13,7 +13,7 @@ import {
 } from "@/api/external/assethub"
 import { useCrossChainWallet } from "@/api/xcm"
 import { WaitingForBalanceUpdate } from "@/modules/onramp/components/WaitingForBalanceUpdate"
-import { getCexConfigById } from "@/modules/onramp/config/cex"
+import { CexId } from "@/modules/onramp/types"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import {
   assertTransferValues,
@@ -30,7 +30,7 @@ import { toBigInt, toDecimal } from "@/utils/formatting"
 
 export type CexWithdrawOptions = TransactionActions & {
   asset: Asset | null
-  cexId: string
+  cexId: CexId
 }
 
 export const useSubmitCexWithdraw = (options: CexWithdrawOptions) => {
@@ -62,7 +62,7 @@ export const useSubmitCexWithdraw = (options: CexWithdrawOptions) => {
         amount: srcAmount,
         symbol: source.balance.originSymbol,
         destChain: destChain.name,
-        cex: getCexConfigById(cexId)?.title ?? "",
+        cex: t(`cex.${cexId}.title`),
       }
 
       const tx = await buildXcmTx(srcChain, transfer, srcAmount, papi)

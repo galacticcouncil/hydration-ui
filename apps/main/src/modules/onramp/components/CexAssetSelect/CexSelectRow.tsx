@@ -16,20 +16,18 @@ export const CexSelectRow: React.FC<CexSelectRowProps> = ({
   onClick,
 }) => {
   return (
-    <Flex align="center" px="s">
-      <SButton
-        variant={isActive ? "accent" : "transparent"}
-        outline={isActive}
-        onClick={onClick}
-        isActive={isActive}
-      >
-        <Icon component={logo} />
-        <Flex>
-          <Text fs="p5" fw={500}>
-            {title}
-          </Text>
-        </Flex>
-      </SButton>
-    </Flex>
+    <SButton
+      variant={isActive ? "accent" : "transparent"}
+      outline={isActive}
+      onClick={onClick}
+      isActive={isActive}
+    >
+      <Icon component={logo} />
+      <Flex>
+        <Text fs="p5" fw={500}>
+          {title}
+        </Text>
+      </Flex>
+    </SButton>
   )
 }

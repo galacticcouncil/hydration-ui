@@ -6,7 +6,6 @@ import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ENV } from "@/config/env"
 import { LINKS } from "@/config/navigation"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 
@@ -20,7 +19,6 @@ export const WalletAssetsSubpageLayoutActions = () => {
   return (
     <Flex gap="m">
       <Button
-        css={{ paddingBlock: 14, paddingInline: 18 }}
         variant="accent"
         size="small"
         outline
@@ -28,32 +26,28 @@ export const WalletAssetsSubpageLayoutActions = () => {
       >
         {isMobile ? <Icon component={Send} size="m" /> : t("send")}
       </Button>
-      {ENV.VITE_DEPOSIT_WITHDRAW_ENABLED && (
-        <>
-          <Button
-            variant="emphasis"
-            outline
-            onClick={() => setModal("withdraw")}
-            asChild
-          >
-            <Link to={LINKS.withdraw}>
-              <Minus />
-              {t("withdraw")}
-            </Link>
-          </Button>
-          <Button
-            variant="emphasis"
-            outline
-            onClick={() => setModal("deposit")}
-            asChild
-          >
-            <Link to={LINKS.deposit}>
-              <Plus />
-              {t("deposit")}
-            </Link>
-          </Button>
-        </>
-      )}
+      <Button
+        variant="emphasis"
+        outline
+        onClick={() => setModal("withdraw")}
+        asChild
+      >
+        <Link to={LINKS.withdraw}>
+          <Minus />
+          {t("withdraw")}
+        </Link>
+      </Button>
+      <Button
+        variant="emphasis"
+        outline
+        onClick={() => setModal("deposit")}
+        asChild
+      >
+        <Link to={LINKS.deposit}>
+          <Plus />
+          {t("deposit")}
+        </Link>
+      </Button>
 
       <Modal
         variant="popup"

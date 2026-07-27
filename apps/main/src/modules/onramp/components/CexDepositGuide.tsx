@@ -2,37 +2,20 @@ import { Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { getCexConfigById } from "@/modules/onramp/config/cex"
+import { CexId } from "@/modules/onramp/types"
 
 import { HowToSteps } from "./HowToSteps"
 
-export type CexDepositGuideProps = { cexId: string }
+export type CexDepositGuideProps = { cexId: CexId }
 
 export const CexDepositGuide: React.FC<CexDepositGuideProps> = ({ cexId }) => {
   const { t } = useTranslation(["onramp"])
 
-  const steps = (() => {
-    switch (cexId) {
-      case "binance":
-        return t("guide.binance.steps", { returnObjects: true })
-      case "kucoin":
-        return t("guide.kucoin.steps", { returnObjects: true })
-      case "gateio":
-        return t("guide.gateio.steps", { returnObjects: true })
-      case "kraken":
-        return t("guide.kraken.steps", { returnObjects: true })
-      case "coinbase":
-        return t("guide.coinbase.steps", { returnObjects: true })
-      default:
-        return []
-    }
-  })()
+  const steps = t(`guide.${cexId}.steps`, { returnObjects: true })
 
-  if (!steps.length) {
+  if (!steps) {
     return null
   }
-
-  const cex = getCexConfigById(cexId)!
 
   return (
     <Stack gap="m" p="xl">
@@ -42,7 +25,7 @@ export const CexDepositGuide: React.FC<CexDepositGuideProps> = ({ cexId }) => {
         fw={500}
         color={getToken("text.tint.primary")}
       >
-        {t("onramp:guide.title", { cex: cex.title })}
+        {t("onramp:guide.title", { cex: t(`cex.${cexId}.title`) })}
       </Text>
       <HowToSteps steps={steps} />
     </Stack>

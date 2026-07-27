@@ -9,8 +9,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Trans, useTranslation } from "react-i18next"
 
-import { getCexConfigById } from "@/modules/onramp/config/cex"
-import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
+import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type WithdrawSuccessProps = {
@@ -22,10 +21,8 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
 }) => {
   const { t } = useTranslation(["onramp"])
   const { getAsset } = useAssets()
-  const { asset, amount, cexId } = useDeposit()
+  const { asset, amount, cexId } = useWithdraw()
   const assetDetails = asset ? getAsset(asset.assetId) : null
-
-  const cex = getCexConfigById(cexId)
 
   return (
     <ModalBody>
@@ -47,7 +44,7 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
               values={{
                 amount,
                 symbol: assetDetails.symbol,
-                cex: cex?.title,
+                cex: t(`cex.${cexId}.title`),
               }}
             >
               <span sx={{ color: getToken("text.high") }} />

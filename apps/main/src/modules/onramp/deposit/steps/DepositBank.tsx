@@ -1,4 +1,4 @@
-import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
+import { ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { StepButton } from "@/modules/onramp/components/StepButton"
@@ -19,13 +19,11 @@ export const DepositBank: React.FC<DepositBankProps> = ({ onBack }) => {
         closable={false}
       />
       <ModalBody>
-        <Stack gap="m">
-          <StepButton
-            onClick={() => window.open("https://banxa.com", "_blank")}
-            title="Banxa"
-            description={t("deposit.bank.banxa.description")}
-          />
-        </Stack>
+        <StepButton
+          onClick={() => window.open("https://banxa.com", "_blank")}
+          title={t("bank.banxa.title")}
+          description={t("bank.banxa.description")}
+        />
       </ModalBody>
     </>
   )

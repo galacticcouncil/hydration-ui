@@ -24,8 +24,8 @@ export const WithdrawBank: React.FC<WithdrawBankProps> = ({ onBack }) => {
             onClick={() =>
               window.open("https://app.vortexfinance.co", "_blank")
             }
-            title="Vortex"
-            description={t("withdraw.bank.vortex.description")}
+            title={t("bank.vortex.title")}
+            description={t("bank.vortex.description")}
           />
         </Stack>
       </ModalBody>

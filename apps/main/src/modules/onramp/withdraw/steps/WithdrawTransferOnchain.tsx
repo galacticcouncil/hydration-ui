@@ -16,7 +16,6 @@ import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { getCexConfigById } from "@/modules/onramp/config/cex"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useTransferPositionForm } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
@@ -32,19 +31,16 @@ export type WithdrawTransferOnchainProps = {
 export const WithdrawTransferOnchain: React.FC<
   WithdrawTransferOnchainProps
 > = ({ onTransferSuccess, onBack }) => {
-  const { t } = useTranslation(["onramp", "common", "xcm"])
+  const { t } = useTranslation(["onramp", "common", "xcm", "wallet"])
   const { asset, cexId, setAmount: setWithdrawnAmount } = useWithdraw()
   const { getAsset } = useAssets()
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
   const { getTransferableBalance } = useAccountBalances()
-
-  const activeCex = getCexConfigById(cexId)
   const assetMeta = asset ? getAsset(asset.assetId) : null
 
   const form = useTransferPositionForm({ assetId: assetMeta?.id })
   const { mutate: transfer, isPending: isSubmitting } =
     useSubmitTransferPosition({
-      onClose: () => {},
       onSuccess: () => {
         setWithdrawnAmount(form.getValues("amount"))
         onTransferSuccess()
@@ -59,7 +55,7 @@ export const WithdrawTransferOnchain: React.FC<
     <FormProvider {...form}>
       <ModalHeader
         title={t("withdraw.cex.transfer.title", {
-          cex: activeCex?.title,
+          cex: t(`cex.${cexId}.title`),
         })}
         onBack={onBack}
         align="center"
@@ -94,7 +90,9 @@ export const WithdrawTransferOnchain: React.FC<
             render={({ field, fieldState }) => (
               <Flex direction="column" gap="m">
                 <FormLabel asChild>
-                  <label htmlFor={field.name}>Destination address</label>
+                  <label htmlFor={field.name}>
+                    {t("wallet:transfer.modal.address.label")}
+                  </label>
                 </FormLabel>
                 <AccountInput
                   id={field.name}
@@ -110,7 +108,7 @@ export const WithdrawTransferOnchain: React.FC<
           <Alert
             variant="warning"
             description={t("withdraw.disclaimer.cex.title", {
-              cex: activeCex?.title,
+              cex: t(`cex.${cexId}.title`),
               symbol: asset?.data.asset.originSymbol,
             })}
             action={
@@ -122,7 +120,7 @@ export const WithdrawTransferOnchain: React.FC<
                 />
                 <Text fs="p4" lh={1.3} fw={600}>
                   {t("withdraw.disclaimer.cex.description", {
-                    cex: activeCex?.title,
+                    cex: t(`cex.${cexId}.title`),
                     symbol: asset?.data.asset.originSymbol,
                   })}
                 </Text>

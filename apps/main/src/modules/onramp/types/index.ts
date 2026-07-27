@@ -1,5 +1,13 @@
 import { ChainAssetData } from "@galacticcouncil/xc-core"
 
+export enum CexId {
+  Kraken = "kraken",
+  Binance = "binance",
+  Kucoin = "kucoin",
+  Coinbase = "coinbase",
+  Gateio = "gateio",
+}
+
 export enum DepositScreen2 {
   Select = "Select",
   Method = "Method",
@@ -38,11 +46,13 @@ export type AssetConfig = {
   withdrawalChain: string
   depositChain: string
   data: ChainAssetData
+  minDeposit: number
+  minWithdraw: number
 }
 
 export type DepositConfig = {
   id: string
-  cexId: string
+  cexId: CexId
   asset: AssetConfig
   address: string
   createdAt: number

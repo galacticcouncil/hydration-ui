@@ -100,7 +100,7 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
                   {t("deposit.cex.transfer.delete.description", {
                     symbol: assetMeta.symbol,
                     amount: bigShift(amount, -assetMeta.decimals),
-                    cex: cex.title,
+                    cex: t(`cex.${cexId}.title`),
                   })}
                 </Text>
                 {depositChain && (
