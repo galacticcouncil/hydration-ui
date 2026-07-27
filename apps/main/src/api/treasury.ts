@@ -88,6 +88,12 @@ const HOLLAR_COLLECTOR_TREASURY_WALLET = {
   label: "HOLLAR collector treasury",
 }
 
+//fetch only MM
+export const HOLLAR_STABILITY_MODULE = {
+  address: "13UVJyLnbVp7o9NMXo37cG6SBTTvyDYLAxjVg94wxjT4A5f1",
+  label: "HOLLAR stability module",
+}
+
 //fetch MM and wallet balances
 const PRIME_LOOPED_POSITION_TREASURY_WALLET = {
   address: "15qyoAjtLwtu7stVJ5qdsj7QJsfaxQEU3ZrihHExzC6hQyHA",
@@ -211,6 +217,7 @@ export const useTreasuryBalances = () => {
           TREASURY_WALLET.address,
           PRIME_LOOPED_POSITION_TREASURY_WALLET.address,
           MONEY_MARKET_TREASURY_WALLET.address,
+          HOLLAR_STABILITY_MODULE.address,
         ].map(async (address) => {
           const data = await rpc.queryClient.ensureQueryData(
             userBorrowSummaryQuery(
