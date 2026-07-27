@@ -43,6 +43,8 @@
   "summary.feeEstimationNotAvailable": "Estimation not available",
   "snowbridge.version.v2": "V2",
   "snowbridge.version.v1": "V1",
+  "wormhole.disabled.banner": "Wormhole transfers are temporarily unavailable due to the Moonbeam network shutdown on July 31, 2026. Bridge migration is currently in progress.",
+  "wormhole.disabled.tooltip": "{{ name }} transfers are temporarily unavailable while the Wormhole bridge migration is in progress.",
   "transfer.error.generic": "An unexpected error occurred while preparing the transfer.",
   "tx.description": "Transfer {{ amount, number }} {{ symbol }} to {{ destChain }}",
   "tx.toast.submitted": "Sending {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}...",

@@ -1,15 +1,22 @@
+import { InfoIcon } from "@galacticcouncil/ui/assets/icons"
 import {
-  Box,
   Button,
+  Flex,
+  Icon,
+  LinkTextButton,
+  Stack,
   Text,
+  Tooltip,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
+import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@/components/ChainLogo"
+import { ENV } from "@/config/env"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 
 const CHAIN_ITEM_HEIGHT = 40
@@ -27,6 +34,7 @@ export const ChainList: React.FC<ChainListProps> = ({
   setSelectedChain,
 }) => {
   const { isMobile } = useBreakpoints()
+  const { t } = useTranslation(["xcm", "common"])
   const chainIndex = selectedChain
     ? items.findIndex(({ chain }) => chain.key === selectedChain.key)
     : 0
@@ -44,21 +52,23 @@ export const ChainList: React.FC<ChainListProps> = ({
         px: "base",
         minHeight: CHAIN_ITEM_HEIGHT * MAX_VISIBLE_CHAIN_ITEMS,
       }}
-      renderItem={({ chain }) => {
+      renderItem={({ chain, assets }) => {
         const isActive = chain.key === selectedChain?.key
+        const isDisabled = ENV.VITE_WORMHOLE_DISABLED && assets.length === 0
 
         return (
-          <Box pb="s">
+          <Flex pb="s" align="center">
             <Button
               variant={isActive ? "accent" : "transparent"}
               outline={isActive}
+              aria-disabled={isDisabled}
               sx={{
                 width: ["auto", "100%"],
                 justifyContent: ["center", "flex-start"],
                 height: "auto",
                 px: "base",
               }}
-              onClick={() => setSelectedChain(chain)}
+              onClick={() => !isDisabled && setSelectedChain(chain)}
             >
               <ChainLogo
                 ecosystem={chain.ecosystem}
@@ -66,6 +76,7 @@ export const ChainList: React.FC<ChainListProps> = ({
                 size={isMobile ? "medium" : "small"}
               />
               <Text
+                flex={1}
                 display={["none", "block"]}
                 color={
                   isActive ? getToken("text.high") : getToken("text.medium")
@@ -74,7 +85,29 @@ export const ChainList: React.FC<ChainListProps> = ({
                 {chain.name}
               </Text>
             </Button>
-          </Box>
+            {isDisabled && (
+              <Tooltip
+                side="top"
+                text={
+                  <Stack gap="base">
+                    <Text>
+                      {t("wormhole.disabled.tooltip", { name: chain.name })}
+                    </Text>
+                    <LinkTextButton href="https://x.com/hydration_net/status/2074890386275770872">
+                      {t("common:readMore")}
+                    </LinkTextButton>
+                  </Stack>
+                }
+              >
+                <Icon
+                  sx={{ mr: "base", color: getToken("accents.info.onPrimary") }}
+                  size="s"
+                  component={InfoIcon}
+                  color={getToken("text.medium")}
+                />
+              </Tooltip>
+            )}
+          </Flex>
         )
       }}
     />
