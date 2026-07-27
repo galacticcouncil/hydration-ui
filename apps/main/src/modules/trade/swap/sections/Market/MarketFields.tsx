@@ -6,10 +6,13 @@ import { useTranslation } from "react-i18next"
 
 import { Trade, TradeOrder, TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -20,6 +23,13 @@ type Props = {
 export const MarketFields: FC<Props> = ({ swap, twap }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
+  const { featureFlags } = useRpcProvider()
+
+  const {
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
 
   const navigate = useNavigate()
 
@@ -44,15 +54,24 @@ export const MarketFields: FC<Props> = ({ swap, twap }) => {
 
   const isSell = type === TradeType.Sell
   const isEmpty = isSell ? !sellAmount : !buyAmount
+
+  // Under ICE the derived field shows what the intent commits on-chain
+  // (floor / exact spend), not the raw quote — the form must display
+  // exactly what ends up in the extrinsic.
+  const iceSwap =
+    featureFlags.isIceEnabled && swap
+      ? getIceSwapAmounts(swap, swapSlippage)
+      : undefined
+
   const amountOut = isEmpty
     ? undefined
     : isSingleTrade
-      ? swap?.amountOut
+      ? (iceSwap?.amountOut ?? swap?.amountOut)
       : twap?.amountOut
   const amountIn = isEmpty
     ? undefined
     : isSingleTrade
-      ? swap?.amountIn
+      ? (iceSwap?.amountIn ?? swap?.amountIn)
       : twap?.amountIn
 
   useEffect(() => {
@@ -122,7 +141,14 @@ export const MarketFields: FC<Props> = ({ swap, twap }) => {
       <AssetSelectFormField<MarketFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
-        label={t("buy")}
+        label={
+          // Intent TWAP settles at market with no fixed output floor, so the
+          // received amount is an estimate in both entry directions — flag it
+          // on the receive field header.
+          featureFlags.isIceEnabled && !isSingleTrade
+            ? t("trade:market.form.buy.estimated")
+            : t("buy")
+        }
         assets={buyableAssets}
         hideMaxBalanceAction
         maxBalanceFallback="0"

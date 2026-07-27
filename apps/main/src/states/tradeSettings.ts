@@ -3,6 +3,7 @@ import * as z from "zod/v4"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import i18n from "@/i18n"
 import { validNumber } from "@/utils/validators"
 
 const legacyTradeSettingsSchema = z.object({
@@ -23,14 +24,27 @@ const generalSettingsSchema = z.object({
 const slippageSchema = validNumber.min(0).max(100)
 const maxRetriesSchema = validNumber.min(0).max(10)
 
+export const MIN_TRADE_SLIPPAGE = 0.5
+
+// Trade slippage feeds the SDK intent builders where it directly pads
+// or lowers on-chain amounts — enforce a floor so orders stay fillable
+// and the SDK fraction math (which rejects values below 0.01%) never
+// throws.
+const tradeSlippageSchema = validNumber
+  .min(
+    MIN_TRADE_SLIPPAGE,
+    i18n.t("error.minNumber", { value: MIN_TRADE_SLIPPAGE }),
+  )
+  .max(100)
+
 export const singleTradeSchema = z.object({
-  swapSlippage: slippageSchema,
+  swapSlippage: tradeSlippageSchema,
 })
 
 export type SingleTradeSettings = z.infer<typeof singleTradeSchema>
 
 export const splitTradeSchema = z.object({
-  twapSlippage: slippageSchema,
+  twapSlippage: tradeSlippageSchema,
   twapMaxRetries: maxRetriesSchema,
 })
 
@@ -44,7 +58,7 @@ export const swapSettingsSchema = z.object({
 export type SwapSettings = z.infer<typeof swapSettingsSchema>
 
 export const dcaOrderSchema = z.object({
-  slippage: slippageSchema,
+  slippage: tradeSlippageSchema,
   maxRetries: maxRetriesSchema,
 })
 
@@ -67,7 +81,11 @@ const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
   swap: {
     single: {
-      swapSlippage: 1,
+      // Intent fills land well within 0.5% of quote (measured on Lark);
+      // with intents a too-tight floor just waits a block instead of
+      // reverting, so the tighter default gives users a stronger
+      // guarantee at negligible fill risk.
+      swapSlippage: 0.5,
     },
     split: {
       twapSlippage: 3,

@@ -25,6 +25,7 @@ import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market
 import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 import { getTradeFeeIntervals } from "@/utils/trade"
@@ -37,6 +38,13 @@ type Props = {
 export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
+  const { featureFlags } = useRpcProvider()
+
+  // Intent TWAP (Dca intent) has no fixed output floor — per-slice
+  // protection is the pallet's adaptive oracle limit, so the headline
+  // amount is an estimate for BOTH directions (there is no guaranteed-Buy
+  // variant on intents).
+  const isIce = featureFlags.isIceEnabled
 
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 
@@ -89,6 +97,12 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
       return [0n, 0n, "0", null]
     }
 
+    if (isIce) {
+      // Raw SOR estimate — settles at market, nothing to pad or floor.
+      const twapPrice = twap.amountOut
+      return [twapPrice, 0n, scaleHuman(twapPrice, buyAsset.decimals), buyAsset]
+    }
+
     if (twap.type === TradeOrderType.TwapBuy) {
       const twapPrice =
         twap.amountIn + calculateSlippage(twap.amountIn, twapSlippage)
@@ -130,7 +144,9 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
     mediumHigh = Number.MAX_SAFE_INTEGER,
   ] = getTradeFeeIntervals(0, 0)
 
-  const twapDiff = math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
+  const twapDiff = isIce
+    ? 0
+    : math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
   const twapDiffAbs = Math.abs(twapDiff)
   const twapSymbol = twapDiff >= 0 ? "+" : "-"
 
@@ -141,27 +157,38 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
     >
       <CalculatedAmountSummaryRow
         label={
-          isBuy
-            ? t("trade:market.summary.maxSent")
-            : t("trade:market.summary.minReceived")
+          isIce
+            ? t("trade:market.summary.estReceived")
+            : isBuy
+              ? t("trade:market.summary.maxSent")
+              : t("trade:market.summary.minReceived")
         }
         tooltip={
-          isBuy
-            ? t("trade:market.summary.maxSent.tooltip")
-            : t("trade:market.summary.minReceived.tooltip")
+          isIce
+            ? t("trade:market.summary.estReceived.tooltip")
+            : isBuy
+              ? t("trade:market.summary.maxSent.tooltip")
+              : t("trade:market.summary.minReceived.tooltip")
         }
         amount={
-          <SummaryRowValue>
-            <span>
-              {t("currency", {
-                value: twapPriceHuman,
-                symbol: twapPriceAsset.symbol,
-              })}
-            </span>
-            <span sx={{ color: getToken("colors.skyBlue.500") }}>
-              {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
-            </span>
-          </SummaryRowValue>
+          isIce ? (
+            `~${t("currency", {
+              value: twapPriceHuman,
+              symbol: twapPriceAsset.symbol,
+            })}`
+          ) : (
+            <SummaryRowValue>
+              <span>
+                {t("currency", {
+                  value: twapPriceHuman,
+                  symbol: twapPriceAsset.symbol,
+                })}
+              </span>
+              <span sx={{ color: getToken("colors.skyBlue.500") }}>
+                {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
+              </span>
+            </SummaryRowValue>
+          )
         }
         amountDisplay={twapPriceDisplay}
         isLoading={twapPriceDisplayLoading}

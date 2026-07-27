@@ -17,6 +17,7 @@ type Props = {
   readonly value: string
   readonly diff?: string
   readonly isBuy?: boolean
+  readonly approx?: boolean
   readonly onClick: () => void
   readonly disabled?: boolean
 }
@@ -29,6 +30,7 @@ export const TradeOption = ({
   value,
   diff,
   isBuy,
+  approx,
   onClick,
   disabled,
 }: Props) => {
@@ -56,10 +58,10 @@ export const TradeOption = ({
       </Flex>
       <Flex direction="column" align="end">
         <Text fs="p3" lh={1} fw={600} color={getToken("text.high")}>
-          {t("currency", {
+          {`${approx ? "~" : ""}${t("currency", {
             value: value,
             symbol: asset.symbol,
-          })}
+          })}`}
         </Text>
         <Flex gap="s" align="center">
           <Text fs="p6" fw={400} color={getToken("text.medium")}>
