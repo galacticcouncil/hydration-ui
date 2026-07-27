@@ -47,6 +47,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
 
   const {
     form,
+    getMaxBalance,
     liquidityShares,
     poolMeta,
     activeFarms,
@@ -58,7 +59,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
     healthFactor,
   } = useAddLiquidity({ poolId: id, onSubmitted })
 
-  const { formState, handleSubmit } = form
+  const { formState, handleSubmit, watch } = form
   const customErrors = getCustomErrors(formState.errors.amount)
 
   return (
@@ -75,6 +76,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
             assetFieldName="asset"
             amountFieldName="amount"
             assets={underlyingAssetMeta ? [underlyingAssetMeta, poolMeta] : []}
+            maxBalance={getMaxBalance(watch("asset"))}
             sx={{ pt: 0 }}
             disabledAssetSelector={!underlyingAssetMeta}
           />

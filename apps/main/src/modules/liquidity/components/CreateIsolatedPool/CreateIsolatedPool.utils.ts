@@ -7,16 +7,16 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import {
+  useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
-import {
-  positive,
-  required,
-  requiredObject,
-  useValidateFormMaxBalance,
-} from "@/utils/validators"
+import { scale } from "@/utils/formatting"
+import { positive, required, requiredObject } from "@/utils/validators"
 
 const schema = z.object({
   assetA: requiredObject<TAsset>(),
@@ -27,12 +27,10 @@ const schema = z.object({
 
 export type CreateIsolatedPoolFormData = z.infer<typeof schema>
 
-const useSchema = () => {
-  const refineFormMaxBalance = useValidateFormMaxBalance()
-
+const useSchema = (validateBalance: ValidateFormMaxBalanceWithFee) => {
   return schema.check(
-    refineFormMaxBalance("amountA", (form) => [form.assetA, form.amountA]),
-    refineFormMaxBalance("amountB", (form) => [form.assetB, form.amountB]),
+    validateBalance("amountA", (form) => [form.assetA, form.amountA]),
+    validateBalance("amountB", (form) => [form.assetB, form.amountB]),
   )
 }
 
@@ -44,11 +42,25 @@ const defaultValues: CreateIsolatedPoolFormData = {
 }
 
 export const useIsolatedPoolForm = () => {
-  return useForm<CreateIsolatedPoolFormData>({
+  const { papi } = useRpcProvider()
+
+  const createPoolTx = papi.tx.XYK.create_pool({
+    asset_a: 0,
+    amount_a: BigInt(scale("1", 12)),
+    asset_b: 10,
+    amount_b: BigInt(scale("1", 12)),
+  })
+
+  const { validateBalance, getMaxBalance } =
+    useFormMaxBalanceWithFee(createPoolTx)
+
+  const form = useForm<CreateIsolatedPoolFormData>({
     mode: "onChange",
     defaultValues,
-    resolver: standardSchemaResolver(useSchema()),
+    resolver: standardSchemaResolver(useSchema(validateBalance)),
   })
+
+  return { form, getMaxBalance }
 }
 
 export const useSubmitCreateIsolatedPool = ({
