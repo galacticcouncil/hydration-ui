@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
-import { useTransferPositionForm } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
+import { useTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
@@ -38,7 +38,7 @@ export const WithdrawTransferOnchain: React.FC<
   const { getTransferableBalance } = useAccountBalances()
   const assetMeta = asset ? getAsset(asset.assetId) : null
 
-  const form = useTransferPositionForm({ assetId: assetMeta?.id })
+  const { form } = useTransferPosition({ assetId: assetMeta?.id })
   const { mutate: transfer, isPending: isSubmitting } =
     useSubmitTransferPosition({
       onSuccess: () => {
