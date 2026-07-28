@@ -1,9 +1,5 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import {
-  clampBigInt,
-  HYDRATION_CHAIN_KEY,
-  isAnyEvmChain,
-} from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { isObjectType } from "remeda"
 import {
@@ -29,11 +25,13 @@ import {
   EVM_CALL_PERMIT_TYPES,
   EVM_DEFAULT_CHAIN_KEY,
   EVM_DISPATCH_ADDRESS,
-  EVM_GAS_TO_WEIGHT,
-  EVM_MAX_GAS_LIMIT,
-  EVM_MIN_GAS_LIMIT,
 } from "@/config/evm"
 import { requestNetworkSwitch } from "@/utils"
+import {
+  getPermitGasFromWeight,
+  getPermitGasLimit,
+  getPermitGasPrice,
+} from "@/utils/permitGas"
 
 type PermitMessage = {
   from: string
@@ -96,12 +94,7 @@ export class EthereumSigner {
     const isPrecompileTx = tx.to === EVM_DISPATCH_ADDRESS
 
     if (isPrecompileTx && weight > 0n) {
-      const gasByWeight = clampBigInt(weight / EVM_GAS_TO_WEIGHT, {
-        min: EVM_MIN_GAS_LIMIT,
-        max: EVM_MAX_GAS_LIMIT,
-      })
-      const gasLimitSurplus = (gasByWeight * 30n) / 100n // 30% surplus
-      return gasByWeight + gasLimitSurplus
+      return getPermitGasFromWeight(weight)
     }
 
     return this.publicClient.estimateGas({
@@ -115,14 +108,8 @@ export class EthereumSigner {
       this.getGas(tx, weight),
       this.publicClient.getGasPrice(),
     ])
-
-    const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
-    const gasPrice = gasPriceBase + gasPriceSurplus
-
-    const gasByWeight = weight / EVM_GAS_TO_WEIGHT
-    const baseGasLimit = gasByWeight > gas ? gasByWeight : gas
-    const gasLimitSurplus = (baseGasLimit * 30n) / 100n // 30% surplus
-    const gasLimit = baseGasLimit + gasLimitSurplus
+    const gasPrice = getPermitGasPrice(gasPriceBase)
+    const gasLimit = getPermitGasLimit(gas, weight)
 
     return {
       gas,
@@ -196,7 +183,6 @@ export class EthereumSigner {
         const weight = options.weight ?? 0n
 
         const isExtendedEvmCall = isObjectType(call)
-
         const tx = isExtendedEvmCall
           ? {
               from: call.from as Address,
@@ -218,7 +204,6 @@ export class EthereumSigner {
           isExtendedEvmCall && call.gasLimit
             ? call.gasLimit
             : (await this.estimateGas(tx, weight)).gasLimit
-
         const nonce = options?.nonce ?? (await this.getPermitNonce())
 
         const createPermitMessageData = () => {

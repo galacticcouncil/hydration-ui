@@ -1,6 +1,7 @@
 export * from "./errors"
 export * from "./ethereum"
 export * from "./identity"
+export * from "./permitGas"
 export * from "./polkadot"
 export * from "./signer"
 export * from "./wallet"

@@ -23,6 +23,7 @@ import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TRemoveStablepoolLiquidityFormValues } from "@/modules/liquidity/components/RemoveLiquidity/RemoveStablepoolLiquidity.utils"
 import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
 import { TReserve } from "@/modules/liquidity/Liquidity.utils"
+import { useMaxBalance } from "@/modules/transactions/hooks/useMaxBalance"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -64,14 +65,25 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const balance = getTransferableBalance(erc20Id)
   const balanceShifted = scaleHuman(balance.toString(), meta.decimals)
-  const [maxBalance, setMaxBalance] = useState(balanceShifted)
+  const [maxATokenBalance, setMaxATokenBalance] = useState(balanceShifted)
 
   const initialReceiveAsset = reserves[0]?.meta
 
-  const form = useRemoveStablepoolLiquidityForm({
+  const { data: feeEstimateTrade } = useQuery(
+    bestSellWithTxQuery(rpc, {
+      assetIn: erc20Id,
+      assetOut: stableswapId,
+      amountIn: "1",
+      slippage: swapSlippage,
+      address: account?.address ?? "",
+    }),
+  )
+
+  const { form, maxBalanceWithFee } = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset!,
     asset: { ...meta, iconId: meta.id },
-    maxBalance,
+    maxBalance: maxATokenBalance,
+    tx: feeEstimateTrade?.tx ?? null,
   })
 
   const [removeAmountShifted = "0", receiveAsset, split, receiveAmount] =
@@ -157,7 +169,7 @@ export const useRemoveMoneyMarketLiquidity = ({
     assetIn: meta,
     assetOut: toAsset,
     amountOutRatio: erc20ReserveRatio,
-    onSuccess: setMaxBalance,
+    onSuccess: setMaxATokenBalance,
   })
 
   useEffect(() => {
@@ -330,7 +342,8 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   return {
     form,
-    maxBalance,
+    balance: balanceShifted,
+    maxBalanceWithFee,
     meta,
     reserves: reserves,
     receiveAssetsProportionally,
@@ -361,12 +374,19 @@ const useRemoveStablepoolLiquidityForm = ({
   asset,
   receiveAsset,
   maxBalance,
+  tx,
 }: {
   asset: TSelectedAsset
   receiveAsset: TAssetData
   maxBalance: string
+  tx: AnyTransaction | null
 }) => {
   const { t } = useTranslation("common")
+  const { maxBalanceHuman } = useMaxBalance({
+    assetId: asset.id,
+    tx,
+    balance: scale(maxBalance, asset.decimals),
+  })
 
   const form = useForm<TRemoveStablepoolLiquidityFormValues>({
     mode: "onChange",
@@ -399,5 +419,5 @@ const useRemoveStablepoolLiquidityForm = ({
     }
   }, [maxBalance, form])
 
-  return form
+  return { maxBalanceWithFee: maxBalanceHuman, form }
 }
