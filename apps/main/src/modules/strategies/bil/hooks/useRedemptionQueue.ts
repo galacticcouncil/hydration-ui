@@ -30,9 +30,9 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
       if (!vault) throw new Error("Vault contract not found")
 
       const [length, head, totalQueued] = await Promise.all([
-        vault.read.getRedemptionQueueLength(),
-        vault.read.getQueueHead(),
-        vault.read.getTotalQueuedBil(),
+        vault.read.queueTail(),
+        vault.read.queueHead(),
+        vault.read.totalQueuedBil(),
       ])
 
       const queueLength = Number(length)
