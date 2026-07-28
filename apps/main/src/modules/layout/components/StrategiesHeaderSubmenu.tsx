@@ -8,6 +8,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { NavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -32,7 +33,11 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
     return (
       <SDetailedLink key={key} asChild>
         <Link to={to} search={search}>
-          {showAssetIcon ? <AssetLogo id={assetIconId} size="medium" /> : null}
+          {showAssetIcon ? (
+            <AssetLogo id={assetIconId} size="medium" />
+          ) : key === "strategiesPropeller" ? (
+            <PropellerLogo size="medium" />
+          ) : null}
           <Box>
             <Text fw={600} fs="p4" lh={1.4}>
               {translations[key].title}
