@@ -25,6 +25,7 @@ export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   bilEnabled: boolean
   isIceEnabled: boolean
+  propellerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -114,6 +115,7 @@ const getProviderData = async (
       hollarBondsEnabled: true,
       bilEnabled: true,
       isIceEnabled: true,
+      propellerEnabled: true,
     },
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }
