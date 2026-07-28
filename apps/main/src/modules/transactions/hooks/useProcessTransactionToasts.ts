@@ -7,12 +7,16 @@ import { prop } from "remeda"
 
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { ToastData, useToasts, useToastsStore } from "@/states/toasts"
+import {
+  TransactionToastData,
+  useToasts,
+  useToastsStore,
+} from "@/states/toasts"
 import { TransactionType, useTransactionsStore } from "@/states/transactions"
 
 const TOAST_STALE_AFTER_MINUTES = 60
 
-const isPendingOnChainToast = (toast: ToastData) => {
+const isPendingOnChainToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "pending" &&
     toast.meta.type === TransactionType.Onchain &&
@@ -20,17 +24,17 @@ const isPendingOnChainToast = (toast: ToastData) => {
   )
 }
 
-const isSubmittedXcmToast = (toast: ToastData) => {
+const isSubmittedXcmToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "submitted" && toast.meta.type === TransactionType.Xcm
   )
 }
 
-const isValidToastForProcessing = (toast: ToastData) => {
+const isValidToastForProcessing = (toast: TransactionToastData) => {
   return isPendingOnChainToast(toast) || isSubmittedXcmToast(toast)
 }
 
-const isStaleToast = (toast: ToastData) => {
+const isStaleToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "pending" &&
     !isValidToastForProcessing(toast) &&
@@ -39,13 +43,13 @@ const isStaleToast = (toast: ToastData) => {
   )
 }
 
-const getToastProcessingRefetchInterval = (toast: ToastData) => {
+const getToastProcessingRefetchInterval = (toast: TransactionToastData) => {
   const diffInMin = differenceInMinutes(new Date(), new Date(toast.dateCreated))
   // Process older toasts less frequently
   return diffInMin >= 5 ? 60_000 : 10_000
 }
 
-export const useProcessTransactionToasts = (toasts: ToastData[]) => {
+export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
   const { isLoaded } = useRpcProvider()
   const { edit } = useToasts()
   const { update } = useToastsStore()

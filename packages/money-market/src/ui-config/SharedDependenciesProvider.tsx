@@ -6,6 +6,7 @@ import { ApprovedAmountService } from "@/services/ApprovedAmountService"
 import { UiIncentivesService } from "@/services/UIIncentivesService"
 import { UiPoolService } from "@/services/UIPoolService"
 import { WalletBalanceService } from "@/services/WalletBalanceService"
+import { UseMaxBalanceFn } from "@/types"
 import { getProvider } from "@/utils/provider"
 
 interface SharedDependenciesContextProps {
@@ -14,6 +15,8 @@ interface SharedDependenciesContextProps {
   uiIncentivesService: UiIncentivesService
   uiPoolService: UiPoolService
   squidClient: SquidSdk
+  useMaxBalance: UseMaxBalanceFn
+  getRelatedATokenId: (id: string) => string | undefined
 }
 
 const SharedDependenciesContext =
@@ -22,7 +25,9 @@ const SharedDependenciesContext =
 export const SharedDependenciesProvider: React.FC<{
   children?: React.ReactNode
   squidClient: SquidSdk
-}> = ({ children, squidClient }) => {
+  useMaxBalance: UseMaxBalanceFn
+  getRelatedATokenId: (id: string) => string | undefined
+}> = ({ children, squidClient, useMaxBalance, getRelatedATokenId }) => {
   const poolTokensBalanceService = new WalletBalanceService(getProvider)
   const approvedAmountService = new ApprovedAmountService(getProvider)
 
@@ -37,6 +42,8 @@ export const SharedDependenciesProvider: React.FC<{
         uiPoolService,
         uiIncentivesService,
         squidClient,
+        useMaxBalance,
+        getRelatedATokenId,
       }}
     >
       {children}

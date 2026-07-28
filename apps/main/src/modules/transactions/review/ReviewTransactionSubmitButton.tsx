@@ -30,7 +30,7 @@ export const ReviewTransactionSubmitButton = ({
     meta,
     isSigning,
     signAndSubmit,
-    isLoadingFeeEstimate,
+    isLoading: isTransactionLoading,
     isChangingFeePaymentAsset,
     setFeePaymentModalOpen,
   } = useTransaction()
@@ -74,7 +74,7 @@ export const ReviewTransactionSubmitButton = ({
   }
 
   const isLoading =
-    isSigning || isLoadingFeeEstimate || isChangingFeePaymentAsset
+    isSigning || isTransactionLoading || isChangingFeePaymentAsset
   const isDisabled = disabled || isSigningBlocked || hasAlerts || isLoading
 
   return (

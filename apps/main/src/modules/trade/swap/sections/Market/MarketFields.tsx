@@ -15,9 +15,10 @@ import { scaleHuman } from "@/utils/formatting"
 type Props = {
   readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
+  readonly maxSellBalance: string
 }
 
-export const MarketFields: FC<Props> = ({ swap, twap }) => {
+export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
@@ -93,6 +94,7 @@ export const MarketFields: FC<Props> = ({ swap, twap }) => {
         label={t("sell")}
         assets={tradable}
         maxBalanceFallback="0"
+        maxBalance={maxSellBalance}
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
           const isSwitch = sellAsset.id === buyAsset?.id
