@@ -27,6 +27,7 @@ export type SButtonProps = {
   size?: ButtonSize
   outline?: boolean
   blur?: boolean
+  glow?: boolean
 }
 
 const defaulStyles = createStyles(
@@ -112,6 +113,12 @@ const outlineVariantStyles = (
     : css`
         box-shadow: inset 0 0 0 1px ${border};
       `}
+`
+
+const blowVariantStyles = (border: string, glow: string) => css`
+  box-shadow:
+    inset 0 0 0 1px ${border},
+    0 0 10px 2px ${glow};
 `
 
 const disabledStyles = css`
@@ -283,6 +290,45 @@ const outlineVariants = createVariants<ButtonVariant>((theme) => ({
   ),
 }))
 
+const glowVariants = createVariants<ButtonVariant>((theme) => ({
+  primary: blowVariantStyles(
+    theme.buttons.primary.high.rest,
+    theme.buttons.primary.high.dim,
+  ),
+  secondary: blowVariantStyles(
+    theme.buttons.primary.medium.rest,
+    theme.buttons.primary.medium.outlineHover,
+  ),
+  tertiary: blowVariantStyles(
+    theme.buttons.secondary.low.borderRest,
+    theme.buttons.secondary.low.hover,
+  ),
+  danger: blowVariantStyles(
+    theme.buttons.secondary.danger.onRest,
+    theme.buttons.secondary.danger.hover,
+  ),
+  emphasis: blowVariantStyles(
+    theme.buttons.secondary.emphasis.onRest,
+    theme.buttons.secondary.emphasis.hover,
+  ),
+  accent: blowVariantStyles(
+    theme.buttons.secondary.accent.onRest,
+    theme.buttons.secondary.accent.hover,
+  ),
+  success: blowVariantStyles(
+    theme.accents.success.onEmphasis,
+    theme.accents.success.emphasis,
+  ),
+  muted: blowVariantStyles(
+    theme.buttons.secondary.low.borderRest,
+    theme.buttons.outlineDark.rest,
+  ),
+  transparent: css``,
+  sliderTabActive: css``,
+  sliderTabInactive: css``,
+  restSubtle: css``,
+}))
+
 const sizes = createVariants<ButtonSize>((theme) => ({
   small: css`
     line-height: 1.2;
@@ -306,13 +352,20 @@ const sizes = createVariants<ButtonSize>((theme) => ({
 
 export const SButton = styled(Box, {
   shouldForwardProp: (prop) =>
-    !["variant", "size", "outline", "blur"].includes(prop),
+    !["variant", "size", "outline", "blur", "glow"].includes(prop),
 })<SButtonProps>(
   defaulStyles,
-  ({ variant = "primary", size = "small", outline = false, blur = false }) => [
+  ({
+    variant = "primary",
+    size = "small",
+    outline = false,
+    blur = false,
+    glow = false,
+  }) => [
     sizes(size),
     outline ? outlineVariants(variant) : variants(variant),
     blur ? blurStyles : undefined,
+    glow ? glowVariants(variant) : undefined,
   ],
   disabledStyles,
 )
