@@ -62,6 +62,7 @@ export const LINKS = {
   // memepad: "/memepad",
   strategies: "/strategies",
   strategiesBil: "/strategies/bil-vault",
+  strategiesPropeller: "/strategies/propeller",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -133,6 +134,11 @@ export const NAVIGATION: NavigationItem[] = [
     icon: CoinsIcon,
     children: [
       { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
+      {
+        key: "strategiesPropeller",
+        to: LINKS.strategiesPropeller,
+        icon: GoalIcon,
+      },
       {
         key: "strategiesHollarBonds",
         to: LINKS.strategiesHollarBonds,
@@ -357,6 +363,10 @@ export const getMenuTranslations = (t: TFunction) =>
     strategiesBil: {
       title: t("navigation.strategiesBil.title"),
       description: t("navigation.strategiesBil.description"),
+    },
+    strategiesPropeller: {
+      title: t("navigation.strategiesPropeller.title"),
+      description: t("navigation.strategiesPropeller.description"),
     },
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
