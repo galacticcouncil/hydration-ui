@@ -33,6 +33,7 @@ import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   bilEnabled: boolean
+  propellerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -167,6 +168,7 @@ const getProviderData = async (
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,
+      propellerEnabled: true,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
