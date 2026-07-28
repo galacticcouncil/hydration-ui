@@ -57,11 +57,6 @@ export const DCL_PRECOMPILE_ADDRESS: Hex =
 export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
 
 // First block at which the node0.lark vault proxy emitted a log. Used as
-// `fromBlock` for getLogs queries — public RPCs reject scans from genesis.
-// Update on every fresh lark deploy.
-//   node0.lark deploy: vault + adapter around block 6956.
-export const VAULT_DEPLOY_BLOCK = 6900n
-
 export const EVM_CALL_GAS = 2_000_000n
 
 // ────────────────────────────────────────────────────────────────────────

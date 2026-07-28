@@ -17,10 +17,7 @@ import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   type WithdrawalColumnHandlers,
   type WithdrawalRow,
-  type WithdrawalRowState,
 } from "./Withdrawals.columns"
-
-const isActive = (s: WithdrawalRowState) => s === "pending" || s === "partial"
 
 type Props = {
   row: WithdrawalRow
@@ -40,23 +37,12 @@ export const WithdrawalRowMobile = ({
   const { bil, hollar } = useBilStrategy()
 
   const claimable = row.claimableBil ?? 0
-  const stillActive = isActive(row.state)
-  const showActions = stillActive || claimable > 0
 
   const timeRemainingValue = (() => {
     if (claimable > 0) {
       return (
         <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
           {t("bil.withdrawals.state.claimable")}
-        </Text>
-      )
-    }
-    if (row.state === "fulfilled" || row.state === "cancelled") {
-      return (
-        <Text fs="p4" color={getToken("text.medium")}>
-          {row.state === "fulfilled"
-            ? t("bil.withdrawals.state.redeemed")
-            : t("bil.withdrawals.state.cancelled")}
         </Text>
       )
     }
@@ -83,26 +69,22 @@ export const WithdrawalRowMobile = ({
           {t("common:claim")}
         </Button>
       )}
-      {stillActive && (
-        <>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => onInstantRedeem(row.id, row.amountBil)}
-            disabled={isInstantRedeeming || isCancelling}
-          >
-            {t("bil.withdrawals.action.instant")}
-          </Button>
-          <Button
-            variant="tertiary"
-            size="small"
-            onClick={() => onCancel(row.id)}
-            disabled={isCancelling}
-          >
-            {t("common:cancel")}
-          </Button>
-        </>
-      )}
+      <Button
+        variant="secondary"
+        size="small"
+        onClick={() => onInstantRedeem(row.id, row.amountBil)}
+        disabled={isInstantRedeeming || isCancelling}
+      >
+        {t("bil.withdrawals.action.instant")}
+      </Button>
+      <Button
+        variant="tertiary"
+        size="small"
+        onClick={() => onCancel(row.id)}
+        disabled={isCancelling}
+      >
+        {t("common:cancel")}
+      </Button>
     </>
   )
 
@@ -118,7 +100,7 @@ export const WithdrawalRowMobile = ({
             })}
           </Text>
         </Flex>
-        {showActions && !isMobile && (
+        {!isMobile && (
           <Flex align="center" justify="flex-end" gap="base" wrap>
             {actions}
           </Flex>
@@ -153,7 +135,7 @@ export const WithdrawalRowMobile = ({
           />
         </Flex>
       </Flex>
-      {showActions && isMobile && (
+      {isMobile && (
         <Flex gap="base" mt="l">
           {actions}
         </Flex>

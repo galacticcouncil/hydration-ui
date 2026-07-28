@@ -31,11 +31,6 @@ export const bilQueryKeys = {
     "vault-queue",
     evmAddress,
   ],
-  vaultHistory: (evmAddress: Hex | undefined) => [
-    BIL_QUERY_KEY_PREFIX,
-    "vault-history",
-    evmAddress,
-  ],
   poolPosition: (evmAddress: Hex | undefined) => [
     BIL_QUERY_KEY_PREFIX,
     "pool-position",

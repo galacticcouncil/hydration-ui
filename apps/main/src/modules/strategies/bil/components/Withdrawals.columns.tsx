@@ -9,17 +9,10 @@ import { useTranslation } from "react-i18next"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 
-export type WithdrawalRowState =
-  | "pending"
-  | "partial"
-  | "fulfilled"
-  | "cancelled"
-
 export interface WithdrawalRow {
   id: number
   amountBil: number
   estHollar: number
-  state: WithdrawalRowState
   timeRemainingDays?: number
   /** Shares already queue-side-settled and ready for the user to claim. */
   claimableBil?: number
@@ -28,8 +21,6 @@ export interface WithdrawalRow {
 }
 
 const columnHelper = createColumnHelper<WithdrawalRow>()
-
-const isActive = (s: WithdrawalRowState) => s === "pending" || s === "partial"
 
 export type WithdrawalColumnHandlers = {
   /** Cancel an active queued redemption (auto-resupplies as aBIL). */
@@ -105,15 +96,6 @@ export const useWithdrawalColumns = ({
             </Text>
           )
         }
-        if (r.state === "fulfilled" || r.state === "cancelled") {
-          return (
-            <Text fs="p4" color={getToken("text.medium")}>
-              {r.state === "fulfilled"
-                ? t("bil.withdrawals.state.redeemed")
-                : t("bil.withdrawals.state.cancelled")}
-            </Text>
-          )
-        }
         const days = r.timeRemainingDays ?? 0
         return (
           <Text fs="p4" fw={600} color={getToken("accents.alert.primary")}>
@@ -132,8 +114,6 @@ export const useWithdrawalColumns = ({
       cell: ({ row }) => {
         const r = row.original
         const claimable = r.claimableBil ?? 0
-        const stillActive = isActive(r.state)
-        if (!stillActive && claimable <= 0) return null
         return (
           <Flex justify="flex-end" align="center" gap="base">
             {claimable > 0 && (
@@ -149,32 +129,28 @@ export const useWithdrawalColumns = ({
                 {t("common:claim")}
               </Button>
             )}
-            {stillActive && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onInstantRedeem(r.id, r.amountBil)
-                  }}
-                  disabled={isInstantRedeeming || isCancelling}
-                >
-                  {t("bil.withdrawals.action.instant")}
-                </Button>
-                <Button
-                  variant="tertiary"
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onCancel(r.id)
-                  }}
-                  disabled={isCancelling}
-                >
-                  {t("common:cancel")}
-                </Button>
-              </>
-            )}
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                onInstantRedeem(r.id, r.amountBil)
+              }}
+              disabled={isInstantRedeeming || isCancelling}
+            >
+              {t("bil.withdrawals.action.instant")}
+            </Button>
+            <Button
+              variant="tertiary"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                onCancel(r.id)
+              }}
+              disabled={isCancelling}
+            >
+              {t("common:cancel")}
+            </Button>
           </Flex>
         )
       },

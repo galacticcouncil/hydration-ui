@@ -52,15 +52,11 @@
   "bil.borrows.unit": "HOLLAR",
 
   "bil.withdrawals.title": "Withdrawals",
-  "bil.withdrawals.showRedeemed": "Show Redeemed",
   "bil.withdrawals.autoClaim": "Auto-claim",
   "bil.withdrawals.autoClaim.tooltip": "Automatically claims HOLLAR when your withdrawal is ready.",
   "bil.withdrawals.col.estValue": "Est. Value",
   "bil.withdrawals.col.timeRemaining": "Time remaining",
-  "bil.withdrawals.empty.all": "No withdrawals yet",
   "bil.withdrawals.empty.pending": "No pending withdrawals",
-  "bil.withdrawals.state.redeemed": "Redeemed",
-  "bil.withdrawals.state.cancelled": "Cancelled",
   "bil.withdrawals.state.claimable": "Claim ready",
   "bil.withdrawals.action.instant": "Instant redeem",
 
