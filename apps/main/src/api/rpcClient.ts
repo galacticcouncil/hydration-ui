@@ -24,6 +24,7 @@ export type PapiNext = TypedApi<typeof hydrationNext>
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   bilEnabled: boolean
+  propellerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -112,6 +113,7 @@ const getProviderData = async (
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,
+      propellerEnabled: true,
     },
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }
