@@ -46,7 +46,6 @@ const defaultData: TProviderContext = {
     hollarBondsEnabled: true,
     gigaStakingEnabled: false,
     bilEnabled: false,
-    propellerEnabled: import.meta.env.DEV,
   },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,

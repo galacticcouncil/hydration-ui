@@ -29,7 +29,6 @@ export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   gigaStakingEnabled: boolean
   bilEnabled: boolean
-  propellerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -151,7 +150,6 @@ const getProviderData = async (
       hollarBondsEnabled: !!hollarBond,
       gigaStakingEnabled,
       bilEnabled: !!bilPoolCode && bilPoolCode !== "0x",
-      propellerEnabled: import.meta.env.DEV,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),

@@ -15,7 +15,6 @@ import {
   StrategyBadge,
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 
 export type StrategyCardProps = {
   logoId: string
@@ -42,11 +41,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          {logoId === "propeller" ? (
-            <PropellerLogo size="extra-large" />
-          ) : (
-            <AssetLogo id={logoId} size="extra-large" />
-          )}
+          <AssetLogo id={logoId} size="extra-large" />
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (
