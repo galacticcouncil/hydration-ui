@@ -246,14 +246,19 @@ export const PlatformTotalDocument = `
     query PlatformTotal {
   platformTotalTvl {
     nodes {
+      mmSupplyTvlNorm
       omnipoolTvlNorm
       stablepoolsTvlNorm
+      totalTvlDecoratedNorm
+      xykpoolsTvlNorm
     }
   }
   platformTotalVolumesByPeriod(filter: {period: _24H_}) {
     nodes {
       omnipoolVolNorm
       stableswapVolNorm
+      totalVolNorm
+      xykpoolVolNorm
     }
   }
 }

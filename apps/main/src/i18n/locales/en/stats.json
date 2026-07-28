@@ -5,6 +5,7 @@
     "overview.header.transactions": "Transactions (24h)",
     "overview.header.protocolRevenue": "Protocol Revenue (24h)",
     "fees.title": "Fees & Revenue",
+    "treasury.title": "Treasury",
     "fees.config.asset": "Asset Fee",
     "fees.config.protocol": "Protocol Fee",
     "fees.config.liquidationPenalty": "Liquidation Penalty",
