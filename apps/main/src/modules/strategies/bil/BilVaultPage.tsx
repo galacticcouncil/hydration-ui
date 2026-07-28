@@ -195,7 +195,7 @@ const BilVaultContent = () => {
             />
           )}
 
-          {isConnected && (
+          {isConnected && withdrawalRows.length > 0 && (
             <WithdrawalsCard
               rows={withdrawalRows}
               onCancel={(id) => cancelMutation.mutate(id)}
