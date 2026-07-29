@@ -18,60 +18,23 @@ import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, NATIVE_ASSET_ID, STALE_TIME } from "@/utils/consts"
 import { numerically, sortBy } from "@/utils/sort"
 
-const STATS_SQUID_URL = "https://orca-prod-pool-01.orca.hydration.cloud/graphql"
+// const DEFILLAMA_HYDRATION_TVL = "defillama/api/v2/historicalChainTvl/HydraDX"
+// const DEFILLAMA_HYDRATION_DEX_VOLUME =
+//   "defillama/api/summary/dexs/hydration-dex?dataType=dailyVolume"
+
 const DEFILLAMA_HYDRATION_TVL_URL =
   "https://api.llama.fi/v2/historicalChainTvl/HydraDX"
 const DEFILLAMA_HYDRATION_DEX_VOLUME_URL =
   "https://api.llama.fi/summary/dexs/hydration-dex?dataType=dailyVolume"
 
-export type OmnipoolAssetTVL = {
-  assetId: string
-  tvlInRefAssetNorm: string | null
-  freeBalance: string
-  paraBlockHeight: number
-}
-
-export type XYKPool = {
-  id: string
-  assetAId: string
-  assetBId: string
-  assetABalance: string
-  assetBBalance: string
-  tvlInRefAssetNorm: string | null
-}
-
-export type StatsHistoryPoint = {
+type StatsHistoryPoint = {
   timestamp: number
   value: number
 }
 
-export type PlatformVolumeHistoryBucket = {
+type PlatformVolumeHistoryBucket = {
   durationMs: number
   period: "_1H_" | "_12H_" | "_24H_"
-}
-
-const fetchStatsGraphQL = async <T>(
-  query: string,
-  variables?: Record<string, unknown>,
-  url = STATS_SQUID_URL,
-): Promise<T> => {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
-  })
-
-  if (!response.ok) {
-    throw new Error(`Stats API error: ${response.statusText}`)
-  }
-
-  const { data, errors } = await response.json()
-
-  if (errors?.length) {
-    throw new Error(`GraphQL error: ${errors[0].message}`)
-  }
-
-  return data
 }
 
 const defillamaTvlHistorySchema = z.array(
@@ -85,10 +48,11 @@ const defillamaDexVolumeHistorySchema = z.object({
   totalDataChart: z.array(z.tuple([z.number(), z.number()])),
 })
 
-const fetchDefillamaHydrationTvlHistory = async (): Promise<
-  StatsHistoryPoint[]
-> => {
-  const response = await fetch(DEFILLAMA_HYDRATION_TVL_URL)
+const fetchDefillamaHydrationTvlHistory = async (
+  indexerUrl: string,
+): Promise<StatsHistoryPoint[]> => {
+  console.log(indexerUrl)
+  const response = await fetch(DEFILLAMA_HYDRATION_TVL_URL) //await fetch(`${indexerUrl}/${DEFILLAMA_HYDRATION_TVL}`)
 
   if (!response.ok) {
     throw new Error(`DeFiLlama TVL API error: ${response.statusText}`)
@@ -102,18 +66,23 @@ const fetchDefillamaHydrationTvlHistory = async (): Promise<
   }))
 }
 
-export const defillamaHydrationTvlHistoryQuery = () =>
+const defillamaHydrationTvlHistoryQuery = (indexerUrl: string) =>
   queryOptions({
     queryKey: ["stats", "defillamaHydrationTvlHistory"],
-    queryFn: fetchDefillamaHydrationTvlHistory,
+    queryFn: () => fetchDefillamaHydrationTvlHistory(indexerUrl),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
+    enabled: !!indexerUrl,
   })
 
-const fetchDefillamaHydrationDexVolumeHistory = async (): Promise<
-  StatsHistoryPoint[]
-> => {
-  const response = await fetch(DEFILLAMA_HYDRATION_DEX_VOLUME_URL)
+const fetchDefillamaHydrationDexVolumeHistory = async (
+  indexerUrl: string,
+): Promise<StatsHistoryPoint[]> => {
+  console.log(indexerUrl)
+
+  const response = await fetch(
+    DEFILLAMA_HYDRATION_DEX_VOLUME_URL, //`${indexerUrl}/${DEFILLAMA_HYDRATION_DEX_VOLUME}`,
+  )
 
   if (!response.ok) {
     throw new Error(`DeFiLlama Volume API error: ${response.statusText}`)
@@ -144,110 +113,37 @@ const getCompletedUtcRanges = (days: number, durationMs: number) => {
   })
 }
 
-const VOLUME_QUERY_CHUNK_SIZE = 30
-
-const buildPlatformVolumeHistoryQuery = (
-  ranges: Array<{ start: number; end: number }>,
-  bucket: PlatformVolumeHistoryBucket,
-) => {
-  const fields = ranges
-    .map(
-      ({ start, end }, index) => `
-        d${index}: platformTotalVolumesByPeriod(
-          filter: {
-            startIsoString: "${new Date(start).toISOString()}"
-            endIsoString: "${new Date(end).toISOString()}"
-            period: ${bucket.period}
-          }
-        ) {
-          nodes {
-            totalVolNorm
-          }
-        }
-      `,
-    )
-    .join("\n")
-
-  return `query PlatformDailyVolumeHistory { ${fields} }`
-}
-
-type PlatformDailyVolumeResponse = Record<
-  string,
-  { nodes: Array<{ totalVolNorm: string } | null> }
->
-
 const fetchPlatformDailyVolumeHistory = async (
-  squidUrl: string,
+  indexerUrl: string,
   days: number,
   bucket: PlatformVolumeHistoryBucket,
 ): Promise<StatsHistoryPoint[]> => {
   const ranges = getCompletedUtcRanges(days, bucket.durationMs)
-  const fetchFromUrl = (url: string) =>
-    Promise.all(
-      Array.from(
-        { length: Math.ceil(ranges.length / VOLUME_QUERY_CHUNK_SIZE) },
-        (_, chunkIndex) => {
-          const chunkStart = chunkIndex * VOLUME_QUERY_CHUNK_SIZE
-          const chunkRanges = ranges.slice(
-            chunkStart,
-            chunkStart + VOLUME_QUERY_CHUNK_SIZE,
-          )
-          const query = buildPlatformVolumeHistoryQuery(chunkRanges, bucket)
 
-          return fetchStatsGraphQL<PlatformDailyVolumeResponse>(
-            query,
-            undefined,
-            url,
-          ).then((data) =>
-            chunkRanges.map(({ start }, index) => ({
-              timestamp: start,
-              value: Number(
-                data[`d${index}`]?.nodes.find(Boolean)?.totalVolNorm ?? 0,
-              ),
-            })),
-          )
-        },
-      ),
-    ).then((chunks) => chunks.flat())
-
-  try {
-    const data =
-      squidUrl === STATS_SQUID_URL
-        ? await fetchFromUrl(squidUrl)
-        : await fetchFromUrl(squidUrl).catch(() =>
-            fetchFromUrl(STATS_SQUID_URL),
-          )
-
-    if (data.some((point) => point.value > 0)) return data
-  } catch {
-    // Fall back below. DeFiLlama's DEX volume mirrors Hydration daily volume
-    // closely enough for the temporary stats overview chart.
-  }
-
-  const fallback = await fetchDefillamaHydrationDexVolumeHistory()
+  const volume = await fetchDefillamaHydrationDexVolumeHistory(indexerUrl)
   const minTimestamp = ranges[0]?.start ?? 0
 
-  return fallback.filter((point) => point.timestamp >= minTimestamp)
+  return volume.filter((point) => point.timestamp >= minTimestamp)
 }
 
-export const platformDailyVolumeHistoryQuery = (
-  squidUrl: string,
+const platformDailyVolumeHistoryQuery = (
+  indexerUrl: string,
   days: number,
   bucket: PlatformVolumeHistoryBucket,
 ) =>
   queryOptions({
-    queryKey: ["stats", "platformDailyVolumeHistory", squidUrl, days, bucket],
-    queryFn: () => fetchPlatformDailyVolumeHistory(squidUrl, days, bucket),
+    queryKey: ["stats", "platformDailyVolumeHistory", days, bucket],
+    queryFn: () => fetchPlatformDailyVolumeHistory(indexerUrl, days, bucket),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
-    enabled: !!squidUrl && days > 0,
+    enabled: !!indexerUrl && days > 0,
   })
 
 export type MultiMetricChartPoint = {
   timestamp: number
   tvl: number | null
   volumeBar: number | null
-  volumeBarScaled: number | null
+  volume: number | null
   hdx: number | null
 }
 
@@ -424,43 +320,6 @@ const fetchHdxPriceChartData = async (
   )
 }
 
-const distributeVolumeBars = (
-  points: MultiMetricChartPoint[],
-  volumeScale: number,
-) => {
-  const volumeIndexes = points.reduce<number[]>((acc, point, index) => {
-    if (point.volumeBar !== null) acc.push(index)
-    return acc
-  }, [])
-
-  if (!volumeIndexes.length) return points
-
-  const nextPoints: MultiMetricChartPoint[] = points.map((point) => ({
-    ...point,
-    volumeBar: null,
-    volumeBarScaled: null,
-  }))
-
-  volumeIndexes.forEach((volumeIndex, index) => {
-    const volume = points[volumeIndex]?.volumeBar ?? null
-    if (volume === null) return
-
-    const nextVolumeIndex = volumeIndexes[index + 1] ?? points.length
-    const bucketPointCount = Math.max(nextVolumeIndex - volumeIndex, 1)
-    const barValue = volume / bucketPointCount
-
-    for (let i = volumeIndex; i < nextVolumeIndex; i++) {
-      const point = nextPoints[i]
-      if (point) {
-        point.volumeBar = barValue
-        point.volumeBarScaled = barValue * volumeScale
-      }
-    }
-  })
-
-  return nextPoints
-}
-
 const generateMultiMetricData = (
   tvlHistory: StatsHistoryPoint[],
   volumeHistory: StatsHistoryPoint[],
@@ -477,7 +336,7 @@ const generateMultiMetricData = (
       timestamp,
       tvl: null,
       volumeBar: null,
-      volumeBarScaled: null,
+      volume: null,
       hdx: null,
     }
 
@@ -490,7 +349,9 @@ const generateMultiMetricData = (
   })
 
   volumeHistory.forEach(({ timestamp, value }) => {
-    getPoint(timestamp).volumeBar = value
+    const point = getPoint(timestamp)
+    point.volumeBar = value
+    point.volume = value * volumeScale
   })
 
   hdxPrices.forEach(({ timestamp, price }) => {
@@ -506,23 +367,22 @@ const generateMultiMetricData = (
 
   let latestTvl: number | null = null
 
-  const filledPoints = sortedPoints.map((point) => {
-    latestTvl = point.tvl ?? latestTvl
+  return sortedPoints.map((point) => {
+    const tvl = point.tvl ?? latestTvl
+    latestTvl = tvl
 
     return {
       ...point,
-      tvl: point.tvl ?? latestTvl,
+      tvl,
     }
   })
-
-  return distributeVolumeBars(filledPoints, volumeScale)
 }
 
 export const multiMetricChartDataQuery = (
   queryClient: QueryClient,
   rpc: TProviderContext,
   squidClient: SquidSdk,
-  squidUrl: string,
+  indexerUrl: string,
   displayAssetId: string,
   timeRange: OverviewChartTimeRange,
 ) => {
@@ -534,19 +394,19 @@ export const multiMetricChartDataQuery = (
     queryKey: ["stats", "multiMetricChartData", timeRange],
     queryFn: async () => {
       const [tvlHistory, volumeHistory, hdxPrices] = await Promise.all([
-        queryClient.ensureQueryData(defillamaHydrationTvlHistoryQuery()),
         queryClient.ensureQueryData(
-          platformDailyVolumeHistoryQuery(squidUrl, rangeDays, volumeBucket),
+          defillamaHydrationTvlHistoryQuery(indexerUrl),
         ),
-        displayAssetId
-          ? fetchHdxPriceChartData(
-              queryClient,
-              rpc,
-              squidClient,
-              displayAssetId,
-              timeRange,
-            )
-          : Promise.resolve([]),
+        queryClient.ensureQueryData(
+          platformDailyVolumeHistoryQuery(indexerUrl, rangeDays, volumeBucket),
+        ),
+        fetchHdxPriceChartData(
+          queryClient,
+          rpc,
+          squidClient,
+          displayAssetId,
+          timeRange,
+        ),
       ])
 
       const chartData = generateMultiMetricData(
@@ -563,106 +423,8 @@ export const multiMetricChartDataQuery = (
     },
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
-    enabled: !!squidUrl && rpc.isApiLoaded,
+    enabled: rpc.isApiLoaded && !!displayAssetId,
   })
-}
-
-const OMNIPOOL_TVL_QUERY = `
-  query OmnipoolTVL($first: Int!) {
-    omnipoolAssetHistoricalData(first: $first, orderBy: PARA_BLOCK_HEIGHT_DESC) {
-      nodes {
-        assetId
-        tvlInRefAssetNorm
-        freeBalance
-        paraBlockHeight
-      }
-    }
-  }
-`
-
-const fetchOmnipoolTVL = async (limit = 100): Promise<OmnipoolAssetTVL[]> => {
-  const data = await fetchStatsGraphQL<{
-    omnipoolAssetHistoricalData: { nodes: OmnipoolAssetTVL[] }
-  }>(OMNIPOOL_TVL_QUERY, { first: limit })
-
-  return data.omnipoolAssetHistoricalData.nodes
-}
-
-export const omnipoolTVLQuery = (limit = 100) =>
-  queryOptions({
-    queryKey: ["stats", "omnipoolTVL", limit],
-    queryFn: () => fetchOmnipoolTVL(limit),
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
-  })
-
-export const useOmnipoolTVL = (limit = 100) => {
-  return useQuery(omnipoolTVLQuery(limit))
-}
-
-const XYK_POOLS_QUERY = `
-  query XYKPools($first: Int!) {
-    xykpools(first: $first) {
-      nodes {
-        id
-        assetAId
-        assetBId
-        assetABalance
-        assetBBalance
-        tvlInRefAssetNorm
-      }
-    }
-  }
-`
-
-const fetchXYKPools = async (limit = 50): Promise<XYKPool[]> => {
-  const data = await fetchStatsGraphQL<{
-    xykpools: { nodes: XYKPool[] }
-  }>(XYK_POOLS_QUERY, { first: limit })
-
-  return data.xykpools.nodes
-}
-
-export const xykPoolsQuery = (limit = 50) =>
-  queryOptions({
-    queryKey: ["stats", "xykPools", limit],
-    queryFn: () => fetchXYKPools(limit),
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
-  })
-
-export const useXYKPools = (limit = 50) => {
-  return useQuery(xykPoolsQuery(limit))
-}
-
-export const calculateTotalTVL = (assets: OmnipoolAssetTVL[]): number => {
-  const latestByAsset = new Map<string, OmnipoolAssetTVL>()
-
-  for (const asset of assets) {
-    const existing = latestByAsset.get(asset.assetId)
-    if (!existing || asset.paraBlockHeight > existing.paraBlockHeight) {
-      latestByAsset.set(asset.assetId, asset)
-    }
-  }
-
-  return Array.from(latestByAsset.values()).reduce((sum, asset) => {
-    const tvl = parseFloat(asset.tvlInRefAssetNorm || "0")
-    return sum + tvl
-  }, 0)
-}
-
-//TODO: REMOVE THIS SHIT
-export const formatUSD = (value: number): string => {
-  if (value >= 1_000_000_000) {
-    return `$${(value / 1_000_000_000).toFixed(2)}B`
-  }
-  if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(2)}M`
-  }
-  if (value >= 1_000) {
-    return `$${(value / 1_000).toFixed(2)}K`
-  }
-  return `$${value.toFixed(2)}`
 }
 
 enum ProductType {
@@ -684,7 +446,6 @@ enum StreamType {
 enum FeeDestination {
   Protocol = "protocol",
   Total = "total",
-  LP = "lp",
 }
 
 const FEES_CHARTS_API_URL =
@@ -758,9 +519,7 @@ export const VIEW_MODES = ["protocol", "total"] as const
 export type TimeRange = (typeof TIME_RANGES)[number]
 export type ViewMode = (typeof VIEW_MODES)[number]
 
-export enum BucketSize {
-  OneHour = "1hour",
-  SixHour = "6hour",
+enum BucketSize {
   TwentyFourHour = "24hour",
   SevenDay = "7day",
   ThirtyDay = "30day",

@@ -1,18 +1,23 @@
 import {
+  Box,
   Flex,
   RechartsTooltipProps,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { metricsConfig } from "@/modules/stats/overview/components/MultiMetricChart.utils"
-import { SChartTooltipContainer } from "@/modules/stats/overview/components/StatsCHartTooltip.styled"
+import { MultiMetricChartPoint } from "@/api/stats"
+import {
+  MetricKey,
+  metricsConfig,
+} from "@/modules/stats/overview/components/MultiMetricChart.utils"
+import { SChartTooltipContainer } from "@/modules/stats/overview/components/StatsChartTooltip.styled"
 
 export const chartTooltipProps = {
   isAnimationActive: false,
   offset: 14,
-  allowEscapeViewBox: { x: true, y: true },
+  allowEscapeViewBox: { x: false, y: false },
   wrapperStyle: {
     transition: "none",
     pointerEvents: "none" as const,
@@ -24,9 +29,13 @@ export type TooltipPayloadItem = {
   name: string
   value: number | null
   color: string
-  dataKey: string
-  payload?: unknown
+  dataKey: MetricKey
+  payload: MultiMetricChartPoint
   assetId?: string
+}
+
+type ChartTooltipContentProps = Omit<RechartsTooltipProps, "payload"> & {
+  payload?: TooltipPayloadItem[]
 }
 
 export const ChartTooltipContent = ({
@@ -34,9 +43,10 @@ export const ChartTooltipContent = ({
   payload,
 }: RechartsTooltipProps) => {
   const { t } = useTranslation("common")
+  const typedPayload = payload as ChartTooltipContentProps["payload"]
   const content = Array.from(
-    (payload?.filter((entry) => entry.value !== null) ?? [])
-      .reduce<Map<string, NonNullable<typeof payload>[number]>>(
+    (typedPayload?.filter((entry) => entry.value !== null) ?? [])
+      .reduce<Map<string, NonNullable<typeof typedPayload>[number]>>(
         (entries, entry) => {
           const name = String(entry.name)
           if (!entries.has(name)) entries.set(name, entry)
@@ -49,35 +59,31 @@ export const ChartTooltipContent = ({
 
   if (!active || !content?.length) return null
 
-  const timestamp = (content[0]?.payload as { timestamp?: number } | undefined)
-    ?.timestamp
+  const timestamp = content[0]?.payload?.timestamp
 
   return (
     <SChartTooltipContainer data-state="visible">
-      <Text fs={12} fw={500} color="text.high">
+      <Text fs="p6" fw={500} color={getToken("text.high")}>
         {t("date.day", { value: timestamp })}
       </Text>
       {content.map((entry) => {
-        const metric =
-          metricsConfig[entry.dataKey as keyof typeof metricsConfig]
-        const point = entry?.payload as
-          | { volumeBar?: number | null }
-          | undefined
-        const realValue =
-          entry?.dataKey === "volumeBarScaled"
-            ? (point?.volumeBar ?? entry.value)
-            : entry.value
+        const dataKey = entry.dataKey
+        const isVolume = dataKey === "volume"
+        const isPrice = dataKey === "hdx"
+        const metric = metricsConfig[dataKey]
+        const point = entry.payload
+
+        const realValue = isVolume
+          ? (point?.volumeBar ?? entry.value)
+          : entry.value
 
         return (
-          <Flex key={entry.dataKey} gap="s" align="center">
-            <div
-              style={{
-                width: 8,
-                height: 8,
-                backgroundColor: getToken(metric?.color),
-                borderRadius: 2,
-                flexShrink: 0,
-              }}
+          <Flex key={dataKey} gap="s" align="center">
+            <Box
+              width={8}
+              height={8}
+              borderRadius="m"
+              bg={getToken(metric?.color)}
             />
             <Flex
               justify="space-between"
@@ -85,15 +91,22 @@ export const ChartTooltipContent = ({
               sx={{ flex: 1, minWidth: 100 }}
             >
               <Text
-                fs={10}
-                fw={500}
-                color="text.medium"
-                css={{ textTransform: "uppercase", letterSpacing: "0.02em" }}
+                fs={pxToRem(10)}
+                fw={400}
+                color={getToken("text.high")}
+                transform="uppercase"
               >
                 {metric?.label}
               </Text>
-              <Text fs={12} fw={500} color="text.high">
-                {realValue}
+              <Text fs="p5" fw={500} color={getToken("text.high")}>
+                {isPrice
+                  ? t("currency", {
+                      value: realValue,
+                      maximumFractionDigits: 4,
+                    })
+                  : t("currency.compact", {
+                      value: realValue,
+                    })}
               </Text>
             </Flex>
           </Flex>

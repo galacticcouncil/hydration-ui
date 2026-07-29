@@ -1,3 +1,4 @@
+import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import {
   Separator,
   Stack,
@@ -5,19 +6,31 @@ import {
   ValueStatsBottomValue,
 } from "@galacticcouncil/ui/components"
 import { getSpacingValue, getToken } from "@galacticcouncil/ui/utils"
+import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { useAggregatedPlatformStats } from "@/modules/stats/hooks/useAggregatedPlatformStats"
+import { useSquidClient } from "@/api/provider"
+import { useFeesStats } from "@/modules/stats/hooks/useFeesStats"
+import { useHollarStats } from "@/modules/stats/hooks/useHollarStats"
+import { useMoneyMarketStats } from "@/modules/stats/hooks/useMoneyMarketStats"
 import { useNativePriceChange } from "@/modules/stats/hooks/useNativePriceChange"
 
 const REVENUE_LOOKBACK_DAYS = 7
 
 export const OverviewHeader = () => {
+  const squidClient = useSquidClient()
   const { t } = useTranslation(["common", "stats"])
   const { data: priceChangeData, isLoading: isPriceChangeLoading } =
     useNativePriceChange()
-  const { stats: aggregatedStats, isLoading: isStatsLoading } =
-    useAggregatedPlatformStats()
+
+  const { stats: feesStats, isLoading: isFeesLoading } = useFeesStats()
+  const { stats: hollarStats, isLoading: isHollarLoading } = useHollarStats()
+  const { data: platformTotal, isLoading: isPlatformTotalLoading } = useQuery(
+    platformTotalQuery(squidClient),
+  )
+  const { stats: moneyMarketStats, isLoading: isMoneyMarketLoading } =
+    useMoneyMarketStats()
 
   const endDate = new Date()
   endDate.setDate(endDate.getDate() - 1)
@@ -25,36 +38,47 @@ export const OverviewHeader = () => {
   const startDate = new Date(endDate)
   startDate.setDate(startDate.getDate() - REVENUE_LOOKBACK_DAYS)
 
-  const tooltip = t("stats:overview.header.protocolAnnualised.tooltip", {
-    from: startDate,
-    to: endDate,
-  })
+  const { borrowTvl } = moneyMarketStats
+
+  const tradingTvl = platformTotal
+    ? Big(platformTotal.omnipoolTvlNorm ?? 0)
+        .plus(platformTotal.stablepoolsTvlNorm ?? 0)
+        .plus(platformTotal.xykpoolsTvlNorm ?? 0)
+        .toString()
+    : undefined
+
+  const totalTvl = tradingTvl
+    ? Big(tradingTvl).plus(borrowTvl).toString()
+    : undefined
+
+  const capitalEfficiency = totalTvl
+    ? Big(totalTvl).div(borrowTvl).mul(100).toString()
+    : undefined
 
   const stats = [
     {
       label: t("stats:overview.header.totalTvl"),
-      value: t("currency.compact", { value: aggregatedStats.totalTvl }),
-      isLoading: isStatsLoading,
+      value: t("currency.compact", { value: totalTvl }),
+      isLoading: isPlatformTotalLoading || isMoneyMarketLoading,
     },
     {
       label: t("stats:overview.header.volume"),
-      value: t("currency.compact", { value: aggregatedStats.totalVolume }),
-      isLoading: isStatsLoading,
+      value: t("currency.compact", { value: platformTotal?.totalVolNorm }),
+      isLoading: isPlatformTotalLoading || isMoneyMarketLoading,
     },
     {
       label: t("stats:overview.header.capitalEfficiency"),
       value: t("percent", {
-        value: aggregatedStats.capitalEfficiency,
+        value: capitalEfficiency ?? "-",
       }),
-      isLoading: isStatsLoading,
+      isLoading: isPlatformTotalLoading || isMoneyMarketLoading,
     },
     {
       label: t("stats:overview.header.protocolAnnualised"),
       value: t("currency.compact", {
-        value: aggregatedStats.protocolRevenue * 365,
+        value: feesStats.protocolRevenue,
       }),
-      tooltip,
-      isLoading: isStatsLoading,
+      isLoading: isFeesLoading,
     },
     {
       label: t("stats:overview.header.hdxPrice"),
@@ -80,8 +104,8 @@ export const OverviewHeader = () => {
     },
     {
       label: t("stats:overview.header.hollarSupply"),
-      value: t("currency.compact", { value: aggregatedStats.hollarSupply }),
-      isLoading: isStatsLoading,
+      value: t("currency.compact", { value: hollarStats.hollarSupply }),
+      isLoading: isHollarLoading,
     },
   ]
 

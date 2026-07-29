@@ -41,3 +41,15 @@ query StablepoolVolume($filter: StableswapVolumeHistoricalDataByPeriodFilter!) {
     }
   }
 }
+
+query PlatformTotalVolumes($period: AggregationTimeRange = _24H_) {
+  platformTotalVolumesByPeriod(filter: { period: $period }) {
+    nodes {
+      omnipoolVolNorm
+      stableswapVolNorm
+      totalVolNorm
+      xykpoolVolNorm
+    }
+  }
+}
+

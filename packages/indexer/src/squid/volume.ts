@@ -79,3 +79,25 @@ export const xykVolumeQuery = (squidSdk: SquidSdk, addresses: string[]) =>
     },
     enabled: !!addresses.length,
   })
+
+export const platformTotalVolumesQuery = (
+  squidSdk: SquidSdk,
+  period: AggregationTimeRange = AggregationTimeRange["24H"],
+) =>
+  queryOptions({
+    queryKey: ["platformTotalVolumes", period],
+    queryFn: async () => {
+      const data = await squidSdk.PlatformTotalVolumes({ period })
+
+      const volumes = data.platformTotalVolumesByPeriod.nodes.find(
+        (node) => node !== null,
+      )
+
+      return {
+        omnipoolVolNorm: volumes?.omnipoolVolNorm,
+        stableswapVolNorm: volumes?.stableswapVolNorm,
+        totalVolNorm: volumes?.totalVolNorm,
+        xykpoolVolNorm: volumes?.xykpoolVolNorm,
+      }
+    },
+  })

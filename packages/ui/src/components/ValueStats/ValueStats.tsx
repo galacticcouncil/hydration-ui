@@ -35,6 +35,7 @@ type ValueStatsProps = {
   readonly isLoading?: boolean
   readonly className?: string
   readonly containerClassName?: string
+  readonly skeletonWidth?: number
 }
 
 export const ValueStats: FC<ValueStatsProps> = ({
@@ -52,6 +53,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   isLoading,
   className,
   containerClassName,
+  skeletonWidth = 120,
 }) => {
   const shouldWrap = useResponsiveValue(wrap, false)
 
@@ -59,7 +61,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
     if (isLoading && (bottomLabel || customBottomLabel)) {
       return (
         <SValueStatsBottomValue isFloating={floatingBottomLabel}>
-          <Skeleton width={120} height="100%" />
+          <Skeleton width={skeletonWidth} height="100%" />
         </SValueStatsBottomValue>
       )
     }
@@ -96,7 +98,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
       <SValueStatsValueContainer size={size} className={containerClassName}>
         {isLoading ? (
           <SValueStatsValue font={font} size={size}>
-            <Skeleton width={120} height="100%" />
+            <Skeleton width={skeletonWidth} height="100%" />
           </SValueStatsValue>
         ) : (
           (customValue ?? (
