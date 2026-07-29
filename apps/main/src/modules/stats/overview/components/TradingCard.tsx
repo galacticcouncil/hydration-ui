@@ -3,12 +3,12 @@ import {
   platformTotalQuery,
   platformTotalVolumesQuery,
 } from "@galacticcouncil/indexer/squid"
+import iconTrading from "@galacticcouncil/ui/assets/images/StatsTrading.webp"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { useSquidClient } from "@/api/provider"
-import iconTrading from "@/assets/icons/icon-trading.png"
 import { ProductCard } from "@/modules/stats/overview/components/ProductCard"
 
 export const TradingCard = () => {

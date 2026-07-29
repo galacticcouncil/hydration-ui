@@ -1,6 +1,6 @@
+import iconMoneyMarket from "@galacticcouncil/ui/assets/images/StatsMoneyMarket.webp"
 import { useTranslation } from "react-i18next"
 
-import iconMoneyMarket from "@/assets/icons/icon-money-market.png"
 import { useMoneyMarketStats } from "@/modules/stats/hooks/useMoneyMarketStats"
 import { ProductCard } from "@/modules/stats/overview/components/ProductCard"
 

@@ -1,7 +1,7 @@
+import iconHollar from "@galacticcouncil/ui/assets/images/StatsHollar.webp"
 import { Flex } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import iconHollar from "@/assets/icons/icon-hollar.png"
 import { useHollarStats } from "@/modules/stats/hooks/useHollarStats"
 import { ProductCard } from "@/modules/stats/overview/components/ProductCard"
 import { SPegDot } from "@/modules/stats/overview/components/ProductCards.styled"

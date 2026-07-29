@@ -1,6 +1,6 @@
+import iconStaking from "@galacticcouncil/ui/assets/images/StatsStaking.webp"
 import { useTranslation } from "react-i18next"
 
-import iconStaking from "@/assets/icons/icon-staking.png"
 import { useStakingStats } from "@/modules/stats/hooks/useStakingStats"
 import { ProductCard } from "@/modules/stats/overview/components/ProductCard"
 
