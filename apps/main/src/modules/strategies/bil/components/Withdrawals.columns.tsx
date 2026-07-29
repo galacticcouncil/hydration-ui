@@ -1,4 +1,4 @@
-import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
+import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -7,6 +7,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { WithdrawalRowActions } from "@/modules/strategies/bil/components/WithdrawalRowActions"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 
 export interface WithdrawalRow {
@@ -14,31 +15,13 @@ export interface WithdrawalRow {
   amountBil: number
   estHollar: number
   timeRemainingDays?: number
-  /** Shares already queue-side-settled and ready for the user to claim. */
   claimableBil?: number
-  /** HOLLAR price-locked at settlement, paid out when the user claims. */
   claimableHollar?: number
 }
 
 const columnHelper = createColumnHelper<WithdrawalRow>()
 
-export type WithdrawalColumnHandlers = {
-  onCancel: (id: number) => void
-  isCancelling: boolean
-  onClaim: (claimableBil: number) => void
-  isClaiming: boolean
-  onInstantRedeem: (id: number, amountBil: number) => void
-  isInstantRedeeming: boolean
-}
-
-export const useWithdrawalColumns = ({
-  onCancel,
-  isCancelling,
-  onClaim,
-  isClaiming,
-  onInstantRedeem,
-  isInstantRedeeming,
-}: WithdrawalColumnHandlers) => {
+export const useWithdrawalColumns = () => {
   const { t } = useTranslation(["strategies", "common"])
   const { isMobile } = useBreakpoints()
 
@@ -103,63 +86,9 @@ export const useWithdrawalColumns = ({
     const actionsColumn = columnHelper.display({
       id: "actions",
       meta: { sx: { textAlign: "right" } },
-      cell: ({ row }) => {
-        const r = row.original
-        const claimable = r.claimableBil ?? 0
-        return (
-          <Flex justify="flex-end" align="center" gap="base">
-            {claimable > 0 && (
-              <Button
-                variant="primary"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onClaim(claimable)
-                }}
-                disabled={isClaiming}
-              >
-                {t("common:claim")}
-              </Button>
-            )}
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation()
-                onInstantRedeem(r.id, r.amountBil)
-              }}
-              disabled={isInstantRedeeming || isCancelling}
-            >
-              {t("bil.withdrawals.action.instant")}
-            </Button>
-            <Button
-              variant="tertiary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation()
-                onCancel(r.id)
-              }}
-              disabled={isCancelling}
-            >
-              {t("common:cancel")}
-            </Button>
-          </Flex>
-        )
-      },
+      cell: ({ row }) => <WithdrawalRowActions row={row.original} />,
     })
 
     return [amountColumn, estValueColumn, timeRemainingColumn, actionsColumn]
-  }, [
-    t,
-    isMobile,
-    bil.id,
-    bil.symbol,
-    hollar.symbol,
-    isCancelling,
-    onCancel,
-    isClaiming,
-    onClaim,
-    onInstantRedeem,
-    isInstantRedeeming,
-  ])
+  }, [t, isMobile, bil.id, bil.symbol, hollar.symbol])
 }

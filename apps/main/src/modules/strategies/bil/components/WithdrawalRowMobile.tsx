@@ -1,5 +1,4 @@
 import {
-  Button,
   Flex,
   Paper,
   Separator,
@@ -12,25 +11,15 @@ import { hoursToMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import {
-  type WithdrawalColumnHandlers,
-  type WithdrawalRow,
-} from "@/modules/strategies/bil/components/Withdrawals.columns"
+import { WithdrawalRowActions } from "@/modules/strategies/bil/components/WithdrawalRowActions"
+import { type WithdrawalRow } from "@/modules/strategies/bil/components/Withdrawals.columns"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 
 type Props = {
-  row: WithdrawalRow
-} & WithdrawalColumnHandlers
+  readonly row: WithdrawalRow
+}
 
-export const WithdrawalRowMobile = ({
-  row,
-  onCancel,
-  isCancelling,
-  onClaim,
-  isClaiming,
-  onInstantRedeem,
-  isInstantRedeeming,
-}: Props) => {
+export const WithdrawalRowMobile = ({ row }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
   const { isMobile } = useBreakpoints()
   const { bil, hollar } = useBilStrategy()
@@ -56,37 +45,6 @@ export const WithdrawalRowMobile = ({
     )
   })()
 
-  const actions = (
-    <>
-      {claimable > 0 && (
-        <Button
-          variant="primary"
-          size="small"
-          onClick={() => onClaim(claimable)}
-          disabled={isClaiming}
-        >
-          {t("common:claim")}
-        </Button>
-      )}
-      <Button
-        variant="secondary"
-        size="small"
-        onClick={() => onInstantRedeem(row.id, row.amountBil)}
-        disabled={isInstantRedeeming || isCancelling}
-      >
-        {t("bil.withdrawals.action.instant")}
-      </Button>
-      <Button
-        variant="tertiary"
-        size="small"
-        onClick={() => onCancel(row.id)}
-        disabled={isCancelling}
-      >
-        {t("common:cancel")}
-      </Button>
-    </>
-  )
-
   return (
     <Paper p="l" shadow={false} bg="dim" borderRadius="l">
       <Flex align="center" justify="space-between" gap="m" wrap>
@@ -99,11 +57,7 @@ export const WithdrawalRowMobile = ({
             })}
           </Text>
         </Flex>
-        {!isMobile && (
-          <Flex align="center" justify="flex-end" gap="base" wrap>
-            {actions}
-          </Flex>
-        )}
+        {!isMobile && <WithdrawalRowActions row={row} />}
       </Flex>
       <Separator my="m" mx="-l" />
       <Flex justify="space-between" gap="l" align="start" wrap>
@@ -136,7 +90,7 @@ export const WithdrawalRowMobile = ({
       </Flex>
       {isMobile && (
         <Flex gap="base" mt="l">
-          {actions}
+          <WithdrawalRowActions row={row} />
         </Flex>
       )}
     </Paper>
