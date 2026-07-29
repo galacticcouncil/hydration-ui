@@ -54,6 +54,8 @@ export const LINKS = {
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
   // memepad: "/memepad",
   strategies: "/strategies",
   strategiesBil: "/strategies/bil-vault",
@@ -352,6 +354,14 @@ export const getMenuTranslations = (t: TFunction) =>
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
       description: t("navigation.strategiesHollarBonds.description"),
+    },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
     },
     // memepad: {
     //   title: t("navigation.memepad.title"),

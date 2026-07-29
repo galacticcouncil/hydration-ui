@@ -21,19 +21,14 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
-import { VAULT_ADDRESS } from "@/modules/strategies/bil/constants"
-import { BilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
+import { VAULT_ADDRESS } from "@/modules/strategies/bil/config/constants"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 
-type StrategyDetailsCardProps = {
-  metrics: BilStrategyMetrics
-}
-
-export const StrategyDetailsCard: React.FC<StrategyDetailsCardProps> = ({
-  metrics,
-}) => {
+export const StrategyDetailsCard = () => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
   const { hollar, bil, bilReserve } = useBilStrategy()
+  const { data: metrics } = useBilStrategyMetrics()
   return (
     <Paper>
       <Box p="l">

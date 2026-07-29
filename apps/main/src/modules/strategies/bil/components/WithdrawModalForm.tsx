@@ -15,59 +15,60 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
   projectRate,
   WithdrawMethodPicker,
 } from "@/modules/strategies/bil/components/WithdrawMethodPicker"
 import { useWithdrawForm } from "@/modules/strategies/bil/components/WithdrawModalForm.form"
-import { BIL_HAS_AAVE_LAYER } from "@/modules/strategies/bil/constants"
-import type {
-  BilPoolPosition,
-  BilReserveConfig,
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import {
+  useBilPoolPosition,
+  useBilReserveConfig,
 } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useInstantQuote } from "@/modules/strategies/bil/hooks/useStableswap"
-import type { VaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
+import {
+  useUserBalances,
+  useVaultStats,
+} from "@/modules/strategies/bil/hooks/useVaultReads"
 import {
   getBilMaxWithdrawable,
   getBilWithdrawHealthFactor,
 } from "@/modules/strategies/bil/utils/hf"
 
 interface Props {
-  vaultStats: VaultStats
-  bilBalance: number
   withdrawSource: "supplied" | "raw"
-  poolPosition: BilPoolPosition | undefined
-  reserveConfig: BilReserveConfig | undefined
   onRequestRedeem: (amount: number) => void
-  onInstantRedeem?: (amount: number) => void
+  onInstantRedeem: (amount: number) => void
   isPending: boolean
 }
 
 export const WithdrawModalForm = ({
-  vaultStats,
-  bilBalance,
   withdrawSource,
-  poolPosition,
-  reserveConfig,
   onRequestRedeem,
   onInstantRedeem,
   isPending,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
+  const evmAddress = useEvmAddress()
+
+  const { data: vaultStats } = useVaultStats()
+  const { data: balances } = useUserBalances(evmAddress)
+  const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const { data: reserveConfig } = useBilReserveConfig()
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
+  const bilBalance = isSuppliedWithdraw
+    ? (balances?.bilSupplied ?? 0)
+    : (balances?.bilRaw ?? 0)
   const hfContextEnabled =
-    isSuppliedWithdraw &&
-    BIL_HAS_AAVE_LAYER &&
-    !!poolPosition &&
-    !!reserveConfig
+    isSuppliedWithdraw && !!poolPosition && !!reserveConfig
 
   const hfContext = hfContextEnabled
     ? {
@@ -111,9 +112,7 @@ export const WithdrawModalForm = ({
   const queueHollarOut = inputNum * projectedQueueRate
   const { quote: instantQuote } = useInstantQuote(inputNum, queueHollarOut)
 
-  const isInstantMethodAvailable = method === "queue" || !!onInstantRedeem
-
-  const canSubmit = formState.isValid && !isPending && isInstantMethodAvailable
+  const canSubmit = formState.isValid && !isPending
 
   const onSubmit = handleSubmit(({ amount, method }) => {
     const isMaxSelected =
@@ -124,7 +123,7 @@ export const WithdrawModalForm = ({
     if (method === "queue") {
       onRequestRedeem(inputNum)
     } else {
-      onInstantRedeem?.(inputNum)
+      onInstantRedeem(inputNum)
     }
   })
 

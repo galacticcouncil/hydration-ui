@@ -3,7 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 
 export const StrategyHeader = () => {
   const { t } = useTranslation("strategies")

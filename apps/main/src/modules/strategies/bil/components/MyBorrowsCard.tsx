@@ -10,35 +10,35 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useEvmAddress } from "@galacticcouncil/web3-connect"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
 import {
   SBorrowPanel,
   SBorrowsContent,
   SBorrowsSeparator,
 } from "@/modules/strategies/bil/components/MyBorrowsCard.styled"
-import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { RepayHollarModal } from "@/modules/strategies/bil/components/RepayHollarModal"
+import {
+  useBilPoolPosition,
+  useBilReserveConfig,
+} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useVaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
 
-interface Props {
-  poolPosition: BilPoolPosition | undefined
-  borrowApyPercent: number
-  /**
-   * Annualised vault APY on the collateral side, in percent. Used together
-   * with `borrowApyPercent` to compute the user's leveraged net APY.
-   */
-  vaultApyPercent: number
-  onBorrow: () => void
-  onRepay: () => void
-}
-
-export const MyBorrowsCard = ({
-  poolPosition,
-  borrowApyPercent,
-  vaultApyPercent,
-  onBorrow,
-  onRepay,
-}: Props) => {
+export const MyBorrowsCard = () => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
+  const [showBorrow, setShowBorrow] = useState(false)
+  const [showRepay, setShowRepay] = useState(false)
+  const evmAddress = useEvmAddress()
+
+  const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const { data: reserveConfig } = useBilReserveConfig()
+  const { data: stats } = useVaultStats()
+
+  const borrowApyPercent = reserveConfig?.borrowApyPct ?? 10
+  const vaultApyPercent = stats.apr
 
   const totalCollateralUsd = poolPosition?.totalCollateralUsd ?? 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
@@ -49,6 +49,10 @@ export const MyBorrowsCard = ({
     healthFactor === Infinity ? "-1" : healthFactor.toString()
   const hasCollateral = !!poolPosition?.hasCollateral
   const hasDebt = totalDebtUsd > 0
+
+  // Hidden while borrowing is disabled so we don't advertise it, but kept
+  // whenever debt exists so repay stays reachable.
+  if (!(reserveConfig?.borrowingEnabled ?? false) && !hasDebt) return null
 
   const totalCreditUsd = totalCollateralUsd * (ltvPct / 100)
   const borrowingPowerUsedPct =
@@ -130,7 +134,11 @@ export const MyBorrowsCard = ({
               })}
             />
             <Box mt="m">
-              <Button variant="secondary" onClick={onRepay} disabled={!hasDebt}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowRepay(true)}
+                disabled={!hasDebt}
+              >
                 {t("borrow:repay")}
               </Button>
             </Box>
@@ -151,7 +159,7 @@ export const MyBorrowsCard = ({
             <Box mt="m">
               <Button
                 variant="primary"
-                onClick={onBorrow}
+                onClick={() => setShowBorrow(true)}
                 disabled={!hasCollateral || availableUsd <= 0}
               >
                 {t("borrow:borrow")}
@@ -160,6 +168,14 @@ export const MyBorrowsCard = ({
           </SBorrowPanel>
         </SBorrowsContent>
       </ResponsiveScope>
+
+      {showBorrow && (
+        <BorrowHollarModal open onClose={() => setShowBorrow(false)} />
+      )}
+
+      {showRepay && (
+        <RepayHollarModal open onClose={() => setShowRepay(false)} />
+      )}
     </Paper>
   )
 }

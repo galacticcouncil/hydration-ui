@@ -9,61 +9,57 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useEvmAddress } from "@galacticcouncil/web3-connect"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+import { WithdrawModal } from "@/modules/strategies/bil/components/WithdrawModal"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import {
+  useUserBalances,
+  useVaultStats,
+} from "@/modules/strategies/bil/hooks/useVaultReads"
+import { useSupplyRawBil } from "@/modules/strategies/bil/hooks/useVaultWrites"
 
 export type PositionRow = {
-  /** Stable id for react-table key + filtering. */
   id: "supplied" | "raw"
   label: string
   amount: number
   usdValue: number
-  /** Net worth (USD), after borrow. For the supplied row only — raw rows
-      report the same as amount × rate (not collateralised, no borrow). */
   netWorthUsd: number
-  /** Your net APY %, including borrow effects. */
   netApyPercent: number
-  /** Whether to show the recovery Deposit button (raw BIL only). */
   isRaw: boolean
 }
 
-interface Props {
-  bilSupplied: number
-  bilRaw: number
-  /** BIL → HOLLAR exchange rate (HOLLAR is $-pegged so this also gives USD). */
-  exchangeRate: number
-  /** Strategy APY %. */
-  apyPercent: number
-  /** Net worth in USD, after deducting outstanding HOLLAR debt. */
-  netWorthUsd: number
-  /**
-   * Minimum balance considered "real" — anything below is treated as dust
-   * and the corresponding row is hidden.
-   */
-  minDisplayBalance: number
-  onWithdraw: (id: PositionRow["id"]) => void
-  onDepositRaw: () => void
-  isDepositingRaw: boolean
-}
-
-export const MyPositionsCard = ({
-  bilSupplied,
-  bilRaw,
-  exchangeRate,
-  apyPercent,
-  netWorthUsd,
-  minDisplayBalance,
-  onWithdraw,
-  onDepositRaw,
-  isDepositingRaw,
-}: Props) => {
+export const MyPositionsCard = () => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
   const { bil } = useBilStrategy()
+  const evmAddress = useEvmAddress()
 
-  const hasSupplied = bilSupplied >= minDisplayBalance
-  const hasRaw = bilRaw >= minDisplayBalance
+  const [withdrawSource, setWithdrawSource] = useState<
+    PositionRow["id"] | null
+  >(null)
+
+  const { data: stats } = useVaultStats()
+  const { data: balances } = useUserBalances(evmAddress)
+  const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const supplyRawMutation = useSupplyRawBil()
+
+  const bilSupplied = balances?.bilSupplied ?? 0
+  const bilRaw = balances?.bilRaw ?? 0
+  const exchangeRate = stats.exchangeRate
+  const apyPercent = stats.apr
+
+  const netWorthUsd = Math.max(
+    0,
+    (poolPosition?.totalCollateralUsd ?? 0) - (poolPosition?.totalDebtUsd ?? 0),
+  )
+
+  // Anything below the minimum redeemable amount is dust — hide that row.
+  const hasSupplied = bilSupplied >= stats.minRedeem
+  const hasRaw = bilRaw >= stats.minRedeem
 
   const rows: PositionRow[] = []
   if (hasSupplied) {
@@ -72,9 +68,6 @@ export const MyPositionsCard = ({
       label: bil.symbol,
       amount: bilSupplied,
       usdValue: bilSupplied * exchangeRate,
-      // Net worth = collateral USD - debt USD. We pass the post-borrow value
-      // through the parent (it knows the debt); for the supplied row it's the
-      // user's actual net worth in this strategy.
       netWorthUsd,
       netApyPercent: apyPercent,
       isRaw: false,
@@ -86,12 +79,13 @@ export const MyPositionsCard = ({
       label: t("bil.positions.uncollateralised", { label: bil.symbol }),
       amount: bilRaw,
       usdValue: bilRaw * exchangeRate,
-      // Raw rows are not collateralised — net worth equals their face value.
       netWorthUsd: bilRaw * exchangeRate,
       netApyPercent: apyPercent,
       isRaw: true,
     })
   }
+
+  if (!rows.length) return null
 
   return (
     <Paper>
@@ -159,10 +153,10 @@ export const MyPositionsCard = ({
               <>
                 {row.isRaw && (
                   <MicroButton
-                    onClick={onDepositRaw}
-                    disabled={isDepositingRaw}
+                    onClick={() => supplyRawMutation.mutate(bilRaw)}
+                    disabled={supplyRawMutation.isPending}
                   >
-                    {isDepositingRaw
+                    {supplyRawMutation.isPending
                       ? t("bil.positions.action.depositing")
                       : t("common:deposit")}
                   </MicroButton>
@@ -170,7 +164,7 @@ export const MyPositionsCard = ({
                 <Button
                   variant="tertiary"
                   size="small"
-                  onClick={() => onWithdraw(row.id)}
+                  onClick={() => setWithdrawSource(row.id)}
                 >
                   {t("common:withdraw")}
                 </Button>
@@ -179,6 +173,14 @@ export const MyPositionsCard = ({
           />
         ))}
       </Flex>
+
+      {withdrawSource && (
+        <WithdrawModal
+          open
+          onClose={() => setWithdrawSource(null)}
+          withdrawSource={withdrawSource}
+        />
+      )}
     </Paper>
   )
 }

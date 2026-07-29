@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { formatUnits, type Hex } from "viem"
+import { formatUnits } from "viem"
 
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 
@@ -9,18 +9,15 @@ export interface QueueEntry {
   requestId: number
   user: string
   bilAmount: number
-  /** Portion already settled — waiting for the user to call redeem/withdraw. */
   bilSettled: number
-  /** HOLLAR price-locked for the settled portion. */
   hollarOwed: number
-  /** Still queued (not yet settled). */
   bilRemaining: number
   active: boolean
   isUser: boolean
   estTimeRemainingDays: number
 }
 
-export function useRedemptionQueue(evmAddress: Hex | undefined) {
+export function useRedemptionQueue(evmAddress: string | undefined) {
   const { data: vault } = useBilVaultContract()
   const { bil, hollar } = useBilStrategy()
   return useQuery({

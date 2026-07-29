@@ -54,7 +54,7 @@ export const useWrapEvmTransaction = (
     }
 
     // Account is bound - no binding needed
-    if (isEvmAccountBound) return transaction
+    if (isEvmAccountBound !== false) return transaction
 
     // Prepend bind_evm_address for native EVM calls when not bound
     if (isEvmCall(transaction.tx)) {

@@ -3,9 +3,17 @@ import Big from "big.js"
 import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import {
+  Flex,
+  FormLabel,
+  Icon,
+  LogoSkeleton,
+  MicroButton,
+  Skeleton,
+  Text,
+} from "@/components"
 import { FormError } from "@/components/FormError"
-import { getToken, pxToRem } from "@/utils"
+import { getToken } from "@/utils"
 
 import {
   SAssetButton,
@@ -88,20 +96,7 @@ export const AssetInput = ({
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between" sx={{ minWidth: 0 }}>
-        {label && (
-          <Text
-            color={getToken("text.medium")}
-            fs="p5"
-            fw={500}
-            truncate
-            sx={{
-              minWidth: 0,
-              lineHeight: "120%",
-            }}
-          >
-            {label}
-          </Text>
-        )}
+        {label && <FormLabel>{label}</FormLabel>}
         {!ignoreBalance && (
           <Flex
             align="center"
@@ -240,9 +235,10 @@ export const AssetButton = ({
 }) => {
   if (loading)
     return (
-      <div sx={{ height: pxToRem(34), lineHeight: 1 }}>
-        <Skeleton sx={{ width: pxToRem(80), height: pxToRem(34) }} />
-      </div>
+      <Flex gap="s" justify="center" className={className}>
+        <LogoSkeleton size="medium" />
+        <Skeleton sx={{ width: "2xl" }} />
+      </Flex>
     )
 
   if (symbol && icon)

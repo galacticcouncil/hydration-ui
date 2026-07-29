@@ -39,7 +39,7 @@ export const AssetList: React.FC<AssetListProps> = ({
 }) => {
   const priceIds = useMemo(() => {
     return items.map((item) => {
-      const registryId = registryChain.getBalanceAssetId(item.asset)
+      const registryId = registryChain.getAssetId(item.asset)
       return registryId.toString()
     })
   }, [items, registryChain])
@@ -65,7 +65,7 @@ export const AssetList: React.FC<AssetListProps> = ({
     if (isLoadingBalances || isAssetPriceLoading) return items
 
     const assetsWithBalances = items.map((item) => {
-      const registryId = registryChain.getBalanceAssetId(item.asset)
+      const registryId = registryChain.getAssetId(item.asset)
       const balance = balances?.get(item.asset.key)
       const { price } = getAssetPrice(registryId.toString())
       return {

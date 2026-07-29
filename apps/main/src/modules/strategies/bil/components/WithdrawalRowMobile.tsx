@@ -12,12 +12,11 @@ import { hoursToMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
-
 import {
   type WithdrawalColumnHandlers,
   type WithdrawalRow,
-} from "./Withdrawals.columns"
+} from "@/modules/strategies/bil/components/Withdrawals.columns"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 
 type Props = {
   row: WithdrawalRow

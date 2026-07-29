@@ -2,38 +2,33 @@ import { Modal, ModalHeader } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { WithdrawModalForm } from "@/modules/strategies/bil/components/WithdrawModalForm"
-import type {
-  BilPoolPosition,
-  BilReserveConfig,
-} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
-import type { VaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
+import { useInstantRedeem } from "@/modules/strategies/bil/hooks/useStableswap"
+import {
+  useRequestRedeem,
+  useRequestRedeemRaw,
+} from "@/modules/strategies/bil/hooks/useVaultWrites"
 
 type WithdrawModalProps = {
   open: boolean
   onClose: () => void
-  vaultStats: VaultStats
-  bilBalance: number
   withdrawSource: "supplied" | "raw"
-  poolPosition: BilPoolPosition | undefined
-  reserveConfig: BilReserveConfig | undefined
-  onRequestRedeem: (amount: number) => void
-  onInstantRedeem?: (amount: number) => void
-  isPending: boolean
 }
 
 export const WithdrawModal: React.FC<WithdrawModalProps> = ({
   open,
   onClose,
-  vaultStats,
-  bilBalance,
   withdrawSource,
-  poolPosition,
-  reserveConfig,
-  onRequestRedeem,
-  onInstantRedeem,
-  isPending,
 }) => {
   const { t } = useTranslation(["strategies"])
+
+  const redeemMutation = useRequestRedeem()
+  const redeemRawMutation = useRequestRedeemRaw()
+  const instantRedeemMutation = useInstantRedeem()
+
+  const isPending =
+    redeemMutation.isPending ||
+    redeemRawMutation.isPending ||
+    instantRedeemMutation.isPending
 
   return (
     <Modal
@@ -44,13 +39,16 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
     >
       <ModalHeader title={t("bil.withdraw.title")} />
       <WithdrawModalForm
-        vaultStats={vaultStats}
-        bilBalance={bilBalance}
         withdrawSource={withdrawSource}
-        poolPosition={poolPosition}
-        reserveConfig={reserveConfig}
-        onRequestRedeem={onRequestRedeem}
-        onInstantRedeem={onInstantRedeem}
+        onRequestRedeem={(amount) => {
+          if (withdrawSource === "raw") redeemRawMutation.mutate(amount)
+          else redeemMutation.mutate(amount)
+          onClose()
+        }}
+        onInstantRedeem={(amount) => {
+          instantRedeemMutation.mutate(amount)
+          onClose()
+        }}
         isPending={isPending}
       />
     </Modal>

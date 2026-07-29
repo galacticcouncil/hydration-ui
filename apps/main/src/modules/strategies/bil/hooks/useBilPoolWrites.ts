@@ -1,8 +1,6 @@
-import {
-  safeConvertSS58toH160,
-  safeStringify,
-  UINT256_MAX,
-} from "@galacticcouncil/utils"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { safeConvertSS58toH160, UINT256_MAX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
@@ -10,56 +8,75 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+import { estimateGasLimit } from "@/api/borrow"
+import { BIL_POOL_ABI } from "@/modules/strategies/bil/config/abi"
 import {
   AAVE_INTEREST_RATE_MODE_VARIABLE,
-  BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
-  EVM_CALL_GAS,
   HOLLAR_ADDRESS,
-} from "@/modules/strategies/bil/constants"
+} from "@/modules/strategies/bil/config/constants"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
-/**
- * Internal helper. Submits a single EVM call against the BIL Aave pool
- * (or any other contract reachable via `getVaultEvmClient()`) through the
- * project's `useTransactionsStore`. Mirrors the pattern in `useVaultWrites`
- * but invalidates the pool-position query keys on success rather than the
- * vault keys.
- */
-function useBilPoolEvmCall() {
-  const { evm } = useRpcProvider()
+type BilPoolWriteOptions = {
+  onClose?: () => void
+}
+
+type PoolWriteFunction = "borrow" | "repay"
+
+const getPoolFunctionAbi = (functionName: PoolWriteFunction) =>
+  JSON.stringify(
+    BIL_POOL_ABI.filter(
+      (item) => item.type === "function" && item.name === functionName,
+    ),
+  )
+
+function useBilPoolEvmCall({ onClose }: BilPoolWriteOptions = {}) {
+  const rpc = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useTransactionsStore()
 
   const evmAddress = safeConvertSS58toH160(account?.address ?? "") as Hex
 
   const submitTx = useCallback(
-    async (data: Hex, toasts: { submitted: string; success: string }) => {
-      const gasPrice = await evm.getGasPrice()
-      const gasPricePlus = gasPrice + gasPrice / 100n
+    async (
+      data: Hex,
+      protocolAction: ProtocolAction,
+      functionName: PoolWriteFunction,
+      toasts: { submitted: string; success: string },
+    ) => {
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm: rpc.evm,
+          action: protocolAction,
+        })
 
-      const evmCall = {
+      const evmCall: ExtendedEvmCall = {
         from: evmAddress,
         to: BIL_POOL_ADDRESS,
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit: EVM_CALL_GAS,
-        maxFeePerGas: gasPricePlus,
-        maxPriorityFeePerGas: gasPricePlus,
-        abi: safeStringify([...BIL_POOL_ABI]),
+        gasLimit,
+        maxFeePerGas: maxFeePerGas[0],
+        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
+        abi: getPoolFunctionAbi(functionName),
       }
 
-      return createTransaction({
-        tx: evmCall,
-        toasts,
-        invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
-      })
+      return createTransaction(
+        {
+          tx: evmCall,
+          toasts,
+          invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
+        },
+        {
+          onClose,
+        },
+      )
     },
-    [evmAddress, createTransaction, evm],
+    [createTransaction, evmAddress, onClose, rpc.evm],
   )
 
   return { evmAddress, submitTx }
@@ -72,10 +89,10 @@ function useBilPoolEvmCall() {
  * stable-rate borrows, and stable-rate has been deprecated across Aave V3
  * generally.
  */
-export function useBorrowHollar() {
+export function useBorrowHollar({ onClose }: BilPoolWriteOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
-  const { evmAddress, submitTx } = useBilPoolEvmCall()
+  const { evmAddress, submitTx } = useBilPoolEvmCall({ onClose })
 
   return useMutation({
     mutationFn: (hollarAmount: number) => {
@@ -91,7 +108,7 @@ export function useBorrowHollar() {
         ],
       })
 
-      return submitTx(data, {
+      return submitTx(data, ProtocolAction.borrow, "borrow", {
         submitted: t("bil.borrow.toast.submitted", {
           amount: hollarAmount,
           symbol: hollar.symbol,
@@ -114,10 +131,10 @@ export function useBorrowHollar() {
  * `repayAll: true` so the call uses `UINT256_MAX` (Aave's "repay everything"
  * sentinel) instead of a fixed wei amount that may drift with accrued interest.
  */
-export function useRepayHollar() {
+export function useRepayHollar({ onClose }: BilPoolWriteOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
-  const { evmAddress, submitTx } = useBilPoolEvmCall()
+  const { evmAddress, submitTx } = useBilPoolEvmCall({ onClose })
 
   return useMutation({
     mutationFn: ({
@@ -140,7 +157,7 @@ export function useRepayHollar() {
         ],
       })
 
-      return submitTx(data, {
+      return submitTx(data, ProtocolAction.repay, "repay", {
         submitted: t("bil.repay.toast.submitted", {
           amount,
           symbol: hollar.symbol,

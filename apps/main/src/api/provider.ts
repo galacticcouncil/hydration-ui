@@ -21,7 +21,7 @@ import { createPublicClient, custom, PublicClient } from "viem"
 
 import { ENV } from "@/config/env"
 import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
-import { BIL_POOL_ADDRESS } from "@/modules/strategies/bil/constants"
+import { BIL_POOL_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 

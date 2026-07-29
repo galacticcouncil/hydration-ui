@@ -1,7 +1,8 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { getContract } from "viem"
 
-import { VAULT_ABI, VAULT_ADDRESS } from "@/modules/strategies/bil/constants"
+import { VAULT_ABI } from "@/modules/strategies/bil/config/abi"
+import { VAULT_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 

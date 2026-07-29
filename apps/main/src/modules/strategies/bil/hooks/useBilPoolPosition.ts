@@ -1,41 +1,25 @@
 import { UINT256_MAX } from "@galacticcouncil/utils"
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import { useQuery } from "@tanstack/react-query"
-import { formatUnits, getContract, type Hex } from "viem"
+import { type Address, formatUnits, getContract } from "viem"
 
+import { BIL_POOL_ABI } from "@/modules/strategies/bil/config/abi"
 import {
-  BIL_HAS_AAVE_LAYER,
-  BIL_POOL_ABI,
   BIL_POOL_ADDRESS,
   DCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
-} from "@/modules/strategies/bil/constants"
+} from "@/modules/strategies/bil/config/constants"
 import { useBilPoolContract } from "@/modules/strategies/bil/hooks/useBilPoolContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export interface BilPoolPosition {
-  /** Sum of supplied collateral, in USD. */
   totalCollateralUsd: number
-  /** Sum of outstanding debt, in USD. */
   totalDebtUsd: number
-  /** USD value the user can still borrow given current collateral + LTV. */
   availableBorrowsUsd: number
-  /**
-   * User's current effective LTV (basis-points → percentage).
-   * For the BIL pool with a single collateral asset, this matches the
-   * asset's reserve LTV.
-   */
   ltvPct: number
-  /** Liquidation threshold (basis-points → percentage). */
   liquidationThresholdPct: number
-  /**
-   * Aave health factor. >1 = safe, ≤1 = liquidatable. `Infinity` when the
-   * user has zero debt (Aave returns max-uint256 in that case, which we
-   * surface as Infinity for cleaner downstream consumers).
-   */
   healthFactor: number
-  /** Whether the user has any supplied collateral on this pool. */
   hasCollateral: boolean
 }
 
@@ -51,15 +35,11 @@ export interface BilPoolPosition {
  * market — different addresses, different lifetime. The data isn't useful
  * outside the BIL strategy page.
  */
-export function useBilPoolPosition(evmAddress: Hex | undefined) {
+export function useBilPoolPosition(evmAddress: string | undefined) {
   const { data: pool } = useBilPoolContract()
   return useQuery({
     queryKey: bilQueryKeys.poolPosition(evmAddress),
-    // The BIL Aave pool is the source of borrow / collateral data. On
-    // networks that don't have the pool deployed yet (e.g. lark-2 vault-
-    // only mode), short-circuit to keep the query inert instead of
-    // hammering the zero address with reverts.
-    enabled: BIL_HAS_AAVE_LAYER && !!evmAddress && !!pool,
+    enabled: !!evmAddress && !!pool,
     queryFn: async (): Promise<BilPoolPosition> => {
       if (!evmAddress || !pool) {
         return {
@@ -80,7 +60,7 @@ export function useBilPoolPosition(evmAddress: Hex | undefined) {
         currentLiquidationThreshold,
         ltv,
         healthFactor,
-      ] = await pool.read.getUserAccountData([evmAddress])
+      ] = await pool.read.getUserAccountData([evmAddress as Address])
 
       return {
         totalCollateralUsd: Number(formatUnits(totalCollateralBase, 8)),
@@ -99,25 +79,10 @@ export function useBilPoolPosition(evmAddress: Hex | undefined) {
 }
 
 export interface BilReserveConfig {
-  /** Max LTV (percentage) applied to a fresh BIL supply. */
   maxLtvPct: number
-  /** Liquidation threshold (percentage). Below this and the position is liquidatable. */
   liquidationThresholdPct: number
-  /**
-   * HOLLAR borrow APR (percentage). The pool's GhoInterestRateStrategy is
-   * fixed-rate, so this is constant until governance swaps the strategy.
-   */
   borrowAprPct: number
-  /**
-   * HOLLAR borrow APY (percentage). Annualized from APR using Aave's
-   * per-second compounding (n = 31_536_000). What users typically see.
-   */
   borrowApyPct: number
-  /**
-   * Whether HOLLAR borrowing is enabled on the pool. Disabled at launch
-   * (staged rollout) — governance flips it on later. Gates leverage: with
-   * borrowing off, the achievable Net APY is just the base vault yield.
-   */
   borrowingEnabled: boolean
 }
 
@@ -136,7 +101,6 @@ export function useBilReserveConfig() {
   const { evm } = useRpcProvider()
   return useQuery({
     queryKey: bilQueryKeys.reserveConfig(),
-    enabled: BIL_HAS_AAVE_LAYER,
     queryFn: async (): Promise<BilReserveConfig> => {
       const pool = getContract({
         address: BIL_POOL_ADDRESS,

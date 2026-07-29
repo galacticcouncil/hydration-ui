@@ -1,7 +1,7 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
-  Button,
+  LoadingButton,
   Modal,
   ModalBody,
   ModalContentDivider,
@@ -10,55 +10,58 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
+import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
-import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useRepayHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
+import { useUserBalances } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { getBilRepayHealthFactor } from "@/modules/strategies/bil/utils/hf"
 
 interface Props {
   open: boolean
   onClose: () => void
-  poolPosition: BilPoolPosition | undefined
-  /** User's wallet HOLLAR balance (caps the max repay). */
-  walletHollar: number
-  onRepay: (args: { amount: number; repayAll: boolean }) => void
-  isPending: boolean
 }
 
-export const RepayHollarModal = ({
-  open,
-  onClose,
-  poolPosition,
-  walletHollar,
-  onRepay,
-  isPending,
-}: Props) => {
+export const RepayHollarModal = ({ open, onClose }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
   const [amount, setAmount] = useState("")
 
   const { hollar } = useBilStrategy()
 
-  useEffect(() => {
-    if (!open) setAmount("")
-  }, [open])
+  const evmAddress = useEvmAddress()
+  const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const { data: balances } = useUserBalances(evmAddress)
+  const repayMutation = useRepayHollar({ onClose })
+
+  const walletHollar = balances?.hollar ?? 0
 
   const inputNum = parseFloat(amount) || 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
   const healthFactor = poolPosition
     ? getBilRepayHealthFactor(poolPosition, inputNum)
     : null
-  // Repay max = min(walletHollar, debt) — can't repay more than you owe
-  // and can't repay more than you hold.
   const maxRepay = Math.min(walletHollar, totalDebtUsd)
   const overDebt = inputNum > totalDebtUsd
   const overWallet = inputNum > walletHollar
 
   const canSubmit =
-    inputNum > 0 && !overDebt && !overWallet && !isPending && totalDebtUsd > 0
+    inputNum > 0 &&
+    !overDebt &&
+    !overWallet &&
+    !repayMutation.isPending &&
+    totalDebtUsd > 0
+
+  const handleSubmit = () => {
+    repayMutation.mutate({
+      amount: inputNum,
+      repayAll: inputNum > 0 && Big(inputNum).gte(totalDebtUsd.toString()),
+    })
+  }
 
   const ctaLabel = (() => {
     if (overDebt) return t("bil.repay.cta.exceeds")
@@ -113,21 +116,15 @@ export const RepayHollarModal = ({
       </ModalBody>
 
       <ModalFooter>
-        <Button
+        <LoadingButton
           size="large"
           width="100%"
+          isLoading={repayMutation.isPending}
           disabled={!canSubmit}
-          onClick={() =>
-            canSubmit &&
-            onRepay({
-              amount: inputNum,
-              repayAll:
-                inputNum > 0 && Big(inputNum).gte(totalDebtUsd.toString()),
-            })
-          }
+          onClick={() => canSubmit && handleSubmit()}
         >
           {ctaLabel}
-        </Button>
+        </LoadingButton>
       </ModalFooter>
     </Modal>
   )

@@ -12,31 +12,31 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import { useBilDepositForm } from "@/modules/strategies/bil/components/BilDeposit.form"
 import { BilExchangeRate } from "@/modules/strategies/bil/components/BilExchangeRate"
-import { VaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import {
+  useUserBalances,
+  useVaultStats,
+} from "@/modules/strategies/bil/hooks/useVaultReads"
+import { useDeposit } from "@/modules/strategies/bil/hooks/useVaultWrites"
 
-type BilDepositProps = {
-  vaultStats: VaultStats
-  balance: number
-  onDeposit: (amount: number) => void
-  isPending: boolean
-}
-
-export const BilDeposit: React.FC<BilDepositProps> = ({
-  vaultStats,
-  balance,
-  onDeposit,
-  isPending,
-}) => {
+export const BilDeposit = () => {
   const { t } = useTranslation(["strategies", "common"])
   const { bil, hollar } = useBilStrategy()
+
+  const evmAddress = useEvmAddress()
+  const { data: vaultStats } = useVaultStats()
+  const { data: balances } = useUserBalances(evmAddress)
+  const depositMutation = useDeposit()
+
+  const balance = balances?.hollar ?? 0
 
   // Deposits must clear the *lower* of the vault tvlCap and the pool
   // supplyCap — `remainingDepositHollar` is that binding ceiling, in HOLLAR.
@@ -46,7 +46,6 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
   const capacityKnown = vaultStats.tvlCap > 0
   const remaining = vaultStats.remainingDepositHollar
   const atCapacity = capacityKnown && remaining <= 0
-  // The MAX button fills what's actually depositable: min(wallet, capacity).
   const effectiveMax = capacityKnown ? Math.min(balance, remaining) : balance
 
   const form = useBilDepositForm({
@@ -65,7 +64,10 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
     vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
 
   const canSubmit =
-    formState.isValid && !isPending && !vaultStats.depositsPaused && !atCapacity
+    formState.isValid &&
+    !depositMutation.isPending &&
+    !vaultStats.depositsPaused &&
+    !atCapacity
 
   const ctaLabel = vaultStats.depositsPaused
     ? t("bil.deposit.cta.paused")
@@ -74,7 +76,7 @@ export const BilDeposit: React.FC<BilDepositProps> = ({
       : t("common:deposit")
 
   const onSubmit = handleSubmit(({ amount }) => {
-    onDeposit(parseFloat(amount) || 0)
+    depositMutation.mutate(parseFloat(amount) || 0)
   })
 
   return (

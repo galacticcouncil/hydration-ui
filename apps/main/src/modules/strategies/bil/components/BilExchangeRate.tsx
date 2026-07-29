@@ -1,5 +1,5 @@
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 
 export type BilExchangeRateProps = {
   exchangeRate: number

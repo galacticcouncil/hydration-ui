@@ -1,21 +1,22 @@
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { secondsInDay } from "date-fns/constants"
-import { formatUnits, getContract, type Hex, parseUnits } from "viem"
+import { type Address, formatUnits, getContract } from "viem"
 
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
 import {
-  BIL_ATOKEN_ADDRESS,
-  BIL_HAS_AAVE_LAYER,
   BIL_POOL_ABI,
-  BIL_POOL_ADDRESS,
-  DCL_PRECOMPILE_ADDRESS,
   DECENTRAL_POOL_ABI,
   ERC20_ABI,
-  HOLLAR_ADDRESS,
   VAULT_ABI,
+} from "@/modules/strategies/bil/config/abi"
+import {
+  BIL_ATOKEN_ADDRESS,
+  BIL_POOL_ADDRESS,
+  DCL_PRECOMPILE_ADDRESS,
+  HOLLAR_ADDRESS,
   VAULT_ADDRESS,
-} from "@/modules/strategies/bil/constants"
+} from "@/modules/strategies/bil/config/constants"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -112,13 +113,8 @@ export function useVaultStats() {
         vault.read.getPositionHead(),
       ])
 
-      // The old vault exposed a flat `withdrawalDelay()` (48h buffer between
-      // request and fulfilment). That was removed in commit 47b7041 — the
-      // queue settles as positions mature, no separate redemption delay.
-      // So worst-case-wait now folds back to:
-      //   - if queue non-empty: `getEstimatedWaitTime` for the tail request
-      //   - else if no idle HOLLAR: time until next position maturity
-      //   - else: 0 (settles immediately on next pokeQueue)
+      // There is no separate redemption delay — the queue settles as
+      // positions mature.
       let worstCaseWaitSec = 0n
       let nextMaturitySec = 0n
       const now = BigInt(Math.floor(Date.now() / 1000))
@@ -140,11 +136,8 @@ export function useVaultStats() {
         worstCaseWaitSec = nextMaturitySec
       }
 
-      // Maximum lockup a *new* deposit can face — regardless of current
-      // queue contention. A fresh deposit creates a new Decentral position
-      // that has to run for at least `minimumInvestmentPeriodSeconds`
-      // before it matures. The previously-added 48h `withdrawalDelay` no
-      // longer applies (see above).
+      // Max lockup a *new* deposit faces, regardless of queue contention.
+      // The active deposit pool is read on-chain, not from a local constant.
       const decentralPoolAddr = await vault.read.activeDepositPool()
       const investmentPeriodSec = await evm.readContract({
         address: decentralPoolAddr,
@@ -154,43 +147,37 @@ export function useVaultStats() {
 
       // Aave pool supply cap for the BIL reserve. A deposit is atomically
       // `vault.deposit` + `pool.supply` (see BILDepositZap), so the pool cap
-      // binds alongside the vault's `tvlCap`. Only read it when the Aave
-      // layer is live — on vault-only networks the pool address is inert.
-      let supplyCapBil = 0
-      let suppliedBil = 0
-      if (BIL_HAS_AAVE_LAYER) {
-        const [config, aTokenSupply] = await Promise.all([
-          evm.readContract({
-            address: BIL_POOL_ADDRESS,
-            abi: BIL_POOL_ABI,
-            functionName: "getConfiguration",
-            // The reserve is the DCL precompile (asset 550); the aToken
-            // (asset 55) alias is not a registered reserve.
-            args: [DCL_PRECOMPILE_ADDRESS],
-          }),
-          evm.readContract({
-            address: BIL_ATOKEN_ADDRESS,
-            abi: ERC20_ABI,
-            functionName: "totalSupply",
-          }),
-        ])
-        // Aave V3 packs the supply cap into bits 116-151 of the reserve
-        // config (36 bits, whole tokens, no decimals). 0 == uncapped.
-        supplyCapBil = Number((config.data >> 116n) & 0xfffffffffn)
-        suppliedBil = Number(formatUnits(aTokenSupply, EVM_DECIMALS))
-      }
+      // binds alongside the vault's `tvlCap`.
+      const [config, aTokenSupply] = await Promise.all([
+        evm.readContract({
+          address: BIL_POOL_ADDRESS,
+          abi: BIL_POOL_ABI,
+          functionName: "getConfiguration",
+          // The reserve is the DCL precompile (asset 550); the aToken
+          // (asset 55) alias is not a registered reserve.
+          args: [DCL_PRECOMPILE_ADDRESS],
+        }),
+        evm.readContract({
+          address: BIL_ATOKEN_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: "totalSupply",
+        }),
+      ])
+      // Aave V3 packs the supply cap into bits 116-151 of the reserve
+      // config (36 bits, whole tokens, no decimals). 0 == uncapped.
+      const supplyCapBil = Number((config.data >> 116n) & 0xfffffffffn)
+      const suppliedBil = Number(formatUnits(aTokenSupply, EVM_DECIMALS))
 
       const totalAssetsNum = Number(formatUnits(totalAssets, EVM_DECIMALS))
       const tvlCapNum = Number(formatUnits(tvlCap, EVM_DECIMALS))
       const exchangeRate = Number(formatUnits(exchangeRateWad, EVM_DECIMALS))
 
-      // Vault ceiling, in HOLLAR: room left under tvlCap.
       const vaultRemainingHollar = Math.max(0, tvlCapNum - totalAssetsNum)
       // Pool ceiling, in HOLLAR: room left under supplyCap, priced from BIL
       // back to HOLLAR via the exchange rate (a deposit of H HOLLAR supplies
-      // ~H/rate BIL). Uncapped (supplyCap 0 / no Aave layer) → Infinity.
+      // ~H/rate BIL). Uncapped (supplyCap 0) → Infinity.
       const poolRemainingHollar =
-        BIL_HAS_AAVE_LAYER && supplyCapBil > 0
+        supplyCapBil > 0
           ? Math.max(0, supplyCapBil - suppliedBil) * exchangeRate
           : Infinity
       const remainingDepositHollar = Math.min(
@@ -222,7 +209,7 @@ export function useVaultStats() {
   })
 }
 
-export function useUserBalances(evmAddress: Hex | undefined) {
+export function useUserBalances(evmAddress: string | undefined) {
   const { evm } = useRpcProvider()
   const { hollar, bil } = useBilStrategy()
   return useQuery({
@@ -265,23 +252,18 @@ export function useUserBalances(evmAddress: Hex | undefined) {
         }
       }
 
-      // aBIL only exists when the Aave money-market layer is deployed.
-      // On lark-2 (vault-only) we skip the read entirely so we don't spam
-      // dev warnings against the zero address.
-      const aTokenRead: Promise<bigint> = BIL_HAS_AAVE_LAYER
-        ? safeBalance("BIL aToken", () =>
-            getContract({
-              address: BIL_ATOKEN_ADDRESS,
-              abi: ERC20_ABI,
-              client: evm,
-            }).read.balanceOf([evmAddress]),
-          )
-        : Promise.resolve(0n)
+      const address = evmAddress as Address
 
       const [hollarBal, vaultBal, aTokenBal] = await Promise.all([
-        safeBalance("HOLLAR", () => hollarToken.read.balanceOf([evmAddress])),
-        safeBalance("BIL vault", () => vault.read.balanceOf([evmAddress])),
-        aTokenRead,
+        safeBalance("HOLLAR", () => hollarToken.read.balanceOf([address])),
+        safeBalance("BIL vault", () => vault.read.balanceOf([address])),
+        safeBalance("BIL aToken", () =>
+          getContract({
+            address: BIL_ATOKEN_ADDRESS,
+            abi: ERC20_ABI,
+            client: evm,
+          }).read.balanceOf([address]),
+        ),
       ] as const)
 
       return {
@@ -297,82 +279,13 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 }
 
 /**
- * Predicted BIL minted for a given HOLLAR deposit, read from the vault's
- * `previewDeposit` view. The difference between input HOLLAR and
- * `output × exchangeRate` is the deposit fee in HOLLAR (≈ USD, since
- * HOLLAR is $-pegged). Caller is responsible for debouncing the input.
- *
- * Note: at the lark-2 vault version (commit 555abc7), `previewDeposit`
- * reverts on inputs where the actual `deposit` would revert
- * (ZeroAmount / DepositTooSmall / VaultEmpty) instead of returning 0.
- * That is per ERC-4626 §previewDeposit. We swallow the revert here and
- * return 0 so the fees row in the deposit panel doesn't blow up the
- * whole query.
- */
-export function usePreviewDeposit(hollarAmount: number) {
-  const { evm } = useRpcProvider()
-  const { hollar, bil } = useBilStrategy()
-  return useQuery({
-    queryKey: bilQueryKeys.vaultPreviewDeposit(hollarAmount),
-    enabled: hollarAmount > 0,
-    queryFn: async () => {
-      const vault = getContract({
-        address: VAULT_ADDRESS,
-        abi: VAULT_ABI,
-        client: evm,
-      })
-      try {
-        const result = await vault.read.previewDeposit([
-          parseUnits(hollarAmount.toString(), hollar.decimals),
-        ])
-        return Number(formatUnits(result, bil.decimals))
-      } catch {
-        // Input below the dust threshold or vault empty — no preview to
-        // show. Caller treats this as "fee unknown" and shows the
-        // standard form-validation error from the input itself.
-        return 0
-      }
-    },
-    placeholderData: keepPreviousData,
-    staleTime: 15_000,
-  })
-}
-
-/**
- * Predicted HOLLAR received for a given BIL redeem, read from the vault's
- * `previewRedeem` view. The difference between `input × exchangeRate` and
- * the returned HOLLAR is the redeem fee.
- */
-export function usePreviewRedeem(bilAmount: number) {
-  const { evm } = useRpcProvider()
-  const { hollar, bil } = useBilStrategy()
-  return useQuery({
-    queryKey: bilQueryKeys.vaultPreviewRedeem(bilAmount),
-    enabled: bilAmount > 0,
-    queryFn: async () => {
-      const vault = getContract({
-        address: VAULT_ADDRESS,
-        abi: VAULT_ABI,
-        client: evm,
-      })
-      const result = await vault.read.previewRedeem([
-        parseUnits(bilAmount.toString(), bil.decimals),
-      ])
-      return Number(formatUnits(result, hollar.decimals))
-    },
-    placeholderData: keepPreviousData,
-    staleTime: 15_000,
-  })
-}
-
-/**
  * Whether the connected wallet has opted into keeper-driven auto-claim.
  * Toggled via `useSetAutoClaim`. When true, a CLAIM_OPERATOR_ROLE holder
  * (the keeper bot) will call `redeem` on the user's behalf as soon as
  * their settled inventory is non-zero — funds go to the controller's own
  * address.
  */
-export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
+export function useAutoClaimEnabled(evmAddress: string | undefined) {
   const { evm } = useRpcProvider()
   return useQuery({
     queryKey: bilQueryKeys.vaultAutoclaim(evmAddress),
@@ -384,7 +297,7 @@ export function useAutoClaimEnabled(evmAddress: Hex | undefined) {
         abi: VAULT_ABI,
         client: evm,
       })
-      return vault.read.autoClaimEnabled([evmAddress])
+      return vault.read.autoClaimEnabled([evmAddress as Address])
     },
   })
 }

@@ -1,5 +1,4 @@
 import {
-  Box,
   DataTable,
   Flex,
   Label,
@@ -13,57 +12,77 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount, useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { parseUnits } from "viem"
 
 import { WithdrawalRowMobile } from "@/modules/strategies/bil/components/WithdrawalRowMobile"
 import {
   useWithdrawalColumns,
-  type WithdrawalColumnHandlers,
   type WithdrawalRow,
 } from "@/modules/strategies/bil/components/Withdrawals.columns"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import { useRedemptionQueue } from "@/modules/strategies/bil/hooks/useRedemptionQueue"
+import {
+  useAutoClaimEnabled,
+  useVaultStats,
+} from "@/modules/strategies/bil/hooks/useVaultReads"
+import {
+  useCancelRedeem,
+  useClaim,
+  useInstantRedeemFromQueue,
+  useSetAutoClaim,
+} from "@/modules/strategies/bil/hooks/useVaultWrites"
 
-interface Props {
-  rows: WithdrawalRow[]
-  onCancel: WithdrawalColumnHandlers["onCancel"]
-  isCancelling: boolean
-  onClaim: WithdrawalColumnHandlers["onClaim"]
-  isClaiming: boolean
-  onInstantRedeem: WithdrawalColumnHandlers["onInstantRedeem"]
-  isInstantRedeeming: boolean
-  autoClaimEnabled: boolean
-  onAutoClaimChange: (next: boolean) => void
-  isAutoClaimUpdating: boolean
-}
-
-export const WithdrawalsCard = ({
-  rows,
-  onCancel,
-  isCancelling,
-  onClaim,
-  isClaiming,
-  onInstantRedeem,
-  isInstantRedeeming,
-  autoClaimEnabled,
-  onAutoClaimChange,
-  isAutoClaimUpdating,
-}: Props) => {
+export const WithdrawalsCard = () => {
   const { t } = useTranslation(["strategies", "common"])
   const { gte } = useBreakpoints()
+  const { isConnected } = useAccount()
+  const { bil } = useBilStrategy()
+  const evmAddress = useEvmAddress()
 
-  const visibleRows = useMemo(
-    () => rows.slice().sort((a, b) => a.id - b.id),
-    [rows],
-  )
+  const { data: stats } = useVaultStats()
+  const { data: queueData } = useRedemptionQueue(evmAddress)
+  const { data: autoClaimOn } = useAutoClaimEnabled(evmAddress)
+
+  const cancelMutation = useCancelRedeem()
+  const claimMutation = useClaim()
+  const instantRedeemQueueMutation = useInstantRedeemFromQueue()
+  const setAutoClaimMutation = useSetAutoClaim()
+
+  const exchangeRate = stats.exchangeRate
+  const queue = queueData?.queue
+
+  const visibleRows = useMemo(() => {
+    const rows: WithdrawalRow[] = (queue ?? [])
+      .filter((e) => e.isUser)
+      .map((e) => ({
+        id: e.requestId,
+        amountBil: e.bilRemaining,
+        estHollar: e.bilRemaining * exchangeRate,
+        timeRemainingDays: e.estTimeRemainingDays,
+        claimableBil: e.bilSettled,
+        claimableHollar: e.hollarOwed,
+      }))
+    return rows.sort((a, b) => a.id - b.id)
+  }, [queue, exchangeRate])
 
   const columns = useWithdrawalColumns({
-    onCancel,
-    isCancelling,
-    onClaim,
-    isClaiming,
-    onInstantRedeem,
-    isInstantRedeeming,
+    onCancel: (id) => cancelMutation.mutate(id),
+    isCancelling: cancelMutation.isPending,
+    onClaim: (claimableBil) =>
+      claimMutation.mutate(parseUnits(claimableBil.toString(), bil.decimals)),
+    isClaiming: claimMutation.isPending,
+    onInstantRedeem: (id, amountBil) =>
+      instantRedeemQueueMutation.mutate({
+        requestId: id,
+        bilAmount: amountBil,
+      }),
+    isInstantRedeeming: instantRedeemQueueMutation.isPending,
   })
+
+  if (!isConnected || visibleRows.length === 0) return null
 
   return (
     <Paper>
@@ -84,22 +103,16 @@ export const WithdrawalsCard = ({
             </Tooltip>
             <Toggle
               size="medium"
-              checked={autoClaimEnabled}
-              onCheckedChange={onAutoClaimChange}
+              checked={autoClaimOn ?? false}
+              onCheckedChange={(next) => setAutoClaimMutation.mutate(next)}
               name="auto-claim"
-              disabled={isAutoClaimUpdating}
+              disabled={setAutoClaimMutation.isPending}
             />
           </Flex>
         </Flex>
       </Flex>
       <Separator />
-      {visibleRows.length === 0 ? (
-        <Box px="l" py="xl">
-          <Text fs="p4" color={getToken("text.low")}>
-            {t("bil.withdrawals.empty.pending")}
-          </Text>
-        </Box>
-      ) : gte("xl") ? (
+      {gte("xl") ? (
         <TableContainer borderRadius="xl">
           <DataTable data={visibleRows} columns={columns} />
         </TableContainer>
@@ -109,12 +122,21 @@ export const WithdrawalsCard = ({
             <WithdrawalRowMobile
               key={row.id}
               row={row}
-              onCancel={onCancel}
-              isCancelling={isCancelling}
-              onClaim={onClaim}
-              isClaiming={isClaiming}
-              onInstantRedeem={onInstantRedeem}
-              isInstantRedeeming={isInstantRedeeming}
+              onCancel={(id) => cancelMutation.mutate(id)}
+              isCancelling={cancelMutation.isPending}
+              onClaim={(claimableBil) =>
+                claimMutation.mutate(
+                  parseUnits(claimableBil.toString(), bil.decimals),
+                )
+              }
+              isClaiming={claimMutation.isPending}
+              onInstantRedeem={(id, amountBil) =>
+                instantRedeemQueueMutation.mutate({
+                  requestId: id,
+                  bilAmount: amountBil,
+                })
+              }
+              isInstantRedeeming={instantRedeemQueueMutation.isPending}
             />
           ))}
         </Stack>

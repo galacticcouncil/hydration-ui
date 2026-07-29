@@ -1,7 +1,7 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
-  Button,
+  LoadingButton,
   Modal,
   ModalBody,
   ModalContentDivider,
@@ -10,34 +10,31 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
+import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
-import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
+import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useBorrowHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
 
 interface Props {
   open: boolean
   onClose: () => void
-  poolPosition: BilPoolPosition | undefined
-  onBorrow: (amount: number) => void
-  isPending: boolean
 }
 
-export const BorrowHollarModal = ({
-  open,
-  onClose,
-  poolPosition,
-  onBorrow,
-  isPending,
-}: Props) => {
+export const BorrowHollarModal = ({ open, onClose }: Props) => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
   const [amount, setAmount] = useState("")
 
   const { hollar } = useBilStrategy()
+
+  const evmAddress = useEvmAddress()
+  const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const borrowMutation = useBorrowHollar({ onClose })
 
   const inputNum = parseFloat(amount) || 0
 
@@ -57,12 +54,12 @@ export const BorrowHollarModal = ({
     inputNum > 0 &&
     !overAvailable &&
     !isLiquidationRisk &&
-    !isPending &&
+    !borrowMutation.isPending &&
     hasCollateral
 
   const handleSubmit = () => {
     if (!canSubmit) return
-    onBorrow(inputNum)
+    borrowMutation.mutate(inputNum)
   }
 
   return (
@@ -107,14 +104,15 @@ export const BorrowHollarModal = ({
       </ModalBody>
 
       <ModalFooter>
-        <Button
+        <LoadingButton
           size="large"
           width="100%"
+          isLoading={borrowMutation.isPending}
           disabled={!canSubmit}
           onClick={handleSubmit}
         >
           {t("borrow:borrow")} {hollar.symbol}
-        </Button>
+        </LoadingButton>
       </ModalFooter>
     </Modal>
   )

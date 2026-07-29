@@ -12,36 +12,25 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import type { ComponentType, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useBilStrategy } from "@/modules/strategies/bil/BilStrategyProvider"
-
-import { SMethodCard } from "./WithdrawMethodPicker.styled"
+import { SMethodCard } from "@/modules/strategies/bil/components/WithdrawMethodPicker.styled"
+import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 
 export type WithdrawMethod = "queue" | "instant"
 
 export interface InstantQuote {
-  /** HOLLAR receivable from the secondary-market trade. */
   expectedHollar: number
-  /** Percentage discount vs queue (negative = receive less). */
   discountPct: number
-  /** Pool slippage at the current trade size (positive percent). */
   slippagePct: number
 }
 
 interface Props {
   selected: WithdrawMethod
   onSelect: (method: WithdrawMethod) => void
-  /** Amount the user is withdrawing, in BIL. */
   amountBil: number
-  /** Current vault exchange rate (1 BIL = N HOLLAR, today). */
   exchangeRate: number
-  /** Vault APR % — drives the forward-projection of exchangeRate to fulfillment. */
   aprPercent: number
-  /** Worst-case days until the queue settles (your actual fulfillment time). */
   worstCaseWaitDays: number
-  /** Days until the next vault position matures, regardless of queue.
-      In the no-queue-contention case this equals worstCaseWaitDays. */
   nextMaturityDays: number
-  /** Stableswap quote — undefined while loading or when path unavailable. */
   instantQuote?: InstantQuote
 }
 
@@ -67,7 +56,6 @@ export const WithdrawMethodPicker = ({
   exchangeRate,
   aprPercent,
   worstCaseWaitDays,
-  //nextMaturityDays,
   instantQuote,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
@@ -141,10 +129,6 @@ export const WithdrawMethodPicker = ({
                   bg={getToken("text.high")}
                   sx={{ opacity: 0.1 }}
                 />
-                {/* Concrete payout comparison: instant now vs queue in N days,
-                    then the absolute HOLLAR difference (signed). Replaces an
-                    earlier "-2.8% discount" abstract — users found it easier
-                    to reason about real numbers than a percentage. */}
                 <DetailRow
                   label={t("bil.method.instant.youReceiveNow")}
                   value={t("common:currency", {

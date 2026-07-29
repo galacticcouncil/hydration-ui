@@ -1,3 +1,4 @@
+export const HDX_ASSET_ID = "0"
 export const HOLLAR_ASSET_ID = "222"
 export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"

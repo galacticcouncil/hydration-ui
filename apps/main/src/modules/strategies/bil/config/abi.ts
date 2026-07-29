@@ -1,69 +1,4 @@
-import { type Hex } from "viem"
-
-// ════════════════════════════════════════════════════════════════════════
-//  BIL Vault — node0.lark deployment ("bil" network, mainnet-style)
-//  ─────────────────────────────────────────────────────────────────────
-//  Reference: aave-v3-deploy/deployments/bil/_addresses.md
-//  Network:   Hydration node0.lark (`node0.lark.hydration.cloud`, chain 222222)
-//  Surface:   ERC-4626 (deposit/mint) + ERC-7540 (async redeem)
-// ════════════════════════════════════════════════════════════════════════
-
-export const VAULT_ADDRESS: Hex = "0x7a1FFcF0949C6cf85d16BA04221D650Db0dE41A5"
-export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
-
-// Decentral pool the vault deploys HOLLAR into. Surfaced here only so the
-// DepositPanel can read `minimumInvestmentPeriodSeconds` for the "Lockup
-// period" copy. Vault uses `activeDepositPool()` to resolve the same value
-// on-chain, which is the authoritative source.
-export const DECENTRAL_POOL_ADDRESS: Hex =
-  "0x207a626c07b73E76134177D1f44B0f32e94ADB5a"
-
-// ────────────────────────────────────────────────────────────────────────
-// BIL Aave V3 money-market layer — live on node0.lark.
-//
-// Deployed via scripts/bil/deploy-all.sh and enacted via Root referendum
-// #362 on node0.lark. The Aave pool, deposit-zap, and aToken below power
-// the borrow / supply / instant-redeem flows.
-//
-// Aave layer endpoints:
-//   - Supply BIL  → pool.supply(DCL_PRECOMPILE, ..., user, 0)
-//   - Borrow HOLLAR → pool.borrow(HOLLAR, ..., 2, 0, user)
-//   - Zap deposit (HOLLAR → vault → pool.supply) → zap.depositAndSupply
-//   - Instant redeem path uses the BIL/HOLLAR stableswap (id 10055).
-// ────────────────────────────────────────────────────────────────────────
-export const BIL_HAS_AAVE_LAYER = true
-
-export const BIL_POOL_ADDRESS: Hex =
-  "0xd10b84Ee54dc5B81366b56bABBF4D32303629835"
-export const BIL_POOL_ADDRESSES_PROVIDER: Hex =
-  "0x08D80c63A87746487d673b488FF40386c68cE192"
-export const BIL_DEPOSIT_ZAP_ADDRESS: Hex =
-  "0xFF14a4Bf1Fe038D23b68d738B81cF900FD6E9D8B"
-export const BIL_ATOKEN_ADDRESS: Hex =
-  "0xCc7Dc2433073ed4cf1daFd1A1b9c32e193cce5ce"
-
-// Substrate-asset precompile aliases. Keyed off substrate asset ids, not the
-// EVM deploy — unchanged across lark generations.
-//   BIL (asset 55,  0x37 hex) — user-facing aToken receipt; what users hold.
-//   BIL  (asset 550, 0x226 hex) — the underlying reserve registered in the
-//                                  Aave pool. Use this for pool.getConfiguration
-//                                  / pool.getReserveData.
-export const BIL_PRECOMPILE_ADDRESS: Hex =
-  "0x0000000000000000000000000000000100000037"
-export const DCL_PRECOMPILE_ADDRESS: Hex =
-  "0x0000000000000000000000000000000100000226"
-
-// Aave V3 interestRateMode for borrows: 2 = variable (GhoAToken path).
-export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
-
-// First block at which the node0.lark vault proxy emitted a log. Used as
-export const EVM_CALL_GAS = 2_000_000n
-
-// ────────────────────────────────────────────────────────────────────────
-// Vault ABI — current surface as of lark-2 (commit 555abc7).
-// ────────────────────────────────────────────────────────────────────────
 export const VAULT_ABI = [
-  // ERC-20 / state -------------------------------------------------------
   {
     type: "function",
     name: "totalAssets",
@@ -112,7 +47,6 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "bool" }],
     stateMutability: "nonpayable",
   },
-  // Config / state views -------------------------------------------------
   {
     type: "function",
     name: "activeDepositPool",
@@ -162,7 +96,6 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
-  // Positions ------------------------------------------------------------
   {
     type: "function",
     name: "getPositionCount",
@@ -191,7 +124,6 @@ export const VAULT_ABI = [
     ],
     stateMutability: "view",
   },
-  // Redemption queue -----------------------------------------------------
   {
     type: "function",
     name: "getRedemptionQueueLength",
@@ -220,9 +152,6 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
-  // Note: tuple shape changed at lark-2.
-  // Old: (user, bilAmount, bilFulfilled, active) — 4 fields
-  // New: (user, bilAmount, bilSettled, hollarOwed, active) — 5 fields.
   // `bilSettled` is the portion already covered by idle HOLLAR;
   // `hollarOwed` is the HOLLAR price-locked for that settled portion.
   {
@@ -259,7 +188,6 @@ export const VAULT_ABI = [
     outputs: [{ name: "estimatedSeconds", type: "uint256" }],
     stateMutability: "view",
   },
-  // ERC-7540 spec views --------------------------------------------------
   {
     type: "function",
     name: "pendingRedeemRequest",
@@ -325,7 +253,6 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "pure",
   },
-  // Operator / auto-claim opt-in ----------------------------------------
   {
     type: "function",
     name: "isOperator",
@@ -360,7 +287,6 @@ export const VAULT_ABI = [
     outputs: [],
     stateMutability: "nonpayable",
   },
-  // Writes --------------------------------------------------------------
   // ERC-4626 deposit. assets = HOLLAR, receiver = hDCL recipient.
   {
     type: "function",
@@ -427,7 +353,6 @@ export const VAULT_ABI = [
     outputs: [{ name: "shares", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  // Events ---------------------------------------------------------------
   // Canonical ERC-4626 / 7540 events
   {
     type: "event",
@@ -539,7 +464,7 @@ export const VAULT_ABI = [
 ] as const
 
 // Minimal Aave V3 Pool ABI subset — only the calls the BIL-strategy page
-// actually makes. Active on node0.lark (BIL_HAS_AAVE_LAYER = true).
+// actually makes.
 export const BIL_POOL_ABI = [
   {
     type: "function",
