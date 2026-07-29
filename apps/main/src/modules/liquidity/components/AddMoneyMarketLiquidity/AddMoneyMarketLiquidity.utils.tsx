@@ -4,7 +4,7 @@ import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { first } from "remeda"
+import { first, isNullish } from "remeda"
 import { useDebounce } from "use-debounce"
 
 import {
@@ -13,6 +13,7 @@ import {
   healthFactorQuery,
 } from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
+import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useOmnipoolIds } from "@/api/pools"
 import { bestSellWithTxQuery } from "@/api/trade"
 import {
@@ -28,6 +29,7 @@ import {
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import { useAddableStablepoolTokens } from "@/modules/liquidity/Liquidity.utils"
+import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -51,7 +53,15 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   split: initialSplit,
 }: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
-  const { balances } = useAccountBalances()
+  const { account } = useAccount()
+  const { sdk, isApiLoaded } = useRpcProvider()
+  const { getTransferableBalance } = useAccountBalances()
+  const {
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
+  const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const addableReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { data: omnipoolIds } = useOmnipoolIds()
   const isAddableToOmnipool = omnipoolIds?.includes(erc20Id)
@@ -67,14 +77,35 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserve.asset_id.toString(),
   )
 
-  const accountBalances = new Map(
-    Object.values(balances).map((balance) => [
-      balance.assetId,
-      scaleHuman(
-        balance.transferable,
-        getAssetWithFallback(balance.assetId).decimals,
-      ),
-    ]),
+  const { data: feeEstimationSwapTx } = useQuery({
+    enabled:
+      isApiLoaded && !!account?.address && !isNullish(accountFeePaymentAssetId),
+    queryKey: [
+      "addMoneyMarketLiquidityFeeEstimation",
+      accountFeePaymentAssetId,
+    ],
+    queryFn: async () => {
+      const swap = await sdk.api.router.getBestSell(
+        accountFeePaymentAssetId ?? 0,
+        Number(erc20Id),
+        scaleHuman(
+          getTransferableBalance(accountFeePaymentAssetId?.toString() ?? ""),
+          getAssetWithFallback(accountFeePaymentAssetId?.toString() ?? "")
+            .decimals,
+        ),
+      )
+
+      return sdk.tx
+        .trade(swap)
+        .withSlippage(swapSlippage)
+        .withBeneficiary(account?.address ?? "")
+        .build()
+        .then((tx) => tx.get())
+    },
+  })
+
+  const { getMaxBalance } = useFormMaxBalanceWithFee(
+    feeEstimationSwapTx ?? null,
   )
 
   const defaultOption =
@@ -95,7 +126,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     stablepoolId: stableswapId,
     omnipoolId: isAddableToOmnipool ? erc20Id : stableswapId,
     selectedAssetId: initialAssetIdToAdd ?? "",
-    accountBalances,
+    getMaxBalance,
     option: defaultOption,
     activeFieldIds: reserveIds,
     split: !enabledSplit ? false : initialSplit,
@@ -126,7 +157,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 
   return {
     form,
-    accountBalances,
+    getMaxBalance,
     assetsToSelect: split ? [] : assetsToSelect,
     meta,
     reserveIds,

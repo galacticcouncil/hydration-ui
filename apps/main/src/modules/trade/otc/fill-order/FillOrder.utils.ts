@@ -2,6 +2,30 @@ import { formatAssetAmount } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
+import { Papi } from "@/providers/rpcProvider"
+import { scale } from "@/utils/formatting"
+
+const FULL_ORDER_PCT_LBOUND = 99
+
+export const getOtcFillOrderTx = (
+  papi: Papi,
+  otcOffer: OtcOffer,
+  sellAmount: string,
+) => {
+  const filledPct = new Big(sellAmount)
+    .div(otcOffer.assetAmountIn)
+    .mul(100)
+    .toNumber()
+
+  return otcOffer.isPartiallyFillable && filledPct <= FULL_ORDER_PCT_LBOUND
+    ? papi.tx.OTC.partial_fill_order({
+        order_id: Number(otcOffer.id),
+        amount_in: BigInt(scale(sellAmount, otcOffer.assetIn.decimals)),
+      })
+    : papi.tx.OTC.fill_order({
+        order_id: Number(otcOffer.id),
+      })
+}
 
 export const getOtcFeeMultiplier = (feePct: string) => {
   return Big(1).minus(feePct || 0)

@@ -83,7 +83,7 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
           <Text
             font="primary"
             fw={600}
-            color={getToken("text.high")}
+            color={getToken("buttons.primary.high.onButton")}
             fs={["p3", "p3", "p2"]}
           >
             {isMobileView
@@ -91,7 +91,11 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
               : t("gigaStaking.banner.title")}
           </Text>
 
-          <Text fs={["p5", "p5", "p4"]} lh="m" color={getToken("text.high")}>
+          <Text
+            fs={["p5", "p5", "p4"]}
+            lh="m"
+            color={getToken("buttons.primary.high.onButton")}
+          >
             {type === "stake"
               ? t("gigaStaking.banner.description.stake")
               : t("gigaStaking.banner.description.migrate")}

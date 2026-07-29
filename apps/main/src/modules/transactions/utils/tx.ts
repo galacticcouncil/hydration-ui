@@ -2,7 +2,7 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, SizedHex } from "polkadot-api"
-import { first, isObjectType } from "remeda"
+import { first, isBigInt, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
 import { paymentInfoQuery } from "@/api/transaction"
@@ -10,6 +10,7 @@ import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonVie
 import {
   AnyPapiTx,
   AnyTransaction,
+  DecodedCallEnum,
   TxOptions,
 } from "@/modules/transactions/types"
 import {
@@ -86,6 +87,52 @@ export function containsEvmCall(tx: AnyTransaction): boolean {
   }
 
   return false
+}
+
+const getEvmCallFeeFromDecoded = (decoded: DecodedCallEnum): bigint => {
+  if (!isDecodedCallEnum(decoded) || decoded.type !== "EVM") return 0n
+
+  const evmVariant = decoded.value
+  if (
+    !isObjectType(evmVariant) ||
+    !("type" in evmVariant) ||
+    evmVariant.type !== "call" ||
+    !("value" in evmVariant) ||
+    !isObjectType(evmVariant.value)
+  ) {
+    return 0n
+  }
+
+  const callValue = evmVariant.value as Record<string, unknown>
+  const gasLimit = callValue.gas_limit
+  const maxFeePerGas = callValue.max_fee_per_gas
+
+  if (!isBigInt(gasLimit) || !Array.isArray(maxFeePerGas)) return 0n
+
+  return gasLimit * BigInt(maxFeePerGas[0])
+}
+
+const collectNestedEvmCallFees = (decoded: DecodedCallEnum): bigint => {
+  if (!isDecodedCallEnum(decoded)) return 0n
+
+  if (decoded.type === "EVM") {
+    return getEvmCallFeeFromDecoded(decoded)
+  }
+
+  if (decoded.type === "Utility" && isBatchDecodedCallValue(decoded.value)) {
+    return decoded.value.value.calls.reduce(
+      (sum, call) => sum + collectNestedEvmCallFees(call),
+      0n,
+    )
+  }
+
+  return 0n
+}
+
+export const getNestedEvmCallsFeeWei = (tx: AnyTransaction): bigint => {
+  if (!isPapiTransaction(tx)) return 0n
+
+  return collectNestedEvmCallFees(tx.decodedCall)
 }
 
 export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {

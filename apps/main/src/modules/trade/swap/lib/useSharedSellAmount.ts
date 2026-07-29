@@ -5,6 +5,16 @@ import { useSwapForm } from "@/states/swapForm"
 
 export const getSharedSellAmount = () => useSwapForm.getState().sellAmount
 
+export const useResetSharedSellAmountOnUnmount = () => {
+  const setSharedSellAmount = useSwapForm((state) => state.setSellAmount)
+
+  useEffect(() => {
+    return () => {
+      setSharedSellAmount("")
+    }
+  }, [setSharedSellAmount])
+}
+
 export const useSharedSellAmountSync = <
   TFormValues extends FieldValues & { sellAmount: string },
 >(

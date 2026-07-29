@@ -156,7 +156,7 @@ export const XcmForm = () => {
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
   const spotPriceId = srcAsset
-    ? registryChain.getBalanceAssetId(srcAsset).toString()
+    ? registryChain.getAssetId(srcAsset).toString()
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)
@@ -235,7 +235,10 @@ export const XcmForm = () => {
           </Stack>
         </Paper>
 
-        <ChainSwitch onClick={handleChainSwitch} />
+        <ChainSwitch
+          onClick={handleChainSwitch}
+          disabled={!!transfer && !transfer.reversible}
+        />
 
         <Paper>
           <Stack p={["l", "xl"]} gap="base">
