@@ -30,7 +30,6 @@ interface Props {
   exchangeRate: number
   aprPercent: number
   worstCaseWaitDays: number
-  nextMaturityDays: number
   instantQuote?: InstantQuote
 }
 

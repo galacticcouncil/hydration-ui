@@ -173,7 +173,6 @@ export const WithdrawModalForm = ({
                   exchangeRate={vaultStats.exchangeRate}
                   aprPercent={vaultStats.apr}
                   worstCaseWaitDays={vaultStats.worstCaseWaitDays}
-                  nextMaturityDays={vaultStats.nextMaturityDays}
                   instantQuote={instantQuote}
                 />
               )}

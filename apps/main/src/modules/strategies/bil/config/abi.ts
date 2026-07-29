@@ -587,8 +587,7 @@ export const BIL_DEPOSIT_ZAP_ABI = [
 ] as const
 
 // Subset of IDecentralPool — the underlying RWA pool the vault deploys
-// HOLLAR into. We only need the minimum investment period for the
-// "Lockup period" copy.
+// HOLLAR into.
 export const DECENTRAL_POOL_ABI = [
   {
     type: "function",

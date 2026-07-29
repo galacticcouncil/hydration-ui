@@ -94,6 +94,7 @@ export function useVaultStats() {
         minRedeem,
         apyWad,
         queueLength,
+        queueHead,
         idleHollar,
         positionCount,
         positionHead,
@@ -108,6 +109,7 @@ export function useVaultStats() {
         vault.read.minRedeemAmount(),
         vault.read.getAPYWad(),
         vault.read.getRedemptionQueueLength(),
+        vault.read.getQueueHead(),
         vault.read.getIdleHollar(),
         vault.read.getPositionCount(),
         vault.read.getPositionHead(),
@@ -128,11 +130,22 @@ export function useVaultStats() {
         }
       }
 
-      if (queueLength > 0n) {
-        worstCaseWaitSec = await vault.read.getEstimatedWaitTime([
-          queueLength - 1n,
-        ])
-      } else if (idleHollar === 0n && nextMaturitySec > 0n) {
+      // Estimate wait for a new queue entry: scan active slots plus the
+      // append index. getEstimatedWaitTime often returns 0 for settled/
+      // claimable requests, so floor on next maturity when idle HOLLAR is 0.
+      if (queueLength > queueHead) {
+        worstCaseWaitSec = await vault.read.getEstimatedWaitTime([queueLength])
+        for (let i = queueHead; i < queueLength; i++) {
+          const wait = await vault.read.getEstimatedWaitTime([i])
+          if (wait > worstCaseWaitSec) worstCaseWaitSec = wait
+        }
+      }
+
+      if (
+        idleHollar === 0n &&
+        nextMaturitySec > 0n &&
+        worstCaseWaitSec < nextMaturitySec
+      ) {
         worstCaseWaitSec = nextMaturitySec
       }
 
@@ -191,7 +204,7 @@ export function useVaultStats() {
         totalAssets: totalAssetsNum,
         totalSupply: Number(formatUnits(totalSupply, EVM_DECIMALS)),
         exchangeRate,
-        worstCaseWaitDays: Math.round(Number(worstCaseWaitSec) / secondsInDay),
+        worstCaseWaitDays: Math.ceil(Number(worstCaseWaitSec) / secondsInDay),
         nextMaturityDays: Math.round(Number(nextMaturitySec) / secondsInDay),
         maxLockupDays: Math.ceil(Number(investmentPeriodSec) / secondsInDay),
         tvlCap: tvlCapNum,
