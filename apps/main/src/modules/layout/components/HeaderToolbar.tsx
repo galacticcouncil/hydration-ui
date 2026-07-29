@@ -1,5 +1,6 @@
 import { FC, lazy } from "react"
 
+import { DepositButton } from "@/modules/layout/components/DepositButton/DepositButton"
 import { SHeaderToolbar } from "@/modules/layout/components/HeaderToolbar.styled"
 import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 import { NotificationCenter } from "@/modules/layout/components/NotificationCenter/NotificationCenter"
@@ -20,6 +21,7 @@ export const HeaderToolbar: FC = () => {
       <NotificationCenter />
       {hasTopNavbar && <ThemeModeToggle />}
       {hasTopNavbar && <Settings />}
+      {hasTopNavbar && <DepositButton />}
       <HeaderWeb3ConnectButton />
     </SHeaderToolbar>
   )

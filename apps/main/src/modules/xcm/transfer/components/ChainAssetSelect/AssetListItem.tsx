@@ -51,7 +51,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   const { t } = useTranslation(["common"])
   const { getAsset } = useAssets()
 
-  const registryId = registryChain.getBalanceAssetId(asset)
+  const registryId = registryChain.getAssetId(asset)
   const registryAsset = getAsset(registryId.toString())
 
   const meta = registryAsset

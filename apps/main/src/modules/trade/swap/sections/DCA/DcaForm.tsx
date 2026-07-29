@@ -22,7 +22,7 @@ import {
   DEFAULT_TRADE_ASSET_OUT_ID,
 } from "@/routes/trade/_history/route"
 
-export const DcaForm: FC = () => {
+export const DcaForm: FC<{ maxBalance: string }> = ({ maxBalance }) => {
   const { t } = useTranslation(["common", "trade"])
   const { control, getValues, setValue, reset, trigger, watch } =
     useFormContext<DcaFormValues>()
@@ -123,6 +123,7 @@ export const DcaForm: FC = () => {
             : t("trade:dca.assetIn.title")
         }
         maxBalanceFallback="0"
+        maxBalance={maxBalance}
         onAssetChange={handleSellAssetChange}
       />
       <DcaAssetSwitcher />

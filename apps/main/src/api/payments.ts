@@ -126,7 +126,13 @@ export const useAccountFeePaymentAssets = () => {
     )
       return []
 
-    const assetIds = Object.keys(balances)
+    const assetIds: string[] = []
+
+    Object.entries(balances).forEach(([assetId, balance]) => {
+      if (balance.free - balance.frozen > 0) {
+        assetIds.push(assetId)
+      }
+    })
     return unique([...assetIds, accountFeePaymentAssetId.toString()])
   }, [
     accountFeePaymentAssetId,
