@@ -363,6 +363,14 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.withdraw.title"),
       description: t("navigation.withdraw.description"),
     },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
+    },
     // memepad: {
     //   title: t("navigation.memepad.title"),
     //   description: "",
