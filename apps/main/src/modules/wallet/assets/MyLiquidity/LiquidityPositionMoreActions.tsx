@@ -97,7 +97,7 @@ export const LiquidityPositionMoreActions: FC<
           </MenuItemLabel>
         </MenuSelectionItem>
       </DropdownMenuItem>
-      {/* TODO: do we need aditonal option to joind farms? */}
+      {/* TODO: do we need additional option to join farms? */}
       {!!farmsToJoin.length && false && (
         <DropdownMenuItem asChild>
           <MenuSelectionItem
