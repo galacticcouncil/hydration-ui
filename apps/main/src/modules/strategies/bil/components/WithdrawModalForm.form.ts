@@ -35,7 +35,7 @@ const useSchema = (
       .check(validateFieldMaxBalance(maxWithdrawable))
       .check(
         refine<string>((value) => Big(value || "0").gte(minRedeem), {
-          error: t("bil.withdraw.cta.belowMin", {
+          error: t("bil.withdraw.validation.belowMin", {
             min: minRedeem,
             symbol: asset.symbol,
           }),

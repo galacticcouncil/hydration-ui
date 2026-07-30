@@ -77,7 +77,8 @@
   "bil.withdraw.method": "Withdraw method",
   "bil.withdraw.ack": "I understand my BIL will be locked in the queue until cancelled or the next position matures.",
   "bil.withdraw.ackInstant": "I understand that my BIL will be swapped for HOLLAR and is subject to the above pool slippage.",
-  "bil.withdraw.cta.belowMin": "Minimum withdrawable amount is {{ min, currency }}",
+  "bil.withdraw.cta.belowMin": "Minimum withdrawable amount is {{ min, currency }}. Deposit more to withdraw fully.",
+  "bil.withdraw.validation.belowMin": "Minimum withdrawal is {{ min, currency }}",
 
   "bil.method.queue.title": "Redemption queue",
   "bil.method.queue.subtitle": "Receive full HOLLAR value",
