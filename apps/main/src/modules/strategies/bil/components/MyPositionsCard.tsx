@@ -98,16 +98,6 @@ export const MyPositionsCard = () => {
       <Flex direction="column" gap="m" p="m">
         {rows.map((row) => {
           const canWithdraw = row.amount >= stats.minRedeem
-          const withdrawButton = (
-            <Button
-              variant="tertiary"
-              size="small"
-              disabled={!canWithdraw}
-              onClick={() => setWithdrawSource(row.id)}
-            >
-              {t("common:withdraw")}
-            </Button>
-          )
 
           return (
             <PositionCard
@@ -174,22 +164,29 @@ export const MyPositionsCard = () => {
                         : t("common:deposit")}
                     </MicroButton>
                   )}
-                  {canWithdraw ? (
-                    withdrawButton
-                  ) : (
-                    <Tooltip
-                      text={t("bil.withdraw.cta.belowMin", {
-                        min: stats.minRedeem,
-                        symbol: bil.symbol,
-                      })}
-                      asChild
-                      side="top"
-                    >
-                      <Box as="span" sx={{ display: "inline-flex" }}>
-                        {withdrawButton}
-                      </Box>
-                    </Tooltip>
-                  )}
+                  <Tooltip
+                    text={
+                      !canWithdraw
+                        ? t("bil.withdraw.cta.belowMin", {
+                            min: stats.minRedeem,
+                            symbol: bil.symbol,
+                          })
+                        : undefined
+                    }
+                    asChild
+                    side="top"
+                  >
+                    <Box as="span" sx={{ display: "inline-flex" }}>
+                      <Button
+                        variant="tertiary"
+                        size="small"
+                        disabled={!canWithdraw}
+                        onClick={() => setWithdrawSource(row.id)}
+                      >
+                        {t("common:withdraw")}
+                      </Button>
+                    </Box>
+                  </Tooltip>
                 </>
               }
             />
