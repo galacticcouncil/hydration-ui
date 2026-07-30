@@ -1,5 +1,4 @@
-import { LinkTextButton, Stack } from "@galacticcouncil/ui/components"
-import { Alert } from "@galacticcouncil/ui/components"
+import { Alert, Stack } from "@galacticcouncil/ui/components"
 import { createFileRoute } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
@@ -14,14 +13,9 @@ const Page = () => {
     <Stack gap="xl">
       {ENV.VITE_WORMHOLE_DISABLED && (
         <Alert
-          sx={{ width: "fit-content", mx: "auto" }}
+          sx={{ maxWidth: "65rem", mx: "auto" }}
           variant="info"
           description={t("xcm:wormhole.disabled.banner")}
-          action={
-            <LinkTextButton href="https://x.com/hydration_net/status/2074890386275770872">
-              {t("readMore")}
-            </LinkTextButton>
-          }
         />
       )}
       <XcmPage />

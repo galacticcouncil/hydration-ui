@@ -3,8 +3,6 @@ import {
   Button,
   Flex,
   Icon,
-  LinkTextButton,
-  Stack,
   Text,
   Tooltip,
   VirtualizedList,
@@ -88,16 +86,7 @@ export const ChainList: React.FC<ChainListProps> = ({
             {isDisabled && (
               <Tooltip
                 side="top"
-                text={
-                  <Stack gap="base">
-                    <Text>
-                      {t("wormhole.disabled.tooltip", { name: chain.name })}
-                    </Text>
-                    <LinkTextButton href="https://x.com/hydration_net/status/2074890386275770872">
-                      {t("common:readMore")}
-                    </LinkTextButton>
-                  </Stack>
-                }
+                text={t("wormhole.disabled.tooltip", { name: chain.name })}
               >
                 <Icon
                   sx={{ mr: "base", color: getToken("accents.info.onPrimary") }}
