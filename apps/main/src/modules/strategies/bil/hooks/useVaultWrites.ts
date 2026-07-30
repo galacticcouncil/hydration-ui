@@ -1,4 +1,5 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
 import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
@@ -8,6 +9,8 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
+import { AAVE_GAS_LIMIT } from "@/api/aave"
+import { calculateSlippage } from "@/api/utils/slippage"
 import {
   BIL_DEPOSIT_ZAP_ABI,
   BIL_POOL_ABI,
@@ -468,21 +471,36 @@ export function useInstantRedeemFromQueue() {
         evmAddress,
       )
 
-      const evmInner = await buildBatchCalls(cancelCalls)
+      const [evmInner, swap, hasDebt] = await Promise.all([
+        buildBatchCalls(cancelCalls),
+        sdk.api.router.getBestSell(
+          Number(bil.id),
+          Number(hollar.id),
+          returnAmount,
+        ),
+        sdk.api.aave.hasBorrowPositions(address),
+      ])
+      const route = TradeRouteBuilder.build(swap.swaps) as Parameters<
+        typeof papi.tx.Router.sell
+      >[0]["route"]
+      const exactSellTx = papi.tx.Router.sell({
+        asset_in: Number(bil.id),
+        asset_out: Number(hollar.id),
+        amount_in: swap.amountIn,
+        min_amount_out:
+          swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage),
+        route,
+      })
 
-      const swap = await sdk.api.router.getBestSell(
-        Number(bil.id),
-        Number(hollar.id),
-        bilAmount.toString(),
-      )
-      const swapTx = await sdk.tx
-        .trade(swap)
-        .withSlippage(swapSlippage)
-        .withBeneficiary(address)
-        .build()
+      const swapTx = hasDebt
+        ? papi.tx.Dispatcher.dispatch_with_extra_gas({
+            call: exactSellTx.decodedCall,
+            extra_gas: AAVE_GAS_LIMIT,
+          })
+        : exactSellTx
 
       const batchTx = papi.tx.Utility.batch_all({
-        calls: [...evmInner, swapTx.get().decodedCall],
+        calls: [...evmInner, swapTx.decodedCall],
       })
 
       return createTransaction({

@@ -97,12 +97,13 @@ export const WithdrawModalForm = ({
   const inputNum = parseFloat(withdrawAmount) || 0
   const usdValue = inputNum * vaultStats.exchangeRate
 
-  const healthFactor = hfContext
-    ? getBilWithdrawHealthFactor({
-        ...hfContext,
-        withdrawAmount,
-      })
-    : null
+  const healthFactor =
+    !!reserveConfig?.borrowingEnabled && hfContext
+      ? getBilWithdrawHealthFactor({
+          ...hfContext,
+          withdrawAmount,
+        })
+      : null
 
   const projectedQueueRate = projectRate(
     vaultStats.exchangeRate,
