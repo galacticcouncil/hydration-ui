@@ -207,7 +207,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     isLoadingTransfer,
     isLoadingCall,
     call,
-
     report,
   } = useXcmTransfer(form, transferArgs)
 
