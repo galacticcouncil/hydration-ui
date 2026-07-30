@@ -148,7 +148,9 @@ function toRegistryEmitter(chain: AnyChain, emitterAddress: string): string {
   return `0x${emitterAddress}`
 }
 
-function findChainByWormholeId(wormholeId: number): AnyChain | undefined {
+export function findChainByWormholeId(
+  wormholeId: number,
+): AnyChain | undefined {
   return chainsMap
     .values()
     .find(

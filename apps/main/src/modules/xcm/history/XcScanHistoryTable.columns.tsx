@@ -7,7 +7,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { basejumpscan, stringEquals, xcscan } from "@galacticcouncil/utils"
+import { stringEquals } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
@@ -24,7 +24,10 @@ import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
-import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
+import {
+  getFormattedAddresses,
+  getJourneyExplorerLink,
+} from "@/modules/xcm/history/utils/journey"
 import { toDecimal } from "@/utils/formatting"
 
 const columnHelper = createColumnHelper<XcJourney>()
@@ -203,11 +206,8 @@ export const useXcScanHistoryColumns = () => {
     const actionColumn = columnHelper.display({
       id: XcScanHistoryTableColumnId.Action,
       cell: ({ row }) => {
-        const { correlationId, originProtocol } = row.original
-        const link =
-          originProtocol === "basejump"
-            ? basejumpscan.tx(correlationId)
-            : xcscan.tx(correlationId)
+        const { correlationId } = row.original
+        const link = getJourneyExplorerLink(row.original)
 
         const isNotPending = !pendingCorrelationIds.includes(correlationId)
         const isClaimable = isNotPending && isJourneyClaimable(row.original)
