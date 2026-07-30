@@ -11,7 +11,7 @@ export const useTransactionDryRun = (tx: SingleTransaction["tx"]) => {
   const { account } = useAccount()
 
   return useQuery({
-    ...papiDryRunErrorQuery(rpc, account?.address ?? "", tx, true),
+    ...papiDryRunErrorQuery(rpc, account?.address ?? "", tx),
     enabled: ENV.VITE_DRY_RUN_ENABLED,
   })
 }
