@@ -812,6 +812,7 @@
   "wallet.transactions.filter.withdraw": "Withdrawals",
   "wallet.transactions.filter.search.placeholder": "Search by asset or address",
   "xcm.switch.crosschain": "Cross-Chain",
+  "xcm.unavailable": "Cross-chain transfers are no longer available here. Please use our new UI at <0>{{url}}</0>",
   "xcm.switch.bridge": "Ethereum Bridge",
   "xcm.bridge.description": "Select your bridge to move funds to or from Ethereum",
   "xcm.bridge.carrier.description": "Transfers assets between Hydration and Ethereum using Moonbeam Routed Liquidity.",
