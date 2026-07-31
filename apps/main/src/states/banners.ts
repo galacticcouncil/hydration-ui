@@ -28,20 +28,6 @@ const bannerEntries: BannerConfig[] = [
     priority: 1,
     enabled: false,
   },
-  {
-    id: "hollarb",
-    backgroundImage: "/images/hollarb.webp",
-    backgroundImageMobile: "/images/hollarbMobile.webp",
-    title: "banners.hollarb.title",
-    description: "banners.hollarb.description",
-    textColor: "#FFF",
-    ctaColor: "#B3D7FA",
-    ctaTextColor: "#0D1525",
-    cta: "Get HOLLARb",
-    to: LINKS.strategiesHollarBonds,
-    priority: 2,
-    enabled: false,
-  },
 ]
 
 export const useEnabledBanners = () => {
