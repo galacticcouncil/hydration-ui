@@ -40,7 +40,7 @@ export const useUnlockableNativeTokens = () => {
     queryFn: async () => {
       let referendaUnlockable = 0n
       let votesToRemove: TUnlockableVote[] = []
-      let lockedReferendaSeconds = 0
+      let lockedReferendaMilliseconds = 0
       let classIds: number[] = []
 
       if (referendaLock > 0n) {
@@ -56,7 +56,7 @@ export const useUnlockableNativeTokens = () => {
             : 0n
 
         votesToRemove = unlockedTokens.votesToRemove
-        lockedReferendaSeconds =
+        lockedReferendaMilliseconds =
           (unlockedTokens.maxLockedBlock ?? 0) * rpc.slotDurationMs
 
         classIds = await rpc.queryClient.ensureQueryData(
@@ -102,7 +102,7 @@ export const useUnlockableNativeTokens = () => {
 
       return {
         maxUnlockable: scaleHuman(maxUnlockable.toString(), native.decimals),
-        lockedReferendaSeconds,
+        lockedReferendaMilliseconds,
         unlockableGigaPendingPositions,
         votesToRemove,
         classIds,
@@ -118,7 +118,7 @@ export const useUnlockableNativeTokens = () => {
   return {
     maxUnlockable: data?.maxUnlockable ?? "0",
     displayMaxUnlockable,
-    lockedReferendaSeconds: data?.lockedReferendaSeconds ?? 0,
+    lockedReferendaMilliseconds: data?.lockedReferendaMilliseconds ?? 0,
     unlockableGigaPendingPositions: data?.unlockableGigaPendingPositions ?? [],
     votesToRemove: data?.votesToRemove ?? [],
     classIds: data?.classIds ?? [],
