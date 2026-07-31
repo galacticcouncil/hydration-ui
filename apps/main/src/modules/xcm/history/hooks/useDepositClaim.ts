@@ -1,6 +1,7 @@
-import { HYDRATION_CHAIN_KEY, isAnyParachain } from "@galacticcouncil/utils"
+import { etherscan } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { isEthereumSigner } from "@galacticcouncil/web3-connect"
+import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { CallType } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useMutation } from "@tanstack/react-query"
@@ -8,8 +9,7 @@ import { Binary } from "polkadot-api"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useAccountFeePaymentAssetId } from "@/api/payments"
-import { useCrossChainWallet } from "@/api/xcm"
+import { useClaimTxOptions } from "@/modules/xcm/history/hooks/useClaimTxOptions"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import {
@@ -27,8 +27,6 @@ export function useDepositClaim(journey: XcJourney) {
     usePendingClaimsStore()
   const { papi } = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
-  const wallet = useCrossChainWallet()
-  const { data: feePaymentAssetId } = useAccountFeePaymentAssetId()
 
   const chain = resolveChainFromUrn(journey.destination)
   const chainName = chain?.name ?? ""
@@ -37,6 +35,8 @@ export function useDepositClaim(journey: XcJourney) {
 
   const value = asset ? toDecimal(asset.amount, asset.decimals) : ""
   const symbol = asset?.symbol ?? ""
+
+  const getClaimTxOptions = useClaimTxOptions({ value, symbol, chainName })
 
   const mutation = useMutation({
     onMutate: () => {
@@ -52,34 +52,12 @@ export function useDepositClaim(journey: XcJourney) {
         throw new Error("Failed to build claim call")
       }
 
+      // ss58 origin — the claim is an EVM.call extrinsic on the destination
+      // parachain itself, no remote xcm hop involved.
       if (result.type === CallType.Substrate) {
         const { call, chain: destChain } = result
 
-        const srcChain = chainsMap.get(HYDRATION_CHAIN_KEY)
-        const claimChain = chainsMap.get("moonbeam")
-
-        if (
-          !srcChain ||
-          !claimChain ||
-          !isAnyParachain(srcChain) ||
-          !isAnyParachain(claimChain)
-        ) {
-          throw new Error("Invalid chains for substrate claim")
-        }
-
-        const feeAsset = feePaymentAssetId
-          ? srcChain.findAssetById(String(feePaymentAssetId))
-          : undefined
-
-        const remoteTx = await wallet.remoteXcm(
-          account.address,
-          srcChain,
-          claimChain,
-          call,
-          { srcFeeAsset: feeAsset?.asset },
-        )
-
-        const tx = await papi.txFromCallData(Binary.fromHex(remoteTx.data))
+        const tx = await papi.txFromCallData(Binary.fromHex(call.data))
 
         return createTransaction(
           {
@@ -108,6 +86,31 @@ export function useDepositClaim(journey: XcJourney) {
             },
             onError: () => removePendingCorrelationId(journey.correlationId),
           },
+        )
+      }
+
+      // H160 origin — hydration is a first-class evm destination now, so the
+      // transceiver call is signed directly instead of being wrapped.
+      if (result.type === CallType.Evm) {
+        const { call, chain: destChain } = result
+        const signer = getWallet(account.provider)?.signer
+
+        if (!isEthereumSigner(signer)) {
+          throw new Error("Ethereum signer is required to claim")
+        }
+
+        const options = getClaimTxOptions(destChain, result.type, {
+          createLink: (txHash) => etherscan.tx(destChain.key, txHash),
+          onSubmitted: () => {
+            setIsWaitingForSignature(false)
+            addPendingCorrelationId(journey.correlationId)
+          },
+          onError: () => removePendingCorrelationId(journey.correlationId),
+        })
+
+        return signer.signAndSubmit(
+          { data: call.data, to: call.to, value: call.value },
+          options,
         )
       }
 
