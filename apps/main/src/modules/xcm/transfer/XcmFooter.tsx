@@ -16,14 +16,8 @@ type XcmFooterProps = {
 export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
   const { t } = useTranslation()
 
-  const {
-    alerts,
-    status,
-    dryRunError,
-    isLoading,
-    isLoadingCall,
-    isLoadingTransfer,
-  } = useXcmProvider()
+  const { alerts, status, isLoading, isLoadingCall, isLoadingTransfer } =
+    useXcmProvider()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
   const srcChain = watch("srcChain")
@@ -74,13 +68,6 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
             }
           />
         ))}
-        {dryRunError && (
-          <Alert
-            variant="error"
-            title={dryRunError.name}
-            tooltip={dryRunError.description}
-          />
-        )}
         <SubmitButton
           status={status}
           disabled={
