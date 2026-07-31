@@ -39,7 +39,7 @@ export const NewFarmsBanner = () => {
         setBannerVisible("new-farms", false, Date.now())
       }
     }
-  }, [newFarms, isSuccess, getAsset, banner.visible, setBannerVisible])
+  }, [newFarms, isSuccess, banner.visible, setBannerVisible])
 
   if (!newFarms || newFarms.length === 0) return null
 

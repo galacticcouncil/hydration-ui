@@ -3,7 +3,6 @@ import {
   latestBlockHeightQuery,
 } from "@galacticcouncil/indexer/squid"
 import { PingResponse } from "@galacticcouncil/utils"
-import { millisecondsInSecond } from "date-fns/constants"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { prop } from "remeda"
@@ -31,8 +30,7 @@ declare global {
 export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const { queryClient, slotDurationMs } = useRpcProvider()
-  const refetchInterval = (slotDurationMs || millisecondsInSecond) / 2
+  const { queryClient } = useRpcProvider()
 
   const [isBestProviderFound, setIsBestProviderFound] = useState(
     () => !useProviderRpcUrlStore.getState().autoMode,
@@ -49,7 +47,7 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
 
     if (bestRpc) {
       queryClient.setQueryData(
-        rpcStatusQueryOptions(bestRpc.url, refetchInterval).queryKey,
+        rpcStatusQueryOptions(bestRpc.url).queryKey,
         bestRpc,
       )
     }
