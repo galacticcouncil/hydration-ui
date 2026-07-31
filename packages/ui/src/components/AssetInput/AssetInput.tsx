@@ -3,9 +3,17 @@ import Big from "big.js"
 import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import {
+  Flex,
+  FormLabel,
+  Icon,
+  LogoSkeleton,
+  MicroButton,
+  Skeleton,
+  Text,
+} from "@/components"
 import { FormError } from "@/components/FormError"
-import { getToken, pxToRem } from "@/utils"
+import { getToken } from "@/utils"
 
 import {
   SAssetButton,
@@ -22,6 +30,7 @@ export type AssetInputProps = {
   displayValue?: string
   displayValueLoading?: boolean
   maxBalance?: string
+  maxBalanceLoading?: boolean
   maxButtonBalance?: string
   ignoreBalance?: boolean
   ignoreDisplayValue?: boolean
@@ -36,6 +45,7 @@ export type AssetInputProps = {
   selectedAssetIcon?: ReactNode
   onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
+  onMaxButtonClick?: (value: string) => void
   className?: string
 }
 
@@ -48,7 +58,9 @@ export const AssetInput = ({
   label,
   balanceLabel,
   maxBalance,
+  maxBalanceLoading,
   maxButtonBalance,
+  onMaxButtonClick,
   ignoreBalance,
   ignoreDisplayValue,
   hideMaxBalanceAction,
@@ -65,8 +77,11 @@ export const AssetInput = ({
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
 
-  const onMaxButtonClick = () => {
-    if (usedMaxBalance) onChange?.(usedMaxBalance)
+  const handleMaxButtonClick = () => {
+    if (usedMaxBalance) {
+      onChange?.(usedMaxBalance)
+      onMaxButtonClick?.(usedMaxBalance)
+    }
   }
 
   const errorMessage = assetError ?? amountError
@@ -80,20 +95,7 @@ export const AssetInput = ({
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between">
-        {label && (
-          <Text
-            color={getToken("text.medium")}
-            fs="p5"
-            fw={500}
-            sx={{
-              width: "fit-content",
-              lineHeight: "120%",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </Text>
-        )}
+        {label && <FormLabel>{label}</FormLabel>}
         {!ignoreBalance && (
           <Flex align="center" gap="s" sx={{ marginLeft: "auto" }}>
             <Text
@@ -108,7 +110,7 @@ export const AssetInput = ({
               }}
             >
               <span>{balanceLabel ?? "Balance"}: </span>
-              {loading ? (
+              {loading || maxBalanceLoading ? (
                 <span sx={{ height: 12, lineHeight: 1 }}>
                   <Skeleton width={48} height={12} />
                 </span>
@@ -119,10 +121,11 @@ export const AssetInput = ({
             {!hideMaxBalanceAction && (
               <MicroButton
                 aria-label="Max balance button"
-                onClick={onMaxButtonClick}
+                onClick={handleMaxButtonClick}
                 disabled={
                   Big(usedMaxBalance || "0").lte(0) ||
                   loading ||
+                  maxBalanceLoading ||
                   !onChange ||
                   !!disabled
                 }
@@ -223,9 +226,10 @@ export const AssetButton = ({
 }) => {
   if (loading)
     return (
-      <div sx={{ height: pxToRem(34), lineHeight: 1 }}>
-        <Skeleton sx={{ width: pxToRem(80), height: pxToRem(34) }} />
-      </div>
+      <Flex gap="s" justify="center" className={className}>
+        <LogoSkeleton size="medium" />
+        <Skeleton sx={{ width: "2xl" }} />
+      </Flex>
     )
 
   if (symbol && icon)

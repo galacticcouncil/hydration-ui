@@ -4,21 +4,27 @@ import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { LINKS } from "@/config/navigation"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
 type Props = {
   readonly asset: MyAsset
 }
 
 export const AssetDetailStaking: FC<Props> = ({ asset }) => {
   const { t } = useTranslation("wallet")
-
-  if (!asset.canStake) {
-    return null
-  }
+  const { featureFlags } = useRpcProvider()
 
   return (
     <Button type="button" variant="emphasis" outline asChild>
-      <Link to="/staking">
+      <Link
+        to={
+          featureFlags.gigaStakingEnabled
+            ? LINKS.stakingGigaStake
+            : LINKS.stakingOld
+        }
+      >
         <StylizedAdd />
         {t("myAssets.actions.staking", {
           symbol: asset.symbol,

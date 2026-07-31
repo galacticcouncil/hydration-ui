@@ -18,14 +18,19 @@ import { z } from "zod/v4"
 
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import i18n from "@/i18n"
+import {
+  getSharedSellAmount,
+  useSharedSellAmountSync,
+} from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 import {
+  maxBalanceError,
   positiveOptional,
   requiredObject,
-  useValidateFormMaxBalance,
+  validateMaxBalance,
   validNumber,
 } from "@/utils/validators"
 
@@ -132,22 +137,35 @@ const schema = schemaBase
     }
   })
 
-const useSchema = (account: Account | null) => {
+const useSchema = (
+  account: Account | null,
+  limitOrderMaxBalance: string,
+  openBudgetOrderMaxBalance: string,
+) => {
   const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
-  const refineMaxBalance = useValidateFormMaxBalance()
-  const { getBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
+
+  if (!account) {
+    return schema
+  }
 
   const minBudgetSchema = schema
-    .check(
-      account
-        ? refineMaxBalance("sellAmount", (form) => [
-            form.sellAsset,
-            form.sellAmount,
-          ])
-        : z.refine(() => true),
+    .refine(
+      (form) => {
+        return validateMaxBalance(
+          form.orders.type === DcaOrdersMode.OpenBudget
+            ? openBudgetOrderMaxBalance
+            : limitOrderMaxBalance,
+          form.sellAmount,
+        )
+      },
+      {
+        error: maxBalanceError,
+        path: ["sellAmount"],
+      },
     )
     .check(async (ctx) => {
       const { sellAsset, sellAmount, orders } = ctx.value
@@ -190,9 +208,7 @@ const useSchema = (account: Account | null) => {
         return
       }
 
-      const balance = getBalance(sellAsset.id)
-
-      const minAmount = Big(balance?.transferable.toString() || "0")
+      const minAmount = Big(getTransferableBalance(sellAsset.id).toString())
         .div(MIN_DCA_ORDERS)
         .toString()
 
@@ -221,16 +237,23 @@ const useSchema = (account: Account | null) => {
 type Args = {
   readonly assetIn: string
   readonly assetOut: string
+  readonly limitOrderMaxBalance: string
+  readonly openBudgetOrderMaxBalance: string
 }
 
-export const useDcaForm = ({ assetIn, assetOut }: Args) => {
+export const useDcaForm = ({
+  assetIn,
+  assetOut,
+  limitOrderMaxBalance,
+  openBudgetOrderMaxBalance,
+}: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
   const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
-    sellAmount: "",
+    sellAmount: getSharedSellAmount(),
     buyAsset: getAsset(assetOut) ?? null,
     duration: DEFAULT_DCA_DURATION,
     orders: {
@@ -241,8 +264,12 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
   const form = useForm<DcaFormValues>({
     mode: "onChange",
     defaultValues,
-    resolver: standardSchemaResolver(useSchema(account)),
+    resolver: standardSchemaResolver(
+      useSchema(account, limitOrderMaxBalance, openBudgetOrderMaxBalance),
+    ),
   })
+
+  useSharedSellAmountSync(form)
 
   const { trigger, getValues } = form
 

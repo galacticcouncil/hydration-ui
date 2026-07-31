@@ -85,7 +85,7 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
       />
       <TabsRoot value={view}>
         <TabsContent value={TabView.RPC}>
-          <RpcListModalContent />
+          <RpcListModalContent poll={!!props.open} />
         </TabsContent>
         <TabsContent value={TabView.SQUID}>
           <SquidIndexerListModalContent />

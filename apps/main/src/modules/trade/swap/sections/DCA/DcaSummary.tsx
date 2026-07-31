@@ -118,7 +118,7 @@ export const DcaSummary: FC<Props> = ({
           <SwapSummaryRow
             label={t("trade:dca.summary.slippage")}
             content={
-              <SummaryRowValue color={getToken("colors.azureBlue.300")}>
+              <SummaryRowValue color={getToken("text.tint.quart")}>
                 {t("percent", { value: slippage })}
               </SummaryRowValue>
             }

@@ -8,8 +8,6 @@ export enum CapType {
   "borrowCap" = "borrowCap",
 }
 
-export type MoneyMarketEnv = "mainnet" | "testnet"
-
 export type ToastsConfig = {
   submitted: string
   success: string
@@ -25,6 +23,21 @@ export type MoneyMarketTxFn = (
   },
   withExtraGas?: boolean,
 ) => void
+
+type MaxBalanceResult = {
+  maxBalanceHuman: string
+}
+
+type MaxBalanceParams = {
+  assetId?: string
+  tx: ExtendedEvmCall | null
+  feePctBuffer?: number
+  balance?: string
+}
+
+export type UseMaxBalanceFn = (
+  params: MaxBalanceParams,
+) => MaxBalanceResult | undefined
 
 export interface ExtendedEvmCall extends EvmCall {
   nonce?: bigint
@@ -45,7 +58,7 @@ export type ReserveFormatterFn = <T extends ReserveDataHumanized>(
 export type ExternalApyData = Map<
   string,
   {
-    borrowApy: string
-    supplyApy: string
+    borrowApy: string | null
+    supplyApy: string | null
   }
 >

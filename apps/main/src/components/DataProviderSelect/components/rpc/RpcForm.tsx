@@ -5,7 +5,7 @@ import {
   Input,
   Spinner,
 } from "@galacticcouncil/ui/components"
-import { parseLarkRpcUrlName, pingRpc } from "@galacticcouncil/utils"
+import { parseHydrationRpcName } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
@@ -16,6 +16,7 @@ import {
   useRpcFormSchema,
 } from "@/components/DataProviderSelect/components/rpc/RpcForm.utils"
 import { useRpcListStore } from "@/states/provider"
+import { pingWorker } from "@/workers/ping"
 
 const PING_TIMEOUT = 10000
 
@@ -31,13 +32,13 @@ export const RpcForm = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async ({ address }: RpcFormValues) => {
-      const status = await pingRpc(address, PING_TIMEOUT)
+      const status = await pingWorker.getBlock(address, PING_TIMEOUT)
 
       if (status.ping === Infinity) {
         throw new Error(t("rpc.change.modal.errors.rpcInvalid"))
       }
 
-      const larkName = parseLarkRpcUrlName(address)
+      const larkName = parseHydrationRpcName(address)
       addRpc(address, larkName || undefined)
       form.reset()
     },

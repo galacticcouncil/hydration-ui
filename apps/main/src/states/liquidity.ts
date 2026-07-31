@@ -8,7 +8,6 @@ import {
   calculate_liquidity_lrna_out,
   calculate_liquidity_out,
 } from "@galacticcouncil/math-omnipool"
-import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -239,33 +238,13 @@ export const setOmnipoolAssets = (
 ) => useOmnipoolAssetsStore.setState({ data, isLoading })
 
 export const useOmnipoolStablepoolAssets = () => {
-  useQuery({
-    queryKey: ["omnipoolAssets"],
-    queryFn: () => {
-      throw new Error("queryFn should not run")
-    },
-  })
-
   const data = useOmnipoolAssetsStore((s) => s.data)
   const isLoading = useOmnipoolAssetsStore((s) => s.isLoading)
 
-  const getOmnipoolAsset = useCallback(
-    (assetId: string) => data?.find((asset) => asset.id === assetId),
-    [data],
-  )
-
-  return { data, isLoading, getOmnipoolAsset }
+  return { data, isLoading }
 }
 
 export const useOmnipoolAsset = (assetId: string) => {
-  useQuery({
-    queryKey: ["omnipoolAssets"],
-    staleTime: Infinity,
-    queryFn: () => {
-      throw new Error("queryFn should not run")
-    },
-  })
-
   const isLoading = useOmnipoolAssetsStore(prop("isLoading"))
   const data = useOmnipoolAssetsStore(
     useShallow((state) => state.data?.find((asset) => asset.id === assetId)),
@@ -287,30 +266,12 @@ export const setXYKPools = (data: XYKPoolsStore) =>
   useXYKPoolsStore.setState((prevState) => ({ ...prevState, ...data }))
 
 export const useXYKPools = () => {
-  useQuery({
-    queryKey: ["xykLiquidityPools"],
-    queryFn: () => {
-      throw new Error("queryFn should not run")
-    },
-  })
   const store = useXYKPoolsStore()
 
-  const getXYKPool = useCallback(
-    (address: string) => store.data?.find((pool) => pool.id === address),
-    [store.data],
-  )
-
-  return { ...store, getXYKPool }
+  return store
 }
 
 export const useXYKPool = (address: string) => {
-  useQuery({
-    queryKey: ["xykLiquidityPools"],
-    queryFn: () => {
-      throw new Error("queryFn should not run")
-    },
-  })
-
   const isLoading = useXYKPoolsStore(prop("isLoading"))
   const data = useXYKPoolsStore(
     useShallow((state) => state.data?.find((pool) => pool.id === address)),

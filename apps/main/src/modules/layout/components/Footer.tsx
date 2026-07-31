@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { funnel } from "remeda"
 
 import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
@@ -13,7 +13,25 @@ const FOOTER_VISIBLE_AFTER_ACTIVITY_MS = 1000
 export const Footer = ({ loading }: { loading?: boolean }) => {
   const [isActive, setIsActive] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const activityTimeoutRef = useRef<number | null>(null)
+  const isHoveredRef = useRef(false)
+
+  const pauseHide = useCallback(() => {
+    if (activityTimeoutRef.current !== null) {
+      clearTimeout(activityTimeoutRef.current)
+      activityTimeoutRef.current = null
+    }
+  }, [])
+
+  const scheduleHide = useCallback(() => {
+    pauseHide()
+    activityTimeoutRef.current = window.setTimeout(() => {
+      if (!isHoveredRef.current) {
+        setIsActive(false)
+      }
+    }, FOOTER_VISIBLE_AFTER_ACTIVITY_MS)
+  }, [pauseHide])
 
   useEffect(() => {
     const computeIsAtBottom = () => {
@@ -27,12 +45,7 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
     const markActive = funnel(
       () => {
         setIsActive(true)
-        if (activityTimeoutRef.current !== null) {
-          clearTimeout(activityTimeoutRef.current)
-        }
-        activityTimeoutRef.current = window.setTimeout(() => {
-          setIsActive(false)
-        }, FOOTER_VISIBLE_AFTER_ACTIVITY_MS)
+        scheduleHide()
       },
       { minGapMs: FOOTER_VISIBLE_AFTER_ACTIVITY_MS, triggerAt: "start" },
     )
@@ -60,12 +73,28 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
         clearTimeout(activityTimeoutRef.current)
       }
     }
-  }, [])
+  }, [scheduleHide])
 
-  const hidden = !isActive && !isAtBottom && !loading
+  const hidden = !isActive && !isAtBottom && !loading && !isHovered
+
+  const onMouseEnter = useCallback(() => {
+    isHoveredRef.current = true
+    setIsHovered(true)
+    pauseHide()
+  }, [pauseHide])
+
+  const onMouseLeave = useCallback(() => {
+    isHoveredRef.current = false
+    setIsHovered(false)
+    scheduleHide()
+  }, [scheduleHide])
 
   return (
-    <SFooter justify="space-between">
+    <SFooter
+      justify="space-between"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {!loading && <GigaNews isHidden={hidden} />}
 
       <SFooterControls hidden={hidden} gap="base" ml="auto">

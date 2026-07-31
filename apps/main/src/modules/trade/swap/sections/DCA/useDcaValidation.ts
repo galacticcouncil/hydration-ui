@@ -14,7 +14,7 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 
-const PRICE_IMPACT_WARNING_THRESHOLD = -0.1
+const PRICE_IMPACT_WARNING_THRESHOLD = -1
 
 export enum DcaValidationError {
   PriceImpact = "PriceImpact",

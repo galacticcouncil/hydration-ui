@@ -1,15 +1,18 @@
+import { latestBlockHeightQuery } from "@galacticcouncil/indexer/squid"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import {
   DataProviderStatus,
   DataProviderStatusThreshold,
   getDataProviderStatus,
 } from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import { isNumber, prop, uniqueBy } from "remeda"
 
 import { useBestNumber } from "@/api/chain"
+import { useSquidClient, useSquidUrl } from "@/api/provider"
 import { getIndexerStatus } from "@/components/DataProviderSelect/DataProviderResolver.utils"
 import { SQUID_URLS } from "@/config/rpc"
 import { useSquidListStore } from "@/states/provider"
@@ -22,7 +25,7 @@ const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
 }
 
 const ELAPSED_TIME_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
-  { max: 32_000, status: DataProviderStatus.HEALTHY },
+  { max: 45_000, status: DataProviderStatus.HEALTHY },
   { max: 120_000, status: DataProviderStatus.LAGGING },
   { max: Infinity, status: DataProviderStatus.DEGRADED },
 ]
@@ -86,6 +89,27 @@ export const useBlockHeightStatus = (blockHeight: number | null) => {
           count: blockHeightDifference,
         })
       : "",
+  }
+}
+
+export const useActiveIndexerStatus = () => {
+  const url = useSquidUrl()
+  const squidSdk = useSquidClient()
+
+  const {
+    data: blockHeight,
+    isLoading,
+    isError,
+  } = useQuery(latestBlockHeightQuery(squidSdk, url))
+
+  const blockHeightStatus = useBlockHeightStatus(blockHeight ?? null)
+
+  return {
+    url,
+    blockHeight: blockHeight ?? null,
+    isLoading,
+    isError,
+    ...blockHeightStatus,
   }
 }
 

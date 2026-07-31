@@ -2,7 +2,6 @@ import { Box, Stack, Text } from "@galacticcouncil/ui/components"
 import { getHostnameFromUrl } from "@galacticcouncil/utils"
 
 import { useBestNumber } from "@/api/chain"
-import { useSquidUrl } from "@/api/provider"
 import { SquidIndexerStatus } from "@/components/DataProviderSelect/components/squid/SquidIndexerStatus"
 import { useElapsedTimeStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { ProviderProps } from "@/config/rpc"
@@ -11,7 +10,6 @@ export const StatusTooltipContent: React.FC<ProviderProps> = ({
   name,
   url,
 }) => {
-  const squidUrl = useSquidUrl()
   const { data } = useBestNumber()
   const { statusText } = useElapsedTimeStatus(data?.timestamp ?? 0)
 
@@ -23,7 +21,7 @@ export const StatusTooltipContent: React.FC<ProviderProps> = ({
         </Text>
         <Text>{statusText}</Text>
       </Box>
-      <SquidIndexerStatus url={squidUrl} />
+      <SquidIndexerStatus />
     </Stack>
   )
 }

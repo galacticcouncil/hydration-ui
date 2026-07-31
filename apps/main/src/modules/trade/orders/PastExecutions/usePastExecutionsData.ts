@@ -7,10 +7,9 @@ import {
   IndexerErrorState,
   parseIndexerErrorState,
 } from "@galacticcouncil/indexer/squid/lib/parseIndexerErrorState"
-import { subscan } from "@galacticcouncil/utils"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, subscan } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 
 import { useSquidClient } from "@/api/provider"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
@@ -28,11 +27,21 @@ export type PastExecutionData = {
   readonly errorState: IndexerErrorState | null
 }
 
+const PAGE_SIZE = 100
+
 export const usePastExecutionsData = (scheduleId: number) => {
   const squidClient = useSquidClient()
-  const { data, isLoading } = useQuery(
-    dcaScheduleExecutionsQuery(squidClient, scheduleId),
+  const [showAll, setShowAll] = useState(false)
+  const { data, isLoading, isFetching } = useQuery(
+    dcaScheduleExecutionsQuery(
+      squidClient,
+      scheduleId,
+      showAll ? undefined : PAGE_SIZE,
+    ),
   )
+
+  const totalCount =
+    data?.dcaSchedule?.dcaScheduleExecutionsByScheduleId?.totalCount ?? 0
 
   const { getAssetWithFallback } = useAssets()
 
@@ -100,7 +109,16 @@ export const usePastExecutionsData = (scheduleId: number) => {
     )
   }, [data, assetIn.decimals, assetOut.decimals])
 
-  return { assetIn, assetOut, executions, isLoading }
+  return {
+    assetIn,
+    assetOut,
+    executions,
+    isLoading,
+    totalCount,
+    hasMore: !showAll && totalCount > executions.length,
+    isLoadingAll: showAll && isFetching,
+    loadAll: () => setShowAll(true),
+  }
 }
 
 const statusMap: Record<DcaScheduleExecutionStatus, TransactionStatusVariant> =

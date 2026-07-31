@@ -6,14 +6,14 @@ import { Binary } from "polkadot-api"
 
 import { ENV } from "@/config/env"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
-import { scaleHuman } from "@/utils/formatting"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export enum TokenLockType {
   Vesting = "ormlvest",
   Democracy = "democrac",
   OpenGov = "pyconvot",
   Staking = "stk_stks",
+  GigaStaking = "ghdxlock",
 }
 
 export enum TokenReserveType {
@@ -33,24 +33,35 @@ export const nativeTokenLocksQuery = (
   return queryOptions({
     queryKey: ["balances", "native-lock", address],
     queryFn: async () => {
-      const locks = await papi.query.Balances.Locks.getValue(address)
+      const locks = await papi.query.Balances.Locks.getValue(address, {
+        at: "best",
+      })
 
       return locks
-        .map((lock) => {
-          const type = Binary.toText(Binary.fromHex(lock.id))
+        .map(({ id, amount }) => {
+          const type = Binary.toText(Binary.fromHex(id))
 
           if (!isKnownTokenLockType(type)) {
             return null
           }
 
           return {
-            type: type,
-            amount: scaleHuman(lock.amount, NATIVE_ASSET_DECIMALS),
-          } as const
+            type,
+            amount,
+          }
         })
         .filter((lock) => lock !== null)
     },
     enabled: isApiLoaded && !!address,
+  })
+}
+
+export const useNativeTokenLocks = () => {
+  const { account } = useAccount()
+
+  return useQuery({
+    ...nativeTokenLocksQuery(useRpcProvider(), account?.address ?? ""),
+    select: (locks) => new Map(locks.map((l) => [l.type, l.amount])),
   })
 }
 
@@ -64,15 +75,23 @@ export const tokenReservesQuery = (
     queryFn: async () => {
       const reserves =
         tokenId === NATIVE_ASSET_ID
-          ? await papi.query.Balances.Reserves.getValue(address)
-          : await papi.query.Tokens.Reserves.getValue(address, Number(tokenId))
+          ? await papi.query.Balances.Reserves.getValue(address, {
+              at: "best",
+            })
+          : await papi.query.Tokens.Reserves.getValue(
+              address,
+              Number(tokenId),
+              {
+                at: "best",
+              },
+            )
 
-      return reserves.map((reserve) => {
-        const type = Binary.toText(Binary.fromHex(reserve.id))
+      return reserves.map(({ id, amount }) => {
+        const type = Binary.toText(Binary.fromHex(id))
 
         return {
           type,
-          amount: reserve.amount,
+          amount,
         }
       })
     },
@@ -80,12 +99,13 @@ export const tokenReservesQuery = (
   })
 }
 
-export const useAccountTokenReserves = (tokenId: string) => {
+export const useAccountTokenReserves = (tokenId: string, enabled?: boolean) => {
   const { account } = useAccount()
 
   return useQuery({
     ...tokenReservesQuery(useRpcProvider(), account?.address ?? "", tokenId),
     select: (reserves) => new Map(reserves.map((r) => [r.type, r.amount])),
+    enabled,
   })
 }
 
@@ -149,7 +169,9 @@ export const tokenBalanceQuery = (
     queryKey: ["tokenBalance", tokenId, address],
     queryFn: async (): Promise<BalanceData> => {
       if (tokenId === NATIVE_ASSET_ID) {
-        const res = await papi.query.System.Account.getValue(address ?? "")
+        const res = await papi.query.System.Account.getValue(address ?? "", {
+          at: "best",
+        })
 
         return parseNativeBalanceData(res, tokenId, address ?? "")
       }
@@ -157,6 +179,9 @@ export const tokenBalanceQuery = (
       const res = await papi.query.Tokens.Accounts.getValue(
         address ?? "",
         Number(tokenId),
+        {
+          at: "best",
+        },
       )
 
       return parseTokenBalanceData(res, tokenId, address ?? "")
@@ -177,8 +202,8 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
     queryKey: ["hdxIssuance"],
     queryFn: async () => {
       const [totalissuance, inactiveIssuance] = await Promise.all([
-        papi.query.Balances.TotalIssuance.getValue(),
-        papi.query.Balances.InactiveIssuance.getValue(),
+        papi.query.Balances.TotalIssuance.getValue({ at: "best" }),
+        papi.query.Balances.InactiveIssuance.getValue({ at: "best" }),
       ])
 
       return totalissuance - inactiveIssuance

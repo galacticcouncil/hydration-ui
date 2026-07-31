@@ -9,13 +9,12 @@ import {
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
-import { LINKS, NavigationItem } from "@/config/navigation"
+import { LINKS } from "@/config/navigation"
 import {
   HIDDEN_DESKTOP_NAV_ROUTES,
   useMenuTranslations,
 } from "@/modules/layout/components/HeaderMenu.utils"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
-import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 export const HeaderMenu: React.FC<
   React.ComponentProps<typeof NavigationMenu>
@@ -48,9 +47,7 @@ export const HeaderMenu: React.FC<
               </NavigationMenuTrigger>
               {children &&
                 children.length > 1 &&
-                (isLiquidityPage ? (
-                  <LiquidityMenuContent items={children} />
-                ) : (
+                (isLiquidityPage ? null : (
                   <NavigationMenuContent>
                     {children.map(({ to, search, key, icon }) => (
                       <DetailedLink
@@ -69,29 +66,5 @@ export const HeaderMenu: React.FC<
         })}
       </NavigationMenuList>
     </NavigationMenu>
-  )
-}
-
-const LiquidityMenuContent = ({ items }: { items: NavigationItem[] }) => {
-  const translations = useMenuTranslations()
-  const isLiquidityProvided = useIsLiquidityProvided()
-
-  if (!isLiquidityProvided) {
-    return null
-  }
-
-  return (
-    <NavigationMenuContent>
-      {items.map(({ to, search, key, icon }) => (
-        <DetailedLink
-          key={key}
-          to={to}
-          search={search}
-          title={translations[key].title}
-          description={translations[key].description}
-          icon={icon ?? IconPlaceholder}
-        />
-      ))}
-    </NavigationMenuContent>
   )
 }

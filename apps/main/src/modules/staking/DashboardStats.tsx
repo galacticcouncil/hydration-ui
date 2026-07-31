@@ -67,12 +67,11 @@ export const DashboardStats: FC<Props> = ({
             justify="center"
             align="center"
           >
-            <PieChart height={90} width={90}>
+            <PieChart height={90} width={90} sx={{ pointerEvents: "none" }}>
               <Pie
                 data={[{ value: 1 }]}
-                innerRadius={15}
+                innerRadius={25}
                 outerRadius={45}
-                cornerRadius={5}
                 startAngle={PIE_START_ANGLE}
                 endAngle={
                   PIE_START_ANGLE - (360 * Number(supplyStakedPercent)) / 100
@@ -138,7 +137,7 @@ export const DashboardStats: FC<Props> = ({
               </Text>
               <Tooltip
                 text={(
-                  t("staking:dashboard.projectedAPR.tooltip", {
+                  t("staking:dashboard.projectedAPR.legacyStaking.tooltip", {
                     returnObjects: true,
                   }) as Array<string>
                 ).map((line, index) => (

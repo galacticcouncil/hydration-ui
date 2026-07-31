@@ -11,6 +11,45 @@ export type NewVoteId = {
   readonly classId: number | undefined
 }
 
+type ProcessedVotesData = {
+  readonly newProcessedVotes: ReadonlyArray<{
+    readonly keyArgs: readonly [unknown, number]
+  }>
+  readonly oldProcessedVotes: ReadonlyArray<{
+    readonly keyArgs: readonly [unknown, number]
+  }>
+}
+
+export const getProcessedVoteIds = (
+  votes: ReadonlyArray<TAccountVote>,
+  data?: ProcessedVotesData,
+) => {
+  if (!data) {
+    return {
+      newProcessedVotesIds: [],
+      oldProcessedVotesIds: [],
+    }
+  }
+
+  const newProcessedVotesIds = data.newProcessedVotes.map<NewVoteId>(
+    ({ keyArgs }) => {
+      const [, id] = keyArgs
+      const accountVote = votes.find((vote) => vote.id === id)
+
+      return { id, classId: accountVote?.classId }
+    },
+  )
+
+  const oldProcessedVotesIds = data.oldProcessedVotes.map<number>(
+    ({ keyArgs }) => keyArgs[1],
+  )
+
+  return {
+    newProcessedVotesIds,
+    oldProcessedVotesIds,
+  }
+}
+
 export const useProcessedVotes = (
   votes: ReadonlyArray<TAccountVote>,
   votesSuccess: boolean,
@@ -23,32 +62,7 @@ export const useProcessedVotes = (
     processedVotesQuery(rpc, address, votesSuccess),
   )
 
-  const voteIds = useMemo(() => {
-    if (!data) {
-      return {
-        newProcessedVotesIds: [],
-        oldProcessedVotesIds: [],
-      }
-    }
-
-    const newProcessedVotesIds = data.newProcessedVotes.map<NewVoteId>(
-      ({ keyArgs }) => {
-        const [, id] = keyArgs
-        const accountVote = votes.find((vote) => vote.id === id)
-
-        return { id, classId: accountVote?.classId }
-      },
-    )
-
-    const oldProcessedVotesIds = data.oldProcessedVotes.map<number>(
-      ({ keyArgs }) => keyArgs[1],
-    )
-
-    return {
-      newProcessedVotesIds,
-      oldProcessedVotesIds,
-    }
-  }, [data, votes])
+  const voteIds = useMemo(() => getProcessedVoteIds(votes, data), [data, votes])
 
   return {
     ...voteIds,

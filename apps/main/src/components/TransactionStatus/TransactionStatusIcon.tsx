@@ -1,6 +1,6 @@
-import { PixelCheck, PixelX } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Spinner } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import ErrorStatus from "@galacticcouncil/ui/assets/images/ErrorStatus.webp"
+import SuccessStatus from "@galacticcouncil/ui/assets/images/SuccessStatus.webp"
+import { Image, Spinner } from "@galacticcouncil/ui/components"
 import React from "react"
 
 import { TransactionStatusProps } from "./TransactionStatus"
@@ -19,27 +19,10 @@ export const TransactionStatusIcon: React.FC<TransactionStatusIconProps> = ({
   }
 
   return (
-    <Flex
-      size="3xl"
-      justify="center"
-      align="center"
-      bg={
-        status === "error"
-          ? getToken("accents.danger.dimBg")
-          : getToken("accents.success.dim")
-      }
-      sx={{ borderRadius: "full", mb: "s" }}
-    >
-      <Icon
-        size="2xl"
-        sx={{ flexShrink: 0 }}
-        color={
-          status === "error"
-            ? getToken("accents.danger.emphasis")
-            : getToken("accents.success.emphasis")
-        }
-        component={status === "error" ? PixelX : PixelCheck}
-      />
-    </Flex>
+    <Image
+      src={status === "error" ? ErrorStatus : SuccessStatus}
+      width={100}
+      height={100}
+    />
   )
 }

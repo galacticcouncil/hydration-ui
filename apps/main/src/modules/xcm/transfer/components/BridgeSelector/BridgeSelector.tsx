@@ -46,6 +46,8 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
               <SnowbridgeOptions
                 key={BridgeEntryKind.Snowbridge}
                 activeProvider={bridgeProvider ?? null}
+                hasV2={!!entry.v2}
+                hasV1={!!entry.v1}
                 onSelect={handleSelect}
               />
             )

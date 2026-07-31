@@ -10,10 +10,16 @@ export const calculateMaxWithdrawAmount = (
   user: ExtendedFormattedUser,
   userReserve: ComputedUserReserveData,
   poolReserve: ComputedReserveData,
+  customHealtFactor?: number,
 ) => {
   const underlyingBalance = Big(userReserve?.underlyingBalance || "0")
   const unborrowedLiquidity = Big(poolReserve.unborrowedLiquidity)
   let maxAmountToWithdraw = Big.min(underlyingBalance, unborrowedLiquidity)
+
+  if (customHealtFactor && customHealtFactor <= 0) {
+    return maxAmountToWithdraw
+  }
+
   let maxCollateralToWithdrawInETH = Big("0")
   const reserveLiquidationThreshold =
     user.isInEmode && user.userEmodeCategoryId === poolReserve.eModeCategoryId
@@ -25,7 +31,7 @@ export const calculateMaxWithdrawAmount = (
     user.totalBorrowsMarketReferenceCurrency !== "0"
   ) {
     // if we have any borrowings we should check how much we can withdraw to a minimum HF of 1.01
-    const excessHF = Big(user.healthFactor).minus("1.01")
+    const excessHF = Big(customHealtFactor ?? user.healthFactor).minus("1.01")
     if (excessHF.gt("0")) {
       maxCollateralToWithdrawInETH = excessHF
         .mul(user.totalBorrowsMarketReferenceCurrency)

@@ -12,7 +12,7 @@ import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
 import { useRootStore } from "@/store/root"
-import { ExternalApyData, MoneyMarketEnv, MoneyMarketTxFn } from "@/types"
+import { ExternalApyData, MoneyMarketTxFn, UseMaxBalanceFn } from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
 import { CustomMarket } from "@/utils"
 
@@ -55,16 +55,20 @@ const ClaimRewardsModal = lazy(async () => ({
 export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
   provider: ExternalProvider
-  env: MoneyMarketEnv
+  market: CustomMarket
   squidClient: SquidSdk
   onCreateTransaction: MoneyMarketTxFn
+  useMaxBalance: UseMaxBalanceFn
+  getRelatedATokenId: (id: string) => string | undefined
   externalApyData: ExternalApyData
 }
 
 export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   children,
-  env,
+  market,
   onCreateTransaction,
+  useMaxBalance,
+  getRelatedATokenId,
   provider: externalProvider,
   squidClient,
   externalApyData,
@@ -79,14 +83,13 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   useEffect(() => {
     if (!externalProvider) return
     if (!provider) {
-      setCurrentMarket(
-        env === "mainnet"
-          ? CustomMarket.hydration_v3
-          : CustomMarket.hydration_testnet_v3,
-      )
-      setProvider(new Web3Provider(externalProvider), env)
+      setProvider(new Web3Provider(externalProvider))
     }
-  }, [env, externalProvider, provider, setCurrentMarket, setProvider])
+  }, [externalProvider, provider, setProvider])
+
+  useEffect(() => {
+    setCurrentMarket(market)
+  }, [market, setCurrentMarket])
 
   if (!provider) return null
 
@@ -97,7 +100,11 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
           <PermissionProvider>
             <ModalContextProvider>
               <AppDataProvider externalApyData={externalApyData}>
-                <SharedDependenciesProvider squidClient={squidClient}>
+                <SharedDependenciesProvider
+                  squidClient={squidClient}
+                  useMaxBalance={useMaxBalance}
+                  getRelatedATokenId={getRelatedATokenId}
+                >
                   {children}
                   <Suspense>
                     <SupplyModal />

@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
+import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
@@ -25,6 +26,7 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
+  gigaStakingEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -48,6 +50,13 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
+
+export const getSortedRpcUrlList = (
+  rpcUrlList: string[],
+  priorityRpcUrl?: string,
+): string[] => {
+  return priorityRpcUrl ? unique([priorityRpcUrl, ...rpcUrlList]) : rpcUrlList
+}
 
 export const getProviderProps = (rpcUrl: string) =>
   PROVIDERS.find((p) => p.url === rpcUrl)
@@ -92,9 +101,7 @@ const getProviderData = async (
     setMetadata: doNothing,
   })
 
-  const urls = priorityRpcUrl
-    ? unique([priorityRpcUrl, ...rpcUrlList])
-    : rpcUrlList
+  const urls = getSortedRpcUrlList(rpcUrlList, priorityRpcUrl)
 
   const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 
@@ -103,14 +110,17 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, hollarBond] = await Promise.all([
+  const [sdk, slotDuration, hollarBond, gigaHDXAsset] = await Promise.all([
     createSdkContext(papiClient),
     papi.constants.Aura.SlotDuration(),
     papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
+    papi.query.AssetRegistry.Assets.getValue(Number(STHDX_ASSET_ID)),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
   ])
+
+  const gigaStakingEnabled = !!gigaHDXAsset
 
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
@@ -134,6 +144,7 @@ const getProviderData = async (
     slotDurationMs: Number(slotDuration),
     featureFlags: {
       hollarBondsEnabled: !!hollarBond,
+      gigaStakingEnabled,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),

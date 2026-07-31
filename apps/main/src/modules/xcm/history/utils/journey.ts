@@ -5,8 +5,9 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
-import { isH160Address } from "@galacticcouncil/utils"
-import { XcJourney } from "@galacticcouncil/xc-scan"
+import { getChainId, isH160Address } from "@galacticcouncil/utils"
+import { AnyChain } from "@galacticcouncil/xc-core"
+import { XcJourney, XcOcnUrn } from "@galacticcouncil/xc-scan"
 import { isNonNullish, sortBy } from "remeda"
 
 export type TJourneyStatus = XcJourney["status"]
@@ -96,7 +97,7 @@ export function getFormattedAddresses(journey: XcJourney) {
   return { from, to }
 }
 
-const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
+export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
 
 export function mergeJourneys(
   existing: XcJourney[],
@@ -114,4 +115,10 @@ export function mergeJourneys(
   }
 
   return sortBy([...existing, ...filtered], [journeyDate, "desc"])
+}
+
+export function getChainXcScanUrn(chain: AnyChain): XcOcnUrn {
+  const ecosystem = chain.ecosystem
+  if (!ecosystem) return "" as XcOcnUrn
+  return `urn:ocn:${ecosystem.toLowerCase()}:${getChainId(chain)}` as XcOcnUrn
 }

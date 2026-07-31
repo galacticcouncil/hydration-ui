@@ -77,7 +77,7 @@ export const useTradeChartData = ({
   )
 
   const prices = useMemo(() => {
-    if (isLoading || !data || isSpotPriceLoading) {
+    if (isLoading || !data) {
       return []
     }
 
@@ -93,20 +93,20 @@ export const useTradeChartData = ({
       }))
 
     const currentPrice = Big(spotPrice)
-
     const lastPricePoint = prices.at(prices.length - 1)
 
-    const withCurrentPrice = currentPrice.gt(0)
-      ? prices.concat([
-          {
-            timestamp: lastPricePoint
-              ? lastPricePoint.timestamp + 1000
-              : Date.now(),
-            amount: Big(1).div(currentPrice).toString(),
-            volume: "0",
-          },
-        ])
-      : prices
+    const withCurrentPrice =
+      !isSpotPriceLoading && currentPrice.gt(0)
+        ? prices.concat([
+            {
+              timestamp: lastPricePoint
+                ? lastPricePoint.timestamp + 1000
+                : Date.now(),
+              amount: Big(1).div(currentPrice).toString(),
+              volume: "0",
+            },
+          ])
+        : prices
 
     return withCurrentPrice
       .toSorted(

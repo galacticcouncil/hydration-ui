@@ -5,6 +5,7 @@ import { FormProvider } from "react-hook-form"
 
 import { TradeType } from "@/api/trade"
 import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
 import { useSubmitTwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitTwap"
 import { useMarketBuyData } from "@/modules/trade/swap/sections/Market/Market.BuyData"
@@ -24,7 +25,17 @@ export const Market: FC = () => {
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
 
-  const form = useMarketForm({ assetIn, assetOut })
+  const { maxSwapSellBalance, maxTwapSellBalance } = useMaxSellAmount({
+    assetIn,
+    assetOut,
+  })
+
+  const form = useMarketForm({
+    assetIn,
+    assetOut,
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+  })
   const [type, isSingleTrade] = form.watch(["type", "isSingleTrade"])
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
@@ -87,7 +98,13 @@ export const Market: FC = () => {
             : twap && submitTwap.mutate([values, twap]),
         )}
       >
-        <MarketFields swap={swap} twap={twap} />
+        <MarketFields
+          swap={swap}
+          twap={twap}
+          maxSellBalance={
+            isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance
+          }
+        />
         {isExpanded && (
           <Box pt="base" pb="m">
             <MarketTradeOptions
@@ -97,6 +114,7 @@ export const Market: FC = () => {
               isTwapLoading={isTwapLoading}
             />
             <MarketWarnings
+              swap={swap}
               isFormValid={isFormValid}
               isSingleTrade={isSingleTrade}
               twap={twap}
@@ -111,7 +129,9 @@ export const Market: FC = () => {
         <MarketSubmit
           isSingleTrade={isSingleTrade}
           isLoading={
-            isSwapLoading || submitSwap.isPending || submitTwap.isPending
+            isSingleTrade
+              ? isSwapLoading || submitSwap.isPending
+              : isTwapLoading || submitTwap.isPending
           }
           isEnabled={isSubmitEnabled}
         />

@@ -39,7 +39,7 @@ export const DynamicFee = ({
       {amount ? (
         <Text fs="p5" fw={500} lh={1.2}>
           <span sx={{ color: getToken("text.high") }}>{amount}</span>{" "}
-          <span sx={{ color: getToken("colors.skyBlue.500") }}>
+          <span sx={{ color: getToken("text.tint.quart") }}>
             ({t("percent", { value })})
           </span>
         </Text>

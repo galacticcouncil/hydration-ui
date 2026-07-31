@@ -1,6 +1,7 @@
 import { ReactNode } from "react"
 
 import {
+  AaveV3GIGAHDXPool,
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
 } from "@/ui-config/addresses"
@@ -60,6 +61,7 @@ export type MarketDataType = {
 export enum CustomMarket {
   hydration_v3 = "hydration_v3",
   hydration_testnet_v3 = "hydration_testnet_v3",
+  gigahdx_v3 = "gigahdx_v3",
 }
 
 export const marketsData: {
@@ -103,6 +105,24 @@ export const marketsData: {
       GHO_TOKEN_ADDRESS: AaveV3HydrationTestnet.GHO_TOKEN_ADDRESS,
       GHO_UI_DATA_PROVIDER: AaveV3HydrationTestnet.GHO_UI_DATA_PROVIDER,
       COLLECTOR: AaveV3HydrationMainnet.COLLECTOR,
+    },
+  },
+  [CustomMarket.gigahdx_v3]: {
+    marketTitle: "GIGAHDX",
+    market: CustomMarket.gigahdx_v3,
+    v3: true,
+    chainId: ChainId.hydration,
+    addresses: {
+      LENDING_POOL_ADDRESS_PROVIDER: AaveV3GIGAHDXPool.POOL_ADDRESSES_PROVIDER,
+      LENDING_POOL: AaveV3GIGAHDXPool.POOL,
+      WETH_GATEWAY: AaveV3GIGAHDXPool.WETH_GATEWAY,
+      FAUCET: AaveV3GIGAHDXPool.FAUCET,
+      WALLET_BALANCE_PROVIDER: AaveV3GIGAHDXPool.WALLET_BALANCE_PROVIDER,
+      UI_POOL_DATA_PROVIDER: AaveV3GIGAHDXPool.UI_POOL_DATA_PROVIDER,
+      UI_INCENTIVE_DATA_PROVIDER: AaveV3GIGAHDXPool.UI_INCENTIVE_DATA_PROVIDER,
+      GHO_TOKEN_ADDRESS: AaveV3GIGAHDXPool.GHO_TOKEN_ADDRESS,
+      GHO_UI_DATA_PROVIDER: AaveV3GIGAHDXPool.GHO_UI_DATA_PROVIDER,
+      COLLECTOR: AaveV3GIGAHDXPool.COLLECTOR,
     },
   },
 } as const

@@ -29,16 +29,14 @@ export const useOrderHistoryColumns = () => {
     const fromToColumn = columnHelper.display({
       header: t("trade:trade.orders.orderHistory.inOut"),
       cell: ({ row }) => {
+        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+
         return (
           <SwapAmount
-            fromAmount={
-              row.original.isOpenBudget
-                ? (row.original.fromAmountExecuted ?? "0")
-                : row.original.fromAmountBudget
-            }
-            from={row.original.from}
-            toAmount={row.original.toAmountExecuted ?? "0"}
-            to={row.original.to}
+            fromAmount={fromAmountExecuted ?? "0"}
+            from={from}
+            toAmount={toAmountExecuted ?? "0"}
+            to={to}
             showLogo
           />
         )
@@ -61,22 +59,11 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const {
-          from,
-          to,
-          fromAmountBudget,
-          fromAmountExecuted,
-          toAmountExecuted,
-          isOpenBudget,
-        } = row.original
-
-        const fromAmount = isOpenBudget
-          ? (fromAmountExecuted ?? "0")
-          : fromAmountBudget
+        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
 
         const price =
-          toAmountExecuted && fromAmount && Big(toAmountExecuted).gt(0)
-            ? Big(fromAmount).div(toAmountExecuted).toString()
+          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
         return <SwapPrice from={from} to={to} price={price} />

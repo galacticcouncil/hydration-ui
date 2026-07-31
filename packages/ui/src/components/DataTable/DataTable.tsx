@@ -48,7 +48,11 @@ import {
 } from "@/components/Table"
 import { getToken } from "@/utils"
 
-import { useDataTable, UseDataTableOwnOptions } from "./DataTable.utils"
+import {
+  handleCopyPlainNumbers,
+  useDataTable,
+  UseDataTableOwnOptions,
+} from "./DataTable.utils"
 
 export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
@@ -180,7 +184,11 @@ const DataTable = <TData,>({
 
   return (
     <>
-      <Table {...tableProps} className={className}>
+      <Table
+        {...tableProps}
+        className={className}
+        onCopy={handleCopyPlainNumbers}
+      >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -256,6 +264,9 @@ const DataTable = <TData,>({
                       data-expanded={isRowExpanded}
                       data-selected={row.getIsSelected()}
                       onClick={() => {
+                        // don't trigger the row while the user is selecting text
+                        if (window.getSelection()?.toString()) return
+
                         if (isRowExpandable) {
                           if (expandable === "single" && !isRowExpanded) {
                             table.resetExpanded()

@@ -3,6 +3,7 @@ import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
+import { Asset } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
@@ -35,16 +36,23 @@ export type TransactionAlert = Pick<
   requiresUserConsent?: boolean | string
 }
 
+export type TExecutedAmount = {
+  amount: string
+  assetId: string
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  signerFeeAsset?: Asset
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
+  executedAmount?: TExecutedAmount
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -138,6 +146,7 @@ export interface TransactionActions {
 
 export interface TransactionOptions extends TransactionActions {
   onBack?: () => void
+  resolveOn?: "submitted" | "success"
 }
 
 export type SingleTransaction = SingleTransactionInput &
@@ -183,7 +192,15 @@ export type PendingTransaction = {
   id: string
   meta: TransactionMeta
   nonce: number
+  address: string
+  isPermit: boolean
 }
+
+const PendingTxChannel = new BroadcastChannel("hydration:pending-tx")
+
+type PendingTxMessage =
+  | { type: "add"; transaction: PendingTransaction }
+  | { type: "remove"; id: string }
 
 interface TransactionsStore {
   transactions: Transaction[]
@@ -191,13 +208,9 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TSuccessResult>
+  ) => Promise<TSuccessResult | void>
   cancelTransaction: (id: string) => void
-  addPendingTransaction: (
-    id: string,
-    nonce: number,
-    meta: TransactionMeta,
-  ) => void
+  addPendingTransaction: (transaction: PendingTransaction) => void
   removePendingTransaction: (id: string) => void
 }
 
@@ -205,7 +218,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   pendingTransactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TSuccessResult>((resolve, reject) => {
+    return new Promise<TSuccessResult | void>((resolve, reject) => {
       set((state) => {
         const meta: TransactionMeta =
           "meta" in transaction && transaction.meta
@@ -218,7 +231,12 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
           id: uuid(),
           ...transaction,
           meta,
-          onSubmitted: options?.onSubmitted,
+          onSubmitted: (txHash) => {
+            options?.onSubmitted?.(txHash)
+            if (!options?.resolveOn || options?.resolveOn === "submitted") {
+              resolve()
+            }
+          },
           onSuccess: (event) => {
             options?.onSuccess?.(event)
             resolve(event)
@@ -245,14 +263,41 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
       ),
     }))
   },
-  addPendingTransaction: (id, nonce, meta) => {
+  addPendingTransaction: (transaction) => {
     set((state) => ({
-      pendingTransactions: [...state.pendingTransactions, { id, meta, nonce }],
+      pendingTransactions: [...state.pendingTransactions, transaction],
     }))
+    PendingTxChannel.postMessage({ type: "add", transaction })
   },
   removePendingTransaction: (id) => {
     set((state) => ({
       pendingTransactions: state.pendingTransactions.filter((p) => p.id !== id),
     }))
+    PendingTxChannel.postMessage({ type: "remove", id })
   },
 }))
+
+PendingTxChannel.onmessage = (event: MessageEvent<PendingTxMessage>) => {
+  const message = event.data
+  switch (message.type) {
+    case "add":
+      useTransactionsStore.setState((state) =>
+        state.pendingTransactions.some((p) => p.id === message.transaction.id)
+          ? state
+          : {
+              pendingTransactions: [
+                ...state.pendingTransactions,
+                message.transaction,
+              ],
+            },
+      )
+      break
+    case "remove":
+      useTransactionsStore.setState((state) => ({
+        pendingTransactions: state.pendingTransactions.filter(
+          (p) => p.id !== message.id,
+        ),
+      }))
+      break
+  }
+}

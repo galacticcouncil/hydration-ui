@@ -66,7 +66,7 @@ export const Slider: FC<SliderProps> = ({
         <Icon
           size={10}
           component={Union}
-          color={getToken("controls.outline.active")}
+          color={getToken("controls.solid.onAccent")}
         />
       </SThumb>
     </SRoot>

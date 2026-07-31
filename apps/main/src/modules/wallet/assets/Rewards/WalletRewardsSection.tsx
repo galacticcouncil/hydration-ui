@@ -8,14 +8,20 @@ import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useGigaAccountBalance } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { LINKS } from "@/config/navigation"
 import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.claim"
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 import { WalletRewardsSectionEmpty } from "@/modules/wallet/assets/Rewards/WalletRewardsSectionEmpty"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
+  const { data: gigaHdxBalance } = useGigaAccountBalance()
+  const { featureFlags } = useRpcProvider()
+  const balance = gigaHdxBalance?.free ?? 0n
 
   const { incentives, farming, staking, referral, isEmpty, isLoading } =
     useWalletRewardsSectionData()
@@ -75,8 +81,14 @@ export const WalletRewardsSection: FC = () => {
           })}
           isLoading={staking.loading}
         />
-        {staking.isEmpty && !staking.loading && (
-          <WalletRewardsSectionEmpty link="/staking">
+        {balance === 0n && (
+          <WalletRewardsSectionEmpty
+            link={
+              featureFlags.gigaStakingEnabled
+                ? LINKS.stakingGigaStake
+                : LINKS.stakingOld
+            }
+          >
             {t("rewards.allocated.empty")}
           </WalletRewardsSectionEmpty>
         )}

@@ -25,8 +25,10 @@ import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
 import { useModalContext } from "@/hooks/useModal"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
+import { useSupplyEstimationTx } from "@/hooks/useSupplyEstimationTx"
 import { useRootStore } from "@/store/root"
 import { PRIME_APY, PRIME_ASSET_ID } from "@/ui-config"
+import { useSharedDependencies } from "@/ui-config/SharedDependenciesProvider"
 import { formatHealthFactorResult, isShowIsolationWarning } from "@/utils"
 import { getMaxAmountAvailableToSupply } from "@/utils/getMaxAmountAvailableToSupply"
 import { getAssetCollateralType } from "@/utils/transactions"
@@ -63,9 +65,25 @@ export const SupplyModalContent = React.memo(
       underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase()
 
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance
+    const poolAddress = poolReserve.underlyingAsset
+
+    const { useMaxBalance } = useSharedDependencies()
+    const supplyAssetId = getAssetIdFromAddress(poolAddress)
+    const { data: supplyEstimationTx } = useSupplyEstimationTx({
+      poolAddress,
+      amount: walletBalance,
+      decimals: poolReserve.decimals,
+    })
+
+    const maxBalanceWithFee = useMaxBalance({
+      tx: supplyEstimationTx ?? null,
+      assetId: supplyAssetId,
+      feePctBuffer: 0.5,
+    })
+    const walletBalanceWithFee =
+      maxBalanceWithFee?.maxBalanceHuman ?? walletBalance
 
     const isIsolated = poolReserve.isIsolated
-    const poolAddress = poolReserve.underlyingAsset
     const isPrimeAsset = PRIME_ASSET_ID === getAssetIdFromAddress(poolAddress)
 
     const {
@@ -124,7 +142,7 @@ export const SupplyModalContent = React.memo(
     const maxAmountToSupply = useMemo(
       () =>
         getMaxAmountAvailableToSupply(
-          walletBalance,
+          walletBalanceWithFee,
           {
             supplyCap,
             totalLiquidity,
@@ -137,7 +155,7 @@ export const SupplyModalContent = React.memo(
           minRemainingBaseTokenBalance,
         ),
       [
-        walletBalance,
+        walletBalanceWithFee,
         supplyCap,
         totalLiquidity,
         isFrozen,

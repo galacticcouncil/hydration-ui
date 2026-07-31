@@ -10,11 +10,11 @@ type AmountSize = "default" | "large"
 type AmountColor = "default" | "tint"
 
 type AmountProps = {
-  readonly label?: string
+  readonly label?: ReactNode
   readonly labelIcon?: ComponentType
   readonly description?: string | ReadonlyArray<string>
   readonly descriptionCustom?: ReactNode
-  readonly value: string
+  readonly value: ReactNode
   readonly displayValue?: string
   readonly variant?: AmountVariant
   readonly className?: string
@@ -57,11 +57,15 @@ export const Amount: FC<AmountProps> = ({
               }
             />
           )}
-          {label && (
-            <AmountLabel variant={variant} color={color} size={size}>
-              {label}
-            </AmountLabel>
-          )}
+          {label ? (
+            typeof label === "string" ? (
+              <AmountLabel variant={variant} color={color} size={size}>
+                {label}
+              </AmountLabel>
+            ) : (
+              label
+            )
+          ) : null}
         </Flex>
         {descriptionCustom ||
           (description &&
@@ -78,9 +82,14 @@ export const Amount: FC<AmountProps> = ({
         gap="xs"
         align={variant === "horizontalLabel" ? "flex-end" : undefined}
       >
-        <AmountValue variant={variant} size={size}>
-          {value}
-        </AmountValue>
+        {typeof value !== "string" ? (
+          value
+        ) : (
+          <AmountValue variant={variant} size={size}>
+            {value}
+          </AmountValue>
+        )}
+
         {displayValue && (
           <AmountDisplayValue variant={variant}>
             {displayValue}

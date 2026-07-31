@@ -139,7 +139,7 @@ query UserOpenOrdersCount($address: String!, $assetFilter: DcaScheduleFilter) {
   }
 }
 
-query DcaScheduleExecutions($scheduleId: String!) {
+query DcaScheduleExecutions($scheduleId: String!, $first: Int) {
   dcaSchedule(id: $scheduleId) {
     id
     assetIn {
@@ -149,8 +149,11 @@ query DcaScheduleExecutions($scheduleId: String!) {
       assetRegistryId
     }
     dcaScheduleExecutionsByScheduleId(
+      first: $first
+      orderBy: ID_DESC
       filter: { status: { in: ["Executed", "Failed"] } }
     ) {
+      totalCount
       nodes {
         id
         status

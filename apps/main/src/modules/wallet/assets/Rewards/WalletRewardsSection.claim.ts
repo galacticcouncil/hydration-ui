@@ -4,7 +4,6 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useGetClaimAllBorrowRewardsTx } from "@/api/borrow"
-import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { useXykPools } from "@/api/pools"
 import { stakingPositionsQuery, useInvalidateStakeData } from "@/api/staking"
@@ -27,10 +26,8 @@ const useGetClaimStakingTx = () => {
   const { account } = useAccount()
   const address = account?.address
 
-  const { data: uniquesData } = useQuery(uniquesIds(rpc))
-  const stakingId = uniquesData?.stakingId ?? 0n
   const { data: stakingPositionsData } = useQuery(
-    stakingPositionsQuery(rpc, address ?? "", stakingId),
+    stakingPositionsQuery(rpc, address ?? ""),
   )
   const positionId = stakingPositionsData?.stakePositionId
 
@@ -70,13 +67,12 @@ export const useClaimAllWalletRewards = () => {
   const getClaimBorrowTx = useGetClaimAllBorrowRewardsTx()
   const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
-  // const getClaimStakingTx = useGetClaimStakingTx()
 
   return useMutation({
     mutationFn: async () => {
       const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
       const claimBorrow = await getClaimBorrowTx()
-      // const claimStaking = getClaimStakingTx()
+
       const claimReferral = papi.tx.Referrals.claim_rewards()
 
       const txs = [

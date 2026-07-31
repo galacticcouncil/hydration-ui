@@ -22,16 +22,18 @@ import { useAssetCaps } from "@/hooks"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { formatHealthFactorResult, getGhoBorrowApyRange } from "@/utils"
-import { getMaxGhoMintAmount } from "@/utils/getMaxAmountAvailableToBorrow"
+import {
+  assetCanBeBorrowedByUser,
+  getMaxGhoMintAmount,
+} from "@/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "@/utils/utils"
 
 import { BorrowActions } from "./BorrowActions"
 
 export enum ErrorType {
-  STABLE_RATE_NOT_ENABLED,
+  MAX_EXCEEDED,
   NOT_ENOUGH_LIQUIDITY,
   BORROWING_NOT_AVAILABLE,
-  NOT_ENOUGH_BORROWED,
 }
 
 export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
@@ -101,12 +103,22 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
 
   // error types handling
   let blockingError: ErrorType | undefined = undefined
-  if (!poolReserve.borrowingEnabled) {
+  if (Big(amount || 0).gt(ghoReserveData.aaveFacilitatorRemainingCapacity)) {
+    blockingError = ErrorType.NOT_ENOUGH_LIQUIDITY
+  } else if (!!amount && Big(amount || 0).gt(maxAmountToBorrow)) {
+    blockingError = ErrorType.MAX_EXCEEDED
+  } else if (!assetCanBeBorrowedByUser(poolReserve, user)) {
     blockingError = ErrorType.BORROWING_NOT_AVAILABLE
   }
 
   const handleBlocked = (): Partial<AssetInputProps> => {
     switch (blockingError) {
+      case ErrorType.MAX_EXCEEDED:
+        return { amountError: "Maximum available amount exceeded" }
+      case ErrorType.NOT_ENOUGH_LIQUIDITY:
+        return {
+          amountError: `There are not enough funds in the ${poolReserve.symbol} reserve to borrow`,
+        }
       case ErrorType.BORROWING_NOT_AVAILABLE:
         return {
           assetError: `Borrowing is currently unavailable for ${poolReserve.symbol}.`,
@@ -118,7 +130,6 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   }
 
   const iconSymbol = poolReserve.iconSymbol
-
   return (
     <>
       <AssetInput

@@ -6,7 +6,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { useLocation } from "@tanstack/react-router"
-import { FC } from "react"
+import { FC, useMemo } from "react"
 
 import { TabItem } from "@/components/TabMenu/TabMenu"
 import { TabMenuBadge } from "@/components/TabMenu/TabMenuBadge"
@@ -33,32 +33,35 @@ export const TabMenuItem: FC<Props> = ({
   const { to, title, icon: IconComponent, search, resetScroll } = item
 
   const path = useLocation({
-    select: (state) => state.href,
+    select: (state) => state.pathname,
   })
 
   const currentSearch = useLocation({
     select: (state) => state.search,
   })
 
-  const isActive = (
-    to: string,
-    routeSearch?: Record<string, string | boolean>,
-  ) => {
+  const isActive = useMemo(() => {
+    const [, ...pathRoutes] = path.split("/")
+    const [, ...toRoutes] = to.split("/")
+    const isValid = toRoutes.every(
+      (route, index) => route === pathRoutes[index],
+    )
+
     return (
-      path.startsWith(to) &&
-      (routeSearch
-        ? Object.entries(routeSearch ?? {}).every(
+      isValid &&
+      (search
+        ? Object.entries(search ?? {}).every(
             ([key, value]) =>
               currentSearch[key as keyof typeof currentSearch] === value,
           )
         : true)
     )
-  }
+  }, [path, to, search, currentSearch])
 
   return (
     <Button
       className={className}
-      variant={isActive(to, search) ? activeVariant : variant}
+      variant={isActive ? activeVariant : variant}
       size={size}
       asChild
       sx={{ minWidth: "2xl", flexShrink: 0 }}

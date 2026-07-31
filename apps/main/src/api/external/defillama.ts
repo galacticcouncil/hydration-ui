@@ -6,10 +6,10 @@ import {
   VDOT_ASSET_ID,
   WSTETH_ASSET_ID,
 } from "@galacticcouncil/utils"
-import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/react-query"
 import z from "zod/v4"
 
-import { useSquidUrl } from "@/api/provider"
+import { fetchExternalApyWithCache } from "@/states/externalApy"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 const defillamaApyHistoryEntrySchema = z.object({
@@ -58,26 +58,11 @@ const fetchDefillamaLatestApy = async (
 export const defillamaLatestApyQuery = (id: string, indexerUrl: string) =>
   queryOptions({
     queryKey: ["defillamaApyHistory", id],
-    queryFn: () => fetchDefillamaLatestApy(id, indexerUrl),
+    queryFn: () =>
+      fetchExternalApyWithCache(id, () =>
+        fetchDefillamaLatestApy(id, indexerUrl),
+      ),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: !!id,
   })
-
-export const useDefillamaLatestApyQuery = (assetId: string) => {
-  const url = useSquidUrl()
-
-  const id = ASSET_ID_TO_DEFILLAMA_ID[assetId] ?? ""
-  return useQuery(defillamaLatestApyQuery(id, url))
-}
-
-export const useDefillamaLatestApyQueries = (assetIds: string[]) => {
-  const url = useSquidUrl()
-
-  return useQueries({
-    queries: assetIds.map((assetId) => {
-      const id = ASSET_ID_TO_DEFILLAMA_ID[assetId] ?? ""
-      return defillamaLatestApyQuery(id, url)
-    }),
-  })
-}

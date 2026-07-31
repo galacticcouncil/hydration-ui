@@ -185,8 +185,8 @@ export const selectFormattedReserves = (
     for (const [assetId, data] of externalApyData.entries()) {
       const reserve = reserveMap.get(getAddressFromAssetId(assetId))
       if (reserve) {
-        reserve.supplyAPY = data.supplyApy
-        reserve.variableBorrowAPY = data.borrowApy
+        reserve.supplyAPY = data.supplyApy ?? "0"
+        reserve.variableBorrowAPY = data.borrowApy ?? "0"
       }
     }
   })

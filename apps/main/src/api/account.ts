@@ -1,16 +1,13 @@
 import { HydrationQueries } from "@galacticcouncil/descriptors"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { pick } from "remeda"
 import { ObservedValueOf } from "rxjs"
-import { useShallow } from "zustand/shallow"
 
 import { usePendingPermit, usePermitNonce } from "@/api/evm"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
-import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { usePapiValue } from "@/hooks/usePapiValue"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountData } from "@/states/account"
+import { GC_TIME, STALE_TIME } from "@/utils/consts"
 import {
   getOmnipoolMiningPositions,
   getOmnipoolPositions,
@@ -73,25 +70,27 @@ export const omnipoolPositionsKey = (address: string) => [
 export const omnipoolPositionsQuery = (
   context: TProviderContext,
   address: string,
-  omnipoolNftId: bigint,
-  onSuccess?: (data: OmnipoolPosition[]) => void,
 ) => {
-  const { isApiLoaded, papi } = context
+  const { isApiLoaded, papi, queryClient } = context
 
   return queryOptions({
     queryKey: omnipoolPositionsKey(address),
-    enabled: isApiLoaded && !!address && !!omnipoolNftId,
+    enabled: isApiLoaded && !!address,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    placeholderData: [],
     queryFn: async () => {
+      const { omnipoolNftId } = await queryClient.ensureQueryData(
+        uniquesIds(context),
+      )
+
       const entries = await papi.query.Uniques.Account.getEntries(
         address,
         omnipoolNftId,
         { at: "best" },
       )
 
-      const positions = await getOmnipoolPositions(papi, entries)
-      onSuccess?.(positions)
-
-      return positions
+      return getOmnipoolPositions(papi, entries)
     },
   })
 }
@@ -104,28 +103,27 @@ export const omnipoolMiningPositionsKey = (address: string) => [
 export const omnipoolMiningPositionsQuery = (
   context: TProviderContext,
   address: string,
-  miningNftId: bigint,
-  onSuccess?: (data: OmnipoolDepositFull[]) => void,
 ) => {
-  const { isApiLoaded, papi } = context
+  const { isApiLoaded, papi, queryClient } = context
 
   return queryOptions({
     queryKey: omnipoolMiningPositionsKey(address),
-    enabled: isApiLoaded && !!address && !!miningNftId,
+    enabled: isApiLoaded && !!address,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    placeholderData: [],
     queryFn: async () => {
+      const { miningNftId } = await queryClient.ensureQueryData(
+        uniquesIds(context),
+      )
+
       const entries = await papi.query.Uniques.Account.getEntries(
         address,
         miningNftId,
         { at: "best" },
       )
 
-      const omnipoolMiningPositions = entries.length
-        ? await getOmnipoolMiningPositions(papi, entries)
-        : []
-
-      onSuccess?.(omnipoolMiningPositions)
-
-      return omnipoolMiningPositions
+      return entries.length ? getOmnipoolMiningPositions(papi, entries) : []
     },
   })
 }
@@ -138,123 +136,59 @@ export const xykMiningPositionsKey = (address: string) => [
 export const xykMiningPositionsQuery = (
   context: TProviderContext,
   address: string,
-  miningNftId: bigint,
-  onSuccess?: (data: XykDeposit[]) => void,
 ) => {
-  const { isApiLoaded, papi } = context
+  const { isApiLoaded, papi, queryClient } = context
 
   return queryOptions({
     queryKey: xykMiningPositionsKey(address),
-    enabled: isApiLoaded && !!address && !!miningNftId,
+    enabled: isApiLoaded && !!address,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    placeholderData: [],
     queryFn: async () => {
+      const { xykMiningNftId } = await queryClient.ensureQueryData(
+        uniquesIds(context),
+      )
+
       const entries = await papi.query.Uniques.Account.getEntries(
         address,
-        miningNftId,
+        xykMiningNftId,
         { at: "best" },
       )
 
-      const xykMiningPositions = await getXykMiningPositions(papi, entries)
-      onSuccess?.(xykMiningPositions)
-
-      return xykMiningPositions
+      return getXykMiningPositions(papi, entries)
     },
   })
 }
 
 export const useAccountOmnipoolPositions = () => {
-  const { account } = useAccount()
   const provider = useRpcProvider()
-  const { data: nftIds } = useQuery(uniquesIds(provider))
+  const { account } = useAccount()
 
-  const address = account?.address ?? ""
-  const omnipoolNftId = nftIds?.omnipoolNftId ?? 0n
-
-  return usePapiEntries("Uniques.Account", [address, omnipoolNftId], {
-    enabled: !!address && omnipoolNftId > 0n,
-  })
+  return useQuery(omnipoolPositionsQuery(provider, account?.address ?? ""))
 }
 
 export const useAccountOmnipoolMiningPositions = () => {
-  const { account } = useAccount()
   const provider = useRpcProvider()
-  const { data: nftIds } = useQuery(uniquesIds(provider))
+  const { account } = useAccount()
 
-  const address = account?.address ?? ""
-  const miningNftId = nftIds?.miningNftId ?? 0n
-
-  return usePapiEntries("Uniques.Account", [address, miningNftId], {
-    enabled: !!address && miningNftId > 0n,
-  })
+  return useQuery(
+    omnipoolMiningPositionsQuery(provider, account?.address ?? ""),
+  )
 }
 
 export const useAccountXykMiningPositions = () => {
-  const { account } = useAccount()
-  const provider = useRpcProvider()
-
-  const { data: nftIds } = useQuery(uniquesIds(provider))
-
-  const address = account?.address ?? ""
-  const xykMiningNftId = nftIds?.xykMiningNftId ?? 0n
-
-  return usePapiEntries(
-    "Uniques.Account",
-    [address, xykMiningNftId, { at: "best" }],
-    {
-      enabled: !!address && xykMiningNftId > 0n,
-    },
-  )
-}
-
-export const useAccountUniques = () => {
   const provider = useRpcProvider()
   const { account } = useAccount()
-  const { data: nftIds } = useQuery(uniquesIds(provider))
 
-  const {
-    setOmnipoolPositions,
-    setOmnipoolMiningPositions,
-    setXykMiningPositions,
-  } = useAccountData(
-    useShallow(
-      pick([
-        "setOmnipoolPositions",
-        "setOmnipoolMiningPositions",
-        "setXykMiningPositions",
-      ]),
-    ),
-  )
-
-  useQuery(
-    omnipoolPositionsQuery(
-      provider,
-      account?.address ?? "",
-      nftIds?.omnipoolNftId ?? 0n,
-      (data) => setOmnipoolPositions(data),
-    ),
-  )
-
-  useQuery(
-    omnipoolMiningPositionsQuery(
-      provider,
-      account?.address ?? "",
-      nftIds?.miningNftId ?? 0n,
-      (data) => setOmnipoolMiningPositions(data),
-    ),
-  )
-
-  useQuery(
-    xykMiningPositionsQuery(
-      provider,
-      account?.address ?? "",
-      nftIds?.xykMiningNftId ?? 0n,
-      (data) => setXykMiningPositions(data),
-    ),
-  )
+  return useQuery(xykMiningPositionsQuery(provider, account?.address ?? ""))
 }
 
-export const useAccountPermitNonce = () => {
+export const useAccountPermitNonce = (
+  options?: UseBaseObservableQueryOptions,
+) => {
   const { account } = useAccount()
-  return usePermitNonce(account?.address ?? "")
+  return usePermitNonce(account?.address ?? "", options)
 }
 
 export const useAccountPendingPermit = () => {

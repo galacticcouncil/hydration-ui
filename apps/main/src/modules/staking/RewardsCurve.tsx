@@ -151,6 +151,7 @@ export const RewardsCurve: FC = () => {
                         {t("staking:dashboard.chart.legend.afterVoting")}
                       </Text>
                       <Tooltip
+                        asChild
                         text={(
                           t("staking:dashboard.chart.legend.afterVoting.help", {
                             returnObjects: true,
@@ -189,7 +190,7 @@ export const RewardsCurve: FC = () => {
             <>
               {payload.current && (
                 <CrosshairDot
-                  key={key}
+                  key={`${key}-current`}
                   x={cx - 7}
                   y={cy - 7}
                   color={themeProps.icons.primary}
@@ -197,7 +198,7 @@ export const RewardsCurve: FC = () => {
               )}
               {payload.currentSecondary && (
                 <CrosshairDot
-                  key={key}
+                  key={`${key}-currentSecondary`}
                   x={cx - 7}
                   y={cy - 7}
                   color={themeProps.accents.success.emphasis}
@@ -205,7 +206,7 @@ export const RewardsCurve: FC = () => {
               )}
               {payload.currentThird && (
                 <CrosshairDot
-                  key={key}
+                  key={`${key}-currentThird`}
                   x={cx - 7}
                   y={cy - 7}
                   color={themeProps.buttons.secondary.emphasis.onRest}

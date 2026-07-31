@@ -1,0 +1,66 @@
+query ScheduledOrders($who: String!) {
+  events(
+    where: {
+      args_jsonContains: { who: $who }
+      AND: { name_eq: "DCA.Scheduled" }
+    }
+    orderBy: [block_height_DESC]
+    limit: 100
+  ) {
+    name
+    args
+    call {
+      args
+    }
+    block {
+      height
+      hash
+    }
+  }
+}
+
+query OrdersStatus($who: String!) {
+  events(
+    where: {
+      args_jsonContains: { who: $who }
+      AND: { name_in: ["DCA.Terminated", "DCA.Completed"] }
+    }
+    orderBy: [block_height_DESC]
+    limit: 100
+  ) {
+    name
+    args
+  }
+}
+
+query OrderTrades($id: Int!) {
+  events(
+    where: {
+      args_jsonContains: { id: $id }
+      AND: { name_in: ["DCA.TradeExecuted", "DCA.TradeFailed"] }
+    }
+    orderBy: [block_height_DESC]
+    limit: 10
+  ) {
+    name
+    args
+    block {
+      height
+      timestamp
+    }
+  }
+}
+
+query OrderPlannedExecution($id: Int!) {
+  events(
+    where: {
+      args_jsonContains: { id: $id }
+      AND: { name_eq: "DCA.ExecutionPlanned" }
+    }
+    orderBy: [block_height_DESC]
+    limit: 1
+  ) {
+    name
+    args
+  }
+}

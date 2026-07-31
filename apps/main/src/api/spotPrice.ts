@@ -6,6 +6,7 @@ import {
   bigShift,
   getAddressFromAssetId,
   QUERY_KEY_BLOCK_PREFIX,
+  useStableArray,
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
@@ -189,12 +190,13 @@ const SC_ASSETS = new Map<string, string>([
 ])
 
 export const useSubscribedPriceKeys = (assetIds: string[]) => {
+  const stableAssetIds = useStableArray(assetIds)
   const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()
 
   return useQueries({
-    queries: assetIds.map((assetId) => {
+    queries: stableAssetIds.map((assetId) => {
       const reserveId = SC_ASSETS.get(assetId)
 
       if (reserveId) {

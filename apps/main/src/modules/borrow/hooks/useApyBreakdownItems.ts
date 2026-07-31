@@ -7,6 +7,7 @@ import { BorrowAssetApyData, ExternalApyType } from "@/api/borrow"
 import { ApyRowProps } from "@/components/DetailedApy/DetailedApy"
 import i18n from "@/i18n"
 import { ApyBreakdownProps } from "@/modules/borrow/components/ApyBreakdown"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 type Options = Pick<ApyBreakdownProps, "type"> &
   Pick<BorrowAssetApyData, "underlyingAssetsApyData" | "incentives">
@@ -45,9 +46,7 @@ export const useApyBreakdownItems = ({
         return {
           assetId: id,
           label,
-          value: t("percent", {
-            value: isSupply ? supplyApy : borrowApy,
-          }),
+          value: formatApyPercent(t, isSupply ? supplyApy : borrowApy),
         }
       },
     )

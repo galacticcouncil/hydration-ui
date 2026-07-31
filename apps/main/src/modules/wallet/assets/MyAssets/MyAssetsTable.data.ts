@@ -62,10 +62,10 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           -meta.decimals,
         )
 
-        const totalDisplay = price ? total.times(price).toString() : "0"
+        const totalDisplay = price ? total.times(price).toString() : undefined
         const transferableDisplay = price
           ? transferable.times(price).toString()
-          : "0"
+          : undefined
 
         return {
           ...meta,
@@ -76,6 +76,7 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           transferableDisplay,
           canStake: meta.id === native.id,
           rugCheckData: undefined,
+          reserved: balance?.reserved,
         }
       })
       .sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)

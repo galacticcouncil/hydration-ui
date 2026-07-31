@@ -6,13 +6,18 @@ import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { TradeType } from "@/api/trade"
+import {
+  getSharedSellAmount,
+  useSharedSellAmountSync,
+} from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import {
+  maxBalanceError,
   positiveOptional,
   requiredObject,
-  useValidateFormMaxBalance,
   validateAssetSellOnly,
+  validateMaxBalance,
 } from "@/utils/validators"
 
 const schema = z.object({
@@ -24,16 +29,24 @@ const schema = z.object({
   isSingleTrade: z.boolean(),
 })
 
-const useSchema = () => {
+const useSchema = (maxSwapSellBalance: string, maxTwapSellBalance: string) => {
   const { account } = useAccount()
-  const refineMaxBalance = useValidateFormMaxBalance()
 
   if (!account) {
     return schema
   }
 
-  return schema.check(
-    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
+  return schema.refine(
+    (form) => {
+      return validateMaxBalance(
+        form.isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance,
+        form.sellAmount,
+      )
+    },
+    {
+      error: maxBalanceError,
+      path: ["sellAmount"],
+    },
   )
 }
 
@@ -42,16 +55,24 @@ export type MarketFormValues = z.infer<ReturnType<typeof useSchema>>
 type Args = {
   readonly assetIn: string
   readonly assetOut: string
+  readonly maxSwapSellBalance: string
+  readonly maxTwapSellBalance: string
 }
 
-export const useMarketForm = ({ assetIn, assetOut }: Args) => {
+export const useMarketForm = ({
+  assetIn,
+  assetOut,
+  maxSwapSellBalance,
+  maxTwapSellBalance,
+}: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
+
   const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
 
   const defaultValues: MarketFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
-    sellAmount: "",
+    sellAmount: getSharedSellAmount(),
     buyAsset: getAsset(assetOut) ?? null,
     buyAmount: "",
     type: TradeType.Sell,
@@ -61,8 +82,12 @@ export const useMarketForm = ({ assetIn, assetOut }: Args) => {
   const form = useForm<MarketFormValues>({
     defaultValues,
     mode: "onChange",
-    resolver: standardSchemaResolver(useSchema()),
+    resolver: standardSchemaResolver(
+      useSchema(maxSwapSellBalance, maxTwapSellBalance),
+    ),
   })
+
+  useSharedSellAmountSync(form)
 
   const { trigger, getValues } = form
   useEffect(() => {
