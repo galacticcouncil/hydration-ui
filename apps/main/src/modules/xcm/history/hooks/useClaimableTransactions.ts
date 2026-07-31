@@ -1,3 +1,4 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { type XcJourney, XcJourneyBuilder } from "@galacticcouncil/xc-scan"
 import { useQuery } from "@tanstack/react-query"
@@ -71,6 +72,7 @@ async function isVaaConsumed(rpc: TProviderContext, journey: XcJourney) {
   const toChain = resolveChainFromUrn(journey.destination)
   const header = getJourneyVaaHeader(journey)
   if (!toChain || !header) return false
+  if (toChain.key !== HYDRATION_CHAIN_KEY) return false
 
   const transceiver = resolveNttDeployment(journey, toChain)?.transceiver
     .wormhole

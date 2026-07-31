@@ -1,10 +1,4 @@
-import {
-  bigShift,
-  getVaaHeader,
-  HYDRATION_CHAIN_KEY,
-  stringEquals,
-} from "@galacticcouncil/utils"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { bigShift, getVaaHeader, stringEquals } from "@galacticcouncil/utils"
 import { AnyChain, Ntt } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { isNumber } from "remeda"
@@ -32,8 +26,20 @@ export const wormholeOperationSchema = z.object({
       txHash: z.string(),
     }),
   }),
+  targetChain: z
+    .object({
+      timestamp: z.string().nullish(),
+      transaction: z
+        .object({
+          txHash: z.string(),
+        })
+        .nullish(),
+    })
+    .nullish(),
   content: z.object({
     standarizedProperties: z.object({
+      fromChain: z.number(),
+      fromAddress: z.string(),
       toChain: z.number(),
       toAddress: z.string(),
       appIds: z.array(z.string()),
@@ -82,21 +88,29 @@ export function wormholeOpToXcJourney(op: unknown): XcJourney | undefined {
   const parsed = wormholeOperationSchema.safeParse(op)
   if (!parsed.success) return undefined
 
-  const { id, vaa, sourceChain, content } = parsed.data
+  const { id, vaa, sourceChain, targetChain, content } = parsed.data
   const props = content.standarizedProperties
-
-  const destChain = chainsMap.get(HYDRATION_CHAIN_KEY)
-  if (!destChain) return undefined
 
   const header = safeVaaHeader(vaa.raw)
   if (!header) return undefined
 
-  const originChain = findChainByWormholeId(header.emitterChain)
-  if (!originChain) return undefined
+  const originChain = findChainByWormholeId(props.fromChain)
+  const destChain = findChainByWormholeId(props.toChain)
+  if (!originChain || !destChain || header.emitterChain !== props.fromChain) {
+    return undefined
+  }
 
+  const originUrn = getChainXcScanUrn(originChain)
   const destinationUrn = getChainXcScanUrn(destChain)
   const sentAt = Date.parse(sourceChain.timestamp)
   if (Number.isNaN(sentAt)) return undefined
+  const receivedAt = targetChain?.timestamp
+    ? Date.parse(targetChain.timestamp)
+    : undefined
+  const recvAt =
+    receivedAt === undefined || Number.isNaN(receivedAt)
+      ? undefined
+      : receivedAt
 
   // getJourneyVaaRaw parses this back out to reach the VAA, so it has to
   // round-trip - unlike basejump journeys, which carry no stops at all.
@@ -117,21 +131,24 @@ export function wormholeOpToXcJourney(op: unknown): XcJourney | undefined {
   const journey = {
     id: 0,
     correlationId: id,
-    status: "waiting",
+    status: targetChain ? "received" : "waiting",
     type: "transfer",
     originProtocol: "wormhole",
     destinationProtocol: "wormhole",
-    origin: getChainXcScanUrn(originChain),
+    origin: originUrn,
     destination: destinationUrn,
-    from: "",
+    from: props.fromAddress,
+    fromFormatted: props.fromAddress,
     to: props.toAddress,
     toFormatted: props.toAddress,
     sentAt,
     createdAt: sentAt,
+    recvAt,
     stops: JSON.stringify([stop]),
     instructions: "",
     transactCalls: "",
     originTxPrimary: sourceChain.transaction.txHash,
+    destinationTxPrimary: targetChain?.transaction?.txHash,
     totalUsd: 0,
     assets: [],
   } satisfies XcJourney
