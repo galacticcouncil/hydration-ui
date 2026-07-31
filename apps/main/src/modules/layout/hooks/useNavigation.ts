@@ -15,7 +15,7 @@ export const useNavigation = (): NavigationItem[] => {
 
         return item.enabled !== false
       }).map((item) => {
-        if (item.key === "staking" && !featureFlags.gigaStakingEnabled) {
+        if (item.key === "staking") {
           return {
             ...item,
             to: LINKS.stakingOld,
@@ -27,6 +27,6 @@ export const useNavigation = (): NavigationItem[] => {
 
         return item
       }),
-    [featureFlags.hollarBondsEnabled, featureFlags.gigaStakingEnabled],
+    [featureFlags.hollarBondsEnabled],
   )
 }
