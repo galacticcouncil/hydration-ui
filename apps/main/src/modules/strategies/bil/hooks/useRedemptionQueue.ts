@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { formatUnits } from "viem"
 
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
-import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
+import { bilVaultContractQuery } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export interface QueueEntry {
   requestId: number
@@ -18,13 +19,16 @@ export interface QueueEntry {
 }
 
 export function useRedemptionQueue(evmAddress: string | undefined) {
-  const { data: vault } = useBilVaultContract()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
   const { bil, hollar } = useBilStrategy()
   return useQuery({
-    enabled: !!vault && !!evmAddress,
+    enabled: !!evmAddress && rpc.isLoaded,
     queryKey: bilQueryKeys.vaultQueue(evmAddress),
     queryFn: async () => {
-      if (!vault) throw new Error("Vault contract not found")
+      const vault = await queryClient.ensureQueryData(
+        bilVaultContractQuery(rpc),
+      )
 
       const [length, head, totalQueued] = await Promise.all([
         vault.read.getRedemptionQueueLength(),

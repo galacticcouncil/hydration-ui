@@ -12,10 +12,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
-import { useState } from "react"
+import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useBorrowHollarForm } from "@/modules/strategies/bil/components/BorrowHollarModal.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useBorrowHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
@@ -28,7 +29,6 @@ interface Props {
 
 export const BorrowHollarModal = ({ open, onClose }: Props) => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
-  const [amount, setAmount] = useState("")
 
   const { hollar } = useBilStrategy()
 
@@ -36,14 +36,18 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
   const { data: poolPosition } = useBilPoolPosition(evmAddress)
   const borrowMutation = useBorrowHollar({ onClose })
 
-  const inputNum = parseFloat(amount) || 0
-
   const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
   const hasCollateral = !!poolPosition?.hasCollateral
 
-  const overAvailable = inputNum > availableUsd
+  const { control, handleSubmit, watch, formState } = useBorrowHollarForm({
+    maxBorrowable: availableUsd.toString(),
+  })
+
+  const amount = watch("amount")
+  const inputAmount = amount || "0"
+
   const healthFactor = poolPosition
-    ? getBilBorrowHealthFactor(poolPosition, inputNum)
+    ? getBilBorrowHealthFactor(poolPosition, inputAmount)
     : null
   const isLiquidationRisk =
     !!healthFactor &&
@@ -51,16 +55,15 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
     Big(healthFactor.future).lte(1)
 
   const canSubmit =
-    inputNum > 0 &&
-    !overAvailable &&
+    formState.isValid &&
     !isLiquidationRisk &&
     !borrowMutation.isPending &&
     hasCollateral
 
-  const handleSubmit = () => {
+  const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
-    borrowMutation.mutate(inputNum)
-  }
+    borrowMutation.mutate(amount)
+  })
 
   return (
     <Modal
@@ -71,49 +74,57 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
     >
       <ModalHeader title={t("bil.borrow.title")} />
 
-      <ModalBody>
-        <AssetInput
-          sx={{ pt: 0 }}
-          label={t("bil.borrow.selectAsset")}
-          balanceLabel={t("common:available")}
-          symbol={hollar.symbol}
-          selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-          modalDisabled
-          value={amount}
-          onChange={setAmount}
-          displayValue={t("common:currency", {
-            value: inputNum,
-          })}
-          maxBalance={availableUsd.toString()}
-          maxButtonBalance={availableUsd.toString()}
-          amountError={overAvailable ? t("bil.borrow.cta.exceeds") : undefined}
-        />
+      <form onSubmit={onSubmit}>
+        <ModalBody>
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field, fieldState }) => (
+              <AssetInput
+                sx={{ pt: 0 }}
+                label={t("bil.borrow.selectAsset")}
+                balanceLabel={t("common:available")}
+                symbol={hollar.symbol}
+                selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
+                modalDisabled
+                value={field.value}
+                onChange={field.onChange}
+                displayValue={t("common:currency", {
+                  value: inputAmount,
+                })}
+                maxBalance={availableUsd.toString()}
+                maxButtonBalance={availableUsd.toString()}
+                amountError={fieldState.error?.message}
+              />
+            )}
+          />
 
-        {healthFactor && hasCollateral && (
-          <Summary
-            withLeadingSeparator
-            separator={<ModalContentDivider />}
-            mb="var(--modal-content-inset)"
+          {healthFactor && hasCollateral && (
+            <Summary
+              withLeadingSeparator
+              separator={<ModalContentDivider />}
+              mb="var(--modal-content-inset)"
+            >
+              <SummaryRow
+                label={t("common:healthFactor")}
+                content={<HealthFactorChange {...healthFactor} />}
+              />
+            </Summary>
+          )}
+        </ModalBody>
+
+        <ModalFooter>
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={borrowMutation.isPending}
+            disabled={!canSubmit}
           >
-            <SummaryRow
-              label={t("common:healthFactor")}
-              content={<HealthFactorChange {...healthFactor} />}
-            />
-          </Summary>
-        )}
-      </ModalBody>
-
-      <ModalFooter>
-        <LoadingButton
-          size="large"
-          width="100%"
-          isLoading={borrowMutation.isPending}
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-        >
-          {t("borrow:borrow")} {hollar.symbol}
-        </LoadingButton>
-      </ModalFooter>
+            {t("borrow:borrow")} {hollar.symbol}
+          </LoadingButton>
+        </ModalFooter>
+      </form>
     </Modal>
   )
 }

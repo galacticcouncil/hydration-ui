@@ -1,15 +1,16 @@
 import { UINT256_MAX } from "@galacticcouncil/utils"
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
-import { useQuery } from "@tanstack/react-query"
-import { type Address, formatUnits, getContract } from "viem"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { type Address, formatUnits } from "viem"
 
-import { BIL_POOL_ABI } from "@/modules/strategies/bil/config/abi"
 import {
-  BIL_POOL_ADDRESS,
   DCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
 } from "@/modules/strategies/bil/config/constants"
-import { useBilPoolContract } from "@/modules/strategies/bil/hooks/useBilPoolContract"
+import {
+  bilPoolContractQuery,
+  useBilPoolContract,
+} from "@/modules/strategies/bil/hooks/useBilPoolContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -98,15 +99,13 @@ export interface BilReserveConfig {
  * convert bps → percentage.
  */
 export function useBilReserveConfig() {
-  const { evm } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
   return useQuery({
     queryKey: bilQueryKeys.reserveConfig(),
+    enabled: rpc.isLoaded,
     queryFn: async (): Promise<BilReserveConfig> => {
-      const pool = getContract({
-        address: BIL_POOL_ADDRESS,
-        abi: BIL_POOL_ABI,
-        client: evm,
-      })
+      const pool = await queryClient.ensureQueryData(bilPoolContractQuery(rpc))
       // The DCL precompile (asset 550) is the actual reserve; BIL (asset 55,
       // the aToken receipt) is a user-facing alias and is *not* registered as
       // a reserve, so getConfiguration on it returns 0x.

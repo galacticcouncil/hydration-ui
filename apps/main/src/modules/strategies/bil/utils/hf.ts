@@ -110,7 +110,7 @@ const toBilLiquidationThreshold = (liquidationThresholdPct: number) =>
 
 export const getBilBorrowHealthFactor = (
   poolPosition: BilPoolPosition,
-  borrowAmountUsd: number,
+  borrowAmountUsd: string,
 ): HealthFactorResult => {
   const newHealthFactor = calculateHealthFactorFromBalancesBigUnits({
     collateralBalanceMarketReferenceCurrency:
@@ -131,7 +131,7 @@ export const getBilBorrowHealthFactor = (
 
 export const getBilRepayHealthFactor = (
   poolPosition: BilPoolPosition,
-  repayAmountUsd: number,
+  repayAmountUsd: string,
 ): HealthFactorResult => {
   const remainingBorrowBalance = Big.max(
     Big(poolPosition.totalDebtUsd).minus(repayAmountUsd),

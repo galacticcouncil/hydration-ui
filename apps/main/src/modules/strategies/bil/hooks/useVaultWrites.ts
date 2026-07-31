@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
+import { estimateGasLimit } from "@/api/borrow"
 import { calculateSlippage } from "@/api/utils/slippage"
 import {
   BIL_DEPOSIT_ZAP_ABI,
@@ -69,7 +70,7 @@ function useVaultEvmCall() {
   const rpc = useRpcProvider()
 
   const { account } = useAccount()
-  const { createTransaction } = useTransactionsStore()
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
   const evmAddress = safeConvertSS58toH160(account?.address ?? "") as Hex
 
@@ -81,9 +82,11 @@ function useVaultEvmCall() {
       toasts: { submitted: string; success: string },
       invalidateKeys: string[][] = [[BIL_QUERY_KEY_PREFIX]],
     ) => {
-      const gasPriceBase = await rpc.evm.getGasPrice()
-      const gasPriceSurplus = (gasPriceBase * 5n) / 100n
-      const gasPrice = gasPriceBase + gasPriceSurplus
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm: rpc.evm,
+          gasLimit: EVM_CALL_GAS.toString(),
+        })
 
       const evmCall: ExtendedEvmCall = {
         from: evmAddress,
@@ -91,9 +94,9 @@ function useVaultEvmCall() {
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit: EVM_CALL_GAS,
-        maxFeePerGas: gasPrice,
-        maxPriorityFeePerGas: gasPrice,
+        gasLimit,
+        maxFeePerGas: maxFeePerGas[0],
+        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
         abi: safeStringify(abi),
       }
 
@@ -112,9 +115,11 @@ function useVaultEvmCall() {
         throw new Error("buildBatchCalls called with no calls")
       }
 
-      const gasPriceBase = await rpc.evm.getGasPrice()
-      const gasPriceSurplus = (gasPriceBase * 5n) / 100n
-      const gasPrice = gasPriceBase + gasPriceSurplus
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm: rpc.evm,
+          gasLimit: EVM_CALL_GAS.toString(),
+        })
 
       const evmCalls = calls.map(({ to, data, abi }) => ({
         from: evmAddress,
@@ -122,9 +127,9 @@ function useVaultEvmCall() {
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit: EVM_CALL_GAS,
-        maxFeePerGas: gasPrice,
-        maxPriorityFeePerGas: gasPrice,
+        gasLimit,
+        maxFeePerGas: maxFeePerGas[0],
+        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
         abi: safeStringify(abi),
       }))
 
@@ -438,7 +443,7 @@ export function useInstantRedeemFromQueue() {
       single: { swapSlippage },
     },
   } = useTradeSettings()
-  const { createTransaction } = useTransactionsStore()
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { evmAddress, buildBatchCalls } = useVaultEvmCall()
   const address = account?.address ?? ""
 

@@ -95,13 +95,13 @@ export function useBorrowHollar({ onClose }: BilPoolWriteOptions = {}) {
   const { evmAddress, submitTx } = useBilPoolEvmCall({ onClose })
 
   return useMutation({
-    mutationFn: (hollarAmount: number) => {
+    mutationFn: (hollarAmount: string) => {
       const data = encodeFunctionData({
         abi: BIL_POOL_ABI,
         functionName: "borrow",
         args: [
           HOLLAR_ADDRESS,
-          parseUnits(hollarAmount.toString(), hollar.decimals),
+          parseUnits(hollarAmount, hollar.decimals),
           AAVE_INTEREST_RATE_MODE_VARIABLE,
           0, // referralCode
           evmAddress,
@@ -141,7 +141,7 @@ export function useRepayHollar({ onClose }: BilPoolWriteOptions = {}) {
       amount,
       repayAll,
     }: {
-      amount: number
+      amount: string
       repayAll?: boolean
     }) => {
       const data = encodeFunctionData({
@@ -149,9 +149,7 @@ export function useRepayHollar({ onClose }: BilPoolWriteOptions = {}) {
         functionName: "repay",
         args: [
           HOLLAR_ADDRESS,
-          repayAll
-            ? UINT256_MAX
-            : parseUnits(amount.toString(), hollar.decimals),
+          repayAll ? UINT256_MAX : parseUnits(amount, hollar.decimals),
           AAVE_INTEREST_RATE_MODE_VARIABLE,
           evmAddress,
         ],

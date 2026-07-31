@@ -1,5 +1,5 @@
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { secondsInDay } from "date-fns/constants"
 import { type Address, formatUnits, getContract } from "viem"
 
@@ -17,7 +17,7 @@ import {
   VAULT_ADDRESS,
 } from "@/modules/strategies/bil/config/constants"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
-import { useBilVaultContract } from "@/modules/strategies/bil/hooks/useBilVaultContract"
+import { bilVaultContractQuery } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -75,14 +75,16 @@ const DEFAULT_VAULT_STATS: VaultStats = {
 }
 
 export function useVaultStats() {
-  const { evm } = useRpcProvider()
-  const { data: vault } = useBilVaultContract()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
   return useQuery({
     queryKey: bilQueryKeys.vaultStats(),
-    enabled: !!vault,
+    enabled: rpc.isLoaded,
     initialData: DEFAULT_VAULT_STATS,
     queryFn: async () => {
-      if (!vault) throw new Error("Vault contract not found")
+      const vault = await queryClient.ensureQueryData(
+        bilVaultContractQuery(rpc),
+      )
       const [
         totalAssets,
         totalSupply,
@@ -152,7 +154,7 @@ export function useVaultStats() {
       // Max lockup a *new* deposit faces, regardless of queue contention.
       // The active deposit pool is read on-chain, not from a local constant.
       const decentralPoolAddr = await vault.read.activeDepositPool()
-      const investmentPeriodSec = await evm.readContract({
+      const investmentPeriodSec = await rpc.evm.readContract({
         address: decentralPoolAddr,
         abi: DECENTRAL_POOL_ABI,
         functionName: "minimumInvestmentPeriodSeconds",
@@ -162,7 +164,7 @@ export function useVaultStats() {
       // `vault.deposit` + `pool.supply` (see BILDepositZap), so the pool cap
       // binds alongside the vault's `tvlCap`.
       const [config, aTokenSupply] = await Promise.all([
-        evm.readContract({
+        rpc.evm.readContract({
           address: BIL_POOL_ADDRESS,
           abi: BIL_POOL_ABI,
           functionName: "getConfiguration",
@@ -170,7 +172,7 @@ export function useVaultStats() {
           // (asset 55) alias is not a registered reserve.
           args: [DCL_PRECOMPILE_ADDRESS],
         }),
-        evm.readContract({
+        rpc.evm.readContract({
           address: BIL_ATOKEN_ADDRESS,
           abi: ERC20_ABI,
           functionName: "totalSupply",

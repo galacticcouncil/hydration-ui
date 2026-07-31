@@ -12,10 +12,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
-import { useState } from "react"
+import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useRepayHollarForm } from "@/modules/strategies/bil/components/RepayHollarModal.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useRepayHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
@@ -29,7 +30,6 @@ interface Props {
 
 export const RepayHollarModal = ({ open, onClose }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
-  const [amount, setAmount] = useState("")
 
   const { hollar } = useBilStrategy()
 
@@ -39,41 +39,38 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
   const repayMutation = useRepayHollar({ onClose })
 
   const walletHollar = balances?.hollar ?? 0
-
-  const inputNum = parseFloat(amount) || 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
+
+  const { control, handleSubmit, watch, formState } = useRepayHollarForm({
+    totalDebt: totalDebtUsd.toString(),
+    walletBalance: walletHollar.toString(),
+  })
+
+  const amount = watch("amount")
+  const inputAmount = amount || "0"
+
   const healthFactor = poolPosition
-    ? getBilRepayHealthFactor(poolPosition, inputNum)
+    ? getBilRepayHealthFactor(poolPosition, inputAmount)
     : null
   const maxRepay = Math.min(walletHollar, totalDebtUsd)
-  const overDebt = inputNum > totalDebtUsd
-  const overWallet = inputNum > walletHollar
 
   const canSubmit =
-    inputNum > 0 &&
-    !overDebt &&
-    !overWallet &&
-    !repayMutation.isPending &&
-    totalDebtUsd > 0
+    formState.isValid && !repayMutation.isPending && totalDebtUsd > 0
 
-  const handleSubmit = () => {
+  const onSubmit = handleSubmit(({ amount }) => {
+    if (!canSubmit) return
     repayMutation.mutate({
-      amount: inputNum,
-      repayAll: inputNum > 0 && Big(inputNum).gte(totalDebtUsd.toString()),
+      amount,
+      repayAll: Big(amount).gte(totalDebtUsd.toString()),
     })
-  }
+  })
 
-  const ctaLabel = (() => {
-    if (overDebt) return t("bil.repay.cta.exceeds")
-    if (overWallet) return t("bil.repay.cta.insufficient")
-    return t("bil.repay.cta.repay")
-  })()
-
-  const amountError = overDebt
-    ? t("bil.repay.cta.exceeds")
-    : overWallet
-      ? t("bil.repay.cta.insufficient")
-      : undefined
+  const amountError = formState.errors.amount?.message
+  const ctaLabel =
+    amountError === t("bil.repay.cta.exceeds") ||
+    amountError === t("bil.repay.cta.insufficient")
+      ? amountError
+      : t("bil.repay.cta.repay")
 
   return (
     <Modal
@@ -84,48 +81,56 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
     >
       <ModalHeader title={t("bil.repay.title")} />
 
-      <ModalBody>
-        <AssetInput
-          sx={{ pt: 0 }}
-          label={t("common:amount")}
-          symbol={hollar.symbol}
-          selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-          modalDisabled
-          value={amount}
-          onChange={setAmount}
-          displayValue={t("common:currency", {
-            value: inputNum,
-          })}
-          maxBalance={maxRepay.toString()}
-          maxButtonBalance={maxRepay.toString()}
-          amountError={amountError}
-        />
+      <form onSubmit={onSubmit}>
+        <ModalBody>
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field, fieldState }) => (
+              <AssetInput
+                sx={{ pt: 0 }}
+                label={t("common:amount")}
+                symbol={hollar.symbol}
+                selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
+                modalDisabled
+                value={field.value}
+                onChange={field.onChange}
+                displayValue={t("common:currency", {
+                  value: inputAmount,
+                })}
+                maxBalance={maxRepay.toString()}
+                maxButtonBalance={maxRepay.toString()}
+                amountError={fieldState.error?.message}
+              />
+            )}
+          />
 
-        {healthFactor && totalDebtUsd > 0 && (
-          <Summary
-            withLeadingSeparator
-            separator={<ModalContentDivider />}
-            mb="var(--modal-content-inset)"
+          {healthFactor && totalDebtUsd > 0 && (
+            <Summary
+              withLeadingSeparator
+              separator={<ModalContentDivider />}
+              mb="var(--modal-content-inset)"
+            >
+              <SummaryRow
+                label={t("common:healthFactor")}
+                content={<HealthFactorChange {...healthFactor} />}
+              />
+            </Summary>
+          )}
+        </ModalBody>
+
+        <ModalFooter>
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={repayMutation.isPending}
+            disabled={!canSubmit}
           >
-            <SummaryRow
-              label={t("common:healthFactor")}
-              content={<HealthFactorChange {...healthFactor} />}
-            />
-          </Summary>
-        )}
-      </ModalBody>
-
-      <ModalFooter>
-        <LoadingButton
-          size="large"
-          width="100%"
-          isLoading={repayMutation.isPending}
-          disabled={!canSubmit}
-          onClick={() => canSubmit && handleSubmit()}
-        >
-          {ctaLabel}
-        </LoadingButton>
-      </ModalFooter>
+            {ctaLabel}
+          </LoadingButton>
+        </ModalFooter>
+      </form>
     </Modal>
   )
 }
