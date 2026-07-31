@@ -30,6 +30,21 @@ const HollarBondBanner: React.FC<PromoteBannerProps> = ({ item }) => {
         ...item,
         title: t("banners.hollarb.title"),
         description: apr ? t("banners.hollarb.description", { apr }) : "",
+        cta: t("banners.hollarb.cta"),
+      }}
+    />
+  )
+}
+
+const BilBanner: React.FC<PromoteBannerProps> = ({ item }) => {
+  const { t } = useTranslation("common")
+  return (
+    <PromoteBanner
+      item={{
+        ...item,
+        title: t("banners.bil.title"),
+        description: t("banners.bil.description"),
+        cta: t("banners.bil.cta"),
       }}
     />
   )
@@ -115,6 +130,8 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
               <SStackLayer key={banner.id} $depth={depth}>
                 {banner.id === "hollarb" ? (
                   <HollarBondBanner item={item} />
+                ) : banner.id === "bil" ? (
+                  <BilBanner item={item} />
                 ) : (
                   <PromoteBanner item={item} />
                 )}

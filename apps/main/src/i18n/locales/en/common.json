@@ -392,6 +392,10 @@
   "banners.newFarms.cta": "More Info",
   "banners.hollarb.title": "Introducing Fixed Yield HOLLAR Bonds",
   "banners.hollarb.description": "Earn {{ apr, percent }} APR with fixed-term HOLLAR bonds.",
+  "banners.hollarb.cta": "Get HOLLARb",
+  "banners.bil.title": "Introducing Brazilian Invoice Loans",
+  "banners.bil.description": "Earn 18% APR financing Brazilian invoice receivables",
+  "banners.bil.cta": "Get BIL",
   "gigaNews": "GIGA News",
   "closeAll": "Close all",
   "externalApy.alert": "The external APY is not available"
