@@ -1,3 +1,4 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import {
   EvmAddr,
   getVaaHeader,
@@ -6,6 +7,7 @@ import {
   isEvmParachain,
   isSolanaChain,
   isSuiChain,
+  safeConvertSS58toH160,
   safeParse,
   SolanaAddr,
 } from "@galacticcouncil/utils"
@@ -31,10 +33,9 @@ import type { XcJourney } from "@galacticcouncil/xc-scan"
 import {
   EvmCall,
   EvmClaim,
+  Gas,
   SolanaCall,
   SolanaClaim,
-  SubstrateCall,
-  SubstrateClaim,
   SuiCall,
   SuiClaim,
 } from "@galacticcouncil/xc-sdk"
@@ -262,7 +263,7 @@ type ClaimCallResult =
     }
   | {
       type: CallType.Substrate
-      call: SubstrateCall
+      call: ExtendedEvmCall
       chain: EvmParachain
     }
 
@@ -298,10 +299,17 @@ export async function buildClaimCall(
   // A substrate signed origin can't sign evm txs, so the same claim goes out
   // wrapped in an EVM.call extrinsic on the destination parachain.
   if (!EvmAddr.isValid(claimerAddress) && isEvmParachain(toChain)) {
-    const substrateClaim = await SubstrateClaim.create(toChain)
+    const source = safeConvertSS58toH160(claimerAddress)
+    const evmCall = new EvmClaim().redeem(source, vaaRaw, ntt)
+    const gasPrice = await toChain.evmClient.getProvider().getGasPrice()
+
     return {
       type: CallType.Substrate,
-      call: await substrateClaim.redeem(claimerAddress, vaaRaw, ntt),
+      call: {
+        ...evmCall,
+        gasLimit: Gas.redeem,
+        maxFeePerGas: gasPrice + gasPrice / 10n,
+      },
       chain: toChain,
     }
   }

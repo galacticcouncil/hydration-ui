@@ -5,10 +5,10 @@ import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { CallType } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useMutation } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useClaimTxOptions } from "@/modules/xcm/history/hooks/useClaimTxOptions"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
@@ -57,7 +57,7 @@ export function useDepositClaim(journey: XcJourney) {
       if (result.type === CallType.Substrate) {
         const { call, chain: destChain } = result
 
-        const tx = await papi.txFromCallData(Binary.fromHex(call.data))
+        const tx = transformEvmCallToPapiTx(papi, call)
 
         return createTransaction(
           {
