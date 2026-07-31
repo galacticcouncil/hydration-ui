@@ -4,7 +4,7 @@ import {
   HexString,
   HYDRATION_CHAIN_KEY,
   invariant,
-  isEvmChain,
+  isAnyEvmChain,
   isParachain,
   isValidBigSource,
 } from "@galacticcouncil/utils"
@@ -18,7 +18,10 @@ import { Binary } from "polkadot-api"
 
 import { XcmTransferArgs } from "@/api/xcm"
 import { AnyPapiTx } from "@/modules/transactions/types"
-import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
+import {
+  isEvmApproveCall,
+  isSubstrateCall,
+} from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
@@ -112,30 +115,42 @@ export const getXcmTransferArgs = (
   }
 }
 
+/**
+ * Transfer call of the sequence — the last of {@link Transfer.buildCalls},
+ * preceded by prerequisites (native wrap, erc20 approve) the sender signs
+ * first. Never take the head here: for a native gas source that is the wrap,
+ * and submitting it as the transfer would wrap the funds and stop there.
+ */
 export const buildTransferCall = async (
-  call: Call,
   transfer: Transfer,
   srcChain: AnyChain,
   srcAmount: string,
 ): Promise<Call> => {
-  const isApprovalCall = isEvmChain(srcChain) && isEvmApproveCall(call)
+  const calls = await transfer.buildCalls(srcAmount)
+  const call = calls.at(-1)
 
-  if (!isApprovalCall) return call
+  invariant(call, "Transfer call is required")
+
+  const hasPrerequisites = calls.length > 1
+
+  // Hydration sends NTT too, so an evm parachain source can carry
+  // prerequisites just like a plain evm chain.
+  if (!hasPrerequisites || !isAnyEvmChain(srcChain)) return call
 
   const provider = srcChain.evmClient.getProvider()
   const nonce = await provider.getTransactionCount({
     address: call.from as HexString,
   })
 
-  // wait for approvals to be cleared before building the transfer call
+  // wait for prerequisites to be cleared before building the transfer call
   return waitFor(
     async () => {
       const pending = useApprovalTrackingStore
         .getState()
         .getPendingApprovals(srcChain.key, nonce)
       if (pending.length === 0) {
-        const transferCall = await transfer.buildCall(srcAmount)
-        return waitFor.resolveWith(transferCall)
+        const settled = await transfer.buildCalls(srcAmount)
+        return waitFor.resolveWith(settled.at(-1) ?? call)
       }
       return false
     },
@@ -160,14 +175,12 @@ export async function buildXcmTx(
   srcAmount: string,
   papi: Papi,
 ): Promise<AnyPapiTx | Call> {
-  const call = await transfer.buildCall(srcAmount)
-  const transferCall = await buildTransferCall(
-    call,
-    transfer,
-    srcChain,
-    srcAmount,
-  )
-  return srcChain.key === HYDRATION_CHAIN_KEY
+  const transferCall = await buildTransferCall(transfer, srcChain, srcAmount)
+
+  // Hydration is an evm parachain: an ss58 origin gets the transfer wrapped
+  // in an EVM.call extrinsic, but an H160 one signs the contract call
+  // directly. Only the former is substrate call data papi can decode.
+  return srcChain.key === HYDRATION_CHAIN_KEY && isSubstrateCall(transferCall)
     ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
     : await getExternalChainTx(srcChain, transferCall)
 }
