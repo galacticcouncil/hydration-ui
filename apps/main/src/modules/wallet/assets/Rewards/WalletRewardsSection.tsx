@@ -15,12 +15,10 @@ import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/Wallet
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 import { WalletRewardsSectionEmpty } from "@/modules/wallet/assets/Rewards/WalletRewardsSectionEmpty"
-import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
   const { data: gigaHdxBalance } = useGigaAccountBalance()
-  const { featureFlags } = useRpcProvider()
   const balance = gigaHdxBalance?.free ?? 0n
 
   const { incentives, farming, staking, referral, isEmpty, isLoading } =
@@ -82,13 +80,7 @@ export const WalletRewardsSection: FC = () => {
           isLoading={staking.loading}
         />
         {balance === 0n && (
-          <WalletRewardsSectionEmpty
-            link={
-              featureFlags.gigaStakingEnabled
-                ? LINKS.stakingGigaStake
-                : LINKS.stakingOld
-            }
-          >
+          <WalletRewardsSectionEmpty link={LINKS.stakingGigaStake}>
             {t("rewards.allocated.empty")}
           </WalletRewardsSectionEmpty>
         )}
