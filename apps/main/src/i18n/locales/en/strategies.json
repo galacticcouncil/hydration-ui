@@ -10,8 +10,8 @@
   "badge.leverage": "Leverage",
   "badge.noLiquidation": "No Liquidation",
 
-  "cards.bil.title": "Brazilian Invoice Loans Vault",
-  "cards.bil.description": "Decentral is revolutionizing the payment process for creators, influencers, agencies, and production companies in Brazil.",
+  "cards.bil.title": "Brazilian Invoice Loans",
+  "cards.bil.description": "Deposit HOLLAR into a liquid strategy that earns fixed yield from short-term Brazilian invoice receivables.",
   "cards.hollarBonds.title": "HOLLAR Bonds",
   "cards.hollarBonds.description": "Lock stablecoins and earn fixed APR. Fixed Yield HOLLAR Bonds have no liquidation risk for users, as the protocol covers the underlying yield and liquidation risk.",
 
@@ -32,7 +32,7 @@
   "bonds.position.redeem": "Redeem",
   "bonds.position.availableAtMaturity": "Available at maturity",
 
-  "bil.strategy.name": "Brazilian Invoice Loans Vault",
+  "bil.strategy.name": "Brazilian Invoice Loans",
   "bil.strategy.collateralAsset": "Decentral",
   "bil.strategy.tvl": "TVL",
   "bil.strategy.maxNetApy": "Max Net APY",
