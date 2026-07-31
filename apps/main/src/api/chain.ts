@@ -47,6 +47,20 @@ export const useBestNumber = () => {
   return useQuery(bestNumberQuery(useRpcProvider()))
 }
 
+// Block-tagged query domains (the second key segment after QUERY_KEY_BLOCK_PREFIX)
+// that are only relevant on a specific route. Off their route there is no observer
+// to render the data, so refetching them on every block is pure waste. They are
+// invalidated per block only while the matching route is mounted; everywhere else
+// they refetch lazily on next mount.
+const ROUTE_SCOPED_BLOCK_DOMAINS: Record<string, string> = {
+  trade: "/trade",
+  xcm: "/cross-chain",
+}
+
+// domains that are driven by their own cadence (spotPrice: 10s self-refresh via
+// spotPriceQuery; see api/spotPrice.ts) and must not be force-refetched every block.
+const SELF_REFRESHING_BLOCK_DOMAINS = new Set(["spotPrice"])
+
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
   const { papi, isApiLoaded } = useRpcProvider()
@@ -59,8 +73,36 @@ export const useInvalidateOnBlock = () => {
   useObservable(observable, {
     enabled: isApiLoaded,
     onUpdate: () => {
+      // skip the per-block refetch storm entirely while the tab is hidden;
+      // queries refetch on focus (refetchOnWindowFocus) when the user returns.
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return
+      }
+
+      const pathname =
+        typeof window !== "undefined" ? window.location.pathname : ""
+
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEY_BLOCK_PREFIX],
+        predicate: (query) => {
+          const [prefix, domain] = query.queryKey as [unknown, unknown]
+          if (prefix !== QUERY_KEY_BLOCK_PREFIX) return false
+
+          const domainKey = typeof domain === "string" ? domain : ""
+
+          // prices refresh on their own 10s cadence, never per block
+          if (SELF_REFRESHING_BLOCK_DOMAINS.has(domainKey)) return false
+
+          // route-scoped domains only refetch while on their route
+          const routePrefix = ROUTE_SCOPED_BLOCK_DOMAINS[domainKey]
+          if (routePrefix) return pathname.startsWith(routePrefix)
+
+          // everything else (bestNumber, tx-flow previews, wallet, etc.) stays
+          // fresh — these are either app-wide or gated by their own `enabled`.
+          return true
+        },
       })
     },
   })
