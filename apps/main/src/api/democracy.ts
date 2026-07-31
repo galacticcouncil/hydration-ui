@@ -56,7 +56,10 @@ const LOCKED_DAYS_BY_NAME: { [key: string]: number } = {
   locked6x: LOCKED_DAYS_BY_INDEX[6],
 }
 
-const getConvictionBlocks = (
+export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
+export type Conviction = (typeof CONVICTIONS)[number]
+
+export const getConvictionBlocks = (
   slotDurationMs: number,
   conviction: string | number,
 ) => {

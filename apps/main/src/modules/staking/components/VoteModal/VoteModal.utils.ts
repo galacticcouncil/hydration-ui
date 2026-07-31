@@ -15,7 +15,7 @@ import {
 } from "@/api/balances"
 import {
   Conviction,
-  CONVICTIONS_BLOCKS_BY_INDEX,
+  getConvictionBlocks,
   ongoingReferendaQuery,
 } from "@/api/democracy"
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
@@ -224,7 +224,7 @@ export const useVoteModal = (
     "abstain",
   ])
 
-  const lockedBlocks = CONVICTIONS_BLOCKS_BY_INDEX[multiplier] ?? 0
+  const lockedBlocks = getConvictionBlocks(rpc.slotDurationMs, multiplier) ?? 0
   const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
   const totalVotes = (() => {
     if (voteType === "split") {
