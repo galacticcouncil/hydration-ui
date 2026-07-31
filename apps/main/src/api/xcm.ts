@@ -6,7 +6,12 @@ import {
 } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
-import { AnyChain, Asset, AssetAmount } from "@galacticcouncil/xc-core"
+import {
+  AnyChain,
+  Asset,
+  AssetAmount,
+  ChainRoutes,
+} from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
@@ -19,8 +24,10 @@ import {
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
+import { ENV } from "@/config/env"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export const useCrossChainConfig = () => {
@@ -29,10 +36,30 @@ export const useCrossChainConfig = () => {
     staleTime: Infinity,
     gcTime: Infinity,
     queryKey: ["xcm", "context"],
-    queryFn: () =>
-      createXcContext({
+    queryFn: async () => {
+      const ctx = await createXcContext({
         poolCtx: sdk.ctx.pool,
-      }),
+      })
+
+      if (ENV.VITE_WORMHOLE_DISABLED) {
+        ctx.config.routes.forEach((chainRoutes) => {
+          ctx.config.updateRoutes(
+            new ChainRoutes({
+              chain: chainRoutes.chain,
+              routes: chainRoutes.getRoutes().filter((route) => {
+                const tags = route.tags ?? []
+                return (
+                  !tags.includes(XcmTag.Wormhole) &&
+                  !tags.includes(XcmTag.Basejump)
+                )
+              }),
+            }),
+          )
+        })
+      }
+
+      return ctx
+    },
   })
 }
 
