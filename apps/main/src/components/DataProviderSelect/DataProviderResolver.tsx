@@ -3,6 +3,7 @@ import {
   latestBlockHeightQuery,
 } from "@galacticcouncil/indexer/squid"
 import { PingResponse } from "@galacticcouncil/utils"
+import { useQueryClient } from "@tanstack/react-query"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { prop } from "remeda"
@@ -11,7 +12,6 @@ import { PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { ENV } from "@/config/env"
 import { SQUID_URLS } from "@/config/rpc"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { pingWorker } from "@/workers/ping"
 
@@ -30,7 +30,7 @@ declare global {
 export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const { queryClient } = useRpcProvider()
+  const queryClient = useQueryClient()
 
   const [isBestProviderFound, setIsBestProviderFound] = useState(
     () => !useProviderRpcUrlStore.getState().autoMode,
