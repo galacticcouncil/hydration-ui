@@ -3,6 +3,8 @@ import { FC } from "react"
 import { BoxProps } from "@/components"
 import { SChip, SChipProps } from "@/components/Chip/Chip.styled"
 
+export { type ChipVariant } from "@/components/Chip/Chip.styled"
+
 export type ChipProps = BoxProps &
   SChipProps & {
     ref?: React.Ref<HTMLDivElement>

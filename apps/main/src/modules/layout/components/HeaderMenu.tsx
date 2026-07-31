@@ -14,6 +14,7 @@ import {
   HIDDEN_DESKTOP_NAV_ROUTES,
   useMenuTranslations,
 } from "@/modules/layout/components/HeaderMenu.utils"
+import { StrategiesHeaderSubmenu } from "@/modules/layout/components/StrategiesHeaderSubmenu"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 
 export const HeaderMenu: React.FC<
@@ -37,6 +38,7 @@ export const HeaderMenu: React.FC<
           const linkTo = defaultChild ?? to
 
           const isLiquidityPage = to === LINKS.liquidity
+          const isStrategiesPage = to === LINKS.strategies
 
           return (
             <NavigationMenuItem key={key} data-intersect={key}>
@@ -49,16 +51,20 @@ export const HeaderMenu: React.FC<
                 children.length > 1 &&
                 (isLiquidityPage ? null : (
                   <NavigationMenuContent>
-                    {children.map(({ to, search, key, icon }) => (
-                      <DetailedLink
-                        key={key}
-                        to={to}
-                        search={search}
-                        title={translations[key].title}
-                        description={translations[key].description}
-                        icon={icon ?? IconPlaceholder}
-                      />
-                    ))}
+                    {isStrategiesPage ? (
+                      <StrategiesHeaderSubmenu items={children} />
+                    ) : (
+                      children.map(({ to, search, key, icon }) => (
+                        <DetailedLink
+                          key={key}
+                          to={to}
+                          search={search}
+                          title={translations[key].title}
+                          description={translations[key].description}
+                          icon={icon ?? IconPlaceholder}
+                        />
+                      ))
+                    )}
                   </NavigationMenuContent>
                 ))}
             </NavigationMenuItem>

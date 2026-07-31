@@ -1,5 +1,6 @@
-import { Flex } from "@galacticcouncil/ui/components"
 import { containerSize, css, styled } from "@galacticcouncil/ui/utils"
+
+import { Flex } from "@/components/Flex"
 
 export const SRowContainer = styled(Flex)`
   flex-direction: row;
@@ -8,7 +9,7 @@ export const SRowContainer = styled(Flex)`
   justify-content: space-between;
 
   ${containerSize(
-    "sm",
+    "md",
     css`
       flex-wrap: nowrap;
     `,
@@ -28,7 +29,7 @@ export const SValuesColumn = styled(Flex)`
   justify-content: space-between;
 
   ${containerSize(
-    "sm",
+    "md",
     css`
       order: 1;
       flex: 1 1 auto;
@@ -43,7 +44,7 @@ export const SActionColumn = styled(Flex)`
   min-width: 140px;
 
   ${containerSize(
-    "sm",
+    "md",
     css`
       order: 2;
     `,

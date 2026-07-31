@@ -15,16 +15,16 @@ export type BannerConfig = PromoteBannerItem & {
 
 const bannerEntries: BannerConfig[] = [
   {
-    id: "hollarb",
-    backgroundImage: "/images/hollarb.webp",
-    backgroundImageMobile: "/images/hollarbMobile.webp",
-    title: "banners.hollarb.title",
-    description: "banners.hollarb.description",
-    textColor: "#FFF",
-    ctaColor: "#B3D7FA",
-    ctaTextColor: "#0D1525",
-    cta: "Get HOLLARb",
-    to: LINKS.strategiesHollarBonds,
+    id: "bil",
+    backgroundImage: "/images/bil.webp",
+    backgroundImageMobile: "/images/bilMobile.webp",
+    title: "banners.bil.title",
+    description: "banners.bil.description",
+    textColor: "#000000",
+    ctaColor: "#000000",
+    ctaTextColor: "#FFFFFF",
+    cta: "banners.bil.cta",
+    to: LINKS.strategiesBil,
     priority: 1,
     enabled: false,
   },
@@ -40,9 +40,17 @@ export const useEnabledBanners = () => {
         return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
       }
 
+      if (banner.id === "bil") {
+        return featureFlags.bilEnabled
+      }
+
       return banner.enabled
     })
-  }, [featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders])
+  }, [
+    featureFlags.bilEnabled,
+    featureFlags.hollarBondsEnabled,
+    hasFillableStableBondsOrders,
+  ])
 }
 
 export const bannerConfig: BannerConfig[] = [...bannerEntries].sort(

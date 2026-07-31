@@ -20,11 +20,13 @@ import { createPublicClient, custom, PublicClient } from "viem"
 
 import { ENV } from "@/config/env"
 import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
+import { BIL_POOL_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
+  bilEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -108,10 +110,18 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, hollarBond] = await Promise.all([
+  const evm = createPublicClient({
+    transport: custom({
+      request: ({ method, params }) =>
+        papiClient._request(method, params || []),
+    }),
+  })
+
+  const [sdk, slotDuration, hollarBond, bilPoolCode] = await Promise.all([
     createSdkContext(papiClient),
     papi.constants.Aura.SlotDuration(),
     papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
+    evm.getCode({ address: BIL_POOL_ADDRESS }),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
@@ -120,13 +130,6 @@ const getProviderData = async (
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
   }
-
-  const evm = createPublicClient({
-    transport: custom({
-      request: ({ method, params }) =>
-        papiClient._request(method, params || []),
-    }),
-  })
 
   return {
     queryClient,
@@ -139,6 +142,7 @@ const getProviderData = async (
     slotDurationMs: Number(slotDuration),
     featureFlags: {
       hollarBondsEnabled: !!hollarBond,
+      bilEnabled: !!bilPoolCode && bilPoolCode !== "0x",
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
