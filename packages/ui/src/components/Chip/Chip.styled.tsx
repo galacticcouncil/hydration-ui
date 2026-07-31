@@ -12,8 +12,15 @@ export type ChipVariant =
   | "success"
   | "warning"
   | "danger"
+  | "red"
+  | "orange"
+  | "amber"
+  | "lime"
   | "green"
-  | "accent"
+  | "cyan"
+  | "blue"
+  | "purple"
+  | "pink"
 
 export type ChipSize = "extra-small" | "small" | "medium" | "large"
 export type SChipProps = {
@@ -27,7 +34,7 @@ const variantStyles = (color: string, bg: string) => css`
   color: ${color};
 `
 
-const variants = createVariants(({ buttons, accents }) => ({
+const variants = createVariants(({ buttons, accents, tags: { soft } }) => ({
   primary: variantStyles(
     buttons.primary.high.onButton,
     buttons.primary.high.rest,
@@ -44,7 +51,15 @@ const variants = createVariants(({ buttons, accents }) => ({
   success: variantStyles(accents.success.onEmphasis, accents.success.emphasis),
   warning: variantStyles(accents.alertAlt.onPrimary, accents.alertAlt.primary),
   danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
-  green: variantStyles(accents.success.emphasis, accents.success.dim),
+  red: variantStyles(soft.red.foreground, soft.red.background),
+  orange: variantStyles(soft.orange.foreground, soft.orange.background),
+  amber: variantStyles(soft.amber.foreground, soft.amber.background),
+  lime: variantStyles(soft.lime.foreground, soft.lime.background),
+  green: variantStyles(soft.green.foreground, soft.green.background),
+  cyan: variantStyles(soft.cyan.foreground, soft.cyan.background),
+  blue: variantStyles(soft.blue.foreground, soft.blue.background),
+  purple: variantStyles(soft.purple.foreground, soft.purple.background),
+  pink: variantStyles(soft.pink.foreground, soft.pink.background),
 }))
 
 const sizes = createVariants((theme) => ({
@@ -86,7 +101,7 @@ export const SChip = styled(Box, {
       font-weight: 500;
       line-height: 1;
 
-      border-radius: ${rounded ? theme.radii.full : theme.radii.m};
+      border-radius: ${rounded ? theme.radii.full : theme.radii.base};
     `,
   ],
 )

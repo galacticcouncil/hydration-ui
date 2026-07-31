@@ -27,6 +27,7 @@ import {
 } from "@galacticcouncil/xc-core"
 import { filter, first, pipe, sortBy } from "remeda"
 
+import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
 const CHAINS_PRIORITY = [
@@ -39,7 +40,11 @@ const CHAINS_PRIORITY = [
   "moonbeam",
   "assethub_kusama",
 ]
-const CHAINS_BLACKLIST = ["polkadot"]
+const CHAINS_BLACKLIST = ["polkadot", "interlay"]
+
+if (ENV.VITE_WORMHOLE_DISABLED) {
+  CHAINS_BLACKLIST.push("moonbeam")
+}
 
 export const getChainPriority = (key: string) => {
   const idx = CHAINS_PRIORITY.indexOf(key)

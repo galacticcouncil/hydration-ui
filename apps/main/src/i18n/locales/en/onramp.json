@@ -108,7 +108,7 @@
   "withdraw.disclaimer.cex.title": "Carefully verify the destination address before proceeding. Make sure it is the correct {{ cex }} deposit address for {{ symbol }}. Transfers cannot be reversed.",
   "withdraw.disclaimer.cex.description": "I verified that this is the correct {{ symbol }} deposit address for {{ cex }}.",
   "withdraw.cex.select.title": "Withdraw to CEX",
-  "withdraw.cex.account.evmError": "EVM accounts cannot be used to withdraw {{ symbol }} from a centralized exchange.",
+  "withdraw.cex.account.evmError": "EVM accounts cannot be used to withdraw {{ symbol }} to a centralized exchange.",
   "withdraw.transfer.button": "Confirm withdrawal",
   "withdraw.cex.transfer.title": "Withdraw to {{ cex }}",
   "withdraw.transfer.destination.placeholder": "Paste CEX address here...",

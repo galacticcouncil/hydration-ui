@@ -72,8 +72,7 @@ export const gigaAccountStakesQuery = (
 ) =>
   queryOptions({
     queryKey: [...gigaQueryKey(address), "stakes"],
-    enabled:
-      !!address && rpc.isApiLoaded && rpc.featureFlags.gigaStakingEnabled,
+    enabled: !!address && rpc.isApiLoaded,
     queryFn: async () => {
       const stakes = await rpc.papi.query.GigaHdx.Stakes.getValue(address, {
         at: "best",
