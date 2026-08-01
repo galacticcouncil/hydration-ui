@@ -147,7 +147,11 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
-          invalidateQueries: [["xcm", "transfer"]],
+          invalidateQueries: [
+            ["xcm", "transfer"],
+            // The picker's snapshot is stale the moment a transfer lands.
+            ["xcm", "balanceSnapshot"],
+          ],
           tx,
           signerFeeAsset,
           toasts: {

@@ -1,6 +1,6 @@
 import { AssetAmount } from "@galacticcouncil/xc-core"
 import { differenceInMinutes } from "date-fns"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useInterval } from "react-use"
 
 import { useCrossChainBalanceSubscription } from "@/api/xcm"
@@ -28,9 +28,12 @@ const DepositSubscription: React.FC<DepositSubscriptionProps> = ({
     }
   }, 1000 * 60)
 
+  const subscribedAssets = useMemo(() => [asset.data.asset], [asset.data.asset])
+
   useCrossChainBalanceSubscription(
     address,
     asset.depositChain,
+    subscribedAssets,
     useCallback(
       (balances: AssetAmount[]) => {
         const assetKey = asset.data.asset.key
