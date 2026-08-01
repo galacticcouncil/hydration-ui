@@ -33,6 +33,45 @@ import { ChainEcosystem } from "@galacticcouncil/xc-core"
 
 import { allPools } from "./pools"
 
+/**
+ * Assets that predate the direct NTT route still carry moonbeam branding the
+ * app no longer routes through — a "(Moonbeam Wormhole)" suffix on the name
+ * from the on-chain registry, and a moonbeam chain badge from the metadata cdn.
+ *
+ * Overridden here for display until both sources are updated. Names are the
+ * registry's own with "Moonbeam " dropped — nothing else reworded. The
+ * "(Wormhole)" suffix stays: each of these coexists with a native asset of the
+ * same symbol (weth 1000189 / weth_mwh 20, usdc 22 / usdc_mwh 21, …) and the
+ * suffix is what keeps the two apart in selectors.
+ */
+const MOONBEAM_PARACHAIN_ID = "2004"
+
+/**
+ * Icons are committed per hydration asset id in the metadata cdn, so the legacy
+ * assets carry their own moonbeam-branded art. Borrow the native twin's icon
+ * where one exists — dai (18) and eurc (44) have no twin on hydration and can
+ * only be fixed in the metadata repo.
+ */
+const ASSET_ICON_OVERRIDES: Record<string, string> = {
+  "19": "1000190",
+  "20": "1000189",
+  "21": "22",
+  "23": "10",
+  "1000745": "1000626",
+}
+
+const ASSET_NAME_OVERRIDES: Record<string, string> = {
+  "18": "DAI (Wormhole)",
+  "19": "Wrapped BTC (Wormhole)",
+  "20": "Wrapped ETH (Wormhole)",
+  "21": "USDC (Wormhole)",
+  "23": "Tether (Wormhole)",
+  "44": "EURC (Wormhole)",
+  "1000745": "sUSDS (Wormhole)",
+  "1000752": "Solana (Wormhole)",
+  "1000753": "SUI (Wormhole)",
+}
+
 type TCommonAssetData = {
   id: string
   existentialDeposit: string
@@ -144,13 +183,14 @@ export const assetsQuery = (
 
       const assetsData = assets.map((asset): TAssetData => {
         const isTradable = tradeAssetsMap.has(asset.id)
+        const id = asset.id.toString()
 
         const commonAssetData: TCommonAssetData = {
-          id: asset.id.toString(),
+          id,
           existentialDeposit: asset.existentialDeposit.toString(),
           symbol: asset.symbol ?? "",
           decimals: asset.decimals ?? 0,
-          name: asset.name ?? "",
+          name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
           isTradable,
           isSufficient: asset.isSufficient,
         }
@@ -209,16 +249,18 @@ function assetToTokenType(
   } else {
     const parachainId = getParachainId(asset)?.toString()
     const ecosystem = ChainEcosystem.Polkadot
+    const iconId = ASSET_ICON_OVERRIDES[commonAssetData.id] ?? asset.id
 
     return {
       ...commonAssetData,
       type: AssetType.TOKEN,
       parachainId,
       ecosystem,
-      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, asset.id),
-      chainSrc: parachainId
-        ? metadata.getChainLogoSrc(parachainId, ecosystem)
-        : undefined,
+      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, iconId),
+      chainSrc:
+        parachainId && parachainId !== MOONBEAM_PARACHAIN_ID
+          ? metadata.getChainLogoSrc(parachainId, ecosystem)
+          : undefined,
     }
   }
 }

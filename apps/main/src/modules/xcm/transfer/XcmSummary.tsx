@@ -22,7 +22,6 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
 import { isSnowbridgeRoute } from "@/modules/xcm/transfer/utils/bridge"
-import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
@@ -80,8 +79,6 @@ export const XcmSummary = () => {
 
   const destFeeLabel = (() => {
     if (!origin?.route) return t("xcm:summary.destinationFee")
-    if (origin.route.tags?.includes(XcmTag.Mrl))
-      return t("xcm:summary.relayerFee")
     if (isSnowbridge) return t("xcm:summary.bridgeFee")
     return t("xcm:summary.destinationFee")
   })()

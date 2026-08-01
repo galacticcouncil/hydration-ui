@@ -15,7 +15,8 @@ export const XcmPage = () => {
   const { data: all, isLoading: isLoadingXcScan } = useXcScan(address)
 
   const isLoading = !!account && isLoadingXcScan
-  const isTwoColTemplate = !!account && (all.length > 0 || isLoading)
+  const isTwoColTemplate =
+    !!account && (all.length > 0 || claimable.length > 0 || isLoading)
 
   return (
     <Grid
@@ -28,7 +29,7 @@ export const XcmPage = () => {
     >
       <XcmTransferApp />
       {isLoading && <XcScanJourneyListSkeleton />}
-      {!isLoading && all.length > 0 && (
+      {!isLoading && (all.length > 0 || claimable.length > 0) && (
         <XcmHistoryPanel key={address} all={all} claimable={claimable} />
       )}
     </Grid>
