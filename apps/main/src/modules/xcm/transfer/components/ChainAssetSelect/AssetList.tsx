@@ -6,10 +6,7 @@ import { bigShift } from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 
-import {
-  useCrossChainBalance,
-  useCrossChainBalanceSubscription,
-} from "@/api/xcm"
+import { useCrossChainBalance, useCrossChainBalancesFetch } from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -47,7 +44,7 @@ export const AssetList: React.FC<AssetListProps> = ({
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
     useAssetsPrice(priceIds)
 
-  const { isLoading: isLoadingBalances } = useCrossChainBalanceSubscription(
+  const { isLoading: isLoadingBalances } = useCrossChainBalancesFetch(
     address,
     selectedChain?.key ?? "",
   )

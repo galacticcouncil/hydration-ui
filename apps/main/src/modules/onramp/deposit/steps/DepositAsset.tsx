@@ -19,7 +19,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AssetAmount } from "@galacticcouncil/xc-core"
-import React, { useCallback, useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useMemo, useRef } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useCustomCompareEffect, usePrevious } from "react-use"
 import { isBigInt } from "remeda"
@@ -96,7 +96,17 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
     [address, asset, assetKey, cexId, setCurrentDeposit],
   )
 
-  useCrossChainBalanceSubscription(address, dstChain, setBalanceSnapshot)
+  const subscribedAssets = useMemo(
+    () => (asset ? [asset.data.asset] : []),
+    [asset],
+  )
+
+  useCrossChainBalanceSubscription(
+    address,
+    dstChain,
+    subscribedAssets,
+    setBalanceSnapshot,
+  )
 
   const { data: balances } = useCrossChainBalance(address, dstChain)
 
