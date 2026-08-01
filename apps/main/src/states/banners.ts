@@ -15,7 +15,7 @@ export type BannerConfig = PromoteBannerItem & {
 
 const bannerEntries: BannerConfig[] = [
   {
-    id: "bil",
+    id: "bil-vault",
     backgroundImage: "/images/bil.webp",
     backgroundImageMobile: "/images/bilMobile.webp",
     title: "banners.bil.title",
@@ -40,7 +40,7 @@ export const useEnabledBanners = () => {
         return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
       }
 
-      if (banner.id === "bil") {
+      if (banner.id === "bil-vault") {
         return featureFlags.bilEnabled
       }
 
@@ -119,10 +119,14 @@ function mergePersistedWithDefaults(
     ]),
   ) as BannersState["banners"]
 
+  const closedGigaNewsIds = (
+    p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds
+  ).filter((id) => bannerConfig.some((banner) => banner.id === id))
+
   return {
     ...currentState,
     banners,
-    closedGigaNewsIds: p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds,
+    closedGigaNewsIds,
   }
 }
 
