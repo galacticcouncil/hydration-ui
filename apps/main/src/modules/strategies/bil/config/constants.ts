@@ -1,8 +1,8 @@
 import { type Hex } from "viem"
 
-// BIL Vault — addresses from aave-v3-deploy/deployments/bil/_addresses.md.
+// BIL Vault — addresses from money-market/deployments/bil/_addresses.md.
 // Surface: ERC-4626 (deposit/mint) + ERC-7540 (async redeem).
-export const VAULT_ADDRESS: Hex = "0x7a1FFcF0949C6cf85d16BA04221D650Db0dE41A5"
+export const VAULT_ADDRESS: Hex = "0x6a21891Db0940491603f3ccA0a9f4DBA4c6E810C"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 
 // BIL Aave V3 money-market layer. The Aave pool, deposit-zap, and aToken
@@ -14,11 +14,11 @@ export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 //   - Zap deposit (HOLLAR → vault → pool.supply) → zap.depositAndSupply
 //   - Instant redeem path uses the BIL/HOLLAR stableswap (id 10055).
 export const BIL_POOL_ADDRESS: Hex =
-  "0xd10b84Ee54dc5B81366b56bABBF4D32303629835"
+  "0x69310FdA58c819aD82df7d2Cb61841C853337a53"
 export const BIL_DEPOSIT_ZAP_ADDRESS: Hex =
-  "0xFF14a4Bf1Fe038D23b68d738B81cF900FD6E9D8B"
+  "0x646FD203bbCf19B35D79F58413bB07450FDBb1db"
 export const BIL_ATOKEN_ADDRESS: Hex =
-  "0xCc7Dc2433073ed4cf1daFd1A1b9c32e193cce5ce"
+  "0x8184E2F7c477d165772c21f7A2DBBb61A76E7Fc4"
 
 // Substrate asset 550 (0x226) — the underlying reserve registered in the pool.
 export const DCL_PRECOMPILE_ADDRESS: Hex =
