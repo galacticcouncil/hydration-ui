@@ -39,13 +39,7 @@ import {
   SuiCall,
   SuiClaim,
 } from "@galacticcouncil/xc-sdk"
-import {
-  addMilliseconds,
-  fromUnixTime,
-  hoursToMilliseconds,
-  isWithinInterval,
-  minutesToMilliseconds,
-} from "date-fns"
+import { addMilliseconds, fromUnixTime, hoursToMilliseconds } from "date-fns"
 import { isString } from "remeda"
 
 import {
@@ -57,16 +51,31 @@ import {
   XcJourneyWhStop,
 } from "@/modules/xcm/history/utils/journey"
 
-const CLAIM_MIN_AGE_MS = minutesToMilliseconds(5) // 5 minutes
+const CLAIM_MIN_AGE_MS = 60_000 // 1 minute
 const CLAIM_MAX_AGE_MS = hoursToMilliseconds(24) * 7 * 2 // 2 weeks
 
 function isWithinClaimWindow(emittedAtSeconds: number) {
   const emittedAt = fromUnixTime(emittedAtSeconds)
 
-  return isWithinInterval(new Date(), {
-    start: addMilliseconds(emittedAt, CLAIM_MIN_AGE_MS),
-    end: addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS),
-  })
+  return Date.now() <= addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS).getTime()
+}
+
+export function getJourneyClaimReadyAt(journey: XcJourney): number | undefined {
+  const vaaHeader = getJourneyVaaHeader(journey)
+  if (!vaaHeader) return undefined
+
+  return addMilliseconds(
+    fromUnixTime(vaaHeader.timestamp),
+    CLAIM_MIN_AGE_MS,
+  ).getTime()
+}
+
+export function isJourneyClaimReady(
+  journey: XcJourney,
+  now = new Date(),
+): boolean {
+  const readyAt = getJourneyClaimReadyAt(journey)
+  return readyAt !== undefined && now.getTime() >= readyAt
 }
 
 export function isJourneyClaimable(journey: XcJourney): boolean {
