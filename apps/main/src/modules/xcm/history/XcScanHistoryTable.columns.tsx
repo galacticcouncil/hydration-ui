@@ -23,7 +23,7 @@ import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtoco
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
-import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
+import { isJourneyPendingClaim } from "@/modules/xcm/history/utils/claim"
 import {
   getFormattedAddresses,
   getJourneyExplorerLink,
@@ -210,7 +210,7 @@ export const useXcScanHistoryColumns = () => {
         const link = getJourneyExplorerLink(row.original)
 
         const isNotPending = !pendingCorrelationIds.includes(correlationId)
-        const isClaimable = isNotPending && isJourneyClaimable(row.original)
+        const isClaimable = isNotPending && isJourneyPendingClaim(row.original)
 
         return (
           <Flex
