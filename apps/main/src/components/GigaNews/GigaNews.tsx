@@ -39,20 +39,22 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
     useBannersStore()
   const enabledBanners = useEnabledBanners()
 
-  const allClosed = closedGigaNewsIds.length === enabledBanners.length
-  const [expanded, setExpanded] = useState(allClosed ? false : true)
-  const toggleLabel = expanded
-    ? enabledBanners.length > 1
-      ? t("closeAll")
-      : t("close")
-    : t("gigaNews")
-
   const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
 
   const visibleBanners = enabledBanners.filter(
     (banner) => !closedGigaNewsIds.includes(banner.id),
   )
+
+  const allClosed =
+    enabledBanners.length > 0 &&
+    enabledBanners.every((b) => closedGigaNewsIds.includes(b.id))
+  const [expanded, setExpanded] = useState(allClosed ? false : true)
+  const toggleLabel = expanded
+    ? enabledBanners.length > 1
+      ? t("closeAll")
+      : t("close")
+    : t("gigaNews")
 
   const onCloseRef = useRef(closeAllGigaNews)
   onCloseRef.current = closeAllGigaNews
@@ -109,7 +111,7 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
             return (
               <SStackLayer key={banner.id} $depth={depth}>
-                {banner.id === "bil" ? (
+                {banner.id === "bil-vault" ? (
                   <BilBanner item={item} />
                 ) : (
                   <PromoteBanner item={item} />
