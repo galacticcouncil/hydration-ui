@@ -42,6 +42,11 @@ export const useCrossChainConfig = () => {
         poolCtx: sdk.ctx.pool,
       })
 
+      const hydration = ctx.config.chains.get(HYDRATION_CHAIN_KEY)
+      if (hydration && isEvmParachain(hydration)) {
+        withPermissiveEvmResolver(hydration)
+      }
+
       // Wormhole carries basejump with it — basejump routes hop through the
       // wormhole stack — but basejump can also be pulled on its own.
       const disabledBridgeTags = [
