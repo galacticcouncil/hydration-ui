@@ -26,6 +26,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { ENV } from "@/config/env"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
+import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
@@ -40,6 +41,11 @@ export const useCrossChainConfig = () => {
       const ctx = await createXcContext({
         poolCtx: sdk.ctx.pool,
       })
+
+      const hydration = ctx.config.chains.get(HYDRATION_CHAIN_KEY)
+      if (hydration && isEvmParachain(hydration)) {
+        withPermissiveEvmResolver(hydration)
+      }
 
       if (ENV.VITE_WORMHOLE_DISABLED) {
         ctx.config.routes.forEach((chainRoutes) => {
