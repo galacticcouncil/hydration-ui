@@ -392,9 +392,14 @@ export const WalletManagementContent = () => {
     : null
   const isExternalWalletSelected =
     selectedSource === WalletProviderType.ExternalWallet && showExternalWallet
+  const isSelectedWalletConnecting =
+    !!selectedWallet &&
+    selectedWallet.installed &&
+    selectedWalletStatus === WalletProviderStatus.Pending
   const showSelectedWalletConnectState =
     !!selectedWallet &&
     selectedWallet.provider !== WalletProviderType.ExternalWallet &&
+    !selectedWallet.installed &&
     (selectedWalletStatus === WalletProviderStatus.Disconnected ||
       selectedWalletStatus === WalletProviderStatus.Pending)
   const showWalletGroupChainSelectState =
@@ -403,6 +408,7 @@ export const WalletManagementContent = () => {
   const showAccountPanel =
     hasConnectedWalletState ||
     isExternalWalletSelected ||
+    isSelectedWalletConnecting ||
     showSelectedWalletConnectState ||
     showWalletGroupChainSelectState ||
     showErrorState
@@ -556,6 +562,15 @@ export const WalletManagementContent = () => {
     setSelectedSource(wallet.provider)
   }
 
+  const handleWalletClick = (wallet: Wallet) => {
+    handleProviderSelect(wallet)
+
+    const status = getStatus(wallet.provider)
+    if (wallet.installed && status === WalletProviderStatus.Disconnected) {
+      void enable(wallet.provider).catch(() => undefined)
+    }
+  }
+
   const handleWalletGroupSelect = (group: WalletSourceGroup) => {
     const selectableWallets = getSelectableWallets(
       group,
@@ -564,12 +579,12 @@ export const WalletManagementContent = () => {
     const [wallet] = selectableWallets
 
     if (wallet && selectableWallets.length === 1) {
-      handleProviderSelect(wallet)
+      handleWalletClick(wallet)
       return
     }
 
     if (!wallet) {
-      handleProviderSelect(group.wallets[0])
+      handleWalletClick(group.wallets[0])
       return
     }
 
@@ -698,7 +713,7 @@ export const WalletManagementContent = () => {
                           variant={
                             showAccountPanel ? "management" : "firstConnection"
                           }
-                          onClick={() => handleProviderSelect(group.wallets[0])}
+                          onClick={() => handleWalletClick(group.wallets[0])}
                           onDisconnect={() =>
                             disconnect(group.wallets[0].provider)
                           }
@@ -819,7 +834,7 @@ export const WalletManagementContent = () => {
                                       group.wallets[0].provider,
                                     )}
                                     onClick={() =>
-                                      handleProviderSelect(group.wallets[0])
+                                      handleWalletClick(group.wallets[0])
                                     }
                                     onDisconnect={() =>
                                       disconnect(group.wallets[0].provider)
@@ -859,7 +874,7 @@ export const WalletManagementContent = () => {
                                 )}
                                 variant="firstConnection"
                                 onClick={() =>
-                                  handleProviderSelect(group.wallets[0])
+                                  handleWalletClick(group.wallets[0])
                                 }
                                 onDisconnect={() =>
                                   disconnect(group.wallets[0].provider)
