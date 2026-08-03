@@ -9,12 +9,13 @@ import {
   isValidBigSource,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
-import { AnyChain, Asset } from "@galacticcouncil/xc-core"
+import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
 import { Binary } from "polkadot-api"
+import { first, flatMap, pipe, sortBy } from "remeda"
 
 import { XcmTransferArgs } from "@/api/xcm"
 import { AnyPapiTx } from "@/modules/transactions/types"
@@ -22,9 +23,11 @@ import {
   isEvmApproveCall,
   isSubstrateCall,
 } from "@/modules/transactions/utils/xcm"
+import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { getChainPriority } from "@/modules/xcm/transfer/utils/chain"
 import { Papi } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
@@ -79,6 +82,35 @@ export const calculateTransferDestAmount = (
 
   return amount
 }
+
+export const resolveBestDestRoute = (
+  destChainAssetPairs: ChainAssetPair[],
+  destChain: AnyChain | null,
+  destAsset: Asset | null,
+): AssetRoute | null => {
+  const validRoutes = pipe(
+    destChainAssetPairs,
+    flatMap((c) => c.routes),
+    sortBy((r) => getChainPriority(r.destination.chain.key)),
+  )
+
+  const foundRoute = validRoutes.find(
+    (r) =>
+      r.destination.chain.key === destChain?.key &&
+      r.destination.asset.key === destAsset?.key,
+  )
+
+  return foundRoute ?? first(validRoutes) ?? null
+}
+
+export const isDestRouteSynced = (
+  bestRoute: AssetRoute | null,
+  destChain: AnyChain | null,
+  destAsset: Asset | null,
+): boolean =>
+  !!bestRoute &&
+  bestRoute.destination.chain.key === destChain?.key &&
+  bestRoute.destination.asset.key === destAsset?.key
 
 export const getXcmTransferArgs = (
   account: Account | null,
