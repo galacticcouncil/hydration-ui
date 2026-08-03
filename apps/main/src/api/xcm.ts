@@ -41,17 +41,23 @@ export const useCrossChainConfig = () => {
         poolCtx: sdk.ctx.pool,
       })
 
-      if (ENV.VITE_WORMHOLE_DISABLED) {
+      // Wormhole carries basejump with it — basejump routes hop through the
+      // wormhole stack — but basejump can also be pulled on its own.
+      const disabledBridgeTags = [
+        ...(ENV.VITE_WORMHOLE_DISABLED
+          ? [XcmTag.Wormhole, XcmTag.Basejump]
+          : []),
+        ...(ENV.VITE_BASEJUMP_DISABLED ? [XcmTag.Basejump] : []),
+      ]
+
+      if (disabledBridgeTags.length) {
         ctx.config.routes.forEach((chainRoutes) => {
           ctx.config.updateRoutes(
             new ChainRoutes({
               chain: chainRoutes.chain,
               routes: chainRoutes.getRoutes().filter((route) => {
                 const tags = route.tags ?? []
-                return (
-                  !tags.includes(XcmTag.Wormhole) &&
-                  !tags.includes(XcmTag.Basejump)
-                )
+                return !disabledBridgeTags.some((tag) => tags.includes(tag))
               }),
             }),
           )
