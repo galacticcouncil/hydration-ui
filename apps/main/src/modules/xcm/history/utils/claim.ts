@@ -54,10 +54,36 @@ import {
 const CLAIM_MIN_AGE_MS = 60_000 // 1 minute
 const CLAIM_MAX_AGE_MS = hoursToMilliseconds(24) * 7 * 2 // 2 weeks
 
-function isWithinClaimWindow(emittedAtSeconds: number) {
+function isBeforeClaimExpiry(emittedAtSeconds: number) {
   const emittedAt = fromUnixTime(emittedAtSeconds)
 
   return Date.now() <= addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS).getTime()
+}
+
+function isWithinClaimWindow(emittedAtSeconds: number, nowMs = Date.now()) {
+  const emittedAt = fromUnixTime(emittedAtSeconds)
+
+  return (
+    nowMs >= addMilliseconds(emittedAt, CLAIM_MIN_AGE_MS).getTime() &&
+    nowMs <= addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS).getTime()
+  )
+}
+
+function getClaimContext(journey: XcJourney) {
+  const vaaHeader = getJourneyVaaHeader(journey)
+  if (!vaaHeader) return undefined
+
+  const toChain = resolveChainFromUrn(journey.destination)
+  if (!toChain) return undefined
+
+  const asset = getTransferAsset(journey)
+  if (!asset) return undefined
+
+  // Without a registered NTT deployment on the destination there is nothing
+  // to redeem against, so don't offer a claim that can't be built.
+  if (!resolveNttDeployment(journey, toChain)) return undefined
+
+  return { vaaHeader, toChain, asset }
 }
 
 export function getJourneyClaimReadyAt(journey: XcJourney): number | undefined {
@@ -78,25 +104,38 @@ export function isJourneyClaimReady(
   return readyAt !== undefined && now.getTime() >= readyAt
 }
 
-export function isJourneyClaimable(journey: XcJourney): boolean {
-  const vaaHeader = getJourneyVaaHeader(journey)
-  if (!vaaHeader) return false
+export function isJourneyPendingClaim(journey: XcJourney): boolean {
+  const ctx = getClaimContext(journey)
+  if (!ctx) return false
 
-  const toChain = resolveChainFromUrn(journey.destination)
-  if (!toChain) return false
-
-  const asset = getTransferAsset(journey)
-  if (!asset) return false
-
-  // Without a registered NTT deployment on the destination there is nothing
-  // to redeem against, so don't offer a claim that can't be built.
-  if (!resolveNttDeployment(journey, toChain)) return false
-
-  return isWithinClaimWindow(vaaHeader.timestamp)
+  return isBeforeClaimExpiry(ctx.vaaHeader.timestamp)
 }
 
-export function getClaimableJourneys(journeys: XcJourney[]) {
-  return journeys.filter(isJourneyClaimable)
+export function isJourneyClaimable(
+  journey: XcJourney,
+  nowMs = Date.now(),
+): boolean {
+  const ctx = getClaimContext(journey)
+  if (!ctx) return false
+
+  return isWithinClaimWindow(ctx.vaaHeader.timestamp, nowMs)
+}
+
+export function isJourneyAwaitingMinAge(
+  journey: XcJourney,
+  nowMs = Date.now(),
+): boolean {
+  if (!isJourneyPendingClaim(journey)) return false
+
+  const readyAt = getJourneyClaimReadyAt(journey)
+  return readyAt !== undefined && nowMs < readyAt
+}
+
+export function getClaimableJourneys(
+  journeys: XcJourney[],
+  nowMs = Date.now(),
+) {
+  return journeys.filter((journey) => isJourneyClaimable(journey, nowMs))
 }
 
 function isWormholeStop(stop: XcJourneyStop): stop is XcJourneyWhStop {
@@ -158,9 +197,7 @@ function toRegistryEmitter(chain: AnyChain, emitterAddress: string): string {
   return `0x${emitterAddress}`
 }
 
-export function findChainByWormholeId(
-  wormholeId: number,
-): AnyChain | undefined {
+function findChainByWormholeId(wormholeId: number): AnyChain | undefined {
   return chainsMap
     .values()
     .find(

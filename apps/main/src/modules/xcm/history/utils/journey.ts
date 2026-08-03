@@ -9,7 +9,6 @@ import {
   basejumpscan,
   getChainId,
   isH160Address,
-  wormholescan,
   xcscan,
 } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
@@ -106,11 +105,7 @@ export function getFormattedAddresses(journey: XcJourney) {
 export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
 
 export function getJourneyExplorerLink(journey: XcJourney): string {
-  const { originProtocol, correlationId, originTxPrimary } = journey
-
-  if (originProtocol === "wormhole" && originTxPrimary) {
-    return wormholescan.tx(originTxPrimary)
-  }
+  const { originProtocol, correlationId } = journey
 
   return originProtocol === "basejump"
     ? basejumpscan.tx(correlationId)
