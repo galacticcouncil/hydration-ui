@@ -18,6 +18,7 @@
   "provider.connect": "Connect",
   "provider.disconnect": "Disconnect",
   "provider.connectAll": "Connect all",
+  "provider.logOutAll": "Log out all",
   "provider.connectWallet": "Connect wallet",
   "provider.selectSourceWallet": "Your wallets & accounts",
   "provider.selectSourceWalletOnly": "Select source wallet",

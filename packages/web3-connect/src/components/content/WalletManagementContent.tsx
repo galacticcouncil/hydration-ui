@@ -1,4 +1,9 @@
-import { Search, Wallet as WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import {
+  CircleAlert,
+  HydrationLogo,
+  Search,
+  Wallet as WalletIcon,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   AccountAvatar,
   Box,
@@ -17,7 +22,7 @@ import {
   Spinner,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { formatCurrency, shortenAccountAddress } from "@galacticcouncil/utils"
 import {
   ChevronDown,
@@ -52,6 +57,7 @@ import {
 } from "@/components/external/ExternalWalletForm"
 import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.form"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
+import { Web3ConnectModalPage } from "@/config/modal"
 import { WalletProviderType } from "@/config/providers"
 import { WalletAccountFilterOption, WalletMode } from "@/config/wallet"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
@@ -74,7 +80,12 @@ import {
 } from "@/utils"
 import { getWallet, getWallets, MetaMask } from "@/wallets"
 
-type WalletSourceId = "all" | "recent" | WalletProviderType
+type WalletSourceGroupId = `walletGroup:${string}`
+type WalletSourceId =
+  | "all"
+  | "recent"
+  | WalletProviderType
+  | WalletSourceGroupId
 type WalletSourceButtonVariant =
   | "management"
   | "firstConnection"
@@ -82,6 +93,18 @@ type WalletSourceButtonVariant =
 type WalletAccount = ReturnType<typeof toAccount> & {
   balance?: number
   isActive?: boolean
+}
+type WalletSourceChainBadge = {
+  id: string
+  icon?: ComponentType
+  iconSrc?: string
+}
+type WalletSourceGroup = {
+  id: WalletSourceGroupId
+  title: string
+  logo?: string
+  wallets: [Wallet, ...Wallet[]]
+  providers: [WalletProviderType, ...WalletProviderType[]]
 }
 
 const ACCOUNT_FILTERS: WalletAccountFilterOption[] = [
@@ -93,6 +116,38 @@ const ACCOUNT_FILTERS: WalletAccountFilterOption[] = [
 
 const CONNECT_ALL_PROVIDER_BLACKLIST = [WalletProviderType.WalletConnect]
 
+const getWalletSourceGroupId = (wallet: Wallet): WalletSourceGroupId =>
+  `walletGroup:${wallet.title}`
+
+const isWalletSourceGroupId = (
+  source: WalletSourceId,
+): source is WalletSourceGroupId => source.startsWith("walletGroup:")
+
+const groupWalletsBySource = (wallets: Wallet[]) => {
+  const groups = new Map<WalletSourceGroupId, WalletSourceGroup>()
+
+  for (const wallet of wallets) {
+    const id = getWalletSourceGroupId(wallet)
+    const group = groups.get(id)
+
+    if (group) {
+      group.wallets.push(wallet)
+      group.providers.push(wallet.provider)
+      continue
+    }
+
+    groups.set(id, {
+      id,
+      title: wallet.title,
+      logo: wallet.logo,
+      wallets: [wallet],
+      providers: [wallet.provider],
+    })
+  }
+
+  return Array.from(groups.values())
+}
+
 const getWalletSourceModes = (provider: WalletProviderType) =>
   uniqueBy(
     getWalletModesByProviderType(provider).filter(
@@ -102,10 +157,73 @@ const getWalletSourceModes = (provider: WalletProviderType) =>
     (walletMode) => walletMode,
   )
 
+const getWalletGroupSourceModes = (group: WalletSourceGroup) =>
+  uniqueBy(
+    group.providers.flatMap((provider) => getWalletSourceModes(provider)),
+    (walletMode) => walletMode,
+  )
+
+const getSelectableWallets = (
+  group: WalletSourceGroup,
+  connectedProviderTypes: WalletProviderType[],
+) =>
+  group.wallets.filter(
+    (wallet) =>
+      wallet.installed || connectedProviderTypes.includes(wallet.provider),
+  )
+
+const getWalletPrimaryMode = (provider: WalletProviderType) =>
+  getWalletSourceModes(provider)[0]
+
+const getWalletSourceChainBadges = (
+  modes: WalletMode[],
+): WalletSourceChainBadge[] =>
+  modes.flatMap((mode) => {
+    const modeIcon = getWalletModeIcon(mode)
+    const badges: WalletSourceChainBadge[] = []
+
+    if (mode === WalletMode.EVM) {
+      badges.push({
+        id: "hydration-evm",
+        icon: HydrationLogo,
+      })
+    }
+
+    if (modeIcon) {
+      badges.push({
+        id: mode,
+        iconSrc: modeIcon,
+      })
+    }
+
+    return badges
+  })
+
+const getWalletSourceModeLabel = (mode?: WalletMode) => {
+  switch (mode) {
+    case WalletMode.Substrate:
+      return "Polkadot"
+    case WalletMode.SubstrateH160:
+      return "Substrate H160"
+    case WalletMode.EVM:
+      return "EVM"
+    case WalletMode.Solana:
+      return "Solana"
+    case WalletMode.Sui:
+      return "Sui"
+    case WalletMode.Near:
+      return "NEAR"
+    case WalletMode.Zcash:
+      return "Zcash"
+    default:
+      return "Wallet"
+  }
+}
+
 export const WalletManagementContent = () => {
   const { t } = useTranslation()
   const { account: currentAccount } = useAccount()
-  const { mode, onAccountSelect, isControlled, setModalContentWidth } =
+  const { page, mode, onAccountSelect, isControlled, setModalContentWidth } =
     useWeb3ConnectContext()
   const { enable, disconnect } = useWeb3Enable()
   const { enable: enableConnectAll } = useWeb3Enable({
@@ -117,6 +235,7 @@ export const WalletManagementContent = () => {
     providers: walletProviders,
     recentProvider,
     recentlyDisconnectedProviders,
+    error,
     meta,
     getStatus,
   } = useWeb3Connect(
@@ -127,13 +246,16 @@ export const WalletManagementContent = () => {
         "providers",
         "recentProvider",
         "recentlyDisconnectedProviders",
+        "error",
         "meta",
         "getStatus",
       ]),
     ),
   )
 
-  const [selectedSource, setSelectedSource] = useState<WalletSourceId>("all")
+  const [selectedSource, setSelectedSource] = useState<WalletSourceId>(
+    meta?.initialProvider ?? "all",
+  )
   const [accountFilter, setAccountFilter] = useState<WalletAccountFilterOption>(
     WalletMode.Default,
   )
@@ -179,28 +301,7 @@ export const WalletManagementContent = () => {
   const isProvidersConnecting = pendingProviderTypes.length > 0
   const hasConnectedWalletState =
     connectedProviderTypes.length > 0 || accounts.length > 0
-  const isExternalWalletSelected =
-    selectedSource === WalletProviderType.ExternalWallet && showExternalWallet
-  const selectedWallet =
-    selectedSource !== "all" && selectedSource !== "recent"
-      ? getWallet(selectedSource)
-      : undefined
-  const selectedWalletStatus = selectedWallet
-    ? getStatus(selectedWallet.provider)
-    : null
-  const showSelectedWalletConnectState =
-    !!selectedWallet &&
-    selectedWallet.provider !== WalletProviderType.ExternalWallet &&
-    (selectedWalletStatus === WalletProviderStatus.Disconnected ||
-      selectedWalletStatus === WalletProviderStatus.Pending)
-  const showAccountPanel =
-    hasConnectedWalletState ||
-    isExternalWalletSelected ||
-    showSelectedWalletConnectState
-
-  useLayoutEffect(() => {
-    setModalContentWidth(showAccountPanel ? "650px" : "452px")
-  }, [setModalContentWidth, showAccountPanel])
+  const showErrorState = page === Web3ConnectModalPage.Error && !!error
 
   const compatibleWallets = useMemo(
     () =>
@@ -210,6 +311,11 @@ export const WalletManagementContent = () => {
         ),
       ),
     [allWallets],
+  )
+
+  const walletGroups = useMemo(
+    () => groupWalletsBySource(compatibleWallets),
+    [compatibleWallets],
   )
 
   const sortedWallets = useMemo(
@@ -232,13 +338,79 @@ export const WalletManagementContent = () => {
     [compatibleWallets, connectedProviderTypes],
   )
 
-  const otherWallets = useMemo(
+  const sortedWalletGroups = useMemo(
     () =>
-      compatibleWallets
-        .filter((wallet) => !sortedWallets.includes(wallet))
-        .sort((a, b) => a.title.localeCompare(b.title)),
-    [compatibleWallets, sortedWallets],
+      walletGroups
+        .filter((group) =>
+          group.wallets.some(
+            (wallet) =>
+              wallet.installed ||
+              connectedProviderTypes.includes(wallet.provider),
+          ),
+        )
+        .sort((a, b) => {
+          const aConnected = a.providers.some((provider) =>
+            connectedProviderTypes.includes(provider),
+          )
+          const bConnected = b.providers.some((provider) =>
+            connectedProviderTypes.includes(provider),
+          )
+          if (aConnected !== bConnected) return aConnected ? -1 : 1
+          return a.title.localeCompare(b.title)
+        }),
+    [connectedProviderTypes, walletGroups],
   )
+
+  const otherWalletGroups = useMemo(
+    () =>
+      walletGroups
+        .filter(
+          (group) =>
+            !group.wallets.some(
+              (wallet) =>
+                wallet.installed ||
+                connectedProviderTypes.includes(wallet.provider),
+            ),
+        )
+        .sort((a, b) => a.title.localeCompare(b.title)),
+    [connectedProviderTypes, walletGroups],
+  )
+
+  const selectedWallet =
+    selectedSource !== "all" &&
+    selectedSource !== "recent" &&
+    !isWalletSourceGroupId(selectedSource)
+      ? getWallet(selectedSource)
+      : undefined
+  const selectedWalletGroup = isWalletSourceGroupId(selectedSource)
+    ? [...sortedWalletGroups, ...otherWalletGroups].find(
+        (group) => group.id === selectedSource,
+      )
+    : undefined
+  const selectedWalletStatus = selectedWallet
+    ? getStatus(selectedWallet.provider)
+    : null
+  const isExternalWalletSelected =
+    selectedSource === WalletProviderType.ExternalWallet && showExternalWallet
+  const showSelectedWalletConnectState =
+    !!selectedWallet &&
+    selectedWallet.provider !== WalletProviderType.ExternalWallet &&
+    (selectedWalletStatus === WalletProviderStatus.Disconnected ||
+      selectedWalletStatus === WalletProviderStatus.Pending)
+  const showWalletGroupChainSelectState =
+    !!selectedWalletGroup &&
+    getSelectableWallets(selectedWalletGroup, connectedProviderTypes).length > 1
+  const showAccountPanel =
+    hasConnectedWalletState ||
+    isExternalWalletSelected ||
+    showSelectedWalletConnectState ||
+    showWalletGroupChainSelectState ||
+    showErrorState
+
+  useLayoutEffect(() => {
+    setModalContentWidth(showAccountPanel ? pxToRem(650) : pxToRem(452))
+  }, [setModalContentWidth, showAccountPanel])
+
   const recentlyDisconnectedProviderTypes = useMemo(
     () =>
       recentlyDisconnectedProviders.filter((provider) => {
@@ -286,40 +458,44 @@ export const WalletManagementContent = () => {
   )
   const visibleWallets = useMemo(() => {
     const phrase = walletSearch.toLowerCase().trim()
-    if (!phrase) return sortedWallets
-    return sortedWallets.filter((wallet) =>
-      wallet.title.toLowerCase().includes(phrase),
+    if (!phrase) return sortedWalletGroups
+    return sortedWalletGroups.filter((group) =>
+      group.title.toLowerCase().includes(phrase),
     )
-  }, [sortedWallets, walletSearch])
+  }, [sortedWalletGroups, walletSearch])
 
-  const visibleSuggestedWallets = useMemo(
+  const visibleSuggestedWalletGroups = useMemo(
     () =>
       showAccountPanel
         ? visibleWallets
         : visibleWallets.filter(
-            (wallet) =>
-              !recentlyConnectedProviderTypes.includes(wallet.provider),
+            (group) =>
+              !group.providers.every((provider) =>
+                recentlyConnectedProviderTypes.includes(provider),
+              ),
           ),
     [recentlyConnectedProviderTypes, showAccountPanel, visibleWallets],
   )
 
-  const visibleOtherWallets = useMemo(() => {
+  const visibleOtherWalletGroups = useMemo(() => {
     const phrase = walletSearch.toLowerCase().trim()
-    if (!phrase) return otherWallets
-    return otherWallets.filter((wallet) =>
-      wallet.title.toLowerCase().includes(phrase),
+    if (!phrase) return otherWalletGroups
+    return otherWalletGroups.filter((group) =>
+      group.title.toLowerCase().includes(phrase),
     )
-  }, [otherWallets, walletSearch])
+  }, [otherWalletGroups, walletSearch])
 
   const shouldAutoOpenMoreWallets =
     !showAccountPanel &&
-    visibleSuggestedWallets.length === 0 &&
+    visibleSuggestedWalletGroups.length === 0 &&
     recentlyConnectedProviderTypes.length === 0
   const isMoreWalletsListOpen = isMoreOpen || shouldAutoOpenMoreWallets
 
   const accountList = useMemo(() => {
     const selectedProvider =
-      selectedSource !== "all" && selectedSource !== "recent"
+      selectedSource !== "all" &&
+      selectedSource !== "recent" &&
+      !isWalletSourceGroupId(selectedSource)
         ? selectedSource
         : null
 
@@ -380,6 +556,26 @@ export const WalletManagementContent = () => {
     setSelectedSource(wallet.provider)
   }
 
+  const handleWalletGroupSelect = (group: WalletSourceGroup) => {
+    const selectableWallets = getSelectableWallets(
+      group,
+      connectedProviderTypes,
+    )
+    const [wallet] = selectableWallets
+
+    if (wallet && selectableWallets.length === 1) {
+      handleProviderSelect(wallet)
+      return
+    }
+
+    if (!wallet) {
+      handleProviderSelect(group.wallets[0])
+      return
+    }
+
+    setSelectedSource(group.id)
+  }
+
   const handleRecentWalletsConnect = () => {
     for (const provider of recentlyConnectedProviderTypes) {
       if (pendingProviderTypes.includes(provider)) continue
@@ -418,14 +614,14 @@ export const WalletManagementContent = () => {
   }
 
   const shouldFoldOtherWallets =
-    !showAccountPanel && visibleSuggestedWallets.length >= 3
+    !showAccountPanel && visibleSuggestedWalletGroups.length >= 3
   const visibleOtherWalletPreview =
     shouldFoldOtherWallets && !isMoreWalletsListOpen
-      ? visibleOtherWallets.slice(0, 2)
-      : visibleOtherWallets
+      ? visibleOtherWalletGroups.slice(0, 2)
+      : visibleOtherWalletGroups
   const hasHiddenOtherWallets =
     shouldFoldOtherWallets &&
-    visibleOtherWalletPreview.length < visibleOtherWallets.length
+    visibleOtherWalletPreview.length < visibleOtherWalletGroups.length
 
   return (
     <Box sx={walletManagementShellSx(showAccountPanel)}>
@@ -489,32 +685,47 @@ export const WalletManagementContent = () => {
                       />
                     )}
 
-                    {connectAllProviderTypes.length > 0 && (
-                      <WalletSourceButton
-                        title={t("provider.connectAll")}
-                        subtitle={t("provider.connect")}
-                        logos={connectAllProviderTypes}
-                        variant={
-                          showAccountPanel ? "management" : "firstConnection"
-                        }
-                        onClick={handleConnectAllWallets}
-                      />
+                    {visibleSuggestedWalletGroups.map((group) =>
+                      group.wallets.length === 1 ? (
+                        <WalletProviderSourceButton
+                          key={group.id}
+                          wallet={group.wallets[0]}
+                          active={selectedSource === group.wallets[0].provider}
+                          status={getStatus(group.wallets[0].provider)}
+                          pending={pendingProviderTypes.includes(
+                            group.wallets[0].provider,
+                          )}
+                          variant={
+                            showAccountPanel ? "management" : "firstConnection"
+                          }
+                          onClick={() => handleProviderSelect(group.wallets[0])}
+                          onDisconnect={() =>
+                            disconnect(group.wallets[0].provider)
+                          }
+                        />
+                      ) : (
+                        <WalletGroupSourceButton
+                          key={group.id}
+                          group={group}
+                          active={
+                            selectedSource === group.id ||
+                            group.providers.includes(
+                              selectedSource as WalletProviderType,
+                            )
+                          }
+                          connected={group.providers.some((provider) =>
+                            connectedProviderTypes.includes(provider),
+                          )}
+                          pending={group.providers.some((provider) =>
+                            pendingProviderTypes.includes(provider),
+                          )}
+                          variant={
+                            showAccountPanel ? "management" : "firstConnection"
+                          }
+                          onClick={() => handleWalletGroupSelect(group)}
+                        />
+                      ),
                     )}
-
-                    {visibleSuggestedWallets.map((wallet) => (
-                      <WalletProviderSourceButton
-                        key={wallet.provider}
-                        wallet={wallet}
-                        active={selectedSource === wallet.provider}
-                        status={getStatus(wallet.provider)}
-                        pending={pendingProviderTypes.includes(wallet.provider)}
-                        variant={
-                          showAccountPanel ? "management" : "firstConnection"
-                        }
-                        onClick={() => handleProviderSelect(wallet)}
-                        onDisconnect={() => disconnect(wallet.provider)}
-                      />
-                    ))}
 
                     {showExternalWallet && (
                       <WalletProviderSourceButton
@@ -537,9 +748,32 @@ export const WalletManagementContent = () => {
                         }
                       />
                     )}
+
+                    {connectAllProviderTypes.length > 0 && (
+                      <WalletSourceButton
+                        title={t("provider.connectAll")}
+                        subtitle={t("provider.connect")}
+                        logos={connectAllProviderTypes}
+                        variant={
+                          showAccountPanel ? "management" : "firstConnection"
+                        }
+                        onClick={handleConnectAllWallets}
+                      />
+                    )}
+
+                    {hasConnectedWalletState && (
+                      <WalletSourceButton
+                        title={t("provider.logOutAll")}
+                        icon={LogOut}
+                        variant={
+                          showAccountPanel ? "management" : "firstConnection"
+                        }
+                        onClick={() => disconnect()}
+                      />
+                    )}
                   </Flex>
 
-                  {visibleOtherWallets.length > 0 && (
+                  {visibleOtherWalletGroups.length > 0 && (
                     <Flex direction="column" sx={sourceListSx}>
                       <Text
                         fs="p5"
@@ -569,40 +803,82 @@ export const WalletManagementContent = () => {
                           />
                           {isMoreWalletsListOpen && (
                             <Flex direction="column" sx={moreWalletsListSx}>
-                              {visibleOtherWallets.map((wallet) => (
-                                <WalletProviderSourceButton
-                                  key={wallet.provider}
-                                  wallet={wallet}
-                                  active={selectedSource === wallet.provider}
-                                  status={getStatus(wallet.provider)}
-                                  pending={pendingProviderTypes.includes(
-                                    wallet.provider,
-                                  )}
-                                  onClick={() => handleProviderSelect(wallet)}
-                                  onDisconnect={() =>
-                                    disconnect(wallet.provider)
-                                  }
-                                />
-                              ))}
+                              {visibleOtherWalletGroups.map((group) =>
+                                group.wallets.length === 1 ? (
+                                  <WalletProviderSourceButton
+                                    key={group.id}
+                                    wallet={group.wallets[0]}
+                                    active={
+                                      selectedSource ===
+                                      group.wallets[0].provider
+                                    }
+                                    status={getStatus(
+                                      group.wallets[0].provider,
+                                    )}
+                                    pending={pendingProviderTypes.includes(
+                                      group.wallets[0].provider,
+                                    )}
+                                    onClick={() =>
+                                      handleProviderSelect(group.wallets[0])
+                                    }
+                                    onDisconnect={() =>
+                                      disconnect(group.wallets[0].provider)
+                                    }
+                                  />
+                                ) : (
+                                  <WalletGroupSourceButton
+                                    key={group.id}
+                                    group={group}
+                                    active={selectedSource === group.id}
+                                    connected={false}
+                                    pending={group.providers.some((provider) =>
+                                      pendingProviderTypes.includes(provider),
+                                    )}
+                                    onClick={() =>
+                                      handleWalletGroupSelect(group)
+                                    }
+                                  />
+                                ),
+                              )}
                             </Flex>
                           )}
                         </Box>
                       ) : (
                         <>
-                          {visibleOtherWalletPreview.map((wallet) => (
-                            <WalletProviderSourceButton
-                              key={wallet.provider}
-                              wallet={wallet}
-                              active={selectedSource === wallet.provider}
-                              status={getStatus(wallet.provider)}
-                              pending={pendingProviderTypes.includes(
-                                wallet.provider,
-                              )}
-                              variant="firstConnection"
-                              onClick={() => handleProviderSelect(wallet)}
-                              onDisconnect={() => disconnect(wallet.provider)}
-                            />
-                          ))}
+                          {visibleOtherWalletPreview.map((group) =>
+                            group.wallets.length === 1 ? (
+                              <WalletProviderSourceButton
+                                key={group.id}
+                                wallet={group.wallets[0]}
+                                active={
+                                  selectedSource === group.wallets[0].provider
+                                }
+                                status={getStatus(group.wallets[0].provider)}
+                                pending={pendingProviderTypes.includes(
+                                  group.wallets[0].provider,
+                                )}
+                                variant="firstConnection"
+                                onClick={() =>
+                                  handleProviderSelect(group.wallets[0])
+                                }
+                                onDisconnect={() =>
+                                  disconnect(group.wallets[0].provider)
+                                }
+                              />
+                            ) : (
+                              <WalletGroupSourceButton
+                                key={group.id}
+                                group={group}
+                                active={selectedSource === group.id}
+                                connected={false}
+                                pending={group.providers.some((provider) =>
+                                  pendingProviderTypes.includes(provider),
+                                )}
+                                variant="firstConnection"
+                                onClick={() => handleWalletGroupSelect(group)}
+                              />
+                            ),
+                          )}
                           {(hasHiddenOtherWallets ||
                             (shouldFoldOtherWallets &&
                               isMoreWalletsListOpen)) && (
@@ -642,6 +918,31 @@ export const WalletManagementContent = () => {
                   />
                 </FormProvider>
               </Flex>
+            ) : showErrorState ? (
+              <WalletErrorState
+                error={error}
+                onRetry={
+                  recentProvider
+                    ? () => enableConnectAll(recentProvider)
+                    : undefined
+                }
+              />
+            ) : showWalletGroupChainSelectState && selectedWalletGroup ? (
+              <WalletChainSelectState
+                group={selectedWalletGroup}
+                getStatus={getStatus}
+                onConnect={(wallet) => enable(wallet.provider)}
+                onInstall={(wallet) => {
+                  if (wallet.installUrl) {
+                    window.open(
+                      wallet.installUrl,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
+                }}
+                onSelect={handleProviderSelect}
+              />
             ) : showSelectedWalletConnectState && selectedWallet ? (
               <WalletConnectState
                 wallet={selectedWallet}
@@ -778,6 +1079,180 @@ const WalletProviderSourceButton: React.FC<{
         )
       }
     />
+  )
+}
+
+const WalletGroupSourceButton: React.FC<{
+  readonly group: WalletSourceGroup
+  readonly active: boolean
+  readonly connected: boolean
+  readonly pending: boolean
+  readonly variant?: WalletSourceButtonVariant
+  readonly onClick: () => void
+}> = ({
+  group,
+  active,
+  connected,
+  pending,
+  variant = "management",
+  onClick,
+}) => {
+  const { t } = useTranslation()
+
+  return (
+    <WalletSourceButton
+      active={active}
+      title={group.title}
+      subtitle={connected ? t("provider.connected") : t("provider.connect")}
+      logo={group.logo}
+      pending={pending}
+      variant={variant}
+      chainModes={getWalletGroupSourceModes(group)}
+      onClick={onClick}
+    />
+  )
+}
+
+const WalletErrorState: React.FC<{
+  readonly error: string
+  readonly onRetry?: () => void
+}> = ({ error, onRetry }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Flex align="center" justify="center" sx={walletErrorStateSx}>
+      <Flex
+        direction="column"
+        align="center"
+        gap="base"
+        sx={{ maxWidth: pxToRem(340) }}
+      >
+        <Box sx={walletErrorIconSx}>
+          <Icon size="s" component={CircleAlert} />
+        </Box>
+        <Flex direction="column" align="center" sx={{ gap: "6px" }}>
+          <Text
+            fs="h7"
+            fw={500}
+            lh={1}
+            font="primary"
+            align="center"
+            color="text.high"
+          >
+            {t("error.title")}
+          </Text>
+          <Text fs="p5" lh="m" color="text.medium" align="center">
+            {error || t("error.unknown")}
+          </Text>
+        </Flex>
+        {onRetry && (
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={onRetry}
+            sx={walletErrorRetryButtonSx}
+          >
+            {t("error.retry")}
+          </Button>
+        )}
+      </Flex>
+    </Flex>
+  )
+}
+
+const WalletChainSelectState: React.FC<{
+  readonly group: WalletSourceGroup
+  readonly getStatus: (
+    provider: WalletProviderType | null,
+  ) => WalletProviderStatus
+  readonly onConnect: (wallet: Wallet) => void
+  readonly onInstall: (wallet: Wallet) => void
+  readonly onSelect: (wallet: Wallet) => void
+}> = ({ group, getStatus, onConnect, onInstall, onSelect }) => {
+  const { t } = useTranslation()
+  const selectableWallets = group.wallets.filter((wallet) => {
+    const status = getStatus(wallet.provider)
+    return wallet.installed || status === WalletProviderStatus.Connected
+  })
+
+  return (
+    <Flex direction="column" gap="base" sx={rightColumnSx}>
+      <Flex
+        direction="column"
+        align="center"
+        gap="base"
+        sx={chainSelectHeaderSx}
+      >
+        {group.logo && (
+          <Image
+            src={group.logo}
+            alt=""
+            sx={{ size: 52, borderRadius: "full", flexShrink: 0 }}
+          />
+        )}
+        <Text
+          fs="h7"
+          fw={500}
+          lh={1}
+          font="primary"
+          align="center"
+          color="text.high"
+        >
+          {group.title}
+        </Text>
+      </Flex>
+
+      <Flex direction="column" gap="s">
+        {selectableWallets.map((wallet) => {
+          const status = getStatus(wallet.provider)
+          const isConnected = status === WalletProviderStatus.Connected
+          const isPending = status === WalletProviderStatus.Pending
+          const mode = getWalletPrimaryMode(wallet.provider)
+          const modeIcon = mode ? getWalletModeIcon(mode) : ""
+
+          return (
+            <WalletSourceButton
+              key={wallet.provider}
+              title={getWalletSourceModeLabel(mode)}
+              subtitle={
+                isConnected
+                  ? t("provider.connected")
+                  : wallet.installed
+                    ? t("provider.connect")
+                    : t("provider.download")
+              }
+              logo={mode === WalletMode.EVM ? undefined : modeIcon}
+              icon={mode === WalletMode.EVM ? HydrationLogo : undefined}
+              pending={isPending}
+              onClick={() => {
+                if (isPending) return
+                if (isConnected) {
+                  onSelect(wallet)
+                  return
+                }
+                if (wallet.installed) {
+                  onConnect(wallet)
+                  return
+                }
+                onInstall(wallet)
+              }}
+              action={
+                <Box as="span" sx={sourceActionSx}>
+                  <Icon
+                    size="xs"
+                    component={
+                      !wallet.installed && wallet.installUrl
+                        ? Download
+                        : ChevronRight
+                    }
+                  />
+                </Box>
+              }
+            />
+          )
+        })}
+      </Flex>
+    </Flex>
   )
 }
 
@@ -953,31 +1428,34 @@ const WalletSourceButton: React.FC<{
 
 const WalletSourceChainBadges: React.FC<{ readonly modes: WalletMode[] }> = ({
   modes,
-}) => (
-  <Flex align="center" sx={sourceChainBadgesSx}>
-    {modes.slice(0, 3).map((mode, index) => {
-      const modeIcon = getWalletModeIcon(mode)
-      if (!modeIcon) return null
+}) => {
+  const badges = getWalletSourceChainBadges(modes)
 
-      return (
+  return (
+    <Flex align="center" sx={sourceChainBadgesSx}>
+      {badges.slice(0, 4).map((badge, index) => (
         <Box
-          key={mode}
+          key={badge.id}
           sx={{
             ...sourceChainBadgeSx,
             ml: index === 0 ? 0 : -5,
           }}
         >
-          <Image
-            src={modeIcon}
-            alt=""
-            lazy={false}
-            sx={{ size: 12, borderRadius: "full", objectFit: "contain" }}
-          />
+          {badge.icon ? (
+            <Icon size="xs" component={badge.icon} />
+          ) : badge.iconSrc ? (
+            <Image
+              src={badge.iconSrc}
+              alt=""
+              lazy={false}
+              sx={{ size: 12, borderRadius: "full", objectFit: "contain" }}
+            />
+          ) : null}
         </Box>
-      )
-    })}
-  </Flex>
-)
+      ))}
+    </Flex>
+  )
+}
 
 const WalletAccountSection: React.FC<{
   readonly title: string
@@ -1147,7 +1625,7 @@ const WalletAccountTile: React.FC<{
 const walletManagementShellSx = (
   showAccountPanel: boolean,
 ): BoxProps["sx"] => ({
-  width: ["100%", null, showAccountPanel ? 650 : 452],
+  width: ["100%", null, showAccountPanel ? pxToRem(650) : pxToRem(452)],
   maxWidth: "100%",
   height: ["100dvh", null, showAccountPanel ? "min(720px, 80vh)" : "80vh"],
   maxHeight: ["100dvh", null, "80vh"],
@@ -1179,7 +1657,9 @@ const layoutGridSx = (showAccountPanel: boolean): BoxProps["sx"] => ({
   gridTemplateColumns: [
     "1fr",
     null,
-    showAccountPanel ? "200px minmax(0, 1fr)" : "minmax(0, 1fr) minmax(0, 0fr)",
+    showAccountPanel
+      ? `${pxToRem(200)} minmax(0, 1fr)`
+      : "minmax(0, 1fr) minmax(0, 0fr)",
   ],
   gap: ["base", null, showAccountPanel ? 20 : 0],
   width: "100%",
@@ -1249,6 +1729,34 @@ const rightColumnSx: BoxProps["sx"] = {
   minHeight: 0,
   maxHeight: ["none", null, "100%"],
   overflowY: ["visible", null, "auto"],
+}
+
+const chainSelectHeaderSx: BoxProps["sx"] = {
+  pt: ["base", null, "xl"],
+  px: ["base", null, 30],
+  pb: "s",
+}
+
+const walletErrorStateSx: BoxProps["sx"] = {
+  borderRadius: "m",
+  bg: getToken("surfaces.containers.dim.dimOnBg"),
+  minHeight: 260,
+  height: "100%",
+  p: ["xl", null, 30],
+}
+
+const walletErrorIconSx: BoxProps["sx"] = {
+  size: 40,
+  borderRadius: "full",
+  bg: getToken("accents.danger.dimBg"),
+  color: getToken("accents.danger.secondary"),
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}
+
+const walletErrorRetryButtonSx: BoxProps["sx"] = {
+  mt: "s",
 }
 
 const walletConnectStateSx: BoxProps["sx"] = {
@@ -1368,7 +1876,7 @@ const sourceActionSx: BoxProps["sx"] = {
 }
 
 const accountFilterButtonSx: BoxProps["sx"] = {
-  minWidth: 80,
+  minWidth: pxToRem(80),
   py: "s",
 }
 

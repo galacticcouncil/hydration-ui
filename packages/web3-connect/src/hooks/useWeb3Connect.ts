@@ -70,6 +70,7 @@ type Web3ConnectModalMeta = {
   description?: string
   hideExternalWallet?: boolean
   initialPage?: Web3ConnectModalPage
+  initialProvider?: WalletProviderType
 }
 
 export type WalletProviderEntry = {

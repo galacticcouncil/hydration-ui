@@ -1,13 +1,13 @@
 import { hydration } from "@galacticcouncil/descriptors"
 import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { Modal } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { TypedApi } from "polkadot-api"
 import { FC, useEffect, useMemo, useState } from "react"
 import { I18nextProvider } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { ErrorContent } from "@/components/content/ErrorContent"
 import { ExternalWalletContent } from "@/components/content/ExternalWalletContent"
 import { MultisigConfigSelectContent } from "@/components/content/MultisigConfigSelectContent"
 import { MultisigSetupContent } from "@/components/content/MultisigSetupContent"
@@ -32,7 +32,7 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
   [Web3ConnectModalPage.ProviderSelect]: <WalletManagementContent />,
   [Web3ConnectModalPage.ExternalWallet]: <ExternalWalletContent />,
   [Web3ConnectModalPage.AccountSelect]: <WalletManagementContent />,
-  [Web3ConnectModalPage.Error]: <ErrorContent />,
+  [Web3ConnectModalPage.Error]: <WalletManagementContent />,
   [Web3ConnectModalPage.MultisigSetup]: <MultisigSetupContent />,
   [Web3ConnectModalPage.MultisigConfigSelect]: <MultisigConfigSelectContent />,
   [Web3ConnectModalPage.MultisigSignerSelect]: <MultisigSignerSelectContent />,
@@ -93,7 +93,7 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
         Web3ConnectModalPage.AccountSelect,
       ].includes(page)
     ) {
-      setModalContentWidth("650px")
+      setModalContentWidth(pxToRem(650))
     }
   }, [page, setModalContentWidth])
 
@@ -128,6 +128,7 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
         Web3ConnectModalPage.ProviderSelect,
         Web3ConnectModalPage.ExternalWallet,
         Web3ConnectModalPage.AccountSelect,
+        Web3ConnectModalPage.Error,
         Web3ConnectModalPage.MultisigSetup,
         Web3ConnectModalPage.MultisigConfigSelect,
         Web3ConnectModalPage.MultisigSignerSelect,
@@ -144,7 +145,7 @@ export const Web3ConnectModal: FC<Props> = (props) => {
   useWalletSubscriptions()
 
   const modalState = useWeb3ConnectModal()
-  const [modalContentWidth, setModalContentWidth] = useState("650px")
+  const [modalContentWidth, setModalContentWidth] = useState(pxToRem(650))
 
   const open = isControlled ? props.open : modalState.open
   const onOpenChange = isControlled

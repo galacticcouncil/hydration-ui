@@ -1,3 +1,4 @@
+import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import { Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
@@ -19,7 +20,11 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
+import {
+  formatCurrency,
+  shortenAccountAddress,
+  stringEquals,
+} from "@galacticcouncil/utils"
 import {
   useAccount,
   useWeb3Connect,
@@ -28,24 +33,87 @@ import {
   Web3ConnectModalPage,
 } from "@galacticcouncil/web3-connect"
 import { ProviderLogo } from "@galacticcouncil/web3-connect/src/components/provider/ProviderLogo"
-import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
+import {
+  SUBSTRATE_H160_PROVIDERS,
+  SUBSTRATE_PROVIDERS,
+  WalletProviderType,
+} from "@galacticcouncil/web3-connect/src/config/providers"
 import {
   isEip1193Provider,
   requestAccounts,
 } from "@galacticcouncil/web3-connect/src/utils"
 import { getWallet, MetaMask } from "@galacticcouncil/web3-connect/src/wallets"
+import { useQueries } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { LogOut, Plus, RefreshCw } from "lucide-react"
-import { FC, ReactNode } from "react"
+import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useShallow } from "zustand/react/shallow"
 
+import { useSquidClient } from "@/api/provider"
 import {
   getRecentProviderAccount,
   useRecentProviderAccountsStore,
 } from "@/states/recentProviderAccounts"
 
 import { SHoverActions } from "./UserMenu.styled"
+
+const HOVER_BALANCE_STALE_TIME = 60_000
+
+const useHoverWalletBalances = (
+  accounts: ReturnType<typeof useAccount>["accounts"],
+  enabled: boolean,
+) => {
+  const squidSdk = useSquidClient()
+  const accountsWithoutCachedBalance = useMemo(() => {
+    const byPublicKey = new Map<string, (typeof accounts)[number]>()
+
+    for (const account of accounts) {
+      if (account.balance !== undefined || byPublicKey.has(account.publicKey)) {
+        continue
+      }
+      byPublicKey.set(account.publicKey, account)
+    }
+
+    return [...byPublicKey.values()]
+  }, [accounts])
+
+  const balanceQueries = useQueries({
+    queries: accountsWithoutCachedBalance.map((account) => ({
+      ...latestAccountBalanceQuery(squidSdk, account.publicKey),
+      enabled,
+      staleTime: HOVER_BALANCE_STALE_TIME,
+      refetchOnWindowFocus: false,
+    })),
+  })
+
+  return useMemo(() => {
+    const balances = new Map<string, number>()
+
+    for (const account of accounts) {
+      if (account.balance !== undefined) {
+        balances.set(account.publicKey, account.balance)
+      }
+    }
+
+    accountsWithoutCachedBalance.forEach((account, index) => {
+      const latest =
+        balanceQueries[
+          index
+        ]?.data?.accountTotalBalanceHistoricalData?.nodes.at(0)
+      if (!latest) return
+
+      const transferable = Number(latest.totalTransferableNorm) || 0
+      const locked = Number(latest.totalLockedNorm) || 0
+      balances.set(account.publicKey, transferable + locked)
+    })
+
+    return {
+      balances,
+      isLoading: enabled && balanceQueries.some((query) => query.isLoading),
+    }
+  }, [accounts, accountsWithoutCachedBalance, balanceQueries, enabled])
+}
 
 const UserMenuSeparator = () => (
   <Separator
@@ -55,6 +123,11 @@ const UserMenuSeparator = () => (
     }}
   />
 )
+
+const MANAGE_ACCOUNT_PROVIDERS: WalletProviderType[] = [
+  ...SUBSTRATE_PROVIDERS,
+  ...SUBSTRATE_H160_PROVIDERS,
+].filter((provider) => provider !== WalletProviderType.WalletConnect)
 
 type Props = {
   readonly open: boolean
@@ -86,11 +159,22 @@ export const UserMenu: FC<Props> = ({
     (s) => s.recentByProvider,
   )
 
+  const { balances: balancesByAccount, isLoading: areBalancesLoading } =
+    useHoverWalletBalances(accounts, open)
+
   if (!account) return null
 
   const connectedTypes = providers
     .filter((p) => p.status === WalletProviderStatus.Connected)
     .map((p) => p.type)
+
+  const openManageWallets = (initialProvider?: WalletProviderType) => {
+    onOpenChange(false)
+    toggle(undefined, {
+      initialPage: Web3ConnectModalPage.AccountSelect,
+      initialProvider,
+    })
+  }
 
   return (
     <HoverCard open={open} onOpenChange={onOpenChange} closeDelay={180}>
@@ -159,14 +243,46 @@ export const UserMenu: FC<Props> = ({
             wallet instanceof MetaMask && isEip1193Provider(wallet.extension)
               ? wallet.extension
               : undefined
+          const canManageProviderAccounts =
+            MANAGE_ACCOUNT_PROVIDERS.includes(type) &&
+            providerAccounts.length > 1
+          const providerBalance = providerAccounts.reduce<number | null>(
+            (total, providerAccount) => {
+              const balance = balancesByAccount.get(providerAccount.publicKey)
+              return total === null || balance === undefined
+                ? null
+                : total + balance
+            },
+            0,
+          )
+          const accountSummary =
+            providerBalance !== null
+              ? t("userMenu.accountsBalance", {
+                  count: providerAccounts.length,
+                  balance: formatCurrency(providerBalance),
+                })
+              : areBalancesLoading
+                ? t("userMenu.accountsBalanceLoading", {
+                    count: providerAccounts.length,
+                  })
+                : t("userMenu.accountsCount", {
+                    count: providerAccounts.length,
+                  })
+          const shouldShowAccountSummary =
+            !isExternalWallet &&
+            (providerAccounts.length > 1 ||
+              providerBalance !== null ||
+              areBalancesLoading)
 
           return (
             <MenuSelectionItem
               key={type}
               onClick={
-                isActiveProvider || !storedRecentAccount
-                  ? undefined
-                  : () => setAccount(storedRecentAccount)
+                isActiveProvider
+                  ? () => openManageWallets(type)
+                  : storedRecentAccount
+                    ? () => setAccount(storedRecentAccount)
+                    : undefined
               }
             >
               <Box sx={{ gridRow: "1 / -1", flexShrink: 0 }}>
@@ -186,13 +302,9 @@ export const UserMenu: FC<Props> = ({
                   )}
                 </Flex>
               </MenuItemLabel>
-              {(isExternalWallet || providerAccounts.length > 1) && (
+              {(isExternalWallet || shouldShowAccountSummary) && (
                 <MenuItemDescription>
-                  {isExternalWallet
-                    ? shortAddress
-                    : t("userMenu.accountsCount", {
-                        count: providerAccounts.length,
-                      })}
+                  {isExternalWallet ? shortAddress : accountSummary}
                 </MenuItemDescription>
               )}
               <MenuItemAction>
@@ -205,6 +317,18 @@ export const UserMenu: FC<Props> = ({
                         onClick={(e) => {
                           e.stopPropagation()
                           requestAccounts(metaMaskExtension)
+                        }}
+                      >
+                        <Icon size="s" component={RefreshCw} />
+                      </ButtonIcon>
+                    )}
+                    {canManageProviderAccounts && (
+                      <ButtonIcon
+                        title={changeAccountLabel}
+                        aria-label={changeAccountLabel}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openManageWallets(type)
                         }}
                       >
                         <Icon size="s" component={RefreshCw} />
@@ -249,12 +373,21 @@ export const UserMenu: FC<Props> = ({
           )
         })}
 
+        <MenuSelectionItem
+          onClick={() => {
+            disconnect()
+            onOpenChange(false)
+          }}
+        >
+          <MenuItemIcon sx={{ width: "xl", height: "xl" }} component={LogOut} />
+          <MenuItemLabel>{t("userMenu.logOutAll")}</MenuItemLabel>
+        </MenuSelectionItem>
+
         <UserMenuSeparator />
 
         <MenuSelectionItem
           onClick={() => {
-            onOpenChange(false)
-            toggle()
+            openManageWallets()
           }}
         >
           <MenuItemIcon sx={{ width: "xl", height: "xl" }} component={Plus} />
