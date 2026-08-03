@@ -223,9 +223,21 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     )
   }, [form, srcAmount, srcAsset, xcmTransfer])
 
+  // Only the assets actually in view are subscribed now - the asset picker
+  // fetches the full set on its own.
+  const srcSubscribedAssets = useMemo(
+    () => (srcAsset ? [srcAsset] : []),
+    [srcAsset],
+  )
+  const destSubscribedAssets = useMemo(
+    () => (destAsset ? [destAsset] : []),
+    [destAsset],
+  )
+
   const { isLoading: isLoadingSrcBalances } = useCrossChainBalanceSubscription(
     srcAddress,
     srcChainKey,
+    srcSubscribedAssets,
     () => {
       queryClient.invalidateQueries({ queryKey: ["xcm", "transfer"] })
     },
@@ -233,6 +245,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { isLoading: isLoadingDestBalances } = useCrossChainBalanceSubscription(
     destAddress,
     destChainKey,
+    destSubscribedAssets,
   )
 
   const registryChain = useMemo(() => {
