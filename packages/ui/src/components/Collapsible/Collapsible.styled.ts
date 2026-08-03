@@ -1,3 +1,4 @@
+import isPropValid from "@emotion/is-prop-valid"
 import { css, keyframes } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content } from "@radix-ui/react-collapsible"
@@ -61,17 +62,22 @@ const slideUp = keyframes`
   }
 `
 
-export const SCollapsibleContent = styled(Content)(
-  ({ theme }) => css`
+export const SCollapsibleContent = styled(Content, {
+  shouldForwardProp: (prop) =>
+    isPropValid(prop) && prop !== "animationDurationMs",
+})<{ animationDurationMs?: number }>(
+  ({ theme, animationDurationMs = 200 }) => css`
     overflow: visible;
+    will-change: height;
 
     &[data-state="open"] {
-      animation: ${slideDown} 0.2s ${theme.easings.outExpo};
+      animation: ${slideDown} ${animationDurationMs}ms ${theme.easings.outQuint};
     }
 
     &[data-state="closed"] {
       overflow: hidden;
-      animation: ${slideUp} 0.2s ${theme.easings.outExpo};
+      animation: ${slideUp} ${animationDurationMs}ms ${theme.easings.outQuint}
+        forwards;
     }
   `,
 )

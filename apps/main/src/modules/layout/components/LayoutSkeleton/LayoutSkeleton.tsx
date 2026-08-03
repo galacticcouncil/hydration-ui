@@ -1,4 +1,4 @@
-import { useMatch, useMatches, useRouter } from "@tanstack/react-router"
+import { useMatches, useRouter } from "@tanstack/react-router"
 
 import { Loader } from "@/components/Loader"
 import { TabMenu } from "@/components/TabMenu"
@@ -20,19 +20,7 @@ export const LayoutSkeleton = () => {
   const matches = useMatches()
   const leafMatch = matches.at(-1)
 
-  const subNav = useSubNav()
-
-  const isLiqDetailPage = useMatch({
-    from: "/liquidity/$id",
-    shouldThrow: false,
-  })
-
-  const isStrategiesPage = useMatch({
-    from: "/strategies/",
-    shouldThrow: false,
-  })
-
-  const hasSubNav = !isLiqDetailPage && !isStrategiesPage && subNav.length > 1
+  const { items: subNav, hasSubNav } = useSubNav()
 
   const PendingComponent = leafMatch
     ? router.routesById[leafMatch.routeId]?.options?.pendingComponent

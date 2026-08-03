@@ -1,7 +1,6 @@
 import {
   DataTable,
   Modal,
-  Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -85,10 +84,11 @@ export const MyLiquidityTable: FC<Props> = ({
   const [isDetailOpen, setIsDetailOpen] = useState<ModalType | null>(null)
 
   return (
-    <TableContainer as={Paper}>
+    <TableContainer>
       <DataTable
         data={data}
         columns={columns}
+        size="small"
         paginated
         {...paginationProps}
         {...sortingProps}

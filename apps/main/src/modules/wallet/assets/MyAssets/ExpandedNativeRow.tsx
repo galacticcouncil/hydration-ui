@@ -40,7 +40,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
 
   const { data: identity } = useQuery({
     ...getIdentityQuery(rpc.papi, account?.address ?? ""),
-    enabled: !!account?.address && !!asset.reserved,
+    enabled: !!account?.address,
   })
 
   const identityReserves = identity?.deposit ?? 0n
