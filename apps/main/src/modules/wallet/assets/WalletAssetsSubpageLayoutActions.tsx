@@ -23,6 +23,7 @@ export const WalletAssetsSubpageLayoutActions = () => {
         size="small"
         outline
         onClick={() => setModal("send")}
+        sx={isMobile ? { p: "base" } : undefined}
       >
         {isMobile ? <Icon component={Send} size="m" /> : t("send")}
       </Button>

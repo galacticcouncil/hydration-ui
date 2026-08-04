@@ -36,6 +36,7 @@ export type BoxOwnProps = Partial<
     | "maxWidth"
     | "maxHeight"
     | "size"
+    | "overflow"
     | "borderRadius"
     | "borderWidth"
     | "borderStyle"
@@ -97,6 +98,7 @@ export const Box: React.FC<BoxProps> = ({
   maxWidth,
   maxHeight,
   size,
+  overflow,
   borderRadius,
   borderWidth,
   borderStyle,
@@ -143,6 +145,7 @@ export const Box: React.FC<BoxProps> = ({
     maxWidth,
     maxHeight,
     size,
+    overflow,
     borderRadius,
     borderWidth,
     borderStyle,

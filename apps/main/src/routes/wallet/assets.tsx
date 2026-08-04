@@ -9,8 +9,7 @@ import { WalletAssetsPage } from "@/modules/wallet/assets/WalletAssetsPage"
 import { WalletAssetsSkeleton } from "@/modules/wallet/assets/WalletAssetsSkeleton"
 
 const searchSchema = z.object({
-  category: z.enum(["all", "assets", "liquidity"]).default("all"),
-  assetsPage: z.number().optional(),
+  category: z.enum(["assets", "liquidity", "bonds"]).default("assets"),
   assetsSort: dataTableSortSchema,
   bondsPage: z.number().optional(),
   bondsSort: dataTableSortSchema.default([

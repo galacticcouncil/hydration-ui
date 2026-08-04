@@ -20,6 +20,7 @@ export const OtcSearch: FC<Props> = ({
       onChange={(e) => onSearchPhraseChange(e.currentTarget.value)}
       placeholder={t("search.placeholder.assets")}
       iconStart={Search}
+      width={["100%", null, "4xl"]}
     />
   )
 }
