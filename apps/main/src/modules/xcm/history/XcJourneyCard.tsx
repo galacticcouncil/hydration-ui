@@ -31,7 +31,7 @@ import {
   getTransferAsset,
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
-import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
+import { isJourneyPendingClaim } from "@/modules/xcm/history/utils/claim"
 import {
   getFormattedAddresses,
   getJourneyExplorerLink,
@@ -53,7 +53,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const link = getJourneyExplorerLink(journey)
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
-  const isClaimable = isNotPending && isJourneyClaimable(journey)
+  const isClaimable = isNotPending && isJourneyPendingClaim(journey)
 
   const usdValue = Big(totalUsd || transferAsset?.usd || 0)
 

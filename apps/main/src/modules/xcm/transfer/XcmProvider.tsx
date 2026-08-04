@@ -13,7 +13,7 @@ import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
-import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
+import { prop, unique } from "remeda"
 
 import { getSortedRpcUrlList } from "@/api/provider"
 import {
@@ -31,7 +31,6 @@ import {
   shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
 import {
-  getChainPriority,
   isAccountValidOnChain,
   withCustomChainRpcUrls,
   XCM_CHAINS,
@@ -40,6 +39,8 @@ import {
   calculateTransferDestAmount,
   getTransferStatus,
   getXcmTransferArgs,
+  isDestRouteSynced,
+  resolveBestDestRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -156,23 +157,31 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   }, [bridgeProvider, destPair, destAsset, form])
 
   useEffect(() => {
-    const validRoutes = pipe(
+    const bestRoute = resolveBestDestRoute(
       destChainAssetPairs,
-      flatMap((c) => c.routes),
-      sortBy((r) => getChainPriority(r.destination.chain.key)),
+      destChain,
+      destAsset,
     )
-
-    const foundRoute = validRoutes.find(
-      (r) =>
-        r.destination.chain.key === destChain?.key &&
-        r.destination.asset.key === destAsset?.key,
-    )
-
-    const bestRoute = foundRoute || first(validRoutes)
 
     if (!bestRoute) {
       form.setValue("destChain", null)
       form.setValue("destAsset", null)
+      return
+    }
+
+    const routeSynced = isDestRouteSynced(bestRoute, destChain, destAsset)
+
+    if (routeSynced) {
+      const destAddress = form.getValues("destAddress")
+
+      if (
+        destChain &&
+        destAddress &&
+        !isAddressValidOnChain(destAddress, destChain)
+      ) {
+        form.setValue("destAddress", "")
+        form.setValue("destAccount", null)
+      }
       return
     }
 
@@ -188,7 +197,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     form.setValue("destChain", bestChain)
     form.setValue("destAsset", bestAsset)
-  }, [destAsset?.key, destChain?.key, destChainAssetPairs, form, srcAsset?.key])
+  }, [destAsset, destChain, destChainAssetPairs, form])
 
   const isConnectedAccountValid =
     !!srcChain && isAccountValidOnChain(account, srcChain)
@@ -197,10 +206,18 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
-  const transferArgs = useMemo(
-    () => getXcmTransferArgs(account, values),
-    [account, values],
+  const bestDestRoute = useMemo(
+    () => resolveBestDestRoute(destChainAssetPairs, destChain, destAsset),
+    [destChainAssetPairs, destChain, destAsset],
   )
+
+  const isDestSynced = isDestRouteSynced(bestDestRoute, destChain, destAsset)
+
+  const transferArgs = useMemo(() => {
+    if (!isDestSynced) return null
+
+    return getXcmTransferArgs(account, values)
+  }, [account, isDestSynced, values])
 
   const {
     transfer: xcmTransfer,
@@ -223,9 +240,21 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     )
   }, [form, srcAmount, srcAsset, xcmTransfer])
 
+  // Only the assets actually in view are subscribed now - the asset picker
+  // fetches the full set on its own.
+  const srcSubscribedAssets = useMemo(
+    () => (srcAsset ? [srcAsset] : []),
+    [srcAsset],
+  )
+  const destSubscribedAssets = useMemo(
+    () => (destAsset ? [destAsset] : []),
+    [destAsset],
+  )
+
   const { isLoading: isLoadingSrcBalances } = useCrossChainBalanceSubscription(
     srcAddress,
     srcChainKey,
+    srcSubscribedAssets,
     () => {
       queryClient.invalidateQueries({ queryKey: ["xcm", "transfer"] })
     },
@@ -233,6 +262,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { isLoading: isLoadingDestBalances } = useCrossChainBalanceSubscription(
     destAddress,
     destChainKey,
+    destSubscribedAssets,
   )
 
   const registryChain = useMemo(() => {

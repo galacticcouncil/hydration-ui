@@ -4,6 +4,7 @@ import { createVariants, css } from "@galacticcouncil/ui/utils"
 
 export type ValueStatsSize = "small" | "medium" | "large"
 export type ValueStatsFont = Exclude<ThemeFont, "mono">
+export type ValueStatsAlign = "left" | "right"
 
 const containerSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   small: css`
@@ -31,16 +32,19 @@ export const SValueStatsValueContainer = styled.div<{
 export const SValueStats = styled.div<{
   readonly size?: ValueStatsSize
   readonly shouldWrap: boolean
-}>(({ size = "large", shouldWrap }) => [
+  readonly align?: ValueStatsAlign
+}>(({ size = "large", shouldWrap, align = "left" }) => [
   shouldWrap
     ? css`
         display: flex;
         flex-direction: column;
+        align-items: ${align === "right" ? "flex-end" : "flex-start"};
       `
     : css`
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        text-align: ${align === "right" ? "right" : "left"};
       `,
   containerSizeVariants(size),
 ])
@@ -107,8 +111,9 @@ export const SValueStatsValue = styled.div<{
 ])
 
 export const SValueStatsBottomValue = styled.div<{
-  isFloating?: boolean
-}>(({ theme, isFloating = false }) => [
+  readonly isFloating?: boolean
+  readonly align?: ValueStatsAlign
+}>(({ theme, isFloating = false, align = "left" }) => [
   css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
@@ -123,6 +128,6 @@ export const SValueStatsBottomValue = styled.div<{
     css`
       position: absolute;
       top: calc(100% + ${theme.space.xs});
-      left: 0;
+      ${align === "right" ? "right: 0;" : "left: 0;"}
     `,
 ])

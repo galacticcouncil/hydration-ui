@@ -134,10 +134,11 @@ export const TableRow = styled.tr<{
     (isClickable || isExpandable) &&
     css`
       ${TableBody} &:hover {
-        background: ${theme.surfaces.containers.high.hover};
+        background-color: ${theme.surfaces.containers.high.hover};
         transition: ${theme.transitions.colors};
-        ${TableCell}[data-pinned] {
-          background: ${theme.surfaces.containers.high.hover};
+
+        ${TableCell} {
+          background-color: ${theme.surfaces.containers.high.hover};
           transition: ${theme.transitions.colors};
         }
       }

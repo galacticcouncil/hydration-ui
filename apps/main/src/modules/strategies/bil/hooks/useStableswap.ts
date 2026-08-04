@@ -1,5 +1,6 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
 
@@ -23,8 +24,8 @@ import { scaleHuman } from "@/utils/formatting"
  */
 
 export function useInstantQuote(
-  bilAmount: number,
-  queueHollarOut: number,
+  bilAmount: string,
+  queueHollarOut: string,
 ): { quote: InstantQuote | undefined; isLoading: boolean } {
   const rpc = useRpcProvider()
   const { bil, hollar } = useBilStrategy()
@@ -38,22 +39,24 @@ export function useInstantQuote(
     bestSellQuery(rpc, {
       assetIn: bil.id,
       assetOut: hollar.id,
-      amountIn: debouncedAmount > 0 ? debouncedAmount.toString() : "0",
+      amountIn: Big(debouncedAmount || "0").gt(0) ? debouncedAmount : "0",
     }),
   )
 
-  if (!swap || debouncedAmount <= 0) {
+  if (!swap || Big(debouncedAmount || "0").lte(0)) {
     return { quote: undefined, isLoading: isFetching }
   }
 
-  const expectedHollarStr = scaleHuman(swap.amountOut, hollar.decimals) || "0"
-  const expectedHollar = Number(expectedHollarStr)
+  const expectedHollar = scaleHuman(swap.amountOut, hollar.decimals) || "0"
   // discount as a signed % vs the queue path. Negative = instant gives
   // less than queue (the typical case — you pay a discount for liquidity).
-  const discountPct =
-    queueHollarOut > 0
-      ? ((expectedHollar - queueHollarOut) / queueHollarOut) * 100
-      : 0
+  const discountPct = Big(queueHollarOut || "0").gt(0)
+    ? Big(expectedHollar)
+        .minus(queueHollarOut)
+        .div(queueHollarOut)
+        .times(100)
+        .toNumber()
+    : 0
   // SDK returns priceImpactPct as a percentage already (e.g. 0.15 = 0.15%).
   const slippagePct = Math.abs(swap.priceImpactPct ?? 0)
 
@@ -83,13 +86,13 @@ export function useInstantRedeem() {
   const address = account?.address ?? ""
 
   return useMutation({
-    mutationFn: async (bilAmount: number) => {
+    mutationFn: async (bilAmount: string) => {
       // Same convention as useInstantQuote — SDK takes a human string for
       // amountIn, NOT wei.
       const swap = await sdk.api.router.getBestSell(
         Number(bil.id),
         Number(hollar.id),
-        bilAmount.toString(),
+        bilAmount,
       )
 
       const tx = await sdk.tx

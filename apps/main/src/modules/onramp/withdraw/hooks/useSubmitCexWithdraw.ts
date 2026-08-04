@@ -168,19 +168,24 @@ async function waitForBalanceChange(
 ): Promise<bigint> {
   const { promise, resolve, reject } = Promise.withResolvers<bigint>()
 
-  const sub = await wallet.subscribeBalance(address, chainKey, (balances) => {
-    const balance = balances.find((b) => b.key === asset.key)
+  const sub = await wallet.subscribeBalance(
+    address,
+    chainKey,
+    [asset],
+    (balances) => {
+      const balance = balances.find((b) => b.key === asset.key)
 
-    if (!isBigInt(balance?.amount)) {
-      sub.unsubscribe()
-      return reject(new Error("Asset not found"))
-    }
+      if (!isBigInt(balance?.amount)) {
+        sub.unsubscribe()
+        return reject(new Error("Asset not found"))
+      }
 
-    if (balance.amount > referenceBalance) {
-      sub.unsubscribe()
-      resolve(balance.amount)
-    }
-  })
+      if (balance.amount > referenceBalance) {
+        sub.unsubscribe()
+        resolve(balance.amount)
+      }
+    },
+  )
 
   return promise
 }

@@ -41,6 +41,7 @@ import {
 } from "@galacticcouncil/xc-sdk"
 import { addMilliseconds, fromUnixTime, hoursToMilliseconds } from "date-fns"
 import { isString } from "remeda"
+import { Hex, parseAbi } from "viem"
 
 import {
   getTransferAsset,
@@ -54,10 +55,36 @@ import {
 const CLAIM_MIN_AGE_MS = 60_000 // 1 minute
 const CLAIM_MAX_AGE_MS = hoursToMilliseconds(24) * 7 * 2 // 2 weeks
 
-function isWithinClaimWindow(emittedAtSeconds: number) {
+function isBeforeClaimExpiry(emittedAtSeconds: number) {
   const emittedAt = fromUnixTime(emittedAtSeconds)
 
   return Date.now() <= addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS).getTime()
+}
+
+function isWithinClaimWindow(emittedAtSeconds: number, nowMs = Date.now()) {
+  const emittedAt = fromUnixTime(emittedAtSeconds)
+
+  return (
+    nowMs >= addMilliseconds(emittedAt, CLAIM_MIN_AGE_MS).getTime() &&
+    nowMs <= addMilliseconds(emittedAt, CLAIM_MAX_AGE_MS).getTime()
+  )
+}
+
+function getClaimContext(journey: XcJourney) {
+  const vaaHeader = getJourneyVaaHeader(journey)
+  if (!vaaHeader) return undefined
+
+  const toChain = resolveChainFromUrn(journey.destination)
+  if (!toChain) return undefined
+
+  const asset = getTransferAsset(journey)
+  if (!asset) return undefined
+
+  // Without a registered NTT deployment on the destination there is nothing
+  // to redeem against, so don't offer a claim that can't be built.
+  if (!resolveNttDeployment(journey, toChain)) return undefined
+
+  return { vaaHeader, toChain, asset }
 }
 
 export function getJourneyClaimReadyAt(journey: XcJourney): number | undefined {
@@ -78,25 +105,38 @@ export function isJourneyClaimReady(
   return readyAt !== undefined && now.getTime() >= readyAt
 }
 
-export function isJourneyClaimable(journey: XcJourney): boolean {
-  const vaaHeader = getJourneyVaaHeader(journey)
-  if (!vaaHeader) return false
+export function isJourneyPendingClaim(journey: XcJourney): boolean {
+  const ctx = getClaimContext(journey)
+  if (!ctx) return false
 
-  const toChain = resolveChainFromUrn(journey.destination)
-  if (!toChain) return false
-
-  const asset = getTransferAsset(journey)
-  if (!asset) return false
-
-  // Without a registered NTT deployment on the destination there is nothing
-  // to redeem against, so don't offer a claim that can't be built.
-  if (!resolveNttDeployment(journey, toChain)) return false
-
-  return isWithinClaimWindow(vaaHeader.timestamp)
+  return isBeforeClaimExpiry(ctx.vaaHeader.timestamp)
 }
 
-export function getClaimableJourneys(journeys: XcJourney[]) {
-  return journeys.filter(isJourneyClaimable)
+export function isJourneyClaimable(
+  journey: XcJourney,
+  nowMs = Date.now(),
+): boolean {
+  const ctx = getClaimContext(journey)
+  if (!ctx) return false
+
+  return isWithinClaimWindow(ctx.vaaHeader.timestamp, nowMs)
+}
+
+export function isJourneyAwaitingMinAge(
+  journey: XcJourney,
+  nowMs = Date.now(),
+): boolean {
+  if (!isJourneyPendingClaim(journey)) return false
+
+  const readyAt = getJourneyClaimReadyAt(journey)
+  return readyAt !== undefined && nowMs < readyAt
+}
+
+export function getClaimableJourneys(
+  journeys: XcJourney[],
+  nowMs = Date.now(),
+) {
+  return journeys.filter((journey) => isJourneyClaimable(journey, nowMs))
 }
 
 function isWormholeStop(stop: XcJourneyStop): stop is XcJourneyWhStop {
@@ -158,9 +198,7 @@ function toRegistryEmitter(chain: AnyChain, emitterAddress: string): string {
   return `0x${emitterAddress}`
 }
 
-export function findChainByWormholeId(
-  wormholeId: number,
-): AnyChain | undefined {
+function findChainByWormholeId(wormholeId: number): AnyChain | undefined {
   return chainsMap
     .values()
     .find(
@@ -203,6 +241,30 @@ function findDestinationNtt(
 }
 
 /**
+ * Asset key of the deployment that signed the VAA on the source chain.
+ *
+ * `Ntt.findByEmitter` matches `emitter ?? transceiver.wormhole`, so a
+ * registered `emitter` shadows the transceiver. Solana deployments record one
+ * that has never signed a VAA — every solana transfer is emitted by the
+ * transceiver itself — so match on either address.
+ */
+function findSourceAssetKey(
+  chain: AnyChain,
+  emitter: string,
+): string | undefined {
+  const { ntt } = Wormhole.fromChain(chain)
+  const target = emitter.toLowerCase()
+
+  const entry = Object.entries(ntt).find(([, def]) =>
+    [def.emitter, def.transceiver.wormhole].some(
+      (address) => address?.toLowerCase() === target,
+    ),
+  )
+
+  return entry?.[0]
+}
+
+/**
  * NTT deployment needed to redeem a journey on its destination chain.
  *
  * Mirrors the SDK's WormholeTransfer: the VAA emitter identifies the source
@@ -219,16 +281,39 @@ export function resolveNttDeployment(
   const fromChain = findChainByWormholeId(header.emitterChain)
   if (!fromChain) return
 
-  const source = Ntt.findByEmitter(
+  const assetKey = findSourceAssetKey(
     fromChain,
     toRegistryEmitter(fromChain, header.emitterAddress),
   )
-  if (!source) return
+  if (!assetKey) return
 
-  return findDestinationNtt(
-    { chain: fromChain, assetKey: source.assetKey },
-    toChain,
-  )
+  return findDestinationNtt({ chain: fromChain, assetKey }, toChain)
+}
+
+const wormholeTransceiverAbi = parseAbi([
+  "function isVAAConsumed(bytes32 hash) view returns (bool)",
+])
+
+/**
+ * Whether the destination has already consumed this journey's VAA.
+ */
+export async function isJourneyRedeemed(journey: XcJourney): Promise<boolean> {
+  const header = getJourneyVaaHeader(journey)
+  if (!header) return false
+
+  const toChain = resolveChainFromUrn(journey.destination)
+  if (!toChain) return false
+  if (!isEvmChain(toChain) && !isEvmParachain(toChain)) return false
+
+  const ntt = resolveNttDeployment(journey, toChain)
+  if (!ntt) return false
+
+  return toChain.evmClient.getProvider().readContract({
+    abi: wormholeTransceiverAbi,
+    address: ntt.transceiver.wormhole as Hex,
+    functionName: "isVAAConsumed",
+    args: [`0x${header.id}`],
+  })
 }
 
 export function resolveChainFromUrn(

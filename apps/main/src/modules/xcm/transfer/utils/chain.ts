@@ -1,3 +1,4 @@
+import { h160 } from "@galacticcouncil/common"
 import {
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
@@ -29,6 +30,8 @@ import { filter, first, pipe, sortBy } from "remeda"
 
 import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+
+const { H160 } = h160
 
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
@@ -154,6 +157,16 @@ export const isAccountValidOnChain = (
 
   const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+}
+
+export const withPermissiveEvmResolver = (
+  chain: EvmParachain,
+): EvmParachain => {
+  // @ts-expect-error - mutating readonly property
+  chain.evmResolver = {
+    toH160: async (address: string) => H160.fromAny(address),
+  }
+  return chain
 }
 
 export const withCustomChainRpcUrls = (

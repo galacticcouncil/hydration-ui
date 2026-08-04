@@ -2,12 +2,17 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
 import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
+import {
+  type Abi,
+  encodeFunctionData,
+  formatUnits,
+  type Hex,
+  parseUnits,
+} from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { estimateGasLimit } from "@/api/borrow"
@@ -181,8 +186,8 @@ export function useDeposit() {
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
   return useMutation({
-    mutationFn: async (hollarAmount: number) => {
-      const hollarBig = parseUnits(hollarAmount.toString(), hollar.decimals)
+    mutationFn: async (hollarAmount: string) => {
+      const hollarBig = parseUnits(hollarAmount, hollar.decimals)
       const calls: BatchEvmCall[] = []
 
       if (
@@ -254,8 +259,8 @@ export function useRequestRedeem() {
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
   return useMutation({
-    mutationFn: (bilAmount: number) => {
-      const bilBig = parseUnits(bilAmount.toString(), bil.decimals)
+    mutationFn: (bilAmount: string) => {
+      const bilBig = parseUnits(bilAmount, bil.decimals)
 
       const calls: BatchEvmCall[] = []
       calls.push({
@@ -309,7 +314,7 @@ export function useSupplyRawBil() {
   const { evmAddress, submitTx } = useVaultEvmCall()
 
   return useMutation({
-    mutationFn: async (bilAmountHint: number) => {
+    mutationFn: async (bilAmountHint: string) => {
       const bilBig = await evm.readContract({
         address: VAULT_ADDRESS,
         abi: VAULT_ABI,
@@ -353,15 +358,11 @@ export function useRequestRedeemRaw() {
   const { evmAddress, submitTx } = useVaultEvmCall()
 
   return useMutation({
-    mutationFn: (bilAmount: number) => {
+    mutationFn: (bilAmount: string) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [
-          parseUnits(bilAmount.toString(), bil.decimals),
-          evmAddress,
-          evmAddress,
-        ],
+        args: [parseUnits(bilAmount, bil.decimals), evmAddress, evmAddress],
       })
 
       return submitTx(
@@ -453,7 +454,7 @@ export function useInstantRedeemFromQueue() {
       bilAmount,
     }: {
       requestId: number
-      bilAmount: number
+      bilAmount: string
     }) => {
       const [, bilAmountBig, bilSettled, , active] = await evm.readContract({
         address: VAULT_ADDRESS,
@@ -542,7 +543,7 @@ export function useClaim() {
 
   return useMutation({
     mutationFn: (shares: bigint) => {
-      const amount = Number(shares) / 10 ** EVM_DECIMALS
+      const amount = formatUnits(shares, bil.decimals)
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "redeem",

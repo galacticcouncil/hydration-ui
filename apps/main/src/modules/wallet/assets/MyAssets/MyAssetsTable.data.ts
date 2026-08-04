@@ -1,7 +1,7 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { bigShift } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { useMemo } from "react"
-import { uniqueBy } from "remeda"
 
 import { AssetType } from "@/api/assets"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
@@ -9,52 +9,36 @@ import {
   myAssetsMobileSorter,
   myAssetsSorter,
 } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
-import {
-  Balance,
-  useAccountBalancesWithPriceByAssetType,
-} from "@/states/account"
+import { useAssets } from "@/providers/assetsProvider"
+import { useAccountBalancesWithPriceByAssetType } from "@/states/account"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { getAssetOrigin } from "@/utils/externalAssets"
+
+const SMALL_BALANCE_USD_THRESHOLD = 0.01
+
+const isSmallBalance = (asset: MyAsset) =>
+  asset.id !== NATIVE_ASSET_ID &&
+  !!asset.totalDisplay &&
+  Big(asset.totalDisplay).lte(SMALL_BALANCE_USD_THRESHOLD)
 
 export const useMyAssetsTableData = (showAllAssets: boolean) => {
   const { isMobile } = useBreakpoints()
-  const { native, tokens, erc20 } = useAssets()
+  const { native } = useAssets()
 
   const { data: balancesWithPrice, isLoading } =
     useAccountBalancesWithPriceByAssetType([AssetType.TOKEN, AssetType.ERC20])
 
-  const tableAssets = useMemo(() => {
+  const { assets, hasSmallBalances } = useMemo(() => {
     if (isLoading) {
-      return []
+      return { assets: [], hasSmallBalances: false }
     }
-
-    let assetsToDisplay: Array<{
-      meta: TAsset
-      balance: Balance | undefined
-      price: string | undefined
-    }> = []
 
     const allAssetsWithPrice = [
       ...(balancesWithPrice?.tokenBalances ?? []),
       ...(balancesWithPrice?.erc20Balances ?? []),
     ]
 
-    if (showAllAssets) {
-      const validAssets = [...tokens, ...erc20].map((asset) => ({
-        meta: asset,
-        balance: undefined,
-        price: undefined,
-      }))
-
-      assetsToDisplay = uniqueBy(
-        [...allAssetsWithPrice, ...validAssets],
-        (asset) => asset.meta.id,
-      )
-    } else {
-      assetsToDisplay = allAssetsWithPrice
-    }
-
-    return assetsToDisplay
+    const assets = allAssetsWithPrice
       .map<MyAsset>(({ meta, balance, price }) => {
         const total = bigShift(balance?.total.toString() ?? "0", -meta.decimals)
         const transferable = bigShift(
@@ -79,20 +63,33 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           reserved: balance?.reserved,
         }
       })
+      .filter((asset) => Big(asset.total).gt(0))
       .sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)
+
+    return {
+      assets,
+      hasSmallBalances: assets.some(isSmallBalance),
+    }
   }, [
     isLoading,
     balancesWithPrice?.tokenBalances,
     balancesWithPrice?.erc20Balances,
-    showAllAssets,
     isMobile,
-    tokens,
-    erc20,
     native.id,
   ])
 
+  const data = useMemo(() => {
+    if (showAllAssets) {
+      return assets
+    }
+
+    return assets.filter((asset) => !isSmallBalance(asset))
+  }, [assets, showAllAssets])
+
   return {
-    data: tableAssets,
+    data,
+    hasSmallBalances,
+    isEmpty: assets.length === 0,
     isLoading,
   }
 }

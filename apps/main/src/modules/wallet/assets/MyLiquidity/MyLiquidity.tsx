@@ -1,11 +1,8 @@
-import { Box, SectionHeader } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
-import { MyLiquidityActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityActions"
+import { MyLiquidityEmptyState } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityEmptyState"
 import { MyLiquidityTable } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable"
 import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 
@@ -22,9 +19,6 @@ export const MyLiquidity: FC<Props> = ({
   paginationProps,
   sortingProps,
 }) => {
-  const { t } = useTranslation("wallet")
-  const { isMobile } = useBreakpoints()
-
   const { data: liquidityData, isLoading: liquidityLoading } =
     useMyLiquidityTableData()
 
@@ -33,19 +27,20 @@ export const MyLiquidity: FC<Props> = ({
     isLoading: isLoadingIsolatedPoolsLiquidity,
   } = useMyIsolatedPoolsLiquidity()
 
+  const data = [...liquidityData, ...isolatedPoolsLiquidity]
+  const isLoading = liquidityLoading || isLoadingIsolatedPoolsLiquidity
+
+  if (!isLoading && data.length === 0) {
+    return <MyLiquidityEmptyState />
+  }
+
   return (
-    <Box>
-      <SectionHeader
-        title={t("myLiquidity.header.title")}
-        actions={!isMobile && <MyLiquidityActions />}
-      />
-      <MyLiquidityTable
-        data={[...liquidityData, ...isolatedPoolsLiquidity]}
-        isLoading={liquidityLoading || isLoadingIsolatedPoolsLiquidity}
-        searchPhrase={searchPhrase}
-        paginationProps={paginationProps}
-        sortingProps={sortingProps}
-      />
-    </Box>
+    <MyLiquidityTable
+      data={data}
+      isLoading={isLoading}
+      searchPhrase={searchPhrase}
+      paginationProps={paginationProps}
+      sortingProps={sortingProps}
+    />
   )
 }
