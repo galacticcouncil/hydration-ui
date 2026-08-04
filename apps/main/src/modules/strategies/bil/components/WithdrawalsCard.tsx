@@ -13,6 +13,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, useEvmAddress } from "@galacticcouncil/web3-connect"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -49,7 +50,7 @@ export const WithdrawalsCard = () => {
       .map((e) => ({
         id: e.requestId,
         amountBil: e.bilRemaining,
-        estHollar: e.bilRemaining * exchangeRate,
+        estHollar: Big(e.bilRemaining).times(exchangeRate).toString(),
         timeRemainingDays: e.estTimeRemainingDays,
         claimableBil: e.bilSettled,
         claimableHollar: e.hollarOwed,

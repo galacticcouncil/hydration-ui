@@ -13,6 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
+import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -36,7 +37,7 @@ export const BilDeposit = () => {
   const { data: balances } = useUserBalances(evmAddress)
   const depositMutation = useDeposit()
 
-  const balance = balances?.hollar ?? 0
+  const balance = balances?.hollar ?? "0"
 
   // Deposits must clear the *lower* of the vault tvlCap and the pool
   // supplyCap — `remainingDepositHollar` is that binding ceiling, in HOLLAR.
@@ -46,10 +47,11 @@ export const BilDeposit = () => {
   const capacityKnown = vaultStats.tvlCap > 0
   const remaining = vaultStats.remainingDepositHollar
   const atCapacity = capacityKnown && remaining <= 0
-  const effectiveMax = capacityKnown ? Math.min(balance, remaining) : balance
+  const effectiveMax =
+    capacityKnown && Big(balance).gt(remaining) ? remaining.toString() : balance
 
   const form = useBilDepositForm({
-    maxBalance: balance.toString(),
+    maxBalance: balance,
     minDeposit: vaultStats.minDeposit,
     symbol: hollar.symbol,
     // Skip the capacity ceiling until stats load (Infinity = not enforced).
@@ -59,9 +61,16 @@ export const BilDeposit = () => {
   const { control, handleSubmit, watch, formState } = form
   const amount = watch("amount")
 
-  const inputNum = parseFloat(amount) || 0
   const outputBil =
-    vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
+    vaultStats.exchangeRate > 0
+      ? Big(amount || "0")
+          .div(vaultStats.exchangeRate)
+          .toString()
+      : "0"
+  const outputHollar =
+    vaultStats.exchangeRate > 0
+      ? Big(outputBil).times(vaultStats.exchangeRate).toString()
+      : "0"
 
   const canSubmit =
     formState.isValid &&
@@ -76,7 +85,7 @@ export const BilDeposit = () => {
       : t("common:deposit")
 
   const onSubmit = handleSubmit(({ amount }) => {
-    depositMutation.mutate(parseFloat(amount) || 0)
+    depositMutation.mutate(amount)
   })
 
   return (
@@ -96,10 +105,10 @@ export const BilDeposit = () => {
                   value={field.value}
                   onChange={field.onChange}
                   displayValue={t("common:currency", {
-                    value: inputNum,
+                    value: amount || "0",
                   })}
-                  maxBalance={balance.toString()}
-                  maxButtonBalance={effectiveMax.toString()}
+                  maxBalance={balance}
+                  maxButtonBalance={effectiveMax}
                   amountError={fieldState.error?.message}
                 />
               )}
@@ -114,9 +123,9 @@ export const BilDeposit = () => {
               modalDisabled
               disabledInput
               ignoreBalance
-              value={outputBil.toString()}
+              value={outputBil}
               displayValue={t("common:currency", {
-                value: outputBil * vaultStats.exchangeRate,
+                value: outputHollar,
               })}
             />
           </Box>
