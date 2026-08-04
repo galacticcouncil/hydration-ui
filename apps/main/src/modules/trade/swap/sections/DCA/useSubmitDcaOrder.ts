@@ -2,6 +2,7 @@ import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFra
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { intentsByAccountQuery } from "@/api/intents"
@@ -28,7 +29,8 @@ export const useSubmitDcaOrder = () => {
 
   return useMutation({
     mutationFn: async ([formValues, order]: [DcaFormValues, TradeDcaOrder]) => {
-      const { sellAsset, buyAsset, sellAmount, orders } = formValues
+      const { sellAsset, buyAsset, sellAmount, orders, limitEnabled, limitPrice } =
+        formValues
 
       if (!account) throw new Error("Account not connected")
       if (!sellAsset || !buyAsset) throw new Error("Invalid DCA assets")
@@ -40,18 +42,46 @@ export const useSubmitDcaOrder = () => {
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
       const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
 
-      const tx = featureFlags.isIceEnabled
-        ? await sdk.tx
-            .intentOrder(order)
-            .withBeneficiary(account.address)
-            .withSlippage(slippage)
-            .build()
-        : await sdk.tx
-            .order(order)
-            .withBeneficiary(account.address)
-            .withSlippage(slippage)
-            .withMaxRetries(maxRetries)
-            .build()
+      // Price condition ("limit TWAP"): each slice must deliver at least the
+      // amount implied by the user's price. limitPrice is SELL-per-BUY, so the
+      // per-slice floor = tradeAmountIn(SELL) / limitPrice, scaled to the BUY
+      // asset. Exact floor, no slippage — mirrors the Limit screen.
+      const minAmountOut =
+        limitEnabled && limitPrice && Big(limitPrice).gt(0)
+          ? BigInt(
+              Big(order.tradeAmountIn.toString())
+                .div(Big(10).pow(sellDecimals))
+                .div(limitPrice)
+                .times(Big(10).pow(buyAsset.decimals))
+                .toFixed(0),
+            )
+          : undefined
+
+      // The intent Dca builder emits `amount_out` from the order's `assetOutEd`
+      // field. For a limit-TWAP we override it with the user's per-slice price
+      // floor (a market TWAP keeps the ED). Passing it through the order works
+      // with the published SDK as-is; the SDK also exposes an explicit
+      // `withMinAmountOut(...)` (same effect) to switch to once released.
+      const iceOrder =
+        minAmountOut !== undefined
+          ? { ...order, assetOutEd: minAmountOut }
+          : order
+
+      let tx
+      if (featureFlags.isIceEnabled) {
+        tx = await sdk.tx
+          .intentOrder(iceOrder)
+          .withBeneficiary(account.address)
+          .withSlippage(slippage)
+          .build()
+      } else {
+        tx = await sdk.tx
+          .order(order)
+          .withBeneficiary(account.address)
+          .withSlippage(slippage)
+          .withMaxRetries(maxRetries)
+          .build()
+      }
 
       const params = {
         amountIn: t("currency", {
