@@ -43,8 +43,8 @@ import {
 
 interface Props {
   withdrawSource: "supplied" | "raw"
-  onRequestRedeem: (amount: number) => void
-  onInstantRedeem: (amount: number) => void
+  onRequestRedeem: (amount: string) => void
+  onInstantRedeem: (amount: string) => void
   isPending: boolean
 }
 
@@ -65,8 +65,8 @@ export const WithdrawModalForm = ({
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
   const bilBalance = isSuppliedWithdraw
-    ? (balances?.bilSupplied ?? 0)
-    : (balances?.bilRaw ?? 0)
+    ? (balances?.bilSupplied ?? "0")
+    : (balances?.bilRaw ?? "0")
   const hfContextEnabled =
     isSuppliedWithdraw && !!poolPosition && !!reserveConfig
 
@@ -74,14 +74,14 @@ export const WithdrawModalForm = ({
     ? {
         poolPosition,
         reserveConfig,
-        suppliedBalance: bilBalance.toString(),
+        suppliedBalance: bilBalance,
         exchangeRate: vaultStats.exchangeRate,
       }
     : null
 
   const maxWithdrawable = hfContext
-    ? Big.min(Big(bilBalance.toString()), getBilMaxWithdrawable(hfContext))
-    : Big(bilBalance.toString())
+    ? Big.min(bilBalance, getBilMaxWithdrawable(hfContext))
+    : Big(bilBalance)
 
   const form = useWithdrawForm({
     asset: bil,
@@ -94,8 +94,9 @@ export const WithdrawModalForm = ({
 
   const isMaxSelected = !!amount && Big(amount).gte(maxWithdrawable.toString())
   const withdrawAmount = isMaxSelected ? maxWithdrawable.toString() : amount
-  const inputNum = parseFloat(withdrawAmount) || 0
-  const usdValue = inputNum * vaultStats.exchangeRate
+  const usdValue = Big(withdrawAmount || "0")
+    .times(vaultStats.exchangeRate)
+    .toString()
 
   const healthFactor =
     !!reserveConfig?.borrowingEnabled && hfContext
@@ -110,8 +111,13 @@ export const WithdrawModalForm = ({
     vaultStats.apr,
     vaultStats.worstCaseWaitDays,
   )
-  const queueHollarOut = inputNum * projectedQueueRate
-  const { quote: instantQuote } = useInstantQuote(inputNum, queueHollarOut)
+  const queueHollarOut = Big(withdrawAmount || "0")
+    .times(projectedQueueRate)
+    .toString()
+  const { quote: instantQuote } = useInstantQuote(
+    withdrawAmount,
+    queueHollarOut,
+  )
 
   const canSubmit = formState.isValid && !isPending
 
@@ -119,12 +125,11 @@ export const WithdrawModalForm = ({
     const isMaxSelected =
       !!amount && Big(amount).gte(maxWithdrawable.toString())
     const withdrawAmount = isMaxSelected ? maxWithdrawable.toString() : amount
-    const inputNum = parseFloat(withdrawAmount) || 0
 
     if (method === "queue") {
-      onRequestRedeem(inputNum)
+      onRequestRedeem(withdrawAmount)
     } else {
-      onInstantRedeem(inputNum)
+      onInstantRedeem(withdrawAmount)
     }
   })
 
@@ -146,7 +151,7 @@ export const WithdrawModalForm = ({
                 onChange={field.onChange}
                 balanceLabel={t("common:withdrawableBalance")}
                 displayValue={
-                  inputNum > 0
+                  Big(withdrawAmount || "0").gt(0)
                     ? t("common:currency", { value: usdValue })
                     : t("common:currency", { value: 0 })
                 }
@@ -170,7 +175,7 @@ export const WithdrawModalForm = ({
                 <WithdrawMethodPicker
                   selected={field.value}
                   onSelect={field.onChange}
-                  amountBil={inputNum}
+                  amountBil={withdrawAmount}
                   exchangeRate={vaultStats.exchangeRate}
                   aprPercent={vaultStats.apr}
                   worstCaseWaitDays={vaultStats.worstCaseWaitDays}

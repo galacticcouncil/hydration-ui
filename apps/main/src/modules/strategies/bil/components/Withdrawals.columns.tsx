@@ -2,6 +2,7 @@ import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
+import Big from "big.js"
 import { hoursToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,11 +13,11 @@ import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyCont
 
 export interface WithdrawalRow {
   id: number
-  amountBil: number
-  estHollar: number
+  amountBil: string
+  estHollar: string
   timeRemainingDays?: number
-  claimableBil?: number
-  claimableHollar?: number
+  claimableBil?: string
+  claimableHollar?: string
 }
 
 const columnHelper = createColumnHelper<WithdrawalRow>()
@@ -64,7 +65,7 @@ export const useWithdrawalColumns = () => {
       header: t("bil.withdrawals.col.timeRemaining"),
       cell: ({ row }) => {
         const r = row.original
-        if ((r.claimableBil ?? 0) > 0) {
+        if (Big(r.claimableBil ?? "0").gt(0)) {
           return (
             <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
               {t("bil.withdrawals.state.claimable")}
