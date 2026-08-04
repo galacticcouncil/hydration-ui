@@ -32,7 +32,9 @@ export const useStakingSupply = () => {
   const hdxSupply = "5918000000000000000000"
   const { data: treasuryData } = useQuery(HDXStakingBalanceQuery(rpc))
 
-  const circulatingSupply = Big(hdxSupply).minus(treasuryData?.balance || "0")
+  const circulatingSupply = Big(hdxSupply).minus(
+    treasuryData?.transferable.toString() || "0",
+  )
 
   const supplyStaked = toDecimal(
     stakeData?.total_stake.toString() ?? "0",

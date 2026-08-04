@@ -1,16 +1,46 @@
 import { ThemeUICSSProperties } from "@theme-ui/css"
 import { XAxisProps, YAxisProps } from "recharts"
+import { CurveType } from "recharts/types/shape/Curve"
 import { BaseAxisProps } from "recharts/types/util/types"
 
 export type TChartData = Record<string, unknown>
 
 type ExtractDataKeyOfType<TData extends TChartData, TType> = {
-  [K in keyof TData]: TData[K] extends TType ? K : never
+  [K in keyof TData]: TData[K] extends TType | null | undefined ? K : never
 }[keyof TData] &
   string
 
 export type ChartSeriesType = "time" | "number" | "category"
 export type ChartTooltipType = "none" | "legend" | "timeTop" | "timeBottom"
+export type ChartSeriesRenderType = "area" | "bar" | "line"
+
+export type ChartSeriesConfig<TData extends TChartData> = {
+  key: ExtractDataKeyOfType<TData, number>
+  label?: string
+  color?:
+    | string
+    | [string, string]
+    | [string, string, stopOpacity?: number, opacity?: number]
+  /** Series render type for ComposedChart. Ignored by AreaChart / BarChart. */
+  type?: ChartSeriesRenderType
+  /** Secondary / dual axis id for ComposedChart. */
+  yAxisId?: string
+  curveType?: CurveType
+  stackId?: string
+  barSize?: number
+  fillOpacity?: number
+  strokeOpacity?: number
+  strokeWidth?: number
+  strokeDasharray?: string
+  connectNulls?: boolean
+  radius?: number | [number, number, number, number]
+  withoutDot?: boolean
+  withoutActiveDot?: boolean
+  /** Hide area/line fill (stroke only). */
+  hideFill?: boolean
+  /** Hide area/line stroke (fill only). */
+  hideStroke?: boolean
+}
 
 export type ChartConfig<TData extends TChartData> = {
   xAxisKey: keyof TData & string
@@ -24,14 +54,7 @@ export type ChartConfig<TData extends TChartData> = {
   tooltipType?: ChartTooltipType
 
   seriesLabel?: string
-  series: {
-    key: ExtractDataKeyOfType<TData, number>
-    label?: string
-    color?:
-      | string
-      | [string, string]
-      | [string, string, stopOpacity?: number, opacity?: number]
-  }[]
+  series: ChartSeriesConfig<TData>[]
 }
 
 export type ChartSizeProps = {

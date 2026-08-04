@@ -54,7 +54,7 @@ export type MoneyMarketEventsQuery = { __typename?: 'Query', moneyMarketEvents?:
 export type PlatformTotalQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type PlatformTotalQuery = { __typename?: 'Query', platformTotalTvl: { __typename?: 'PlatformTotalTvlResponse', nodes: Array<{ __typename?: 'PlatformTotalTvl', omnipoolTvlNorm: string, stablepoolsTvlNorm: string } | null> }, platformTotalVolumesByPeriod: { __typename?: 'PlatformTotalVolumesByPeriodResponse', nodes: Array<{ __typename?: 'PlatformTotalVolumesByPeriod', omnipoolVolNorm: string, stableswapVolNorm: string } | null> } };
+export type PlatformTotalQuery = { __typename?: 'Query', platformTotalTvl: { __typename?: 'PlatformTotalTvlResponse', nodes: Array<{ __typename?: 'PlatformTotalTvl', mmSupplyTvlNorm: string, omnipoolTvlNorm: string, stablepoolsTvlNorm: string, totalTvlDecoratedNorm: string, xykpoolsTvlNorm: string } | null> }, platformTotalVolumesByPeriod: { __typename?: 'PlatformTotalVolumesByPeriodResponse', nodes: Array<{ __typename?: 'PlatformTotalVolumesByPeriod', omnipoolVolNorm: string, stableswapVolNorm: string, totalVolNorm: string, xykpoolVolNorm: string } | null> } };
 
 export type OmnipoolYieldMetricsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -154,3 +154,10 @@ export type StablepoolVolumeQueryVariables = Types.Exact<{
 
 
 export type StablepoolVolumeQuery = { __typename?: 'Query', stableswapVolumeHistoricalDataByPeriod: { __typename?: 'StableswapVolumeHistoricalDataByPeriodResponse', nodes: Array<{ __typename?: 'StableswapVolumeAggregated', poolId: string, poolVolNorm: string, assetVolumes: Array<{ __typename?: 'StablepoolAssetVolumeAggregated', assetRegistryId?: string | null, assetId: string, assetVol: string, assetVolNorm: string }> } | null> } };
+
+export type PlatformTotalVolumesQueryVariables = Types.Exact<{
+  period?: Types.InputMaybe<Types.AggregationTimeRange>;
+}>;
+
+
+export type PlatformTotalVolumesQuery = { __typename?: 'Query', platformTotalVolumesByPeriod: { __typename?: 'PlatformTotalVolumesByPeriodResponse', nodes: Array<{ __typename?: 'PlatformTotalVolumesByPeriod', omnipoolVolNorm: string, stableswapVolNorm: string, totalVolNorm: string, xykpoolVolNorm: string } | null> } };

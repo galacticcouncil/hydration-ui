@@ -1,12 +1,10 @@
-import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
-import { ButtonIcon, ExternalLink, Icon } from "@galacticcouncil/ui/components"
 import { FC, lazy } from "react"
 
-import { HYDRATION_DOCS_LINK } from "@/config/links"
 import { DepositButton } from "@/modules/layout/components/DepositButton/DepositButton"
 import { SHeaderToolbar } from "@/modules/layout/components/HeaderToolbar.styled"
 import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 import { NotificationCenter } from "@/modules/layout/components/NotificationCenter/NotificationCenter"
+import { ThemeModeToggle } from "@/modules/layout/components/Settings/ThemeModeToggle"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 
 const Settings = lazy(async () => ({
@@ -20,14 +18,8 @@ export const HeaderToolbar: FC = () => {
 
   return (
     <SHeaderToolbar>
-      {hasTopNavbar && (
-        <ButtonIcon asChild>
-          <ExternalLink href={HYDRATION_DOCS_LINK}>
-            <Icon component={QuestionCircleRegular} size="l" />
-          </ExternalLink>
-        </ButtonIcon>
-      )}
       <NotificationCenter />
+      {hasTopNavbar && <ThemeModeToggle />}
       {hasTopNavbar && <Settings />}
       {hasTopNavbar && <DepositButton />}
       <HeaderWeb3ConnectButton />

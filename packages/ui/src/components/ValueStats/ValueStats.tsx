@@ -1,6 +1,8 @@
 import { ResponsiveStyleValue } from "@theme-ui/css"
 import { FC, ReactNode } from "react"
 
+import { Flex } from "@/components/Flex"
+import { Tooltip } from "@/components/Tooltip"
 import {
   SValueStats,
   SValueStatsBottomValue,
@@ -29,9 +31,11 @@ export type ValueStatsProps = {
   readonly bottomLabel?: string
   readonly customBottomLabel?: ReactNode
   readonly floatingBottomLabel?: boolean
+  readonly tooltip?: ReactNode
   readonly isLoading?: boolean
   readonly className?: string
   readonly containerClassName?: string
+  readonly skeletonWidth?: number
 }
 
 export const ValueStats: FC<ValueStatsProps> = ({
@@ -45,9 +49,11 @@ export const ValueStats: FC<ValueStatsProps> = ({
   bottomLabel,
   customBottomLabel,
   floatingBottomLabel,
+  tooltip,
   isLoading,
   className,
   containerClassName,
+  skeletonWidth = 120,
 }) => {
   const shouldWrap = useResponsiveValue(wrap, false)
 
@@ -55,7 +61,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
     if (isLoading && (bottomLabel || customBottomLabel)) {
       return (
         <SValueStatsBottomValue isFloating={floatingBottomLabel}>
-          <Skeleton width={120} height="100%" />
+          <Skeleton width={skeletonWidth} height="100%" />
         </SValueStatsBottomValue>
       )
     }
@@ -75,13 +81,24 @@ export const ValueStats: FC<ValueStatsProps> = ({
     return null
   }
 
+  const labelContent =
+    customLabel ??
+    (tooltip ? (
+      <Flex align="center" gap="s">
+        <SValueStatsLabel>{label}</SValueStatsLabel>
+        <Tooltip text={tooltip} asChild />
+      </Flex>
+    ) : (
+      <SValueStatsLabel>{label}</SValueStatsLabel>
+    ))
+
   return (
     <SValueStats shouldWrap={shouldWrap} size={size} className={className}>
-      {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
+      {labelContent}
       <SValueStatsValueContainer size={size} className={containerClassName}>
         {isLoading ? (
           <SValueStatsValue font={font} size={size}>
-            <Skeleton width={120} height="100%" />
+            <Skeleton width={skeletonWidth} height="100%" />
           </SValueStatsValue>
         ) : (
           (customValue ?? (

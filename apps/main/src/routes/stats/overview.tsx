@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-function PlatformOverview() {
-  return null
-}
+import { Overview } from "@/modules/stats/overview/Overview"
 
 export const Route = createFileRoute("/stats/overview")({
-  component: PlatformOverview,
+  component: Overview,
 })

@@ -40,6 +40,13 @@ export const BottomLabel: Story = {
   },
 }
 
+export const WithTooltip: Story = {
+  render: Template,
+  args: {
+    tooltip: "Additional context about this metric.",
+  },
+}
+
 export const SecondaryFont: Story = {
   render: Template,
   args: {

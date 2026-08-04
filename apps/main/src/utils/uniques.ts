@@ -16,24 +16,26 @@ export const getOmnipoolPositions = async (
   entries: AccountUniquesValues,
 ) => {
   const positions = await papi.query.Omnipool.Positions.getValues(
-    entries.map(({ keyArgs }) => [keyArgs[2]]),
+    getUniquesEntriesIds(entries),
     { at: "best" },
   )
-  return entries.reduce<OmnipoolPosition[]>((acc, { keyArgs }, i) => {
+  const result: OmnipoolPosition[] = []
+
+  for (const [i, entry] of entries.entries()) {
     const position = positions[i]
 
     if (position) {
-      acc.push({
-        positionId: keyArgs[2].toString(),
-        assetId: position?.asset_id.toString(),
-        shares: position?.shares,
-        price: position?.price,
-        amount: position?.amount,
+      result.push({
+        positionId: entry.keyArgs[2].toString(),
+        assetId: position.asset_id.toString(),
+        shares: position.shares,
+        price: position.price,
+        amount: position.amount,
       })
     }
+  }
 
-    return acc
-  }, [])
+  return result
 }
 
 export const getOmnipoolMiningPositions = async (
@@ -48,18 +50,20 @@ export const getOmnipoolMiningPositions = async (
     papi.query.OmnipoolWarehouseLM.Deposit.getValues(ids, { at: "best" }),
   ])
 
-  const validOmnipoolDeposits = omnipoolDepositPositionIds.reduce<
-    OmnipoolDeposit[]
-  >((acc, positionId, i) => {
+  const validOmnipoolDeposits: OmnipoolDeposit[] = []
+
+  for (const [i, positionId] of omnipoolDepositPositionIds.entries()) {
     const miningNft = entries[i]
     const depositData = omnipoolDeposits[i]
 
     if (positionId && miningNft && depositData) {
-      acc.push({ miningId: miningNft.keyArgs[2], positionId, ...depositData })
+      validOmnipoolDeposits.push({
+        miningId: miningNft.keyArgs[2],
+        positionId,
+        ...depositData,
+      })
     }
-
-    return acc
-  }, [])
+  }
 
   const omnipoolDepositPositions =
     await papi.query.Omnipool.Positions.getValues(
@@ -67,26 +71,25 @@ export const getOmnipoolMiningPositions = async (
       { at: "best" },
     )
 
-  return omnipoolDepositPositions.reduce<OmnipoolDepositFull[]>(
-    (acc, depositPosition, i) => {
-      const depositData = validOmnipoolDeposits[i]
+  const result: OmnipoolDepositFull[] = []
 
-      if (depositData && depositPosition) {
-        acc.push({
-          miningId: depositData.miningId.toString(),
-          positionId: depositData.positionId.toString(),
-          yield_farm_entries: depositData.yield_farm_entries,
-          shares: depositData.shares,
-          assetId: depositPosition.asset_id.toString(),
-          amount: depositPosition.amount,
-          price: depositPosition.price,
-        })
-      }
+  for (const [i, depositPosition] of omnipoolDepositPositions.entries()) {
+    const depositData = validOmnipoolDeposits[i]
 
-      return acc
-    },
-    [],
-  )
+    if (depositData && depositPosition) {
+      result.push({
+        miningId: depositData.miningId.toString(),
+        positionId: depositData.positionId.toString(),
+        yield_farm_entries: depositData.yield_farm_entries,
+        shares: depositData.shares,
+        assetId: depositPosition.asset_id.toString(),
+        amount: depositPosition.amount,
+        price: depositPosition.price,
+      })
+    }
+  }
+
+  return result
 }
 
 export const getXykMiningPositions = async (
@@ -98,13 +101,15 @@ export const getXykMiningPositions = async (
     at: "best",
   })
 
-  return entries.reduce<XykDeposit[]>((acc, { keyArgs }, i) => {
+  const miningPositions: XykDeposit[] = []
+
+  for (const [i, entry] of entries.entries()) {
     const depositData = xykDeposits[i]
 
     if (depositData) {
-      acc.push({ ...depositData, id: keyArgs[2].toString() })
+      miningPositions.push({ ...depositData, id: entry.keyArgs[2].toString() })
     }
+  }
 
-    return acc
-  }, [])
+  return miningPositions
 }

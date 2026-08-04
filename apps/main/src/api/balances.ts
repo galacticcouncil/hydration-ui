@@ -1,10 +1,11 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
 
+import { TAssetData } from "@/api/assets"
 import { ENV } from "@/config/env"
+import { isErc20 } from "@/providers/assetsProvider"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
@@ -109,82 +110,100 @@ export const useAccountTokenReserves = (tokenId: string, enabled?: boolean) => {
   })
 }
 
-export type BalanceData = {
+type BalanceData = {
   readonly accountId: string
   readonly assetId: string
-  readonly balance: string
-  readonly total: string
-  readonly freeBalance: string
-  readonly reservedBalance: string
-}
-
-export const parseNativeBalanceData = (
-  { data }: Awaited<ReturnType<Papi["query"]["System"]["Account"]["getValue"]>>,
-  assetId: string,
-  address: string,
-) => {
-  const freeBalance = new Big(data.free.toString())
-  const frozenBalance = new Big(data.frozen.toString())
-  const reservedBalance = new Big(data.reserved.toString())
-  const balance = freeBalance.minus(frozenBalance)
-  const total = freeBalance.plus(reservedBalance)
-
-  return {
-    accountId: address,
-    assetId,
-    balance: balance.toString(),
-    total: total.toString(),
-    freeBalance: freeBalance.toString(),
-    reservedBalance: reservedBalance.toString(),
-  }
+  readonly total: bigint
+  readonly free: bigint
+  readonly reserved: bigint
+  readonly transferable: bigint
 }
 
 export const parseTokenBalanceData = (
-  data: Awaited<ReturnType<Papi["query"]["Tokens"]["Accounts"]["getValue"]>>,
+  {
+    free,
+    frozen,
+    reserved,
+  }: Awaited<ReturnType<Papi["query"]["Tokens"]["Accounts"]["getValue"]>>,
   assetId: string,
   address: string,
 ) => {
-  const freeBalance = new Big(data.free.toString())
-  const frozenBalance = new Big(data.frozen.toString())
-  const reservedBalance = new Big(data.reserved.toString())
-  const balance = freeBalance.minus(frozenBalance)
-  const total = freeBalance.plus(reservedBalance)
+  const freezeExcess = frozen - reserved
+  const netFreezeConstraint = freezeExcess > 0n ? freezeExcess : 0n
+
+  const transferable =
+    free > netFreezeConstraint ? free - netFreezeConstraint : 0n
+  const total = free + reserved
 
   return {
     accountId: address,
     assetId,
-    balance: balance.toString(),
-    total: total.toString(),
-    freeBalance: freeBalance.toString(),
-    reservedBalance: reservedBalance.toString(),
+    total,
+    free,
+    reserved,
+    transferable,
   }
+}
+
+export const allTokenBalancesQuery = (
+  { papi, isApiLoaded }: TProviderContext,
+  address: string,
+) => {
+  return queryOptions({
+    queryKey: ["allTokenBalances", address],
+    queryFn: async (): Promise<BalanceData[]> => {
+      const [nativeBalance, allEntries] = await Promise.all([
+        papi.query.System.Account.getValue(address, {
+          at: "best",
+        }),
+        papi.query.Tokens.Accounts.getEntries(address, {
+          at: "best",
+        }),
+      ])
+
+      const parsedNativeBalance = parseTokenBalanceData(
+        nativeBalance.data,
+        NATIVE_ASSET_ID,
+        address,
+      )
+      const parsedTokenBalances = allEntries.map(({ keyArgs, value }) => {
+        const tokenId = keyArgs[1].toString()
+        return parseTokenBalanceData(value, tokenId, address)
+      })
+
+      return parsedNativeBalance.total > 0n
+        ? [parsedNativeBalance, ...parsedTokenBalances]
+        : parsedTokenBalances
+    },
+    enabled: isApiLoaded && !!address,
+  })
 }
 
 export const tokenBalanceQuery = (
   { papi, isApiLoaded }: TProviderContext,
   tokenId: string,
-  address: string | undefined | null,
+  address: string,
 ) => {
   return queryOptions({
-    queryKey: ["tokenBalance", tokenId, address],
+    queryKey: ["tokenBalance", address, tokenId],
     queryFn: async (): Promise<BalanceData> => {
       if (tokenId === NATIVE_ASSET_ID) {
-        const res = await papi.query.System.Account.getValue(address ?? "", {
+        const res = await papi.query.System.Account.getValue(address, {
           at: "best",
         })
 
-        return parseNativeBalanceData(res, tokenId, address ?? "")
+        return parseTokenBalanceData(res.data, tokenId, address)
       }
 
       const res = await papi.query.Tokens.Accounts.getValue(
-        address ?? "",
+        address,
         Number(tokenId),
         {
           at: "best",
         },
       )
 
-      return parseTokenBalanceData(res, tokenId, address ?? "")
+      return parseTokenBalanceData(res, tokenId, address)
     },
     enabled: isApiLoaded && !!address && !!tokenId,
   })
@@ -210,5 +229,30 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
     },
     enabled: isApiLoaded,
     staleTime: millisecondsInMinute,
+  })
+}
+
+export const tokenBalanceSDKQuery = (
+  { sdk, isApiLoaded }: TProviderContext,
+  address: string,
+  asset: TAssetData,
+) => {
+  return queryOptions({
+    queryKey: ["tokenBalanceSDK", address, asset.id],
+    queryFn: async () => {
+      if (asset.id === NATIVE_ASSET_ID) {
+        return await sdk.client.balance.getSystemBalance(address)
+      }
+
+      if (isErc20(asset)) {
+        return await sdk.client.balance.getErc20Balance(
+          address,
+          Number(asset.id),
+        )
+      }
+
+      return await sdk.client.balance.getTokenBalance(address, Number(asset.id))
+    },
+    enabled: isApiLoaded && !!address && !!asset.id,
   })
 }

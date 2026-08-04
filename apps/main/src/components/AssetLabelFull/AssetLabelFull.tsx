@@ -12,12 +12,14 @@ import { StablepoolBadge } from "@/modules/liquidity/components/StablepoolBadge"
 
 export const AssetLabelFull = ({
   asset,
+  logoId,
   size,
   withName = true,
   loading = false,
   variant = "horizontal",
 }: {
   asset?: TAssetData
+  logoId?: string | string[]
   size?: AssetLabelProps["size"]
   withName?: boolean
   loading?: boolean
@@ -44,7 +46,10 @@ export const AssetLabelFull = ({
       {loading ? (
         <Skeleton circle width={24} height={24} />
       ) : (
-        <AssetLogo id={asset.id} size={size === "primary" ? "large" : size} />
+        <AssetLogo
+          id={logoId ?? asset.id}
+          size={size === "primary" ? "large" : size}
+        />
       )}
       <AssetLabel
         symbol={asset.symbol}

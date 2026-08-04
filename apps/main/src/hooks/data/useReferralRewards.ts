@@ -29,7 +29,7 @@ export const useReferralRewards = () => {
 
   const { referrerShares, traderShares, totalShares } = referralSharesData
   const accountShares = referrerShares + traderShares
-  const freeBalance = potBalanceData?.freeBalance ?? "1"
+  const freeBalance = potBalanceData?.free.toString() ?? "1"
 
   const totalRewards = Big(accountShares.toString())
     .div(totalShares.toString())

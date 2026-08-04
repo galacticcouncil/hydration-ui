@@ -7,14 +7,7 @@ import {
 import { FC, ReactNode, useState } from "react"
 
 import { CircleInfo } from "@/assets/icons"
-import {
-  BoxProps,
-  ButtonIcon,
-  Drawer,
-  DrawerBody,
-  Icon,
-  Text,
-} from "@/components"
+import { BoxProps, Drawer, DrawerBody, Flex, Icon, Text } from "@/components"
 import { useBreakpoints } from "@/theme"
 import { getToken } from "@/utils"
 
@@ -30,6 +23,7 @@ export type InfoTooltipProps = {
   asChild?: boolean
   preventDefault?: boolean
   iconColor?: BoxProps["color"]
+  sxContent?: BoxProps["sx"]
 }
 
 export const Tooltip = ({
@@ -42,6 +36,7 @@ export const Tooltip = ({
   asChild = false,
   preventDefault,
   iconColor,
+  sxContent,
 }: InfoTooltipProps) => {
   const [open, setOpen] = useState(false)
   const { isMobile } = useBreakpoints()
@@ -53,7 +48,13 @@ export const Tooltip = ({
   if (isMobile) {
     return (
       <>
-        <ButtonIcon
+        <Flex
+          align="center"
+          justify="start"
+          position="relative"
+          color={iconColor}
+          as="button"
+          width="auto"
           asChild={asChild}
           onClick={(e) => {
             if (preventDefault) {
@@ -67,17 +68,9 @@ export const Tooltip = ({
             e.preventDefault()
             e.stopPropagation()
           }}
-          sx={{
-            p: 0,
-            height: "auto",
-            width: "auto",
-            justifyContent: "start",
-            color: iconColor,
-            "&:hover": { background: "transparent" },
-          }}
         >
           {children || <TooltipIcon color={iconColor} />}
-        </ButtonIcon>
+        </Flex>
 
         <Drawer
           open={open}
@@ -120,6 +113,7 @@ export const Tooltip = ({
           sideOffset={sideOffset}
           alignOffset={alignOffset}
           collisionPadding={12}
+          sx={sxContent}
         >
           {typeof text === "string" ? (
             <Text fw={500} fs="p5">

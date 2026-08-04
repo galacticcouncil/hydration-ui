@@ -11,6 +11,7 @@ import {
 import { ChartContainer } from "./ChartContainer"
 import { AreaChart } from "./charts/AreaChart"
 import { BarChart } from "./charts/BarChart"
+import { ComposedChart } from "./charts/ComposedChart"
 
 type Story = StoryObj<typeof ChartContainer>
 
@@ -297,5 +298,86 @@ export const BarHiddenAxes: Story = {
   args: {
     height: 400,
     config: SINGLE_SERIES_CONFIG,
+  },
+}
+
+const COMPOSED_SERIES_CONFIG = {
+  xAxisKey: "month",
+  series: [
+    {
+      key: "desktop",
+      label: "Desktop",
+      type: "area",
+      color: ["#6fc272", "#6fc272", 0.4, 0],
+      withoutDot: true,
+      connectNulls: true,
+    },
+    {
+      key: "mobile",
+      label: "Mobile",
+      type: "bar",
+      color: "#98C8F8",
+      fillOpacity: 0.9,
+      barSize: 8,
+      radius: [3, 3, 0, 0],
+    },
+  ],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any satisfies ChartConfig<(typeof MOCK_CATEGORY_DATA)[number]>
+
+export const Composed: Story = {
+  render: (args) => (
+    <ComposedChart
+      {...args}
+      data={MOCK_CATEGORY_DATA}
+      curveType="monotone"
+      barCategoryGap={4}
+      withoutReferenceLine
+    />
+  ),
+  args: {
+    height: 400,
+    config: COMPOSED_SERIES_CONFIG,
+  },
+}
+
+export const ComposedDualAxis: Story = {
+  render: (args) => (
+    <ComposedChart
+      {...args}
+      data={MOCK_CATEGORY_DATA}
+      curveType="monotone"
+      withoutReferenceLine
+      yAxes={[
+        { yAxisId: "left", width: 48 },
+        { yAxisId: "right", orientation: "right", width: 48 },
+      ]}
+      config={{
+        xAxisKey: "month",
+        series: [
+          {
+            key: "desktop",
+            label: "Desktop",
+            type: "area",
+            yAxisId: "left",
+            color: ["#6fc272", "#6fc272", 0.4, 0],
+            withoutDot: true,
+          },
+          {
+            key: "mobile",
+            label: "Mobile",
+            type: "bar",
+            yAxisId: "right",
+            color: "#98C8F8",
+            fillOpacity: 0.9,
+            barSize: 8,
+            radius: [3, 3, 0, 0],
+          },
+        ],
+      }}
+    />
+  ),
+  args: {
+    height: 400,
   },
 }

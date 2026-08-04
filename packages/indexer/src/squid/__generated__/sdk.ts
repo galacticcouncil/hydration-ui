@@ -246,14 +246,19 @@ export const PlatformTotalDocument = `
     query PlatformTotal {
   platformTotalTvl {
     nodes {
+      mmSupplyTvlNorm
       omnipoolTvlNorm
       stablepoolsTvlNorm
+      totalTvlDecoratedNorm
+      xykpoolsTvlNorm
     }
   }
   platformTotalVolumesByPeriod(filter: {period: _24H_}) {
     nodes {
       omnipoolVolNorm
       stableswapVolNorm
+      totalVolNorm
+      xykpoolVolNorm
     }
   }
 }
@@ -475,6 +480,18 @@ export const StablepoolVolumeDocument = `
   }
 }
     `;
+export const PlatformTotalVolumesDocument = `
+    query PlatformTotalVolumes($period: AggregationTimeRange = _24H_) {
+  platformTotalVolumesByPeriod(filter: {period: $period}) {
+    nodes {
+      omnipoolVolNorm
+      stableswapVolNorm
+      totalVolNorm
+      xykpoolVolNorm
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -530,6 +547,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     StablepoolVolume(variables: Types.StablepoolVolumeQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.StablepoolVolumeQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.StablepoolVolumeQuery>({ document: StablepoolVolumeDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'StablepoolVolume', 'query', variables);
+    },
+    PlatformTotalVolumes(variables?: Types.PlatformTotalVolumesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.PlatformTotalVolumesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.PlatformTotalVolumesQuery>({ document: PlatformTotalVolumesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'PlatformTotalVolumes', 'query', variables);
     }
   };
 }

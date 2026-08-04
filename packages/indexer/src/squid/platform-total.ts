@@ -14,10 +14,15 @@ export const platformTotalQuery = (squidSdk: SquidSdk) =>
       )
 
       return {
+        mmSupplyTvlNorm: tvl?.mmSupplyTvlNorm,
         omnipoolTvlNorm: tvl?.omnipoolTvlNorm,
         stablepoolsTvlNorm: tvl?.stablepoolsTvlNorm,
+        totalTvlDecoratedNorm: tvl?.totalTvlDecoratedNorm,
+        xykpoolsTvlNorm: tvl?.xykpoolsTvlNorm,
         omnipoolVolNorm: volumes?.omnipoolVolNorm,
         stableswapVolNorm: volumes?.stableswapVolNorm,
+        totalVolNorm: volumes?.totalVolNorm,
+        xykpoolVolNorm: volumes?.xykpoolVolNorm,
       }
     },
   })
