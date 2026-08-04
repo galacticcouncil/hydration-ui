@@ -43,6 +43,10 @@ export type DcaOrderDataBase = OrderDataBase & {
   readonly singleTradeSize: string | null
   readonly blocksPeriod: string | null
   readonly isOpenBudget: boolean
+  // Per-slice price condition ("limit TWAP"), expressed as SELL per BUY.
+  // Null for a plain market TWAP (whose on-chain floor is just the buy
+  // asset's existential deposit).
+  readonly limitPrice: string | null
 }
 
 export type DcaOrderData = DcaOrderDataBase & {
@@ -131,6 +135,7 @@ export const useOrdersData = (
             status,
             blocksPeriod: schedule.period ?? null,
             isOpenBudget,
+            limitPrice: null,
             timestamp: null,
           }
         }) ?? [],

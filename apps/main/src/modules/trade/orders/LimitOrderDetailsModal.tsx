@@ -2,6 +2,7 @@ import { Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
+  Chip,
   Flex,
   Grid,
   Icon,
@@ -11,11 +12,12 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import Big from "big.js"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
+import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import { IntentLimitOrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 
@@ -28,12 +30,15 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
   const { t } = useTranslation(["common", "trade"])
   const removeIntent = useRemoveIntent()
 
-  const limitPrice =
-    details.toAmountExecuted &&
-    details.fromAmountBudget &&
-    Big(details.toAmountExecuted).gt(0)
-      ? Big(details.fromAmountBudget).div(details.toAmountExecuted).toString()
-      : null
+  // Everything price-related is shown as "receive per sell" (to per from),
+  // e.g. HDX per PRIME — the same orientation as the order row — so the limit
+  // price and the market price compare directly with no denomination flip.
+  const { orderRate, marketRate, distancePct, fillable } = useLimitFillStatus({
+    from: details.from,
+    to: details.to,
+    sellAmount: details.fromAmountBudget,
+    receiveAmount: details.toAmountExecuted,
+  })
 
   return (
     <>
@@ -87,14 +92,47 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
           <Amount
             label={t("trade:trade.orders.limit.limitPrice")}
             value={
-              limitPrice
-                ? `${t("number", { value: limitPrice })} ${details.to.symbol} / ${details.from.symbol}`
+              orderRate
+                ? `${t("number", { value: orderRate })} ${details.to.symbol} / ${details.from.symbol}`
                 : "-"
             }
           />
           <Separator orientation="vertical" />
-          <Amount label={t("trade:trade.orders.limit.avgPrice")} value="-" />
+          <Amount
+            label={t("trade:trade.orders.limit.marketPrice")}
+            value={
+              marketRate
+                ? `${t("number", { value: marketRate })} ${details.to.symbol} / ${details.from.symbol}`
+                : "-"
+            }
+          />
         </Grid>
+        {orderRate && (
+          <>
+            <ModalContentDivider />
+            <Flex direction="column" gap="s" py="xl" align="flex-start">
+              <Text fs="p5" color={getToken("text.high")}>
+                {t("trade:trade.orders.limit.fillsWhen", {
+                  fromSymbol: details.from.symbol,
+                  rate: t("number", { value: orderRate }),
+                  toSymbol: details.to.symbol,
+                })}
+              </Text>
+              {distancePct !== null &&
+                (fillable ? (
+                  <Chip variant="green" size="small">
+                    {t("trade:trade.orders.limit.fillableNow")}
+                  </Chip>
+                ) : (
+                  <Chip variant="secondary" size="small">
+                    {t("trade:trade.orders.limit.away", {
+                      pct: Math.abs(distancePct).toFixed(2),
+                    })}
+                  </Chip>
+                ))}
+            </Flex>
+          </>
+        )}
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
           <Amount

@@ -1,5 +1,6 @@
 import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import Big from "big.js"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
@@ -61,6 +62,18 @@ const intentEntryToOrder = (
     const amountIn = scaleHuman(dca.amount_in, from.decimals)
     const amountOut = scaleHuman(dca.amount_out, to.decimals)
 
+    // A market TWAP carries the buy asset's existential deposit as a dust
+    // floor; a "limit TWAP" carries a real per-slice min-out. So both amounts
+    // being meaningfully specified (amount_out above ED) marks a price
+    // condition, and the limit price = per-slice SELL / per-slice BUY.
+    const isLimit =
+      !!to.existentialDeposit &&
+      Big(dca.amount_out.toString()).gt(to.existentialDeposit)
+    const limitPrice =
+      isLimit && Big(amountOut).gt(0)
+        ? Big(amountIn).div(amountOut).toString()
+        : null
+
     return {
       kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
       intentId: entry.id,
@@ -75,6 +88,7 @@ const intentEntryToOrder = (
       singleTradeSize: amountIn,
       blocksPeriod: String(dca.period),
       isOpenBudget,
+      limitPrice,
     } satisfies IntentDcaOrderData
   }
 

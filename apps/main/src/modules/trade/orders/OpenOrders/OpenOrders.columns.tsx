@@ -111,7 +111,12 @@ export const useOpenOrdersColumns = () => {
       cell: ({ row }) => {
         return (
           <Flex justify="center">
-            <SwapType type={row.original.kind} />
+            <SwapType
+              type={row.original.kind}
+              isLimit={
+                "limitPrice" in row.original && !!row.original.limitPrice
+              }
+            />
           </Flex>
         )
       },
