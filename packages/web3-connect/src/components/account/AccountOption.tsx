@@ -1,6 +1,7 @@
 import {
   AccountAvatar,
   Box,
+  EditableText,
   Flex,
   Skeleton,
   Text,
@@ -11,21 +12,23 @@ import {
   formatNumber,
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
-import { useState } from "react"
 
 import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
-import { AccountEditButton } from "@/components/account/AccountEditButton"
-import { AccountNameEdit } from "@/components/account/AccountNameEdit"
 import {
   SAccountOption,
   SCopyButton,
 } from "@/components/account/AccountOption.styled"
 import { ProviderLogo } from "@/components/provider/ProviderLogo"
+import { WalletProviderType } from "@/config/providers"
+import { WalletMode } from "@/config/wallet"
 import { Account } from "@/hooks/useWeb3Connect"
 import { getAccountAvatarTheme } from "@/utils"
+import { getWalletModeIcon } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 
-export type AccountOptionProps = Account & {
+export type AccountOptionProps = Omit<Account, "provider"> & {
+  provider?: WalletProviderType
+  mode?: WalletMode
   className?: string
   isActive?: boolean
   isProxy?: boolean
@@ -50,18 +53,18 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
   onDelete,
   ...account
 }) => {
-  const [isEditing, setIsEditing] = useState(false)
-
   const wallet = getWallet(account.provider)
+
+  const modeIcon = account.mode ? getWalletModeIcon(account.mode) : ""
 
   return (
     <SAccountOption
       className={className}
       data-active={isActive}
       data-proxy={isProxy}
-      {...(onSelect && !isEditing
+      {...(onSelect
         ? {
-            onClick: () => onSelect(account),
+            onClick: () => onSelect(account as Account),
           }
         : {
             disabled: true,
@@ -71,32 +74,33 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
         <Box sx={{ flexShrink: 0 }}>
           <AccountAvatar
             address={account.displayAddress}
-            theme={getAccountAvatarTheme(account)}
+            theme={getAccountAvatarTheme(account as Account)}
           />
         </Box>
         <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
           <Flex align="center" justify="space-between" height="l">
-            {isEditing ? (
-              <AccountNameEdit
-                name={account.name}
-                onChange={(name) => {
-                  onEdit?.(name)
-                  setIsEditing(false)
-                }}
-                onCancel={() => setIsEditing(false)}
-              />
-            ) : (
-              <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
-                {onEdit && (
-                  <AccountEditButton onClick={() => setIsEditing(true)} />
-                )}
-                {wallet && <ProviderLogo size="xs" wallet={wallet} />}
+            <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
+              {wallet ? (
+                <ProviderLogo size="xs" wallet={wallet} />
+              ) : (
+                modeIcon && <img sx={{ size: "xs" }} src={modeIcon} />
+              )}
+              {onEdit ? (
+                <Box sx={{ minWidth: 0 }} onClick={(e) => e.stopPropagation()}>
+                  <EditableText
+                    fs="p3"
+                    truncate={200}
+                    value={account.name}
+                    onChange={onEdit}
+                  />
+                </Box>
+              ) : (
                 <Text fs="p3" truncate={200}>
                   {account.name}
                 </Text>
-                {nameBadge}
-              </Flex>
-            )}
+              )}
+              {nameBadge}
+            </Flex>
             {isBalanceLoading && balance === undefined ? (
               <Skeleton sx={{ width: 75, ml: "auto" }} />
             ) : (

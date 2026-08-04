@@ -31,8 +31,8 @@ export const EmptyState: FC<Props> = ({
       direction="column"
       align="center"
       gap="s"
-      m="auto"
-      pb="3rem"
+      mx="auto"
+      py="xxxl"
       maxWidth="4xl"
       className={className}
     >

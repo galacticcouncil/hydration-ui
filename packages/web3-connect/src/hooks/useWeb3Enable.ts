@@ -1,13 +1,9 @@
-import {
-  isH160Address,
-  safeConvertSS58toPublicKey,
-} from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import {
-  Address,
+  AddressInput,
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
 import { WalletProviderType } from "@/config/providers"
@@ -47,17 +43,16 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
 
       const addresses = data
         .map(
-          (account): Address => ({
+          (account): AddressInput => ({
             address: account.address,
             name: account.name,
             provider: account.provider,
-            publicKey: isH160Address(account.address)
-              ? account.address
-              : safeConvertSS58toPublicKey(account.address),
           }),
         )
         .filter(
-          ({ provider }) => !ADDRESS_BOOK_PROVIDER_BLACKLIST.includes(provider),
+          ({ provider }) =>
+            provider !== undefined &&
+            !ADDRESS_BOOK_PROVIDER_BLACKLIST.includes(provider),
         )
 
       addToAddressBook(addresses)

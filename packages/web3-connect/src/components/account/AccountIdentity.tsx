@@ -9,7 +9,7 @@ import {
   stringEquals,
   subscan,
 } from "@galacticcouncil/utils"
-import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
+import { useAddresses } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
 
@@ -29,7 +29,7 @@ export const AccountSubstrateIdentity: React.FC<AccountIdentityProps> = ({
   withSubscanLink = true,
   ...props
 }) => {
-  const addresses = useAddressStore((state) => state.addresses)
+  const addresses = useAddresses()
   const addressBookName = addresses.find((a) =>
     stringEquals(a.publicKey, safeConvertSS58toPublicKey(address)),
   )?.name
@@ -61,7 +61,7 @@ export const AccountSubstrateIdentity: React.FC<AccountIdentityProps> = ({
 export const AccountAddressBookIdentity: React.FC<
   Omit<AccountIdentityProps, "papi">
 > = ({ address, withSubscanLink = true, ...props }) => {
-  const addresses = useAddressStore((state) => state.addresses)
+  const addresses = useAddresses()
   const addressBookName = addresses.find((a) =>
     stringEquals(a.address, address),
   )?.name
