@@ -3,6 +3,7 @@ import type { XcJourney } from "@galacticcouncil/xc-scan"
 
 import { ClaimFlowModalButton } from "@/modules/xcm/history/components/ClaimFlowModalButton"
 import { useDepositClaim } from "@/modules/xcm/history/hooks/useDepositClaim"
+import { useJourneyRedeemed } from "@/modules/xcm/history/hooks/useJourneyRedeemed"
 import { useWithdrawClaim } from "@/modules/xcm/history/hooks/useWithdrawClaim"
 import {
   isJourneyClaimReady,
@@ -41,7 +42,9 @@ export const ClaimButton: React.FC<ClaimButtonProps> = ({ journey }) => {
   const now = useNow(isJourneyClaimReady(journey) ? null : 1000)
   const isReady = isJourneyClaimReady(journey, now)
 
-  if (!isReady) return null
+  const { data: isRedeemed } = useJourneyRedeemed(journey)
+
+  if (!isReady || isRedeemed) return null
 
   const chain = resolveChainFromUrn(journey.destination)
   const isDeposit = chain?.key === HYDRATION_CHAIN_KEY
