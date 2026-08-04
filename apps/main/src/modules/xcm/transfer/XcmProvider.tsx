@@ -169,7 +169,21 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       return
     }
 
-    if (isDestRouteSynced(bestRoute, destChain, destAsset)) return
+    const routeSynced = isDestRouteSynced(bestRoute, destChain, destAsset)
+
+    if (routeSynced) {
+      const destAddress = form.getValues("destAddress")
+
+      if (
+        destChain &&
+        destAddress &&
+        !isAddressValidOnChain(destAddress, destChain)
+      ) {
+        form.setValue("destAddress", "")
+        form.setValue("destAccount", null)
+      }
+      return
+    }
 
     const bestAsset = bestRoute.destination.asset
     const bestChain = bestRoute.destination.chain
