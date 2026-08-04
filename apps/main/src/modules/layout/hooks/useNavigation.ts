@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 
-import { LINKS, NAVIGATION, NavigationItem } from "@/config/navigation"
+import { NAVIGATION, NavigationItem } from "@/config/navigation"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useNavigation = (): NavigationItem[] => {
@@ -8,25 +8,24 @@ export const useNavigation = (): NavigationItem[] => {
 
   return useMemo(
     () =>
-      NAVIGATION.filter((item) => {
-        if (item.key === "strategiesHollarBonds") {
-          return featureFlags.hollarBondsEnabled
-        }
-
-        return item.enabled !== false
-      }).map((item) => {
-        if (item.key === "staking" && !featureFlags.gigaStakingEnabled) {
+      NAVIGATION.filter((item) => item.enabled !== false).map((item) => {
+        if (item.key === "strategies") {
           return {
             ...item,
-            to: LINKS.stakingOld,
-            children: item.children?.filter(
-              (child) => child.key !== "stakingGigaStake",
-            ),
+            children: item.children?.filter((child) => {
+              if (child.key === "strategiesBil") {
+                return featureFlags.bilEnabled
+              }
+              if (child.key === "strategiesHollarBonds") {
+                return featureFlags.hollarBondsEnabled
+              }
+              return true
+            }),
           }
         }
 
         return item
       }),
-    [featureFlags.hollarBondsEnabled, featureFlags.gigaStakingEnabled],
+    [featureFlags.bilEnabled, featureFlags.hollarBondsEnabled],
   )
 }

@@ -2,21 +2,33 @@ import {
   formatDestChainAddress,
   formatSourceChainAddress,
   HexString,
-  isEvmChain,
+  HYDRATION_CHAIN_KEY,
+  invariant,
+  isAnyEvmChain,
+  isParachain,
   isValidBigSource,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
-import { AnyChain, Asset } from "@galacticcouncil/xc-core"
+import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
+import { Binary } from "polkadot-api"
+import { first, flatMap, pipe, sortBy } from "remeda"
 
 import { XcmTransferArgs } from "@/api/xcm"
-import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
+import { AnyPapiTx } from "@/modules/transactions/types"
+import {
+  isEvmApproveCall,
+  isSubstrateCall,
+} from "@/modules/transactions/utils/xcm"
+import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { getChainPriority } from "@/modules/xcm/transfer/utils/chain"
+import { Papi } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
 export enum XcmTransferStatus {
@@ -71,6 +83,35 @@ export const calculateTransferDestAmount = (
   return amount
 }
 
+export const resolveBestDestRoute = (
+  destChainAssetPairs: ChainAssetPair[],
+  destChain: AnyChain | null,
+  destAsset: Asset | null,
+): AssetRoute | null => {
+  const validRoutes = pipe(
+    destChainAssetPairs,
+    flatMap((c) => c.routes),
+    sortBy((r) => getChainPriority(r.destination.chain.key)),
+  )
+
+  const foundRoute = validRoutes.find(
+    (r) =>
+      r.destination.chain.key === destChain?.key &&
+      r.destination.asset.key === destAsset?.key,
+  )
+
+  return foundRoute ?? first(validRoutes) ?? null
+}
+
+export const isDestRouteSynced = (
+  bestRoute: AssetRoute | null,
+  destChain: AnyChain | null,
+  destAsset: Asset | null,
+): boolean =>
+  !!bestRoute &&
+  bestRoute.destination.chain.key === destChain?.key &&
+  bestRoute.destination.asset.key === destAsset?.key
+
 export const getXcmTransferArgs = (
   account: Account | null,
   values: XcmFormValues,
@@ -106,30 +147,42 @@ export const getXcmTransferArgs = (
   }
 }
 
+/**
+ * Transfer call of the sequence — the last of {@link Transfer.buildCalls},
+ * preceded by prerequisites (native wrap, erc20 approve) the sender signs
+ * first. Never take the head here: for a native gas source that is the wrap,
+ * and submitting it as the transfer would wrap the funds and stop there.
+ */
 export const buildTransferCall = async (
-  call: Call,
   transfer: Transfer,
   srcChain: AnyChain,
   srcAmount: string,
 ): Promise<Call> => {
-  const isApprovalCall = isEvmChain(srcChain) && isEvmApproveCall(call)
+  const calls = await transfer.buildCalls(srcAmount)
+  const call = calls.at(-1)
 
-  if (!isApprovalCall) return call
+  invariant(call, "Transfer call is required")
+
+  const hasPrerequisites = calls.length > 1
+
+  // Hydration sends NTT too, so an evm parachain source can carry
+  // prerequisites just like a plain evm chain.
+  if (!hasPrerequisites || !isAnyEvmChain(srcChain)) return call
 
   const provider = srcChain.evmClient.getProvider()
   const nonce = await provider.getTransactionCount({
     address: call.from as HexString,
   })
 
-  // wait for approvals to be cleared before building the transfer call
+  // wait for prerequisites to be cleared before building the transfer call
   return waitFor(
     async () => {
       const pending = useApprovalTrackingStore
         .getState()
         .getPendingApprovals(srcChain.key, nonce)
       if (pending.length === 0) {
-        const transferCall = await transfer.buildCall(srcAmount)
-        return waitFor.resolveWith(transferCall)
+        const settled = await transfer.buildCalls(srcAmount)
+        return waitFor.resolveWith(settled.at(-1) ?? call)
       }
       return false
     },
@@ -138,4 +191,44 @@ export const buildTransferCall = async (
       timeout: minutesToMilliseconds(3),
     },
   )
+}
+
+export async function getExternalChainTx(
+  chain: AnyChain,
+  call: Call,
+): Promise<AnyPapiTx | Call> {
+  if (!isParachain(chain)) return call
+  return chain.client.getUnsafeApi().txFromCallData(Binary.fromHex(call.data))
+}
+
+export async function buildXcmTx(
+  srcChain: AnyChain,
+  transfer: Transfer,
+  srcAmount: string,
+  papi: Papi,
+): Promise<AnyPapiTx | Call> {
+  const transferCall = await buildTransferCall(transfer, srcChain, srcAmount)
+
+  // Hydration is an evm parachain: an ss58 origin gets the transfer wrapped
+  // in an EVM.call extrinsic, but an H160 one signs the contract call
+  // directly. Only the former is substrate call data papi can decode.
+  return srcChain.key === HYDRATION_CHAIN_KEY && isSubstrateCall(transferCall)
+    ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
+    : await getExternalChainTx(srcChain, transferCall)
+}
+
+export function assertTransferValues(values: XcmFormValues) {
+  const { srcAmount, srcChain, srcAsset, destChain, destAsset } = values
+  invariant(srcAmount, "Source amount is required")
+  invariant(destChain, "Destination chain is required")
+  invariant(srcChain, "Source chain is required")
+  invariant(srcAsset, "Source asset is required")
+  invariant(destAsset, "Destination asset is required")
+  return {
+    ...values,
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+  }
 }

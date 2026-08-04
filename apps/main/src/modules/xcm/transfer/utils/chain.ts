@@ -1,3 +1,4 @@
+import { h160 } from "@galacticcouncil/common"
 import {
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
@@ -27,7 +28,10 @@ import {
 } from "@galacticcouncil/xc-core"
 import { filter, first, pipe, sortBy } from "remeda"
 
+import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+
+const { H160 } = h160
 
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
@@ -39,7 +43,11 @@ const CHAINS_PRIORITY = [
   "moonbeam",
   "assethub_kusama",
 ]
-const CHAINS_BLACKLIST = ["polkadot"]
+const CHAINS_BLACKLIST = ["polkadot", "interlay"]
+
+if (ENV.VITE_WORMHOLE_DISABLED) {
+  CHAINS_BLACKLIST.push("moonbeam")
+}
 
 export const getChainPriority = (key: string) => {
   const idx = CHAINS_PRIORITY.indexOf(key)
@@ -99,10 +107,13 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
   return {
     srcChain,
     srcAsset,
-    srcAmount: "",
+
     destChain,
     destAsset: srcAsset,
+
+    srcAmount: "",
     destAmount: "",
+
     destAddress: destAccount?.rawAddress ?? "",
     destAccount: destAccount,
     bridgeProvider: null,
@@ -146,6 +157,16 @@ export const isAccountValidOnChain = (
 
   const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+}
+
+export const withPermissiveEvmResolver = (
+  chain: EvmParachain,
+): EvmParachain => {
+  // @ts-expect-error - mutating readonly property
+  chain.evmResolver = {
+    toH160: async (address: string) => H160.fromAny(address),
+  }
+  return chain
 }
 
 export const withCustomChainRpcUrls = (

@@ -33,9 +33,10 @@ export const useWrapEvmTransaction = (
   const rpc = useRpcProvider()
   const { papi } = rpc
   const { account } = useAccount()
+  const address = account?.address ?? ""
 
   const { data: isEvmAccountBound, isPending: isLoadingEvmBinding } = useQuery(
-    evmAccountBindingQuery(rpc, account?.address ?? ""),
+    evmAccountBindingQuery(rpc, address),
   )
 
   return useMemo(() => {
@@ -53,7 +54,7 @@ export const useWrapEvmTransaction = (
     }
 
     // Account is bound - no binding needed
-    if (isLoadingEvmBinding || isEvmAccountBound) return transaction
+    if (isLoadingEvmBinding || isEvmAccountBound !== false) return transaction
 
     // Prepend bind_evm_address for native EVM calls when not bound
     if (isEvmCall(transaction.tx)) {
@@ -65,12 +66,23 @@ export const useWrapEvmTransaction = (
             call: transformEvmCallToPapiTx(papi, transaction.tx).decodedCall,
           }),
         ),
+        invalidateQueries: [
+          ["evm", "accountBinding"],
+          ...(transaction.invalidateQueries ?? []),
+        ],
       }
     }
 
     // Prepend bind_evm_address for PAPI transactions that contain an EVM.call when not bound
     if (isPapiTransaction(transaction.tx) && containsEvmCall(transaction.tx)) {
-      return { ...transaction, tx: prependEvmBindingTx(papi, transaction.tx) }
+      return {
+        ...transaction,
+        tx: prependEvmBindingTx(papi, transaction.tx),
+        invalidateQueries: [
+          ["evm", "accountBinding"],
+          ...(transaction.invalidateQueries ?? []),
+        ],
+      }
     }
 
     return transaction

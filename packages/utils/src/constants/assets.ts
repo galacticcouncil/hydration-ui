@@ -1,3 +1,4 @@
+export const HDX_ASSET_ID = "0"
 export const HOLLAR_ASSET_ID = "222"
 export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"
@@ -15,6 +16,8 @@ export const SUSDE_ASSET_ID = "1000625"
 export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 export const WETH_POOL_ASSET_ID = "104"
+export const BIL_ERC20_ID = "55"
+export const BIL_ASSET_ID = "550"
 
 export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"

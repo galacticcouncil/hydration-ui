@@ -5,15 +5,11 @@ import { useEffect, useMemo, useState } from "react"
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import {
   getVisibleJourneys,
-  isXcSwapReceiverJourney,
   mergeJourneys,
 } from "@/modules/xcm/history/utils/journey"
 import {
-  clearPendingHop,
-  isIndexedTransferJourney,
-  mergeLoadedJourneysWithOptimistic,
-  shouldIgnoreIncomingJourney,
-  shouldRemoveJourneyForIncoming,
+  addJourney,
+  mergeLoadedJourneys,
 } from "@/modules/xcm/history/utils/optimistic"
 
 import { useBasejumpScan } from "./useBasejumpScan"
@@ -86,43 +82,15 @@ export const useXcScanSubscription = (address: string) => {
       xcStore.subscribe(address, {
         onLoad(journeys) {
           queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
-            mergeLoadedJourneysWithOptimistic(
-              address,
-              old,
-              getVisibleJourneys(journeys),
-            ),
+            mergeLoadedJourneys(old, journeys, address),
           )
           setIsLoading(false)
           setIsError(false)
         },
         onNew(journey) {
-          if (isXcSwapReceiverJourney(journey)) return
-
-          queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
-            if (!old) {
-              return [journey]
-            }
-
-            const ignore = shouldIgnoreIncomingJourney(old, journey, address)
-            if (ignore) {
-              return old
-            }
-
-            const prev: XcJourney[] = []
-
-            for (const item of old) {
-              if (shouldRemoveJourneyForIncoming(item, journey, address)) {
-                // Pending hop is resolved once the indexed journey supersedes the hop leg.
-                if (item.originTxPrimary && isIndexedTransferJourney(journey)) {
-                  clearPendingHop(address, item.originTxPrimary)
-                }
-              } else {
-                prev.push(item)
-              }
-            }
-
-            return [journey, ...prev]
-          })
+          queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
+            addJourney(old ?? [], journey, address),
+          )
         },
         onUpdate(journey, prev) {
           queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {

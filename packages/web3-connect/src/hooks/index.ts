@@ -1,5 +1,6 @@
 export * from "./useAccount"
 export * from "./useAccountMultisigs"
+export * from "./useEvmAddress"
 export * from "./useMultisigConfigs"
 export * from "./useMultisigStore"
 export * from "./useSolanaNativeBalance"

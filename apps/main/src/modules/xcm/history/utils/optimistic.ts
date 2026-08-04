@@ -3,6 +3,7 @@ import {
   HYDRATION_CHAIN_KEY,
   isEvmParachainAccount,
   safeConvertSS58toH160,
+  stringEquals,
 } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
@@ -10,254 +11,244 @@ import type { Transfer } from "@galacticcouncil/xc-sdk"
 import type { QueryClient } from "@tanstack/react-query"
 
 import { createXcScanQueryKey } from "@/modules/xcm/history/useXcScan"
-import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
+import {
+  getChainXcScanUrn,
+  journeyDate,
+} from "@/modules/xcm/history/utils/journey"
 import type { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmTag } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
-const TRANSFER_MATCH_WINDOW_MS = 5 * 60 * 1000
+const OPTIMISTIC_JOURNEY_PREFIX = "optimistic:"
+
+const MATCH_WINDOW_MS = 5 * 60 * 1000
+
 const ASSETHUB_KUSAMA_CHAIN_KEY = "assethub_kusama"
 const HYDRATION_URN = "urn:ocn:polkadot:2034"
 const ASSETHUB_KUSAMA_URN = "urn:ocn:kusama:1000"
-
-const OPTIMISTIC_JOURNEY_PREFIX = "optimistic:"
-
-const pendingHopTxByAddress = new Map<string, Map<string, number>>()
-
-function pruneExpiredPendingHops(address: string) {
-  const pending = pendingHopTxByAddress.get(address)
-  if (!pending) return
-
-  const now = Date.now()
-  for (const [txHash, ts] of pending) {
-    if (now - ts > TRANSFER_MATCH_WINDOW_MS) {
-      pending.delete(txHash)
-    }
-  }
-
-  if (pending.size === 0) {
-    pendingHopTxByAddress.delete(address)
-  }
-}
-
-export function trackPendingHop(address: string, txHash: string) {
-  if (!txHash) return
-
-  pruneExpiredPendingHops(address)
-
-  let pending = pendingHopTxByAddress.get(address)
-  if (!pending) {
-    pending = new Map()
-    pendingHopTxByAddress.set(address, pending)
-  }
-
-  pending.set(txHash, Date.now())
-}
-
-export function clearPendingHop(address: string, txHash: string) {
-  pendingHopTxByAddress.get(address)?.delete(txHash)
-}
-
-export function isPendingHop(
-  address: string,
-  txHash: string | null | undefined,
-): boolean {
-  if (!txHash) return false
-
-  pruneExpiredPendingHops(address)
-
-  const ts = pendingHopTxByAddress.get(address)?.get(txHash)
-  if (!ts) return false
-
-  return Date.now() - ts <= TRANSFER_MATCH_WINDOW_MS
-}
-
-export function isHopRouteTransfer(
-  srcChain?: AnyChain | null,
-  destChain?: AnyChain | null,
-): boolean {
-  if (!srcChain || !destChain) return false
-
-  // Only hydration <-> assethub_kusama produces the dual SSE journey pattern.
-  // Regular routes (e.g. hydration -> assethub polkadot) emit a single journey.
-  const isHydration = (chain: AnyChain) => chain.key === HYDRATION_CHAIN_KEY
-  const isAssetHubKusama = (chain: AnyChain) =>
-    chain.key === ASSETHUB_KUSAMA_CHAIN_KEY
-
-  return (
-    (isHydration(srcChain) && isAssetHubKusama(destChain)) ||
-    (isAssetHubKusama(srcChain) && isHydration(destChain))
-  )
-}
-
-export function isHopRouteJourney(journey: XcJourney): boolean {
-  // Indexed hop journeys span both networks; used to avoid ignoring unrelated
-  // hop legs when unrelated indexed journeys already exist in history.
-  const touchesHydration =
-    journey.origin === HYDRATION_URN || journey.destination === HYDRATION_URN
-  const touchesAssetHubKusama =
-    journey.origin === ASSETHUB_KUSAMA_URN ||
-    journey.destination === ASSETHUB_KUSAMA_URN
-
-  return touchesHydration && touchesAssetHubKusama
-}
-
-export function getOptimisticJourneyId(txHash: string): string {
-  return `${OPTIMISTIC_JOURNEY_PREFIX}${txHash}`
-}
 
 export function isOptimisticJourney(journey: XcJourney): boolean {
   return journey.correlationId.startsWith(OPTIMISTIC_JOURNEY_PREFIX)
 }
 
-export function isIndexedTransferJourney(journey: XcJourney): boolean {
-  // Canonical xc-scan journey for a multi-hop transfer; arrives after the hop leg.
+function isCanonical(journey: XcJourney): boolean {
   return !journey.originTxPrimary && !journey.originTxSecondary
 }
 
-export function isOptimisticJourneyForTxHash(
-  journey: XcJourney,
-  txHash: string,
-): boolean {
-  return (
-    isOptimisticJourney(journey) &&
-    (journey.originTxPrimary === txHash || journey.originTxSecondary === txHash)
+function txHashes(journey: XcJourney): string[] {
+  return [journey.originTxPrimary, journey.originTxSecondary].filter(
+    (hash): hash is string => !!hash,
   )
 }
 
-export function shouldRemoveJourneyForIncoming(
+function sharesTxHash(a: XcJourney, b: XcJourney): boolean {
+  const hashes = txHashes(b)
+  return txHashes(a).some((hash) => hashes.includes(hash))
+}
+
+function isOptimisticFor(journey: XcJourney, txHash: string): boolean {
+  return isOptimisticJourney(journey) && txHashes(journey).includes(txHash)
+}
+
+/* -------------------------------------------------------------------------
+ * Hop routes
+ *
+ * Hydration <-> AssetHub Kusama transfers reach us twice: first as a leg
+ * carrying the origin tx hash, then as the canonical journey carrying none.
+ * Remembering the tx hash of an in-flight hop lets the canonical journey
+ * replace its leg, and lets a late leg be ignored.
+ * ---------------------------------------------------------------------- */
+
+const hopTxAt = new Map<string, number>()
+
+const hopKey = (address: string, txHash: string) => `${address}:${txHash}`
+
+function trackHopTx(address: string, txHash: string) {
+  hopTxAt.set(hopKey(address, txHash), Date.now())
+}
+
+function forgetHopTx(address: string, txHash: string) {
+  hopTxAt.delete(hopKey(address, txHash))
+}
+
+function isHopTx(address: string, txHash?: string): boolean {
+  if (!txHash) return false
+
+  const key = hopKey(address, txHash)
+  const trackedAt = hopTxAt.get(key)
+
+  if (trackedAt === undefined) return false
+  if (Date.now() - trackedAt <= MATCH_WINDOW_MS) return true
+
+  hopTxAt.delete(key)
+  return false
+}
+
+function isHopRoute(srcChain?: AnyChain | null, destChain?: AnyChain | null) {
+  const keys = [srcChain?.key, destChain?.key]
+  return (
+    keys.includes(HYDRATION_CHAIN_KEY) &&
+    keys.includes(ASSETHUB_KUSAMA_CHAIN_KEY)
+  )
+}
+
+function isHopJourney(journey: XcJourney): boolean {
+  const urns = [journey.origin, journey.destination]
+  return urns.includes(HYDRATION_URN) && urns.includes(ASSETHUB_KUSAMA_URN)
+}
+
+function replaces(
+  incoming: XcJourney,
   item: XcJourney,
-  incoming: XcJourney,
-  address?: string,
+  address: string,
 ): boolean {
-  if (item.correlationId === incoming.correlationId) {
-    return true
-  }
+  // Same journey, pushed again.
+  if (incoming.correlationId === item.correlationId) return true
 
-  // Real journey arrived with a tx hash — drop the matching optimistic placeholder.
+  // The real journey behind an optimistic placeholder.
+  if (isOptimisticJourney(item) && sharesTxHash(item, incoming)) return true
+
+  // Same transfer, re-emitted under a new correlation id.
   if (
-    isOptimisticJourneyForTxHash(item, incoming.originTxPrimary ?? "") ||
-    isOptimisticJourneyForTxHash(item, incoming.originTxSecondary ?? "")
-  ) {
-    return true
-  }
-
-  if (!address || !isIndexedTransferJourney(incoming)) {
-    if (
-      !isOptimisticJourney(item) &&
-      !!incoming.originTxPrimary &&
-      item.originTxPrimary === incoming.originTxPrimary
-    ) {
-      return true
-    }
-
-    return false
-  }
-
-  // Indexed journey arrived — drop the hop leg (or optimistic) keyed by pending tx.
-  if (
-    address &&
-    isIndexedTransferJourney(incoming) &&
-    item.originTxPrimary &&
-    isPendingHop(address, item.originTxPrimary)
-  ) {
-    return true
-  }
-
-  if (
-    !isOptimisticJourney(item) &&
     !!incoming.originTxPrimary &&
-    item.originTxPrimary === incoming.originTxPrimary
+    incoming.originTxPrimary === item.originTxPrimary
   ) {
     return true
   }
 
-  return false
+  // Canonical hop journey superseding the leg stored before it.
+  return isCanonical(incoming) && isHopTx(address, item.originTxPrimary)
 }
 
-export function shouldIgnoreNewJourney(
-  previous: XcJourney[],
+/**
+ * Wormhole NTT journeys arrive under a tx hash we never saw, so their
+ * placeholder is matched on route, parties, amount and time instead — and
+ * only when exactly one candidate fits.
+ */
+function findWormholeTwin(list: XcJourney[], incoming: XcJourney) {
+  if (incoming.originProtocol !== "wh_ntt") return undefined
+
+  const matches = list.filter((item) => isSameTransfer(item, incoming))
+  return matches.length === 1 ? matches[0] : undefined
+}
+
+function isSameTransfer(optimistic: XcJourney, incoming: XcJourney): boolean {
+  if (!isOptimisticJourney(optimistic)) return false
+  if (optimistic.origin !== incoming.origin) return false
+  if (optimistic.destination !== incoming.destination) return false
+
+  const sameSender =
+    stringEquals(optimistic.from, incoming.from) ||
+    stringEquals(safeConvertSS58toH160(optimistic.from), incoming.from)
+
+  const sameRecipient =
+    stringEquals(optimistic.to, incoming.to) ||
+    (!!optimistic.toFormatted &&
+      !!incoming.toFormatted &&
+      stringEquals(optimistic.toFormatted, incoming.toFormatted))
+
+  const sameTime =
+    Math.abs(journeyDate(optimistic) - journeyDate(incoming)) <= MATCH_WINDOW_MS
+
+  const sameAsset = optimistic.assets.some((asset) =>
+    incoming.assets.some(
+      (other) =>
+        asset.symbol === other.symbol &&
+        asset.amount === other.amount &&
+        asset.decimals === other.decimals,
+    ),
+  )
+
+  return sameSender && sameRecipient && sameTime && sameAsset
+}
+
+function findReplaced(
+  list: XcJourney[],
   incoming: XcJourney,
-): boolean {
-  return previous.some((journey) => {
-    const isOptimisticPrimary = isOptimisticJourneyForTxHash(
-      journey,
-      incoming.originTxPrimary ?? "",
-    )
-    const isOptimisticSecondary = isOptimisticJourneyForTxHash(
-      journey,
-      incoming.originTxSecondary ?? "",
-    )
-    return (
-      journey.originProtocol === "basejump" &&
-      (isOptimisticPrimary || isOptimisticSecondary)
-    )
-  })
-}
-
-export function shouldIgnoreIncomingJourney(
-  previous: XcJourney[],
-  incoming: XcJourney,
-  address?: string,
-): boolean {
-  if (shouldIgnoreNewJourney(previous, incoming)) {
-    return true
-  }
-
-  if (
-    address &&
-    incoming.originTxPrimary &&
-    isPendingHop(address, incoming.originTxPrimary)
-  ) {
-    return previous.some(
-      (journey) =>
-        isIndexedTransferJourney(journey) && isHopRouteJourney(journey),
-    )
-  }
-
-  return false
-}
-
-function dedupeJourneyList(
   address: string,
-  journeys: XcJourney[],
 ): XcJourney[] {
-  return journeys.filter((journey, index, list) => {
-    const supersedingJourney = list.find(
-      (other, otherIndex) =>
-        otherIndex !== index &&
-        shouldRemoveJourneyForIncoming(journey, other, address),
-    )
+  const replaced = list.filter((item) => replaces(incoming, item, address))
+  if (replaced.some(isOptimisticJourney)) return replaced
 
-    if (
-      supersedingJourney &&
-      journey.originTxPrimary &&
-      isIndexedTransferJourney(supersedingJourney)
-    ) {
-      clearPendingHop(address, journey.originTxPrimary)
-    }
+  const twin = findWormholeTwin(list, incoming)
+  return twin ? [...replaced, twin] : replaced
+}
 
-    return !supersedingJourney
+function isIgnored(
+  list: XcJourney[],
+  incoming: XcJourney,
+  address: string,
+): boolean {
+  // Basejump transfers are tracked through basejumpscan; xc-scan repeats them.
+  const duplicatesBasejump = list.some(
+    (item) =>
+      item.originProtocol === "basejump" &&
+      isOptimisticJourney(item) &&
+      sharesTxHash(item, incoming),
+  )
+  if (duplicatesBasejump) return true
+
+  // Hop leg arriving after its canonical journey.
+  return (
+    isHopTx(address, incoming.originTxPrimary) &&
+    list.some((item) => isCanonical(item) && isHopJourney(item))
+  )
+}
+
+function resolveHopTxs(
+  address: string,
+  incoming: XcJourney,
+  replaced: XcJourney[],
+) {
+  if (!isCanonical(incoming)) return
+
+  for (const item of replaced) {
+    if (item.originTxPrimary) forgetHopTx(address, item.originTxPrimary)
+  }
+}
+
+function dedupe(list: XcJourney[], address: string): XcJourney[] {
+  return list.filter((item, index) => {
+    const replacedBy = list.find((other, otherIndex) => {
+      if (otherIndex === index || !replaces(other, item, address)) return false
+      // Both replace each other — keep the one listed first.
+      return replaces(item, other, address) ? otherIndex < index : true
+    })
+
+    if (replacedBy) resolveHopTxs(address, replacedBy, [item])
+
+    return !replacedBy
   })
 }
 
-export function mergeLoadedJourneysWithOptimistic(
+export function addJourney(
+  list: XcJourney[],
+  incoming: XcJourney,
   address: string,
+): XcJourney[] {
+  if (isIgnored(list, incoming, address)) return list
+
+  const replaced = findReplaced(list, incoming, address)
+  resolveHopTxs(address, incoming, replaced)
+
+  return [incoming, ...list.filter((item) => !replaced.includes(item))]
+}
+
+export function mergeLoadedJourneys(
   previous: XcJourney[] | undefined,
   loaded: XcJourney[],
+  address: string,
 ): XcJourney[] {
-  const optimistics = (previous ?? []).filter(isOptimisticJourney)
-  const survivingOptimistics = optimistics.filter(
-    (optimistic) =>
-      !loaded.some((journey) =>
-        shouldRemoveJourneyForIncoming(optimistic, journey, address),
-      ),
+  const optimistic = (previous ?? []).filter(isOptimisticJourney)
+  const replaced = new Set(
+    loaded.flatMap((journey) => findReplaced(optimistic, journey, address)),
   )
+  const surviving = optimistic.filter((journey) => !replaced.has(journey))
 
-  return dedupeJourneyList(address, [...survivingOptimistics, ...loaded])
+  return dedupe([...surviving, ...loaded], address)
 }
 
-export function convertXcmFormValuesToOptimisticJourney(
+function toOptimisticJourney(
   values: XcmFormValues,
   transfer: Transfer,
   txHash: string,
@@ -282,7 +273,7 @@ export function convertXcmFormValuesToOptimisticJourney(
 
   return {
     id: 0,
-    correlationId: getOptimisticJourneyId(txHash),
+    correlationId: `${OPTIMISTIC_JOURNEY_PREFIX}${txHash}`,
     status: "pending",
     type: "transfer",
     originProtocol: protocol,
@@ -320,26 +311,19 @@ export function insertOptimisticJourney(
   transfer: Transfer,
 ) {
   const queryKey = createXcScanQueryKey(address)
-  const current = queryClient.getQueryData<XcJourney[]>(queryKey) ?? []
-  const alreadyExists = current.some((j) =>
-    isOptimisticJourneyForTxHash(j, txHash),
-  )
-  if (alreadyExists) return
-  const optimisticJourney = convertXcmFormValuesToOptimisticJourney(
-    values,
-    transfer,
-    txHash,
-    address,
-  )
-  if (!optimisticJourney) return
+  const list = queryClient.getQueryData<XcJourney[]>(queryKey) ?? []
 
-  // Hop routes need tx-hash tracking so the later indexed journey can dedupe.
-  if (isHopRouteTransfer(values.srcChain, values.destChain)) {
-    trackPendingHop(address, txHash)
+  if (list.some((journey) => isOptimisticFor(journey, txHash))) return
+
+  const journey = toOptimisticJourney(values, transfer, txHash, address)
+  if (!journey) return
+
+  if (isHopRoute(values.srcChain, values.destChain)) {
+    trackHopTx(address, txHash)
   }
 
   queryClient.setQueryData<XcJourney[]>(queryKey, (old) => [
-    optimisticJourney,
+    journey,
     ...(old ?? []),
   ])
 }
@@ -349,10 +333,10 @@ export function removeOptimisticJourney(
   address: string,
   txHash: string,
 ) {
-  clearPendingHop(address, txHash)
+  forgetHopTx(address, txHash)
 
   const queryKey = createXcScanQueryKey(address)
   queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
-    (old ?? []).filter((j) => !isOptimisticJourneyForTxHash(j, txHash)),
+    (old ?? []).filter((journey) => !isOptimisticFor(journey, txHash)),
   )
 }

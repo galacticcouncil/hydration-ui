@@ -29,8 +29,6 @@ import { TradeFee } from "@/modules/trade/otc/TradeFee"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { isBond } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalance } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly otcOffer: OtcOfferTabular
@@ -47,15 +45,18 @@ export const FillOrderModalContent: FC<Props> = ({
   const { t } = useTranslation(["trade", "common"])
   const [isSubmitCancelOpen, setIsSubmitCancelOpen] = useState(false)
 
-  const inBalance = useAccountBalance(otcOffer.assetIn.id)
-  const assetInBalance = inBalance
-    ? scaleHuman(inBalance.transferable, otcOffer.assetIn.decimals)
-    : "0"
-  const assetInMax = Big.min(otcOffer.assetAmountIn, assetInBalance).toString()
-
   const { data: feePct = "0" } = useQuery(otcTradeFeeQuery(rpc))
 
-  const form = useFillOrderForm(otcOffer, isUsersOffer, feePct)
+  const { form, getMaxBalance } = useFillOrderForm(
+    otcOffer,
+    isUsersOffer,
+    feePct,
+  )
+  const maxAccountBalance = getMaxBalance(otcOffer.assetIn)
+  const assetInMax = Big.min(
+    otcOffer.assetAmountIn,
+    maxAccountBalance,
+  ).toString()
   const submit = useSubmitFillOrder({
     otcOffer,
     onSubmitted: onClose,
@@ -150,6 +151,7 @@ export const FillOrderModalContent: FC<Props> = ({
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
                     modalDisabled
                     maxButtonBalance={assetInMax}
+                    maxBalance={maxAccountBalance}
                     maxBalanceFallback="0"
                     hideMaxBalanceAction={!otcOffer.isPartiallyFillable}
                     amountError={fieldState.error?.message}

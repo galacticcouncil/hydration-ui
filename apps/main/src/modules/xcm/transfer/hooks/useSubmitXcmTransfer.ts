@@ -1,24 +1,24 @@
-import {
-  HexString,
-  HYDRATION_CHAIN_KEY,
-  isEvmChain,
-  isParachain,
-} from "@galacticcouncil/utils"
+import { HexString, invariant, isAnyEvmChain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { AnyChain, ConfigBuilder } from "@galacticcouncil/xc-core"
+import { ConfigBuilder } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainConfigService } from "@/api/xcm"
-import { AnyPapiTx } from "@/modules/transactions/types"
-import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
+import {
+  isEvmApproveCall,
+  isEvmCall,
+  isSubstrateCall,
+} from "@/modules/transactions/utils/xcm"
 import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
-import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
+import {
+  assertTransferValues,
+  buildXcmTx,
+} from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   TransactionActions,
@@ -57,6 +57,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
+      invariant(account, "Account is required")
+
       const {
         srcAmount,
         srcChain,
@@ -64,13 +66,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         srcAsset,
         destAsset,
         bridgeProvider,
-      } = values
-
-      if (!account) throw new Error("Account is required")
-      if (!destChain) throw new Error("Destination chain is required")
-      if (!srcChain) throw new Error("Source chain is required")
-      if (!srcAsset) throw new Error("Source asset is required")
-      if (!destAsset) throw new Error("Destination asset is required")
+      } = assertTransferValues(values)
 
       const { source } = transfer
 
@@ -95,24 +91,42 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
       const { origin } = destPair.build(validDstAsset, tag)
 
-      const call = await transfer.buildCall(srcAmount)
-      const isApprove = isEvmApproveCall(call)
+      const calls = await transfer.buildCalls(srcAmount)
+      const transferCall = calls.at(-1)
+
+      invariant(transferCall, "Transfer call is required")
+
+      // Prerequisites (native wrap, erc20 approve) the sender signs before the
+      // transfer itself, each dropping off the sequence once executed.
+      const prerequisites = calls.slice(0, -1)
+
+      // Approve is the only erc20-specific prerequisite. Every other one the
+      // platforms emit is a native wrap — WETH.deposit on evm, wSOL on
+      // solana — so keying off approve keeps the labels right per platform.
+      const prerequisiteStepLabels = (call: Call) =>
+        isEvmApproveCall(call)
+          ? {
+              title: t("approve.title"),
+              description: t("approve.description", i18nVars),
+              stepTitle: t("approve"),
+              toasts: {
+                submitted: t("approve.toast.submitted", i18nVars),
+                success: t("approve.toast.success", i18nVars),
+              },
+            }
+          : {
+              title: t("wrap.title", i18nVars),
+              description: t("wrap.description", i18nVars),
+              stepTitle: t("wrap"),
+              toasts: {
+                submitted: t("wrap.toast.submitted", i18nVars),
+                success: t("wrap.toast.success", i18nVars),
+              },
+            }
 
       const buildTransferTransaction = async () => {
-        const call = await transfer.buildCall(srcAmount)
-        const transferCall = await buildTransferCall(
-          call,
-          transfer,
-          srcChain,
-          srcAmount,
-        )
-
+        const tx = await buildXcmTx(srcChain, transfer, srcAmount, papi)
         const sourceFee = await transfer.estimateFee(srcAmount)
-
-        const tx =
-          srcChain.key === HYDRATION_CHAIN_KEY
-            ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
-            : await getExternalChainTx(srcChain, transferCall)
 
         const sourceFeeValue = (() => {
           if (sourceFee.amount === 0n)
@@ -125,11 +139,21 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
         const destFee = await transfer.estimateDestinationFee(srcAmount)
 
+        const signerFeeAsset =
+          isSubstrateCall(transferCall) && transferCall?.txOptions?.asset
+            ? transferCall.txOptions.asset
+            : undefined
+
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
-          invalidateQueries: [["xcm", "transfer"]],
+          invalidateQueries: [
+            ["xcm", "transfer"],
+            // The picker's snapshot is stale the moment a transfer lands.
+            ["xcm", "balanceSnapshot"],
+          ],
           tx,
+          signerFeeAsset,
           toasts: {
             submitted: t("tx.toast.submitted", i18nVars),
             success: t("tx.toast.success", i18nVars),
@@ -151,43 +175,41 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         }
       }
 
-      if (isApprove) {
+      if (prerequisites.length > 0) {
         let transferTxHash: string | null = null
         return createTransaction(
           {
             tx: [
-              {
-                tx: call,
-                title: t("approve.title"),
-                description: t("approve.description", i18nVars),
-                stepTitle: t("approve"),
-                toasts: {
-                  submitted: t("approve.toast.submitted", i18nVars),
-                  success: t("approve.toast.success", i18nVars),
-                },
+              ...prerequisites.map((prerequisite) => ({
+                tx: prerequisite,
+                ...prerequisiteStepLabels(prerequisite),
+                // Only drives the explorer link (etherscan over subscan),
+                // which holds for any evm prerequisite, wrap included.
                 meta: {
-                  type: TransactionType.EvmApprove,
+                  type: TransactionType.EvmApprove as const,
                   srcChainKey: srcChain.key,
                 },
-                onSubmitted: async (txHash) => {
+                onSubmitted: async (txHash: string) => {
                   const isEvmCallOnEvmChain =
-                    !!srcChain && isEvmChain(srcChain) && isEvmCall(call)
+                    !!srcChain &&
+                    isAnyEvmChain(srcChain) &&
+                    isEvmCall(prerequisite)
 
                   if (!isEvmCallOnEvmChain) return
 
                   const provider = srcChain.evmClient.getProvider()
                   const nonce = await provider.getTransactionCount({
-                    address: call.from as HexString,
+                    address: prerequisite.from as HexString,
                   })
 
                   addPendingApproval({
                     chainKey: srcChain.key,
-                    to: call.to,
+                    to: prerequisite.to,
                     nonce,
                     txHash,
                   })
                 },
-              },
+              })),
               {
                 stepTitle: t("common:transfer"),
                 pendingComponent: PendingApproval,
@@ -239,14 +261,4 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       })
     },
   })
-}
-
-async function getExternalChainTx(
-  chain: AnyChain,
-  call: Call,
-): Promise<AnyPapiTx | Call> {
-  if (!isParachain(chain)) {
-    return call
-  }
-  return chain.client.getUnsafeApi().txFromCallData(Binary.fromHex(call.data))
 }

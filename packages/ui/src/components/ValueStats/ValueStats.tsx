@@ -18,7 +18,7 @@ export const ValueStatsLabel = SValueStatsLabel
 export const ValueStatsValue = SValueStatsValue
 export const ValueStatsBottomValue = SValueStatsBottomValue
 
-type ValueStatsProps = {
+export type ValueStatsProps = {
   readonly font?: ValueStatsFont
   readonly wrap?: ResponsiveStyleValue<boolean>
   readonly size?: ValueStatsSize

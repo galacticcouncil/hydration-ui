@@ -156,7 +156,7 @@ export const XcmForm = () => {
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
   const spotPriceId = srcAsset
-    ? registryChain.getBalanceAssetId(srcAsset).toString()
+    ? registryChain.getAssetId(srcAsset).toString()
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)

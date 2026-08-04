@@ -65,7 +65,7 @@ const pointsNumberSizes = createVariants<PointsSize>((theme) => ({
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 700;
     font-size: ${theme.fontSizes.p5};
-    line-height: 1.3;
+    line-height: 1;
     color: ${theme.text.high};
   `,
   l: css`
@@ -88,11 +88,13 @@ export const SPointsNumber = styled.p<{ readonly size: PointsSize }>(
 const pointsTextContentSizes = createVariants<PointsSize>((theme) => ({
   m: css`
     display: flex;
+    justify-content: center;
     flex-direction: column;
     gap: ${theme.space.xs};
   `,
   l: css`
     display: flex;
+    justify-content: center;
     flex-direction: column;
     gap: ${theme.space.s};
   `,

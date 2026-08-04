@@ -54,7 +54,11 @@ export const LINKS = {
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
   // memepad: "/memepad",
+  strategies: "/strategies",
+  strategiesBil: "/strategies/bil-vault",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -99,6 +103,19 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
+    ],
+  },
+  {
+    key: "strategies",
+    to: LINKS.strategies,
+    icon: CoinsIcon,
+    children: [
+      { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
+      {
+        key: "strategiesHollarBonds",
+        to: LINKS.strategiesHollarBonds,
+        icon: GoalIcon,
+      },
     ],
   },
   {
@@ -168,11 +185,6 @@ export const NAVIGATION: NavigationItem[] = [
       },
       { key: "stakingOld", to: LINKS.stakingOld, icon: ChartPieIcon },
     ],
-  },
-  {
-    key: "strategiesHollarBonds",
-    to: LINKS.strategiesHollarBonds,
-    icon: GoalIcon,
   },
   // {
   //   key: "governance",
@@ -331,9 +343,25 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
+    strategies: {
+      title: t("navigation.strategies.title"),
+      description: "",
+    },
+    strategiesBil: {
+      title: t("navigation.strategiesBil.title"),
+      description: t("navigation.strategiesBil.description"),
+    },
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
-      description: "",
+      description: t("navigation.strategiesHollarBonds.description"),
+    },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
     },
     // memepad: {
     //   title: t("navigation.memepad.title"),
@@ -374,6 +402,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "strategies",
   "liquidity",
   "wallet",
   "crossChain",
@@ -388,6 +417,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "liquidity",
   "borrow",
+  "strategies",
   "crossChain",
   "stats",
   "staking",

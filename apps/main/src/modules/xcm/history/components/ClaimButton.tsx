@@ -1,10 +1,14 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, useNow } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 
 import { ClaimFlowModalButton } from "@/modules/xcm/history/components/ClaimFlowModalButton"
 import { useDepositClaim } from "@/modules/xcm/history/hooks/useDepositClaim"
+import { useJourneyRedeemed } from "@/modules/xcm/history/hooks/useJourneyRedeemed"
 import { useWithdrawClaim } from "@/modules/xcm/history/hooks/useWithdrawClaim"
-import { resolveChainFromUrn } from "@/modules/xcm/history/utils/claim"
+import {
+  isJourneyClaimReady,
+  resolveChainFromUrn,
+} from "@/modules/xcm/history/utils/claim"
 
 type ClaimButtonProps = {
   journey: XcJourney
@@ -35,8 +39,16 @@ const ClaimDepositButton: React.FC<ClaimButtonProps> = ({ journey }) => {
 }
 
 export const ClaimButton: React.FC<ClaimButtonProps> = ({ journey }) => {
+  const now = useNow(isJourneyClaimReady(journey) ? null : 1000)
+  const isReady = isJourneyClaimReady(journey, now)
+
+  const { data: isRedeemed } = useJourneyRedeemed(journey)
+
+  if (!isReady || isRedeemed) return null
+
   const chain = resolveChainFromUrn(journey.destination)
   const isDeposit = chain?.key === HYDRATION_CHAIN_KEY
+
   return isDeposit ? (
     <ClaimDepositButton journey={journey} />
   ) : (

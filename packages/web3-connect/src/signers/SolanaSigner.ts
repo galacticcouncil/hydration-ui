@@ -88,7 +88,7 @@ export class SolanaSigner {
     signers: Keypair[],
     options: SolanaSignerOptions,
   ) {
-    const versioned = dataToVersionedTx(data, signers)
+    const versioned = await dataToVersionedTx(this.connection, data, signers)
 
     await this.provider.connect()
 
@@ -117,7 +117,9 @@ export class SolanaSigner {
   }
 
   async signAndSendBatch(calls: SolanaCall[], options: SolanaSignerOptions) {
-    const versioned = calls.map((c) => dataToVersionedTx(c.data, c.signers))
+    const versioned = await Promise.all(
+      calls.map((c) => dataToVersionedTx(this.connection, c.data, c.signers)),
+    )
 
     await this.provider.connect()
 

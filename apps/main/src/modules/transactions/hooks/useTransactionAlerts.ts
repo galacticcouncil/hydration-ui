@@ -10,7 +10,9 @@ import { isObjectType } from "remeda"
 import { useAccountPendingPermit } from "@/api/account"
 import { useMultisigDeposit, useMultisigSignerBalance } from "@/api/multisig"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
+import { useAssets } from "@/providers/assetsProvider"
 import { useTransactionsStore } from "@/states/transactions"
+import { scaleHuman } from "@/utils/formatting"
 
 export enum TransactionAlertFlag {
   InsufficientFeeBalance = "insufficientFeeBalance",
@@ -24,6 +26,7 @@ type TransactionAlert = AlertProps & {
 
 export const useTransactionAlerts = () => {
   const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
   const activeMultisigConfig = useActiveMultisigConfig()
 
@@ -33,6 +36,7 @@ export const useTransactionAlerts = () => {
     feeEstimate,
     feeEstimateNative,
     feeAssetBalance,
+    feeAssetId,
     isUsingPermit,
     nonce,
   } = useTransaction()
@@ -49,13 +53,19 @@ export const useTransactionAlerts = () => {
     multisigConfig?.signers.length ?? 0,
   )
 
+  const feeAsset = getAssetWithFallback(feeAssetId)
+
   // For multisig, fee is paid by the signer (not the multisig account itself),
   // so skip the regular fee balance check — isSignerBalanceInsufficient covers it.
   const isFeeBalanceInsufficient =
     !isMultisig &&
     feeAssetBalance &&
     feeEstimate &&
-    Big(feeAssetBalance).lt(feeEstimate)
+    Big(feeAssetBalance).lt(
+      Big(feeEstimate).plus(
+        scaleHuman(feeAsset.existentialDeposit, feeAsset.decimals),
+      ),
+    )
 
   // For multisig: signer must cover native tx fee + multisig deposit
   const isSignerBalanceInsufficient =

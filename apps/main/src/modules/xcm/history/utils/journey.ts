@@ -5,7 +5,13 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
-import { getChainId, isH160Address, stringEquals } from "@galacticcouncil/utils"
+import {
+  basejumpscan,
+  getChainId,
+  isH160Address,
+  stringEquals,
+  xcscan,
+} from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { XcJourney, XcOcnUrn } from "@galacticcouncil/xc-scan"
 import { isNonNullish, sortBy } from "remeda"
@@ -105,8 +111,12 @@ export function isXcSwapReceiverJourney(journey: XcJourney): boolean {
   return stringEquals(journey.to ?? "", XC_SWAP_CONFIG.receiver)
 }
 
-export function getVisibleJourneys(journeys: XcJourney[]): XcJourney[] {
-  return journeys.filter((j) => !isXcSwapReceiverJourney(j))
+export function getJourneyExplorerLink(journey: XcJourney): string {
+  const { originProtocol, correlationId } = journey
+
+  return originProtocol === "basejump"
+    ? basejumpscan.tx(correlationId)
+    : xcscan.tx(correlationId)
 }
 
 export function mergeJourneys(

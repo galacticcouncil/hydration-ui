@@ -18,6 +18,7 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
     padding: ${theme.space.s};
     padding-right: ${theme.space.m};
     min-width: fit-content;
+    flex-shrink: 0;
 
     border-radius: 30px;
     border: 1px solid
@@ -51,6 +52,8 @@ export const SAssetInput = styled(Input)(
     font-size: ${theme.fontSizes.p2};
     height: auto;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     padding: 0;
   `,
 )
