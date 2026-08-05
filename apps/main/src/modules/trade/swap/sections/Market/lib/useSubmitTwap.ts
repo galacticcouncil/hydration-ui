@@ -1,47 +1,48 @@
-import { useAccount } from "@galacticcouncil/web3-connect";
-import { useMutation } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
-import { useTranslation } from "react-i18next";
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useMutation } from "@tanstack/react-query"
+import { formatDistanceToNow } from "date-fns"
+import { useTranslation } from "react-i18next"
 
-import { blockTimeQuery } from "@/api/chain";
-import { intentsByAccountQuery } from "@/api/intents";
-import { bestBuyQuery, bestSellTwapQuery, TradeType } from "@/api/trade";
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm";
-import { useRpcProvider } from "@/providers/rpcProvider";
-import { useTradeSettings } from "@/states/tradeSettings";
+import { intentsByAccountQuery } from "@/api/intents"
 import {
-  TransactionActions,
-  useTransactionsStore,
-} from "@/states/transactions";
-import { scaleHuman } from "@/utils/formatting";
+  bestBuyQuery,
+  bestSellTwapQuery,
+  tradeOrderDurationQuery,
+  TradeType,
+} from "@/api/trade"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
+import { TransactionActions, useTransactionsStore } from "@/states/transactions"
+import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitTwap = (actions?: TransactionActions) => {
-  const { t } = useTranslation(["common", "trade"]);
-  const { account } = useAccount();
-  const rpc = useRpcProvider();
-  const { sdk, featureFlags } = rpc;
+  const { t } = useTranslation(["common", "trade"])
+  const { account } = useAccount()
+  const rpc = useRpcProvider()
+  const { sdk, featureFlags } = rpc
 
   const {
     swap: {
       split: { twapSlippage, twapMaxRetries },
     },
-  } = useTradeSettings();
+  } = useTradeSettings()
 
-  const { createTransaction } = useTransactionsStore();
+  const { createTransaction } = useTransactionsStore()
 
   return useMutation({
     mutationFn: async (values: MarketFormValues) => {
-      const { sellAsset, buyAsset } = values;
+      const { sellAsset, buyAsset } = values
 
-      if (!sellAsset) throw new Error("Invalid sell asset");
-      if (!buyAsset) throw new Error("Invalid buy asset");
-      if (!account) throw new Error("Account not connected");
+      if (!sellAsset) throw new Error("Invalid sell asset")
+      if (!buyAsset) throw new Error("Invalid buy asset")
+      if (!account) throw new Error("Account not connected")
 
-      const sellDecimals = sellAsset.decimals;
-      const sellSymbol = sellAsset.symbol;
+      const sellDecimals = sellAsset.decimals
+      const sellSymbol = sellAsset.symbol
 
       const budget = await (async () => {
-        if (values.type !== TradeType.Buy) return values.sellAmount;
+        if (values.type !== TradeType.Buy) return values.sellAmount
 
         const quote = await rpc.queryClient.ensureQueryData(
           bestBuyQuery(rpc, {
@@ -49,10 +50,10 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             assetOut: buyAsset.id,
             amountOut: values.buyAmount,
           }),
-        );
+        )
 
-        return scaleHuman(quote.amountIn, sellDecimals);
-      })();
+        return scaleHuman(quote.amountIn, sellDecimals)
+      })()
 
       const twap = await rpc.queryClient.ensureQueryData(
         bestSellTwapQuery(rpc, {
@@ -60,18 +61,21 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
           assetOut: buyAsset.id,
           amountIn: budget,
         }),
-      );
+      )
 
-      const blockTimeMs = await rpc.queryClient.ensureQueryData(
-        blockTimeQuery(sdk),
-      );
+      // Same duration source as the split card ("Execute within X") —
+      // interval- and ICE-aware, unlike a plain tradeCount × blockTime.
+      const duration = await rpc.queryClient
+        .ensureQueryData(tradeOrderDurationQuery(rpc, twap.tradeCount))
+        .catch(() => 0)
 
       const params = {
         noOfTrades: twap.tradeCount,
-        timeframe: formatDistanceToNow(
-          Date.now() + twap.tradeCount * twap.tradePeriod * blockTimeMs,
-          { includeSeconds: true },
-        ),
+        timeframe: duration
+          ? formatDistanceToNow(Date.now() + duration, {
+              includeSeconds: true,
+            })
+          : t("unknown"),
         in: t("currency", {
           value: scaleHuman(twap.tradeAmountIn, sellDecimals),
           symbol: sellSymbol,
@@ -80,7 +84,7 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
           value: scaleHuman(twap.amountIn, sellDecimals),
           symbol: sellSymbol,
         }),
-      };
+      }
 
       const tx = featureFlags.isIceEnabled
         ? await sdk.tx
@@ -93,7 +97,7 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             .withSlippage(twapSlippage)
             .withMaxRetries(twapMaxRetries)
             .withBeneficiary(account.address)
-            .build();
+            .build()
 
       return createTransaction(
         {
@@ -108,7 +112,7 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
           ],
         },
         actions,
-      );
+      )
     },
-  });
-};
+  })
+}

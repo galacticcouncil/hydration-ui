@@ -1,9 +1,7 @@
-import { Flex, FormError, NumberInput } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
 import { SettingsSection } from "@/modules/trade/swap/components/SettingsModal/SettingsSection"
 import { TradeSlippage } from "@/modules/trade/swap/components/SettingsModal/TradeSlippage"
 import { SwapSettings } from "@/states/tradeSettings"
@@ -24,30 +22,6 @@ export const SplitTradeSection: FC = () => {
             helpTooltip={t("dca.settings.modal.slippage.help")}
             error={error?.message}
           />
-        )}
-      />
-      <Controller
-        control={control}
-        name="split.twapMaxRetries"
-        render={({ field: { value, onChange }, fieldState: { error } }) => (
-          <div>
-            <Flex justify="space-between" align="center">
-              <SettingLabel
-                label={t("swap.settings.modal.split.maxRetries")}
-                helpTooltip={t("dca.settings.modal.maxRetries.help")}
-              />
-              <NumberInput
-                sx={{ width: 85 }}
-                value={value}
-                allowNegative={false}
-                decimalScale={0}
-                onValueChange={({ floatValue }) => onChange(floatValue ?? null)}
-              />
-            </Flex>
-            {error && (
-              <FormError sx={{ textAlign: "end" }}>{error.message}</FormError>
-            )}
-          </div>
         )}
       />
     </SettingsSection>

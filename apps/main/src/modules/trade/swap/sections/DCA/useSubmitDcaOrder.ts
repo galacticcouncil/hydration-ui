@@ -1,62 +1,95 @@
-import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils";
-import { useAccount } from "@galacticcouncil/web3-connect";
-import { useMutation } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
+import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useMutation } from "@tanstack/react-query"
+import Big from "big.js"
+import { useTranslation } from "react-i18next"
 
-import { intentsByAccountQuery } from "@/api/intents";
-import { dcaOrderQuery } from "@/api/trade";
+import { intentsByAccountQuery } from "@/api/intents"
+import { dcaOrderQuery } from "@/api/trade"
 import {
   DcaFormValues,
   DcaOrdersMode,
-} from "@/modules/trade/swap/sections/DCA/useDcaForm";
-import { useRpcProvider } from "@/providers/rpcProvider";
-import { useNeckworkSyncStore } from "@/states/neckwork";
-import { useTradeSettings } from "@/states/tradeSettings";
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkSyncStore } from "@/states/neckwork"
+import { useTradeSettings } from "@/states/tradeSettings"
 import {
   getTxResultBlockHeight,
   isSubstrateTxResult,
   useTransactionsStore,
-} from "@/states/transactions";
-import { scaleHuman } from "@/utils/formatting";
+} from "@/states/transactions"
+import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitDcaOrder = () => {
-  const { t } = useTranslation(["common", "trade"]);
+  const { t } = useTranslation(["common", "trade"])
 
-  const { account } = useAccount();
-  const rpc = useRpcProvider();
-  const { sdk, featureFlags } = rpc;
+  const { account } = useAccount()
+  const rpc = useRpcProvider()
+  const { sdk, featureFlags } = rpc
 
   const {
     dca: { slippage, maxRetries },
-  } = useTradeSettings();
+  } = useTradeSettings()
 
-  const { createTransaction } = useTransactionsStore();
-  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm);
+  const { createTransaction } = useTransactionsStore()
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
   return useMutation({
     mutationFn: async (values: DcaFormValues) => {
-      const { sellAsset, buyAsset, sellAmount, orders } = values;
+      const {
+        sellAsset,
+        buyAsset,
+        sellAmount,
+        orders,
+        limitEnabled,
+        limitPrice,
+      } = values
 
-      if (!account) throw new Error("Account not connected");
-      if (!sellAsset) throw new Error("Invalid sell asset");
-      if (!buyAsset) throw new Error("Invalid buy asset");
+      if (!account) throw new Error("Account not connected")
+      if (!sellAsset) throw new Error("Invalid sell asset")
+      if (!buyAsset) throw new Error("Invalid buy asset")
 
       const order = await rpc.queryClient.ensureQueryData(
         dcaOrderQuery(rpc, values),
-      );
+      )
 
-      if (!order) throw new Error("Failed to build DCA order");
+      if (!order) throw new Error("Failed to build DCA order")
 
-      const sellDecimals = sellAsset.decimals;
-      const sellSymbol = sellAsset.symbol;
-      const buySymbol = buyAsset.symbol;
-      const duration = getTimeFrameMillis(values.duration);
-      const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0;
-      const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget;
+      const sellDecimals = sellAsset.decimals
+      const sellSymbol = sellAsset.symbol
+      const buySymbol = buyAsset.symbol
+      const duration = getTimeFrameMillis(values.duration)
+      const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
+      const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+
+      // Price condition ("limit TWAP"): each slice must deliver at least the
+      // amount implied by the user's price. limitPrice is SELL-per-BUY, so the
+      // per-slice floor = tradeAmountIn(SELL) / limitPrice, scaled to the BUY
+      // asset. Exact floor, no slippage — mirrors the Limit screen.
+      const minAmountOut =
+        limitEnabled && limitPrice && Big(limitPrice).gt(0)
+          ? BigInt(
+              Big(order.tradeAmountIn.toString())
+                .div(Big(10).pow(sellDecimals))
+                .div(limitPrice)
+                .times(Big(10).pow(buyAsset.decimals))
+                .toFixed(0),
+            )
+          : undefined
+
+      // The intent Dca builder emits `amount_out` from the order's `assetOutEd`
+      // field. For a limit-TWAP we override it with the user's per-slice price
+      // floor (a market TWAP keeps the ED). Passing it through the order works
+      // with the published SDK as-is; the SDK also exposes an explicit
+      // `withMinAmountOut(...)` (same effect) to switch to once released.
+      const iceOrder =
+        minAmountOut !== undefined
+          ? { ...order, assetOutEd: minAmountOut }
+          : order
 
       const tx = featureFlags.isIceEnabled
         ? await sdk.tx
-            .intentOrder(order)
+            .intentOrder(iceOrder)
             .withBeneficiary(account.address)
             .withSlippage(slippage)
             .build()
@@ -65,7 +98,7 @@ export const useSubmitDcaOrder = () => {
             .withBeneficiary(account.address)
             .withSlippage(slippage)
             .withMaxRetries(maxRetries)
-            .build();
+            .build()
 
       const params = {
         amountIn: t("currency", {
@@ -78,7 +111,7 @@ export const useSubmitDcaOrder = () => {
         }),
         assetOut: buySymbol,
         frequency: isOpenBudget ? duration : frequency,
-      };
+      }
 
       return createTransaction(
         {
@@ -105,22 +138,22 @@ export const useSubmitDcaOrder = () => {
           // arm the indexer sync for the first execution rather than the block
           // the schedule landed in, so the enrichment has an amount to report
           onSuccess: (event) => {
-            if (featureFlags.isIceEnabled) return;
+            if (featureFlags.isIceEnabled) return
 
-            const blockHeight = getTxResultBlockHeight(event);
-            if (blockHeight === null) return;
+            const blockHeight = getTxResultBlockHeight(event)
+            if (blockHeight === null) return
 
             const planned = isSubstrateTxResult(event)
               ? (event.events.find(
                   (e) =>
                     e.type === "DCA" && e.value.type === "ExecutionPlanned",
                 )?.value.value as { block: number } | undefined)
-              : undefined;
+              : undefined
 
-            armNeckworkSync(planned?.block ?? blockHeight + 1);
+            armNeckworkSync(planned?.block ?? blockHeight + 1)
           },
         },
-      );
+      )
     },
-  });
-};
+  })
+}
