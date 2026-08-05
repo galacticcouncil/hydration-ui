@@ -16,7 +16,6 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { formatCalcValue } from "@/modules/trade/swap/sections/Limit/limitUtils"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import {
   SCustomPill,
@@ -30,6 +29,7 @@ import {
   SPillTrigger,
   SPriceInput,
 } from "@/modules/trade/swap/sections/Limit/LimitPriceSection.styled"
+import { formatCalcValue } from "@/modules/trade/swap/sections/Limit/limitUtils"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
@@ -119,7 +119,9 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
       return u.value
     if (!limitPrice) return ""
     try {
-      const v = isInverted ? Big(1).div(new Big(limitPrice)) : new Big(limitPrice)
+      const v = isInverted
+        ? Big(1).div(new Big(limitPrice))
+        : new Big(limitPrice)
       return v.lte(0) ? "" : formatCalcValue(v)
     } catch {
       return ""
@@ -140,7 +142,11 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
           return
         }
       }
-      userInputRef.current = { value: displayValue, inverted: isInverted, canonical }
+      userInputRef.current = {
+        value: displayValue,
+        inverted: isInverted,
+        canonical,
+      }
       setUserPct(null)
       setValue("limitPrice", canonical, { shouldValidate: true })
     },
@@ -148,8 +154,10 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
   )
 
   // The asset the price is quoted in, given the denomination.
-  const priceQuoteSymbol = (isInverted ? buyAsset?.symbol : sellAsset?.symbol) ?? ""
-  const priceBaseSymbol = (isInverted ? sellAsset?.symbol : buyAsset?.symbol) ?? ""
+  const priceQuoteSymbol =
+    (isInverted ? buyAsset?.symbol : sellAsset?.symbol) ?? ""
+  const priceBaseSymbol =
+    (isInverted ? sellAsset?.symbol : buyAsset?.symbol) ?? ""
   const priceQuoteAssetId = (isInverted ? buyAsset?.id : sellAsset?.id) ?? ""
 
   const [priceFiat] = useDisplayAssetPrice(
@@ -288,7 +296,13 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
                   color={getToken("icons.onContainer")}
                 />
               </Button>
-              <Flex align="center" flex={1} minWidth={0} gap="s" justify="flex-end">
+              <Flex
+                align="center"
+                flex={1}
+                minWidth={0}
+                gap="s"
+                justify="flex-end"
+              >
                 <SPriceInput
                   variant="embedded"
                   customSize="small"

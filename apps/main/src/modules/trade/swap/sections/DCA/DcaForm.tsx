@@ -20,8 +20,8 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   DEFAULT_TRADE_ASSET_IN_ID,
   DEFAULT_TRADE_ASSET_OUT_ID,

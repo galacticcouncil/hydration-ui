@@ -29,8 +29,14 @@ export const useSubmitDcaOrder = () => {
 
   return useMutation({
     mutationFn: async ([formValues, order]: [DcaFormValues, TradeDcaOrder]) => {
-      const { sellAsset, buyAsset, sellAmount, orders, limitEnabled, limitPrice } =
-        formValues
+      const {
+        sellAsset,
+        buyAsset,
+        sellAmount,
+        orders,
+        limitEnabled,
+        limitPrice,
+      } = formValues
 
       if (!account) throw new Error("Account not connected")
       if (!sellAsset || !buyAsset) throw new Error("Invalid DCA assets")
