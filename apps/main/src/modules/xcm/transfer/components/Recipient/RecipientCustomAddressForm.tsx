@@ -1,8 +1,10 @@
+import { Notebook } from "@galacticcouncil/ui/assets/icons"
 import {
   AccountInput,
   Box,
   Button,
   FormError,
+  Icon,
   Label,
   ModalContentDivider,
 } from "@galacticcouncil/ui/components"
@@ -11,13 +13,8 @@ import {
   arraySearch,
   isAddressValidOnChain,
   preventDefault,
-  safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
-import {
-  getWalletModeByAddress,
-  PROVIDERS_BY_WALLET_MODE,
-} from "@galacticcouncil/web3-connect"
-import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
+import { useAddresses, useAddressStore } from "@galacticcouncil/web3-connect"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMemo } from "react"
@@ -58,7 +55,10 @@ export const RecipientCustomAddressForm: React.FC<
     },
   })
 
-  const { addresses, add: addAddressToAddressBook } = useAddressStore()
+  const { add: addAddressToAddressBook } = useAddressStore()
+  const addresses = useAddresses({
+    related: true,
+  })
 
   const customAddress = form.watch("customAddress")
 
@@ -80,23 +80,11 @@ export const RecipientCustomAddressForm: React.FC<
 
   const onSubmitHandler = (values: CustomAddressFormValues) => {
     const address = values.customAddress.trim()
-    const addressPublicKey = safeConvertSS58toPublicKey(address)
-    const addressProvider = getWalletModeByAddress(address)
-    const walletProvider = addressProvider
-      ? PROVIDERS_BY_WALLET_MODE[addressProvider][0]
-      : null
-    const canAdd =
-      !!walletProvider &&
-      !addresses.find((address) => address.publicKey === addressPublicKey)
-    if (canAdd) {
-      addAddressToAddressBook({
-        address,
-        publicKey: safeConvertSS58toPublicKey(address),
-        name: "",
-        provider: walletProvider,
-        isCustom: true,
-      })
-    }
+    addAddressToAddressBook({
+      address,
+      name: "",
+      isCustom: true,
+    })
     onSubmit(address)
   }
 
@@ -142,6 +130,7 @@ export const RecipientCustomAddressForm: React.FC<
       ) : (
         <EmptyState
           header=""
+          icon={<Icon component={Notebook} size="xl" />}
           description={t("recipient.modal.empty.description")}
         />
       )}

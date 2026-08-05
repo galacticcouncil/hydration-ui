@@ -3,6 +3,7 @@ import {
   EvmAddr,
   isEvmParachainAccount,
   isH160Address,
+  NearAddr,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
   safeConvertSolanaAddressToSS58,
@@ -12,26 +13,62 @@ import {
   SolanaAddr,
   Ss58Addr,
   stringEquals,
+  SuiAddr,
+  ZcashAddr,
 } from "@galacticcouncil/utils"
 
-import {
-  AccountFilterOption,
-  allAccountFilterOptions,
-} from "@/components/account/AccountFilter"
 import {
   SOLANA_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
 import {
+  WALLET_ACCOUNT_FILTER_OPTIONS,
+  WalletAccountFilterOption,
+  WalletAccountFilterOptionOverride,
+  WalletMode,
+} from "@/config/wallet"
+import {
   Account,
   COMPATIBLE_WALLET_PROVIDERS,
   PROVIDERS_BY_WALLET_MODE,
   StoredAccount,
   useWeb3Connect,
-  WalletMode,
 } from "@/hooks/useWeb3Connect"
 import { Wallet, WalletAccount } from "@/types/wallet"
+
+const walletModeNames = {
+  [WalletMode.Substrate]: "Polkadot",
+  [WalletMode.EVM]: "EVM",
+  [WalletMode.Solana]: "Solana",
+  [WalletMode.Sui]: "Sui",
+  [WalletMode.SubstrateH160]: "Substrate H160",
+  [WalletMode.Near]: "NEAR",
+  [WalletMode.Zcash]: "Zcash",
+} satisfies Record<WalletAccountFilterOptionOverride, string>
+
+export const getWalletModeName = (
+  mode: WalletAccountFilterOptionOverride,
+): string => walletModeNames[mode]
+
+export const addressToPublicKey = (address: string): string => {
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return address
+    case Ss58Addr.isValid(address):
+      return safeConvertSS58toPublicKey(address)
+    case SolanaAddr.isValid(address):
+      return address
+    case SuiAddr.isValid(address):
+      return address
+    case NearAddr.isValid(address):
+      return address
+    case ZcashAddr.isValid(address):
+      return address
+    default:
+      return ""
+  }
+}
 
 const toStoredSolanaAccount = ({
   address,
@@ -132,6 +169,12 @@ export const getWalletModeByAddress = (address: string) => {
       return WalletMode.Substrate
     case SolanaAddr.isValid(address):
       return WalletMode.Solana
+    case SuiAddr.isValid(address):
+      return WalletMode.Sui
+    case NearAddr.isValid(address):
+      return WalletMode.Near
+    case ZcashAddr.isValid(address):
+      return WalletMode.Zcash
     default:
       return null
   }
@@ -139,10 +182,10 @@ export const getWalletModeByAddress = (address: string) => {
 
 export const getDefaultAccountFilterByMode = (
   mode: WalletMode,
-): AccountFilterOption => {
+): WalletAccountFilterOption => {
   if (mode !== WalletMode.Default)
     return (
-      allAccountFilterOptions.find((option) => option === mode) ||
+      WALLET_ACCOUNT_FILTER_OPTIONS.find((option) => option === mode) ||
       WalletMode.Default
     )
   return WalletMode.Default
@@ -189,19 +232,11 @@ export function subscribeWalletAccounts(
   return unsubscribe
 }
 
-export function getWalletModeIcon(mode: WalletMode) {
-  switch (mode) {
-    case WalletMode.EVM:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
-    case WalletMode.Substrate:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
-    case WalletMode.Solana:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
-    case WalletMode.Sui:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
-    default:
-      return ""
-  }
+export function getUniqueAccountKey(account: {
+  provider: string
+  publicKey: string
+}) {
+  return `${account.provider}-${account.publicKey}`
 }
 
 export function getWalletModesByProviderType(
@@ -212,6 +247,22 @@ export function getWalletModesByProviderType(
     .map(([mode, _]) => mode as WalletMode)
 }
 
-export function getUniqueAccountKey(account: StoredAccount) {
-  return `${account.provider}-${account.publicKey}`
+export function getWalletModeIcon(mode: WalletMode) {
+  switch (mode) {
+    case WalletMode.EVM:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
+    case WalletMode.Substrate:
+    case WalletMode.SubstrateH160:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
+    case WalletMode.Solana:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
+    case WalletMode.Sui:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
+    case WalletMode.Near:
+      return "/images/platforms/near.png"
+    case WalletMode.Zcash:
+      return "/images/platforms/zcash.png"
+    default:
+      return ""
+  }
 }
