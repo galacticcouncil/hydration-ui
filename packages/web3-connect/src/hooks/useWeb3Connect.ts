@@ -3,6 +3,7 @@ import { omit, uniqueBy } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import { Web3ConnectModalPage } from "@/config/modal"
 import {
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
@@ -11,7 +12,8 @@ import {
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
-import { getUniqueAccountKey } from "@/utils"
+import { WalletMode } from "@/config/wallet"
+import { getUniqueAccountKey } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
@@ -22,16 +24,7 @@ export enum WalletProviderStatus {
   Error = "error",
 }
 
-export enum WalletMode {
-  Default = "default",
-  EVM = "evm",
-  Substrate = "substrate",
-  SubstrateEVM = "substrate-evm",
-  SubstrateH160 = "substrate-h160",
-  Solana = "solana",
-  Sui = "sui",
-  Unknown = "unknown",
-}
+export { WalletMode } from "@/config/wallet"
 
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
   ...SUBSTRATE_PROVIDERS,
@@ -73,6 +66,9 @@ export type Account = StoredAccount & {
 type Web3ConnectModalMeta = {
   title?: string
   description?: string
+  hideExternalWallet?: boolean
+  initialPage?: Web3ConnectModalPage
+  initialProvider?: WalletProviderType
 }
 
 export type WalletProviderEntry = {
@@ -84,6 +80,7 @@ export type WalletProviderState = {
   open: boolean
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
+  recentlyDisconnectedProviders: WalletProviderType[]
   account: StoredAccount | null
   accounts: StoredAccount[]
   mode: WalletMode
@@ -111,6 +108,7 @@ const initialState: WalletProviderState = {
   open: false,
   providers: [],
   recentProvider: null,
+  recentlyDisconnectedProviders: [],
   account: null,
   accounts: [],
   mode: WalletMode.Default,
@@ -214,23 +212,46 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           (type) => type === givenProvider,
         )
 
-        set((state) => ({
-          ...state,
-          ...initialState,
-          account:
+        set((state) => {
+          const isDisconnectingActive =
             !provider || provider === state.account?.provider
-              ? null
-              : state.account,
-          accounts: provider
+          const remainingAccounts = provider
             ? state.accounts.filter((a) => a.provider !== provider)
-            : [],
-          providers: provider
+            : []
+          const remainingProviders = provider
             ? state.providers.filter((p) => p.type !== provider)
-            : [],
-          recentProvider: null,
-          mode: state.mode,
-          open: state.open,
-        }))
+            : []
+          const nextAccount = isDisconnectingActive
+            ? (remainingAccounts[0] ?? null)
+            : state.account
+
+          if (nextAccount) {
+            const wallet = getWallet(nextAccount.provider)
+            if (wallet instanceof BaseSubstrateWallet) {
+              const signerAddress = nextAccount.isMultisig
+                ? (nextAccount.multisigSignerAddress ?? nextAccount.address)
+                : nextAccount.address
+              wallet.setSigner(signerAddress)
+            }
+          }
+
+          return {
+            ...state,
+            ...initialState,
+            account: nextAccount,
+            accounts: remainingAccounts,
+            providers: remainingProviders,
+            recentProvider: null,
+            recentlyDisconnectedProviders: provider
+              ? uniqueBy(
+                  [provider, ...state.recentlyDisconnectedProviders],
+                  (type) => type,
+                ).slice(0, 3)
+              : [],
+            mode: state.mode,
+            open: state.open,
+          }
+        })
       },
     }),
     {
