@@ -53,7 +53,12 @@ export const DcaSummary: FC<Props> = ({
 
   const now = Date.now()
 
-  const [durationTimeFrame, type] = watch(["duration", "orders.type"])
+  const [durationTimeFrame, type, limitEnabled, limitPrice] = watch([
+    "duration",
+    "orders.type",
+    "limitEnabled",
+    "limitPrice",
+  ])
   const isOpenBudget = type === DcaOrdersMode.OpenBudget
   const duration = getTimeFrameMillis(durationTimeFrame)
   const frequency =
@@ -104,6 +109,21 @@ export const DcaSummary: FC<Props> = ({
               <Box as="span" color={getToken("text.tint.secondary")} />
             </Trans>
           </Text>
+          {limitEnabled && limitPrice && (
+            <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
+              <Trans
+                t={t}
+                i18nKey="trade:dca.summary.limitClause"
+                values={{
+                  buySymbol: buyAsset.symbol,
+                  price: limitPrice,
+                  sellSymbol: sellAsset.symbol,
+                }}
+              >
+                <Box as="span" color={getToken("text.tint.secondary")} />
+              </Trans>
+            </Text>
+          )}
         </Flex>
         <SwapSectionSeparator sx={{ mt: 9 }} />
         <Summary separator={<SwapSectionSeparator />}>
