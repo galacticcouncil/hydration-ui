@@ -1,4 +1,4 @@
-import { etherscan, subscan } from "@galacticcouncil/utils"
+import { etherscan, intentscan, subscan } from "@galacticcouncil/utils"
 import {
   useAccount,
   useActiveMultisigConfig,
@@ -112,6 +112,10 @@ function getTransactionLink(
   meta: TransactionMeta,
   txHash: string,
 ) {
+  if (meta.type === TransactionType.XcSwap && meta.intentId) {
+    return intentscan.intent(meta.intentId)
+  }
+
   if (
     meta.type === TransactionType.EvmApprove ||
     (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm)

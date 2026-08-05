@@ -48,6 +48,7 @@ import {
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
 import {
+  isXcSwapReceiverJourney,
   XcJourneyStop,
   XcJourneyWhStop,
 } from "@/modules/xcm/history/utils/journey"
@@ -136,7 +137,10 @@ export function getClaimableJourneys(
   journeys: XcJourney[],
   nowMs = Date.now(),
 ) {
-  return journeys.filter((journey) => isJourneyClaimable(journey, nowMs))
+  return journeys.filter(
+    (journey) =>
+      !isXcSwapReceiverJourney(journey) && isJourneyClaimable(journey, nowMs),
+  )
 }
 
 function isWormholeStop(stop: XcJourneyStop): stop is XcJourneyWhStop {

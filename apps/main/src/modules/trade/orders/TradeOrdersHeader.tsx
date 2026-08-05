@@ -34,7 +34,7 @@ type Props = {
 export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
-  const { tab, allPairs, assetIn, assetOut } = useSearch({
+  const { tab, allPairs, assetIn, assetOut, destPlatform } = useSearch({
     from: "/trade/_history",
   })
 
@@ -69,6 +69,7 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
             allPairs,
             assetIn,
             assetOut,
+            destPlatform,
           } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}
@@ -99,7 +100,13 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
           onCheckedChange={(checked) => {
             navigate({
               to: ".",
-              search: { tab, allPairs: checked, assetIn, assetOut },
+              search: {
+                tab,
+                allPairs: checked,
+                assetIn,
+                assetOut,
+                destPlatform,
+              },
               resetScroll: false,
             })
           }}

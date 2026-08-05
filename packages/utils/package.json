@@ -14,6 +14,7 @@
   "dependencies": {
     "humanize-duration-ts": "^2.1.1",
     "@noble/hashes": "^1.6.1",
+    "@scure/base": "^1.2.6",
     "@types/uuid": "^10.0.0",
     "buffer": "^6.0.3",
     "uuid": "^11.0.5"

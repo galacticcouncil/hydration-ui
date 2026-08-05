@@ -6,12 +6,14 @@ import { useTranslation } from "react-i18next"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 
 type Props = {
-  readonly priceImpact: number
+  readonly priceImpact: number | null
   readonly label?: string
 }
 
 export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact, label }) => {
   const { t } = useTranslation(["common", "trade"])
+
+  const pct = priceImpact || 0
 
   return (
     <SwapSummaryRow
@@ -19,10 +21,12 @@ export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact, label }) => {
       content={
         <SummaryRowValue
           color={
-            priceImpact <= -1 ? getToken("alarmRed.400") : getToken("text.high")
+            pct <= -1
+              ? getToken("accents.danger.secondary")
+              : getToken("text.high")
           }
         >
-          {t("percent", { value: priceImpact })}
+          {t("percent", { value: pct || 0 })}
         </SummaryRowValue>
       }
       tooltip={t("trade:market.summary.priceImpact.tooltip")}

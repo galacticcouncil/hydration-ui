@@ -18,7 +18,13 @@ import {
   safeConvertSS58toPublicKey,
   stringEquals,
 } from "@galacticcouncil/utils"
-import { AddressBookModal, useAccount } from "@galacticcouncil/web3-connect"
+import {
+  AddressBookModal,
+  getWalletModeByAddress,
+  PROVIDERS_BY_WALLET_MODE,
+  useAccount,
+  WalletMode,
+} from "@galacticcouncil/web3-connect"
 import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useEffect, useState } from "react"
@@ -81,7 +87,20 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     }
   }, [watch])
 
-  const { addresses: userOwnedAddresses } = useAddressStore()
+  const { addresses: userOwnedAddresses, add: addAddressToAddressBook } =
+    useAddressStore()
+
+  const addCustomRecipient = (recipient: string) => {
+    const mode = getWalletModeByAddress(recipient)
+    const provider = mode ? PROVIDERS_BY_WALLET_MODE[mode][0] : undefined
+    if (!provider) return
+    addAddressToAddressBook({
+      address: recipient,
+      name: "",
+      provider,
+      isCustom: true,
+    })
+  }
 
   const isUserOwnedAddress = userOwnedAddresses.some(({ publicKey }) =>
     stringEquals(
@@ -105,12 +124,8 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   if (isMyContactsOpen) {
     return (
       <AddressBookModal
-        header={
-          <ModalHeader
-            title={t("common:addressBook.modal.title")}
-            onBack={() => setIsMyContactsOpen(false)}
-          />
-        }
+        whitelist={[WalletMode.Substrate, WalletMode.EVM]}
+        onBack={() => setIsMyContactsOpen(false)}
         onSelect={(address) => {
           form.setValue("address", address.address, { shouldValidate })
           setIsMyContactsOpen(false)
@@ -122,9 +137,10 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit((values) =>
-          transferPosition.mutate(values),
-        )}
+        onSubmit={form.handleSubmit((values) => {
+          addCustomRecipient(values.address)
+          transferPosition.mutate(values)
+        })}
       >
         <ModalHeader align="center" title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>

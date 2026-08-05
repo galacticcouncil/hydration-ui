@@ -1,16 +1,12 @@
+import { Box, Modal, ScrollArea, Stack } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import {
-  AccountAvatar,
-  Box,
-  Flex,
-  ScrollArea,
-  Stack,
-  Text,
-} from "@galacticcouncil/ui/components"
-import { shortenAccountAddress } from "@galacticcouncil/utils"
-import { Address } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
-import { FC } from "react"
-
-import { SRecipientAddressBookItem } from "./RecipientAddressBook.styled"
+  AddressBookEntry,
+  useAddressStore,
+} from "@galacticcouncil/web3-connect"
+import { AccountRemoveModal } from "@galacticcouncil/web3-connect/src/components/account/AccountRemoveModal"
+import { type Address } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
+import { FC, useState } from "react"
 
 type RecipientAddressBookProps = {
   addresses: Address[]
@@ -20,27 +16,52 @@ type RecipientAddressBookProps = {
 export const RecipientAddressBook: FC<RecipientAddressBookProps> = ({
   addresses,
   onSelectAddress,
-}) => (
-  <Box mx="var(--modal-content-inset)">
-    <ScrollArea height={200}>
-      <Stack separated>
-        {addresses.map((address) => (
-          <SRecipientAddressBookItem
-            onClick={() => onSelectAddress(address.address)}
-            key={address.publicKey}
-          >
-            <Flex align="center" gap="base">
-              <AccountAvatar
+}) => {
+  const [publicKeyToRemove, setPublicKeyToRemove] = useState("")
+  const { edit, remove } = useAddressStore()
+
+  return (
+    <>
+      <Box mx="var(--modal-content-inset)">
+        <ScrollArea height={pxToRem(200)}>
+          <Stack separated>
+            {addresses.map((address) => (
+              <AddressBookEntry
+                key={address.publicKey}
                 address={address.address}
-                sx={{ flexShrink: 0 }}
-                size={24}
+                mode={address.mode}
+                name={address.name}
+                onSelect={() => onSelectAddress(address.address)}
+                onEdit={(name) =>
+                  edit({
+                    ...address,
+                    name,
+                  })
+                }
+                onDelete={() => setPublicKeyToRemove(address.publicKey)}
               />
-              <Text truncate={120}>{address.name}</Text>
-            </Flex>
-            <Text>{shortenAccountAddress(address.address)}</Text>
-          </SRecipientAddressBookItem>
-        ))}
-      </Stack>
-    </ScrollArea>
-  </Box>
-)
+            ))}
+          </Stack>
+        </ScrollArea>
+      </Box>
+      <Modal
+        variant="popup"
+        open={!!publicKeyToRemove}
+        onOpenChange={(open) => {
+          if (!open) setPublicKeyToRemove("")
+        }}
+        disableInteractOutside
+      >
+        <AccountRemoveModal
+          align="center"
+          onDelete={() => {
+            remove(publicKeyToRemove)
+            setPublicKeyToRemove("")
+          }}
+          onCancel={() => setPublicKeyToRemove("")}
+          onBack={() => setPublicKeyToRemove("")}
+        />
+      </Modal>
+    </>
+  )
+}
