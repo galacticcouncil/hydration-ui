@@ -366,11 +366,16 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
       <Flex direction="column" gap="xs" sx={{ paddingBlock: theme.sizes.l }}>
         <Flex justify="space-between" align="center">
           <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
-            {t("trade:limit.priceLabel", {
-              symbol: isInverted
-                ? (buyAsset?.symbol ?? "")
-                : (sellAsset?.symbol ?? ""),
-            })}
+            {t(
+              isInverted
+                ? "trade:limit.priceLabelBelow"
+                : "trade:limit.priceLabelAbove",
+              {
+                symbol: isInverted
+                  ? (buyAsset?.symbol ?? "")
+                  : (sellAsset?.symbol ?? ""),
+              },
+            )}
           </Text>
           <Flex align="center" gap="s">
             <SCustomPill
@@ -527,6 +532,24 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
               />
             </SMarketButton>
           </Flex>
+        )}
+        {limitPrice && displayPrice && (
+          <Text fw={500} fs="p6" lh={1.3} color={getToken("text.medium")} mt="s">
+            {t(
+              isInverted
+                ? "trade:limit.fillsWhenBelow"
+                : "trade:limit.fillsWhenAbove",
+              {
+                base: isInverted
+                  ? (buyAsset?.symbol ?? "")
+                  : (sellAsset?.symbol ?? ""),
+                price: displayPrice,
+                quote: isInverted
+                  ? (sellAsset?.symbol ?? "")
+                  : (buyAsset?.symbol ?? ""),
+              },
+            )}
+          </Text>
         )}
       </Flex>
 

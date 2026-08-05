@@ -347,6 +347,26 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
                 </SMarketButton>
               </Flex>
             )}
+            {limitPrice && displayPrice && (
+              <Text
+                fs="p6"
+                lh={1.3}
+                fw={500}
+                color={getToken("text.medium")}
+                mt="s"
+              >
+                {t(
+                  isInverted
+                    ? "trade:limit.fillsWhenAbove"
+                    : "trade:limit.fillsWhenBelow",
+                  {
+                    base: priceBaseSymbol,
+                    price: displayPrice,
+                    quote: priceQuoteSymbol,
+                  },
+                )}
+              </Text>
+            )}
           </Flex>
         </>
       )}
