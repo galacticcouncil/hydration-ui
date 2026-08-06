@@ -3,10 +3,12 @@ import { useMemo } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useHydrationDepositLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationDepositLimitAlerts"
-import { useHydrationGlobalWithdrawLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationGlobalWithdrawLimitAlerts"
+import { useCBreakerInboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerInboundLimitAlerts"
+import { useCBreakerOutboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerOutboundLimitAlerts"
+import { useWormholeNttLimitAlerts } from "@/modules/xcm/transfer/hooks/useWormholeNttLimitAlerts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { pickXcmLimitAlert } from "@/modules/xcm/transfer/utils/limits"
 
 const REPORT_ERROR_KEYS = [
   "fee.insufficientBalance",
@@ -27,8 +29,9 @@ export const useXcmTransferAlerts = (
 ): XcmAlert[] => {
   const { t } = useTranslation(["xcm"])
 
-  const depositLimitAlerts = useHydrationDepositLimitAlerts(form)
-  const globalWithdrawLimitAlerts = useHydrationGlobalWithdrawLimitAlerts(form)
+  const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
+  const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
+  const wormholeNttLimitAlerts = useWormholeNttLimitAlerts(form)
 
   return useMemo<XcmAlert[]>(() => {
     const transferReportAlerts: XcmAlert[] = []
@@ -47,10 +50,19 @@ export const useXcmTransferAlerts = (
         }
       }
     }
-    return [
-      ...transferReportAlerts,
-      ...depositLimitAlerts,
-      ...globalWithdrawLimitAlerts,
-    ]
-  }, [t, transferReport, depositLimitAlerts, globalWithdrawLimitAlerts])
+    if (transferReportAlerts.length) return transferReportAlerts
+
+    const limitAlert = pickXcmLimitAlert([
+      ...cBreakerInboundLimitAlerts,
+      ...cBreakerOutboundLimitAlerts,
+      ...wormholeNttLimitAlerts,
+    ])
+    return limitAlert ? [limitAlert] : []
+  }, [
+    t,
+    transferReport,
+    cBreakerInboundLimitAlerts,
+    cBreakerOutboundLimitAlerts,
+    wormholeNttLimitAlerts,
+  ])
 }

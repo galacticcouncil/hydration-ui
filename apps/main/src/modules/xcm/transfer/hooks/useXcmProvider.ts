@@ -13,6 +13,7 @@ export type XcmAlert = {
   key: string
   message: string
   severity: XcmAlertSeverity
+  title?: string
   requiresUserConsent?: boolean | string
 }
 
