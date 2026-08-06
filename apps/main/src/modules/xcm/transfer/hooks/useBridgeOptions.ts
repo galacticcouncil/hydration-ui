@@ -12,6 +12,7 @@ import { XcmTag } from "@/states/transactions"
 export enum BridgeEntryKind {
   Default = "default",
   Snowbridge = "snowbridge",
+  Wormhole = "wormhole",
 }
 
 export type BridgeEntry =
@@ -21,12 +22,21 @@ export type BridgeEntry =
       v2: AssetRoute | null
       v1: AssetRoute | null
     }
+  | { kind: BridgeEntryKind.Wormhole }
 
-const entryPriority = (entry: BridgeEntry): number => {
-  const tag =
-    entry.kind === BridgeEntryKind.Snowbridge ? XcmTag.Snowbridge : entry.tag
-  return BRIDGE_PRIORITY[tag] ?? 99
+const entryTag = (entry: BridgeEntry): string => {
+  switch (entry.kind) {
+    case BridgeEntryKind.Snowbridge:
+      return XcmTag.Snowbridge
+    case BridgeEntryKind.Wormhole:
+      return XcmTag.NttExecutor
+    case BridgeEntryKind.Default:
+      return entry.tag
+  }
 }
+
+const entryPriority = (entry: BridgeEntry): number =>
+  BRIDGE_PRIORITY[entryTag(entry)] ?? 99
 
 export const useBridgeOptions = (
   routes: AssetRoute[],
@@ -41,6 +51,9 @@ export const useBridgeOptions = (
     const { v2, v1 } = pickSnowbridgeVariants(snowbridgeRoutes)
     const hasSnowbridgeChoice = [v2, v1].filter(isNonNullish).length >= 2
 
+    const hasWormholeChoice =
+      tags.includes(XcmTag.NttExecutor) && tags.includes(XcmTag.Wormhole)
+
     const options = pipe(
       tags,
       flatMap((tag): BridgeEntry[] => {
@@ -49,12 +62,20 @@ export const useBridgeOptions = (
             ? [{ kind: BridgeEntryKind.Snowbridge, v2, v1 }]
             : []
         }
+        if (tag === XcmTag.NttExecutor || tag === XcmTag.Wormhole) {
+          if (!hasWormholeChoice)
+            return [{ kind: BridgeEntryKind.Default, tag }]
+          return tag === XcmTag.NttExecutor
+            ? [{ kind: BridgeEntryKind.Wormhole }]
+            : []
+        }
         return [{ kind: BridgeEntryKind.Default, tag }]
       }),
       sortBy(entryPriority),
     )
 
-    const hasVisibleOptions = hasSnowbridgeChoice || options.length >= 2
+    const hasVisibleOptions =
+      hasSnowbridgeChoice || hasWormholeChoice || options.length >= 2
 
     return { options, hasVisibleOptions }
   }, [routes, destAsset])
