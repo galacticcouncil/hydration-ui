@@ -1,19 +1,33 @@
 import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Skeleton, Text } from "@galacticcouncil/ui/components"
-import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
+import { Flex, Icon, SpinnerIcon, Text } from "@galacticcouncil/ui/components"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { ComponentPropsWithoutRef, forwardRef } from "react"
 
 import { ChainLogo } from "@/components/ChainLogo"
 import { SPortfolioChainHeaderButton } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 
 type Props = ComponentPropsWithoutRef<"button"> & {
-  readonly totalDisplay: string
+  readonly name: string
+  readonly chainId: string | number
+  readonly ecosystem?: ChainEcosystem
+  readonly totalDisplay?: string
   readonly isLoading: boolean
   readonly isExpandable?: boolean
 }
 
 export const WalletPortfolioChainHeader = forwardRef<HTMLButtonElement, Props>(
-  ({ totalDisplay, isLoading, isExpandable = false, ...props }, ref) => {
+  (
+    {
+      name,
+      chainId,
+      ecosystem,
+      totalDisplay,
+      isLoading,
+      isExpandable = false,
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <SPortfolioChainHeaderButton
         ref={ref}
@@ -21,20 +35,26 @@ export const WalletPortfolioChainHeader = forwardRef<HTMLButtonElement, Props>(
         isExpandable={isExpandable}
       >
         <Flex align="center" gap="s">
-          <ChainLogo chainId={HYDRATION_PARACHAIN_ID} size="extra-small" />
+          <ChainLogo
+            chainId={chainId}
+            ecosystem={ecosystem}
+            size="extra-small"
+          />
           <Text fs="p5" fw={600} lh={1.2} color="text.high">
-            Hydration
+            {name}
           </Text>
         </Flex>
         {isExpandable && (
           <Flex align="center" gap="base">
-            <Text fs="p6" fw={500} lh={1.4} color="text.high">
-              {isLoading ? (
-                <Skeleton width="4rem" height="1em" />
-              ) : (
-                totalDisplay
-              )}
-            </Text>
+            {isLoading ? (
+              <SpinnerIcon size="s" />
+            ) : (
+              totalDisplay && (
+                <Text fs="p6" fw={500} lh={1.4} color="text.high">
+                  {totalDisplay}
+                </Text>
+              )
+            )}
             <Icon size="s" component={ChevronDown} />
           </Flex>
         )}

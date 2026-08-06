@@ -24,6 +24,7 @@ type Props = {
   readonly isLoading: boolean
   readonly searchPhrase: string
   readonly sortingProps: SortingProps
+  readonly isReadOnly?: boolean
 }
 
 export const MyAssetsTable: FC<Props> = ({
@@ -31,11 +32,15 @@ export const MyAssetsTable: FC<Props> = ({
   isLoading,
   searchPhrase,
   sortingProps,
+  isReadOnly = false,
 }) => {
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
 
-  const columns = useMyAssetsColumns(!isLoading && data.length === 0)
+  const columns = useMyAssetsColumns(
+    !isLoading && data.length === 0,
+    isReadOnly,
+  )
 
   const [isDetailOpen, setIsDetailOpen] = useState<{
     type: AssetDetailModal | null
@@ -57,7 +62,8 @@ export const MyAssetsTable: FC<Props> = ({
         data={data}
         columns={columns}
         size="small"
-        expandable={!isMobile}
+        fixedLayout
+        expandable={!isMobile && !isReadOnly}
         renderSubComponent={(asset) =>
           asset.id === native.id ? (
             <ExpandedNativeRow asset={asset} />
@@ -65,7 +71,11 @@ export const MyAssetsTable: FC<Props> = ({
             <AssetDetailExpanded asset={asset} />
           )
         }
-        onRowClick={(asset) => setIsDetailOpen({ type: null, detail: asset })}
+        onRowClick={
+          isReadOnly
+            ? undefined
+            : (asset) => setIsDetailOpen({ type: null, detail: asset })
+        }
       />
       <Modal
         variant="popup"

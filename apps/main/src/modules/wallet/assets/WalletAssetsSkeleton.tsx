@@ -11,6 +11,7 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 
 import { useMyAssetsColumns } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { walletPortfolioTabs } from "@/modules/wallet/assets/Portfolio/WalletPortfolio"
@@ -29,7 +30,13 @@ export const WalletAssetsSkeleton = () => {
       </Box>
 
       <Paper>
-        <WalletPortfolioChainHeader isLoading totalDisplay="" disabled />
+        <WalletPortfolioChainHeader
+          isLoading
+          name="Hydration"
+          chainId={HYDRATION_PARACHAIN_ID}
+          totalDisplay=""
+          disabled
+        />
         <Box p="m">
           <ScrollArea orientation="horizontal" horizontalEdgeOffset="m">
             <Stack separated gap="xxl" direction="row">
