@@ -13,25 +13,31 @@ export type TableProps = {
   fixedLayout?: boolean
 }
 
+const rowHeightBySize: Record<TableSize, string> = {
+  small: "3.75rem",
+  medium: "4.375rem",
+  large: "5.25rem",
+}
+
 const columnSizeStyles = createVariants<TableSize>((theme) => ({
   small: css`
     --table-column-padding-x: ${theme.space.l};
 
-    height: 3.75rem;
+    height: ${rowHeightBySize.small};
     padding-inline: var(--table-column-padding-x);
     font-size: ${theme.fontSizes.p5};
   `,
   medium: css`
     --table-column-padding-x: ${theme.space.l};
 
-    height: 4.375rem;
+    height: ${rowHeightBySize.medium};
     padding-inline: var(--table-column-padding-x);
     font-size: ${theme.fontSizes.p4};
   `,
   large: css`
     --table-column-padding-x: ${theme.space.xl};
 
-    height: 5.25rem;
+    height: ${rowHeightBySize.large};
     padding-inline: var(--table-column-padding-x);
     font-size: ${theme.fontSizes.p3};
   `,
@@ -93,6 +99,13 @@ export const Table = styled.table<TableProps>(
         border-collapse: collapse;
 
         ${fixedLayout && "table-layout: fixed;"}
+
+        overflow-anchor: none;
+
+        tbody tr:not([data-variable-height]) {
+          content-visibility: auto;
+          contain-intrinsic-size: auto ${rowHeightBySize[size]};
+        }
 
         thead th,
         tbody td {

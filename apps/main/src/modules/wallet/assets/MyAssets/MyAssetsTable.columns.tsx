@@ -21,7 +21,7 @@ import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-import { useMemo, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
@@ -31,7 +31,7 @@ import { LINKS } from "@/config/navigation"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
-import { naturally, numericallyStr, sortBy, undefinedLast } from "@/utils/sort"
+import { naturally, numericallyStr, sortBy } from "@/utils/sort"
 
 export enum MyAssetsTableColumn {
   Asset = "asset",
@@ -43,11 +43,34 @@ export enum MyAssetsTableColumn {
 
 export type MyAsset = TAssetData & {
   readonly origin: AnyChain | null
+  readonly xcAssetKey?: string
   readonly total: string
   readonly totalDisplay: string | undefined
   readonly transferable: string
   readonly transferableDisplay: string | undefined
   readonly canStake: boolean
+}
+
+const DepositToHydrationAction: FC<{ readonly asset: MyAsset }> = ({
+  asset,
+}) => {
+  const { t } = useTranslation("wallet")
+
+  if (!asset.origin || !asset.xcAssetKey) return null
+
+  return (
+    <TableRowAction asChild>
+      <Link
+        to={LINKS.crossChain}
+        search={{
+          srcChain: asset.origin.key,
+          srcAsset: asset.xcAssetKey,
+        }}
+      >
+        {t("myAssets.actions.depositToHydration")}
+      </Link>
+    </TableRowAction>
+  )
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
@@ -79,7 +102,13 @@ const ActionsSkeletonCell = () => (
   </Flex>
 )
 
-export const useMyAssetsColumns = (isEmpty: boolean) => {
+const DepositActionSkeletonCell = () => (
+  <Flex justify="flex-end">
+    <Skeleton width="10.5rem" height="1.875rem" borderRadius="1rem" />
+  </Flex>
+)
+
+export const useMyAssetsColumns = (isEmpty: boolean, isReadOnly = false) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile, gte } = useBreakpoints()
   const isWideDesktop = gte("xl")
@@ -87,7 +116,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       id: MyAssetsTableColumn.Asset,
-      size: isWideDesktop ? 320 : 280,
+      size: isWideDesktop ? 350 : 280,
       header: t("common:asset"),
       meta: {
         skeletonCell: AssetSkeletonCell,
@@ -101,16 +130,17 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       },
     })
 
-    const totalColumn = columnHelper.accessor("total", {
+    const totalColumn = columnHelper.accessor("totalDisplay", {
       id: MyAssetsTableColumn.Total,
-      size: isWideDesktop ? 200 : 170,
       header: t("myAssets.header.total"),
+      size: 230,
+      sortUndefined: "last",
       meta: {
         skeletonCell: AmountSkeletonCell,
       },
       sortingFn: sortBy({
-        select: (row) => row.original.totalDisplay,
-        compare: undefinedLast(numericallyStr),
+        select: (row) => row.original.totalDisplay ?? "",
+        compare: numericallyStr,
       }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
@@ -129,16 +159,16 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       },
     })
 
-    const transferableColumn = columnHelper.accessor("transferable", {
+    const transferableColumn = columnHelper.accessor("transferableDisplay", {
       id: MyAssetsTableColumn.Transferable,
-      size: isWideDesktop ? 200 : 170,
       header: t("myAssets.header.transferable"),
+      sortUndefined: "last",
       meta: {
         skeletonCell: AmountSkeletonCell,
       },
       sortingFn: sortBy({
-        select: (row) => row.original.transferableDisplay,
-        compare: undefinedLast(numericallyStr),
+        select: (row) => row.original.transferableDisplay ?? "",
+        compare: numericallyStr,
       }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
@@ -159,17 +189,26 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
 
     const actionsColumn = columnHelper.display({
       id: MyAssetsTableColumn.Actions,
-      size: isWideDesktop ? 560 : 360,
       header: t("common:actions"),
       meta: {
         sx: {
           textAlign: "right",
           ...(isEmpty && { pr: "0 !important" }),
         },
-        skeletonCell: ActionsSkeletonCell,
+        skeletonCell: isReadOnly
+          ? DepositActionSkeletonCell
+          : ActionsSkeletonCell,
       },
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
+
+        if (isReadOnly) {
+          return (
+            <Flex align="center" justify="flex-end">
+              <DepositToHydrationAction asset={row.original} />
+            </Flex>
+          )
+        }
 
         return (
           <Flex
@@ -256,9 +295,10 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
       },
     })
 
-    const totalColumnMobile = columnHelper.accessor("total", {
+    const totalColumnMobile = columnHelper.accessor("totalDisplay", {
       id: MyAssetsTableColumn.Total,
       header: t("myAssets.header.total"),
+      sortUndefined: "last",
       meta: {
         sx: {
           textAlign: "right",
@@ -266,14 +306,33 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
         skeletonCell: AmountSkeletonCell,
       },
       sortingFn: sortBy({
-        select: (row) => row.original.totalDisplay,
-        compare: undefinedLast(numericallyStr),
+        select: (row) => row.original.totalDisplay ?? "",
+        compare: numericallyStr,
       }),
       cell: function Cell({ row }) {
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
           row.original.total,
         )
+
+        const amount = (
+          <Amount
+            variant="default"
+            value={t("common:number", {
+              value: row.original.total,
+            })}
+            displayValue={displayPrice}
+          />
+        )
+
+        if (isReadOnly) {
+          return (
+            <Flex direction="column" align="flex-end" gap="xs" justify="center">
+              {amount}
+              <DepositToHydrationAction asset={row.original} />
+            </Flex>
+          )
+        }
 
         return (
           <TableRowDetailsExpand>
@@ -283,22 +342,27 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
                 {t("myAssets.locks")}
               </TableRowAction>
             )}
-            <Amount
-              variant="default"
-              value={t("common:number", {
-                value: row.original.total,
-              })}
-              displayValue={displayPrice}
-            />
+            {amount}
           </TableRowDetailsExpand>
         )
       },
     })
 
-    return isMobile
-      ? ([assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyAsset>>)
-      : ([assetColumn, totalColumn, transferableColumn, actionsColumn] as Array<
-          ColumnDef<MyAsset>
-        >)
-  }, [isWideDesktop, isMobile, isEmpty, t])
+    if (isMobile) {
+      return [assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyAsset>>
+    }
+
+    if (isReadOnly) {
+      return [assetColumn, totalColumn, actionsColumn] as Array<
+        ColumnDef<MyAsset>
+      >
+    }
+
+    return [
+      assetColumn,
+      totalColumn,
+      transferableColumn,
+      actionsColumn,
+    ] as Array<ColumnDef<MyAsset>>
+  }, [isWideDesktop, isMobile, isEmpty, isReadOnly, t])
 }

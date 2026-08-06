@@ -18,8 +18,6 @@ export const SPortfolioChainHeaderButton = styled.button<{
     color: ${theme.text.high};
     cursor: pointer;
     transition: ${theme.transitions.colors};
-    border-top-left-radius: ${theme.radii.xl};
-    border-top-right-radius: ${theme.radii.xl};
 
     &:hover {
       background: ${theme.surfaces.containers.high.hover};
@@ -27,13 +25,6 @@ export const SPortfolioChainHeaderButton = styled.button<{
 
     svg {
       transition: transform 0.15s ease;
-    }
-
-    &[data-state="closed"] {
-      transition: border-radius 0.15s 0.2s;
-      border-bottom-color: transparent;
-      border-bottom-left-radius: ${theme.radii.xl};
-      border-bottom-right-radius: ${theme.radii.xl};
     }
 
     &[data-state="open"] svg {
@@ -57,8 +48,6 @@ export const SPortfolioClaimButton = styled(Button)(
 export const SPortfolioTableWrapper = styled.div(
   ({ theme }) => css`
     overflow: hidden;
-    border-bottom-left-radius: ${theme.radii.xl};
-    border-bottom-right-radius: ${theme.radii.xl};
 
     & table {
       background-color: transparent;
