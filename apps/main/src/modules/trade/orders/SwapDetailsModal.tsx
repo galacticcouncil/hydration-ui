@@ -1,4 +1,4 @@
-import { SubScan } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Box,
@@ -81,12 +81,12 @@ export const SwapDetailsModal = ({ details }: Props) => {
         {"link" in details && details.link && (
           <>
             <ModalContentDivider />
-            <Flex justify="flex-end" pt="l" pb="xl">
+            <Flex pt="l" pb="xl">
               <Button variant="tertiary" outline asChild>
                 <ExternalLink href={details.link}>
-                  <Icon component={SubScan} size="xs" />
+                  <Icon component={SquareArrowOutUpRight} size="xs" />
                   <Text fw={500} fs="p6" lh={1.4}>
-                    {t("trade:trade.orders.swapDetail.openOnSubscan")}
+                    {t("openInExplorer")}
                   </Text>
                 </ExternalLink>
               </Button>

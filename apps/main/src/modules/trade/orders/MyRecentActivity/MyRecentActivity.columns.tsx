@@ -1,9 +1,15 @@
 import { ClassNames } from "@emotion/react"
-import { ArrowRightLeft } from "@galacticcouncil/ui/assets/icons"
 import {
+  ArrowRightLeft,
+  SquareArrowOutUpRight,
+} from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
+  ExternalLink,
   Flex,
   Icon,
   TableRowDetailsExpand,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -44,11 +50,8 @@ export const useMyRecentActivityColumns = () => {
 
     const fillPriceColumn = columnHelper.display({
       id: "price",
-      meta: {
-        sx: { textAlign: "center" },
-      },
       header: () => (
-        <Flex gap="s" align="center" justify="center">
+        <Flex gap="s" align="center">
           {t("trade:trade.orders.myActivity.fillPrice")}
           <Icon
             size="xs"
@@ -105,6 +108,34 @@ export const useMyRecentActivityColumns = () => {
       },
     })
 
+    const actionColumn = columnHelper.display({
+      id: "actions",
+      size: 50,
+      cell: ({ row }) => {
+        if (!row.original.link) return null
+
+        return (
+          <Flex align="center" justify="end" gap="base">
+            <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
+              <Button
+                sx={{ p: "base" }}
+                variant="muted"
+                outline
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                asChild
+              >
+                <ExternalLink href={row.original.link}>
+                  <Icon component={SquareArrowOutUpRight} size="s" />
+                </ExternalLink>
+              </Button>
+            </Tooltip>
+          </Flex>
+        )
+      },
+    })
+
     const fromToColumnMobile = columnHelper.display({
       header: t("trade:trade.orders.fromTo.mobile"),
       cell: ({ row }) => {
@@ -128,6 +159,12 @@ export const useMyRecentActivityColumns = () => {
       return [fromToColumnMobile]
     }
 
-    return [fromToColumn, fillPriceColumn, typeColumn, statusColumn]
+    return [
+      fromToColumn,
+      fillPriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
   }, [t, isMobile])
 }

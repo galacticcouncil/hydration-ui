@@ -1,8 +1,57 @@
-import { NearAddr, stringEquals } from "@galacticcouncil/utils"
+import { EvmAddr, NearAddr, stringEquals } from "@galacticcouncil/utils"
 
 import { getWalletModeName } from "@/utils/wallet"
 
 import type { Address, NormalizedAddress } from "./AddressBook.store"
+
+export function normalizeStoredAddress(address: Address): Address {
+  if (!EvmAddr.isValid(address.address)) return address
+
+  const normalized = address.address.toLowerCase()
+
+  return {
+    ...address,
+    address: normalized,
+    publicKey: address.publicKey.toLowerCase(),
+  }
+}
+
+function mergeDuplicateEntries(a: Address, b: Address): Address {
+  const [custom, wallet] = a.isCustom ? [a, b] : b.isCustom ? [b, a] : [a, b]
+
+  const name =
+    custom.isCustom && custom.name
+      ? custom.name
+      : !wallet.isCustom && wallet.name && wallet.name !== custom.name
+        ? wallet.name
+        : custom.name || wallet.name
+
+  const savedBy =
+    a.savedBy.length === 0 || b.savedBy.length === 0
+      ? []
+      : [...new Set([...a.savedBy, ...b.savedBy])]
+
+  return normalizeStoredAddress({
+    ...wallet,
+    ...custom,
+    name,
+    savedBy,
+    isCustom: a.isCustom || b.isCustom,
+    provider: custom.provider ?? wallet.provider,
+  })
+}
+
+export function dedupeAddresses(addresses: Address[]): Address[] {
+  const byKey = new Map<string, Address>()
+
+  for (const entry of addresses.map(normalizeStoredAddress)) {
+    const key = entry.publicKey.toLowerCase()
+    const existing = byKey.get(key)
+    byKey.set(key, existing ? mergeDuplicateEntries(existing, entry) : entry)
+  }
+
+  return [...byKey.values()]
+}
 
 export function getAllAddresses(addresses: Address[]): Address[] {
   const indices = new Map<Address["mode"], number>()
@@ -124,5 +173,5 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
   const hasChanges =
     added.length > 0 || updated.some((a, i) => a !== existing[i])
 
-  return hasChanges ? [...updated, ...added] : existing
+  return hasChanges ? dedupeAddresses([...updated, ...added]) : existing
 }

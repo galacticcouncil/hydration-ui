@@ -1,4 +1,4 @@
-import { Notebook } from "@galacticcouncil/ui/assets/icons"
+import { BookOpen } from "@galacticcouncil/ui/assets/icons"
 import {
   AccountInput,
   Box,
@@ -130,7 +130,7 @@ export const RecipientCustomAddressForm: React.FC<
       ) : (
         <EmptyState
           header=""
-          icon={<Icon component={Notebook} size="xl" />}
+          icon={<Icon component={BookOpen} size="xl" />}
           description={t("recipient.modal.empty.description")}
         />
       )}

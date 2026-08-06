@@ -18,11 +18,19 @@ import {
 import { useBreakpoints } from "@/theme"
 import { getToken } from "@/utils"
 
-import { SContent, STrigger } from "./Tooltip.styled"
+import {
+  SContent,
+  STrigger,
+  TooltipSize,
+  tooltipTextFontSize,
+} from "./Tooltip.styled"
+
+export type { TooltipSize }
 
 export type InfoTooltipProps = {
   text: ReactNode | string
   children?: ReactNode
+  size?: TooltipSize
   side?: TooltipContentProps["side"]
   align?: TooltipContentProps["align"]
   sideOffset?: TooltipContentProps["sideOffset"]
@@ -35,7 +43,8 @@ export type InfoTooltipProps = {
 export const Tooltip = ({
   text,
   children,
-  side = "bottom",
+  size = "medium",
+  side = "top",
   align = "center",
   sideOffset = 3,
   alignOffset = -10,
@@ -50,7 +59,7 @@ export const Tooltip = ({
     return children
   }
 
-  if (isMobile) {
+  if (isMobile && size !== "small") {
     return (
       <>
         <ButtonIcon
@@ -94,7 +103,11 @@ export const Tooltip = ({
   const TriggerComp = asChild ? Trigger : STrigger
 
   return (
-    <Root delayDuration={0} open={open} onOpenChange={setOpen}>
+    <Root
+      delayDuration={size === "small" ? 700 : 0}
+      open={open}
+      onOpenChange={setOpen}
+    >
       <TriggerComp
         type="button"
         asChild={asChild}
@@ -115,6 +128,7 @@ export const Tooltip = ({
       </TriggerComp>
       <Portal>
         <SContent
+          size={size}
           side={side}
           align={align}
           sideOffset={sideOffset}
@@ -122,7 +136,7 @@ export const Tooltip = ({
           collisionPadding={12}
         >
           {typeof text === "string" ? (
-            <Text fw={500} fs="p5">
+            <Text fw={500} fs={tooltipTextFontSize[size]}>
               {text}
             </Text>
           ) : (

@@ -54,7 +54,7 @@ export const getWalletModeName = (
 export const addressToPublicKey = (address: string): string => {
   switch (true) {
     case EvmAddr.isValid(address):
-      return address
+      return address.toLowerCase()
     case Ss58Addr.isValid(address):
       return safeConvertSS58toPublicKey(address)
     case SolanaAddr.isValid(address):

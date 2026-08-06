@@ -13,11 +13,9 @@ import {
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
 
+import { SAccountActionCopyButton } from "@/components/account/AccountActionButton.styled"
 import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
-import {
-  SAccountOption,
-  SCopyButton,
-} from "@/components/account/AccountOption.styled"
+import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import { WalletProviderType } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
@@ -123,7 +121,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
               </Text>
             </Text>
             <Flex pl="m" ml="auto" gap="base">
-              <SCopyButton text={account.displayAddress} />
+              <SAccountActionCopyButton text={account.displayAddress} />
               {onDelete && <AccountDeleteButton onClick={onDelete} />}
             </Flex>
           </Flex>

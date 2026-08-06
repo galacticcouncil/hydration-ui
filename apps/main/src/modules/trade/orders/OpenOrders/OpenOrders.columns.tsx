@@ -1,13 +1,20 @@
-import { ArrowRightLeft, Trash } from "@galacticcouncil/ui/assets/icons"
+import {
+  ArrowRightLeft,
+  SquareArrowOutUpRight,
+  Trash,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
+  ExternalLink,
   Flex,
   Icon,
   Modal,
   TableRowDetailsExpand,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { neckwork } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { useMemo, useState } from "react"
@@ -54,11 +61,9 @@ export const useOpenOrdersColumns = () => {
 
     const averagePriceColumn = columnHelper.display({
       id: "price",
-      meta: {
-        sx: { textAlign: "center" },
-      },
+
       header: () => (
-        <Flex gap="s" align="center" justify="center">
+        <Flex gap="s" align="center">
           {t("trade:trade.orders.openOrders.averagePrice")}
           <Icon
             size="xs"
@@ -111,20 +116,43 @@ export const useOpenOrdersColumns = () => {
         const [modal, setModal] = useState<"confirmation" | "none">("none")
 
         return (
-          <Flex align="center" gap="base">
-            <Button
-              variant="danger"
-              outline
-              height={28}
-              width={34}
-              onClick={(e) => {
-                e.stopPropagation()
-                setModal("confirmation")
-              }}
+          <Flex align="center" justify="end" gap="base">
+            <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
+              <Button
+                sx={{ p: "base" }}
+                variant="muted"
+                outline
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                asChild
+              >
+                <ExternalLink
+                  href={neckwork.activityDca(row.original.scheduleId)}
+                >
+                  <Icon component={SquareArrowOutUpRight} size="s" />
+                </ExternalLink>
+              </Button>
+            </Tooltip>
+            <Tooltip
+              text={t("trade:trade.cancelOrder.cta")}
+              size="small"
+              asChild
+              side="top"
             >
-              <Icon component={Trash} size="s" />
-            </Button>
-            <TableRowDetailsExpand />
+              <Button
+                variant="danger"
+                outline
+                sx={{ p: "base" }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setModal("confirmation")
+                }}
+              >
+                <Icon component={Trash} size="s" />
+              </Button>
+            </Tooltip>
+
             <Modal
               open={modal === "confirmation"}
               onOpenChange={() => setModal("none")}

@@ -10,14 +10,11 @@ import {
   Summary,
   SummaryRow,
   Text,
+  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  HYDRATION_CHAIN_KEY,
-  shortenAccountAddress,
-  subscan,
-} from "@galacticcouncil/utils"
+import { neckwork, shortenAccountAddress } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -107,12 +104,12 @@ export const StrategyDetailsCard = () => {
             label={t("bil.strategy.contractAddress")}
             content={
               <Text fs="p4" lh={1.5} whiteSpace="nowrap">
-                <ExternalLink
-                  href={subscan.account(HYDRATION_CHAIN_KEY, VAULT_ADDRESS)}
-                >
-                  {shortenAccountAddress(VAULT_ADDRESS)}
-                  <Icon component={MoveUpRight} size="xs" />
-                </ExternalLink>
+                <Tooltip text={t("common:openInExplorer")} size="small" asChild>
+                  <ExternalLink href={neckwork.contract(VAULT_ADDRESS)}>
+                    {shortenAccountAddress(VAULT_ADDRESS)}
+                    <Icon component={MoveUpRight} size="xs" />
+                  </ExternalLink>
+                </Tooltip>
               </Text>
             }
           />

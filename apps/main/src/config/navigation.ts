@@ -1,6 +1,7 @@
 import {
   ArrowRightLeftIcon,
   BanknoteIcon,
+  BlocksIcon,
   ChartPieIcon,
   CoinsIcon,
   DropletIcon,
@@ -14,6 +15,7 @@ import {
   WalletCardsIcon,
   WavesIcon,
 } from "@galacticcouncil/ui/assets/icons"
+import { neckwork } from "@galacticcouncil/utils"
 import { TFunction } from "i18next"
 
 import { FileRouteTypes } from "@/routeTree.gen"
@@ -62,17 +64,35 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
-export type NavigationKey = keyof typeof LINKS
+export const EXTERNAL_LINKS = {
+  explorer: neckwork.base,
+} as const
 
-export type NavigationItem = {
-  key: NavigationKey
-  to: Route
+export type ExternalNavigationKey = keyof typeof EXTERNAL_LINKS
+export type NavigationKey = keyof typeof LINKS | ExternalNavigationKey
+
+type NavigationItemCommon = {
   icon?: React.ComponentType
   enabled?: boolean
-  children?: NavigationItem[]
   defaultChild?: Route
   search?: Record<string, string | boolean>
 }
+
+export type InternalNavigationItem = NavigationItemCommon & {
+  key: Exclude<NavigationKey, ExternalNavigationKey>
+  to: Route
+  href?: never
+  children?: InternalNavigationItem[]
+}
+
+export type ExternalNavigationItem = NavigationItemCommon & {
+  key: ExternalNavigationKey
+  href: string
+  to?: never
+  children?: never
+}
+
+export type NavigationItem = InternalNavigationItem | ExternalNavigationItem
 
 export const NAVIGATION: NavigationItem[] = [
   {
@@ -182,19 +202,11 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "stakingOld", to: LINKS.stakingOld, icon: ChartPieIcon },
     ],
   },
-  // {
-  //   key: "governance",
-  //   to: LINKS.governance,
-  //   icon: LandmarkIcon,
-  // },
-  // {
-  //   key: "referrals",
-  //   to: LINKS.referrals,
-  // },
-  // {
-  //   key: "memepad",
-  //   to: LINKS.memepad,
-  // },
+  {
+    key: "explorer",
+    href: EXTERNAL_LINKS.explorer,
+    icon: BlocksIcon,
+  },
 ]
 
 export const getMenuTranslations = (t: TFunction) =>
@@ -231,10 +243,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.crossChainHistory.title"),
       description: t("navigation.crossChainHistory.description"),
     },
-    // bridge: {
-    //   title: t("navigation.bridge.title"),
-    //   description: "",
-    // },
     trade: {
       title: t("navigation.trade.title"),
       description: "",
@@ -279,18 +287,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.stakingGigaStake.title"),
       description: t("navigation.staking.description"),
     },
-    // governance: {
-    //   title: t("navigation.governance.title"),
-    //   description: t("navigation.governance.description"),
-    // },
-    // stakingGovernance: {
-    //   title: t("navigation.stakingGovernance.title"),
-    //   description: "",
-    // },
-    // referrals: {
-    //   title: t("navigation.referrals.title"),
-    //   description: "",
-    // },
     borrow: {
       title: t("navigation.borrow.title"),
       description: "",
@@ -355,12 +351,12 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.withdraw.title"),
       description: t("navigation.withdraw.description"),
     },
-    // memepad: {
-    //   title: t("navigation.memepad.title"),
-    //   description: "",
-    // },
     submitTransaction: {
       title: t("navigation.submitTransaction.title"),
+      description: "",
+    },
+    explorer: {
+      title: t("navigation.explorer.title"),
       description: "",
     },
   }) satisfies Record<NavigationKey, { title: string; description: string }>
@@ -400,9 +396,7 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
-  //"governance",
-  // "referrals",
-  // "memepad",
+  "explorer",
 ]
 export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "wallet",
@@ -413,9 +407,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "crossChain",
   "stats",
   "staking",
-  //"governance",
-  // "referrals",
-  // "memepad",
+  "explorer",
 ]
 
 export const NAV_ITEMS_SHOWN_MOBILE = 4

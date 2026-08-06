@@ -7,7 +7,7 @@ import {
   IndexerErrorState,
   parseIndexerErrorState,
 } from "@galacticcouncil/indexer/squid/lib/parseIndexerErrorState"
-import { HYDRATION_CHAIN_KEY, subscan } from "@galacticcouncil/utils"
+import { neckwork } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo, useState } from "react"
 
@@ -82,8 +82,8 @@ export const usePastExecutionsData = (scheduleId: number) => {
           const timestamp = event?.block?.timestamp ?? null
 
           const link = event
-            ? subscan.blockEvent(
-                HYDRATION_CHAIN_KEY,
+            ? neckwork.activityEvent(
+                "dca",
                 event.paraBlockHeight,
                 event.indexInBlock,
               )
