@@ -1,5 +1,5 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
-import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
@@ -53,6 +53,7 @@ export type TransactionCommon = {
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
   executedAmount?: TExecutedAmount
+  activity?: ActivityType
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -100,6 +101,7 @@ type TransactionFee = {
 
 type TransactionMetaCommon = {
   srcChainKey: string
+  activity?: ActivityType
 }
 
 export type TransactionOnchainMeta = TransactionMetaCommon & {
@@ -220,13 +222,16 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   createTransaction: (transaction, options) => {
     return new Promise<TSuccessResult | void>((resolve, reject) => {
       set((state) => {
-        const meta: TransactionMeta =
-          "meta" in transaction && transaction.meta
+        const meta: TransactionMeta = {
+          ...("meta" in transaction && transaction.meta
             ? transaction.meta
             : {
                 type: TransactionType.Onchain,
                 srcChainKey: HYDRATION_CHAIN_KEY,
-              }
+              }),
+          ...("activity" in transaction &&
+            transaction.activity && { activity: transaction.activity }),
+        }
         const newTransaction: Transaction = {
           id: uuid(),
           ...transaction,

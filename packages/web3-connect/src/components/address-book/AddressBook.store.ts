@@ -1,5 +1,6 @@
 import {
   createZustandStorage,
+  EvmAddr,
   isH160Address,
   NearAddr,
   safeConvertSS58toPublicKey,
@@ -19,8 +20,10 @@ import { getWalletModeByAddress } from "@/utils/wallet"
 import {
   type AddressFilter,
   buildAddresses,
+  dedupeAddresses,
   getAllAddresses,
   isVisibleToWallet,
+  normalizeStoredAddress,
   selectAddresses,
 } from "./AddressBook.merge"
 
@@ -80,10 +83,13 @@ export type NormalizedAddress = Address & { isGlobal?: boolean }
 
 function normalizeAddress(input: AddressInput): NormalizedAddress | null {
   const { isGlobal, ...rest } = input
-  const publicKey = addressToPublicKey(input.address)
+  const address = EvmAddr.isValid(input.address)
+    ? input.address.toLowerCase()
+    : input.address
+  const publicKey = addressToPublicKey(address)
   if (!publicKey) return null
 
-  const mode = input.mode ?? getWalletModeByAddress(input.address)
+  const mode = input.mode ?? getWalletModeByAddress(address)
   if (!mode) return null
 
   const parsedMode = modeSchema.safeParse(mode)
@@ -91,7 +97,8 @@ function normalizeAddress(input: AddressInput): NormalizedAddress | null {
 
   return {
     ...rest,
-    name: input.name || NearAddr.parseAccountName(input.address),
+    address,
+    name: input.name || NearAddr.parseAccountName(address),
     publicKey,
     mode: parsedMode.data,
     savedBy: input.savedBy ?? [],
@@ -140,11 +147,19 @@ export const useAddressStore = create<AddressStore>()(
         })),
 
       edit: (address) =>
-        set((state) => ({
-          addresses: state.addresses.map((a) =>
-            stringEquals(a.publicKey, address.publicKey) ? address : a,
-          ),
-        })),
+        set((state) => {
+          const normalized = normalizeStoredAddress(address)
+
+          return {
+            addresses: dedupeAddresses(
+              state.addresses.map((a) =>
+                stringEquals(a.publicKey, normalized.publicKey)
+                  ? normalized
+                  : a,
+              ),
+            ),
+          }
+        }),
 
       remove: (publicKey) =>
         set((state) => ({
@@ -196,20 +211,29 @@ function migrateAddressBookV3toV4(persistedState: unknown): State {
   if (!parsed.success) return defaultState
 
   return {
-    addresses: parsed.data.addresses
-      .map<Address | null>((address) => {
-        const mode = modeSchema.safeParse(
-          getWalletModeByAddress(address.address),
-        )
-        if (!mode.success) return null
+    addresses: dedupeAddresses(
+      parsed.data.addresses
+        .map<Address | null>((entry) => {
+          const address = EvmAddr.isValid(entry.address)
+            ? entry.address.toLowerCase()
+            : entry.address
+          const publicKey =
+            entry.publicKey.trim() || addressToPublicKey(address)
+          if (!publicKey) return null
 
-        return {
-          ...address,
-          mode: mode.data,
-          savedBy: [],
-        }
-      })
-      .filter((address) => address !== null),
+          const mode = modeSchema.safeParse(getWalletModeByAddress(address))
+          if (!mode.success) return null
+
+          return {
+            ...entry,
+            address,
+            publicKey,
+            mode: mode.data,
+            savedBy: [],
+          }
+        })
+        .filter((address) => address !== null),
+    ),
   }
 }
 

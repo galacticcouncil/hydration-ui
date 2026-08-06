@@ -1,5 +1,4 @@
 import styled from "@emotion/styled"
-import { ArrowRight } from "lucide-react"
 
 import { Box } from "@/components/Box"
 import { Icon } from "@/components/Icon"
@@ -126,7 +125,7 @@ export const MenuSelectionItem = styled(MenuItem)<{
   menuItemVariants(variant),
 ])
 
-export const MenuSelectionItemArrow = styled(ArrowRight)(
+export const MenuSelectionItemIcon = styled(Icon)(
   ({ theme }) => css`
     ${MenuItemAction.__emotion_styles}
 

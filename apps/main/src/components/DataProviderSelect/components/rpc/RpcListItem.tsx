@@ -1,4 +1,4 @@
-import { Edit, Trash } from "@galacticcouncil/ui/assets/icons"
+import { CircleOff, Edit, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   Flex,
@@ -75,6 +75,9 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
   const { t } = useTranslation()
   const [isEdit, setIsEdit] = useState(false)
   const { renameRpc } = useRpcListStore()
+  const isOffline = !isLoading && !isNumber(blockNumber)
+  const isBlocked = isLoading || isOffline
+  const canSelect = !isBlocked && !!onClick
 
   if (isEdit) {
     return (
@@ -90,9 +93,9 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
 
   return (
     <SRpcListItem
-      blocked={isLoading || !isNumber(blockNumber)}
-      onClick={() => onClick?.(url)}
-      isInteractive={!!onClick || !!onRemove}
+      blocked={isBlocked}
+      onClick={canSelect ? () => onClick?.(url) : undefined}
+      isInteractive={canSelect || !!onRemove}
     >
       <Box>
         <Text
@@ -147,7 +150,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
                 </TextButton>
               }
             />
-            <Tooltip text={t("edit")} asChild side="top">
+            <Tooltip text={t("edit")} size="small" asChild side="top">
               <TextButton
                 sx={{ p: "xs" }}
                 onClick={(e) => {
@@ -162,7 +165,11 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
         )}
         {!!onClick && (
           <Box sx={{ ml: "base" }}>
-            <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
+            {isOffline ? (
+              <Icon size="xs" component={CircleOff} />
+            ) : (
+              <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
+            )}
           </Box>
         )}
       </Flex>

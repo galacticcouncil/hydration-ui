@@ -1,4 +1,4 @@
-import { Button, CopyButton } from "@galacticcouncil/ui/components"
+import { Button } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SAccountOption = styled.div<{
@@ -38,20 +38,6 @@ export const SAccountOption = styled.div<{
         background-color: ${theme.details.borders};
       }
     `}
-  `,
-)
-
-export const SCopyButton = styled(CopyButton)(
-  ({ theme }) => css`
-    color: ${theme.text.medium};
-    cursor: pointer;
-
-    &[data-copied="true"] {
-      color: ${theme.accents.success.emphasis};
-    }
-    &:hover:not(:disabled) {
-      color: ${theme.text.high};
-    }
   `,
 )
 

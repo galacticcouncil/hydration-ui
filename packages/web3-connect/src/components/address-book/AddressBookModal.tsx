@@ -227,9 +227,7 @@ export const AddressBookModal: FC<Props> = ({
                 {searchedAddresses.map((address) => (
                   <AddressBookEntry
                     key={address.publicKey}
-                    address={address.address}
-                    mode={address.mode}
-                    name={address.name}
+                    {...address}
                     {...(onSelect && { onSelect: () => onSelect(address) })}
                     {...(address.isCustom && {
                       onEdit: (name: string) => {

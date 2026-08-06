@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { TabItem } from "@/components/TabMenu"
 import { LINKS } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import { isInternalNavItem } from "@/modules/layout/components/NavigationItemLink"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 
 declare module "@tanstack/react-router" {
@@ -37,6 +38,7 @@ export const useSubNav = () => {
   const items = useMemo(
     () =>
       navigation
+        .filter(isInternalNavItem)
         .find(({ to }) => path.startsWith(to))
         ?.children?.map<TabItem>((nav) => ({
           to: nav.to,

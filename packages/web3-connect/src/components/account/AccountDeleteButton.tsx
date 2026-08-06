@@ -1,20 +1,14 @@
 import { Trash2 } from "@galacticcouncil/ui/assets/icons"
 import { Icon } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { ComponentProps, FC } from "react"
+
+import { SAccountActionButton } from "@/components/account/AccountActionButton.styled"
 
 export const AccountDeleteButton: FC<
   Omit<ComponentProps<"button">, "children">
 > = ({ onClick, ...props }) => {
   return (
-    <button
-      sx={{
-        cursor: "pointer",
-        color: getToken("text.medium"),
-        "&:hover": {
-          color: getToken("text.high"),
-        },
-      }}
+    <SAccountActionButton
       type="button"
       onClick={(e) => {
         e.stopPropagation()
@@ -23,6 +17,6 @@ export const AccountDeleteButton: FC<
       {...props}
     >
       <Icon size="s" component={Trash2} />
-    </button>
+    </SAccountActionButton>
   )
 }

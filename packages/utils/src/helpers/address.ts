@@ -1,5 +1,11 @@
 import { addr } from "@galacticcouncil/xc-core"
 
+import { neckwork } from "./neckwork"
+import { solexplorer } from "./solana"
+import { suivision } from "./sui"
+import { isAddressValidOnHydration } from "./xcm"
+import { xcscan } from "./xcscan"
+
 const { Ss58Addr, EvmAddr, SolanaAddr, SuiAddr } = addr
 
 const NEAR_ACCOUNT =
@@ -25,3 +31,19 @@ const ZcashAddr = {
 }
 
 export { EvmAddr, NearAddr, SolanaAddr, Ss58Addr, SuiAddr, ZcashAddr }
+
+export function getAccountExplorerLink(address: string) {
+  if (isAddressValidOnHydration(address)) {
+    return neckwork.account(address)
+  }
+
+  if (SolanaAddr.isValid(address)) {
+    return solexplorer.account(address)
+  }
+
+  if (SuiAddr.isValid(address)) {
+    return suivision.account(address)
+  }
+
+  return xcscan.search(address)
+}

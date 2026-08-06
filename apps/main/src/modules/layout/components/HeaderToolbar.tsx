@@ -1,5 +1,6 @@
 import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
 import { ButtonIcon, ExternalLink, Icon } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, lazy } from "react"
 
 import { HYDRATION_DOCS_LINK } from "@/config/links"
@@ -7,6 +8,7 @@ import { DepositButton } from "@/modules/layout/components/DepositButton/Deposit
 import { SHeaderToolbar } from "@/modules/layout/components/HeaderToolbar.styled"
 import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 import { NotificationCenter } from "@/modules/layout/components/NotificationCenter/NotificationCenter"
+import { FULL_HEADER_BREAKPOINT } from "@/modules/layout/constants"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 
 const Settings = lazy(async () => ({
@@ -17,6 +19,8 @@ const Settings = lazy(async () => ({
 
 export const HeaderToolbar: FC = () => {
   const hasTopNavbar = useHasTopNavbar()
+  const { gte } = useBreakpoints()
+  const isFullHeader = gte(FULL_HEADER_BREAKPOINT)
 
   return (
     <SHeaderToolbar>
@@ -29,7 +33,7 @@ export const HeaderToolbar: FC = () => {
       )}
       <NotificationCenter />
       {hasTopNavbar && <Settings />}
-      {hasTopNavbar && <DepositButton />}
+      {hasTopNavbar && isFullHeader && <DepositButton />}
       <HeaderWeb3ConnectButton />
     </SHeaderToolbar>
   )

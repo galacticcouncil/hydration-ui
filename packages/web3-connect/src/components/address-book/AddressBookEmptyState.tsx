@@ -1,4 +1,4 @@
-import { NotebookTabs, PlusCircle } from "@galacticcouncil/ui/assets/icons"
+import { BookOpen, PlusCircle } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
@@ -85,15 +85,15 @@ export const AddressBookEmptyState = ({
       mx="auto"
       maxWidth="5xl"
     >
-      <Icon
-        component={canAdd ? PlusCircle : NotebookTabs}
-        size="xl"
-        mb="base"
-      />
+      <Icon component={canAdd ? PlusCircle : BookOpen} size="xl" mb="base" />
       <Text fs="p3" fw={500} align="center" textWrap="balance">
         {title}
       </Text>
-      {description && <Text fw={500}>{description}</Text>}
+      {description && (
+        <Text fs="p4" fw={500} align="center" textWrap="balance">
+          {description}
+        </Text>
+      )}
       {canAdd && (
         <Button variant="muted" size="large" mt="m" onClick={onAdd}>
           <Flex align="center" gap="base">

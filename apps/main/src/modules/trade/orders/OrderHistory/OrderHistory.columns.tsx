@@ -1,11 +1,18 @@
-import { ArrowRightLeft } from "@galacticcouncil/ui/assets/icons"
 import {
+  ArrowRightLeft,
+  SquareArrowOutUpRight,
+} from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
+  ExternalLink,
   Flex,
   Icon,
   TableRowDetailsExpand,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { neckwork } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -45,11 +52,8 @@ export const useOrderHistoryColumns = () => {
 
     const fillPriceColumn = columnHelper.display({
       id: "price",
-      meta: {
-        sx: { textAlign: "center" },
-      },
       header: () => (
-        <Flex gap="s" align="center" justify="center">
+        <Flex gap="s" align="center">
           {t("trade:trade.orders.orderHistory.averagePrice")}
           <Icon
             size="xs"
@@ -89,12 +93,33 @@ export const useOrderHistoryColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
+      cell: ({ row }) =>
+        row.original.status && <DcaOrderStatus status={row.original.status} />,
+    })
+
+    const actionColumn = columnHelper.display({
+      id: "actions",
+      size: 50,
       cell: ({ row }) => (
-        <TableRowDetailsExpand>
-          {row.original.status && (
-            <DcaOrderStatus status={row.original.status} />
-          )}
-        </TableRowDetailsExpand>
+        <Flex align="center" justify="end" gap="base">
+          <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
+            <Button
+              sx={{ p: "base" }}
+              variant="muted"
+              outline
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+              asChild
+            >
+              <ExternalLink
+                href={neckwork.activityDca(row.original.scheduleId)}
+              >
+                <Icon component={SquareArrowOutUpRight} size="s" />
+              </ExternalLink>
+            </Button>
+          </Tooltip>
+        </Flex>
       ),
     })
 
@@ -125,6 +150,12 @@ export const useOrderHistoryColumns = () => {
       return [fromToColumnMobile, statusColumnMobile]
     }
 
-    return [fromToColumn, fillPriceColumn, typeColumn, statusColumn]
+    return [
+      fromToColumn,
+      fillPriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
   }, [t, isMobile])
 }

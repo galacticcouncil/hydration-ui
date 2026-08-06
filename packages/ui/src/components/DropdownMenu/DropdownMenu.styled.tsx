@@ -95,7 +95,7 @@ export const DropdownMenuContent: FC<
   }
 > = ({ animation, ...props }) => {
   return (
-    <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Portal container={document.getElementById("root")}>
       <SDropdownMenuContent sideOffset={13} animation={animation} {...props} />
     </DropdownMenuPrimitive.Portal>
   )

@@ -33,9 +33,11 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   return (
     <button
       type="button"
-      {...props}
       disabled={copied}
       data-copied={copied}
+      aria-label="Copy to clipboard"
+      title="Copy to clipboard"
+      {...props}
       onClick={(e) => {
         e.stopPropagation()
         copy(text)

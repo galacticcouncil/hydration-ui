@@ -1,13 +1,12 @@
 import { hydration } from "@galacticcouncil/descriptors"
 import { ExternalLink, Text, TextProps } from "@galacticcouncil/ui/components"
 import {
-  HYDRATION_CHAIN_KEY,
+  getAccountExplorerLink,
   isSS58Address,
   safeConvertSS58toPublicKey,
   shorten,
   shortenAccountAddress,
   stringEquals,
-  subscan,
 } from "@galacticcouncil/utils"
 import { useAddresses } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
@@ -17,16 +16,33 @@ import { getIdentityQuery } from "@/utils/identity"
 
 const MAX_DISPLAY_NAME_LENGTH = 15
 
+const renderIdentity = (
+  displayName: string,
+  address: string,
+  withExplorerLink: boolean,
+  props: TextProps,
+) => (
+  <Text {...props}>
+    {withExplorerLink ? (
+      <ExternalLink href={getAccountExplorerLink(address)} underlined={false}>
+        {displayName}
+      </ExternalLink>
+    ) : (
+      displayName
+    )}
+  </Text>
+)
+
 export type AccountIdentityProps = TextProps & {
   papi: TypedApi<typeof hydration>
   address: string
-  withSubscanLink?: boolean
+  withExplorerLink?: boolean
 }
 
 export const AccountSubstrateIdentity: React.FC<AccountIdentityProps> = ({
   papi,
   address,
-  withSubscanLink = true,
+  withExplorerLink = true,
   ...props
 }) => {
   const addresses = useAddresses()
@@ -42,25 +58,12 @@ export const AccountSubstrateIdentity: React.FC<AccountIdentityProps> = ({
     ? shorten(addressBookName, MAX_DISPLAY_NAME_LENGTH)
     : identity?.display || shortenAccountAddress(address)
 
-  return (
-    <Text {...props}>
-      {withSubscanLink ? (
-        <ExternalLink
-          href={subscan.account(HYDRATION_CHAIN_KEY, address)}
-          underlined={false}
-        >
-          {displayName}
-        </ExternalLink>
-      ) : (
-        displayName
-      )}
-    </Text>
-  )
+  return renderIdentity(displayName, address, withExplorerLink, props)
 }
 
 export const AccountAddressBookIdentity: React.FC<
   Omit<AccountIdentityProps, "papi">
-> = ({ address, withSubscanLink = true, ...props }) => {
+> = ({ address, withExplorerLink = true, ...props }) => {
   const addresses = useAddresses()
   const addressBookName = addresses.find((a) =>
     stringEquals(a.address, address),
@@ -70,20 +73,7 @@ export const AccountAddressBookIdentity: React.FC<
     ? shorten(addressBookName, MAX_DISPLAY_NAME_LENGTH)
     : shortenAccountAddress(address)
 
-  return (
-    <Text {...props}>
-      {withSubscanLink ? (
-        <ExternalLink
-          href={subscan.account(HYDRATION_CHAIN_KEY, address)}
-          underlined={false}
-        >
-          {displayName}
-        </ExternalLink>
-      ) : (
-        displayName
-      )}
-    </Text>
-  )
+  return renderIdentity(displayName, address, withExplorerLink, props)
 }
 
 export const AccountIdentity: React.FC<AccountIdentityProps> = ({

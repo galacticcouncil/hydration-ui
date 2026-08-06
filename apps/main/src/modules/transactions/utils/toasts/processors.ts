@@ -20,6 +20,7 @@ import { QueryClient } from "@tanstack/react-query"
 import { first } from "remeda"
 import { PublicClient } from "viem"
 
+import { getExplorerTxLink } from "@/modules/transactions/utils/tx"
 import { createBasejumpScanQueryKey } from "@/modules/xcm/history/useBasejumpScan"
 import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
 import { ToastData } from "@/states/toasts"
@@ -184,6 +185,11 @@ const evm =
       status,
       processed: true,
       dateUpdated: extrinsic.block.timestamp,
+      link: getExplorerTxLink(
+        toast.meta,
+        extrinsic.block.height,
+        extrinsic.indexInBlock,
+      ),
     }
   }
 
@@ -215,6 +221,11 @@ const substrate =
       status,
       processed: true,
       dateUpdated: extrinsic.block.timestamp,
+      link: getExplorerTxLink(
+        toast.meta,
+        extrinsic.block.height,
+        extrinsic.indexInBlock,
+      ),
     }
   }
 
