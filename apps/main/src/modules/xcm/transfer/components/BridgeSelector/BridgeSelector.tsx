@@ -3,6 +3,7 @@ import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useFormContext } from "react-hook-form"
 
 import { SnowbridgeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/SnowbridgeOptions"
+import { WormholeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/WormholeOptions"
 import {
   BridgeEntryKind,
   useBridgeOptions,
@@ -52,6 +53,14 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
                 activeProvider={bridgeProvider ?? null}
                 hasV2={!!entry.v2}
                 hasV1={!!entry.v1}
+                onSelect={handleSelect}
+              />
+            )
+          case BridgeEntryKind.Wormhole:
+            return (
+              <WormholeOptions
+                key={BridgeEntryKind.Wormhole}
+                activeProvider={bridgeProvider ?? null}
                 onSelect={handleSelect}
               />
             )

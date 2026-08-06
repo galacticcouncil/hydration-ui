@@ -47,6 +47,7 @@
   "summary.feeEstimationNotAvailable": "Estimation not available",
   "snowbridge.version.v2": "V2",
   "snowbridge.version.v1": "V1",
+  "wormhole.autoClaim": "Claim automatically",
   "wormhole.disabled.banner": "Wormhole transfers are temporarily unavailable while we migrate from MRL to Hydration's native Wormhole deployment. All funds are safe and will be migrated automatically. No user action is required.",
   "wormhole.disabled.tooltip": "{{ name }} transfers are temporarily unavailable while we migrate from MRL to Hydration's native Wormhole deployment.",
   "transfer.error.generic": "An unexpected error occurred while preparing the transfer.",
