@@ -45,7 +45,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const selectedMarket = market || defaultMarketByEnv[dataEnv]
 
   const createTx = useCallback<MoneyMarketTxFn>(
-    ({ tx, toasts }, options, withExtraGas) => {
+    ({ tx, toasts, activity }, options, withExtraGas) => {
       const invalidateQueries = [["borrow"]]
       if (Array.isArray(tx)) {
         createBatchTx({
@@ -54,11 +54,12 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
             toasts,
             withExtraGas,
             invalidateQueries,
+            activity,
           },
           options,
         })
       } else {
-        createTransaction({ tx, toasts, invalidateQueries }, options)
+        createTransaction({ tx, toasts, invalidateQueries, activity }, options)
       }
     },
     [createTransaction, createBatchTx, papi],

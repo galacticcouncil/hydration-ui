@@ -2,7 +2,10 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { mq } from "@galacticcouncil/ui/theme"
 
-import { TOP_NAVBAR_BREAKPOINT } from "@/modules/layout/constants"
+import {
+  FULL_HEADER_BREAKPOINT,
+  TOP_NAVBAR_BREAKPOINT,
+} from "@/modules/layout/constants"
 
 export const SHeader = styled.header(
   ({ theme }) => css`
@@ -14,7 +17,7 @@ export const SHeader = styled.header(
     grid-template-columns: 1fr auto;
 
     align-items: center;
-    gap: ${theme.space.xxxl};
+    gap: ${theme.space.m};
 
     height: 3.375rem;
 
@@ -30,6 +33,10 @@ export const SHeader = styled.header(
       padding-left: var(--layout-gutter);
       padding-right: ${theme.space.m};
       margin-bottom: ${theme.space.xxl};
+    }
+
+    ${mq(FULL_HEADER_BREAKPOINT)} {
+      gap: ${theme.space.xxxl};
     }
   `,
 )

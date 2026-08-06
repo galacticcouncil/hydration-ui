@@ -65,7 +65,7 @@ export const App = () => {
       <QueryClientProvider client={queryClient}>
         <DataProviderResolver>
           <ThemeProvider>
-            <TooltipProvider delayDuration={0}>
+            <TooltipProvider>
               <RouterProvider router={router} />
               <Toaster />
             </TooltipProvider>

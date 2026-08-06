@@ -1,8 +1,9 @@
 import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
-import { Trash } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
+  ExternalLink,
   Flex,
   Grid,
   Icon,
@@ -10,7 +11,9 @@ import {
   ModalContentDivider,
   ModalHeader,
   Separator,
+  Text,
 } from "@galacticcouncil/ui/components"
+import { neckwork } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -106,14 +109,22 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
           />
         </Grid>
         <ModalContentDivider />
-        {details.status === DcaScheduleStatus.Created && onTerminate && (
-          <Flex justify="flex-end" pt="l" pb="xl">
+        <Flex justify="space-between" gap="base" pt="l" pb="xl">
+          <Button variant="tertiary" outline asChild>
+            <ExternalLink href={neckwork.activityDca(details.scheduleId)}>
+              <Icon component={SquareArrowOutUpRight} size="xs" />
+              <Text fw={500} fs="p6" lh={1.4}>
+                {t("openInExplorer")}
+              </Text>
+            </ExternalLink>
+          </Button>
+          {details.status === DcaScheduleStatus.Created && onTerminate && (
             <Button variant="danger" outline onClick={onTerminate}>
               <Icon component={Trash} size="s" />
               {t("trade:trade.cancelOrder.cta")}
             </Button>
-          </Flex>
-        )}
+          )}
+        </Flex>
         <PastExecutions
           scheduleId={details.scheduleId}
           sx={{ marginInline: "var(--modal-content-inset)" }}

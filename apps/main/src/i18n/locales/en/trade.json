@@ -34,7 +34,6 @@
   "trade.orders.emptyState.header": "No orders yet",
   "trade.orders.emptyState.description": "Seems like you have not made any orders yet. Have fun trading on Hydration",
   "trade.orders.swapDetail.title": "Swap details",
-  "trade.orders.swapDetail.openOnSubscan": "Open on Subscan",
   "trade.orders.dcaDetail.title": "Order details",
   "trade.orders.dcaDetail.blockInterval": "Block interval",
   "trade.orders.dcaDetail.singleTradeSize": "Single trade size",

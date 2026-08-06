@@ -6,7 +6,7 @@ import { Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
-import { NavigationItem, NavigationKey } from "@/config/navigation"
+import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -17,7 +17,7 @@ const STRATEGY_ASSET_ICON_BY_KEY: Partial<Record<NavigationKey, string>> = {
 }
 
 type Props = {
-  readonly items: NavigationItem[]
+  readonly items: InternalNavigationItem[]
 }
 
 export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {

@@ -115,9 +115,9 @@
   "transfer.modal.asset.label": "Asset to transfer",
   "transfer.modal.warning.nonNative": "Sending any asset other than HDX to a centralized exchange will lead to a loss of funds. Instead, you should first send the asset to its source chain using cross-chain transfers.",
   "transfer.modal.acceptance.cex": "I confirm that the destination of this transfer is not an unsupported exchange.",
-  "transfer.modal.onLoading": "Sending {{ amount }} {{symbol}} to {{address}}",
-  "transfer.modal.onSuccess": "Sent {{ amount }} {{symbol}} to {{address}}",
-  "transfer.modal.onError": "Failed to send {{ amount }} {{symbol}} to {{address}}",
+  "transfer.modal.onLoading": "Sending {{ amount, currency }} to {{address}}",
+  "transfer.modal.onSuccess": "Sent {{ amount, currency }} to {{address}}",
+  "transfer.modal.onError": "Failed to send {{ amount, currency }} to {{address}}",
   "transfer.error.validAddress": "The address is incorrect. Please review it and try again.",
   "transfer.error.notSame": "Sending and receiving address cannot be the same."
 }

@@ -148,6 +148,11 @@ export const SwapFragmentDoc = `
   event {
     paraBlockHeight
     indexInBlock
+    call {
+      extrinsic {
+        indexInBlock
+      }
+    }
   }
   swapInputs {
     nodes {
@@ -166,6 +171,10 @@ export const SwapFragmentDoc = `
     }
   }
   dcaScheduleExecutionEvent {
+    event {
+      paraBlockHeight
+      indexInBlock
+    }
     scheduleExecution {
       schedule {
         ...SwapDcaSchedule
@@ -177,7 +186,20 @@ export const SwapFragmentDoc = `
     ${SwapDcaScheduleFragmentDoc}`;
 export const RoutedTradeSwapFragmentDoc = `
     fragment RoutedTradeSwap on Swap {
+  event {
+    paraBlockHeight
+    indexInBlock
+    call {
+      extrinsic {
+        indexInBlock
+      }
+    }
+  }
   dcaScheduleExecutionEvent {
+    event {
+      paraBlockHeight
+      indexInBlock
+    }
     scheduleExecution {
       schedule {
         ...SwapDcaSchedule

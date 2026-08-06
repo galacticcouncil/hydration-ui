@@ -13,10 +13,7 @@ import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
-import {
-  AccountFilter,
-  AccountFilterOption,
-} from "@/components/account/AccountFilter"
+import { AccountFilter } from "@/components/account/AccountFilter"
 import { AccountMetaMaskOption } from "@/components/account/AccountMetaMaskOption"
 import { AccountMultisigOption } from "@/components/account/AccountMultisigOption"
 import { AccountOption } from "@/components/account/AccountOption"
@@ -33,6 +30,7 @@ import {
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
+import { WalletAccountFilterOption } from "@/config/wallet"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { useActiveMultisigConfig } from "@/hooks/useMultisigConfigs"
@@ -66,7 +64,7 @@ export const AccountSelectContent = () => {
 
   const isDefaultMode = mode === WalletMode.Default
 
-  const [filter, setFilter] = useState<AccountFilterOption>(
+  const [filter, setFilter] = useState<WalletAccountFilterOption>(
     getDefaultAccountFilterByMode(mode),
   )
   const [searchVal, setSearchVal] = useState("")
@@ -142,6 +140,7 @@ export const AccountSelectContent = () => {
               {isDefaultMode && (
                 <AccountFilter
                   active={filter}
+                  whitelist={[WalletMode.Substrate, WalletMode.EVM]}
                   onSetActive={(mode) => setFilter(mode)}
                 />
               )}

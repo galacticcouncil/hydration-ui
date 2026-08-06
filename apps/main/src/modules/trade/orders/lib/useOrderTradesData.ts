@@ -2,7 +2,7 @@ import {
   orderPlannedExecutionQuery,
   orderTradesQuery,
 } from "@galacticcouncil/indexer/indexer"
-import { HYDRATION_CHAIN_KEY, subscan } from "@galacticcouncil/utils"
+import { neckwork } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
@@ -59,7 +59,7 @@ export const useOrderTradesData = (
           ? new Date(event.block.timestamp)
           : null
 
-        const link = subscan.block(HYDRATION_CHAIN_KEY, event.block.height)
+        const link = neckwork.block(event.block.height)
 
         return {
           id: `${event.block.height}-${args?.id ?? scheduleId}-${event.name}`,
