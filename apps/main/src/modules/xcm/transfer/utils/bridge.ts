@@ -5,19 +5,30 @@ import { ComponentType } from "react"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
+// Both Wormhole variants wait on the same guardian attestation - the
+// executor only removes the manual claim that follows it.
 export const BRIDGE_TIME: Record<string, string> = {
   [XcmTag.Basejump]: "≈ 22 sec",
   [XcmTag.Wormhole]: "≈ 30 min",
+  [XcmTag.NttExecutor]: "≈ 30 min",
 }
 
 export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
   [XcmTag.Basejump]: Basejumper,
   [XcmTag.Wormhole]: WormholeLogo,
+  [XcmTag.NttExecutor]: WormholeLogo,
+}
+
+// The raw tag is the fallback label, which only reads as a product name for
+// the bridges whose tag *is* one.
+export const BRIDGE_LABEL: Record<string, string> = {
+  [XcmTag.NttExecutor]: "Wormhole (auto)",
 }
 
 export const BRIDGE_PRIORITY: Record<string, number> = {
   [XcmTag.Basejump]: 1,
-  [XcmTag.Wormhole]: 2,
+  [XcmTag.NttExecutor]: 2,
+  [XcmTag.Wormhole]: 3,
   [XcmTag.Snowbridge]: 4,
 }
 

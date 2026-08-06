@@ -8,7 +8,11 @@ import {
   useBridgeOptions,
 } from "@/modules/xcm/transfer/hooks/useBridgeOptions"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { BRIDGE_ICON, BRIDGE_TIME } from "@/modules/xcm/transfer/utils/bridge"
+import {
+  BRIDGE_ICON,
+  BRIDGE_LABEL,
+  BRIDGE_TIME,
+} from "@/modules/xcm/transfer/utils/bridge"
 
 type BridgeSelectorProps = {
   routes: AssetRoute[]
@@ -34,7 +38,7 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
             return (
               <OptionCard
                 key={entry.tag}
-                label={entry.tag}
+                label={BRIDGE_LABEL[entry.tag] ?? entry.tag}
                 value={BRIDGE_TIME[entry.tag] ?? ""}
                 icon={BRIDGE_ICON[entry.tag]}
                 isActive={bridgeProvider === entry.tag}
