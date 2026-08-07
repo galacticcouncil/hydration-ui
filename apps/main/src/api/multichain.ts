@@ -14,16 +14,20 @@ import { PORTFOLIO_CHAINS } from "@/config/portfolio"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
-export const useMultichainService = () => {
+export const useMultichainService = (
+  chains: readonly string[] = PORTFOLIO_CHAINS,
+) => {
   const configService = useCrossChainConfigService()
 
+  // ponytail: `chains` is expected to be a module-level constant, so plain
+  // identity is a good enough memo key here.
   return useMemo(
     () =>
       new MultichainBalanceService({
         configService,
-        chains: PORTFOLIO_CHAINS,
+        chains,
       }),
-    [configService],
+    [configService, chains],
   )
 }
 
@@ -74,8 +78,11 @@ export type MultichainBalanceEntry = {
  *
  * All grouping/shaping lives here; the service stays chain-agnostic.
  */
-export const useMultichainPortfolio = (addresses: string[]) => {
-  const service = useMultichainService()
+export const useMultichainPortfolio = (
+  addresses: string[],
+  chains: readonly string[] = PORTFOLIO_CHAINS,
+) => {
+  const service = useMultichainService(chains)
   const configService = useCrossChainConfigService()
   const stableAddresses = useStableArray(addresses)
 
@@ -135,7 +142,7 @@ export const useMultichainPortfolio = (addresses: string[]) => {
     }
   }
 
-  const byChain = PORTFOLIO_CHAINS.flatMap((chainKey) => {
+  const byChain = chains.flatMap((chainKey) => {
     const chainEntries = entries.filter((entry) => entry.chainKey === chainKey)
     const chain = configService.chains.get(chainKey)
     if (!chainEntries.length || !chain) return []

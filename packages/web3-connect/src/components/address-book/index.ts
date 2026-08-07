@@ -1,4 +1,5 @@
 export * from "./AddressBook"
 export { useAddresses, useAddressStore } from "./AddressBook.store"
+export * from "./AddressBookButton"
 export * from "./AddressBookEntry"
 export * from "./AddressBookModal"

@@ -32,14 +32,9 @@ type Props = {
   readonly refetch: () => void
   readonly searchPhrase: string
   readonly sortingProps: SortingProps
+  readonly showDepositAction?: boolean
 }
 
-/**
- * One collapsible section per eligible chain, stacked under Hydration in the
- * shared portfolio paper. Rows use the same `MyAssetsTable` in its read-only
- * variant — send/trade/unlock are unavailable off-Hydration, but each row
- * links to cross-chain with the source chain and asset preset for deposit.
- */
 export const WalletPortfolioChainSection: FC<Props> = ({
   chain,
   balances,
@@ -49,6 +44,7 @@ export const WalletPortfolioChainSection: FC<Props> = ({
   refetch,
   searchPhrase,
   sortingProps,
+  showDepositAction = true,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { getAsset } = useAssets()
@@ -62,8 +58,6 @@ export const WalletPortfolioChainSection: FC<Props> = ({
           const amount = toDecimal(balance.amount, balance.decimals)
           const chainId = getChainId(chain)
           const chainAssetId = getChainAssetId(chain, balance).toString()
-          // Same source as XCM ExternalAssetLogo — needed when the Hydration
-          // registry miss (xc key ≠ on-chain id) or has no icon for this asset
           const externalIconSrc = chainId
             ? metadata.getAssetLogoSrc(
                 chainId,
@@ -155,6 +149,7 @@ export const WalletPortfolioChainSection: FC<Props> = ({
             <SPortfolioTableWrapper>
               <MyAssetsTable
                 isReadOnly
+                showDepositAction={showDepositAction}
                 data={data}
                 isLoading={isLoading}
                 searchPhrase={searchPhrase}
