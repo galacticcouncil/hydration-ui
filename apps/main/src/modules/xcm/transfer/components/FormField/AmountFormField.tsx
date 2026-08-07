@@ -31,6 +31,7 @@ type AmountFormFieldProps = FlexProps & {
   disabled?: boolean
   className?: string
   isLoading?: boolean
+  isBalanceLoading?: boolean
   withMaxButton?: boolean
   assetPrice?: string
 }
@@ -42,6 +43,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   disabled = false,
   className,
   isLoading = false,
+  isBalanceLoading,
   withMaxButton = false,
   assetPrice,
   ...props
@@ -54,6 +56,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   })
 
   const errorMessage = fieldState.error?.message
+  const showBalanceLoading = isBalanceLoading ?? isLoading
 
   const displayPrice =
     isValidBigSource(assetPrice) && isValidBigSource(field.value)
@@ -69,7 +72,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
       {...props}
     >
       <Flex ml="auto" align="center" gap="s">
-        {isLoading ? (
+        {showBalanceLoading ? (
           <Text fs="p6" lh={1.6}>
             <Skeleton sx={{ width: "2xl" }} />
           </Text>

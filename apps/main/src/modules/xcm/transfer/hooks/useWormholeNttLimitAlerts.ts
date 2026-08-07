@@ -90,6 +90,8 @@ export const useWormholeNttLimitAlerts = (
           message: t("limit.alert.wormhole.inboundExceeded", {
             srcChainName: srcChain.name,
             destChainName: destChain.name,
+            capacity: toDecimal(inbound.capacity, destDecimals),
+            symbol: destAsset.originSymbol,
           }),
           severity: "warning",
         })

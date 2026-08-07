@@ -24,6 +24,7 @@ import {
 } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
+import { isString } from "remeda"
 
 import { ENV } from "@/config/env"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
@@ -185,7 +186,8 @@ export const useNttInboundLimit = (
 }
 
 const createCrossChainBalanceQueryKey = (chainKey: string, address: string) => {
-  return ["xcm", "balance", chainKey, address] as const
+  const normalizedAddress = isString(address) ? address.toLowerCase() : ""
+  return ["xcm", "balance", chainKey, normalizedAddress] as const
 }
 
 export const useCrossChainBalance = (address: string, chainKey: string) => {
@@ -378,6 +380,7 @@ export const xcmTransferQuery = (
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
     retry: false,
+    placeholderData: keepPreviousData,
     queryKey: [
       "xcm",
       "transfer",

@@ -21,6 +21,8 @@ type XcmContextValue = {
   readonly isLoading: boolean
   readonly isLoadingCall: boolean
   readonly isLoadingTransfer: boolean
+  readonly isLoadingSrcBalances: boolean
+  readonly isLoadingDestBalances: boolean
   readonly isConnectedAccountValid: boolean
   readonly transfer: Transfer | null
   readonly transferArgs: XcmTransferArgs | null
@@ -38,6 +40,8 @@ export const XcmContext = createContext<XcmContextValue>({
   isLoading: false,
   isLoadingCall: false,
   isLoadingTransfer: false,
+  isLoadingSrcBalances: false,
+  isLoadingDestBalances: false,
   isConnectedAccountValid: false,
   transfer: null,
   transferArgs: null,

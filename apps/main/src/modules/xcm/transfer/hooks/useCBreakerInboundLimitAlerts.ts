@@ -62,21 +62,18 @@ export const useCBreakerInboundLimitAlerts = (
       ]
     }
 
-    if (lockedUntil && data.limit && data.headroom) {
+    if (data.limit !== null && data.headroom !== null) {
       const sentAmount = toBigInt(destAmount, data.decimals)
       if (sentAmount > data.headroom) {
-        const lockedAmount = sentAmount - data.headroom
         return [
           {
             key: XcmLimitAlertKey.CBreakerInboundExceeded,
             title: t("limit.circuitBreaker"),
             message: t("limit.alert.cBreaker.inbound.exceeded", {
-              remaining: toDecimal(data.headroom, data.decimals),
-              locked: toDecimal(lockedAmount, data.decimals),
+              capacity: toDecimal(data.headroom, data.decimals),
               symbol: data.symbol,
-              datetime: lockedUntil,
             }),
-            severity: "warning" as const,
+            severity: "error" as const,
           },
         ]
       }
