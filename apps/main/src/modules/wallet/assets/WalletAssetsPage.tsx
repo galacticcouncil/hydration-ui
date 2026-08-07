@@ -1,5 +1,6 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
@@ -8,6 +9,10 @@ import { MyBonds } from "@/modules/wallet/assets/MyBonds/MyBonds"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletPortfolio } from "@/modules/wallet/assets/Portfolio/WalletPortfolio"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
+
+const bifrost = chainsMap.get("bifrost")!
+// @ts-expect-error dasd
+bifrost.ws = ["wss://eu.bifrost-polkadot-rpc.liebi.com"]
 
 export const WalletAssetsPage = () => {
   const { account } = useAccount()
