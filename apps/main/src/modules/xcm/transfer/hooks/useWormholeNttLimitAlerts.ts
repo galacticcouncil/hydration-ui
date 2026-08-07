@@ -1,3 +1,4 @@
+import { big } from "@galacticcouncil/common"
 import { Ntt } from "@galacticcouncil/xc-core"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -9,7 +10,6 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
   isNttMetered,
-  rescaleNttAmount,
   XcmLimitAlertKey,
 } from "@/modules/xcm/transfer/utils/limits"
 import { toBigInt, toDecimal } from "@/utils/formatting"
@@ -82,7 +82,7 @@ export const useWormholeNttLimitAlerts = (
     }
 
     if (inbound && isNttMetered(inbound)) {
-      const delivered = rescaleNttAmount(amount, srcDecimals, destDecimals)
+      const delivered = big.convertDecimals(amount, srcDecimals, destDecimals)
       if (delivered > inbound.capacity) {
         alerts.push({
           key: XcmLimitAlertKey.WormholeInboundExceeded,

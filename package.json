@@ -15,7 +15,7 @@
     "i18n": "turbo i18n"
   },
   "resolutions": {
-    "@galacticcouncil/xc-core": "2.3.0-pr350-baf950c",
+    "@galacticcouncil/xc-core": "2.3.0-pr350-7caff1d",
     "polkadot-api": "^2.1.7",
     "strip-ansi": "6.0.1"
   },
@@ -24,8 +24,8 @@
     "@galacticcouncil/descriptors": "^2.6.0",
     "@galacticcouncil/sdk-next": "^1.6.0",
     "@galacticcouncil/xc": "^2.1.0",
-    "@galacticcouncil/xc-cfg": "2.3.0-pr350-baf950c",
-    "@galacticcouncil/xc-core": "2.3.0-pr350-baf950c",
+    "@galacticcouncil/xc-cfg": "2.3.0-pr350-7caff1d",
+    "@galacticcouncil/xc-core": "2.3.0-pr350-7caff1d",
     "@galacticcouncil/xc-scan": "^0.5.0",
     "@galacticcouncil/xc-sdk": "^2.2.0",
     "@polkadot-api/tx-utils": "^0.2.2",

@@ -106,17 +106,6 @@ export const getDepositLimitPeriodWindow = (
 
 export const isNttMetered = (data: NttRateLimit): boolean => data.windowMs > 0
 
-export const rescaleNttAmount = (
-  amount: bigint,
-  fromDecimals: number,
-  toDecimals: number,
-): bigint => {
-  if (fromDecimals === toDecimals) return amount
-  return toDecimals > fromDecimals
-    ? amount * 10n ** BigInt(toDecimals - fromDecimals)
-    : amount / 10n ** BigInt(fromDecimals - toDecimals)
-}
-
 export const getNttUsagePercent = (data: NttRateLimit): number | null => {
   if (!isNttMetered(data) || data.limit === 0n) return null
   const used = data.limit - data.capacity
