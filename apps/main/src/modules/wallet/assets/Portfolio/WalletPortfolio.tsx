@@ -29,10 +29,12 @@ import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { useWalletBalancesSectionData } from "@/modules/wallet/assets/Balances/WalletBalances.data"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.data"
+import { TrackedWallets } from "@/modules/wallet/assets/Portfolio/TrackedWallets"
 import { SPortfolioTableWrapper } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 import { WalletPortfolioChainHeader } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainHeader"
 import { WalletPortfolioChainSection } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainSection"
 import { WalletPortfolioOverview } from "@/modules/wallet/assets/Portfolio/WalletPortfolioOverview"
+import { useTrackedWallets } from "@/states/trackedWallets"
 
 export const walletPortfolioTabs = ["assets", "liquidity", "bonds"] as const
 
@@ -81,6 +83,7 @@ export const WalletPortfolio: FC<Props> = ({
   const { byChain } = useMultichainPortfolio(
     account ? [account.rawAddress] : [],
   )
+  const trackedWallets = useTrackedWallets()
   const queryClient = useQueryClient()
 
   return (
@@ -202,19 +205,29 @@ export const WalletPortfolio: FC<Props> = ({
           )}
       </Paper>
 
-      {activeTab === "assets" && byChain.length > 0 && (
-        <Flex justify="flex-end">
-          <TextButton
-            onClick={() =>
-              queryClient.invalidateQueries({
-                queryKey: ["portfolio", "balances"],
-              })
-            }
-          >
-            {t("myAssets.otherChains.refresh")}
-          </TextButton>
-        </Flex>
+      {activeTab === "assets" && (
+        <Box mt="xxl">
+          <TrackedWallets
+            searchPhrase={searchPhrase}
+            sortingProps={sortingProps}
+          />
+        </Box>
       )}
+
+      {activeTab === "assets" &&
+        (byChain.length > 0 || trackedWallets.length > 0) && (
+          <Flex justify="flex-end">
+            <TextButton
+              onClick={() =>
+                queryClient.invalidateQueries({
+                  queryKey: ["portfolio", "balances"],
+                })
+              }
+            >
+              {t("myAssets.otherChains.refresh")}
+            </TextButton>
+          </Flex>
+        )}
     </Flex>
   )
 }

@@ -17,6 +17,7 @@ import {
   TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
@@ -56,7 +57,12 @@ const DepositToHydrationAction: FC<{ readonly asset: MyAsset }> = ({
 }) => {
   const { t } = useTranslation("wallet")
 
-  if (!asset.origin || !asset.xcAssetKey) return null
+  if (
+    !asset.origin ||
+    !asset.xcAssetKey ||
+    asset.origin.key === HYDRATION_CHAIN_KEY
+  )
+    return null
 
   return (
     <TableRowAction asChild>
@@ -108,7 +114,11 @@ const DepositActionSkeletonCell = () => (
   </Flex>
 )
 
-export const useMyAssetsColumns = (isEmpty: boolean, isReadOnly = false) => {
+export const useMyAssetsColumns = (
+  isEmpty: boolean,
+  isReadOnly = false,
+  showDepositAction = true,
+) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile, gte } = useBreakpoints()
   const isWideDesktop = gte("xl")
@@ -196,13 +206,17 @@ export const useMyAssetsColumns = (isEmpty: boolean, isReadOnly = false) => {
           ...(isEmpty && { pr: "0 !important" }),
         },
         skeletonCell: isReadOnly
-          ? DepositActionSkeletonCell
+          ? showDepositAction
+            ? DepositActionSkeletonCell
+            : () => null
           : ActionsSkeletonCell,
       },
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
 
         if (isReadOnly) {
+          if (!showDepositAction) return null
+
           return (
             <Flex align="center" justify="flex-end">
               <DepositToHydrationAction asset={row.original} />
@@ -326,6 +340,8 @@ export const useMyAssetsColumns = (isEmpty: boolean, isReadOnly = false) => {
         )
 
         if (isReadOnly) {
+          if (!showDepositAction) return amount
+
           return (
             <Flex direction="column" align="flex-end" gap="xs" justify="center">
               {amount}
@@ -364,5 +380,5 @@ export const useMyAssetsColumns = (isEmpty: boolean, isReadOnly = false) => {
       transferableColumn,
       actionsColumn,
     ] as Array<ColumnDef<MyAsset>>
-  }, [isWideDesktop, isMobile, isEmpty, isReadOnly, t])
+  }, [isWideDesktop, isMobile, isEmpty, isReadOnly, showDepositAction, t])
 }

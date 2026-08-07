@@ -25,6 +25,7 @@ type Props = {
   readonly searchPhrase: string
   readonly sortingProps: SortingProps
   readonly isReadOnly?: boolean
+  readonly showDepositAction?: boolean
 }
 
 export const MyAssetsTable: FC<Props> = ({
@@ -33,6 +34,7 @@ export const MyAssetsTable: FC<Props> = ({
   searchPhrase,
   sortingProps,
   isReadOnly = false,
+  showDepositAction = true,
 }) => {
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
@@ -40,6 +42,7 @@ export const MyAssetsTable: FC<Props> = ({
   const columns = useMyAssetsColumns(
     !isLoading && data.length === 0,
     isReadOnly,
+    showDepositAction,
   )
 
   const [isDetailOpen, setIsDetailOpen] = useState<{
