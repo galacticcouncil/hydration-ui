@@ -60,6 +60,7 @@ export const WormholeLimitSummaryRow = ({
         <Tooltip
           text={
             <WormholeLimitInfo
+              leg={bindingLeg}
               outbound={outbound}
               inbound={inbound}
               srcChain={srcChain}

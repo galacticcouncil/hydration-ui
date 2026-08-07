@@ -10,6 +10,7 @@ import {
 import { toDecimal } from "@/utils/formatting"
 
 export type WormholeLimitInfoProps = {
+  leg: "outbound" | "inbound"
   outbound: NttRateLimit | undefined
   inbound: NttRateLimit | undefined
   srcChain: AnyChain
@@ -19,6 +20,7 @@ export type WormholeLimitInfoProps = {
 }
 
 export const WormholeLimitInfo: React.FC<WormholeLimitInfoProps> = ({
+  leg,
   outbound,
   inbound,
   srcChain,
@@ -28,58 +30,40 @@ export const WormholeLimitInfo: React.FC<WormholeLimitInfoProps> = ({
 }) => {
   const { t } = useTranslation(["common", "xcm"])
 
-  const srcDecimals = srcChain.getAssetDecimals(srcAsset) ?? 0
-  const destDecimals = destChain.getAssetDecimals(destAsset) ?? 0
+  const isInbound = leg === "inbound"
+  const limit = isInbound ? inbound : outbound
+  const chain = isInbound ? destChain : srcChain
+  const asset = isInbound ? destAsset : srcAsset
+  const decimals = chain.getAssetDecimals(asset) ?? 0
+
+  if (!limit || !isNttMetered(limit)) return null
 
   return (
     <Stack gap="base">
-      <Text fs="p5">{t("xcm:limit.wormhole.description")}</Text>
+      <Text fs="p5">
+        {t("xcm:limit.wormhole.description", { period: limit.windowMs })}
+      </Text>
 
-      {outbound && isNttMetered(outbound) && (
-        <Stack gap="xs">
-          <Text fs="p5" fw={600}>
-            {t("xcm:limit.wormhole.outbound.title", {
-              chainName: srcChain.name,
-            })}
-          </Text>
-          <Text fs="p5" fw={600} color={getToken("text.tint.secondary")}>
-            {t("number.compact", {
-              value: toDecimal(outbound.capacity, srcDecimals),
-            })}
-            {" / "}
-            {t("number.compact", {
-              value: toDecimal(outbound.limit, srcDecimals),
-            })}{" "}
-            {srcAsset.originSymbol}
-          </Text>
-          <Text fs="p6" lh={1.3}>
-            {t("xcm:limit.wormhole.outbound.description")}
-          </Text>
-        </Stack>
-      )}
-
-      {inbound && isNttMetered(inbound) && (
-        <Stack gap="xs">
-          <Text fs="p5" fw={600}>
-            {t("xcm:limit.wormhole.inbound.title", {
-              chainName: destChain.name,
-            })}
-          </Text>
-          <Text fs="p5" fw={600} color={getToken("text.tint.secondary")}>
-            {t("number.compact", {
-              value: toDecimal(inbound.capacity, destDecimals),
-            })}
-            {" / "}
-            {t("number.compact", {
-              value: toDecimal(inbound.limit, destDecimals),
-            })}{" "}
-            {destAsset.originSymbol}
-          </Text>
-          <Text fs="p6" lh={1.3}>
-            {t("xcm:limit.wormhole.inbound.description")}
-          </Text>
-        </Stack>
-      )}
+      <Stack gap="xs">
+        <Text fs="p5" fw={600}>
+          {t(`xcm:limit.wormhole.${leg}.title`, {
+            chainName: chain.name,
+          })}
+        </Text>
+        <Text fs="p5" fw={600} color={getToken("text.tint.secondary")}>
+          {t("number.compact", {
+            value: toDecimal(limit.capacity, decimals),
+          })}
+          {" / "}
+          {t("number.compact", {
+            value: toDecimal(limit.limit, decimals),
+          })}{" "}
+          {asset.originSymbol}
+        </Text>
+        <Text fs="p6" lh={1.3}>
+          {t(`xcm:limit.wormhole.${leg}.description`)}
+        </Text>
+      </Stack>
     </Stack>
   )
 }
