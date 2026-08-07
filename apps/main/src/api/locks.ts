@@ -16,7 +16,6 @@ import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useUnlockableNativeTokens = () => {
@@ -41,7 +40,7 @@ export const useUnlockableNativeTokens = () => {
     queryFn: async () => {
       let referendaUnlockable = 0n
       let votesToRemove: TUnlockableVote[] = []
-      let lockedReferendaSeconds = 0
+      let lockedReferendaMilliseconds = 0
       let classIds: number[] = []
 
       if (referendaLock > 0n) {
@@ -57,8 +56,8 @@ export const useUnlockableNativeTokens = () => {
             : 0n
 
         votesToRemove = unlockedTokens.votesToRemove
-        lockedReferendaSeconds =
-          (unlockedTokens.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
+        lockedReferendaMilliseconds =
+          (unlockedTokens.maxLockedBlock ?? 0) * rpc.slotDurationMs
 
         classIds = await rpc.queryClient.ensureQueryData(
           accountUnlockClassesQuery(rpc, address),
@@ -103,7 +102,7 @@ export const useUnlockableNativeTokens = () => {
 
       return {
         maxUnlockable: scaleHuman(maxUnlockable.toString(), native.decimals),
-        lockedReferendaSeconds,
+        lockedReferendaMilliseconds,
         unlockableGigaPendingPositions,
         votesToRemove,
         classIds,
@@ -119,7 +118,7 @@ export const useUnlockableNativeTokens = () => {
   return {
     maxUnlockable: data?.maxUnlockable ?? "0",
     displayMaxUnlockable,
-    lockedReferendaSeconds: data?.lockedReferendaSeconds ?? 0,
+    lockedReferendaMilliseconds: data?.lockedReferendaMilliseconds ?? 0,
     unlockableGigaPendingPositions: data?.unlockableGigaPendingPositions ?? [],
     votesToRemove: data?.votesToRemove ?? [],
     classIds: data?.classIds ?? [],
