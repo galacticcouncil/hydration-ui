@@ -104,6 +104,33 @@ export const getDepositLimitPeriodWindow = (
   return undefined
 }
 
+export const getDepositLimitLockUntilDate = (
+  data: AssetDepositLimit,
+  currentBlock: number,
+  currentTimestamp: number,
+  slotDurationMs: number,
+): Date | undefined => {
+  const periodWindow = getDepositLimitPeriodWindow(
+    data,
+    currentBlock,
+    slotDurationMs,
+  )
+  if (!periodWindow) return undefined
+
+  // Expired period: exceeding headroom starts a fresh lockdown from this mint.
+  if (periodWindow.type === "expired") {
+    return new Date(
+      currentTimestamp + ASSET_LOCKDOWN_PERIOD_BLOCKS * slotDurationMs,
+    )
+  }
+
+  if (periodWindow.durationMs > 0) {
+    return new Date(currentTimestamp + periodWindow.durationMs)
+  }
+
+  return undefined
+}
+
 export const isNttMetered = (data: NttRateLimit): boolean => data.windowMs > 0
 
 export const getNttUsagePercent = (data: NttRateLimit): number | null => {

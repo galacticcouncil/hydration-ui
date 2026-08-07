@@ -9,7 +9,7 @@ import { useCrossChainDepositLimit } from "@/api/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
-  getDepositLimitPeriodWindow,
+  getDepositLimitLockUntilDate,
   XcmLimitAlertKey,
 } from "@/modules/xcm/transfer/utils/limits"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -39,18 +39,12 @@ export const useCBreakerInboundLimitAlerts = (
 
     const currentBlock = bestNumber.parachainBlockNumber
     const currentTimestamp = bestNumber.timestamp
-    const periodWindow = getDepositLimitPeriodWindow(
+    const lockedUntil = getDepositLimitLockUntilDate(
       data,
       currentBlock,
+      currentTimestamp,
       slotDurationMs,
     )
-
-    const lockedUntil =
-      periodWindow &&
-      periodWindow.type !== "expired" &&
-      periodWindow.durationMs > 0
-        ? new Date(currentTimestamp + periodWindow.durationMs)
-        : undefined
 
     if (lockedUntil && data.locked) {
       return [
