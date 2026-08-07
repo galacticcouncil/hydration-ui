@@ -9,23 +9,32 @@ import {
   Paper,
   Separator,
   Text,
+  TextButton,
   Toggle,
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
+import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQueryClient } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
-import { FC, ReactNode, useState } from "react"
+import Big from "big.js"
+import { FC, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useMultichainPortfolio } from "@/api/multichain"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { useWalletBalancesSectionData } from "@/modules/wallet/assets/Balances/WalletBalances.data"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.data"
+import { TrackedWallets } from "@/modules/wallet/assets/Portfolio/TrackedWallets"
 import { SPortfolioTableWrapper } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 import { WalletPortfolioChainHeader } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainHeader"
+import { WalletPortfolioChainSection } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainSection"
 import { WalletPortfolioOverview } from "@/modules/wallet/assets/Portfolio/WalletPortfolioOverview"
+import { useTrackedWallets } from "@/states/trackedWallets"
 
 export const walletPortfolioTabs = ["assets", "liquidity", "bonds"] as const
 
@@ -52,7 +61,30 @@ export const WalletPortfolio: FC<Props> = ({
 
   const { data, hasSmallBalances, isEmpty, isLoading } =
     useMyAssetsTableData(showAllAssets)
-  const { assets, isAssetsLoading } = useWalletBalancesSectionData()
+  const {
+    assets,
+    isAssetsLoading,
+    liquidity,
+    isLiquidityLoading,
+    borrow,
+    isBorrowLoading,
+  } = useWalletBalancesSectionData()
+
+  const netWorth = useMemo(
+    () =>
+      Big(assets || 0)
+        .plus(liquidity || 0)
+        .minus(borrow || 0)
+        .toString(),
+    [assets, borrow, liquidity],
+  )
+
+  const { account } = useAccount()
+  const { byChain } = useMultichainPortfolio(
+    account ? [account.rawAddress] : [],
+  )
+  const trackedWallets = useTrackedWallets()
+  const queryClient = useQueryClient()
 
   return (
     <Flex direction="column" gap="l">
@@ -95,12 +127,17 @@ export const WalletPortfolio: FC<Props> = ({
         </Flex>
       </Flex>
 
-      <Paper>
+      <Paper overflow="hidden">
         <CollapsibleRoot defaultOpen>
           <CollapsibleTrigger asChild>
             <WalletPortfolioChainHeader
-              totalDisplay={t("common:currency", { value: assets })}
-              isLoading={isAssetsLoading}
+              isExpandable
+              name="Hydration"
+              chainId={HYDRATION_PARACHAIN_ID}
+              totalDisplay={t("common:currency", { value: netWorth })}
+              isLoading={
+                isAssetsLoading || isLiquidityLoading || isBorrowLoading
+              }
             />
           </CollapsibleTrigger>
           <CollapsibleContent
@@ -142,7 +179,55 @@ export const WalletPortfolio: FC<Props> = ({
             </Box>
           </CollapsibleContent>
         </CollapsibleRoot>
+        {activeTab === "assets" &&
+          byChain.map(
+            ({
+              chainKey,
+              chain,
+              balances,
+              total,
+              isLoading,
+              isError,
+              refetch,
+            }) => (
+              <WalletPortfolioChainSection
+                key={chainKey}
+                chain={chain}
+                balances={balances}
+                total={total}
+                isLoading={isLoading}
+                isError={isError}
+                refetch={refetch}
+                searchPhrase={searchPhrase}
+                sortingProps={sortingProps}
+              />
+            ),
+          )}
       </Paper>
+
+      {activeTab === "assets" && (
+        <Box mt="xxl">
+          <TrackedWallets
+            searchPhrase={searchPhrase}
+            sortingProps={sortingProps}
+          />
+        </Box>
+      )}
+
+      {activeTab === "assets" &&
+        (byChain.length > 0 || trackedWallets.length > 0) && (
+          <Flex justify="flex-end">
+            <TextButton
+              onClick={() =>
+                queryClient.invalidateQueries({
+                  queryKey: ["portfolio", "balances"],
+                })
+              }
+            >
+              {t("myAssets.otherChains.refresh")}
+            </TextButton>
+          </Flex>
+        )}
     </Flex>
   )
 }
