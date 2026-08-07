@@ -49,7 +49,7 @@ export const XcmForm = () => {
     sourceChainAssetPairs,
     destChainAssetPairs,
     availableBridgeRoutes,
-    isLoading,
+    isLoadingBalances,
     isConnectedAccountValid,
     registryChain,
   } = useXcmProvider()
@@ -227,8 +227,8 @@ export const XcmForm = () => {
                 balance={srcBalances?.get(srcAsset?.key ?? "")}
                 balanceMax={transfer?.source.max}
                 withMaxButton
-                disabled={!srcAsset || !hasValidAccounts || isLoading}
-                isLoading={isLoading}
+                disabled={!srcAsset || !hasValidAccounts || isLoadingBalances}
+                isLoading={isLoadingBalances}
                 assetPrice={price}
               />
             </Flex>
@@ -286,7 +286,7 @@ export const XcmForm = () => {
                 fieldName="destAmount"
                 balance={destBalances?.get(destAsset?.key ?? "")}
                 disabled
-                isLoading={isLoading}
+                isLoading={isLoadingBalances}
                 assetPrice={price}
               />
             </Flex>
