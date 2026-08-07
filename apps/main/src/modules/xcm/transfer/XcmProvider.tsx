@@ -284,6 +284,8 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isLoading,
         isLoadingCall,
         isLoadingTransfer,
+        isLoadingSrcBalances,
+        isLoadingDestBalances,
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
