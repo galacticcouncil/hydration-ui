@@ -46,7 +46,7 @@ export const ReceiveAssets = ({
       >
         {assets.map((asset, index) => (
           <React.Fragment key={asset.asset.id}>
-            <RecieveAsset asset={asset} />
+            <ReceiveAsset asset={asset} />
             {index < assets.length - 1 && <Separator />}
           </React.Fragment>
         ))}
@@ -68,7 +68,7 @@ export const ReceiveAssets = ({
   )
 }
 
-const RecieveAsset = ({ asset }: { asset: TReceiveAsset }) => {
+const ReceiveAsset = ({ asset }: { asset: TReceiveAsset }) => {
   const { t } = useTranslation("common")
 
   return (
