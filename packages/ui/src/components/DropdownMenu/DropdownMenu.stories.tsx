@@ -1,14 +1,14 @@
 import { Meta, StoryFn } from "@storybook/react-vite"
 import { SettingsIcon } from "lucide-react"
 
-import { IconPlaceholder } from "@/assets/icons"
+import { ArrowRight, IconPlaceholder } from "@/assets/icons"
 import {
   MenuItem,
   MenuItemDescription,
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
-  MenuSelectionItemArrow,
+  MenuSelectionItemIcon,
 } from "@/components/Menu"
 
 import {
@@ -33,7 +33,7 @@ export const DropdownMenuStory: StoryFn = () => {
           <MenuSelectionItem>
             <MenuItemIcon component={IconPlaceholder} />
             <MenuItemLabel>Item 1</MenuItemLabel>
-            <MenuSelectionItemArrow />
+            <MenuSelectionItemIcon component={ArrowRight} />
           </MenuSelectionItem>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

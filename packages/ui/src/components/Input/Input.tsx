@@ -27,13 +27,17 @@ type TrailingElementProps =
       trailingElement?: ReactNode
     }
 
-export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
+export type InputProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "width"
+> &
   CustomInputProps &
   LeadingElementProps &
   TrailingElementProps & {
     isError?: boolean
     className?: string
     ref?: Ref<HTMLInputElement>
+    width?: string | number | Array<string | number | null>
   }
 
 export const Input: FC<InputProps> = ({
@@ -47,6 +51,7 @@ export const Input: FC<InputProps> = ({
   className,
   ref,
   id,
+  width,
   autoComplete = "off",
   ...props
 }) => {
@@ -58,6 +63,7 @@ export const Input: FC<InputProps> = ({
       variant={variant}
       customSize={customSize}
       className={className}
+      sx={{ width }}
     >
       {leadingElement}
       {IconStart && <IconStart />}

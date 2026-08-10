@@ -11,6 +11,7 @@ export type TextProps = BoxProps & {
   fs?: ThemeUICSSProperties["fontSize"]
   font?: ThemeFont
   align?: ThemeUICSSProperties["textAlign"]
+  textWrap?: ThemeUICSSProperties["textWrap"]
   transform?: ThemeUICSSProperties["textTransform"]
   decoration?: ThemeUICSSProperties["textDecoration"]
   whiteSpace?: ThemeUICSSProperties["whiteSpace"]
@@ -32,6 +33,7 @@ export const Text: FC<TextProps> = ({
   lh,
   fw,
   align,
+  textWrap,
   transform,
   decoration,
   whiteSpace,
@@ -54,6 +56,7 @@ export const Text: FC<TextProps> = ({
         textTransform: transform,
         textDecoration: decoration,
         lineHeight: lh,
+        textWrap,
         whiteSpace,
         wordBreak,
         ...(truncate && getTruncateProps(truncate)),

@@ -32,8 +32,6 @@ export const STabBarItem = styled.div(
     padding-inline: ${theme.space.m};
     padding-block: ${theme.space.base};
 
-    text-decoration: none;
-
     &:focus {
       outline: none;
     }

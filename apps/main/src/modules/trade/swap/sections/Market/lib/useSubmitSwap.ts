@@ -74,6 +74,7 @@ export const useSubmitSwap = () => {
 
       await createTransaction({
         tx: tx.get(),
+        activity: "swap",
         alerts: isSellAll
           ? [
               {

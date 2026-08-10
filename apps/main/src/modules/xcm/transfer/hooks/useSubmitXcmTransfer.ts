@@ -1,7 +1,7 @@
-import { HexString, invariant, isEvmChain } from "@galacticcouncil/utils"
+import { HexString, invariant, isAnyEvmChain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { ConfigBuilder } from "@galacticcouncil/xc-core"
-import { Transfer } from "@galacticcouncil/xc-sdk"
+import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
@@ -91,8 +91,38 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
       const { origin } = destPair.build(validDstAsset, tag)
 
-      const call = await transfer.buildCall(srcAmount)
-      const isApprove = isEvmApproveCall(call)
+      const calls = await transfer.buildCalls(srcAmount)
+      const transferCall = calls.at(-1)
+
+      invariant(transferCall, "Transfer call is required")
+
+      // Prerequisites (native wrap, erc20 approve) the sender signs before the
+      // transfer itself, each dropping off the sequence once executed.
+      const prerequisites = calls.slice(0, -1)
+
+      // Approve is the only erc20-specific prerequisite. Every other one the
+      // platforms emit is a native wrap — WETH.deposit on evm, wSOL on
+      // solana — so keying off approve keeps the labels right per platform.
+      const prerequisiteStepLabels = (call: Call) =>
+        isEvmApproveCall(call)
+          ? {
+              title: t("approve.title"),
+              description: t("approve.description", i18nVars),
+              stepTitle: t("approve"),
+              toasts: {
+                submitted: t("approve.toast.submitted", i18nVars),
+                success: t("approve.toast.success", i18nVars),
+              },
+            }
+          : {
+              title: t("wrap.title", i18nVars),
+              description: t("wrap.description", i18nVars),
+              stepTitle: t("wrap"),
+              toasts: {
+                submitted: t("wrap.toast.submitted", i18nVars),
+                success: t("wrap.toast.success", i18nVars),
+              },
+            }
 
       const buildTransferTransaction = async () => {
         const tx = await buildXcmTx(srcChain, transfer, srcAmount, papi)
@@ -110,14 +140,18 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         const destFee = await transfer.estimateDestinationFee(srcAmount)
 
         const signerFeeAsset =
-          isSubstrateCall(call) && call?.txOptions?.asset
-            ? call.txOptions.asset
+          isSubstrateCall(transferCall) && transferCall?.txOptions?.asset
+            ? transferCall.txOptions.asset
             : undefined
 
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
-          invalidateQueries: [["xcm", "transfer"]],
+          invalidateQueries: [
+            ["xcm", "transfer"],
+            // The picker's snapshot is stale the moment a transfer lands.
+            ["xcm", "balanceSnapshot"],
+          ],
           tx,
           signerFeeAsset,
           toasts: {
@@ -141,43 +175,41 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         }
       }
 
-      if (isApprove) {
+      if (prerequisites.length > 0) {
         let transferTxHash: string | null = null
         return createTransaction(
           {
             tx: [
-              {
-                tx: call,
-                title: t("approve.title"),
-                description: t("approve.description", i18nVars),
-                stepTitle: t("approve"),
-                toasts: {
-                  submitted: t("approve.toast.submitted", i18nVars),
-                  success: t("approve.toast.success", i18nVars),
-                },
+              ...prerequisites.map((prerequisite) => ({
+                tx: prerequisite,
+                ...prerequisiteStepLabels(prerequisite),
+                // Only drives the explorer link (etherscan over subscan),
+                // which holds for any evm prerequisite, wrap included.
                 meta: {
-                  type: TransactionType.EvmApprove,
+                  type: TransactionType.EvmApprove as const,
                   srcChainKey: srcChain.key,
                 },
-                onSubmitted: async (txHash) => {
+                onSubmitted: async (txHash: string) => {
                   const isEvmCallOnEvmChain =
-                    !!srcChain && isEvmChain(srcChain) && isEvmCall(call)
+                    !!srcChain &&
+                    isAnyEvmChain(srcChain) &&
+                    isEvmCall(prerequisite)
 
                   if (!isEvmCallOnEvmChain) return
 
                   const provider = srcChain.evmClient.getProvider()
                   const nonce = await provider.getTransactionCount({
-                    address: call.from as HexString,
+                    address: prerequisite.from as HexString,
                   })
 
                   addPendingApproval({
                     chainKey: srcChain.key,
-                    to: call.to,
+                    to: prerequisite.to,
                     nonce,
                     txHash,
                   })
                 },
-              },
+              })),
               {
                 stepTitle: t("common:transfer"),
                 pendingComponent: PendingApproval,

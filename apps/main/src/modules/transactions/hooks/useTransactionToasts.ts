@@ -1,4 +1,4 @@
-import { etherscan, subscan } from "@galacticcouncil/utils"
+import { etherscan, neckwork } from "@galacticcouncil/utils"
 import {
   useAccount,
   useActiveMultisigConfig,
@@ -8,12 +8,18 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
-import { parseTxMethodName } from "@/modules/transactions/utils/tx"
+import {
+  getDcaScheduleIdFromEvents,
+  getExplorerTxLink,
+  parseTxMethodName,
+} from "@/modules/transactions/utils/tx"
 import { useToasts } from "@/states/toasts"
 import {
+  isSubstrateTxResult,
   SingleTransaction,
   TransactionMeta,
   TransactionType,
+  TSuccessResult,
 } from "@/states/transactions"
 
 export const useTransactionToasts = (
@@ -61,14 +67,18 @@ export const useTransactionToasts = (
           },
         })
       },
-      onSuccess: () => {
+      onSuccess: (result) => {
         if (isMultisig) {
           return remove(id)
         }
+
+        const link = getFinalizedTransactionLink(meta, result)
+
         if (isXcm) {
           return edit(id, {
             variant: "submitted",
             dateCreated: new Date().toISOString(),
+            ...(link && { link }),
           })
         }
 
@@ -76,6 +86,7 @@ export const useTransactionToasts = (
           variant: "success",
           title: toasts?.success ?? t("transaction.status.success.title"),
           dateCreated: new Date().toISOString(),
+          ...(link && { link }),
         })
       },
       onError: (message) => {
@@ -119,5 +130,20 @@ function getTransactionLink(
     return etherscan.tx(meta.srcChainKey, txHash)
   }
 
-  return subscan.tx(meta.srcChainKey, txHash)
+  return neckwork.extrinsicHash(txHash)
+}
+
+function getFinalizedTransactionLink(
+  meta: TransactionMeta,
+  result: TSuccessResult,
+) {
+  if (!isSubstrateTxResult(result)) return null
+
+  const scheduleId = getDcaScheduleIdFromEvents(result.events)
+  if (scheduleId !== null) {
+    return neckwork.activityDca(scheduleId)
+  }
+
+  const { number, index } = result.block
+  return getExplorerTxLink(meta, number, index)
 }

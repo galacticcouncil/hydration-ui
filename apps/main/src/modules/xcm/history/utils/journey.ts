@@ -5,7 +5,12 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
-import { getChainId, isH160Address } from "@galacticcouncil/utils"
+import {
+  basejumpscan,
+  getChainId,
+  isH160Address,
+  xcscan,
+} from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { XcJourney, XcOcnUrn } from "@galacticcouncil/xc-scan"
 import { isNonNullish, sortBy } from "remeda"
@@ -98,6 +103,14 @@ export function getFormattedAddresses(journey: XcJourney) {
 }
 
 export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
+
+export function getJourneyExplorerLink(journey: XcJourney): string {
+  const { originProtocol, correlationId } = journey
+
+  return originProtocol === "basejump"
+    ? basejumpscan.tx(correlationId)
+    : xcscan.tx(correlationId)
+}
 
 export function mergeJourneys(
   existing: XcJourney[],

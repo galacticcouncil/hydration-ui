@@ -5,31 +5,27 @@ import {
   PromoteBanner,
   PromoteBannerProps,
 } from "@galacticcouncil/ui/components"
-import { HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useBondData } from "@/api/bonds"
 import {
   SGigaNewsContainer,
   SGigaNewsToggleButton,
   SStackLayer,
   SStackRoot,
 } from "@/components/GigaNews/GigaNews.styled"
-import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useBannersStore, useEnabledBanners } from "@/states/banners"
 
-const HollarBondBanner: React.FC<PromoteBannerProps> = ({ item }) => {
+const BilBanner: React.FC<PromoteBannerProps> = ({ item }) => {
   const { t } = useTranslation("common")
-  const { timeLeft } = useBondData(HOLLAR_BOND_25_08_26_ID)
-  const apr = getBondApr(HOLLAR_BOND_25_08_26_ID, timeLeft)
   return (
     <PromoteBanner
       item={{
         ...item,
-        title: t("banners.hollarb.title"),
-        description: apr ? t("banners.hollarb.description", { apr }) : "",
+        title: t("banners.bil.title"),
+        description: t("banners.bil.description"),
+        cta: t("banners.bil.cta"),
       }}
     />
   )
@@ -43,20 +39,22 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
     useBannersStore()
   const enabledBanners = useEnabledBanners()
 
-  const allClosed = closedGigaNewsIds.length === enabledBanners.length
-  const [expanded, setExpanded] = useState(allClosed ? false : true)
-  const toggleLabel = expanded
-    ? enabledBanners.length > 1
-      ? t("closeAll")
-      : t("close")
-    : t("gigaNews")
-
   const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
 
   const visibleBanners = enabledBanners.filter(
     (banner) => !closedGigaNewsIds.includes(banner.id),
   )
+
+  const allClosed =
+    enabledBanners.length > 0 &&
+    enabledBanners.every((b) => closedGigaNewsIds.includes(b.id))
+  const [expanded, setExpanded] = useState(allClosed ? false : true)
+  const toggleLabel = expanded
+    ? enabledBanners.length > 1
+      ? t("closeAll")
+      : t("close")
+    : t("gigaNews")
 
   const onCloseRef = useRef(closeAllGigaNews)
   onCloseRef.current = closeAllGigaNews
@@ -113,8 +111,8 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
             return (
               <SStackLayer key={banner.id} $depth={depth}>
-                {banner.id === "hollarb" ? (
-                  <HollarBondBanner item={item} />
+                {banner.id === "bil-vault" ? (
+                  <BilBanner item={item} />
                 ) : (
                   <PromoteBanner item={item} />
                 )}

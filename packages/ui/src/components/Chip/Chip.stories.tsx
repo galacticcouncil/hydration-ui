@@ -85,3 +85,66 @@ export const Danger: Story = {
     variant: "danger",
   },
 }
+
+export const Red: Story = {
+  render: Template,
+  args: {
+    variant: "red",
+  },
+}
+
+export const Orange: Story = {
+  render: Template,
+  args: {
+    variant: "orange",
+  },
+}
+
+export const Amber: Story = {
+  render: Template,
+  args: {
+    variant: "amber",
+  },
+}
+
+export const Lime: Story = {
+  render: Template,
+  args: {
+    variant: "lime",
+  },
+}
+
+export const Green: Story = {
+  render: Template,
+  args: {
+    variant: "green",
+  },
+}
+
+export const Cyan: Story = {
+  render: Template,
+  args: {
+    variant: "cyan",
+  },
+}
+
+export const Blue: Story = {
+  render: Template,
+  args: {
+    variant: "blue",
+  },
+}
+
+export const Purple: Story = {
+  render: Template,
+  args: {
+    variant: "purple",
+  },
+}
+
+export const Pink: Story = {
+  render: Template,
+  args: {
+    variant: "pink",
+  },
+}

@@ -8,13 +8,13 @@ import {
   TradeOperation,
   userSwapsQuery,
 } from "@galacticcouncil/indexer/squid"
-import { safeConvertPublicKeyToSS58, subscan } from "@galacticcouncil/utils"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
+import { getSwapExplorerLink } from "@/modules/trade/orders/lib/getSwapExplorerLink"
 import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -84,14 +84,20 @@ export const useSwapsData = (
           const fillPrice = Big(toAmount).gt(0)
             ? Big(fromAmount).div(toAmount).toString()
             : "0"
-          const link = swap.event
-            ? subscan.blockEvent(
-                HYDRATION_CHAIN_KEY,
-                swap.event.paraBlockHeight,
-                swap.event.indexInBlock,
-              )
-            : null
           const status = getOrderStatus(swap, getAssetWithFallback)
+          const swapEvent = swap.event
+            ? {
+                paraBlockHeight: swap.event.paraBlockHeight,
+                indexInBlock: swap.event.indexInBlock,
+                extrinsicIndex: swap.event.call?.extrinsic?.indexInBlock,
+              }
+            : null
+          const link = getSwapExplorerLink(
+            status,
+            swapEvent,
+            swap.dcaScheduleExecutionEvent?.event,
+            status?.kind !== "market" ? status?.scheduleId : undefined,
+          )
           const type = isTradeOperation(swap.operationType)
             ? swap.operationType
             : null

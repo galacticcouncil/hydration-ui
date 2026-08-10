@@ -31,7 +31,7 @@ export const BorrowHistorySearch: FC<Props> = ({ searchPhrase, onChange }) => {
       value={input}
       onChange={(e) => setInput(e.target.value)}
       placeholder={t("search.placeholder.assets")}
-      sx={{ minWidth: ["100%", 250] }}
+      width={["100%", null, "4xl"]}
     />
   )
 }

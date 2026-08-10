@@ -14,23 +14,16 @@ const WalletSubpageLayout: FC = () => {
     shouldThrow: false,
   })
 
-  const isTransactionsPage = useMatch({
-    from: "/wallet/transactions",
-    shouldThrow: false,
-  })
-
   return (
     <SubpageLayout
-      actions={
-        (isAssetsPage || isTransactionsPage) &&
-        account && <WalletAssetsSubpageLayoutActions />
-      }
+      actions={isAssetsPage && account && <WalletAssetsSubpageLayoutActions />}
     />
   )
 }
 
 export const Route = createFileRoute("/wallet")({
   component: WalletSubpageLayout,
+  staticData: { showSubNav: true },
   head: ({
     match: {
       context: { i18n },

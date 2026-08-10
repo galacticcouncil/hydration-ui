@@ -16,25 +16,22 @@ import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 type Props = {
   readonly actions?: ReactNode
-  readonly subpageMenu?: ReactNode
   readonly crumbs?: BreadcrumbItem[]
   readonly ignoreCurrentSearch?: boolean
 }
 
 export const SubpageLayout: FC<Props> = ({
   actions,
-  subpageMenu,
   crumbs = [],
   ignoreCurrentSearch,
 }) => {
   const isMatch = useMatchRoute()
   const isLiquidityPage = !!isMatch({ to: LINKS.liquidity })
 
-  const subNav = useSubNav()
+  const { items: subNav, hasSubNav } = useSubNav()
 
   const hasCrumbs = crumbs.length > 0
-  const hasSubpageMenu =
-    !hasCrumbs && (subpageMenu || subNav.length >= (actions ? 1 : 2))
+  const hasSubpageMenu = !hasCrumbs && hasSubNav
 
   return (
     <Container>

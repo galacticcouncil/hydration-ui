@@ -1,6 +1,7 @@
 import { ReactNode } from "react"
 
 import {
+  AaveV3BILVaultMainnet,
   AaveV3GIGAHDXPool,
   AaveV3HydrationMainnet,
   AaveV3HydrationTestnet,
@@ -61,6 +62,7 @@ export type MarketDataType = {
 export enum CustomMarket {
   hydration_v3 = "hydration_v3",
   hydration_testnet_v3 = "hydration_testnet_v3",
+  bil_v3 = "bil_v3",
   gigahdx_v3 = "gigahdx_v3",
 }
 
@@ -123,6 +125,24 @@ export const marketsData: {
       GHO_TOKEN_ADDRESS: AaveV3GIGAHDXPool.GHO_TOKEN_ADDRESS,
       GHO_UI_DATA_PROVIDER: AaveV3GIGAHDXPool.GHO_UI_DATA_PROVIDER,
       COLLECTOR: AaveV3GIGAHDXPool.COLLECTOR,
+    },
+  },
+  [CustomMarket.bil_v3]: {
+    marketTitle: "BIL",
+    market: CustomMarket.bil_v3,
+    v3: true,
+    chainId: ChainId.hydration,
+    addresses: {
+      LENDING_POOL_ADDRESS_PROVIDER:
+        AaveV3BILVaultMainnet.POOL_ADDRESSES_PROVIDER,
+      LENDING_POOL: AaveV3BILVaultMainnet.POOL,
+      WALLET_BALANCE_PROVIDER: AaveV3BILVaultMainnet.WALLET_BALANCE_PROVIDER,
+      UI_POOL_DATA_PROVIDER: AaveV3BILVaultMainnet.UI_POOL_DATA_PROVIDER,
+      UI_INCENTIVE_DATA_PROVIDER:
+        AaveV3BILVaultMainnet.UI_INCENTIVE_DATA_PROVIDER,
+      GHO_TOKEN_ADDRESS: AaveV3BILVaultMainnet.GHO_TOKEN_ADDRESS,
+      GHO_UI_DATA_PROVIDER: AaveV3BILVaultMainnet.GHO_UI_DATA_PROVIDER,
+      COLLECTOR: AaveV3BILVaultMainnet.COLLECTOR,
     },
   },
 } as const

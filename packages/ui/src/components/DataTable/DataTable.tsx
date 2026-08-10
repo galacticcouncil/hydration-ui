@@ -308,7 +308,7 @@ const DataTable = <TData,>({
                       })}
 
                       {isRowExpandable && (
-                        <TableCell sx={{ pl: "0 !important" }}>
+                        <TableCell sx={{ pl: "0 !important", width: "s" }}>
                           <Flex justify="end" align="center">
                             <Icon
                               size="m"

@@ -1,49 +1,74 @@
 import {
-  ChartValues,
+  Box,
+  DataTable,
   Flex,
   Paper,
+  ScrollArea,
   Separator,
   Skeleton,
   Stack,
+  TableContainer,
+  Text,
+  ValueStats,
 } from "@galacticcouncil/ui/components"
 
-import { ChartState } from "@/components/ChartState"
-import { TableSkeleton } from "@/modules/layout/components/LayoutSkeleton"
-import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
+import { useMyAssetsColumns } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { walletPortfolioTabs } from "@/modules/wallet/assets/Portfolio/WalletPortfolio"
+import { SPortfolioTableWrapper } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
+import { WalletPortfolioChainHeader } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainHeader"
 
 export const WalletAssetsSkeleton = () => {
+  const columns = useMyAssetsColumns(false)
+
   return (
-    <Stack gap="xl">
-      <TwoColumnGrid template="sidebar">
-        <Stack as={Paper} p={["secondary", "primary"]}>
-          <ChartValues isLoading />
-          <ChartState isLoading isEmpty sx={{ height: 300 }} />
-        </Stack>
-        <Flex
-          direction="column"
-          gap="base"
-          p="xl"
-          justify="space-between"
-          height="100%"
-          as={Paper}
-        >
-          <Stack gap="base">
-            <Skeleton width="50%" />
-            <Skeleton width="20%" />
-          </Stack>
-          <Separator />
-          <Stack gap="base">
-            <Skeleton width="50%" />
-            <Skeleton width="20%" />
-          </Stack>
-          <Separator />
-          <Stack gap="base">
-            <Skeleton width="50%" />
-            <Skeleton width="20%" />
-          </Stack>
+    <Flex direction="column" gap="l">
+      <Box height="2.5rem">
+        <Text fs="h7">
+          <Skeleton width="6.5rem" height="1em" />
+        </Text>
+      </Box>
+
+      <Paper>
+        <WalletPortfolioChainHeader isLoading totalDisplay="" disabled />
+        <Box p="m">
+          <ScrollArea orientation="horizontal" horizontalEdgeOffset="m">
+            <Stack separated gap="xxl" direction="row">
+              {Array.from({ length: 6 }, (_, index) => (
+                <ValueStats
+                  key={index}
+                  sx={{ flex: 1 }}
+                  wrap
+                  size="small"
+                  align="left"
+                  customLabel={
+                    <Text fs="p6">
+                      <Skeleton width="4rem" height="1em" />
+                    </Text>
+                  }
+                  isLoading
+                />
+              ))}
+            </Stack>
+          </ScrollArea>
+        </Box>
+        <Separator />
+        <Flex gap="base" p="m">
+          {walletPortfolioTabs.map((tab) => (
+            <Skeleton
+              key={tab}
+              width="4.5rem"
+              height="1.75rem"
+              borderRadius="9999px"
+            />
+          ))}
         </Flex>
-      </TwoColumnGrid>
-      <TableSkeleton rows={10} cols={[2, null, 4, 6]} />
-    </Stack>
+        <Separator />
+        <SPortfolioTableWrapper>
+          <TableContainer>
+            <DataTable isLoading data={[]} columns={columns} size="small" />
+          </TableContainer>
+        </SPortfolioTableWrapper>
+      </Paper>
+    </Flex>
   )
 }
