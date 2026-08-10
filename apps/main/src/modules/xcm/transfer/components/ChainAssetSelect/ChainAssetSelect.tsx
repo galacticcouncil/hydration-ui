@@ -22,7 +22,6 @@ import { AssetList } from "@/modules/xcm/transfer/components/ChainAssetSelect/As
 import { ChainAssetSelectButton } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelectButton"
 import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { ConnectChainTile } from "@/modules/xcm/transfer/components/ConnectButton/ConnectChainTile"
-import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
   getWalletModeByChain,
   isAccountValidOnChain,
@@ -93,7 +92,6 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   const { isMobile } = useBreakpoints()
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
-  const { registryChain } = useXcmProvider()
   const [chainSearch, setChainSearch] = useState("")
   const [assetSearch, setAssetSearch] = useState("")
   const [pendingChain, setPendingChain] = useState<AnyChain | null>(
@@ -165,7 +163,6 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
         <Flex direction="column">
           {pendingChain && isCompatibleWalletMode && (
             <AssetList
-              registryChain={registryChain}
               items={filteredAssetsWithRoutes}
               address={address}
               selectedAsset={currentSelection?.asset}

@@ -6,6 +6,11 @@ import { useEffect, useMemo, useState } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import {
+  mapErc20PalletBalances,
+  mapNativeBalance,
+  mapTokenPalletBalances,
+} from "@/api/balances"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { Balance, useAccountData } from "@/states/account"
@@ -72,13 +77,8 @@ export function useAccountBalanceSubscription() {
 
     const subscribeSystemBalance = () =>
       balance.watchSystemBalance(accountAddress).subscribe({
-        next: ({ balance }) => {
-          setBalance([
-            {
-              assetId: native.id,
-              ...balance,
-            },
-          ])
+        next: ({ balance: systemBalance }) => {
+          setBalance([mapNativeBalance(native.id, systemBalance)])
 
           setIsSystemBalanceLoaded(true)
         },
@@ -87,17 +87,7 @@ export function useAccountBalanceSubscription() {
     const subscribeTokensBalance = () =>
       balance.watchTokensBalance(accountAddress).subscribe({
         next: (balances) => {
-          const validBalances = new Map<number, Balance>()
-
-          for (const { id, balance } of balances) {
-            if (!followedAssetIds.has(id)) {
-              continue
-            }
-
-            validBalances.set(id, { ...balance, assetId: id.toString() })
-          }
-
-          setBalance(Array.from(validBalances.values()))
+          setBalance(mapTokenPalletBalances(balances, followedAssetIds))
 
           setIsTokensBalanceLoaded(true)
         },
@@ -108,25 +98,22 @@ export function useAccountBalanceSubscription() {
     const subscribeErc20Balance = () =>
       balance.watchErc20Balance(accountAddress, erc20AssetIds).subscribe({
         next: async (balances) => {
-          const validBalances = new Map<number, Balance>([])
+          const validBalances = new Map<number, Balance>(
+            mapErc20PalletBalances(balances).map((entry) => [
+              Number(entry.assetId),
+              entry,
+            ]),
+          )
 
           let shouldSync = false
 
-          for (const { id: assetId, balance } of balances) {
+          for (const [assetId, entry] of validBalances.entries()) {
             const snapBalance = snapABalances.get(assetId)
 
-            validBalances.set(assetId, {
-              ...balance,
-              assetId: assetId.toString(),
-            })
-
-            snapABalances.set(assetId, {
-              ...balance,
-              assetId: assetId.toString(),
-            })
+            snapABalances.set(assetId, entry)
 
             const snapTransferable = snapBalance?.transferable ?? 0n
-            const { transferable } = balance
+            const { transferable } = entry
 
             if (
               snapTransferable !== transferable &&

@@ -14,7 +14,7 @@ import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useCrossChainBalance } from "@/api/xcm"
+import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -52,7 +52,6 @@ export const XcmForm = () => {
     isLoadingSrcBalances,
     isLoadingDestBalances,
     isConnectedAccountValid,
-    registryChain,
   } = useXcmProvider()
 
   const { watch, handleSubmit, reset, setValue } =
@@ -156,8 +155,10 @@ export const XcmForm = () => {
 
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
+  const getHydrationAssetId = useHydrationAssetId()
+
   const spotPriceId = srcAsset
-    ? registryChain.getAssetId(srcAsset).toString()
+    ? (getHydrationAssetId(srcAsset, srcChainKey) ?? undefined)
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)

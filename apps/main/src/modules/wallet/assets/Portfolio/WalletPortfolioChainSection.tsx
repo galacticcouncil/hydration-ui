@@ -17,6 +17,7 @@ import { MultichainValuedBalance } from "@/api/multichain"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { MyAssetsTable } from "@/modules/wallet/assets/MyAssets/MyAssetsTable"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { myAssetsMobileSorter } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
 import { SPortfolioTableWrapper } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 import { WalletPortfolioChainHeader } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainHeader"
 import { useAssets } from "@/providers/assetsProvider"
@@ -98,7 +99,8 @@ export const WalletPortfolioChainSection: FC<Props> = ({
             canStake: false,
           }
         })
-        .filter((asset) => Big(asset.total).gt(0)),
+        .filter((asset) => Big(asset.total).gt(0))
+        .sort(myAssetsMobileSorter),
     [balances, chain, getAsset, metadata],
   )
 

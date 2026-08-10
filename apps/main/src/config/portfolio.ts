@@ -23,8 +23,9 @@ export const PORTFOLIO_CHAINS = [
  * Chains shown for a tracked (watch-only) wallet.
  *
  * Unlike the connected account, a tracked wallet has no richer Hydration data
- * path here — so `hydration` is included and its plain token balances come from
- * the same chain-agnostic balance service as every other chain.
+ * path here — so `hydration` is included. Its token/ERC20 balances are read
+ * from the on-chain registry via the SDK (not xc-cfg's cross-chain asset list,
+ * which omits native Hydration assets like GDOT).
  */
 export const TRACKED_CHAINS = [
   HYDRATION_CHAIN_KEY,

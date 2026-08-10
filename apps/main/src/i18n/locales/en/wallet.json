@@ -57,7 +57,7 @@
   "myAssets.tracked.manage.save": "Save",
   "myAssets.tracked.manage.remove": "Remove",
   "myAssets.tracked.manage.error.invalid": "This doesn't look like a valid address.",
-  "myAssets.tracked.manage.error.own": "This is your own address — it's already shown above.",
+  "myAssets.tracked.manage.error.own": "This address is already tracked from your currently connected wallet.",
   "myAssets.tracked.manage.error.duplicate": "You are already tracking this address.",
   "myAssets.tracked.manage.error.limit": "You can track up to {{ max }} wallets. Remove one first.",
   "myBonds.emptyState.header": "No bonds",

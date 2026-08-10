@@ -1,9 +1,7 @@
 import {
-  Box,
   CollapsibleContent,
   CollapsibleRoot,
   CollapsibleTrigger,
-  Paper,
 } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
@@ -11,6 +9,10 @@ import { useMultichainPortfolio } from "@/api/multichain"
 import { TRACKED_CHAINS } from "@/config/portfolio"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { TrackedWalletHeader } from "@/modules/wallet/assets/Portfolio/TrackedWalletHeader"
+import {
+  SPortfolioChainsList,
+  SPortfolioPaper,
+} from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 import { WalletPortfolioChainSection } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainSection"
 import { TrackedWallet } from "@/states/trackedWallets"
 
@@ -28,7 +30,7 @@ export const TrackedWalletCard: FC<Props> = ({
   const { byChain } = useMultichainPortfolio([wallet.address], TRACKED_CHAINS)
 
   return (
-    <Paper overflow="hidden">
+    <SPortfolioPaper>
       <CollapsibleRoot defaultOpen>
         <CollapsibleTrigger asChild>
           <TrackedWalletHeader address={wallet.address} />
@@ -37,7 +39,7 @@ export const TrackedWalletCard: FC<Props> = ({
           animationDurationMs={400}
           sx={{ overflow: "hidden" }}
         >
-          <Box sx={{ minHeight: 0 }}>
+          <SPortfolioChainsList sx={{ minHeight: 0 }}>
             {byChain.map(
               ({
                 chainKey,
@@ -62,9 +64,9 @@ export const TrackedWalletCard: FC<Props> = ({
                 />
               ),
             )}
-          </Box>
+          </SPortfolioChainsList>
         </CollapsibleContent>
       </CollapsibleRoot>
-    </Paper>
+    </SPortfolioPaper>
   )
 }

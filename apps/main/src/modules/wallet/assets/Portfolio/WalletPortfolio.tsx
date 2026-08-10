@@ -6,7 +6,6 @@ import {
   CollapsibleTrigger,
   Flex,
   Input,
-  Paper,
   Separator,
   Text,
   TextButton,
@@ -30,7 +29,10 @@ import { useWalletBalancesSectionData } from "@/modules/wallet/assets/Balances/W
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.data"
 import { TrackedWallets } from "@/modules/wallet/assets/Portfolio/TrackedWallets"
-import { SPortfolioTableWrapper } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
+import {
+  SPortfolioPaper,
+  SPortfolioTableWrapper,
+} from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 import { WalletPortfolioChainHeader } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainHeader"
 import { WalletPortfolioChainSection } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainSection"
 import { WalletPortfolioOverview } from "@/modules/wallet/assets/Portfolio/WalletPortfolioOverview"
@@ -127,7 +129,7 @@ export const WalletPortfolio: FC<Props> = ({
         </Flex>
       </Flex>
 
-      <Paper overflow="hidden">
+      <SPortfolioPaper>
         <CollapsibleRoot defaultOpen>
           <CollapsibleTrigger asChild>
             <WalletPortfolioChainHeader
@@ -203,7 +205,7 @@ export const WalletPortfolio: FC<Props> = ({
               />
             ),
           )}
-      </Paper>
+      </SPortfolioPaper>
 
       {activeTab === "assets" && (
         <Box mt="xxl">

@@ -1,11 +1,17 @@
+import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { AssetAmount } from "@galacticcouncil/xc-core"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
+import { firstValueFrom } from "rxjs"
 
+import { TAssetData } from "@/api/assets"
+import { TProviderData } from "@/api/provider"
 import { ENV } from "@/config/env"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { Balance } from "@/states/account"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export enum TokenLockType {
@@ -211,4 +217,95 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
     enabled: isApiLoaded,
     staleTime: millisecondsInMinute,
   })
+}
+
+type BalanceClient = TProviderData["sdk"]["client"]["balance"]
+
+type TokenPalletEntry = { id: number; balance: SdkBalance }
+
+const toAccountBalance = (assetId: string, balance: SdkBalance): Balance => ({
+  assetId,
+  ...balance,
+})
+
+export const mapNativeBalance = (
+  nativeId: string,
+  balance: SdkBalance,
+): Balance => toAccountBalance(nativeId, balance)
+
+export const mapTokenPalletBalances = (
+  entries: TokenPalletEntry[],
+  followedTokenIds: ReadonlySet<number>,
+): Balance[] =>
+  entries.flatMap(({ id, balance }) =>
+    followedTokenIds.has(id) ? [toAccountBalance(id.toString(), balance)] : [],
+  )
+
+export const mapErc20PalletBalances = (
+  entries: TokenPalletEntry[],
+): Balance[] =>
+  entries.map(({ id, balance }) => toAccountBalance(id.toString(), balance))
+
+export const fetchHydrationBalances = async ({
+  address,
+  balance,
+  nativeId = NATIVE_ASSET_ID,
+}: {
+  address: string
+  balance: BalanceClient
+  nativeId?: string
+}): Promise<Balance[]> => {
+  const entries = await firstValueFrom(balance.watchBalance(address))
+
+  return entries.flatMap(({ id, balance: sdkBalance }) => {
+    if (sdkBalance.total <= 0n) return []
+
+    const assetId = id === 0 ? nativeId : id.toString()
+    return [toAccountBalance(assetId, sdkBalance)]
+  })
+}
+
+export const mapHydrationBalancesToAssetAmounts = (
+  balances: Balance[],
+  getAsset: (id: string) => TAssetData | undefined,
+  includeAsset: (meta: TAssetData) => boolean,
+): AssetAmount[] =>
+  balances.flatMap((entry) => {
+    const meta = getAsset(entry.assetId)
+    if (!meta || !includeAsset(meta)) return []
+
+    return [
+      new AssetAmount({
+        key: meta.id,
+        originSymbol: meta.symbol,
+        amount: entry.total,
+        decimals: meta.decimals,
+        symbol: meta.symbol,
+      }),
+    ]
+  })
+
+export const fetchHydrationRegistryAssetAmounts = async ({
+  address,
+  sdk,
+  getAsset,
+  isToken,
+  isErc20,
+}: {
+  address: string
+  sdk: TProviderData["sdk"]
+  getAsset: (id: string) => TAssetData | undefined
+  isToken: (asset: TAssetData) => boolean
+  isErc20: (asset: TAssetData) => boolean
+}): Promise<AssetAmount[]> => {
+  const balances = await fetchHydrationBalances({
+    address,
+    balance: sdk.client.balance,
+  })
+
+  return mapHydrationBalancesToAssetAmounts(
+    balances,
+    getAsset,
+    (meta) => isToken(meta) || isErc20(meta),
+  )
 }

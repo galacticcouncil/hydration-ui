@@ -1,4 +1,4 @@
-import { Button } from "@galacticcouncil/ui/components"
+import { Box, Button, Paper } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SPortfolioChainHeaderButton = styled.button<{
@@ -14,6 +14,7 @@ export const SPortfolioChainHeaderButton = styled.button<{
     padding-block: ${theme.space.m};
     background: ${theme.surfaces.containers.dim.dimOnBg};
     border-bottom: 1px solid ${theme.details.separators};
+    border-top: 1px solid ${theme.details.separators};
     box-sizing: border-box;
     color: ${theme.text.high};
     cursor: pointer;
@@ -27,6 +28,10 @@ export const SPortfolioChainHeaderButton = styled.button<{
       transition: transform 0.15s ease;
     }
 
+    &[data-state="closed"] {
+      border-bottom-color: transparent;
+    }
+
     &[data-state="open"] svg {
       transform: rotate(180deg);
     }
@@ -35,6 +40,25 @@ export const SPortfolioChainHeaderButton = styled.button<{
     css`
       pointer-events: none;
     `}
+  `,
+)
+
+const portfolioChainHeaderButtonCss = css`
+  & > *:first-child > [data-state] {
+    border-top-color: transparent;
+  }
+`
+
+export const SPortfolioPaper = styled(Paper)(
+  () => css`
+    overflow: hidden;
+    ${portfolioChainHeaderButtonCss}
+  `,
+)
+
+export const SPortfolioChainsList = styled(Box)(
+  () => css`
+    ${portfolioChainHeaderButtonCss}
   `,
 )
 

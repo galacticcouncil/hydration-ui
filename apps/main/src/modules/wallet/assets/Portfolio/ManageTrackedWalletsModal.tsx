@@ -1,13 +1,11 @@
-import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWallet.png"
 import {
   AccountInput,
-  Box,
   Button,
   Flex,
   FormError,
   FormLabel,
-  Image,
   ModalBody,
+  ModalContentDivider,
   ModalHeader,
   Separator,
   Stack,
@@ -21,7 +19,7 @@ import {
   getWalletModeByAddress,
   useAccount,
 } from "@galacticcouncil/web3-connect"
-import { FC, useCallback, useRef, useState } from "react"
+import { FC, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TrackedWalletEntry } from "@/modules/wallet/assets/Portfolio/TrackedWalletEntry"
@@ -47,11 +45,6 @@ export const ManageTrackedWalletsModal: FC = () => {
   const [error, setError] = useState<Error | null>(null)
 
   const accountPublicKey = account ? addressToPublicKey(account.address) : ""
-
-  const focusAddressInput = useCallback(() => {
-    addressInputRef.current?.focus({ preventScroll: true })
-    addressInputRef.current?.select()
-  }, [])
 
   const validate = (value: string): Error | null => {
     const publicKey = addressToPublicKey(value)
@@ -94,7 +87,7 @@ export const ManageTrackedWalletsModal: FC = () => {
     <>
       <ModalHeader align="center" title={t("myAssets.tracked.modal.title")} />
       <ModalBody scrollable={false}>
-        <Stack gap="base">
+        <Stack>
           <Flex justify="space-between" align="center">
             <FormLabel>{t("myAssets.tracked.modal.addressLabel")}</FormLabel>
             <AddressBookButton onClick={() => setIsAddressBookOpen(true)} />
@@ -120,85 +113,38 @@ export const ManageTrackedWalletsModal: FC = () => {
               })}
             </FormError>
           )}
+          <ModalContentDivider my="xl" />
           <Button
             disabled={!address}
-            size="medium"
-            variant="secondary"
+            size="large"
             onClick={() => save(address)}
-            sx={{ width: "100%" }}
+            width="100%"
           >
             {t("myAssets.tracked.manage.save")}
           </Button>
         </Stack>
       </ModalBody>
-      <ModalBody noPadding>
-        <Flex direction="column" gap="base" sx={{ flexShrink: 0 }}>
-          <Text fs="p5" fw={500} color="text.high" px="xl" pt="xl">
-            {t("myAssets.tracked.title")}
-          </Text>
+      {wallets.length > 0 && (
+        <ModalBody noPadding>
+          <Flex direction="column" gap="base" sx={{ flexShrink: 0 }}>
+            <Text fs="p5" fw={500} color="text.high" px="xl" pt="xl">
+              {t("myAssets.tracked.title")}
+            </Text>
 
-          <Separator />
+            <Separator />
 
-          {wallets.length === 0 ? (
-            <Flex
-              direction="column"
-              align="center"
-              justify="center"
-              gap="s"
-              sx={{ px: 30, textAlign: "center" }}
-            >
-              <Image
-                src={TrackedWalletImage}
-                alt=""
-                sx={{
-                  width: 138,
-                  height: 138,
-                  objectFit: "cover",
-                  objectPosition: "center",
-                  flexShrink: 0,
-                }}
-              />
-              <Flex direction="column" align="center" gap="s">
-                <Text font="primary" fs="p3" fw={500} color="text.high">
-                  {t("myAssets.tracked.empty.title")}
-                </Text>
-                <Text
-                  fs="p5"
-                  lh={1.3}
-                  align="center"
-                  color="text.medium"
-                  sx={{
-                    maxWidth: 320,
-                    whiteSpace: "pre-line",
-                    textWrap: "balance",
-                  }}
-                >
-                  {t("myAssets.tracked.empty.modalDescription")}
-                </Text>
-              </Flex>
-              <Button
-                size="medium"
-                variant="secondary"
-                onClick={focusAddressInput}
-              >
-                {t("myAssets.tracked.empty.addAddress")}
-              </Button>
-            </Flex>
-          ) : (
-            <Box>
-              <Stack separated>
-                {wallets.map((wallet) => (
-                  <TrackedWalletEntry
-                    key={wallet.publicKey}
-                    address={wallet.address}
-                    onRemove={() => remove(wallet.publicKey)}
-                  />
-                ))}
-              </Stack>
-            </Box>
-          )}
-        </Flex>
-      </ModalBody>
+            <Stack separated>
+              {wallets.map((wallet) => (
+                <TrackedWalletEntry
+                  key={wallet.publicKey}
+                  address={wallet.address}
+                  onRemove={() => remove(wallet.publicKey)}
+                />
+              ))}
+            </Stack>
+          </Flex>
+        </ModalBody>
+      )}
     </>
   )
 }

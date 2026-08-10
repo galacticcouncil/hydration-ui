@@ -3,14 +3,17 @@ import {
   MultichainBalanceService,
   useStableArray,
 } from "@galacticcouncil/utils"
-import { Asset, AssetAmount } from "@galacticcouncil/xc-core"
+import { AssetAmount } from "@galacticcouncil/xc-core"
 import { useQueries } from "@tanstack/react-query"
 import Big from "big.js"
 import { useCallback, useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import { useCrossChainConfigService } from "@/api/xcm"
+import { fetchHydrationRegistryAssetAmounts } from "@/api/balances"
+import { useCrossChainConfigService, useHydrationAssetId } from "@/api/xcm"
 import { PORTFOLIO_CHAINS } from "@/config/portfolio"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
@@ -19,8 +22,6 @@ export const useMultichainService = (
 ) => {
   const configService = useCrossChainConfigService()
 
-  // ponytail: `chains` is expected to be a module-level constant, so plain
-  // identity is a good enough memo key here.
   return useMemo(
     () =>
       new MultichainBalanceService({
@@ -28,29 +29,6 @@ export const useMultichainService = (
         chains,
       }),
     [configService, chains],
-  )
-}
-
-/**
- * Maps an xc asset onto its Hydration registry id, the key every price in
- * `useDisplaySpotPriceStore` is keyed by. `getAssetId` throws for assets that
- * are not registered on Hydration (e.g. a Solana-only token), so it is guarded
- * — an unmapped asset just loses its fiat value, it must not break the section.
- */
-export const useHydrationAssetId = () => {
-  const configService = useCrossChainConfigService()
-  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
-
-  return useCallback(
-    (asset: Asset): string | null => {
-      if (!hydrationChain) return null
-      try {
-        return hydrationChain.getAssetId(asset).toString()
-      } catch {
-        return null
-      }
-    },
-    [hydrationChain],
   )
 }
 
@@ -84,7 +62,21 @@ export const useMultichainPortfolio = (
 ) => {
   const service = useMultichainService(chains)
   const configService = useCrossChainConfigService()
+  const { sdk, isApiLoaded } = useRpcProvider()
+  const { getAsset, isToken, isErc20 } = useAssets()
   const stableAddresses = useStableArray(addresses)
+
+  const fetchHydrationBalances = useCallback(
+    (address: string) =>
+      fetchHydrationRegistryAssetAmounts({
+        address,
+        sdk,
+        getAsset,
+        isToken,
+        isErc20,
+      }),
+    [sdk, getAsset, isToken, isErc20],
+  )
 
   const pairs = useMemo(
     () =>
@@ -99,7 +91,13 @@ export const useMultichainPortfolio = (
   const results = useQueries({
     queries: pairs.map(({ address, chainKey }) => ({
       queryKey: ["portfolio", "balances", address, chainKey],
-      queryFn: () => service.getChainBalances(address, chainKey),
+      queryFn: () =>
+        chainKey === HYDRATION_CHAIN_KEY
+          ? fetchHydrationBalances(address)
+          : service.getChainBalances(address, chainKey),
+      enabled:
+        chainKey !== HYDRATION_CHAIN_KEY ||
+        (isApiLoaded && !!Object.keys(sdk).length),
       staleTime: 60_000,
       gcTime: 300_000,
       refetchOnWindowFocus: false,
@@ -119,14 +117,27 @@ export const useMultichainPortfolio = (
 
   const getHydrationAssetId = useHydrationAssetId()
 
+  const resolvePortfolioAssetId = (
+    balance: AssetAmount,
+    chainKey: string,
+  ): string | null =>
+    chainKey === HYDRATION_CHAIN_KEY && /^\d+$/.test(balance.key)
+      ? balance.key
+      : getHydrationAssetId(balance, chainKey)
+
   const assetIds = entries.flatMap((entry) =>
-    entry.balances.map(getHydrationAssetId).filter(isNonNullish),
+    entry.balances
+      .map((balance) => resolvePortfolioAssetId(balance, entry.chainKey))
+      .filter(isNonNullish),
   )
 
   const { getAssetPrice } = useAssetsPrice(assetIds)
 
-  const value = (balance: AssetAmount): MultichainValuedBalance => {
-    const assetId = getHydrationAssetId(balance)
+  const value = (
+    balance: AssetAmount,
+    sourceChainKey: string,
+  ): MultichainValuedBalance => {
+    const assetId = resolvePortfolioAssetId(balance, sourceChainKey)
     const price = assetId ? getAssetPrice(assetId) : null
 
     return {
@@ -147,7 +158,17 @@ export const useMultichainPortfolio = (
     const chain = configService.chains.get(chainKey)
     if (!chainEntries.length || !chain) return []
 
-    const balances = chainEntries.flatMap((entry) => entry.balances.map(value))
+    const balances = chainEntries.flatMap((entry) =>
+      entry.balances.map((balance) => value(balance, chainKey)),
+    )
+    const isLoading = chainEntries.some((entry) => entry.isLoading)
+    const isError = chainEntries.some((entry) => entry.isError)
+    const hasAssets = balances.some(({ balance }) =>
+      Big(balance.amount.toString()).gt(0),
+    )
+
+    // hide chains with nothing to show; keep errors visible for retry
+    if (!isError && !isLoading && !hasAssets) return []
 
     return [
       {
@@ -160,8 +181,8 @@ export const useMultichainPortfolio = (
             Big(0),
           )
           .toString(),
-        isLoading: chainEntries.some((entry) => entry.isLoading),
-        isError: chainEntries.some((entry) => entry.isError),
+        isLoading,
+        isError,
         refetch: () => chainEntries.forEach((entry) => entry.refetch()),
       },
     ]
