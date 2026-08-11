@@ -44,6 +44,84 @@ export const SPortfolioChainHeaderButton = styled.button<{
   `,
 )
 
+export const STrackedWalletHeader = styled.div<{
+  readonly "data-state"?: "open" | "closed"
+}>(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-left: ${theme.space.primary};
+    padding-right: ${theme.space.quart};
+    padding-block: ${theme.space.m};
+    background: ${theme.surfaces.containers.dim.dimOnBg};
+    border-bottom: 1px solid ${theme.details.separators};
+    border-top: 1px solid ${theme.details.separators};
+    box-sizing: border-box;
+    color: ${theme.text.high};
+    transition: ${theme.transitions.colors};
+
+    &:hover {
+      background: ${theme.surfaces.containers.high.hover};
+    }
+
+    &[data-state="closed"] {
+      border-bottom-color: transparent;
+    }
+  `,
+)
+
+export const STrackedWalletHeaderMainTrigger = styled.button(
+  () => css`
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+  `,
+)
+
+export const STrackedWalletHeaderChevronTrigger = styled.button(
+  () => css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+
+    svg {
+      transition: transform 0.15s ease;
+    }
+
+    &[data-state="open"] svg {
+      transform: rotate(180deg);
+    }
+  `,
+)
+
+export const STrackedWalletHeaderRefreshButton = styled(Button)(
+  ({ theme }) => css`
+    height: ${theme.sizes.xl};
+    width: ${theme.sizes.xl};
+    min-width: ${theme.sizes.xl};
+    padding: 0;
+    margin-block: -${theme.space.xl};
+
+    [disabled] {
+      opacity: 1;
+    }
+  `,
+)
+
 export const SPortfolioChainHeaderTotal = styled.div(
   ({ theme }) => css`
     display: flex;

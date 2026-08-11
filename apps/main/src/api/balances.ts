@@ -219,8 +219,6 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
   })
 }
 
-type BalanceClient = TProviderData["sdk"]["client"]["balance"]
-
 type TokenPalletEntry = { id: number; balance: SdkBalance }
 
 const toAccountBalance = (assetId: string, balance: SdkBalance): Balance => ({
@@ -246,23 +244,31 @@ export const mapErc20PalletBalances = (
 ): Balance[] =>
   entries.map(({ id, balance }) => toAccountBalance(id.toString(), balance))
 
-export const fetchHydrationBalances = async ({
-  address,
-  balance,
-  nativeId = NATIVE_ASSET_ID,
+export const getFollowedAssetIds = ({
+  tokens,
+  stableswap,
+  bonds,
+  xykShareTokens,
+  nativeId,
 }: {
-  address: string
-  balance: BalanceClient
-  nativeId?: string
-}): Promise<Balance[]> => {
-  const entries = await firstValueFrom(balance.watchBalance(address))
+  tokens: ReadonlyArray<{ id: string }>
+  stableswap: ReadonlyArray<{ id: string }>
+  bonds: ReadonlyArray<{ id: string }>
+  xykShareTokens: ReadonlyArray<{ id: string }> | undefined
+  nativeId: string
+}): ReadonlySet<number> => {
+  if (!xykShareTokens) return new Set()
 
-  return entries.flatMap(({ id, balance: sdkBalance }) => {
-    if (sdkBalance.total <= 0n) return []
+  const ids = new Set([
+    ...tokens.map((token) => Number(token.id)),
+    ...stableswap.map((token) => Number(token.id)),
+    ...bonds.map((token) => Number(token.id)),
+    ...xykShareTokens.map((token) => Number(token.id)),
+  ])
 
-    const assetId = id === 0 ? nativeId : id.toString()
-    return [toAccountBalance(assetId, sdkBalance)]
-  })
+  ids.delete(Number(nativeId))
+
+  return ids
 }
 
 export const mapHydrationBalancesToAssetAmounts = (
@@ -291,17 +297,32 @@ export const fetchHydrationRegistryAssetAmounts = async ({
   getAsset,
   isToken,
   isErc20,
+  followedTokenIds,
+  erc20AssetIds,
+  nativeId = NATIVE_ASSET_ID,
 }: {
   address: string
   sdk: TProviderData["sdk"]
   getAsset: (id: string) => TAssetData | undefined
   isToken: (asset: TAssetData) => boolean
   isErc20: (asset: TAssetData) => boolean
+  followedTokenIds: ReadonlySet<number>
+  erc20AssetIds: readonly number[]
+  nativeId?: string
 }): Promise<AssetAmount[]> => {
-  const balances = await fetchHydrationBalances({
-    address,
-    balance: sdk.client.balance,
-  })
+  const { balance } = sdk.client
+
+  const [systemBalance, tokenBalances, erc20Balances] = await Promise.all([
+    firstValueFrom(balance.watchSystemBalance(address)),
+    firstValueFrom(balance.watchTokensBalance(address)),
+    firstValueFrom(balance.watchErc20Balance(address, [...erc20AssetIds])),
+  ])
+
+  const balances: Balance[] = [
+    mapNativeBalance(nativeId, systemBalance.balance),
+    ...mapTokenPalletBalances(tokenBalances, followedTokenIds),
+    ...mapErc20PalletBalances(erc20Balances),
+  ]
 
   return mapHydrationBalancesToAssetAmounts(
     balances,

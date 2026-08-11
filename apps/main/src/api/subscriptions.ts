@@ -7,6 +7,7 @@ import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import {
+  getFollowedAssetIds,
   mapErc20PalletBalances,
   mapNativeBalance,
   mapTokenPalletBalances,
@@ -101,20 +102,17 @@ export function useAccountBalanceSubscription() {
     })
   }, [accountAddress])
 
-  const followedAssetIds = useMemo(() => {
-    if (!xykShareTokens) return new Set<number>()
-
-    const ids = new Set([
-      ...tokens.map((token) => Number(token.id)),
-      ...stableswap.map((token) => Number(token.id)),
-      ...bonds.map((token) => Number(token.id)),
-      ...xykShareTokens.map((token) => Number(token.id)),
-    ])
-
-    ids.delete(Number(native.id))
-
-    return ids
-  }, [tokens, bonds, xykShareTokens, stableswap, native.id])
+  const followedAssetIds = useMemo(
+    () =>
+      getFollowedAssetIds({
+        tokens,
+        stableswap,
+        bonds,
+        xykShareTokens,
+        nativeId: native.id,
+      }),
+    [tokens, bonds, xykShareTokens, stableswap, native.id],
+  )
 
   const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
 

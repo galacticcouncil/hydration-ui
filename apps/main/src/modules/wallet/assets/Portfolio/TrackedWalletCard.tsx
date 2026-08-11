@@ -1,9 +1,11 @@
 import {
   CollapsibleContent,
   CollapsibleRoot,
-  CollapsibleTrigger,
+  Text,
 } from "@galacticcouncil/ui/components"
-import { FC } from "react"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { FC, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useMultichainPortfolio } from "@/api/portfolio"
 import { TRACKED_CHAINS } from "@/config/portfolio"
@@ -27,42 +29,62 @@ export const TrackedWalletCard: FC<Props> = ({
   searchPhrase,
   sortingProps,
 }) => {
-  const { byChain } = useMultichainPortfolio([wallet.address], TRACKED_CHAINS)
+  const { t } = useTranslation("wallet")
+  const { byChain, refetchAll, isRefetching, lastUpdatedAt, entries } =
+    useMultichainPortfolio([wallet.address], TRACKED_CHAINS)
+  const [open, setOpen] = useState(true)
+  const isLoading = entries.some((entry) => entry.isLoading)
+  const showNoBalances = !isLoading && byChain.length === 0
 
   return (
     <SPortfolioPaper>
-      <CollapsibleRoot defaultOpen>
-        <CollapsibleTrigger asChild>
-          <TrackedWalletHeader address={wallet.address} />
-        </CollapsibleTrigger>
+      <CollapsibleRoot open={open} onOpenChange={setOpen}>
+        <TrackedWalletHeader
+          address={wallet.address}
+          open={open}
+          isRefreshing={isRefetching}
+          lastUpdatedAt={lastUpdatedAt}
+          onRefresh={refetchAll}
+        />
         <CollapsibleContent
           animationDurationMs={400}
           sx={{ overflow: "hidden" }}
         >
           <SPortfolioChainsList sx={{ minHeight: 0 }}>
-            {byChain.map(
-              ({
-                chainKey,
-                chain,
-                balances,
-                total,
-                isLoading,
-                isError,
-                refetch,
-              }) => (
-                <WalletPortfolioChainSection
-                  key={chainKey}
-                  chain={chain}
-                  balances={balances}
-                  total={total}
-                  isLoading={isLoading}
-                  isError={isError}
-                  refetch={refetch}
-                  searchPhrase={searchPhrase}
-                  sortingProps={sortingProps}
-                  showDepositAction={false}
-                />
-              ),
+            {showNoBalances ? (
+              <Text
+                fs="p5"
+                lh={1.4}
+                color={getToken("text.medium")}
+                sx={{ py: "xl", px: "primary", textWrap: "balance" }}
+              >
+                {t("myAssets.tracked.noBalances")}
+              </Text>
+            ) : (
+              byChain.map(
+                ({
+                  chainKey,
+                  chain,
+                  balances,
+                  total,
+                  isLoading,
+                  isError,
+                  refetch,
+                }) => (
+                  <WalletPortfolioChainSection
+                    key={chainKey}
+                    chain={chain}
+                    balances={balances}
+                    total={total}
+                    isLoading={isLoading}
+                    isError={isError}
+                    refetch={refetch}
+                    searchPhrase={searchPhrase}
+                    sortingProps={sortingProps}
+                    showDepositAction={false}
+                  />
+                ),
+              )
             )}
           </SPortfolioChainsList>
         </CollapsibleContent>

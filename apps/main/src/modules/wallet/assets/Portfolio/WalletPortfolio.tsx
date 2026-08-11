@@ -8,7 +8,6 @@ import {
   Input,
   Separator,
   Text,
-  TextButton,
   Toggle,
   ToggleLabel,
   ToggleRoot,
@@ -18,7 +17,6 @@ import {
   isAddressValidOnHydration,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQueryClient } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, ReactNode, useMemo, useState } from "react"
@@ -39,7 +37,6 @@ import {
 import { WalletPortfolioChainHeader } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainHeader"
 import { WalletPortfolioChainSection } from "@/modules/wallet/assets/Portfolio/WalletPortfolioChainSection"
 import { WalletPortfolioOverview } from "@/modules/wallet/assets/Portfolio/WalletPortfolioOverview"
-import { useTrackedWallets } from "@/states/trackedWallets"
 
 export const walletPortfolioTabs = ["assets", "liquidity", "bonds"] as const
 
@@ -92,9 +89,6 @@ export const WalletPortfolio: FC<Props> = ({
   const { byChain } = useMultichainPortfolio(
     account ? [account.rawAddress] : [],
   )
-  const trackedWallets = useTrackedWallets()
-  const queryClient = useQueryClient()
-
   return (
     <Flex direction="column" gap="l">
       <Flex
@@ -223,20 +217,6 @@ export const WalletPortfolio: FC<Props> = ({
             sortingProps={sortingProps}
           />
         </Box>
-      )}
-
-      {showOtherChains && (byChain.length > 0 || trackedWallets.length > 0) && (
-        <Flex justify="flex-end">
-          <TextButton
-            onClick={() =>
-              queryClient.invalidateQueries({
-                queryKey: ["portfolio", "balances"],
-              })
-            }
-          >
-            {t("myAssets.otherChains.refresh")}
-          </TextButton>
-        </Flex>
       )}
     </Flex>
   )

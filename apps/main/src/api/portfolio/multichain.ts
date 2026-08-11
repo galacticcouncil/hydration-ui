@@ -9,7 +9,10 @@ import Big from "big.js"
 import { useCallback, useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import { fetchHydrationRegistryAssetAmounts } from "@/api/balances"
+import {
+  fetchHydrationRegistryAssetAmounts,
+  getFollowedAssetIds,
+} from "@/api/balances"
 import { portfolioBalanceQueryKey } from "@/api/portfolio/queryKeys"
 import { useCrossChainConfigService, useHydrationAssetId } from "@/api/xcm"
 import { PORTFOLIO_CACHE_MAX_AGE, PORTFOLIO_CHAINS } from "@/config/portfolio"
@@ -62,8 +65,32 @@ export const useMultichainPortfolio = (
   const service = useMultichainService(chains)
   const configService = useCrossChainConfigService()
   const { sdk, isApiLoaded } = useRpcProvider()
-  const { getAsset, isToken, isErc20 } = useAssets()
+  const {
+    getAsset,
+    isToken,
+    isErc20,
+    tokens,
+    stableswap,
+    bonds,
+    xykShareTokens,
+    native,
+    erc20,
+  } = useAssets()
   const stableAddresses = useStableArray(addresses)
+
+  const followedTokenIds = useMemo(
+    () =>
+      getFollowedAssetIds({
+        tokens,
+        stableswap,
+        bonds,
+        xykShareTokens,
+        nativeId: native.id,
+      }),
+    [tokens, stableswap, bonds, xykShareTokens, native.id],
+  )
+
+  const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
 
   const fetchHydrationBalances = useCallback(
     (address: string) =>
@@ -73,8 +100,19 @@ export const useMultichainPortfolio = (
         getAsset,
         isToken,
         isErc20,
+        followedTokenIds,
+        erc20AssetIds,
+        nativeId: native.id,
       }),
-    [sdk, getAsset, isToken, isErc20],
+    [
+      sdk,
+      getAsset,
+      isToken,
+      isErc20,
+      followedTokenIds,
+      erc20AssetIds,
+      native.id,
+    ],
   )
 
   const pairs = useMemo(
@@ -152,6 +190,18 @@ export const useMultichainPortfolio = (
     }
   }
 
+  const refetchAll = useCallback(
+    () => results.forEach((query) => void query?.refetch()),
+    [results],
+  )
+
+  const isRefetching = results.some((query) => query.isRefetching)
+
+  const lastUpdatedAt = useMemo(
+    () => Math.max(0, ...results.map((query) => query.dataUpdatedAt)),
+    [results],
+  )
+
   const byChain = chains.flatMap((chainKey) => {
     const chainEntries = entries.filter((entry) => entry.chainKey === chainKey)
     const chain = configService.chains.get(chainKey)
@@ -187,5 +237,5 @@ export const useMultichainPortfolio = (
     ]
   })
 
-  return { entries, byChain }
+  return { entries, byChain, refetchAll, isRefetching, lastUpdatedAt }
 }
