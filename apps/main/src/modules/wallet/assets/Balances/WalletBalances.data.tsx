@@ -40,7 +40,7 @@ export const useWalletBalancesSectionData = () => {
   const { data: userBorrowSummary, isLoading: isLoadingBorrowSummary } =
     useUserBorrowSummary()
 
-  const { data: balancesWithPrice, isLoading: isBalanceLoading } =
+  const { data: balancesWithPrice, isSettled: isBalanceSettled } =
     useAccountBalancesWithPriceByAssetType([
       AssetType.STABLESWAP,
       AssetType.TOKEN,
@@ -113,7 +113,9 @@ export const useWalletBalancesSectionData = () => {
 
   return {
     assets: assetsTotal.toString(),
-    isAssetsLoading: isBalanceLoading,
+    // aggregates stay behind a loader until nothing can move — a total that
+    // counts up as prices arrive reads as a wrong number, not a loading one
+    isAssetsLoading: !isBalanceSettled,
     liquidity: liquidityTotal.toString(),
     farms: farmingTotal.toString(),
     isLiquidityLoading: isLoadingIsolatedPoolsLiquidity || isLoadingPositions,

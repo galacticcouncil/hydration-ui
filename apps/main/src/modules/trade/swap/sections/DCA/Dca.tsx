@@ -20,12 +20,14 @@ import {
 import { useMaxOrderBalance } from "@/modules/trade/swap/sections/DCA/useMaxOrderBalance"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
+import { useAccountBalances } from "@/states/account"
 import { maxBalanceError } from "@/utils/validators"
 
 import { DcaOrdersMode, DEFAULT_DCA_DURATION, useDcaForm } from "./useDcaForm"
 
 export const Dca: FC = () => {
   const { t } = useTranslation(["trade"])
+  const { isBalanceLoading } = useAccountBalances()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { limitOrderMaxBalance, openBudgetOrderMaxBalance } =
     useMaxOrderBalance({
@@ -98,7 +100,10 @@ export const Dca: FC = () => {
       : true
 
   const isSubmitEnabled =
-    isFormValid && isPriceImpactCheckSatisfied && isHealthFactorCheckSatisfied
+    isFormValid &&
+    isPriceImpactCheckSatisfied &&
+    isHealthFactorCheckSatisfied &&
+    !isBalanceLoading
 
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError

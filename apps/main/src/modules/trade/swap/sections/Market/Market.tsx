@@ -17,10 +17,12 @@ import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketT
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { MarketSummary } from "@/modules/trade/swap/sections/Market/Summary/MarketSummary"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
+import { useAccountBalances } from "@/states/account"
 import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
+  const { isBalanceLoading } = useAccountBalances()
 
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
@@ -83,7 +85,10 @@ export const Market: FC = () => {
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 
   const isFormValid = isTradeEnabled && form.formState.isValid
-  const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
+  // balances can be seeded from cache, so the form looks ready before the live
+  // ones land — don't let a stale MAX be signed in that window
+  const isSubmitEnabled =
+    isFormValid && isHealthFactorCheckSatisfied && !isBalanceLoading
 
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError

@@ -13,6 +13,7 @@ const KEY_PATH = "key" as const
 export enum IndexedDBStores {
   AssetRegistry = "asset-registry",
   PortfolioBalances = "portfolio-balances",
+  AccountBalances = "account-balances",
 }
 
 export type IndexedDBConfig = {

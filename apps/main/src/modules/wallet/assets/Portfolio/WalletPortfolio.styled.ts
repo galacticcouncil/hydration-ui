@@ -1,4 +1,5 @@
-import { Box, Button, Paper } from "@galacticcouncil/ui/components"
+import { Box, Button, Paper, Stack } from "@galacticcouncil/ui/components"
+import { mq } from "@galacticcouncil/ui/theme"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SPortfolioChainHeaderButton = styled.button<{
@@ -43,6 +44,17 @@ export const SPortfolioChainHeaderButton = styled.button<{
   `,
 )
 
+export const SPortfolioChainHeaderTotal = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: calc(${theme.fontSizes.p6} * 1.4);
+    font-size: ${theme.fontSizes.p6};
+    line-height: 1.4;
+  `,
+)
+
 const portfolioChainHeaderButtonCss = css`
   & > *:first-child > [data-state] {
     border-top-color: transparent;
@@ -59,6 +71,40 @@ export const SPortfolioPaper = styled(Paper)(
 export const SPortfolioChainsList = styled(Box)(
   () => css`
     ${portfolioChainHeaderButtonCss}
+  `,
+)
+
+export const SPortfolioOverviewStats = styled(Stack)(
+  ({ theme }) => css`
+    ${mq("lg")} {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      width: 100%;
+      align-items: start;
+      column-gap: ${theme.space.xxl};
+    }
+  `,
+)
+
+export const SPortfolioOverviewStat = styled(Box)(
+  ({ theme }) => css`
+    min-width: 0;
+
+    ${mq("lg")} {
+      padding-right: ${theme.space.xxl};
+      border-right: 1px solid ${theme.details.separators};
+
+      &:last-child {
+        padding-right: 0;
+        border-right: none;
+      }
+
+      /* reserve the value line height so skeleton ↔ text swaps don't resize the row */
+      & > div > div:nth-child(2),
+      & > div > div > div:nth-child(2) {
+        min-height: ${theme.fontSizes.h7};
+      }
+    }
   `,
 )
 

@@ -14,6 +14,10 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { Balance, useAccountData } from "@/states/account"
+import {
+  readAccountBalances,
+  writeAccountBalances,
+} from "@/states/accountBalancesCache"
 
 const ERC20_THRESHOLD = 0.01
 
@@ -48,6 +52,54 @@ export function useAccountBalanceSubscription() {
     setIsTokensBalanceLoaded(false)
     setIsErcBalanceLoaded(false)
   }, [accountAddress, resetBalances])
+
+  /**
+   * Paints last session's balances while the live subscriptions connect. This
+   * effect depends on the address alone, so it fires as soon as the wallet is
+   * restored — the subscription effect below additionally waits on the asset
+   * registry, and that wait is most of the delay being hidden here.
+   *
+   * `isBalanceLoading` stays true until all three subscriptions have emitted,
+   * so nothing restored from disk can be submitted as a transaction.
+   *
+   * Applied only into an empty store: `setBalance` merges, so a read that
+   * resolves late would otherwise resurrect assets already spent to zero.
+   */
+  useEffect(() => {
+    if (!accountAddress) return
+
+    let cancelled = false
+
+    readAccountBalances(accountAddress).then((balances) => {
+      if (cancelled || !balances) return
+      if (Object.keys(useAccountData.getState().balances).length) return
+
+      setBalance(balances)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [accountAddress, setBalance])
+
+  /**
+   * Writes the whole record on every store change — a partial snapshot beats
+   * none, and it self-heals the moment live data lands. The empty guard is
+   * what keeps `resetBalances()` on disconnect from wiping a good cache.
+   */
+  useEffect(() => {
+    if (!accountAddress) return
+
+    return useAccountData.subscribe((state) => {
+      const balances = Object.values(state.balances)
+      if (!balances.length) return
+
+      // ponytail: one IndexedDB write per emit, unthrottled. The React
+      // re-render it rides along with costs more; throttle if a profile
+      // ever says otherwise.
+      void writeAccountBalances(accountAddress, balances)
+    })
+  }, [accountAddress])
 
   const followedAssetIds = useMemo(() => {
     if (!xykShareTokens) return new Set<number>()

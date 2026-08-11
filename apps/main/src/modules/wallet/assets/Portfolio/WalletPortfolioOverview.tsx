@@ -2,24 +2,30 @@ import {
   Box,
   Flex,
   ScrollArea,
-  Stack,
   Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { isMobileDevice } from "@galacticcouncil/utils"
 import Big from "big.js"
-import { FC, Fragment, useMemo } from "react"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useWalletBalancesSectionData } from "@/modules/wallet/assets/Balances/WalletBalances.data"
-import { SPortfolioClaimButton } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
+import {
+  SPortfolioClaimButton,
+  SPortfolioOverviewStat,
+  SPortfolioOverviewStats,
+} from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 import { WalletRewardsBreakdownTooltipContent } from "@/modules/wallet/assets/Rewards/WalletRewardsBreakdownTooltipContent"
 import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.claim"
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 
 export const WalletPortfolioOverview: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
+  const { gte } = useBreakpoints()
+  const isLg = gte("lg")
 
   const {
     assets,
@@ -107,48 +113,55 @@ export const WalletPortfolioOverview: FC = () => {
     },
   ]
 
+  const statsContent = (
+    <SPortfolioOverviewStats separated={!isLg} gap="xxl" direction="row" py="m">
+      {stats.map(({ cta, ...stat }, index) => {
+        const isLast = index === stats.length - 1
+
+        return (
+          <SPortfolioOverviewStat key={stat.label}>
+            {cta ? (
+              <Flex
+                align="center"
+                justify={isLast ? "flex-end" : "flex-start"}
+                gap="base"
+                width="100%"
+              >
+                <ValueStats
+                  wrap
+                  align={isLast ? "right" : "left"}
+                  size="small"
+                  label={stat.label}
+                  value={stat.value}
+                  isLoading={stat.isLoading}
+                />
+                {cta}
+              </Flex>
+            ) : (
+              <ValueStats
+                wrap
+                size="small"
+                align={isLast ? "right" : "left"}
+                label={stat.label}
+                value={stat.value}
+                isLoading={stat.isLoading}
+              />
+            )}
+          </SPortfolioOverviewStat>
+        )
+      })}
+    </SPortfolioOverviewStats>
+  )
+
   return (
     <Box px="m">
-      <ScrollArea orientation="horizontal" horizontalEdgeOffset="m">
-        <Stack separated gap="xxl" direction="row" py="m">
-          {stats.map(({ cta, ...stat }, index) => {
-            const isLast = index === stats.length - 1
-
-            return (
-              <Fragment key={stat.label}>
-                {cta ? (
-                  <Flex
-                    align="center"
-                    justify={isLast ? "flex-end" : "flex-start"}
-                    gap="base"
-                    flex={1}
-                  >
-                    <ValueStats
-                      wrap
-                      align={isLast ? "right" : "left"}
-                      size="small"
-                      label={stat.label}
-                      value={stat.value}
-                      isLoading={stat.isLoading}
-                    />
-                    {cta}
-                  </Flex>
-                ) : (
-                  <ValueStats
-                    sx={{ flex: 1 }}
-                    wrap
-                    size="small"
-                    align={isLast ? "right" : "left"}
-                    label={stat.label}
-                    value={stat.value}
-                    isLoading={stat.isLoading}
-                  />
-                )}
-              </Fragment>
-            )
-          })}
-        </Stack>
-      </ScrollArea>
+      {isLg ? (
+        statsContent
+      ) : (
+        <ScrollArea orientation="horizontal" horizontalEdgeOffset="m">
+          {statsContent}
+        </ScrollArea>
+      )}
     </Box>
   )
 }

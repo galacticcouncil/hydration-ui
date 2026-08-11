@@ -4,7 +4,10 @@ import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { ComponentPropsWithoutRef, forwardRef } from "react"
 
 import { ChainLogo } from "@/components/ChainLogo"
-import { SPortfolioChainHeaderButton } from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
+import {
+  SPortfolioChainHeaderButton,
+  SPortfolioChainHeaderTotal,
+} from "@/modules/wallet/assets/Portfolio/WalletPortfolio.styled"
 
 type Props = ComponentPropsWithoutRef<"button"> & {
   readonly name: string
@@ -46,15 +49,17 @@ export const WalletPortfolioChainHeader = forwardRef<HTMLButtonElement, Props>(
         </Flex>
         {isExpandable && (
           <Flex align="center" gap="base">
-            {isLoading ? (
-              <SpinnerIcon size="s" />
-            ) : (
-              totalDisplay && (
-                <Text fs="p6" fw={500} lh={1.4} color="text.high">
-                  {totalDisplay}
-                </Text>
-              )
-            )}
+            <SPortfolioChainHeaderTotal>
+              {isLoading ? (
+                <SpinnerIcon size="s" />
+              ) : (
+                totalDisplay && (
+                  <Text fs="p6" fw={500} lh={1.4} color="text.high">
+                    {totalDisplay}
+                  </Text>
+                )
+              )}
+            </SPortfolioChainHeaderTotal>
             <Icon size="s" component={ChevronDown} />
           </Flex>
         )}
