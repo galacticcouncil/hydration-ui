@@ -13,7 +13,10 @@ import {
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
+import {
+  HYDRATION_PARACHAIN_ID,
+  isAddressValidOnHydration,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
@@ -21,7 +24,7 @@ import Big from "big.js"
 import { FC, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useMultichainPortfolio } from "@/api/multichain"
+import { useMultichainPortfolio } from "@/api/portfolio"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
@@ -82,6 +85,10 @@ export const WalletPortfolio: FC<Props> = ({
   )
 
   const { account } = useAccount()
+  const isHydrationValid = account
+    ? isAddressValidOnHydration(account.rawAddress)
+    : false
+  const showOtherChains = !isHydrationValid || activeTab === "assets"
   const { byChain } = useMultichainPortfolio(
     account ? [account.rawAddress] : [],
   )
@@ -130,58 +137,60 @@ export const WalletPortfolio: FC<Props> = ({
       </Flex>
 
       <SPortfolioPaper>
-        <CollapsibleRoot defaultOpen>
-          <CollapsibleTrigger asChild>
-            <WalletPortfolioChainHeader
-              isExpandable
-              name="Hydration"
-              chainId={HYDRATION_PARACHAIN_ID}
-              totalDisplay={t("common:currency", { value: netWorth })}
-              isLoading={
-                isAssetsLoading || isLiquidityLoading || isBorrowLoading
-              }
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent
-            forceMount
-            animationDurationMs={400}
-            sx={{ overflow: "hidden" }}
-          >
-            <Box sx={{ minHeight: 0 }}>
-              <WalletPortfolioOverview />
-              <Separator />
-              <TabMenu
-                gap="base"
-                p="m"
-                horizontalEdgeOffset="xl"
-                items={walletPortfolioTabs.map<TabItem>((category) => ({
-                  to: "/wallet/assets",
-                  title: t(`myAssets.tabs.${category}`),
-                  search: { category },
-                  resetScroll: false,
-                }))}
-                renderItem={(item) => (
-                  <TabMenuItem size="small" item={item} variant="muted" />
-                )}
+        {isHydrationValid && (
+          <CollapsibleRoot defaultOpen>
+            <CollapsibleTrigger asChild>
+              <WalletPortfolioChainHeader
+                isExpandable
+                name="Hydration"
+                chainId={HYDRATION_PARACHAIN_ID}
+                totalDisplay={t("common:currency", { value: netWorth })}
+                isLoading={
+                  isAssetsLoading || isLiquidityLoading || isBorrowLoading
+                }
               />
-              <Separator />
-              <SPortfolioTableWrapper>
-                {activeTab === "assets" && (
-                  <MyAssets
-                    data={data}
-                    isEmpty={isEmpty}
-                    isLoading={isLoading}
-                    searchPhrase={searchPhrase}
-                    sortingProps={sortingProps}
-                  />
-                )}
-                {activeTab === "liquidity" && liquidityContent}
-                {activeTab === "bonds" && bondsContent}
-              </SPortfolioTableWrapper>
-            </Box>
-          </CollapsibleContent>
-        </CollapsibleRoot>
-        {activeTab === "assets" &&
+            </CollapsibleTrigger>
+            <CollapsibleContent
+              forceMount
+              animationDurationMs={400}
+              sx={{ overflow: "hidden" }}
+            >
+              <Box sx={{ minHeight: 0 }}>
+                <WalletPortfolioOverview />
+                <Separator />
+                <TabMenu
+                  gap="base"
+                  p="m"
+                  horizontalEdgeOffset="xl"
+                  items={walletPortfolioTabs.map<TabItem>((category) => ({
+                    to: "/wallet/assets",
+                    title: t(`myAssets.tabs.${category}`),
+                    search: { category },
+                    resetScroll: false,
+                  }))}
+                  renderItem={(item) => (
+                    <TabMenuItem size="small" item={item} variant="muted" />
+                  )}
+                />
+                <Separator />
+                <SPortfolioTableWrapper>
+                  {activeTab === "assets" && (
+                    <MyAssets
+                      data={data}
+                      isEmpty={isEmpty}
+                      isLoading={isLoading}
+                      searchPhrase={searchPhrase}
+                      sortingProps={sortingProps}
+                    />
+                  )}
+                  {activeTab === "liquidity" && liquidityContent}
+                  {activeTab === "bonds" && bondsContent}
+                </SPortfolioTableWrapper>
+              </Box>
+            </CollapsibleContent>
+          </CollapsibleRoot>
+        )}
+        {showOtherChains &&
           byChain.map(
             ({
               chainKey,
@@ -207,7 +216,7 @@ export const WalletPortfolio: FC<Props> = ({
           )}
       </SPortfolioPaper>
 
-      {activeTab === "assets" && (
+      {showOtherChains && (
         <Box mt="xxl">
           <TrackedWallets
             searchPhrase={searchPhrase}
@@ -216,20 +225,19 @@ export const WalletPortfolio: FC<Props> = ({
         </Box>
       )}
 
-      {activeTab === "assets" &&
-        (byChain.length > 0 || trackedWallets.length > 0) && (
-          <Flex justify="flex-end">
-            <TextButton
-              onClick={() =>
-                queryClient.invalidateQueries({
-                  queryKey: ["portfolio", "balances"],
-                })
-              }
-            >
-              {t("myAssets.otherChains.refresh")}
-            </TextButton>
-          </Flex>
-        )}
+      {showOtherChains && (byChain.length > 0 || trackedWallets.length > 0) && (
+        <Flex justify="flex-end">
+          <TextButton
+            onClick={() =>
+              queryClient.invalidateQueries({
+                queryKey: ["portfolio", "balances"],
+              })
+            }
+          >
+            {t("myAssets.otherChains.refresh")}
+          </TextButton>
+        </Flex>
+      )}
     </Flex>
   )
 }

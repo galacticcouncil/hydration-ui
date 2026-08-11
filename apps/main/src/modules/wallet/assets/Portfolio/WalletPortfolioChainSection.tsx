@@ -13,7 +13,7 @@ import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetType, TAssetData } from "@/api/assets"
-import { MultichainValuedBalance } from "@/api/multichain"
+import { MultichainValuedBalance } from "@/api/portfolio"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { MyAssetsTable } from "@/modules/wallet/assets/MyAssets/MyAssetsTable"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"

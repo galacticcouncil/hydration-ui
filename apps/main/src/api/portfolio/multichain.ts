@@ -10,8 +10,9 @@ import { useCallback, useMemo } from "react"
 import { isNonNullish } from "remeda"
 
 import { fetchHydrationRegistryAssetAmounts } from "@/api/balances"
+import { portfolioBalanceQueryKey } from "@/api/portfolio/queryKeys"
 import { useCrossChainConfigService, useHydrationAssetId } from "@/api/xcm"
-import { PORTFOLIO_CHAINS } from "@/config/portfolio"
+import { PORTFOLIO_CACHE_MAX_AGE, PORTFOLIO_CHAINS } from "@/config/portfolio"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -34,9 +35,7 @@ export const useMultichainService = (
 
 export type MultichainValuedBalance = {
   balance: AssetAmount
-  /** Hydration registry id, or null when the asset is not on Hydration */
   assetId: string | null
-  /** Value in the user's display currency, or null when unpriceable */
   displayValue: string | null
 }
 
@@ -90,7 +89,7 @@ export const useMultichainPortfolio = (
 
   const results = useQueries({
     queries: pairs.map(({ address, chainKey }) => ({
-      queryKey: ["portfolio", "balances", address, chainKey],
+      queryKey: portfolioBalanceQueryKey(address, chainKey),
       queryFn: () =>
         chainKey === HYDRATION_CHAIN_KEY
           ? fetchHydrationBalances(address)
@@ -99,7 +98,7 @@ export const useMultichainPortfolio = (
         chainKey !== HYDRATION_CHAIN_KEY ||
         (isApiLoaded && !!Object.keys(sdk).length),
       staleTime: 60_000,
-      gcTime: 300_000,
+      gcTime: PORTFOLIO_CACHE_MAX_AGE,
       refetchOnWindowFocus: false,
     })),
   })

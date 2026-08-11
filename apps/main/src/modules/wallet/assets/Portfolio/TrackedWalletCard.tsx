@@ -5,7 +5,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 
-import { useMultichainPortfolio } from "@/api/multichain"
+import { useMultichainPortfolio } from "@/api/portfolio"
 import { TRACKED_CHAINS } from "@/config/portfolio"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { TrackedWalletHeader } from "@/modules/wallet/assets/Portfolio/TrackedWalletHeader"
