@@ -6,7 +6,14 @@ import { isNonNullish, sortBy } from "remeda"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
-export const WORMHOLE_FAMILY_TAGS: XcmTags = [XcmTag.Wormhole, XcmTag.Basejump]
+export const WORMHOLE_FAMILY_TAGS: XcmTags = [
+  XcmTag.NttExecutor,
+  XcmTag.Wormhole,
+  XcmTag.Basejump,
+]
+
+export const isWormholeFamilyTag = (tag: string | null | undefined): boolean =>
+  !!tag && WORMHOLE_FAMILY_TAGS.includes(tag as XcmTags[number])
 
 export const BRIDGE_TIME: Record<string, string> = {
   [XcmTag.Basejump]: "≈ 22 sec",
