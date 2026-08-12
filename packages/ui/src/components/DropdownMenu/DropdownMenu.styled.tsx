@@ -92,13 +92,22 @@ const SDropdownMenuContent = styled(DropdownMenuPrimitive.Content, {
 export const DropdownMenuContent: FC<
   ComponentProps<typeof SDropdownMenuContent> & {
     animation?: DropdownMenuAnimation
+    mountInRoot?: boolean
   }
-> = ({ animation, ...props }) => {
-  return (
-    <DropdownMenuPrimitive.Portal container={document.getElementById("root")}>
-      <SDropdownMenuContent sideOffset={13} animation={animation} {...props} />
-    </DropdownMenuPrimitive.Portal>
+> = ({ animation, mountInRoot, ...props }) => {
+  const content = (
+    <SDropdownMenuContent sideOffset={13} animation={animation} {...props} />
   )
+
+  if (mountInRoot) {
+    return (
+      <DropdownMenuPrimitive.Portal container={document.getElementById("root")}>
+        {content}
+      </DropdownMenuPrimitive.Portal>
+    )
+  }
+
+  return <DropdownMenuPrimitive.Portal>{content}</DropdownMenuPrimitive.Portal>
 }
 
 export const DropdownMenuItem = styled(DropdownMenuPrimitive.Item)`
