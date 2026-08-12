@@ -43,7 +43,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   disabled = false,
   className,
   isLoading = false,
-  isBalanceLoading,
+  isBalanceLoading = false,
   withMaxButton = false,
   assetPrice,
   ...props
@@ -56,7 +56,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   })
 
   const errorMessage = fieldState.error?.message
-  const showBalanceLoading = isBalanceLoading ?? isLoading
+  const showBalanceLoading = isBalanceLoading || isLoading
 
   const displayPrice =
     isValidBigSource(assetPrice) && isValidBigSource(field.value)

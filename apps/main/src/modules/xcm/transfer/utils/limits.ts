@@ -34,7 +34,6 @@ export const WORMHOLE_LIMIT_ALERT_KEYS: XcmLimitAlertKey[] = [
   XcmLimitAlertKey.WormholeInboundExceeded,
 ]
 
-// Single source of truth for which limit alert wins — most blocking first.
 export const XCM_LIMIT_ALERT_PRIORITY: XcmLimitAlertKey[] = [
   XcmLimitAlertKey.CBreakerOutboundLockdown,
   XcmLimitAlertKey.WormholeOutboundExceeded,

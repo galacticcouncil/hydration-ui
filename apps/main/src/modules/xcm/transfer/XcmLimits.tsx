@@ -29,7 +29,6 @@ import { useAssetPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
 type XcmLimitsProps = {
-  // The row must match the banner it lives in — always the alert's own key.
   alertKey: string
 }
 
@@ -99,7 +98,6 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
   const showDepositRow = isInbound && !!depositLimit
   const showGlobalWithdrawRow =
     isOutbound && !!globalWithdrawLimit && !!headroomUsd
-  // The NTT row shows the leg the alert is about.
   const bindingLeg =
     alertKey === XcmLimitAlertKey.WormholeInboundExceeded
       ? "inbound"

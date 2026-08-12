@@ -33,53 +33,6 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
-// TODO: remove — temporary XCM balance debug override
-const XCM_DEBUG_FAKE_BALANCE = {
-  enabled: true,
-  amount: 10_000_000,
-} as const
-
-const getDebugFakeAmount = (decimals: number) =>
-  BigInt(XCM_DEBUG_FAKE_BALANCE.amount) * 10n ** BigInt(decimals)
-
-const applyDebugFakeBalances = (
-  balances: AssetAmount[],
-  chain: AnyChain,
-): Map<string, AssetAmount> => {
-  const balanceMap = new Map<string, AssetAmount>()
-
-  for (const { asset, decimals } of chain.assetsData.values()) {
-    if (!decimals) continue
-
-    balanceMap.set(
-      asset.key,
-      AssetAmount.fromAsset(asset, {
-        amount: getDebugFakeAmount(decimals),
-        decimals,
-      }),
-    )
-  }
-
-  for (const balance of balances) {
-    balanceMap.set(
-      balance.key,
-      balance.copyWith({ amount: getDebugFakeAmount(balance.decimals) }),
-    )
-  }
-
-  return balanceMap
-}
-
-const applyDebugFakeTransferSource = (transfer: Transfer) => {
-  const { balance, fee, max } = transfer.source
-  const fakeAmount = getDebugFakeAmount(balance.decimals)
-
-  transfer.source.balance = balance.copyWith({ amount: fakeAmount })
-  transfer.source.max = max.copyWith({
-    amount: fee.amount < fakeAmount ? fakeAmount - fee.amount : fakeAmount,
-  })
-}
-
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
   return useSuspenseQuery({
@@ -238,19 +191,14 @@ export const useCrossChainBalancesFetch = (
   useEffect(() => {
     if (!data || dataUpdatedAt === appliedAt.current) return
     appliedAt.current = dataUpdatedAt
-    const chain = chainsMap.get(chainKey)
-    const queryKey = createCrossChainBalanceQueryKey(chainKey, address)
-
-    if (XCM_DEBUG_FAKE_BALANCE.enabled && chain) {
-      queryClient.setQueryData(queryKey, applyDebugFakeBalances(data, chain))
-      return
-    }
-
-    queryClient.setQueryData<Map<string, AssetAmount>>(queryKey, (prev) => {
-      const next = new Map(prev)
-      for (const balance of data) next.set(balance.key, balance)
-      return next
-    })
+    queryClient.setQueryData<Map<string, AssetAmount>>(
+      createCrossChainBalanceQueryKey(chainKey, address),
+      (prev) => {
+        const next = new Map(prev)
+        for (const balance of data) next.set(balance.key, balance)
+        return next
+      },
+    )
   }, [data, dataUpdatedAt, chainKey, address, queryClient])
 
   return { isLoading, isError }
@@ -308,24 +256,17 @@ export const useCrossChainBalanceSubscription = (
           chain,
           assetsRef.current,
           (balances) => {
-            if (XCM_DEBUG_FAKE_BALANCE.enabled) {
-              queryClient.setQueryData(
-                queryKey,
-                applyDebugFakeBalances(balances, chain),
-              )
-            } else {
-              // Merge, don't replace. The cache key has no asset dimension, so a
-              // narrow subscription (selected asset) and a wide one (asset list)
-              // on the same chain would otherwise blank each other out.
-              queryClient.setQueryData<Map<string, AssetAmount>>(
-                queryKey,
-                (prev) => {
-                  const next = new Map(prev)
-                  for (const balance of balances) next.set(balance.key, balance)
-                  return next
-                },
-              )
-            }
+            // Merge, don't replace. The cache key has no asset dimension, so a
+            // narrow subscription (selected asset) and a wide one (asset list)
+            // on the same chain would otherwise blank each other out.
+            queryClient.setQueryData<Map<string, AssetAmount>>(
+              queryKey,
+              (prev) => {
+                const next = new Map(prev)
+                for (const balance of balances) next.set(balance.key, balance)
+                return next
+              },
+            )
 
             onSuccessRef.current?.(balances)
             setIsLoading(false)
@@ -413,22 +354,18 @@ export const xcmTransferQuery = (
         tag,
       })
 
-      if (XCM_DEBUG_FAKE_BALANCE.enabled) {
-        applyDebugFakeTransferSource(transfer)
-      } else {
-        const { balance, fee, max } = transfer.source
-        if (balance.isSame(fee) && max.amount > 0n) {
-          try {
-            const atMaxFee = await transfer.estimateFee(
-              toDecimal(max.amount, max.decimals),
-            )
-            const delta = atMaxFee.amount - fee.amount
-            if (delta > 0n) {
-              transfer.source.max = max.copyWith({ amount: max.amount - delta })
-            }
-          } catch {
-            // keep original max if re-pricing fails
+      const { balance, fee, max } = transfer.source
+      if (balance.isSame(fee) && max.amount > 0n) {
+        try {
+          const atMaxFee = await transfer.estimateFee(
+            toDecimal(max.amount, max.decimals),
+          )
+          const delta = atMaxFee.amount - fee.amount
+          if (delta > 0n) {
+            transfer.source.max = max.copyWith({ amount: max.amount - delta })
           }
+        } catch {
+          // keep original max if re-pricing fails
         }
       }
 
