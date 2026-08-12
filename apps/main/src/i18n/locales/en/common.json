@@ -261,6 +261,7 @@
   "rpc.status.degraded": "This RPC is having a hard time. Please select another RPC.",
   "rpc.status.offline": "This RPC seems to be down. Please select another RPC.",
   "rpc.status.ping": "{{ value, number }} ms",
+  "rpc.status.blockTime": "Avg. block time: {{ value, number(minimumFractionDigits: 2; maximumFractionDigits: 2) }}s",
   "rpc.status.blockHeightDiff_one": "{{ count, number }} block behind",
   "rpc.status.blockHeightDiff_other": "{{ count, number }} blocks behind",
   "rpc.indexer.status.title.healthy": "Healthy",

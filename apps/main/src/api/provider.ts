@@ -10,6 +10,7 @@ import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
+  getHostnameFromUrl,
   HOLLAR_BOND_25_08_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
@@ -18,11 +19,17 @@ import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
+import { getAverageBlockTimeMs } from "@/api/blockTime"
 import { ENV } from "@/config/env"
-import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
+import {
+  createProvider,
+  ProviderProps,
+  PROVIDERS,
+  TDataEnv,
+} from "@/config/rpc"
 import { BIL_POOL_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
-import { useProviderRpcUrlStore } from "@/states/provider"
+import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
@@ -117,9 +124,9 @@ const getProviderData = async (
     }),
   })
 
-  const [sdk, slotDuration, hollarBond, bilPoolCode] = await Promise.all([
+  const [sdk, blockTimeMs, hollarBond, bilPoolCode] = await Promise.all([
     createSdkContext(papiClient),
-    papi.constants.Aura.SlotDuration(),
+    getAverageBlockTimeMs(papiClient, papi),
     papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
     evm.getCode({ address: BIL_POOL_ADDRESS }),
     metadata.fetchAssets(),
@@ -139,7 +146,7 @@ const getProviderData = async (
     evm,
     sdk,
     rpcUrlList,
-    slotDurationMs: Number(slotDuration),
+    slotDurationMs: blockTimeMs,
     featureFlags: {
       hollarBondsEnabled: !!hollarBond,
       bilEnabled: !!bilPoolCode && bilPoolCode !== "0x",
@@ -168,8 +175,20 @@ export const useIndexerUrl = (): string => {
 
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
+  const { rpcList } = useRpcListStore()
 
-  return useMemo(() => getProviderProps(endpoint) || null, [endpoint])
+  return useMemo(() => {
+    if (!endpoint) return null
+
+    const known = getProviderProps(endpoint)
+    if (known) return known
+
+    const custom = rpcList.find((rpc) => rpc.url === endpoint)
+    return createProvider(
+      custom?.name ?? getHostnameFromUrl(endpoint),
+      endpoint,
+    )
+  }, [endpoint, rpcList])
 }
 
 export const useSquidClient = (): SquidSdk => {
