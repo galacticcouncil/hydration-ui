@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 
 import { useCBreakerInboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerInboundLimitAlerts"
 import { useCBreakerOutboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerOutboundLimitAlerts"
+import { useHydrationEvmBindingAlert } from "@/modules/xcm/transfer/hooks/useHydrationEvmBindingAlert"
 import { useWormholeNttLimitAlerts } from "@/modules/xcm/transfer/hooks/useWormholeNttLimitAlerts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
@@ -26,14 +27,17 @@ const isReportErrorKey = (error: string): error is ReportErrorKey => {
 export const useXcmTransferAlerts = (
   form: UseFormReturn<XcmFormValues>,
   transferReport: TransferValidationReport[] | null,
-): XcmAlert[] => {
+  requiresEvmBinding: boolean,
+): { alerts: XcmAlert[]; isLoading: boolean } => {
   const { t } = useTranslation(["xcm"])
 
   const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
   const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
   const wormholeNttLimitAlerts = useWormholeNttLimitAlerts(form)
+  const { alerts: evmBindingAlerts, isLoading: isLoadingEvmBinding } =
+    useHydrationEvmBindingAlert(form, requiresEvmBinding)
 
-  return useMemo<XcmAlert[]>(() => {
+  const alerts = useMemo<XcmAlert[]>(() => {
     const transferReportAlerts: XcmAlert[] = []
     if (transferReport) {
       for (const e of transferReport) {
@@ -51,6 +55,7 @@ export const useXcmTransferAlerts = (
       }
     }
     if (transferReportAlerts.length) return transferReportAlerts
+    if (evmBindingAlerts.length) return evmBindingAlerts
 
     const limitAlert = pickXcmLimitAlert([
       ...cBreakerInboundLimitAlerts,
@@ -64,5 +69,8 @@ export const useXcmTransferAlerts = (
     cBreakerInboundLimitAlerts,
     cBreakerOutboundLimitAlerts,
     wormholeNttLimitAlerts,
+    evmBindingAlerts,
   ])
+
+  return { alerts, isLoading: isLoadingEvmBinding }
 }

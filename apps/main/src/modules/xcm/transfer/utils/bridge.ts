@@ -6,9 +6,8 @@ import { isNonNullish, sortBy } from "remeda"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
-// Both Wormhole variants wait on the same guardian attestation - the
-// executor only removes the manual claim that follows it, so they share one
-// ETA and read as the same bridge.
+export const WORMHOLE_FAMILY_TAGS: XcmTags = [XcmTag.Wormhole, XcmTag.Basejump]
+
 export const BRIDGE_TIME: Record<string, string> = {
   [XcmTag.Basejump]: "≈ 22 sec",
   [XcmTag.Wormhole]: "≈ 30 min",
@@ -21,8 +20,6 @@ export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
   [XcmTag.NttExecutor]: WormholeLogo,
 }
 
-// The raw tag is the fallback card label, which only reads as a product name
-// for the bridges whose tag *is* one.
 export const BRIDGE_LABEL: Record<string, string> = {
   [XcmTag.NttExecutor]: "Wormhole",
 }

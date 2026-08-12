@@ -391,7 +391,6 @@ export const xcmTransferReportQuery = (
 ) =>
   queryOptions({
     enabled: !!transfer && !!transferArgs,
-    placeholderData: keepPreviousData,
     queryKey: ["xcm", "report", transferArgs],
     queryFn: async () => {
       if (!transfer) return []
