@@ -11,13 +11,11 @@ import { daysInYear, secondsInDay } from "date-fns/constants"
 
 import { bestNumberQuery } from "@/api/chain"
 import {
-  accumulatorPotBalanceQuery,
-  getRewardTrackPercentage,
   gigapotBalanceQuery,
   gigaTotalLockedQuery,
   referendaRewardPoolQuery,
   referendaTotalWeightedVotesQuery,
-  referendumTracksQuery,
+  REWARD_ACCUMULATOR_POT_ADDRESS,
   STAKE_GIGAPOT_ADDRESS,
 } from "@/api/gigaStake"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -33,9 +31,9 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
  * once the pallet is old enough for the window to be meaningful. Position-
  * size-independent. See `passiveAprQuery` doc for the full spec.
  *
- * votingAPR — forward-looking projection of referendum reward pool shares at
- * max conviction, normalised per assumed annual cadence. Degrades cleanly at
- * stakeValue = 0 to a fleet estimate.
+ * votingAPR — share of referendum reward pools at max conviction, anchored
+ * to the measured payout flow out of the reward accumulator over a trailing
+ * window. Degrades cleanly at stakeValue = 0 to a fleet estimate.
  */
 
 const getBlocksPerDay = (blockSeconds: number) => {
@@ -48,10 +46,10 @@ const DEFAULT_WINDOW_DAYS = 28
 
 /**
  * Pallet age (days since `GIGAHDX_LAUNCH_BLOCK`) required before the measured
- * rate-delta signal is considered stable enough to display. Below this,
- * `passiveAprQuery` returns the governance-guaranteed constant alone — 1-2d
- * of rate delta annualises to wildly noisy launch-burst numbers (30%+
- * headline for a signal that will settle around 10-13% within a week).
+ * signals are considered stable enough to display. Below this, both
+ * `passiveAprQuery` and `votingAprQuery` return their governance-guaranteed
+ * floors alone — 1-2d of measured data annualises to wildly noisy
+ * launch-burst numbers.
  */
 const MEASURED_MIN_AGE_DAYS = 7
 
@@ -235,136 +233,66 @@ export const passiveAprQuery = (
 // Voting APR (active — referendum reward shares)
 // ---------------------------------------------------------------------------
 
-/** Window (days) used to observe on-chain referendum cadence for the voting-
- * APR annualisation. Longer = smoother, more resistant to weekly bursts;
- * shorter = more responsive to a cadence shift. 60d matches the 60d/90d
- * mainnet trend (both landed at ~773–775 finished refs/yr as of mid-2026).
- */
-const REFS_PER_YEAR_LOOKBACK_DAYS = 60
-
-/** Floor for `refsPerYear` — if governance activity dies down, don't zero
- * out the display. 50/yr matches "one every ~7 days" — a plausible minimum
- * for an active parachain. */
-const REFS_PER_YEAR_MIN = 50
-
-/** Ceiling — sanity guard against pathological readings (e.g. a spammy week
- * or bogus indexer). 2000/yr = ~5.5/day is well above any observed activity. */
-const REFS_PER_YEAR_MAX = 2000
-
-/** Number of most-recent ref ids to sample per query. Sized to cover the
- * `REFS_PER_YEAR_MAX` ceiling — 2000/yr × 60d/365 ≈ 329 finished refs in
- * a 60d window. 400 buffers for ongoing refs and edge cases; if actual
- * activity exceeds this we clamp at MAX anyway. */
-const REFS_PER_YEAR_SAMPLE_SIZE = 400
+/** Trailing window (days) over which reward-pool payouts are measured for
+ * the voting APR. Clamped to pallet age while the pallet is younger. 60d
+ * smooths the lumpy per-referendum allocation cadence (~0.5 allocations/day
+ * as of Aug 2026). */
+const PAIDOUT_WINDOW_DAYS = 60
 
 /**
- * Observed annual referendum cadence, derived from on-chain state.
+ * Fallback for the "typical total weighted votes per referendum" denominator,
+ * used when the live sample is empty — every allocated pool fully claimed AND
+ * no ongoing ref with votes. This happens regularly (e.g. 2026-08-11 ~12:00
+ * UTC when the last claimants of refs 371/377–381 wiped the sample); without
+ * the fallback the display collapses to the guaranteed floor between refs.
  *
- * Reads `Referenda.ReferendumCount` (1 call), then fetches the last
- * `REFS_PER_YEAR_SAMPLE_SIZE` ref ids in parallel and counts those in
- * Approved / Rejected / Cancelled / TimedOut / Killed state whose end block
- * falls within the trailing `REFS_PER_YEAR_LOOKBACK_DAYS` window. Annualises
- * `count × 365 / lookback`. Clamped to `[REFS_PER_YEAR_MIN, MAX]`.
- *
- * Scales with `REFS_PER_YEAR_SAMPLE_SIZE` (constant), NOT chain age —
- * `.getEntries()` would pull every historical ref, `.getValue` × N stays
- * bounded even after years of governance activity.
- *
- * `voting APR` uses this instead of a hardcoded constant so the display
- * self-tunes as governance cadence evolves without a UI redeploy.
- *
- * Cost: 1 storage read for the count + N parallel reads for the sample.
- * Cached `staleTime: Infinity` — one round-trip per session.
+ * Calibration: median `total_weighted_votes` across all 23 allocations since
+ * launch (refs 359–381, `RewardPoolAllocated` events, read 2026-08-12) =
+ * 2.15B HDX-weighted. Participation drifts slowly; recalibrate
+ * opportunistically by replaying `RewardPoolAllocated` events (each
+ * accumulator balance drop marks one).
  */
-export const refsPerYearQuery = (rpc: TProviderContext) =>
-  queryOptions({
-    ...APR_QUERY_OPTS,
-    queryKey: ["gigaApr", "refsPerYear", REFS_PER_YEAR_LOOKBACK_DAYS],
-    enabled: rpc.isApiLoaded,
-    queryFn: async () => {
-      const blocksPerDay = getBlocksPerDay(
-        millisecondsToSeconds(rpc.slotDurationMs),
-      )
-      const bestNumber = await rpc.queryClient.ensureQueryData(
-        bestNumberQuery(rpc),
-      )
-      const head = bestNumber.parachainBlockNumber
-      const cutoff = head - REFS_PER_YEAR_LOOKBACK_DAYS * blocksPerDay
+const FALLBACK_MEDIAN_WEIGHTED = 2_150_000_000n * 10n ** 12n
 
-      const refCount = Number(
-        await rpc.papi.query.Referenda.ReferendumCount.getValue({
-          at: "best",
-        }),
-      )
-      const start = Math.max(0, refCount - REFS_PER_YEAR_SAMPLE_SIZE)
-
-      const infos = await Promise.all(
-        Array.from({ length: refCount - start }, (_, k) =>
-          rpc.papi.query.Referenda.ReferendumInfoFor.getValue(start + k, {
-            at: "best",
-          }),
-        ),
-      )
-
-      let count = 0
-      for (const value of infos) {
-        if (!value) continue
-        // Terminal states carry the end block as first tuple element (or as
-        // the whole value for `Killed`). `Ongoing` doesn't count.
-        let endBlock: number | null = null
-        switch (value.type) {
-          case "Approved":
-          case "Rejected":
-          case "Cancelled":
-          case "TimedOut":
-            endBlock = value.value[0]
-            break
-          case "Killed":
-            endBlock = value.value
-            break
-          default:
-            continue
-        }
-        if (endBlock !== null && endBlock > cutoff) count++
-      }
-
-      const annualised = Math.round(
-        (count * daysInYear) / REFS_PER_YEAR_LOOKBACK_DAYS,
-      )
-      return Math.max(
-        REFS_PER_YEAR_MIN,
-        Math.min(REFS_PER_YEAR_MAX, annualised),
-      )
-    },
-  })
+/** Milliseconds per year, for annualising the measured payout window. */
+const YEAR_MS = daysInYear * secondsInDay * 1000
 
 /**
  * Voting APR — annualised share of referendum reward pools at max
  * conviction (Locked6x = 8×). Displays `max(guaranteed, measured)`.
  *
- *   measured = 8 × typicalPool / (medianWeighted + 8 × stakeValue)
- *                × refsPerYear × 100
+ *   measured = 8 × paidOutPerYear / (medianWeighted + 8 × stakeValue) × 100
  *
- * "Typical" values come from the median of the historical sample (allocated
- * refs still in `ReferendaRewardPool` + currently-ongoing pre-alloc refs).
- * Median > mean here because most refs are Default-track (2%) — using mean
- * would over-project by giving atypical Root refs (10%) too much weight.
+ * Derivation: `paidOutPerYear` HDX is distributed pro-rata to weighted votes;
+ * a voter with stake S at Locked6x holds `8 × S` weight against
+ * `medianWeighted` others, earning `paidOutPerYear × 8S / (W + 8S)` — divide
+ * by S for the rate; S cancels at `stakeValue = 0` (fleet-level projection).
+ * Referendum cadence deliberately does NOT appear: pool-size × refs-per-year
+ * cancels out (annual flow is what it is regardless of how many refs split
+ * it), and both of those inputs proved volatile — the accumulator saw-tooths
+ * with claim timing.
  *
- *   typicalPool     = accumulator × medianTrackPct / 100
- *   medianTrackPct  = median of track pcts across the sample
- *                     (Root 10%, Whitelisted 8%, Treasurer/Economic 5%,
- *                      default 2%)
- *   medianWeighted  = median of `total_weighted_votes` across the sample
+ * `paidOutPerYear` is MEASURED, not modelled: HDX that actually left the
+ * `gigarwd!` accumulator into per-referendum reward pools over the trailing
+ * `PAIDOUT_WINDOW_DAYS` (clamped to pallet age):
  *
- * The `refsPerYear` multiplier (annualised cadence) comes from
- * `refsPerYearQuery` — real 60d count from chain, not a hardcoded constant.
+ *   scheduled(window) = ANNUAL_HDX_TO_VOTING_POT × elapsed / year
+ *   paidOut(window)   = scheduled(window) − Δaccumulator  (clamped ≥ 0)
  *
- * Behaviour at stakeValue = 0: denominator collapses to `medianWeighted`,
- * giving the fleet-level "per-stake-unit" projection.
+ * Cost: two archive balance reads + two timestamp reads. `elapsed` comes
+ * from block timestamps, never `blocks × assumed-block-time` — block time
+ * drifts. Conservative by construction: the accumulator also receives a
+ * variable trading-fee stream (~40K HDX/day average since launch) that this
+ * estimate ignores, so `measured` is a lower bound of real payouts (as of
+ * 2026-08-12: ~10% displayed vs ~16% exact from `RewardPoolAllocated`
+ * events). Exact measurement wants a runtime `TotalAllocated` counter.
  *
- * Falls back to the guaranteed floor when the sample is empty (no allocated
- * refs still in flight AND no ongoing refs with any votes yet). Also falls
- * back when the sample is dust-only (below `MIN_REAL_VOTE_WEIGHTED`).
+ * `medianWeighted` — typical competition per referendum — comes from the
+ * live sample (allocated pools awaiting claims + ongoing tallies) when
+ * non-empty, else `FALLBACK_MEDIAN_WEIGHTED`.
+ *
+ * Returns the guaranteed floor alone while the pallet is younger than
+ * `MEASURED_MIN_AGE_DAYS` or when a historical read fails (pruned RPC).
  *
  * NOTE: `stakeValue` is in HDX planck (the locked HDX backing the user's
  * position). For a connected user with a position, pass `gigahdx × rate` so
@@ -381,26 +309,24 @@ export const votingAprQuery = (
     queryKey: ["gigaApr", "voting", stakeValueHdxPlanck.toString()],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      const [
-        allocatedEntries,
-        liveEntries,
-        rewardPotAcct,
-        tlNow,
-        gpNow,
-        refsPerYear,
-      ] = await Promise.all([
+      const blocksPerDay = getBlocksPerDay(
+        millisecondsToSeconds(rpc.slotDurationMs),
+      )
+      const bestNumber = await rpc.queryClient.ensureQueryData(
+        bestNumberQuery(rpc),
+      )
+      const head = bestNumber.parachainBlockNumber
+
+      const [allocatedEntries, liveEntries, tlNow, gpNow] = await Promise.all([
         rpc.queryClient.ensureQueryData(referendaRewardPoolQuery(rpc)),
         rpc.queryClient.ensureQueryData(referendaTotalWeightedVotesQuery(rpc)),
-        rpc.queryClient.fetchQuery(accumulatorPotBalanceQuery(rpc)),
         rpc.queryClient.ensureQueryData(gigaTotalLockedQuery(rpc)),
         rpc.queryClient.ensureQueryData(gigapotBalanceQuery(rpc)),
-        rpc.queryClient.ensureQueryData(refsPerYearQuery(rpc)),
       ])
 
       // Governance-guaranteed voting-APR floor: 54M HDX/yr from ref 358
-      // divided by live `totalStake`. Mirrors base APR's `guaranteed`
-      // component and protects the display when measured is noisy (few
-      // ongoing refs, concentrated voting) or drops below the commitment.
+      // divided by live `totalStake`. Worst-case by construction — nominal
+      // budget with 100% of stake voting at max conviction.
       const totalStake = (tlNow ?? 0n) + (gpNow ?? 0n)
       const guaranteed =
         totalStake === 0n
@@ -409,74 +335,73 @@ export const votingAprQuery = (
               .div(totalStake.toString())
               .times(100)
 
-      const potFree = rewardPotAcct.free
-      const myWeighted = stakeValueHdxPlanck * LOCKED_6X_MULTIPLIER
+      // Pallet too young → the measured window is launch-burst noise.
+      const palletAgeDays = (head - GIGAHDX_LAUNCH_BLOCK) / blocksPerDay
+      if (palletAgeDays < MEASURED_MIN_AGE_DAYS) return guaranteed
 
-      // Build historical sample: (track pct, weighted) tuples from both
-      // recently-allocated refs (in-flight claims — auto-cleaned as voters
-      // finish claiming, so this is naturally a "recent" window) AND
-      // currently-ongoing pre-alloc refs that already have any votes cast.
-      const sample: Array<{ pct: number; weighted: bigint }> = []
-      for (const alloc of allocatedEntries.values()) {
-        sample.push({
-          pct: getRewardTrackPercentage(alloc.track_id),
-          weighted: alloc.total_weighted_votes,
-        })
-      }
-      const preAllocTracks = await Promise.all(
-        Array.from(liveEntries.keys())
-          .filter((refId) => !allocatedEntries.has(refId))
-          .map(async (refId) => ({
-            refId,
-            trackId: await rpc.queryClient.ensureQueryData(
-              referendumTracksQuery(rpc, refId),
-            ),
-          })),
+      // --- paidOutPerYear: measured payout flow over the trailing window ---
+      const t0Block = Math.max(
+        GIGAHDX_LAUNCH_BLOCK,
+        head - PAIDOUT_WINDOW_DAYS * blocksPerDay,
       )
-      for (const { refId, trackId } of preAllocTracks) {
-        if (trackId === null) continue
-        sample.push({
-          pct: getRewardTrackPercentage(trackId),
-          weighted: liveEntries.get(refId)?.total_weighted ?? 0n,
-        })
-      }
-
-      // Drop dust weighted — they'd blow up the fleet APR calc and don't
-      // represent real governance activity.
-      const validSample = sample.filter(
-        (s) => s.weighted >= MIN_REAL_VOTE_WEIGHTED,
+      const t0HashStr: string = await rpc.papiClient._request(
+        "chain_getBlockHash",
+        [t0Block],
       )
+      const [accNow, accT0, tsT0, tsNow] = await Promise.all([
+        rpc.papi.query.System.Account.getValue(REWARD_ACCUMULATOR_POT_ADDRESS, {
+          at: "best",
+        }).catch(() => null),
+        rpc.papi.query.System.Account.getValue(REWARD_ACCUMULATOR_POT_ADDRESS, {
+          at: t0HashStr,
+        }).catch(() => null),
+        rpc.papi.query.Timestamp.Now.getValue({ at: t0HashStr }).catch(
+          () => null,
+        ),
+        rpc.papi.query.Timestamp.Now.getValue({ at: "best" }).catch(() => null),
+      ])
+      // Any missing read (pruned RPC) → no measurement, floor only.
+      if (!accNow || !accT0 || tsT0 === null || tsNow === null)
+        return guaranteed
+      const elapsedMs = Number(tsNow - tsT0)
+      if (elapsedMs <= 0) return guaranteed
 
-      // No usable sample → guaranteed floor is our only signal.
-      if (validSample.length === 0) return guaranteed
+      const accDelta = accNow.data.free - accT0.data.free
+      const scheduledInWindow =
+        (ANNUAL_HDX_TO_VOTING_POT_PLANCK * BigInt(elapsedMs)) / BigInt(YEAR_MS)
+      const paidOutInWindow =
+        scheduledInWindow > accDelta ? scheduledInWindow - accDelta : 0n
+      const paidOutPerYear =
+        (paidOutInWindow * BigInt(YEAR_MS)) / BigInt(elapsedMs)
 
-      // Median of track pct: "typical ref pays this fraction of accumulator."
-      // Sort a copy, take middle element.
-      const sortedPcts = validSample.map((s) => s.pct).sort((a, b) => a - b)
-      const medianPct = sortedPcts[Math.floor(sortedPcts.length / 2)]
+      // --- medianWeighted: typical competition per referendum ---
+      // Live sample: allocated pools awaiting claims + ongoing pre-alloc
+      // tallies, dust filtered. Empty between refs → calibrated fallback.
+      const weightedSample = [
+        ...Array.from(
+          allocatedEntries.values(),
+          (alloc) => alloc.total_weighted_votes,
+        ),
+        ...Array.from(liveEntries.entries())
+          .filter(([refId]) => !allocatedEntries.has(refId))
+          .map(([, tally]) => tally.total_weighted),
+      ].filter((weighted) => weighted >= MIN_REAL_VOTE_WEIGHTED)
 
-      // Median of weighted: "typical ref has this much voter weight against
-      // the pool." bigint sort by comparator.
-      const sortedWeighted = validSample
-        .map((s) => s.weighted)
-        .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      const sortedWeighted = weightedSample.sort((a, b) =>
+        a < b ? -1 : a > b ? 1 : 0,
+      )
       const medianWeighted =
-        sortedWeighted[Math.floor(sortedWeighted.length / 2)]
+        sortedWeighted[Math.floor(sortedWeighted.length / 2)] ??
+        FALLBACK_MEDIAN_WEIGHTED
 
-      // Typical per-ref share at max conviction, annualised by observed
-      // cadence. `typicalPool` uses the live accumulator (which reflects
-      // scheduler + fees inflow to date); real allocations at future ref
-      // completions will use whatever accumulator balance exists then.
-      const typicalPool = (potFree * BigInt(medianPct ?? 0)) / 100n
-      const denom = Big(medianWeighted?.toString() ?? "0").plus(
-        myWeighted.toString(),
+      const denom = Big(medianWeighted.toString()).plus(
+        (stakeValueHdxPlanck * LOCKED_6X_MULTIPLIER).toString(),
       )
       const measured = denom.lte(0)
         ? Big(0)
-        : Big(typicalPool.toString())
+        : Big(paidOutPerYear.toString())
             .times(LOCKED_6X_MULTIPLIER.toString())
             .div(denom)
-            .times(refsPerYear)
             .times(100)
 
       return measured.gt(guaranteed) ? measured : guaranteed
