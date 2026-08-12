@@ -1,10 +1,12 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
-import { LINKS } from "@/config/navigation"
+import { getPageMeta } from "@/config/navigation"
 import { dataTableSortSchema } from "@/form/dataTableSortSchema"
 import { MyBondsTableColumnId } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
 import { MyLiquidityTableColumnId } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.columns"
+import { PortfolioOverviewPage } from "@/modules/portfolio/overview/PortfolioOverviewPage"
+import { PortfolioOverviewSkeleton } from "@/modules/portfolio/overview/PortfolioOverviewSkeleton"
 
 const searchSchema = z.object({
   category: z
@@ -23,12 +25,17 @@ const searchSchema = z.object({
   search: z.string().optional(),
 })
 
-const WalletAssetsRedirect = () => {
-  const search = Route.useSearch()
-  return <Navigate to={LINKS.portfolio} search={search} replace />
-}
+export type PortfolioOverviewCategory = z.infer<typeof searchSchema>["category"]
 
-export const Route = createFileRoute("/wallet/assets")({
-  component: WalletAssetsRedirect,
+export const Route = createFileRoute("/portfolio/")({
+  component: PortfolioOverviewPage,
+  pendingComponent: PortfolioOverviewSkeleton,
   validateSearch: searchSchema,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("portfolio", i18n.t),
+  }),
 })

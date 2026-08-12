@@ -30,7 +30,7 @@ export const TabMenuItem: FC<Props> = ({
   className,
   ignoreCurrentSearch,
 }) => {
-  const { to, title, icon: IconComponent, search, resetScroll } = item
+  const { to, title, icon: IconComponent, search, resetScroll, exact } = item
 
   const path = useLocation({
     select: (state) => state.pathname,
@@ -41,6 +41,13 @@ export const TabMenuItem: FC<Props> = ({
   })
 
   const isActive = useMemo(() => {
+    const normalizedPath = path.replace(/\/$/, "") || "/"
+    const normalizedTo = to.replace(/\/$/, "") || "/"
+
+    if (exact && normalizedPath !== normalizedTo) {
+      return false
+    }
+
     const [, ...pathRoutes] = path.split("/")
     const [, ...toRoutes] = to.split("/")
     const isValid = toRoutes.every(
@@ -56,7 +63,7 @@ export const TabMenuItem: FC<Props> = ({
           )
         : true)
     )
-  }, [path, to, search, currentSearch])
+  }, [path, to, search, currentSearch, exact])
 
   return (
     <Button

@@ -3,7 +3,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
-import { useMyIsolatedPoolsLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
+import { useMyIsolatedPoolsLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import {
   isOmnipoolDepositPosition,
   useAccountBalancesWithPriceByAssetType,

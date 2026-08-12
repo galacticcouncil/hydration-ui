@@ -31,8 +31,9 @@ export const LINKS = {
   swap: "/trade/swap",
   swapMarket: "/trade/swap/market",
   swapDca: "/trade/swap/dca",
-  wallet: "/wallet",
-  walletAssets: "/wallet/assets",
+  portfolio: "/portfolio",
+  portfolioOverview: "/portfolio",
+  portfolioTracked: "/portfolio/tracked",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
@@ -76,6 +77,7 @@ type NavigationItemCommon = {
   enabled?: boolean
   defaultChild?: Route
   search?: Record<string, string | boolean>
+  exact?: boolean
 }
 
 export type InternalNavigationItem = NavigationItemCommon & {
@@ -157,11 +159,14 @@ export const NAVIGATION: NavigationItem[] = [
     ],
   },
   {
-    key: "wallet",
-    to: LINKS.wallet,
+    key: "portfolio",
+    to: LINKS.portfolio,
     icon: WalletCardsIcon,
-    defaultChild: LINKS.walletAssets,
-    children: [{ key: "walletAssets", to: LINKS.walletAssets }],
+    defaultChild: LINKS.portfolio,
+    children: [
+      { key: "portfolioOverview", to: LINKS.portfolioOverview, exact: true },
+      { key: "portfolioTracked", to: LINKS.portfolioTracked },
+    ],
   },
   {
     key: "crossChain",
@@ -227,12 +232,16 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.pools.title"),
       description: "",
     },
-    wallet: {
-      title: t("navigation.wallet.title"),
+    portfolio: {
+      title: t("navigation.portfolio.title"),
       description: "",
     },
-    walletAssets: {
-      title: t("navigation.walletAssets.title"),
+    portfolioOverview: {
+      title: t("navigation.portfolioOverview.title"),
+      description: "",
+    },
+    portfolioTracked: {
+      title: t("navigation.portfolioTracked.title"),
       description: "",
     },
     crossChain: {
@@ -392,14 +401,14 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "borrow",
   "strategies",
   "liquidity",
-  "wallet",
+  "portfolio",
   "crossChain",
   "stats",
   "staking",
   "explorer",
 ]
 export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
-  "wallet",
+  "portfolio",
   "trade",
   "liquidity",
   "borrow",
