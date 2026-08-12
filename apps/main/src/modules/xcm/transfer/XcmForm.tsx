@@ -49,7 +49,6 @@ export const XcmForm = () => {
     sourceChainAssetPairs,
     destChainAssetPairs,
     availableBridgeRoutes,
-    isLoading,
     isLoadingSrcBalances,
     isLoadingDestBalances,
     isConnectedAccountValid,
@@ -229,7 +228,9 @@ export const XcmForm = () => {
                 balance={srcBalances?.get(srcAsset?.key ?? "")}
                 balanceMax={transfer?.source.max}
                 withMaxButton
-                disabled={!srcAsset || !hasValidAccounts || isLoading}
+                disabled={
+                  !srcAsset || !hasValidAccounts || isLoadingSrcBalances
+                }
                 isLoading={isLoadingSrcBalances}
                 isBalanceLoading={isLoadingSrcBalances}
                 assetPrice={price}

@@ -275,13 +275,17 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   useTrackApprovals(srcChainKey)
 
-  const isLoading =
-    isLoadingTransfer || isLoadingSrcBalances || isLoadingDestBalances
+  // Balances come from their own subscription - keep them apart from the
+  // transfer build, which waits on bridge quotes and a source fee estimation
+  // and would otherwise skeleton balances that are already known.
+  const isLoadingBalances = isLoadingSrcBalances || isLoadingDestBalances
+  const isLoading = isLoadingTransfer || isLoadingBalances
 
   return (
     <XcmContext.Provider
       value={{
         isLoading,
+        isLoadingBalances,
         isLoadingCall,
         isLoadingTransfer,
         isLoadingSrcBalances,
