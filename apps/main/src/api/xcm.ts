@@ -160,7 +160,7 @@ export const useNttOutboundLimit = (
     enabled,
     queryFn: () => {
       if (!chain || !asset) throw new Error("chain and asset are required")
-      return new clients.NttClient(chain, asset).getOutboundLimit()
+      return clients.nttClient(chain, asset).getOutboundLimit()
     },
   })
 }
@@ -180,7 +180,7 @@ export const useNttInboundLimit = (
       if (!chain || !asset || !from) {
         throw new Error("chain, asset, and from are required")
       }
-      return new clients.NttClient(chain, asset).getInboundLimit(from)
+      return clients.nttClient(chain, asset).getInboundLimit(from)
     },
   })
 }

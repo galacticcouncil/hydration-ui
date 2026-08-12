@@ -23,6 +23,7 @@ import {
   ChainEcosystem,
   EvmChain,
   EvmParachain,
+  Gas,
   Ntt,
   NttTokenDef,
   SolanaChain,
@@ -33,7 +34,6 @@ import type { XcJourney } from "@galacticcouncil/xc-scan"
 import {
   EvmCall,
   EvmClaim,
-  Gas,
   SolanaCall,
   SolanaClaim,
   SuiCall,
