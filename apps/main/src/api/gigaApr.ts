@@ -237,18 +237,6 @@ export const passiveAprQuery = (
 // Voting APR (active — referendum reward shares)
 // ---------------------------------------------------------------------------
 
-/**
- * Last-resort fallback for the "typical total weighted votes per referendum"
- * denominator, used only when BOTH the live sample (pools awaiting claims +
- * ongoing tallies) and the scanned allocation history are empty — e.g. a
- * fresh browser whose first history scan failed on a pruned RPC.
- *
- * Calibration: median `total_weighted_votes` across all 23 allocations since
- * launch (refs 359–381, `RewardPoolAllocated` events, read 2026-08-12) =
- * 2.15B HDX-weighted.
- */
-const FALLBACK_MEDIAN_WEIGHTED = 2_150_000_000n * 10n ** 12n
-
 /** Milliseconds per year, for annualising the measured payout window. */
 const YEAR_MS = daysInYear * secondsInDay * 1000
 
@@ -281,11 +269,10 @@ const YEAR_MS = daysInYear * secondsInDay * 1000
  *
  * `medianWeighted` — typical competition per referendum — is the median over
  * the live sample (pools awaiting claims + ongoing tallies) merged with the
- * scanned in-window history; `FALLBACK_MEDIAN_WEIGHTED` only when both are
- * empty.
- *
- * Returns the guaranteed floor alone while the pallet is younger than
- * `MEASURED_MIN_AGE_DAYS` or when no measurement path is available.
+ * scanned in-window history. Nothing is hardcoded: every input is measured
+ * from chain, and when no measurement path is available (young pallet,
+ * pruned RPC with no live sample, zero allocations in the window) the
+ * display degrades to the guaranteed floor instead of inventing a number.
  *
  * NOTE: `stakeValue` is in HDX planck (the locked HDX backing the user's
  * position). For a connected user with a position, pass `gigahdx × rate` so
@@ -408,8 +395,9 @@ export const votingAprQuery = (
         a < b ? -1 : a > b ? 1 : 0,
       )
       const medianWeighted =
-        sortedWeighted[Math.floor(sortedWeighted.length / 2)] ??
-        FALLBACK_MEDIAN_WEIGHTED
+        sortedWeighted[Math.floor(sortedWeighted.length / 2)]
+      // No weighted-vote data from any source → no honest measurement.
+      if (medianWeighted === undefined) return guaranteed
 
       const denom = Big(medianWeighted.toString()).plus(
         (stakeValueHdxPlanck * LOCKED_6X_MULTIPLIER).toString(),

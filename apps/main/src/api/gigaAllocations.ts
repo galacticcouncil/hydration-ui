@@ -1,4 +1,7 @@
-import { GIGAHDX_LAUNCH_BLOCK } from "@galacticcouncil/money-market/ui-config"
+import {
+  GIGAHDX_ANNUAL_VOTING_INCENTIVES_HDX,
+  GIGAHDX_LAUNCH_BLOCK,
+} from "@galacticcouncil/money-market/ui-config"
 import { queryOptions } from "@tanstack/react-query"
 import { millisecondsToSeconds } from "date-fns"
 import { secondsInDay } from "date-fns/constants"
@@ -25,10 +28,10 @@ import { TProviderContext } from "@/providers/rpcProvider"
  * persist in localStorage forever; after the first scan only the range since
  * `lastScannedBlock` is ever touched again (~4 balance reads per absent day).
  *
- * Detection floor: a drop must exceed `DROP_MARGIN` (20K HDX) to be found —
- * pools below that (2%-track refs against a nearly-empty accumulator) can
- * slip through. Every pool observed on mainnet is ≥70K; a missed dust pool
- * biases the measured APR down by well under 1%.
+ * Detection floor: a drop must exceed `dropMargin` (≈3 drip-ticks, derived
+ * from the ref-358 schedule — see `detectionThresholds`) to be found. Every
+ * pool observed on mainnet is ≥70K HDX; a missed dust pool biases the
+ * measured APR down by well under 1%.
  */
 
 export type TAllocationRecord = {
@@ -54,19 +57,46 @@ const CACHE_VERSION = 1
  * `lastScannedBlock`. */
 export const PAIDOUT_WINDOW_DAYS = 60
 
-/** ~6h of blocks at 6s — coarse sampling step. Scheduled inflow per step is
- * ~37K HDX (6 hourly ticks), so `COARSE_FLAG_DELTA` below cleanly separates
- * "inflow only" from "a ≥20K drop happened here". */
+/** ~6h of blocks — coarse sampling step. */
 const COARSE_STEP_BLOCKS = 3600
 /** ~1h of blocks — refinement step inside flagged coarse intervals. */
 const FINE_STEP_BLOCKS = 600
-/** Net delta under this (vs ~37K scheduled) flags a coarse interval. */
-const COARSE_FLAG_DELTA = 20_000n * 10n ** 12n
-/** Balance fall vs interval start that confirms a drop during bisection.
- * Must exceed any realistic intra-bucket inflow (one 6.2K tick + fees). */
-const DROP_MARGIN = 20_000n * 10n ** 12n
 /** Parallel RPC batch size for balance sampling. */
 const RPC_BATCH = 40
+
+const ANNUAL_VOTING_PLANCK =
+  BigInt(GIGAHDX_ANNUAL_VOTING_INCENTIVES_HDX) * 10n ** 12n
+const SECONDS_PER_YEAR = 365.25 * secondsInDay
+
+/**
+ * Detection thresholds, derived from the ref-358 schedule and the live slot
+ * duration rather than hardcoded amounts — they keep working if the drip
+ * size or block time changes.
+ *
+ * - `coarseFlagDelta`: a coarse interval receives ~`scheduled(step)` from
+ *   the drip (fees only add); a net delta below HALF that means an outflow
+ *   of at least `scheduled/2` (~18.5K HDX today) happened inside.
+ * - `dropMargin`: bisection confirms a drop when the balance falls this far
+ *   below the anchor — 3× the per-fine-step drip comfortably exceeds any
+ *   intra-bucket inflow (one drip tick + typical fees) while staying far
+ *   below every pool observed on mainnet (≥70K HDX).
+ *
+ * Pools smaller than these thresholds (2%-track refs against a nearly empty
+ * accumulator) can slip through; the resulting APR bias is downward and
+ * bounded by threshold × cadence — well under 1% today.
+ */
+const detectionThresholds = (blockSeconds: number) => {
+  const scheduledPerBlock =
+    Number(ANNUAL_VOTING_PLANCK) * (blockSeconds / SECONDS_PER_YEAR)
+  const perCoarseStep = BigInt(
+    Math.round(scheduledPerBlock * COARSE_STEP_BLOCKS),
+  )
+  const perFineStep = BigInt(Math.round(scheduledPerBlock * FINE_STEP_BLOCKS))
+  return {
+    coarseFlagDelta: perCoarseStep / 2n,
+    dropMargin: perFineStep * 3n,
+  }
+}
 
 const loadCache = (): TAllocationCache | null => {
   try {
@@ -146,6 +176,9 @@ const scanRange = async (
 ): Promise<TAllocationRecord[]> => {
   if (to <= from) return []
   const { balanceAt, allocationsAt } = makeChainReaders(rpc)
+  const { coarseFlagDelta, dropMargin } = detectionThresholds(
+    millisecondsToSeconds(rpc.slotDurationMs),
+  )
 
   // Coarse pass: balances at every ~6h boundary.
   const coarsePoints: number[] = []
@@ -156,7 +189,7 @@ const scanRange = async (
   const flagged: Array<{ start: number; end: number }> = []
   for (let i = 1; i < coarsePoints.length; i++) {
     const delta = (coarseBalances[i] ?? 0n) - (coarseBalances[i - 1] ?? 0n)
-    if (delta < COARSE_FLAG_DELTA) {
+    if (delta < coarseFlagDelta) {
       flagged.push({
         start: coarsePoints[i - 1] ?? from,
         end: coarsePoints[i] ?? to,
@@ -189,17 +222,17 @@ const scanRange = async (
     let anchor = bucket.start
     let anchorBalance = await balanceAt(anchor)
     for (;;) {
-      // Smallest block in (anchor, end] whose balance fell ≥ DROP_MARGIN
+      // Smallest block in (anchor, end] whose balance fell ≥ dropMargin
       // below the anchor. Intra-range inflow keeps non-drop balances above
       // the anchor, so the predicate is monotone across the drop point.
       let lo = anchor
       let hi = bucket.end
       let hiBalance = await balanceAt(hi)
-      if (anchorBalance - hiBalance < DROP_MARGIN) break
+      if (anchorBalance - hiBalance < dropMargin) break
       while (hi - lo > 1) {
         const mid = (lo + hi) >> 1
         const midBalance = await balanceAt(mid)
-        if (anchorBalance - midBalance >= DROP_MARGIN) {
+        if (anchorBalance - midBalance >= dropMargin) {
           hi = mid
           hiBalance = midBalance
         } else {
