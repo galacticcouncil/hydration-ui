@@ -96,6 +96,7 @@ export const MobileTabBar: FC = () => {
             <DropdownMenuContent
               fullWidth
               animation="slide-bottom"
+              mountInRoot
               sx={{ zIndex: 1 }}
             >
               <MobileTabBarActions onOpenDrawer={setDrawer} />

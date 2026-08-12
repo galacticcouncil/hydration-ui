@@ -40,7 +40,9 @@ import {
   getTransferStatus,
   getXcmTransferArgs,
   isDestRouteSynced,
+  requiresEvmBinding,
   resolveBestDestRoute,
+  resolveSelectedRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -136,6 +138,17 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     return forDestAsset.length > 1 ? forDestAsset : []
   }, [destPair, destAsset?.key])
 
+  const selectedRoute = useMemo(
+    () => resolveSelectedRoute(destPair, destAsset, bridgeProvider),
+    [destPair, destAsset, bridgeProvider],
+  )
+
+  const requiresBinding = requiresEvmBinding(
+    selectedRoute,
+    destChain,
+    destAddress,
+  )
+
   useEffect(() => {
     if (!destPair || !destAsset) return
 
@@ -228,7 +241,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     report,
   } = useXcmTransfer(form, transferArgs)
 
-  const alerts = useXcmTransferAlerts(form, report)
+  const { alerts, isLoading: isLoadingAlerts } = useXcmTransferAlerts(
+    form,
+    report,
+    requiresBinding,
+  )
 
   useEffect(() => {
     setTransfer(xcmTransfer)
@@ -275,19 +292,23 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   useTrackApprovals(srcChainKey)
 
-  const isLoading =
-    isLoadingTransfer || isLoadingSrcBalances || isLoadingDestBalances
+  const isLoadingBalances = isLoadingSrcBalances || isLoadingDestBalances
+  const isLoading = isLoadingTransfer || isLoadingBalances || isLoadingAlerts
 
   return (
     <XcmContext.Provider
       value={{
         isLoading,
+        isLoadingBalances,
         isLoadingCall,
         isLoadingTransfer,
+        isLoadingSrcBalances,
+        isLoadingDestBalances,
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
         availableBridgeRoutes,
+        selectedRoute,
         transferArgs,
         alerts,
         transfer,

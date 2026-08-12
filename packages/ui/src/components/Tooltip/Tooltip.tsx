@@ -12,6 +12,7 @@ import {
   ButtonIcon,
   Drawer,
   DrawerBody,
+  Flex,
   Icon,
   Text,
 } from "@/components"
@@ -60,22 +61,48 @@ export const Tooltip = ({
   }
 
   if (isMobile && size !== "small") {
+    const openDrawer = (e: React.MouseEvent | React.PointerEvent) => {
+      if (preventDefault) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+
+      setOpen(true)
+    }
+
+    const drawer = (
+      <Drawer
+        open={open}
+        onOpenChange={setOpen}
+        customTitle=" "
+        title="Tooltip"
+      >
+        <DrawerBody>{text}</DrawerBody>
+      </Drawer>
+    )
+
+    if (asChild) {
+      return (
+        <>
+          <Flex
+            align="center"
+            gap="xs"
+            asChild
+            onClick={openDrawer}
+            onPointerDown={openDrawer}
+          >
+            {children || <TooltipIcon color={iconColor} />}
+          </Flex>
+          {drawer}
+        </>
+      )
+    }
+
     return (
       <>
         <ButtonIcon
-          asChild={asChild}
-          onClick={(e) => {
-            if (preventDefault) {
-              e.preventDefault()
-              e.stopPropagation()
-            }
-
-            setOpen(true)
-          }}
-          onPointerDown={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
+          onClick={openDrawer}
+          onPointerDown={openDrawer}
           sx={{
             p: 0,
             height: "auto",
@@ -87,15 +114,7 @@ export const Tooltip = ({
         >
           {children || <TooltipIcon color={iconColor} />}
         </ButtonIcon>
-
-        <Drawer
-          open={open}
-          onOpenChange={setOpen}
-          customTitle=" "
-          title="Tooltip"
-        >
-          <DrawerBody>{text}</DrawerBody>
-        </Drawer>
+        {drawer}
       </>
     )
   }
@@ -150,7 +169,7 @@ export const Tooltip = ({
 
 export const TooltipIcon: FC<BoxProps> = (props) => (
   <Icon
-    sx={{ cursor: "pointer" }}
+    sx={{ cursor: "pointer", display: "flex" }}
     component={CircleInfo}
     size="s"
     color={getToken("icons.onContainer")}
