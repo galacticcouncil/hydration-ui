@@ -13,13 +13,17 @@ export type XcmAlert = {
   key: string
   message: string
   severity: XcmAlertSeverity
+  title?: string
   requiresUserConsent?: boolean | string
 }
 
 type XcmContextValue = {
   readonly isLoading: boolean
+  readonly isLoadingBalances: boolean
   readonly isLoadingCall: boolean
   readonly isLoadingTransfer: boolean
+  readonly isLoadingSrcBalances: boolean
+  readonly isLoadingDestBalances: boolean
   readonly isConnectedAccountValid: boolean
   readonly transfer: Transfer | null
   readonly transferArgs: XcmTransferArgs | null
@@ -29,14 +33,18 @@ type XcmContextValue = {
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
   readonly availableBridgeRoutes: AssetRoute[]
+  readonly selectedRoute: AssetRoute | null
   readonly registryChain: EvmParachain
   readonly status: XcmTransferStatus
 }
 
 export const XcmContext = createContext<XcmContextValue>({
   isLoading: false,
+  isLoadingBalances: false,
   isLoadingCall: false,
   isLoadingTransfer: false,
+  isLoadingSrcBalances: false,
+  isLoadingDestBalances: false,
   isConnectedAccountValid: false,
   transfer: null,
   transferArgs: null,
@@ -46,6 +54,7 @@ export const XcmContext = createContext<XcmContextValue>({
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],
   availableBridgeRoutes: [],
+  selectedRoute: null,
   registryChain: {} as EvmParachain,
   status: XcmTransferStatus.Default,
 })

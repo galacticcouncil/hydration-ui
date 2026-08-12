@@ -8,6 +8,7 @@ import { SubmitButton } from "@/modules/xcm/transfer/components/SubmitButton"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
+import { XcmLimits } from "@/modules/xcm/transfer/XcmLimits"
 
 type XcmFooterProps = {
   isSubmitting: boolean
@@ -44,33 +45,37 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
   const isLoadingCallOrTransfer = isLoadingCall || isLoadingTransfer
 
   return (
-    <Box p={["l", "xl"]}>
-      <Flex direction="column" gap="xl">
+    <Box px={["l", "xl"]} py="l">
+      <Flex direction="column" gap="l">
         {alerts.map((alert) => (
           <Alert
             key={alert.key}
             variant={alert.severity}
+            title={alert.title}
             description={alert.message}
             action={
-              alert.requiresUserConsent ? (
-                <Flex align="center" as="label" gap="base">
-                  <Toggle
-                    size="large"
-                    checked={!!consented[alert.key]}
-                    onCheckedChange={(checked) => {
-                      setConsented((prev) => ({
-                        ...prev,
-                        [alert.key]: checked,
-                      }))
-                    }}
-                  />
-                  <Text fs="p4" lh={1.3} fw={600}>
-                    {isString(alert.requiresUserConsent)
-                      ? alert.requiresUserConsent
-                      : t("transaction.alert.acceptRisk")}
-                  </Text>
-                </Flex>
-              ) : undefined
+              <>
+                <XcmLimits alertKey={alert.key} />
+                {alert.requiresUserConsent && (
+                  <Flex align="center" as="label" gap="base">
+                    <Toggle
+                      size="large"
+                      checked={!!consented[alert.key]}
+                      onCheckedChange={(checked) => {
+                        setConsented((prev) => ({
+                          ...prev,
+                          [alert.key]: checked,
+                        }))
+                      }}
+                    />
+                    <Text fs="p4" lh={1.3} fw={600}>
+                      {isString(alert.requiresUserConsent)
+                        ? alert.requiresUserConsent
+                        : t("transaction.alert.acceptRisk")}
+                    </Text>
+                  </Flex>
+                )}
+              </>
             }
           />
         ))}

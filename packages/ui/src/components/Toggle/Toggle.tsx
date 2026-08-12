@@ -47,7 +47,7 @@ export const ToggleLabel: FC<
       ref={ref}
       fw={500}
       fs="p5"
-      lh="s"
+      lh={1}
       color={getToken("text.high")}
       whiteSpace="nowrap"
       {...props}

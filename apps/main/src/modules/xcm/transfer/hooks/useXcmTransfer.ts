@@ -21,19 +21,29 @@ export const useXcmTransfer = (
 
   const values = form.watch()
 
-  const { data: transfer, isLoading: isLoadingTransfer } = useQuery(
-    xcmTransferQuery(wallet, transferArgs),
-  )
+  const {
+    data: transfer,
+    isLoading: isLoadingTransferQuery,
+    isFetching: isFetchingTransfer,
+    isPlaceholderData: isTransferPlaceholder,
+  } = useQuery(xcmTransferQuery(wallet, transferArgs))
+
+  const syncedTransfer = transfer && !isTransferPlaceholder ? transfer : null
+
+  const isLoadingTransfer =
+    !!transferArgs &&
+    !syncedTransfer &&
+    (isLoadingTransferQuery || isFetchingTransfer)
 
   const [reportQuery, callQuery] = useQueries({
     queries: [
       xcmTransferReportQuery(
-        form.formState.isValid && transfer ? transfer : null,
+        form.formState.isValid && syncedTransfer ? syncedTransfer : null,
         transferArgs,
       ),
       xcmTransferCallQuery(
         rpc,
-        transfer ?? null,
+        syncedTransfer,
         values.srcAmount,
         transferArgs,
         form.formState.isValid && ENV.VITE_DRY_RUN_ENABLED,
@@ -45,12 +55,12 @@ export const useXcmTransfer = (
   const { data: callData, isLoading: isLoadingCall } = callQuery
 
   return {
-    transfer: transfer ?? null,
+    transfer: syncedTransfer,
     isLoadingTransfer,
-    report: report ?? null,
-    isLoadingReport,
-    call: callData?.call ?? null,
-    dryRunError: callData?.dryRunError ?? null,
+    report: syncedTransfer ? (report ?? null) : null,
+    isLoadingReport: isLoadingTransfer || isLoadingReport,
+    call: syncedTransfer ? (callData?.call ?? null) : null,
+    dryRunError: syncedTransfer ? (callData?.dryRunError ?? null) : null,
     isLoadingCall,
   }
 }

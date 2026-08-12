@@ -17,8 +17,13 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
+// Order matters - getPrimaryBridgeTag takes the first match, and an executor
+// route carries Wormhole too. NttExecutor has to win, or both Wormhole
+// variants collapse to one indistinguishable option and the executor route
+// becomes unreachable.
 export const BRIDGE_PROVIDER_TAGS: XcmTags = [
   XcmTag.Basejump,
+  XcmTag.NttExecutor,
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
 ]

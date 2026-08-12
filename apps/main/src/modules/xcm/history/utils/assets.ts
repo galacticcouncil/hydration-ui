@@ -71,6 +71,14 @@ export type XcJourneyTransferAsset = Omit<
   decimals: number
 }
 
+export function getTransferUsdValue(
+  journey: XcJourney,
+  transferAsset?: Pick<XcAssetOperation, "usd">,
+): number {
+  const asset = transferAsset ?? getTransferAsset(journey)
+  return asset?.usd ?? journey.totalUsd ?? 0
+}
+
 export function getTransferAsset(
   journey: XcJourney,
 ): XcJourneyTransferAsset | undefined {
