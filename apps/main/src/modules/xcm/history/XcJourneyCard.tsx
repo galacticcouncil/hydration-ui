@@ -29,6 +29,7 @@ import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
   getTransferAsset,
+  getTransferUsdValue,
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
 import { isJourneyPendingClaim } from "@/modules/xcm/history/utils/claim"
@@ -40,8 +41,7 @@ import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
-  const { origin, destination, sentAt, status, totalUsd, originProtocol } =
-    journey
+  const { origin, destination, sentAt, status, originProtocol } = journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
 
@@ -55,7 +55,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
   const isClaimable = isNotPending && isJourneyPendingClaim(journey)
 
-  const usdValue = Big(totalUsd || transferAsset?.usd || 0)
+  const usdValue = Big(getTransferUsdValue(journey, transferAsset))
 
   return (
     <Stack as={Paper} px="primary">

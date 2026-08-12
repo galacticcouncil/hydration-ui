@@ -11,6 +11,7 @@ import {
   Asset,
   AssetAmount,
   ChainRoutes,
+  Ntt,
 } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
@@ -23,6 +24,7 @@ import {
 } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
+import { isString } from "remeda"
 
 import { ENV } from "@/config/env"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
@@ -99,8 +101,46 @@ export const useCrossChainWallet = () => {
   return data.wallet
 }
 
+export const useNttOutboundLimit = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+) => {
+  const enabled = !!chain && !!asset && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "outboundLimit", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: () => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+      return clients.nttClient(chain, asset).getOutboundLimit()
+    },
+  })
+}
+
+export const useNttInboundLimit = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+  from: AnyChain | null,
+) => {
+  const enabled = !!chain && !!asset && !!from && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "inboundLimit", chain?.key, asset?.key, from?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: () => {
+      if (!chain || !asset || !from) {
+        throw new Error("chain, asset, and from are required")
+      }
+      return clients.nttClient(chain, asset).getInboundLimit(from)
+    },
+  })
+}
+
 const createCrossChainBalanceQueryKey = (chainKey: string, address: string) => {
-  return ["xcm", "balance", chainKey, address] as const
+  const normalizedAddress = isString(address) ? address.toLowerCase() : ""
+  return ["xcm", "balance", chainKey, normalizedAddress] as const
 }
 
 export const useCrossChainBalance = (address: string, chainKey: string) => {
@@ -281,6 +321,7 @@ export const xcmTransferQuery = (
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
     retry: false,
+    placeholderData: keepPreviousData,
     queryKey: [
       "xcm",
       "transfer",

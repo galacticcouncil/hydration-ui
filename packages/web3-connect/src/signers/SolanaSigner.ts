@@ -132,7 +132,12 @@ export class SolanaSigner {
     try {
       const simulation = await this.lilJit.simulateBundle(encoded)
 
-      if (simulation && simulation.value.summary !== "succeeded") {
+      if (!simulation) {
+        options.onError(SolanaTxError.SIMULATION_FAILED)
+        throw new Error(SolanaTxError.SIMULATION_FAILED)
+      }
+
+      if (simulation.value.summary !== "succeeded") {
         const errorObj = simulation.value.summary.failed
         const [_, message] = errorObj.error.TransactionFailure
         options.onSubmitted(errorObj.tx_signature)
