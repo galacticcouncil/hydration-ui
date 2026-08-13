@@ -66,17 +66,6 @@ export const useInvalidateOnBlock = () => {
   })
 }
 
-export const blockTimeQuery = (context: TProviderContext) => {
-  const { isApiLoaded, sdk } = context
-
-  return queryOptions({
-    enabled: isApiLoaded,
-    queryKey: ["blockTime"],
-    queryFn: () => sdk.client.params.getBlockTime(),
-    staleTime: Infinity,
-  })
-}
-
 export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
   const provider = useRpcProvider()
   const { data } = useQuery(bestNumberQuery(provider))

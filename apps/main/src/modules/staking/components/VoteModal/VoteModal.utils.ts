@@ -2,7 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
@@ -225,7 +225,9 @@ export const useVoteModal = (
   ])
 
   const lockedBlocks = getConvictionBlocks(rpc.slotDurationMs, multiplier) ?? 0
-  const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
+  const lockedDays = Math.round(
+    (lockedBlocks * rpc.slotDurationMs) / millisecondsInDay,
+  )
   const totalVotes = (() => {
     if (voteType === "split") {
       return Big(aye || "0")
