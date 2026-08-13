@@ -72,7 +72,7 @@ export const blockTimeQuery = (context: TProviderContext) => {
   return queryOptions({
     enabled: isApiLoaded,
     queryKey: ["blockTime"],
-    queryFn: () => sdk.api.scheduler.blockTime,
+    queryFn: () => sdk.client.params.getBlockTime(),
     staleTime: Infinity,
   })
 }

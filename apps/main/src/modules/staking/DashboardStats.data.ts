@@ -1,7 +1,7 @@
 import { calculate_accumulated_rps } from "@galacticcouncil/math-staking"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToSeconds } from "date-fns"
+import { secondsToMilliseconds } from "date-fns"
 import { secondsInWeek, secondsInYear } from "date-fns/constants"
 import { useMemo } from "react"
 
@@ -59,9 +59,9 @@ export const useStakingSupply = () => {
 
 // min. amount of block for how long we want to calculate APR from = one week
 const getLengthOfStaking = (slotDurationMs: number) =>
-  secondsInWeek / millisecondsToSeconds(slotDurationMs)
+  secondsToMilliseconds(secondsInWeek) / slotDurationMs
 const getBlocksPerYear = (slotDurationMs: number) =>
-  secondsInYear / millisecondsToSeconds(slotDurationMs)
+  secondsToMilliseconds(secondsInYear) / slotDurationMs
 
 export const useStakingAPR = (positionId: bigint) => {
   const rpc = useRpcProvider()

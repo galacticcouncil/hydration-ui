@@ -6,8 +6,7 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToSeconds } from "date-fns"
-import { secondsInDay } from "date-fns/constants"
+import { millisecondsInDay } from "date-fns/constants"
 
 import { stakingConstsQuery } from "@/api/constants"
 import { ongoingReferendaQuery } from "@/api/democracy"
@@ -141,8 +140,8 @@ export const useRewardsCurveData = () => {
         const x = Big.max(
           Big(stakingConsts.periodLength)
             .times(period)
-            .times(millisecondsToSeconds(rpc.slotDurationMs))
-            .div(secondsInDay),
+            .times(rpc.slotDurationMs)
+            .div(millisecondsInDay),
           0,
         ).toNumber()
 

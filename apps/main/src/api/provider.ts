@@ -19,7 +19,6 @@ import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
-import { getAverageBlockTimeMs } from "@/api/blockTime"
 import { ENV } from "@/config/env"
 import {
   createProvider,
@@ -124,15 +123,16 @@ const getProviderData = async (
     }),
   })
 
-  const [sdk, blockTimeMs, hollarBond, bilPoolCode] = await Promise.all([
+  const [sdk, hollarBond, bilPoolCode] = await Promise.all([
     createSdkContext(papiClient),
-    getAverageBlockTimeMs(papiClient, papi),
     papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
     evm.getCode({ address: BIL_POOL_ADDRESS }),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
   ])
+
+  const blockTimeMs = await sdk.client.params.getBlockTime()
 
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()

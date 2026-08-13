@@ -2,8 +2,7 @@ import { IndexerSdk, newFarmsQuery } from "@galacticcouncil/indexer/indexer"
 import { farm, SdkCtx } from "@galacticcouncil/sdk-next"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToSeconds } from "date-fns"
-import { millisecondsInHour, secondsInDay } from "date-fns/constants"
+import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { z } from "zod"
 
 import { useIndexerClient } from "@/api/provider"
@@ -26,9 +25,9 @@ export type FarmRewards = {
 }
 
 export const NEW_YIELD_FARMS_DAYS = 4
-const NEW_YIELD_FARMS_TIME = secondsInDay * NEW_YIELD_FARMS_DAYS
+const NEW_YIELD_FARMS_TIME = millisecondsInDay * NEW_YIELD_FARMS_DAYS
 const getNewYieldFarmsBlocks = (slotDurationMs: number) =>
-  NEW_YIELD_FARMS_TIME / millisecondsToSeconds(slotDurationMs)
+  Math.round(NEW_YIELD_FARMS_TIME / slotDurationMs)
 
 const newFarmsDataSchema = z.object({
   events: z.array(

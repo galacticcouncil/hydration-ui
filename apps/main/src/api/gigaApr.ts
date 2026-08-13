@@ -6,8 +6,7 @@ import {
 } from "@galacticcouncil/money-market/ui-config"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToSeconds } from "date-fns"
-import { daysInYear, secondsInDay } from "date-fns/constants"
+import { daysInYear, millisecondsInDay } from "date-fns/constants"
 
 import { bestNumberQuery } from "@/api/chain"
 import {
@@ -38,8 +37,8 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
  * stakeValue = 0 to a fleet estimate.
  */
 
-const getBlocksPerDay = (blockSeconds: number) => {
-  return Math.floor(secondsInDay / blockSeconds)
+const getBlocksPerDay = (blockTimeMs: number) => {
+  return Math.floor(millisecondsInDay / blockTimeMs)
 }
 
 /** Locked6x conviction multiplier / REWARD_MULTIPLIER_SCALE = 800/100. */
@@ -134,9 +133,7 @@ export const passiveAprQuery = (
     queryKey: ["gigaApr", "passive", windowDays],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      const blocksPerDay = getBlocksPerDay(
-        millisecondsToSeconds(rpc.slotDurationMs),
-      )
+      const blocksPerDay = getBlocksPerDay(rpc.slotDurationMs)
 
       const bestNumber = await rpc.queryClient.ensureQueryData(
         bestNumberQuery(rpc),
@@ -282,9 +279,7 @@ export const refsPerYearQuery = (rpc: TProviderContext) =>
     queryKey: ["gigaApr", "refsPerYear", REFS_PER_YEAR_LOOKBACK_DAYS],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      const blocksPerDay = getBlocksPerDay(
-        millisecondsToSeconds(rpc.slotDurationMs),
-      )
+      const blocksPerDay = getBlocksPerDay(rpc.slotDurationMs)
       const bestNumber = await rpc.queryClient.ensureQueryData(
         bestNumberQuery(rpc),
       )
