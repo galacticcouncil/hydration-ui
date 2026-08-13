@@ -1,6 +1,7 @@
 import { Stack } from "@galacticcouncil/ui/components"
 
 import { TBond } from "@/api/assets"
+import { useAccountBalance } from "@/api/balances"
 import { Page404 } from "@/components/Page404"
 import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -16,7 +17,6 @@ import {
 } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalance } from "@/states/account"
 
 type StableBondsPageProps = {
   asset: TBond

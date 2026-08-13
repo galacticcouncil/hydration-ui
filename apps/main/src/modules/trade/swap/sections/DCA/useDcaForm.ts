@@ -16,6 +16,7 @@ import { FieldPath, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
+import { useAccountBalances } from "@/api/balances"
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import i18n from "@/i18n"
 import {
@@ -24,7 +25,6 @@ import {
 } from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 import {
   maxBalanceError,
@@ -249,7 +249,7 @@ export const useDcaForm = ({
 }: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
+  const { isBalanceLoading } = useAccountBalances()
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -280,10 +280,10 @@ export const useDcaForm = ({
       return
     }
 
-    if (isBalanceLoaded(sellAsset.id) || !isBalanceLoading) {
+    if (!isBalanceLoading) {
       trigger("sellAmount")
     }
-  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
+  }, [account, isBalanceLoading, trigger, getValues])
 
   return form
 }

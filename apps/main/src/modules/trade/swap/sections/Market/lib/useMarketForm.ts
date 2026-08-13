@@ -5,13 +5,13 @@ import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import {
   getSharedSellAmount,
   useSharedSellAmountSync,
 } from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import {
   maxBalanceError,
   positiveOptional,
@@ -68,7 +68,7 @@ export const useMarketForm = ({
   const { account } = useAccount()
   const { getAsset } = useAssets()
 
-  const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
+  const { isBalanceLoading } = useAccountBalances()
 
   const defaultValues: MarketFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -97,18 +97,16 @@ export const useMarketForm = ({
       return
     }
 
-    if (
-      type === TradeType.Buy &&
-      (isBalanceLoaded(buyAsset.id) || !isBalanceLoading)
-    ) {
+    if (isBalanceLoading) {
+      return
+    }
+
+    if (type === TradeType.Buy) {
       trigger("buyAmount")
-    } else if (
-      (type === TradeType.Sell && isBalanceLoaded(sellAsset.id)) ||
-      !isBalanceLoading
-    ) {
+    } else {
       trigger("sellAmount")
     }
-  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
+  }, [account, isBalanceLoading, trigger, getValues])
 
   return form
 }
