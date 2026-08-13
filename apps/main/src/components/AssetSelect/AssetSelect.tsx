@@ -54,13 +54,13 @@ export const AssetSelect = ({
       return providedMaxBalance
     }
 
-    const maxBalance =
+    const rawTransferable =
       !props.ignoreBalance && selectedAsset
         ? getTransferableBalance(selectedAsset.id)
         : undefined
 
-    return maxBalance && selectedAsset
-      ? scaleHuman(maxBalance, selectedAsset.decimals)
+    return rawTransferable && selectedAsset
+      ? scaleHuman(rawTransferable, selectedAsset.decimals)
       : maxBalanceFallback
   })()
 

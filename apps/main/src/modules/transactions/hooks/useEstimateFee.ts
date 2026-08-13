@@ -74,14 +74,8 @@ export const useEstimateFee = (
         )
       : "0"
 
-  return useQuery({
+  const query = useQuery({
     placeholderData: keepPreviousData,
-    select: (data) => {
-      return {
-        ...data,
-        feeAssetBalance,
-      }
-    },
     enabled:
       isLoaded &&
       !!anyTx &&
@@ -177,4 +171,14 @@ export const useEstimateFee = (
       }
     },
   })
+
+  return {
+    ...query,
+    data: query.data
+      ? {
+          ...query.data,
+          feeAssetBalance,
+        }
+      : undefined,
+  }
 }

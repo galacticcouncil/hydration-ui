@@ -1,4 +1,3 @@
-import { percentageDifference } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { produce } from "immer"
@@ -9,8 +8,6 @@ import { useShallow } from "zustand/shallow"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { Balance, useAccountData } from "@/states/account"
-
-const ERC20_THRESHOLD = 0.01
 
 export function useAccountBalanceSubscription() {
   const { isApiLoaded, sdk } = useRpcProvider()
@@ -67,8 +64,9 @@ export function useAccountBalanceSubscription() {
       !isApiLoaded ||
       !followedAssetIds.size ||
       !erc20AssetIds.length
-    )
+    ) {
       return
+    }
 
     const subscribeSystemBalance = () =>
       balance.watchSystemBalance(accountAddress).subscribe({
@@ -111,6 +109,7 @@ export function useAccountBalanceSubscription() {
           const validBalances = new Map<number, Balance>([])
 
           let shouldSync = false
+          const increasedTransferable = new Set<number>()
 
           for (const { id: assetId, balance } of balances) {
             const snapBalance = snapABalances.get(assetId)
@@ -120,22 +119,21 @@ export function useAccountBalanceSubscription() {
               assetId: assetId.toString(),
             })
 
+            const snapTransferable = snapBalance?.transferable ?? 0n
+            const { transferable } = balance
+
+            if (snapTransferable !== transferable) {
+              shouldSync = true
+            }
+
+            if (transferable > snapTransferable) {
+              increasedTransferable.add(assetId)
+            }
+
             snapABalances.set(assetId, {
               ...balance,
               assetId: assetId.toString(),
             })
-
-            const snapTransferable = snapBalance?.transferable ?? 0n
-            const { transferable } = balance
-
-            if (
-              snapTransferable !== transferable &&
-              percentageDifference(snapTransferable, transferable).gt(
-                ERC20_THRESHOLD,
-              )
-            ) {
-              shouldSync = true
-            }
           }
 
           if (shouldSync || !validBalances.size) {
@@ -162,7 +160,7 @@ export function useAccountBalanceSubscription() {
                   getErc20AToken(assetId)?.underlyingAssetId ?? ""
                 const maxReserve = maxReservesMap.get(registryId)
 
-                if (maxReserve) {
+                if (maxReserve && !increasedTransferable.has(assetId)) {
                   balance.transferable = maxReserve.amount
                 }
               }
@@ -204,5 +202,11 @@ export function useAccountBalanceSubscription() {
     if (isLoaded) {
       balancesLoaded()
     }
-  }, [isLoaded, balancesLoaded])
+  }, [
+    isLoaded,
+    balancesLoaded,
+    isSystemBalanceLoaded,
+    isTokensBalanceLoaded,
+    isErcBalanceLoaded,
+  ])
 }

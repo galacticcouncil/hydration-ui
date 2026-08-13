@@ -1,6 +1,6 @@
 import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
-import { QueryKey, queryOptions } from "@tanstack/react-query"
+import { keepPreviousData, QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { papiDryRunErrorQuery } from "@/api/dryRun"
@@ -58,6 +58,7 @@ export const bestSellQuery = (
 
       return swap
     },
+    placeholderData: keepPreviousData,
     enabled:
       isApiLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
@@ -156,6 +157,7 @@ export const bestSellTwapQuery = (
         Number(assetOut),
         amountIn,
       ),
+    placeholderData: keepPreviousData,
     enabled:
       enabled &&
       isApiLoaded &&
@@ -277,6 +279,7 @@ export const bestBuyQuery = (
 
       return swap
     },
+    placeholderData: keepPreviousData,
     enabled:
       isApiLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
@@ -375,6 +378,7 @@ export const bestBuyTwapQuery = (
         Number(assetOut),
         amountOut,
       ),
+    placeholderData: keepPreviousData,
     enabled:
       enabled &&
       isApiLoaded &&

@@ -65,7 +65,7 @@ export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
       ? scaleHuman(amountOut, buyAsset.decimals)
       : ""
 
-    if (buyAmount !== nextBuyAmount) {
+    if (nextBuyAmount && buyAmount !== nextBuyAmount) {
       setValue("buyAmount", nextBuyAmount)
       trigger()
     }
@@ -80,7 +80,7 @@ export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
       ? scaleHuman(amountIn, sellAsset.decimals)
       : ""
 
-    if (sellAmount !== nextSellAmount) {
+    if (nextSellAmount && sellAmount !== nextSellAmount) {
       setValue("sellAmount", nextSellAmount)
       trigger()
     }

@@ -30,6 +30,11 @@ export const useMaxSellAmount = ({
   const enabled =
     rpc.isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
 
+  const rawStoreBalance = scaleHuman(
+    getTransferableBalance(assetIn).toString(),
+    getAssetWithFallback(assetIn).decimals,
+  )
+
   const { data: tx } = useQuery({
     enabled,
     queryKey: ["maxSellAmount", assetIn, assetOut, swapSlippage],
@@ -69,19 +74,18 @@ export const useMaxSellAmount = ({
   const maxTwapBalanceWithFee = useMaxBalanceWithFee(tx?.twapTx ?? null)
 
   if (!enabled) {
-    const balance = scaleHuman(
-      getTransferableBalance(assetIn).toString(),
-      getAssetWithFallback(assetIn).decimals,
-    )
-
     return {
-      maxSwapSellBalance: balance,
-      maxTwapSellBalance: balance,
+      maxSwapSellBalance: rawStoreBalance,
+      maxTwapSellBalance: rawStoreBalance,
     }
   }
 
+  const maxSwapSellBalance =
+    maxSwapBalanceWithFee?.maxBalanceHuman ?? rawStoreBalance
+  const maxTwapSellBalance =
+    maxTwapBalanceWithFee?.maxBalanceHuman ?? rawStoreBalance
   return {
-    maxSwapSellBalance: maxSwapBalanceWithFee?.maxBalanceHuman ?? "0",
-    maxTwapSellBalance: maxTwapBalanceWithFee?.maxBalanceHuman ?? "0",
+    maxSwapSellBalance,
+    maxTwapSellBalance,
   }
 }

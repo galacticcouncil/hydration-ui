@@ -63,14 +63,7 @@ export const healthFactorAfterWithdrawQuery = (
   { address, fromAssetId, fromAmount }: HealthFactorWithdrawArgs,
 ) =>
   queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
-      "withdraw",
-      address,
-      fromAssetId,
-      fromAmount,
-    ],
+    queryKey: ["healthFactor", "withdraw", address, fromAssetId, fromAmount],
 
     queryFn: async () => {
       const [currentHF, futureHF] = await Promise.all([
@@ -92,14 +85,7 @@ export const healthFactorAfterSupplyQuery = (
   { address, toAssetId, toAmount }: HealthFactorSupplyArgs,
 ) =>
   queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
-      "supply",
-      address,
-      toAssetId,
-      toAmount,
-    ],
+    queryKey: ["healthFactor", "supply", address, toAssetId, toAmount],
     queryFn: async () => {
       const [currentHF, futureHF] = await Promise.all([
         sdk.api.aave.getHealthFactor(address),
@@ -121,7 +107,6 @@ export const healthFactorAfterSwapQuery = (
 ) =>
   queryOptions({
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
       "healthFactor",
       "swap",
       address,
