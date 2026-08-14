@@ -1,7 +1,4 @@
-import {
-  safeConvertPublicKeyToSS58,
-  safeConvertSS58toPublicKey,
-} from "@galacticcouncil/utils"
+import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
 import { NECKWORK_STALE_TIME, NeckworkClient } from "."
@@ -79,19 +76,13 @@ export const stablepoolYieldMetricsQuery = (client: NeckworkClient) =>
     },
   })
 
-export const xykVolumeQuery = (client: NeckworkClient, addresses: string[]) => {
-  const publicKeys = addresses
-    .map((address) => safeConvertSS58toPublicKey(address))
-    .filter((publicKey) => !!publicKey)
-
-  return queryOptions({
-    queryKey: ["neckwork", "xykVolumes", publicKeys],
+export const xykVolumeQuery = (client: NeckworkClient) =>
+  queryOptions({
+    queryKey: ["neckwork", "xykVolumes"],
     staleTime: NECKWORK_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/pools/xyk/volumes", {
-        params: {
-          query: { period: "24h", pools: publicKeys.join(",") },
-        },
+        params: { query: { period: "24h" } },
       })
 
       if (!data) throw new Error("Neckwork API returned no XYK volumes")
@@ -103,6 +94,4 @@ export const xykVolumeQuery = (client: NeckworkClient, addresses: string[]) => {
         poolVolume: item.volumeUsd,
       }))
     },
-    enabled: !!addresses.length,
   })
-}

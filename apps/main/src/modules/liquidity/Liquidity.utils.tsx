@@ -561,8 +561,8 @@ export const useIsolatedPools = () => {
 
   const { data: neckworkXykVolumes, isLoading: isNeckworkVolumeLoading } =
     useQuery({
-      ...neckworkXykVolumeQuery(neckworkClient, poolAddresses),
-      enabled: neckworkEnabled && !!poolAddresses.length,
+      ...neckworkXykVolumeQuery(neckworkClient),
+      enabled: neckworkEnabled,
     })
 
   const { data: squidXykVolumes, isLoading: isSquidVolumeLoading } = useQuery({
