@@ -16,7 +16,10 @@ export const useNavigation = (): NavigationItem[] => {
               if (child.key === "strategiesBil") {
                 return featureFlags.bilEnabled
               }
-              if (child.key === "strategiesPropeller") {
+              if (
+                child.key === "strategiesPropellerEth" ||
+                child.key === "strategiesPropellerTbtc"
+              ) {
                 return featureFlags.propellerEnabled
               }
               if (child.key === "strategiesHollarBonds") {

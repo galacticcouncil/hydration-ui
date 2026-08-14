@@ -1,12 +1,23 @@
+import { type FileRouteTypes } from "@tanstack/react-router"
 import { type Hex } from "viem"
 
 // ════════════════════════════════════════════════════════════════════════
-//  Propeller — per-collateral vault registry (lark-2)
+//  Propeller — per-collateral vault registry (lark-4)
 //  ─────────────────────────────────────────────────────────────────────
 //  One shared SubLoop + Harvester + SyntheticToken back every collateral;
-//  each collateral gets its own CollateralVault. The UI is parameterized by
-//  `asset` (route /strategies/propeller/$asset) — components/hooks read the
-//  active PropellerVaultConfig instead of hardcoded ETH constants.
+//  each collateral gets its own CollateralVault. Every vault is its own
+//  strategy with its own flat route (/strategies/propeller-<asset>); the page
+//  is generic and components/hooks read the active PropellerVaultConfig from
+//  PropellerVaultProvider instead of hardcoded ETH constants.
+//
+//  ⚠ MAINNET CHECKLIST — every deployment-specific constant, in one place:
+//    1. PROPELLER_VAULTS.eth.vaultAddress   (below)
+//    2. PROPELLER_VAULTS.tbtc.vaultAddress  (below)
+//    3. SUBLOOP_ADDRESS                     (constants.ts)
+//    4. VAULT_DEPLOY_BLOCK                  (constants.ts)
+//  POOL_ADDRESS, HOLLAR_ADDRESS and PRIME_ADDRESS are mainnet-mirrored on
+//  lark and do NOT change. `assetAddress` values are Substrate asset
+//  precompiles (eth_getCode == "0x00"), also identical across networks.
 // ════════════════════════════════════════════════════════════════════════
 
 export type PropellerAsset = "eth" | "tbtc"
@@ -31,7 +42,7 @@ export const PROPELLER_VAULTS: Record<PropellerAsset, PropellerVaultConfig> = {
     key: "eth",
     assetId: "34",
     assetAddress: "0x0000000000000000000000000000000100000022",
-    vaultAddress: "0x305EE427b94187c5abC68fCCc194E77D82F39921",
+    vaultAddress: "0x1D7C983Bfd8087BFB1671EF52a157cCad0ba13F8",
     symbol: "ETH",
     shareSymbol: "pETH",
   },
@@ -39,20 +50,24 @@ export const PROPELLER_VAULTS: Record<PropellerAsset, PropellerVaultConfig> = {
     key: "tbtc",
     assetId: "1000765",
     assetAddress: "0x00000000000000000000000000000001000f453d",
-    vaultAddress: "0x8E84b6e1eFfdF6C3258854ED2E813b1882b719Bf",
+    vaultAddress: "0x294862CBfaa0E4fD6d3C29E8d354B680EfCAFEc1",
     symbol: "tBTC",
     shareSymbol: "ptBTC",
   },
 }
 
-export const DEFAULT_PROPELLER_ASSET: PropellerAsset = "eth"
+/**
+ * Risk profile shared by every Propeller vault — the loop is self-deleveraging
+ * and the user position cannot be liquidated, regardless of the collateral.
+ * Resolves to the `strategy.risk.<level>` string in the propeller namespace.
+ */
+export const PROPELLER_RISK_PROFILE = "low"
 
-/** Display order for the in-page collateral switcher (all vaults share one subpage). */
-export const PROPELLER_ASSET_ORDER: PropellerAsset[] = ["eth", "tbtc"]
-
-export const getPropellerVault = (key: string): PropellerVaultConfig =>
-  PROPELLER_VAULTS[
-    (key as PropellerAsset) in PROPELLER_VAULTS
-      ? (key as PropellerAsset)
-      : DEFAULT_PROPELLER_ASSET
-  ]
+/** Flat per-vault route of each strategy. */
+export const PROPELLER_VAULT_ROUTE: Record<
+  PropellerAsset,
+  FileRouteTypes["to"]
+> = {
+  eth: "/strategies/propeller-eth",
+  tbtc: "/strategies/propeller-tbtc",
+}

@@ -8,20 +8,24 @@ import { useTranslation } from "react-i18next"
 import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
-export type WithdrawalRowState = "pending" | "settled" | "claimed"
+export type WithdrawalRowState = "pending" | "partial" | "settled" | "claimed"
 
 export interface WithdrawalRow {
   id: number
-  /** pETH shares the request escrowed. */
+  /** Vault shares the request escrowed. */
   amountShares: number
-  /** ETH owed / claimable for the request. */
+  /** Collateral owed / claimable for the request. */
   estEth: number
   requestedDate: Date
   state: WithdrawalRowState
   settledDate?: Date
   claimedDate?: Date
-  /** ETH already settled and ready for the user to claim. */
-  claimableEth?: number
+  /** Collateral the vault owes for the request, snapshotted at request time. */
+  collateralOwed?: number
+  /** Collateral settled and ready for the user to claim right now. */
+  collateralSettled?: number
+  /** Fraction (0–1) of the request the keeper has unwound so far. */
+  settledProgress?: number
 }
 
 const columnHelper = createColumnHelper<WithdrawalRow>()
@@ -93,13 +97,6 @@ export const useWithdrawalColumns = ({
       header: t("withdrawals.col.status"),
       cell: ({ row }) => {
         const r = row.original
-        if ((r.claimableEth ?? 0) > 0 && r.state !== "claimed") {
-          return (
-            <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
-              {t("withdrawals.state.claimable")}
-            </Text>
-          )
-        }
         if (r.state === "claimed") {
           return (
             <Text fs="p4" color={getToken("text.medium")}>
@@ -107,10 +104,37 @@ export const useWithdrawalColumns = ({
             </Text>
           )
         }
+
+        const claimable = r.collateralSettled ?? 0
+        const owed = r.collateralOwed ?? 0
+        const isPartial = r.state === "partial"
+        const label =
+          claimable > 0 ? "claimable" : isPartial ? "settling" : "pending"
+
         return (
-          <Text fs="p4" fw={600} color={getToken("accents.alert.primary")}>
-            {t("withdrawals.state.pending")}
-          </Text>
+          <Flex direction="column" gap="s">
+            <Text
+              fs="p4"
+              fw={600}
+              color={getToken(
+                claimable > 0
+                  ? "accents.success.primary"
+                  : "accents.alert.primary",
+              )}
+            >
+              {t(`withdrawals.state.${label}`)}
+            </Text>
+            {isPartial && owed > 0 && (
+              <Text fs="p6" color={getToken("text.low")}>
+                {t("withdrawals.settledProgress", {
+                  settled: t("common:currency", {
+                    value: (r.settledProgress ?? 0) * owed,
+                  }),
+                  owed: t("common:currency", { value: owed, symbol }),
+                })}
+              </Text>
+            )}
+          </Flex>
         )
       },
     })
@@ -120,7 +144,10 @@ export const useWithdrawalColumns = ({
       meta: { sx: { textAlign: "right" } },
       cell: ({ row }) => {
         const r = row.original
-        const claimable = r.claimableEth ?? 0
+        // Claiming stays available for as long as there is settled collateral,
+        // including on a request already partially claimed — claim() burns
+        // shares pro-rata and leaves the request open for the next tranche.
+        const claimable = r.collateralSettled ?? 0
         if (claimable <= 0 || r.state === "claimed") return null
         return (
           <Flex justify="flex-end" align="center" gap="base">

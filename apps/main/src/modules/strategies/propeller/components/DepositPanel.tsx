@@ -1,4 +1,4 @@
-import { Hourglass } from "@galacticcouncil/ui/assets/icons"
+import { Scale, ShieldCheck } from "@galacticcouncil/ui/assets/icons"
 import {
   AssetInput,
   Box,
@@ -7,25 +7,23 @@ import {
   Icon,
   Paper,
   Separator,
-  Summary,
-  SummaryRow,
+  Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useState } from "react"
+import { type ComponentType, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-import { PropellerExchangeRate } from "@/modules/strategies/propeller/components/PropellerExchangeRate"
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
-import { useAssets } from "@/providers/assetsProvider"
 
 interface VaultStats {
   exchangeRate: number
-  minDeposit: number
+  totalAssets: number
+  tvlCap: number
+  paused: boolean
   depositsPaused: boolean
 }
 
@@ -50,24 +48,29 @@ export const DepositPanel = ({
   const { t } = useTranslation(["propeller", "common"])
   const { isConnected } = useAccount()
   const [amount, setAmount] = useState("")
-  const { getAssetWithFallback } = useAssets()
   const vault = useActivePropellerVault()
-  const eth = getAssetWithFallback(vault.assetId)
 
   const inputNum = parseFloat(amount) || 0
-  // shares = assets / exchangeRate (exchangeRate is ETH per pETH).
-  const outputShares =
-    vaultStats.exchangeRate > 0 ? inputNum / vaultStats.exchangeRate : 0
-  const isBelowMin = inputNum > 0 && inputNum < vaultStats.minDeposit
   const overBalance = inputNum > balances.eth
+
+  // The contract reverts ExceedsTvlCap when totalAssets + assets > tvlCap, so
+  // the exact headroom is tvlCap − totalAssets. A tvlCap of 0 is the "not read
+  // yet" default rather than a real zero-capacity vault, so it doesn't gate.
+  const remainingCapacity = Math.max(
+    vaultStats.tvlCap - vaultStats.totalAssets,
+    0,
+  )
+  const overCapacity = vaultStats.tvlCap > 0 && inputNum > remainingCapacity
+  // deposit() is whenNotPaused on top of its own depositsPaused switch.
+  const isPaused = vaultStats.depositsPaused || vaultStats.paused
 
   const handleSubmit = () => {
     if (
       !isConnected ||
       inputNum <= 0 ||
-      isBelowMin ||
       overBalance ||
-      vaultStats.depositsPaused
+      overCapacity ||
+      isPaused
     )
       return
     onDeposit(inputNum)
@@ -75,29 +78,22 @@ export const DepositPanel = ({
 
   const ctaLabel = (() => {
     if (isPending) return t("deposit.cta.pending")
-    if (vaultStats.depositsPaused) return t("deposit.cta.paused")
-    if (isBelowMin)
-      return t("deposit.cta.belowMin", {
-        value: vaultStats.minDeposit,
-        symbol: eth.symbol,
-      })
+    if (isPaused) return t("deposit.cta.paused")
+    if (overCapacity) return t("deposit.cta.exceedsCapacity")
     return t("deposit.cta.deposit")
   })()
 
   const amountError = overBalance
     ? t("withdraw.cta.insufficient")
-    : isBelowMin
-      ? t("deposit.cta.belowMin", {
-          value: vaultStats.minDeposit,
-          symbol: eth.symbol,
-        })
+    : overCapacity
+      ? t("deposit.cta.exceedsCapacity")
       : undefined
 
   return (
     <Paper px="xl" position="relative">
       <Box>
         <AssetInput
-          label={t("deposit.your")}
+          label={t("deposit.amount")}
           symbol={vault.symbol}
           selectedAssetIcon={<AssetLogo id={vault.assetId} size="medium" />}
           modalDisabled
@@ -110,42 +106,22 @@ export const DepositPanel = ({
           maxButtonBalance={balances.eth.toString()}
           amountError={amountError}
         />
-
-        <PropellerExchangeRate exchangeRate={vaultStats.exchangeRate} />
-
-        <AssetInput
-          label={t("deposit.youReceive")}
-          symbol={vault.shareSymbol}
-          selectedAssetIcon={<PropellerLogo size="medium" />}
-          modalDisabled
-          disabledInput
-          ignoreBalance
-          value={outputShares.toString()}
-          displayValue={t("common:currency", {
-            value: outputShares * vaultStats.exchangeRate,
-          })}
-        />
       </Box>
 
       <Separator mx="-xl" />
 
-      <Summary separator={<Separator mx="-xl" />}>
-        <SummaryRow
-          label={
-            <Flex
-              align="center"
-              gap="base"
-              sx={{ color: getToken("text.tint.secondary") }}
-            >
-              <Icon component={Hourglass} size="xs" />
-              <Text fs="p5" fw={500} color={getToken("text.tint.secondary")}>
-                {t("deposit.option.queue")}
-              </Text>
-            </Flex>
-          }
-          content={t("deposit.option.queueValue")}
+      <Stack gap="base" py="xl">
+        <BenefitRow
+          icon={ShieldCheck}
+          label={t("deposit.benefit.noLiquidations")}
+          description={t("deposit.benefit.noLiquidationsDescription")}
         />
-      </Summary>
+        <BenefitRow
+          icon={Scale}
+          label={t("deposit.benefit.noImpermanentLoss")}
+          description={t("deposit.benefit.noImpermanentLossDescription")}
+        />
+      </Stack>
 
       <Separator mx="-xl" />
 
@@ -157,9 +133,9 @@ export const DepositPanel = ({
             disabled={
               inputNum <= 0 ||
               isPending ||
-              isBelowMin ||
               overBalance ||
-              vaultStats.depositsPaused
+              overCapacity ||
+              isPaused
             }
             onClick={handleSubmit}
           >
@@ -168,5 +144,34 @@ export const DepositPanel = ({
         </AuthorizedAction>
       </Box>
     </Paper>
+  )
+}
+
+const BenefitRow = ({
+  icon,
+  label,
+  description,
+}: {
+  icon: ComponentType
+  label: string
+  description: string
+}) => {
+  return (
+    <Flex justify="space-between">
+      <Flex gap="s" sx={{ color: getToken("text.tint.quart") }}>
+        <Icon component={icon} size="s" />
+        <Text
+          fs="p5"
+          fw={500}
+          color={getToken("text.tint.quart")}
+          whiteSpace="nowrap"
+        >
+          {label}
+        </Text>
+      </Flex>
+      <Text fs="p5" fw={400} align="right">
+        {description}
+      </Text>
+    </Flex>
   )
 }

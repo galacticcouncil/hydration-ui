@@ -1,21 +1,23 @@
 import { type Hex } from "viem"
 
 // ════════════════════════════════════════════════════════════════════════
-//  Propeller Vault — lark-2 deployment
+//  Propeller Vault — lark-4 deployment
 //  ─────────────────────────────────────────────────────────────────────
-//  Reference: money-market@propeller → propeller-vault/ + scripts/*-lark.mjs
-//  Network:   Hydration lark testnet (`2.lark.hydration.cloud`, chain 222222)
+//  Reference: gc-money-market@ys-propeller-fixes → propeller-vault/
+//  Network:   Hydration lark testnet (`node4.lark.hydration.cloud`)
 //  Surface:   ERC-4626 (deposit) + ERC-7540-style async redeem queue.
 //
-//  ⚠ The app's default RPC is node4.lark, where NONE of the Propeller
-//  contracts below are deployed (eth_getCode == "0x" for the vault, SubLoop,
-//  synth and harvester; the Aave pool and HOLLAR do exist). Every address
-//  here is the live 2.lark deployment. Redeploy on lark-4 and update these,
-//  or point the app back at 2.lark — the reads will just revert otherwise.
+//  ⚠ MAINNET CHECKLIST — the constants that must be repointed on redeploy:
+//    1. SUBLOOP_ADDRESS      (below)
+//    2. VAULT_DEPLOY_BLOCK   (below)
+//    3. PROPELLER_VAULTS.eth.vaultAddress   (vaults.ts)
+//    4. PROPELLER_VAULTS.tbtc.vaultAddress  (vaults.ts)
+//  POOL_ADDRESS, HOLLAR_ADDRESS and PRIME_ADDRESS are mainnet-mirrored on
+//  lark and stay as they are.
 //
 //  Unlike BIL, Propeller has NO user-facing borrow leg. The vault runs a
 //  leveraged loop internally (CollateralVault → SubLoop) and the user only
-//  ever sees: deposit ETH → hold pETH shares → async redeem back to ETH.
+//  ever sees: deposit collateral → hold vault shares → async redeem back.
 //
 //  Per-collateral CollateralVault addresses live in `vaults.ts`.
 // ════════════════════════════════════════════════════════════════════════
@@ -23,11 +25,13 @@ import { type Hex } from "viem"
 // SubLoop — the single leverage engine shared by every CollateralVault.
 // Read-only from the UI: `healthFactor()` and `totalEquity()` power the
 // optional leverage/HF detail line in the strategy card.
-export const SUBLOOP_ADDRESS: Hex = "0xF23F4baFB4560DFb3234ad7f441Da6260b4218E8"
+export const SUBLOOP_ADDRESS: Hex = "0x8F790900596a2172F307250389CEEF3923B56ec6"
 
-// First block to scan event logs from. The vault was deployed ~block 320000
-// on 2.lark; 300000 is a safe lower bound (public RPCs reject genesis scans).
-export const VAULT_DEPLOY_BLOCK = 300000n
+// First block to scan event logs from. On lark-4 the SubLoop landed at block
+// 287138 and the two CollateralVaults at 287140 / 287154; 287000 is a safe
+// lower bound. Over-scanning only costs a little time — under-scanning
+// silently truncates withdrawal history.
+export const VAULT_DEPLOY_BLOCK = 287000n
 
 export const EVM_CALL_GAS = 2_000_000n
 
@@ -101,6 +105,17 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  // Synthetic (psHOLLAR) the vault supplies to Aave as collateral, sized
+  // debt/LT·1.005. It inflates `getUserAccountData(vault).totalCollateralBase`,
+  // which is why the vault's LTV must come from the reserve config, not from
+  // that call — see `usePropellerApy`.
+  {
+    type: "function",
+    name: "syntheticSupplied",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
   {
     type: "function",
     name: "convertToAssets",
@@ -161,7 +176,7 @@ export const VAULT_ABI = [
   },
   // Redemption struct getter.
   //   (owner, shares, collateralOwed, debtShare, synthShare, repaid,
-  //    collateralSettled, active)
+  //    collateralSettled, sharesBurned, active)
   // active stays TRUE until the owner claims; `claim` reverts with
   // RequestNotActive otherwise. Claimable == active && collateralSettled > 0
   // (pokeSettle settles proportionally, so it can be partially filled);
@@ -178,12 +193,13 @@ export const VAULT_ABI = [
       { name: "synthShare", type: "uint256" },
       { name: "repaid", type: "uint256" },
       { name: "collateralSettled", type: "uint256" },
+      { name: "sharesBurned", type: "uint256" },
       { name: "active", type: "bool" },
     ],
     stateMutability: "view",
   },
   // Writes ---------------------------------------------------------------
-  // ERC-4626 deposit. assets = ETH pulled, receiver = pETH recipient.
+  // ERC-4626 deposit. assets = collateral pulled, receiver = share recipient.
   {
     type: "function",
     name: "deposit",
@@ -194,7 +210,7 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  // Async redeem request. shares = pETH escrowed, owner = source of shares.
+  // Async redeem request. shares = vault shares escrowed, owner = source of shares.
   {
     type: "function",
     name: "requestRedeem",
@@ -205,7 +221,7 @@ export const VAULT_ABI = [
     outputs: [{ name: "requestId", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  // Claim a settled request — pays out ETH to `receiver`.
+  // Claim a settled request — pays out collateral to `receiver`.
   {
     type: "function",
     name: "claim",
@@ -282,6 +298,16 @@ export const SUBLOOP_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  // Per-vault share of the loop's equity. `requestRedeem` reverts with
+  // NoLoopEquity when this is 0 for the calling vault, so the UI must block
+  // the withdraw CTA on it — see `useLoopEquity`.
+  {
+    type: "function",
+    name: "equityOf",
+    inputs: [{ name: "vault", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
 ] as const
 
 // Aave main-market pool — for the loop's live carry (PRIME supply − HOLLAR
@@ -304,6 +330,14 @@ export const POOL_ABI = [
       { name: "ltv", type: "uint256" },
       { name: "healthFactor", type: "uint256" },
     ],
+    stateMutability: "view",
+  },
+  // Packed reserve configuration bitmap. Bits 0–15 are the max LTV in bps.
+  {
+    type: "function",
+    name: "getConfiguration",
+    inputs: [{ name: "asset", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
   {
