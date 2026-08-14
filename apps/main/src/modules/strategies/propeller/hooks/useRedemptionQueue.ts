@@ -3,16 +3,23 @@ import { formatUnits, type Hex } from "viem"
 
 import { usePropellerVaultContract } from "@/modules/strategies/propeller/hooks/usePropellerVaultContract"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useAssets } from "@/providers/assetsProvider"
 
 export interface QueueEntry {
   requestId: number
   owner: string
-  /** pETH shares escrowed by the request. */
+  /** Vault shares escrowed by the request. */
   shares: number
-  /** ETH the vault owes for this request once settled. */
+  /** Collateral the vault owes for this request once settled. */
   collateralOwed: number
-  /** ETH already settled and claimable. */
+  /** Collateral settled and not yet claimed — claim() decrements this. */
   collateralSettled: number
+  /**
+   * Fraction (0–1) of the request the keeper has unwound so far, taken from
+   * repaid/debtShare. `collateralSettled` cannot be used for this: it is
+   * claimable collateral, so a claim resets it to 0 even mid-settlement.
+   */
+  settledProgress: number
   /** True until the owner claims — not a settlement flag. */
   active: boolean
   isUser: boolean
@@ -20,10 +27,14 @@ export interface QueueEntry {
 
 export function useRedemptionQueue(evmAddress: Hex | undefined) {
   const { data: vault } = usePropellerVaultContract()
-  const { vaultAddress } = useActivePropellerVault()
+  const { getAssetWithFallback } = useAssets()
+  const { vaultAddress, assetId } = useActivePropellerVault()
+  // Shares are numerically scaled to the collateral (CollateralVault has no
+  // decimals() override), so shares and collateral amounts share these.
+  const decimals = getAssetWithFallback(assetId).decimals
   return useQuery({
     enabled: !!vault && !!evmAddress,
-    queryKey: ["propeller-vault-queue", vaultAddress, evmAddress],
+    queryKey: ["propeller-vault-queue", vaultAddress, evmAddress, assetId],
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
 
@@ -33,7 +44,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
       ])
 
       const queueTail = Number(tail)
-      const totalQueuedShares = Number(formatUnits(totalQueued, 18))
+      const totalQueuedShares = Number(formatUnits(totalQueued, decimals))
 
       const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
@@ -43,8 +54,17 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
       // the head. Starting at the head would hide the claim.
       // ponytail: linear scan; add a per-user index if the queue ever gets long.
       for (let i = 0; i < queueTail; i++) {
-        const [owner, shares, collateralOwed, , , , collateralSettled, active] =
-          await vault.read.redemptions([BigInt(i)])
+        const [
+          owner,
+          shares,
+          collateralOwed,
+          debtShare,
+          ,
+          repaid,
+          collateralSettled,
+          ,
+          active,
+        ] = await vault.read.redemptions([BigInt(i)])
 
         // Skip slots that were never populated (zero owner).
         if (owner === "0x0000000000000000000000000000000000000000") continue
@@ -52,9 +72,11 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
         entries.push({
           requestId: i,
           owner,
-          shares: Number(formatUnits(shares, 18)),
-          collateralOwed: Number(formatUnits(collateralOwed, 18)),
-          collateralSettled: Number(formatUnits(collateralSettled, 18)),
+          shares: Number(formatUnits(shares, decimals)),
+          collateralOwed: Number(formatUnits(collateralOwed, decimals)),
+          collateralSettled: Number(formatUnits(collateralSettled, decimals)),
+          settledProgress:
+            debtShare > 0n ? Number(repaid) / Number(debtShare) : 0,
           active,
           isUser: addr ? owner.toLowerCase() === addr : false,
         })

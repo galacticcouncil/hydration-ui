@@ -3,6 +3,7 @@ import { formatUnits, type Hex, parseAbiItem } from "viem"
 
 import { VAULT_DEPLOY_BLOCK } from "@/modules/strategies/propeller/constants"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 // The on-chain `redemptions` view doesn't carry request timestamps, so we
@@ -25,11 +26,11 @@ export interface RedemptionHistoryEntry {
   requestId: number
   state: RedemptionState
   requestedAt: Date
-  /** pETH shares the request escrowed. */
+  /** Vault shares the request escrowed. */
   shares: number
-  /** ETH settled by the keeper (available to claim). */
+  /** Collateral settled by the keeper (available to claim). */
   collateralSettled: number
-  /** ETH actually claimed by the user. */
+  /** Collateral actually claimed by the user. */
   collateralClaimed: number
   settledAt: Date | null
   claimedAt: Date | null
@@ -48,9 +49,13 @@ export interface RedemptionHistoryEntry {
  */
 export function useRedemptionHistory(evmAddress: Hex | undefined) {
   const { evm } = useRpcProvider()
-  const { vaultAddress } = useActivePropellerVault()
+  const { getAssetWithFallback } = useAssets()
+  const { vaultAddress, assetId } = useActivePropellerVault()
+  // Shares and collateral both carry the collateral's scale — see the note in
+  // useVaultReads: CollateralVault has no decimals() override.
+  const decimals = getAssetWithFallback(assetId).decimals
   return useQuery({
-    queryKey: ["propeller-vault-history", vaultAddress, evmAddress],
+    queryKey: ["propeller-vault-history", vaultAddress, evmAddress, assetId],
     enabled: !!evmAddress,
     queryFn: async (): Promise<RedemptionHistoryEntry[]> => {
       if (!evmAddress) return []
@@ -113,7 +118,7 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
           requestId: Number(requestId),
           state: "pending",
           requestedAt: tsOf(l),
-          shares: Number(formatUnits(l.args.shares!, 18)),
+          shares: Number(formatUnits(l.args.shares!, decimals)),
           collateralSettled: 0,
           collateralClaimed: 0,
           settledAt: null,
@@ -124,7 +129,9 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
       for (const l of mySettledLogs) {
         const entry = byId.get(l.args.requestId!)
         if (!entry) continue
-        entry.collateralSettled += Number(formatUnits(l.args.collateral!, 18))
+        entry.collateralSettled += Number(
+          formatUnits(l.args.collateral!, decimals),
+        )
         entry.settledAt = tsOf(l)
         if (entry.state === "pending") entry.state = "settled"
       }
@@ -132,7 +139,9 @@ export function useRedemptionHistory(evmAddress: Hex | undefined) {
       for (const l of claimedLogs) {
         const entry = byId.get(l.args.requestId!)
         if (!entry) continue
-        entry.collateralClaimed += Number(formatUnits(l.args.collateral!, 18))
+        entry.collateralClaimed += Number(
+          formatUnits(l.args.collateral!, decimals),
+        )
         entry.claimedAt = tsOf(l)
         entry.state = "claimed"
       }

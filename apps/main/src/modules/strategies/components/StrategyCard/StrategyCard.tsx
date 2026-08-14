@@ -9,16 +9,18 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link } from "@tanstack/react-router"
+import { type ReactNode } from "react"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import {
   StrategyBadge,
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 
 export type StrategyCardProps = {
   logoId: string
+  /** Optional logo override (e.g. tinted Propeller asset logo). */
+  logo?: ReactNode
   stats: ValueStatsProps[]
   badges?: StrategyBadgeType[]
   title: string
@@ -28,6 +30,7 @@ export type StrategyCardProps = {
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   logoId,
+  logo,
   stats,
   title,
   description,
@@ -42,11 +45,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          {logoId === "propeller" ? (
-            <PropellerLogo size="extra-large" />
-          ) : (
-            <AssetLogo id={logoId} size="extra-large" />
-          )}
+          {logo ?? <AssetLogo id={logoId} size="extra-large" />}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (
