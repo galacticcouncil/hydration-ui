@@ -110,13 +110,13 @@ export const DepositPanel = ({
 
       <Separator mx="-xl" />
 
-      <Stack gap="base" py="xl">
-        <BenefitRow
+      <Stack gap="l" py="xl">
+        <BenefitCard
           icon={ShieldCheck}
           label={t("deposit.benefit.noLiquidations")}
           description={t("deposit.benefit.noLiquidationsDescription")}
         />
-        <BenefitRow
+        <BenefitCard
           icon={Scale}
           label={t("deposit.benefit.noImpermanentLoss")}
           description={t("deposit.benefit.noImpermanentLossDescription")}
@@ -147,7 +147,7 @@ export const DepositPanel = ({
   )
 }
 
-const BenefitRow = ({
+const BenefitCard = ({
   icon,
   label,
   description,
@@ -156,22 +156,19 @@ const BenefitRow = ({
   label: string
   description: string
 }) => {
+  const color = getToken("text.tint.quart")
+
   return (
-    <Flex justify="space-between">
-      <Flex gap="s" sx={{ color: getToken("text.tint.quart") }}>
-        <Icon component={icon} size="s" />
-        <Text
-          fs="p5"
-          fw={500}
-          color={getToken("text.tint.quart")}
-          whiteSpace="nowrap"
-        >
+    <Stack gap="s" align="flex-start">
+      <Flex align="center" gap="s">
+        <Icon component={icon} size="s" color={color} />
+        <Text fs="p5" lh={1} fw={600} color={color}>
           {label}
         </Text>
       </Flex>
-      <Text fs="p5" fw={400} align="right">
+      <Text fs="p5" color={getToken("text.medium")}>
         {description}
       </Text>
-    </Flex>
+    </Stack>
   )
 }
