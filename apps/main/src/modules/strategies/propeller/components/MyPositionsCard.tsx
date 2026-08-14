@@ -14,9 +14,9 @@ import { PropellerLogo } from "@/modules/strategies/propeller/components/Propell
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 interface Props {
-  /** pETH shares held by the user. */
+  /** Vault shares held by the user. */
   shares: number
-  /** pETH → ETH exchange rate. */
+  /** Share → collateral exchange rate. */
   exchangeRate: number
   /** Strategy net APY as a fraction; null hides it (never show 0%/negative). */
   apy: number | null
@@ -32,7 +32,7 @@ export const MyPositionsCard = ({
   const { t } = useTranslation(["propeller", "common"])
   const { symbol, shareSymbol } = useActivePropellerVault()
 
-  const ethValue = shares * exchangeRate
+  const assetValue = shares * exchangeRate
 
   return (
     <Paper>
@@ -45,7 +45,7 @@ export const MyPositionsCard = ({
       <Flex direction="column" gap="m" p="m">
         <PositionCard
           logo={<PropellerLogo size="large" />}
-          symbol={t("strategy.collateralAsset")}
+          symbol={symbol}
           stats={
             <>
               <ValueStats
@@ -62,7 +62,7 @@ export const MyPositionsCard = ({
                   </Text>
                 }
                 bottomLabel={t("common:currency", {
-                  value: ethValue,
+                  value: assetValue,
                   symbol,
                 })}
               />

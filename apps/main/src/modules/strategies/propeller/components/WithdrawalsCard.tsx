@@ -30,12 +30,11 @@ interface Props {
 }
 
 /**
- * A row stays "actionable" while either the keeper hasn't settled it yet
- * (state pending), or it's settled and the user hasn't claimed the ETH yet
- * (claimableEth > 0). Claimed rows fall under the "Show Redeemed" toggle.
+ * A row stays "actionable" until the request is fully claimed — that covers
+ * requests still waiting on the keeper, partially settled ones, and settled
+ * ones the user hasn't claimed yet. Claimed rows fall under "Show Redeemed".
  */
-const isActionable = (r: WithdrawalRow) =>
-  r.state === "pending" || (r.claimableEth ?? 0) > 0
+const isActionable = (r: WithdrawalRow) => r.state !== "claimed"
 
 export const WithdrawalsCard = ({
   rows,
@@ -63,6 +62,8 @@ export const WithdrawalsCard = ({
     onClaim,
     isClaiming,
   })
+
+  if (rows.length === 0) return null
 
   return (
     <Paper>
