@@ -9,6 +9,8 @@ import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
+import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
@@ -16,6 +18,7 @@ export const TRADE_CHART_MOBILE_HEIGHT = 300
 
 export const SwapPageMobile: FC = () => {
   const { status } = useActiveIndexerStatus()
+  const isNeckworkEnabled = useNeckworkEnabled()
 
   const isUsingLegacyData =
     status === DataProviderStatus.DEGRADED ||
@@ -28,7 +31,9 @@ export const SwapPageMobile: FC = () => {
         <Separator mx={-20} />
         <Outlet />
       </SSwapFormContainer>
-      {isUsingLegacyData ? (
+      {isNeckworkEnabled ? (
+        <TradeChartNeckwork height={TRADE_CHART_MOBILE_HEIGHT} />
+      ) : isUsingLegacyData ? (
         <TradeChartGrafana height={TRADE_CHART_MOBILE_HEIGHT} />
       ) : (
         <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />

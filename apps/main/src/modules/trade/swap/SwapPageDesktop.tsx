@@ -10,6 +10,8 @@ import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeade
 import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
+import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
@@ -17,6 +19,7 @@ export const TRADE_CHART_DESKTOP_HEIGHT = 460
 
 export const SwapPageDesktop = () => {
   const { status } = useActiveIndexerStatus()
+  const isNeckworkEnabled = useNeckworkEnabled()
   const isUsingLegacyData =
     status === DataProviderStatus.DEGRADED ||
     status === DataProviderStatus.OFFLINE
@@ -25,7 +28,9 @@ export const SwapPageDesktop = () => {
     <Stack gap="xl">
       <PageHeader />
       <TwoColumnGrid template="sidebar">
-        {isUsingLegacyData ? (
+        {isNeckworkEnabled ? (
+          <TradeChartNeckwork height={TRADE_CHART_DESKTOP_HEIGHT} />
+        ) : isUsingLegacyData ? (
           <TradeChartGrafana height={TRADE_CHART_DESKTOP_HEIGHT} />
         ) : (
           <TradeChart height={TRADE_CHART_DESKTOP_HEIGHT} />
