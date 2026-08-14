@@ -1,4 +1,5 @@
 import {
+  Alert,
   AssetInput,
   Box,
   Button,
@@ -20,14 +21,18 @@ import { useActivePropellerVault } from "@/modules/strategies/propeller/Propelle
 interface VaultStats {
   exchangeRate: number
   minRedeem: number
+  /** global vault pause — `requestRedeem` is whenNotPaused. */
+  paused: boolean
 }
 
 interface Props {
   open: boolean
   onClose: () => void
   vaultStats: VaultStats
-  /** pETH share balance available to redeem. */
+  /** Vault share balance available to redeem. */
   shareBalance: number
+  /** This vault's share of the SubLoop equity (WAD); null while unknown. */
+  loopEquity: bigint | null
   onRequestRedeem: (amount: number) => void
   isPending: boolean
 }
@@ -37,11 +42,12 @@ export const WithdrawModal = ({
   onClose,
   vaultStats,
   shareBalance,
+  loopEquity,
   onRequestRedeem,
   isPending,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { shareSymbol } = useActivePropellerVault()
+  const { symbol, shareSymbol } = useActivePropellerVault()
   const [amount, setAmount] = useState("")
   const [acknowledged, setAcknowledged] = useState(false)
 
@@ -53,31 +59,46 @@ export const WithdrawModal = ({
   }, [open])
 
   const inputNum = parseFloat(amount) || 0
-  // pETH → ETH at the current vault rate. The queue settles at the rate at
-  // settlement time; this is an indicative estimate.
-  const ethOut = inputNum * vaultStats.exchangeRate
+  // Shares → collateral at the current vault rate. `requestRedeem` snapshots
+  // the owed amount at request time, so this is what the request will lock in.
+  const assetOut = inputNum * vaultStats.exchangeRate
   const isBelowMin = inputNum > 0 && inputNum < vaultStats.minRedeem
   const overBalance = inputNum > shareBalance
 
+  // `requestRedeem` reverts on both of these — block the CTA instead of
+  // letting the user pay for a failing tx. A null equity read (loading or
+  // reverted) never blocks.
+  const blockedReason = vaultStats.paused
+    ? "paused"
+    : loopEquity === 0n
+      ? "noEquity"
+      : null
+
   const canSubmit =
-    inputNum > 0 && !isBelowMin && !overBalance && acknowledged && !isPending
+    inputNum > 0 &&
+    !isBelowMin &&
+    !overBalance &&
+    acknowledged &&
+    !isPending &&
+    !blockedReason
 
   const ctaLabel = (() => {
+    if (blockedReason) return t("withdraw.cta.unavailable")
     if (isPending) return t("withdraw.cta.pending")
-    if (overBalance) return t("withdraw.cta.insufficient")
+    if (overBalance) return t("withdraw.cta.insufficient", { shareSymbol })
     if (isBelowMin)
       return t("withdraw.cta.belowMin", {
-        symbol: shareSymbol,
+        shareSymbol,
         min: vaultStats.minRedeem,
       })
     return t("withdraw.cta.withdraw")
   })()
 
   const amountError = overBalance
-    ? t("withdraw.cta.insufficient")
+    ? t("withdraw.cta.insufficient", { shareSymbol })
     : isBelowMin
       ? t("withdraw.cta.belowMin", {
-          symbol: shareSymbol,
+          shareSymbol,
           min: vaultStats.minRedeem,
         })
       : undefined
@@ -94,7 +115,7 @@ export const WithdrawModal = ({
       onOpenChange={onClose}
       disableInteractOutside
     >
-      <ModalHeader title={t("withdraw.title")} />
+      <ModalHeader title={t("withdraw.title", { shareSymbol })} />
       <ModalBody noPadding>
         <Box px="xl">
           <AssetInput
@@ -104,12 +125,21 @@ export const WithdrawModal = ({
             modalDisabled
             value={amount}
             onChange={setAmount}
-            displayValue={t("common:currency", { value: ethOut })}
+            displayValue={t("common:currency", { value: assetOut })}
             maxBalance={shareBalance.toString()}
             maxButtonBalance={shareBalance.toString()}
             amountError={amountError}
           />
         </Box>
+
+        {blockedReason && (
+          <Box px="xl" pt="l">
+            <Alert
+              variant="warning"
+              title={t(`withdraw.blocked.${blockedReason}`)}
+            />
+          </Box>
+        )}
 
         <ModalContentDivider />
 
@@ -121,7 +151,7 @@ export const WithdrawModal = ({
               onCheckedChange={(c) => setAcknowledged(!!c)}
             />
             <Text fs="p5" onClick={() => setAcknowledged((v) => !v)}>
-              {t("withdraw.ack")}
+              {t("withdraw.ack", { symbol, shareSymbol })}
             </Text>
           </Flex>
         </Box>

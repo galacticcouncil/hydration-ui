@@ -3,12 +3,14 @@ import {
   Box,
   ExternalLink,
   Flex,
-  Grid,
   Icon,
   Paper,
+  ProgressBar,
+  ResponsiveScope,
   Separator,
   SummaryRow,
   Text,
+  ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -19,17 +21,20 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
 import {
-  usePropellerApy,
-  useSubLoopStats,
-} from "@/modules/strategies/propeller/hooks/useVaultReads"
+  SDetailsContainer,
+  SStatItem,
+} from "@/modules/strategies/propeller/components/StrategyDetailsCard.styled"
+import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { PROPELLER_RISK_PROFILE } from "@/modules/strategies/propeller/vaults"
+import { useAssetPrice } from "@/states/displayAsset"
 
 interface VaultStats {
+  /** vault size, denominated in the collateral */
   totalAssets: number
-  exchangeRate: number
-  apr: number
+  /** deposit ceiling, denominated in the collateral; 0 until the query loads */
+  tvlCap: number
 }
 
 interface Props {
@@ -39,15 +44,20 @@ interface Props {
 export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const vault = useActivePropellerVault()
-  // totalAssets is denominated in the collateral (the underlying); display directly.
-  const tvl = vaultStats.totalAssets
-  const { data: subLoop } = useSubLoopStats()
-  const healthFactor = subLoop?.healthFactor ?? null
-  const targetHf = subLoop?.targetHf ?? null
-  const leverage = subLoop?.leverage ?? null
+  const { price } = useAssetPrice(vault.assetId)
   // live leveraged carry (Kamino PRIME yield − HOLLAR borrow); null unless
   // positive — we never surface a 0% or negative APY.
   const apr = usePropellerApy()
+
+  const { totalAssets, tvlCap } = vaultStats
+  // totalAssets is denominated in the collateral (the underlying).
+  const tvlDisplay = totalAssets * Number(price || 0)
+  // The contract reverts when totalAssets + assets > tvlCap, so the headroom
+  // is exactly tvlCap − totalAssets. A cap of 0 is the pre-load default, not a
+  // vault with no room — hide the stat until it resolves.
+  const hasCap = tvlCap > 0
+  const remainingCapacity = Math.max(tvlCap - totalAssets, 0)
+  const remainingPct = hasCap ? (remainingCapacity / tvlCap) * 100 : 0
 
   return (
     <Paper>
@@ -58,128 +68,112 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
       </Box>
       <Separator />
 
-      <Flex justify="space-between" gap="l" mb="l" p="l" wrap>
-        <Box>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.tvl")}
-          </Text>
-          <Flex align="center" gap="s" mt="xs">
-            <PropellerLogo size="medium" />
-            <Text font="primary" fs="h6" fw={600} color={getToken("text.high")}>
-              {t("common:currency", {
-                value: tvl,
-                symbol: vault.symbol,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
-          </Flex>
-        </Box>
-        <Box>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.netApy")}
-          </Text>
-          <Text
-            font="primary"
-            fs="h6"
-            fw={600}
-            color={getToken(
-              apr === null ? "text.high" : "accents.success.emphasis",
-            )}
-            mt="xs"
-          >
-            {apr === null
-              ? "—"
-              : t("common:percent", {
-                  prefix: "+",
-                  value: apr,
-                  maximumFractionDigits: 2,
-                })}
-          </Text>
-        </Box>
-        <Box>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("strategy.healthFactor")}
-          </Text>
-          <Flex align="baseline" gap="xs" mt="xs">
-            <Text font="primary" fs="h6" fw={500} color={getToken("text.high")}>
-              {healthFactor === null
-                ? "—"
-                : t("common:number", {
-                    value: healthFactor,
-                    maximumFractionDigits: 2,
-                  })}
-            </Text>
-            {healthFactor !== null && targetHf !== null && (
-              <Text fs="p4" color={getToken("text.medium")}>
-                {"→ "}
-                {t("common:number", {
-                  value: targetHf,
-                  maximumFractionDigits: 2,
-                })}
+      <ResponsiveScope>
+        <SDetailsContainer>
+          <SStatItem>
+            <ValueStats
+              wrap
+              label={t("strategy.tvl")}
+              customValue={
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken("text.high")}
+                >
+                  {t("common:currency.compact", { value: tvlDisplay })}
+                </Text>
+              }
+            />
+          </SStatItem>
+
+          {hasCap && (
+            <SStatItem>
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("strategy.remainingCapacity")}
               </Text>
-            )}
-          </Flex>
-          {leverage !== null && (
-            <Text fs="p5" color={getToken("text.medium")} mt="xs">
-              {t("strategy.leverage", {
-                value: t("common:number", {
-                  value: leverage,
-                  maximumFractionDigits: 2,
-                }),
-              })}
-            </Text>
+              <Flex align="center" gap="s" mt="xs">
+                <AssetLogo id={vault.assetId} size="medium" />
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken("text.high")}
+                >
+                  {t("common:currency.compact", {
+                    value: remainingCapacity,
+                    symbol: vault.symbol,
+                    maximumFractionDigits: remainingCapacity > 100_000 ? 0 : 2,
+                  })}
+                </Text>
+              </Flex>
+              <Box mt="xs" sx={{ maxWidth: 200 }}>
+                <ProgressBar size="small" value={remainingPct} />
+              </Box>
+            </SStatItem>
           )}
-        </Box>
-      </Flex>
+
+          <SStatItem>
+            <ValueStats
+              wrap
+              label={t("strategy.netApy")}
+              customValue={
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken(
+                    apr === null ? "text.high" : "accents.success.emphasis",
+                  )}
+                >
+                  {apr === null
+                    ? "—"
+                    : t("common:percent", {
+                        prefix: "+",
+                        value: apr,
+                        maximumFractionDigits: 2,
+                      })}
+                </Text>
+              }
+            />
+          </SStatItem>
+
+          <SStatItem>
+            <ValueStats
+              wrap
+              label={t("strategy.riskProfile")}
+              customValue={
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken("text.high")}
+                >
+                  {t(`strategy.risk.${PROPELLER_RISK_PROFILE}`)}
+                </Text>
+              }
+            />
+          </SStatItem>
+        </SDetailsContainer>
+      </ResponsiveScope>
 
       <Separator />
 
-      <Grid columnGap="l" columnTemplate={["1fr", null, "1fr 1fr"]} p="l">
-        <Box>
-          <SummaryRow
-            label={t("strategy.collateralAssetLabel")}
-            content={
-              <Flex align="center" gap="xs">
-                <AssetLogo id={vault.assetId} size="small" />
-                <Text fs="p4" lh={1.5}>
-                  {vault.symbol}
-                </Text>
-              </Flex>
-            }
-          />
-          <Separator />
-        </Box>
-        <Box>
-          <SummaryRow
-            label={t("strategy.yieldCycle")}
-            content={
-              <Text fs="p4" lh={1.5}>
-                {t("strategy.yieldCycleValue")}
-              </Text>
-            }
-          />
-          <Separator />
-        </Box>
-        <Box>
-          <SummaryRow
-            label={t("strategy.contractAddress")}
-            content={
-              <Text fs="p4" lh={1.5}>
-                <ExternalLink
-                  href={subscan.account(
-                    HYDRATION_CHAIN_KEY,
-                    vault.vaultAddress,
-                  )}
-                >
-                  {shortenAccountAddress(vault.vaultAddress)}
-                  <Icon component={MoveUpRight} size="xs" />
-                </ExternalLink>
-              </Text>
-            }
-          />
-          <Separator />
-        </Box>
-      </Grid>
+      <Box p="l">
+        <SummaryRow
+          label={t("strategy.contractAddress")}
+          content={
+            <Text fs="p4" lh={1.5}>
+              <ExternalLink
+                href={subscan.account(HYDRATION_CHAIN_KEY, vault.vaultAddress)}
+              >
+                {shortenAccountAddress(vault.vaultAddress)}
+                <Icon component={MoveUpRight} size="xs" />
+              </ExternalLink>
+            </Text>
+          }
+        />
+      </Box>
     </Paper>
   )
 }

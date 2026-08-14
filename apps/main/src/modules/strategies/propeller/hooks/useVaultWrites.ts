@@ -100,7 +100,7 @@ function useVaultEvmCall() {
    * If the user isn't yet bound to their EVM mapping, prepends the bind tx
    * to the same batch so binding happens atomically with the first call.
    *
-   * Used by the deposit flow (ETH.approve → vault.deposit).
+   * Used by the deposit flow (collateral.approve → vault.deposit).
    */
   const submitBatch = useCallback(
     async (
@@ -165,10 +165,10 @@ function useVaultEvmCall() {
 }
 
 /**
- * Deposit ETH and end up holding pETH shares.
+ * Deposit the vault's collateral and end up holding its shares.
  *
- * Vault pulls ETH via ERC-4626 `deposit(assets, receiver)`, so we approve
- * the vault for the ETH amount (if needed) then call deposit. Both calls are
+ * Vault pulls the collateral via ERC-4626 `deposit(assets, receiver)`, so we
+ * approve the vault for that amount (if needed) then call deposit. Both calls are
  * bundled into a single substrate `Utility.batch_all`.
  */
 export function useDeposit() {
@@ -181,24 +181,24 @@ export function useDeposit() {
   const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
-    mutationFn: async (ethAmount: number) => {
-      const ethBig = parseUnits(ethAmount.toString(), decimals)
+    mutationFn: async (assetAmount: number) => {
+      const assetBig = parseUnits(assetAmount.toString(), decimals)
       const calls: BatchEvmCall[] = []
 
-      const ethAllowance = await evm.readContract({
+      const assetAllowance = await evm.readContract({
         address: assetAddress,
         abi: ERC20_ABI,
         functionName: "allowance",
         args: [evmAddress, vaultAddress],
       })
 
-      if (ethAllowance < ethBig) {
+      if (assetAllowance < assetBig) {
         calls.push({
           to: assetAddress,
           data: encodeFunctionData({
             abi: ERC20_ABI,
             functionName: "approve",
-            args: [vaultAddress, ethBig],
+            args: [vaultAddress, assetBig],
           }),
           abi: [...ERC20_ABI],
         })
@@ -209,13 +209,13 @@ export function useDeposit() {
         data: encodeFunctionData({
           abi: VAULT_ABI,
           functionName: "deposit",
-          args: [ethBig, evmAddress],
+          args: [assetBig, evmAddress],
         }),
         abi: [...VAULT_ABI],
       })
 
       const fmt = t("currency", {
-        value: ethAmount,
+        value: assetAmount,
         symbol,
         maximumFractionDigits: 4,
       })
@@ -228,23 +228,27 @@ export function useDeposit() {
 }
 
 /**
- * Request an async redemption of `shares` pETH back to ETH.
+ * Request an async redemption of `shares` back to the vault's collateral.
  *
  * `requestRedeem(shares, owner)` escrows the shares and appends a request to
  * the queue. The keeper later unwinds the loop and settles the request; the
- * user then calls `claim(requestId, receiver)` to collect their ETH.
+ * user then calls `claim(requestId, receiver)` to collect their collateral.
  */
 export function useRequestRedeem() {
   const { t } = useTranslation(["common"])
+  const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitTx } = useVaultEvmCall()
-  const { vaultAddress, shareSymbol } = useActivePropellerVault()
+  const { vaultAddress, assetId, shareSymbol } = useActivePropellerVault()
+  // Shares carry the collateral's scale, not a fixed 18 — CollateralVault has
+  // no decimals() override and mints 1:1 against assets on the first deposit.
+  const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
     mutationFn: (shareAmount: number) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseUnits(shareAmount.toString(), 18), evmAddress],
+        args: [parseUnits(shareAmount.toString(), decimals), evmAddress],
       })
 
       const fmt = t("currency", {
@@ -261,7 +265,7 @@ export function useRequestRedeem() {
 }
 
 /**
- * Claim a single settled redemption request — pays the owed ETH out to the
+ * Claim a single settled redemption request — pays the owed collateral out to the
  * caller's own address. `requestId` comes from the redemption queue read.
  */
 export function useClaim() {

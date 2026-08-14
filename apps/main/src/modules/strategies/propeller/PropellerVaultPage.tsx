@@ -17,6 +17,7 @@ import { WithdrawModal } from "@/modules/strategies/propeller/components/Withdra
 import { useRedemptionHistory } from "@/modules/strategies/propeller/hooks/useRedemptionHistory"
 import { useRedemptionQueue } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
 import {
+  useLoopEquity,
   usePropellerApy,
   useUserBalances,
   useVaultStats,
@@ -27,45 +28,28 @@ import {
   useRequestRedeem,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { PropellerVaultProvider } from "@/modules/strategies/propeller/PropellerVaultContext"
-import {
-  DEFAULT_PROPELLER_ASSET,
-  getPropellerVault,
-  type PropellerAsset,
-} from "@/modules/strategies/propeller/vaults"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/vaults"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-/**
- * The single shared Propeller subpage. All collateral vaults (ETH, tBTC, …) live
- * here; the active one is local state driven by the in-header collateral switcher
- * and supplied to every read/write hook via PropellerVaultProvider. The content
- * is keyed on `asset` so a switch cleanly remounts (resets transient UI state and
- * re-queries against the new vault).
- */
-export const PropellerVaultPage = () => {
+export const PropellerVaultPage = ({
+  vault,
+}: {
+  vault: PropellerVaultConfig
+}) => {
   const { featureFlags, isLoaded } = useRpcProvider()
-  const [asset, setAsset] = useState<PropellerAsset>(DEFAULT_PROPELLER_ASSET)
 
   if (isLoaded && !featureFlags.propellerEnabled) {
     return <Navigate to="/strategies" />
   }
 
   return (
-    <PropellerVaultProvider vault={getPropellerVault(asset)}>
-      <PropellerVaultContent
-        key={asset}
-        asset={asset}
-        onAssetChange={setAsset}
-      />
+    <PropellerVaultProvider vault={vault}>
+      <PropellerVaultContent />
     </PropellerVaultProvider>
   )
 }
 
-type ContentProps = {
-  asset: PropellerAsset
-  onAssetChange: (asset: PropellerAsset) => void
-}
-
-const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
+const PropellerVaultContent = () => {
   const { account } = useAccount()
   const [showRedeemed, setShowRedeemed] = useState(false)
   const [showWithdraw, setShowWithdraw] = useState(false)
@@ -80,6 +64,7 @@ const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
   const { data: balances } = useUserBalances(evmAddress)
   const { data: queueData } = useRedemptionQueue(evmAddress)
   const { data: historyData } = useRedemptionHistory(evmAddress)
+  const { data: loopEquity } = useLoopEquity()
 
   const depositMutation = useDeposit()
   const redeemMutation = useRequestRedeem()
@@ -98,7 +83,6 @@ const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
     tvlCap: 0,
     paused: false,
     depositsPaused: false,
-    minDeposit: 0,
     minRedeem: 0,
     apr: 0,
   }
@@ -118,13 +102,16 @@ const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
     .filter((e) => e.isUser)
     .map((e) => {
       const h = historyByReqId.get(e.requestId)
-      // The request stays active until claimed; settled collateral on an
-      // active request is what's claimable.
+      // The request stays active until fully claimed. Settlement happens in
+      // tranches, so a live request is pending (nothing unwound yet),
+      // partial (some of it unwound) or settled (all of it unwound).
       const state: WithdrawalRow["state"] = !e.active
         ? "claimed"
-        : e.collateralSettled > 0
+        : e.settledProgress >= 1
           ? "settled"
-          : "pending"
+          : e.settledProgress > 0
+            ? "partial"
+            : "pending"
       return {
         id: e.requestId,
         amountShares: e.shares,
@@ -135,7 +122,9 @@ const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
         requestedDate: h?.requestedAt ?? new Date(0),
         state,
         settledDate: h?.settledAt ?? undefined,
-        claimableEth: e.collateralSettled,
+        collateralOwed: e.collateralOwed,
+        collateralSettled: e.collateralSettled,
+        settledProgress: e.settledProgress,
       }
     })
 
@@ -158,7 +147,7 @@ const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
 
   return (
     <Stack gap="xxl">
-      <StrategyHeader asset={asset} onAssetChange={onAssetChange} />
+      <StrategyHeader />
 
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl" sx={{ order: [1, null, 0] }}>
@@ -197,6 +186,7 @@ const PropellerVaultContent = ({ asset, onAssetChange }: ContentProps) => {
         onClose={() => setShowWithdraw(false)}
         vaultStats={stats}
         shareBalance={userBalances.shares}
+        loopEquity={loopEquity ?? null}
         onRequestRedeem={(amount) => {
           redeemMutation.mutate(amount)
           setShowWithdraw(false)
