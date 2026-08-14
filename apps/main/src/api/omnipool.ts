@@ -1,3 +1,4 @@
+import { platformStatsQuery } from "@galacticcouncil/indexer/neckwork"
 import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -7,8 +8,9 @@ import type { SizedHex } from "polkadot-api"
 import { Binary, Enum } from "polkadot-api"
 import { useMemo } from "react"
 
-import { useSquidClient } from "@/api/provider"
+import { neckworkClient, useSquidClient } from "@/api/provider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 import { hubTokenQuery, omnipoolTokensQuery } from "./pools"
 
@@ -164,9 +166,22 @@ export const useOraclePrice = (
 
 export const useTotalOmnipoolLiquidity = () => {
   const squidClient = useSquidClient()
+  const neckworkEnabled = useNeckworkEnabled()
 
-  return useQuery({
-    ...platformTotalQuery(squidClient),
+  const { data: neckworkData, isLoading: isNeckworkLoading } = useQuery({
+    ...platformStatsQuery(neckworkClient),
+    enabled: neckworkEnabled,
     select: (data) => data.omnipoolTvlNorm,
   })
+
+  const { data: squidData, isLoading: isSquidLoading } = useQuery({
+    ...platformTotalQuery(squidClient),
+    enabled: !neckworkEnabled,
+    select: (data) => data.omnipoolTvlNorm,
+  })
+
+  return {
+    data: neckworkEnabled ? neckworkData : squidData,
+    isLoading: neckworkEnabled ? isNeckworkLoading : isSquidLoading,
+  }
 }
