@@ -1,17 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { getPageMeta } from "@/config/navigation"
-import { PropellerVaultPage } from "@/modules/strategies/propeller/PropellerVaultPage"
-
-// The single shared Propeller subpage — every collateral vault (ETH, tBTC, …)
-// is reachable here via the in-page collateral switcher (no per-asset route).
+// Back-compat: the shared Propeller subpage is gone — every collateral vault is
+// now its own strategy at /strategies/propeller-<asset>.
 export const Route = createFileRoute("/strategies/propeller/")({
-  component: PropellerVaultPage,
-  head: ({
-    match: {
-      context: { i18n },
-    },
-  }) => ({
-    meta: getPageMeta("strategiesPropeller", i18n.t),
-  }),
+  beforeLoad: () => {
+    throw redirect({ to: "/strategies" })
+  },
 })

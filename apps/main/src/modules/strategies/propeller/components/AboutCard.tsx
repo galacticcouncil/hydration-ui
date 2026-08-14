@@ -7,20 +7,28 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { Markdown } from "@/components/Markdown"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 export const AboutCard: React.FC<PaperProps> = (props) => {
-  const { t } = useTranslation("strategies")
+  const { t } = useTranslation(["strategies", "propeller"])
+  const { symbol, shareSymbol } = useActivePropellerVault()
+
   return (
     <Paper p="xl" {...props}>
       <SectionHeader
-        title={t("about.title", {
-          suffix: "Propeller",
+        title={t("strategies:about.title", {
+          suffix: t("propeller:strategy.name", { symbol }),
         })}
         as="h2"
         noTopPadding
       />
       <Separator mx="-xl" mb="xl" />
-      <Markdown id="propeller-vault" muted size="small" />
+      <Markdown
+        id="propeller-vault"
+        muted
+        size="small"
+        values={{ symbol, shareSymbol }}
+      />
     </Paper>
   )
 }
