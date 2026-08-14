@@ -24,14 +24,18 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 // keeper unwinds the loop. These are first-paint UI fallbacks; the live
 // numbers users care about (exchangeRate, queued shares) come from chain.
 const FALLBACK_APR = 0
-const FALLBACK_MIN_DEPOSIT = 0
 const FALLBACK_MIN_REDEEM = 0
 
 export function useVaultStats() {
   const { data: vault } = usePropellerVaultContract()
-  const { vaultAddress } = useActivePropellerVault()
+  const { getAssetWithFallback } = useAssets()
+  const { vaultAddress, assetId } = useActivePropellerVault()
+  // CollateralVault has no decimals() override — shares declare 18dp but are
+  // numerically scaled to the collateral (first mint = assets − DEAD_SHARES),
+  // so both asset and share amounts use the registry's collateral decimals.
+  const decimals = getAssetWithFallback(assetId).decimals
   return useQuery({
-    queryKey: ["propeller-vault-stats", vaultAddress],
+    queryKey: ["propeller-vault-stats", vaultAddress, assetId],
     enabled: !!vault,
     queryFn: async () => {
       if (!vault) throw new Error("Vault contract not found")
@@ -58,14 +62,15 @@ export function useVaultStats() {
       const queueLength = queueTail > queueHead ? queueTail - queueHead : 0n
 
       return {
-        totalAssets: Number(formatUnits(totalAssets, 18)),
-        totalSupply: Number(formatUnits(totalSupply, 18)),
+        totalAssets: Number(formatUnits(totalAssets, decimals)),
+        totalSupply: Number(formatUnits(totalSupply, decimals)),
+        // exchangeRate is a dimensionless WAD ratio, not an asset amount — it
+        // is always 1e18-scaled regardless of the collateral's decimals.
         exchangeRate: Number(formatUnits(exchangeRateWad, 18)),
         queueLength: Number(queueLength),
-        tvlCap: Number(formatUnits(tvlCap, 18)),
+        tvlCap: Number(formatUnits(tvlCap, decimals)),
         paused,
         depositsPaused,
-        minDeposit: FALLBACK_MIN_DEPOSIT,
         minRedeem: FALLBACK_MIN_REDEEM,
         apr: FALLBACK_APR,
       }
@@ -81,7 +86,7 @@ export function useVaultStats() {
  */
 export function useSubLoopStats(override?: PropellerVaultConfig) {
   const { evm } = useRpcProvider()
-  const { vaultAddress } = useActivePropellerVault(override)
+  const { vaultAddress, assetAddress } = useActivePropellerVault(override)
   return useQuery({
     queryKey: ["propeller-subloop-stats", vaultAddress],
     queryFn: async () => {
@@ -113,7 +118,7 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         totalEquity,
         targetHf,
         account,
-        vaultAccount,
+        collateralConfig,
         hollarRes,
       ] = await Promise.all([
         safe("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
@@ -122,8 +127,8 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         safe("Pool.getUserAccountData(SubLoop)", () =>
           pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
         ),
-        safe("Pool.getUserAccountData(Vault)", () =>
-          pool.read.getUserAccountData([vaultAddress]),
+        safe("Pool.getConfiguration(collateral)", () =>
+          pool.read.getConfiguration([assetAddress]),
         ),
         safe("Pool.getReserveData(HOLLAR)", () =>
           pool.read.getReserveData([HOLLAR_ADDRESS]),
@@ -131,17 +136,20 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
       ])
 
       // loopLeverage = the SHARED SubLoop's collateral / equity — the same for
-      // every vault, since one SubLoop backs them all. mainLtv = THIS vault's
-      // own Main-leg LTV (its HOLLAR debt / its collateral). The two must be
-      // kept separate: attributing the loop's HOLLAR debt per-vault by the
-      // aggregate (the old borrowExposure) penalised the larger/higher-LTV vault
-      // as pure cost while crediting only the shared loop benefit — so a bigger
-      // tBTC position showed a LOWER APY than ETH, backwards. The real per-deposit
-      // carry is mainLtv·loopLeverage·(primeYield − borrowRate): set by the
-      // vault's own LTV, not its dollar size. borrowRate = HOLLAR variable borrow
-      // rate (ray, 1e27) as a fraction.
+      // every vault, since one SubLoop backs them all. maxLtv = the LTV THIS
+      // vault's collateral is borrowed at, read from the reserve configuration
+      // bitmap (bits 0–15, in bps).
+      //
+      // It must NOT come from getUserAccountData(vault): the vault supplies the
+      // synthetic (psHOLLAR) as extra Aave collateral, sized debt/LT·1.005, so
+      // that call's totalCollateralBase is inflated by 1 + 1.02·ltv (~1.34x
+      // observed on lark-4, ~1.77x at 75% LTV) and the derived LTV understates
+      // the real one by the same factor. The contract itself nets the synthetic
+      // out in rebalance() (ethValue8 = collBase8 − synthValue8).
+      //
+      // borrowRate = HOLLAR variable borrow rate (ray, 1e27) as a fraction.
       let loopLeverage: number | null = null
-      let mainLtv: number | null = null
+      let maxLtv: number | null = null
       let borrowRate: number | null = null
       if (account) {
         const loopColl = account[0]
@@ -150,10 +158,9 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         if (loopEquity > 0n)
           loopLeverage = Number(loopColl) / Number(loopEquity)
       }
-      if (vaultAccount) {
-        const vaultColl = vaultAccount[0] // this vault's collateral (base ccy)
-        const mainDebt = vaultAccount[1] // this vault's HOLLAR debt
-        if (vaultColl > 0n) mainLtv = Number(mainDebt) / Number(vaultColl)
+      if (collateralConfig !== null) {
+        const ltvBps = Number(collateralConfig & 0xffffn)
+        if (ltvBps > 0) maxLtv = ltvBps / 1e4
       }
       if (hollarRes) {
         borrowRate = Number(hollarRes.currentVariableBorrowRate) / 1e27
@@ -166,7 +173,7 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         totalEquity:
           totalEquity === null ? null : Number(formatUnits(totalEquity, 18)),
         leverage: loopLeverage,
-        mainLtv,
+        maxLtv,
         borrowRate,
       }
     },
@@ -175,15 +182,15 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
 }
 
 /**
- * Live net APY on the deposit = mainLtv·loopLeverage·(primeYield − borrowRate).
+ * Live net APY on the deposit = maxLtv·loopLeverage·(primeYield − borrowRate).
  *
- * Derivation: a deposit of collateral C borrows mainLtv·C of HOLLAR (the Main
+ * Derivation: a deposit of collateral C borrows maxLtv·C of HOLLAR (the Main
  * leg), which seeds the shared SubLoop and is levered loopLeverage×. Per unit of
- * C the loop holds mainLtv·loopLeverage of PRIME (earning primeYield) and owes
+ * C the loop holds maxLtv·loopLeverage of PRIME (earning primeYield) and owes
  * the same notional of HOLLAR (costing borrowRate), so the net carry on the
- * DEPOSIT is mainLtv·loopLeverage·(primeYield − borrowRate). This is the honest
- * yield-on-collateral; it rises with the vault's own LTV (so tBTC at 80% > ETH at
- * 75%) and is independent of position size. PRIME yield = the money market's
+ * DEPOSIT is maxLtv·loopLeverage·(primeYield − borrowRate). This is the honest
+ * yield-on-collateral; it rises with the collateral's LTV (so tBTC at 80% > ETH
+ * at 75%) and is independent of position size. PRIME yield = the money market's
  * total PRIME supply APY (Aave base + Kamino + farms). Returns null — never 0 or
  * negative — when an input is missing or the carry isn't positive.
  */
@@ -197,21 +204,53 @@ export function usePropellerApy(
   )?.totalSupplyApy
 
   const loopLeverage = subLoop?.leverage ?? null
-  const mainLtv = subLoop?.mainLtv ?? null
+  const maxLtv = subLoop?.maxLtv ?? null
   const borrowRate = subLoop?.borrowRate ?? null
   if (
     isNullish(loopLeverage) ||
-    isNullish(mainLtv) ||
+    isNullish(maxLtv) ||
     isNullish(borrowRate) ||
     isNullish(primeSupplyApy)
   ) {
     return null
   }
   const primeYield = primeSupplyApy / 100 // percent → fraction
-  const apr = mainLtv * loopLeverage * (primeYield - borrowRate)
+  const apr = maxLtv * loopLeverage * (primeYield - borrowRate)
   // return a PERCENT number (e.g. 9.4), the form `common:percent` expects
   // (it divides by 100 internally). null — never 0/negative — so the UI hides it.
   return apr > 0 ? apr * 100 : null
+}
+
+/**
+ * This vault's share of the shared SubLoop's equity, in WAD.
+ *
+ * `requestRedeem` is guarded by `if (yieldSource.equityOf(vault) == 0) revert
+ * NoLoopEquity()` — requesting in that state used to orphan the request, so the
+ * withdraw CTA has to be blocked upfront rather than let the tx revert.
+ * Returns `null` while loading or if the read reverts, which never blocks.
+ */
+export function useLoopEquity() {
+  const { evm } = useRpcProvider()
+  const { vaultAddress } = useActivePropellerVault()
+  return useQuery({
+    queryKey: ["propeller-loop-equity", vaultAddress],
+    queryFn: async () => {
+      const subLoop = getContract({
+        address: SUBLOOP_ADDRESS,
+        abi: SUBLOOP_ABI,
+        client: evm,
+      })
+      try {
+        return await subLoop.read.equityOf([vaultAddress])
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.warn("[propeller-vault] SubLoop.equityOf reverted", err)
+        }
+        return null
+      }
+    },
+    refetchInterval: 30_000,
+  })
 }
 
 export function useUserBalances(evmAddress: Hex | undefined) {
