@@ -2,6 +2,8 @@ import {
   CANDLE_BUCKETS,
   CandleBucket,
   invertCandle,
+  liveCandle as toLiveCandle,
+  PairCandle,
   pairCandlesInfiniteQuery,
 } from "@galacticcouncil/indexer/neckwork"
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
@@ -12,19 +14,24 @@ import {
   Flex,
   Icon,
   Paper,
-  Separator,
   Text,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { CandlestickChart, LineChart } from "lucide-react"
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/provider"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { ChartState } from "@/components/ChartState"
 import {
   ChartTimeRange,
@@ -36,6 +43,7 @@ import { CandleChart } from "@/modules/trade/swap/components/TradeChartNeckwork/
 import { TRADE_CHART_TYPES } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 const intervalOptions = CANDLE_BUCKETS.map<
   ChartTimeRangeOptionType<CandleBucket>
@@ -63,6 +71,18 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
 
   const [isInverted, setIsInverted] = useState(false)
 
+  // Display orientation: buy/sell (assetOut/assetIn), or flipped via invert.
+  // Priced as how much quote-asset one base-asset costs.
+  const baseAssetId = isInverted ? assetIn : assetOut
+  const quoteAssetId = isInverted ? assetOut : assetIn
+
+  // Stable fetch order (like Squid) so swap/invert don't refetch — only the
+  // display orientation changes. Neckwork returns assetIn quoted in assetOut.
+  const isFetchAligned = Number(quoteAssetId) >= Number(baseAssetId)
+  const fetchAssetIn = isFetchAligned ? baseAssetId : quoteAssetId
+  const fetchAssetOut = isFetchAligned ? quoteAssetId : baseAssetId
+  const needsInvert = !isFetchAligned
+
   const {
     data,
     isLoading,
@@ -71,33 +91,82 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     hasNextPage,
     isFetchingNextPage,
     isFetching,
+    isPlaceholderData,
     fetchNextPage,
   } = useInfiniteQuery({
     ...pairCandlesInfiniteQuery(neckworkClient, {
-      assetIn,
-      assetOut,
+      assetIn: fetchAssetIn,
+      assetOut: fetchAssetOut,
       bucket: interval,
     }),
     placeholderData: keepPreviousData,
   })
 
-  // refetch triggered by changing assetIn/assetOut/interval, not by panning
+  // refetch triggered by changing assets/interval, not by panning or invert
   const isRefetching = isFetching && !isFetchingNextPage
 
-  // pages arrive newest-first; the chart wants a single ascending series
+  // pages arrive newest-first; invert locally when display ≠ fetch orientation
   const candles = useMemo(() => {
-    const ascending = (data?.pages ?? []).toReversed().flat()
-    return isInverted ? ascending.map(invertCandle) : ascending
-  }, [data, isInverted])
+    const series = (data?.pages ?? []).toReversed().flat()
+    return needsInvert ? series.map(invertCandle) : series
+  }, [data, needsInvert])
+
+  // spot price is the live feed — refetched every block via the @block key
+  const rpc = useRpcProvider()
+  const { data: spot } = useQuery(
+    spotPriceQuery(rpc, baseAssetId, quoteAssetId),
+  )
+  const spotPrice = Number(spot?.spotPrice)
+
+  const resetKey = `${baseAssetId}-${quoteAssetId}-${interval}`
+  const liveRef = useRef<{ resetKey: string; candle: PairCandle } | null>(null)
+
+  const live = useMemo(() => {
+    // keepPreviousData leaves the prior pair's candles mounted while the new
+    // query loads; spot already tracks the new pair. Seeding live OHLC from
+    // that mismatch (e.g. HDX ~0.01 open + USDT ~1 close) draws a candle to 0.
+    if (isPlaceholderData) {
+      liveRef.current = null
+      return null
+    }
+
+    const last = candles.at(-1)
+    if (!last || !spotPrice || !isFinite(spotPrice)) return null
+
+    // seed from the running live candle so high/low accumulate across ticks and
+    // each new bucket opens at the previous close — the API candles don't
+    // refetch while mounted, so they fall behind by one or more buckets
+    const running = liveRef.current
+    const sameSeries =
+      running?.resetKey === resetKey && running.candle.time >= last.time
+    // heal a live candle poisoned by a prior placeholder tick once real
+    // series data arrives (low/high stuck on the previous pair's price)
+    const consistentWithTip =
+      !!running &&
+      last.close > 0 &&
+      running.candle.low > last.close * 0.5 &&
+      running.candle.high < last.close * 2
+    const seed = sameSeries && consistentWithTip ? running.candle : last
+
+    const candle = toLiveCandle(seed, spotPrice, interval)
+    liveRef.current = { resetKey, candle }
+
+    return candle
+  }, [candles, spotPrice, interval, resetKey, isPlaceholderData])
+
+  const prices = useMemo(() => {
+    if (!live) return candles
+
+    return candles.at(-1)?.time === live.time
+      ? candles.with(-1, live)
+      : [...candles, live]
+  }, [candles, live])
 
   const onReachStart = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   const isEmpty = isSuccess && !candles.length
-
-  const baseAssetId = isInverted ? assetOut : assetIn
-  const quoteAssetId = isInverted ? assetIn : assetOut
 
   const {
     onCrosshairMove,
@@ -109,8 +178,9 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     formattedVolumePrice,
     shouldShowValues,
     isLoadingValues,
+    isLiveValue,
   } = useTradeChartValues({
-    prices: candles,
+    prices,
     priceAssetId: quoteAssetId,
     isEmpty,
     isError,
@@ -123,9 +193,11 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   const quoteMeta = getAssetWithFallback(quoteAssetId)
 
   const chartValue = shouldShowValues ? (
-    <Text fs={["p3", "p1"]} fw={600}>
+    <Text fs={["p3", "p1"]} fw={600} fontVariantNumeric="tabular-nums">
       <AnimatedValue
+        key={`${baseAssetId}-${quoteAssetId}`}
         value={value}
+        valueFlash={isLiveValue}
         format={(value) => t("currency", { value, symbol: quoteMeta.symbol })}
       />
     </Text>
@@ -134,35 +206,42 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   const formatPrice = (price: number) => t("number", { value: price })
 
   const chartDisplayValue = shouldShowValues ? (
-    <Box>
+    <Box display={["none", null, null, null, "block"]}>
       <Flex gap="s">
-        <Text fs="p5" fontVariantNumeric="tabular-nums">
+        <Text fs="p6" fontVariantNumeric="tabular-nums" whiteSpace="nowrap">
           <Text as="span" color={getToken("text.low")}>
             O
           </Text>{" "}
           {formatPrice(open)}
         </Text>
-        <Text fs="p5" fontVariantNumeric="tabular-nums">
+        <Text fs="p6" fontVariantNumeric="tabular-nums" whiteSpace="nowrap">
           <Text as="span" color={getToken("text.low")}>
             H
           </Text>{" "}
           {formatPrice(high)}
         </Text>
-        <Text fs="p5" fontVariantNumeric="tabular-nums">
+        <Text fs="p6" fontVariantNumeric="tabular-nums" whiteSpace="nowrap">
           <Text as="span" color={getToken("text.low")}>
             L
           </Text>{" "}
           {formatPrice(low)}
         </Text>
-        <Text fs="p5" fontVariantNumeric="tabular-nums">
+        <Text fs="p6" fontVariantNumeric="tabular-nums" whiteSpace="nowrap">
           <Text as="span" color={getToken("text.low")}>
             C
           </Text>{" "}
           {formatPrice(value)}
         </Text>
       </Flex>
-      <Text fs="p5" visibility={volume > 0 ? "visible" : "hidden"}>
-        {t("vol")}: {formattedVolumePrice}
+      <Text
+        fs="p6"
+        visibility={volume > 0 ? "visible" : "hidden"}
+        whiteSpace="nowrap"
+      >
+        <Text as="span" color={getToken("text.low")} transform="uppercase">
+          {t("vol")}
+        </Text>{" "}
+        {formattedVolumePrice}
       </Text>
     </Box>
   ) : undefined
@@ -177,47 +256,50 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
           isLoading={shouldShowValues && isLoadingValues}
         />
         <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <SChartInvertButton
-            size="small"
-            variant="tertiary"
-            outline
-            onClick={() => setIsInverted((prev) => !prev)}
-          >
-            <Icon component={ArrowLeftRight} size="m" />
-            {baseMeta.symbol}/{quoteMeta.symbol}
-          </SChartInvertButton>
-          <ToggleGroup
-            type="single"
-            size="small"
-            value={chartType}
-            onValueChange={(value) =>
-              value &&
-              navigate({
-                to: ".",
-                search: { ...search, chartType: value },
-                resetScroll: false,
-              })
-            }
-          >
-            {TRADE_CHART_TYPES.map((type) => (
-              <ToggleGroupItem
-                key={type}
-                value={type}
-                aria-label={t(`chart.chartType.${type}`)}
-              >
-                <Icon component={chartTypeIcons[type]} size="m" />
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-          <Separator
-            orientation="vertical"
-            mx="base"
-            sx={{
-              height: "l",
-              mt: "xs",
-              display: ["none", null, null, null, "block"],
-            }}
-          />
+          <Flex align="center" gap="s" ml="auto">
+            <SChartInvertButton
+              size="small"
+              variant="tertiary"
+              outline
+              onClick={() => setIsInverted((prev) => !prev)}
+            >
+              <Icon component={ArrowLeftRight} size="m" />
+              {baseMeta.symbol}/{quoteMeta.symbol}
+            </SChartInvertButton>
+            <ToggleGroup
+              type="single"
+              size="small"
+              value={chartType}
+              onValueChange={(value) =>
+                value &&
+                navigate({
+                  to: ".",
+                  search: { ...search, chartType: value },
+                  resetScroll: false,
+                })
+              }
+            >
+              {TRADE_CHART_TYPES.map((type) => (
+                <Tooltip
+                  key={type}
+                  text={t(`chart.chartType.${type}`)}
+                  size="small"
+                  asChild
+                  side="top"
+                >
+                  <Box as="span" sx={{ display: "flex" }}>
+                    <ToggleGroupItem
+                      value={type}
+                      aria-label={t(`chart.chartType.${type}`)}
+                    >
+                      <Icon component={chartTypeIcons[type]} size="s" />
+                    </ToggleGroupItem>
+                  </Box>
+                </Tooltip>
+              ))}
+            </ToggleGroup>
+          </Flex>
+
           <ChartTimeRange
             sx={{ ml: "auto" }}
             options={intervalOptions}
@@ -242,8 +324,9 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
           <CandleChart
             height={height}
             candles={candles}
+            liveCandle={live}
             type={chartType}
-            resetKey={`${assetIn}-${assetOut}-${interval}`}
+            resetKey={resetKey}
             isRefetching={isRefetching}
             onCrosshairMove={onCrosshairMove}
             onReachStart={onReachStart}

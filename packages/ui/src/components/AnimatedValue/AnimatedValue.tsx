@@ -1,16 +1,56 @@
 import Big from "big.js"
 import { useEffect, useRef, useState } from "react"
 
+import {
+  FlashDirection,
+  SFlashValue,
+} from "@/components/AnimatedValue/AnimatedValue.styled"
+
+const useValueFlash = (value: number, enabled: boolean) => {
+  const previous = useRef<number | null>(null)
+  const [flash, setFlash] = useState<{
+    direction: FlashDirection
+    tick: number
+  }>({ direction: null, tick: 0 })
+
+  useEffect(() => {
+    if (!enabled) {
+      previous.current = null
+      setFlash((current) =>
+        current.direction === null
+          ? current
+          : { direction: null, tick: current.tick },
+      )
+      return
+    }
+
+    const prev = previous.current
+    previous.current = value
+
+    if (prev === null || prev === value) return
+
+    setFlash(({ tick }) => ({
+      direction: value > prev ? "up" : "down",
+      tick: tick + 1,
+    }))
+  }, [enabled, value])
+
+  return flash
+}
+
 export const AnimatedValue = ({
   value,
   format,
-  duration = 300,
+  duration = 500,
+  valueFlash = false,
 }: {
   value: number
   format: (value: number) => string
   duration?: number
+  valueFlash?: boolean
 }) => {
   const [displayValue, setDisplayValue] = useState(value)
+  const { direction, tick } = useValueFlash(value, valueFlash)
   const startTime = useRef<number | null>(null)
   const currentValue = useRef(value)
   const endValue = useRef(value)
@@ -46,5 +86,11 @@ export const AnimatedValue = ({
     return () => cancelAnimationFrame(animationFrameId)
   }, [duration, value])
 
-  return <>{format(displayValue)}</>
+  if (!valueFlash) return <>{format(displayValue)}</>
+
+  return (
+    <SFlashValue key={tick} direction={direction} duration={duration * 2}>
+      {format(displayValue)}
+    </SFlashValue>
+  )
 }

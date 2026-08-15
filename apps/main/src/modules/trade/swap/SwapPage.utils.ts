@@ -5,7 +5,6 @@ import { funnel, last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 
-/** Optional open/high/low, populated only by candlestick charts. */
 type CrosshairData = BaselineChartData & {
   open?: number
   high?: number
@@ -44,8 +43,8 @@ export const useTradeChartValues = ({
             setCrosshair(nextCrosshair)
           },
           {
-            minGapMs: 200,
-            triggerAt: "start",
+            minGapMs: 150,
+            triggerAt: "both",
             reducer: (_, next: CrosshairData | null) => next,
           },
         ),
@@ -93,5 +92,6 @@ export const useTradeChartValues = ({
     formattedVolumePrice,
     shouldShowValues,
     isLoadingValues,
+    isLiveValue: crosshair === null,
   }
 }

@@ -83,6 +83,18 @@ const scrollOptions = (isMobile: boolean) =>
       }
     : {}
 
+const tradeCrosshair = (theme: ThemeProps) => {
+  const base = crosshair(theme)
+  return {
+    ...base,
+    horzLine: {
+      ...base.horzLine,
+      labelVisible: true,
+      labelBackgroundColor: theme.controls.dim.base,
+    },
+  }
+}
+
 const getPriceFormat = (
   candles: ReadonlyArray<PairCandle>,
 ): Partial<PriceFormat> | undefined => {
@@ -109,10 +121,9 @@ type Series = {
 type CandleChartProps = {
   readonly height: number
   readonly candles: ReadonlyArray<PairCandle>
+  readonly liveCandle: PairCandle | null
   readonly type: TradeChartType
-  /** Changing this discards the viewport and jumps back to the newest candles. */
   readonly resetKey: string
-  /** True while new candles are being fetched for changed params (not while panning). */
   readonly isRefetching: boolean
   readonly onCrosshairMove: (data: OhlcCrosshairData | null) => void
   readonly onReachStart: () => void
@@ -121,6 +132,7 @@ type CandleChartProps = {
 export const CandleChart: React.FC<CandleChartProps> = ({
   height,
   candles,
+  liveCandle,
   type,
   resetKey,
   isRefetching,
@@ -164,10 +176,8 @@ export const CandleChart: React.FC<CandleChartProps> = ({
       rightPriceScale,
       leftPriceScale,
       grid,
-      // the shared config pins both edges; panning past the left edge is how
-      // older pages get requested here
-      timeScale: { ...timeScale, fixLeftEdge: false, fixRightEdge: false },
-      crosshair: crosshair(theme),
+      timeScale: { ...timeScale, fixLeftEdge: false, fixRightEdge: true },
+      crosshair: tradeCrosshair(theme),
       ...scrollOptions(mobile),
     })
 
@@ -263,7 +273,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({
 
     chart.applyOptions({
       layout: layout(themeProps, uiScale),
-      crosshair: crosshair(themeProps),
+      crosshair: tradeCrosshair(themeProps),
       ...scrollOptions(isMobile),
     })
     series.candlestick.applyOptions(candlestickColors(themeProps))
@@ -330,6 +340,22 @@ export const CandleChart: React.FC<CandleChartProps> = ({
 
     appliedRef.current = { resetKey, firstTime: candles[0]?.time ?? null }
   }, [candles, resetKey])
+
+  useEffect(() => {
+    const series = seriesRef.current
+    if (!series || !liveCandle) return
+
+    const time = toTime(liveCandle)
+
+    series.candlestick.update({
+      time,
+      open: liveCandle.open,
+      high: liveCandle.high,
+      low: liveCandle.low,
+      close: liveCandle.close,
+    })
+    series.baseline.update({ time, value: liveCandle.close })
+  }, [liveCandle])
 
   return (
     <Box

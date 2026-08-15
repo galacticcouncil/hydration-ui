@@ -55,6 +55,39 @@ export const invertCandle = (candle: PairCandle): PairCandle => ({
   volume: candle.volume,
 })
 
+/**
+ * Advance the in-progress candle. `previous` must be the most recent candle
+ * known — the running live one when there is one, otherwise the newest from
+ * the API. Passing the API candle on every tick makes high/low static and
+ * every new bucket a copy of the last fetched one.
+ */
+export const liveCandle = (
+  previous: PairCandle,
+  price: number,
+  bucket: CandleBucket,
+  nowMs: number = Date.now(),
+): PairCandle => {
+  const bucketMs = CANDLE_BUCKET_MS[bucket]
+  const openTime = Math.floor(nowMs / bucketMs) * (bucketMs / 1000)
+
+  if (previous.time >= openTime)
+    return {
+      ...previous,
+      high: Math.max(previous.high, price),
+      low: Math.min(previous.low, price),
+      close: price,
+    }
+
+  return {
+    time: openTime,
+    open: previous.close,
+    high: Math.max(previous.close, price),
+    low: Math.min(previous.close, price),
+    close: price,
+    volume: 0,
+  }
+}
+
 type PairCandlesArgs = {
   assetIn: string
   assetOut: string

@@ -11,15 +11,15 @@ import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeade
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
+//import { useNeckworkEnabled } from "@/states/neckwork"
 import { SSwapFormContainer } from "./SwapPage.styled"
 
 export const TRADE_CHART_DESKTOP_HEIGHT = 460
 
 export const SwapPageDesktop = () => {
   const { status } = useActiveIndexerStatus()
-  const isNeckworkEnabled = useNeckworkEnabled()
+  const isNeckworkEnabled = false
   const isUsingLegacyData =
     status === DataProviderStatus.DEGRADED ||
     status === DataProviderStatus.OFFLINE

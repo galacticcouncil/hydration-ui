@@ -12,6 +12,7 @@
     "fees.config.assetReserve": "Asset Reserve",
     "fees.config.borrowApr": "Borrow APR",
     "fees.config.hsmRevenue": "HSM Revenue",
+    "fees.chart.ariaLabel": "Protocol revenue and fees over time, by stream",
     "fees.chart.mode.protocol": "Revenue",
     "fees.chart.mode.total": "Fees",
     "fees.chart.timeRange.description.1W": "Last 7 days",
