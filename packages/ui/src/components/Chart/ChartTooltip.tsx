@@ -1,186 +1,136 @@
-import React from "react"
+import { ChartValue } from "@tanstack/charts"
 import {
-  DefaultTooltipContentProps,
-  Tooltip,
-  TooltipContentProps,
-} from "recharts"
-import {
-  NameType,
-  ValueType,
-} from "recharts/types/component/DefaultTooltipContent"
+  ChartPoint,
+  ChartTooltipBodyRenderContext,
+} from "@tanstack/charts/react/tooltip"
+import { ReactNode } from "react"
 
-import { Flex, Grid, Text } from "@/components"
-import { ChartCrosshair, useChart } from "@/components/Chart"
+import { Flex, Grid, Stack, Text } from "@/components"
+import { ChartCrosshair } from "@/components/Chart/ChartCrosshair"
 import { STooltipContainer } from "@/components/Chart/ChartTooltip.styled"
 import {
   dateFormatter,
-  getColorSet,
   timeFormatter,
-} from "@/components/Chart/utils"
-import { useTheme } from "@/theme"
+} from "@/components/Chart/utils/formatters"
 import { getToken } from "@/utils"
 
-export type RechartsTooltipProps = React.ComponentProps<typeof Tooltip> &
-  Omit<DefaultTooltipContentProps<ValueType, NameType>, "accessibilityLayer">
+type ChartTooltipBodyProps<
+  TDatum,
+  TXValue extends ChartValue,
+  TYValue extends ChartValue,
+> = Pick<ChartTooltipBodyRenderContext<TDatum, TXValue, TYValue>, "points">
 
-type CoordinateProps = Pick<
-  TooltipContentProps<ValueType, NameType>,
-  "coordinate"
->
-
-const ChartTooltipLegendLabel = ({
-  payload = [],
-  labelFormatter,
-}: RechartsTooltipProps) => {
-  const { config } = useChart()
-
-  if (!payload.length) return null
-
-  const [item] = payload
-  const value = item.payload[config.xAxisKey]
-
-  const formattedValue = labelFormatter ? labelFormatter(value, payload) : value
-
-  return (
-    <Flex justify="space-between">
-      {config.seriesLabel && (
-        <Text fs="p3" fw={500}>
-          {config.seriesLabel}
-        </Text>
-      )}
-      <Text fs="p3" fw={500} align="left">
-        {formattedValue}
-      </Text>
-    </Flex>
-  )
+export type ChartLegendTooltipBodyProps<
+  TDatum = unknown,
+  TXValue extends ChartValue = ChartValue,
+  TYValue extends ChartValue = ChartValue,
+> = ChartTooltipBodyProps<TDatum, TXValue, TYValue> & {
+  label?: ReactNode
+  formatLabel?: (value: TXValue) => ReactNode
+  formatSeriesLabel?: (point: ChartPoint<TDatum, TXValue, TYValue>) => ReactNode
+  formatValue?: (point: ChartPoint<TDatum, TXValue, TYValue>) => ReactNode
 }
 
-export const ChartTooltipLegendType = ({
-  active,
-  payload,
-  labelFormatter,
-  formatter,
-}: RechartsTooltipProps) => {
-  const { config } = useChart()
-  const { themeProps: theme } = useTheme()
+export const ChartLegendTooltipBody = <
+  TDatum,
+  TXValue extends ChartValue = ChartValue,
+  TYValue extends ChartValue = ChartValue,
+>({
+  points,
+  label,
+  formatLabel,
+  formatSeriesLabel,
+  formatValue,
+}: ChartLegendTooltipBodyProps<TDatum, TXValue, TYValue>) => {
+  const [first] = points
 
-  if (!active || !payload?.length) {
-    return null
-  }
+  if (!first) return null
+
+  const heading = formatLabel ? formatLabel(first.xValue) : String(first.xValue)
 
   return (
     <STooltipContainer>
-      <ChartTooltipLegendLabel
-        payload={payload}
-        labelFormatter={labelFormatter}
-      />
-      <Grid gap="s">
-        {payload.map((item, index) => {
-          const key = `${item.name || item.dataKey || "value"}`
-          const itemConfig = config.series.find((s) => s.key === key)
-
-          const colors = getColorSet(itemConfig?.color, theme.details.chart)
-
-          const formatted =
-            formatter && item?.value !== undefined && item.name
-              ? formatter(item.value, item.name, item, index, item.payload)
-              : item.value
-
-          return (
-            <Flex
-              gap="base"
-              align="center"
-              key={
-                typeof item.dataKey === "function"
-                  ? item.dataKey(index)
-                  : item.dataKey
-              }
-            >
-              <Flex
-                sx={{
-                  background: colors.primary,
-                  flexShrink: 0,
-                  size: 10,
-                  borderRadius: 2,
-                }}
-              />
-              <Flex justify="space-between" gap="xl" sx={{ flex: 1 }}>
-                {itemConfig?.label && (
-                  <Text color={getToken("text.medium")} fs="p3" fw={500} lh={1}>
-                    {itemConfig.label}
-                  </Text>
-                )}
-                <Text
-                  color={getToken("text.high")}
-                  fs="p3"
-                  fw={500}
-                  lh={1}
-                  align="end"
-                  sx={{
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {formatted}
-                </Text>
-              </Flex>
-            </Flex>
-          )
-        })}
-      </Grid>
+      {(label || heading) && (
+        <Flex justify="space-between">
+          {label && (
+            <Text fs="p3" fw={600}>
+              {label}
+            </Text>
+          )}
+          {heading && (
+            <Text fs="p3" fw={600} align="left">
+              {heading}
+            </Text>
+          )}
+        </Flex>
+      )}
+      <Stack gap="base">
+        {points.map((point) => (
+          <Flex gap="s" align="center" key={point.key}>
+            <Flex bg={point.color} size="2xs" borderRadius="full" />
+            <Grid columns={2} justify="space-between" gap="xl" sx={{ flex: 1 }}>
+              <Text
+                color={getToken("text.medium")}
+                fs="p5"
+                fw={500}
+                lh={1}
+                whiteSpace="nowrap"
+              >
+                {formatSeriesLabel
+                  ? formatSeriesLabel(point)
+                  : point.groupLabel}
+              </Text>
+              <Text
+                color={getToken("text.high")}
+                fs="p4"
+                fw={600}
+                lh={1}
+                align="end"
+                fontVariantNumeric="tabular-nums"
+              >
+                {formatValue ? formatValue(point) : String(point.yValue)}
+              </Text>
+            </Grid>
+          </Flex>
+        ))}
+      </Stack>
     </STooltipContainer>
   )
 }
 
-export const ChartTooltipTimeType = ({
-  active,
-  payload,
-  coordinate,
-}: RechartsTooltipProps & CoordinateProps) => {
-  const { config } = useChart()
+export type ChartTimeTooltipBodyProps<
+  TDatum = unknown,
+  TXValue extends ChartValue = ChartValue,
+  TYValue extends ChartValue = ChartValue,
+> = ChartTooltipBodyProps<TDatum, TXValue, TYValue>
 
-  if (!active || !payload?.length || !coordinate) {
-    return null
-  }
+export const ChartTimeTooltipBody = <
+  TDatum,
+  TXValue extends ChartValue = ChartValue,
+  TYValue extends ChartValue = ChartValue,
+>({
+  points,
+}: ChartTimeTooltipBodyProps<TDatum, TXValue, TYValue>) => {
+  const [first] = points
 
-  if (config.xAxisType !== "time") {
-    throw new Error("Tooltip type and xAxisType are not compatible")
-  }
-
-  const [item] = payload
-  const value = item.payload[config.xAxisKey]
-
-  const placement = config.tooltipType === "timeBottom" ? "bottom" : "top"
+  if (!first || typeof first.xValue === "string") return null
 
   return (
-    <div
-      css={{
-        position: "absolute",
-        width: "fit-content",
-        left: coordinate.x,
-        transform: "translateX(-50%)",
-        [placement]: 0,
-      }}
-    >
-      <ChartCrosshair
-        date={dateFormatter.format(value)}
-        time={timeFormatter.format(value)}
-      />
-    </div>
+    <ChartCrosshair
+      date={dateFormatter.format(first.xValue)}
+      time={timeFormatter.format(first.xValue)}
+    />
   )
 }
 
-export const ChartTooltip = (
-  props: React.ComponentProps<typeof Tooltip> & CoordinateProps,
-) => {
-  const { config } = useChart()
+export const CHART_BARE_TOOLTIP_CLASS = "ts-chart-tooltip--bare"
 
-  if (config.tooltipType === "none") {
-    return null
-  }
-
-  if (config.tooltipType === "legend") {
-    return <ChartTooltipLegendType {...props} />
-  }
-
-  return <ChartTooltipTimeType {...props} />
-}
+export const chartTimeTooltipPlacement = (placement: "top" | "bottom") =>
+  ({
+    anchor: {
+      x: "pointer",
+      y: placement === "bottom" ? "plot-bottom" : "plot-top",
+    },
+    placement,
+    className: CHART_BARE_TOOLTIP_CLASS,
+  }) as const

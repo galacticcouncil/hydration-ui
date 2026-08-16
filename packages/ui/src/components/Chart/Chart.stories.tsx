@@ -1,301 +1,433 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { PlusIcon } from "lucide-react"
-
-import { ChartConfig } from "@/components"
 import {
+  areaY,
+  barY,
+  defineChart,
+  dot,
+  lineY,
+  ruleX,
+  stack,
+  text,
+} from "@tanstack/charts"
+import { scaleBand } from "@tanstack/charts/scales/band"
+import { scaleLinear } from "@tanstack/charts/scales/linear"
+import { tooltip } from "@tanstack/charts/tooltip"
+import { fold } from "@tanstack/charts/transform/fold"
+import { useMemo } from "react"
+
+import { useTheme } from "@/theme"
+
+import { Chart, chartColorScale } from "./Chart"
+import {
+  ChartLegendTooltipBody,
+  ChartTimeTooltipBody,
+  chartTimeTooltipPlacement,
+} from "./ChartTooltip"
+import { PieChart } from "./PieChart"
+import {
+  dateFormatter,
   MOCK_CATEGORY_DATA,
   MOCK_CURVE_DATA,
   MOCK_TIME_DATA,
-} from "@/components/Chart/utils"
+} from "./utils"
 
-import { ChartContainer } from "./ChartContainer"
-import { AreaChart } from "./charts/AreaChart"
-import { BarChart } from "./charts/BarChart"
-
-type Story = StoryObj<typeof ChartContainer>
+type Story = StoryObj<typeof Chart>
 
 export default {
-  component: ChartContainer,
-} as Meta<typeof ChartContainer>
+  component: Chart,
+} as Meta<typeof Chart>
 
-const SINGLE_SERIES_CONFIG = {
-  xAxisKey: "month",
-  series: [
-    {
-      key: "desktop",
-      label: "Desktop",
-      color: "#6fc272",
-    },
-  ],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any satisfies ChartConfig<(typeof MOCK_CATEGORY_DATA)[number]>
+const CHART_HEIGHT = 300
+const STROKE_WIDTH = 2.5
+const DOT_RADIUS = 6
 
-const MULTI_SERIES_CONFIG = {
-  xAxisKey: "month",
-  series: [
-    {
-      key: "desktop",
-      label: "Desktop",
-      color: "#6fc272",
-    },
-    {
-      key: "mobile",
-      label: "Mobile",
-      color: "#98C8F8",
-    },
-  ],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any satisfies ChartConfig<(typeof MOCK_CATEGORY_DATA)[number]>
+const AreaWithGradientChart = () => {
+  const { themeProps } = useTheme()
 
-const TIME_SERIES_CONFIG = {
-  xAxisKey: "timestamp",
-  xAxisType: "time",
-  tooltipType: "timeTop",
-  series: [
-    {
-      label: "Value",
-      key: "value",
-    },
-  ],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any satisfies ChartConfig<(typeof MOCK_TIME_DATA)[number]>
+  const definition = useMemo(() => {
+    const color = themeProps.details.chart
 
-const CURVE_SERIES_CONFIG = {
-  xAxisKey: "x",
-  series: [
-    {
-      key: "y",
-      label: "Value",
-      color: ["#FC408C", "#57B3EB"],
-    },
-  ],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any satisfies ChartConfig<(typeof MOCK_CURVE_DATA)[number]>
+    return defineChart({
+      marks: [
+        areaY(MOCK_TIME_DATA, {
+          x: "timestamp",
+          y: "value",
+          fill: "url(#gradient)",
+        }),
+        lineY(MOCK_TIME_DATA, {
+          x: "timestamp",
+          y: "value",
+          stroke: color,
+          strokeWidth: STROKE_WIDTH,
+        }),
+      ],
+      gradients: [
+        {
+          id: "gradient",
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+          stops: [
+            { offset: 0.05, color, opacity: 1 },
+            { offset: 0.95, color, opacity: 0 },
+          ],
+        },
+      ],
+      x: {
+        scale: scaleLinear,
+        axis: {
+          line: false,
+          ticks: { size: 0, padding: 8, format: dateFormatter.format },
+        },
+      },
+      y: {
+        scale: scaleLinear,
+        grid: true,
+        axis: { line: false, ticks: { size: 0 } },
+      },
+    })
+  }, [themeProps])
 
-export const Area: Story = {
-  render: (args) => (
-    <AreaChart height={400} {...args} data={MOCK_CATEGORY_DATA} />
-  ),
-  args: {
-    height: 400,
-    config: SINGLE_SERIES_CONFIG,
-  },
-}
-
-export const AreaLabels: Story = {
-  render: (args) => (
-    <AreaChart
-      height={400}
-      {...args}
-      data={MOCK_CATEGORY_DATA}
-      yAxisLabel="Device Usage"
-      xAxisLabel="Month"
-      yAxisProps={{ tickCount: 2 }}
-      xAxisProps={{ tick: false }}
+  return (
+    <Chart
+      definition={definition}
+      ariaLabel="Net worth over time"
+      height={CHART_HEIGHT}
     />
-  ),
-  args: {
-    height: 400,
-    config: SINGLE_SERIES_CONFIG,
-  },
+  )
 }
 
-export const AreaMultiSeries: Story = {
-  render: (args) => <AreaChart {...args} data={MOCK_CATEGORY_DATA} />,
-  args: {
-    height: 400,
-    config: MULTI_SERIES_CONFIG,
-  },
+export const AreaWithGradient: Story = {
+  render: () => <AreaWithGradientChart />,
 }
 
-export const AreaLinearCurve: Story = {
-  render: (args) => (
-    <AreaChart {...args} data={MOCK_CATEGORY_DATA} curveType="linear" />
-  ),
-  args: {
-    height: 400,
-    config: MULTI_SERIES_CONFIG,
-  },
-}
+const OPTIMAL = 300
+const CURRENT = 600
 
-export const AreaTimeTooltip: Story = {
-  render: (args) => <AreaChart {...args} data={MOCK_TIME_DATA} />,
-  args: {
-    height: 400,
-    config: TIME_SERIES_CONFIG,
-  },
-}
+const AreaWithReferenceLinesChart = () => {
+  const { themeProps } = useTheme()
 
-export const AreaHiddenTooltip: Story = {
-  render: (args) => <AreaChart {...args} data={MOCK_TIME_DATA} />,
-  args: {
-    height: 400,
-    config: {
-      ...TIME_SERIES_CONFIG,
-      tooltipType: "none",
-    },
-  },
-}
+  const definition = useMemo(() => {
+    const topValue = Math.max(...MOCK_CURVE_DATA.map(({ y }) => y))
 
-export const AreaHiddenAxes: Story = {
-  render: (args) => (
-    <AreaChart
-      {...args}
-      data={MOCK_TIME_DATA}
-      yAxisHidden
-      xAxisHidden
-      verticalGridHidden
-      horizontalGridHidden
+    const labels = [
+      {
+        x: OPTIMAL + 5,
+        y: topValue,
+        label: "Optimal 30%",
+        anchor: "start" as const,
+      },
+      {
+        x: CURRENT - 5,
+        y: topValue,
+        label: "Current 60%",
+        anchor: "end" as const,
+      },
+    ]
+
+    return defineChart({
+      marks: [
+        areaY(MOCK_CURVE_DATA, {
+          x: "x",
+          y: "y",
+          fill: "none",
+        }),
+        lineY(MOCK_CURVE_DATA, {
+          x: "x",
+          y: "y",
+          stroke: themeProps.accents.success.emphasis,
+          strokeWidth: STROKE_WIDTH,
+        }),
+        ruleX([OPTIMAL, CURRENT], {
+          stroke: themeProps.text.tint.quart,
+          strokeDasharray: "4 2",
+        }),
+        text(labels, {
+          x: "x",
+          y: "y",
+          text: "label",
+          fontSize: 12,
+          anchor: (row) => row.anchor,
+          dy: 10,
+          fill: themeProps.text.tint.quart,
+        }),
+      ],
+      x: { scale: scaleLinear, axis: { line: false, ticks: { size: 0 } } },
+      y: {
+        scale: scaleLinear,
+        grid: true,
+        axis: { line: false, ticks: { size: 0 } },
+      },
+    })
+  }, [themeProps])
+
+  return (
+    <Chart
+      definition={definition}
+      ariaLabel="Interest rate model"
+      height={CHART_HEIGHT}
     />
-  ),
-  args: {
-    height: 400,
-    config: TIME_SERIES_CONFIG,
-  },
+  )
 }
 
-export const AreaGradientLine: Story = {
-  render: (args) => (
-    <AreaChart
-      {...args}
-      data={MOCK_CURVE_DATA}
-      gradient="line"
-      xAxisProps={{ type: "number", tickCount: 10, interval: "preserveStart" }}
-      yAxisProps={{ type: "number", padding: { bottom: 2 } }}
-      strokeWidth={4}
+export const AreaWithReferenceLines: Story = {
+  render: () => <AreaWithReferenceLinesChart />,
+}
+
+const AreaWithLayeredDotsChart = () => {
+  const { themeProps } = useTheme()
+
+  const definition = useMemo(
+    () =>
+      defineChart({
+        marks: [
+          areaY(MOCK_CURVE_DATA, {
+            x: "x",
+            y: "y",
+            fill: "none",
+          }),
+          lineY(MOCK_CURVE_DATA, {
+            x: "x",
+            y: "y",
+            stroke: themeProps.details.chart,
+            strokeWidth: STROKE_WIDTH,
+          }),
+          dot(
+            MOCK_CURVE_DATA.filter(({ current }) => current),
+            { x: "x", y: "y", r: DOT_RADIUS, fill: themeProps.text.tint.quart },
+          ),
+          dot(
+            MOCK_CURVE_DATA.filter(({ currentSecondary }) => currentSecondary),
+            {
+              x: "x",
+              y: "y",
+              r: DOT_RADIUS,
+              fill: themeProps.text.tint.quart,
+            },
+          ),
+        ],
+        x: { scale: scaleLinear, axis: { line: false, ticks: { size: 0 } } },
+        y: {
+          scale: scaleLinear,
+          grid: true,
+          axis: { line: false, ticks: { size: 0 } },
+        },
+      }),
+    [themeProps],
+  )
+
+  return (
+    <Chart
+      definition={definition}
+      ariaLabel="Rewards curve"
+      height={CHART_HEIGHT}
     />
-  ),
-  args: {
-    height: 400,
-    config: CURVE_SERIES_CONFIG,
-  },
+  )
 }
 
-export const AreaCustomDot: Story = {
-  render: (args) => (
-    <AreaChart
-      {...args}
-      data={MOCK_CURVE_DATA}
-      gradient="line"
-      xAxisProps={{ type: "number", tickCount: 10, interval: "preserveStart" }}
-      yAxisProps={{ type: "number", tickCount: 2, padding: { bottom: 16 } }}
-      yAxisLabel="Payable Percentage"
-      xAxisLabel="Days"
-      strokeWidth={4}
-      customDot={({ key, payload, cx = 0, cy = 0 }) => (
-        <>
-          {payload.current && (
-            <PlusIcon key={key} x={cx - 12} y={cy - 12} color="#FFD230" />
-          )}
-          {payload.currentSecondary && (
-            <PlusIcon key={key} x={cx - 12} y={cy - 12} color="#ED6AFF" />
-          )}
-        </>
+export const AreaWithLayeredDots: Story = {
+  render: () => <AreaWithLayeredDotsChart />,
+}
+
+const AreaWithTimeTooltipChart = () => {
+  const { themeProps } = useTheme()
+
+  const definition = useMemo(
+    () =>
+      defineChart({
+        marks: [
+          areaY(MOCK_TIME_DATA, {
+            x: "timestamp",
+            y: "value",
+            fill: "none",
+          }),
+          lineY(MOCK_TIME_DATA, {
+            x: "timestamp",
+            y: "value",
+            stroke: themeProps.details.chart,
+            strokeWidth: STROKE_WIDTH,
+          }),
+        ],
+        x: { scale: scaleLinear, axis: false },
+        y: { scale: scaleLinear, axis: false },
+        margin: { bottom: 40 },
+        tooltip: {
+          use: tooltip,
+          ...chartTimeTooltipPlacement("bottom"),
+        },
+      }),
+    [themeProps],
+  )
+
+  return (
+    <Chart
+      definition={definition}
+      ariaLabel="Net worth with a time crosshair"
+      height={CHART_HEIGHT}
+      renderTooltipBody={({ points }) => (
+        <ChartTimeTooltipBody points={points} />
       )}
     />
-  ),
-  args: {
-    height: 400,
-    config: CURVE_SERIES_CONFIG,
-  },
+  )
 }
 
-export const Bar: Story = {
-  render: (args) => <BarChart {...args} data={MOCK_CATEGORY_DATA} />,
-  args: {
-    height: 400,
-    config: SINGLE_SERIES_CONFIG,
-  },
+export const AreaWithTimeTooltip: Story = {
+  render: () => <AreaWithTimeTooltipChart />,
 }
 
-export const BarLabels: Story = {
-  render: (args) => (
-    <BarChart
-      height={400}
-      {...args}
-      data={MOCK_CATEGORY_DATA}
-      yAxisLabel="Device Usage"
-      xAxisLabel="Month"
-      yAxisProps={{ tickCount: 2 }}
-      xAxisProps={{ tick: false }}
+const SERIES = ["desktop", "mobile"] as const
+const SERIES_COLORS = {
+  desktop: "colors.skyBlue.700",
+  mobile: "colors.lavender.700",
+} as const
+
+const BAR_RADIUS = 4
+
+const BasicBarsChart = () => {
+  const { themeProps } = useTheme()
+
+  const definition = useMemo(
+    () =>
+      defineChart({
+        marks: [
+          barY(MOCK_CATEGORY_DATA, {
+            x: "month",
+            y: "desktop",
+            fill: themeProps.details.chart,
+            radius: BAR_RADIUS,
+          }),
+        ],
+        x: {
+          scale: () => scaleBand<string>().padding(0.3),
+          axis: { line: false, ticks: { size: 0 } },
+        },
+        y: {
+          scale: scaleLinear,
+          grid: true,
+          axis: { line: false, ticks: { size: 0 } },
+        },
+        focus: "group-x",
+        tooltip: {
+          use: tooltip,
+          anchor: { x: "value", y: "plot-top" },
+          placement: "top",
+        },
+      }),
+    [themeProps],
+  )
+
+  return (
+    <Chart
+      definition={definition}
+      ariaLabel="Desktop visitors per month"
+      height={CHART_HEIGHT}
+      renderTooltipBody={({ points }) => (
+        <ChartLegendTooltipBody label="Visitors" points={points} />
+      )}
     />
-  ),
-  args: {
-    height: 400,
-    config: SINGLE_SERIES_CONFIG,
-  },
+  )
 }
 
-export const BarMultiSeries: Story = {
-  render: (args) => <BarChart {...args} data={MOCK_CATEGORY_DATA} />,
-  args: {
-    height: 400,
-    config: MULTI_SERIES_CONFIG,
-  },
+export const Bars: Story = {
+  render: () => <BasicBarsChart />,
 }
 
-export const BarCustomBarSize: Story = {
-  render: (args) => (
-    <BarChart {...args} data={MOCK_CATEGORY_DATA} barSize={10} />
-  ),
-  args: {
-    height: 400,
-    config: MULTI_SERIES_CONFIG,
-  },
+type StackedRow = {
+  month: string
+  series: string
+  value: number
 }
 
-export const BarStacked: Story = {
-  render: (args) => <BarChart {...args} data={MOCK_CATEGORY_DATA} stacked />,
-  args: {
-    height: 400,
-    config: MULTI_SERIES_CONFIG,
-  },
-}
+const StackedBarsChart = () => {
+  const { getToken } = useTheme()
 
-export const BarVerticalLayout: Story = {
-  render: (args) => (
-    <BarChart {...args} data={MOCK_CATEGORY_DATA} layout="vertical" stacked />
-  ),
-  args: {
-    height: 600,
-    config: MULTI_SERIES_CONFIG,
-  },
-}
+  const definition = useMemo(() => {
+    const rows = fold(MOCK_CATEGORY_DATA, {
+      fields: [...SERIES],
+      as: { key: "series", value: "value" },
+    }).map<StackedRow>(({ month, series, value }) => ({
+      month: String(month),
+      series,
+      value: Number(value),
+    }))
 
-export const BarTimeTooltip: Story = {
-  render: (args) => <BarChart {...args} data={MOCK_TIME_DATA} />,
-  args: {
-    height: 400,
-    config: {
-      ...TIME_SERIES_CONFIG,
-      tooltipType: "timeTop",
-    },
-  },
-}
+    return defineChart({
+      marks: [
+        barY(rows, {
+          x: "month",
+          y: "value",
+          color: "series",
+          layout: stack({ order: [...SERIES] }),
+          radius: BAR_RADIUS,
+        }),
+      ],
+      x: {
+        scale: () => scaleBand<string>().padding(0.3),
+        axis: { line: false, ticks: { size: 0 } },
+      },
+      y: {
+        scale: scaleLinear,
+        grid: true,
+        axis: { line: false, ticks: { size: 0 } },
+      },
+      color: chartColorScale(SERIES_COLORS, getToken),
+      focus: "group-x",
+      tooltip: {
+        use: tooltip,
+        sort: "color-domain",
+        anchor: { x: "value", y: "plot-top" },
+        placement: "top",
+      },
+    })
+  }, [getToken])
 
-export const BarHiddenTooltip: Story = {
-  render: (args) => <BarChart {...args} data={MOCK_CATEGORY_DATA} />,
-  args: {
-    height: 400,
-    config: {
-      ...SINGLE_SERIES_CONFIG,
-      tooltipType: "none",
-    },
-  },
-}
-
-export const BarHiddenAxes: Story = {
-  render: (args) => (
-    <BarChart
-      {...args}
-      data={MOCK_CATEGORY_DATA}
-      yAxisHidden
-      xAxisHidden
-      verticalGridHidden
+  return (
+    <Chart
+      definition={definition}
+      ariaLabel="Visitors per month by device"
+      height={CHART_HEIGHT}
+      renderTooltipBody={({ points }) => (
+        <ChartLegendTooltipBody label="Visitors" points={points} />
+      )}
     />
-  ),
-  args: {
-    height: 400,
-    config: SINGLE_SERIES_CONFIG,
-  },
+  )
+}
+
+export const BarsStacked: Story = {
+  render: () => <StackedBarsChart />,
+}
+
+const SupplyPieChart = () => {
+  const { getToken } = useTheme()
+
+  return (
+    <PieChart
+      size={200}
+      ariaLabel="Supply split"
+      tooltipLabel="Supply"
+      formatValue={({ value }) => `${value}%`}
+      segments={[
+        {
+          value: 35,
+          label: "Legacy",
+          color: getToken("colors.basePalette.coralPink"),
+        },
+        {
+          value: 25,
+          label: "Giga",
+          color: getToken("colors.basePalette.hollar-green"),
+        },
+        {
+          value: 40,
+          label: "Other",
+          color: getToken("controls.outline.base"),
+        },
+      ]}
+    />
+  )
+}
+
+export const Pie: Story = {
+  render: () => <SupplyPieChart />,
 }

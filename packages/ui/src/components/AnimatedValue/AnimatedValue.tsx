@@ -1,10 +1,16 @@
 import Big from "big.js"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import {
   FlashDirection,
   SFlashValue,
 } from "@/components/AnimatedValue/AnimatedValue.styled"
+
+const getContentWidth = (el: HTMLElement) => {
+  const range = document.createRange()
+  range.selectNodeContents(el)
+  return range.getBoundingClientRect().width
+}
 
 const useValueFlash = (value: number, enabled: boolean) => {
   const previous = useRef<number | null>(null)
@@ -50,15 +56,20 @@ export const AnimatedValue = ({
   valueFlash?: boolean
 }) => {
   const [displayValue, setDisplayValue] = useState(value)
+  const [minWidth, setMinWidth] = useState<number>()
   const { direction, tick } = useValueFlash(value, valueFlash)
   const startTime = useRef<number | null>(null)
   const currentValue = useRef(value)
   const endValue = useRef(value)
+  const measureRef = useRef<HTMLSpanElement>(null)
+  const animating = useRef(false)
 
   useEffect(() => {
     const startValue = currentValue.current
     endValue.current = value
     startTime.current = null
+    animating.current = true
+    setMinWidth(undefined)
 
     let animationFrameId: number
 
@@ -79,6 +90,12 @@ export const AnimatedValue = ({
 
       if (percentage < 1) {
         animationFrameId = requestAnimationFrame(animate)
+      } else {
+        animating.current = false
+        const el = measureRef.current
+        if (el) {
+          setMinWidth(getContentWidth(el))
+        }
       }
     }
 
@@ -86,11 +103,36 @@ export const AnimatedValue = ({
     return () => cancelAnimationFrame(animationFrameId)
   }, [duration, value])
 
-  if (!valueFlash) return <>{format(displayValue)}</>
+  const display = format(displayValue)
+
+  useLayoutEffect(() => {
+    const el = measureRef.current
+    if (!el || !animating.current) return
+
+    const contentWidth = getContentWidth(el)
+    setMinWidth((prev) =>
+      prev === undefined ? contentWidth : Math.max(prev, contentWidth),
+    )
+  }, [display])
+
+  const content = (
+    <span
+      ref={measureRef}
+      style={{
+        display: "inline-block",
+        minWidth: minWidth !== undefined ? `${minWidth}px` : undefined,
+        fontVariantNumeric: "tabular-nums",
+      }}
+    >
+      {display}
+    </span>
+  )
+
+  if (!valueFlash) return content
 
   return (
     <SFlashValue key={tick} direction={direction} duration={duration * 2}>
-      {format(displayValue)}
+      {content}
     </SFlashValue>
   )
 }

@@ -5,12 +5,15 @@ import {
   liveCandle as toLiveCandle,
   PairCandle,
   pairCandlesInfiniteQuery,
+  pairReferencePriceQuery,
+  PriceChangePeriod,
 } from "@galacticcouncil/indexer/neckwork"
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
   AnimatedValue,
   Box,
   ChartValues,
+  Chip,
   Flex,
   Icon,
   Paper,
@@ -68,19 +71,32 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   const navigate = useNavigate()
   const search = useSearch({ from: "/trade/_history" })
   const { assetIn, assetOut, interval, chartType } = search
+  const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
+  const rpc = useRpcProvider()
 
   const [isInverted, setIsInverted] = useState(false)
+  const [changePeriod, setChangePeriod] = useState<PriceChangePeriod>("24h")
 
-  // Display orientation: buy/sell (assetOut/assetIn), or flipped via invert.
-  // Priced as how much quote-asset one base-asset costs.
   const baseAssetId = isInverted ? assetIn : assetOut
   const quoteAssetId = isInverted ? assetOut : assetIn
 
-  // Stable fetch order (like Squid) so swap/invert don't refetch — only the
-  // display orientation changes. Neckwork returns assetIn quoted in assetOut.
-  const isFetchAligned = Number(quoteAssetId) >= Number(baseAssetId)
-  const fetchAssetIn = isFetchAligned ? baseAssetId : quoteAssetId
-  const fetchAssetOut = isFetchAligned ? quoteAssetId : baseAssetId
+  const resolveChartAssetId = (id: string) => {
+    const aToken = getErc20AToken(id)
+    if (!aToken) return id
+    const underlying = getAssetWithFallback(aToken.underlyingAssetId)
+    if (isStableSwap(underlying)) return id
+    return aToken.underlyingAssetId
+  }
+
+  const resolvedBaseAssetId = resolveChartAssetId(baseAssetId)
+  const resolvedQuoteAssetId = resolveChartAssetId(quoteAssetId)
+  const pairCollapsed = resolvedBaseAssetId === resolvedQuoteAssetId
+  const chartBaseAssetId = pairCollapsed ? baseAssetId : resolvedBaseAssetId
+  const chartQuoteAssetId = pairCollapsed ? quoteAssetId : resolvedQuoteAssetId
+
+  const isFetchAligned = Number(chartQuoteAssetId) >= Number(chartBaseAssetId)
+  const fetchAssetIn = isFetchAligned ? chartBaseAssetId : chartQuoteAssetId
+  const fetchAssetOut = isFetchAligned ? chartQuoteAssetId : chartBaseAssetId
   const needsInvert = !isFetchAligned
 
   const {
@@ -112,11 +128,19 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   }, [data, needsInvert])
 
   // spot price is the live feed — refetched every block via the @block key
-  const rpc = useRpcProvider()
   const { data: spot } = useQuery(
-    spotPriceQuery(rpc, baseAssetId, quoteAssetId),
+    spotPriceQuery(rpc, chartBaseAssetId, chartQuoteAssetId),
   )
   const spotPrice = Number(spot?.spotPrice)
+
+  // price `changePeriod` ago, in the same orientation as the displayed pair
+  const { data: referencePrice } = useQuery(
+    pairReferencePriceQuery(neckworkClient, {
+      assetIn: fetchAssetIn,
+      assetOut: fetchAssetOut,
+      period: changePeriod,
+    }),
+  )
 
   const resetKey = `${baseAssetId}-${quoteAssetId}-${interval}`
   const liveRef = useRef<{ resetKey: string; candle: PairCandle } | null>(null)
@@ -181,26 +205,72 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     isLiveValue,
   } = useTradeChartValues({
     prices,
-    priceAssetId: quoteAssetId,
+    priceAssetId: chartQuoteAssetId,
     isEmpty,
     isError,
     isLoading,
   })
 
-  const { getAssetWithFallback } = useAssets()
-
   const baseMeta = getAssetWithFallback(baseAssetId)
   const quoteMeta = getAssetWithFallback(quoteAssetId)
 
+  const livePrice = prices.at(-1)?.close
+  const reference =
+    !referencePrice || isPlaceholderData
+      ? null
+      : needsInvert
+        ? 1 / referencePrice
+        : referencePrice
+  const priceChange =
+    reference && livePrice ? ((livePrice - reference) / reference) * 100 : null
+
+  const periodLabel =
+    changePeriod === "24h"
+      ? t("chart.priceChange.24h")
+      : t("chart.priceChange.7d")
+
   const chartValue = shouldShowValues ? (
-    <Text fs={["p3", "p1"]} fw={600} fontVariantNumeric="tabular-nums">
-      <AnimatedValue
-        key={`${baseAssetId}-${quoteAssetId}`}
-        value={value}
-        valueFlash={isLiveValue}
-        format={(value) => t("currency", { value, symbol: quoteMeta.symbol })}
-      />
-    </Text>
+    <Flex align="center" gap="s">
+      <Text fs={["p3", "p1"]} fw={600} fontVariantNumeric="tabular-nums">
+        <AnimatedValue
+          key={`${baseAssetId}-${quoteAssetId}`}
+          value={value}
+          valueFlash={isLiveValue}
+          format={(value) => t("number", { value })}
+        />
+        {` ${quoteMeta.symbol}`}
+      </Text>
+      {priceChange !== null && (
+        <Tooltip
+          text={t("chart.priceChange.tooltip", {
+            period: periodLabel,
+          })}
+          size="small"
+          side="top"
+          asChild
+        >
+          <Chip
+            as="button"
+            rounded
+            size="small"
+            variant={priceChange < 0 ? "red" : "green"}
+            sx={{
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              fontVariantNumeric: "tabular-nums",
+            }}
+            onClick={() =>
+              setChangePeriod(changePeriod === "24h" ? "7d" : "24h")
+            }
+          >
+            {`${t("percent", {
+              value: priceChange,
+              signDisplay: "always",
+            })} / ${periodLabel}`}
+          </Chip>
+        </Tooltip>
+      )}
+    </Flex>
   ) : undefined
 
   const formatPrice = (price: number) => t("number", { value: price })
@@ -257,15 +327,35 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
         />
         <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
           <Flex align="center" gap="s" ml="auto">
-            <SChartInvertButton
+            <Tooltip
+              text={t("chart.invert", {
+                pair: `${baseMeta.symbol}/${quoteMeta.symbol}`,
+              })}
               size="small"
-              variant="tertiary"
-              outline
-              onClick={() => setIsInverted((prev) => !prev)}
+              side="top"
+              asChild
             >
-              <Icon component={ArrowLeftRight} size="m" />
-              {baseMeta.symbol}/{quoteMeta.symbol}
-            </SChartInvertButton>
+              <Box as="span" sx={{ display: "flex" }}>
+                <SChartInvertButton
+                  size="small"
+                  variant="tertiary"
+                  outline
+                  aria-label={t("chart.invert", {
+                    pair: `${baseMeta.symbol}/${quoteMeta.symbol}`,
+                  })}
+                  onClick={() => setIsInverted((prev) => !prev)}
+                >
+                  <Icon
+                    component={ArrowLeftRight}
+                    size="s"
+                    sx={{
+                      transform: isInverted ? "scaleX(-1)" : "scaleX(1)",
+                      transition: getToken("transitions.transform"),
+                    }}
+                  />
+                </SChartInvertButton>
+              </Box>
+            </Tooltip>
             <ToggleGroup
               type="single"
               size="small"
@@ -328,6 +418,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
             type={chartType}
             resetKey={resetKey}
             isRefetching={isRefetching}
+            isPlaceholderData={isPlaceholderData}
             onCrosshairMove={onCrosshairMove}
             onReachStart={onReachStart}
           />

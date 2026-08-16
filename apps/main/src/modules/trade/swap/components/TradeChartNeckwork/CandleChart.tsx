@@ -125,6 +125,8 @@ type CandleChartProps = {
   readonly type: TradeChartType
   readonly resetKey: string
   readonly isRefetching: boolean
+  /** keepPreviousData — freeze series so resetKey/live don't paint stale candles */
+  readonly isPlaceholderData: boolean
   readonly onCrosshairMove: (data: OhlcCrosshairData | null) => void
   readonly onReachStart: () => void
 }
@@ -136,6 +138,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({
   type,
   resetKey,
   isRefetching,
+  isPlaceholderData,
   onCrosshairMove,
   onReachStart,
 }) => {
@@ -292,7 +295,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({
   useEffect(() => {
     const chart = chartRef.current
     const series = seriesRef.current
-    if (!chart || !series || !candles.length) return
+    if (isPlaceholderData || !chart || !series || !candles.length) return
 
     const scale = chart.timeScale()
     const visibleRange = scale.getVisibleLogicalRange()
@@ -339,11 +342,11 @@ export const CandleChart: React.FC<CandleChartProps> = ({
     }
 
     appliedRef.current = { resetKey, firstTime: candles[0]?.time ?? null }
-  }, [candles, resetKey])
+  }, [candles, resetKey, isPlaceholderData])
 
   useEffect(() => {
     const series = seriesRef.current
-    if (!series || !liveCandle) return
+    if (!series || !liveCandle || isPlaceholderData) return
 
     const time = toTime(liveCandle)
 
@@ -355,7 +358,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({
       close: liveCandle.close,
     })
     series.baseline.update({ time, value: liveCandle.close })
-  }, [liveCandle])
+  }, [liveCandle, isPlaceholderData])
 
   return (
     <Box

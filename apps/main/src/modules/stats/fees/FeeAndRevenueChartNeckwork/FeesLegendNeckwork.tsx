@@ -1,14 +1,10 @@
 import { Box, Button, Flex, Select, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { feesAndRevenueConfig } from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
 
-/**
- * Per-stream total, or `null` when that stream's query failed. A dormant
- * stream reports 0 and stays readable; a failed one must not be mistaken for
- * one that legitimately earned nothing.
- */
 export type FeesLegendFields = ReadonlyMap<string, number | null>
 
 export const FeesLegendNeckwork = ({
@@ -58,6 +54,10 @@ export const FeesLegendNeckwork = ({
       {legendItems.map(({ key, label, color, value }) => {
         const isActive = activeFilter === key
         const hasFailed = value === null
+
+        if (key !== "all" && Big(value || "0").lte(0)) {
+          return null
+        }
 
         return (
           <Button

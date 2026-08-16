@@ -1,4 +1,4 @@
-import { infiniteQueryOptions } from "@tanstack/react-query"
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query"
 
 import { NeckworkClient } from "."
 
@@ -86,6 +86,56 @@ export const liveCandle = (
     close: price,
     volume: 0,
   }
+}
+
+export const PRICE_CHANGE_PERIODS = ["24h", "7d"] as const
+
+export type PriceChangePeriod = (typeof PRICE_CHANGE_PERIODS)[number]
+
+const PRICE_CHANGE_LOOKBACK: Record<
+  PriceChangePeriod,
+  { ms: number; bucket: CandleBucket }
+> = {
+  "24h": { ms: 24 * 60 * 60_000, bucket: "1h" },
+  "7d": { ms: 7 * 24 * 60 * 60_000, bucket: "4h" },
+}
+
+export const pairReferencePriceQuery = (
+  client: NeckworkClient,
+  {
+    assetIn,
+    assetOut,
+    period,
+  }: Omit<PairCandlesArgs, "bucket"> & { period: PriceChangePeriod },
+) => {
+  const { ms, bucket } = PRICE_CHANGE_LOOKBACK[period]
+
+  return queryOptions({
+    queryKey: ["neckwork", "pairReferencePrice", assetIn, assetOut, period],
+    staleTime: CANDLE_BUCKET_MS[bucket],
+    queryFn: async (): Promise<number | null> => {
+      // round to the bucket so the key-stable query doesn't refetch every render
+      const cutoff =
+        Math.floor((Date.now() - ms) / CANDLE_BUCKET_MS[bucket]) *
+        CANDLE_BUCKET_MS[bucket]
+
+      const { data } = await client.GET("/v1/prices/pair", {
+        params: {
+          query: {
+            assetIn,
+            assetOut,
+            bucket,
+            // a few buckets of slack so a gap in the series still resolves
+            from: new Date(cutoff - 4 * CANDLE_BUCKET_MS[bucket]).toISOString(),
+            to: new Date(cutoff).toISOString(),
+          },
+        },
+      })
+
+      const close = data && Array.from(data.items).at(-1)?.close
+      return close === undefined ? null : Number(close)
+    },
+  })
 }
 
 type PairCandlesArgs = {

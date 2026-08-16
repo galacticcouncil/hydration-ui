@@ -168,6 +168,7 @@ export const FeesAndRevenueNeckwork = () => {
           isLoading={isLoading}
           isError={isError}
           isEmpty={!visibleRows.length}
+          variant="bar"
           sx={{ height: "100%" }}
         >
           <FeesStackedBar
