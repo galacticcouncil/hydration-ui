@@ -10,13 +10,13 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { millisecondsInDay } from "date-fns/constants"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalances } from "@/api/balances"
 import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { BondRedeemButton } from "@/components/BondRedeemButton"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 const PositionRow = () => {

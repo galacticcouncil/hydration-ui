@@ -21,6 +21,7 @@ import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { Trade } from "@/api/trade"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
@@ -36,7 +37,6 @@ import {
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 
 import { ReceiveAssets } from "./ReceiveAssets"
 import { RemoveLiquidityProps } from "./RemoveLiquidity"

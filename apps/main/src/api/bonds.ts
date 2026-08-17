@@ -2,10 +2,10 @@ import { useMutation } from "@tanstack/react-query"
 import { differenceInMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalance } from "@/api/balances"
 import { useBestNumber } from "@/api/chain"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalance } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 

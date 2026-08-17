@@ -19,6 +19,7 @@ import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import {
   borrowReservesQuery,
   gigaLendingPoolAddressProvider,
@@ -36,7 +37,6 @@ import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman, toDecimal } from "@/utils/formatting"
 
 /**

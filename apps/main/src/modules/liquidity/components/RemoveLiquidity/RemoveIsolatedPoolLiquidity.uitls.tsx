@@ -10,6 +10,7 @@ import {
   XykDeposit,
   xykMiningPositionsKey,
 } from "@/api/account"
+import { useAccountBalances } from "@/api/balances"
 import { useIsolatedPoolFarms } from "@/api/farms"
 import { useShareTokenPrices } from "@/api/spotPrice"
 import { useXYKPoolWithLiquidity, XYKPoolWithLiquidity } from "@/api/xyk"
@@ -20,7 +21,6 @@ import {
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { TransactionToasts, useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"

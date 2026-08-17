@@ -1,6 +1,7 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
+import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
@@ -8,7 +9,6 @@ import { DEFAULT_DCA_DURATION } from "@/modules/trade/swap/sections/DCA/useDcaFo
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 

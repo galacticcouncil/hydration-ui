@@ -16,9 +16,15 @@ type Props = {
   readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
   readonly maxSellBalance: string
+  readonly maxSellBalanceLoading: boolean
 }
 
-export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
+export const MarketFields: FC<Props> = ({
+  swap,
+  twap,
+  maxSellBalance,
+  maxSellBalanceLoading,
+}) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
@@ -95,6 +101,7 @@ export const MarketFields: FC<Props> = ({ swap, twap, maxSellBalance }) => {
         assets={tradable}
         maxBalanceFallback="0"
         maxBalance={maxSellBalance}
+        maxBalanceLoading={maxSellBalanceLoading}
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
           const isSwitch = sellAsset.id === buyAsset?.id
