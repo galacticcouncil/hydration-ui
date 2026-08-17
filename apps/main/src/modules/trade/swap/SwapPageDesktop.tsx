@@ -6,6 +6,7 @@ import { useActiveIndexerStatus } from "@/components/DataProviderSelect/DataProv
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
+import { TradeOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/TradeOrdersNeckwork"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
@@ -40,7 +41,9 @@ export const SwapPageDesktop = () => {
           <Separator mx="-xl" />
           <Outlet />
         </SSwapFormContainer>
-        {isUsingLegacyData ? (
+        {isNeckworkEnabled ? (
+          <TradeOrdersNeckwork gridColumn={[null, null, "1/-1", "1"]} />
+        ) : isUsingLegacyData ? (
           <TradeOrdersHistory gridColumn={[null, null, "1/-1", "1"]} />
         ) : (
           <TradeOrders gridColumn={[null, null, "1/-1", "1"]} />

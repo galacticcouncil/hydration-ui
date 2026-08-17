@@ -1,37 +1,29 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
+import { DCA_OPEN_STATUSES } from "@galacticcouncil/indexer/neckwork"
 import { DataTable, Modal } from "@galacticcouncil/ui/components"
-import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
-import {
-  OrderData,
-  useOrdersData,
-} from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
-import { PastExecutionsSquid } from "@/modules/trade/orders/PastExecutions/PastExecutionsSquid"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
+import { useNeckworkOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useNeckworkOrdersData"
+import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/PastExecutionsNeckwork"
 
 type Props = {
-  readonly allPairs: boolean
   readonly paginationProps: PaginationProps
 }
 
-export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
-  const { assetIn, assetOut } = useSearch({
-    from: "/trade/_history",
-  })
-
+export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
   const [isDetailOpen, setIsDetailOpen] = useState<{
     readonly detail: OrderData
     readonly isTermination: boolean
   } | null>(null)
 
-  const { orders, totalCount, isLoading } = useOrdersData(
-    [DcaScheduleStatus.Created],
-    allPairs ? [] : [assetIn, assetOut],
+  const { orders, totalCount, isLoading } = useNeckworkOrdersData(
+    DCA_OPEN_STATUSES,
+    [],
     paginationProps.pagination.pageIndex,
     paginationProps.pagination.pageSize,
   )
@@ -57,7 +49,7 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
           <DcaOrderDetailsModal
             details={isDetailOpen.detail}
             pastExecutions={
-              <PastExecutionsSquid
+              <PastExecutionsNeckwork
                 scheduleId={isDetailOpen.detail.scheduleId}
               />
             }

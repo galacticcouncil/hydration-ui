@@ -105,7 +105,15 @@ export const useOpenOrdersColumns = () => {
       },
       cell: ({ row }) => {
         return (
-          row.original.status && <DcaOrderStatus status={row.original.status} />
+          row.original.status && (
+            <DcaOrderStatus
+              status={row.original.status}
+              sold={row.original.fromAmountExecuted}
+              total={row.original.fromAmountBudget}
+              isOpenBudget={row.original.isOpenBudget}
+              from={row.original.from}
+            />
+          )
         )
       },
     })
@@ -189,6 +197,8 @@ export const useOpenOrdersColumns = () => {
             fromAmount={row.original.fromAmountExecuted}
             from={row.original.from}
             status={row.original.status}
+            total={row.original.fromAmountBudget}
+            isOpenBudget={row.original.isOpenBudget}
           />
         </TableRowDetailsExpand>
       ),

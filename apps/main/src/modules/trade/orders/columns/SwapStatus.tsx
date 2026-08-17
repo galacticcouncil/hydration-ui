@@ -1,5 +1,4 @@
-import { Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Chip, Text } from "@galacticcouncil/ui/components"
 import { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -7,9 +6,9 @@ export const SwapStatus: FC = () => {
   const { t } = useTranslation("trade")
 
   return (
-    <Status color={getToken("text.tint.quart")}>
+    <Chip variant="info" size="small">
       {t("trade.orders.status.filled")}
-    </Status>
+    </Chip>
   )
 }
 

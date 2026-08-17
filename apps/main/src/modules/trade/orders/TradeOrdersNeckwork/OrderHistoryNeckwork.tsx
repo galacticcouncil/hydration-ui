@@ -1,33 +1,25 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
+import { DCA_HISTORY_STATUSES } from "@galacticcouncil/indexer/neckwork"
 import { DataTable, Modal } from "@galacticcouncil/ui/components"
-import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
-import {
-  OrderData,
-  useOrdersData,
-} from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
-import { PastExecutionsSquid } from "@/modules/trade/orders/PastExecutions/PastExecutionsSquid"
+import { useNeckworkOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useNeckworkOrdersData"
+import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/PastExecutionsNeckwork"
 
 type Props = {
-  readonly allPairs: boolean
   readonly paginationProps: PaginationProps
 }
 
-export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
-  const { assetIn, assetOut } = useSearch({
-    from: "/trade/_history",
-  })
-
+export const OrderHistoryNeckwork: FC<Props> = ({ paginationProps }) => {
   const [isDetailOpen, setIsDetailOpen] = useState<OrderData | null>(null)
 
-  const { orders, totalCount, isLoading } = useOrdersData(
-    [DcaScheduleStatus.Completed, DcaScheduleStatus.Terminated],
-    allPairs ? [] : [assetIn, assetOut],
+  const { orders, totalCount, isLoading } = useNeckworkOrdersData(
+    DCA_HISTORY_STATUSES,
+    [],
     paginationProps.pagination.pageIndex,
     paginationProps.pagination.pageSize,
   )
@@ -52,7 +44,7 @@ export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
             details={isDetailOpen}
             onTerminate={null}
             pastExecutions={
-              <PastExecutionsSquid scheduleId={isDetailOpen.scheduleId} />
+              <PastExecutionsNeckwork scheduleId={isDetailOpen.scheduleId} />
             }
           />
         )}

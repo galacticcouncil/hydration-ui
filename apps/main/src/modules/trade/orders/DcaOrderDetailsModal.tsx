@@ -15,21 +15,36 @@ import {
 } from "@galacticcouncil/ui/components"
 import { neckwork } from "@galacticcouncil/utils"
 import Big from "big.js"
+import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
+import {
+  getDcaCompletionPercent,
+  getDcaTradeProgress,
+  useDcaFundingBalance,
+} from "@/modules/trade/orders/lib/dcaProgress"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
-import { PastExecutions } from "@/modules/trade/orders/PastExecutions/PastExecutions"
+import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 type Props = {
   readonly details: OrderData
   readonly onTerminate: (() => void) | null
+  readonly pastExecutions: ReactNode
 }
 
-export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
+export const DcaOrderDetailsModal = ({
+  details,
+  onTerminate,
+  pastExecutions,
+}: Props) => {
   const { t } = useTranslation(["common", "trade"])
+  const fundingBalance = useDcaFundingBalance(
+    details.from,
+    details.isOpenBudget,
+  )
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
 
@@ -54,6 +69,37 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
     value: details.toAmountExecuted ?? "0",
     symbol: details.to.symbol,
   })
+
+  const isActive = details.status === DcaScheduleStatus.Created
+  const progressPercent = isActive
+    ? getDcaCompletionPercent({
+        sold: details.fromAmountExecuted,
+        total: details.fromAmountBudget,
+        isOpenBudget: details.isOpenBudget,
+        fundingBalance,
+      })
+    : null
+  const tradeProgress = isActive
+    ? getDcaTradeProgress({
+        sold: details.fromAmountExecuted,
+        total: details.fromAmountBudget,
+        singleTradeSize: details.singleTradeSize,
+        isOpenBudget: details.isOpenBudget,
+        fundingBalance,
+      })
+    : null
+
+  let tradesLabel: string | null = null
+  if (tradeProgress !== null && tradeProgress.remaining > 0) {
+    tradesLabel = t("trade:trade.orders.dcaDetail.tradesProgress", {
+      executed: tradeProgress.executed,
+      total: tradeProgress.executed + tradeProgress.remaining,
+    })
+  } else if (tradeProgress !== null) {
+    tradesLabel = t("trade:trade.orders.dcaDetail.tradesCount", {
+      count: tradeProgress.executed,
+    })
+  }
 
   return (
     <>
@@ -108,6 +154,17 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
             })}
           />
         </Grid>
+        {progressPercent !== null && (
+          <>
+            <ModalContentDivider />
+            <Grid columnTemplate="1fr" gap="xxl" py="m">
+              <DcaOrderProgress
+                percent={progressPercent}
+                tradesLabel={tradesLabel}
+              />
+            </Grid>
+          </>
+        )}
         <ModalContentDivider />
         <Flex justify="space-between" gap="base" pt="l" pb="xl">
           <Button variant="tertiary" outline asChild>
@@ -125,10 +182,12 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
             </Button>
           )}
         </Flex>
-        <PastExecutions
-          scheduleId={details.scheduleId}
+        <Flex
+          direction="column"
           sx={{ marginInline: "var(--modal-content-inset)" }}
-        />
+        >
+          {pastExecutions}
+        </Flex>
         <ModalContentDivider />
       </ModalBody>
     </>

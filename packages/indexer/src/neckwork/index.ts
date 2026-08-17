@@ -3,10 +3,12 @@ import createClient, { Middleware } from "openapi-fetch"
 import type { paths } from "@/neckwork/__generated__/schema"
 
 export * from "./accounts"
+export * from "./dca"
 export * from "./fees"
 export * from "./pools"
 export * from "./prices"
 export * from "./stats"
+export * from "./trades"
 
 export const NECKWORK_STALE_TIME = 60000
 

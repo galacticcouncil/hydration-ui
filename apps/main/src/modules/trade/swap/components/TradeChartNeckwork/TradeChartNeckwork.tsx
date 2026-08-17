@@ -1,6 +1,4 @@
 import {
-  CANDLE_BUCKETS,
-  CandleBucket,
   invertCandle,
   liveCandle as toLiveCandle,
   PairCandle,
@@ -8,19 +6,13 @@ import {
   pairReferencePriceQuery,
   PriceChangePeriod,
 } from "@galacticcouncil/indexer/neckwork"
-import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  AnimatedValue,
   Box,
   ChartValues,
-  Chip,
   Flex,
-  Icon,
   Paper,
+  ResponsiveScope,
   Text,
-  ToggleGroup,
-  ToggleGroupItem,
-  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -28,37 +20,23 @@ import {
   useInfiniteQuery,
   useQuery,
 } from "@tanstack/react-query"
-import { useNavigate, useSearch } from "@tanstack/react-router"
-import { CandlestickChart, LineChart } from "lucide-react"
+import { useSearch } from "@tanstack/react-router"
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/provider"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { ChartState } from "@/components/ChartState"
-import {
-  ChartTimeRange,
-  ChartTimeRangeOptionType,
-} from "@/components/ChartTimeRange/ChartTimeRange"
-import i18n from "@/i18n"
-import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
 import { CandleChart } from "@/modules/trade/swap/components/TradeChartNeckwork/CandleChart"
-import { TRADE_CHART_TYPES } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
+import { TradeChartControls } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartControls"
+import {
+  SChartHeader,
+  SChartOhlc,
+} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.styled"
+import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartPrice"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-
-const intervalOptions = CANDLE_BUCKETS.map<
-  ChartTimeRangeOptionType<CandleBucket>
->((bucket) => ({
-  key: bucket,
-  label: i18n.t(`chart.interval.${bucket}`),
-}))
-
-const chartTypeIcons = {
-  candles: CandlestickChart,
-  line: LineChart,
-}
 
 type TradeChartNeckworkProps = {
   readonly height: number
@@ -68,9 +46,9 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   height,
 }) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const search = useSearch({ from: "/trade/_history" })
-  const { assetIn, assetOut, interval, chartType } = search
+  const { assetIn, assetOut, interval, chartType } = useSearch({
+    from: "/trade/_history",
+  })
   const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
   const rpc = useRpcProvider()
 
@@ -224,59 +202,24 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   const priceChange =
     reference && livePrice ? ((livePrice - reference) / reference) * 100 : null
 
-  const periodLabel =
-    changePeriod === "24h"
-      ? t("chart.priceChange.24h")
-      : t("chart.priceChange.7d")
-
   const chartValue = shouldShowValues ? (
-    <Flex align="center" gap="s">
-      <Text fs={["p3", "p1"]} fw={600} fontVariantNumeric="tabular-nums">
-        <AnimatedValue
-          key={`${baseAssetId}-${quoteAssetId}`}
-          value={value}
-          valueFlash={isLiveValue}
-          format={(value) => t("number", { value })}
-        />
-        {` ${quoteMeta.symbol}`}
-      </Text>
-      {priceChange !== null && (
-        <Tooltip
-          text={t("chart.priceChange.tooltip", {
-            period: periodLabel,
-          })}
-          size="small"
-          side="top"
-          asChild
-        >
-          <Chip
-            as="button"
-            rounded
-            size="small"
-            variant={priceChange < 0 ? "red" : "green"}
-            sx={{
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              fontVariantNumeric: "tabular-nums",
-            }}
-            onClick={() =>
-              setChangePeriod(changePeriod === "24h" ? "7d" : "24h")
-            }
-          >
-            {`${t("percent", {
-              value: priceChange,
-              signDisplay: "always",
-            })} / ${periodLabel}`}
-          </Chip>
-        </Tooltip>
-      )}
-    </Flex>
+    <TradeChartPrice
+      value={value}
+      symbol={quoteMeta.symbol}
+      animationKey={`${baseAssetId}-${quoteAssetId}`}
+      isLiveValue={isLiveValue}
+      priceChange={priceChange}
+      changePeriod={changePeriod}
+      onChangePeriodToggle={() =>
+        setChangePeriod(changePeriod === "24h" ? "7d" : "24h")
+      }
+    />
   ) : undefined
 
   const formatPrice = (price: number) => t("number", { value: price })
 
   const chartDisplayValue = shouldShowValues ? (
-    <Box display={["none", null, null, null, "block"]}>
+    <SChartOhlc>
       <Flex gap="s">
         <Text fs="p6" fontVariantNumeric="tabular-nums" whiteSpace="nowrap">
           <Text as="span" color={getToken("text.low")}>
@@ -313,97 +256,26 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
         </Text>{" "}
         {formattedVolumePrice}
       </Text>
-    </Box>
+    </SChartOhlc>
   ) : undefined
 
   return (
     <Paper p="xl">
-      <Flex align="flex-start" gap="base" justify="space-between">
-        <ChartValues
-          sx={{ position: "relative" }}
-          value={chartValue}
-          displayValue={chartDisplayValue}
-          isLoading={shouldShowValues && isLoadingValues}
-        />
-        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <Flex align="center" gap="s" ml="auto">
-            <Tooltip
-              text={t("chart.invert", {
-                pair: `${baseMeta.symbol}/${quoteMeta.symbol}`,
-              })}
-              size="small"
-              side="top"
-              asChild
-            >
-              <Box as="span" sx={{ display: "flex" }}>
-                <SChartInvertButton
-                  size="small"
-                  variant="tertiary"
-                  outline
-                  aria-label={t("chart.invert", {
-                    pair: `${baseMeta.symbol}/${quoteMeta.symbol}`,
-                  })}
-                  onClick={() => setIsInverted((prev) => !prev)}
-                >
-                  <Icon
-                    component={ArrowLeftRight}
-                    size="s"
-                    sx={{
-                      transform: isInverted ? "scaleX(-1)" : "scaleX(1)",
-                      transition: getToken("transitions.transform"),
-                    }}
-                  />
-                </SChartInvertButton>
-              </Box>
-            </Tooltip>
-            <ToggleGroup
-              type="single"
-              size="small"
-              value={chartType}
-              onValueChange={(value) =>
-                value &&
-                navigate({
-                  to: ".",
-                  search: { ...search, chartType: value },
-                  resetScroll: false,
-                })
-              }
-            >
-              {TRADE_CHART_TYPES.map((type) => (
-                <Tooltip
-                  key={type}
-                  text={t(`chart.chartType.${type}`)}
-                  size="small"
-                  asChild
-                  side="top"
-                >
-                  <Box as="span" sx={{ display: "flex" }}>
-                    <ToggleGroupItem
-                      value={type}
-                      aria-label={t(`chart.chartType.${type}`)}
-                    >
-                      <Icon component={chartTypeIcons[type]} size="s" />
-                    </ToggleGroupItem>
-                  </Box>
-                </Tooltip>
-              ))}
-            </ToggleGroup>
-          </Flex>
-
-          <ChartTimeRange
-            sx={{ ml: "auto" }}
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={(option) =>
-              navigate({
-                to: ".",
-                search: { ...search, interval: option.key },
-                resetScroll: false,
-              })
-            }
+      <ResponsiveScope>
+        <SChartHeader>
+          <ChartValues
+            sx={{ position: "relative" }}
+            value={chartValue}
+            displayValue={chartDisplayValue}
+            isLoading={shouldShowValues && isLoadingValues}
           />
-        </Flex>
-      </Flex>
+          <TradeChartControls
+            pair={`${baseMeta.symbol}/${quoteMeta.symbol}`}
+            isInverted={isInverted}
+            onInvert={() => setIsInverted((prev) => !prev)}
+          />
+        </SChartHeader>
+      </ResponsiveScope>
       <Box sx={{ height }}>
         <ChartState
           sx={{ height }}

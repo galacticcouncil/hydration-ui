@@ -1,20 +1,38 @@
+import isPropValid from "@emotion/is-prop-valid"
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Item, Trigger, Viewport } from "@radix-ui/react-select"
 
-export const SelectTrigger = styled(Trigger)(
-  ({ theme }) => css`
+import { createVariants } from "@/utils"
+
+export type SelectSize = "small" | "medium" | "large"
+
+const sizes = createVariants<SelectSize>((theme) => ({
+  small: css`
+    padding: ${theme.space.s} ${theme.space.m};
+    font-size: ${theme.fontSizes.p6};
+  `,
+  medium: css`
     padding: ${theme.buttons.paddings.tertiary}
       ${theme.buttons.paddings.primary};
+    font-size: ${theme.fontSizes.p4};
+  `,
+  large: css`
+    padding: ${theme.space.m} ${theme.space.l};
+    font-size: ${theme.fontSizes.p4};
+  `,
+}))
 
+export const SelectTrigger = styled(Trigger, {
+  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "size",
+})<{ size?: SelectSize }>(({ theme, size = "medium" }) => [
+  css`
     cursor: pointer;
 
     display: flex;
     justify-content: center;
     align-items: center;
     gap: ${theme.space.s};
-
-    font-size: 12px;
 
     border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
@@ -27,7 +45,8 @@ export const SelectTrigger = styled(Trigger)(
       border-color: ${theme.buttons.secondary.low.hover};
     }
   `,
-)
+  sizes(size),
+])
 
 export const SContent = styled(Content)(
   ({ theme }) => css`

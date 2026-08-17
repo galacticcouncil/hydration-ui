@@ -6,6 +6,7 @@ import { FC } from "react"
 import { useActiveIndexerStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
+import { TradeOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/TradeOrdersNeckwork"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
@@ -38,7 +39,13 @@ export const SwapPageMobile: FC = () => {
       ) : (
         <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
       )}
-      {isUsingLegacyData ? <TradeOrdersHistory /> : <TradeOrders />}
+      {isNeckworkEnabled ? (
+        <TradeOrdersNeckwork />
+      ) : isUsingLegacyData ? (
+        <TradeOrdersHistory />
+      ) : (
+        <TradeOrders />
+      )}
     </Flex>
   )
 }
