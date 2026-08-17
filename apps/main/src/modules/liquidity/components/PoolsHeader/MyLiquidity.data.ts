@@ -3,10 +3,10 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
+import { useAccountBalancesWithPriceByAssetType } from "@/api/balances"
 import { useMyIsolatedPoolsLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import {
   isOmnipoolDepositPosition,
-  useAccountBalancesWithPriceByAssetType,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
 

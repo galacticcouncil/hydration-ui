@@ -1,8 +1,8 @@
+import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useMaxBalance = ({

@@ -4,13 +4,13 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
+import { useAccountBalancesWithPriceByAssetType } from "@/api/balances"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import {
   myAssetsMobileSorter,
   myAssetsSorter,
 } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalancesWithPriceByAssetType } from "@/states/account"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { getAssetOrigin } from "@/utils/externalAssets"
 

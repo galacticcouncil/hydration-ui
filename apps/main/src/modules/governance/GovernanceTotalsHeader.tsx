@@ -10,10 +10,10 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalances } from "@/api/balances"
 import { useGigaAccountBalance } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 type GovernanceTotalsHeaderProps = {

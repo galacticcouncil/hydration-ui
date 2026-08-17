@@ -2,10 +2,10 @@ import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
+import { useAccountBalances } from "@/api/balances"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
-import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
@@ -94,7 +94,7 @@ function RootComponent() {
 
 function ApiSubscriptions() {
   useInvalidateOnBlock()
-  useAccountBalanceSubscription()
+  useAccountBalances()
   usePriceSubscriber()
 
   return null

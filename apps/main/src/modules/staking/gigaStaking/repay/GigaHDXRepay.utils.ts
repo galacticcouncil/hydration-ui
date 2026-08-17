@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import {
   useGigaBorrowPoolContract,
   useUserGigaBorrowSummary,
@@ -22,7 +23,6 @@ import {
 } from "@/api/borrow/queries"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt } from "@/utils/formatting"
 import { positive } from "@/utils/validators"

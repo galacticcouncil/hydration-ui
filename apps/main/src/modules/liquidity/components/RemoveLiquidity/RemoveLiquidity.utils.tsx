@@ -7,6 +7,7 @@ import z, { ZodType } from "zod/v4"
 
 import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import {
   FarmDepositReward,
@@ -20,7 +21,6 @@ import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   isDepositPosition,
-  useAccountBalances,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
