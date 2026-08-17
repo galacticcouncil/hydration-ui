@@ -7,6 +7,8 @@ import { LINKS } from "@/config/navigation"
 import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { PropellerStrategyCard } from "@/modules/strategies/propeller/components/PropellerStrategyCard"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -43,6 +45,10 @@ export const StrategiesPage = () => {
             link={LINKS.strategiesBil}
           />
         )}
+        {featureFlags.propellerEnabled &&
+          Object.values(PROPELLER_VAULTS).map((vault) => (
+            <PropellerStrategyCard key={vault.key} vault={vault} />
+          ))}
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard
             logoId={bondId}

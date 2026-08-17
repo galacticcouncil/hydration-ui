@@ -8,12 +8,15 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const STRATEGY_ASSET_ICON_BY_KEY: Partial<Record<NavigationKey, string>> = {
   strategiesBil: BIL_ERC20_ID,
   strategiesHollarBonds: HOLLAR_ASSET_ID,
+  strategiesPropellerEth: PROPELLER_VAULTS.eth.assetId,
+  strategiesPropellerTbtc: PROPELLER_VAULTS.tbtc.assetId,
 }
 
 type Props = {
