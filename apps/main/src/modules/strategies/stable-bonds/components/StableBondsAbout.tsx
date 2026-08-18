@@ -13,7 +13,14 @@ import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/
 import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useAssets } from "@/providers/assetsProvider"
 
-export const StableBondsAbout: React.FC<PaperProps> = (props) => {
+export type StableBondsAboutProps = PaperProps & {
+  isSoldOut?: boolean
+}
+
+export const StableBondsAbout: React.FC<StableBondsAboutProps> = ({
+  isSoldOut,
+  ...props
+}) => {
   const { t } = useTranslation(["common", "strategies"])
   const config = useStableBondsConfig()
   const { getBond, getAssetWithFallback } = useAssets()
@@ -42,6 +49,7 @@ export const StableBondsAbout: React.FC<PaperProps> = (props) => {
         muted
         size="small"
         values={{
+          soldOut: isSoldOut ?? false,
           daysLeft: t("interval", {
             value: timeLeft,
             largest: 1,
