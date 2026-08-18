@@ -4,6 +4,7 @@ import { lazy, Suspense } from "react"
 
 import { useAccountBalances } from "@/api/balances"
 import { useInvalidateOnBlock } from "@/api/chain"
+import { useNeckworkSync } from "@/api/neckworkSync"
 import { neckworkClient, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { RouterContext } from "@/App"
@@ -95,6 +96,7 @@ function RootComponent() {
 
 function ApiSubscriptions() {
   useInvalidateOnBlock()
+  useNeckworkSync()
   useAccountBalances()
   usePriceSubscriber()
 

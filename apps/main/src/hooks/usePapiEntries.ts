@@ -10,10 +10,35 @@ import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 
+type EntriesOptions = { at?: string }
+
+// DCA storage is not part of the whitelisted descriptors, so it can only be
+// read through the unsafe api - typed here to keep call sites type-safe.
+type UnsafeQuery = {
+  readonly DCA: {
+    readonly ScheduleOwnership: {
+      readonly getEntries: (
+        address: string,
+        options?: EntriesOptions,
+      ) => Promise<Array<{ keyArgs: [string, number]; value: undefined }>>
+      readonly watchEntries: (
+        address: string,
+        options?: EntriesOptions,
+      ) => Observable<WatchEntriesData>
+    }
+  }
+}
+
+type QuerySources = {
+  readonly typed: Papi["query"]
+  readonly unsafe: UnsafeQuery
+}
+
 const QUERY_MAP = {
-  "OTC.Orders": (query) => query.OTC.Orders,
-  "Uniques.Account": (query) => query.Uniques.Account,
-} as const satisfies Record<string, (query: Papi["query"]) => unknown>
+  "DCA.ScheduleOwnership": ({ unsafe }) => unsafe.DCA.ScheduleOwnership,
+  "OTC.Orders": ({ typed }) => typed.OTC.Orders,
+  "Uniques.Account": ({ typed }) => typed.Uniques.Account,
+} as const satisfies Record<string, (sources: QuerySources) => unknown>
 
 type QueryKey = keyof typeof QUERY_MAP
 type QueryFn<K extends QueryKey> = (typeof QUERY_MAP)[K]
@@ -75,8 +100,13 @@ export function usePapiEntries<
   options?: PapiEntriesQueryOptions<K, TMap, TSelect>,
 ): UseQueryResult<TSelect, Error> {
   const queryClient = useQueryClient()
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, papiClient, isApiLoaded } = useRpcProvider()
   const isWatcherInitializedRef = useRef(false)
+
+  const querySources = (): QuerySources => ({
+    typed: papi.query,
+    unsafe: papiClient.getUnsafeApi().query as unknown as UnsafeQuery,
+  })
 
   const mapper =
     typeof mapperOrOptions === "function" ? mapperOrOptions : undefined
@@ -92,7 +122,7 @@ export function usePapiEntries<
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      const query = QUERY_MAP[queryKey](papi.query)
+      const query = QUERY_MAP[queryKey](querySources())
       // @ts-expect-error Args vary by query type
       const entries = await query.getEntries(...args, { at: "best" })
 
@@ -115,11 +145,10 @@ export function usePapiEntries<
 
     subscribe(key, () =>
       (
-        QUERY_MAP[queryKey](papi.query)
+        QUERY_MAP[queryKey](querySources())
           // @ts-expect-error Args vary by query type
           .watchEntries(...args, { at: "best" })
           .pipe(
-            // @ts-expect-error skips finalized block
             skip(1),
             distinctUntilChanged(
               (_, current: WatchEntriesData) => !current.deltas,

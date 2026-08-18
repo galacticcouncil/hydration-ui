@@ -32,47 +32,50 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
 }) => {
   const queryClient = useQueryClient()
 
-  const [isBestProviderFound, setIsBestProviderFound] = useState(
-    () => !useProviderRpcUrlStore.getState().autoMode,
-  )
+  const [isBestProviderFound, setIsBestProviderFound] = useState(false)
 
   const [, fetchBestProvider] = useAsyncFn(async () => {
-    const bestRpcs =
-      window.__HYDRATION_BEST_RPCS__ ??
-      (await pingWorker.getBestRpcs(PROVIDER_URLS))
+    const { autoMode } = useProviderRpcUrlStore.getState()
 
-    delete window.__HYDRATION_BEST_RPCS__
+    let referenceBlock: number | null = null
 
-    const bestRpc = getBestRpc(bestRpcs)
+    if (autoMode) {
+      const bestRpcs =
+        window.__HYDRATION_BEST_RPCS__ ??
+        (await pingWorker.getBestRpcs(PROVIDER_URLS))
 
-    if (bestRpc) {
-      queryClient.setQueryData(
-        rpcStatusQueryOptions(bestRpc.url).queryKey,
-        bestRpc,
+      delete window.__HYDRATION_BEST_RPCS__
+
+      const bestRpc = getBestRpc(bestRpcs)
+
+      if (bestRpc) {
+        queryClient.setQueryData(
+          rpcStatusQueryOptions(bestRpc.url).queryKey,
+          bestRpc,
+        )
+      }
+
+      const bestRpcsUrls = bestRpcs.map(prop("url"))
+      const sortedRpcList = Array.from(
+        new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
       )
+
+      const bestRpcUrl = bestRpc?.url ?? ENV.VITE_PROVIDER_URL
+
+      useProviderRpcUrlStore.setState({
+        rpcUrl: bestRpcUrl,
+        rpcUrlList: sortedRpcList,
+        updatedAt: Date.now(),
+      })
+
+      referenceBlock = bestRpc?.blockNumber ?? null
     }
-
-    const bestRpcsUrls = bestRpcs.map(prop("url"))
-    const sortedRpcList = Array.from(
-      new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
-    )
-
-    const bestRpcUrl = bestRpc?.url ?? ENV.VITE_PROVIDER_URL
-
-    useProviderRpcUrlStore.setState({
-      rpcUrl: bestRpcUrl,
-      rpcUrlList: sortedRpcList,
-      updatedAt: Date.now(),
-    })
 
     const indexerInfos = await Promise.all(
       SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer)),
     )
 
-    const bestIndexer = getBestIndexer(
-      indexerInfos,
-      bestRpc?.blockNumber ?? null,
-    )
+    const bestIndexer = getBestIndexer(indexerInfos, referenceBlock)
 
     if (bestIndexer) {
       const url = bestIndexer.config.graphqlUrl

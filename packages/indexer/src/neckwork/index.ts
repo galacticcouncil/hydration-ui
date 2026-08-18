@@ -13,6 +13,12 @@ export * from "./trades"
 
 export const NECKWORK_STALE_TIME = 60000
 
+/**
+ * Key prefix for account-scoped neckwork queries. `useNeckworkSync` invalidates
+ * this subtree once the indexer has caught up with the user's latest tx.
+ */
+export const NECKWORK_ACCOUNT_KEY = ["neckwork", "account"] as const
+
 export class NeckworkApiError extends Error {
   readonly status: number
   readonly path: string

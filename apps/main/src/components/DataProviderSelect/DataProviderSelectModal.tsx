@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next"
 import { AutoModeToggle } from "@/components/DataProviderSelect/components/AutoModeToggle"
 import { RpcForm } from "@/components/DataProviderSelect/components/rpc/RpcForm"
 import { RpcListModalContent } from "@/components/DataProviderSelect/components/rpc/RpcListModalContent"
-import { SquidIndexerForm } from "@/components/DataProviderSelect/components/squid/SquidIndexerForm"
 import { SquidIndexerListModalContent } from "@/components/DataProviderSelect/components/squid/SquidIndexerListModalContent"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -65,21 +64,18 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
                 {t("rpc.change.modal.view.indexer")}
               </ToggleGroupItem>
             </ToggleGroup>
-            <AutoModeToggle
-              size="large"
-              checked={autoMode}
-              onCheckedChange={setAutoMode}
-            />
-            {!autoMode && (
-              <TabsRoot value={view}>
-                <TabsContent value={TabView.RPC}>
-                  <RpcForm />
-                </TabsContent>
-                <TabsContent value={TabView.SQUID}>
-                  <SquidIndexerForm />
-                </TabsContent>
-              </TabsRoot>
-            )}
+            <TabsRoot value={view}>
+              <TabsContent value={TabView.RPC}>
+                <Stack gap="base">
+                  <AutoModeToggle
+                    size="large"
+                    checked={autoMode}
+                    onCheckedChange={setAutoMode}
+                  />
+                  {!autoMode && <RpcForm />}
+                </Stack>
+              </TabsContent>
+            </TabsRoot>
           </Stack>
         }
       />

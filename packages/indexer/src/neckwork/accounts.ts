@@ -1,13 +1,13 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_STALE_TIME, NeckworkClient } from "."
+import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
 
 export const accountsBalancesQuery = (
   client: NeckworkClient,
   publicKeys: string[],
 ) =>
   queryOptions({
-    queryKey: ["neckwork", "accountBalances", publicKeys],
+    queryKey: [...NECKWORK_ACCOUNT_KEY, "accountBalances", publicKeys],
     staleTime: NECKWORK_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/accounts/balances", {

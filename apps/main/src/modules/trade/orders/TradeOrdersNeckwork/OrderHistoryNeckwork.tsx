@@ -7,7 +7,7 @@ import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModa
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
-import { useNeckworkOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useNeckworkOrdersData"
+import { useNeckworkHistoryData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useNeckworkHistoryData"
 import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/PastExecutionsNeckwork"
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
 export const OrderHistoryNeckwork: FC<Props> = ({ paginationProps }) => {
   const [isDetailOpen, setIsDetailOpen] = useState<OrderData | null>(null)
 
-  const { orders, totalCount, isLoading } = useNeckworkOrdersData(
+  const { orders, totalCount, isLoading } = useNeckworkHistoryData(
     DCA_HISTORY_STATUSES,
     [],
     paginationProps.pagination.pageIndex,

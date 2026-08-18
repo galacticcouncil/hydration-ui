@@ -11,6 +11,7 @@ import { FC, useEffect } from "react"
 
 import { neckworkClient } from "@/api/provider"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useChainOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
 import { MyRecentActivityNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/MyRecentActivityNeckwork"
 import { OpenOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/OpenOrdersNeckwork"
 import { OrderHistoryNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/OrderHistoryNeckwork"
@@ -29,6 +30,13 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
     "page",
     10,
   )
+
+  const resolvedTab = tab === "marketTransactions" ? "myActivity" : tab
+  const isOpenOrdersTab = resolvedTab === "openOrders"
+
+  const { orders: chainOrders } = useChainOrdersData({
+    enabled: isOpenOrdersTab,
+  })
 
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
@@ -53,13 +61,13 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
     })
   }, [tab, navigate])
 
-  const resolvedTab = tab === "marketTransactions" ? "myActivity" : tab
-
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
       <TradeOrdersHeaderNeckwork
         paginationProps={paginationProps}
-        openOrdersCount={openOrdersCount ?? 0}
+        openOrdersCount={
+          isOpenOrdersTab ? chainOrders.length : (openOrdersCount ?? 0)
+        }
       />
       <Separator />
       <div sx={{ overflowX: "auto" }}>

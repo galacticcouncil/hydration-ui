@@ -18,7 +18,7 @@ const STATUS_MAP: Record<DcaStatus, DcaScheduleStatus> = {
   cancelled: DcaScheduleStatus.Cancelled,
 }
 
-export const useNeckworkOrdersData = (
+export const useNeckworkHistoryData = (
   statuses: readonly DcaStatus[],
   assetIds: Array<string>,
   page: number,

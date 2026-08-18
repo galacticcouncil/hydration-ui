@@ -1,7 +1,6 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
-import { NeckworkClient } from "."
+import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
 
 export type RoutedTrade = {
   blockHeight: number
@@ -29,16 +28,15 @@ export const routedTradesQuery = (
   { account, assetIds, page, pageSize }: RoutedTradesArgs,
 ) =>
   queryOptions({
-    // no staleTime — the block prefix invalidates this every block
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "neckwork",
+      ...NECKWORK_ACCOUNT_KEY,
       "routedTrades",
       account,
       assetIds,
       page,
       pageSize,
     ],
+    staleTime: NECKWORK_STALE_TIME,
     enabled: !!account,
     queryFn: async (): Promise<{
       items: RoutedTrade[]

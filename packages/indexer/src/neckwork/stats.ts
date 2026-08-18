@@ -24,3 +24,25 @@ export const platformStatsQuery = (client: NeckworkClient) =>
       }
     },
   })
+
+/**
+ * Indexed head of the neckwork ingestion pipeline. Deliberately keyed outside
+ * NECKWORK_ACCOUNT_KEY so invalidating the account subtree does not re-trigger
+ * the poller that just disarmed itself.
+ */
+export const neckworkStatusQuery = (client: NeckworkClient) =>
+  queryOptions({
+    queryKey: ["neckwork", "status"],
+    queryFn: async () => {
+      const { data } = await client.GET("/v1/status")
+
+      if (!data) throw new Error("Neckwork API returned no status")
+
+      return {
+        blockHeight: data.blockHeight,
+        chainBlockHeight: data.chainBlockHeight,
+        blocksBehindHead: data.blocksBehindHead,
+        lagSeconds: data.lagSeconds,
+      }
+    },
+  })

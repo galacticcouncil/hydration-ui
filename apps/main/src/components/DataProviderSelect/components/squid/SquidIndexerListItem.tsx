@@ -2,39 +2,18 @@ import {
   getSquidSdk,
   latestBlockHeightQuery,
 } from "@galacticcouncil/indexer/squid"
-import { Edit, Trash } from "@galacticcouncil/ui/assets/icons"
-import {
-  Box,
-  Flex,
-  Icon,
-  Spinner,
-  Stack,
-  Text,
-  TextButton,
-  Tooltip,
-} from "@galacticcouncil/ui/components"
+import { Flex, Spinner, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ListItemEditForm } from "@/components/DataProviderSelect/components/ListItemEditForm"
-import {
-  SRpcRadio,
-  SRpcRadioThumb,
-} from "@/components/DataProviderSelect/components/rpc/RpcListItem.styled"
 import { useBlockHeightStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
-import { useSquidListStore } from "@/states/provider"
 
 import { SSquidIndexerListItem } from "./SquidIndexerListItem.styled"
 
 export type SquidIndexerListItemProps = {
   name: string
   url: string
-  isActive?: boolean
-  isCustom?: boolean
-  onClick?: (url: string) => void
-  onRemove?: (url: string) => void
 }
 
 export const SquidIndexerListHeader: React.FC = () => {
@@ -65,13 +44,8 @@ export const SquidIndexerListHeader: React.FC = () => {
 export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
   name,
   url,
-  isActive,
-  isCustom,
-  onClick,
-  onRemove,
 }) => {
   const { t } = useTranslation()
-  const [isEdit, setIsEdit] = useState(false)
 
   const squidSdk = getSquidSdk(url)
 
@@ -85,41 +59,12 @@ export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
     blockHeight ?? null,
   )
 
-  const { renameSquid } = useSquidListStore()
-
-  if (isEdit) {
-    return (
-      <SSquidIndexerListItem data-edit="true">
-        <ListItemEditForm
-          name={name}
-          onClose={() => setIsEdit(false)}
-          onSubmit={(newName) => renameSquid(url, newName)}
-        />
-      </SSquidIndexerListItem>
-    )
-  }
-
   return (
-    <SSquidIndexerListItem
-      blocked={isBlockHeightLoading || isBlockHeightError}
-      onClick={() => onClick?.(url)}
-      isInteractive={!!onClick || !!onRemove}
-    >
-      <Box>
-        <Text
-          fs="p3"
-          color={getToken(isActive ? "colors.coral.700" : "text.high")}
-        >
-          {name}
-        </Text>
-      </Box>
-      <Flex
-        color={getToken("text.medium")}
-        gap="s"
-        justify="center"
-        align="center"
-        display={["none", "flex"]}
-      >
+    <SSquidIndexerListItem blocked={isBlockHeightLoading || isBlockHeightError}>
+      <Text fs="p3" color={getToken("text.high")}>
+        {name}
+      </Text>
+      <Flex justify="center" align="center" display={["none", "flex"]}>
         {isBlockHeightLoading ? (
           <Spinner size="xs" />
         ) : (
@@ -130,12 +75,7 @@ export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
           </Text>
         )}
       </Flex>
-      <Flex
-        color={getToken("text.medium")}
-        gap="s"
-        justify="end"
-        align="center"
-      >
+      <Flex justify="end" align="center">
         <Stack gap="xs">
           <Text
             fs="p5"
@@ -152,38 +92,6 @@ export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
             </Text>
           )}
         </Stack>
-
-        {isCustom && !!onRemove && (
-          <>
-            <Tooltip text={t("remove")} asChild side="top">
-              <TextButton
-                sx={{ p: "xs" }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRemove(url)
-                }}
-              >
-                <Icon size="s" component={Trash} />
-              </TextButton>
-            </Tooltip>
-            <Tooltip text={t("edit")} asChild side="top">
-              <TextButton
-                sx={{ p: "xs" }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsEdit(true)
-                }}
-              >
-                <Icon size="s" component={Edit} />
-              </TextButton>
-            </Tooltip>
-          </>
-        )}
-        {!!onClick && (
-          <Box sx={{ ml: "base" }}>
-            <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
-          </Box>
-        )}
       </Flex>
     </SSquidIndexerListItem>
   )

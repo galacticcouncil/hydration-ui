@@ -15,7 +15,6 @@ import { useBestNumber } from "@/api/chain"
 import { useSquidClient, useSquidUrl } from "@/api/provider"
 import { getIndexerStatus } from "@/components/DataProviderSelect/DataProviderResolver.utils"
 import { SQUID_URLS } from "@/config/rpc"
-import { useSquidListStore } from "@/states/provider"
 
 const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
   [DataProviderStatus.HEALTHY]: "accents.success.emphasis",
@@ -113,24 +112,12 @@ export const useActiveIndexerStatus = () => {
   }
 }
 
-export const useFullSquidUrlList = () => {
-  const { t } = useTranslation()
-  const { squidList } = useSquidListStore()
-  return useMemo(() => {
-    const list = [
-      ...SQUID_URLS.map(({ name, graphqlUrl }) => ({
-        name,
-        url: graphqlUrl,
-        isCustom: false,
-      })),
-      ...squidList.map((squid, index) => ({
-        ...squid,
-        name:
-          squid.name ?? t("rpc.change.modal.name.label", { index: index + 1 }),
-        isCustom: true,
-      })),
-    ]
-
-    return uniqueBy(list, prop("url"))
-  }, [squidList, t])
-}
+export const useFullSquidUrlList = () =>
+  useMemo(
+    () =>
+      uniqueBy(
+        SQUID_URLS.map(({ name, graphqlUrl }) => ({ name, url: graphqlUrl })),
+        prop("url"),
+      ),
+    [],
+  )

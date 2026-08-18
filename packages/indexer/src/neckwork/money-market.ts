@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_STALE_TIME, NeckworkClient } from "."
+import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
 
 export type MoneyMarketEventName =
   | "Supply"
@@ -33,7 +33,7 @@ export const moneyMarketEventsQuery = (
 ) =>
   queryOptions({
     queryKey: [
-      "neckwork",
+      ...NECKWORK_ACCOUNT_KEY,
       "moneyMarketEvents",
       account,
       events,

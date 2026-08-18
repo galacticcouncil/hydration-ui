@@ -188,6 +188,21 @@ export const isSubstrateTxResult = (
   return "type" in result && result.type === "txBestBlocksState"
 }
 
+/**
+ * Hydration block the tx landed in, for the substrate and EVM paths — the EVM
+ * runs on the same chain, so its receipt block number is directly comparable.
+ * Solana and Sui results are from other chains and yield null.
+ */
+export const getTxResultBlockHeight = (
+  result: TSuccessResult,
+): number | null => {
+  if (isSubstrateTxResult(result)) return result.block.number
+  if ("blockNumber" in result && typeof result.blockNumber === "bigint") {
+    return Number(result.blockNumber)
+  }
+  return null
+}
+
 export const isBridgeTransaction = (meta: TransactionMeta) => {
   return (
     meta.type === TransactionType.Xcm &&

@@ -1,4 +1,3 @@
-import { DCA_OPEN_STATUSES } from "@galacticcouncil/indexer/neckwork"
 import { DataTable, Modal } from "@galacticcouncil/ui/components"
 import { FC, useState } from "react"
 
@@ -8,7 +7,8 @@ import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
-import { useNeckworkOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useNeckworkOrdersData"
+import { useChainOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
+import { useDcaEnrichment } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useDcaEnrichment"
 import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/PastExecutionsNeckwork"
 
 type Props = {
@@ -21,24 +21,19 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
     readonly isTermination: boolean
   } | null>(null)
 
-  const { orders, totalCount, isLoading } = useNeckworkOrdersData(
-    DCA_OPEN_STATUSES,
-    [],
-    paginationProps.pagination.pageIndex,
-    paginationProps.pagination.pageSize,
-  )
+  const { orders, isLoading } = useChainOrdersData()
+  const enrichedOrders = useDcaEnrichment(orders)
 
   const columns = useOpenOrdersColumns()
 
   return (
     <>
       <DataTable
-        data={orders}
+        data={enrichedOrders}
         columns={columns}
         isLoading={isLoading}
         paginated
         {...paginationProps}
-        rowCount={totalCount}
         onRowClick={(detail) =>
           setIsDetailOpen({ detail, isTermination: false })
         }

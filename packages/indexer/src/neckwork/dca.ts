@@ -1,7 +1,6 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_STALE_TIME, NeckworkClient } from "."
+import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
 
 export const DCA_STATUSES = [
   "created",
@@ -80,10 +79,8 @@ export const dcaSchedulesQuery = (
   { owner, statuses, assetIds, page, pageSize }: DcaSchedulesArgs,
 ) =>
   queryOptions({
-    // no staleTime — the block prefix invalidates this every block
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "neckwork",
+      ...NECKWORK_ACCOUNT_KEY,
       "dcaSchedules",
       owner,
       statuses,
@@ -91,6 +88,7 @@ export const dcaSchedulesQuery = (
       page,
       pageSize,
     ],
+    staleTime: NECKWORK_STALE_TIME,
     enabled: !!owner,
     queryFn: async (): Promise<{
       items: DcaSchedule[]
@@ -135,15 +133,14 @@ export const dcaSchedulesCountQuery = (
   { owner, statuses, assetIds }: DcaSchedulesFilter,
 ) =>
   queryOptions({
-    // no staleTime — the block prefix invalidates this every block
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "neckwork",
+      ...NECKWORK_ACCOUNT_KEY,
       "dcaSchedulesCount",
       owner,
       statuses,
       assetIds,
     ],
+    staleTime: NECKWORK_STALE_TIME,
     enabled: !!owner,
     queryFn: async (): Promise<number> => {
       const { data } = await client.GET("/v1/dca/schedules/count", {
@@ -165,9 +162,7 @@ export const dcaExecutionsInfiniteQuery = (
   { scheduleId }: { scheduleId: number },
 ) =>
   infiniteQueryOptions({
-    // off the block prefix on purpose: an infinite query in a modal would
-    // refetch every loaded page each block to catch an hourly execution
-    queryKey: ["neckwork", "dcaExecutions", scheduleId],
+    queryKey: [...NECKWORK_ACCOUNT_KEY, "dcaExecutions", scheduleId],
     staleTime: NECKWORK_STALE_TIME,
     initialPageParam: 0,
     queryFn: async ({
