@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@galacticcouncil/common": "^1.2.0",
-    "@galacticcouncil/descriptors": "^2.6.0",
-    "@galacticcouncil/sdk-next": "^1.6.0",
+    "@galacticcouncil/descriptors": "^2.7.0",
+    "@galacticcouncil/sdk-next": "^2.0.0",
     "@galacticcouncil/xc": "^2.1.0",
     "@galacticcouncil/xc-cfg": "^2.4.1",
     "@galacticcouncil/xc-core": "^2.3.0",

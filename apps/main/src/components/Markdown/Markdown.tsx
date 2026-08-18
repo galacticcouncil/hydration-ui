@@ -15,7 +15,7 @@ import { ProseSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 
 export type MarkdownProps = ProseProps & {
   id: string
-  values?: Record<string, string | number>
+  values?: Record<string, string | number | boolean>
 }
 
 export const Markdown: React.FC<MarkdownProps> = ({ id, values, ...props }) => {

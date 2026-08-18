@@ -4,23 +4,10 @@ import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
 
+import { BalanceData, TokenLockType } from "@/api/balances/types"
 import { ENV } from "@/config/env"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
-
-export enum TokenLockType {
-  Vesting = "ormlvest",
-  Democracy = "democrac",
-  OpenGov = "pyconvot",
-  Staking = "stk_stks",
-  GigaStaking = "ghdxlock",
-}
-
-export enum TokenReserveType {
-  DCA = "dcaorder",
-  XCM = "depositc",
-  OTC = "otcorder",
-}
 
 const isKnownTokenLockType = (type: string): type is TokenLockType => {
   return Object.values(TokenLockType).includes(type as TokenLockType)
@@ -107,15 +94,6 @@ export const useAccountTokenReserves = (tokenId: string, enabled?: boolean) => {
     select: (reserves) => new Map(reserves.map((r) => [r.type, r.amount])),
     enabled,
   })
-}
-
-export type BalanceData = {
-  readonly accountId: string
-  readonly assetId: string
-  readonly balance: string
-  readonly total: string
-  readonly freeBalance: string
-  readonly reservedBalance: string
 }
 
 export const parseNativeBalanceData = (
