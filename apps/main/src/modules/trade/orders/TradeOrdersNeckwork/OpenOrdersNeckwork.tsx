@@ -13,9 +13,13 @@ import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwo
 
 type Props = {
   readonly paginationProps: PaginationProps
+  readonly openOrdersCount?: number
 }
 
-export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
+export const OpenOrdersNeckwork: FC<Props> = ({
+  paginationProps,
+  openOrdersCount,
+}) => {
   const [isDetailOpen, setIsDetailOpen] = useState<{
     readonly detail: OrderData
     readonly isTermination: boolean
@@ -32,6 +36,7 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
         data={enrichedOrders}
         columns={columns}
         isLoading={isLoading}
+        skeletonRowCount={openOrdersCount}
         paginated
         {...paginationProps}
         onRowClick={(detail) =>

@@ -70,11 +70,15 @@ export const useTradeChartValues = ({
   const low = crosshair?.low ?? lastDataPoint?.low ?? 0
   const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
-  const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(priceAssetId, value, priceOptions)
+  const [
+    formattedAssetPrice,
+    { isLoading: isAssetPriceLoading, isValid: isAssetPriceValid },
+  ] = useDisplayAssetPrice(priceAssetId, value, priceOptions)
 
-  const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
-    useDisplayAssetPrice(USDT_ASSET_ID, volume)
+  const [
+    formattedVolumePrice,
+    { isLoading: isVolumePriceLoading, isValid: isVolumePriceValid },
+  ] = useDisplayAssetPrice(USDT_ASSET_ID, volume)
 
   const shouldShowValues = !isEmpty && !isError
 
@@ -90,6 +94,8 @@ export const useTradeChartValues = ({
     volume,
     formattedAssetPrice,
     formattedVolumePrice,
+    isAssetPriceValid,
+    isVolumePriceValid,
     shouldShowValues,
     isLoadingValues,
     isLiveValue: crosshair === null,

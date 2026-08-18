@@ -33,7 +33,7 @@ export const TradeOrdersHeader: FC<Props> = ({
 }) => {
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
-  const { tab, allPairs, assetIn, assetOut, interval, chartType } = useSearch({
+  const { tab, allPairs, assetIn, assetOut } = useSearch({
     from: "/trade/_history",
   })
 
@@ -53,8 +53,6 @@ export const TradeOrdersHeader: FC<Props> = ({
             allPairs,
             assetIn,
             assetOut,
-            interval,
-            chartType,
           } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}
@@ -90,8 +88,6 @@ export const TradeOrdersHeader: FC<Props> = ({
                 allPairs: checked,
                 assetIn,
                 assetOut,
-                interval,
-                chartType,
               },
               resetScroll: false,
             })

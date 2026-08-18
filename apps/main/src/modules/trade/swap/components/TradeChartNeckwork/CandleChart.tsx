@@ -310,24 +310,34 @@ export const CandleChart: React.FC<CandleChartProps> = ({
         : -1
 
     const priceFormat = getPriceFormat(candles)
+    const ohlc = candles.map((candle) => ({
+      time: toTime(candle),
+      open: candle.open,
+      high: candle.high,
+      low: candle.low,
+      close: candle.close,
+    }))
+    const line = candles.map((candle) => ({
+      time: toTime(candle),
+      value: candle.close,
+    }))
+    const volumes = candles.map((candle) => ({
+      time: toTime(candle),
+      value: candle.volume,
+    }))
+
+    if (latestProps.current.type === "line") {
+      series.baseline.setData(line)
+      series.volume.setData(volumes)
+      series.candlestick.setData(ohlc)
+    } else {
+      series.candlestick.setData(ohlc)
+      series.volume.setData(volumes)
+      series.baseline.setData(line)
+    }
+
     series.candlestick.applyOptions({ priceFormat })
     series.baseline.applyOptions({ priceFormat })
-
-    series.candlestick.setData(
-      candles.map((candle) => ({
-        time: toTime(candle),
-        open: candle.open,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-      })),
-    )
-    series.baseline.setData(
-      candles.map((candle) => ({ time: toTime(candle), value: candle.close })),
-    )
-    series.volume.setData(
-      candles.map((candle) => ({ time: toTime(candle), value: candle.volume })),
-    )
 
     if (isReset || !visibleRange) {
       scale.setVisibleLogicalRange({

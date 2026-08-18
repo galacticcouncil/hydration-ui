@@ -20,6 +20,11 @@ type TradeChartPriceProps = {
   readonly onChangePeriodToggle: () => void
 }
 
+const formatPriceChange = (priceChange: number, periodLabel: string) => {
+  const sign = priceChange < 0 ? "-" : "+"
+  return `${sign}${Math.abs(priceChange).toFixed(2)}% / ${periodLabel}`
+}
+
 export const TradeChartPrice: React.FC<TradeChartPriceProps> = ({
   value,
   symbol,
@@ -49,8 +54,8 @@ export const TradeChartPrice: React.FC<TradeChartPriceProps> = ({
           value={value}
           valueFlash={isLiveValue}
           format={(value) => t("number", { value })}
-        />
-        {` ${symbol}`}
+        />{" "}
+        {symbol}
       </Text>
       {priceChange !== null && (
         <Tooltip
@@ -71,10 +76,7 @@ export const TradeChartPrice: React.FC<TradeChartPriceProps> = ({
             }}
             onClick={onChangePeriodToggle}
           >
-            {`${t("percent", {
-              value: priceChange,
-              signDisplay: "always",
-            })} / ${periodLabel}`}
+            {formatPriceChange(priceChange, periodLabel)}
           </Chip>
         </Tooltip>
       )}

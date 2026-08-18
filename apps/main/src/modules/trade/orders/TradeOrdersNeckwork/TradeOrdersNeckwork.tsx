@@ -78,7 +78,12 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
                 <MyRecentActivityNeckwork paginationProps={paginationProps} />
               )
             case "openOrders":
-              return <OpenOrdersNeckwork paginationProps={paginationProps} />
+              return (
+                <OpenOrdersNeckwork
+                  paginationProps={paginationProps}
+                  openOrdersCount={openOrdersCount}
+                />
+              )
             case "orderHistory":
               return <OrderHistoryNeckwork paginationProps={paginationProps} />
           }

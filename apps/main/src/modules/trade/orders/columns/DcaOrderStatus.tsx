@@ -1,9 +1,10 @@
 import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
-import { Box, Chip } from "@galacticcouncil/ui/components"
+import { Box } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
+import { Status, SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import {
   getDcaCompletionPercent,
   useDcaFundingBalance,
@@ -35,15 +36,15 @@ export const DcaOrderStatus: FC<Props> = ({
   switch (status) {
     case DcaScheduleStatus.Terminated:
       return (
-        <Chip variant="orange" size="small">
+        <Status color={getToken("accents.danger.secondary")}>
           {t("trade.orders.status.terminated")}
-        </Chip>
+        </Status>
       )
     case DcaScheduleStatus.Cancelled:
       return (
-        <Chip variant="red" size="small">
+        <Status color={getToken("text.low")}>
           {t("trade.orders.status.cancelled")}
-        </Chip>
+        </Status>
       )
     case DcaScheduleStatus.Created: {
       const percent = getDcaCompletionPercent({
@@ -54,7 +55,10 @@ export const DcaOrderStatus: FC<Props> = ({
       })
 
       return (
-        <Chip variant="info" size="small">
+        <Status
+          color={getToken("accents.success.emphasis")}
+          sx={{ display: "inline-flex", alignItems: "center", gap: "s" }}
+        >
           {t("trade.orders.status.active")}
           {percent !== null && <CompletionBar percent={percent} />}
           {percent !== null &&
@@ -63,14 +67,14 @@ export const DcaOrderStatus: FC<Props> = ({
               value: percent,
               maximumFractionDigits: 0,
             })}
-        </Chip>
+        </Status>
       )
     }
     case DcaScheduleStatus.Completed:
       return (
-        <Chip variant="green" size="small">
+        <Status color={getToken("text.tint.quart")}>
           {t("trade.orders.status.completed")}
-        </Chip>
+        </Status>
       )
   }
 }
