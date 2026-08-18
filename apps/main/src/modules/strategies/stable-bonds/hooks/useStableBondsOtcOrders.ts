@@ -69,6 +69,11 @@ export const useStableBondsOtcOrders = (
   return { ...query, data, isReady }
 }
 
+export const isStableBondSoldOut = (
+  orders: OtcOffer[] | undefined,
+  isReady: boolean,
+) => isReady && !orders?.some((order) => Big(order.assetAmountIn).gt(0))
+
 export const useHasFillableStableBondsOrders = () => {
   const query = useOtcOffers()
 

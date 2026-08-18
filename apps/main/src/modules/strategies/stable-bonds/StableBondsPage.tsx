@@ -15,7 +15,10 @@ import {
   StableBondsConfigProvider,
   useStableBondsConfig,
 } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
-import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import {
+  isStableBondSoldOut,
+  useStableBondsOtcOrders,
+} from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
 import { useAssets } from "@/providers/assetsProvider"
 
 type StableBondsPageProps = {
@@ -30,6 +33,7 @@ const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
     config.otcOfferIds,
   )
   const balance = useAccountBalance(asset.id)
+  const isSoldOut = isStableBondSoldOut(orders, isReady)
 
   return (
     <Stack gap="xxl">
@@ -37,8 +41,8 @@ const StableBondsPageContent: React.FC<StableBondsPageProps> = ({ asset }) => {
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl" sx={{ order: [2, null, 0] }}>
           {balance && balance.transferable > 0n && <StableBondsPosition />}
-          <StableBondsDetails orders={orders} />
-          <StableBondsAbout />
+          <StableBondsDetails orders={orders} isSoldOut={isSoldOut} />
+          <StableBondsAbout isSoldOut={isSoldOut} />
         </Stack>
         {isReady ? <StableBondsDeposit orders={orders} /> : <AppSkeleton />}
       </TwoColumnGrid>

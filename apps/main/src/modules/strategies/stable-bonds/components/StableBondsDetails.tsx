@@ -24,21 +24,28 @@ import {
   SStatsGroup,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDetails.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
-import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
+import {
+  getBondApr,
+  getDefaultBondApr,
+} from "@/modules/strategies/stable-bonds/utils/apr"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 
 export type StableBondsDetailsProps = {
   orders?: OtcOffer[]
+  isSoldOut?: boolean
 }
 
 export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   orders,
+  isSoldOut,
 }) => {
   const { t } = useTranslation(["common", "strategies"])
   const config = useStableBondsConfig()
   const { timeLeft } = useBondData(config.bondId)
 
-  const currentApr = getBondApr(config.bondId, timeLeft)
+  const currentApr = isSoldOut
+    ? getDefaultBondApr(config.bondId)
+    : getBondApr(config.bondId, timeLeft)
 
   return (
     <Paper p="l">
