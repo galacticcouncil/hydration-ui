@@ -1646,10 +1646,10 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.4.0.tgz#b364ca73b752f04608fe169cbdfbe6983124dc18"
-  integrity sha512-Pe9Cnr+qz0CDw0V6NDJwyBN4t+nlMESzg3KgtF/Y40ZzsVbtp200eXCNp0Gm0PAj7CbQuc6VVoW3UZ5nMK+bfw==
+"@galacticcouncil/xc-cfg@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.4.1.tgz#dab5f7234470eaa086c51972a0394a24e5e7f110"
+  integrity sha512-upK8JARFqHJQmuUBUcbWVSrQwCqZtfHBzA3DnPaERmvr5T45XvccrdOKUi46gbtJFaN8AXEldShM6ijzgGKBjA==
   dependencies:
     "@galacticcouncil/xc-core" "^2.3.0"
     "@thi.ng/memoize" "^4.0.2"
@@ -1678,10 +1678,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
   integrity sha512-OS/TfBaToyHSN6VqlfDxjXnBeI4Nx03OBGNrlS7a6qlutGF28lqGFiQgzqEGRYo5iQcTV2/WmKcBsWaMOl31fg==
 
-"@galacticcouncil/xc-sdk@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-2.3.0.tgz#62c6ad06586d2ec502fa581d5d7f706d2ad01f3e"
-  integrity sha512-m5He8/vP14MusRMeSK+8cIF4Gw0oZY6KQAtXUqcMi0H38KQu8ZAz/21LG1R2CQY1qG+KawU57c2wDuUBynz7Lg==
+"@galacticcouncil/xc-sdk@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-2.3.1.tgz#388ca8b54ec6944a7092e449a83a43c177487b8f"
+  integrity sha512-kAxVGwT7KuOomb2PfSMA/CZlewjLbPtENmSZeq++7tT2cpTqZ8/gGdir0LDjWw7NGXwqIlIIVbUzo04MwEaPhQ==
   dependencies:
     "@galacticcouncil/xc-core" "^2.3.0"
 
