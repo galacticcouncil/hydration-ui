@@ -14,6 +14,7 @@ import {
   HOLLAR_BOND_25_08_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
+import { millisecondsInMinute } from "date-fns/constants"
 import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
@@ -98,6 +99,22 @@ const getNominalBlockTimeMs = async (
   }
   return sdk.client.params.getBlockTime()
 }
+
+/**
+ * Live nominal block time. The provider snapshot reads it once at init — a
+ * session that spans a runtime upgrade (block-time change) would otherwise
+ * keep multiplying fresh block-denominated constants by a stale block time
+ * (observed on 3.lark: 2s cooldown constant × frozen 6s block time → "84
+ * days"). Refetching the constant is one cheap call per minute.
+ */
+export const nominalBlockTimeQuery = (data: TProviderData, endpoint: string) =>
+  queryOptions({
+    queryKey: ["nominalBlockTime", endpoint],
+    enabled: Object.keys(data.papi).length > 0,
+    queryFn: () => getNominalBlockTimeMs(data.papi, data.sdk),
+    refetchInterval: millisecondsInMinute,
+    refetchIntervalInBackground: true,
+  })
 
 type RpcProviderQueryOptions = ApiOptions & { priorityRpcUrl?: string }
 
