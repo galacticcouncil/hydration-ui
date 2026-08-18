@@ -9,7 +9,9 @@ import {
   TUnlockableVote,
 } from "@/api/democracy"
 import {
+  getCooldownExpiresAt,
   gigaStakeConstantsQuery,
+  gigaTwoSecBlocksSinceQuery,
   gigaUnstakePositionsQuery,
 } from "@/api/gigaStake"
 import { useProxyUrl } from "@/api/provider"
@@ -71,19 +73,23 @@ export const useUnlockableNativeTokens = () => {
       }> = []
 
       if (gigaLock > 0n) {
-        const [pendingPositions, bestNumber, gigaStakeConstants] =
+        const [pendingPositions, bestNumber, gigaStakeConstants, twoSecSince] =
           await Promise.all([
             rpc.queryClient.ensureQueryData(
               gigaUnstakePositionsQuery(rpc, address),
             ),
             rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
             rpc.queryClient.ensureQueryData(gigaStakeConstantsQuery(rpc)),
+            rpc.queryClient.ensureQueryData(gigaTwoSecBlocksSinceQuery(rpc)),
           ])
 
         unlockableGigaPendingPositions = pendingPositions.filter(
           (position) =>
-            position.voteAtBlock + gigaStakeConstants.cooldownPeriod <
-            bestNumber.parachainBlockNumber,
+            getCooldownExpiresAt(
+              position.voteAtBlock,
+              gigaStakeConstants.cooldownPeriod,
+              twoSecSince,
+            ) < bestNumber.parachainBlockNumber,
         )
 
         gigaUnlockable = unlockableGigaPendingPositions.reduce(

@@ -41,6 +41,40 @@ const getBlocksPerDay = (blockTimeMs: number) => {
   return Math.floor(millisecondsInDay / blockTimeMs)
 }
 
+/**
+ * Latest block whose timestamp is at or before `targetTs`, found by binary
+ * search over historical `Timestamp.Now`. Block-number arithmetic cannot
+ * express wall-clock lookbacks across block-time changes (6s→2s upgrade) or
+ * fork height resets — timestamps can. ~2·log2(head) light RPC reads, and
+ * every caller caches with `staleTime: Infinity`.
+ *
+ * Clamps to block 1 when the target predates the chain.
+ */
+const findBlockAtTimestamp = async (
+  rpc: TProviderContext,
+  targetTs: number,
+  headNumber: number,
+): Promise<{ block: number; timestamp: number }> => {
+  const timestampAt = async (blockNumber: number): Promise<number> => {
+    const hash: string = await rpc.papiClient._request("chain_getBlockHash", [
+      blockNumber,
+    ])
+    return Number(await rpc.papi.query.Timestamp.Now.getValue({ at: hash }))
+  }
+
+  let lo = 1
+  let hi = headNumber
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2)
+    if ((await timestampAt(mid)) <= targetTs) {
+      lo = mid
+    } else {
+      hi = mid - 1
+    }
+  }
+  return { block: lo, timestamp: await timestampAt(lo) }
+}
+
 /** Locked6x conviction multiplier / REWARD_MULTIPLIER_SCALE = 800/100. */
 const LOCKED_6X_MULTIPLIER = 8n
 const DEFAULT_WINDOW_DAYS = 28
@@ -162,18 +196,21 @@ export const passiveAprQuery = (
         (parachainBlockNumber - GIGAHDX_LAUNCH_BLOCK) / blocksPerDay
       if (palletAgeDays < MEASURED_MIN_AGE_DAYS) return guaranteed
 
-      // Window = min(windowDays, palletAge). Anchored so t0 can never predate
-      // the launch sweep (`gigapot = 0`, `stHDX supply = 0` → rate = 1 by
-      // runtime clamp).
-      const windowBlocks = windowDays * blocksPerDay
-      const t0Block = Math.max(
-        GIGAHDX_LAUNCH_BLOCK,
-        parachainBlockNumber - windowBlocks,
+      // Window = min(windowDays, palletAge). The window start is resolved by
+      // timestamp (era-safe across the 6s→2s switch), then anchored so t0 can
+      // never predate the launch sweep (`gigapot = 0`, `stHDX supply = 0` →
+      // rate = 1 by runtime clamp).
+      const nowTs = bestNumber.timestamp
+      const windowStart = await findBlockAtTimestamp(
+        rpc,
+        nowTs - windowDays * millisecondsInDay,
+        parachainBlockNumber,
       )
-      const actualWindowDays = Math.max(
-        1,
-        (parachainBlockNumber - t0Block) / blocksPerDay,
-      )
+      const t0Block = Math.max(GIGAHDX_LAUNCH_BLOCK, windowStart.block)
+      const actualWindowDays =
+        t0Block === windowStart.block
+          ? Math.max(1, (nowTs - windowStart.timestamp) / millisecondsInDay)
+          : Math.max(1, (parachainBlockNumber - t0Block) / blocksPerDay)
 
       const t0HashStr: string = await rpc.papiClient._request(
         "chain_getBlockHash",
@@ -279,12 +316,27 @@ export const refsPerYearQuery = (rpc: TProviderContext) =>
     queryKey: ["gigaApr", "refsPerYear", REFS_PER_YEAR_LOOKBACK_DAYS],
     enabled: rpc.isApiLoaded,
     queryFn: async () => {
-      const blocksPerDay = getBlocksPerDay(rpc.slotDurationMs)
       const bestNumber = await rpc.queryClient.ensureQueryData(
         bestNumberQuery(rpc),
       )
       const head = bestNumber.parachainBlockNumber
-      const cutoff = head - REFS_PER_YEAR_LOOKBACK_DAYS * blocksPerDay
+      const nowTs = bestNumber.timestamp
+
+      // Cutoff resolved by timestamp — era-safe across block-time changes
+      // and immune to fork height resets (where inherited end blocks exceed
+      // the reset head and block arithmetic would count everything).
+      const cutoffAnchor = await findBlockAtTimestamp(
+        rpc,
+        nowTs - REFS_PER_YEAR_LOOKBACK_DAYS * millisecondsInDay,
+        head,
+      )
+      const cutoff = cutoffAnchor.block
+      // Actual observed span, capped at the configured lookback — a chain
+      // younger than the lookback annualises over its real age instead.
+      const lookbackDays = Math.min(
+        REFS_PER_YEAR_LOOKBACK_DAYS,
+        Math.max(1, (nowTs - cutoffAnchor.timestamp) / millisecondsInDay),
+      )
 
       const refCount = Number(
         await rpc.papi.query.Referenda.ReferendumCount.getValue({
@@ -320,12 +372,10 @@ export const refsPerYearQuery = (rpc: TProviderContext) =>
           default:
             continue
         }
-        if (endBlock !== null && endBlock > cutoff) count++
+        if (endBlock !== null && endBlock > cutoff && endBlock <= head) count++
       }
 
-      const annualised = Math.round(
-        (count * daysInYear) / REFS_PER_YEAR_LOOKBACK_DAYS,
-      )
+      const annualised = Math.round((count * daysInYear) / lookbackDays)
       return Math.max(
         REFS_PER_YEAR_MIN,
         Math.min(REFS_PER_YEAR_MAX, annualised),

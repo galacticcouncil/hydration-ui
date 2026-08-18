@@ -77,6 +77,28 @@ export const getProviderDataEnv = (rpcUrl: string) => {
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
+/**
+ * Runtime invariant: `DCA.MinimalPeriod` encodes a 30s wall-clock floor for
+ * schedule frequency, rescaled with every block-time migration (5 blocks at
+ * 6s, 15 blocks at 2s). Deriving the block time from it flips atomically in
+ * the upgrade block — unlike a measured average, it can neither drift with
+ * block-production gaps nor lag the runtime upgrade by the sample window.
+ */
+const DCA_MINIMAL_PERIOD_MS = 30_000
+
+const getNominalBlockTimeMs = async (
+  papi: Papi,
+  sdk: SdkCtx,
+): Promise<number> => {
+  try {
+    const minimalPeriod = await papi.constants.DCA.MinimalPeriod()
+    if (minimalPeriod > 0) return DCA_MINIMAL_PERIOD_MS / minimalPeriod
+  } catch {
+    // constant unavailable — fall through to the measured average
+  }
+  return sdk.client.params.getBlockTime()
+}
+
 type RpcProviderQueryOptions = ApiOptions & { priorityRpcUrl?: string }
 
 export const rpcProviderQuery = (
@@ -132,7 +154,7 @@ const getProviderData = async (
     metadata.fetchMetadata(),
   ])
 
-  const blockTimeMs = await sdk.client.params.getBlockTime()
+  const blockTimeMs = await getNominalBlockTimeMs(papi, sdk)
 
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
