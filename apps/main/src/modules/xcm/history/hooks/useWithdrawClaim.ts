@@ -1,4 +1,4 @@
-import { etherscan, jitoexplorer, solexplorer } from "@galacticcouncil/utils"
+import { etherscan, solexplorer } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import {
   isEthereumSigner,
@@ -83,7 +83,7 @@ export function useWithdrawClaim(journey: XcJourney) {
           return signer.signAndSendBatch(
             call,
             getClaimTxOptions(chain, result.type, {
-              createLink: (bundleId) => jitoexplorer.bundle(bundleId),
+              createLink: (txHash) => solexplorer.tx(txHash),
               ...commonCallbacks,
             }),
           )
