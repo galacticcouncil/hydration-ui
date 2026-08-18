@@ -158,7 +158,7 @@ export const dcaSchedulesCountQuery = (
     },
   })
 
-const DCA_EXECUTIONS_PAGE_SIZE = 200
+const DCA_EXECUTIONS_PAGE_SIZE = 50
 
 export const dcaExecutionsInfiniteQuery = (
   client: NeckworkClient,

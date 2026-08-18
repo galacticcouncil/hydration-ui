@@ -157,7 +157,7 @@ export const DcaOrderDetailsModal = ({
         {progressPercent !== null && (
           <>
             <ModalContentDivider />
-            <Grid columnTemplate="1fr" gap="xxl" py="m">
+            <Grid columnTemplate="1fr" gap="xxl" py="xl">
               <DcaOrderProgress
                 percent={progressPercent}
                 tradesLabel={tradesLabel}

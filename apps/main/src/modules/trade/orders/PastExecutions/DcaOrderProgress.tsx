@@ -20,7 +20,7 @@ export const DcaOrderProgress: FC<Props> = ({ percent, tradesLabel }) => {
       >
         {tradesLabel && (
           <Text
-            fs="p6"
+            fs="p4"
             fw={500}
             color={getToken("text.tint.secondary")}
             whiteSpace="nowrap"
@@ -29,7 +29,7 @@ export const DcaOrderProgress: FC<Props> = ({ percent, tradesLabel }) => {
           </Text>
         )}
         <Text
-          fs="p6"
+          fs="p4"
           fw={500}
           color={getToken("text.high")}
           whiteSpace="nowrap"
@@ -40,7 +40,7 @@ export const DcaOrderProgress: FC<Props> = ({ percent, tradesLabel }) => {
           })}
         </Text>
       </Flex>
-      <ProgressBar value={percent} size="small" hideLabel />
+      <ProgressBar value={percent} hideLabel />
     </Flex>
   )
 }

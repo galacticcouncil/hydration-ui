@@ -1,7 +1,7 @@
 import Big from "big.js"
 
+import { useAccountBalances } from "@/api/balances"
 import { TAsset } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useDcaFundingBalance = (

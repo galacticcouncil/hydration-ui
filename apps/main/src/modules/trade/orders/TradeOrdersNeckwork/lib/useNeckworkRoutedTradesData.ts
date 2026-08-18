@@ -1,6 +1,6 @@
 import { routedTradesQuery } from "@galacticcouncil/indexer/neckwork"
 import { neckwork } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
@@ -20,14 +20,15 @@ export const useNeckworkRoutedTradesData = (
   page: number,
   pageSize: number,
 ) => {
-  const { data, isLoading } = useQuery(
-    routedTradesQuery(neckworkClient, {
+  const { data, isLoading } = useQuery({
+    ...routedTradesQuery(neckworkClient, {
       account: address,
       assetIds,
       page,
       pageSize,
     }),
-  )
+    placeholderData: keepPreviousData,
+  })
 
   const { getAssetWithFallback } = useAssets()
 

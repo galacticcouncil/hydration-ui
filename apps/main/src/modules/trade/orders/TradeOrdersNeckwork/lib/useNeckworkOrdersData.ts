@@ -2,7 +2,7 @@ import { dcaSchedulesQuery, DcaStatus } from "@galacticcouncil/indexer/neckwork"
 import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
@@ -28,15 +28,16 @@ export const useNeckworkOrdersData = (
   const accountAddress = account?.address ?? ""
   const owner = safeConvertSS58toPublicKey(accountAddress)
 
-  const { data, isLoading } = useQuery(
-    dcaSchedulesQuery(neckworkClient, {
+  const { data, isLoading } = useQuery({
+    ...dcaSchedulesQuery(neckworkClient, {
       owner,
       statuses,
       assetIds,
       page,
       pageSize,
     }),
-  )
+    placeholderData: keepPreviousData,
+  })
 
   const { getAssetWithFallback } = useAssets()
 

@@ -15,6 +15,12 @@ import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePast
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
+const MAX_EMPTY_PAGES = 5
+
+const hasVisibleRows = (
+  page: { items: ReadonlyArray<DcaExecution> } | undefined,
+) => !!page?.items.some((item) => item.status !== "planned")
+
 const STATUS_MAP: Record<DcaExecution["status"], TransactionStatusVariant> = {
   executed: TransactionStatusVariant.Success,
   failed: TransactionStatusVariant.Error,
@@ -59,21 +65,27 @@ export const useNeckworkPastExecutionsData = (scheduleId: number) => {
     [data, assetIn.decimals, assetOut.decimals],
   )
 
-  const loadAll = useCallback(async () => {
-    let hasMore = hasNextPage
-    while (hasMore) {
-      hasMore = (await fetchNextPage()).hasNextPage
+  const onEndReached = useCallback(async () => {
+    if (!hasNextPage || isFetchingNextPage) return
+
+    // `planned` rows are dropped client-side (the API has no status
+    // filter), so a page can yield no visible rows at all — the list would stop
+    // growing and the scroll trigger, which only re-fires when the rendered
+    // range moves, would never fire again. Pull a few more until one yields.
+    // Bounded: an empty page would leave the offset (and `hasNextPage`) put.
+    let result = await fetchNextPage()
+    for (let i = 0; i < MAX_EMPTY_PAGES; i++) {
+      if (result.isError || !result.hasNextPage) break
+      if (hasVisibleRows(result.data?.pages.at(-1))) break
+      result = await fetchNextPage()
     }
-  }, [hasNextPage, fetchNextPage])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   return {
     assetIn,
     assetOut,
     executions,
     isLoading,
-    totalCount: firstPage?.totalCount ?? 0,
-    hasMore: hasNextPage,
-    isLoadingAll: isFetchingNextPage,
-    loadAll,
+    onEndReached,
   }
 }

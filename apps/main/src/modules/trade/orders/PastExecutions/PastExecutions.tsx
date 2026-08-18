@@ -30,10 +30,11 @@ export type PastExecutionsProps = {
   readonly assetOut: TAsset
   readonly executions: ReadonlyArray<PastExecutionData>
   readonly isLoading: boolean
-  readonly hasMore: boolean
-  readonly isLoadingAll: boolean
-  readonly loadAll: () => void
-  readonly totalCount: number
+  readonly hasMore?: boolean
+  readonly isLoadingAll?: boolean
+  readonly loadAll?: () => void
+  readonly totalCount?: number
+  readonly onEndReached?: () => void
   readonly className?: string
 }
 
@@ -46,6 +47,7 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
   isLoadingAll,
   loadAll,
   totalCount,
+  onEndReached,
   className,
 }) => {
   const { t } = useTranslation("trade")
@@ -88,6 +90,7 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
           <VirtualizedList
             {...pastExecutionsListProps}
             items={executions}
+            onEndReached={onEndReached}
             renderItem={(execution) => (
               <PastExecutionItem
                 assetIn={assetIn}
@@ -97,15 +100,17 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
             )}
           />
         )}
-        {hasMore && (
+        {loadAll && hasMore && (
           <Flex justify="center" px="l" pb="l">
             <LoadingButton
               variant="tertiary"
               outline
-              isLoading={isLoadingAll}
+              isLoading={isLoadingAll ?? false}
               onClick={loadAll}
             >
-              {t("trade.orders.pastExecutions.loadAll", { count: totalCount })}
+              {t("trade.orders.pastExecutions.loadAll", {
+                count: totalCount ?? 0,
+              })}
             </LoadingButton>
           </Flex>
         )}
