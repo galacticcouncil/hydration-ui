@@ -11,6 +11,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import {
   accountOpenGovVotesQuery,
   ongoingReferendaQuery,
@@ -18,7 +19,6 @@ import {
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import { VoteModal } from "@/modules/staking/components/VoteModal/VoteModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 
 type Props = {

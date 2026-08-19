@@ -12,16 +12,15 @@ import { Binary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isBigInt, isNullish, isNumber, pick, prop, unique, zip } from "remeda"
-import { useShallow } from "zustand/shallow"
+import { isBigInt, isNullish, isNumber, prop, unique, zip } from "remeda"
 
 import { useAccountInfo } from "@/api/account"
+import { useAccountBalances } from "@/api/balances"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiValue } from "@/hooks/usePapiValue"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountData } from "@/states/account"
 import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
@@ -112,9 +111,7 @@ export const useAccountFeePaymentAssetId = (
 export const useAccountFeePaymentAssets = () => {
   const { getAsset } = useAssets()
 
-  const { balances, isBalanceLoading } = useAccountData(
-    useShallow(pick(["balances", "isBalanceLoading"])),
-  )
+  const { balances, isBalanceLoading } = useAccountBalances()
   const { data: accountFeePaymentAssetId, isLoading: isPaymentAssetLoading } =
     useAccountFeePaymentAssetId()
 
@@ -129,7 +126,7 @@ export const useAccountFeePaymentAssets = () => {
     const assetIds: string[] = []
 
     Object.entries(balances).forEach(([assetId, balance]) => {
-      if (balance.free - balance.frozen > 0) {
+      if (balance.free - balance.frozen > 0 && getAsset(assetId)) {
         assetIds.push(assetId)
       }
     })
@@ -137,6 +134,7 @@ export const useAccountFeePaymentAssets = () => {
   }, [
     accountFeePaymentAssetId,
     balances,
+    getAsset,
     isPaymentAssetLoading,
     isBalanceLoading,
   ])
