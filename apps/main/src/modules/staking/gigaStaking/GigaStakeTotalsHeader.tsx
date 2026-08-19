@@ -18,37 +18,19 @@ import { millisecondsInDay } from "date-fns/constants"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
 import {
   borrowReservesQuery,
   gigaLendingPoolAddressProvider,
   useFacilitatorBucket,
-  useUserGigaBorrowSummary,
 } from "@/api/borrow"
 import { useBorrowPoolDataContract } from "@/api/borrow/contracts"
 import { useGigaApr } from "@/api/gigaApr"
-import {
-  gigaStakeConstantsQuery,
-  gigaTotalLockedQuery,
-  useGigaStakeExchangeRate,
-} from "@/api/gigaStake"
+import { gigaStakeConstantsQuery, gigaTotalLockedQuery } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { STAKING_DOCS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman, toDecimal } from "@/utils/formatting"
-
-/**
- * Reference stake (in HDX planck) used as the dilution input for the fleet
- * voting APR when the connected wallet has no GIGAHDX position (or no wallet
- * is connected at all). Picked so the projection doesn't degenerate into the
- * "marginal voter grabs the whole pool" limit on chains with few voters,
- * while still being small enough to represent a realistic new-staker entry.
- *
- * 1,000 HDX — a plausible "I'm trying staking out" amount.
- */
-const DEFAULT_REFERENCE_STAKE_HDX_PLANCK = 1_000n * 10n ** 12n
 
 export const GigaStakeTotalsHeader: FC = () => {
   const { t } = useTranslation(["common", "staking"])
@@ -59,61 +41,13 @@ export const GigaStakeTotalsHeader: FC = () => {
     gigaStakeConstantsQuery(rpc),
   )
   const { isMobile, isTablet } = useBreakpoints()
-  const { data: exchangeRate } = useGigaStakeExchangeRate()
 
-  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
-  const userGhdxHuman = gigaBorrowSummary?.hdxReserve?.underlyingBalance ?? "0"
+  const { total, base, voting, isLoading: isAprLoading } = useGigaApr()
 
-  const { getBalance } = useAccountBalances()
-  const nativeBalance = getBalance(native.id)
-  const { data: locksData } = useNativeTokenLocks()
-
-  const stakeableHdxPlanck = (() => {
-    if (!nativeBalance) return 0n
-    const free = BigInt(nativeBalance.free.toString())
-    const vested = locksData?.get(TokenLockType.Vesting) ?? 0n
-    const classicStake = locksData?.get(TokenLockType.Staking) ?? 0n
-    const gigaStaked = locksData?.get(TokenLockType.GigaStaking) ?? 0n
-    const spendable = free - vested - classicStake - gigaStaked
-    return spendable > 0n ? spendable : 0n
-  })()
-
-  // Convert user GIGAHDX × rate → HDX planck. Returns the default reference
-  // when the user has no position (or no rate yet).
-  const stakedHdxPlanck = (() => {
-    if (!exchangeRate) return 0n
-    const ghdxBig = Big(userGhdxHuman)
-    if (ghdxBig.lte(0)) return 0n
-    const hdxHuman = ghdxBig.times(exchangeRate.toString())
-    return BigInt(
-      hdxHuman.times(`1e${native.decimals}`).round(0, Big.roundDown).toString(),
-    )
-  })()
-  const totalReferenceStake = stakedHdxPlanck + stakeableHdxPlanck
-  const aprReferenceStake =
-    totalReferenceStake > 0n
-      ? totalReferenceStake
-      : DEFAULT_REFERENCE_STAKE_HDX_PLANCK
-
-  // We render passive and voting on separate lines (Option 2 split) to make
-  // the conditionality of voting APR explicit — a passive holder earns only
-  // the base component; voting is "+ up to X% if you vote at max conviction".
-  const {
-    total,
-    passive: aprPassive,
-    voting: aprVoting,
-    isLoading: isAprLoading,
-  } = useGigaApr(aprReferenceStake)
-
-  // The base + voting breakdown is only meaningful when there's a voting
-  // component. When the voting APR rounds to 0 (e.g. no referenda with reward
-  // pools yet) the total IS the base, so the breakdown row is hidden entirely.
-  const basePct = Number(aprPassive.toFixed(2))
-  const votingPct = Number(aprVoting.toFixed(2))
-  const showAprBreakdown = votingPct > 0
+  const showAprBreakdown = !!base && !!voting
   const aprBreakdown = t("staking:dashboard.projectedAPR.summ", {
-    base: basePct,
-    voting: votingPct,
+    base,
+    voting,
   })
 
   const cooldownPeriodDays = Math.round(
@@ -186,7 +120,7 @@ export const GigaStakeTotalsHeader: FC = () => {
         isLoading={isAprLoading}
         customValue={
           <ValueStatsValue size="medium">
-            {t("percent", { value: Number(total.toFixed(2)) })}
+            {total ? t("percent", { value: total }) : "—"}
           </ValueStatsValue>
         }
         customBottomLabel={
@@ -275,19 +209,19 @@ export const ProjectedAPRTooltipContent = () => {
         {lines[0]}
       </Text>
 
-      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+      <Text fw={400} fs="p6" lh={1.4} color={getToken("text.high")}>
         <Trans t={t} i18nKey="gigaStaking.projectedAPR.base.tooltip">
-          <Text fw={600} />
+          <Text fw={600} as="span" />
         </Trans>
       </Text>
 
-      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+      <Text fw={400} fs="p6" lh={1.4} color={getToken("text.high")}>
         <Trans t={t} i18nKey="gigaStaking.projectedAPR.voting.tooltip">
-          <Text fw={600} />
+          <Text fw={600} as="span" />
         </Trans>
       </Text>
 
-      <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
+      <Text fw={400} fs="p6" lh={1.4} color={getToken("text.medium")}>
         {lines[3]}
       </Text>
 

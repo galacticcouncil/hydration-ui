@@ -13,6 +13,7 @@ import {
   TokenLockType,
   useNativeTokenLocks,
 } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import {
   Conviction,
   getConvictionBlocks,
@@ -23,7 +24,6 @@ import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt } from "@/utils/formatting"
 import { positive } from "@/utils/validators"

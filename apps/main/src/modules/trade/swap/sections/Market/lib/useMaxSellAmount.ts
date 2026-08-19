@@ -1,11 +1,11 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
+import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -26,11 +26,11 @@ export const useMaxSellAmount = ({
   } = useTradeSettings()
 
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
-  const { getTransferableBalance } = useAccountBalances()
+  const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const enabled =
     rpc.isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
 
-  const { data: tx } = useQuery({
+  const { data: tx, isPending: isTxPending } = useQuery({
     enabled,
     queryKey: ["maxSellAmount", assetIn, assetOut, swapSlippage],
     queryFn: async () => {
@@ -77,11 +77,15 @@ export const useMaxSellAmount = ({
     return {
       maxSwapSellBalance: balance,
       maxTwapSellBalance: balance,
+      isMaxSwapSellBalanceLoading: isBalanceLoading,
+      isMaxTwapSellBalanceLoading: isBalanceLoading,
     }
   }
 
   return {
     maxSwapSellBalance: maxSwapBalanceWithFee?.maxBalanceHuman ?? "0",
     maxTwapSellBalance: maxTwapBalanceWithFee?.maxBalanceHuman ?? "0",
+    isMaxSwapSellBalanceLoading: isTxPending || !maxSwapBalanceWithFee,
+    isMaxTwapSellBalanceLoading: isTxPending || !maxTwapBalanceWithFee,
   }
 }

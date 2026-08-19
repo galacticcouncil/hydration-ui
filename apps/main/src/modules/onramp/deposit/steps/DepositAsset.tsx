@@ -11,7 +11,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { isH160Address } from "@galacticcouncil/utils"
+import { isEvmParachain, isEvmParachainAccount } from "@galacticcouncil/utils"
 import {
   useAccount,
   useWeb3ConnectModal,
@@ -135,8 +135,8 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 
   const chain = chainsMap.get(dstChain)
 
-  const isAccountAllowed = isH160Address(address)
-    ? (chain?.isEvmParachain() ?? false)
+  const isAccountAllowed = isEvmParachainAccount(address)
+    ? !!chain && isEvmParachain(chain)
     : true
 
   const assetDetails = asset ? getAsset(asset.assetId) : null

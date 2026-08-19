@@ -64,7 +64,12 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
         </Button>
 
         {error ? (
-          <Text fs="p3" color={getToken("alarmRed.400")}>
+          <Text
+            fs="p3"
+            fw={500}
+            color={getToken("alarmRed.400")}
+            align="center"
+          >
             {error}
           </Text>
         ) : (

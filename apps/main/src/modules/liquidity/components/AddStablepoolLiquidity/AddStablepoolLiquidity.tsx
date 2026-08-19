@@ -28,6 +28,7 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { useBorrowAssetsApy } from "@/api/borrow"
 import { Farm } from "@/api/farms"
 import { spotPriceQuery } from "@/api/spotPrice"
@@ -59,7 +60,6 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
-import { useAccountBalances } from "@/states/account"
 
 import {
   addStablepoolOptions,

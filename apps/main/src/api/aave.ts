@@ -17,6 +17,7 @@ import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import {
   borrowReserveQuery,
   lendingPoolAddressProvider,
@@ -27,7 +28,6 @@ import {
 } from "@/api/borrow"
 import { isErc20AToken } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 type HealthFactorArgs = {

@@ -13,3 +13,9 @@ export const getBondApr = (
     timeLeftMs > 0 ? Math.ceil(timeLeftMs / millisecondsInDay) : 0
   return daysLeft > 0 ? (fixedYield / daysLeft) * daysInYear : null
 }
+
+export const getDefaultBondApr = (bondId: string): number | null => {
+  const config = STABLE_BONDS[bondId]
+  if (!config) return null
+  return getBondApr(bondId, config.termDays * millisecondsInDay)
+}
