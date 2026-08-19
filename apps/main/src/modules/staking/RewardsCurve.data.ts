@@ -6,7 +6,6 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsInDay } from "date-fns/constants"
 
 import { stakingConstsQuery } from "@/api/constants"
 import { ongoingReferendaQuery } from "@/api/democracy"
@@ -137,13 +136,13 @@ export const useRewardsCurveData = () => {
 
         const y = Big(scalePercentage(payablePercentage_)).mul(100).toNumber()
 
-        const x = Big.max(
-          Big(stakingConsts.periodLength)
-            .times(period)
-            .times(rpc.slotDurationMs)
-            .div(millisecondsInDay),
-          0,
-        ).toNumber()
+        // 1 staking period = 1 wall-clock day in every block-time era: the
+        // pallet's `calculate_period_number` normalizes 12s/6s/2s blocks
+        // against its era anchors so `PeriodLength` (7200, 12s-denominated)
+        // always spans 86400s. Deriving days as periodLength × blockTime
+        // was only correct in the 12s era (it halved the axis at 6s and
+        // would show a sixth of it at 2s).
+        const x = Big.max(period, 0).toNumber()
 
         return {
           x,
