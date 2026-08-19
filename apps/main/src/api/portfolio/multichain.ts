@@ -1,13 +1,18 @@
 import {
+  formatSourceChainAddress,
   HYDRATION_CHAIN_KEY,
   MultichainBalanceService,
   useStableArray,
 } from "@galacticcouncil/utils"
 import { AssetAmount } from "@galacticcouncil/xc-core"
-import { useQueries } from "@tanstack/react-query"
+import {
+  useQueries,
+  useQueryClient,
+  UseQueryResult,
+} from "@tanstack/react-query"
 import Big from "big.js"
 import { useCallback, useMemo } from "react"
-import { isNonNullish } from "remeda"
+import { isNonNullish, unique } from "remeda"
 
 import {
   fetchHydrationRegistryAssetAmounts,
@@ -25,14 +30,15 @@ export const useMultichainService = (
   chains: readonly string[] = PORTFOLIO_CHAINS,
 ) => {
   const configService = useCrossChainConfigService()
+  const stableChains = useStableArray([...chains])
 
   return useMemo(
     () =>
       new MultichainBalanceService({
         configService,
-        chains,
+        chains: stableChains,
       }),
-    [configService, chains],
+    [configService, stableChains],
   )
 }
 
@@ -42,44 +48,48 @@ export type MultichainValuedBalance = {
   displayValue: string | null
 }
 
-export type MultichainBalanceEntry = {
+type MultichainBalanceEntry = {
   address: string
   chainKey: string
   balances: AssetAmount[]
   isLoading: boolean
   isError: boolean
-  refetch: () => void
 }
 
-/**
- * One query per address × eligible chain, so each chain section loads, fails and
- * retries on its own. The service's `getBalances` fan-out is intentionally
- * unused here — it would collapse all chains into a single query state.
- *
- * All grouping/shaping lives here; the service stays chain-agnostic.
- */
 export const useMultichainPortfolio = (
   addresses: string[],
   chains: readonly string[] = PORTFOLIO_CHAINS,
 ) => {
-  const service = useMultichainService(chains)
+  const stableChains = useStableArray([...chains])
+  const service = useMultichainService(stableChains)
   const configService = useCrossChainConfigService()
+  const queryClient = useQueryClient()
   const { sdk, isApiLoaded } = useRpcProvider()
   const { getAsset, isToken, isErc20 } = useAssets()
   const stableAddresses = useStableArray(addresses)
   const balanceFilter = useAccountBalanceFilter()
 
   const fetchHydrationBalances = useCallback(
-    (address: string) =>
-      fetchHydrationRegistryAssetAmounts({
-        address,
+    (address: string) => {
+      if (!balanceFilter) {
+        throw new Error("[multichain] account balance filter is not ready")
+      }
+
+      const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+      const formatted = hydrationChain
+        ? formatSourceChainAddress(address, hydrationChain)
+        : address
+
+      return fetchHydrationRegistryAssetAmounts({
+        address: formatted,
         sdk,
-        filter: balanceFilter!,
+        filter: balanceFilter,
         getAsset,
         isToken,
         isErc20,
-      }),
-    [sdk, balanceFilter, getAsset, isToken, isErc20],
+      })
+    },
+    [sdk, balanceFilter, getAsset, isToken, isErc20, configService],
   )
 
   const pairs = useMemo(
@@ -92,117 +102,148 @@ export const useMultichainPortfolio = (
     [service, stableAddresses],
   )
 
-  const results = useQueries({
-    queries: pairs.map(({ address, chainKey }) => ({
-      queryKey: portfolioBalanceQueryKey(address, chainKey),
-      queryFn: () =>
-        chainKey === HYDRATION_CHAIN_KEY
-          ? fetchHydrationBalances(address)
-          : service.getChainBalances(address, chainKey),
-      enabled:
-        chainKey !== HYDRATION_CHAIN_KEY ||
-        (isApiLoaded && !!Object.keys(sdk).length && !!balanceFilter),
-      staleTime: 60_000,
-      gcTime: PORTFOLIO_CACHE_MAX_AGE,
-      refetchOnWindowFocus: false,
-    })),
-  })
+  const queries = useMemo(
+    () =>
+      pairs.map(({ address, chainKey }) => ({
+        queryKey: portfolioBalanceQueryKey(address, chainKey),
+        queryFn: () =>
+          chainKey === HYDRATION_CHAIN_KEY
+            ? fetchHydrationBalances(address)
+            : service.getChainBalances(address, chainKey),
+        enabled:
+          chainKey !== HYDRATION_CHAIN_KEY ||
+          (isApiLoaded && !!Object.keys(sdk).length && !!balanceFilter),
+        staleTime: 60_000,
+        gcTime: PORTFOLIO_CACHE_MAX_AGE,
+        refetchOnWindowFocus: false,
+      })),
+    [pairs, fetchHydrationBalances, service, isApiLoaded, sdk, balanceFilter],
+  )
 
-  const entries: MultichainBalanceEntry[] = pairs.map((pair, i) => {
-    const query = results[i]
-    return {
-      ...pair,
-      balances: query?.data ?? [],
-      isLoading: query?.isLoading ?? true,
-      isError: query?.isError ?? false,
-      refetch: () => void query?.refetch(),
-    }
+  const combine = useCallback(
+    (results: ReadonlyArray<UseQueryResult<AssetAmount[]>>) => ({
+      entries: pairs.map<MultichainBalanceEntry>((pair, i) => ({
+        ...pair,
+        balances: results[i]?.data ?? [],
+        isLoading: results[i]?.isLoading ?? true,
+        isError: results[i]?.isError ?? false,
+      })),
+      isLoading: results.some((query) => query.isLoading),
+      isRefetching: results.some((query) => query.isRefetching),
+      lastUpdatedAt: Math.max(
+        0,
+        ...results.map((query) => query.dataUpdatedAt),
+      ),
+    }),
+    [pairs],
+  )
+
+  const { entries, isLoading, isRefetching, lastUpdatedAt } = useQueries({
+    queries,
+    combine,
   })
 
   const getHydrationAssetId = useHydrationAssetId()
 
-  const resolvePortfolioAssetId = (
-    balance: AssetAmount,
-    chainKey: string,
-  ): string | null =>
-    chainKey === HYDRATION_CHAIN_KEY && /^\d+$/.test(balance.key)
-      ? balance.key
-      : getHydrationAssetId(balance, chainKey)
+  const resolvePortfolioAssetId = useCallback(
+    (balance: AssetAmount, chainKey: string): string | null =>
+      chainKey === HYDRATION_CHAIN_KEY && /^\d+$/.test(balance.key)
+        ? balance.key
+        : getHydrationAssetId(balance, chainKey),
+    [getHydrationAssetId],
+  )
 
-  const assetIds = entries.flatMap((entry) =>
-    entry.balances
-      .map((balance) => resolvePortfolioAssetId(balance, entry.chainKey))
-      .filter(isNonNullish),
+  const assetIds = useMemo(
+    () =>
+      unique(
+        entries.flatMap((entry) =>
+          entry.balances
+            .map((balance) => resolvePortfolioAssetId(balance, entry.chainKey))
+            .filter(isNonNullish),
+        ),
+      ),
+    [entries, resolvePortfolioAssetId],
   )
 
   const { getAssetPrice } = useAssetsPrice(assetIds)
 
-  const value = (
-    balance: AssetAmount,
-    sourceChainKey: string,
-  ): MultichainValuedBalance => {
-    const assetId = resolvePortfolioAssetId(balance, sourceChainKey)
-    const price = assetId ? getAssetPrice(assetId) : null
-
-    return {
-      balance,
-      assetId,
-      // no price => no fiat value at all; never fall back to 0, that would
-      // render a held balance as "$0.00"
-      displayValue: price?.isValid
-        ? Big(price.price)
-            .times(toDecimal(balance.amount, balance.decimals))
-            .toString()
-        : null,
-    }
-  }
+  const refetchPair = useCallback(
+    (address: string, chainKey: string) =>
+      void queryClient.refetchQueries({
+        queryKey: portfolioBalanceQueryKey(address, chainKey),
+      }),
+    [queryClient],
+  )
 
   const refetchAll = useCallback(
-    () => results.forEach((query) => void query?.refetch()),
-    [results],
+    () =>
+      pairs.forEach(({ address, chainKey }) => refetchPair(address, chainKey)),
+    [pairs, refetchPair],
   )
 
-  const isRefetching = results.some((query) => query.isRefetching)
+  const byChain = useMemo(
+    () =>
+      stableChains.flatMap((chainKey) => {
+        const chainEntries = entries.filter(
+          (entry) => entry.chainKey === chainKey,
+        )
+        const chain = configService.chains.get(chainKey)
+        if (!chainEntries.length || !chain) return []
 
-  const lastUpdatedAt = useMemo(
-    () => Math.max(0, ...results.map((query) => query.dataUpdatedAt)),
-    [results],
+        const balances = chainEntries.flatMap((entry) =>
+          entry.balances.map((balance) => {
+            const assetId = resolvePortfolioAssetId(balance, chainKey)
+            const price = assetId ? getAssetPrice(assetId) : null
+
+            return {
+              balance,
+              assetId,
+              displayValue: price?.isValid
+                ? Big(price.price)
+                    .times(toDecimal(balance.amount, balance.decimals))
+                    .toString()
+                : null,
+            }
+          }),
+        )
+        const isLoading = chainEntries.some((entry) => entry.isLoading)
+        const isError = chainEntries.some((entry) => entry.isError)
+        const hasAssets = balances.some(({ balance }) =>
+          Big(balance.amount.toString()).gt(0),
+        )
+
+        // hide chains with nothing to show; keep errors visible for retry
+        if (!isError && !isLoading && !hasAssets) return []
+
+        return [
+          {
+            chainKey,
+            chain,
+            balances,
+            total: balances
+              .reduce(
+                (acc, { displayValue }) => acc.plus(displayValue ?? "0"),
+                Big(0),
+              )
+              .toString(),
+            isLoading,
+            isError,
+            refetch: () =>
+              chainEntries.forEach((entry) =>
+                refetchPair(entry.address, entry.chainKey),
+              ),
+          },
+        ]
+      }),
+    [
+      stableChains,
+      configService,
+      entries,
+      getAssetPrice,
+      resolvePortfolioAssetId,
+      refetchPair,
+    ],
   )
 
-  const byChain = chains.flatMap((chainKey) => {
-    const chainEntries = entries.filter((entry) => entry.chainKey === chainKey)
-    const chain = configService.chains.get(chainKey)
-    if (!chainEntries.length || !chain) return []
-
-    const balances = chainEntries.flatMap((entry) =>
-      entry.balances.map((balance) => value(balance, chainKey)),
-    )
-    const isLoading = chainEntries.some((entry) => entry.isLoading)
-    const isError = chainEntries.some((entry) => entry.isError)
-    const hasAssets = balances.some(({ balance }) =>
-      Big(balance.amount.toString()).gt(0),
-    )
-
-    // hide chains with nothing to show; keep errors visible for retry
-    if (!isError && !isLoading && !hasAssets) return []
-
-    return [
-      {
-        chainKey,
-        chain,
-        balances,
-        total: balances
-          .reduce(
-            (acc, { displayValue }) => acc.plus(displayValue ?? "0"),
-            Big(0),
-          )
-          .toString(),
-        isLoading,
-        isError,
-        refetch: () => chainEntries.forEach((entry) => entry.refetch()),
-      },
-    ]
-  })
-
-  return { entries, byChain, refetchAll, isRefetching, lastUpdatedAt }
+  return { byChain, isLoading, isRefetching, lastUpdatedAt, refetchAll }
 }

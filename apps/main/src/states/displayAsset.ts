@@ -1,7 +1,7 @@
 import { useStableArray } from "@galacticcouncil/utils"
-import { hoursToMilliseconds } from "date-fns"
+import { minutesToMilliseconds } from "date-fns"
 import { useCallback, useMemo } from "react"
-import { isNonNullish } from "remeda"
+import { isNonNullish, pickBy, unique } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
@@ -9,7 +9,7 @@ import { useShallow } from "zustand/shallow"
 import { useSubscribedPriceKeys } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
 
-const SPOT_PRICE_MAX_AGE = hoursToMilliseconds(4)
+const SPOT_PRICE_MAX_AGE = minutesToMilliseconds(5)
 
 type TDisplayAsset = {
   id: string | undefined
@@ -71,9 +71,16 @@ export const useDisplaySpotPriceStore = create<Store>()(
       },
     }),
     {
-      name: "prices",
+      // prices are denominated in the display asset — a different one must not
+      // read the previous denomination back off disk
+      name: `prices-${ENV.VITE_DISPLAY_ASSET_ID}`,
       version: 1,
-      partialize: ({ assets, updatedAt }) => ({ assets, updatedAt }),
+      // never persist a null: it reads back as "fetched, no price" with no
+      // loading state, so a single failed fetch would replay until it expires
+      partialize: ({ assets, updatedAt }) => ({
+        assets: pickBy(assets, isNonNullish),
+        updatedAt,
+      }),
       merge: (persisted, current) => {
         const stored = persisted as Partial<Store> | undefined
 
@@ -95,7 +102,7 @@ export const useDisplaySpotPriceStore = create<Store>()(
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
-  const stableAssetIds = useStableArray(assetIds)
+  const stableAssetIds = useStableArray(unique(assetIds))
 
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>

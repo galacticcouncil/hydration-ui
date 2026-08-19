@@ -29,7 +29,7 @@ export const PortfolioOverviewSkeleton = () => {
         </Text>
       </Box>
 
-      <Paper>
+      <Paper sx={{ overflow: "hidden" }}>
         <PortfolioChainHeader
           isLoading
           name="Hydration"

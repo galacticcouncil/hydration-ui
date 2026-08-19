@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, memo } from "react"
 
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { MyAssetsEmptyState } from "@/modules/portfolio/overview/MyAssets/MyAssetsEmptyState"
@@ -13,23 +13,20 @@ type Props = {
   readonly sortingProps: SortingProps
 }
 
-export const MyAssets: FC<Props> = ({
-  data,
-  isEmpty,
-  isLoading,
-  searchPhrase,
-  sortingProps,
-}) => {
-  if (!isLoading && isEmpty) {
-    return <MyAssetsEmptyState />
-  }
+export const MyAssets: FC<Props> = memo(
+  ({ data, isEmpty, isLoading, searchPhrase, sortingProps }) => {
+    if (!isLoading && isEmpty) {
+      return <MyAssetsEmptyState />
+    }
 
-  return (
-    <MyAssetsTable
-      data={data}
-      isLoading={isLoading}
-      searchPhrase={searchPhrase}
-      sortingProps={sortingProps}
-    />
-  )
-}
+    return (
+      <MyAssetsTable
+        data={data}
+        isLoading={isLoading}
+        searchPhrase={searchPhrase}
+        sortingProps={sortingProps}
+      />
+    )
+  },
+)
+MyAssets.displayName = "MyAssets"

@@ -11,7 +11,7 @@ export const PortfolioEmptyState: FC = () => {
 
   return (
     <Box>
-      <SectionHeader noTopPadding title={t("wallet:myAssets.header.title")} />
+      <SectionHeader noTopPadding title={t("wallet:myAssets.title")} />
       <Paper py="5.75rem">
         <EmptyState
           image={NoFunds}

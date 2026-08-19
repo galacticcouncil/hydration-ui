@@ -60,6 +60,7 @@ export const STrackedWalletHeader = styled.div<{
     border-top: 1px solid ${theme.details.separators};
     box-sizing: border-box;
     color: ${theme.text.high};
+    cursor: pointer;
     transition: ${theme.transitions.colors};
 
     &:hover {
@@ -69,41 +70,45 @@ export const STrackedWalletHeader = styled.div<{
     &[data-state="closed"] {
       border-bottom-color: transparent;
     }
+
+    &[data-state="open"] [data-chevron] svg {
+      transform: rotate(180deg);
+    }
   `,
 )
 
-export const STrackedWalletHeaderMainTrigger = styled.button(
+export const STrackedWalletHeaderIdentity = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.space.s};
+    min-width: 0;
+
+    &:hover [data-remove],
+    &:focus-within [data-remove] {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  `,
+)
+
+export const STrackedWalletHeaderMainTrigger = styled.div(
   () => css`
     display: flex;
     align-items: center;
-    flex: 1;
     min-width: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
     text-align: left;
   `,
 )
 
-export const STrackedWalletHeaderChevronTrigger = styled.button(
+export const STrackedWalletHeaderChevronTrigger = styled.span(
   () => css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
 
     svg {
       transition: transform 0.15s ease;
-    }
-
-    &[data-state="open"] svg {
-      transform: rotate(180deg);
     }
   `,
 )
@@ -122,6 +127,32 @@ export const STrackedWalletHeaderRefreshButton = styled(Button)(
   `,
 )
 
+export const STrackedWalletHeaderRemoveButton = styled.button(
+  ({ theme }) => css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: ${theme.text.medium};
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: ${theme.transitions.opacity}, ${theme.transitions.colors};
+
+    &:hover:not(:disabled) {
+      color: ${theme.text.high};
+    }
+
+    @media (hover: none) {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  `,
+)
+
 export const SPortfolioChainHeaderTotal = styled.div(
   ({ theme }) => css`
     display: flex;
@@ -134,7 +165,8 @@ export const SPortfolioChainHeaderTotal = styled.div(
 )
 
 const portfolioChainHeaderButtonCss = css`
-  & > *:first-child > [data-state] {
+  scroll-margin-top: calc(3.375rem + 1rem);
+  & > *:first-of-type > [data-state] {
     border-top-color: transparent;
   }
 `
@@ -154,6 +186,9 @@ export const SPortfolioChainsList = styled(Box)(
 
 export const SPortfolioOverviewStats = styled(Stack)(
   ({ theme }) => css`
+    width: max-content;
+    justify-content: flex-start;
+
     ${mq("lg")} {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -166,9 +201,10 @@ export const SPortfolioOverviewStats = styled(Stack)(
 
 export const SPortfolioOverviewStat = styled(Box)(
   ({ theme }) => css`
-    min-width: 0;
+    flex-shrink: 0;
 
     ${mq("lg")} {
+      min-width: 0;
       padding-right: ${theme.space.xxl};
       border-right: 1px solid ${theme.details.separators};
 
@@ -177,9 +213,8 @@ export const SPortfolioOverviewStat = styled(Box)(
         border-right: none;
       }
 
-      /* reserve the value line height so skeleton ↔ text swaps don't resize the row */
-      & > div > div:nth-child(2),
-      & > div > div > div:nth-child(2) {
+      & > div > div:nth-of-type(2),
+      & > div > div > div:nth-of-type(2) {
         min-height: ${theme.fontSizes.h7};
       }
     }
@@ -213,8 +248,8 @@ export const SPortfolioTableWrapper = styled.div(
       border-top-color: ${theme.details.separators};
     }
 
-    & tbody tr:hover,
-    & tbody tr:hover td,
+    & tbody tr:not([data-empty-state]):hover,
+    & tbody tr:not([data-empty-state]):hover td,
     & [data-expanded="true"],
     & [data-expanded="true"] td {
       background-color: ${theme.surfaces.containers.high.hover};

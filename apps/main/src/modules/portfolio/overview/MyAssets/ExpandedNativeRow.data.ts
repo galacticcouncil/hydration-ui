@@ -9,7 +9,7 @@ export const useNativeAssetLocks = () => {
   const { native } = useAssets()
 
   const { data: locks, isLoading } = useNativeTokenLocks()
-  const { price } = useAssetPrice(native.id)
+  const price = useAssetPrice(native.id).price || "0"
 
   const lockedInGigaStaking = scaleHuman(
     locks?.get(TokenLockType.GigaStaking) ?? "0",

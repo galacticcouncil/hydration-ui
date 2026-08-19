@@ -8,7 +8,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { isMobileDevice } from "@galacticcouncil/utils"
 import Big from "big.js"
-import { FC, useMemo } from "react"
+import { FC, memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
@@ -22,7 +22,7 @@ import { WalletRewardsBreakdownTooltipContent } from "@/modules/portfolio/overvi
 import { useClaimAllWalletRewards } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.claim"
 import { useWalletRewardsSectionData } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.data"
 
-export const PortfolioSummary: FC = () => {
+export const PortfolioSummary: FC = memo(() => {
   const { t } = useTranslation(["wallet", "common"])
   const { gte } = useBreakpoints()
   const isLg = gte("lg")
@@ -114,7 +114,13 @@ export const PortfolioSummary: FC = () => {
   ]
 
   const statsContent = (
-    <SPortfolioOverviewStats separated={!isLg} gap="xxl" direction="row" py="m">
+    <SPortfolioOverviewStats
+      separated={!isLg}
+      gap="xxl"
+      direction="row"
+      justify="flex-start"
+      py="m"
+    >
       {stats.map(({ cta, ...stat }, index) => {
         const isLast = index === stats.length - 1
 
@@ -164,4 +170,6 @@ export const PortfolioSummary: FC = () => {
       )}
     </Box>
   )
-}
+})
+
+PortfolioSummary.displayName = "PortfolioSummary"

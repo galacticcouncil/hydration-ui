@@ -33,23 +33,21 @@ export const useTrackedWalletsStore = create<TrackedWalletsStore>()(
           if (!existing) {
             return {
               wallets: [
-                ...state.wallets,
                 { publicKey, address, savedBy: [savedBy] },
+                ...state.wallets,
               ],
             }
           }
 
+          if (existing.savedBy.some((key) => stringEquals(key, savedBy))) {
+            return state
+          }
+
           return {
-            wallets: state.wallets.map((w) =>
-              w === existing
-                ? {
-                    ...w,
-                    savedBy: w.savedBy.some((key) => stringEquals(key, savedBy))
-                      ? w.savedBy
-                      : [...w.savedBy, savedBy],
-                  }
-                : w,
-            ),
+            wallets: [
+              { ...existing, savedBy: [...existing.savedBy, savedBy] },
+              ...state.wallets.filter((w) => w !== existing),
+            ],
           }
         }),
       remove: (publicKey, savedBy) =>

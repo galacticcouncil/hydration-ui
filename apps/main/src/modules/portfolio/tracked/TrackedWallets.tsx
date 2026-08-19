@@ -1,20 +1,19 @@
 import { ClassicWallet, Search } from "@galacticcouncil/ui/assets/icons"
-import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWallet.png"
+import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWallet.webp"
 import {
   Button,
   Flex,
   Icon,
-  Image,
   Input,
   Modal,
   Paper,
-  Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { EmptyState } from "@/components/EmptyState"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { ManageTrackedWalletsModal } from "@/modules/portfolio/tracked/ManageTrackedWalletsModal"
 import { TrackedWalletCard } from "@/modules/portfolio/tracked/TrackedWalletCard"
@@ -90,49 +89,20 @@ export const TrackedWallets: FC<Props> = ({
 
       {wallets.length === 0 ? (
         <Paper overflow="hidden">
-          <Flex
-            direction="column"
-            align="center"
-            justify="center"
-            gap="base"
-            sx={{
-              minHeight: 180,
-              p: getToken("containers.paddings.primary"),
-            }}
-          >
-            <Image
-              src={TrackedWalletImage}
-              alt=""
-              sx={{
-                width: 92,
-                height: 92,
-                objectFit: "cover",
-                objectPosition: "center",
-                flexShrink: 0,
-              }}
-            />
-            <Stack gap="xs" align="center">
-              <Text font="primary" fs="p3" fw={500} color="text.high">
-                {t("myAssets.tracked.empty.title")}
-              </Text>
-              <Text
-                fs="p5"
-                lh={1.3}
-                align="center"
-                color="text.medium"
-                sx={{ textWrap: "balance" }}
+          <EmptyState
+            image={TrackedWalletImage}
+            header={t("myAssets.tracked.empty.title")}
+            description={t("myAssets.tracked.empty.description")}
+            action={
+              <Button
+                size="medium"
+                variant="secondary"
+                onClick={() => setIsManageOpen(true)}
               >
-                {t("myAssets.tracked.empty.description")}
-              </Text>
-            </Stack>
-            <Button
-              size="medium"
-              variant="secondary"
-              onClick={() => setIsManageOpen(true)}
-            >
-              {t("myAssets.tracked.empty.addAddress")}
-            </Button>
-          </Flex>
+                {t("myAssets.tracked.empty.addAddress")}
+              </Button>
+            }
+          />
         </Paper>
       ) : (
         <Flex direction="column" gap="l">
@@ -152,7 +122,16 @@ export const TrackedWallets: FC<Props> = ({
         open={isManageOpen}
         onOpenChange={() => setIsManageOpen(false)}
       >
-        <ManageTrackedWalletsModal />
+        <ManageTrackedWalletsModal
+          onSaved={(address) => {
+            setIsManageOpen(false)
+            setTimeout(() => {
+              document
+                .querySelector(`[data-address="${CSS.escape(address)}"]`)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }, 250)
+          }}
+        />
       </Modal>
     </Flex>
   )

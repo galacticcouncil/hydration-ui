@@ -346,7 +346,7 @@ const DataTable = <TData,>({
               )
             })
           ) : (
-            <TableRow isEmptyState data-variable-height>
+            <TableRow isEmptyState data-variable-height data-empty-state>
               <TableCell colSpan={columns.length + (expandable ? 1 : 0)}>
                 {emptyState ?? "No results."}
               </TableCell>

@@ -7,6 +7,7 @@ import {
   DropletIcon,
   DropletsIcon,
   GemIcon,
+  GlassesIcon,
   GoalIcon,
   Grid2X2Icon,
   HDXClassic,
@@ -164,8 +165,17 @@ export const NAVIGATION: NavigationItem[] = [
     icon: WalletCardsIcon,
     defaultChild: LINKS.portfolio,
     children: [
-      { key: "portfolioOverview", to: LINKS.portfolioOverview, exact: true },
-      { key: "portfolioTracked", to: LINKS.portfolioTracked },
+      {
+        key: "portfolioOverview",
+        to: LINKS.portfolioOverview,
+        exact: true,
+        icon: WalletCardsIcon,
+      },
+      {
+        key: "portfolioTracked",
+        to: LINKS.portfolioTracked,
+        icon: GlassesIcon,
+      },
     ],
   },
   {
@@ -238,11 +248,11 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     portfolioOverview: {
       title: t("navigation.portfolioOverview.title"),
-      description: "",
+      description: t("navigation.portfolioOverview.description"),
     },
     portfolioTracked: {
       title: t("navigation.portfolioTracked.title"),
-      description: "",
+      description: t("navigation.portfolioTracked.description"),
     },
     crossChain: {
       title: t("navigation.crossChain.title"),
@@ -306,7 +316,7 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     borrowMarkets: {
       title: t("navigation.borrowMarkets.title"),
-      description: "",
+      description: t("navigation.borrowMarkets.description"),
     },
     borrowHistory: {
       title: t("navigation.borrowHistory.title"),

@@ -6,6 +6,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useState } from "react"
 
+import { SearchEmptyState } from "@/components/EmptyState"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { BondDetailMobileModal } from "@/modules/portfolio/overview/MyBonds/BondDetailMobileModal"
@@ -55,7 +56,13 @@ export const MyBondsTable: FC<Props> = ({
         }
         data={data}
         columns={columns}
-        emptyState={<MyBondsEmptyState />}
+        emptyState={
+          searchPhrase ? (
+            <SearchEmptyState searchPhrase={searchPhrase} />
+          ) : (
+            <MyBondsEmptyState />
+          )
+        }
         onRowClick={
           isMobile
             ? (detail) => setIsDetailOpen({ type: "detail", detail })

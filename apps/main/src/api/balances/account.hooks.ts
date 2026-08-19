@@ -2,6 +2,7 @@ import { useStableArray } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef } from "react"
+import { unique } from "remeda"
 
 import { AssetType, TBond, TErc20, TStableswap, TToken } from "@/api/assets"
 import {
@@ -185,7 +186,7 @@ export const useAccountBalancesWithPriceByAssetType = (
       erc20Balances,
       stableSwapBalances,
       bondBalances,
-      priceIds,
+      priceIds: unique(priceIds),
     }
   }, [
     balances,

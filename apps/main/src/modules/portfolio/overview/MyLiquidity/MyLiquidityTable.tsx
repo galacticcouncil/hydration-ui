@@ -6,6 +6,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useState } from "react"
 
+import { SearchEmptyState } from "@/components/EmptyState"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { LiquidityDetailExpanded } from "@/modules/portfolio/overview/MyLiquidity/LiquidityDetailExpanded"
@@ -151,7 +152,13 @@ export const MyLiquidityTable: FC<Props> = ({
             />
           )
         }
-        emptyState={<MyLiquidityEmptyState />}
+        emptyState={
+          searchPhrase ? (
+            <SearchEmptyState searchPhrase={searchPhrase} />
+          ) : (
+            <MyLiquidityEmptyState />
+          )
+        }
         onRowClick={(detail) =>
           setIsDetailOpen({ type: "mobile-modal-default", detail })
         }

@@ -52,7 +52,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
   const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
   const identityAmountHuman = scaleHuman(identityReserves, asset.decimals)
-  const { price: assetPrice } = useAssetPrice(asset.id)
+  const assetPrice = useAssetPrice(asset.id).price || "0"
 
   return (
     <>

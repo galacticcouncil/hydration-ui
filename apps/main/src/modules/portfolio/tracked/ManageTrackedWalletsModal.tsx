@@ -32,7 +32,11 @@ export const MAX_TRACKED_WALLETS = 5
 
 type Error = "invalid" | "own" | "duplicate" | "limit"
 
-export const ManageTrackedWalletsModal: FC = () => {
+type Props = {
+  readonly onSaved?: (address: string) => void
+}
+
+export const ManageTrackedWalletsModal: FC<Props> = ({ onSaved }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { account } = useAccount()
 
@@ -66,6 +70,7 @@ export const ManageTrackedWalletsModal: FC = () => {
 
     add(value)
     setAddress("")
+    onSaved?.(value)
     return true
   }
 

@@ -44,7 +44,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   })
 
   const identityReserves = identity?.deposit ?? 0n
-  const { price: assetPrice } = useAssetPrice(asset.id)
+  const assetPrice = useAssetPrice(asset.id).price || "0"
 
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n

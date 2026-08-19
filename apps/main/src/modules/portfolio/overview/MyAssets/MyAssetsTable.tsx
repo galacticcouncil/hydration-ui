@@ -4,8 +4,9 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { FC, useState } from "react"
+import { FC, memo, useState } from "react"
 
+import { SearchEmptyState } from "@/components/EmptyState"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { AssetDetailExpanded } from "@/modules/portfolio/overview/MyAssets/AssetDetailExpanded"
 import { AssetDetailMobileModal } from "@/modules/portfolio/overview/MyAssets/AssetDetailMobileModal"
@@ -28,93 +29,101 @@ type Props = {
   readonly showDepositAction?: boolean
 }
 
-export const MyAssetsTable: FC<Props> = ({
-  data,
-  isLoading,
-  searchPhrase,
-  sortingProps,
-  isReadOnly = false,
-  showDepositAction = true,
-}) => {
-  const { isMobile } = useBreakpoints()
-  const { native } = useAssets()
+export const MyAssetsTable: FC<Props> = memo(
+  ({
+    data,
+    isLoading,
+    searchPhrase,
+    sortingProps,
+    isReadOnly = false,
+    showDepositAction = true,
+  }) => {
+    const { isMobile } = useBreakpoints()
+    const { native } = useAssets()
 
-  const columns = useMyAssetsColumns(
-    !isLoading && data.length === 0,
-    isReadOnly,
-    showDepositAction,
-  )
+    const columns = useMyAssetsColumns(
+      !isLoading && data.length === 0,
+      isReadOnly,
+      showDepositAction,
+    )
 
-  const [isDetailOpen, setIsDetailOpen] = useState<{
-    type: AssetDetailModal | null
-    detail: MyAsset
-  } | null>(null)
+    const [isDetailOpen, setIsDetailOpen] = useState<{
+      type: AssetDetailModal | null
+      detail: MyAsset
+    } | null>(null)
 
-  return (
-    <TableContainer>
-      <DataTable
-        isLoading={isLoading}
-        {...sortingProps}
-        globalFilter={searchPhrase}
-        globalFilterFn={(row) =>
-          row.original.symbol
-            .toLowerCase()
-            .includes(searchPhrase.toLowerCase()) ||
-          row.original.name.toLowerCase().includes(searchPhrase.toLowerCase())
-        }
-        data={data}
-        columns={columns}
-        size="small"
-        fixedLayout
-        expandable={!isMobile && !isReadOnly}
-        renderSubComponent={(asset) =>
-          asset.id === native.id ? (
-            <ExpandedNativeRow asset={asset} />
-          ) : (
-            <AssetDetailExpanded asset={asset} />
-          )
-        }
-        onRowClick={
-          isReadOnly
-            ? undefined
-            : (asset) => setIsDetailOpen({ type: null, detail: asset })
-        }
-      />
-      <Modal
-        variant="popup"
-        open={!!isDetailOpen}
-        onOpenChange={() =>
-          setIsDetailOpen(
-            !isDetailOpen?.type ? null : { ...isDetailOpen, type: null },
-          )
-        }
-      >
-        {isDetailOpen?.type === null && (
-          <>
-            {isDetailOpen.detail.id === native.id ? (
-              <AssetDetailNativeMobileModal
-                asset={isDetailOpen.detail}
-                onModalOpen={(type) =>
-                  setIsDetailOpen({ ...isDetailOpen, type })
-                }
-              />
+    return (
+      <TableContainer>
+        <DataTable
+          isLoading={isLoading}
+          {...sortingProps}
+          globalFilter={searchPhrase}
+          globalFilterFn={(row) =>
+            row.original.symbol
+              .toLowerCase()
+              .includes(searchPhrase.toLowerCase()) ||
+            row.original.name.toLowerCase().includes(searchPhrase.toLowerCase())
+          }
+          data={data}
+          columns={columns}
+          emptyState={
+            searchPhrase ? (
+              <SearchEmptyState searchPhrase={searchPhrase} />
+            ) : undefined
+          }
+          size="small"
+          fixedLayout
+          expandable={!isMobile && !isReadOnly}
+          renderSubComponent={(asset) =>
+            asset.id === native.id ? (
+              <ExpandedNativeRow asset={asset} />
             ) : (
-              <AssetDetailMobileModal
-                asset={isDetailOpen.detail}
-                onModalOpen={(type) =>
-                  setIsDetailOpen({ ...isDetailOpen, type })
-                }
-              />
-            )}
-          </>
-        )}
-        {isDetailOpen?.type === "transfer" && (
-          <TransferPositionModal
-            assetId={isDetailOpen.detail.id}
-            onClose={() => setIsDetailOpen({ ...isDetailOpen, type: null })}
-          />
-        )}
-      </Modal>
-    </TableContainer>
-  )
-}
+              <AssetDetailExpanded asset={asset} />
+            )
+          }
+          onRowClick={
+            isReadOnly
+              ? undefined
+              : (asset) => setIsDetailOpen({ type: null, detail: asset })
+          }
+        />
+        <Modal
+          variant="popup"
+          open={!!isDetailOpen}
+          onOpenChange={() =>
+            setIsDetailOpen(
+              !isDetailOpen?.type ? null : { ...isDetailOpen, type: null },
+            )
+          }
+        >
+          {isDetailOpen?.type === null && (
+            <>
+              {isDetailOpen.detail.id === native.id ? (
+                <AssetDetailNativeMobileModal
+                  asset={isDetailOpen.detail}
+                  onModalOpen={(type) =>
+                    setIsDetailOpen({ ...isDetailOpen, type })
+                  }
+                />
+              ) : (
+                <AssetDetailMobileModal
+                  asset={isDetailOpen.detail}
+                  onModalOpen={(type) =>
+                    setIsDetailOpen({ ...isDetailOpen, type })
+                  }
+                />
+              )}
+            </>
+          )}
+          {isDetailOpen?.type === "transfer" && (
+            <TransferPositionModal
+              assetId={isDetailOpen.detail.id}
+              onClose={() => setIsDetailOpen({ ...isDetailOpen, type: null })}
+            />
+          )}
+        </Modal>
+      </TableContainer>
+    )
+  },
+)
+MyAssetsTable.displayName = "MyAssetsTable"

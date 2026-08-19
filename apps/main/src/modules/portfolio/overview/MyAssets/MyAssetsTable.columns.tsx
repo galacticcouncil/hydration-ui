@@ -15,6 +15,7 @@ import {
   Skeleton,
   TableRowAction,
   TableRowDetailsExpand,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
@@ -199,7 +200,7 @@ export const useMyAssetsColumns = (
 
     const actionsColumn = columnHelper.display({
       id: MyAssetsTableColumn.Actions,
-      header: t("common:actions"),
+      header: isReadOnly && !showDepositAction ? "" : t("common:actions"),
       meta: {
         sx: {
           textAlign: "right",
@@ -238,7 +239,9 @@ export const useMyAssetsColumns = (
                 <DataTableExpandTrigger>
                   <TableRowAction variant="accent">
                     <Icon component={LockOpen} size="xs" />
-                    {t("myAssets.locks")}
+                    <Text display={["none", "block"]}>
+                      {t("myAssets.locks")}
+                    </Text>
                   </TableRowAction>
                 </DataTableExpandTrigger>
               </>
@@ -355,7 +358,7 @@ export const useMyAssetsColumns = (
             {row.original.id === NATIVE_ASSET_ID && (
               <TableRowAction variant="accent" allowPropagation>
                 <Icon component={LockOpen} size="xs" />
-                {t("myAssets.locks")}
+                <Text display={["none", "block"]}>{t("myAssets.locks")}</Text>
               </TableRowAction>
             )}
             {amount}

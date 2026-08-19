@@ -16,7 +16,7 @@ import {
   SPortfolioPaper,
 } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 import { TrackedWalletHeader } from "@/modules/portfolio/tracked/TrackedWalletHeader"
-import { TrackedWallet } from "@/states/trackedWallets"
+import { TrackedWallet, useTrackedWalletActions } from "@/states/trackedWallets"
 
 type Props = {
   readonly wallet: TrackedWallet
@@ -30,21 +30,21 @@ export const TrackedWalletCard: FC<Props> = ({
   sortingProps,
 }) => {
   const { t } = useTranslation("wallet")
-  const { byChain, refetchAll, isRefetching, lastUpdatedAt, entries } =
+  const { remove } = useTrackedWalletActions()
+  const { byChain, refetchAll, isRefetching, lastUpdatedAt, isLoading } =
     useMultichainPortfolio([wallet.address], TRACKED_CHAINS)
   const [open, setOpen] = useState(true)
-  const isLoading = entries.some((entry) => entry.isLoading)
   const showNoBalances = !isLoading && byChain.length === 0
 
   return (
-    <SPortfolioPaper>
+    <SPortfolioPaper data-address={wallet.address}>
       <CollapsibleRoot open={open} onOpenChange={setOpen}>
         <TrackedWalletHeader
           address={wallet.address}
-          open={open}
           isRefreshing={isRefetching}
           lastUpdatedAt={lastUpdatedAt}
           onRefresh={refetchAll}
+          onRemove={() => remove(wallet.publicKey)}
         />
         <CollapsibleContent
           animationDurationMs={400}

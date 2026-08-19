@@ -48,8 +48,8 @@ export const TabMenuItem: FC<Props> = ({
       return false
     }
 
-    const [, ...pathRoutes] = path.split("/")
-    const [, ...toRoutes] = to.split("/")
+    const [, ...pathRoutes] = normalizedPath.split("/")
+    const [, ...toRoutes] = normalizedTo.split("/")
     const isValid = toRoutes.every(
       (route, index) => route === pathRoutes[index],
     )
