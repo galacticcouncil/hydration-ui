@@ -3,6 +3,7 @@ import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
+import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
@@ -17,7 +18,6 @@ import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketT
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { MarketSummary } from "@/modules/trade/swap/sections/Market/Summary/MarketSummary"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useAccountBalances } from "@/states/account"
 import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
@@ -27,7 +27,12 @@ export const Market: FC = () => {
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
 
-  const { maxSwapSellBalance, maxTwapSellBalance } = useMaxSellAmount({
+  const {
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+  } = useMaxSellAmount({
     assetIn,
     assetOut,
   })
@@ -108,6 +113,11 @@ export const Market: FC = () => {
           twap={twap}
           maxSellBalance={
             isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance
+          }
+          maxSellBalanceLoading={
+            isSingleTrade
+              ? isMaxSwapSellBalanceLoading
+              : isMaxTwapSellBalanceLoading
           }
         />
         {isExpanded && (

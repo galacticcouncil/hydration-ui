@@ -2,12 +2,12 @@ import { AssetInput, AssetInputProps } from "@galacticcouncil/ui/components"
 import { useState } from "react"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetSelectModal } from "@/components/AssetSelectModal"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 export type TSelectedAsset = {
@@ -47,22 +47,30 @@ export const AssetSelect = ({
   const displayValue = props.displayValue ?? displayValue_
   const displayValueLoading = props.displayValueLoading ?? displayValueLoading_
 
-  const { getTransferableBalance } = useAccountBalances()
+  const { getTransferableBalance, getBalance, isBalanceLoading } =
+    useAccountBalances()
 
   const maxBalance = ((): string | undefined => {
     if (providedMaxBalance) {
       return providedMaxBalance
     }
 
-    const maxBalance =
-      !props.ignoreBalance && selectedAsset
-        ? getTransferableBalance(selectedAsset.id)
-        : undefined
+    if (props.ignoreBalance || !selectedAsset) {
+      return maxBalanceFallback
+    }
 
-    return maxBalance && selectedAsset
-      ? scaleHuman(maxBalance, selectedAsset.decimals)
+    const balance = getBalance(selectedAsset.id)
+    const amount =
+      props.hideMaxBalanceAction && balance
+        ? balance.total
+        : getTransferableBalance(selectedAsset.id)
+
+    return amount !== undefined
+      ? scaleHuman(amount, selectedAsset.decimals)
       : maxBalanceFallback
   })()
+
+  const maxBalanceLoading = props.maxBalanceLoading ?? isBalanceLoading
 
   return (
     <>
@@ -78,6 +86,7 @@ export const AssetSelect = ({
         displayValue={displayValue}
         displayValueLoading={displayValueLoading}
         maxBalance={maxBalance}
+        maxBalanceLoading={maxBalanceLoading}
         onAsssetBtnClick={
           setSelectedAsset ? () => setOpeModal(true) : undefined
         }

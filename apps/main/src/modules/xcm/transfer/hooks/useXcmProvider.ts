@@ -33,6 +33,7 @@ type XcmContextValue = {
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
   readonly availableBridgeRoutes: AssetRoute[]
+  readonly selectedRoute: AssetRoute | null
   readonly registryChain: EvmParachain
   readonly status: XcmTransferStatus
 }
@@ -53,6 +54,7 @@ export const XcmContext = createContext<XcmContextValue>({
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],
   availableBridgeRoutes: [],
+  selectedRoute: null,
   registryChain: {} as EvmParachain,
   status: XcmTransferStatus.Default,
 })

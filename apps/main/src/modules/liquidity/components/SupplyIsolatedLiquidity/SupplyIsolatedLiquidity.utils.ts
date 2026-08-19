@@ -23,6 +23,7 @@ import z from "zod"
 
 import { healthFactorQuery } from "@/api/aave"
 import { TAssetData, TErc20AToken } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import {
   lendingPoolAddressProvider,
   useBorrowAssetsApy,
@@ -41,7 +42,6 @@ import {
 } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 

@@ -2,11 +2,8 @@ import { bigShift } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
+import { Balance, useAccountBalancesWithPriceByAssetType } from "@/api/balances"
 import { MyBond } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
-import {
-  Balance,
-  useAccountBalancesWithPriceByAssetType,
-} from "@/states/account"
 import { numericallyStrDesc } from "@/utils/sort"
 
 export const useMyBondsTableData = () => {

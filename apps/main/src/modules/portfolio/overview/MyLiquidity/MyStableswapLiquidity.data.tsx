@@ -1,7 +1,7 @@
 import { bigShift } from "@galacticcouncil/utils"
 
 import { AssetType } from "@/api/assets"
-import { useAccountBalancesWithPriceByAssetType } from "@/states/account"
+import { useAccountBalancesWithPriceByAssetType } from "@/api/balances"
 
 export const useMyStableswapLiquidity = () => {
   const { data: balancesWithPrice, isLoading: isBalanceLoading } =

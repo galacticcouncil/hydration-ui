@@ -13,6 +13,7 @@ import {
   healthFactorQuery,
 } from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
+import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useOmnipoolIds } from "@/api/pools"
 import { bestSellWithTxQuery } from "@/api/trade"
@@ -32,7 +33,6 @@ import { useAddableStablepoolTokens } from "@/modules/liquidity/Liquidity.utils"
 import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   isSubstrateTxResult,

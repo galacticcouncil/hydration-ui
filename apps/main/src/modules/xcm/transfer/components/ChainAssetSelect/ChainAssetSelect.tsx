@@ -114,10 +114,16 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     const routes = selectedChainPair?.routes ?? []
 
     const assetsWithRoutes = routes.length
-      ? pipe(
-          zip(routes, assets),
-          map(([route, asset]) => ({ route, asset })),
-        )
+      ? selectedChainPair?.isTagSelect
+        ? pipe(
+            zip(routes, assets),
+            map(([route, asset]) => ({ route, asset })),
+          )
+        : assets.map((asset) => ({
+            asset,
+            route:
+              routes.find((r) => r.destination.asset.key === asset.key) ?? null,
+          }))
       : assets.map((asset) => ({ asset, route: null }))
 
     return assetsWithRoutes.filter(({ asset }) =>

@@ -27,6 +27,7 @@ import { useShallow } from "zustand/shallow"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20, TErc20AToken } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
@@ -46,8 +47,6 @@ import { XYKPoolWithLiquidity } from "@/api/xyk"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
-  useAccountBalances,
-  useAccountData,
   useAccountOmnipoolPositionsData,
   useAccountPositions,
 } from "@/states/account"
@@ -841,7 +840,7 @@ export const convertXYKSharesToValues = (
 
 export const useIsLiquidityProvided = () => {
   const { getAsset, getShareToken } = useAssets()
-  const balances = useAccountData(useShallow(prop("balances")))
+  const { balances } = useAccountBalances()
   const { positionsAmount } = useAccountPositions()
 
   return useMemo(() => {

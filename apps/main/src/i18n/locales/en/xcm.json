@@ -62,6 +62,7 @@
   "report.destFee.insufficientBalance": "You need to have at least {{ amount, number }} {{ symbol }} on {{ chain }}",
   "report.asset.frozen": "Your account on {{ chain }} has frozen balance for {{ symbol }}",
   "report.account.insufficientDeposit": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for existential deposit",
+  "report.account.notBound": "The recipient is a Substrate address that isn't bound to EVM. Bind this account on Hydration first, or use different account.",
   "journey.status.sent": "In Progress",
   "journey.status.pending": "In Progress",
   "journey.status.received": "Completed",

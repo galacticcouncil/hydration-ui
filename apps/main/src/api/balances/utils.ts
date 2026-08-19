@@ -1,4 +1,3 @@
-import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { AssetAmount } from "@galacticcouncil/xc-core"
 import { queryOptions, useQuery } from "@tanstack/react-query"
@@ -8,25 +7,20 @@ import { Binary } from "polkadot-api"
 import { firstValueFrom } from "rxjs"
 
 import { TAssetData } from "@/api/assets"
-import { TProviderData } from "@/api/provider"
+import {
+  mergeBalances,
+  watchFilteredAccountBalances,
+} from "@/api/balances/account.utils"
+import {
+  AccountBalanceFilter,
+  Balance,
+  BalanceData,
+  EMPTY_BALANCES,
+  TokenLockType,
+} from "@/api/balances/types"
 import { ENV } from "@/config/env"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { Balance } from "@/states/account"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
-
-export enum TokenLockType {
-  Vesting = "ormlvest",
-  Democracy = "democrac",
-  OpenGov = "pyconvot",
-  Staking = "stk_stks",
-  GigaStaking = "ghdxlock",
-}
-
-export enum TokenReserveType {
-  DCA = "dcaorder",
-  XCM = "depositc",
-  OTC = "otcorder",
-}
 
 const isKnownTokenLockType = (type: string): type is TokenLockType => {
   return Object.values(TokenLockType).includes(type as TokenLockType)
@@ -113,15 +107,6 @@ export const useAccountTokenReserves = (tokenId: string, enabled?: boolean) => {
     select: (reserves) => new Map(reserves.map((r) => [r.type, r.amount])),
     enabled,
   })
-}
-
-export type BalanceData = {
-  readonly accountId: string
-  readonly assetId: string
-  readonly balance: string
-  readonly total: string
-  readonly freeBalance: string
-  readonly reservedBalance: string
 }
 
 export const parseNativeBalanceData = (
@@ -219,58 +204,6 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
   })
 }
 
-type TokenPalletEntry = { id: number; balance: SdkBalance }
-
-const toAccountBalance = (assetId: string, balance: SdkBalance): Balance => ({
-  assetId,
-  ...balance,
-})
-
-export const mapNativeBalance = (
-  nativeId: string,
-  balance: SdkBalance,
-): Balance => toAccountBalance(nativeId, balance)
-
-export const mapTokenPalletBalances = (
-  entries: TokenPalletEntry[],
-  followedTokenIds: ReadonlySet<number>,
-): Balance[] =>
-  entries.flatMap(({ id, balance }) =>
-    followedTokenIds.has(id) ? [toAccountBalance(id.toString(), balance)] : [],
-  )
-
-export const mapErc20PalletBalances = (
-  entries: TokenPalletEntry[],
-): Balance[] =>
-  entries.map(({ id, balance }) => toAccountBalance(id.toString(), balance))
-
-export const getFollowedAssetIds = ({
-  tokens,
-  stableswap,
-  bonds,
-  xykShareTokens,
-  nativeId,
-}: {
-  tokens: ReadonlyArray<{ id: string }>
-  stableswap: ReadonlyArray<{ id: string }>
-  bonds: ReadonlyArray<{ id: string }>
-  xykShareTokens: ReadonlyArray<{ id: string }> | undefined
-  nativeId: string
-}): ReadonlySet<number> => {
-  if (!xykShareTokens) return new Set()
-
-  const ids = new Set([
-    ...tokens.map((token) => Number(token.id)),
-    ...stableswap.map((token) => Number(token.id)),
-    ...bonds.map((token) => Number(token.id)),
-    ...xykShareTokens.map((token) => Number(token.id)),
-  ])
-
-  ids.delete(Number(nativeId))
-
-  return ids
-}
-
 export const mapHydrationBalancesToAssetAmounts = (
   balances: Balance[],
   getAsset: (id: string) => TAssetData | undefined,
@@ -291,41 +224,31 @@ export const mapHydrationBalancesToAssetAmounts = (
     ]
   })
 
+/**
+ * One-shot read of the same filtered balance stream the live account
+ * subscription uses — the first emission is the full set.
+ */
 export const fetchHydrationRegistryAssetAmounts = async ({
   address,
   sdk,
+  filter,
   getAsset,
   isToken,
   isErc20,
-  followedTokenIds,
-  erc20AssetIds,
-  nativeId = NATIVE_ASSET_ID,
 }: {
   address: string
-  sdk: TProviderData["sdk"]
+  sdk: TProviderContext["sdk"]
+  filter: AccountBalanceFilter
   getAsset: (id: string) => TAssetData | undefined
   isToken: (asset: TAssetData) => boolean
   isErc20: (asset: TAssetData) => boolean
-  followedTokenIds: ReadonlySet<number>
-  erc20AssetIds: readonly number[]
-  nativeId?: string
 }): Promise<AssetAmount[]> => {
-  const { balance } = sdk.client
-
-  const [systemBalance, tokenBalances, erc20Balances] = await Promise.all([
-    firstValueFrom(balance.watchSystemBalance(address)),
-    firstValueFrom(balance.watchTokensBalance(address)),
-    firstValueFrom(balance.watchErc20Balance(address, [...erc20AssetIds])),
-  ])
-
-  const balances: Balance[] = [
-    mapNativeBalance(nativeId, systemBalance.balance),
-    ...mapTokenPalletBalances(tokenBalances, followedTokenIds),
-    ...mapErc20PalletBalances(erc20Balances),
-  ]
+  const chunk = await firstValueFrom(
+    watchFilteredAccountBalances(sdk, address, filter),
+  )
 
   return mapHydrationBalancesToAssetAmounts(
-    balances,
+    Object.values(mergeBalances(EMPTY_BALANCES, chunk)),
     getAsset,
     (meta) => isToken(meta) || isErc20(meta),
   )

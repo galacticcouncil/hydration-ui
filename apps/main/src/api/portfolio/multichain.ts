@@ -11,7 +11,7 @@ import { isNonNullish } from "remeda"
 
 import {
   fetchHydrationRegistryAssetAmounts,
-  getFollowedAssetIds,
+  useAccountBalanceFilter,
 } from "@/api/balances"
 import { portfolioBalanceQueryKey } from "@/api/portfolio/queryKeys"
 import { useCrossChainConfigService, useHydrationAssetId } from "@/api/xcm"
@@ -65,54 +65,21 @@ export const useMultichainPortfolio = (
   const service = useMultichainService(chains)
   const configService = useCrossChainConfigService()
   const { sdk, isApiLoaded } = useRpcProvider()
-  const {
-    getAsset,
-    isToken,
-    isErc20,
-    tokens,
-    stableswap,
-    bonds,
-    xykShareTokens,
-    native,
-    erc20,
-  } = useAssets()
+  const { getAsset, isToken, isErc20 } = useAssets()
   const stableAddresses = useStableArray(addresses)
-
-  const followedTokenIds = useMemo(
-    () =>
-      getFollowedAssetIds({
-        tokens,
-        stableswap,
-        bonds,
-        xykShareTokens,
-        nativeId: native.id,
-      }),
-    [tokens, stableswap, bonds, xykShareTokens, native.id],
-  )
-
-  const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
+  const balanceFilter = useAccountBalanceFilter()
 
   const fetchHydrationBalances = useCallback(
     (address: string) =>
       fetchHydrationRegistryAssetAmounts({
         address,
         sdk,
+        filter: balanceFilter!,
         getAsset,
         isToken,
         isErc20,
-        followedTokenIds,
-        erc20AssetIds,
-        nativeId: native.id,
       }),
-    [
-      sdk,
-      getAsset,
-      isToken,
-      isErc20,
-      followedTokenIds,
-      erc20AssetIds,
-      native.id,
-    ],
+    [sdk, balanceFilter, getAsset, isToken, isErc20],
   )
 
   const pairs = useMemo(
@@ -134,7 +101,7 @@ export const useMultichainPortfolio = (
           : service.getChainBalances(address, chainKey),
       enabled:
         chainKey !== HYDRATION_CHAIN_KEY ||
-        (isApiLoaded && !!Object.keys(sdk).length),
+        (isApiLoaded && !!Object.keys(sdk).length && !!balanceFilter),
       staleTime: 60_000,
       gcTime: PORTFOLIO_CACHE_MAX_AGE,
       refetchOnWindowFocus: false,

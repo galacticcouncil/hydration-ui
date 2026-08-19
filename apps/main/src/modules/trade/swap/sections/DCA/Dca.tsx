@@ -4,6 +4,7 @@ import { FC, useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalances } from "@/api/balances"
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
 import { DcaFooter } from "@/modules/trade/swap/sections/DCA/DcaFooter"
 import { DcaForm } from "@/modules/trade/swap/sections/DCA/DcaForm"
@@ -20,7 +21,6 @@ import {
 import { useMaxOrderBalance } from "@/modules/trade/swap/sections/DCA/useMaxOrderBalance"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useAccountBalances } from "@/states/account"
 import { maxBalanceError } from "@/utils/validators"
 
 import { DcaOrdersMode, DEFAULT_DCA_DURATION, useDcaForm } from "./useDcaForm"

@@ -15,12 +15,12 @@ import { useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalances } from "@/api/balances"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useTransferPosition } from "@/modules/portfolio/overview/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/portfolio/overview/Transfer/TransferPositionModal.submit"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 export type WithdrawTransferOnchainProps = {
