@@ -64,7 +64,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
                 <Text fs="p5" color={getToken("text.medium")}>
                   {t("strategies:bonds.details.remainingCapacity")}
                 </Text>
-                <SRemainingList gap="xl">
+                <SRemainingList>
                   {orders.map((order) => (
                     <StableBondsCurrency key={order.id} order={order} />
                   ))}
@@ -89,7 +89,8 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
                   >
                     {t("percent", {
                       value: currentApr,
-                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                      suffix: isSoldOut ? "+" : undefined,
                     })}
                   </Text>
                 }

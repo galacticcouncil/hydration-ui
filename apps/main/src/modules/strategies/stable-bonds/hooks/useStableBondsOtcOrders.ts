@@ -3,7 +3,10 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
+import {
+  STABLE_BONDS,
+  type StableBondConfig,
+} from "@/modules/strategies/stable-bonds/config/bonds"
 import {
   OtcOffer,
   useOtcOffers,
@@ -67,6 +70,28 @@ export const useStableBondsOtcOrders = (
   const isReady = query.isSuccess && !!bondAsset
 
   return { ...query, data, isReady }
+}
+
+export const getStableBondRemainingCapacity = (
+  offers: OtcOffer[] | undefined,
+  config: StableBondConfig,
+) => {
+  if (!offers) return new Big(0)
+
+  return offers.reduce((sum, offer) => {
+    if (
+      !matchesStableBondOtcOffer(
+        offer,
+        config.bondId,
+        config.otcAcceptedAssetIds,
+        config.otcOfferIds,
+      )
+    ) {
+      return sum
+    }
+
+    return sum.plus(offer.assetAmountIn)
+  }, new Big(0))
 }
 
 export const isStableBondSoldOut = (

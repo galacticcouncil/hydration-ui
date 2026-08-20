@@ -1,19 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, useParams } from "@tanstack/react-router"
 
 import { getPageMeta } from "@/config/navigation"
-import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import { StableBondsPage } from "@/modules/strategies/stable-bonds/StableBondsPage"
 import { StableBondsPageSkeleton } from "@/modules/strategies/stable-bonds/StableBondsPageSkeleton"
 
 const RouteComponent = () => {
-  const { active, isReady } = useStableBonds()
+  const { bondId } = useParams({ from: "/strategies/hollar-bonds/$bondId" })
 
-  if (!isReady) return <StableBondsPageSkeleton />
-
-  return active ? <StableBondsPage bondId={active.id} /> : null
+  return <StableBondsPage bondId={bondId} isDetail />
 }
 
-export const Route = createFileRoute("/strategies/hollar-bonds/")({
+export const Route = createFileRoute("/strategies/hollar-bonds/$bondId")({
   component: RouteComponent,
   pendingComponent: StableBondsPageSkeleton,
   head: ({
