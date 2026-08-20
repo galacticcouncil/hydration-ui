@@ -230,7 +230,6 @@
   "referenda.remove.toasts.success": "Removed vote for referendum {{ referendumId }}",
 
   "referenda.vote.modal.title": "Referendum vote",
-  "referenda.vote.modal.description": "Accept Moonbeam HRMP & on-chain remark",
   "referenda.vote.modal.multiplier": "Voting Power Multiplier",
   "referenda.vote.modal.totalVotes": "Total votes",
   "referenda.vote.modal.claim.cta": "Claim yield",

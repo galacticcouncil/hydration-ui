@@ -59,6 +59,7 @@ type VoteFormProps = {
   open: boolean
   onClose: () => void
   isGigaStaking?: boolean
+  title: string
 }
 
 export const VoteModal = ({
@@ -66,6 +67,7 @@ export const VoteModal = ({
   onClose,
   referendumId,
   isGigaStaking,
+  title,
 }: VoteFormProps) => {
   const { t } = useTranslation("staking")
 
@@ -73,7 +75,7 @@ export const VoteModal = ({
     <Modal open={open} onOpenChange={onClose}>
       <ModalHeader
         title={t("referenda.vote.modal.title")}
-        description={t("referenda.vote.modal.description")}
+        description={title}
         align="center"
       />
       <VoteForm
