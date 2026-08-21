@@ -4,7 +4,7 @@ import {
   useActiveMultisigConfig,
 } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
@@ -38,9 +38,13 @@ export const useTransactionToasts = (
 
   const method = parseTxMethodName(transaction.tx, "value.value.call")
 
+  // PAPI re-emits found:true on parachain re-orgs; show toast at most once
+  const hasShownToastRef = useRef(false)
+
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
+        hasShownToastRef.current = false
         if (isMultisig) {
           pending({
             id,
@@ -74,6 +78,12 @@ export const useTransactionToasts = (
 
         const link = getFinalizedTransactionLink(meta, result)
 
+        if (hasShownToastRef.current) {
+          if (link) edit(id, { link })
+          return
+        }
+        hasShownToastRef.current = true
+
         if (isXcm) {
           return edit(id, {
             variant: "submitted",
@@ -90,6 +100,8 @@ export const useTransactionToasts = (
         })
       },
       onError: (message) => {
+        if (hasShownToastRef.current) return
+        hasShownToastRef.current = true
         edit(id, {
           variant: "error",
           title:
