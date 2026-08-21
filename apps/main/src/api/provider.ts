@@ -10,7 +10,7 @@ import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
-  HOLLAR_BOND_25_08_26_ID,
+  HOLLAR_BOND_24_11_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { createWsClient } from "polkadot-api/ws"
@@ -120,7 +120,7 @@ const getProviderData = async (
   const [sdk, slotDuration, hollarBond, bilPoolCode] = await Promise.all([
     createSdkContext(papiClient),
     papi.constants.Aura.SlotDuration(),
-    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
+    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_24_11_26_ID)),
     evm.getCode({ address: BIL_POOL_ADDRESS }),
     metadata.fetchAssets(),
     metadata.fetchChains(),
