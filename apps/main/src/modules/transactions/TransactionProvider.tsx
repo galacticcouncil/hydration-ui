@@ -28,8 +28,13 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
-import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
+import {
+  getTxResultBlockHeight,
+  SingleTransaction,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = SingleTransaction &
@@ -78,6 +83,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
   const { account } = useAccount()
@@ -199,6 +205,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         transaction.invalidateQueries?.forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         )
+        // the indexer can't have this block yet — arm the sync instead of
+        // invalidating the neckwork queries now
+        const blockHeight = getTxResultBlockHeight(event)
+        if (blockHeight !== null) armNeckworkSync(blockHeight)
         queryClient.invalidateQueries({
           queryKey: MAX_WITHDRAW_ALL_QUERY_KEY,
         })

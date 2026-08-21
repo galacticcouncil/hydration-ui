@@ -1,0 +1,3650 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Hydration Public API",
+    "version": "1.0.0",
+    "description": "Versioned REST surface over the Hydration indexer. Addresses are lowercase hex public keys (never SS58), timestamps are ISO-8601 UTC, token amounts are strings and USD values are 2-decimal strings, and asset ids are decimal strings. Every error response, on every route, is `{ \"error\": { \"code\": \"bad_request\" | \"not_found\" | \"rate_limited\" | \"upstream_error\" | \"internal\", \"message\": \"…\" } }` with the matching HTTP status. /v1 is additive-only; a breaking change means /v2."
+  },
+  "components": {
+    "schemas": {}
+  },
+  "paths": {
+    "/rest/service/health": {
+      "get": {
+        "summary": "Liveness probe",
+        "tags": [
+          "service"
+        ],
+        "description": "Static liveness answer. It reports that this process is serving, not that the indexer is caught up — use /v1/status for lag.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "healthy"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "timestamp"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/service/metadata": {
+      "get": {
+        "summary": "Indexer identity and coverage",
+        "tags": [
+          "service"
+        ],
+        "description": "Data-lake-compatible metadata probe. `master` comes from PUBLIC_API_MASTER (default true); a replica serving stale data should set it to \"false\" so a consumer's provider failover can prefer another host.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metadataVersion": {
+                      "type": "number",
+                      "enum": [
+                        1
+                      ]
+                    },
+                    "indexer": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "network": {
+                          "type": "string"
+                        },
+                        "master": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "network",
+                        "master"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "coverage": {
+                      "type": "object",
+                      "properties": {
+                        "blockBounds": {
+                          "type": "object",
+                          "properties": {
+                            "minBlockHeight": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "maxBlockHeight": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "minBlockHeight",
+                            "maxBlockHeight"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "blockBounds"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "metadataVersion",
+                    "indexer",
+                    "coverage"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/status": {
+      "get": {
+        "summary": "Indexed head and lag",
+        "tags": [
+          "service"
+        ],
+        "description": "`chainBlockHeight` is the raw ingestion checkpoint, so `blocksBehindHead` measures distance from raw ingestion rather than from the chain head — this service performs no RPC.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "blockHeight": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "blockTimestamp": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "lagSeconds": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "chainBlockHeight": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "blocksBehindHead": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "blockHeight",
+                    "blockTimestamp",
+                    "lagSeconds",
+                    "chainBlockHeight",
+                    "blocksBehindHead"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proxy/defillama/{*}": {
+      "get": {
+        "summary": "defillama passthrough",
+        "tags": [
+          "proxy"
+        ],
+        "description": "DefiLlama yield charts for a pool uuid, Hydration chain TVL history, and the hydration-dex volume summary. Allow-listed paths only — anything else is 404: ^(yields)\\/(chart\\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$ | ^(api)\\/(v2\\/historicalChainTvl\\/HydraDX)$ | ^(api)\\/(summary\\/dexs\\/hydration-dex)$. Responses are cached in this process for 600s and are never stored by a shared cache. An upstream 4xx is passed through; a 5xx or a timeout is reported as 502, and neither is cached. No caller header is forwarded upstream.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "*",
+            "required": true,
+            "description": "Allow-listed upstream path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proxy/kamino/{*}": {
+      "get": {
+        "summary": "kamino passthrough",
+        "tags": [
+          "proxy"
+        ],
+        "description": "Kamino yield history for one yield source (`yields/<source>/history`). Allow-listed paths only — anything else is 404: ^(yields\\/[0-9A-Za-z]+\\/history)$. Responses are cached in this process for 600s and are never stored by a shared cache. An upstream 4xx is passed through; a 5xx or a timeout is reported as 502, and neither is cached. No caller header is forwarded upstream.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "*",
+            "required": true,
+            "description": "Allow-listed upstream path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proxy/subsquare/{*}": {
+      "get": {
+        "summary": "subsquare passthrough",
+        "tags": [
+          "proxy"
+        ],
+        "description": "A voter's OpenGov vote history and the referendum list from Subsquare's Hydration API. Allow-listed paths only — anything else is 404: ^(users\\/[0-9A-Za-z]+\\/referenda\\/votes)$ | ^(gov2\\/referendums)$. Responses are cached in this process for 60s and are never stored by a shared cache. An upstream 4xx is passed through; a 5xx or a timeout is reported as 502, and neither is cached. No caller header is forwarded upstream.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "*",
+            "required": true,
+            "description": "Allow-listed upstream path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/assets": {
+      "get": {
+        "summary": "Asset registry",
+        "tags": [
+          "assets"
+        ],
+        "description": "The full asset registry (including foreign, aToken, pool-share and bond assets). Consumers resolve decimals from here; ids are decimal strings everywhere on this surface. Served from the in-process registry snapshot, refreshed every 5 minutes.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "symbol": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "decimals": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "assetType": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "origin": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "ecosystem": {
+                                "type": "string"
+                              },
+                              "chainId": {
+                                "type": "string"
+                              },
+                              "assetId": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "ecosystem",
+                              "chainId",
+                              "assetId"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "symbol",
+                          "name",
+                          "decimals",
+                          "assetType",
+                          "origin"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/balances": {
+      "get": {
+        "summary": "Current valued balances for up to 50 accounts",
+        "tags": [
+          "accounts"
+        ],
+        "description": "Batched replacement for a per-account balance fan-out. `transferableUsd` values, at current prices: free pallet balances, the ERC-20-backed wallet pot (assets such as HOLLAR whose balances live in contract storage), and money-market SUPPLIED balances — the aToken side (spec \"Semantics\" rule 7). `lockedUsd` values reserved pallet balances. `lpUsd` values Omnipool LP claims — what the account's positions would withdraw at current pool state, bare and farm-deposited alike, including each position's hub (LRNA) leg.\n\n`totalUsd` is transferable + locked + LP: GROSS assets. It is rounded from the exact sum, so it can differ by up to a cent from adding the three rounded fields — trust `totalUsd`, and treat the identity as holding to within a cent. `debtUsd` is money-market debt across every configured market, reported on its own and NOT netted out of any other field (deviation from the data lake; documented). The Hydration account picker's value is therefore `totalUsd - debtUsd`. `lockedUsd` covers reserved balances only, because the frozen component is not carried by the latest-balance model.\n\nThe money-market and LP slices are read from the indexer's own persisted value and Omnipool-claim snapshots, so this endpoint and the explorer cannot disagree by computing them twice, and the money-market slice REPLACES the pallet-side aToken rows rather than being added to them. Both snapshots are republished every few minutes; if one goes stale (older than 1 h) ITS fields are null — `lpUsd` null also drops LP out of `totalUsd`, and `debtUsd` null accompanies an absent money-market slice — rather than being served months out of date or faked as zero. A fresh snapshot in which the account holds nothing reports \"0.00\", so null and \"0.00\" are distinguishable.\n\nStaking-backed markets (GIGAHDX) are excluded from the SUPPLIED side: staking leaves the HDX in the holder's own balance, so counting the receipt as well would report the same money twice. Their debt is still counted — an account's obligations are one number even though the markets are isolated for health-factor purposes. Stableswap and XYK LP positions remain out of scope (spec \"Semantics\" rule 7).\n\nAn account known only by its LP positions is included and reports `blockHeight` 0: the claim snapshot carries no block height of its own.\n\nAn asset whose price feed has gone stale (no close within ~12 h of the price head) contributes nothing rather than being valued at an old price. Accounts with no indexed balances are absent from `items` — the response is never a 404.\n\nAn EVM account and the AccountId32 bound to it are ONE account. Requesting both in one batch returns a row for each address, both carrying the same figures — index the response by `account`, and do not sum a batch's rows.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "accounts",
+            "required": true,
+            "description": "Comma-separated lowercase hex account ids, 1 to 50."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "account": {
+                            "type": "string",
+                            "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                          },
+                          "transferableUsd": {
+                            "type": "string"
+                          },
+                          "lockedUsd": {
+                            "type": "string"
+                          },
+                          "lpUsd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "debtUsd": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "totalUsd": {
+                            "type": "string"
+                          },
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "account",
+                          "transferableUsd",
+                          "lockedUsd",
+                          "lpUsd",
+                          "debtUsd",
+                          "totalUsd",
+                          "blockHeight"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{account}/balance-history": {
+      "get": {
+        "summary": "Bucketed net-worth series for one account",
+        "tags": [
+          "accounts"
+        ],
+        "description": "Per-asset forward-fill of the hourly balance model, valued at each bucket's closed candle — never a future or current price (AGENTS.md). `timestamp` is the bucket CLOSE, and only fully closed buckets are emitted, so the series never ends on a partial figure.\n\nSCOPE — this series is NARROWER than GET /v1/accounts/balances and the two are not comparable. `transferableUsd` covers pallet-side balances only. Money-market supplied balances and the ERC-20-backed wallet pot are BOTH absent, because each exists only as a current-state snapshot with no per-bucket history; applying today's position to a past bucket would be the future-price mistake this endpoint otherwise avoids, so they are omitted rather than faked.\n\n`debtUsd` IS reconstructible per bucket and is reported, so for a leveraged account this series shows full debt against holdings that exclude the collateral backing it. `transferableUsd - debtUsd` is therefore NOT net worth. Debt is summed across the configured markets and is not netted out of `transferableUsd` (spec \"Semantics\" rule 7). LP and farm positions are omitted.\n\n`lockedUsd` is always \"0.00\": the historical balance models store only the TOTAL balance, so the whole pallet-side valued amount rides in `transferableUsd`. GET /v1/accounts/balances carries the current free/reserved split. An asset with no candle within 30 days of a bucket is treated as unpriced for that bucket and contributes nothing.\n\nDefaults to the most recent 168 hourly (or 90 daily) buckets. At most 1000 points per request; a wider window is a 400, never a silently truncated series.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "in": "query",
+            "name": "from",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "in": "query",
+            "name": "to",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "1h",
+              "type": "string",
+              "enum": [
+                "1h",
+                "1d"
+              ]
+            },
+            "in": "query",
+            "name": "bucket",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "in": "path",
+            "name": "account",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "referenceCurrency": {
+                      "type": "string",
+                      "enum": [
+                        "usd"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "transferableUsd": {
+                            "type": "string"
+                          },
+                          "lockedUsd": {
+                            "type": "string"
+                          },
+                          "debtUsd": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "timestamp",
+                          "transferableUsd",
+                          "lockedUsd",
+                          "debtUsd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "referenceCurrency",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{account}/money-market-events": {
+      "get": {
+        "summary": "Money-market event history for one account",
+        "tags": [
+          "accounts"
+        ],
+        "description": "Newest first, from the account-first money-market activity model. `events` accepts the lowercase form of any published name; the response uses pascal case. The reserves' own ERC-20 plumbing (Transfer, Approval, Mint, Burn) is never returned and never counted.\n\n`amount` is null for ReserveUsedAsCollateralEnabled/Disabled and UserEModeSet. For LiquidationCall it is the SEIZED COLLATERAL, which is the amount denominated in the same asset as `assetId`; the debt repaid is not published here (the raw event's `debtToCover` is in a different asset).\n\n`categoryId` is always null: the activity model carries no eMode category column, and the value survives only in the raw event's decoded arguments, which cannot be read per account within bounded cost.\n\n`search` matches asset symbols and names, then widens each match to the ids the market files rows under (aDOT resolves to the DOT reserve, GDOT to the 2-Pool-GDOT reserve). A term matching no asset returns no rows.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "events",
+            "required": false,
+            "description": "Comma-separated lowercase event names, e.g. supply,borrow. Defaults to all."
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "description": "Asset symbol or name substring."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "in": "path",
+            "name": "account",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "eventName": {
+                            "type": "string",
+                            "enum": [
+                              "Supply",
+                              "Withdraw",
+                              "Borrow",
+                              "Repay",
+                              "LiquidationCall",
+                              "ReserveUsedAsCollateralEnabled",
+                              "ReserveUsedAsCollateralDisabled",
+                              "UserEModeSet"
+                            ]
+                          },
+                          "assetId": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "amount": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "categoryId": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "eventName",
+                          "assetId",
+                          "amount",
+                          "blockHeight",
+                          "eventIndex",
+                          "timestamp",
+                          "categoryId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "totalCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fees/charts": {
+      "get": {
+        "summary": "Bucketed protocol revenue by product and stream",
+        "tags": [
+          "fees"
+        ],
+        "description": "Bucketed protocol revenue, mirroring `hydration-metrics-aggregator`'s `/api/v1/fees/charts` so the Hydration UI's fees page works against this API by base-URL swap alone. Values are JSON **numbers** here — the one documented exception to this surface's decimal-string convention.\n\n**Buckets.** A bucket exists when its source had at least one row in it; empty buckets are omitted rather than zero-filled. Bucket starts sit on a grid anchored at 2000-01-03T00:00:00Z (inert for 1hour/6hour/24hour, which are plain UTC hours and days; it is what puts 7day buckets on Mondays and reproduces the incumbent's 30day grid). Only buckets whose START falls inside [startTime, endTime] are returned.\n\n**periodAggregate** is the sum of the returned buckets.\n\n**Streams.** `asset`/`protocol` are the Omnipool's per-asset and hub (LRNA) trade fees. `liquidation_penalty` is the protocol's share of a money-market liquidation bonus, derived from the liquidator's net bonus because Aave reports collateral already net of that share. `pepl_liquidation_profit` is the protocol liquidator's own profit, straight from the `Liquidation.Liquidated` event. `asset_reserve` is the reserve-factor share of borrow interest (`MintedToTreasury`); no reserve has minted since 2026-06-25, so recent windows are legitimately empty. `borrow_apr` is interest accruing on HOLLAR debt.\n\n**`hsm_revenue` is NOT served and answers 400.** The HSM earns most of its revenue arbitraging HOLLAR back to peg in the stablepools, and that spread is not recoverable from indexed data: `HSM.ArbitrageExecuted` reports a profit of `\"0\"` on all 343,522 rows and the arbitrage's collateral leg never reaches `pool_swap_legs`. Serving the swaps-filled channel alone was measured and is dominated by the gap between its two legs' price candles rather than by the HSM fee (20 of 45 weekly buckets negative over a year), so a wrong number is refused rather than published. Every other stream is unaffected.\n\n**Valuation** is event-time: each amount is priced at the 1h candle that had already closed when it happened. The incumbent prices off the money-market oracle, so values agree in magnitude rather than to the cent. Measured against it: Omnipool `asset` 1.04x over a year and 1.05x over the full range; `pepl_liquidation_profit` 1.03x over a year; the hub `protocol` fee 0.72x on a recent week and 1.47x-1.72x over long ones, for two separate reasons. Coverage: between 2025-02-16 and 2026-02-16 the runtime emitted TWO hub fee legs per fill (one burned, one to the treasury) and this series counts both while the incumbent counts only the burned one — measured over 2026-01-10 to 2026-01-16, ours 5,009.48 against its 2,482.25, while our `burned` alone is 2,504.74, or 1.009x its figure. Pricing: with coverage held equal that 1.009x shows the two LRNA prices agreed then, so the recent 0.72x is a present-day divergence in LRNA/USD, which is anchored on a thin position.\n\n**Recognition differs on `borrow_apr`.** This series recognises interest as it ACCRUES; the incumbent recognises it when a borrower REPAYS. Measured, ours runs ~4.4x the incumbent over one week and converges to ~1.8x over a year. The accrual is the figure verified against a closed form (HOLLAR debt x borrow rate).\n\n**`liquidation_penalty` understates history.** The protocol's share of the bonus is applied as a single 10% constant, pinned against the incumbent on 2026-08 data where the two agree to 0.98x. Aave's per-reserve `liquidationProtocolFee` is not indexed, and earlier eras used a different share: over the trailing year this series reads 0.26x the incumbent. Recent windows are right; long ones understate.\n\n**`asset_reserve` diverges in one era.** Bucket instants match the incumbent exactly and most buckets agree within a few percent (the six most recent within 2.5%), but five 30-day buckets between 2025-08-19 and 2025-12-17 run 1.36x-2.36x, which carries the full-range total to 1.37x and the 1-year total to 1.68x. Those buckets' treasury mints are dominated by one high-value reserve (11,852.94 DOT in the 2025-08-19 bucket alone, about the whole difference), so this is a per-asset valuation difference in that era, not a coverage or bucketing one.\n\n**Coverage.** `borrow_apr` starts where the money market's aToken anchor does, and returns an empty series (never zeros) while that anchor is unavailable. `asset`+`feeDestination=protocol` excludes pre-2025-01-25 legs, whose destination the runtime did not record; `total` includes them.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "omnipool",
+                "money-market",
+                "hollar"
+              ]
+            },
+            "in": "query",
+            "name": "productType",
+            "required": true
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "asset",
+                    "protocol",
+                    "liquidation_penalty",
+                    "pepl_liquidation_profit",
+                    "asset_reserve",
+                    "borrow_apr",
+                    "hsm_revenue"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "total"
+                  ]
+                }
+              ]
+            },
+            "in": "query",
+            "name": "streamType",
+            "required": true
+          },
+          {
+            "schema": {
+              "default": "protocol",
+              "type": "string",
+              "enum": [
+                "protocol",
+                "total",
+                "lp",
+                "burned"
+              ]
+            },
+            "in": "query",
+            "name": "feeDestination",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "startTime",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "endTime",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1hour",
+                "6hour",
+                "24hour",
+                "7day",
+                "30day"
+              ]
+            },
+            "in": "query",
+            "name": "bucketSize",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "timestamp",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "periodAggregate": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "periodAggregate"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trades": {
+      "get": {
+        "summary": "Market swaps, newest first",
+        "tags": [
+          "trades"
+        ],
+        "description": "Newest first. ONE ROW PER USER-LEVEL TRADE: `swap_activity` holds both the router's net summary (assetIn→assetOut end to end) and the AMM event of every hop, and only the net row is returned — a 3-hop route is one trade in the pair the user named, never three trades in intermediate assets. Router hops, DCA keeper-fee legs and (before the router event rename at block 4,542,080) the AMM legs of DCA executions are excluded for the same reason.\n\n`amountIn`/`amountOut` are therefore the end-to-end legs (first input, last output) in raw on-chain integer units.\n\n`swapper` is resolved in order of authority: Broadcast.Swapped's swapper (the account the router traded FOR, which is the proxied or multisig account when the extrinsic ran on behalf of one), then the owner of the DCA execution the swap belongs to, then the extrinsic's signatory, then the pool event's own `who`. A hook-dispatched swap older than the Broadcast events (block 6,837,789) that no DCA execution claims reports null rather than being credited to a pallet.\n\n`operationType` is the side the user fixed: a pool event names it, a routed trade's call names it, and a batched or hook-dispatched route leaves it null rather than guessed.\n\n`dca` names the schedule a hook-dispatched execution belongs to, matched to its DCA.TradeExecuted event by block and per-trade amount.\n\nWith an address the query is scoped to the account-first model, which files a trade under the extrinsic's signatory (and its EVM effective signer); either half of a bound EVM identity finds the same trades. DCA executions are NOT in that model — they are the DCA path's rows — so a schedule owner sees them on the global feed and under /v1/dca, not here.\n\nWithout an address the global feed is served. `totalCount` counts the same filter the page uses and is cached for 30 s per filter.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "assets",
+            "required": false,
+            "description": "Comma-separated registry ids; matches either side of the pair."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "in": "query",
+            "name": "swapper",
+            "required": false,
+            "description": "Scope to one account. Omit for the global feed."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "extrinsicIndex": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "swapper": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                          },
+                          "operationType": {
+                            "nullable": true,
+                            "type": "string",
+                            "enum": [
+                              "exactIn",
+                              "exactOut"
+                            ]
+                          },
+                          "assetIn": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "amountIn": {
+                            "type": "string"
+                          },
+                          "assetOut": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "amountOut": {
+                            "type": "string"
+                          },
+                          "dca": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "scheduleId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "scheduleId"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "blockHeight",
+                          "eventIndex",
+                          "extrinsicIndex",
+                          "timestamp",
+                          "swapper",
+                          "operationType",
+                          "assetIn",
+                          "amountIn",
+                          "assetOut",
+                          "amountOut",
+                          "dca"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "totalCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/trades/routed": {
+      "get": {
+        "summary": "Routed trades, newest first (equivalent to /v1/trades)",
+        "tags": [
+          "trades"
+        ],
+        "description": "IDENTICAL to GET /v1/trades, with `participant` as the name of the account parameter. Both exist so the UI's two tabs map 1:1 onto the API; in this indexer they are the same query, because /v1/trades already returns the netted end-to-end view of each routed trade rather than its hops.\n\nNewest first. ONE ROW PER USER-LEVEL TRADE: `swap_activity` holds both the router's net summary (assetIn→assetOut end to end) and the AMM event of every hop, and only the net row is returned — a 3-hop route is one trade in the pair the user named, never three trades in intermediate assets. Router hops, DCA keeper-fee legs and (before the router event rename at block 4,542,080) the AMM legs of DCA executions are excluded for the same reason.\n\n`amountIn`/`amountOut` are therefore the end-to-end legs (first input, last output) in raw on-chain integer units.\n\n`swapper` is resolved in order of authority: Broadcast.Swapped's swapper (the account the router traded FOR, which is the proxied or multisig account when the extrinsic ran on behalf of one), then the owner of the DCA execution the swap belongs to, then the extrinsic's signatory, then the pool event's own `who`. A hook-dispatched swap older than the Broadcast events (block 6,837,789) that no DCA execution claims reports null rather than being credited to a pallet.\n\n`operationType` is the side the user fixed: a pool event names it, a routed trade's call names it, and a batched or hook-dispatched route leaves it null rather than guessed.\n\n`dca` names the schedule a hook-dispatched execution belongs to, matched to its DCA.TradeExecuted event by block and per-trade amount.\n\nWith an address the query is scoped to the account-first model, which files a trade under the extrinsic's signatory (and its EVM effective signer); either half of a bound EVM identity finds the same trades. DCA executions are NOT in that model — they are the DCA path's rows — so a schedule owner sees them on the global feed and under /v1/dca, not here.\n\nWithout an address the global feed is served. `totalCount` counts the same filter the page uses and is cached for 30 s per filter.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "assets",
+            "required": false,
+            "description": "Comma-separated registry ids; matches either side of the pair."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "in": "query",
+            "name": "participant",
+            "required": false,
+            "description": "Scope to one account. Omit for the global feed."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "extrinsicIndex": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "swapper": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                          },
+                          "operationType": {
+                            "nullable": true,
+                            "type": "string",
+                            "enum": [
+                              "exactIn",
+                              "exactOut"
+                            ]
+                          },
+                          "assetIn": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "amountIn": {
+                            "type": "string"
+                          },
+                          "assetOut": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "amountOut": {
+                            "type": "string"
+                          },
+                          "dca": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "scheduleId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "scheduleId"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "blockHeight",
+                          "eventIndex",
+                          "extrinsicIndex",
+                          "timestamp",
+                          "swapper",
+                          "operationType",
+                          "assetIn",
+                          "amountIn",
+                          "assetOut",
+                          "amountOut",
+                          "dca"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "totalCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/extrinsics/{hash}": {
+      "get": {
+        "summary": "One extrinsic by transaction hash",
+        "tags": [
+          "chain"
+        ],
+        "description": "`success` and `error` are the extrinsic's dispatch outcome: exactly one of them is meaningful, and a successful extrinsic has `error: null`.\n\n`signer` is the extrinsic's signatory, or its effective signer for an EVM-originated transaction (the ETH-prefixed account id). An unsigned/inherent extrinsic reports null.\n\nA Module error is named from `runtime_error_names` for the spec version active at that block. A triple the metadata index does not know reports `module`/`name`/`docs` as null while keeping `kind` and `raw`, rather than inventing a name.\n\n**Which of the two extrinsic routes to call.** They are told apart by path SHAPE, not by sniffing the value: a hash is ONE segment after `/v1/extrinsics` and a position is TWO, so `:hash` must be a 0x-prefixed 32-byte hex hash and nothing else. A bare block height is one segment and therefore arrives here, where it is a 400 naming the route that does work — an extrinsic is not addressable by height alone, it needs its index: GET /v1/extrinsics/{blockHeight}/{index}.\n\n**Bounded by time.** `raw_extrinsics` is ordered by (blockHeight, extrinsicIndex) and has no index over the hash, so this lookup is a partition-pruned scan and its cost is proportional to the window: measured on the live table, 7 days reads ~5 MiB and 90 days ~189 MiB, against ~2.11 GiB for the whole table. The default window is 7 days and the cap is 90; an extrinsic older than the window it was asked for is a 404, and is addressable through GET /v1/extrinsics/{blockHeight}/{index} instead.\n\nThe window covers the transaction-toast use case by a wide margin — a toast is polled for at most an hour after submission.\n\nA transaction that has been submitted but not yet indexed is also a 404: this endpoint reads indexed blocks only and has no view of the transaction pool. Poll until it appears.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 7,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90
+            },
+            "in": "query",
+            "name": "withinDays",
+            "required": false,
+            "description": "How far back to search, in days. See the note above on why this is bounded."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{64}$"
+            },
+            "in": "path",
+            "name": "hash",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "blockHeight": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "extrinsicIndex": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "hash": {
+                      "type": "string",
+                      "pattern": "^0x[0-9a-f]{64}$"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "signer": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "description": "The DispatchError variant: Module, Token, Arithmetic, BadOrigin, Other, …"
+                        },
+                        "module": {
+                          "nullable": true,
+                          "description": "Pallet name of a Module error, from the runtime metadata active at that block.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "nullable": true,
+                          "description": "Error name inside the pallet.",
+                          "type": "string"
+                        },
+                        "docs": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "raw": {
+                          "type": "string",
+                          "description": "The undecoded DispatchError JSON, always present, so a caller can decode a variant this service does not name."
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "module",
+                        "name",
+                        "docs",
+                        "raw"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "blockHeight",
+                    "extrinsicIndex",
+                    "hash",
+                    "timestamp",
+                    "signer",
+                    "success",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/extrinsics/{blockHeight}/{index}": {
+      "get": {
+        "summary": "One extrinsic by block height and index",
+        "tags": [
+          "chain"
+        ],
+        "description": "The canonical identity of an extrinsic, and the unbounded-in-age counterpart of the hash lookup: (blockHeight, extrinsicIndex) is this model's primary key, so the read is a key lookup at any depth of history.\n\n`success` and `error` are the extrinsic's dispatch outcome: exactly one of them is meaningful, and a successful extrinsic has `error: null`.\n\n`signer` is the extrinsic's signatory, or its effective signer for an EVM-originated transaction (the ETH-prefixed account id). An unsigned/inherent extrinsic reports null.\n\nA Module error is named from `runtime_error_names` for the spec version active at that block. A triple the metadata index does not know reports `module`/`name`/`docs` as null while keeping `kind` and `raw`, rather than inventing a name.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "in": "path",
+            "name": "blockHeight",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "in": "path",
+            "name": "index",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "blockHeight": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "extrinsicIndex": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "hash": {
+                      "type": "string",
+                      "pattern": "^0x[0-9a-f]{64}$"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "signer": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "description": "The DispatchError variant: Module, Token, Arithmetic, BadOrigin, Other, …"
+                        },
+                        "module": {
+                          "nullable": true,
+                          "description": "Pallet name of a Module error, from the runtime metadata active at that block.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "nullable": true,
+                          "description": "Error name inside the pallet.",
+                          "type": "string"
+                        },
+                        "docs": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "raw": {
+                          "type": "string",
+                          "description": "The undecoded DispatchError JSON, always present, so a caller can decode a variant this service does not name."
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "module",
+                        "name",
+                        "docs",
+                        "raw"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "blockHeight",
+                    "extrinsicIndex",
+                    "hash",
+                    "timestamp",
+                    "signer",
+                    "success",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/otc/orders/{orderId}": {
+      "get": {
+        "summary": "One OTC order and its fill history",
+        "tags": [
+          "chain"
+        ],
+        "description": "Order state folded from its event history, newest state from the oldest events: `open` until a terminal event, then `filled` or `cancelled`. Partial fills never end an order — an order pulled after two partial fills is `cancelled`, and `filledAmountIn`/`filledAmountOut` say how much of it had traded first.\n\n`assetIn`/`assetOut`/`amountIn`/`amountOut`/`partiallyFillable` describe the order AS PLACED and are read only from its OTC.Placed event. A fill or cancel event does not carry them, so an order whose placement is not indexed is a 404 rather than an order with a guessed pair.\n\n`filledAmountIn`/`filledAmountOut` are exact integer sums over every fill event, in raw on-chain units. The remaining size is `amountIn - filledAmountIn` (respectively out); combined with the placed amount, that is the partial-fill progress an order row shows.\n\n`owner` is always null. OTC.Placed does not carry the order owner and no indexed model records it; reporting the placing extrinsic's signatory would be wrong for a proxied or batched placement, so the field is honestly empty rather than plausibly filled.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "in": "path",
+            "name": "orderId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "owner": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                    },
+                    "assetIn": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    "assetOut": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    "amountIn": {
+                      "type": "string"
+                    },
+                    "amountOut": {
+                      "type": "string"
+                    },
+                    "partiallyFillable": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "filled",
+                        "cancelled"
+                      ]
+                    },
+                    "filledAmountIn": {
+                      "type": "string"
+                    },
+                    "filledAmountOut": {
+                      "type": "string"
+                    },
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "placed",
+                              "filled",
+                              "partiallyFilled",
+                              "cancelled"
+                            ]
+                          },
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "amountIn": {
+                            "nullable": true,
+                            "description": "The order size on `placed`; the fill size on `filled`/`partiallyFilled`; null on `cancelled`.",
+                            "type": "string"
+                          },
+                          "amountOut": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "filler": {
+                            "nullable": true,
+                            "description": "The filling account — carried only by the two fill events.",
+                            "type": "string",
+                            "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "blockHeight",
+                          "eventIndex",
+                          "timestamp",
+                          "amountIn",
+                          "amountOut",
+                          "filler"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "orderId",
+                    "owner",
+                    "assetIn",
+                    "assetOut",
+                    "amountIn",
+                    "amountOut",
+                    "partiallyFillable",
+                    "status",
+                    "filledAmountIn",
+                    "filledAmountOut",
+                    "events"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/staking/events": {
+      "get": {
+        "summary": "Staking pallet event streams, oldest first",
+        "tags": [
+          "chain"
+        ],
+        "description": "**Oldest first**, unlike the other feeds: the staking APR reconstruction differences each reward-per-share accumulator against the one before it, so ascending block order is part of the contract.\n\nTyped per stream: AccumulatedRpsUpdated carries `accumulatedRps` and `totalStake`, StakingInitialized carries `nonDustableBalance`, and the fields of the other stream are null. All three are raw integer strings — the accumulator and the total stake both exceed 2^53.\n\nBounded: page with `fromBlock`, which prunes by the primary key, rather than with a deep `offset`. These events are ~1 per 1,200 blocks, so a page's cost is set by how far through the event stream it must walk, not by how many rows it returns — which is why `offset` is capped at 1000 and an offset past it is a 400 rather than a slow request. `totalCount` counts the same filter the page uses and is cached for 5 minutes per filter.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 200,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "types",
+            "required": false,
+            "description": "Comma-separated event types. Default: all of AccumulatedRpsUpdated, StakingInitialized."
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "in": "query",
+            "name": "fromBlock",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "in": "query",
+            "name": "toBlock",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "AccumulatedRpsUpdated",
+                              "StakingInitialized"
+                            ]
+                          },
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "accumulatedRps": {
+                            "nullable": true,
+                            "description": "AccumulatedRpsUpdated only: the reward-per-share accumulator, raw integer.",
+                            "type": "string"
+                          },
+                          "totalStake": {
+                            "nullable": true,
+                            "description": "AccumulatedRpsUpdated only: total staked HDX at the update, raw integer.",
+                            "type": "string"
+                          },
+                          "nonDustableBalance": {
+                            "nullable": true,
+                            "description": "StakingInitialized only: the staking pot's non-dustable balance, raw integer.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "blockHeight",
+                          "eventIndex",
+                          "timestamp",
+                          "accumulatedRps",
+                          "totalStake",
+                          "nonDustableBalance"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "totalCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/dca/schedules": {
+      "get": {
+        "summary": "DCA schedules of one owner, with computed status",
+        "tags": [
+          "dca"
+        ],
+        "description": "Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of schedules before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.\n\n`status` is computed server-side from the schedule's events, never stored: `completed` when the pallet reported DCA.Completed, `cancelled` when a DCA.Terminated event came from a SIGNED extrinsic (the owner's own dca.terminate call), `terminated` when it came from a block hook (the pallet ending the schedule on an error), and `created` while it is still live. The signed-extrinsic signal is what the explorer's DCA page uses, so both surfaces label the same schedule the same way; the older data-lake heuristic (terminated with the last execution still only planned ⇒ cancelled) is the fallback when that signal is unavailable, and it mislabels an error termination that left a pending plan.\n\n`isRollingBudget` means the schedule has no total budget: it keeps spending whatever the owner holds. `executedAmountIn`/`executedAmountOut` sum the schedule's DCA.TradeExecuted events. Sorted by most recent event first; a schedule with no events yet sorts last.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "in": "query",
+            "name": "owner",
+            "required": true,
+            "description": "REQUIRED. The schedule owner, as a lowercase hex account id."
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "description": "Comma-separated: created, completed, terminated, cancelled. Defaults to all."
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "assets",
+            "required": false,
+            "description": "Comma-separated registry ids; matches either side of the pair."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "scheduleId": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "owner": {
+                            "type": "string",
+                            "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+                          },
+                          "assetIn": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "assetOut": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "singleTradeAmount": {
+                            "type": "string"
+                          },
+                          "budget": {
+                            "type": "string"
+                          },
+                          "isRollingBudget": {
+                            "type": "boolean"
+                          },
+                          "executedAmountIn": {
+                            "type": "string"
+                          },
+                          "executedAmountOut": {
+                            "type": "string"
+                          },
+                          "periodBlocks": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "created",
+                              "completed",
+                              "terminated",
+                              "cancelled"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "createdAtBlock": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "lastEventAt": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          }
+                        },
+                        "required": [
+                          "scheduleId",
+                          "owner",
+                          "assetIn",
+                          "assetOut",
+                          "singleTradeAmount",
+                          "budget",
+                          "isRollingBudget",
+                          "executedAmountIn",
+                          "executedAmountOut",
+                          "periodBlocks",
+                          "status",
+                          "createdAt",
+                          "createdAtBlock",
+                          "lastEventAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "totalCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/dca/schedules/count": {
+      "get": {
+        "summary": "How many schedules match a filter",
+        "tags": [
+          "dca"
+        ],
+        "description": "The totalCount GET /v1/dca/schedules reports for the same filter, without the page. Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of schedules before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "in": "query",
+            "name": "owner",
+            "required": true,
+            "description": "REQUIRED. The schedule owner, as a lowercase hex account id."
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "description": "Comma-separated: created, completed, terminated, cancelled. Defaults to all."
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "assets",
+            "required": false,
+            "description": "Comma-separated registry ids; matches either side of the pair."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "totalCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/dca/schedules/{id}/executions": {
+      "get": {
+        "summary": "Executions of one DCA schedule, newest first",
+        "tags": [
+          "dca"
+        ],
+        "description": "Every execution event of the schedule: `executed` (DCA.TradeExecuted), `failed` (DCA.TradeFailed) and `planned` (DCA.ExecutionPlanned, the attempts the pallet has scheduled). A failed or planned attempt traded nothing, so its amounts are null rather than 0.\n\n`errorState` decodes a failed attempt's DispatchError. A Module error carries the pallet index and error bytes (`{\"kind\":\"Module\",\"error\":\"0x0c000000\",\"index\":66}`); every other kind is self-describing, so its sub-kind travels in `error` and `index` is 0 — the pallet index is never invented.\n\n`assetIn`/`assetOut` are the schedule's registered pair. An unknown schedule id is a 404.",
+        "parameters": [
+          {
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "executed",
+                              "failed",
+                              "planned"
+                            ]
+                          },
+                          "amountIn": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "amountOut": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "blockHeight": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "errorState": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string"
+                              },
+                              "error": {
+                                "type": "string"
+                              },
+                              "index": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "error",
+                              "index"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "amountIn",
+                          "amountOut",
+                          "blockHeight",
+                          "eventIndex",
+                          "timestamp",
+                          "errorState"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "assetIn": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    "assetOut": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "totalCount",
+                    "assetIn",
+                    "assetOut"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/prices/pair": {
+      "get": {
+        "summary": "OHLCV candles for one pair",
+        "tags": [
+          "prices"
+        ],
+        "description": "ORIENTATION: the price is `assetIn` quoted in `assetOut` — how much assetOut one assetIn buys — matching the UI's pair orientation.\n\n`referenceAsset` is `usd` when assetOut is a USD-pegged token (USDT, USDC, HOLLAR, DAI, HUSDT, HUSDC), because the candle model is USD-denominated and that IS the pair. Otherwise it is assetOut's registry id and the candles are the cross rate: assetIn's USD OHLC divided by assetOut's USD CLOSE for the same bucket. That is an approximation of a true cross candle (an exact high/low would need the per-block ratio, since the base's high and the quote's low never occur at the same instant); the close is exact. A bucket the quote asset has no candle for is omitted rather than priced at an older rate.\n\n`timestamp` is the bucket's OPEN. Only buckets that have fully closed are returned, so the series never ends on a partial candle (AGENTS.md). At most 5000 candles per request — a wider window is a 400, never a silently truncated series — and the window defaults to the most recent 500 buckets.\n\nThere is no minute-level candle model, so `bucket=1m` is rejected rather than rounded up to 5 minutes.\n\nPRECISION: the candle model stores Decimal(38,12), and the database client requests quoted decimals so no value passes through a JSON double. Cross-rate division is integer arithmetic on that exact decimal text.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "in": "query",
+            "name": "assetIn",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "in": "query",
+            "name": "assetOut",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "in": "query",
+            "name": "from",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "in": "query",
+            "name": "to",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": "1h",
+              "type": "string",
+              "enum": [
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "4h",
+                "1d",
+                "1w"
+              ]
+            },
+            "in": "query",
+            "name": "bucket",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "referenceAsset": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          },
+                          "open": {
+                            "type": "string"
+                          },
+                          "high": {
+                            "type": "string"
+                          },
+                          "low": {
+                            "type": "string"
+                          },
+                          "close": {
+                            "type": "string"
+                          },
+                          "volumeUsd": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "timestamp",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volumeUsd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "referenceAsset",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pools/omnipool/volumes": {
+      "get": {
+        "summary": "Omnipool volume and fees per asset",
+        "tags": [
+          "pools"
+        ],
+        "description": "Per-asset traded volume over a rolling window. A fill contributes the USD value of ITS legs in that asset; when those legs are unpriced it inherits the fill's own value (out side, falling back to the in side). Volume is SINGLE-counted per fill — the data lake counts both sides, so its per-fill numbers are about twice these — and fees are not added to volume.\n\nThe LRNA hub legs are not per-asset volume. `feeUsd` is the asset fee that accrues to liquidity providers; `protocolFeeUsd` is the LRNA-denominated protocol fee of the same fills, attributed to the non-hub asset that was sold into the hub.\n\nThe window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.\n\nLegs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.\n\nCoverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "24h",
+              "type": "string",
+              "enum": [
+                "1h",
+                "24h",
+                "7d",
+                "30d"
+              ]
+            },
+            "in": "query",
+            "name": "period",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": {
+                      "type": "string",
+                      "enum": [
+                        "1h",
+                        "24h",
+                        "7d",
+                        "30d"
+                      ]
+                    },
+                    "asOf": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "assetId": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "volumeUsd": {
+                            "type": "string"
+                          },
+                          "feeUsd": {
+                            "type": "string"
+                          },
+                          "protocolFeeUsd": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "assetId",
+                          "volumeUsd",
+                          "feeUsd",
+                          "protocolFeeUsd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "period",
+                    "asOf",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pools/stableswap/volumes": {
+      "get": {
+        "summary": "Stableswap volume and fees per pool",
+        "tags": [
+          "pools"
+        ],
+        "description": "Per-pool traded volume over a rolling window, single-counted per fill (the USD value of the fill's out legs, falling back to its in legs). `poolId` is the pool's share-token id. `feeUsd` is the pool's fee legs valued at event time.\n\nThe window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.\n\nLegs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.\n\nCoverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "24h",
+              "type": "string",
+              "enum": [
+                "1h",
+                "24h",
+                "7d",
+                "30d"
+              ]
+            },
+            "in": "query",
+            "name": "period",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": {
+                      "type": "string",
+                      "enum": [
+                        "1h",
+                        "24h",
+                        "7d",
+                        "30d"
+                      ]
+                    },
+                    "asOf": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "poolId": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "volumeUsd": {
+                            "type": "string"
+                          },
+                          "feeUsd": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "poolId",
+                          "volumeUsd",
+                          "feeUsd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "period",
+                    "asOf",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pools/xyk/volumes": {
+      "get": {
+        "summary": "XYK volume and fees per pool",
+        "tags": [
+          "pools"
+        ],
+        "description": "Per-pool traded volume over a rolling window, keyed by the pool ACCOUNT (a hex public key). `?pools=` filters to a subset; omitted, every pool that traded in the window is returned. Fees are attributed to the asset they were actually charged in (the data lake reports one side's fee in the other's field for multi-block trades).\n\nA pool account can be reused after a destroy/recreate, so `shareTokenId`/`assetA`/`assetB` describe its newest registry entry; they are null for an account the registry does not know.\n\nThe window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.\n\nLegs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.\n\nCoverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "24h",
+              "type": "string",
+              "enum": [
+                "1h",
+                "24h",
+                "7d",
+                "30d"
+              ]
+            },
+            "in": "query",
+            "name": "period",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "pools",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": {
+                      "type": "string",
+                      "enum": [
+                        "1h",
+                        "24h",
+                        "7d",
+                        "30d"
+                      ]
+                    },
+                    "asOf": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "poolAccount": {
+                            "type": "string"
+                          },
+                          "shareTokenId": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "assetA": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "assetB": {
+                            "nullable": true,
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "volumeUsd": {
+                            "type": "string"
+                          },
+                          "feeUsd": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "poolAccount",
+                          "shareTokenId",
+                          "assetA",
+                          "assetB",
+                          "volumeUsd",
+                          "feeUsd"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "period",
+                    "asOf",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pools/omnipool/yield": {
+      "get": {
+        "summary": "Omnipool fee APR/APY per asset",
+        "tags": [
+          "pools"
+        ],
+        "description": "`feeAprPerc = 100 × (fee_amount_in_asset / mean_reserve) × 365/W`, a RAW-UNIT ratio: numerator and denominator are the same token, so no price enters and no feed can distort it. Only fee legs that were not burned count — those are the ones that accrue to liquidity providers. `feeApyPerc` compounds that period return over a year. There is no ÷2 (the data lake halves both, so its numbers are about half of these).\n\n`protocolFeeAprPerc` is the LRNA-denominated protocol fee measured against the asset's own hub reserve, reported separately and never blended into the LP APR. `farmAprPerc` is reported separately too — a consumer that wants the total APR adds it to `feeAprPerc`.\n\nThe denominator is the mean of the asset's `omnipool_pool_state_history` samples INSIDE the window. That grid is uniform (every 600 blocks), so the simple mean is the time-weighted average up to grid jitter. An asset with no in-window sample reports null rather than a rate computed against a stale reserve.\n\n`farmAprPerc` is the liquidity-mining rate, summed over every farm running on the asset and paid in `farmRewardAssets`: `min(multiplier · yieldPerPeriod · periodsPerYear, maxRewardPerPeriod · periodsPerYear · rewardPrice / stakedValue)` with `periodsPerYear = 365.2425 d / (6 s · blocksPerPeriod)`, the pallet's own reward rule (a farm splits a fixed per-period budget across its stake, and pays its full yield rate until that budget binds). The capped term carries no `multiplier` on purpose: the pallet's `total_shares_z` is multiplier-weighted stake, so the factor cancels. The loyalty curve is NOT applied: this is the rate a matured deposit earns, the top of the range the Hydration UI shows. The reward asset is valued at its newest 1-hour close, and one more than 30 days older than the anchor counts as unpriced.\n\nThe stake in the denominator is the CURRENT value of the Omnipool positions that are currently farmed, while the pallet divides by `total_shares_z` — the same positions valued at the block each was deposited. The gap is NOT a centred error band: deposits left in since-stopped farms keep counting toward the current value while earning nothing, so that term only ever ENLARGES the denominator (measured +0.15 % … +9.4 % of stake) and only ever pushes the published rate DOWN, and a stake that has appreciated since its deposits pushes it down again. Net, measured against chain state on 2026-08-12 across all six live farms: −9.0 % … +8.7 % relative (−1.28 pp … +0.94 pp); a farm whose stake has moved further since its deposits will differ by more.\n\nA null `farmAprPerc` with a NON-EMPTY `farmRewardAssets` means a farm is running but its rate is not knowable here — it is past its planned schedule (what it still pays then depends on whether its pot was topped up, which is not indexed for these reward assets), its asset has no pool-state sample within 24 hours, its reward asset is unpriced, or its global farm runs more than one yield farm (their shared budget cannot be split per asset). An asset with no farm at all reports an EMPTY `farmRewardAssets`. Note that every farm now running was created in one block and is scheduled to end on 2026-10-26T21:10:36Z, so unless the schedules are extended (a pot top-up alone does not) every `farmAprPerc` becomes null on that date.\n\nThe window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.\n\nCoverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "30d",
+              "type": "string",
+              "enum": [
+                "24h",
+                "7d",
+                "30d"
+              ]
+            },
+            "in": "query",
+            "name": "window",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "window": {
+                      "type": "string",
+                      "enum": [
+                        "24h",
+                        "7d",
+                        "30d"
+                      ]
+                    },
+                    "asOf": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "assetId": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "feeAprPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "feeApyPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "farmAprPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "farmRewardAssets": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^\\d+$"
+                            }
+                          },
+                          "protocolFeeAprPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "assetId",
+                          "feeAprPerc",
+                          "feeApyPerc",
+                          "farmAprPerc",
+                          "farmRewardAssets",
+                          "protocolFeeAprPerc"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "window",
+                    "asOf",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pools/stableswap/yield": {
+      "get": {
+        "summary": "Stableswap fee APR/APY per pool",
+        "tags": [
+          "pools"
+        ],
+        "description": "`feeAprPerc = 100 × (Σ fee_legs_usd / mean_pool_tvl_usd) × 365/W`. A pool earns fees in several assets, so the ratio is USD-weighted (the data lake averages per-asset raw ratios unweighted). Both sides are valued event-time; a TVL sample in which any reserve is unpriced is dropped whole rather than counted short.\n\n`farmAprPerc` is always null here: liquidity mining incentivises Omnipool positions and XYK shares, never a stableswap pool's own LPs. When a pool's share token is itself an Omnipool asset, the farm running on it is reported on `/v1/pools/omnipool/yield` under that asset id. A pool with no fully priced in-window sample reports null too.\n\nThe window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.\n\nLegs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.\n\nCoverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "30d",
+              "type": "string",
+              "enum": [
+                "24h",
+                "7d",
+                "30d"
+              ]
+            },
+            "in": "query",
+            "name": "window",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "window": {
+                      "type": "string",
+                      "enum": [
+                        "24h",
+                        "7d",
+                        "30d"
+                      ]
+                    },
+                    "asOf": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "poolId": {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          "feeAprPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "feeApyPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "farmAprPerc": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "poolId",
+                          "feeAprPerc",
+                          "feeApyPerc",
+                          "farmAprPerc"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "window",
+                    "asOf",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dexscreener/latest-block": {
+      "get": {
+        "summary": "Newest indexed block",
+        "tags": [
+          "dexscreener"
+        ],
+        "description": "DexScreener adapter endpoint. Amounts are token-unit decimal strings and timestamps are unix seconds — DexScreener's conventions, not the /v1 ones.\n\nThe head of the indexed chain, from the same source `/v1/status` reports. DexScreener only requests event windows at or below this height, so it is the read models' own progress rather than the raw pipeline's checkpoint.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "block": {
+                      "type": "object",
+                      "properties": {
+                        "blockNumber": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "blockTimestamp": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "blockNumber",
+                        "blockTimestamp"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "block"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dexscreener/asset": {
+      "get": {
+        "summary": "Asset metadata by registry id",
+        "tags": [
+          "dexscreener"
+        ],
+        "description": "DexScreener adapter endpoint. Amounts are token-unit decimal strings and timestamps are unix seconds — DexScreener's conventions, not the /v1 ones.\n\n`id` is the on-chain asset registry id. The optional spec fields `totalSupply`, `circulatingSupply`, `coinGeckoId`, `coinMarketCapId` and `metadata.assetType` are omitted rather than guessed: no per-asset issuance model, external catalogue id or asset-type column exists in this index.\n\nAn id the registry does not know is a 404, never a synthesised placeholder token.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "in": "query",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "asset": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^\\d+$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "symbol": {
+                          "type": "string"
+                        },
+                        "metadata": {
+                          "type": "object",
+                          "properties": {
+                            "decimals": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "decimals"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "symbol",
+                        "metadata"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "asset"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dexscreener/pair": {
+      "get": {
+        "summary": "Pair metadata by pair id",
+        "tags": [
+          "dexscreener"
+        ],
+        "description": "DexScreener adapter endpoint. Amounts are token-unit decimal strings and timestamps are unix seconds — DexScreener's conventions, not the /v1 ones.\n\nA pair id is `<pool>-<asset0>-<asset1>`, with the two registry ids sorted numerically ascending so one pair has one id. `<pool>` is the Omnipool pallet account, a stableswap pool id, or an XYK pool account — which is also what names the venue.\n\nPairs cover the three AMM venues: Omnipool (every asset against the LRNA hub), stableswap (each pool's assets against each other and against the pool share token) and XYK. The `aave` (aToken mint/redeem, always 1:1), `otc` (per-order, not a pool) and `hsm` legs of the same trade model are deliberately not pairs.\n\nThe id is resolved against the pools that exist: a well-formed id whose pool does not hold both assets, or either of whose assets the registry cannot resolve, is a 404. The optional spec fields `createdAtBlockNumber`, `createdAtTxnId`, `creator`, `feeBps` and `pool` are omitted — pool creation is not projected per pair, and the Omnipool's fee is a dynamic per-asset value rather than a pair constant.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "in": "query",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pair": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "dexKey": {
+                          "type": "string",
+                          "enum": [
+                            "hydration"
+                          ]
+                        },
+                        "asset0Id": {
+                          "type": "string",
+                          "pattern": "^\\d+$"
+                        },
+                        "asset1Id": {
+                          "type": "string",
+                          "pattern": "^\\d+$"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "dexKey",
+                        "asset0Id",
+                        "asset1Id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "pair"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dexscreener/events": {
+      "get": {
+        "summary": "Swap events in a block range",
+        "tags": [
+          "dexscreener"
+        ],
+        "description": "DexScreener adapter endpoint. Amounts are token-unit decimal strings and timestamps are unix seconds — DexScreener's conventions, not the /v1 ones.\n\nEvery AMM swap fill with `fromBlock <= block <= toBlock`, ordered by block then event index. The range is inclusive and spans at most 10000 blocks (~50,000 events is the hard ceiling); a wider or denser range is a 400 asking for a narrower one, never a silently truncated page.\n\n`txnIndex` is always 0. Two thirds of Hydration's fills are dispatched by block hooks with no extrinsic at all, and those events sort after the block's extrinsic events, so no per-block transaction index orders the stream — `eventIndex`, which is unique and increasing within a block across every phase, carries the ordering. The extrinsic, or the router operation for a hook-dispatched route, is named in `txnId`.\n\n`reserves` is the pool's state at the nearest sample AT OR BEFORE the fill's block. The state histories are sampled on a 600-block grid, so that sample is normally under an hour old; past 1200 blocks the field is omitted rather than publishing a stale reserve (a delisted Omnipool asset keeps its final sample forever). For an Omnipool pair the two sides are the asset's hub reserve and its own reserve; for a stableswap pair against the pool share token, the share side is the pool's total issuance.\n\n`reserves` is also omitted when either side would read 0. A fill proves the pool held both assets, so a zero is an indexing artefact rather than the pool's state, and publishing it would report the pool as empty. This currently suppresses reserves for every HDX-quoted XYK pool: native HDX balances live in `System.Account` rather than `Tokens`, so the XYK reserve history reads 0 on the HDX side.\n\nFills touching an asset the on-chain registry does not yet carry are skipped rather than priced on an assumed scale — registration is permissionless, so an AssetHub external can trade here before its decimals are indexed, and without them every amount and `priceNative` on that fill would be a guess. Such an asset also 404s on `/dexscreener/asset` and its pairs 404 on `/dexscreener/pair`, so the three endpoints stay consistent.\n\nPairs cover the three AMM venues: Omnipool (every asset against the LRNA hub), stableswap (each pool's assets against each other and against the pool share token) and XYK. The `aave` (aToken mint/redeem, always 1:1), `otc` (per-order, not a pool) and `hsm` legs of the same trade model are deliberately not pairs.\n\n`join` and `exit` events are not served: the indexed liquidity events carry at most one side's amount, and a pair event needs both. See the service module for the per-event-name measurement.\n\nSwap coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "in": "query",
+            "name": "fromBlock",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            },
+            "in": "query",
+            "name": "toBlock",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "block": {
+                            "type": "object",
+                            "properties": {
+                              "blockNumber": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "blockTimestamp": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "blockNumber",
+                              "blockTimestamp"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "eventType": {
+                            "type": "string",
+                            "enum": [
+                              "swap"
+                            ]
+                          },
+                          "txnId": {
+                            "type": "string"
+                          },
+                          "txnIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "eventIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "maker": {
+                            "type": "string"
+                          },
+                          "pairId": {
+                            "type": "string"
+                          },
+                          "priceNative": {
+                            "type": "string"
+                          },
+                          "asset0In": {
+                            "type": "string"
+                          },
+                          "asset1In": {
+                            "type": "string"
+                          },
+                          "asset0Out": {
+                            "type": "string"
+                          },
+                          "asset1Out": {
+                            "type": "string"
+                          },
+                          "reserves": {
+                            "type": "object",
+                            "properties": {
+                              "asset0": {
+                                "type": "string"
+                              },
+                              "asset1": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "asset0",
+                              "asset1"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "block",
+                          "eventType",
+                          "txnId",
+                          "txnIndex",
+                          "eventIndex",
+                          "maker",
+                          "pairId",
+                          "priceNative"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "events"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/stats/platform": {
+      "get": {
+        "summary": "Chain-wide TVL and 24h volume",
+        "tags": [
+          "stats"
+        ],
+        "description": "TVL is CURRENT pooled value at current prices; the Omnipool figure excludes the LRNA hub leg, which is the pool's internal accounting unit rather than deposited value. A pool whose legs cannot all be priced contributes nothing to its venue instead of making the venue unknown.\n\n`moneyMarketSupplyUsd` is null: there is no money-market TVL model on this surface yet, and null says so rather than reporting the platform as smaller than it is.\n\n`volume24h` is the rolling 24 hours of swap legs, each fill counted ONCE (its out side, falling back to its in side). `totalRoutedUsd` nets each routed trade end to end — a multi-hop route counts once, at the larger of its two boundary sides — so the per-venue sums legitimately exceed it. It also drops trades whose every fill is an aToken mint or redeem: those are 1:1 money-market wraps, not swaps. An aToken hop inside a routed swap still counts, as part of that swap; the three per-venue fields are unaffected either way, since `aave` is not among them.\n\n`asOf`/`blockHeight` describe the indexed-block volume anchor. The TVL snapshot is another current-state model and can sit a few blocks apart. Both are null only while no swap legs are indexed at all.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "asOf": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    },
+                    "blockHeight": {
+                      "nullable": true,
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "tvl": {
+                      "type": "object",
+                      "properties": {
+                        "omnipoolUsd": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "stableswapUsd": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "xykUsd": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "moneyMarketSupplyUsd": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "totalUsd": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "omnipoolUsd",
+                        "stableswapUsd",
+                        "xykUsd",
+                        "moneyMarketSupplyUsd",
+                        "totalUsd"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "volume24h": {
+                      "type": "object",
+                      "properties": {
+                        "omnipoolUsd": {
+                          "type": "string"
+                        },
+                        "stableswapUsd": {
+                          "type": "string"
+                        },
+                        "xykUsd": {
+                          "type": "string"
+                        },
+                        "totalRoutedUsd": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "omnipoolUsd",
+                        "stableswapUsd",
+                        "xykUsd",
+                        "totalRoutedUsd"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "asOf",
+                    "blockHeight",
+                    "tvl",
+                    "volume24h"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coingecko/v1/tickers": {
+      "get": {
+        "summary": "24h DEX tickers per pool and pair",
+        "tags": [
+          "coingecko"
+        ],
+        "description": "CoinGecko DEX ticker spec: one row per pool and asset pair filled in the rolling 24 hours. A drop-in replacement for `api.hydradx.io/coingecko/v1/tickers` — same fields, same pair canonicalisation, same price and volume definitions.\n\n`last_price`, `high` and `low` are the base/target quantity ratio of a single fill (the most recent one, the largest and the smallest). The pair is canonical: H2O, GDOT and GETH are pinned to the target side, in that order of precedence, and every other pair is ordered by symbol. `base_volume` and `target_volume` sum every fill of the pair in BOTH directions, so a round trip is counted twice — the incumbent feed's convention.\n\nAn asset quotes under the asset it wraps (aUSDT as USDT, 2-Pool-GDOT as GDOT), taken from the indexed asset registry rather than a hand-maintained token list. A pair whose asset carries no registry symbol at all — external XCM assets are registered on chain without one — is omitted rather than published under an invented code.\n\nThe Omnipool routes every swap through its hub and emits one fill per hop, so a swap there appears as two tickers against H2O rather than one direct pair.\n\nMoney-market wrap flows are not DEX trades and are excluded: supplying USDT mints aUSDT one for one, which emits the same swap event as a trade but has no price, no reserves and no counterparty. The old feed counted them, folded invisibly inside merged tickers.\n\nDeviations from the incumbent feed, both deliberate: numeric fields are strings (CoinGecko's own spec form; the old feed emitted JSON numbers), and `pool_id` names the real pool instead of repeating `ticker_id`, so a pair traded in several pools reports each pool's own depth. `liquidity_in_usd` is real — the old feed hardcoded it to 0. The window is anchored to the newest indexed block, not to wall clock, and a cold cache computes on demand instead of answering 503.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ticker_id": {
+                        "type": "string",
+                        "description": "`<base>_<target>`. Not unique on its own: a pair traded in several pools has one row per pool, told apart by `pool_id`."
+                      },
+                      "base_currency": {
+                        "type": "string"
+                      },
+                      "target_currency": {
+                        "type": "string"
+                      },
+                      "last_price": {
+                        "type": "string",
+                        "description": "Base units per one target unit, from the most recent fill in the window."
+                      },
+                      "base_volume": {
+                        "type": "string",
+                        "description": "Base-asset volume over the window, counting both trade directions."
+                      },
+                      "target_volume": {
+                        "type": "string",
+                        "description": "Target-asset volume over the window, counting both trade directions."
+                      },
+                      "pool_id": {
+                        "type": "string",
+                        "description": "`omnipool`, or `<venue>:<pool key>` — a stableswap pool id, an XYK pool account, an aToken contract account, an OTC order id."
+                      },
+                      "liquidity_in_usd": {
+                        "type": "string",
+                        "description": "Current USD depth behind the pair. 0 where the venue holds no reserves (money-market wraps, OTC) or the pool is unpriced."
+                      },
+                      "high": {
+                        "type": "string"
+                      },
+                      "low": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "ticker_id",
+                      "base_currency",
+                      "target_currency",
+                      "last_price",
+                      "base_volume",
+                      "target_volume",
+                      "pool_id",
+                      "liquidity_in_usd",
+                      "high",
+                      "low"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coingecko/v1/totalsupply/{token}": {
+      "get": {
+        "summary": "Total supply of a Hydration product token",
+        "tags": [
+          "coingecko"
+        ],
+        "description": "Total supply of one of `hollar`, `gigadot`, `gigaeth`, `h2o`, in whole tokens, in the incumbent endpoint's body shape.\n\nReconstructed from indexed state with NO per-request RPC: HOLLAR from the ERC-20 balance model, GDOT and GETH from the underlying held by their money-market receipt-token contract (their reserves have never minted variable debt, which every read re-checks, so custody is the whole supply), H2O from indexed substrate issuance.\n\nA source this model cannot read answers 503, never 0: a missing reserve entry, an unindexed balance or a reserve that has started lending are all \"unknown supply\", and publishing zero for any of them would be a wrong number an aggregator keeps.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "description": "hollar | gigadot | gigaeth | h2o"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Whole tokens as a decimal string."
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The supply exists but could not be read from indexed state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false,
+                  "description": "The supply exists but could not be read from indexed state."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/defillama/v1/volume": {
+      "get": {
+        "summary": "24h netted trading volume",
+        "tags": [
+          "defillama"
+        ],
+        "description": "Rolling 24-hour trading volume across every venue, in the incumbent feed's one-element array shape. A drop-in replacement for `api.hydradx.io/defillama/v1/volume`.\n\nSingle-counted: a trade contributes the larger of its two boundary sides ONCE, so a multi-hop route, an Omnipool hub hop and a batch of independent swaps are each counted for what they are. The Hydration Data Lake series this replaces counts one side of every FILL instead — a routed swap once per hop, an Omnipool swap twice because the router reports `A→LRNA` and `LRNA→B` separately — so its figure runs 2–3.4× this one (measured over the week of 2026-08-03: 6.33 M here against 16.97 M there). Money-market wrap round-trips are excluded from DEX volume: a trade whose every fill is an aToken mint or redeem is a 1:1 deposit into the money market, not a swap. An aToken hop INSIDE a routed swap still counts, as part of that swap. Fees are never part of volume.\n\nThe window ends at the newest indexed block, not at wall clock, so an indexing lag shortens the window instead of reporting a partial period as a full one. Values are event-time priced, from the 1-hour candle that had already closed when each fill happened.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "volume_usd": {
+                        "type": "number",
+                        "description": "Netted USD volume over the rolling 24 hours, as a JSON number rounded to cents."
+                      }
+                    },
+                    "required": [
+                      "volume_usd"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/defillama/v1/backfill": {
+      "get": {
+        "summary": "Per-day historical volume and fees",
+        "tags": [
+          "defillama"
+        ],
+        "description": "Historical volume and fees per UTC calendar day, for a DefiLlama reindex. `startDate` and `endDate` are `YYYY-MM-DD` and BOTH inclusive, at most 62 days per request.\n\nCoverage is the full history of the chain: the first indexed swap is 2023-01-06 (Omnipool block 1,708,104), well before the unified `Broadcast.Swapped` event the rest of this API's trade surfaces start at. Fees, however, start on 2023-08-04 (block 3,112,604): the Omnipool swap event carried no fee amount before that runtime, so every fee field reads 0 for the earlier days rather than reporting a fee the chain never published.\n\nOnly CLOSED days are served. The range is cut at the start of the day the newest indexed block sits in, so the day in progress is never published as a complete one, and a day is omitted rather than published as `0` when it has no indexed fill at all, or when none of its fills could be valued — a gap means \"nothing to report for that day\", not \"zero volume traded\". Measured, the second case is every day from the first Omnipool fill (2023-01-06) to 2023-04-11, whose assets are older than the price feed; the series is dense from 2023-04-12 on.\n\nVolume is netted exactly as `/defillama/v1/volume` nets it — same rule, same money-market wrap exclusion — so the two agree. `dailyFees` is every fee leg valued at event time and is a breakdown of the trade, not extra flow: a stableswap fee is already inside the trade's own amounts, so adding fees to volume would count the same value twice. The destination fields split `dailyFees` by where the fee went, including a class the chain did not record for pre-Broadcast Omnipool asset fees — a consumer computing protocol revenue must exclude both the burned and the unknown class rather than assume everything accrued.\n\nThe DefiLlama volume adapter today applies a hardcoded 80/20 asset-vs-protocol-fee split and a 50/50 LP-vs-referral split client-side. `dailyProtocolFees` is the real measured protocol (hub-asset) share and replaces the first assumption; the second cannot be replaced from this data, because a fee credited to an account names the recipient but not its role.\n\nCost: the fold runs one calendar month at a time over the swap-leg projection, and each month is cached for an hour (stale-served for a day). A busy month reads ~2.7 M legs in ~5 s cold, the slowest month of the whole era took 11.8 s, and a warm range answers in milliseconds — so a reindex that walks the era in 62-day requests pays each month exactly once.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "description": "First day, inclusive."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "description": "Last day, inclusive."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string",
+                        "description": "The UTC calendar day, `YYYY-MM-DD`."
+                      },
+                      "volume_usd": {
+                        "type": "number",
+                        "description": "Netted USD volume of the day's trades."
+                      },
+                      "dailyFees": {
+                        "type": "number",
+                        "description": "Every fee leg the day's trades paid, valued at event time — whatever the fee's destination. Fees are NOT part of `volume_usd`."
+                      },
+                      "dailyFeesToAccounts": {
+                        "type": "number",
+                        "description": "The part of `dailyFees` credited to an account: a pool, a referrer, staking, the treasury. This surface does not decide which."
+                      },
+                      "dailyFeesBurned": {
+                        "type": "number",
+                        "description": "The part of `dailyFees` destroyed rather than credited — the Omnipool LRNA protocol fee for most of the chain's history. It accrues to nobody."
+                      },
+                      "dailyFeesUnknownDestination": {
+                        "type": "number",
+                        "description": "The part of `dailyFees` whose destination the chain did not record. Pre-Broadcast Omnipool asset fees only; never book it as revenue."
+                      },
+                      "dailyProtocolFees": {
+                        "type": "number",
+                        "description": "The part of `dailyFees` charged in the Omnipool hub asset (LRNA) — the protocol fee. It overlaps the destination classes above rather than adding to them."
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "volume_usd",
+                      "dailyFees",
+                      "dailyFeesToAccounts",
+                      "dailyFeesBurned",
+                      "dailyFeesUnknownDestination",
+                      "dailyProtocolFees"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ]
+}

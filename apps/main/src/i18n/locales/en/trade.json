@@ -1,5 +1,6 @@
 {
   "trade.orders.myActivity": "My recent activity",
+  "trade.orders.myTrades": "My recent trades",
   "trade.orders.myActivity.fromTo": "Filled from / Filled to",
   "trade.orders.myActivity.fillPrice": "Fill price",
   "trade.orders.myActivity.type": "Type",
@@ -37,6 +38,9 @@
   "trade.orders.dcaDetail.title": "Order details",
   "trade.orders.dcaDetail.blockInterval": "Block interval",
   "trade.orders.dcaDetail.singleTradeSize": "Single trade size",
+  "trade.orders.dcaDetail.tradesProgress": "{{ executed, number }} of ~{{ total, number }} trades",
+  "trade.orders.dcaDetail.tradesCount_one": "{{ count, number }} trade",
+  "trade.orders.dcaDetail.tradesCount_other": "{{ count, number }} trades",
   "trade.orders.dcaDetail.schedulePeriod_one": "{{ timeframe, interval }} ({{ count }} block)",
   "trade.orders.dcaDetail.schedulePeriod_other": "{{ timeframe, interval }} ({{ count }} blocks)",
   "trade.cancelOrder.title": ["Sure you want", "to stop your trade?"],

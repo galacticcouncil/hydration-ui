@@ -43,6 +43,7 @@
   "history.table.collateralization": "Collateralization <0>{{ state }}</0> for",
   "history.table.emodeDisabled": "<0>{{ emode }}</0> <1>Disabled</1>",
   "history.table.emodeEnabled": "<0>{{ emode }}</0> <1>Enabled</1>",
+  "history.table.emodeUpdated": "E-Mode updated",
   "history.table.liquidatedCollateral": "Liquidated Collateral",
   "history.table.title": "Transaction history",
   "market.stats.totalAvailable": "Total available",

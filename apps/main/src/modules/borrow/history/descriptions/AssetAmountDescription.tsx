@@ -1,4 +1,5 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -24,7 +25,7 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
       sx={{ flexWrap: "wrap" }}
     >
       {assetId && <AssetLogo size="small" id={assetId} />}
-      <Text fs="p3" css={{ whiteSpace: "nowrap" }}>
+      <Text fs="p4" fw={500} whiteSpace="nowrap" color={getToken("text.high")}>
         {t("currency", {
           value: scaleHuman(amount, asset.decimals),
           symbol: asset.symbol,

@@ -138,10 +138,14 @@ export const Tooltip = ({
 
           setOpen(true)
         }}
-        onPointerDown={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
+        onPointerDown={
+          asChild
+            ? undefined
+            : (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+        }
       >
         {children || <TooltipIcon color={iconColor} />}
       </TriggerComp>

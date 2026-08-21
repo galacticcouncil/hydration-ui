@@ -12,7 +12,13 @@ import { getToken } from "@/utils"
 
 import { Icon } from "../Icon"
 import { Text } from "../Text"
-import { SContent, SelectTrigger, SItem, SViewport } from "./Select.styled"
+import {
+  SContent,
+  SelectSize,
+  SelectTrigger,
+  SItem,
+  SViewport,
+} from "./Select.styled"
 
 export type SelectItem<TKey extends string> = {
   key: TKey
@@ -35,6 +41,7 @@ type SelectPropsCustom<TKey extends string> = Omit<
 > &
   RenderProps & {
     placeholder?: string
+    size?: SelectSize
     items: ReadonlyArray<SelectItem<TKey>>
     onValueChange: (value: TKey) => void
   }
@@ -44,6 +51,7 @@ export const Select = <TKey extends string = string>({
   placeholder,
   items,
   renderTrigger,
+  size = "medium",
   ...props
 }: SelectPropsCustom<TKey>) => {
   return (
@@ -51,7 +59,7 @@ export const Select = <TKey extends string = string>({
       {renderTrigger ? (
         <Trigger sx={{ cursor: "pointer" }}>{renderTrigger()}</Trigger>
       ) : (
-        <SelectTrigger>
+        <SelectTrigger size={size}>
           {label && <SelectLabel>{label}</SelectLabel>}
           <Value placeholder={placeholder} />
           <SelectCaret />
