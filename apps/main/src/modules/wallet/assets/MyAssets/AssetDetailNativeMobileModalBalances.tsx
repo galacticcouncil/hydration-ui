@@ -168,10 +168,12 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
               value: locks.lockedInDemocracyDisplay,
             })}
             descriptionCustom={
-              unlockable.lockedReferendaSeconds > 0 && (
+              unlockable.lockedReferendaMilliseconds > 0 && (
                 <FullExpiration
                   sx={{ width: "fit-content" }}
-                  initialLockedSeconds={unlockable.lockedReferendaSeconds}
+                  initialLockedMilliseconds={
+                    unlockable.lockedReferendaMilliseconds
+                  }
                 />
               )
             }
@@ -206,10 +208,12 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
           })}
           displayValue={unlockable.displayMaxUnlockable}
           descriptionCustom={
-            unlockable.lockedReferendaSeconds > 0 && (
+            unlockable.lockedReferendaMilliseconds > 0 && (
               <FullExpiration
                 sx={{ width: "fit-content" }}
-                initialLockedSeconds={unlockable.lockedReferendaSeconds}
+                initialLockedMilliseconds={
+                  unlockable.lockedReferendaMilliseconds
+                }
               />
             )
           }

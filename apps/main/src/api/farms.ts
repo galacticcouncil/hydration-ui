@@ -2,14 +2,12 @@ import { IndexerSdk, newFarmsQuery } from "@galacticcouncil/indexer/indexer"
 import { farm, SdkCtx } from "@galacticcouncil/sdk-next"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToSeconds } from "date-fns"
-import { millisecondsInHour, secondsInDay } from "date-fns/constants"
+import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { z } from "zod"
 
 import { useIndexerClient } from "@/api/provider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { isXykDepositPosition } from "@/states/account"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { OmnipoolDepositFull, XykDeposit } from "./account"
 import { bestNumberQuery } from "./chain"
@@ -27,9 +25,9 @@ export type FarmRewards = {
 }
 
 export const NEW_YIELD_FARMS_DAYS = 4
-const NEW_YIELD_FARMS_TIME = secondsInDay * NEW_YIELD_FARMS_DAYS
-const NEW_YIELD_FARMS_BLOCKS =
-  NEW_YIELD_FARMS_TIME / millisecondsToSeconds(PARACHAIN_BLOCK_TIME) // 2 days in blocks
+const NEW_YIELD_FARMS_TIME = millisecondsInDay * NEW_YIELD_FARMS_DAYS
+const getNewYieldFarmsBlocks = (slotDurationMs: number) =>
+  Math.round(NEW_YIELD_FARMS_TIME / slotDurationMs)
 
 const newFarmsDataSchema = z.object({
   events: z.array(
@@ -183,15 +181,17 @@ const newCreatedFarmsQuery = (
   indexerSdk: IndexerSdk,
 ) =>
   queryOptions({
+    enabled: rpcProvider.isApiLoaded,
     queryKey: ["newCreatedFarms"],
     queryFn: async () => {
+      const slotDurationMs = rpcProvider.slotDurationMs
       const { parachainBlockNumber } =
         await rpcProvider.queryClient.ensureQueryData(
           bestNumberQuery(rpcProvider),
         )
 
       const latestBlockNumber = Big(parachainBlockNumber)
-        .minus(NEW_YIELD_FARMS_BLOCKS)
+        .minus(getNewYieldFarmsBlocks(slotDurationMs))
         .toNumber()
 
       const data = await rpcProvider.queryClient.fetchQuery(

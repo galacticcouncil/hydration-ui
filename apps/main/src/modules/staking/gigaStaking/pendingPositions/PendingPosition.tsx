@@ -15,7 +15,11 @@ import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { bestNumberQuery } from "@/api/chain"
-import { gigaStakeConstantsQuery } from "@/api/gigaStake"
+import {
+  getCooldownExpiresAt,
+  gigaStakeConstantsQuery,
+  gigaTwoSecBlocksSinceQuery,
+} from "@/api/gigaStake"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { CancelConfirmationModal } from "@/modules/staking/gigaStaking/pendingPositions/CancelConfirmationModal"
@@ -45,6 +49,9 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   const rpc = useRpcProvider()
   const { data: best } = useQuery(bestNumberQuery(rpc))
   const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
+  const { data: twoSecBlocksSince = null } = useQuery(
+    gigaTwoSecBlocksSinceQuery(rpc),
+  )
   const cancelPendingPosition = useCancelPendingPosition()
   const claimPendingPosition = useClaimPendingPosition()
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
@@ -59,7 +66,11 @@ export const PendingPosition: FC<PendingPositionProps> = ({
       return null
     }
 
-    const claimableAtBlock = voteAtBlock + cooldownPeriod
+    const claimableAtBlock = getCooldownExpiresAt(
+      voteAtBlock,
+      cooldownPeriod,
+      twoSecBlocksSince,
+    )
 
     const blocksRemaining = Math.max(0, claimableAtBlock - Number(currentBlock))
 
@@ -76,7 +87,14 @@ export const PendingPosition: FC<PendingPositionProps> = ({
       label: endDate ? `~${endDate}` : "--",
       tooltip: t("date.long", { value: unlockDate }),
     }
-  }, [currentBlock, rpc.slotDurationMs, t, cooldownPeriod, voteAtBlock])
+  }, [
+    currentBlock,
+    rpc.slotDurationMs,
+    t,
+    cooldownPeriod,
+    voteAtBlock,
+    twoSecBlocksSince,
+  ])
 
   if (isMobile) {
     return (
