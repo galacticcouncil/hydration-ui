@@ -5,7 +5,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalProps,
-  Separator,
   Stack,
   TabsContent,
   TabsRoot,
@@ -42,16 +41,7 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
         title={t("rpc.change.modal.title")}
         align="center"
         customHeader={
-          <Stack
-            separated
-            pt="m"
-            separator={
-              <Separator
-                my="var(--modal-content-padding)"
-                mx="var(--modal-content-inset)"
-              />
-            }
-          >
+          <Stack pt="m">
             <ToggleGroup<TabView>
               type="single"
               value={view}

@@ -1,44 +1,34 @@
-import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
 import { Flex, Spinner, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient } from "@/api/provider"
 import { SSquidIndexerListItem } from "@/components/DataProviderSelect/components/squid/SquidIndexerListItem.styled"
-import { useBlockHeightStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
-import { useNeckworkEnabled } from "@/states/neckwork"
+import { useNeckworkIndexerStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 
 export const NeckworkStatusItem = () => {
   const { t } = useTranslation()
-  const neckworkEnabled = useNeckworkEnabled()
 
   const {
-    data: status,
+    name,
+    blockHeight,
     isLoading,
     isError,
-  } = useQuery({
-    ...neckworkStatusQuery(neckworkClient),
-    enabled: neckworkEnabled,
-  })
-
-  const { blockDiffText, statusText, color } = useBlockHeightStatus(
-    status?.blockHeight ?? null,
-  )
-
-  if (!neckworkEnabled) return null
+    blockDiffText,
+    statusText,
+    color,
+  } = useNeckworkIndexerStatus()
 
   return (
     <SSquidIndexerListItem blocked={isLoading || isError}>
       <Text fs="p3" color={getToken("text.high")}>
-        Neckwork
+        {name}
       </Text>
       <Flex justify="center" align="center" display={["none", "flex"]}>
         {isLoading ? (
           <Spinner size="xs" />
         ) : (
           <Text fs="p5" fw={600} align="center" color={getToken("text.high")}>
-            {t("number", { value: status?.blockHeight })}
+            {t("number", { value: blockHeight })}
           </Text>
         )}
       </Flex>

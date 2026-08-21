@@ -2,7 +2,19 @@ import { create } from "zustand"
 
 import { ENV } from "@/config/env"
 
-export const useNeckworkEnabled = (): boolean => ENV.VITE_NECKWORK_ENABLED
+type NeckworkStore = {
+  alive: boolean
+}
+
+export const useNeckworkStore = create<NeckworkStore>()(() => ({
+  alive: false,
+}))
+
+export const useNeckworkEnabled = (): boolean => {
+  const alive = useNeckworkStore((state) => state.alive)
+
+  return ENV.VITE_NECKWORK_ENABLED && alive
+}
 
 type NeckworkSyncStore = {
   armedForBlock: number | null

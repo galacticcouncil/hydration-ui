@@ -1,3 +1,4 @@
+import { NeckworkStatus } from "@galacticcouncil/indexer/neckwork"
 import { getSquidSdk } from "@galacticcouncil/indexer/squid"
 import {
   DataProviderStatus,
@@ -8,6 +9,7 @@ import {
 } from "@galacticcouncil/utils"
 import { first } from "remeda"
 
+import { ENV } from "@/config/env"
 import { IndexerProps } from "@/config/rpc"
 
 type IndexerInfo = {
@@ -32,6 +34,20 @@ const INDEXER_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
 ]
 
 const INDEXER_TIMEOUT_MS = 2000
+
+export async function fetchNeckworkStatus(): Promise<NeckworkStatus | null> {
+  try {
+    const response = await fetch(`${ENV.VITE_NECKWORK_URL}/v1/status`, {
+      signal: AbortSignal.timeout(INDEXER_TIMEOUT_MS),
+    })
+
+    if (!response.ok) return null
+
+    return (await response.json()) as NeckworkStatus
+  } catch {
+    return null
+  }
+}
 
 export async function fetchIndexerInfo(
   indexer: IndexerProps,

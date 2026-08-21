@@ -1,3 +1,4 @@
+import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
 import {
   getSquidSdk,
   latestBlockHeightQuery,
@@ -8,15 +9,17 @@ import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { prop } from "remeda"
 
-import { PROVIDER_URLS } from "@/api/provider"
+import { neckworkClient, PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { ENV } from "@/config/env"
 import { SQUID_URLS } from "@/config/rpc"
+import { useNeckworkStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { pingWorker } from "@/workers/ping"
 
 import {
   fetchIndexerInfo,
+  fetchNeckworkStatus,
   getBestIndexer,
   getBestRpc,
 } from "./DataProviderResolver.utils"
@@ -71,9 +74,19 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
       referenceBlock = bestRpc?.blockNumber ?? null
     }
 
-    const indexerInfos = await Promise.all(
-      SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer)),
-    )
+    const [indexerInfos, neckworkStatus] = await Promise.all([
+      Promise.all(SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer))),
+      ENV.VITE_NECKWORK_ENABLED ? fetchNeckworkStatus() : null,
+    ])
+
+    useNeckworkStore.setState({ alive: !!neckworkStatus })
+
+    if (neckworkStatus) {
+      queryClient.setQueryData(
+        neckworkStatusQuery(neckworkClient).queryKey,
+        neckworkStatus,
+      )
+    }
 
     const bestIndexer = getBestIndexer(indexerInfos, referenceBlock)
 

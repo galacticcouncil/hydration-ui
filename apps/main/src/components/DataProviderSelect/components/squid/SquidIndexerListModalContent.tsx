@@ -15,26 +15,33 @@ import {
   SquidIndexerListItem,
 } from "@/components/DataProviderSelect/components/squid/SquidIndexerListItem"
 import { useFullSquidUrlList } from "@/components/DataProviderSelect/DataProviderSelect.utils"
+import { useNeckworkEnabled } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export const SquidIndexerListModalContent = () => {
   const { t } = useTranslation("common")
   const { squidUrl } = useProviderRpcUrlStore()
+  const neckworkEnabled = useNeckworkEnabled()
 
   const urlList = useFullSquidUrlList()
   const activeSquid = urlList.find((item) => item.url === squidUrl)
 
+  const activeItem = neckworkEnabled ? (
+    <NeckworkStatusItem />
+  ) : activeSquid ? (
+    <SquidIndexerListItem name={activeSquid.name} url={activeSquid.url} />
+  ) : null
+
   return (
     <ModalBody>
-      {activeSquid ? (
+      {activeItem ? (
         <Stack
           bg={getToken("surfaces.containers.dim.dimOnBg")}
           borderRadius="m"
         >
           <SquidIndexerListHeader />
           <Separator />
-          <SquidIndexerListItem name={activeSquid.name} url={activeSquid.url} />
-          <NeckworkStatusItem />
+          {activeItem}
         </Stack>
       ) : (
         <Flex align="center" justify="center" gap="base" p="base" height={64}>
