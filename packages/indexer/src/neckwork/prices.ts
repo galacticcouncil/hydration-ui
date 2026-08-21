@@ -46,6 +46,29 @@ export const pairCandlesWindow = (
   return { from: new Date(from).toISOString(), to: new Date(to).toISOString() }
 }
 
+/**
+ * Flat 1:1 series for pairs that are pegged by construction — an aToken and
+ * its underlying. Neckwork has no candles for these because they never trade
+ * against each other; the price is always exactly 1.
+ */
+export const peggedCandles = (
+  bucket: CandleBucket,
+  count: number = CANDLE_PAGE_SIZE,
+): PairCandle[] => {
+  const bucketMs = CANDLE_BUCKET_MS[bucket]
+  const step = bucketMs / 1000
+  const latest = Math.floor(Date.now() / bucketMs) * step
+
+  return Array.from({ length: count }, (_, index) => ({
+    time: latest - (count - 1 - index) * step,
+    open: 1,
+    high: 1,
+    low: 1,
+    close: 1,
+    volume: 0,
+  }))
+}
+
 export const invertCandle = (candle: PairCandle): PairCandle => ({
   time: candle.time,
   open: 1 / candle.open,

@@ -1,3 +1,4 @@
+import { FeeStreamKey } from "@galacticcouncil/indexer/neckwork"
 import { Box, Button, Flex, Select, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
 import Big from "big.js"
@@ -5,7 +6,8 @@ import { useTranslation } from "react-i18next"
 
 import { feesAndRevenueConfig } from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
 
-export type FeesLegendFields = ReadonlyMap<string, number | null>
+export type FeesLegendFields = ReadonlyMap<FeeStreamKey, number | null>
+type LegendFilter = FeeStreamKey | "all"
 
 export const FeesLegendNeckwork = ({
   fields,
@@ -13,14 +15,19 @@ export const FeesLegendNeckwork = ({
   setActiveFilter,
 }: {
   fields: FeesLegendFields
-  activeFilter: string
-  setActiveFilter: (filter: string) => void
+  activeFilter: LegendFilter
+  setActiveFilter: (filter: LegendFilter) => void
 }) => {
   const { t } = useTranslation("common")
   const { getToken } = useTheme()
   const { gte } = useBreakpoints()
 
-  const legendItems = [
+  const legendItems: ReadonlyArray<{
+    key: LegendFilter
+    label: string
+    color: string | undefined
+    value: number | null | undefined
+  }> = [
     {
       key: "all",
       label: t("all"),
@@ -44,7 +51,7 @@ export const FeesLegendNeckwork = ({
       <Select
         value={activeFilter}
         items={legendItems}
-        onValueChange={(val: string) => setActiveFilter(val)}
+        onValueChange={setActiveFilter}
       />
     )
   }

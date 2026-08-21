@@ -40,14 +40,11 @@ import { useEffect, useRef, useState } from "react"
 
 import { TradeChartType } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
 
-/** Bars shown on first paint — the rest of the page is pan-ahead buffer. */
 const VISIBLE_BARS = 60
-/** Bars left of the viewport below which the next page is requested. */
 const LOAD_MORE_THRESHOLD = 60
 
 const toTime = (candle: PairCandle) => toUTCTimestamp(candle.time * 1000)
 
-/** Crosshair payload for candlestick charts — open/high/low alongside the shared close/volume shape. */
 type OhlcCrosshairData = BaselineChartData & {
   open?: number
   high?: number
@@ -125,7 +122,6 @@ type CandleChartProps = {
   readonly type: TradeChartType
   readonly resetKey: string
   readonly isRefetching: boolean
-  /** keepPreviousData — freeze series so resetKey/live don't paint stale candles */
   readonly isPlaceholderData: boolean
   readonly onCrosshairMove: (data: OhlcCrosshairData | null) => void
   readonly onReachStart: () => void
@@ -250,7 +246,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({
         open,
         high,
         low,
-        volume: volumePoint?.value,
+        volume: volumePoint?.value ?? 0,
       })
     })
 
@@ -321,10 +317,12 @@ export const CandleChart: React.FC<CandleChartProps> = ({
       time: toTime(candle),
       value: candle.close,
     }))
-    const volumes = candles.map((candle) => ({
-      time: toTime(candle),
-      value: candle.volume,
-    }))
+    const volumes = candles
+      .filter((candle) => candle.volume > 0)
+      .map((candle) => ({
+        time: toTime(candle),
+        value: candle.volume,
+      }))
 
     if (latestProps.current.type === "line") {
       series.baseline.setData(line)

@@ -83,8 +83,6 @@ export const CollateralChangeModalContent: React.FC<
             statuses: DCA_OPEN_STATUSES,
             assetIds: [assetId],
             page: 0,
-            // ponytail: one page is enough — an account with 200 open DCAs on
-            // a single asset is not a case worth paginating a warning for
             pageSize: 200,
           }),
         ]

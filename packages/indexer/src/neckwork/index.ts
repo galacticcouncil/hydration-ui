@@ -51,7 +51,7 @@ const readErrorMessage = async (response: Response) => {
       return body.error.message
     }
   } catch {
-    // body was absent or not JSON — fall back to status only
+    // ignore non-JSON error bodies
   }
 
   return undefined

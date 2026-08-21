@@ -41,8 +41,6 @@ export const useNeckworkSync = () => {
   const isIndexed =
     !!indexedBlock && !!armedForBlock && indexedBlock >= armedForBlock
 
-  // ponytail: evaluated on render, and the poll re-renders every 10s while
-  // armed — no separate timer needed
   const isTimedOut = !!armedAt && Date.now() - armedAt >= ARM_TIMEOUT
 
   useEffect(() => {
@@ -56,8 +54,6 @@ export const useNeckworkSync = () => {
 
     if (!isIndexed && !isTimedOut) return
 
-    // on timeout the data may still be stale, but a frozen table is worse than
-    // one wasted refetch — the staleTime floor takes over from here
     disarm()
     queryClient.invalidateQueries({ queryKey: NECKWORK_ACCOUNT_KEY })
   }, [isArmed, isIndexed, isTimedOut, neckworkEnabled, disarm, queryClient])

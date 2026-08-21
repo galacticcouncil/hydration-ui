@@ -8,30 +8,12 @@ import {
 import { useEffect, useRef } from "react"
 import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
+import { UnsafeDcaQuery } from "@/api/dcaStorage"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-
-type EntriesOptions = { at?: string }
-
-// DCA storage is not part of the whitelisted descriptors, so it can only be
-// read through the unsafe api - typed here to keep call sites type-safe.
-type UnsafeQuery = {
-  readonly DCA: {
-    readonly ScheduleOwnership: {
-      readonly getEntries: (
-        address: string,
-        options?: EntriesOptions,
-      ) => Promise<Array<{ keyArgs: [string, number]; value: undefined }>>
-      readonly watchEntries: (
-        address: string,
-        options?: EntriesOptions,
-      ) => Observable<WatchEntriesData>
-    }
-  }
-}
 
 type QuerySources = {
   readonly typed: Papi["query"]
-  readonly unsafe: UnsafeQuery
+  readonly unsafe: UnsafeDcaQuery
 }
 
 const QUERY_MAP = {
@@ -105,7 +87,7 @@ export function usePapiEntries<
 
   const querySources = (): QuerySources => ({
     typed: papi.query,
-    unsafe: papiClient.getUnsafeApi().query as unknown as UnsafeQuery,
+    unsafe: papiClient.getUnsafeApi().query as unknown as UnsafeDcaQuery,
   })
 
   const mapper =

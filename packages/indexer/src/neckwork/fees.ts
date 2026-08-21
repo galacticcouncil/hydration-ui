@@ -12,7 +12,6 @@ export type FeeStreamType = FeesChartParams["streamType"]
 export type FeeDestination = NonNullable<FeesChartParams["feeDestination"]>
 export type FeeBucketSize = FeesChartParams["bucketSize"]
 
-/** Which slice of the Omnipool trade fee the page is showing. */
 export type FeeViewMode = "protocol" | "total"
 
 export type FeeStreamKey =
@@ -34,13 +33,12 @@ export type FeeStream = {
 const alwaysProtocol = () => "protocol" as const
 
 /**
- * The seven fee streams, in stack order — array order IS the bottom-to-top
- * order of the bars, so reordering this changes the chart.
+ * Fee streams in stack order — array order is the bottom-to-top order of the
+ * bars, so reordering this changes the chart.
  *
- * Only the Omnipool per-asset fee follows the view mode. The hub fee answers
- * with byte-identical payloads for `protocol` and `total`, so pinning it to
- * `protocol` keeps its query key stable across a view-mode switch instead of
- * refetching the same bytes under a second key.
+ * Only the Omnipool per-asset fee follows the view mode. The hub fee returns
+ * the same payload for `protocol` and `total`, so pinning it to `protocol`
+ * keeps its query key stable across a view-mode switch.
  */
 export const FEE_STREAMS: readonly FeeStream[] = [
   {
@@ -107,12 +105,9 @@ const RANGE_DAYS: Record<Exclude<TimeRange, "ALL">, number> = {
 }
 
 /**
- * `ALL` means all of it, like the explorer's `all` range — the API omits
- * buckets it has no rows for, so an over-wide start costs nothing and stops
- * the chart from truncating history the way a hand-picked 2023 start did.
- *
- * The floor is the API's own bucket-grid anchor: a start before it answers
- * `{"data": []}` (measured) rather than more history.
+ * Wide start for the ALL range. The API omits empty buckets, so this does not
+ * inflate the response. A start before the API's bucket-grid anchor returns
+ * empty data rather than extra history.
  */
 const ALL_START_MS = Date.UTC(2000, 0, 3)
 
@@ -130,14 +125,11 @@ export type FeesChartWindow = {
 }
 
 /**
- * Request window for one time range. Pure — the caller passes the clock in, so
- * the window (and the query key built from it) is reproducible.
+ * Request window for one time range. The caller passes the clock so the
+ * window (and the query key) is reproducible.
  *
- * The start is a UTC day boundary because the API's bucket grid is
- * UTC-anchored; a local-time start would cut the first bucket in half
- * everywhere but UTC+0. The end is now (quantized), so the running day shows
- * up as a short final bar — the explorer counts it, and dropping it hid up to
- * a day of revenue.
+ * Start is a UTC day boundary because the API's bucket grid is UTC-anchored.
+ * End is now, quantized, so the current day still appears as a short final bar.
  */
 export const feesChartWindow = (
   timeRange: TimeRange,
@@ -159,7 +151,6 @@ export const feesChartWindow = (
   }
 }
 
-/** One bucket of one stream. `time` is the bucket start, in ms epoch. */
 export type FeeBucket = {
   time: number
   value: number
@@ -167,11 +158,6 @@ export type FeeBucket = {
 
 export type FeesChartResult = {
   buckets: FeeBucket[]
-  /**
-   * The endpoint's own aggregate over the window — documented as the sum of
-   * the returned buckets, so it is carried through but never needed: totals
-   * are summed from `buckets`, which the fold has to walk anyway.
-   */
   periodAggregate: number
 }
 
@@ -208,7 +194,6 @@ export const feesChartQuery = (
       startTime,
       endTime,
     ],
-    // the endpoint answers with a uniform `cache-control: max-age=300`
     staleTime: 300_000,
     queryFn: async (): Promise<FeesChartResult> => {
       const { data } = await client.GET("/api/v1/fees/charts", {
@@ -236,7 +221,6 @@ export const feesChartQuery = (
     },
   })
 
-/** One (bucket, stream) pair — the long format the stacked bar consumes. */
 export type FeeRow = {
   time: number
   stream: FeeStreamKey
@@ -254,20 +238,16 @@ export type FeesChartFold = {
 }
 
 /**
- * Folds the per-stream results into chart rows and totals.
+ * Fold per-stream results into chart rows and totals.
  *
- * Streams come back ragged — different lengths and different timestamps over
- * the same window — so the merge is by timestamp, never by index. A stream with
- * no bucket at a given timestamp contributes no row; the chart already treats a
- * missing pair as zero for layout, and zero-filling would draw phantom bars.
+ * Streams come back ragged — different lengths and timestamps over the same
+ * window — so the merge is by timestamp, never by index. A missing (bucket,
+ * stream) pair is treated as zero by the chart; zero-filling would draw
+ * phantom bars.
  *
- * Sorting ascending by time is load-bearing: the band scale takes its domain in
- * first-seen order, and rows arrive grouped by stream, so an unsorted list
- * scrambles the x-axis.
- *
- * Totals are summed from the buckets, in the same walk that builds the rows —
- * `periodAggregate` would agree, but only per stream, and the chart needs the
- * per-stream breakdown regardless.
+ * Sort ascending by time: the band scale takes its domain in first-seen
+ * order, and rows arrive grouped by stream, so an unsorted list scrambles
+ * the x-axis.
  */
 export const foldFeesChart = (
   results: Partial<Record<FeeStreamKey, FeesChartResult>>,

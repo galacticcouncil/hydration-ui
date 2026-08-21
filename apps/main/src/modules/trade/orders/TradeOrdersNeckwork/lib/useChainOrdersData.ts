@@ -3,54 +3,12 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
+import { UnsafeDcaQuery } from "@/api/dcaStorage"
 import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { OrderData, OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
-
-type DcaOrder =
-  | {
-      readonly type: "Sell"
-      readonly value: {
-        readonly asset_in: number
-        readonly asset_out: number
-        readonly amount_in: bigint
-      }
-    }
-  | {
-      readonly type: "Buy"
-      readonly value: {
-        readonly asset_in: number
-        readonly asset_out: number
-        readonly max_amount_in: bigint
-      }
-    }
-
-type DcaSchedule = {
-  readonly period: number
-  readonly total_amount: bigint
-  readonly order: DcaOrder
-}
-
-// DCA storage is not part of the whitelisted descriptors, so it can only be
-// read through the unsafe api - typed here to keep call sites type-safe.
-type UnsafeDcaQuery = {
-  readonly DCA: {
-    readonly Schedules: {
-      readonly getValues: (
-        keys: ReadonlyArray<readonly [number]>,
-        options?: { at?: string },
-      ) => Promise<Array<DcaSchedule | undefined>>
-    }
-    readonly RemainingAmounts: {
-      readonly getValues: (
-        keys: ReadonlyArray<readonly [number]>,
-        options?: { at?: string },
-      ) => Promise<Array<bigint | undefined>>
-    }
-  }
-}
 
 export const useChainOrdersData = (options?: {
   readonly enabled?: boolean

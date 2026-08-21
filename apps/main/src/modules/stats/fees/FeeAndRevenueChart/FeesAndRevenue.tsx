@@ -42,7 +42,6 @@ type ChartDataPoint = {
   [key: string]: string | number
 }
 
-/** Long-format row: one per (bucket, series) pair, as the stacked mark wants. */
 export type FeeSegmentRow = {
   timestamp: string
   stream: string
@@ -50,7 +49,6 @@ export type FeeSegmentRow = {
 }
 
 const BAR_RADIUS = 4
-/** The panel height is fixed, so the chart takes a number rather than measuring. */
 const CHART_HEIGHT = 380
 
 export const FeesAndRevenue = () => {
@@ -104,8 +102,6 @@ export const FeesAndRevenue = () => {
     ]),
   )
 
-  // filtering happens on the data, not the chart definition: the rows, the
-  // colour domain and the stack order all narrow together
   const visibleKeys = useMemo(() => {
     const keys = Object.keys(feesChartsData ?? {})
     return activeFilter === "all"
@@ -115,16 +111,12 @@ export const FeesAndRevenue = () => {
 
   const rows = useMemo(
     () =>
-      // fold's `fields` is typed as a literal tuple; the series keys are only
-      // known at runtime, so the arity is narrowed here and never relied on
       fold(chartData, {
         fields: visibleKeys as [string],
         as: { key: "stream", value: "value" },
       })
-        // a bucket may be missing a series entirely
         .filter(({ value }) => typeof value === "number")
         .map<FeeSegmentRow>(({ timestamp, stream, value }) => ({
-          // the index signature widens the folded key back to string | number
           timestamp: String(timestamp),
           stream,
           value: Number(value),

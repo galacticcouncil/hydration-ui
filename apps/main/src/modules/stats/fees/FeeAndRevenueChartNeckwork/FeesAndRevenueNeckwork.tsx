@@ -39,7 +39,6 @@ const VIEW_MODES = [
 
 const STREAM_KEYS = FEE_STREAMS.map(({ key }) => key)
 
-/** The panel height is fixed, so the chart takes a number rather than measuring. */
 const CHART_HEIGHT = 380
 
 export const FeesAndRevenueNeckwork = () => {
@@ -47,9 +46,8 @@ export const FeesAndRevenueNeckwork = () => {
   const { gte } = useBreakpoints()
   const [timeRange, setTimeRange] = useState<TimeRange>("1M")
   const [viewMode, setViewMode] = useState<FeeViewMode>("protocol")
-  const [activeFilter, setActiveFilter] = useState<string>("all")
+  const [activeFilter, setActiveFilter] = useState<FeeStreamKey | "all">("all")
 
-  // one window for all seven queries, so it lands identically in every key
   const chartWindow = feesChartWindow(timeRange, Date.now())
 
   const result = useQueries({
@@ -76,7 +74,6 @@ export const FeesAndRevenueNeckwork = () => {
         ...foldFeesChart(byStream, STREAM_KEYS),
         failedStreams,
         isPending: results.some(({ isPending }) => isPending),
-        // a single failed stream just drops its band
         isError: results.every(({ isError }) => isError),
       }
     },
@@ -95,8 +92,7 @@ export const FeesAndRevenueNeckwork = () => {
   const isLoading = result.isPending && !previous
   const isRefetching = result.isPending && !!previous
 
-  // a failed stream reports null so the legend can tell it apart from a
-  // dormant one; every stream keeps its entry whatever the range is
+  // null marks a failed stream so the legend can tell it apart from a dormant one
   const fields = new Map(
     STREAM_KEYS.map((key) => [
       key,
@@ -104,9 +100,7 @@ export const FeesAndRevenueNeckwork = () => {
     ]),
   )
 
-  // filtering happens on the data, not the chart definition: the rows, the
-  // colour domain and the stack order all narrow together
-  const selectedStream = STREAM_KEYS.find((key) => key === activeFilter)
+  const selectedStream = activeFilter === "all" ? null : activeFilter
   const visibleStreams = selectedStream ? [selectedStream] : STREAM_KEYS
   const visibleRows = selectedStream
     ? rows.filter(({ stream }) => stream === selectedStream)

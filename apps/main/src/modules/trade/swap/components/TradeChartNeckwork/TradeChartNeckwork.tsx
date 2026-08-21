@@ -4,6 +4,7 @@ import {
   PairCandle,
   pairCandlesInfiniteQuery,
   pairReferencePriceQuery,
+  peggedCandles,
 } from "@galacticcouncil/indexer/neckwork"
 import {
   Box,
@@ -66,11 +67,19 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     return aToken.underlyingAssetId
   }
 
-  const resolvedBaseAssetId = resolveChartAssetId(baseAssetId)
-  const resolvedQuoteAssetId = resolveChartAssetId(quoteAssetId)
-  const pairCollapsed = resolvedBaseAssetId === resolvedQuoteAssetId
-  const chartBaseAssetId = pairCollapsed ? baseAssetId : resolvedBaseAssetId
-  const chartQuoteAssetId = pairCollapsed ? quoteAssetId : resolvedQuoteAssetId
+  // an aToken and its underlying are always 1:1, so they never trade against
+  // each other and the API has no candles for the pair
+  const isPegged =
+    baseAssetId === quoteAssetId ||
+    getErc20AToken(baseAssetId)?.underlyingAssetId === quoteAssetId ||
+    getErc20AToken(quoteAssetId)?.underlyingAssetId === baseAssetId
+
+  const chartBaseAssetId = isPegged
+    ? baseAssetId
+    : resolveChartAssetId(baseAssetId)
+  const chartQuoteAssetId = isPegged
+    ? quoteAssetId
+    : resolveChartAssetId(quoteAssetId)
 
   const isFetchAligned = Number(chartQuoteAssetId) >= Number(chartBaseAssetId)
   const fetchAssetIn = isFetchAligned ? chartBaseAssetId : chartQuoteAssetId
@@ -93,19 +102,24 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
       assetOut: fetchAssetOut,
       bucket: interval,
     }),
+    enabled: !isPegged,
     placeholderData: keepPreviousData,
   })
 
   const isRefetching = isFetching && !isFetchingNextPage
 
   const candles = useMemo(() => {
+    if (isPegged) return peggedCandles(interval)
+
     const series = (data?.pages ?? []).toReversed().flat()
     return needsInvert ? series.map(invertCandle) : series
-  }, [data, needsInvert])
+  }, [data, needsInvert, isPegged, interval])
 
-  const { data: spot } = useQuery(
-    spotPriceQuery(rpc, chartQuoteAssetId, chartBaseAssetId),
-  )
+  const spotOptions = spotPriceQuery(rpc, chartQuoteAssetId, chartBaseAssetId)
+  const { data: spot } = useQuery({
+    ...spotOptions,
+    enabled: !isPegged && spotOptions.enabled,
+  })
   const spotPrice = (() => {
     const raw = spot?.spotPrice
     if (raw === undefined || raw === null) return Number.NaN
@@ -118,13 +132,14 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     }
   })()
 
-  const { data: referencePrice } = useQuery(
-    pairReferencePriceQuery(neckworkClient, {
+  const { data: referencePrice } = useQuery({
+    ...pairReferencePriceQuery(neckworkClient, {
       assetIn: fetchAssetIn,
       assetOut: fetchAssetOut,
       period: changePeriod,
     }),
-  )
+    enabled: !isPegged,
+  })
 
   const resetKey = `${baseAssetId}-${quoteAssetId}-${interval}`
   const liveRef = useRef<{ resetKey: string; candle: PairCandle } | null>(null)
@@ -222,6 +237,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
       <Box>
         <Text
           fs="p6"
+          lh={1.3}
           fontVariantNumeric="tabular-nums"
           visibility={isAssetPriceValid ? "visible" : "hidden"}
         >
@@ -229,6 +245,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
         </Text>
         <Text
           fs="p6"
+          lh={1.3}
           visibility={!isLiveValue && volume > 0 ? "visible" : "hidden"}
           whiteSpace="nowrap"
         >
@@ -310,7 +327,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
             type={chartType}
             resetKey={resetKey}
             isRefetching={isRefetching}
-            isPlaceholderData={isPlaceholderData}
+            isPlaceholderData={!isPegged && isPlaceholderData}
             onCrosshairMove={onCrosshairMove}
             onReachStart={onReachStart}
           />

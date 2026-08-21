@@ -48,7 +48,7 @@ export const mapSquidMoneyMarketEvent = (
   event: MoneyMarketEventFragment,
 ): MoneyMarketEvent => {
   const eventName = event.eventName as MoneyMarketEventName
-  // ponytail: the fragment nests one payload per event name, only one is set
+  // the fragment nests one payload per event name; only one is set
   const payload =
     event.supply ??
     event.withdraw ??

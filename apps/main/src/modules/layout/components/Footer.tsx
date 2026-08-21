@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { funnel } from "remeda"
 
 import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
-import { NeckworkToggle } from "@/components/DataProviderSelect/NeckworkToggle"
 import { GigaNews } from "@/components/GigaNews/GigaNews"
 import {
   SFooter,
@@ -99,7 +98,6 @@ export const Footer = ({ loading }: { loading?: boolean }) => {
       {!loading && <GigaNews isHidden={hidden} />}
 
       <SFooterControls hidden={hidden} gap="base" ml="auto">
-        <NeckworkToggle />
         <DataProviderSelect />
       </SFooterControls>
     </SFooter>
