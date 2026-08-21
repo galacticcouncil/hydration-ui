@@ -1,6 +1,7 @@
 import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { secondsToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 
 import { UnsafeDcaQuery } from "@/api/dcaStorage"
@@ -10,21 +11,24 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-export const useChainOrdersData = (options?: {
-  readonly enabled?: boolean
-}) => {
+const CHAIN_ORDERS_STALE_TIME = secondsToMilliseconds(30)
+
+export const useChainScheduleIds = () => {
   const { account } = useAccount()
-  const { papiClient, isApiLoaded } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
+  const { isApiLoaded } = useRpcProvider()
 
   // papi takes the account address as-is, no SS58 conversion
   const address = account?.address ?? ""
-  const enabled = (options?.enabled ?? true) && isApiLoaded && !!address
+  const enabled = isApiLoaded && !!address
 
-  const { data: entries, isLoading: isEntriesLoading } = usePapiEntries(
+  const { data: entries, isLoading } = usePapiEntries(
     "DCA.ScheduleOwnership",
     [address],
-    { enabled },
+    {
+      enabled,
+      staleTime: CHAIN_ORDERS_STALE_TIME,
+      refetchOnWindowFocus: true,
+    },
   )
 
   const scheduleIds = useMemo(
@@ -33,8 +37,17 @@ export const useChainOrdersData = (options?: {
     [entries],
   )
 
+  return { scheduleIds, isLoading }
+}
+
+export const useChainOrdersData = () => {
+  const { papiClient } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+
+  const { scheduleIds, isLoading: isEntriesLoading } = useChainScheduleIds()
+
   const { data, isLoading: isSchedulesLoading } = useQuery({
-    queryKey: ["trade", "orders", "chain", address, scheduleIds],
+    queryKey: ["trade", "orders", "chain", scheduleIds],
     queryFn: async () => {
       const query = papiClient.getUnsafeApi().query as unknown as UnsafeDcaQuery
       const keys = scheduleIds.map((id) => [id] as const)
@@ -50,14 +63,18 @@ export const useChainOrdersData = (options?: {
         remaining: remainingAmounts[index] ?? null,
       }))
     },
-    enabled: enabled && !!entries,
+    enabled: scheduleIds.length > 0,
+    staleTime: CHAIN_ORDERS_STALE_TIME,
+    refetchOnWindowFocus: true,
     placeholderData: keepPreviousData,
   })
+
+  const openScheduleIds = useMemo(() => new Set(scheduleIds), [scheduleIds])
 
   const orders = useMemo<Array<OrderData>>(
     () =>
       (data ?? []).flatMap<OrderData>(({ scheduleId, schedule, remaining }) => {
-        if (!schedule) return []
+        if (!schedule || !openScheduleIds.has(scheduleId)) return []
 
         const { order } = schedule
         const from = getAssetWithFallback(String(order.value.asset_in))
@@ -80,8 +97,6 @@ export const useChainOrdersData = (options?: {
             fromAmountBudget: isOpenBudget
               ? null
               : scaleHuman(schedule.total_amount, from.decimals),
-            // RemainingAmounts only counts down for fixed budgets - for rolling
-            // schedules it is a reserve the pallet tops back up
             fromAmountExecuted: hasBudget
               ? scaleHuman(schedule.total_amount - remaining, from.decimals)
               : null,
@@ -91,15 +106,13 @@ export const useChainOrdersData = (options?: {
             singleTradeSize: scaleHuman(singleTradeAmount, from.decimals),
             to,
             toAmountExecuted: null,
-            // terminated schedules drop out of ScheduleOwnership, so anything
-            // still in the map is open by construction
             status: DcaScheduleStatus.Created,
             blocksPeriod: String(schedule.period),
             isOpenBudget,
           },
         ]
       }),
-    [data, getAssetWithFallback],
+    [data, openScheduleIds, getAssetWithFallback],
   )
 
   const isLoading =

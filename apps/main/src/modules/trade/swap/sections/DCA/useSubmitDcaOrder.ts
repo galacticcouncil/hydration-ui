@@ -9,7 +9,12 @@ import {
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { AnyTransaction } from "@/modules/transactions/types"
-import { useTransactionsStore } from "@/states/transactions"
+import { useNeckworkSyncStore } from "@/states/neckwork"
+import {
+  getTxResultBlockHeight,
+  isSubstrateTxResult,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitDcaOrder = () => {
@@ -19,6 +24,7 @@ export const useSubmitDcaOrder = () => {
   const address = account?.address
 
   const { createTransaction } = useTransactionsStore()
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
   return useMutation({
     mutationFn: async ([formValues, order, orderTx]: [
@@ -52,23 +58,44 @@ export const useSubmitDcaOrder = () => {
         frequency: isOpenBudget ? duration : frequency,
       }
 
-      return createTransaction({
-        tx: orderTx,
-        toasts: {
-          submitted: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
-            params,
-          ),
-          success: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
-            params,
-          ),
-          error: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
-            params,
-          ),
+      return createTransaction(
+        {
+          tx: orderTx,
+          toasts: {
+            submitted: t(
+              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
+              params,
+            ),
+            success: t(
+              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
+              params,
+            ),
+            error: t(
+              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
+              params,
+            ),
+          },
         },
-      })
+        {
+          // arm the indexer sync for the first execution rather than the block
+          // the schedule landed in, so the enrichment has an amount to report
+          onSuccess: (event) => {
+            const blockHeight = getTxResultBlockHeight(event)
+            if (blockHeight === null) return
+
+            const planned = isSubstrateTxResult(event)
+              ? (event.events.find(
+                  (e) =>
+                    e.type === "DCA" && e.value.type === "ExecutionPlanned",
+                )?.value.value as { block: number } | undefined)
+              : undefined
+
+            console.log({ planned, blockHeight })
+
+            armNeckworkSync(planned?.block ?? blockHeight + 1)
+          },
+        },
+      )
     },
   })
 }

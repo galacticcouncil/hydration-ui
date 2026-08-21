@@ -18,8 +18,6 @@ const ARM_TIMEOUT = 120_000
  * it". While armed, polls the cheap /v1/status endpoint instead of the account
  * queries themselves, then invalidates them once — one small request loop
  * rather than refetching every mounted table on a timer.
- *
- * Mounted once, in __root.
  */
 export const useNeckworkSync = () => {
   const queryClient = useQueryClient()
@@ -55,6 +53,7 @@ export const useNeckworkSync = () => {
     if (!isIndexed && !isTimedOut) return
 
     disarm()
+    console.log("invalidating queries for neckwork sync")
     queryClient.invalidateQueries({ queryKey: NECKWORK_ACCOUNT_KEY })
   }, [isArmed, isIndexed, isTimedOut, neckworkEnabled, disarm, queryClient])
 }

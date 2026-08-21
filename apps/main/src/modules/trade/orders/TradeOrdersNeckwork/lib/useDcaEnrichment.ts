@@ -5,6 +5,7 @@ import {
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { useMemo } from "react"
 
 import { neckworkClient } from "@/api/provider"
@@ -17,7 +18,9 @@ export const useDcaEnrichment = (orders: Array<OrderData>) => {
   const { account } = useAccount()
   const owner = safeConvertSS58toPublicKey(account?.address ?? "")
 
-  const { data } = useQuery(
+  // no polling here - useNeckworkSync invalidates the account subtree once the
+  // indexer catches up with the user's latest tx
+  const { data, refetch } = useQuery(
     dcaSchedulesQuery(neckworkClient, {
       owner,
       statuses: DCA_OPEN_STATUSES,
@@ -41,24 +44,42 @@ export const useDcaEnrichment = (orders: Array<OrderData>) => {
     [data],
   )
 
-  return useMemo(
+  const enriched = useMemo(
     () =>
       orders.map((order) => {
         const executed = enrichment.get(order.scheduleId)
         if (!executed) return order
 
+        const indexerIn = scaleHuman(
+          executed.executedAmountIn,
+          order.from.decimals,
+        )
+        const indexerOut = scaleHuman(
+          executed.executedAmountOut,
+          order.to.decimals,
+        )
+        const fromAmountExecuted = Big.max(
+          order.fromAmountExecuted ?? 0,
+          indexerIn,
+        ).toString()
+
         return {
           ...order,
-          fromAmountExecuted: scaleHuman(
-            executed.executedAmountIn,
-            order.from.decimals,
-          ),
-          toAmountExecuted: scaleHuman(
-            executed.executedAmountOut,
-            order.to.decimals,
-          ),
+          fromAmountExecuted,
+          fromAmountRemaining:
+            order.isOpenBudget || order.fromAmountBudget === null
+              ? order.fromAmountRemaining
+              : Big.max(
+                  0,
+                  Big(order.fromAmountBudget).minus(fromAmountExecuted),
+                ).toString(),
+          toAmountExecuted: Big(indexerOut).gt(0)
+            ? indexerOut
+            : order.toAmountExecuted,
         }
       }),
     [orders, enrichment],
   )
+
+  return { orders: enriched, refetch }
 }

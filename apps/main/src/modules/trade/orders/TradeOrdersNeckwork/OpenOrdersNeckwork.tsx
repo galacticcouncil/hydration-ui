@@ -13,22 +13,25 @@ import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwo
 
 type Props = {
   readonly paginationProps: PaginationProps
-  readonly openOrdersCount?: number
 }
 
-export const OpenOrdersNeckwork: FC<Props> = ({
-  paginationProps,
-  openOrdersCount,
-}) => {
-  const [isDetailOpen, setIsDetailOpen] = useState<{
-    readonly detail: OrderData
-    readonly isTermination: boolean
-  } | null>(null)
+export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
+  const [detailId, setDetailId] = useState<number | null>(null)
+  const [terminating, setTerminating] = useState<OrderData | null>(null)
 
   const { orders, isLoading } = useChainOrdersData()
-  const enrichedOrders = useDcaEnrichment(orders)
+  const { orders: enrichedOrders, refetch } = useDcaEnrichment(orders)
 
   const columns = useOpenOrdersColumns()
+
+  const detail = enrichedOrders.find(
+    ({ scheduleId }) => scheduleId === detailId,
+  )
+
+  const close = () => {
+    setDetailId(null)
+    setTerminating(null)
+  }
 
   return (
     <>
@@ -36,45 +39,34 @@ export const OpenOrdersNeckwork: FC<Props> = ({
         data={enrichedOrders}
         columns={columns}
         isLoading={isLoading}
-        skeletonRowCount={openOrdersCount}
         paginated
         {...paginationProps}
-        onRowClick={(detail) =>
-          setIsDetailOpen({ detail, isTermination: false })
-        }
+        onRowClick={({ scheduleId }) => {
+          void refetch()
+          setDetailId(scheduleId)
+        }}
         emptyState={<OrdersEmptyState />}
       />
-      <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
-        {isDetailOpen?.isTermination === false && (
-          <DcaOrderDetailsModal
-            details={isDetailOpen.detail}
-            pastExecutions={
-              <PastExecutionsNeckwork
-                scheduleId={isDetailOpen.detail.scheduleId}
-              />
-            }
-            onTerminate={() =>
-              setIsDetailOpen({
-                ...isDetailOpen,
-                isTermination: true,
-              })
-            }
-          />
-        )}
-        {isDetailOpen?.isTermination === true && (
+      <Modal open={!!detail || !!terminating} onOpenChange={close}>
+        {terminating ? (
           <TerminateDcaScheduleModalContent
-            scheduleId={isDetailOpen.detail.scheduleId}
-            sold={isDetailOpen.detail.fromAmountExecuted}
-            total={isDetailOpen.detail.fromAmountBudget}
-            symbol={isDetailOpen.detail.from.symbol}
-            openBudget={isDetailOpen.detail.isOpenBudget}
-            onClose={() =>
-              setIsDetailOpen({
-                detail: isDetailOpen.detail,
-                isTermination: false,
-              })
-            }
+            scheduleId={terminating.scheduleId}
+            sold={terminating.fromAmountExecuted}
+            total={terminating.fromAmountBudget}
+            symbol={terminating.from.symbol}
+            openBudget={terminating.isOpenBudget}
+            onClose={() => setTerminating(null)}
           />
+        ) : (
+          detail && (
+            <DcaOrderDetailsModal
+              details={detail}
+              pastExecutions={
+                <PastExecutionsNeckwork scheduleId={detail.scheduleId} />
+              }
+              onTerminate={() => setTerminating(detail)}
+            />
+          )
         )}
       </Modal>
     </>
