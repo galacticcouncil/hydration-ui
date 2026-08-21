@@ -11,7 +11,7 @@ export const getBondApr = (
   if (!config) return null
   const { fixedYield } = config
   const daysLeft =
-    timeLeftMs > 0 ? Math.ceil(timeLeftMs / millisecondsInDay) : 0
+    timeLeftMs > 0 ? Math.max(1, Math.round(timeLeftMs / millisecondsInDay)) : 0
   return daysLeft > 0 ? (fixedYield / daysLeft) * daysInYear : null
 }
 

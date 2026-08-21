@@ -33,8 +33,8 @@ export const STABLE_BONDS: Record<string, StableBondConfig> = {
   },
   [HOLLAR_BOND_24_11_26_ID]: {
     bondId: HOLLAR_BOND_24_11_26_ID,
-    fixedYield: 1.725,
-    termDays: 90,
+    fixedYield: 2.0165,
+    termDays: 94,
     otcOfferIds: ["1546", "1547"],
     otcAcceptedAssetIds: [USDT_ASSET_ID, USDC_ASSET_ID],
     contentId: "hollar-bonds-25-08-26",
