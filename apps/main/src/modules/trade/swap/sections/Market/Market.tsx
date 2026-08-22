@@ -3,6 +3,7 @@ import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
+import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
@@ -21,6 +22,7 @@ import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
+  const { isBalanceLoading } = useAccountBalances()
 
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
@@ -88,7 +90,10 @@ export const Market: FC = () => {
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 
   const isFormValid = isTradeEnabled && form.formState.isValid
-  const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
+  // balances can be seeded from cache, so the form looks ready before the live
+  // ones land — don't let a stale MAX be signed in that window
+  const isSubmitEnabled =
+    isFormValid && isHealthFactorCheckSatisfied && !isBalanceLoading
 
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError

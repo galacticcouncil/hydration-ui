@@ -65,5 +65,8 @@ export const useDataTableUrlSorting = <TRouteId extends RouteId>(
     [sortingParam, options?.columnPriority, sorting, navigate],
   )
 
-  return { sorting, onSortingChange }
+  return useMemo(
+    () => ({ sorting, onSortingChange }),
+    [sorting, onSortingChange],
+  )
 }

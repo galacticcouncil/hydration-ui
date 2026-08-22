@@ -219,6 +219,9 @@ const DataTable = <TData,>({
                   </TableHead>
                 )
               })}
+              {!!expandable && (
+                <TableHead sx={{ pl: "0 !important", width: "xl" }} />
+              )}
             </TableRow>
           ))}
         </TableHeader>
@@ -307,17 +310,19 @@ const DataTable = <TData,>({
                         )
                       })}
 
-                      {isRowExpandable && (
-                        <TableCell sx={{ pl: "0 !important", width: "s" }}>
-                          <Flex justify="end" align="center">
-                            <Icon
-                              size="m"
-                              color={getToken("icons.onSurface")}
-                              component={
-                                isRowExpanded ? ChevronUp : ChevronDown
-                              }
-                            />
-                          </Flex>
+                      {!!expandable && (
+                        <TableCell sx={{ pl: "0 !important", width: "xl" }}>
+                          {isRowExpandable && (
+                            <Flex justify="end" align="center">
+                              <Icon
+                                size="m"
+                                color={getToken("icons.onSurface")}
+                                component={
+                                  isRowExpanded ? ChevronUp : ChevronDown
+                                }
+                              />
+                            </Flex>
+                          )}
                         </TableCell>
                       )}
                     </TableRow>
@@ -341,8 +346,8 @@ const DataTable = <TData,>({
               )
             })
           ) : (
-            <TableRow isEmptyState>
-              <TableCell colSpan={columns.length}>
+            <TableRow isEmptyState data-variable-height data-empty-state>
+              <TableCell colSpan={columns.length + (expandable ? 1 : 0)}>
                 {emptyState ?? "No results."}
               </TableCell>
             </TableRow>
@@ -427,7 +432,10 @@ const DataTableCollapsibleRow: FC<DataTableCollapsibleRowProps> = ({
   }
 
   return (
-    <TableRow sx={{ display: isVisible ? "table-row" : "none" }}>
+    <TableRow
+      data-variable-height
+      sx={{ display: isVisible ? "table-row" : "none" }}
+    >
       <TableCell
         colSpan={colSpan}
         sx={{ p: "0!important", height: "auto!important" }}
