@@ -100,7 +100,11 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           logWsStatusChange(status)
           if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
-            if (status.uri !== connectedRpcUrl) setConnectedRpcUrl(status.uri)
+            const { rpcUrl, connectedRpcUrl } =
+              useProviderRpcUrlStore.getState()
+            if (status.uri !== connectedRpcUrl) {
+              setConnectedRpcUrl(status.uri)
+            }
             if (status.uri !== rpcUrl) setRpcUrl(status.uri)
             setIsRpcConnecting(false)
           }
