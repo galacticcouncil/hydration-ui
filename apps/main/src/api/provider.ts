@@ -11,7 +11,6 @@ import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
   getHostnameFromUrl,
-  HOLLAR_BOND_25_08_26_ID,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { millisecondsInMinute } from "date-fns/constants"
@@ -27,7 +26,6 @@ import {
   PROVIDERS,
   TDataEnv,
 } from "@/config/rpc"
-import { BIL_POOL_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
@@ -143,10 +141,8 @@ const getProviderData = async (
     }),
   })
 
-  const [sdk, hollarBond, bilPoolCode] = await Promise.all([
+  const [sdk] = await Promise.all([
     createSdkContext(papiClient),
-    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
-    evm.getCode({ address: BIL_POOL_ADDRESS }),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
@@ -168,8 +164,8 @@ const getProviderData = async (
     rpcUrlList,
     slotDurationMs: blockTimeMs,
     featureFlags: {
-      hollarBondsEnabled: !!hollarBond,
-      bilEnabled: !!bilPoolCode && bilPoolCode !== "0x",
+      hollarBondsEnabled: true,
+      bilEnabled: true,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),

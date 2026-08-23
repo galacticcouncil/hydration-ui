@@ -102,7 +102,9 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
   const destChain = chainsMap.get(HYDRATION_CHAIN_KEY) || null
 
   const destAccount =
-    !!destChain && isAccountValidOnChain(account, destChain) ? account : null
+    !!destChain && canUseAccountAsDestination(account, destChain)
+      ? account
+      : null
 
   return {
     srcChain,
@@ -157,6 +159,15 @@ export const isAccountValidOnChain = (
 
   const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+}
+
+export const canUseAccountAsDestination = (
+  account: Account | null,
+  chain: AnyChain,
+): account is Account => {
+  if (!account) return false
+  if (account.provider === WalletProviderType.ExternalWallet) return false
+  return isAccountValidOnChain(account, chain)
 }
 
 export const withPermissiveEvmResolver = (

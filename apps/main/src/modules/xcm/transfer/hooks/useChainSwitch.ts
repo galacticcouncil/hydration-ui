@@ -3,7 +3,7 @@ import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { isAccountValidOnChain } from "@/modules/xcm/transfer/utils/chain"
+import { canUseAccountAsDestination } from "@/modules/xcm/transfer/utils/chain"
 
 export const useChainSwitch = () => {
   const { account } = useAccount()
@@ -18,7 +18,7 @@ export const useChainSwitch = () => {
     const newDestAsset = srcAsset
 
     const isAccountValidForDest =
-      !!newDestChain && isAccountValidOnChain(account, newDestChain)
+      !!newDestChain && canUseAccountAsDestination(account, newDestChain)
 
     form.reset({
       srcChain: newSrcChain,

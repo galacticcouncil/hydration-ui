@@ -33,6 +33,7 @@ export const APYUSD_ASSET_ID = "46"
 export const HEURC_ASSET_ID = "10044"
 
 export const HOLLAR_BOND_25_08_26_ID = "1001351"
+export const HOLLAR_BOND_24_11_26_ID = "1001353"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,

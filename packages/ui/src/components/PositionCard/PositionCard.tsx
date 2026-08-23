@@ -16,6 +16,7 @@ export type PositionCardProps = {
   symbol: ReactNode
   stats: ReactNode
   cta?: ReactNode
+  columns?: number | string
 }
 
 export const PositionCard: FC<PositionCardProps> = ({
@@ -23,11 +24,12 @@ export const PositionCard: FC<PositionCardProps> = ({
   symbol,
   stats,
   cta,
+  columns,
 }) => {
   return (
     <ResponsiveScope>
       <Paper p="l" shadow={false} bg="dim" borderRadius="m">
-        <SRowContainer gap="l">
+        <SRowContainer>
           <SNameColumn align="center" gap="s">
             {logo}
             {typeof symbol === "string" ? (
@@ -39,9 +41,7 @@ export const PositionCard: FC<PositionCardProps> = ({
             )}
           </SNameColumn>
 
-          <SValuesColumn justify="space-between" gap="xxl">
-            {stats}
-          </SValuesColumn>
+          <SValuesColumn columns={columns}>{stats}</SValuesColumn>
 
           <SActionColumn direction="column" align="flex-end" gap="xs">
             {cta}

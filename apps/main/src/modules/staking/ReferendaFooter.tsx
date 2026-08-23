@@ -26,6 +26,7 @@ type Props = {
   readonly classId: number
   readonly voted: boolean
   readonly isGigaStaking?: boolean
+  readonly title: string
 }
 
 export const ReferendaFooter: FC<Props> = ({
@@ -33,6 +34,7 @@ export const ReferendaFooter: FC<Props> = ({
   classId,
   voted,
   isGigaStaking,
+  title,
 }) => {
   const { t } = useTranslation("staking")
   const rpc = useRpcProvider()
@@ -117,6 +119,7 @@ export const ReferendaFooter: FC<Props> = ({
         open={voteOpen}
         onClose={() => setVoteOpen(false)}
         isGigaStaking={isGigaStaking}
+        title={title}
       />
     </>
   )
