@@ -6,13 +6,7 @@ import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import {
-  Trade,
-  TradeOrder,
-  tradeOrderDurationQuery,
-  TradeOrderType,
-  TradeType,
-} from "@/api/trade"
+import { Trade, TradeOrder, tradeOrderDurationQuery } from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
@@ -55,11 +49,10 @@ export const MarketTradeOptions: FC<Props> = ({
     return null
   }
 
-  const isBuy = swap.type === TradeType.Buy
-
-  const [asset, amount, twapAmount] = isBuy
-    ? [sellAsset, swap.amountIn, twap?.amountIn]
-    : [buyAsset, swap.amountOut, twap?.amountOut]
+  // Both options spend the same amount, so what separates them is what comes
+  // back; a buy quote's output is the amount that was asked for
+  const asset = buyAsset
+  const [amount, twapAmount] = [swap.amountOut, twap?.amountOut]
 
   const price = scaleHuman(amount, asset.decimals)
   const twapPrice = twapAmount ? scaleHuman(twapAmount, asset.decimals) : "0"
@@ -88,7 +81,6 @@ export const MarketTradeOptions: FC<Props> = ({
               asset={asset}
               value={twapPrice}
               diff={diff}
-              isBuy={twap.type === TradeOrderType.TwapBuy}
               active={!field.value}
               onClick={(): void => {
                 field.onChange(false)
