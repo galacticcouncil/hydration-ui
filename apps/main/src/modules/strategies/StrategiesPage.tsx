@@ -48,6 +48,10 @@ export const StrategiesPage = () => {
         columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
         gap="xl"
       >
+        {featureFlags.propellerEnabled &&
+          Object.values(PROPELLER_VAULTS).map((vault) => (
+            <PropellerStrategyCard key={vault.key} vault={vault} />
+          ))}
         {featureFlags.bilEnabled && (
           <StrategyCard
             logoId={BIL_ERC20_ID}
@@ -64,10 +68,7 @@ export const StrategiesPage = () => {
             link={LINKS.strategiesBil}
           />
         )}
-        {featureFlags.propellerEnabled &&
-          Object.values(PROPELLER_VAULTS).map((vault) => (
-            <PropellerStrategyCard key={vault.key} vault={vault} />
-          ))}
+
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard
             logoId={bondId}
