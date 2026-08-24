@@ -129,6 +129,7 @@ export const Notification = ({
       {autoClose && (
         <SProgressContainer>
           <SProgress
+            key={`${variant}-${autoCloseTimeSC}`}
             onAnimationEnd={onClose}
             closeTime={autoCloseTimeSC}
             variant={variant}

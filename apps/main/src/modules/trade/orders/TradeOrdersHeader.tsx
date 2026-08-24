@@ -1,18 +1,13 @@
-import { userOpenOrdersCountQuery } from "@galacticcouncil/indexer/squid"
 import {
   Flex,
   Toggle,
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQuery } from "@tanstack/react-query"
 import { useLocation, useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
@@ -29,29 +24,18 @@ export type TradeOrderTab = (typeof tradeOrderTabs)[number]
 
 type Props = {
   readonly paginationProps: PaginationProps
+  readonly openOrdersCount: number
 }
 
-export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
+export const TradeOrdersHeader: FC<Props> = ({
+  paginationProps,
+  openOrdersCount,
+}) => {
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
   const { tab, allPairs, assetIn, assetOut } = useSearch({
     from: "/trade/_history",
   })
-
-  const squidClient = useSquidClient()
-  const { account } = useAccount()
-  const accountAddress = account?.address ?? ""
-  const address = safeConvertSS58toPublicKey(accountAddress)
-
-  const { data: openOrdersCountData } = useQuery(
-    userOpenOrdersCountQuery(
-      squidClient,
-      address,
-      allPairs ? [] : [assetIn, assetOut],
-    ),
-  )
-
-  const openOrdersCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
 
   const navigate = useNavigate()
 
@@ -99,7 +83,12 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
           onCheckedChange={(checked) => {
             navigate({
               to: ".",
-              search: { tab, allPairs: checked, assetIn, assetOut },
+              search: {
+                tab,
+                allPairs: checked,
+                assetIn,
+                assetOut,
+              },
               resetScroll: false,
             })
           }}

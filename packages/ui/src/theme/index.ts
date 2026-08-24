@@ -107,4 +107,5 @@ export {
   type ScreenType,
   useBreakpoints,
   useResponsiveValue,
+  useUiScale,
 } from "@/styles/media"

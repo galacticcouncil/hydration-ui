@@ -1,4 +1,5 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -23,12 +24,21 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap", whiteSpace: "collapse" }}
     >
-      <Text fs="p3" sx={{ textAlign: ["right", "left"] }}>
+      <Text
+        fs="p4"
+        color={getToken("text.high")}
+        sx={{ textAlign: ["right", "left"] }}
+      >
         {t("borrow:history.table.liquidatedCollateral")}
       </Text>
       <Flex align="center" gap="base">
         {assetId && <AssetLogo size="small" id={assetId} />}
-        <Text fs="p3">
+        <Text
+          fs="p4"
+          fw={500}
+          whiteSpace="nowrap"
+          color={getToken("text.high")}
+        >
           {t("currency", {
             value: scaleHuman(amount, asset.decimals),
             symbol: asset.symbol,

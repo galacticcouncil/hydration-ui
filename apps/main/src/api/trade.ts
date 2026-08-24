@@ -12,6 +12,7 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
+import { toBigInt } from "@/utils/formatting"
 
 export const TradeType = sor.TradeType
 
@@ -352,10 +353,8 @@ export const bestBuyWithTxQuery = (
   })
 }
 
-export const dcaOrderQuery = (
-  { sdk, isLoaded }: TProviderContext,
-  form: DcaFormValues,
-) => {
+export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
+  const { sdk, isLoaded, queryClient } = rpc
   const duration = getTimeFrameMillis(form.duration)
 
   const orders =
@@ -374,25 +373,43 @@ export const dcaOrderQuery = (
       form.duration,
       form.orders,
     ],
-    queryFn: () => {
+    queryFn: async () => {
       if (!form.sellAsset || !form.buyAsset) {
         return null
       }
 
-      return form.orders.type === DcaOrdersMode.OpenBudget
-        ? sdk.api.scheduler.getOpenBudgetDcaOrder(
-            Number(form.sellAsset.id),
-            Number(form.buyAsset.id),
-            form.sellAmount,
-            duration,
-          )
-        : sdk.api.scheduler.getDcaOrder(
-            Number(form.sellAsset.id),
-            Number(form.buyAsset.id),
-            form.sellAmount,
-            duration,
-            orders ?? undefined,
-          )
+      if (form.orders.type === DcaOrdersMode.OpenBudget) {
+        return sdk.api.scheduler.getOpenBudgetDcaOrder(
+          Number(form.sellAsset.id),
+          Number(form.buyAsset.id),
+          form.sellAmount,
+          duration,
+        )
+      }
+
+      const minBudget = await queryClient.ensureQueryData(
+        minimumOrderBudgetQuery(
+          rpc,
+          form.sellAsset.id,
+          form.sellAsset.decimals,
+        ),
+      )
+
+      // getDcaOrder divides by tradeCount, which is 0 below 20% of min budget.
+      const minTradeAmount = (minBudget * 2n) / 10n
+      const amountIn = toBigInt(form.sellAmount, form.sellAsset.decimals)
+
+      if (minTradeAmount === 0n || amountIn < minTradeAmount) {
+        return null
+      }
+
+      return sdk.api.scheduler.getDcaOrder(
+        Number(form.sellAsset.id),
+        Number(form.buyAsset.id),
+        form.sellAmount,
+        duration,
+        orders ?? undefined,
+      )
     },
     enabled:
       isLoaded &&

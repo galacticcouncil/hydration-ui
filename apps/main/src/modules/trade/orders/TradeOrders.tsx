@@ -1,7 +1,12 @@
+import { userOpenOrdersCountQuery } from "@galacticcouncil/indexer/squid"
 import { Paper, PaperProps, Separator } from "@galacticcouncil/ui/components"
+import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 
+import { useSquidClient } from "@/api/provider"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { MarketTransactions } from "@/modules/trade/orders/MarketTransactions/MarketTransactions"
 import { MyRecentActivity } from "@/modules/trade/orders/MyRecentActivity/MyRecentActivity"
@@ -12,7 +17,7 @@ import { TradeOrdersHeader } from "@/modules/trade/orders/TradeOrdersHeader"
 type Props = PaperProps
 
 export const TradeOrders: FC<Props> = (props) => {
-  const { tab, allPairs } = useSearch({
+  const { tab, allPairs, assetIn, assetOut } = useSearch({
     from: "/trade/_history",
   })
 
@@ -22,9 +27,25 @@ export const TradeOrders: FC<Props> = (props) => {
     10,
   )
 
+  const squidClient = useSquidClient()
+  const { account } = useAccount()
+  const accountAddress = account?.address ?? ""
+  const address = safeConvertSS58toPublicKey(accountAddress)
+
+  const { data: openOrdersCountData } = useQuery(
+    userOpenOrdersCountQuery(
+      squidClient,
+      address,
+      allPairs ? [] : [assetIn, assetOut],
+    ),
+  )
+
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersHeader paginationProps={paginationProps} />
+      <TradeOrdersHeader
+        paginationProps={paginationProps}
+        openOrdersCount={openOrdersCountData?.dcaSchedules?.totalCount ?? 0}
+      />
       <Separator />
       <div sx={{ overflowX: "auto" }}>
         {(() => {

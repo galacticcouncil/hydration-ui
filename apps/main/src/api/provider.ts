@@ -5,6 +5,7 @@ import {
   hydrationNext,
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
+import { getNeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
@@ -217,6 +218,8 @@ export const useSquidClient = (): SquidSdk => {
 
   return client
 }
+
+export const neckworkClient = getNeckworkClient(ENV.VITE_NECKWORK_URL)
 
 export const useIndexerClient = (): IndexerSdk => {
   const url = useIndexerUrl()
