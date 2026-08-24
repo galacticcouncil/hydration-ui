@@ -22,7 +22,6 @@ export type TradeOrder = sor.TradeOrder
 export type TxBuilderFactory = SdkCtx["tx"]
 export type TradeRouter = sor.TradeRouter
 
-export const TradeOrderType = sor.TradeOrderType
 export const TradeOrderError = sor.TradeOrderError
 
 type BestSellArgs = {
@@ -350,116 +349,6 @@ export const bestBuyWithTxQuery = (
       }
     },
     enabled: bestBuy.enabled as boolean,
-  })
-}
-
-type BestBuyTwapArgs = Omit<BestBuyArgs, "debug">
-
-export const bestBuyTwapQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut }: BestBuyTwapArgs,
-  enabled = true,
-) =>
-  queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "trade",
-      "twapBuyOrder",
-      assetIn,
-      assetOut,
-      amountOut,
-    ],
-    queryFn: async () =>
-      sdk.api.scheduler.getTwapBuyOrder(
-        Number(assetIn),
-        Number(assetOut),
-        amountOut,
-      ),
-    enabled:
-      enabled &&
-      isApiLoaded &&
-      !!assetIn &&
-      !!assetOut &&
-      Big(amountOut || "0").gt(0),
-  })
-
-export const bestBuyTwapTxQuery = (
-  { sdk }: TProviderContext,
-  twap: TradeOrder,
-  twapKey: QueryKey,
-  address: string,
-  slippage: number,
-  maxRetries: number,
-) =>
-  queryOptions({
-    queryKey: [twapKey, "tx"],
-    queryFn: () =>
-      sdk.tx
-        .order(twap)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get()),
-    enabled: !!address,
-  })
-
-type BestBuyTwapWithTxArgs = BestBuyTwapArgs & {
-  readonly slippage: number
-  readonly address: string
-  readonly maxRetries: number
-  readonly dryRun?: boolean
-}
-
-export const bestBuyTwapWithTxQuery = (
-  rpc: TProviderContext,
-  {
-    slippage,
-    maxRetries,
-    address,
-    dryRun,
-    ...bestBuyTwapArgs
-  }: BestBuyTwapWithTxArgs,
-  enabled = true,
-) => {
-  const { queryClient } = rpc
-  const bestBuyTwap = bestBuyTwapQuery(rpc, bestBuyTwapArgs)
-
-  return queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      bestBuyTwap.queryKey,
-      slippage,
-      maxRetries,
-      address,
-      dryRun,
-    ],
-    queryFn: async () => {
-      const twap = await queryClient.ensureQueryData(bestBuyTwap)
-
-      const txQuery = bestBuyTwapTxQuery(
-        rpc,
-        twap,
-        bestBuyTwap.queryKey,
-        address,
-        slippage,
-        maxRetries,
-      )
-
-      const tx = txQuery.enabled
-        ? await queryClient.ensureQueryData(txQuery)
-        : null
-
-      const dryRunError =
-        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
-          ? await queryClient.ensureQueryData(
-              papiDryRunErrorQuery(rpc, address, tx),
-            )
-          : null
-
-      return { twap, tx, dryRunError }
-    },
-    enabled: enabled && (bestBuyTwap.enabled as boolean),
   })
 }
 
