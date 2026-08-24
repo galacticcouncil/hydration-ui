@@ -43,7 +43,7 @@ const RefreshTooltipContent: FC<{ readonly updatedAt: number }> = ({
   return (
     <Stack gap="xs">
       <Text fw={600}>{t("myAssets.otherChains.refresh")}</Text>
-      <Text color={getToken("text.medium")} tabularNums>
+      <Text color={getToken("text.medium")} fontVariantNumeric="tabular-nums">
         {t("myAssets.tracked.lastUpdate", { relativeTime })}
       </Text>
     </Stack>
