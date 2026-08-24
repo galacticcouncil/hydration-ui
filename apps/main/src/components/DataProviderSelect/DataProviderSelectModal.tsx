@@ -56,7 +56,7 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
             </ToggleGroup>
             <TabsRoot value={view}>
               <TabsContent value={TabView.RPC}>
-                <Stack gap="base">
+                <Stack gap="base" pt="base">
                   <AutoModeToggle
                     size="large"
                     checked={autoMode}

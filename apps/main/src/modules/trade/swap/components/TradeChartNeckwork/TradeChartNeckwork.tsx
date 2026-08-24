@@ -32,7 +32,7 @@ import { CandleChart } from "@/modules/trade/swap/components/TradeChartNeckwork/
 import { TradeChartControls } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartControls"
 import {
   SChartHeader,
-  SChartOhlc,
+  SChartValues,
 } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.styled"
 import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartPrice"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
@@ -234,7 +234,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
 
   const chartDisplayValue = shouldShowValues ? (
     chartType === "line" ? (
-      <Box>
+      <SChartValues>
         <Text
           fs="p6"
           lh={1.3}
@@ -251,9 +251,9 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
         >
           {t("vol")}: {formattedVolumePrice}
         </Text>
-      </Box>
+      </SChartValues>
     ) : (
-      <SChartOhlc>
+      <SChartValues>
         <Flex gap="s">
           {(
             [
@@ -292,7 +292,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
           </Text>{" "}
           {formattedVolumePrice}
         </Text>
-      </SChartOhlc>
+      </SChartValues>
     )
   ) : undefined
 
