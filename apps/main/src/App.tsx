@@ -12,6 +12,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
+import { setupPortfolioPersistence } from "@/api/portfolio"
 import { DataProviderResolver } from "@/components/DataProviderSelect/DataProviderResolver"
 import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
@@ -31,6 +32,9 @@ const queryClient = new QueryClient({
     },
   }),
 })
+
+setupPortfolioPersistence(queryClient)
+
 export interface RouterContext {
   queryClient: QueryClient
   i18n: typeof i18n

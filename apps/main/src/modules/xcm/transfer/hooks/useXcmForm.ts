@@ -33,18 +33,30 @@ const resolveXcmFormDefaults = ({
     ...parsedQueryParams,
   }
 
-  const destChain = merged.destChain
-  const destAddress = merged.destAddress ?? ""
+  // Source-only deep links leave dest unset so XcmProvider's best-route
+  // effect can pick Hydration (or the next priority dest) for this src pair.
+  // Keeping wallet defaults would pin a stale destAsset from the previous src.
+  const sourceOnlyPreset =
+    !!parsedQueryParams?.srcChain &&
+    parsedQueryParams.destChain === undefined &&
+    parsedQueryParams.destAsset === undefined
+
+  const withResolvedDest = sourceOnlyPreset
+    ? { ...merged, destChain: null, destAsset: null }
+    : merged
+
+  const destChain = withResolvedDest.destChain
+  const destAddress = withResolvedDest.destAddress ?? ""
 
   if (
     destChain &&
     destAddress &&
     !isAddressValidOnChain(destAddress, destChain)
   ) {
-    return { ...merged, destAddress: "", destAccount: null }
+    return { ...withResolvedDest, destAddress: "", destAccount: null }
   }
 
-  return merged
+  return withResolvedDest
 }
 
 export const useXcmForm = (

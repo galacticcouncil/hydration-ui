@@ -2,6 +2,7 @@ import { useStableArray } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef } from "react"
+import { unique } from "remeda"
 
 import { AssetType, TBond, TErc20, TStableswap, TToken } from "@/api/assets"
 import {
@@ -134,16 +135,10 @@ export const useAccountBalancesWithPriceByAssetType = (
     const bondBalances: Array<{ balance: Balance; meta: TBond }> = []
     const priceIds: Array<string> = []
 
-    if (isBalanceLoading) {
-      return {
-        tokenBalances,
-        erc20Balances,
-        stableSwapBalances,
-        bondBalances,
-        priceIds,
-      }
-    }
-
+    // Shape whatever balances exist, loading or not. Skipping them while
+    // `isBalanceLoading` also left `priceIds` empty — which meant the price
+    // subscription below only started *after* balances landed instead of
+    // alongside them.
     for (const balance of Object.values(balances)) {
       const asset = getAsset(balance.assetId)
       if (!asset) continue
@@ -191,7 +186,7 @@ export const useAccountBalancesWithPriceByAssetType = (
       erc20Balances,
       stableSwapBalances,
       bondBalances,
-      priceIds,
+      priceIds: unique(priceIds),
     }
   }, [
     balances,
@@ -201,7 +196,6 @@ export const useAccountBalancesWithPriceByAssetType = (
     isStableSwap,
     isBond,
     stableAssetTypes,
-    isBalanceLoading,
   ])
 
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
@@ -223,10 +217,11 @@ export const useAccountBalancesWithPriceByAssetType = (
     [getAssetPrice],
   )
 
-  const data = useMemo(() => {
-    if (isAssetPriceLoading) return
-
-    return {
+  // Rows render as soon as balances exist; `price` stays undefined until the
+  // spot price subscription answers, so fiat values fill in afterwards and any
+  // total derived from them climbs to its final value.
+  const data = useMemo(
+    () => ({
       tokenBalances: mapBalancesWithPrice(tokenBalances),
       erc20Balances: mapBalancesWithPrice(erc20Balances),
       stableSwapBalances: mapBalancesWithPrice(stableSwapBalances),
@@ -234,17 +229,31 @@ export const useAccountBalancesWithPriceByAssetType = (
         bondBalances,
         (meta) => (meta as TBond).underlyingAssetId,
       ),
-    }
-  }, [
-    bondBalances,
-    erc20Balances,
-    mapBalancesWithPrice,
-    isAssetPriceLoading,
-    stableSwapBalances,
-    tokenBalances,
-  ])
+    }),
+    [
+      bondBalances,
+      erc20Balances,
+      mapBalancesWithPrice,
+      stableSwapBalances,
+      tokenBalances,
+    ],
+  )
 
-  return { data, isLoading: isAssetPriceLoading || isBalanceLoading }
+  const hasBalances =
+    tokenBalances.length > 0 ||
+    erc20Balances.length > 0 ||
+    stableSwapBalances.length > 0 ||
+    bondBalances.length > 0
+
+  return {
+    data,
+    // loading means "nothing to show", not "not final" — the money paths gate
+    // on `isBalanceLoading` directly
+    isLoading: (isBalanceLoading || isAssetPriceLoading) && !hasBalances,
+    // every balance and every price is in: totals derived from this won't move
+    // again. Aggregates should wait for it rather than count up in public.
+    isSettled: !isBalanceLoading && !isAssetPriceLoading,
+  }
 }
 
 /**

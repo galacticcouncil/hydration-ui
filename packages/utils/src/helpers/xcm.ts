@@ -5,6 +5,7 @@ import {
   AnyParachain,
   Asset,
   ChainType,
+  ConfigService,
   EvmChain,
   EvmParachain,
   Parachain,
@@ -142,4 +143,50 @@ export function formatDestChainAddress(
     return safeConvertH160toSS58(address)
   }
   return isAddressValidOnChain(address, chain) ? address : ""
+}
+
+const HYDRATION_REGISTRY_ID = /^\d+$/
+
+function toHydrationRegistryId(
+  hydrationChain: AnyChain,
+  asset: Asset,
+): string | null {
+  const id = hydrationChain.getAssetId(asset).toString()
+  return HYDRATION_REGISTRY_ID.test(id) ? id : null
+}
+
+export function resolveHydrationAssetId(
+  asset: Asset,
+  sourceChainKey: string,
+  configService: ConfigService,
+): string | null {
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return null
+
+  if (sourceChainKey === HYDRATION_CHAIN_KEY) {
+    return toHydrationRegistryId(hydrationChain, asset)
+  }
+
+  const sourceChain = configService.chains.get(sourceChainKey)
+  if (!sourceChain) return toHydrationRegistryId(hydrationChain, asset)
+
+  const canonical =
+    configService.assets.get(asset.key) ??
+    sourceChain.getAsset(asset.key) ??
+    asset
+
+  const routes = configService.getAssetRoutesOrEmpty(
+    canonical,
+    sourceChain,
+    hydrationChain,
+  )
+
+  for (const route of routes) {
+    const dest = route.destination?.asset
+    if (!dest) continue
+    const id = toHydrationRegistryId(hydrationChain, dest)
+    if (id) return id
+  }
+
+  return toHydrationRegistryId(hydrationChain, asset)
 }

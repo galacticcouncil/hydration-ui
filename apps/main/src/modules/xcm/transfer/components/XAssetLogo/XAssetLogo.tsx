@@ -1,9 +1,9 @@
 import { getChainAssetId, getChainId } from "@galacticcouncil/utils"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
 
+import { useHydrationAssetId } from "@/api/xcm"
 import { AssetLogo } from "@/components/AssetLogo"
 import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
-import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type XAssetLogoProps = {
@@ -17,7 +17,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   chain,
   className,
 }) => {
-  const { registryChain } = useXcmProvider()
+  const getHydrationAssetId = useHydrationAssetId()
   const { getAsset } = useAssets()
   const isExternalEcosystem =
     chain.isEvmChain() || chain.isSolana() || chain.isSui()
@@ -33,8 +33,8 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
     )
   }
 
-  const registryId = registryChain.getAssetId(asset)
-  const registryAsset = getAsset(registryId.toString())
+  const registryId = getHydrationAssetId(asset, chain.key)
+  const registryAsset = registryId ? getAsset(registryId) : undefined
 
   return (
     <AssetLogo id={registryAsset?.id?.toString() ?? ""} className={className} />

@@ -5,11 +5,13 @@ import { useCallback, useMemo } from "react"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 
-type ParsedXcmQueryParams =
-  | Pick<XcmFormValues, "srcChain" | "srcAsset" | "destChain" | "destAsset">
-  | undefined
+type ParsedXcmQueryParams = Partial<
+  Pick<XcmFormValues, "srcChain" | "srcAsset" | "destChain" | "destAsset">
+>
 
-const parseQueryParams = (params: XcmQueryParams): ParsedXcmQueryParams => {
+const parseQueryParams = (
+  params: XcmQueryParams,
+): ParsedXcmQueryParams | undefined => {
   const {
     srcChain: srcChainKey,
     srcAsset: srcAssetKey,
@@ -17,30 +19,35 @@ const parseQueryParams = (params: XcmQueryParams): ParsedXcmQueryParams => {
     destAsset: destAssetKey,
   } = params
 
-  if (!srcChainKey || !srcAssetKey || !destChainKey || !destAssetKey) {
+  const parsed: ParsedXcmQueryParams = {}
+
+  if (srcChainKey) {
+    const srcChain = chainsMap.get(srcChainKey)
+    if (!srcChain) return undefined
+
+    parsed.srcChain = srcChain
+
+    if (srcAssetKey) {
+      const srcAsset = srcChain.assetsData.get(srcAssetKey)?.asset
+      if (!srcAsset) return undefined
+      parsed.srcAsset = srcAsset
+    }
+  }
+
+  if (destChainKey && destAssetKey) {
+    const destChain = chainsMap.get(destChainKey)
+    const destAsset = destChain?.assetsData.get(destAssetKey)?.asset
+    if (destChain && destAsset) {
+      parsed.destChain = destChain
+      parsed.destAsset = destAsset
+    }
+  }
+
+  if (!parsed.srcChain && !parsed.destChain) {
     return undefined
   }
 
-  const srcChain = chainsMap.get(srcChainKey)
-  const destChain = chainsMap.get(destChainKey)
-
-  if (!srcChain || !destChain) {
-    return undefined
-  }
-
-  const srcAssetData = srcChain.assetsData.get(srcAssetKey)
-  const destAssetData = destChain.assetsData.get(destAssetKey)
-
-  if (!srcAssetData?.asset || !destAssetData?.asset) {
-    return undefined
-  }
-
-  return {
-    srcChain,
-    srcAsset: srcAssetData.asset,
-    destChain,
-    destAsset: destAssetData.asset,
-  }
+  return parsed
 }
 
 export const useXcmQueryParams = () => {

@@ -173,7 +173,7 @@ export const useOmnipoolPositionData = (
         let currentTotalDisplay = currentDisplay
 
         if (Big(hubLiquidity).gt(0)) {
-          const hubPrice = getAssetPrice(hub.id).price
+          const hubPrice = getAssetPrice(hub.id).price || "0"
 
           currentHubValue = hubLiquidity
           currentHubValueHuman = scaleHuman(currentHubValue, hub.decimals)

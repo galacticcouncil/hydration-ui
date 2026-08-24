@@ -1,6 +1,7 @@
 import {
   AssetLabel,
   AssetLabelProps,
+  AssetLogo as AssetLogoPrimitive,
   Flex,
   Skeleton,
 } from "@galacticcouncil/ui/components"
@@ -39,12 +40,21 @@ export const AssetLabelFull = ({
 
   if (!asset) return null
 
+  const logoSize = size === "primary" ? "large" : size
+
   return (
     <AssetLabelFullContainer variant={variant}>
       {loading ? (
         <Skeleton circle width={24} height={24} />
+      ) : asset.iconSrc ? (
+        <AssetLogoPrimitive
+          src={asset.iconSrc}
+          chainSrc={asset.chainSrc}
+          alt={asset.symbol}
+          size={logoSize}
+        />
       ) : (
-        <AssetLogo id={asset.id} size={size === "primary" ? "large" : size} />
+        <AssetLogo id={asset.id} size={logoSize} />
       )}
       <AssetLabel
         symbol={asset.symbol}

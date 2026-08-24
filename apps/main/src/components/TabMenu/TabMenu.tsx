@@ -17,6 +17,7 @@ export type TabItem = {
   readonly icon?: React.ComponentType
   readonly search?: Record<string, string | boolean>
   readonly resetScroll?: boolean
+  readonly exact?: boolean
 }
 
 type Props = FlexProps &
