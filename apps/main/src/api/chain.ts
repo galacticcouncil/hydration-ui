@@ -1,5 +1,7 @@
+import { SdkCtx } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
+import { millisecondsInHour } from "date-fns/constants"
 import { useMemo } from "react"
 
 import { useObservable } from "@/hooks/useObservable"
@@ -112,5 +114,14 @@ export const blockWeightsQuery = (context: TProviderContext) => {
     queryKey: ["blockWeights"],
     queryFn: () => papi.constants.System.BlockWeights(),
     staleTime: Infinity,
+  })
+}
+
+export const blockTimeQuery = (sdk: SdkCtx) => {
+  return queryOptions({
+    queryKey: ["blockTime"],
+    enabled: Object.keys(sdk).length > 0,
+    queryFn: () => sdk.client.params.getBlockTime(),
+    staleTime: millisecondsInHour,
   })
 }

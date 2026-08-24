@@ -14,12 +14,12 @@ import {
   getHostnameFromUrl,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
-import { millisecondsInMinute } from "date-fns/constants"
 import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
+import { blockTimeQuery } from "@/api/chain"
 import { ENV } from "@/config/env"
 import {
   createProvider,
@@ -77,25 +77,6 @@ export const getProviderDataEnv = (rpcUrl: string) => {
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
-/**
- * Live block time from the SDK — the single authority the UI trusts
- * (`ChainParams.getBlockTime()`: average `Timestamp.Now` delta over the
- * trailing blocks, cached SDK-side with a 60s TTL). The provider snapshot
- * reads it once at init — a session that spans a runtime upgrade
- * (block-time change) would otherwise keep multiplying fresh
- * block-denominated constants by a stale block time (observed on 3.lark:
- * 2s cooldown constant × frozen 6s block time → "84 days"). Re-asking the
- * SDK once a minute keeps the session honest.
- */
-export const nominalBlockTimeQuery = (data: TProviderData, endpoint: string) =>
-  queryOptions({
-    queryKey: ["nominalBlockTime", endpoint],
-    enabled: Object.keys(data.sdk).length > 0,
-    queryFn: () => data.sdk.client.params.getBlockTime(),
-    refetchInterval: millisecondsInMinute,
-    refetchIntervalInBackground: true,
-  })
-
 type RpcProviderQueryOptions = ApiOptions & { priorityRpcUrl?: string }
 
 export const rpcProviderQuery = (
@@ -149,8 +130,6 @@ const getProviderData = async (
     metadata.fetchMetadata(),
   ])
 
-  const blockTimeMs = await sdk.client.params.getBlockTime()
-
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
   }
@@ -163,7 +142,7 @@ const getProviderData = async (
     evm,
     sdk,
     rpcUrlList,
-    slotDurationMs: blockTimeMs,
+    slotDurationMs: await queryClient.ensureQueryData(blockTimeQuery(sdk)),
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,
