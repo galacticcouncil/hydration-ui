@@ -14,7 +14,6 @@ type Props = {
   readonly active: boolean
   readonly value: string
   readonly diff?: string
-  readonly isBuy?: boolean
   readonly onClick: () => void
   readonly disabled?: boolean
 }
@@ -26,7 +25,6 @@ export const TradeOption = ({
   active,
   value,
   diff,
-  isBuy,
   onClick,
   disabled,
 }: Props) => {
@@ -55,13 +53,9 @@ export const TradeOption = ({
               fs="p6"
               fw={600}
               color={
-                isBuy
-                  ? isPositive
-                    ? getToken("accents.danger.emphasis")
-                    : getToken("accents.success.emphasis")
-                  : isPositive
-                    ? getToken("accents.success.emphasis")
-                    : getToken("accents.danger.emphasis")
+                isPositive
+                  ? getToken("accents.success.emphasis")
+                  : getToken("accents.danger.emphasis")
               }
             >
               ({isPositive && "+"}
