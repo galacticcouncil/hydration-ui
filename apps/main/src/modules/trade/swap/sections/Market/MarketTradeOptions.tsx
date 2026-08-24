@@ -49,13 +49,8 @@ export const MarketTradeOptions: FC<Props> = ({
     return null
   }
 
-  // Both options spend the same amount, so what separates them is what comes
-  // back; a buy quote's output is the amount that was asked for
-  const asset = buyAsset
-  const [amount, twapAmount] = [swap.amountOut, twap?.amountOut]
-
-  const price = scaleHuman(amount, asset.decimals)
-  const twapPrice = twapAmount ? scaleHuman(twapAmount, asset.decimals) : "0"
+  const price = scaleHuman(swap.amountOut, buyAsset.decimals)
+  const twapPrice = twap ? scaleHuman(twap.amountOut, buyAsset.decimals) : "0"
   const diff = Big(twapPrice).minus(price).toString()
 
   return (
@@ -65,7 +60,7 @@ export const MarketTradeOptions: FC<Props> = ({
       render={({ field }) => (
         <Flex sx={{ flexDirection: "column", gap: "base" }}>
           <TradeOption
-            asset={asset}
+            asset={buyAsset}
             value={price}
             active={field.value}
             onClick={(): void => {
@@ -78,7 +73,7 @@ export const MarketTradeOptions: FC<Props> = ({
             <TradeOptionSkeleton />
           ) : (
             <TradeOption
-              asset={asset}
+              asset={buyAsset}
               value={twapPrice}
               diff={diff}
               active={!field.value}
