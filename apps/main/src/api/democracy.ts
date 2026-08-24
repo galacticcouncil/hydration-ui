@@ -34,28 +34,73 @@ export type TUnlockableVote = {
   classId: number
 }
 
-const CONVICTIONS_BLOCKS: { [key: string]: number } = {
-  none: 0,
-  locked1x: 100800,
-  locked2x: 201600,
-  locked3x: 403200,
-  locked4x: 806400,
-  locked5x: 1612800,
-  locked6x: 3225600,
+/**
+ * `pallet-conviction-voting` lock periods per conviction, in multiples of the
+ * `VoteLockingPeriod` chain constant (None locks nothing, each conviction
+ * step doubles). The unlock block is pure block arithmetic against the same
+ * constant the pallet enforces — block time never enters eligibility math.
+ */
+const LOCK_PERIODS_BY_INDEX = {
+  0: 0,
+  1: 1,
+  2: 2,
+  3: 4,
+  4: 8,
+  5: 16,
+  6: 32,
+} as const
+
+type ConvictionIndex = keyof typeof LOCK_PERIODS_BY_INDEX
+
+const LOCK_PERIODS_BY_NAME: { [key: string]: number } = {
+  none: LOCK_PERIODS_BY_INDEX[0],
+  locked1x: LOCK_PERIODS_BY_INDEX[1],
+  locked2x: LOCK_PERIODS_BY_INDEX[2],
+  locked3x: LOCK_PERIODS_BY_INDEX[3],
+  locked4x: LOCK_PERIODS_BY_INDEX[4],
+  locked5x: LOCK_PERIODS_BY_INDEX[5],
+  locked6x: LOCK_PERIODS_BY_INDEX[6],
 }
 
 export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
 export type Conviction = (typeof CONVICTIONS)[number]
 
-export const CONVICTIONS_BLOCKS_BY_INDEX: { [key in Conviction]: number } = {
-  0: 0,
-  1: 100800,
-  2: 201600,
-  3: 403200,
-  4: 806400,
-  5: 1612800,
-  6: 3225600,
+export const getConvictionBlocks = (
+  voteLockingPeriodBlocks: number,
+  conviction: string | number,
+) => {
+  if (typeof conviction === "number") {
+    if (!(conviction in LOCK_PERIODS_BY_INDEX)) return undefined
+
+    return (
+      LOCK_PERIODS_BY_INDEX[conviction as ConvictionIndex] *
+      voteLockingPeriodBlocks
+    )
+  }
+
+  const lockPeriods = LOCK_PERIODS_BY_NAME[conviction]
+  if (lockPeriods === undefined) return undefined
+
+  return lockPeriods * voteLockingPeriodBlocks
 }
+
+type UnsafeVoteLockingPeriodConstants = {
+  ConvictionVoting: { VoteLockingPeriod: () => Promise<number> }
+}
+
+export const voteLockingPeriodQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    queryKey: ["voteLockingPeriod"],
+    enabled: rpc.isApiLoaded,
+    staleTime: Infinity,
+    queryFn: async () => {
+      // Unsafe api — `ConvictionVoting` constants are not part of the
+      // generated descriptor set.
+      const constants = rpc.papiClient.getUnsafeApi()
+        .constants as unknown as UnsafeVoteLockingPeriodConstants
+      return Number(await constants.ConvictionVoting.VoteLockingPeriod())
+    },
+  })
 
 const CONVICTION_NAMES = [
   "none",
@@ -318,7 +363,7 @@ export const openGovUnlockedTokensQuery = (
   queryOptions({
     queryKey: openGovUnlockedTokensQueryKey(address),
     queryFn: async () => {
-      const [accountVotes, bestNumber, subsquareAccountVotes] =
+      const [accountVotes, bestNumber, subsquareAccountVotes, voteLocking] =
         await Promise.all([
           rpc.queryClient.ensureQueryData(
             accountOpenGovVotesQuery(rpc, address),
@@ -327,6 +372,7 @@ export const openGovUnlockedTokensQuery = (
           rpc.queryClient.ensureQueryData(
             accountVotesQuery(address, indexerUrl),
           ),
+          rpc.queryClient.ensureQueryData(voteLockingPeriodQuery(rpc)),
         ])
       if (!bestNumber) {
         throw new Error("Best number not found")
@@ -340,8 +386,10 @@ export const openGovUnlockedTokensQuery = (
 
         const balance = vote.balance ?? vote.abstainBalance ?? "0"
         if (status === SubsquareVoteState.Executed) {
-          const convictionBlockNumber =
-            CONVICTIONS_BLOCKS_BY_INDEX[vote.conviction]
+          const convictionBlockNumber = getConvictionBlocks(
+            voteLocking,
+            vote.conviction,
+          )
 
           if (convictionBlockNumber === undefined) {
             indexedVotes.push({
@@ -416,8 +464,10 @@ export const openGovUnlockedTokensQuery = (
               referendumInfo.type === "Killed"
                 ? referendumInfo.value
                 : referendumInfo.value[0]
-            const convictionBlockNumber =
-              CONVICTIONS_BLOCKS[accountVote.conviction]
+            const convictionBlockNumber = getConvictionBlocks(
+              voteLocking,
+              accountVote.conviction,
+            )
 
             if (convictionBlockNumber === undefined) {
               throw new Error("Invalid conviction")

@@ -14,5 +14,5 @@ export const SwapStatus: FC = () => {
 }
 
 export const Status: FC<ComponentProps<typeof Text>> = (props) => {
-  return <Text fw={500} fs="p6" lh="s" {...props} />
+  return <Text as="div" fw={600} fs="p6" lh={1} {...props} />
 }

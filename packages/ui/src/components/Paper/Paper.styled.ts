@@ -13,7 +13,10 @@ const variants = createVariants((theme) => ({
   plain: css``,
 }))
 
-export const SPaper = styled(Box)<PaperProps>(
+export const SPaper = styled(Box, {
+  shouldForwardProp: (prop) =>
+    !["variant", "shadow", "hoverable"].includes(prop),
+})<PaperProps>(
   ({
     theme,
     variant = "bordered",

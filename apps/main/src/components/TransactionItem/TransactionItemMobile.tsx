@@ -65,10 +65,12 @@ export const TransactionItemMobile: FC<Props> = ({
           )}
         </Flex>
 
-        <Flex direction="column" align="end" gap="s">
-          <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-            {received ?? "⎯"}
-          </Text>
+        <Flex direction="column" justify="center" align="end" gap="s">
+          {received && (
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
+              {received}
+            </Text>
+          )}
           <TransactionStatus variant={statusProps.status} />
           {message && (
             <TransactionStatusMessage

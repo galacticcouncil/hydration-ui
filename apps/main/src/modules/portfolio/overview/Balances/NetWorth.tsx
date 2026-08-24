@@ -1,16 +1,22 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   AnimatedValue,
-  AreaChart,
+  Chart,
+  ChartTimeTooltipBody,
+  chartTimeTooltipPlacement,
   Flex,
   Grid,
   SValueStatsValue,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useTheme } from "@galacticcouncil/ui/theme"
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
+import { areaY, defineChart, lineY } from "@tanstack/charts"
+import { scaleLinear } from "@tanstack/charts/scales/linear"
+import { tooltip } from "@tanstack/charts/tooltip"
 import Big from "big.js"
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
@@ -21,10 +27,7 @@ import {
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
-import {
-  NetWorthData,
-  useNetWorthData,
-} from "@/modules/portfolio/overview/Balances/NetWorth.data"
+import { useNetWorthData } from "@/modules/portfolio/overview/Balances/NetWorth.data"
 
 const netWorthTimeFrameTypes = timeFrameTypes.filter(
   (type) => type !== "minute",
@@ -38,6 +41,16 @@ const intervalOptions = (["all", ...netWorthTimeFrameTypes] as const).map<
   key: option,
   label: i18n.t(`chart.timeFrame.${option}`),
 }))
+
+type NetWorthRow = {
+  time: number
+  netWorth: number
+}
+
+const GRADIENT_ID = "net-worth-gradient"
+const CHART_HEIGHT = 180
+const STROKE_WIDTH = 2
+const TIME_TOOLTIP_MARGIN = 40
 
 type Props = {
   readonly assetBalance: string
@@ -54,8 +67,10 @@ export const NetWorth: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["wallet", "common"])
 
+  const { themeProps } = useTheme()
+
   const [interval, setInterval] = useState<NetWorthTimeFrameType | "all">("all")
-  const [crosshair, setCrosshair] = useState<NetWorthData | null>(null)
+  const [crosshair, setCrosshair] = useState<number | null>(null)
 
   const currentNetWorth = Big(assetBalance || "0")
     .plus(liquidityBalance || "0")
@@ -69,9 +84,56 @@ export const NetWorth: FC<Props> = ({
   )
 
   const lastDataPoint = last(balances)
-  const value = (crosshair ?? lastDataPoint)?.netWorth ?? 0
+  const value = crosshair ?? lastDataPoint?.netWorth ?? 0
 
   const isEmpty = isSuccess && !balances.length
+
+  const definition = useMemo(() => {
+    const rows = balances.map<NetWorthRow>(({ netWorth, time }) => ({
+      netWorth,
+      time: time.valueOf(),
+    }))
+
+    const color = themeProps.details.chart
+
+    return defineChart({
+      marks: [
+        areaY(rows, {
+          x: "time",
+          y: "netWorth",
+          fill: `url(#${GRADIENT_ID})`,
+        }),
+        lineY(rows, {
+          x: "time",
+          y: "netWorth",
+          stroke: color,
+          strokeWidth: STROKE_WIDTH,
+        }),
+      ],
+      gradients: [
+        {
+          id: GRADIENT_ID,
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+          stops: [
+            { offset: 0.05, color, opacity: 1 },
+            { offset: 0.95, color, opacity: 0 },
+          ],
+        },
+      ],
+      x: { scale: scaleLinear, axis: false },
+      y: { scale: scaleLinear, axis: false },
+      margin: { bottom: TIME_TOOLTIP_MARGIN },
+      focus: "group-x",
+      tooltip: {
+        use: tooltip,
+        format: ({ yValue }) => t("common:currency", { value: yValue }),
+        ...chartTimeTooltipPlacement("bottom"),
+      },
+    })
+  }, [balances, themeProps, t])
 
   return (
     <Grid minWidth={pxToRem(320)} rowTemplate="auto 1fr" align="center">
@@ -89,26 +151,16 @@ export const NetWorth: FC<Props> = ({
         width="100%"
       >
         <ChartState isError={isError} isLoading={isLoading} isEmpty={isEmpty}>
-          <AreaChart
-            data={balances}
-            xAxisHidden
-            yAxisHidden
-            verticalGridHidden
-            curveType="linear"
-            onCrosshairMove={setCrosshair}
-            config={{
-              xAxisKey: "time",
-              xAxisType: "time",
-              yAxisFormatter: (value: number) =>
-                t("common:currency", { value }),
-              tooltipType: "timeBottom",
-              series: [
-                {
-                  label: t("balances.header.netWorth"),
-                  key: "netWorth",
-                },
-              ],
-            }}
+          <Chart
+            definition={definition}
+            ariaLabel={t("balances.header.netWorth")}
+            height={CHART_HEIGHT}
+            onFocusChange={(point) =>
+              setCrosshair(point?.datum?.netWorth ?? null)
+            }
+            renderTooltipBody={({ points }) => (
+              <ChartTimeTooltipBody points={points} />
+            )}
           />
         </ChartState>
       </Flex>

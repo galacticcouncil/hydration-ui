@@ -78,14 +78,14 @@ export const MOCK_CURVE_DATA = [
   {
     x: 30,
     y: 0,
-    current: true,
+    current: false,
     currentSecondary: false,
   },
   {
     x: 40,
     y: 0.02,
     current: false,
-    currentSecondary: true,
+    currentSecondary: false,
   },
   {
     x: 50,
@@ -120,7 +120,7 @@ export const MOCK_CURVE_DATA = [
   {
     x: 100,
     y: 0.79,
-    current: false,
+    current: true,
     currentSecondary: false,
   },
   {
@@ -175,7 +175,7 @@ export const MOCK_CURVE_DATA = [
     x: 190,
     y: 9.44,
     current: false,
-    currentSecondary: false,
+    currentSecondary: true,
   },
   {
     x: 200,

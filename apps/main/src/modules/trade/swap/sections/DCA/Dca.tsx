@@ -191,7 +191,11 @@ export const Dca: FC = () => {
           isLoading={isLoading}
         />
         <SwapSectionSeparator />
-        <DcaFooter isEnabled={isSubmitEnabled} isOpenBudget={isOpenBudget} />
+        <DcaFooter
+          isEnabled={isSubmitEnabled}
+          isLoading={submitDcaOrder.isPending}
+          isOpenBudget={isOpenBudget}
+        />
       </form>
     </FormProvider>
   )

@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
@@ -16,6 +17,7 @@ import { isFunction } from "remeda"
 
 import {
   getProviderDataEnv,
+  nominalBlockTimeQuery,
   rpcProviderQuery,
   TProviderData,
 } from "@/api/provider"
@@ -98,7 +100,11 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           logWsStatusChange(status)
           if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
-            if (status.uri !== connectedRpcUrl) setConnectedRpcUrl(status.uri)
+            const { rpcUrl, connectedRpcUrl } =
+              useProviderRpcUrlStore.getState()
+            if (status.uri !== connectedRpcUrl) {
+              setConnectedRpcUrl(status.uri)
+            }
             if (status.uri !== rpcUrl) setRpcUrl(status.uri)
             setIsRpcConnecting(false)
           }
@@ -129,10 +135,17 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const isApiLoaded =
     Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
 
+  // Tracks runtime upgrades that change the block time mid-session — the
+  // snapshot in `data.slotDurationMs` is only the initial value.
+  const { data: liveBlockTimeMs } = useQuery(
+    nominalBlockTimeQuery(data, rpcUrl),
+  )
+
   return (
     <ProviderContext.Provider
       value={{
         ...data,
+        slotDurationMs: liveBlockTimeMs ?? data.slotDurationMs,
         isApiLoaded,
         isLoaded,
         endpoint: rpcUrl,

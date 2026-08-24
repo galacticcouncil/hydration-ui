@@ -1,22 +1,16 @@
 import {
+  Box,
   Flex,
-  Pie,
-  PieChart,
   Skeleton,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import {
-  LegendItem,
-  PIE_START_ANGLE,
-} from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
+import { LegendItem } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
 
 export const GigaHDXSupplyInfoSkeleton = () => {
-  const { isMobile, isTablet } = useBreakpoints()
   const { t } = useTranslation("staking")
 
   return (
@@ -29,22 +23,11 @@ export const GigaHDXSupplyInfoSkeleton = () => {
         justify="center"
         align="center"
       >
-        <PieChart
-          height={isMobile || isTablet ? 35 : 90}
-          width={isMobile || isTablet ? 35 : 90}
-          sx={{ pointerEvents: "none" }}
-        >
-          <Pie
-            data={[]}
-            dataKey="value"
-            nameKey="name"
-            innerRadius={isMobile || isTablet ? 7 : 25}
-            outerRadius={isMobile || isTablet ? 15 : 45}
-            startAngle={PIE_START_ANGLE}
-            endAngle={PIE_START_ANGLE - 360}
-            stroke="none"
-          />
-        </PieChart>
+        <Box
+          size={[35, 35, 90]}
+          borderRadius="full"
+          bg={getToken("details.separatorsOnDim")}
+        />
       </Flex>
 
       <Flex direction="column" gap="s" flex={1}>
