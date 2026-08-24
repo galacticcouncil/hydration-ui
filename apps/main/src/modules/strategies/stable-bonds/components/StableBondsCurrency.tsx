@@ -14,6 +14,8 @@ import { useInitialOtcOfferAmount } from "@/modules/trade/otc/table/columns/Offe
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { scaleHuman } from "@/utils/formatting"
 
+const DEFAULT_INITIAL_AMOUNT = 222_222
+
 type StableBondsCurrencyProps = {
   order: OtcOffer
 }
@@ -30,9 +32,12 @@ export const StableBondsCurrency: React.FC<StableBondsCurrencyProps> = ({
 
   const isFillable = Big(amount).gt(0)
 
-  const initialAmount = data?.amountInInitial
-    ? Big(scaleHuman(data.amountInInitial, asset.decimals))
-    : null
+  const initialAmount =
+    data &&
+    data.assetInId === order.assetIn.id &&
+    data.assetOutId === order.assetOut.id
+      ? Big(scaleHuman(data.amountInInitial, asset.decimals))
+      : Big(DEFAULT_INITIAL_AMOUNT)
 
   const remainingPct =
     initialAmount && !initialAmount.eq(0)

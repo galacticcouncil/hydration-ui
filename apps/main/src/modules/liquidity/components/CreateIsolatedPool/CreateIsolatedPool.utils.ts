@@ -7,13 +7,13 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import {
   useFormMaxBalanceWithFee,
   ValidateFormMaxBalanceWithFee,
 } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 import { positive, required, requiredObject } from "@/utils/validators"

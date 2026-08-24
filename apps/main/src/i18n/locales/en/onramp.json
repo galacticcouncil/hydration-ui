@@ -17,7 +17,7 @@
   "deposit.cex.asset.title": "Deposit to Hydration",
   "deposit.cex.asset.alert": "It is recommended that you keep this tab open until the deposit is complete.",
   "deposit.cex.asset.select.label": "From <0></0> <1>{{ name }}</1>",
-  "deposit.cex.account.evmError": "EVM account not allowed for depositing {{ symbol }}",
+  "deposit.cex.account.evmError": "EVM account is not supported for depositing {{ symbol }}",
   "deposit.cex.account.depositTo": "Deposit to",
   "deposit.cex.amount.min.title": "Minimum deposit amount",
   "deposit.cex.awaiting.title": "Awaiting deposit",

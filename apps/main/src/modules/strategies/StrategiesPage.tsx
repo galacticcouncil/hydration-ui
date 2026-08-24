@@ -1,5 +1,5 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
-import { BIL_ERC20_ID, HOLLAR_BOND_25_08_26_ID } from "@galacticcouncil/utils"
+import { BIL_ERC20_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -7,15 +7,34 @@ import { LINKS } from "@/config/navigation"
 import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
-import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
+import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
+import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
+import {
+  isStableBondSoldOut,
+  useStableBondsOtcOrders,
+} from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import {
+  getBondApr,
+  getDefaultBondApr,
+} from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const StrategiesPage = () => {
   const { t } = useTranslation(["common", "strategies"])
   const { featureFlags } = useRpcProvider()
-  const bondId = HOLLAR_BOND_25_08_26_ID
+  const { active } = useStableBonds()
+  const bondId = active?.id ?? ""
+  const bondConfig = STABLE_BONDS[bondId]
   const { timeLeft } = useBondData(bondId)
-  const bondApr = getBondApr(bondId, timeLeft)
+  const { data: orders, isReady } = useStableBondsOtcOrders(
+    bondId,
+    bondConfig?.otcAcceptedAssetIds ?? [],
+    bondConfig?.otcOfferIds ?? [],
+  )
+  const isSoldOut = isStableBondSoldOut(orders, isReady)
+  const bondApr = isSoldOut
+    ? getDefaultBondApr(bondId)
+    : getBondApr(bondId, timeLeft)
 
   const { data: bilMetrics, isLoading: isBilMetricsLoading } =
     useBilStrategyMetrics()
@@ -54,6 +73,7 @@ export const StrategiesPage = () => {
                   bondApr !== null
                     ? t("common:percent", {
                         value: bondApr,
+                        suffix: isSoldOut ? "+" : undefined,
                       })
                     : "-",
               },

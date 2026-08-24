@@ -5,9 +5,9 @@ import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
 
+import { useAccountBalances } from "@/api/balances"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 const requiredError = i18n.t("error.required")

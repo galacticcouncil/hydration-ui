@@ -1,12 +1,12 @@
 import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
 
+import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { TAsset } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 import { maxBalanceError, validateMaxBalance } from "@/utils/validators"
 

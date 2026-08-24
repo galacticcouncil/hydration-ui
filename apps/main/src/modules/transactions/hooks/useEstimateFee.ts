@@ -11,6 +11,7 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
 import { AnyTransaction } from "@/modules/transactions/types"
@@ -28,7 +29,6 @@ import {
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useEstimateFee = (

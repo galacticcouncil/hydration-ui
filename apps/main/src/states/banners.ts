@@ -28,6 +28,19 @@ const bannerEntries: BannerConfig[] = [
     priority: 1,
     enabled: false,
   },
+  {
+    id: "hollarb-24-11-26",
+    backgroundImage: "/images/hollarb.webp",
+    backgroundImageMobile: "/images/hollarbMobile.webp",
+    title: "banners.hollarb.title",
+    textColor: "#FFF",
+    ctaColor: "#B3D7FA",
+    ctaTextColor: "#0D1525",
+    cta: "banners.hollarb.cta",
+    to: LINKS.strategiesHollarBonds,
+    priority: 2,
+    enabled: false,
+  },
 ]
 
 export const useEnabledBanners = () => {
@@ -36,7 +49,7 @@ export const useEnabledBanners = () => {
 
   return useMemo(() => {
     return bannerEntries.filter((banner) => {
-      if (banner.id === "hollarb") {
+      if (banner.id.startsWith("hollarb")) {
         return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
       }
 
