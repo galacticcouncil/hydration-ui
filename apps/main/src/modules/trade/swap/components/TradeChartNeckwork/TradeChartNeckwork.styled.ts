@@ -4,6 +4,7 @@ import { containerSize, css, styled } from "@galacticcouncil/ui/utils"
 export const SChartHeader = styled(Flex)(
   ({ theme }) => css`
     flex-direction: column;
+    gap: ${theme.space.s};
 
     ${containerSize(
       "md",
@@ -45,7 +46,7 @@ export const SChartControls = styled(Flex)(
   `,
 )
 
-export const SChartOhlc = styled(Flex)(
+export const SChartValues = styled(Flex)(
   () => css`
     display: none;
 

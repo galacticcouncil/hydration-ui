@@ -53,7 +53,14 @@ export const useWeb3EagerEnable = (enabled = true) => {
           continue
         }
 
-        if (wallet.installed && !wallet.enabled) {
+        if (!wallet.installed) {
+          disconnect(type)
+          continue
+        }
+
+        if (wallet.enabled) continue
+
+        try {
           await enable(wallet.provider)
 
           const isSubstrate = wallet instanceof BaseSubstrateWallet
@@ -63,6 +70,8 @@ export const useWeb3EagerEnable = (enabled = true) => {
               : account.address
             wallet.setSigner(signerAddress)
           }
+        } catch {
+          disconnect(type)
         }
       }
     }
