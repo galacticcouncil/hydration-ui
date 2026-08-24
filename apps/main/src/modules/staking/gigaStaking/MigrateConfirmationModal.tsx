@@ -10,7 +10,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { Trans, useTranslation } from "react-i18next"
 
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
@@ -31,7 +31,7 @@ export const MigrateConfirmationModal = ({
   const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
   const cooldownPeriodDays = cooldownPeriod
-    ? millisecondsToHours(cooldownPeriod * rpc.slotDurationMs) / 24
+    ? Math.round((cooldownPeriod * rpc.slotDurationMs) / millisecondsInDay)
     : undefined
 
   return (

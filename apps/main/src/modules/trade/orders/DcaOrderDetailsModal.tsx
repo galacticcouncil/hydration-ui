@@ -27,7 +27,7 @@ import {
 } from "@/modules/trade/orders/lib/dcaProgress"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly details: OrderData
@@ -40,6 +40,7 @@ export const DcaOrderDetailsModal = ({
   onTerminate,
   pastExecutions,
 }: Props) => {
+  const rpc = useRpcProvider()
   const { t } = useTranslation(["common", "trade"])
   const fundingBalance = useDcaFundingBalance(
     details.from,
@@ -47,6 +48,7 @@ export const DcaOrderDetailsModal = ({
   )
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
+  const parachainBlockTime = rpc.slotDurationMs
 
   const spentOrBudgetLabel = details.isOpenBudget
     ? t("spent")
@@ -132,14 +134,12 @@ export const DcaOrderDetailsModal = ({
         </Grid>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
-          {blocksPeriod && (
+          {blocksPeriod && parachainBlockTime && (
             <>
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: blocksPeriod
-                    .times(PARACHAIN_BLOCK_TIME)
-                    .toNumber(),
+                  timeframe: blocksPeriod.times(parachainBlockTime).toNumber(),
                   count: blocksPeriod.toNumber(),
                 })}
               />
