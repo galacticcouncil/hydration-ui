@@ -68,7 +68,7 @@ export const useDisplayAssetPrice = (
       })
     : "-"
 
-  return [formattedPrice, { price: displayValue, isLoading }] as const
+  return [formattedPrice, { price: displayValue, isLoading, isValid }] as const
 }
 
 export const useDisplayAssetsPrice = (

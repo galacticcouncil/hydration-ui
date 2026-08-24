@@ -118,6 +118,7 @@ export const TradeChartGrafana: React.FC<TradeChartGrafanaProps> = ({
             variant="tertiary"
             outline
             onClick={() => setIsInverted((prev) => !prev)}
+            sx={{ width: "auto", px: "m", gap: "s" }}
           >
             <Icon component={ArrowLeftRight} size="m" />
             {assetBMeta.symbol}/{assetAMeta.symbol}

@@ -1,10 +1,11 @@
+import { accountsBalancesQuery } from "@galacticcouncil/indexer/neckwork"
 import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import { Chip } from "@galacticcouncil/ui/components"
 import {
   safeConvertAddressSS58,
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
+import { QueriesResults, useQueries, useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { AccountOption } from "@/components/account/AccountOption"
@@ -29,20 +30,43 @@ export const AccountMultisigOption: React.FC<Props> = ({
   onDelete,
 }) => {
   const { t } = useTranslation()
-  const { squidSdk } = useWeb3ConnectContext()
+  const { neckwork, squidSdk } = useWeb3ConnectContext()
   const publicKey = safeConvertSS58toPublicKey(config.address)
 
-  const { data: balanceData, isLoading: isBalanceLoading } = useQuery(
-    latestAccountBalanceQuery(squidSdk, publicKey),
+  const neckworkQueries: Array<ReturnType<typeof accountsBalancesQuery>> =
+    neckwork ? [accountsBalancesQuery(neckwork, [publicKey])] : []
+
+  const { balance: neckworkBalance, isLoading: isNeckworkLoading } = useQueries(
+    {
+      queries: neckworkQueries,
+      combine: (
+        queries: QueriesResults<
+          Array<ReturnType<typeof accountsBalancesQuery>>
+        >,
+      ) => ({
+        isLoading: queries.some((query) => query.isLoading),
+        balance: queries[0]?.data
+          ? (queries[0].data.at(0)?.balance ?? 0)
+          : undefined,
+      }),
+    },
   )
 
-  const balance = (() => {
-    const node = balanceData?.accountTotalBalanceHistoricalData?.nodes.at(0)
+  const { data: squidData, isLoading: isSquidLoading } = useQuery({
+    ...latestAccountBalanceQuery(squidSdk, publicKey),
+    enabled: !neckwork,
+  })
+
+  const squidBalance = (() => {
+    const node = squidData?.accountTotalBalanceHistoricalData?.nodes.at(0)
     if (!node) return undefined
     const transferable = Number(node.totalTransferableNorm) || 0
     const locked = Number(node.totalLockedNorm) || 0
     return transferable + locked
   })()
+
+  const balance = neckwork ? neckworkBalance : squidBalance
+  const isBalanceLoading = neckwork ? isNeckworkLoading : isSquidLoading
 
   return (
     <AccountOption

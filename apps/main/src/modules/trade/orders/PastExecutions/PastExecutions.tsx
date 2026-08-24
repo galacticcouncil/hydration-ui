@@ -13,7 +13,8 @@ import { useTranslation } from "react-i18next"
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
 import { PastExecutionsListHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsListHeader"
-import { usePastExecutionsData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
+import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
+import { TAsset } from "@/providers/assetsProvider"
 
 const PAST_EXECUTION_ITEM_SIZE = 65
 const PAST_EXECUTIONS_MAX_VISIBLE_ITEMS = 5
@@ -24,23 +25,32 @@ const pastExecutionsListProps = {
   separated: true as const,
 }
 
-type Props = {
-  readonly scheduleId: number
+export type PastExecutionsProps = {
+  readonly assetIn: TAsset
+  readonly assetOut: TAsset
+  readonly executions: ReadonlyArray<PastExecutionData>
+  readonly isLoading: boolean
+  readonly hasMore?: boolean
+  readonly isLoadingAll?: boolean
+  readonly loadAll?: () => void
+  readonly totalCount?: number
+  readonly onEndReached?: () => void
   readonly className?: string
 }
 
-export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
+export const PastExecutions: FC<PastExecutionsProps> = ({
+  assetIn,
+  assetOut,
+  executions,
+  isLoading,
+  hasMore,
+  isLoadingAll,
+  loadAll,
+  totalCount,
+  onEndReached,
+  className,
+}) => {
   const { t } = useTranslation("trade")
-  const {
-    assetIn,
-    assetOut,
-    executions,
-    isLoading,
-    hasMore,
-    isLoadingAll,
-    loadAll,
-    totalCount,
-  } = usePastExecutionsData(scheduleId)
 
   return (
     <Flex
@@ -80,6 +90,7 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
           <VirtualizedList
             {...pastExecutionsListProps}
             items={executions}
+            onEndReached={onEndReached}
             renderItem={(execution) => (
               <PastExecutionItem
                 assetIn={assetIn}
@@ -89,15 +100,17 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
             )}
           />
         )}
-        {hasMore && (
+        {loadAll && hasMore && (
           <Flex justify="center" px="l" pb="l">
             <LoadingButton
               variant="tertiary"
               outline
-              isLoading={isLoadingAll}
+              isLoading={isLoadingAll ?? false}
               onClick={loadAll}
             >
-              {t("trade.orders.pastExecutions.loadAll", { count: totalCount })}
+              {t("trade.orders.pastExecutions.loadAll", {
+                count: totalCount ?? 0,
+              })}
             </LoadingButton>
           </Flex>
         )}

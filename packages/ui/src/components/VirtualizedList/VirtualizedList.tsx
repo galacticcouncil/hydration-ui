@@ -28,6 +28,7 @@ type VirtualizedListProps<T> = VirtualizerProps &
     initialScrollIndex?: number
     maxVisibleItems?: ResponsiveStyleValue<number>
     separated?: boolean
+    onEndReached?: () => void
   }
 
 function VirtualizedList<T>({
@@ -39,10 +40,12 @@ function VirtualizedList<T>({
   getItemKey,
   initialScrollIndex,
   separated = false,
+  onEndReached,
   ...props
 }: VirtualizedListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
   const hasScrolledToInitial = useRef(false)
+  const onEndReachedForLength = useRef<number | null>(null)
 
   const uiScale = useUiScale()
 
@@ -77,6 +80,18 @@ function VirtualizedList<T>({
   }, [initialScrollIndex, items.length, rowVirtualizer])
 
   const virtualItems = rowVirtualizer.getVirtualItems()
+  const lastRenderedIndex = virtualItems.at(-1)?.index
+
+  useEffect(() => {
+    if (!onEndReached || isNullish(lastRenderedIndex)) return
+    if (lastRenderedIndex < items.length - 1 - overscan) return
+    // Fire once per list length. lastRenderedIndex ticks through the
+    // overscan zone, which would otherwise invoke the loader repeatedly
+    // before the list has grown.
+    if (onEndReachedForLength.current === items.length) return
+    onEndReachedForLength.current = items.length
+    onEndReached()
+  }, [onEndReached, lastRenderedIndex, items.length, overscan])
 
   return (
     <ScrollArea

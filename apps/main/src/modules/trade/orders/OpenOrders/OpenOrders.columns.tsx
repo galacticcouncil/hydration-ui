@@ -46,11 +46,7 @@ export const useOpenOrdersColumns = () => {
                 ? row.original.fromAmountExecuted
                 : row.original.fromAmountBudget
             }
-            toAmount={
-              row.original.isOpenBudget
-                ? row.original.toAmountExecuted
-                : undefined
-            }
+            toAmount={row.original.toAmountExecuted}
             from={row.original.from}
             to={row.original.to}
             showLogo
@@ -76,7 +72,10 @@ export const useOpenOrdersColumns = () => {
         const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
 
         const price =
-          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
+          toAmountExecuted &&
+          fromAmountExecuted &&
+          Big(fromAmountExecuted).gt(0) &&
+          Big(toAmountExecuted).gt(0)
             ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
@@ -105,7 +104,15 @@ export const useOpenOrdersColumns = () => {
       },
       cell: ({ row }) => {
         return (
-          row.original.status && <DcaOrderStatus status={row.original.status} />
+          row.original.status && (
+            <DcaOrderStatus
+              status={row.original.status}
+              sold={row.original.fromAmountExecuted}
+              total={row.original.fromAmountBudget}
+              isOpenBudget={row.original.isOpenBudget}
+              from={row.original.from}
+            />
+          )
         )
       },
     })
@@ -189,6 +196,8 @@ export const useOpenOrdersColumns = () => {
             fromAmount={row.original.fromAmountExecuted}
             from={row.original.from}
             status={row.original.status}
+            total={row.original.fromAmountBudget}
+            isOpenBudget={row.original.isOpenBudget}
           />
         </TableRowDetailsExpand>
       ),

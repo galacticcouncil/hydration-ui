@@ -28,7 +28,7 @@ import { useTradeOrderHistoryEnrichment } from "@/modules/trade/orders/lib/useTr
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
 import { PastExecutionsListHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsListHeader"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly details: TradeOrderHistoryItem
@@ -37,6 +37,7 @@ type Props = {
 
 export const TradeOrderHistoryDetailsModal = ({ details, onClose }: Props) => {
   const { t } = useTranslation(["common", "trade"])
+  const rpc = useRpcProvider()
 
   const terminateDcaSchedule = useTerminateDcaSchedule()
 
@@ -127,9 +128,7 @@ export const TradeOrderHistoryDetailsModal = ({ details, onClose }: Props) => {
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: blocksPeriod
-                    .times(PARACHAIN_BLOCK_TIME)
-                    .toNumber(),
+                  timeframe: blocksPeriod.times(rpc.slotDurationMs).toNumber(),
                   count: blocksPeriod.toNumber(),
                 })}
               />

@@ -17,6 +17,7 @@ export type TextProps = BoxProps & {
   whiteSpace?: ThemeUICSSProperties["whiteSpace"]
   wordBreak?: ThemeUICSSProperties["wordBreak"]
   truncate?: true | ResponsiveStyleValue<number | string>
+  fontVariantNumeric?: ThemeUICSSProperties["fontVariantNumeric"]
   ref?: Ref<HTMLParagraphElement>
 }
 
@@ -40,6 +41,7 @@ export const Text: FC<TextProps> = ({
   font = "secondary",
   truncate,
   wordBreak,
+  fontVariantNumeric,
   ref,
   ...props
 }) => {
@@ -59,6 +61,7 @@ export const Text: FC<TextProps> = ({
         textWrap,
         whiteSpace,
         wordBreak,
+        fontVariantNumeric,
         ...(truncate && getTruncateProps(truncate)),
       }}
       {...props}

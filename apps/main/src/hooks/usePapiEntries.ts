@@ -8,12 +8,19 @@ import {
 import { useEffect, useRef } from "react"
 import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
+import { UnsafeDcaQuery } from "@/api/dcaStorage"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 
+type QuerySources = {
+  readonly typed: Papi["query"]
+  readonly unsafe: UnsafeDcaQuery
+}
+
 const QUERY_MAP = {
-  "OTC.Orders": (query) => query.OTC.Orders,
-  "Uniques.Account": (query) => query.Uniques.Account,
-} as const satisfies Record<string, (query: Papi["query"]) => unknown>
+  "DCA.ScheduleOwnership": ({ unsafe }) => unsafe.DCA.ScheduleOwnership,
+  "OTC.Orders": ({ typed }) => typed.OTC.Orders,
+  "Uniques.Account": ({ typed }) => typed.Uniques.Account,
+} as const satisfies Record<string, (sources: QuerySources) => unknown>
 
 type QueryKey = keyof typeof QUERY_MAP
 type QueryFn<K extends QueryKey> = (typeof QUERY_MAP)[K]
@@ -75,8 +82,13 @@ export function usePapiEntries<
   options?: PapiEntriesQueryOptions<K, TMap, TSelect>,
 ): UseQueryResult<TSelect, Error> {
   const queryClient = useQueryClient()
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, papiClient, isApiLoaded } = useRpcProvider()
   const isWatcherInitializedRef = useRef(false)
+
+  const querySources = (): QuerySources => ({
+    typed: papi.query,
+    unsafe: papiClient.getUnsafeApi().query as unknown as UnsafeDcaQuery,
+  })
 
   const mapper =
     typeof mapperOrOptions === "function" ? mapperOrOptions : undefined
@@ -92,7 +104,7 @@ export function usePapiEntries<
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      const query = QUERY_MAP[queryKey](papi.query)
+      const query = QUERY_MAP[queryKey](querySources())
       // @ts-expect-error Args vary by query type
       const entries = await query.getEntries(...args, { at: "best" })
 
@@ -115,11 +127,10 @@ export function usePapiEntries<
 
     subscribe(key, () =>
       (
-        QUERY_MAP[queryKey](papi.query)
+        QUERY_MAP[queryKey](querySources())
           // @ts-expect-error Args vary by query type
           .watchEntries(...args, { at: "best" })
           .pipe(
-            // @ts-expect-error skips finalized block
             skip(1),
             distinctUntilChanged(
               (_, current: WatchEntriesData) => !current.deltas,
