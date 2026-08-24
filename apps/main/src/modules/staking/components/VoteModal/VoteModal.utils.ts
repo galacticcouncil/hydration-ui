@@ -1,8 +1,8 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
@@ -16,8 +16,9 @@ import {
 import { useAccountBalances } from "@/api/balances"
 import {
   Conviction,
-  CONVICTIONS_BLOCKS_BY_INDEX,
+  getConvictionBlocks,
   ongoingReferendaQuery,
+  voteLockingPeriodQuery,
 } from "@/api/democracy"
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
@@ -224,8 +225,11 @@ export const useVoteModal = (
     "abstain",
   ])
 
-  const lockedBlocks = CONVICTIONS_BLOCKS_BY_INDEX[multiplier] ?? 0
-  const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
+  const { data: voteLockingPeriod = 0 } = useQuery(voteLockingPeriodQuery(rpc))
+  const lockedBlocks = getConvictionBlocks(voteLockingPeriod, multiplier) ?? 0
+  const lockedDays = Math.round(
+    (lockedBlocks * rpc.slotDurationMs) / millisecondsInDay,
+  )
   const totalVotes = (() => {
     if (voteType === "split") {
       return Big(aye || "0")

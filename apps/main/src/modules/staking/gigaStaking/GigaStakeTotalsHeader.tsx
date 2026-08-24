@@ -14,7 +14,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -50,9 +50,9 @@ export const GigaStakeTotalsHeader: FC = () => {
     voting,
   })
 
-  const cooldownPeriodDays =
-    millisecondsToHours((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) /
-    24
+  const cooldownPeriodDays = Math.round(
+    ((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) / millisecondsInDay,
+  )
 
   const { data: gigaPoolReserves, isLoading: isGigaPoolReservesLoading } =
     useQuery(

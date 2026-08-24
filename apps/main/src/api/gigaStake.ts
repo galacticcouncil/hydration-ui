@@ -44,6 +44,67 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
     gcTime: GC_TIME,
   })
 
+const U32_MAX = 4_294_967_295
+
+type UnsafeTwoSecBlocksSinceQuery = {
+  Parameters: {
+    TwoSecBlocksSince: { getValue: () => Promise<number | undefined> }
+  }
+}
+
+/**
+ * `Parameters.TwoSecBlocksSince` — block height of the 6s→2s switch,
+ * set once by the `SetTwoSecBlocksSince` runtime migration (`u32::MAX`
+ * sentinel until it happens). Canonical anchor consumed by both
+ * pallet-staking and pallet-gigahdx via `TwoSecBlocksSinceProvider`.
+ * Read via the unsafe api: the pallet is newer than the generated
+ * descriptors. Resolves `null` on runtimes that don't expose it
+ * (pre-2s), which callers treat as "no switch — plain arithmetic".
+ */
+export const gigaTwoSecBlocksSinceQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    queryKey: ["gigaStake", "twoSecBlocksSince"],
+    enabled: rpc.isApiLoaded,
+    staleTime: millisecondsInHour,
+    gcTime: GC_TIME,
+    queryFn: async (): Promise<number | null> => {
+      try {
+        const query = rpc.papiClient.getUnsafeApi()
+          .query as unknown as UnsafeTwoSecBlocksSinceQuery
+        const value = await query.Parameters.TwoSecBlocksSince.getValue()
+        return value === undefined ? null : Number(value)
+      } catch {
+        return null
+      }
+    },
+  })
+
+/**
+ * Mirrors `pallet-gigahdx::cooldown_expires_at`: positions unstaked before
+ * the 2s switch preserve their remaining wall-clock cooldown. They were
+ * created against the 6s-denominated cooldown (a third of the current
+ * constant); whatever portion of that old cooldown remains at the switch is
+ * re-denominated ×3 into 2s blocks.
+ */
+export const getCooldownExpiresAt = (
+  unstakedAt: number,
+  cooldownPeriod: number,
+  twoSecBlocksSince: number | null,
+): number => {
+  if (
+    twoSecBlocksSince === null ||
+    twoSecBlocksSince >= U32_MAX ||
+    unstakedAt >= twoSecBlocksSince
+  ) {
+    return unstakedAt + cooldownPeriod
+  }
+
+  const oldExpiresAt = unstakedAt + Math.floor(cooldownPeriod / 3)
+  if (oldExpiresAt <= twoSecBlocksSince) return oldExpiresAt
+
+  return twoSecBlocksSince + (oldExpiresAt - twoSecBlocksSince) * 3
+}
+
 export const gigaQueryKey = (address: string) => ["gigaStake", address]
 
 export const gigaUnstakePositionsQuery = (
