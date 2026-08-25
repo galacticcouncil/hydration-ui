@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useBestNumber } from "@/api/chain"
+import { useBestNumber, useBlockTime } from "@/api/chain"
 import { useCrossChainDepositLimit } from "@/api/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
@@ -12,7 +12,6 @@ import {
   getDepositLimitLockUntilDate,
   XcmLimitAlertKey,
 } from "@/modules/xcm/transfer/utils/limits"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { toBigInt, toDecimal } from "@/utils/formatting"
 
 export const useCBreakerInboundLimitAlerts = (
@@ -20,7 +19,7 @@ export const useCBreakerInboundLimitAlerts = (
 ): XcmAlert[] => {
   const { t } = useTranslation(["xcm", "common"])
 
-  const { slotDurationMs } = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
   const { data: bestNumber } = useBestNumber()
 
   const [destChain, destAsset, destAmount] = form.watch([
@@ -34,7 +33,13 @@ export const useCBreakerInboundLimitAlerts = (
   const isDeposit = destChain?.key === HYDRATION_CHAIN_KEY
 
   return useMemo<XcmAlert[]>(() => {
-    if (!data || !bestNumber || !isDeposit || !Big(destAmount || "0").gt(0))
+    if (
+      !data ||
+      !bestNumber ||
+      !isDeposit ||
+      !blockTimeMs ||
+      !Big(destAmount || "0").gt(0)
+    )
       return []
 
     const currentBlock = bestNumber.parachainBlockNumber
@@ -43,7 +48,7 @@ export const useCBreakerInboundLimitAlerts = (
       data,
       currentBlock,
       currentTimestamp,
-      slotDurationMs,
+      blockTimeMs,
     )
 
     if (lockedUntil && data.locked) {
@@ -80,5 +85,5 @@ export const useCBreakerInboundLimitAlerts = (
     }
 
     return []
-  }, [bestNumber, data, destAmount, isDeposit, slotDurationMs, t])
+  }, [bestNumber, data, destAmount, isDeposit, blockTimeMs, t])
 }

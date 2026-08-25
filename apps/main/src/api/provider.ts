@@ -19,7 +19,6 @@ import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
-import { blockTimeQuery } from "@/api/chain"
 import { ENV } from "@/config/env"
 import {
   createProvider,
@@ -46,7 +45,6 @@ export type TProviderData = {
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
-  slotDurationMs: number
   metadata: AssetMetadataFactory
   dryRunErrorDecoder: DryRunErrorDecoder
 }
@@ -142,7 +140,6 @@ const getProviderData = async (
     evm,
     sdk,
     rpcUrlList,
-    slotDurationMs: await queryClient.ensureQueryData(blockTimeQuery(sdk)),
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,

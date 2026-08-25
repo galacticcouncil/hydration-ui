@@ -36,7 +36,6 @@ export type TProviderContext = TProviderData & {
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
-  slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiNext: {} as TProviderData["papiNext"],
   sdk: {} as TProviderData["sdk"],

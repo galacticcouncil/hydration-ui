@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
 
+import { blockTimeQuery } from "@/api/chain"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -32,11 +33,14 @@ export const useSubmitTwap = () => {
       const { sellAsset } = values
       const sellDecimals = sellAsset?.decimals ?? 0
       const sellSymbol = sellAsset?.symbol ?? ""
+      const blockTimeMs = await rpc.queryClient.ensureQueryData(
+        blockTimeQuery(sdk),
+      )
 
       const params = {
         noOfTrades: twap.tradeCount,
         timeframe: formatDistanceToNow(
-          Date.now() + twap.tradeCount * twap.tradePeriod * rpc.slotDurationMs,
+          Date.now() + twap.tradeCount * twap.tradePeriod * blockTimeMs,
           { includeSeconds: true },
         ),
         in: t("currency", {

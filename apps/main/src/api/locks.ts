@@ -2,7 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, blockTimeQuery } from "@/api/chain"
 import {
   accountUnlockClassesQuery,
   openGovUnlockedTokensQuery,
@@ -58,8 +58,11 @@ export const useUnlockableNativeTokens = () => {
             : 0n
 
         votesToRemove = unlockedTokens.votesToRemove
+        const blockTimeMs = await rpc.queryClient.ensureQueryData(
+          blockTimeQuery(rpc.sdk),
+        )
         lockedReferendaMilliseconds =
-          (unlockedTokens.maxLockedBlock ?? 0) * rpc.slotDurationMs
+          (unlockedTokens.maxLockedBlock ?? 0) * blockTimeMs
 
         classIds = await rpc.queryClient.ensureQueryData(
           accountUnlockClassesQuery(rpc, address),

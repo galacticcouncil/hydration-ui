@@ -13,7 +13,7 @@ import { millisecondsInDay, millisecondsInMinute } from "date-fns/constants"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, useBlockTime } from "@/api/chain"
 import {
   getCooldownExpiresAt,
   gigaStakeConstantsQuery,
@@ -53,6 +53,7 @@ export const PendingPosition: FC<PendingPositionProps> = ({
     useState(false)
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
   const { data: best } = useQuery({
     ...bestNumberQuery(rpc),
     queryKey: ["gigaStake", "pendingPositionBestNumber", rpc.endpoint],
@@ -90,7 +91,7 @@ export const PendingPosition: FC<PendingPositionProps> = ({
       return { claimableNow: true, label: "" }
     }
 
-    const msRemaining = blocksRemaining * rpc.slotDurationMs
+    const msRemaining = blocksRemaining * (blockTimeMs ?? 0)
     const unlockDate = new Date(Date.now() + msRemaining)
 
     return {
@@ -103,7 +104,7 @@ export const PendingPosition: FC<PendingPositionProps> = ({
     }
   }, [
     currentBlock,
-    rpc.slotDurationMs,
+    blockTimeMs,
     t,
     cooldownPeriod,
     voteAtBlock,

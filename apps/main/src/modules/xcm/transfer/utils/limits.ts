@@ -81,12 +81,12 @@ export type DepositLimitPeriodWindow =
 export const getDepositLimitPeriodWindow = (
   data: AssetDepositLimit,
   currentBlock: number,
-  slotDurationMs: number,
+  blockTimeMs: number,
 ): DepositLimitPeriodWindow | undefined => {
   if (data.locked && data.lockedUntilBlock) {
     return {
       type: "lockdown",
-      durationMs: (data.lockedUntilBlock - currentBlock) * slotDurationMs,
+      durationMs: (data.lockedUntilBlock - currentBlock) * blockTimeMs,
     }
   }
   if (!data.periodExpired && data.lastResetBlock) {
@@ -94,7 +94,7 @@ export const getDepositLimitPeriodWindow = (
       data.lastResetBlock + ASSET_LOCKDOWN_PERIOD_BLOCKS - currentBlock
     return {
       type: "reset",
-      durationMs: blocksLeft * slotDurationMs,
+      durationMs: blocksLeft * blockTimeMs,
     }
   }
   if (data.periodExpired) {
@@ -107,19 +107,19 @@ export const getDepositLimitLockUntilDate = (
   data: AssetDepositLimit,
   currentBlock: number,
   currentTimestamp: number,
-  slotDurationMs: number,
+  blockTimeMs: number,
 ): Date | undefined => {
   const periodWindow = getDepositLimitPeriodWindow(
     data,
     currentBlock,
-    slotDurationMs,
+    blockTimeMs,
   )
   if (!periodWindow) return undefined
 
   // Expired period: exceeding headroom starts a fresh lockdown from this mint.
   if (periodWindow.type === "expired") {
     return new Date(
-      currentTimestamp + ASSET_LOCKDOWN_PERIOD_BLOCKS * slotDurationMs,
+      currentTimestamp + ASSET_LOCKDOWN_PERIOD_BLOCKS * blockTimeMs,
     )
   }
 

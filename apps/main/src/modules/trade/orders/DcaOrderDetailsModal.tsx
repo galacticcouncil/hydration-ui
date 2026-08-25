@@ -11,6 +11,7 @@ import {
   ModalContentDivider,
   ModalHeader,
   Separator,
+  Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
 import { neckwork } from "@galacticcouncil/utils"
@@ -18,6 +19,7 @@ import Big from "big.js"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useBlockTime } from "@/api/chain"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import {
@@ -27,7 +29,6 @@ import {
 } from "@/modules/trade/orders/lib/dcaProgress"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
-import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly details: OrderData
@@ -40,7 +41,7 @@ export const DcaOrderDetailsModal = ({
   onTerminate,
   pastExecutions,
 }: Props) => {
-  const rpc = useRpcProvider()
+  const { data: blockTimeMs, isLoading: isBlockTimeLoading } = useBlockTime()
   const { t } = useTranslation(["common", "trade"])
   const fundingBalance = useDcaFundingBalance(
     details.from,
@@ -48,7 +49,6 @@ export const DcaOrderDetailsModal = ({
   )
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
-  const parachainBlockTime = rpc.slotDurationMs
 
   const spentOrBudgetLabel = details.isOpenBudget
     ? t("spent")
@@ -134,14 +134,18 @@ export const DcaOrderDetailsModal = ({
         </Grid>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
-          {blocksPeriod && parachainBlockTime && (
+          {blocksPeriod && (
             <>
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
-                value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: blocksPeriod.times(parachainBlockTime).toNumber(),
-                  count: blocksPeriod.toNumber(),
-                })}
+                value={
+                  blockTimeMs !== undefined
+                    ? t("trade:trade.orders.dcaDetail.schedulePeriod", {
+                        timeframe: blocksPeriod.times(blockTimeMs).toNumber(),
+                        count: blocksPeriod.toNumber(),
+                      })
+                    : "-"
+                }
               />
               <Separator orientation="vertical" />
             </>

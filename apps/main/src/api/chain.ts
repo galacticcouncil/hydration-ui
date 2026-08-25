@@ -68,16 +68,6 @@ export const useInvalidateOnBlock = () => {
   })
 }
 
-export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
-  const provider = useRpcProvider()
-  const { data } = useQuery(bestNumberQuery(provider))
-
-  const timestamp = data?.timestamp || 0
-  const periodMs = provider.slotDurationMs * blocksFromNow
-
-  return timestamp + periodMs
-}
-
 export const useBlockTimestamp = () =>
   usePapiValue("Timestamp.Now", [{ at: "best" }])
 
@@ -123,5 +113,31 @@ export const blockTimeQuery = (sdk: SdkCtx) => {
     enabled: Object.keys(sdk).length > 0,
     queryFn: () => sdk.client.params.getBlockTime(),
     staleTime: millisecondsInHour,
+    gcTime: millisecondsInHour,
+    refetchOnWindowFocus: false,
   })
+}
+
+export const useBlockTime = () => {
+  const { sdk } = useRpcProvider()
+  return useQuery(blockTimeQuery(sdk))
+}
+
+export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
+  const provider = useRpcProvider()
+  const { data } = useQuery(bestNumberQuery(provider))
+  const { data: blockTimeMs } = useBlockTime()
+
+  const timestamp = data?.timestamp
+  if (
+    !timestamp ||
+    !blockTimeMs ||
+    !Number.isFinite(timestamp) ||
+    !Number.isFinite(blockTimeMs) ||
+    !Number.isFinite(blocksFromNow)
+  ) {
+    return null
+  }
+
+  return timestamp + blockTimeMs * blocksFromNow
 }

@@ -14,6 +14,7 @@ import {
   useNativeTokenLocks,
 } from "@/api/balances"
 import { useAccountBalances } from "@/api/balances"
+import { useBlockTime } from "@/api/chain"
 import {
   Conviction,
   getConvictionBlocks,
@@ -58,6 +59,7 @@ export const useVoteModal = (
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { data: blockTimeMs = 0 } = useBlockTime()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getBalance } = useAccountBalances()
   const { data: locks } = useNativeTokenLocks()
@@ -228,7 +230,7 @@ export const useVoteModal = (
   const { data: voteLockingPeriod = 0 } = useQuery(voteLockingPeriodQuery(rpc))
   const lockedBlocks = getConvictionBlocks(voteLockingPeriod, multiplier) ?? 0
   const lockedDays = Math.round(
-    (lockedBlocks * rpc.slotDurationMs) / millisecondsInDay,
+    (lockedBlocks * blockTimeMs) / millisecondsInDay,
   )
   const totalVotes = (() => {
     if (voteType === "split") {

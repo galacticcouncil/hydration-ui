@@ -6,7 +6,7 @@ import { secondsInWeek, secondsInYear } from "date-fns/constants"
 import { useMemo } from "react"
 
 import { HDXStakingBalanceQuery } from "@/api/balances"
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, useBlockTime } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
 import { useIndexerClient } from "@/api/provider"
 import { potBalanceQuery } from "@/api/staking"
@@ -58,13 +58,15 @@ export const useStakingSupply = () => {
 }
 
 // min. amount of block for how long we want to calculate APR from = one week
-const getLengthOfStaking = (slotDurationMs: number) =>
-  secondsToMilliseconds(secondsInWeek) / slotDurationMs
-const getBlocksPerYear = (slotDurationMs: number) =>
-  secondsToMilliseconds(secondsInYear) / slotDurationMs
+const getLengthOfStaking = (blockTimeMs: number) =>
+  secondsToMilliseconds(secondsInWeek) / blockTimeMs
+const getBlocksPerYear = (blockTimeMs: number) =>
+  secondsToMilliseconds(secondsInYear) / blockTimeMs
 
 export const useStakingAPR = (positionId: bigint) => {
   const rpc = useRpcProvider()
+  const { data: blockTimeMs, isLoading: blockTimeLoading } =
+    useBlockTime()
 
   const { data: bestNumber, isLoading: bestNumberLoading } = useQuery(
     bestNumberQuery(rpc),
@@ -97,7 +99,8 @@ export const useStakingAPR = (positionId: bigint) => {
     accumulatedRpsUpdatedLoading ||
     initializedEventsLoading ||
     stakingConstsLoading ||
-    potBalanceLoading
+    potBalanceLoading ||
+    blockTimeLoading
 
   const stakingAPR = useMemo(() => {
     if (
@@ -106,12 +109,13 @@ export const useStakingAPR = (positionId: bigint) => {
       !bestNumber ||
       !accumulatedRpsUpdated ||
       !initializedEvents ||
-      !potBalance
+      !potBalance ||
+      !blockTimeMs
     ) {
       return undefined
     }
 
-    const blocksPerYear = getBlocksPerYear(rpc.slotDurationMs)
+    const blocksPerYear = getBlocksPerYear(blockTimeMs)
 
     const stakingInitialized = initializedEvents.length
       ? initializedEvents[0]
@@ -127,7 +131,7 @@ export const useStakingAPR = (positionId: bigint) => {
     const pendingRewards = Big(potBalance.transferable.toString()).minus(
       pot_reserved_balance.toString(),
     )
-    const lengthOfStaking = getLengthOfStaking(rpc.slotDurationMs)
+    const lengthOfStaking = getLengthOfStaking(blockTimeMs)
     const {
       filteredAccumulatedRpsUpdatedBefore,
       filteredAccumulatedRpsUpdatedAfter,
@@ -257,7 +261,7 @@ export const useStakingAPR = (positionId: bigint) => {
     initializedEvents,
     positionId,
     potBalance,
-    rpc.slotDurationMs,
+    blockTimeMs,
     stakeValue,
   ])
 
