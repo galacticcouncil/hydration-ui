@@ -65,8 +65,7 @@ const getBlocksPerYear = (blockTimeMs: number) =>
 
 export const useStakingAPR = (positionId: bigint) => {
   const rpc = useRpcProvider()
-  const { data: blockTimeMs, isLoading: blockTimeLoading } =
-    useBlockTime()
+  const { data: blockTimeMs, isLoading: blockTimeLoading } = useBlockTime()
 
   const { data: bestNumber, isLoading: bestNumberLoading } = useQuery(
     bestNumberQuery(rpc),

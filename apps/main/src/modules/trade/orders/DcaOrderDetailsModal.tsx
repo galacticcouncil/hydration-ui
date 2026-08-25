@@ -11,7 +11,6 @@ import {
   ModalContentDivider,
   ModalHeader,
   Separator,
-  Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
 import { neckwork } from "@galacticcouncil/utils"
@@ -41,7 +40,7 @@ export const DcaOrderDetailsModal = ({
   onTerminate,
   pastExecutions,
 }: Props) => {
-  const { data: blockTimeMs, isLoading: isBlockTimeLoading } = useBlockTime()
+  const { data: blockTimeMs } = useBlockTime()
   const { t } = useTranslation(["common", "trade"])
   const fundingBalance = useDcaFundingBalance(
     details.from,
