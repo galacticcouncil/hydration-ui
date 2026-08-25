@@ -112,8 +112,6 @@ export const useWalletBalancesSectionData = () => {
 
   return {
     assets: assetsTotal.toString(),
-    // aggregates stay behind a loader until nothing can move — a total that
-    // counts up as prices arrive reads as a wrong number, not a loading one
     isAssetsLoading: !isBalanceSettled,
     liquidity: liquidityTotal.toString(),
     farms: farmingTotal.toString(),

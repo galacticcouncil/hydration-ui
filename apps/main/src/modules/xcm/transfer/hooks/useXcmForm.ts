@@ -33,9 +33,6 @@ const resolveXcmFormDefaults = ({
     ...parsedQueryParams,
   }
 
-  // Source-only deep links leave dest unset so XcmProvider's best-route
-  // effect can pick Hydration (or the next priority dest) for this src pair.
-  // Keeping wallet defaults would pin a stale destAsset from the previous src.
   const sourceOnlyPreset =
     !!parsedQueryParams?.srcChain &&
     parsedQueryParams.destChain === undefined &&

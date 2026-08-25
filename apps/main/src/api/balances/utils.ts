@@ -224,10 +224,6 @@ export const mapHydrationBalancesToAssetAmounts = (
     ]
   })
 
-/**
- * One-shot read of the same filtered balance stream the live account
- * subscription uses — the first emission is the full set.
- */
 export const fetchHydrationRegistryAssetAmounts = async ({
   address,
   sdk,

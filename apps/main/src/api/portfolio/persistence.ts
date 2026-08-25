@@ -22,17 +22,6 @@ import {
 
 const PORTFOLIO_BALANCES_KEY = ["portfolio", "balances"] as const
 
-/**
- * Persistence is an allowlist on purpose, never a denylist.
- *
- * The same query cache holds values that cannot survive a structured clone —
- * `["xcm", "context"]` is a live `ConfigService` holding chain connections, and
- * the cross-chain balance query resolves to a `Map`. Opting queries in one by
- * one means a query added elsewhere later is never persisted by accident.
- *
- * `success` only: restoring an error state would paint a failure from disk
- * before the page has even tried to fetch.
- */
 export const shouldDehydratePortfolioQuery = (query: Query): boolean =>
   query.state.status === "success" &&
   PORTFOLIO_BALANCES_KEY.every((part, i) => query.queryKey[i] === part)
@@ -45,11 +34,6 @@ type PersistedAssetAmount = {
   symbol: string
 }
 
-/**
- * `AssetAmount`'s complete own state — `amount` stays a bigint throughout,
- * because IndexedDB's structured clone handles BigInt natively. Any JSON step
- * here would be a bug, not a convenience.
- */
 const isPersistedAssetAmount = (
   value: unknown,
 ): value is PersistedAssetAmount => {
@@ -83,16 +67,6 @@ const toAssetAmounts = (data: unknown): AssetAmount[] => {
   })
 }
 
-/**
- * Structured clone preserves fields but drops prototypes, so every restored
- * balance comes back as a plain object. The read path calls `AssetAmount`
- * methods (`toDecimal`, `toBig`, …), so each one has to be reconstructed into a
- * real instance before it reaches the cache.
- *
- * Returns undefined when the persisted shape no longer matches — e.g. after an
- * xc-core bump. Dropping the cache costs one cold fetch; throwing would break
- * app start.
- */
 export const reconstructPersistedClient = (
   client: PersistedClient,
 ): PersistedClient | undefined => {
@@ -119,13 +93,6 @@ export const reconstructPersistedClient = (
 const STORE = IndexedDBStores.PortfolioBalances
 const KEY = "balances"
 
-/**
- * Dumb I/O over the app's existing IndexedDB helpers — every decision about
- * what is written and how it comes back lives in the two pure functions above.
- *
- * The `PersistedClient` is stored as a structured clone, never as JSON: the
- * balance amounts are bigints, which `JSON.stringify` throws on.
- */
 export const portfolioPersister: Persister = {
   persistClient: async (client) => {
     const db = await IndexedDBManager.getInstance()
@@ -166,19 +133,6 @@ export const portfolioPersister: Persister = {
   },
 }
 
-/**
- * Restores the persisted portfolio cache, then keeps writing it back.
- *
- * Fire-and-forget by design: nothing renders behind this. Gating boot on a
- * disk read would slow every route down to speed one page up, and losing the
- * race costs only the speedup — the portfolio's first fetch sits behind the
- * `useSuspenseQuery` in `useCrossChainConfig`, and query-core's hydrate
- * overwrites cached data only when the persisted copy is strictly newer.
- *
- * Subscribe is chained after restore, not started alongside it: the subscriber
- * rewrites the whole blob on any cache event, so an event arriving mid-restore
- * would erase the very cache being read.
- */
 export const setupPortfolioPersistence = (queryClient: QueryClient) => {
   persistQueryClientRestore({
     queryClient,

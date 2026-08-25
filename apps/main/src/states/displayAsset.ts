@@ -71,12 +71,10 @@ export const useDisplaySpotPriceStore = create<Store>()(
       },
     }),
     {
-      // prices are denominated in the display asset — a different one must not
-      // read the previous denomination back off disk
+      // prices are denominated in the display asset, so a different one
+      // must not read the previous denomination back off disk
       name: `prices-${ENV.VITE_DISPLAY_ASSET_ID}`,
       version: 1,
-      // never persist a null: it reads back as "fetched, no price" with no
-      // loading state, so a single failed fetch would replay until it expires
       partialize: ({ assets, updatedAt }) => ({
         assets: pickBy(assets, isNonNullish),
         updatedAt,

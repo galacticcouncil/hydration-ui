@@ -1,7 +1,6 @@
 import {
   formatSourceChainAddress,
   HYDRATION_CHAIN_KEY,
-  MultichainBalanceService,
   useStableArray,
 } from "@galacticcouncil/utils"
 import { AssetAmount } from "@galacticcouncil/xc-core"
@@ -19,28 +18,16 @@ import {
   useAccountBalanceFilter,
 } from "@/api/balances"
 import { portfolioBalanceQueryKey } from "@/api/portfolio/queryKeys"
-import { useCrossChainConfigService, useHydrationAssetId } from "@/api/xcm"
+import {
+  useCrossChainConfigService,
+  useCrossChainWallet,
+  useHydrationAssetId,
+} from "@/api/xcm"
 import { PORTFOLIO_CACHE_MAX_AGE, PORTFOLIO_CHAINS } from "@/config/portfolio"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
-
-export const useMultichainService = (
-  chains: readonly string[] = PORTFOLIO_CHAINS,
-) => {
-  const configService = useCrossChainConfigService()
-  const stableChains = useStableArray([...chains])
-
-  return useMemo(
-    () =>
-      new MultichainBalanceService({
-        configService,
-        chains: stableChains,
-      }),
-    [configService, stableChains],
-  )
-}
 
 export type MultichainValuedBalance = {
   balance: AssetAmount
@@ -58,16 +45,16 @@ type MultichainBalanceEntry = {
 
 export const useMultichainPortfolio = (
   addresses: string[],
-  chains: readonly string[] = PORTFOLIO_CHAINS,
+  chains: string[] = PORTFOLIO_CHAINS,
 ) => {
-  const stableChains = useStableArray([...chains])
-  const service = useMultichainService(stableChains)
+  const wallet = useCrossChainWallet()
   const configService = useCrossChainConfigService()
   const queryClient = useQueryClient()
   const { sdk, isApiLoaded } = useRpcProvider()
   const { getAsset, isToken, isErc20 } = useAssets()
-  const stableAddresses = useStableArray(addresses)
   const balanceFilter = useAccountBalanceFilter()
+  const stableAddresses = useStableArray(addresses)
+  const stableChains = useStableArray(chains)
 
   const fetchHydrationBalances = useCallback(
     (address: string) => {
@@ -95,21 +82,30 @@ export const useMultichainPortfolio = (
   const pairs = useMemo(
     () =>
       stableAddresses.flatMap((address) =>
-        service
-          .getEligibleChains(address)
+        wallet
+          .getChainsForAddress(address, stableChains)
           .map((chain) => ({ address, chainKey: chain.key })),
       ),
-    [service, stableAddresses],
+    [wallet, stableAddresses, stableChains],
   )
 
   const queries = useMemo(
     () =>
       pairs.map(({ address, chainKey }) => ({
         queryKey: portfolioBalanceQueryKey(address, chainKey),
-        queryFn: () =>
-          chainKey === HYDRATION_CHAIN_KEY
-            ? fetchHydrationBalances(address)
-            : service.getChainBalances(address, chainKey),
+        queryFn: () => {
+          if (chainKey === HYDRATION_CHAIN_KEY) {
+            return fetchHydrationBalances(address)
+          }
+
+          const chain = configService.chains.get(chainKey)
+          if (!chain) throw new Error(`Chain ${chainKey} is not configured`)
+
+          return wallet.getBalances(
+            formatSourceChainAddress(address, chain),
+            chain,
+          )
+        },
         enabled:
           chainKey !== HYDRATION_CHAIN_KEY ||
           (isApiLoaded && !!Object.keys(sdk).length && !!balanceFilter),
@@ -117,7 +113,15 @@ export const useMultichainPortfolio = (
         gcTime: PORTFOLIO_CACHE_MAX_AGE,
         refetchOnWindowFocus: false,
       })),
-    [pairs, fetchHydrationBalances, service, isApiLoaded, sdk, balanceFilter],
+    [
+      pairs,
+      fetchHydrationBalances,
+      wallet,
+      configService,
+      isApiLoaded,
+      sdk,
+      balanceFilter,
+    ],
   )
 
   const combine = useCallback(

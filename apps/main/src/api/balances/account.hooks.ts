@@ -135,10 +135,6 @@ export const useAccountBalancesWithPriceByAssetType = (
     const bondBalances: Array<{ balance: Balance; meta: TBond }> = []
     const priceIds: Array<string> = []
 
-    // Shape whatever balances exist, loading or not. Skipping them while
-    // `isBalanceLoading` also left `priceIds` empty — which meant the price
-    // subscription below only started *after* balances landed instead of
-    // alongside them.
     for (const balance of Object.values(balances)) {
       const asset = getAsset(balance.assetId)
       if (!asset) continue
@@ -217,9 +213,6 @@ export const useAccountBalancesWithPriceByAssetType = (
     [getAssetPrice],
   )
 
-  // Rows render as soon as balances exist; `price` stays undefined until the
-  // spot price subscription answers, so fiat values fill in afterwards and any
-  // total derived from them climbs to its final value.
   const data = useMemo(
     () => ({
       tokenBalances: mapBalancesWithPrice(tokenBalances),
@@ -247,11 +240,7 @@ export const useAccountBalancesWithPriceByAssetType = (
 
   return {
     data,
-    // loading means "nothing to show", not "not final" — the money paths gate
-    // on `isBalanceLoading` directly
     isLoading: (isBalanceLoading || isAssetPriceLoading) && !hasBalances,
-    // every balance and every price is in: totals derived from this won't move
-    // again. Aggregates should wait for it rather than count up in public.
     isSettled: !isBalanceLoading && !isAssetPriceLoading,
   }
 }

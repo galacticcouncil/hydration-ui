@@ -35,6 +35,7 @@ export const PortfolioOverviewSkeleton = () => {
           name="Hydration"
           chainId={HYDRATION_PARACHAIN_ID}
           totalDisplay=""
+          replaceLogoWhenLoading={false}
           disabled
         />
         <Box p="m">

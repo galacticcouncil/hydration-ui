@@ -138,6 +138,7 @@ export const PortfolioOverview: FC<Props> = ({
                 name="Hydration"
                 chainId={HYDRATION_PARACHAIN_ID}
                 totalDisplay={t("common:currency", { value: netWorth })}
+                replaceLogoWhenLoading={false}
                 isLoading={
                   isAssetsLoading || isLiquidityLoading || isBorrowLoading
                 }

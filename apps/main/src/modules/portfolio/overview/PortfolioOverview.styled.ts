@@ -25,7 +25,7 @@ export const SPortfolioChainHeaderButton = styled.button<{
       background: ${theme.surfaces.containers.high.hover};
     }
 
-    svg {
+    [data-chevron] svg {
       transition: transform 0.15s ease;
     }
 
@@ -33,7 +33,7 @@ export const SPortfolioChainHeaderButton = styled.button<{
       border-bottom-color: transparent;
     }
 
-    &[data-state="open"] svg {
+    &[data-state="open"] [data-chevron] svg {
       transform: rotate(180deg);
     }
 
