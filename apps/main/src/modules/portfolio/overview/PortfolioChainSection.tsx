@@ -6,19 +6,24 @@ import {
   CollapsibleRoot,
   CollapsibleTrigger,
 } from "@galacticcouncil/ui/components"
-import { getChainAssetId, getChainId } from "@galacticcouncil/utils"
+import {
+  getChainAssetId,
+  getChainId,
+  hasRouteToHydration,
+} from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import Big from "big.js"
 import { FC, memo, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetType, TAssetData } from "@/api/assets"
 import { MultichainValuedBalance } from "@/api/portfolio"
+import { useCrossChainConfigService } from "@/api/xcm"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { MyAssetsTable } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable"
 import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import { myAssetsMobileSorter } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.utils"
 import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChainHeader"
+import { toSourceChainAssetData } from "@/modules/portfolio/overview/PortfolioChainSection.utils"
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -51,6 +56,7 @@ export const PortfolioChainSection: FC<Props> = memo(
     const { t } = useTranslation(["wallet", "common"])
     const { getAsset } = useAssets()
     const { metadata } = useRpcProvider()
+    const configService = useCrossChainConfigService()
     const [open, setOpen] = useState<boolean | null>(null)
 
     const data = useMemo(
@@ -68,29 +74,22 @@ export const PortfolioChainSection: FC<Props> = memo(
                 ) || undefined
               : undefined
 
-            const registryAsset = assetId ? getAsset(assetId) : undefined
-            const meta: TAssetData = registryAsset
-              ? {
-                  ...registryAsset,
-                  iconSrc: registryAsset.iconSrc || externalIconSrc,
-                  chainSrc: undefined,
-                }
-              : {
-                  id: `${chain.key}-${balance.key}`,
-                  existentialDeposit: "0",
-                  symbol: balance.symbol,
-                  decimals: balance.decimals,
-                  name: balance.originSymbol,
-                  isTradable: false,
-                  isSufficient: false,
-                  type: AssetType.Unknown as const,
-                  iconSrc: externalIconSrc,
-                }
+            const meta = toSourceChainAssetData(
+              chain.key,
+              balance,
+              assetId ? getAsset(assetId) : undefined,
+              externalIconSrc,
+            )
 
             return {
               ...meta,
               origin: chain,
               xcAssetKey: balance.key,
+              canDeposit: hasRouteToHydration(
+                balance.key,
+                chain,
+                configService,
+              ),
               total: amount,
               totalDisplay: displayValue ?? undefined,
               transferable: amount,
@@ -100,8 +99,10 @@ export const PortfolioChainSection: FC<Props> = memo(
           })
           .filter((asset) => Big(asset.total).gt(0))
           .sort(myAssetsMobileSorter),
-      [balances, chain, getAsset, metadata],
+      [balances, chain, configService, getAsset, metadata],
     )
+
+    const canDepositAny = data.some((asset) => asset.canDeposit)
 
     const hasAssets = data.length > 0
     const defaultOpen = isError || (!isLoading && hasAssets)
@@ -149,7 +150,7 @@ export const PortfolioChainSection: FC<Props> = memo(
               <SPortfolioTableWrapper>
                 <MyAssetsTable
                   isReadOnly
-                  showDepositAction={showDepositAction}
+                  showDepositAction={showDepositAction && canDepositAny}
                   data={data}
                   isLoading={isLoading}
                   searchPhrase={searchPhrase}

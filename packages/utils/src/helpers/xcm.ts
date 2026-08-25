@@ -155,6 +155,26 @@ function toHydrationRegistryId(
   return HYDRATION_REGISTRY_ID.test(id) ? id : null
 }
 
+export function hasRouteToHydration(
+  assetKey: string,
+  sourceChain: AnyChain,
+  configService: ConfigService,
+): boolean {
+  if (sourceChain.key === HYDRATION_CHAIN_KEY) return false
+
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return false
+
+  const asset =
+    configService.assets.get(assetKey) ?? sourceChain.getAsset(assetKey)
+  if (!asset) return false
+
+  return (
+    configService.getAssetRoutesOrEmpty(asset, sourceChain, hydrationChain)
+      .length > 0
+  )
+}
+
 export function resolveHydrationAssetId(
   asset: Asset,
   sourceChainKey: string,
@@ -181,12 +201,13 @@ export function resolveHydrationAssetId(
     hydrationChain,
   )
 
-  for (const route of routes) {
-    const dest = route.destination?.asset
-    if (!dest) continue
-    const id = toHydrationRegistryId(hydrationChain, dest)
-    if (id) return id
-  }
+  const sameKey = routes.find(
+    (route) => route.destination?.asset?.key === canonical.key,
+  )
+  const fallback = routes.find((route) => route.destination?.asset)
+  const dest = (sameKey ?? fallback)?.destination?.asset
 
-  return toHydrationRegistryId(hydrationChain, asset)
+  return dest
+    ? toHydrationRegistryId(hydrationChain, dest)
+    : toHydrationRegistryId(hydrationChain, asset)
 }

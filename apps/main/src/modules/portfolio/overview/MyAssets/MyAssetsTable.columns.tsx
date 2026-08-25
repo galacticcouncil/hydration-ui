@@ -18,7 +18,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
@@ -46,6 +45,7 @@ export enum MyAssetsTableColumn {
 export type MyAsset = TAssetData & {
   readonly origin: AnyChain | null
   readonly xcAssetKey?: string
+  readonly canDeposit?: boolean
   readonly total: string
   readonly totalDisplay: string | undefined
   readonly transferable: string
@@ -58,12 +58,7 @@ const DepositToHydrationAction: FC<{ readonly asset: MyAsset }> = ({
 }) => {
   const { t } = useTranslation("wallet")
 
-  if (
-    !asset.origin ||
-    !asset.xcAssetKey ||
-    asset.origin.key === HYDRATION_CHAIN_KEY
-  )
-    return null
+  if (!asset.canDeposit || !asset.origin || !asset.xcAssetKey) return null
 
   return (
     <TableRowAction asChild>
