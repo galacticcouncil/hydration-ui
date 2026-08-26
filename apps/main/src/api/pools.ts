@@ -1,5 +1,5 @@
 import { pool, SdkCtx } from "@galacticcouncil/sdk-next"
-import { aave } from "@galacticcouncil/sdk-next/pool"
+import { aave, uniswapv3 } from "@galacticcouncil/sdk-next/pool"
 import {
   type QueryClient,
   queryOptions,
@@ -17,6 +17,7 @@ export type PoolBase = Omit<pool.PoolBase, "tokens"> & {
 }
 export type PoolToken = pool.PoolToken
 export type PoolFee = pool.PoolFee
+export type V3PoolBase = uniswapv3.UniswapV3PoolBase
 
 export const PoolType = pool.PoolType
 
@@ -30,6 +31,7 @@ export const allPools = (sdk: SdkCtx) =>
       const xykPools: PoolBase[] = []
       const omnipoolTokens: OmniPoolToken[] = []
       const aavePools: aave.AavePool[] = []
+      const v3Pools: V3PoolBase[] = []
       let hub: PoolToken | undefined
 
       for (const pool of pools) {
@@ -58,6 +60,8 @@ export const allPools = (sdk: SdkCtx) =>
           }
         } else if (pool.type === PoolType.Aave) {
           aavePools.push(pool as aave.AavePool)
+        } else if (pool.type === PoolType.V3) {
+          v3Pools.push(pool as V3PoolBase)
         }
       }
 
@@ -67,6 +71,7 @@ export const allPools = (sdk: SdkCtx) =>
         hub: hub,
         xykPools,
         aavePools,
+        v3Pools,
         allPools: pools,
       }
     },
@@ -106,6 +111,25 @@ export const omnipoolTokensQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
     },
     staleTime: Infinity,
   })
+
+const v3PoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
+  queryOptions<V3PoolBase[]>({
+    queryKey: ["pools", "v3"],
+    queryFn: async () => {
+      const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
+
+      return v3Pools
+    },
+    staleTime: Infinity,
+  })
+
+/** Empty where `Parameters.UniswapV3Factory` is unset, since the venue disables itself */
+export const useV3Pools = () => {
+  const queryClient = useQueryClient()
+  const { sdk } = useRpcProvider()
+
+  return useQuery(v3PoolsQuery(sdk, queryClient))
+}
 
 export const xykPoolQuery = (
   sdk: SdkCtx,

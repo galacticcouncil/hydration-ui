@@ -60,17 +60,19 @@ export const AssetLabelXYK = ({
   iconIds,
   symbol,
   name,
+  badge,
   size,
 }: {
   iconIds: string[]
   symbol: string
   name?: string
+  badge?: ReactNode
   size?: AssetLabelProps["size"]
 }) => {
   return (
     <AssetLabelFullContainer>
       <AssetLogo id={iconIds} />
-      <AssetLabel symbol={symbol} name={name} size={size} />
+      <AssetLabel symbol={symbol} name={name} badge={badge} size={size} />
     </AssetLabelFullContainer>
   )
 }

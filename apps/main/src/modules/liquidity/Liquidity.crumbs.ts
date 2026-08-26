@@ -65,6 +65,8 @@ const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
       return i18n.t("liquidity:joinFarms")
     case "/liquidity/create":
       return i18n.t("liquidity:createPool")
+    case "/liquidity/vault/$address":
+      return i18n.t("liquidity:section.vaults")
     default:
       return "N/A"
   }

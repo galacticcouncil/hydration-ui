@@ -5,6 +5,7 @@ import { AllPools } from "./AllPools"
 import { Isolated } from "./Isolated"
 import { MyLiquidity } from "./MyLiquidity"
 import { Omnipool } from "./Omnipool"
+import { Vaults } from "./Vaults"
 
 export const PoolsHeader = () => {
   const { myLiquidity, type } = useSearch({
@@ -22,6 +23,8 @@ export const PoolsHeader = () => {
         <MyLiquidity />
       ) : type === "all" ? (
         <AllPools />
+      ) : type === "vaults" ? (
+        <Vaults />
       ) : isIsolated ? (
         <Isolated />
       ) : (

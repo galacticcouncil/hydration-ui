@@ -34,6 +34,36 @@ export function getToken(token: ThemeToken | ThemeToken[]) {
     Array.isArray(token) ? token.map((t) => get(theme, t)) : get(theme, token)
 }
 
+/**
+ * Brand color of an asset, falling back to a neutral when the asset has no
+ * generated color. Composite assets (aTokens, pool shares) resolve through
+ * `useAssetColor` in the app, which knows their underlying assets.
+ */
+export const getAssetColor =
+  (id: string | number) =>
+  (theme: ThemeUI): string =>
+    get(theme, `assets.${id}`, get(theme, "text.medium"))
+
+/**
+ * Even sRGB blend of any number of `#rrggbb` colors — the shape the generated
+ * asset palette is written in.
+ */
+export const mixColors = (colors: string[]): string | undefined => {
+  if (!colors.length) return undefined
+
+  const channel = (offset: number) =>
+    Math.round(
+      colors.reduce(
+        (sum, hex) => sum + parseInt(hex.slice(offset, offset + 2), 16),
+        0,
+      ) / colors.length,
+    )
+      .toString(16)
+      .padStart(2, "0")
+
+  return `#${channel(1)}${channel(3)}${channel(5)}`
+}
+
 export function createStyles<T extends SerializedStyles>(
   callback: (theme: EmotionTheme) => T,
 ) {

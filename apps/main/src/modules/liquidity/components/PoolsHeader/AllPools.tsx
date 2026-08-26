@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 
 import { neckworkClient, useSquidClient } from "@/api/provider"
 import { PoolsHeaderSeparator } from "@/modules/liquidity/components/PoolsHeader/PoolsHeaderSeparator"
+import { VaultsValueTile } from "@/modules/liquidity/components/PoolsHeader/Vaults"
 import { useXYKPools } from "@/states/liquidity"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
@@ -111,6 +112,7 @@ export const AllPools = () => {
         wrap
       />
       <PoolsHeaderSeparator />
+      <VaultsValueTile />
       <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency.compact", { value: totals.liquidity })}
