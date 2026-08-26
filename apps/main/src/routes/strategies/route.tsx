@@ -5,7 +5,7 @@ import { SubpageLayout } from "@/modules/layout/SubpageLayout"
 
 export const Route = createFileRoute("/strategies")({
   component: SubpageLayout,
-  staticData: { showSubNav: false },
+  staticData: { showSubNav: false, crumb: true },
   head: ({
     match: {
       context: { i18n },
