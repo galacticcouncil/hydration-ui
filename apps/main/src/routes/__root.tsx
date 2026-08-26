@@ -3,7 +3,7 @@ import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
 import { useAccountBalances } from "@/api/balances"
-import { useInvalidateOnBlock } from "@/api/chain"
+import { useInvalidateOnBlock, useReloadOnStaleBlocks } from "@/api/chain"
 import { useNeckworkSync } from "@/api/neckworkSync"
 import { neckworkClient, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
@@ -96,6 +96,7 @@ function RootComponent() {
 
 function ApiSubscriptions() {
   useInvalidateOnBlock()
+  useReloadOnStaleBlocks()
   useNeckworkSync()
   useAccountBalances()
   usePriceSubscriber()
