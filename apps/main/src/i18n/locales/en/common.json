@@ -299,6 +299,7 @@
   "percent.apy": "{{ value, percent }} APY",
   "percent.apr": "{{ value, percent }} APR",
   "percent.range": "{{ from, percent }} - {{ to, percent }}",
+  "number.range": "{{ from, number }} – {{ to, number }}",
   "currency": "{{prefix, default('')}}{{ value, currency }}{{suffix, default('')}}",
   "number.compact": "{{ value, number(notation: 'compact'; maximumFractionDigits: 2) }}",
   "currency.compact": "{{ value, currency(notation: 'compact'; maximumFractionDigits: 2) }}",

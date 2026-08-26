@@ -15,7 +15,10 @@ import { useTranslation } from "react-i18next"
 
 import { TradeRouteAsset } from "@/modules/trade/swap/components/TradeRoutes/TradeRouteAsset"
 import { TradeRouteFee } from "@/modules/trade/swap/components/TradeRoutes/TradeRouteFee"
-import { TradeRoute } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes.utils"
+import {
+  formatPoolTypes,
+  TradeRoute,
+} from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes.utils"
 
 type Props = {
   readonly totalFeesDisplay: string
@@ -75,11 +78,22 @@ export const TradeRoutesModalContent: FC<Props> = ({
                 assetSymbol={route.assetIn.symbol}
                 amount={route.amountIn}
               />
-              <Icon
-                size="m"
-                component={ArrowRightLong}
-                color={getToken("icons.onContainer")}
-              />
+              <Flex direction="column" align="center" gap="xs">
+                <Icon
+                  size="m"
+                  component={ArrowRightLong}
+                  color={getToken("icons.onContainer")}
+                />
+                <Text
+                  fw={500}
+                  fs="p6"
+                  lh={1.2}
+                  color={getToken("text.low")}
+                  whiteSpace="nowrap"
+                >
+                  {formatPoolTypes(route.pools)}
+                </Text>
+              </Flex>
               <TradeRouteAsset
                 assetId={route.assetOut.id}
                 assetSymbol={route.assetOut.symbol}

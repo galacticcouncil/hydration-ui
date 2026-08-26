@@ -16,12 +16,13 @@
   },
   "resolutions": {
     "polkadot-api": "^2.1.7",
+    "typescript": "5.7.3",
     "strip-ansi": "6.0.1"
   },
   "dependencies": {
     "@galacticcouncil/common": "^1.2.0",
     "@galacticcouncil/descriptors": "^2.7.0",
-    "@galacticcouncil/sdk-next": "^2.1.0",
+    "@galacticcouncil/sdk-next": "2.2.0-pr333-77f5552",
     "@galacticcouncil/xc": "^2.1.0",
     "@galacticcouncil/xc-cfg": "^2.4.1",
     "@galacticcouncil/xc-core": "^2.3.0",

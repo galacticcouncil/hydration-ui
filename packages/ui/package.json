@@ -16,7 +16,8 @@
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "theme": "node ./style-dictionary/build.mjs"
+    "theme": "node ./style-dictionary/build.mjs",
+    "assets:colors": "node ./scripts/generate-asset-colors.mjs"
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.12.0",
@@ -74,6 +75,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "eslint-plugin-storybook": "^10.3.5",
     "http-server": "^14.1.1",
+    "sharp": "0.35.4",
     "storybook": "^10.3.5",
     "style-dictionary": "^4.1.4",
     "vite-plugin-wasm": "^3.6.0"
