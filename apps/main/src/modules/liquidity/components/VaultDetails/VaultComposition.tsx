@@ -8,14 +8,18 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
+import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
 export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation(["liquidity", "common"])
+  const [token0, token1] = vault.tokens
+  const { getAssetPrice } = useAssetsPrice([token0.id, token1.id])
 
   const human = (raw: bigint, decimals: number) =>
     t("common:number", {
@@ -24,8 +28,18 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
       thresholdMaximumFractionDigits: 2,
     })
 
+  const usd = (assetId: string, raw: bigint, decimals: number) => {
+    const price = getAssetPrice(assetId)
+    if (!price?.isValid) return undefined
+
+    return t("common:currency", {
+      value: Big(scaleHuman(raw.toString(), decimals))
+        .times(price.price)
+        .toString(),
+    })
+  }
+
   const state = vault.vault
-  const [token0, token1] = vault.tokens
 
   if (!state) return null
 
@@ -68,16 +82,18 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
                   {row.label}
                 </Text>
               </Flex>
-              <Grid columns={2} gap="l">
+              <Grid columns={2} gap="l" align="center">
                 <Amount
                   assetId={token0.id}
                   symbol={token0.symbol}
                   value={human(row.amount0, token0.decimals)}
+                  displayValue={usd(token0.id, row.amount0, token0.decimals)}
                 />
                 <Amount
                   assetId={token1.id}
                   symbol={token1.symbol}
                   value={human(row.amount1, token1.decimals)}
+                  displayValue={usd(token1.id, row.amount1, token1.decimals)}
                 />
               </Grid>
             </Flex>
@@ -108,18 +124,33 @@ const Amount = ({
   assetId,
   symbol,
   value,
+  displayValue,
 }: {
   assetId: string
   symbol: string
   value: string
+  displayValue?: string
 }) => (
   <Flex align="center" gap="s">
     <AssetLogo id={assetId} size="small" />
-    <Text fs="p5" fw={500}>
-      {value}
-    </Text>
-    <Text fs="p6" color={getToken("text.low")}>
-      {symbol}
-    </Text>
+    <Flex direction="column" justify="center">
+      <Flex align="center" gap="s">
+        <Text fs="p6" lh={1} fw={500} fontVariantNumeric="tabular-nums">
+          {value}
+        </Text>
+        <Text fs="p6" lh={1} fw={500} color={getToken("text.medium")}>
+          {symbol}
+        </Text>
+      </Flex>
+      {displayValue && (
+        <Text
+          fs="p7"
+          color={getToken("text.low")}
+          fontVariantNumeric="tabular-nums"
+        >
+          {displayValue}
+        </Text>
+      )}
+    </Flex>
   </Flex>
 )
