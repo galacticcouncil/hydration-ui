@@ -47,9 +47,15 @@ const Devtools = import.meta.env.DEV
     }))
   : lazy(async () => ({ default: () => null }))
 
+const RootPendingComponent = () => (
+  <AssetsProvider>
+    <LayoutSkeleton />
+  </AssetsProvider>
+)
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
-  pendingComponent: LayoutSkeleton,
+  pendingComponent: RootPendingComponent,
   head: ({
     match: {
       context: { i18n },
