@@ -148,7 +148,21 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
 
           <SExplainerSplitDivider />
 
-          <Flex direction="column" gap="m" sx={{ flex: 2, minWidth: 0 }}>
+          <Flex
+            key={scenario}
+            direction="column"
+            gap="m"
+            sx={{
+              flex: 2,
+              minWidth: 0,
+              animationName: getToken("animations.fadeIn"),
+              animationDuration: "650ms",
+              animationTimingFunction: "ease-in-out",
+              "@media (prefers-reduced-motion: reduce)": {
+                animation: "none",
+              },
+            }}
+          >
             <Flex direction="column" gap="s">
               <Text as="h3" fs="p2" fw={500} font="primary">
                 {selected.title}

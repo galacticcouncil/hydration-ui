@@ -34,6 +34,13 @@ const FOCUS_TRANSITION = {
   duration: 350,
   easing: "ease-out" as const,
 }
+const SCENARIO_TRANSITION = {
+  transition: {
+    type: "tween" as const,
+    duration: 650,
+    easing: "ease-in-out" as const,
+  },
+}
 
 const DEFAULT_HEIGHT: ResponsiveStyleValue<number> = [280, 420]
 
@@ -43,6 +50,7 @@ export const LiquidityDistribution = ({
   height,
 }: {
   vault: VaultTable
+  /** set to stage the price and managed band over the pool's real depth */
   scenario?: RangeScenario
   height?: ResponsiveStyleValue<number>
 }) => {
@@ -55,7 +63,7 @@ export const LiquidityDistribution = ({
   const { decimals: decimals1 } = token1
 
   const tickFontSize = themeProps.paragraphSize.p5
-  const bandFontSize = themeProps.paragraphSize.p6
+  /** puts a mark's label on the same baseline the axis gives its own tick labels */
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
 
   const colors = useMemo(
@@ -67,7 +75,6 @@ export const LiquidityDistribution = ({
         ? themeProps.controls.solid.base
         : getAssetColor(token1.id),
       spot: themeProps.buttons.primary.high.rest,
-      range: themeProps.text.medium,
       rangeFill: themeProps.controls.dim.active,
       rangeEdge: themeProps.controls.outline.active,
       surface: themeProps.surfaces.themeBasePalette.surfaceHigh,
@@ -91,41 +98,28 @@ export const LiquidityDistribution = ({
   const ceiling = top * 1.12
 
   const definition = useMemo(() => {
-    const band = (
-      lower: number,
-      upper: number,
-      label: string,
-      fillOpacity: number,
-      strokeOpacity: number,
-      height: number,
-    ) => [
-      decorative(
-        rect([{ lower, upper }], {
-          x1: "lower",
-          x2: "upper",
-          y1: () => 0,
-          y2: () => height,
-          fill: colors.rangeFill,
-          fillOpacity,
-          stroke: `color-mix(in srgb, ${colors.rangeEdge} ${
-            strokeOpacity * 100
-          }%, transparent)`,
-          strokeWidth: 1,
-          radius: 5,
-          inset: 0,
-        }),
-      ),
-      decorative(
-        text([{ tick: (lower + upper) / 2, label }], {
-          x: "tick",
-          y: () => ceiling,
-          text: "label",
-          fill: colors.range,
-          fontSize: bandFontSize,
-          dy: 8,
-        }),
-      ),
-    ]
+    const bandMarks = scenario
+      ? []
+      : bands.map(({ id, lower, upper, opacity, height }) =>
+          decorative(
+            rect([{ lower, upper }], {
+              id: `managed-band-${id}`,
+              x1: "lower",
+              x2: "upper",
+              y1: () => 0,
+              y2: () => top * height,
+              fill: colors.rangeFill,
+              fillOpacity: opacity,
+              // rect has no strokeOpacity channel, so it goes into the colour
+              stroke: `color-mix(in srgb, ${colors.rangeEdge} ${
+                opacity * 58
+              }%, transparent)`,
+              strokeWidth: 1,
+              radius: 5,
+              inset: 0,
+            }),
+          ),
+        )
 
     return defineChart({
       focusRing: false,
@@ -137,12 +131,13 @@ export const LiquidityDistribution = ({
           y1: () => 0,
           y2: "liquidity",
           color: "side",
-          key: (bar) => bar.from,
+          key: (bar) => bar.key,
           inset: 0,
           radius: BAR_RADIUS,
           stroke: colors.surface,
           strokeWidth: BAR_GAP,
           fillOpacity: 1,
+          motion: scenario ? SCENARIO_TRANSITION : undefined,
           // a range is drawn as several slices, so hovering one lights them all
           states: [
             {
@@ -157,33 +152,41 @@ export const LiquidityDistribution = ({
             },
           ],
         }),
-        ...bands.flatMap(({ lower, upper, opacity, height }) =>
-          band(lower, upper, "", opacity, opacity * 0.58, top * height),
-        ),
-        ruleX([spotTick], {
-          stroke: colors.spot,
-          strokeOpacity: 1,
-          strokeWidth: 2,
-        }),
-        dot([spotTick], {
-          x: (tick) => tick,
-          y: () => ceiling,
-          r: 4,
-          fill: colors.spot,
-        }),
-        // the axis cannot colour one tick on its own, so the spot price is
-        // drawn as a mark into the bottom margin instead
-        text([spotTick], {
-          x: (tick) => tick,
-          y: () => 0,
-          text: (tick) =>
-            t("common:number", {
-              value: priceAtTick(tick, token0.decimals, token1.decimals),
-            }),
-          fill: colors.spot,
-          fontSize: tickFontSize,
-          dy: tickBaseline,
-        }),
+        ...bandMarks,
+        ...(scenario
+          ? []
+          : [
+              ruleX([spotTick], {
+                id: "current-price-rule",
+                key: () => "current-price",
+                stroke: colors.spot,
+                strokeOpacity: 1,
+                strokeWidth: 2,
+              }),
+              dot([spotTick], {
+                id: "current-price-dot",
+                key: () => "current-price",
+                x: (tick) => tick,
+                y: () => ceiling,
+                r: 4,
+                fill: colors.spot,
+              }),
+              // the axis cannot colour one tick on its own, so the spot price
+              // is drawn as a mark into the bottom margin instead
+              text([spotTick], {
+                id: "current-price-label",
+                key: () => "current-price",
+                x: (tick) => tick,
+                y: () => 0,
+                text: (tick) =>
+                  t("common:number", {
+                    value: priceAtTick(tick, token0.decimals, token1.decimals),
+                  }),
+                fill: colors.spot,
+                fontSize: tickFontSize,
+                dy: tickBaseline,
+              }),
+            ]),
       ],
       x: {
         scale: scaleLinear().domain([lo, hi]),
@@ -221,7 +224,6 @@ export const LiquidityDistribution = ({
       },
     })
   }, [
-    bandFontSize,
     bands,
     bars,
     colors,
@@ -235,6 +237,7 @@ export const LiquidityDistribution = ({
     token1.decimals,
     ceiling,
     top,
+    scenario,
   ])
 
   if (!bars.length)
@@ -284,23 +287,109 @@ export const LiquidityDistribution = ({
         </Flex>
       )}
 
-      <Chart
-        css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
-        definition={definition}
-        ariaLabel={t(
-          scenario ? "vaults.explainer.chartLabel" : "vaults.chart.liquidity",
+      <Flex sx={{ position: "relative", minWidth: 0 }}>
+        <Chart
+          // the grid has no dasharray option, so it is styled through its class
+          css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
+          definition={definition}
+          ariaLabel={t(
+            scenario ? "vaults.explainer.chartLabel" : "vaults.chart.liquidity",
+          )}
+          height={resolvedHeight}
+          renderTooltipBody={({ points }) => {
+            // the staged price makes per-tick amounts meaningless
+            if (scenario) return null
+
+            const [first] = points.filter(isBarPoint)
+
+            if (!first) return null
+
+            return <TickStats bar={first.datum} vault={vault} />
+          }}
+        />
+
+        {scenario && (
+          <>
+            {bands.map((managedBand) => (
+              <Flex
+                key={managedBand.id}
+                aria-hidden
+                sx={{
+                  position: "absolute",
+                  zIndex: 1,
+                  top: 8,
+                  bottom: 25,
+                  left: `${((managedBand.lower - lo) / (hi - lo)) * 100}%`,
+                  width: `${
+                    ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
+                  }%`,
+                  border: `1px solid color-mix(in srgb, ${colors.rangeEdge} 28%, transparent)`,
+                  borderRadius: 5,
+                  bg: colors.rangeFill,
+                  opacity: managedBand.opacity,
+                  pointerEvents: "none",
+                  transitionProperty: "left, width, opacity",
+                  transitionDuration: "650ms",
+                  transitionTimingFunction: "ease-in-out",
+                }}
+              />
+            ))}
+
+            <Flex
+              aria-hidden
+              sx={{
+                position: "absolute",
+                zIndex: 2,
+                top: 8,
+                bottom: 25,
+                left: `${Math.min(
+                  100,
+                  Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
+                )}%`,
+                width: 2,
+                bg: colors.spot,
+                transform: "translateX(-1px)",
+                pointerEvents: "none",
+                transitionProperty: "left",
+                transitionDuration: "650ms",
+                transitionTimingFunction: "ease-in-out",
+              }}
+            >
+              <Flex
+                sx={{
+                  position: "absolute",
+                  top: -4,
+                  left: "50%",
+                  width: 8,
+                  height: 8,
+                  borderRadius: "full",
+                  bg: colors.spot,
+                  transform: "translateX(-50%)",
+                }}
+              />
+              <Text
+                fs="p6"
+                sx={{
+                  position: "absolute",
+                  bottom: -22,
+                  left: "50%",
+                  color: colors.spot,
+                  transform: "translateX(-50%)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t("common:number", {
+                  value: priceAtTick(
+                    spotTick,
+                    token0.decimals,
+                    token1.decimals,
+                  ),
+                })}
+              </Text>
+            </Flex>
+          </>
         )}
-        height={resolvedHeight}
-        renderTooltipBody={({ points }) => {
-          if (scenario) return null
-
-          const [first] = points.filter(isBarPoint)
-
-          if (!first) return null
-
-          return <TickStats bar={first.datum} vault={vault} />
-        }}
-      />
+      </Flex>
 
       <Flex gap="0.3rem 1.5rem" mt="s" wrap>
         <Legend

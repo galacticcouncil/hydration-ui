@@ -36,6 +36,8 @@ const lockedAmount = (
  * one the pointer lands on.
  */
 export type Bar = {
+  /** stable identity used to animate chart updates */
+  key: string
   from: number
   to: number
   liquidity: number
@@ -51,6 +53,7 @@ export type Bar = {
 
 /** A keeper range drawn behind the bars */
 type Band = {
+  id: "active" | "previous" | "base" | "limit"
   lower: number
   upper: number
   opacity: number
@@ -91,7 +94,7 @@ export const getLiquidityDistribution = ({
   state: VaultState | null
   decimals0: number
   decimals1: number
-  /** set to walk through the lifecycle: the depth is real, the price is staged */
+  /** set to stage the price and managed band over the pool's real depth */
   scenario?: RangeScenario
 }) => {
   const ticks = [...(pool.ticks ?? [])].sort((a, b) => a.index - b.index)
@@ -107,8 +110,8 @@ export const getLiquidityDistribution = ({
       : marketSpot + 3000
   const span = to - from
 
-  // The illustration keeps the pool's real depth and window, and only stages
-  // where the price sits and which band the keeper is holding.
+  // The lifecycle illustration keeps the pool's real depth and price window,
+  // then stages where the price and keeper-managed band sit inside it.
   const base =
     state && bandWidth > 0
       ? { lower: state.baseLower, upper: state.baseUpper }
@@ -127,30 +130,39 @@ export const getLiquidityDistribution = ({
     upper: Math.min(to - span * 0.02, outside + halfBand),
   }
 
-  // faded band first so the live one paints over it
-  const bands: ReadonlyArray<Band> =
-    scenario === "recentered"
-      ? [
-          { ...base, opacity: 0.25, height: 1.05 },
-          { ...recentered, opacity: 0.6, height: 1.05 },
-        ]
-      : scenario
-        ? [{ ...base, opacity: 0.6, height: 1.05 }]
-        : [
-            ...(state && bandWidth > 0
-              ? [{ ...base, opacity: 0.6, height: 1.05 }]
-              : []),
-            ...(state && state.limitUpper > state.limitLower
-              ? [
-                  {
-                    lower: state.limitLower,
-                    upper: state.limitUpper,
-                    opacity: 0.6,
-                    height: 1,
-                  },
-                ]
-              : []),
-          ]
+  // Keep both scenario marks mounted so the active band can glide to its new
+  // position and the previous band can fade in behind it.
+  const bands: ReadonlyArray<Band> = scenario
+    ? [
+        {
+          id: "previous",
+          ...base,
+          opacity: scenario === "recentered" ? 0.16 : 0,
+          height: 1.05,
+        },
+        {
+          id: "active",
+          ...(scenario === "recentered" ? recentered : base),
+          opacity: 0.48,
+          height: 1.05,
+        },
+      ]
+    : [
+        ...(state && bandWidth > 0
+          ? [{ id: "base" as const, ...base, opacity: 0.6, height: 1.05 }]
+          : []),
+        ...(state && state.limitUpper > state.limitLower
+          ? [
+              {
+                id: "limit" as const,
+                lower: state.limitLower,
+                upper: state.limitUpper,
+                opacity: 0.6,
+                height: 1,
+              },
+            ]
+          : []),
+      ]
 
   let running = pool.liquidity
   for (const tick of ticks) {
@@ -159,6 +171,10 @@ export const getLiquidityDistribution = ({
 
   const out: Bar[] = []
   const sliceWidth = (to - from) / SLICE_TARGET
+  // Keep the explainer's bar geometry anchored to the real market tick. The
+  // staged price may recolour slices, but it must not resize or repartition
+  // the pool-depth histogram as the user switches lifecycle states.
+  const geometrySpot = scenario ? marketSpot : spot
   const push = (
     left: number,
     right: number,
@@ -178,15 +194,21 @@ export const getLiquidityDistribution = ({
     const step = (right - left) / count
 
     for (let slice = 0; slice < count; slice++) {
+      const sliceFrom = left + slice * step
+      const sliceTo = left + (slice + 1) * step
+      const stagedSide =
+        scenario && (sliceFrom + sliceTo) / 2 > spot ? "token0" : "token1"
+
       out.push({
-        from: left + slice * step,
-        to: left + (slice + 1) * step,
+        key: `${left}-${right}-${slice}`,
+        from: sliceFrom,
+        to: sliceTo,
         liquidity,
-        side,
+        side: scenario ? stagedSide : side,
         rangeFrom: left,
         rangeTo: right,
         locked,
-        current,
+        current: scenario ? sliceFrom <= spot && sliceTo > spot : current,
       })
     }
   }
@@ -207,17 +229,64 @@ export const getLiquidityDistribution = ({
 
     const current = left <= spot && right > spot
 
-    if (left < spot && right > spot) {
-      push(left, spot, liquidity, "token1", current)
-      push(spot, right, liquidity, "token0", current)
+    if (left < geometrySpot && right > geometrySpot) {
+      push(left, geometrySpot, liquidity, "token1", current)
+      push(geometrySpot, right, liquidity, "token0", current)
     } else {
-      push(left, right, liquidity, right <= spot ? "token1" : "token0", current)
+      push(
+        left,
+        right,
+        liquidity,
+        right <= geometrySpot ? "token1" : "token0",
+        current,
+      )
     }
   }
 
+  // The explainer presents the vault's position as a schematic profile: its
+  // managed bars share one height and the background bars stay low. Recentering
+  // moves that same profile to the new band. Every slice stays mounted so the
+  // height transition remains smooth. The main chart continues to show the
+  // pool's unmodified on-chain liquidity distribution.
+  const displayBars =
+    scenario && out.length
+      ? (() => {
+          const midpoint = (bar: Bar) => (bar.from + bar.to) / 2
+          const rawFloor = out.reduce(
+            (value, bar) => Math.min(value, bar.liquidity),
+            Number.POSITIVE_INFINITY,
+          )
+          const managedValues = out
+            .filter((bar) => {
+              const center = midpoint(bar)
+              return center >= base.lower && center <= base.upper
+            })
+            .map((bar) => bar.liquidity)
+          const reference = managedValues.reduce(
+            (value, liquidity) => Math.max(value, liquidity),
+            rawFloor,
+          )
+          const managed = reference * 0.8
+          const background = reference * 0.5
+          const active = scenario === "recentered" ? recentered : base
+
+          return out.map((bar) => {
+            const center = midpoint(bar)
+            const isManaged = center >= active.lower && center <= active.upper
+
+            return {
+              ...bar,
+              liquidity: isManaged ? managed : background,
+            }
+          })
+        })()
+      : out
+
   return {
-    bars: out,
+    bars: displayBars,
     spotTick: spot,
+    // Preserve the real distribution's ceiling in the explainer so flattening
+    // its outlier does not rescale the uniform managed block to full height.
     max: out.reduce((value, bar) => Math.max(value, bar.liquidity), 0),
     lo: from,
     hi: to,
