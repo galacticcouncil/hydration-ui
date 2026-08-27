@@ -6,6 +6,7 @@ import { defineChart, dot, rect, ruleX, text } from "@tanstack/charts"
 import { decorative } from "@tanstack/charts/mark/decorative"
 import { scaleLinear } from "@tanstack/charts/scales/linear"
 import { tooltip } from "@tanstack/charts/tooltip"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -15,12 +16,15 @@ import {
   Bar,
   BARS_ID,
   getLiquidityDistribution,
+  getManagedBand,
   isBarPoint,
-  isSameRange,
   priceAtTick,
   RangeScenario,
+  sharesFocusGroup,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.utils"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
+import { useAssetsPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
 
 export type { RangeScenario }
 
@@ -82,6 +86,8 @@ export const LiquidityDistribution = ({
     [getAssetColor, scenario, themeProps, token0.id, token1.id],
   )
 
+  const vaultState = vault.vault
+
   const { bars, spotTick, max, lo, hi, bands } = useMemo(
     () =>
       getLiquidityDistribution({
@@ -138,15 +144,18 @@ export const LiquidityDistribution = ({
           strokeWidth: BAR_GAP,
           fillOpacity: 1,
           motion: scenario ? SCENARIO_TRANSITION : undefined,
-          // a range is drawn as several slices, so hovering one lights them all
+          // a range is drawn as several slices, so hovering one lights them all;
+          // managed-band bars share one tooltip, so they highlight together too
           states: [
             {
-              when: ({ datum, focus }) => !isSameRange(focus.primary, datum),
+              when: ({ datum, focus }) =>
+                !sharesFocusGroup(focus.primary, datum, vaultState),
               style: { fillOpacity: FADED_OPACITY },
               transition: FOCUS_TRANSITION,
             },
             {
-              when: ({ datum, focus }) => isSameRange(focus.primary, datum),
+              when: ({ datum, focus }) =>
+                sharesFocusGroup(focus.primary, datum, vaultState),
               style: { fillOpacity: 1 },
               transition: FOCUS_TRANSITION,
             },
@@ -238,6 +247,7 @@ export const LiquidityDistribution = ({
     ceiling,
     top,
     scenario,
+    vaultState,
   ])
 
   if (!bars.length)
@@ -440,13 +450,48 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
   const [token0, token1] = vault.tokens
   const { decimals: decimals0 } = token0
   const { decimals: decimals1 } = token1
+  const { getAssetPrice } = useAssetsPrice([token0.id, token1.id])
 
   const low = priceAtTick(bar.rangeFrom, decimals0, decimals1)
   const high = priceAtTick(bar.rangeTo, decimals0, decimals1)
   const held = bar.side === "token0" ? token0 : token1
+  const state = vault.vault
+  const mid = (bar.rangeFrom + bar.rangeTo) / 2
+  const managedBand = state ? getManagedBand(mid, state) : null
+
+  const human = (raw: bigint, decimals: number) =>
+    t("common:number", {
+      value: scaleHuman(raw.toString(), decimals),
+      threshold: true,
+      thresholdMaximumFractionDigits: 2,
+    })
+
+  const usd = (assetId: string, amount: string | number) => {
+    const price = getAssetPrice(assetId)
+    if (!price?.isValid) return undefined
+
+    return t("common:currency", {
+      value: Big(amount).times(price.price).toString(),
+    })
+  }
+
+  const vaultPosition =
+    state && managedBand === "base"
+      ? {
+          label: t("vaults.composition.base"),
+          amount0: state.base.amount0,
+          amount1: state.base.amount1,
+        }
+      : state && managedBand === "limit"
+        ? {
+            label: t("vaults.composition.limit"),
+            amount0: state.limit.amount0,
+            amount1: state.limit.amount1,
+          }
+        : null
 
   return (
-    <Flex direction="column" gap="base" sx={{ p: "m", minWidth: 240 }}>
+    <Flex direction="column" gap="s" p="m" minWidth="12rem">
       <Flex justify="space-between" align="center" gap="m">
         <Text
           fs="p5"
@@ -463,14 +508,50 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
         )}
       </Flex>
 
-      <TickStatsRow
-        label={t("vaults.chart.tooltip.locked")}
-        icon={<AssetLogo id={held.id} size="extra-small" />}
-        value={t("vaults.chart.tooltip.lockedAmount", {
-          value: bar.locked,
-          symbol: held.symbol,
-        })}
-      />
+      {vaultPosition ? (
+        <>
+          <Text fs="p6" color={getToken("text.medium")}>
+            {vaultPosition.label}
+          </Text>
+          <TickStatsRow
+            label={token0.symbol}
+            isSymbolLabel={true}
+            icon={<AssetLogo id={token0.id} size="extra-small" />}
+            value={human(vaultPosition.amount0, token0.decimals)}
+            displayValue={usd(
+              token0.id,
+              scaleHuman(vaultPosition.amount0.toString(), token0.decimals),
+            )}
+          />
+          <TickStatsRow
+            label={token1.symbol}
+            isSymbolLabel={true}
+            icon={<AssetLogo id={token1.id} size="extra-small" />}
+            value={human(vaultPosition.amount1, token1.decimals)}
+            displayValue={usd(
+              token1.id,
+              scaleHuman(vaultPosition.amount1.toString(), token1.decimals),
+            )}
+          />
+        </>
+      ) : (
+        <>
+          <Text fs="p6" color={getToken("text.medium")}>
+            {t("vaults.chart.tooltip.locked")}
+          </Text>
+          <TickStatsRow
+            label={held.symbol}
+            isSymbolLabel={true}
+            icon={<AssetLogo id={held.id} size="extra-small" />}
+            value={t("common:number", {
+              value: bar.locked,
+              threshold: true,
+              thresholdMaximumFractionDigits: 2,
+            })}
+            displayValue={usd(held.id, bar.locked)}
+          />
+        </>
+      )}
     </Flex>
   )
 }
@@ -478,18 +559,28 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
 const TickStatsRow = ({
   label,
   value,
+  displayValue,
   icon,
+  isSymbolLabel = false,
 }: {
   label: string
   value: string
+  displayValue?: string
   icon?: React.ReactNode
+  isSymbolLabel?: boolean
 }) => (
   <Flex justify="space-between" align="center" gap="xl">
-    <Text fs="p6" color={getToken("text.medium")} whiteSpace="nowrap">
-      {label}
-    </Text>
     <Flex align="center" gap="xs">
       {icon}
+      <Text
+        fs="p6"
+        color={getToken(isSymbolLabel ? "text.high" : "text.medium")}
+        whiteSpace="nowrap"
+      >
+        {label}
+      </Text>
+    </Flex>
+    <Flex direction="column" align="flex-end" gap="xxs">
       <Text
         fs="p6"
         lh={1}
@@ -499,6 +590,17 @@ const TickStatsRow = ({
       >
         {value}
       </Text>
+      {displayValue && (
+        <Text
+          fs="p6"
+          lh={1}
+          color={getToken("text.low")}
+          fontVariantNumeric="tabular-nums"
+          whiteSpace="nowrap"
+        >
+          {displayValue}
+        </Text>
+      )}
     </Flex>
   </Flex>
 )

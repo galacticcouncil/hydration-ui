@@ -217,7 +217,7 @@
   "vaults.chart.band.base": "Base",
   "vaults.chart.band.limit": "Limit",
   "vaults.chart.tooltip.current": "Current",
-  "vaults.chart.tooltip.locked": "Locked",
+  "vaults.chart.tooltip.locked": "Liquidity",
   "vaults.chart.tooltip.lockedAmount": "{{ value, number }} {{ symbol }}",
   "vaults.explainer.title": "How this pool works",
   "vaults.explainer.intro": "This is an auto-managed, two-token liquidity position.",

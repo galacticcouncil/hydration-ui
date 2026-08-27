@@ -81,8 +81,43 @@ export const isSameRange = (
   (focused.datum.rangeFrom === bar.rangeFrom &&
     focused.datum.rangeTo === bar.rangeTo)
 
-// Initialised ticks accumulate into active-liquidity ranges — liquidity is
-// constant between two initialised ticks — which are then sliced for looks only.
+export const getManagedBand = (
+  tick: number,
+  state: VaultState,
+): "base" | "limit" | null => {
+  if (
+    state.limitUpper > state.limitLower &&
+    tick >= state.limitLower &&
+    tick <= state.limitUpper
+  )
+    return "limit"
+
+  if (
+    state.baseUpper > state.baseLower &&
+    tick >= state.baseLower &&
+    tick <= state.baseUpper
+  )
+    return "base"
+
+  return null
+}
+
+export const sharesFocusGroup = (
+  focused: { markId: string; datum: unknown },
+  bar: Bar,
+  state: VaultState | null,
+) => {
+  if (!isBarPoint(focused)) return true
+  if (isSameRange(focused, bar)) return true
+  if (!state) return false
+
+  const mid = (bar: Bar) => (bar.rangeFrom + bar.rangeTo) / 2
+  const focusedBand = getManagedBand(mid(focused.datum), state)
+  const barBand = getManagedBand(mid(bar), state)
+
+  return focusedBand !== null && focusedBand === barBand
+}
+
 export const getLiquidityDistribution = ({
   pool,
   state,
