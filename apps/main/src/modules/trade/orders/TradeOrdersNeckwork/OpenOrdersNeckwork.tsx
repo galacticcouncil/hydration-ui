@@ -20,6 +20,7 @@ import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/Termina
 import { useChainOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
 import { useDcaEnrichment } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useDcaEnrichment"
 import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/PastExecutionsNeckwork"
+import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 
 type Props = {
   readonly paginationProps: PaginationProps
@@ -41,11 +42,8 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
   // chain-only - neckwork does not index them - so they skip the enrichment.
   const { orders: chainOrders, isLoading: isChainLoading } =
     useChainOrdersData()
-  const {
-    orders: enrichedOrders,
-    refetch,
-    neckworkEnabled,
-  } = useDcaEnrichment(chainOrders)
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const { orders: enrichedOrders, refetch } = useDcaEnrichment(chainOrders)
   const { orders: intentOrders, isLoading: isIntentsLoading } =
     useIntentOrdersData(assetFilter)
 
