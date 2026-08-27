@@ -6,21 +6,9 @@ import { millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
 import { firstValueFrom } from "rxjs"
 
-import { TAssetData } from "@/api/assets"
-import {
-  mergeBalances,
-  watchFilteredAccountBalances,
-} from "@/api/balances/account.utils"
-import {
-  AccountBalanceFilter,
-  Balance,
-  BalanceData,
-  EMPTY_BALANCES,
-  TokenLockType,
-} from "@/api/balances/types"
-import { Papi } from "@/api/rpcClient"
+import { BalanceData, TokenLockType } from "@/api/balances/types"
 import { ENV } from "@/config/env"
-import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 const isKnownTokenLockType = (type: string): type is TokenLockType => {
@@ -54,6 +42,15 @@ export const nativeTokenLocksQuery = (
         .filter((lock) => lock !== null)
     },
     enabled: isReady && !!address,
+  })
+}
+
+export const useNativeTokenLocks = () => {
+  const { account } = useAccount()
+
+  return useQuery({
+    ...nativeTokenLocksQuery(useRpcProvider(), account?.address ?? ""),
+    select: (locks) => new Map(locks.map((l) => [l.type, l.amount])),
   })
 }
 

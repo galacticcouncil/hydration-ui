@@ -15,10 +15,10 @@ import { useTranslation } from "react-i18next"
 
 import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
 import { useUnlockableNativeTokens } from "@/api/locks"
-import { AssetDetailUnlock } from "@/modules/portfolio/overview/MyAssets/AssetDetailUnlock"
-import { useNativeAssetLocks } from "@/modules/portfolio/overview/MyAssets/ExpandedNativeRow.data"
-import { ExpandedRowSeparator } from "@/modules/portfolio/overview/MyAssets/ExpandedRowSeparator"
-import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
+import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
+import { useNativeAssetLocks } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -44,7 +44,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   })
 
   const identityReserves = identity?.deposit ?? 0n
-  const assetPrice = useAssetPrice(asset.id).price || "0"
+  const { price: assetPrice } = useAssetPrice(asset.id)
 
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
   const otc = reserves?.get(TokenReserveType.OTC) ?? 0n

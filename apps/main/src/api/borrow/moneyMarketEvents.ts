@@ -1,13 +1,18 @@
 import { moneyMarketEventsQuery } from "@galacticcouncil/indexer/neckwork"
+import {
+  MoneyMarketEventFragment,
+  moneyMarketQuery,
+} from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { PaginationState } from "@tanstack/react-table"
 
-import { neckworkClient } from "@/api/neckwork"
+import { neckworkClient, useSquidClient } from "@/api/provider"
 import {
   borrowHistoryFilters,
   BorrowHistoryFilterType,
 } from "@/modules/borrow/history/BorrowHistoryFilter.utils"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 export const moneyMarketEventNames = [
   "Supply",
@@ -22,6 +27,7 @@ export const moneyMarketEventNames = [
 
 export type MoneyMarketEventName = (typeof moneyMarketEventNames)[number]
 
+/** Source-agnostic money-market row — Squid and Neckwork both map into this. */
 export type MoneyMarketEvent = {
   readonly eventName: MoneyMarketEventName
   readonly assetId: string | null
@@ -36,6 +42,30 @@ export type NeckworkMoneyMarketEvent = {
   readonly amount: string | null
   readonly timestamp: string
   readonly categoryId: number | null
+}
+
+export const mapSquidMoneyMarketEvent = (
+  event: MoneyMarketEventFragment,
+): MoneyMarketEvent => {
+  const eventName = event.eventName as MoneyMarketEventName
+  // the fragment nests one payload per event name; only one is set
+  const payload =
+    event.supply ??
+    event.withdraw ??
+    event.borrow ??
+    event.repay ??
+    event.reserveUsedAsCollateralEnabled ??
+    event.reserveUsedAsCollateralDisabled ??
+    event.liquidationCall
+
+  return {
+    eventName,
+    assetId: payload?.asset?.assetRegistryId ?? null,
+    amount:
+      payload && "amount" in payload && payload.amount ? payload.amount : null,
+    date: new Date(event.event?.block?.timestamp ?? 0),
+    categoryId: event.userEModeSet?.categoryId ?? null,
+  }
 }
 
 export const mapNeckworkMoneyMarketEvent = ({
@@ -69,7 +99,14 @@ export const useMoneyMarketEvents = (
     mapFilterToEventName,
   )
 
-  const { data, isLoading, isFetching } = useQuery({
+  const squidSdk = useSquidClient()
+  const neckworkEnabled = useNeckworkEnabled()
+
+  const {
+    data: neckworkData,
+    isLoading: isNeckworkLoading,
+    isFetching: isNeckworkFetching,
+  } = useQuery({
     ...moneyMarketEventsQuery(
       neckworkClient,
       address,
@@ -78,7 +115,7 @@ export const useMoneyMarketEvents = (
       pagination.pageSize,
       pagination.pageIndex * pagination.pageSize,
     ),
-    enabled: !!address,
+    enabled: neckworkEnabled && !!address,
     placeholderData: keepPreviousData,
     select: (data): MoneyMarketEventPage => ({
       items: data.items.map(mapNeckworkMoneyMarketEvent),
@@ -86,7 +123,35 @@ export const useMoneyMarketEvents = (
     }),
   })
 
-  return { data, isLoading, isFetching }
+  const {
+    data: squidData,
+    isLoading: isSquidLoading,
+    isFetching: isSquidFetching,
+  } = useQuery({
+    ...moneyMarketQuery(
+      squidSdk,
+      address,
+      eventNames,
+      searchPhrase,
+      pagination.pageSize,
+      pagination.pageIndex,
+    ),
+    enabled: !neckworkEnabled && !!address,
+    placeholderData: keepPreviousData,
+    select: (data): MoneyMarketEventPage => ({
+      items:
+        data.moneyMarketEvents?.nodes
+          .filter((event) => !!event)
+          .map(mapSquidMoneyMarketEvent) ?? [],
+      totalCount: data.moneyMarketEvents?.totalCount ?? 0,
+    }),
+  })
+
+  return {
+    data: neckworkEnabled ? neckworkData : squidData,
+    isLoading: neckworkEnabled ? isNeckworkLoading : isSquidLoading,
+    isFetching: neckworkEnabled ? isNeckworkFetching : isSquidFetching,
+  }
 }
 
 const mapFilterToEventName = (

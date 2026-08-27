@@ -84,15 +84,22 @@ export const TransactionItemMobile: FC<Props> = ({
       </Flex>
       {link && (
         <TransactionItemMobileAction>
-          <ButtonIcon asChild>
-            <ExternalLink href={link}>
-              <Icon
-                size="s"
-                component={SubScan}
-                color={getToken("text.high")}
-              />
-            </ExternalLink>
-          </ButtonIcon>
+          <Tooltip
+            text={isMobileDevice() ? null : t("openInExplorer")}
+            size="small"
+            asChild
+            side="top"
+          >
+            <ButtonIcon asChild>
+              <ExternalLink href={link}>
+                <Icon
+                  size="s"
+                  component={SquareArrowOutUpRight}
+                  color={getToken("text.high")}
+                />
+              </ExternalLink>
+            </ButtonIcon>
+          </Tooltip>
         </TransactionItemMobileAction>
       )}
     </TransactionItemMobileContainer>

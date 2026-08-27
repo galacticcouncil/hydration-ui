@@ -28,12 +28,8 @@ function FreshAssetRegistry() {
 }
 
 export const AssetRegistryGate = ({ children }: { children: ReactNode }) => {
-  const { assets, genesisHash: storedGenesisHash } = useAssetRegistry()
-  const { genesisHash } = useRpcProvider()
-
-  // Assets cached for a different chain are useless - fall through to the
-  // suspense branch so the registry is refetched for the connected chain.
-  const isCached = assets.length > 0 && storedGenesisHash === genesisHash
+  const { assets } = useAssetRegistry()
+  const isCached = assets.length > 0
 
   return (
     <>

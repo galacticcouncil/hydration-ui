@@ -83,7 +83,7 @@ export const SwapDetailsModal = ({ details }: Props) => {
         {"link" in details && details.link && (
           <>
             <ModalContentDivider />
-            <Flex justify="flex-end" pt="l" pb="xl">
+            <Flex pt="l" pb="xl">
               <Button variant="tertiary" outline asChild>
                 <ExternalLink href={details.link}>
                   <Icon component={SquareArrowOutUpRight} size="xs" />

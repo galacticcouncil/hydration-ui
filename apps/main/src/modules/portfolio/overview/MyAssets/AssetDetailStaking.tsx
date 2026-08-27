@@ -5,7 +5,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { LINKS } from "@/config/navigation"
-import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 
 type Props = {
   readonly asset: MyAsset

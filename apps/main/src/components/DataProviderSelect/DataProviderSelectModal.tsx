@@ -18,6 +18,7 @@ import { AutoModeToggle } from "@/components/DataProviderSelect/components/AutoM
 import { IndexerListModalContent } from "@/components/DataProviderSelect/components/indexer/IndexerListModalContent"
 import { RpcForm } from "@/components/DataProviderSelect/components/rpc/RpcForm"
 import { RpcListModalContent } from "@/components/DataProviderSelect/components/rpc/RpcListModalContent"
+import { SquidIndexerListModalContent } from "@/components/DataProviderSelect/components/squid/SquidIndexerListModalContent"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 enum TabView {

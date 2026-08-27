@@ -46,7 +46,7 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
 
   if (banner.visible === false) return null
 
-  const isLoading = !isReady || isLoadingReserves || isLoadingGhoReserveData
+  const isLoading = !isLoaded || isLoadingReserves || isLoadingGhoReserveData
 
   const totalBorrowed = (() => {
     if (!reserve) return

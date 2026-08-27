@@ -12,12 +12,12 @@ type UseBorrowHollarFormParams = {
 }
 
 const useSchema = (maxBorrowable: string) => {
-  const { t } = useTranslation(["borrow"])
+  const { t } = useTranslation(["strategies"])
 
   return z.object({
     amount: required.pipe(positive).check(
       refine<string>((value) => validateMaxBalance(maxBorrowable, value), {
-        error: t("borrow.maxExceeded"),
+        error: t("bil.borrow.cta.exceeds"),
       }),
     ),
   })

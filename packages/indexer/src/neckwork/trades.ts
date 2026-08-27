@@ -1,17 +1,20 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import {
-  NECKWORK_ACCOUNT_KEY,
-  NECKWORK_BASE_STALE_TIME,
-  NeckworkClient,
-  NeckworkResponse,
-  WithEpoch,
-  withEpoch,
-} from "."
+import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
 
-export type RoutedTrade = WithEpoch<
-  NeckworkResponse<"/v1/trades/routed">["items"][number]
->
+export type RoutedTrade = {
+  blockHeight: number
+  eventIndex: number
+  extrinsicIndex: number | null
+  /** ms epoch */
+  timestamp: number
+  assetIn: string
+  /** raw on-chain integer */
+  amountIn: string
+  assetOut: string
+  /** raw on-chain integer */
+  amountOut: string
+}
 
 type RoutedTradesArgs = {
   account: string
@@ -33,10 +36,10 @@ export const routedTradesQuery = (
       page,
       pageSize,
     ],
-    staleTime: NECKWORK_BASE_STALE_TIME,
+    staleTime: NECKWORK_STALE_TIME,
     enabled: !!account,
     queryFn: async (): Promise<{
-      items: readonly RoutedTrade[]
+      items: RoutedTrade[]
       totalCount: number
     }> => {
       const { data } = await client.GET("/v1/trades/routed", {
@@ -52,47 +55,18 @@ export const routedTradesQuery = (
 
       if (!data) throw new Error("Neckwork API returned no routed trades")
 
-      return { items: data.items.map(withEpoch), totalCount: data.totalCount }
-    },
-  })
-
-export type MarketTrade = WithEpoch<
-  NeckworkResponse<"/v1/trades">["items"][number]
->
-
-type MarketTradesArgs = {
-  assetIds: string[]
-  limit: number
-  offset: number
-}
-
-/**
- * Global market trades feed. The query omits `swapper` because the API serves
- * the global feed only when no account is named.
- */
-export const marketTradesQuery = (
-  client: NeckworkClient,
-  { assetIds, limit, offset }: MarketTradesArgs,
-) =>
-  queryOptions({
-    queryKey: ["neckwork", "marketTrades", assetIds, limit, offset],
-    staleTime: NECKWORK_BASE_STALE_TIME,
-    queryFn: async (): Promise<{
-      items: readonly MarketTrade[]
-      totalCount: number
-    }> => {
-      const { data } = await client.GET("/v1/trades", {
-        params: {
-          query: {
-            limit,
-            offset,
-            ...(assetIds.length ? { assets: assetIds.join(",") } : {}),
-          },
-        },
-      })
-
-      if (!data) throw new Error("Neckwork API returned no market trades")
-
-      return { items: data.items.map(withEpoch), totalCount: data.totalCount }
+      return {
+        items: Array.from(data.items).map((item) => ({
+          blockHeight: item.blockHeight,
+          eventIndex: item.eventIndex,
+          extrinsicIndex: item.extrinsicIndex,
+          timestamp: new Date(item.timestamp).getTime(),
+          assetIn: item.assetIn,
+          amountIn: item.amountIn,
+          assetOut: item.assetOut,
+          amountOut: item.amountOut,
+        })),
+        totalCount: data.totalCount,
+      }
     },
   })

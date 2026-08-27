@@ -4,7 +4,7 @@ import {
   Button,
   Separator,
   Summary,
-  SummaryRow,
+  Text,
 } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
@@ -73,16 +73,24 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
 
         <Separator />
 
-        <Summary px="l" separator={<Separator sx={{ mx: "-l" }} />}>
-          <SummaryRow
-            label={t("gigaStaking.gigaUnstake.receive.label")}
-            content={t("common:currency", {
-              prefix: "≈",
-              value: amountInHdx,
-              symbol: native.symbol,
-            })}
+        <Box px="l" asChild>
+          <Summary
+            rows={[
+              {
+                label: t("gigaStaking.gigaUnstake.receive.label"),
+                content: (
+                  <Text>
+                    {t("common:currency", {
+                      prefix: "≈",
+                      value: amountInHdx,
+                      symbol: native.symbol,
+                    })}
+                  </Text>
+                ),
+              },
+            ]}
           />
-        </Summary>
+        </Box>
 
         <Separator />
 
@@ -91,7 +99,7 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
             <Alert
               sx={{ m: "l" }}
               variant="warning"
-              description={
+              title={
                 showFrozenLockAlert
                   ? t("gigaStaking.gigaUnstake.frozen.alert", {
                       value: frozenInGigaHdx,

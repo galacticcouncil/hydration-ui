@@ -203,7 +203,7 @@ const SC_ASSETS = new Map<string, string>([
 ])
 
 export const useSubscribedPriceKeys = (assetIds: AssetId[]) => {
-  const stableAssetIds = useStableArray(unique(assetIds.map(String)))
+  const stableAssetIds = useStableArray(assetIds.map(String))
   const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()

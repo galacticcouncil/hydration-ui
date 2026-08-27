@@ -17,7 +17,7 @@ export const stakingRewardsQuery = (
   address: string,
   openGovReferendaIds: Array<string>,
 ) => {
-  const { queryClient, sdk, isReady } = rpc
+  const { queryClient, sdk, isApiLoaded } = rpc
 
   return queryOptions({
     queryKey: ["staking", "rewards", address, openGovReferendaIds],
@@ -33,7 +33,7 @@ export const stakingRewardsQuery = (
         )
         .then((r) => r ?? null)
     },
-    enabled: isReady && !!address,
+    enabled: isApiLoaded && !!address,
   })
 }
 
@@ -79,7 +79,7 @@ export const stakingPositionsQuery = (
   rpc: TProviderContext,
   address: string,
 ) => {
-  const { queryClient, isReady, papi } = rpc
+  const { queryClient, isApiLoaded, papi } = rpc
 
   return queryOptions({
     queryKey: StakingPositionsQueryKey(address),
@@ -107,7 +107,7 @@ export const stakingPositionsQuery = (
         ...positions,
       }
     },
-    enabled: isReady && !!address,
+    enabled: isApiLoaded && !!address,
   })
 }
 

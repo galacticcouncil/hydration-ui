@@ -3,6 +3,7 @@ import { Navigate, useMatchRoute } from "@tanstack/react-router"
 import { lazy } from "react"
 
 import { LINKS } from "@/config/navigation"
+import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const SwapPageDesktop = lazy(async () => ({

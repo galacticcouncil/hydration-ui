@@ -12,7 +12,6 @@ import { bestNumberQuery } from "@/api/chain"
 import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
 import { StatusTooltipContent } from "@/components/DataProviderSelect/components/StatusTooltipContent"
 import { DataProviderSelectModal } from "@/components/DataProviderSelect/DataProviderSelectModal"
-import { useActiveProviderProps } from "@/components/DataProviderSelect/useActiveProviderProps"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const DataProviderSelect = () => {

@@ -18,6 +18,7 @@ import {
   SAddressBookEntryModeIcon,
 } from "@/components/address-book/AddressBookEntry.styled"
 import { ProviderLogo } from "@/components/provider/ProviderLogo"
+import { WalletMode } from "@/config/wallet"
 import i18n from "@/i18n"
 import { getWalletModeIcon } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
@@ -40,7 +41,8 @@ export const AddressBookEntry: FC<AddressBookEntryProps> = ({
 }) => {
   const { t } = useTranslation("translations", { i18n })
   const modeIcon = getWalletModeIcon(mode)
-  const displayAddress = shortenAccountAddress(address)
+  const displayAddress =
+    mode === WalletMode.Near ? address : shortenAccountAddress(address)
   const wallet = !isCustom && provider ? getWallet(provider) : null
 
   return (
@@ -74,8 +76,8 @@ export const AddressBookEntry: FC<AddressBookEntryProps> = ({
           </Text>
         )}
       </Flex>
-      <Flex align="center" gap="base" pl="m" ml="auto" sx={{ minWidth: 0 }}>
-        <Text fs="p4" fw={500} font="mono" truncate={160} title={address}>
+      <Flex align="center" gap="base" pl="m" ml="auto">
+        <Text fs="p4" fw={500} font="mono">
           {displayAddress}
         </Text>
         <Tooltip text={t("addressBook.copyAddress")} size="small" asChild>

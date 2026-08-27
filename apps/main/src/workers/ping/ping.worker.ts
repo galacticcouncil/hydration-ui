@@ -51,19 +51,6 @@ function decodeCompactNumber(bytes: Uint8Array): number {
   return Number(result)
 }
 
-const BLOCK_ID = 1
-const GENESIS_HASH_ID = 2
-
-type JsonRpcResponse = {
-  id?: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  result?: any
-}
-
-function findResultById(responses: JsonRpcResponse[], id: number) {
-  return responses.find((response) => response?.id === id)?.result
-}
-
 const getBlock = async (
   wsUrl: string,
   timeoutMs = 5000,
@@ -74,7 +61,6 @@ const getBlock = async (
     ping: Infinity,
     timestamp: 0,
     blockNumber: null,
-    genesisHash: null,
   }
 
   if (signal?.aborted) return defaultResponse
@@ -94,47 +80,23 @@ const getBlock = async (
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify([
-            {
-              id: BLOCK_ID,
-              jsonrpc: "2.0",
-              method: "chain_getBlock",
-              params: [],
-            },
-            {
-              id: GENESIS_HASH_ID,
-              jsonrpc: "2.0",
-              method: "chain_getBlockHash",
-              params: [0],
-            },
-          ]),
+          body: JSON.stringify({
+            id: 1,
+            jsonrpc: "2.0",
+            method: "chain_getBlock",
+            params: [],
+          }),
         })
         const ping = performance.now() - start
 
         const data = await res.json()
 
-        if (!Array.isArray(data)) return defaultResponse
-
-        const block = findResultById(data, BLOCK_ID)
-        const genesisHash = findResultById(data, GENESIS_HASH_ID)
-
-        const blockNumber = Number(block?.block?.header?.number)
-        const tsExtinsic = block?.block?.extrinsics?.[0]
-
-        if (!Number.isFinite(blockNumber) || typeof tsExtinsic !== "string") {
-          return defaultResponse
-        }
-
+        const blockNumber = Number(data.result.block.header.number)
+        const tsExtinsic = data.result.block.extrinsics[0] as string
         const tsBytes = hexToBytes(tsExtinsic)
         const timestamp = decodeCompactNumber(tsBytes.subarray(4))
 
-        return {
-          url: wsUrl,
-          ping,
-          blockNumber,
-          timestamp,
-          genesisHash: typeof genesisHash === "string" ? genesisHash : null,
-        }
+        return { url: wsUrl, ping, blockNumber, timestamp }
       })(),
       new Promise<PingResponse>(
         (resolve) =>

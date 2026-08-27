@@ -5,7 +5,8 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 
-import { neckworkClient } from "@/api/neckwork"
+import { neckworkClient } from "@/api/provider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkEnabled, useNeckworkSyncStore } from "@/states/neckwork"
 
 /** Poll the indexer for status every 10 seconds. */
@@ -26,6 +27,8 @@ const ARM_TIMEOUT = 120_000
 export const useNeckworkSync = () => {
   const queryClient = useQueryClient()
   const neckworkEnabled = useNeckworkEnabled()
+  const { isFork } = useRpcProvider()
+  const syncEnabled = neckworkEnabled && !isFork
 
   const armedForBlock = useNeckworkSyncStore((state) => state.armedForBlock)
   const armedAt = useNeckworkSyncStore((state) => state.armedAt)
@@ -35,7 +38,7 @@ export const useNeckworkSync = () => {
 
   const { data: status } = useQuery({
     ...neckworkStatusQuery(neckworkClient),
-    enabled: neckworkEnabled && isArmed,
+    enabled: syncEnabled && isArmed,
     refetchInterval: STATUS_POLL_INTERVAL,
   })
 
@@ -51,7 +54,7 @@ export const useNeckworkSync = () => {
     if (!isArmed) return
 
     // nothing polls while neckwork is off, so nothing would ever disarm us
-    if (!neckworkEnabled) {
+    if (!syncEnabled) {
       disarm()
       return
     }
@@ -61,5 +64,5 @@ export const useNeckworkSync = () => {
     disarm()
     console.log("invalidating queries for neckwork sync")
     queryClient.invalidateQueries({ queryKey: NECKWORK_ACCOUNT_KEY })
-  }, [isArmed, isIndexed, isTimedOut, neckworkEnabled, disarm, queryClient])
+  }, [isArmed, isIndexed, isTimedOut, syncEnabled, disarm, queryClient])
 }
