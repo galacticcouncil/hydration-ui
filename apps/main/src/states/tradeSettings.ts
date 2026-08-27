@@ -10,6 +10,10 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import i18n from "@/i18n"
+import {
+  TRADE_CHART_TYPES,
+  TradeChartType,
+} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
 import { validNumber } from "@/utils/validators"
 
 const legacyTradeSettingsSchema = z.object({

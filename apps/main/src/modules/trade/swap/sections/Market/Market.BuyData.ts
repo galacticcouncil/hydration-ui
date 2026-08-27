@@ -54,13 +54,7 @@ export const useMarketBuyData = (
   const twapBudget =
     swap && sellAsset ? scaleHuman(swap.amountIn, sellAsset.decimals) : ""
 
-  const twapEnabled = isTwapEnabled(swap)
-
-  const {
-    data: twap,
-    isLoading: isTwapLoading,
-    isPlaceholderData: isTwapPlaceholderData,
-  } = useQuery({
+  const { data: twap, isLoading: isTwapLoading } = useQuery({
     ...bestSellTwapQuery(
       rpc,
       {
@@ -75,14 +69,6 @@ export const useMarketBuyData = (
     // hold on to, so the form collapses as it did before.
     placeholderData: twapBudget ? keepPreviousData : undefined,
   })
-
-  const isTwapPreviousData = twapEnabled && isTwapPlaceholderData
-  const isTwapQueryLoading = isTwapLoading || isTwapPreviousData
-
-  const isTwapValid =
-    !!twap &&
-    String(twap.assetIn) === sellAsset?.id &&
-    String(twap.assetOut) === buyAsset?.id
 
   return {
     swap: isBuyAmountSynced ? swap : undefined,

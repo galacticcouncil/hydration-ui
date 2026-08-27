@@ -200,7 +200,7 @@ export const RpcListItemActive: React.FC<
   const timestamp = isSwitching ? props.timestamp : bestNumber?.timestamp
 
   const isLoading =
-    !provider.isReady || isSwitching || (isBestNumberLoading && !isSwitching)
+    !provider.isLoaded || isSwitching || (isBestNumberLoading && !isSwitching)
 
   return (
     <RpcListItemLayout

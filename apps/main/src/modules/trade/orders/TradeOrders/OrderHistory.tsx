@@ -9,8 +9,7 @@ import {
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
-import { useHistoryData } from "@/modules/trade/orders/TradeOrders/lib/useHistoryData"
-import { PastExecutions } from "@/modules/trade/orders/TradeOrders/PastExecutions"
+import { PastExecutionsSquid } from "@/modules/trade/orders/PastExecutions/PastExecutionsSquid"
 
 type Props = {
   readonly paginationProps: PaginationProps
@@ -51,7 +50,7 @@ export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
             details={isDetailOpen}
             onTerminate={null}
             pastExecutions={
-              <PastExecutions scheduleId={isDetailOpen.scheduleId} />
+              <PastExecutionsSquid scheduleId={isDetailOpen.scheduleId} />
             }
           />
         )}

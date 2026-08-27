@@ -95,19 +95,7 @@ export const useOrderHistoryColumns = () => {
         sx: { textAlign: "end" },
       },
       cell: ({ row }) =>
-        row.original.status && (
-          <Flex direction="column" gap="xs">
-            <DcaOrderStatus status={row.original.status} />
-            {row.original.date && (
-              <DateText
-                date={row.original.date}
-                fw={500}
-                fs="p6"
-                color={getToken("text.medium")}
-              />
-            )}
-          </Flex>
-        ),
+        row.original.status && <DcaOrderStatus status={row.original.status} />,
     })
 
     const actionColumn = columnHelper.display({

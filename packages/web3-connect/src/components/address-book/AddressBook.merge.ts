@@ -1,8 +1,4 @@
-import {
-  EvmAddr,
-  parseNearAccountName,
-  stringEquals,
-} from "@galacticcouncil/utils"
+import { EvmAddr, NearAddr, stringEquals } from "@galacticcouncil/utils"
 
 import { getWalletModeName } from "@/utils/wallet"
 
@@ -65,7 +61,7 @@ export function getAllAddresses(addresses: Address[]): Address[] {
       return address
     }
 
-    const nearName = parseNearAccountName(address.address)
+    const nearName = NearAddr.parseAccountName(address.address)
     if (nearName) {
       return { ...address, name: nearName }
     }

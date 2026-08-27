@@ -34,7 +34,6 @@ export const useSubNav = () => {
           title: translations[nav.key].title,
           icon: nav.icon,
           search: nav.search,
-          exact: nav.exact,
         })) || [],
     [path, translations, navigation],
   )

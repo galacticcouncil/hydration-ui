@@ -18,7 +18,7 @@ export const useTradeOrderHistoryEnrichment = (
   from: TAsset,
   to: TAsset,
 ) => {
-  const { papiClient, isReady } = useRpcProvider()
+  const { papiClient, isApiLoaded } = useRpcProvider()
 
   const { data: remainingRaw, isLoading: isRemainingLoading } = useQuery({
     queryKey: ["trade", "orders", "history", "remaining", scheduleId],
@@ -28,7 +28,7 @@ export const useTradeOrderHistoryEnrichment = (
       const value = await query.DCA.RemainingAmounts.getValue(scheduleId)
       return value ?? null
     },
-    enabled: isReady && !!scheduleId,
+    enabled: isApiLoaded && !!scheduleId,
   })
 
   const { data: received = "0", isLoading: isReceivedLoading } = useQuery(

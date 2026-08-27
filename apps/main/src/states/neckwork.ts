@@ -1,45 +1,20 @@
-import { NeckworkStatus } from "@galacticcouncil/indexer/neckwork"
 import { create } from "zustand"
 
-/**
- * "unknown" means no probe has landed yet. The app stays on the primary source
- * rather than flashing legacy content.
- */
-export type NeckworkHealth = "alive" | "dead" | "unknown"
-
-/** Result of one /v1/status probe, before classification. */
-export type NeckworkProbe =
-  | { kind: "ok"; status: NeckworkStatus }
-  | { kind: "http"; statusCode: number }
-  | { kind: "network" }
-  | { kind: "timeout" }
-
-/**
- * Only a hard outage drops the app to the legacy source. A rate limit (429) or
- * any other client error leaves health "unknown" and the next poll decides.
- */
-export const classifyNeckworkProbe = (probe: NeckworkProbe): NeckworkHealth => {
-  switch (probe.kind) {
-    case "ok":
-      return "alive"
-    case "network":
-    case "timeout":
-      return "dead"
-    case "http":
-      return probe.statusCode >= 500 ? "dead" : "unknown"
-  }
-}
+import { ENV } from "@/config/env"
 
 type NeckworkStore = {
-  health: NeckworkHealth
+  alive: boolean
 }
 
 export const useNeckworkStore = create<NeckworkStore>()(() => ({
-  health: "unknown",
+  alive: false,
 }))
 
-export const useNeckworkEnabled = (): boolean =>
-  useNeckworkStore((state) => state.health) !== "dead"
+export const useNeckworkEnabled = (): boolean => {
+  const alive = useNeckworkStore((state) => state.alive)
+
+  return ENV.VITE_NECKWORK_ENABLED && alive
+}
 
 type NeckworkSyncStore = {
   armedForBlock: number | null

@@ -16,11 +16,11 @@ import { useTranslation } from "react-i18next"
 
 import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
 import { useUnlockableNativeTokens } from "@/api/locks"
-import { SAssetDetailMobileSeparator } from "@/modules/portfolio/overview/MyAssets/AssetDetailNativeMobileModal.styled"
-import { AssetDetailUnlock } from "@/modules/portfolio/overview/MyAssets/AssetDetailUnlock"
-import { useNativeAssetLocks } from "@/modules/portfolio/overview/MyAssets/ExpandedNativeRow.data"
-import { FullExpiration } from "@/modules/portfolio/overview/MyAssets/FullExpiration"
-import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
+import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
+import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
+import { useNativeAssetLocks } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
+import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -52,7 +52,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
   const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
   const identityAmountHuman = scaleHuman(identityReserves, asset.decimals)
-  const assetPrice = useAssetPrice(asset.id).price || "0"
+  const { price: assetPrice } = useAssetPrice(asset.id)
 
   return (
     <>

@@ -136,9 +136,11 @@ export const useSubmitDcaOrder = () => {
         },
         {
           // arm the indexer sync for the first execution rather than the block
-          // the schedule landed in, so the enrichment has an amount to report
+          // the schedule landed in, so the enrichment has an amount to report.
+          // Only the DCA-schedule path is indexed by neckwork - an ICE intent
+          // emits no ExecutionPlanned and is read straight from chain state.
           onSuccess: (event) => {
-            if (featureFlags.isIceEnabled) return
+            if (featureFlags.isIceEnabled || rpc.isFork) return
 
             const blockHeight = getTxResultBlockHeight(event)
             if (blockHeight === null) return

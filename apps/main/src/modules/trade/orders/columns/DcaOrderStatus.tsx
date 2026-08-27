@@ -1,3 +1,4 @@
+import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { Box } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
@@ -8,7 +9,6 @@ import {
   getDcaCompletionPercent,
   useDcaFundingBalance,
 } from "@/modules/trade/orders/lib/dcaProgress"
-import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {

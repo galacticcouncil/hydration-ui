@@ -33,27 +33,18 @@ const resolveXcmFormDefaults = ({
     ...parsedQueryParams,
   }
 
-  const sourceOnlyPreset =
-    !!parsedQueryParams?.srcChain &&
-    parsedQueryParams.destChain === undefined &&
-    parsedQueryParams.destAsset === undefined
-
-  const withResolvedDest = sourceOnlyPreset
-    ? { ...merged, destChain: null, destAsset: null }
-    : merged
-
-  const destChain = withResolvedDest.destChain
-  const destAddress = withResolvedDest.destAddress ?? ""
+  const destChain = merged.destChain
+  const destAddress = merged.destAddress ?? ""
 
   if (
     destChain &&
     destAddress &&
     !isAddressValidOnChain(destAddress, destChain)
   ) {
-    return { ...withResolvedDest, destAddress: "", destAccount: null }
+    return { ...merged, destAddress: "", destAccount: null }
   }
 
-  return withResolvedDest
+  return merged
 }
 
 export const useXcmForm = (

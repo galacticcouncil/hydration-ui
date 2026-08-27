@@ -14,7 +14,6 @@ type Props = {
   readonly active: boolean
   readonly value: string
   readonly diff?: string
-  readonly isBuy?: boolean
   readonly approx?: boolean
   readonly onClick: () => void
   readonly disabled?: boolean
@@ -27,7 +26,6 @@ export const TradeOption = ({
   active,
   value,
   diff,
-  isBuy,
   approx,
   onClick,
   disabled,
@@ -40,27 +38,14 @@ export const TradeOption = ({
   const isPositive = Big(diff || "0").gte(0)
 
   return (
-    <STradeOptionContainer
-      type="button"
-      onClick={onClick}
-      active={active}
-      disabled={disabled}
-    >
-      <Flex direction="column">
-        <Text fs="p3" lh={1} color={getToken("text.high")}>
-          {label}
-        </Text>
-        <Text fs="p5" color={getToken("text.medium")}>
-          {time}
-        </Text>
-      </Flex>
-      <Flex direction="column" align="end">
-        <Text fs="p3" lh={1} fw={600} color={getToken("text.high")}>
-          {`${approx ? "~" : ""}${t("currency", {
-            value: value,
-            symbol: asset.symbol,
-          })}`}
-        </Text>
+    <OptionCard
+      label={label}
+      description={time}
+      value={`${approx ? "~" : ""}${t("currency", {
+        value: value,
+        symbol: asset.symbol,
+      })}`}
+      displayValue={
         <Flex gap="s" align="center">
           <Text fs="p6" fw={400} color={getToken("text.medium")}>
             {displayValue}

@@ -1,13 +1,6 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query"
 
-import {
-  NECKWORK_ACCOUNT_KEY,
-  NECKWORK_BASE_STALE_TIME,
-  NeckworkClient,
-  NeckworkResponse,
-  WithEpoch,
-  withEpoch,
-} from "."
+import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
 
 export const DCA_STATUSES = [
   "created",
@@ -26,18 +19,39 @@ export const DCA_HISTORY_STATUSES = [
   "cancelled",
 ] as const
 
-type DcaScheduleItem = NeckworkResponse<"/v1/dca/schedules">["items"][number]
-
-export type DcaSchedule = Omit<DcaScheduleItem, "createdAt" | "lastEventAt"> & {
+export type DcaSchedule = {
+  scheduleId: number
+  assetIn: string
+  assetOut: string
+  /** raw on-chain integer */
+  singleTradeAmount: string
+  /** raw on-chain integer */
+  budget: string
+  isRollingBudget: boolean
+  /** raw on-chain integer */
+  executedAmountIn: string
+  /** raw on-chain integer */
+  executedAmountOut: string
+  periodBlocks: number
+  status: DcaStatus
   /** ms epoch */
-  readonly createdAt: number
+  createdAt: number
   /** ms epoch */
-  readonly lastEventAt: number | null
+  lastEventAt: number | null
 }
 
-export type DcaExecution = WithEpoch<
-  NeckworkResponse<"/v1/dca/schedules/{id}/executions">["items"][number]
->
+export type DcaExecution = {
+  status: "executed" | "failed" | "planned"
+  /** raw on-chain integer, null on failed/planned attempts */
+  amountIn: string | null
+  /** raw on-chain integer, null on failed/planned attempts */
+  amountOut: string | null
+  blockHeight: number
+  eventIndex: number
+  /** ms epoch */
+  timestamp: number
+  errorState: { kind: string; error: string; index: number } | null
+}
 
 type DcaSchedulesFilter = {
   owner: string
@@ -74,10 +88,10 @@ export const dcaSchedulesQuery = (
       page,
       pageSize,
     ],
-    staleTime: NECKWORK_BASE_STALE_TIME,
+    staleTime: NECKWORK_STALE_TIME,
     enabled: !!owner,
     queryFn: async (): Promise<{
-      items: readonly DcaSchedule[]
+      items: DcaSchedule[]
       totalCount: number
     }> => {
       const { data } = await client.GET("/v1/dca/schedules", {
@@ -93,8 +107,17 @@ export const dcaSchedulesQuery = (
       if (!data) throw new Error("Neckwork API returned no DCA schedules")
 
       return {
-        items: data.items.map((item) => ({
-          ...item,
+        items: Array.from(data.items).map((item) => ({
+          scheduleId: item.scheduleId,
+          assetIn: item.assetIn,
+          assetOut: item.assetOut,
+          singleTradeAmount: item.singleTradeAmount,
+          budget: item.budget,
+          isRollingBudget: item.isRollingBudget,
+          executedAmountIn: item.executedAmountIn,
+          executedAmountOut: item.executedAmountOut,
+          periodBlocks: item.periodBlocks,
+          status: item.status,
           createdAt: new Date(item.createdAt).getTime(),
           lastEventAt: item.lastEventAt
             ? new Date(item.lastEventAt).getTime()
@@ -117,7 +140,7 @@ export const dcaSchedulesCountQuery = (
       statuses,
       assetIds,
     ],
-    staleTime: NECKWORK_BASE_STALE_TIME,
+    staleTime: NECKWORK_STALE_TIME,
     enabled: !!owner,
     queryFn: async (): Promise<number> => {
       const { data } = await client.GET("/v1/dca/schedules/count", {
@@ -140,12 +163,12 @@ export const dcaExecutionsInfiniteQuery = (
 ) =>
   infiniteQueryOptions({
     queryKey: [...NECKWORK_ACCOUNT_KEY, "dcaExecutions", scheduleId],
-    staleTime: NECKWORK_BASE_STALE_TIME,
+    staleTime: NECKWORK_STALE_TIME,
     initialPageParam: 0,
     queryFn: async ({
       pageParam,
     }): Promise<{
-      items: readonly DcaExecution[]
+      items: DcaExecution[]
       totalCount: number
       assetIn: string
       assetOut: string
@@ -160,7 +183,15 @@ export const dcaExecutionsInfiniteQuery = (
       if (!data) throw new Error("Neckwork API returned no DCA executions")
 
       return {
-        items: data.items.map(withEpoch),
+        items: Array.from(data.items).map((item) => ({
+          status: item.status,
+          amountIn: item.amountIn,
+          amountOut: item.amountOut,
+          blockHeight: item.blockHeight,
+          eventIndex: item.eventIndex,
+          timestamp: new Date(item.timestamp).getTime(),
+          errorState: item.errorState,
+        })),
         totalCount: data.totalCount,
         assetIn: data.assetIn,
         assetOut: data.assetOut,

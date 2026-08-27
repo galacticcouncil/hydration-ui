@@ -22,12 +22,12 @@ type Props = {
 
 export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
   const translations = useMenuTranslations()
-  const { isReady } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
   const { getAsset } = useAssets()
 
   return items.map(({ key, to, search }) => {
     const assetIconId = STRATEGY_ASSET_ICON_BY_KEY[key]
-    const showAssetIcon = isReady && assetIconId && !!getAsset(assetIconId)
+    const showAssetIcon = isLoaded && assetIconId && !!getAsset(assetIconId)
 
     return (
       <SDetailedLink key={key} asChild>

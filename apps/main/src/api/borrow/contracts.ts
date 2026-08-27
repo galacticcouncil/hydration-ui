@@ -12,7 +12,7 @@ import {
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { TProviderData } from "@/api/rpcClient"
+import { TProviderData } from "@/api/provider"
 import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -79,7 +79,7 @@ export const gigaBorrowPoolContractQuery = (
   })
 }
 export const useGigaBorrowPoolContract = () => {
-  const { evm, isReady } = useRpcProvider()
+  const { evm, isLoaded } = useRpcProvider()
 
-  return useQuery(gigaBorrowPoolContractQuery(evm, isReady))
+  return useQuery(gigaBorrowPoolContractQuery(evm, isLoaded))
 }

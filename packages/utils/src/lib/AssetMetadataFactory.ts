@@ -31,7 +31,7 @@ const DEFAULT_ASSETS_METADATA: TMetadataResource["assets"] = {
   xcscanAssetUrnMap: {},
 }
 
-export const METADATA_CDN_URL =
+const BASE_URL =
   "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master"
 
 export class AssetMetadataFactory {

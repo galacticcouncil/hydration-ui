@@ -4,7 +4,11 @@ import { FC } from "react"
 
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { LimitPostFormDisclaimer } from "@/modules/trade/swap/components/LimitPostFormDisclaimer"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import {
+  TRADE_CHART_BY_SOURCE,
+  TRADE_ORDERS_BY_SOURCE,
+  useTradeDataSource,
+} from "@/modules/trade/swap/tradeDataSource"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 

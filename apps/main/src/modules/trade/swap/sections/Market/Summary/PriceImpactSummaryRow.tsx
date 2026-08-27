@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 
 type Props = {
-  readonly priceImpact: number | null
+  readonly priceImpact: number
   readonly label?: string
 }
 

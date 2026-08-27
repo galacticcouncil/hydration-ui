@@ -2,7 +2,6 @@ import { useStableArray } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef } from "react"
-import { unique } from "remeda"
 
 import { AssetType, TBond, TErc20, TStableswap, TToken } from "@/api/assets"
 import {
@@ -72,11 +71,6 @@ export const useAccountBalances = () => {
     [balances],
   )
 
-  const isBalanceLoaded = useCallback(
-    (assetId: string) => assetId in balances,
-    [balances],
-  )
-
   const isBalanceLoading = account
     ? isBalancesPending || isMaxWithdrawAllPending || !balanceFilter
     : false
@@ -84,7 +78,6 @@ export const useAccountBalances = () => {
   return {
     balances,
     isBalanceLoading,
-    isBalanceLoaded,
     getBalance,
     getTransferableBalance,
   }
@@ -141,6 +134,16 @@ export const useAccountBalancesWithPriceByAssetType = (
     const bondBalances: Array<{ balance: Balance; meta: TBond }> = []
     const priceIds: Array<string> = []
 
+    if (isBalanceLoading) {
+      return {
+        tokenBalances,
+        erc20Balances,
+        stableSwapBalances,
+        bondBalances,
+        priceIds,
+      }
+    }
+
     for (const balance of Object.values(balances)) {
       const asset = getAsset(balance.assetId)
       if (!asset) continue
@@ -188,7 +191,7 @@ export const useAccountBalancesWithPriceByAssetType = (
       erc20Balances,
       stableSwapBalances,
       bondBalances,
-      priceIds: unique(priceIds),
+      priceIds,
     }
   }, [
     balances,
@@ -198,6 +201,7 @@ export const useAccountBalancesWithPriceByAssetType = (
     isStableSwap,
     isBond,
     stableAssetTypes,
+    isBalanceLoading,
   ])
 
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
@@ -219,8 +223,10 @@ export const useAccountBalancesWithPriceByAssetType = (
     [getAssetPrice],
   )
 
-  const data = useMemo(
-    () => ({
+  const data = useMemo(() => {
+    if (isAssetPriceLoading) return
+
+    return {
       tokenBalances: mapBalancesWithPrice(tokenBalances),
       erc20Balances: mapBalancesWithPrice(erc20Balances),
       stableSwapBalances: mapBalancesWithPrice(stableSwapBalances),
@@ -228,27 +234,17 @@ export const useAccountBalancesWithPriceByAssetType = (
         bondBalances,
         (meta) => (meta as TBond).underlyingAssetId,
       ),
-    }),
-    [
-      bondBalances,
-      erc20Balances,
-      mapBalancesWithPrice,
-      stableSwapBalances,
-      tokenBalances,
-    ],
-  )
+    }
+  }, [
+    bondBalances,
+    erc20Balances,
+    mapBalancesWithPrice,
+    isAssetPriceLoading,
+    stableSwapBalances,
+    tokenBalances,
+  ])
 
-  const hasBalances =
-    tokenBalances.length > 0 ||
-    erc20Balances.length > 0 ||
-    stableSwapBalances.length > 0 ||
-    bondBalances.length > 0
-
-  return {
-    data,
-    isLoading: (isBalanceLoading || isAssetPriceLoading) && !hasBalances,
-    isSettled: !isBalanceLoading && !isAssetPriceLoading,
-  }
+  return { data, isLoading: isAssetPriceLoading || isBalanceLoading }
 }
 
 /**
