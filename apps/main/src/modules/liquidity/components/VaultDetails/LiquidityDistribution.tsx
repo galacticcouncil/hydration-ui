@@ -1,5 +1,6 @@
 import { Chart, Chip, Flex, Text } from "@galacticcouncil/ui/components"
-import { useTheme } from "@galacticcouncil/ui/theme"
+import { useResponsiveValue, useTheme } from "@galacticcouncil/ui/theme"
+import type { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { defineChart, dot, rect, ruleX, text } from "@tanstack/charts"
 import { decorative } from "@tanstack/charts/mark/decorative"
@@ -34,32 +35,31 @@ const FOCUS_TRANSITION = {
   easing: "ease-out" as const,
 }
 
+const DEFAULT_HEIGHT: ResponsiveStyleValue<number> = [280, 420]
+
 export const LiquidityDistribution = ({
   vault,
   scenario,
-  height = 420,
+  height,
 }: {
   vault: VaultTable
-  /** set to walk through the lifecycle: the depth is real, the price is staged */
   scenario?: RangeScenario
-  height?: number
+  height?: ResponsiveStyleValue<number>
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { themeProps } = useTheme()
+  const resolvedHeight = useResponsiveValue(height ?? DEFAULT_HEIGHT)
   const getAssetColor = useAssetColor()
   const [token0, token1] = vault.tokens
   const { decimals: decimals0 } = token0
   const { decimals: decimals1 } = token1
 
-  // marks take px numbers, so the type scale is read off the numeric tokens
   const tickFontSize = themeProps.paragraphSize.p5
   const bandFontSize = themeProps.paragraphSize.p6
-  /** puts a mark's label on the same baseline the axis gives its own tick labels */
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
 
   const colors = useMemo(
     () => ({
-      // the illustration is not live data, so it stays off the live palette
       token0: scenario
         ? themeProps.controls.solid.accent
         : getAssetColor(token0.id),
@@ -87,10 +87,7 @@ export const LiquidityDistribution = ({
     [vault.pool, vault.vault, decimals0, decimals1, scenario],
   )
 
-  // full-height overlays span the liquidity domain, so they need its ceiling
   const top = max || 1
-  // headroom above the deepest bar: anything drawn at `top` would sit exactly on
-  // the plot edge and be clipped away
   const ceiling = top * 1.12
 
   const definition = useMemo(() => {
@@ -110,7 +107,6 @@ export const LiquidityDistribution = ({
           y2: () => height,
           fill: colors.rangeFill,
           fillOpacity,
-          // rect has no strokeOpacity channel, so it goes into the colour
           stroke: `color-mix(in srgb, ${colors.rangeEdge} ${
             strokeOpacity * 100
           }%, transparent)`,
@@ -243,7 +239,11 @@ export const LiquidityDistribution = ({
 
   if (!bars.length)
     return (
-      <Flex direction="column" justify="center" sx={{ minHeight: height }}>
+      <Flex
+        direction="column"
+        justify="center"
+        sx={{ minHeight: resolvedHeight }}
+      >
         <Text fs="p5" color={getToken("text.low")}>
           {t("vaults.chart.empty")}
         </Text>
@@ -253,7 +253,7 @@ export const LiquidityDistribution = ({
   const price = priceAtTick(spotTick, token0.decimals, token1.decimals)
 
   return (
-    <Flex direction="column" sx={{ minHeight: height }}>
+    <Flex direction="column" sx={{ minHeight: resolvedHeight }}>
       {!scenario && (
         <Flex
           justify="space-between"
@@ -285,15 +285,13 @@ export const LiquidityDistribution = ({
       )}
 
       <Chart
-        // the grid has no dasharray option, so it is styled through its class
         css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
         definition={definition}
         ariaLabel={t(
           scenario ? "vaults.explainer.chartLabel" : "vaults.chart.liquidity",
         )}
-        height={height}
+        height={resolvedHeight}
         renderTooltipBody={({ points }) => {
-          // the staged price makes per-tick amounts meaningless
           if (scenario) return null
 
           const [first] = points.filter(isBarPoint)
@@ -304,7 +302,7 @@ export const LiquidityDistribution = ({
         }}
       />
 
-      <Flex gap="l" sx={{ mt: "s", flexWrap: "wrap" }}>
+      <Flex gap="0.3rem 1.5rem" mt="s" wrap>
         <Legend
           color={colors.token1}
           label={

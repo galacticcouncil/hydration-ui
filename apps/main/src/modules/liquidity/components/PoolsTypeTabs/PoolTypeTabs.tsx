@@ -24,16 +24,16 @@ export const PoolTypeTabs = () => {
             label: t("tab.allPools"),
           },
           {
+            key: "vaults",
+            label: t("tab.vaults"),
+          },
+          {
             key: "omnipoolStablepool",
             label: t("tab.omnipoolStablepool"),
           },
           {
             key: "isolated",
             label: t("tab.isolatedPools"),
-          },
-          {
-            key: "vaults",
-            label: t("tab.vaults"),
           },
         ]}
         onValueChange={(value) =>
@@ -66,6 +66,14 @@ export const PoolTypeTabs = () => {
         {
           to: LINKS.liquidity,
           search: {
+            type: "vaults",
+            myLiquidity: search?.myLiquidity,
+          },
+          title: t("tab.vaults"),
+        },
+        {
+          to: LINKS.liquidity,
+          search: {
             type: "omnipoolStablepool",
             myLiquidity: search?.myLiquidity,
           },
@@ -78,14 +86,6 @@ export const PoolTypeTabs = () => {
             myLiquidity: search?.myLiquidity,
           },
           title: t("tab.isolatedPools"),
-        },
-        {
-          to: LINKS.liquidity,
-          search: {
-            type: "vaults",
-            myLiquidity: search?.myLiquidity,
-          },
-          title: t("tab.vaults"),
         },
       ]}
     />

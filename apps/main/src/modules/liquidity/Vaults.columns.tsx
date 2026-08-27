@@ -44,7 +44,6 @@ const VaultActions = ({ vault }: { vault: VaultTable }) => {
   const [open, setOpen] = useState(false)
 
   return (
-    // the row navigates on click, so the buttons keep theirs to themselves
     <Flex
       gap="s"
       justify="end"
@@ -97,24 +96,6 @@ export const useVaultsColumns = () => {
           />
         ),
       }),
-      columnHelper.accessor("vaultTvlDisplay", {
-        header: t("liquidity:vaults.column.vaultLiquidity"),
-        meta: { sx: { textAlign: isMobile ? "right" : "left" } },
-        cell: ({ row: { original } }) =>
-          original.vault ? (
-            t("currency", { value: Number(original.vaultTvlDisplay ?? 0) })
-          ) : (
-            <Text fs="p5" color={getToken("text.low")}>
-              &mdash;
-            </Text>
-          ),
-      }),
-      columnHelper.accessor("tvlDisplay", {
-        header: t("liquidity:vaults.column.poolLiquidity"),
-        meta: { sx: { textAlign: isMobile ? "right" : "left" } },
-        cell: ({ row: { original } }) =>
-          t("currency", { value: Number(original.tvlDisplay ?? 0) }),
-      }),
       columnHelper.accessor("price", {
         header: t("liquidity:vaults.column.price"),
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
@@ -122,7 +103,7 @@ export const useVaultsColumns = () => {
           const [token0, token1] = original.tokens
 
           return (
-            <Text fs="p5">
+            <Text>
               {t("liquidity:vaults.price.pair", {
                 value: original.price ?? 0,
                 symbolA: token0.symbol,
@@ -131,6 +112,22 @@ export const useVaultsColumns = () => {
             </Text>
           )
         },
+      }),
+      columnHelper.accessor("tvlDisplay", {
+        header: t("liquidity:vaults.column.poolLiquidity"),
+        meta: { sx: { textAlign: isMobile ? "right" : "left" } },
+        cell: ({ row: { original } }) =>
+          t("currency", { value: Number(original.tvlDisplay ?? 0) }),
+      }),
+      columnHelper.accessor("vaultTvlDisplay", {
+        header: t("liquidity:totalValueLocked"),
+        meta: { sx: { textAlign: isMobile ? "right" : "left" } },
+        cell: ({ row: { original } }) =>
+          original.vault ? (
+            t("currency", { value: Number(original.vaultTvlDisplay ?? 0) })
+          ) : (
+            <Text color={getToken("text.low")}>&mdash;</Text>
+          ),
       }),
       columnHelper.display({
         id: "status",

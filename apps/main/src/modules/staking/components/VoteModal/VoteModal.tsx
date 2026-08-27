@@ -11,10 +11,11 @@ import {
   ModalHeader,
   Separator,
   Slider,
-  SliderTabs,
   Stack,
   Summary,
   Text,
+  ToggleGroup,
+  ToggleGroupItem,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -117,13 +118,22 @@ const VoteForm = ({
               control={form.control}
               name="voteType"
               render={({ field: { value, onChange, disabled } }) => (
-                <SliderTabs
-                  options={VOTE_TYPE_OPTIONS}
-                  selected={value}
-                  onSelect={(option) => onChange(option.id)}
-                  sx={{ flex: 1 }}
-                  disabled={disabled}
-                />
+                <Flex direction="column" flex={1}>
+                  <ToggleGroup
+                    type="single"
+                    value={value}
+                    onValueChange={(nextValue) =>
+                      nextValue && onChange(nextValue as VoteType)
+                    }
+                    disabled={disabled}
+                  >
+                    {VOTE_TYPE_OPTIONS.map((option) => (
+                      <ToggleGroupItem key={option.id} value={option.id}>
+                        {option.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </Flex>
               )}
             />
 

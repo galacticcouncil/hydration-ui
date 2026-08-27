@@ -33,7 +33,7 @@ const columnSizeStyles = createVariants<TableSize>((theme) => ({
 
     height: 5.25rem;
     padding-inline: var(--table-column-padding-x);
-    font-size: ${theme.fontSizes.p3};
+    font-size: ${theme.fontSizes.p4};
   `,
 }))
 
@@ -143,7 +143,7 @@ export const TableRow = styled.tr<{
         }
       }
     `}
-    color: ${theme.text.medium};
+    color: ${theme.text.high};
     background-color: ${theme.surfaces.containers.high.primary};
 
     ${isClickable &&

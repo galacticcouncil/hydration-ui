@@ -3,15 +3,23 @@ import {
   Flex,
   Icon,
   Paper,
-  SliderTabs,
-  SliderTabsOption,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { ComponentProps, ReactNode, useState } from "react"
 
 import i18n from "@/i18n"
 
-export const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
+type PoolStatsType = "chart" | "stats"
+
+type PoolStatsTabOption = {
+  readonly id: PoolStatsType
+  readonly label: string
+  readonly leadingElement?: ReactNode
+}
+
+export const types: ReadonlyArray<PoolStatsTabOption> = [
   {
     id: "chart",
     label: i18n.t("chart"),
@@ -25,10 +33,8 @@ export const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
 ]
 
 export type PoolStatsShellProps = {
-  /** chart panel body, rendered side by side with the values on desktop */
   renderChart: (isMobile: boolean) => ReactNode
   values: ReactNode
-  /** desktop: above the chart, mobile: next to the chart/stats tabs */
   renderChartHeader?: (isMobile: boolean) => ReactNode
   sx?: ComponentProps<typeof Flex>["sx"]
 }
@@ -40,26 +46,33 @@ export const PoolStatsShell = ({
   sx,
 }: PoolStatsShellProps) => {
   const { isTablet, isMobile } = useBreakpoints()
-  const [type, setType] = useState<"chart" | "stats">("chart")
+  const [type, setType] = useState<PoolStatsType>("chart")
 
   if (isTablet || isMobile) {
     const header = renderChartHeader?.(true)
 
     return (
       <Paper
-        p={[16, 20]}
+        p={["secondary", "primary"]}
         sx={{ flex: 1, gap: "m", flexDirection: "column", ...sx }}
         as={Flex}
       >
-        <Flex gap="base" justify="space-between">
-          <Flex align="center" gap="base">
-            <SliderTabs
-              options={types}
-              selected={types.find((option) => option.id === type)?.id}
-              onSelect={(option) => setType(option.id)}
-            />
-          </Flex>
-          {type === "chart" && header}
+        <Flex direction="column" gap="base">
+          <ToggleGroup
+            type="single"
+            value={type}
+            onValueChange={(value) => value && setType(value as PoolStatsType)}
+          >
+            {types.map((option) => (
+              <ToggleGroupItem key={option.id} value={option.id}>
+                {option.leadingElement}
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          {type === "chart" && header && (
+            <Flex justify="flex-end">{header}</Flex>
+          )}
         </Flex>
         {type === "chart" ? renderChart(true) : values}
       </Paper>
@@ -70,10 +83,7 @@ export const PoolStatsShell = ({
 
   return (
     <Flex gap="xl" sx={sx}>
-      <Paper
-        p={["secondary", "primary"]}
-        sx={{ flex: 1, flexBasis: "31.25rem", minWidth: 0 }}
-      >
+      <Paper p={["secondary", "primary"]} sx={{ flex: 2.5 }}>
         {header ? (
           <Flex direction="column" gap="l">
             <Flex>{header}</Flex>
@@ -87,8 +97,7 @@ export const PoolStatsShell = ({
       <Paper
         p={["secondary", "primary"]}
         sx={{
-          flex: 0,
-          flexBasis: "22.5rem",
+          flex: 1,
         }}
       >
         {values}

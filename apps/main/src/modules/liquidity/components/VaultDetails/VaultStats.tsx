@@ -1,10 +1,11 @@
 import {
   Flex,
   Separator,
-  SliderTabs,
-  SliderTabsOption,
+  ToggleGroup,
+  ToggleGroupItem,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,13 +17,13 @@ import { feeTierPercent, VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 type VaultChart = "distribution" | "price"
 
-// APRs, fees and volume are left out: they need swap or share-price history
-// from the indexer, and zeros here would read as measurements.
 export const VaultStats = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const [chart, setChart] = useState<VaultChart>("distribution")
 
-  const options: ReadonlyArray<SliderTabsOption<VaultChart>> = [
+  const { isMobile } = useBreakpoints()
+
+  const options: ReadonlyArray<{ id: VaultChart; label: string }> = [
     { id: "distribution", label: t("liquidity:vaults.chart.liquidity") },
     { id: "price", label: t("liquidity:vaults.chart.price") },
   ]
@@ -32,11 +33,19 @@ export const VaultStats = ({ vault }: { vault: VaultTable }) => {
       sx={{ mb: "xl" }}
       values={<VaultValues vault={vault} />}
       renderChartHeader={() => (
-        <SliderTabs
-          options={options}
-          selected={chart}
-          onSelect={(option) => setChart(option.id)}
-        />
+        <ToggleGroup
+          type="single"
+          fullWidth={isMobile}
+          size={isMobile ? "small" : "medium"}
+          value={chart}
+          onValueChange={(value) => value && setChart(value as VaultChart)}
+        >
+          {options.map((option) => (
+            <ToggleGroupItem key={option.id} value={option.id}>
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       )}
       renderChart={() =>
         chart === "distribution" ? (

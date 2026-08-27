@@ -12,9 +12,9 @@ import {
   Paper,
   ResponsiveScope,
   Separator,
-  SliderTabs,
-  SliderTabsOption,
   Text,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ComponentType, useState } from "react"
@@ -44,7 +44,7 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation("liquidity")
   const [scenario, setScenario] = useState<RangeScenario>("inRange")
 
-  const options: ReadonlyArray<SliderTabsOption<RangeScenario>> = [
+  const options: ReadonlyArray<{ id: RangeScenario; label: string }> = [
     { id: "inRange", label: t("vaults.explainer.states.inRange") },
     { id: "outOfRange", label: t("vaults.explainer.states.outOfRange") },
     { id: "recentered", label: t("vaults.explainer.states.recentered") },
@@ -108,7 +108,7 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
   const selected = copy[scenario]
 
   return (
-    <Paper sx={{ p: "l", flex: 2, minWidth: 0 }}>
+    <Paper sx={{ p: "l", flex: 2.5, minWidth: 0 }}>
       <Text as="h2" fs="base" fw={500} font="primary">
         {t("vaults.explainer.title")}
       </Text>
@@ -117,11 +117,19 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
       </Text>
 
       <Flex sx={{ mt: "m" }}>
-        <SliderTabs
-          options={options}
-          selected={scenario}
-          onSelect={(option) => setScenario(option.id)}
-        />
+        <ToggleGroup
+          type="single"
+          value={scenario}
+          onValueChange={(value) =>
+            value && setScenario(value as RangeScenario)
+          }
+        >
+          {options.map((option) => (
+            <ToggleGroupItem key={option.id} value={option.id}>
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </Flex>
 
       <ResponsiveScope sx={{ mt: "l" }}>
@@ -129,7 +137,7 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
           <Flex
             direction="column"
             justify="center"
-            sx={{ flex: 2.5, minWidth: 0, pointerEvents: "none" }}
+            sx={{ flex: 3, minWidth: 0, pointerEvents: "none" }}
           >
             <LiquidityDistribution
               vault={vault}

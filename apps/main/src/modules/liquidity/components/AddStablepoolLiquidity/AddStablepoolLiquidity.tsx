@@ -10,10 +10,11 @@ import {
   ModalFooter,
   ModalHeader,
   Skeleton,
-  SliderTabs,
   Summary,
   Text,
   Toggle,
+  ToggleGroup,
+  ToggleGroupItem,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
@@ -262,13 +263,22 @@ export const AddStablepoolLiquidityForm = ({
                 control={form.control}
                 name="option"
                 render={({ field: { value, onChange, disabled } }) => (
-                  <SliderTabs
-                    options={addStablepoolOptions}
-                    selected={value}
-                    onSelect={(option) => onChange(option.id)}
-                    sx={{ flex: 1 }}
-                    disabled={disabled}
-                  />
+                  <Flex sx={{ flex: 1 }}>
+                    <ToggleGroup
+                      type="single"
+                      value={value}
+                      onValueChange={(nextValue) =>
+                        nextValue && onChange(nextValue)
+                      }
+                      disabled={disabled}
+                    >
+                      {addStablepoolOptions.map((option) => (
+                        <ToggleGroupItem key={option.id} value={option.id}>
+                          {option.label}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </Flex>
                 )}
               />
               <AddStablepoolLiquidityTooltip />

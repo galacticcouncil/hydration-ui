@@ -1,7 +1,4 @@
-import {
-  SliderTabsOption,
-  TradingViewChartRef,
-} from "@galacticcouncil/ui/components"
+import { TradingViewChartRef } from "@galacticcouncil/ui/components"
 import { useRef, useState } from "react"
 
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
@@ -22,7 +19,10 @@ import { PoolStatsShell } from "./PoolStatsShell"
 
 export { types } from "./PoolStatsShell"
 
-export const chartTypes: ReadonlyArray<SliderTabsOption<"price" | "volume">> = [
+export const chartTypes: ReadonlyArray<{
+  id: "price" | "volume"
+  label: string
+}> = [
   { id: "price", label: i18n.t("price") },
   //{ id: "volume", label: i18n.t("volume") },
 ]

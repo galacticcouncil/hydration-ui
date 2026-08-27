@@ -60,7 +60,6 @@ export const PoolsPage = () => {
     <>
       <PoolsHeader />
       <PoolsFilters search={search} onChange={setSearch} />
-
       {(type === "vaults" || type === "all") && <VaultsTable search={search} />}
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable

@@ -84,3 +84,17 @@ export const Disabled: Story = {
     disabled: true,
   },
 }
+
+export const FullWidth: Story = {
+  render: SingleSelectTemplate,
+  args: {
+    fullWidth: true,
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ width: 320 }}>
+        <Story />
+      </div>
+    ),
+  ],
+}

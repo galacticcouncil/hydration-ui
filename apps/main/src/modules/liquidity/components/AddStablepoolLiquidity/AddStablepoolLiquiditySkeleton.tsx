@@ -1,9 +1,10 @@
 import {
   Button,
-  SliderTabs,
   Summary,
   Text,
   Toggle,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { Flex } from "@galacticcouncil/ui/components/Flex"
 import {
@@ -39,13 +40,19 @@ export const AddStablepoolLiquiditySkeleton = (
         onBack={props.onBack}
         customHeader={
           <Flex align="center" mt="l" gap="m">
-            <SliderTabs
-              options={addStablepoolOptions}
-              selected={addStablepoolOptions[0]?.id}
-              onSelect={doNothing}
-              sx={{ flex: 1 }}
-              disabled
-            />
+            <Flex sx={{ flex: 1 }}>
+              <ToggleGroup
+                type="single"
+                value={addStablepoolOptions[0]?.id}
+                disabled
+              >
+                {addStablepoolOptions.map((option) => (
+                  <ToggleGroupItem key={option.id} value={option.id}>
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </Flex>
             <AddStablepoolLiquidityTooltip />
           </Flex>
         }

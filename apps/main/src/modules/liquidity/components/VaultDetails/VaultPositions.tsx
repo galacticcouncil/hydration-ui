@@ -148,7 +148,8 @@ export const VaultPositions = ({
         align="center"
         gap="s"
         color={getToken("buttons.primary.high.hover")}
-        sx={{ px: ["base", "l"], pt: "l" }}
+        px={["base", "l"]}
+        pt="l"
       >
         <Icon component={LiquidityIcon} size="xs" />
         <Text fw={500} font="primary">
