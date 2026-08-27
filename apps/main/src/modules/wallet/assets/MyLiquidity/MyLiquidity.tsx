@@ -7,6 +7,7 @@ import { MyLiquidityTable } from "@/modules/wallet/assets/MyLiquidity/MyLiquidit
 import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 
 import { useMyIsolatedPoolsLiquidity } from "./MyIsolatedPoolsLiquidity.data"
+import { useMyVaultLiquidity } from "./MyVaultLiquidity.data"
 
 type Props = {
   readonly searchPhrase: string
@@ -27,8 +28,14 @@ export const MyLiquidity: FC<Props> = ({
     isLoading: isLoadingIsolatedPoolsLiquidity,
   } = useMyIsolatedPoolsLiquidity()
 
-  const data = [...liquidityData, ...isolatedPoolsLiquidity]
-  const isLoading = liquidityLoading || isLoadingIsolatedPoolsLiquidity
+  const { data: vaultLiquidity, isLoading: isLoadingVaultLiquidity } =
+    useMyVaultLiquidity()
+
+  const data = [...liquidityData, ...isolatedPoolsLiquidity, ...vaultLiquidity]
+  const isLoading =
+    liquidityLoading ||
+    isLoadingIsolatedPoolsLiquidity ||
+    isLoadingVaultLiquidity
 
   if (!isLoading && data.length === 0) {
     return <MyLiquidityEmptyState />

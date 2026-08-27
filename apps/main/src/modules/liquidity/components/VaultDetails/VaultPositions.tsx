@@ -1,7 +1,6 @@
-import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
+import { LiquidityIcon, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
-  Box,
   Button,
   DataTable,
   Flex,
@@ -19,6 +18,7 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLabelXYK } from "@/components/AssetLabelFull/AssetLabelFull"
 import { PositionsTableShell } from "@/modules/liquidity/components/PositionsTable"
+import { STableHeader } from "@/modules/liquidity/components/PositionsTable/PositionsTable.styled"
 import { RemoveVaultLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
@@ -30,36 +30,11 @@ type PositionRow = {
 
 const columnHelper = createColumnHelper<PositionRow>()
 
-const RemoveAction = ({ vault }: { vault: VaultTable }) => {
-  const { t } = useTranslation("liquidity")
-  const [open, setOpen] = useState(false)
-
-  return (
-    <>
-      <Button
-        variant="tertiary"
-        outline
-        size="small"
-        disabled={vault.positionShares === 0n}
-        onClick={() => setOpen(true)}
-      >
-        <Minus />
-        {t("removeLiquidity")}
-      </Button>
-      <Modal variant="popup" open={open} onOpenChange={setOpen}>
-        {open && (
-          <RemoveVaultLiquidity
-            vault={vault}
-            closable
-            onSubmitted={() => setOpen(false)}
-          />
-        )}
-      </Modal>
-    </>
-  )
-}
-
-const usePositionColumns = (vault: VaultTable, shareSymbol: string) => {
+const usePositionColumns = (
+  vault: VaultTable,
+  shareSymbol: string,
+  onRemove: () => void,
+) => {
   const { t } = useTranslation(["common", "liquidity"])
   const [token0, token1] = vault.tokens
 
@@ -67,20 +42,18 @@ const usePositionColumns = (vault: VaultTable, shareSymbol: string) => {
     () => [
       columnHelper.display({
         id: "position",
-        size: 250,
+        size: 175,
         header: t("common:position"),
         cell: () => (
-          <Box height={66} py="xl" px="l">
-            <AssetLabelXYK
-              iconIds={[token0.id, token1.id]}
-              symbol={`${token0.symbol}/${token1.symbol}`}
-            />
-          </Box>
+          <AssetLabelXYK
+            iconIds={[token0.id, token1.id]}
+            symbol={`${token0.symbol}/${token1.symbol}`}
+          />
         ),
       }),
       columnHelper.accessor("shares", {
-        id: "amount",
-        header: t("liquidity:liquidity.positions.header.amount"),
+        id: "currentValue",
+        header: t("liquidity:liquidity.positions.header.currentValue"),
         cell: ({ row: { original } }) => (
           <Amount
             value={t("currency", {
@@ -97,15 +70,24 @@ const usePositionColumns = (vault: VaultTable, shareSymbol: string) => {
       }),
       columnHelper.display({
         id: "actions",
+        header: t("liquidity:liquidity.positions.header.actions"),
         meta: { sx: { textAlign: "right" } },
         cell: () => (
-          <Flex justify="end">
-            <RemoveAction vault={vault} />
+          <Flex gap="m" justify="end" align="center">
+            <Button
+              variant="tertiary"
+              outline
+              sx={{ flexShrink: 0 }}
+              onClick={onRemove}
+            >
+              <Trash />
+              {t("common:remove")}
+            </Button>
           </Flex>
         ),
       }),
     ],
-    [t, shareSymbol, vault, token0, token1],
+    [t, shareSymbol, onRemove, token0, token1],
   )
 }
 
@@ -120,10 +102,12 @@ export const VaultPositions = ({
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const [expanded, setExpanded] = useState(true)
+  const [isRemoveOpen, setIsRemoveOpen] = useState(false)
   const { isMobile } = useBreakpoints()
   const columns = usePositionColumns(
     vault,
     vault.vault?.shareSymbol ?? "shares",
+    () => setIsRemoveOpen(true),
   )
 
   const rows: PositionRow[] =
@@ -144,22 +128,35 @@ export const VaultPositions = ({
       onToggle={() => setExpanded((v) => !v)}
       totalBalanceDisplay={vault.positionValueDisplay ?? "0"}
     >
-      <Flex
-        align="center"
-        gap="s"
-        color={getToken("buttons.primary.high.hover")}
-        px={["base", "l"]}
-        pt="l"
-      >
-        <Icon component={LiquidityIcon} size="xs" />
-        <Text fw={500} font="primary">
-          {t("liquidity:liquidity.positions.label.vault")}
-        </Text>
-      </Flex>
+      <STableHeader sx={{ justifyContent: "space-between" }}>
+        <Flex
+          align="center"
+          gap="s"
+          color={getToken("buttons.primary.high.hover")}
+        >
+          <Icon component={LiquidityIcon} size="xs" />
+          <Text fw={500} font="primary">
+            {t("liquidity:liquidity.positions.label.vault")}
+          </Text>
+        </Flex>
+
+        {!!rows.length && (
+          <Button
+            variant="tertiary"
+            outline
+            onClick={() => setIsRemoveOpen(true)}
+          >
+            <Minus />
+            {t("liquidity:removeLiquidity")}
+          </Button>
+        )}
+      </STableHeader>
       <DataTable
-        size={isMobile ? "small" : "large"}
         data={rows}
         columns={columns}
+        columnPinning={{ left: ["position"] }}
+        columnVisibility={{ position: !isMobile }}
+        sx={{ minWidth: [undefined, 900] }}
         emptyState={
           <Text fs="p5" color={getToken("text.low")}>
             {isDisconnected
@@ -170,6 +167,15 @@ export const VaultPositions = ({
           </Text>
         }
       />
+      <Modal variant="popup" open={isRemoveOpen} onOpenChange={setIsRemoveOpen}>
+        {isRemoveOpen && (
+          <RemoveVaultLiquidity
+            vault={vault}
+            closable
+            onSubmitted={() => setIsRemoveOpen(false)}
+          />
+        )}
+      </Modal>
     </PositionsTableShell>
   )
 }

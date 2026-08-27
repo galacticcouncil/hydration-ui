@@ -13,6 +13,7 @@ import {
   XYKPosition,
 } from "./MyIsolatedPoolsLiquidity.data"
 import { useMyStableswapLiquidity } from "./MyStableswapLiquidity.data"
+import { VaultLiquidityByPool } from "./MyVaultLiquidity.data"
 
 export type StableswapPosition = {
   data: {
@@ -39,9 +40,13 @@ export const isXYKPosition = (
   position: MyLiquidityPosition,
 ): position is XYKPosition => "amm_pool_id" in position
 
-export type LiquidityPositionByAsset =
+export type NonVaultLiquidityByAsset =
   | OmnipoolLiquidityByAsset
   | IsolatedPoolsLiquidityByPool
+
+export type LiquidityPositionByAsset =
+  | NonVaultLiquidityByAsset
+  | VaultLiquidityByPool
 
 export type OmnipoolLiquidityByAsset = {
   readonly meta: TAssetData

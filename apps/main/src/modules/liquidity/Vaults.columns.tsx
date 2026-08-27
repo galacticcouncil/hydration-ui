@@ -74,6 +74,22 @@ const VaultActions = ({ vault }: { vault: VaultTable }) => {
           />
         )}
       </Modal>
+
+      {vault.positionShares > 0n && (
+        <Text
+          color={getToken("text.tint.secondary")}
+          fw={500}
+          fs="p6"
+          sx={{
+            position: "absolute",
+            bottom: "-xl",
+          }}
+        >
+          {t("liquidity:liquidity.pool.positions.total", {
+            value: vault.positionValueDisplay ?? 0,
+          })}
+        </Text>
+      )}
     </Flex>
   )
 }
