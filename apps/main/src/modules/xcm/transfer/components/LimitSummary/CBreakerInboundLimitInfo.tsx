@@ -9,12 +9,11 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { AssetDepositLimit } from "@galacticcouncil/xc-cfg/build/clients"
 import { useTranslation } from "react-i18next"
 
-import { useBestNumber } from "@/api/chain"
+import { useBestNumber, useBlockTime } from "@/api/chain"
 import {
   getDepositLimitPeriodWindow,
   getDepositLimitUsagePercent,
 } from "@/modules/xcm/transfer/utils/limits"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
 export type CBreakerInboundLimitInfoProps = {
@@ -25,15 +24,15 @@ export const CBreakerInboundLimitInfo: React.FC<
   CBreakerInboundLimitInfoProps
 > = ({ depositLimit }) => {
   const { t } = useTranslation(["common", "xcm"])
-  const { slotDurationMs } = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
 
   const { data: bestNumber } = useBestNumber()
   const usagePercent = getDepositLimitUsagePercent(depositLimit)
   const currentBlock = bestNumber?.parachainBlockNumber
 
   const periodWindow =
-    currentBlock !== undefined
-      ? getDepositLimitPeriodWindow(depositLimit, currentBlock, slotDurationMs)
+    currentBlock !== undefined && blockTimeMs
+      ? getDepositLimitPeriodWindow(depositLimit, currentBlock, blockTimeMs)
       : undefined
 
   const periodWindowText = (() => {

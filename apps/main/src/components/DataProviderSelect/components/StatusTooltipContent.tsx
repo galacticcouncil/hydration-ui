@@ -2,7 +2,7 @@ import { Box, Stack, Text } from "@galacticcouncil/ui/components"
 import { getHostnameFromUrl } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
-import { useBestNumber } from "@/api/chain"
+import { useBestNumber, useBlockTime } from "@/api/chain"
 import { SquidIndexerStatus } from "@/components/DataProviderSelect/components/squid/SquidIndexerStatus"
 import { useElapsedTimeStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { ProviderProps } from "@/config/rpc"
@@ -13,7 +13,8 @@ export const StatusTooltipContent: React.FC<ProviderProps> = ({
   url,
 }) => {
   const { t } = useTranslation()
-  const { isApiLoaded, slotDurationMs } = useRpcProvider()
+  const { isApiLoaded } = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
   const { data } = useBestNumber()
   const { statusText } = useElapsedTimeStatus(data?.timestamp ?? 0)
 
@@ -24,9 +25,9 @@ export const StatusTooltipContent: React.FC<ProviderProps> = ({
           {name || getHostnameFromUrl(url)}
         </Text>
         <Text>{statusText}</Text>
-        {isApiLoaded && (
+        {isApiLoaded && blockTimeMs && (
           <Text>
-            {t("rpc.status.blockTime", { value: slotDurationMs / 1000 })}
+            {t("rpc.status.blockTime", { value: blockTimeMs / 1000 })}
           </Text>
         )}
       </Box>

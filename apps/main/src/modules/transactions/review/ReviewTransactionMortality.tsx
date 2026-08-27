@@ -16,18 +16,18 @@ export const ReviewTransactionMortality = () => {
     <Flex gap="xs" align="center">
       <Text fs="p5" fw={500} color={getToken("text.high")}>
         {t("approx.short")}{" "}
-        {t("date.relative", {
-          value: expirationDate,
-        })}
+        {expirationDate !== null
+          ? t("date.relative", { value: expirationDate })
+          : "—"}
       </Text>
       <Tooltip
         text={
           <>
             <Text fw={600} mb="s">
               {t("approx.short")}{" "}
-              {t("date.datetime", {
-                value: expirationDate,
-              })}
+              {expirationDate !== null
+                ? t("date.datetime", { value: expirationDate })
+                : "—"}
             </Text>
             <Text>{t("transaction.summary.mortality.tooltip")}</Text>
           </>

@@ -2,19 +2,18 @@ import {
   Amount,
   Button,
   Flex,
-  Separator,
+  ResponsiveScope,
   Text,
   Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { durationInDaysAndHoursFromNow } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { millisecondsInDay, millisecondsInMinute } from "date-fns/constants"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, useBlockTime } from "@/api/chain"
 import {
   getCooldownExpiresAt,
   gigaStakeConstantsQuery,
@@ -24,10 +23,18 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { CancelConfirmationModal } from "@/modules/staking/gigaStaking/pendingPositions/CancelConfirmationModal"
 import {
+  SActionsGroup,
+  SAmountSection,
+  SCancelSection,
+  SCountdownValueStats,
+  SMobileSeparator,
+  SPendingPosition,
+  SUnlockSection,
+} from "@/modules/staking/gigaStaking/pendingPositions/PendingPosition.styled"
+import {
   useCancelPendingPosition,
   useClaimPendingPosition,
 } from "@/modules/staking/gigaStaking/pendingPositions/PendingPosition.utils"
-import { SUnstakingPosition } from "@/modules/staking/gigaStaking/UnstakingPosition.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -44,10 +51,15 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   const { t } = useTranslation(["common", "staking"])
   const [isCancelConfirmationModalOpen, setIsCancelConfirmationModalOpen] =
     useState(false)
-  const { isMobile } = useBreakpoints()
   const { native } = useAssets()
   const rpc = useRpcProvider()
-  const { data: best } = useQuery(bestNumberQuery(rpc))
+  const { data: blockTimeMs } = useBlockTime()
+  const { data: best } = useQuery({
+    ...bestNumberQuery(rpc),
+    queryKey: ["gigaStake", "pendingPositionBestNumber", rpc.endpoint],
+    staleTime: millisecondsInMinute,
+    refetchInterval: millisecondsInMinute,
+  })
   const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
   const { data: twoSecBlocksSince = null } = useQuery(
     gigaTwoSecBlocksSinceQuery(rpc),
@@ -57,7 +69,8 @@ export const PendingPosition: FC<PendingPositionProps> = ({
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
 
   const amountShifted = scaleHuman(amount, native.decimals)
-  const [displayValue] = useDisplayAssetPrice(native.id, amountShifted)
+  const [displayValue, { isLoading: isDisplayValueLoading }] =
+    useDisplayAssetPrice(native.id, amountShifted)
 
   const { parachainBlockNumber: currentBlock } = best ?? {}
 
@@ -78,93 +91,98 @@ export const PendingPosition: FC<PendingPositionProps> = ({
       return { claimableNow: true, label: "" }
     }
 
-    const msRemaining = blocksRemaining * rpc.slotDurationMs
-    const endDate = durationInDaysAndHoursFromNow(msRemaining)
+    const msRemaining = blocksRemaining * (blockTimeMs ?? 0)
     const unlockDate = new Date(Date.now() + msRemaining)
 
     return {
       claimableNow: false,
-      label: endDate ? `~${endDate}` : "--",
+      label:
+        msRemaining > 0
+          ? `~${t("interval", { value: msRemaining, largest: 1, ...(msRemaining > millisecondsInDay && { unit: "d" }) })}`
+          : "-",
       tooltip: t("date.long", { value: unlockDate }),
     }
   }, [
     currentBlock,
-    rpc.slotDurationMs,
+    blockTimeMs,
     t,
     cooldownPeriod,
     voteAtBlock,
     twoSecBlocksSince,
   ])
 
-  if (isMobile) {
-    return (
-      <SUnstakingPosition align="center" justify="space-between" gap="base">
-        <Flex direction="column" gap="base" flex={1}>
-          <Flex align="center" gap="s">
-            <AssetLogo id={native.id} />
-
-            <Amount
-              value={t("currency", {
-                value: amountShifted,
-                symbol: native.symbol,
-              })}
-              displayValue={displayValue}
-            />
-          </Flex>
-
-          <Separator />
-
-          {unlockStats === null ? (
-            <ValueStats
-              label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-              value="—"
-              wrap
-              size="small"
-              sx={{
-                alignItems: "flex-end",
-              }}
-            />
-          ) : unlockStats.claimableNow ? (
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() =>
-                claimPendingPosition.mutate({ voteAtBlock, amount })
-              }
-              width="fit-content"
-              disabled={claimPendingPosition.isPending}
-            >
-              {t("staking:gigaStaking.unstakingPositions.claimCta")}
-            </Button>
-          ) : (
-            <ValueStats
-              label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-              customValue={
-                <Flex align="center" gap="s">
-                  <Text fs="p5" lh={1} fw={500} color={getToken("text.high")}>
-                    {unlockStats.label}
-                  </Text>
-                  {unlockStats.tooltip && (
-                    <Tooltip asChild text={unlockStats.tooltip} />
-                  )}
-                </Flex>
-              }
-              wrap={false}
-              size="small"
-              sx={{
-                alignItems: "flex-end",
-              }}
-            />
-          )}
-        </Flex>
-        <Button
-          variant="tertiary"
+  const unlockContent =
+    unlockStats === null ? (
+      <ValueStats
+        label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
+        value="—"
+        wrap
+        size="small"
+        sx={{
+          alignItems: "flex-end",
+        }}
+      />
+    ) : unlockStats.claimableNow ? (
+      <Button
+        variant="secondary"
+        size="small"
+        onClick={() => claimPendingPosition.mutate({ voteAtBlock, amount })}
+        width="fit-content"
+        disabled={claimPendingPosition.isPending}
+      >
+        {t("staking:gigaStaking.unstakingPositions.claimCta")}
+      </Button>
+    ) : (
+      <SCountdownValueStats>
+        <ValueStats
+          label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
+          customValue={
+            <Flex align="center" gap="s">
+              <Text fs="p5" lh={1} fw={500} color={getToken("text.high")}>
+                {unlockStats.label}
+              </Text>
+              {unlockStats.tooltip && (
+                <Tooltip asChild text={unlockStats.tooltip} />
+              )}
+            </Flex>
+          }
+          wrap={false}
           size="small"
-          onClick={() => setIsCancelConfirmationModalOpen(true)}
-          disabled={cancelPendingPosition.isPending}
-        >
-          {t("cancel")}
-        </Button>
+          sx={{
+            alignItems: "flex-end",
+          }}
+        />
+      </SCountdownValueStats>
+    )
+
+  return (
+    <ResponsiveScope>
+      <SPendingPosition>
+        <SAmountSection>
+          <AssetLogo id={native.id} />
+          <Amount
+            value={t("currency", {
+              value: amountShifted,
+              symbol: native.symbol,
+            })}
+            displayValue={displayValue}
+            isLoading={isDisplayValueLoading}
+          />
+        </SAmountSection>
+        <SMobileSeparator />
+        <SActionsGroup>
+          <SUnlockSection>{unlockContent}</SUnlockSection>
+          <SCancelSection>
+            <Button
+              variant="tertiary"
+              size="small"
+              onClick={() => setIsCancelConfirmationModalOpen(true)}
+              disabled={cancelPendingPosition.isPending}
+            >
+              {t("cancel")}
+            </Button>
+          </SCancelSection>
+        </SActionsGroup>
         <CancelConfirmationModal
           open={isCancelConfirmationModalOpen}
           onClose={() => setIsCancelConfirmationModalOpen(false)}
@@ -172,78 +190,7 @@ export const PendingPosition: FC<PendingPositionProps> = ({
             cancelPendingPosition.mutate({ voteAtBlock, amount })
           }
         />
-      </SUnstakingPosition>
-    )
-  }
-
-  return (
-    <SUnstakingPosition align="center" justify="space-between">
-      <Flex align="center" gap="s">
-        <AssetLogo id={native.id} />
-
-        <Amount
-          value={t("currency", {
-            value: amountShifted,
-            symbol: native.symbol,
-          })}
-          displayValue={displayValue}
-        />
-      </Flex>
-
-      <Flex align="center" gap="m">
-        {unlockStats === null ? (
-          <ValueStats
-            label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-            value="—"
-            wrap
-            size="small"
-            sx={{
-              alignItems: "flex-end",
-            }}
-          />
-        ) : unlockStats.claimableNow ? (
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => claimPendingPosition.mutate({ voteAtBlock, amount })}
-            disabled={claimPendingPosition.isPending}
-          >
-            {t("staking:gigaStaking.unstakingPositions.claimCta")}
-          </Button>
-        ) : (
-          <ValueStats
-            label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-            customValue={
-              <Flex align="center" gap="s">
-                <Text fs="p2" lh={1} fw={500} color={getToken("text.high")}>
-                  {unlockStats.label}
-                </Text>
-                {unlockStats.tooltip && (
-                  <Tooltip asChild text={unlockStats.tooltip} />
-                )}
-              </Flex>
-            }
-            wrap
-            size="small"
-            sx={{
-              alignItems: "flex-end",
-            }}
-          />
-        )}
-        <Button
-          variant="tertiary"
-          size="small"
-          onClick={() => setIsCancelConfirmationModalOpen(true)}
-          disabled={cancelPendingPosition.isPending}
-        >
-          {t("cancel")}
-        </Button>
-      </Flex>
-      <CancelConfirmationModal
-        open={isCancelConfirmationModalOpen}
-        onClose={() => setIsCancelConfirmationModalOpen(false)}
-        onConfirm={() => cancelPendingPosition.mutate({ voteAtBlock, amount })}
-      />
-    </SUnstakingPosition>
+      </SPendingPosition>
+    </ResponsiveScope>
   )
 }
