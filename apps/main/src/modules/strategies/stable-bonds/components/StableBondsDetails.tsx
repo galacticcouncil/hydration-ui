@@ -24,21 +24,28 @@ import {
   SStatsGroup,
 } from "@/modules/strategies/stable-bonds/components/StableBondsDetails.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
+import {
+  getBondApr,
+  getDefaultBondApr,
+} from "@/modules/strategies/stable-bonds/utils/apr"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 
 export type StableBondsDetailsProps = {
   orders?: OtcOffer[]
+  isSoldOut?: boolean
 }
 
 export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   orders,
+  isSoldOut,
 }) => {
   const { t } = useTranslation(["common", "strategies"])
   const config = useStableBondsConfig()
   const { timeLeft } = useBondData(config.bondId)
 
-  const daysLeft = timeLeft > 0 ? Math.ceil(timeLeft / millisecondsInDay) : 0
-  const currentApr = daysLeft > 0 ? (config.fixedYield / daysLeft) * 365 : null
+  const currentApr = isSoldOut
+    ? getDefaultBondApr(config.bondId)
+    : getBondApr(config.bondId, timeLeft)
 
   return (
     <Paper p="l">
@@ -57,7 +64,7 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
                 <Text fs="p5" color={getToken("text.medium")}>
                   {t("strategies:bonds.details.remainingCapacity")}
                 </Text>
-                <SRemainingList gap="xl">
+                <SRemainingList>
                   {orders.map((order) => (
                     <StableBondsCurrency key={order.id} order={order} />
                   ))}
@@ -82,7 +89,8 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
                   >
                     {t("percent", {
                       value: currentApr,
-                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                      suffix: isSoldOut ? "+" : undefined,
                     })}
                   </Text>
                 }

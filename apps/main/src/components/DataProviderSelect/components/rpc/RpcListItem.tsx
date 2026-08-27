@@ -1,9 +1,9 @@
-import { Edit, Trash } from "@galacticcouncil/ui/assets/icons"
+import { CircleOff, Edit, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   Flex,
   Icon,
-  Spinner,
+  SpinnerIcon,
   Text,
   TextButton,
   Tooltip,
@@ -16,12 +16,12 @@ import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
 
 import { bestNumberQuery } from "@/api/chain"
-import { useRpcStatus } from "@/api/rpc"
+import { RpcStatusQueryOptions, useRpcStatus } from "@/api/rpc"
 import { ListItemEditForm } from "@/components/DataProviderSelect/components/ListItemEditForm"
 import { RpcRemoveModal } from "@/components/DataProviderSelect/components/rpc/RpcRemoveModal"
 import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useRpcListStore } from "@/states/provider"
+import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 import { SRpcListItem, SRpcRadio, SRpcRadioThumb } from "./RpcListItem.styled"
 
@@ -75,6 +75,9 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
   const { t } = useTranslation()
   const [isEdit, setIsEdit] = useState(false)
   const { renameRpc } = useRpcListStore()
+  const isOffline = !isLoading && !isNumber(blockNumber)
+  const isBlocked = isLoading || isOffline
+  const canSelect = !isBlocked && !!onClick
 
   if (isEdit) {
     return (
@@ -90,9 +93,9 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
 
   return (
     <SRpcListItem
-      blocked={isLoading || !isNumber(blockNumber)}
-      onClick={() => onClick?.(url)}
-      isInteractive={!!onClick || !!onRemove}
+      blocked={isBlocked}
+      onClick={canSelect ? () => onClick?.(url) : undefined}
+      isInteractive={canSelect || !!onRemove}
     >
       <Box>
         <Text
@@ -110,9 +113,9 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
           {getHostnameFromUrl(url)}
         </Text>
       </Box>
-      <Box>
+      <Flex height="xl" align="center">
         {isLoading ? (
-          <Spinner size="xs" />
+          <SpinnerIcon size="xs" />
         ) : (
           <RpcStatus
             url={url}
@@ -122,7 +125,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
             ping={ping}
           />
         )}
-      </Box>
+      </Flex>
       <Flex
         color={getToken("text.medium")}
         gap="s"
@@ -147,7 +150,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
                 </TextButton>
               }
             />
-            <Tooltip text={t("edit")} asChild side="top">
+            <Tooltip text={t("edit")} size="small" asChild side="top">
               <TextButton
                 sx={{ p: "xs" }}
                 onClick={(e) => {
@@ -162,8 +165,8 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
         )}
         {!!onClick && (
           <Box sx={{ ml: "base" }}>
-            {isLoading ? (
-              <Spinner size="xs" />
+            {isOffline ? (
+              <Icon size="xs" component={CircleOff} />
             ) : (
               <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
             )}
@@ -175,19 +178,37 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
 }
 
 export const RpcListItemActive: React.FC<
-  RpcListItemProps & Partial<PingResponse>
-> = (props) => {
+  RpcListItemProps & Partial<PingResponse> & RpcStatusQueryOptions
+> = ({ poll, ...props }) => {
   const provider = useRpcProvider()
-  const { data: bestNumber, isLoading } = useQuery(bestNumberQuery(provider))
-  const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "")
+  const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const connectedRpcUrl = useProviderRpcUrlStore(
+    (state) => state.connectedRpcUrl,
+  )
+
+  const isSwitching = rpcUrl !== connectedRpcUrl
+  const { data: bestNumber, isLoading: isBestNumberLoading } = useQuery(
+    bestNumberQuery(provider),
+  )
+  const { data: status } = useRpcStatus(!props?.ping ? provider.endpoint : "", {
+    poll,
+  })
+
+  const blockNumber = isSwitching
+    ? props.blockNumber
+    : bestNumber?.parachainBlockNumber
+  const timestamp = isSwitching ? props.timestamp : bestNumber?.timestamp
+
+  const isLoading =
+    !provider.isLoaded || isSwitching || (isBestNumberLoading && !isSwitching)
 
   return (
     <RpcListItemLayout
       {...props}
       ping={props?.ping ?? status?.ping}
-      blockNumber={bestNumber?.parachainBlockNumber}
-      timestamp={bestNumber?.timestamp}
-      isLoading={!provider.isLoaded || isLoading}
+      blockNumber={blockNumber}
+      timestamp={timestamp}
+      isLoading={isLoading}
     />
   )
 }

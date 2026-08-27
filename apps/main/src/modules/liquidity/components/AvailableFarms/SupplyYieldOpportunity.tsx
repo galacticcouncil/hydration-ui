@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 
 import { BorrowAssetApyData } from "@/api/borrow"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 import { SYieldOpportunityContainer } from "./AvailableFarm.styled"
 
@@ -25,10 +26,14 @@ export const SupplyYieldOpportunity = ({
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
-  const value = Big(borrowApyData.underlyingSupplyApy)
-    .plus(omnipoolFee ?? 0)
-    .plus(stablepoolFee ?? 0)
-    .toString()
+  const underlyingSupplyApy = borrowApyData.underlyingSupplyApy
+  const value =
+    underlyingSupplyApy === null
+      ? null
+      : Big(underlyingSupplyApy)
+          .plus(omnipoolFee ?? 0)
+          .plus(stablepoolFee ?? 0)
+          .toNumber()
 
   return (
     <SYieldOpportunityContainer
@@ -45,9 +50,7 @@ export const SupplyYieldOpportunity = ({
         </Text>
         <Chip variant="green" size="small">
           <Flex align="center" gap="s"></Flex>
-          {t("percent", {
-            value,
-          })}
+          {formatApyPercent(t, value)}
 
           <TooltipAPR
             borrowApyData={{ ...borrowApyData, incentives: [] }}

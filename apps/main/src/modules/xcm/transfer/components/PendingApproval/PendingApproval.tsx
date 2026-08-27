@@ -9,10 +9,10 @@ export const PendingApproval = () => {
       <Spinner size="3xl" />
       <Flex direction="column" justify="center" align="center" gap="base">
         <Text as="h2" align="center" fs="h7" fw={500} font="primary">
-          {t("approve.pending.title")}
+          {t("prerequisite.pending.title")}
         </Text>
         <Text fs="p5" align="center" color={getToken("text.medium")}>
-          {t("approve.pending.description")}
+          {t("prerequisite.pending.description")}
         </Text>
       </Flex>
     </Stack>

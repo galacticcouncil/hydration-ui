@@ -8,13 +8,24 @@ export const useNavigation = (): NavigationItem[] => {
 
   return useMemo(
     () =>
-      NAVIGATION.filter((item) => {
-        if (item.key === "strategiesHollarBonds") {
-          return featureFlags.hollarBondsEnabled
+      NAVIGATION.filter((item) => item.enabled !== false).map((item) => {
+        if (item.key === "strategies") {
+          return {
+            ...item,
+            children: item.children?.filter((child) => {
+              if (child.key === "strategiesBil") {
+                return featureFlags.bilEnabled
+              }
+              if (child.key === "strategiesHollarBonds") {
+                return featureFlags.hollarBondsEnabled
+              }
+              return true
+            }),
+          }
         }
 
-        return item.enabled !== false
+        return item
       }),
-    [featureFlags.hollarBondsEnabled],
+    [featureFlags.bilEnabled, featureFlags.hollarBondsEnabled],
   )
 }

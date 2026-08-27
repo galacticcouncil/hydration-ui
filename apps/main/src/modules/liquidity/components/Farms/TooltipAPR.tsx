@@ -28,7 +28,7 @@ export const TooltipAPR = ({
   stablepoolFee?: string
   farms: { rewardCurrency: number; apr: string }[]
   borrowApyData?: BorrowAssetApyData
-  description?: string
+  description?: React.ReactNode
 } & Omit<InfoTooltipProps, "text">) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { getAssetWithFallback } = useAssets()
@@ -42,9 +42,13 @@ export const TooltipAPR = ({
       {...props}
       text={
         <Flex direction="column" gap="base">
-          <Text fs="p6" fw={500} mb="s">
-            {description ?? t("liquidity:liquidity.tooltip.fee.apr.title")}
-          </Text>
+          {typeof description === "string" || description === undefined ? (
+            <Text fs="p6" fw={500} mb="s">
+              {description ?? t("liquidity:liquidity.tooltip.fee.apr.title")}
+            </Text>
+          ) : (
+            <Box mb="s">{description}</Box>
+          )}
 
           {omnipoolFee && (
             <Row

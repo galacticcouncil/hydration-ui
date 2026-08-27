@@ -1,7 +1,6 @@
 import {
   DataTable,
   Modal,
-  Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -40,10 +39,11 @@ export const MyBondsTable: FC<Props> = ({
   } | null>(null)
 
   return (
-    <TableContainer as={Paper}>
+    <TableContainer>
       <DataTable
         isLoading={isLoading}
         paginated
+        size="small"
         {...paginationProps}
         {...sortingProps}
         globalFilter={searchPhrase}

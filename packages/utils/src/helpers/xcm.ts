@@ -1,3 +1,4 @@
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
   AnyChain,
   AnyEvmChain,
@@ -37,6 +38,12 @@ export function getChainId(chain: AnyChain) {
     default:
       return chain.id
   }
+}
+
+export function isAddressValidOnHydration(address: string) {
+  const chain = chainsMap.get(HYDRATION_CHAIN_KEY)
+  if (!chain) return false
+  return isAddressValidOnChain(address, chain)
 }
 
 export function isAddressValidOnChain(address: string, chain: AnyChain) {

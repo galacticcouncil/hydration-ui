@@ -6,12 +6,13 @@ import {
   hydrationNext,
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
+import { getNeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
-  HOLLAR_BOND_25_08_26_ID,
+  getHostnameFromUrl,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { CompatibilityLevel } from "polkadot-api"
@@ -21,17 +22,23 @@ import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
 import { ENV } from "@/config/env"
-import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
+import {
+  createProvider,
+  ProviderProps,
+  PROVIDERS,
+  TDataEnv,
+} from "@/config/rpc"
 import {
   Papi,
   PapiIce,
   PapiNext,
   useRpcProvider,
 } from "@/providers/rpcProvider"
-import { useProviderRpcUrlStore } from "@/states/provider"
+import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
+  bilEnabled: boolean
   isIceEnabled: boolean
 }
 
@@ -47,7 +54,6 @@ export type TProviderData = {
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
-  slotDurationMs: number
   metadata: AssetMetadataFactory
   dryRunErrorDecoder: DryRunErrorDecoder
 }
@@ -57,6 +63,13 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
+
+export const getSortedRpcUrlList = (
+  rpcUrlList: string[],
+  priorityRpcUrl?: string,
+): string[] => {
+  return priorityRpcUrl ? unique([priorityRpcUrl, ...rpcUrlList]) : rpcUrlList
+}
 
 export const getProviderProps = (rpcUrl: string) =>
   PROVIDERS.find((p) => p.url === rpcUrl)
@@ -101,9 +114,7 @@ const getProviderData = async (
     setMetadata: doNothing,
   })
 
-  const urls = priorityRpcUrl
-    ? unique([priorityRpcUrl, ...rpcUrlList])
-    : rpcUrlList
+  const urls = getSortedRpcUrlList(rpcUrlList, priorityRpcUrl)
 
   const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 
@@ -112,10 +123,15 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, hollarBond] = await Promise.all([
+  const evm = createPublicClient({
+    transport: custom({
+      request: ({ method, params }) =>
+        papiClient._request(method, params || []),
+    }),
+  })
+
+  const [sdk] = await Promise.all([
     createSdkContext(papiClient),
-    papi.constants.Aura.SlotDuration(),
-    papi.query.Bonds.Bonds.getValue(Number(HOLLAR_BOND_25_08_26_ID)),
     metadata.fetchAssets(),
     metadata.fetchChains(),
     metadata.fetchMetadata(),
@@ -124,13 +140,6 @@ const getProviderData = async (
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
   }
-
-  const evm = createPublicClient({
-    transport: custom({
-      request: ({ method, params }) =>
-        papiClient._request(method, params || []),
-    }),
-  })
 
   const papiIce = papiClient.getTypedApi(hydrationIce)
   const staticIceApis = await papiIce.getStaticApis()
@@ -147,9 +156,9 @@ const getProviderData = async (
     evm,
     sdk,
     rpcUrlList,
-    slotDurationMs: Number(slotDuration),
     featureFlags: {
-      hollarBondsEnabled: !!hollarBond,
+      hollarBondsEnabled: true,
+      bilEnabled: true,
       isIceEnabled,
     },
     metadata,
@@ -176,8 +185,20 @@ export const useIndexerUrl = (): string => {
 
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
+  const { rpcList } = useRpcListStore()
 
-  return useMemo(() => getProviderProps(endpoint) || null, [endpoint])
+  return useMemo(() => {
+    if (!endpoint) return null
+
+    const known = getProviderProps(endpoint)
+    if (known) return known
+
+    const custom = rpcList.find((rpc) => rpc.url === endpoint)
+    return createProvider(
+      custom?.name ?? getHostnameFromUrl(endpoint),
+      endpoint,
+    )
+  }, [endpoint, rpcList])
 }
 
 export const useSquidClient = (): SquidSdk => {
@@ -190,6 +211,8 @@ export const useSquidClient = (): SquidSdk => {
 
   return client
 }
+
+export const neckworkClient = getNeckworkClient(ENV.VITE_NECKWORK_URL)
 
 export const useIndexerClient = (): IndexerSdk => {
   const url = useIndexerUrl()

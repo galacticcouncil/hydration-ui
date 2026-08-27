@@ -18,9 +18,16 @@ import { scaleHuman } from "@/utils/formatting"
 type Props = {
   readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
+  readonly maxSellBalance: string
+  readonly maxSellBalanceLoading: boolean
 }
 
-export const MarketFields: FC<Props> = ({ swap, twap }) => {
+export const MarketFields: FC<Props> = ({
+  swap,
+  twap,
+  maxSellBalance,
+  maxSellBalanceLoading,
+}) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
   const { featureFlags } = useRpcProvider()
@@ -112,6 +119,8 @@ export const MarketFields: FC<Props> = ({ swap, twap }) => {
         label={t("sell")}
         assets={tradable}
         maxBalanceFallback="0"
+        maxBalance={maxSellBalance}
+        maxBalanceLoading={maxSellBalanceLoading}
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
           const isSwitch = sellAsset.id === buyAsset?.id

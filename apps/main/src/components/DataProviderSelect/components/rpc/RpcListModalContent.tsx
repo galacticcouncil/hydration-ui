@@ -18,7 +18,13 @@ import {
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
-export const RpcListModalContent = () => {
+type RpcListModalContentProps = {
+  poll?: boolean
+}
+
+export const RpcListModalContent = ({
+  poll = false,
+}: RpcListModalContentProps) => {
   const { t } = useTranslation("common")
   const { autoMode } = useProviderRpcUrlStore()
   const activeProvider = useActiveProviderProps()
@@ -37,6 +43,7 @@ export const RpcListModalContent = () => {
             <RpcListItemActive
               url={activeProvider.url}
               name={activeProvider.name}
+              poll={poll}
             />
           </Stack>
         ) : (
@@ -53,7 +60,7 @@ export const RpcListModalContent = () => {
 
   return (
     <ModalBody noPadding scrollable={false}>
-      <RpcList />
+      <RpcList poll={poll} />
     </ModalBody>
   )
 }

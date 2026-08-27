@@ -9,6 +9,8 @@ import {
   Locale,
 } from "date-fns"
 
+const ELLIPSIS = "\u2026"
+
 export function wsToHttp(url: string) {
   return url.replace(/^(ws)(s)?:\/\//, (_, _insecure, secure) =>
     secure ? "https://" : "http://",
@@ -31,7 +33,7 @@ export const shorten = (
   const start = string.slice(0, fromStart).trim()
   const end = fromEnd > 0 ? string.slice(fromEnd * -1) : ""
 
-  return fromStart > 0 ? `${start}...${end}` : string
+  return fromStart > 0 ? `${start}${ELLIPSIS}${end}` : string
 }
 
 export const shortenAccountAddress = (address: string, length = 6): string =>
@@ -85,7 +87,6 @@ export const durationInDaysAndHoursFromNow = (
   if (differenceInDays(end, now)) {
     return formatDistanceToNowStrict(end, {
       unit: "day",
-      roundingMethod: "floor",
     })
   }
 

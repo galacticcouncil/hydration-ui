@@ -6,12 +6,9 @@ import { bigShift } from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 
-import {
-  useCrossChainBalance,
-  useCrossChainBalanceSubscription,
-} from "@/api/xcm"
+import { useCrossChainBalance, useCrossChainBalancesFetch } from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
-import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
+import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { numericallyStrDesc } from "@/utils/sort"
 
@@ -39,7 +36,7 @@ export const AssetList: React.FC<AssetListProps> = ({
 }) => {
   const priceIds = useMemo(() => {
     return items.map((item) => {
-      const registryId = registryChain.getBalanceAssetId(item.asset)
+      const registryId = registryChain.getAssetId(item.asset)
       return registryId.toString()
     })
   }, [items, registryChain])
@@ -47,7 +44,7 @@ export const AssetList: React.FC<AssetListProps> = ({
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
     useAssetsPrice(priceIds)
 
-  const { isLoading: isLoadingBalances } = useCrossChainBalanceSubscription(
+  const { isLoading: isLoadingBalances } = useCrossChainBalancesFetch(
     address,
     selectedChain?.key ?? "",
   )
@@ -65,7 +62,7 @@ export const AssetList: React.FC<AssetListProps> = ({
     if (isLoadingBalances || isAssetPriceLoading) return items
 
     const assetsWithBalances = items.map((item) => {
-      const registryId = registryChain.getBalanceAssetId(item.asset)
+      const registryId = registryChain.getAssetId(item.asset)
       const balance = balances?.get(item.asset.key)
       const { price } = getAssetPrice(registryId.toString())
       return {

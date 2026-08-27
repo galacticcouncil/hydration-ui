@@ -1,16 +1,12 @@
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { lazy } from "react"
+import { lazy, Suspense } from "react"
 
-import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
-import { assetsQuery } from "@/api/assets"
-import { useInvalidateOnBlock } from "@/api/chain"
-import { useSquidClient } from "@/api/provider"
+import { useAccountBalances } from "@/api/balances"
+import { useInvalidateOnBlock, useReloadOnStaleBlocks } from "@/api/chain"
+import { useNeckworkSync } from "@/api/neckworkSync"
+import { neckworkClient, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
-import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
@@ -21,9 +17,11 @@ import {
   useXcScanSubscription,
 } from "@/modules/xcm/history"
 import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
+import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -43,9 +41,21 @@ const Web3ConnectModal = lazy(async () => ({
   ),
 }))
 
+const Devtools = import.meta.env.DEV
+  ? lazy(async () => ({
+      default: await import("@/components/Devtools").then((m) => m.Devtools),
+    }))
+  : lazy(async () => ({ default: () => null }))
+
+const RootPendingComponent = () => (
+  <AssetsProvider>
+    <LayoutSkeleton />
+  </AssetsProvider>
+)
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
-  pendingComponent: LayoutSkeleton,
+  pendingComponent: RootPendingComponent,
   head: ({
     match: {
       context: { i18n },
@@ -72,29 +82,30 @@ function RootComponent() {
       <AssetsProvider>
         <RpcProvider>
           <MultisigProvider>
-            <MainLayout />
-            <Services />
-            <Footer />
-            {!hasTopNavbar && <MobileTabBar />}
+            <AssetRegistryGate>
+              <MainLayout />
+              <Services />
+              <Footer />
+              {!hasTopNavbar && <MobileTabBar />}
+            </AssetRegistryGate>
           </MultisigProvider>
         </RpcProvider>
       </AssetsProvider>
-      {hasTopNavbar && <ReactQueryDevtools buttonPosition="top-left" />}
-      {hasTopNavbar && <TanStackRouterDevtools position="top-left" />}
+      {hasTopNavbar && (
+        <Suspense>
+          <Devtools />
+        </Suspense>
+      )}
     </>
   )
 }
 
 function ApiSubscriptions() {
-  const rpcProvider = useRpcProvider()
-  const queryClient = useQueryClient()
-
   useInvalidateOnBlock()
-  useAccountBalanceSubscription()
-  useAccountUniques()
+  useReloadOnStaleBlocks()
+  useNeckworkSync()
+  useAccountBalances()
   usePriceSubscriber()
-  useSuspenseQuery(assetsQuery(rpcProvider, queryClient))
-  useAccountPermitNonce()
 
   return null
 }
@@ -111,10 +122,15 @@ function Services() {
   const squidSdk = useSquidClient()
   const { isConnected, account } = useAccount()
   const { isApiLoaded, papi } = useRpcProvider()
+  const neckworkEnabled = useNeckworkEnabled()
   return (
     <>
       <TransactionManager />
-      <Web3ConnectModal squidSdk={squidSdk} papi={papi} />
+      <Web3ConnectModal
+        squidSdk={squidSdk}
+        neckwork={neckworkEnabled ? neckworkClient : null}
+        papi={papi}
+      />
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>

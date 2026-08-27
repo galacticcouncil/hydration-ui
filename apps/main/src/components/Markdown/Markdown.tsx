@@ -11,12 +11,14 @@ import { lazy, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { mdx } from "@/i18n/content"
+import { ProseSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 
 export type MarkdownProps = ProseProps & {
   id: string
+  values?: Record<string, string | number | boolean>
 }
 
-export const Markdown: React.FC<MarkdownProps> = ({ id, ...props }) => {
+export const Markdown: React.FC<MarkdownProps> = ({ id, values, ...props }) => {
   const { i18n } = useTranslation()
   const locale = i18n.language
 
@@ -30,8 +32,8 @@ export const Markdown: React.FC<MarkdownProps> = ({ id, ...props }) => {
   if (!Mdx) return null
 
   return (
-    <Suspense>
-      <Prose {...props}>
+    <Prose {...props}>
+      <Suspense fallback={<ProseSkeleton />}>
         <MDXProvider
           components={{
             a: ({ href, children, ...rest }) =>
@@ -47,9 +49,9 @@ export const Markdown: React.FC<MarkdownProps> = ({ id, ...props }) => {
               ),
           }}
         >
-          <Mdx />
+          <Mdx {...values} />
         </MDXProvider>
-      </Prose>
-    </Suspense>
+      </Suspense>
+    </Prose>
   )
 }

@@ -26,3 +26,10 @@ export const Plain: Story = {
     variant: "plain",
   },
 }
+
+export const Hoverable: Story = {
+  render: Template,
+  args: {
+    hoverable: true,
+  },
+}

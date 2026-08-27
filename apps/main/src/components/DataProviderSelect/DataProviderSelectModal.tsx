@@ -5,7 +5,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalProps,
-  Separator,
   Stack,
   TabsContent,
   TabsRoot,
@@ -18,7 +17,6 @@ import { useTranslation } from "react-i18next"
 import { AutoModeToggle } from "@/components/DataProviderSelect/components/AutoModeToggle"
 import { RpcForm } from "@/components/DataProviderSelect/components/rpc/RpcForm"
 import { RpcListModalContent } from "@/components/DataProviderSelect/components/rpc/RpcListModalContent"
-import { SquidIndexerForm } from "@/components/DataProviderSelect/components/squid/SquidIndexerForm"
 import { SquidIndexerListModalContent } from "@/components/DataProviderSelect/components/squid/SquidIndexerListModalContent"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -43,16 +41,7 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
         title={t("rpc.change.modal.title")}
         align="center"
         customHeader={
-          <Stack
-            separated
-            pt="m"
-            separator={
-              <Separator
-                my="var(--modal-content-padding)"
-                mx="var(--modal-content-inset)"
-              />
-            }
-          >
+          <Stack pt="m">
             <ToggleGroup<TabView>
               type="single"
               value={view}
@@ -65,27 +54,24 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
                 {t("rpc.change.modal.view.indexer")}
               </ToggleGroupItem>
             </ToggleGroup>
-            <AutoModeToggle
-              size="large"
-              checked={autoMode}
-              onCheckedChange={setAutoMode}
-            />
-            {!autoMode && (
-              <TabsRoot value={view}>
-                <TabsContent value={TabView.RPC}>
-                  <RpcForm />
-                </TabsContent>
-                <TabsContent value={TabView.SQUID}>
-                  <SquidIndexerForm />
-                </TabsContent>
-              </TabsRoot>
-            )}
+            <TabsRoot value={view}>
+              <TabsContent value={TabView.RPC}>
+                <Stack gap="base" pt="base">
+                  <AutoModeToggle
+                    size="large"
+                    checked={autoMode}
+                    onCheckedChange={setAutoMode}
+                  />
+                  {!autoMode && <RpcForm />}
+                </Stack>
+              </TabsContent>
+            </TabsRoot>
           </Stack>
         }
       />
       <TabsRoot value={view}>
         <TabsContent value={TabView.RPC}>
-          <RpcListModalContent />
+          <RpcListModalContent poll={!!props.open} />
         </TabsContent>
         <TabsContent value={TabView.SQUID}>
           <SquidIndexerListModalContent />

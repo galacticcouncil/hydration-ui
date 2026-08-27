@@ -2,9 +2,11 @@ import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
+import Big from "big.js"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
+import { MAX_WITHDRAW_ALL_QUERY_KEY } from "@/api/balances"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useNonce } from "@/modules/transactions/hooks/useNonce"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
@@ -26,8 +28,13 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
-import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
+import {
+  getTxResultBlockHeight,
+  SingleTransaction,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = SingleTransaction &
@@ -76,6 +83,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
   const { account } = useAccount()
@@ -99,7 +107,16 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
   const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
-  const feeAssetBalance = fee?.feeAssetBalance
+  const feeAssetBalance =
+    transaction.executedAmount &&
+    transaction.executedAmount.assetId === feeAssetId
+      ? Big.max(
+          Big(fee?.feeAssetBalance ?? "0")
+            .minus(transaction.executedAmount.amount)
+            .toString(),
+          "0",
+        ).toString()
+      : fee?.feeAssetBalance
 
   const {
     nonce,
@@ -154,6 +171,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const signAndSubmit = () => {
     signAndSubmitMutation.mutate({
       chainKey: transaction.meta.srcChainKey,
+      signerFeeAsset: transaction.signerFeeAsset,
       feeAssetId,
       tip,
       weight: paymentInfo?.weight?.ref_time,
@@ -171,7 +189,15 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
-        addPendingTransaction(transaction.id, nonce, transaction.meta)
+        if (account) {
+          addPendingTransaction({
+            id: transaction.id,
+            nonce,
+            meta: transaction.meta,
+            address: account.address,
+            isPermit: isUsingPermit,
+          })
+        }
       },
       onSuccess: (event) => {
         dispatch(doSetStatus("success"))
@@ -179,6 +205,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         transaction.invalidateQueries?.forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         )
+        // the indexer can't have this block yet — arm the sync instead of
+        // invalidating the neckwork queries now
+        const blockHeight = getTxResultBlockHeight(event)
+        if (blockHeight !== null) armNeckworkSync(blockHeight)
+        queryClient.invalidateQueries({
+          queryKey: MAX_WITHDRAW_ALL_QUERY_KEY,
+        })
         toasts.onSuccess?.(event)
         removePendingTransaction(transaction.id)
       },

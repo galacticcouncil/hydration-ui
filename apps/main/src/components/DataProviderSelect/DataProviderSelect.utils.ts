@@ -1,18 +1,23 @@
+import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
+import { latestBlockHeightQuery } from "@galacticcouncil/indexer/squid"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import {
   DataProviderStatus,
   DataProviderStatusThreshold,
   getDataProviderStatus,
 } from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import { isNumber, prop, uniqueBy } from "remeda"
 
 import { useBestNumber } from "@/api/chain"
+import { neckworkClient, useSquidClient, useSquidUrl } from "@/api/provider"
 import { getIndexerStatus } from "@/components/DataProviderSelect/DataProviderResolver.utils"
+import { ENV } from "@/config/env"
 import { SQUID_URLS } from "@/config/rpc"
-import { useSquidListStore } from "@/states/provider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
   [DataProviderStatus.HEALTHY]: "accents.success.emphasis",
@@ -22,7 +27,7 @@ const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
 }
 
 const ELAPSED_TIME_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
-  { max: 32_000, status: DataProviderStatus.HEALTHY },
+  { max: 45_000, status: DataProviderStatus.HEALTHY },
   { max: 120_000, status: DataProviderStatus.LAGGING },
   { max: Infinity, status: DataProviderStatus.DEGRADED },
 ]
@@ -89,24 +94,67 @@ export const useBlockHeightStatus = (blockHeight: number | null) => {
   }
 }
 
-export const useFullSquidUrlList = () => {
-  const { t } = useTranslation()
-  const { squidList } = useSquidListStore()
-  return useMemo(() => {
-    const list = [
-      ...SQUID_URLS.map(({ name, graphqlUrl }) => ({
-        name,
-        url: graphqlUrl,
-        isCustom: false,
-      })),
-      ...squidList.map((squid, index) => ({
-        ...squid,
-        name:
-          squid.name ?? t("rpc.change.modal.name.label", { index: index + 1 }),
-        isCustom: true,
-      })),
-    ]
+export const useActiveIndexerStatus = () => {
+  const url = useSquidUrl()
+  const squidSdk = useSquidClient()
+  const urlList = useFullSquidUrlList()
 
-    return uniqueBy(list, prop("url"))
-  }, [squidList, t])
+  const {
+    data: blockHeight,
+    isLoading,
+    isError,
+  } = useQuery(latestBlockHeightQuery(squidSdk, url))
+
+  const blockHeightStatus = useBlockHeightStatus(blockHeight ?? null)
+
+  return {
+    name: urlList.find((item) => item.url === url)?.name ?? url,
+    url,
+    blockHeight: blockHeight ?? null,
+    isLoading,
+    isError,
+    ...blockHeightStatus,
+  }
 }
+
+export const useNeckworkIndexerStatus = () => {
+  const neckworkEnabled = useNeckworkEnabled()
+
+  const {
+    data: status,
+    isLoading,
+    isError,
+  } = useQuery({
+    ...neckworkStatusQuery(neckworkClient),
+    enabled: neckworkEnabled,
+  })
+
+  const blockHeightStatus = useBlockHeightStatus(status?.blockHeight ?? null)
+
+  return {
+    name: "Neckwork",
+    url: ENV.VITE_NECKWORK_URL,
+    blockHeight: status?.blockHeight ?? null,
+    isLoading,
+    isError,
+    ...blockHeightStatus,
+  }
+}
+
+export const useActiveDataSourceStatus = () => {
+  const neckworkEnabled = useNeckworkEnabled()
+  const neckwork = useNeckworkIndexerStatus()
+  const squid = useActiveIndexerStatus()
+
+  return neckworkEnabled ? neckwork : squid
+}
+
+export const useFullSquidUrlList = () =>
+  useMemo(
+    () =>
+      uniqueBy(
+        SQUID_URLS.map(({ name, graphqlUrl }) => ({ name, url: graphqlUrl })),
+        prop("url"),
+      ),
+    [],
+  )

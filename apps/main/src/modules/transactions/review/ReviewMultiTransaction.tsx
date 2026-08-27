@@ -45,6 +45,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   const [isPendingResolution, setIsPendingResolution] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isLastSubmitted, setIsLastSubmitted] = useState(false)
+  const [isLastError, setIsLastError] = useState(false)
   const [hasUserClosedModal, setHasUserClosedModal] = useState(false)
 
   const txArray = transaction.tx
@@ -112,6 +113,9 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
       },
       onError: (message) => {
         setIsLoading(false)
+        if (isLastTransaction) {
+          setIsLastError(true)
+        }
         transaction.onError?.(message)
       },
       onClose: () => {
@@ -139,7 +143,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   const isModalOpen =
     !hasUserClosedModal && currentIndex < txArray.length && !isLastSubmitted
 
-  const isClosable = isFirstTransaction && !isLoading
+  const isClosable = (isFirstTransaction && !isLoading) || isLastError
 
   const { title, description } = currentConfig
 

@@ -1,4 +1,5 @@
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
 import { TradeOrder } from "@/api/trade"
@@ -8,6 +9,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useTwapFee = (twap: TradeOrder) => {
   const { sdk, featureFlags } = useRpcProvider()
+  const { account } = useAccount()
 
   // Estimate against the extrinsic that will actually be submitted:
   // a Dca intent under ICE, a DCA schedule otherwise.
@@ -26,7 +28,7 @@ export const useTwapFee = (twap: TradeOrder) => {
         : sdk.tx.order(twap)
 
       return builder
-        .withBeneficiary(ENV.VITE_TRSRY_ADDR)
+        .withBeneficiary(account?.address ?? ENV.VITE_TRSRY_ADDR)
         .build()
         .then((tx) => tx.get())
     },

@@ -1,20 +1,16 @@
 import {
   DataTable,
-  DataTableRef,
   Modal,
-  Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { FC, Ref, useState } from "react"
+import { FC, useState } from "react"
 
-import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
 import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal"
 import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow"
-import { MyAssetsEmptyState } from "@/modules/wallet/assets/MyAssets/MyAssetsEmptyState"
 import {
   AssetDetailModal,
   MyAsset,
@@ -27,18 +23,14 @@ type Props = {
   readonly data: Array<MyAsset>
   readonly isLoading: boolean
   readonly searchPhrase: string
-  readonly paginationProps: PaginationProps
   readonly sortingProps: SortingProps
-  readonly ref?: Ref<DataTableRef>
 }
 
 export const MyAssetsTable: FC<Props> = ({
   data,
   isLoading,
   searchPhrase,
-  paginationProps,
   sortingProps,
-  ref,
 }) => {
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
@@ -51,12 +43,9 @@ export const MyAssetsTable: FC<Props> = ({
   } | null>(null)
 
   return (
-    <TableContainer as={Paper}>
+    <TableContainer>
       <DataTable
-        ref={ref}
         isLoading={isLoading}
-        paginated
-        {...paginationProps}
         {...sortingProps}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
@@ -67,6 +56,7 @@ export const MyAssetsTable: FC<Props> = ({
         }
         data={data}
         columns={columns}
+        size="small"
         expandable={!isMobile}
         renderSubComponent={(asset) =>
           asset.id === native.id ? (
@@ -75,7 +65,6 @@ export const MyAssetsTable: FC<Props> = ({
             <AssetDetailExpanded asset={asset} />
           )
         }
-        emptyState={<MyAssetsEmptyState />}
         onRowClick={(asset) => setIsDetailOpen({ type: null, detail: asset })}
       />
       <Modal

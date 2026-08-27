@@ -9,10 +9,7 @@ import { useDevice } from "@galacticcouncil/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  AccountFilter,
-  AccountFilterOption,
-} from "@/components/account/AccountFilter"
+import { AccountFilter } from "@/components/account/AccountFilter"
 import { ProviderButton } from "@/components/provider/ProviderButton"
 import { ProviderConnectAll } from "@/components/provider/ProviderConnectAll"
 import { ProviderDeeplinkedButton } from "@/components/provider/ProviderDeeplinkedButton"
@@ -21,6 +18,7 @@ import { ProviderInstalledButton } from "@/components/provider/ProviderInstalled
 import { ProviderLastConnectedButton } from "@/components/provider/ProviderLastConnectedButton"
 import { ProviderMultisigButton } from "@/components/provider/ProviderMultisigButton"
 import { Web3ConnectModalPage } from "@/config/modal"
+import { WalletAccountFilterOption } from "@/config/wallet"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useWalletProviders } from "@/hooks/useWalletProviders"
 import { WalletMode } from "@/hooks/useWeb3Connect"
@@ -31,7 +29,7 @@ export const ProviderSelect = () => {
   const { t } = useTranslation()
   const { setPage, mode } = useWeb3ConnectContext()
   const { isMobileDevice } = useDevice()
-  const [filter, setFilter] = useState<AccountFilterOption>(
+  const [filter, setFilter] = useState<WalletAccountFilterOption>(
     getDefaultAccountFilterByMode(mode),
   )
 
@@ -48,7 +46,11 @@ export const ProviderSelect = () => {
   return (
     <Stack gap="base">
       {isDefaultMode && (
-        <AccountFilter active={filter} onSetActive={setFilter} />
+        <AccountFilter
+          active={filter}
+          whitelist={[WalletMode.Substrate, WalletMode.EVM]}
+          onSetActive={setFilter}
+        />
       )}
       <Collapsible
         label={

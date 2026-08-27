@@ -1,16 +1,23 @@
-import { UserEModeFragment } from "@galacticcouncil/indexer/squid"
 import { useMoneyMarketData } from "@galacticcouncil/money-market/hooks"
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-export const EModeDescription: FC<UserEModeFragment> = ({ categoryId }) => {
+type Props = {
+  readonly categoryId: number | null | undefined
+}
+
+export const EModeDescription: FC<Props> = ({ categoryId }) => {
   const { t } = useTranslation(["borrow"])
   const { eModes } = useMoneyMarketData()
 
   if (categoryId === null || categoryId === undefined) {
-    return null
+    return (
+      <Text fs="p4" color={getToken("text.high")}>
+        {t("borrow:history.table.emodeUpdated")}
+      </Text>
+    )
   }
 
   const emode = eModes?.[categoryId]?.label
@@ -23,7 +30,7 @@ export const EModeDescription: FC<UserEModeFragment> = ({ categoryId }) => {
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap" }}
     >
-      <Text fs="p3">
+      <Text fs="p4" color={getToken("text.high")}>
         <Trans
           t={t}
           i18nKey={

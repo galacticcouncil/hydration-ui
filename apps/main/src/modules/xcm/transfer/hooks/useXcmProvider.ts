@@ -3,42 +3,58 @@ import { AssetRoute, EvmParachain } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { createContext, useContext } from "react"
 
+import { XcmTransferArgs } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
+
+export type XcmAlertSeverity = "error" | "warning" | "info"
 
 export type XcmAlert = {
   key: string
   message: string
+  severity: XcmAlertSeverity
+  title?: string
+  requiresUserConsent?: boolean | string
 }
 
 type XcmContextValue = {
   readonly isLoading: boolean
+  readonly isLoadingBalances: boolean
   readonly isLoadingCall: boolean
   readonly isLoadingTransfer: boolean
+  readonly isLoadingSrcBalances: boolean
+  readonly isLoadingDestBalances: boolean
   readonly isConnectedAccountValid: boolean
   readonly transfer: Transfer | null
+  readonly transferArgs: XcmTransferArgs | null
   readonly call: Call | null
   readonly dryRunError: DryRunError | null
   readonly alerts: XcmAlert[]
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
   readonly availableBridgeRoutes: AssetRoute[]
+  readonly selectedRoute: AssetRoute | null
   readonly registryChain: EvmParachain
   readonly status: XcmTransferStatus
 }
 
 export const XcmContext = createContext<XcmContextValue>({
   isLoading: false,
+  isLoadingBalances: false,
   isLoadingCall: false,
   isLoadingTransfer: false,
+  isLoadingSrcBalances: false,
+  isLoadingDestBalances: false,
   isConnectedAccountValid: false,
   transfer: null,
+  transferArgs: null,
   call: null,
   dryRunError: null,
   alerts: [],
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],
   availableBridgeRoutes: [],
+  selectedRoute: null,
   registryChain: {} as EvmParachain,
   status: XcmTransferStatus.Default,
 })

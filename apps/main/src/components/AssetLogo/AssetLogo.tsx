@@ -1,3 +1,4 @@
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   AssetLogo as AssetLogoPrimitive,
   AssetLogoDecoration,
@@ -32,7 +33,13 @@ type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   isLoading?: boolean
 }
 
-const ATOKEN_DECOR_BLACKLIST = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
+const ATOKEN_DECOR_BLACKLIST = [
+  GDOT_ERC20_ID,
+  GETH_ERC20_ID,
+  GSOL_ERC20_ID,
+  GETH_ERC20_ID,
+  HDX_ERC20_ASSET_ID,
+]
 
 export const AssetLogo: React.FC<AssetLogoProps> = ({
   id,

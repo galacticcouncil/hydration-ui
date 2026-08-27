@@ -1,8 +1,10 @@
+import { h160 } from "@galacticcouncil/common"
 import {
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
   isH160Address,
   isParachain,
+  wsToHttp,
 } from "@galacticcouncil/utils"
 import {
   Account,
@@ -15,12 +17,21 @@ import {
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
+  WalletProviderType,
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
+import {
+  AnyChain,
+  Asset,
+  ChainEcosystem,
+  EvmParachain,
+} from "@galacticcouncil/xc-core"
 import { filter, first, pipe, sortBy } from "remeda"
 
+import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+
+const { H160 } = h160
 
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
@@ -32,7 +43,11 @@ const CHAINS_PRIORITY = [
   "moonbeam",
   "assethub_kusama",
 ]
-const CHAINS_BLACKLIST = ["polkadot"]
+const CHAINS_BLACKLIST = ["polkadot", "interlay"]
+
+if (ENV.VITE_WORMHOLE_DISABLED) {
+  CHAINS_BLACKLIST.push("moonbeam")
+}
 
 export const getChainPriority = (key: string) => {
   const idx = CHAINS_PRIORITY.indexOf(key)
@@ -87,15 +102,20 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
   const destChain = chainsMap.get(HYDRATION_CHAIN_KEY) || null
 
   const destAccount =
-    !!destChain && isAccountValidOnChain(account, destChain) ? account : null
+    !!destChain && canUseAccountAsDestination(account, destChain)
+      ? account
+      : null
 
   return {
     srcChain,
     srcAsset,
-    srcAmount: "",
+
     destChain,
     destAsset: srcAsset,
+
+    srcAmount: "",
     destAmount: "",
+
     destAddress: destAccount?.rawAddress ?? "",
     destAccount: destAccount,
     bridgeProvider: null,
@@ -135,7 +155,43 @@ export const isAccountValidOnChain = (
   chain: AnyChain,
 ): account is Account => {
   if (!account) return false
-  const walletMode = getWalletModeByChain(chain)
+  if (account.provider === WalletProviderType.ExternalWallet) return true
 
+  const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+}
+
+export const canUseAccountAsDestination = (
+  account: Account | null,
+  chain: AnyChain,
+): account is Account => {
+  if (!account) return false
+  if (account.provider === WalletProviderType.ExternalWallet) return false
+  return isAccountValidOnChain(account, chain)
+}
+
+export const withPermissiveEvmResolver = (
+  chain: EvmParachain,
+): EvmParachain => {
+  // @ts-expect-error - mutating readonly property
+  chain.evmResolver = {
+    toH160: async (address: string) => H160.fromAny(address),
+  }
+  return chain
+}
+
+export const withCustomChainRpcUrls = (
+  chain: EvmParachain,
+  wsUrls: string[],
+): EvmParachain => {
+  const httpUrls = wsUrls.map(wsToHttp)
+  // @ts-expect-error - mutating readonly property
+  chain.ws = wsUrls
+  // @ts-expect-error - mutating readonly property
+  chain.rpcs = httpUrls
+  chain.evmChain.rpcUrls = {
+    default: { http: httpUrls, webSocket: wsUrls },
+    public: { http: httpUrls, webSocket: wsUrls },
+  }
+  return chain
 }

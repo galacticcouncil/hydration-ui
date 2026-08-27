@@ -1,4 +1,10 @@
-import { Box, Flex, Tooltip } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  Skeleton,
+  Text,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
@@ -20,6 +26,8 @@ type Props = {
   readonly supportTooltipPercent: number
   readonly supportMarkPercentage: number
   readonly voted: boolean
+  readonly isTitledLoading: boolean
+  readonly title: string
 }
 
 export const ReferendaStatus: FC<Props> = ({
@@ -34,12 +42,21 @@ export const ReferendaStatus: FC<Props> = ({
   supportTooltipPercent,
   supportMarkPercentage,
   voted,
+  isTitledLoading,
+  title,
 }) => {
   const { t } = useTranslation(["common", "staking"])
   const { isMobile } = useBreakpoints()
 
   return (
-    <Flex direction="column" gap="l">
+    <Flex direction="column" gap="l" px="l">
+      {isTitledLoading ? (
+        <Skeleton height={23} width="100%" />
+      ) : (
+        <Text py="s" fw={500} fs="p2" lh={1.3} color={getToken("text.high")}>
+          {title || "N/a"}
+        </Text>
+      )}
       <Flex direction="column" gap="s">
         <SReferendaProgress size="large">
           <Flex position="relative" gap="s">

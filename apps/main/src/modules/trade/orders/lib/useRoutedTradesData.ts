@@ -4,6 +4,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
+import { getSwapExplorerLink } from "@/modules/trade/orders/lib/getSwapExplorerLink"
 import {
   getOrderStatus,
   OrderStatus,
@@ -18,6 +19,7 @@ export type RoutedTradeData = {
   readonly toAmount: string
   readonly fillPrice: string
   readonly date: Date
+  readonly link: string | null
   readonly status: OrderStatus | null
 }
 
@@ -63,6 +65,19 @@ export const useRoutedTradesData = (
             ? getOrderStatus(swap, getAssetWithFallback)
             : null
 
+          const link = getSwapExplorerLink(
+            status,
+            swap?.event
+              ? {
+                  paraBlockHeight: swap.event.paraBlockHeight,
+                  indexInBlock: swap.event.indexInBlock,
+                  extrinsicIndex: swap.event.call?.extrinsic?.indexInBlock,
+                }
+              : null,
+            swap?.dcaScheduleExecutionEvent?.event,
+            status?.kind !== "market" ? status?.scheduleId : undefined,
+          )
+
           const date = new Date(trade.block?.timestamp ?? 0)
 
           return {
@@ -72,6 +87,7 @@ export const useRoutedTradesData = (
             toAmount,
             fillPrice,
             date,
+            link,
             status,
           }
         }) ?? []

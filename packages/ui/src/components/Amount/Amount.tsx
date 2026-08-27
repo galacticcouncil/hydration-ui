@@ -2,6 +2,7 @@ import { ComponentProps, ComponentType, FC, ReactNode, Ref } from "react"
 
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
+import { Skeleton } from "@/components/Skeleton"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
@@ -10,16 +11,17 @@ type AmountSize = "default" | "large"
 type AmountColor = "default" | "tint"
 
 type AmountProps = {
-  readonly label?: string
+  readonly label?: ReactNode
   readonly labelIcon?: ComponentType
   readonly description?: string | ReadonlyArray<string>
   readonly descriptionCustom?: ReactNode
-  readonly value: string
+  readonly value: ReactNode
   readonly displayValue?: string
   readonly variant?: AmountVariant
   readonly className?: string
   readonly size?: AmountSize
   readonly color?: AmountColor
+  readonly isLoading?: boolean
 }
 
 export const Amount: FC<AmountProps> = ({
@@ -33,6 +35,7 @@ export const Amount: FC<AmountProps> = ({
   className,
   size = "default",
   color = "default",
+  isLoading = false,
 }) => {
   return (
     <Flex
@@ -57,11 +60,15 @@ export const Amount: FC<AmountProps> = ({
               }
             />
           )}
-          {label && (
-            <AmountLabel variant={variant} color={color} size={size}>
-              {label}
-            </AmountLabel>
-          )}
+          {label ? (
+            typeof label === "string" ? (
+              <AmountLabel variant={variant} color={color} size={size}>
+                {label}
+              </AmountLabel>
+            ) : (
+              label
+            )
+          ) : null}
         </Flex>
         {descriptionCustom ||
           (description &&
@@ -78,12 +85,17 @@ export const Amount: FC<AmountProps> = ({
         gap="xs"
         align={variant === "horizontalLabel" ? "flex-end" : undefined}
       >
-        <AmountValue variant={variant} size={size}>
-          {value}
-        </AmountValue>
-        {displayValue && (
+        {isLoading || typeof value === "string" ? (
+          <AmountValue variant={variant} size={size}>
+            {isLoading ? <Skeleton width="6em" height="1em" /> : value}
+          </AmountValue>
+        ) : (
+          value
+        )}
+
+        {(isLoading || displayValue) && (
           <AmountDisplayValue variant={variant}>
-            {displayValue}
+            {isLoading ? <Skeleton width="4em" height="1em" /> : displayValue}
           </AmountDisplayValue>
         )}
       </Flex>

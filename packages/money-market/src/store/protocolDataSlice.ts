@@ -1,7 +1,6 @@
 import { Provider } from "@ethersproject/providers"
 import { StateCreator } from "zustand"
 
-import { MoneyMarketEnv } from "@/types"
 import { CustomMarket, MarketDataType } from "@/ui-config/marketsConfig"
 import { NetworkConfig } from "@/ui-config/networksConfig"
 import { getNetworkConfig, marketsData } from "@/utils/marketsAndNetworksConfig"
@@ -14,18 +13,14 @@ type TypePermitParams = {
 }
 
 export interface ProtocolDataSlice {
-  env: MoneyMarketEnv
   provider: Provider | null
   currentMarket: CustomMarket
   currentMarketData: MarketDataType
   currentChainId: number
   currentNetworkConfig: NetworkConfig
-  setProvider: (provider: Provider, env: MoneyMarketEnv) => void
+  setProvider: (provider: Provider) => void
   jsonRpcProvider: () => Provider
-  setCurrentMarket: (
-    market: CustomMarket,
-    omitQueryParameterUpdate?: boolean,
-  ) => void
+  setCurrentMarket: (market: CustomMarket) => void
   tryPermit: ({
     reserveAddress,
     isWrappedBaseAsset,
@@ -42,13 +37,12 @@ export const createProtocolDataSlice: StateCreator<
   const initialMarketData = marketsData[initialMarket]
 
   return {
-    env: "mainnet",
     currentMarket: initialMarket,
     currentMarketData: marketsData[initialMarket],
     currentChainId: initialMarketData.chainId,
     currentNetworkConfig: getNetworkConfig(initialMarketData.chainId),
     provider: null,
-    setProvider: (provider, env) => set({ provider, env }),
+    setProvider: (provider) => set({ provider }),
     jsonRpcProvider: () => get().provider as Provider,
     setCurrentMarket: (market) => {
       const nextMarketData = marketsData[market]

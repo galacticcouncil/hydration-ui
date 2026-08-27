@@ -23,10 +23,16 @@ export const pxToRem = (n: number | string): string => {
 declare const __brand: unique symbol
 export type Branded<T> = true & { [__brand]: T }
 
-export const getToken =
-  (token: ThemeToken | ThemeToken[]) =>
-  (theme: ThemeUI): ThemeUICSSObject =>
+export function getToken(
+  token: ThemeToken,
+): (theme: ThemeUI) => ThemeUICSSObject
+export function getToken(
+  token: ThemeToken[],
+): (theme: ThemeUI) => ThemeUICSSObject[]
+export function getToken(token: ThemeToken | ThemeToken[]) {
+  return (theme: ThemeUI) =>
     Array.isArray(token) ? token.map((t) => get(theme, t)) : get(theme, token)
+}
 
 export function createStyles<T extends SerializedStyles>(
   callback: (theme: EmotionTheme) => T,

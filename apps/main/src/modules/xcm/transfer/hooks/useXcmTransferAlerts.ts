@@ -1,8 +1,15 @@
 import { TransferValidationReport } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
+import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useCBreakerInboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerInboundLimitAlerts"
+import { useCBreakerOutboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerOutboundLimitAlerts"
+import { useHydrationEvmBindingAlert } from "@/modules/xcm/transfer/hooks/useHydrationEvmBindingAlert"
+import { useWormholeNttLimitAlerts } from "@/modules/xcm/transfer/hooks/useWormholeNttLimitAlerts"
+import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { pickXcmLimitAlert } from "@/modules/xcm/transfer/utils/limits"
 
 const REPORT_ERROR_KEYS = [
   "fee.insufficientBalance",
@@ -18,24 +25,52 @@ const isReportErrorKey = (error: string): error is ReportErrorKey => {
 }
 
 export const useXcmTransferAlerts = (
+  form: UseFormReturn<XcmFormValues>,
   transferReport: TransferValidationReport[] | null,
-): XcmAlert[] => {
+  requiresEvmBinding: boolean,
+): { alerts: XcmAlert[]; isLoading: boolean } => {
   const { t } = useTranslation(["xcm"])
-  return useMemo(() => {
-    if (!transferReport) return []
-    const alerts: XcmAlert[] = []
-    for (const e of transferReport) {
-      if (isReportErrorKey(e.error)) {
-        alerts.push({
-          key: e.error,
-          message: t(`report.${e.error}`, {
-            amount: e.amount,
-            symbol: e.asset,
-            chain: e.chain,
-          }),
-        })
+
+  const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
+  const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
+  const wormholeNttLimitAlerts = useWormholeNttLimitAlerts(form)
+  const { alerts: evmBindingAlerts, isLoading: isLoadingEvmBinding } =
+    useHydrationEvmBindingAlert(form, requiresEvmBinding)
+
+  const alerts = useMemo<XcmAlert[]>(() => {
+    const transferReportAlerts: XcmAlert[] = []
+    if (transferReport) {
+      for (const e of transferReport) {
+        if (isReportErrorKey(e.error)) {
+          transferReportAlerts.push({
+            key: e.error,
+            message: t(`report.${e.error}`, {
+              amount: e.amount,
+              symbol: e.asset,
+              chain: e.chain,
+            }),
+            severity: "error",
+          })
+        }
       }
     }
-    return alerts
-  }, [t, transferReport])
+    if (transferReportAlerts.length) return transferReportAlerts
+    if (evmBindingAlerts.length) return evmBindingAlerts
+
+    const limitAlert = pickXcmLimitAlert([
+      ...cBreakerInboundLimitAlerts,
+      ...cBreakerOutboundLimitAlerts,
+      ...wormholeNttLimitAlerts,
+    ])
+    return limitAlert ? [limitAlert] : []
+  }, [
+    t,
+    transferReport,
+    cBreakerInboundLimitAlerts,
+    cBreakerOutboundLimitAlerts,
+    wormholeNttLimitAlerts,
+    evmBindingAlerts,
+  ])
+
+  return { alerts, isLoading: isLoadingEvmBinding }
 }

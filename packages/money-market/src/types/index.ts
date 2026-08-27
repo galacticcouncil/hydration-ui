@@ -1,4 +1,5 @@
 import { ReserveDataHumanized } from "@aave/contract-helpers"
+import { ActivityType } from "@galacticcouncil/utils"
 import { EvmCall } from "@galacticcouncil/xc-sdk"
 
 export type { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
@@ -7,8 +8,6 @@ export enum CapType {
   "supplyCap" = "supplyCap",
   "borrowCap" = "borrowCap",
 }
-
-export type MoneyMarketEnv = "mainnet" | "testnet"
 
 export type ToastsConfig = {
   submitted: string
@@ -19,12 +18,28 @@ export type MoneyMarketTxFn = (
   data: {
     tx: ExtendedEvmCall | ExtendedEvmCall[]
     toasts?: ToastsConfig
+    activity?: ActivityType
   },
   options: {
     onSuccess: () => void
   },
   withExtraGas?: boolean,
 ) => void
+
+type MaxBalanceResult = {
+  maxBalanceHuman: string
+}
+
+type MaxBalanceParams = {
+  assetId?: string
+  tx: ExtendedEvmCall | null
+  feePctBuffer?: number
+  balance?: string
+}
+
+export type UseMaxBalanceFn = (
+  params: MaxBalanceParams,
+) => MaxBalanceResult | undefined
 
 export interface ExtendedEvmCall extends EvmCall {
   nonce?: bigint
@@ -45,7 +60,7 @@ export type ReserveFormatterFn = <T extends ReserveDataHumanized>(
 export type ExternalApyData = Map<
   string,
   {
-    borrowApy: string
-    supplyApy: string
+    borrowApy: string | null
+    supplyApy: string | null
   }
 >

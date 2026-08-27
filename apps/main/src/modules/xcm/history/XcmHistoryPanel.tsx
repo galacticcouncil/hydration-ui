@@ -27,7 +27,9 @@ export const XcmHistoryPanel: React.FC<XcmHistoryPanelProps> = ({
   claimable,
 }) => {
   const { t } = useTranslation(["common"])
-  const [filter, setFilter] = useState<TabView>(TabView.All)
+  const [filter, setFilter] = useState<TabView>(
+    all.length === 0 && claimable.length > 0 ? TabView.Claimable : TabView.All,
+  )
 
   const shouldRenderFilter = claimable.length > 0
 

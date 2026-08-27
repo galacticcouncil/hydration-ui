@@ -1,5 +1,6 @@
 import { SubSquare } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   Button,
   Flex,
   Grid,
@@ -13,22 +14,21 @@ import {
   SReferenda,
   SReferendaProgress,
 } from "@/modules/staking/Referenda.styled"
-import { ReferendaSeparator } from "@/modules/staking/ReferendaSeparator"
 
 export const ReferendaSkeleton: FC = () => {
   const { t } = useTranslation(["staking"])
 
   return (
     <SReferenda>
-      <Skeleton sx={{ mb: 5 }} height="m" width="12.5rem" />
-      <ReferendaSeparator />
-      <Skeleton height="m" width="100%" />
-      <Flex pt="base" pb="s" direction="column" gap="xl">
+      <Box py="m" px="l">
+        <Skeleton sx={{ mb: 5 }} height="m" width="12.5rem" />
+      </Box>
+
+      <Flex pt="base" pb="s" px="l" direction="column" gap="xl">
+        <Skeleton height="m" width="100%" />
         <SReferendaProgress size="large">
-          <Grid flex={1}>
+          <Grid columns={2} gap="s" width="100%">
             <Skeleton sx={{ lineHeight: "5px" }} />
-          </Grid>
-          <Grid flex={1}>
             <Skeleton sx={{ lineHeight: "5px" }} />
           </Grid>
         </SReferendaProgress>
@@ -38,11 +38,16 @@ export const ReferendaSkeleton: FC = () => {
           </Grid>
         </SReferendaProgress>
       </Flex>
-      <ReferendaSeparator />
-      <Flex justify="flex-end">
-        <Button size="large" disabled width="min-content">
-          <Icon component={SubSquare} size="s" color="white" />
-          {t("staking:referenda.item.cta")}
+
+      <Flex justify="flex-end" py="m" px="l">
+        <Button
+          size="medium"
+          variant="tertiary"
+          outline
+          disabled
+          aria-label={t("referenda.item.openOnSubSquare")}
+        >
+          <Icon component={SubSquare} />
         </Button>
       </Flex>
     </SReferenda>

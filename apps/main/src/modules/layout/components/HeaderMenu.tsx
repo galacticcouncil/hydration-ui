@@ -6,16 +6,21 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@galacticcouncil/ui/components"
-import { Link, useMatchRoute } from "@tanstack/react-router"
+import { useMatchRoute } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
-import { LINKS, NavigationItem } from "@/config/navigation"
+import { LINKS } from "@/config/navigation"
 import {
   HIDDEN_DESKTOP_NAV_ROUTES,
   useMenuTranslations,
 } from "@/modules/layout/components/HeaderMenu.utils"
+import {
+  isExternalNavItem,
+  NavigationItemLabel,
+  NavigationItemLink,
+} from "@/modules/layout/components/NavigationItemLink"
+import { StrategiesHeaderSubmenu } from "@/modules/layout/components/StrategiesHeaderSubmenu"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
-import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 export const HeaderMenu: React.FC<
   React.ComponentProps<typeof NavigationMenu>
@@ -34,34 +39,41 @@ export const HeaderMenu: React.FC<
   return (
     <NavigationMenu {...props}>
       <NavigationMenuList>
-        {navigation.map(({ key, children, to, search, defaultChild }) => {
-          const linkTo = defaultChild ?? to
+        {navigation.map((item) => {
+          const { key, children, to } = item
+          const external = isExternalNavItem(item)
 
           const isLiquidityPage = to === LINKS.liquidity
+          const isStrategiesPage = to === LINKS.strategies
 
           return (
             <NavigationMenuItem key={key} data-intersect={key}>
               <NavigationMenuTrigger asChild>
-                <Link to={linkTo} search={search}>
-                  {translations[key].title}
-                </Link>
+                <NavigationItemLink item={item}>
+                  <NavigationItemLabel
+                    title={translations[key].title}
+                    external={external}
+                  />
+                </NavigationItemLink>
               </NavigationMenuTrigger>
               {children &&
                 children.length > 1 &&
-                (isLiquidityPage ? (
-                  <LiquidityMenuContent items={children} />
-                ) : (
+                (isLiquidityPage ? null : (
                   <NavigationMenuContent>
-                    {children.map(({ to, search, key, icon }) => (
-                      <DetailedLink
-                        key={key}
-                        to={to}
-                        search={search}
-                        title={translations[key].title}
-                        description={translations[key].description}
-                        icon={icon ?? IconPlaceholder}
-                      />
-                    ))}
+                    {isStrategiesPage ? (
+                      <StrategiesHeaderSubmenu items={children} />
+                    ) : (
+                      children.map(({ to, search, key, icon }) => (
+                        <DetailedLink
+                          key={key}
+                          to={to}
+                          search={search}
+                          title={translations[key].title}
+                          description={translations[key].description}
+                          icon={icon ?? IconPlaceholder}
+                        />
+                      ))
+                    )}
                   </NavigationMenuContent>
                 ))}
             </NavigationMenuItem>
@@ -69,29 +81,5 @@ export const HeaderMenu: React.FC<
         })}
       </NavigationMenuList>
     </NavigationMenu>
-  )
-}
-
-const LiquidityMenuContent = ({ items }: { items: NavigationItem[] }) => {
-  const translations = useMenuTranslations()
-  const isLiquidityProvided = useIsLiquidityProvided()
-
-  if (!isLiquidityProvided) {
-    return null
-  }
-
-  return (
-    <NavigationMenuContent>
-      {items.map(({ to, search, key, icon }) => (
-        <DetailedLink
-          key={key}
-          to={to}
-          search={search}
-          title={translations[key].title}
-          description={translations[key].description}
-          icon={icon ?? IconPlaceholder}
-        />
-      ))}
-    </NavigationMenuContent>
   )
 }

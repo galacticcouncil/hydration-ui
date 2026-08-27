@@ -32,7 +32,7 @@ const DEFAULT_ASSETS_METADATA: TMetadataResource["assets"] = {
 }
 
 const BASE_URL =
-  "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
+  "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master"
 
 export class AssetMetadataFactory {
   private static _instance: AssetMetadataFactory = new AssetMetadataFactory()

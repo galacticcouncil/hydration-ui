@@ -1,6 +1,7 @@
 import {
   ArrowRightLeftIcon,
   BanknoteIcon,
+  BlocksIcon,
   ChartPieIcon,
   CoinsIcon,
   DropletIcon,
@@ -8,11 +9,13 @@ import {
   GemIcon,
   GoalIcon,
   Grid2X2Icon,
+  HDXClassic,
   HistoryIcon,
   Repeat2Icon,
   WalletCardsIcon,
   WavesIcon,
 } from "@galacticcouncil/ui/assets/icons"
+import { neckwork } from "@galacticcouncil/utils"
 import { TFunction } from "i18next"
 
 import { FileRouteTypes } from "@/routeTree.gen"
@@ -31,14 +34,15 @@ export const LINKS = {
   swapLimit: "/trade/swap/limit",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
-  walletTransactions: "/wallet/transactions",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
   staking: "/staking",
-  // stakingDashboard: "/staking/dashboard",
+  stakingOld: "/staking-old",
+  stakingGigaStake: "/staking",
+  //governance: "/governance",
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
@@ -52,22 +56,44 @@ export const LINKS = {
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
   // memepad: "/memepad",
+  strategies: "/strategies",
+  strategiesBil: "/strategies/bil-vault",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
-export type NavigationKey = keyof typeof LINKS
+export const EXTERNAL_LINKS = {
+  explorer: neckwork.base,
+} as const
 
-export type NavigationItem = {
-  key: NavigationKey
-  to: Route
+export type ExternalNavigationKey = keyof typeof EXTERNAL_LINKS
+export type NavigationKey = keyof typeof LINKS | ExternalNavigationKey
+
+type NavigationItemCommon = {
   icon?: React.ComponentType
   enabled?: boolean
-  children?: NavigationItem[]
   defaultChild?: Route
   search?: Record<string, string | boolean>
 }
+
+export type InternalNavigationItem = NavigationItemCommon & {
+  key: Exclude<NavigationKey, ExternalNavigationKey>
+  to: Route
+  href?: never
+  children?: InternalNavigationItem[]
+}
+
+export type ExternalNavigationItem = NavigationItemCommon & {
+  key: ExternalNavigationKey
+  href: string
+  to?: never
+  children?: never
+}
+
+export type NavigationItem = InternalNavigationItem | ExternalNavigationItem
 
 export const NAVIGATION: NavigationItem[] = [
   {
@@ -101,6 +127,19 @@ export const NAVIGATION: NavigationItem[] = [
     ],
   },
   {
+    key: "strategies",
+    to: LINKS.strategies,
+    icon: CoinsIcon,
+    children: [
+      { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
+      {
+        key: "strategiesHollarBonds",
+        to: LINKS.strategiesHollarBonds,
+        icon: GoalIcon,
+      },
+    ],
+  },
+  {
     key: "liquidity",
     to: LINKS.liquidity,
     icon: DropletIcon,
@@ -124,10 +163,7 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.wallet,
     icon: WalletCardsIcon,
     defaultChild: LINKS.walletAssets,
-    children: [
-      { key: "walletAssets", to: LINKS.walletAssets },
-      // { key: "walletTransactions", to: LINKS.walletTransactions },
-    ],
+    children: [{ key: "walletAssets", to: LINKS.walletAssets }],
   },
   {
     key: "crossChain",
@@ -159,20 +195,20 @@ export const NAVIGATION: NavigationItem[] = [
     key: "staking",
     to: LINKS.staking,
     icon: GemIcon,
+    children: [
+      {
+        key: "stakingGigaStake",
+        to: LINKS.staking,
+        icon: HDXClassic,
+      },
+      { key: "stakingOld", to: LINKS.stakingOld, icon: ChartPieIcon },
+    ],
   },
   {
-    key: "strategiesHollarBonds",
-    to: LINKS.strategiesHollarBonds,
-    icon: GoalIcon,
+    key: "explorer",
+    href: EXTERNAL_LINKS.explorer,
+    icon: BlocksIcon,
   },
-  // {
-  //   key: "referrals",
-  //   to: LINKS.referrals,
-  // },
-  // {
-  //   key: "memepad",
-  //   to: LINKS.memepad,
-  // },
 ]
 
 export const getMenuTranslations = (t: TFunction) =>
@@ -201,10 +237,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.walletAssets.title"),
       description: "",
     },
-    walletTransactions: {
-      title: t("navigation.walletTransactions.title"),
-      description: "",
-    },
     crossChain: {
       title: t("navigation.crossChain.title"),
       description: "",
@@ -213,10 +245,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.crossChainHistory.title"),
       description: t("navigation.crossChainHistory.description"),
     },
-    // bridge: {
-    //   title: t("navigation.bridge.title"),
-    //   description: "",
-    // },
     trade: {
       title: t("navigation.trade.title"),
       description: "",
@@ -257,18 +285,14 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.staking.title"),
       description: t("navigation.staking.description"),
     },
-    // stakingDashboard: {
-    //   title: t("navigation.stakingDashboard.title"),
-    //   description: "",
-    // },
-    // stakingGovernance: {
-    //   title: t("navigation.stakingGovernance.title"),
-    //   description: "",
-    // },
-    // referrals: {
-    //   title: t("navigation.referrals.title"),
-    //   description: "",
-    // },
+    stakingOld: {
+      title: t("navigation.stakingOld.title"),
+      description: t("navigation.staking.description"),
+    },
+    stakingGigaStake: {
+      title: t("navigation.stakingGigaStake.title"),
+      description: t("navigation.staking.description"),
+    },
     borrow: {
       title: t("navigation.borrow.title"),
       description: "",
@@ -313,16 +337,32 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
-    strategiesHollarBonds: {
-      title: t("navigation.strategiesHollarBonds.title"),
+    strategies: {
+      title: t("navigation.strategies.title"),
       description: "",
     },
-    // memepad: {
-    //   title: t("navigation.memepad.title"),
-    //   description: "",
-    // },
+    strategiesBil: {
+      title: t("navigation.strategiesBil.title"),
+      description: t("navigation.strategiesBil.description"),
+    },
+    strategiesHollarBonds: {
+      title: t("navigation.strategiesHollarBonds.title"),
+      description: t("navigation.strategiesHollarBonds.description"),
+    },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
+    },
     submitTransaction: {
       title: t("navigation.submitTransaction.title"),
+      description: "",
+    },
+    explorer: {
+      title: t("navigation.explorer.title"),
       description: "",
     },
   }) satisfies Record<NavigationKey, { title: string; description: string }>
@@ -356,24 +396,24 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "strategies",
   "liquidity",
   "wallet",
   "crossChain",
   "stats",
   "staking",
-  // "referrals",
-  // "memepad",
+  "explorer",
 ]
 export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "wallet",
   "trade",
   "liquidity",
   "borrow",
+  "strategies",
   "crossChain",
   "stats",
   "staking",
-  // "referrals",
-  // "memepad",
+  "explorer",
 ]
 
 export const NAV_ITEMS_SHOWN_MOBILE = 4

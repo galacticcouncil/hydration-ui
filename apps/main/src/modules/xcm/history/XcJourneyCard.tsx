@@ -15,7 +15,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { basejumpscan, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
@@ -30,23 +29,19 @@ import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
   getTransferAsset,
+  getTransferUsdValue,
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
-import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
-import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
+import { isJourneyPendingClaim } from "@/modules/xcm/history/utils/claim"
+import {
+  getFormattedAddresses,
+  getJourneyExplorerLink,
+} from "@/modules/xcm/history/utils/journey"
 import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
-  const {
-    origin,
-    destination,
-    sentAt,
-    correlationId,
-    status,
-    totalUsd,
-    originProtocol,
-  } = journey
+  const { origin, destination, sentAt, status, originProtocol } = journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
 
@@ -55,15 +50,12 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const transferAsset = getTransferAsset(journey)
   const { from, to } = getFormattedAddresses(journey)
 
-  const link =
-    originProtocol === "basejump"
-      ? basejumpscan.tx(correlationId)
-      : xcscan.tx(correlationId)
+  const link = getJourneyExplorerLink(journey)
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
-  const isClaimable = isNotPending && isJourneyClaimable(journey)
+  const isClaimable = isNotPending && isJourneyPendingClaim(journey)
 
-  const usdValue = Big(totalUsd || transferAsset?.usd || 0)
+  const usdValue = Big(getTransferUsdValue(journey, transferAsset))
 
   return (
     <Stack as={Paper} px="primary">

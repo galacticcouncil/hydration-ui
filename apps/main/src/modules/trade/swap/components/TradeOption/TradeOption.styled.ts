@@ -6,41 +6,10 @@ export const STradeOptionSkeleton = styled.div(
     display: grid;
 
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
-    border-radius: 8px;
-    padding: 16px 12px;
-  `,
-)
+    border-radius: ${theme.radii.m};
+    padding: ${theme.space.l} ${theme.space.m};
 
-export const STradeOptionContainer = styled.button<{ active: boolean }>(
-  ({ theme, active }) => css`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: ${theme.space.base};
-
-    border: 1px solid ${theme.buttons.outlineDark.onOutline};
-    border-radius: 8px;
-
-    padding: 16px 12px;
-
-    cursor: pointer;
-
-    transition: ${theme.transitions.colors};
-
-    ${active
-      ? css`
-          background-color: ${theme.buttons.secondary.outline.fill};
-          border-color: ${theme.buttons.secondary.outline.outline};
-        `
-      : css`
-          &:hover:not(:disabled) {
-            background-color: ${theme.buttons.outlineDark.rest};
-          }
-        `}
-
-    &:disabled {
-      cursor: unset;
-      opacity: 0.6;
-    }
+    width: 100%;
+    height: 4rem;
   `,
 )

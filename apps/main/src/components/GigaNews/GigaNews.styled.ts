@@ -84,6 +84,8 @@ export const SStackLayer = styled.div<{ readonly $depth: number }>(
       opacity 0.22s ease;
     pointer-events: ${$depth === 0 ? "auto" : "none"};
 
+    will-change: transform;
+
     ${$depth === 0 &&
     css`
       &:hover {
@@ -97,6 +99,6 @@ export const SStackLayer = styled.div<{ readonly $depth: number }>(
   `,
 )
 
-export const SGigaNewsContainer = styled(Box)<{ readonly isHidden?: boolean }>(
-  ({ isHidden }) => hiddenStyles(isHidden),
-)
+export const SGigaNewsContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "isHidden",
+})<{ readonly isHidden?: boolean }>(({ isHidden }) => hiddenStyles(isHidden))

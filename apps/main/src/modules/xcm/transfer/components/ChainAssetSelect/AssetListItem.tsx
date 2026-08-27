@@ -19,7 +19,7 @@ import { isBigInt } from "remeda"
 
 import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetBridgeTags"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
-import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
+import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssets } from "@/providers/assetsProvider"
 import { toDecimal } from "@/utils/formatting"
 
@@ -51,7 +51,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   const { t } = useTranslation(["common"])
   const { getAsset } = useAssets()
 
-  const registryId = registryChain.getBalanceAssetId(asset)
+  const registryId = registryChain.getAssetId(asset)
   const registryAsset = getAsset(registryId.toString())
 
   const meta = registryAsset

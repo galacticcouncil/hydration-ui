@@ -2,21 +2,28 @@ import { Flex, Separator, Stack } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
-import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { LimitPostFormDisclaimer } from "@/modules/trade/swap/components/LimitPostFormDisclaimer"
 import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeader"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import {
+  TRADE_CHART_BY_SOURCE,
+  TRADE_ORDERS_BY_SOURCE,
+  useTradeDataSource,
+} from "@/modules/trade/swap/tradeDataSource"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
 export const TRADE_CHART_DESKTOP_HEIGHT = 460
 
 export const SwapPageDesktop = () => {
+  const source = useTradeDataSource()
+  const TradeChart = TRADE_CHART_BY_SOURCE[source]
+  const TradeOrders = TRADE_ORDERS_BY_SOURCE[source]
+
   return (
     <Stack gap="xl">
       <PageHeader />
-      <TwoColumnGrid template="sidebar">
+      <TwoColumnGrid template="sidebar" sx={{ gridTemplateRows: "auto 1fr" }}>
         <TradeChart height={TRADE_CHART_DESKTOP_HEIGHT} />
         <Flex
           direction="column"
@@ -29,7 +36,7 @@ export const SwapPageDesktop = () => {
         >
           <SSwapFormContainer width="100%">
             <FormHeader />
-            <Separator mx={-20} />
+            <Separator mx="-xl" />
             <Outlet />
           </SSwapFormContainer>
           <LimitPostFormDisclaimer />

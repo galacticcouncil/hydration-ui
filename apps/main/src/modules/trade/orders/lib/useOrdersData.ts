@@ -66,6 +66,13 @@ export const isIntentOrder = (
 export const isDcaScheduleOrder = (order: OrderData): order is DcaOrderData =>
   "scheduleId" in order
 
+// A schedule is keyed on chain by scheduleId, an intent by intentId, so neither
+// alone identifies a row in a list that mixes the two.
+export const orderKey = (order: OrderData): string =>
+  isDcaScheduleOrder(order)
+    ? `schedule:${order.scheduleId}`
+    : `intent:${order.intentId}`
+
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,
   assetIds: Array<string>,

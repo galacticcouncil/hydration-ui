@@ -1,10 +1,12 @@
 import { calculate_accumulated_rps } from "@galacticcouncil/math-staking"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { secondsToMilliseconds } from "date-fns"
+import { secondsInWeek, secondsInYear } from "date-fns/constants"
 import { useMemo } from "react"
 
 import { HDXStakingBalanceQuery } from "@/api/balances"
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, useBlockTime } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
 import { useIndexerClient } from "@/api/provider"
 import { potBalanceQuery } from "@/api/staking"
@@ -15,8 +17,8 @@ import {
   stakingInitializedEventsQuery,
 } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_DECIMALS } from "@/utils/consts"
 import { toDecimal } from "@/utils/formatting"
 
 const BIG_0 = Big(0)
@@ -25,6 +27,7 @@ const BIG_QUINTILL = BIG_10.pow(18)
 
 export const useStakingSupply = () => {
   const rpc = useRpcProvider()
+  const { native } = useAssets()
 
   const { data: stakeData, isLoading: stakeLoading } = useQuery(stakeQuery(rpc))
 
@@ -35,7 +38,7 @@ export const useStakingSupply = () => {
 
   const supplyStaked = toDecimal(
     stakeData?.total_stake.toString() ?? "0",
-    NATIVE_ASSET_DECIMALS,
+    native.decimals,
   )
 
   const supplyStakedPercent =
@@ -49,19 +52,20 @@ export const useStakingSupply = () => {
   return {
     supplyStaked,
     supplyStakedPercent,
-    circulatingSupply: toDecimal(
-      circulatingSupply.toString(),
-      NATIVE_ASSET_DECIMALS,
-    ),
+    circulatingSupply: toDecimal(circulatingSupply.toString(), native.decimals),
     isLoading: stakeLoading,
   }
 }
 
-const lengthOfStaking = 100800 // min. amount of block for how long we want to calculate APR from = one week
-const blocksPerYear = 5256000 // blocks per year with 6s block period
+// min. amount of block for how long we want to calculate APR from = one week
+const getLengthOfStaking = (blockTimeMs: number) =>
+  secondsToMilliseconds(secondsInWeek) / blockTimeMs
+const getBlocksPerYear = (blockTimeMs: number) =>
+  secondsToMilliseconds(secondsInYear) / blockTimeMs
 
 export const useStakingAPR = (positionId: bigint) => {
   const rpc = useRpcProvider()
+  const { data: blockTimeMs, isLoading: blockTimeLoading } = useBlockTime()
 
   const { data: bestNumber, isLoading: bestNumberLoading } = useQuery(
     bestNumberQuery(rpc),
@@ -94,7 +98,8 @@ export const useStakingAPR = (positionId: bigint) => {
     accumulatedRpsUpdatedLoading ||
     initializedEventsLoading ||
     stakingConstsLoading ||
-    potBalanceLoading
+    potBalanceLoading ||
+    blockTimeLoading
 
   const stakingAPR = useMemo(() => {
     if (
@@ -103,10 +108,13 @@ export const useStakingAPR = (positionId: bigint) => {
       !bestNumber ||
       !accumulatedRpsUpdated ||
       !initializedEvents ||
-      !potBalance
+      !potBalance ||
+      !blockTimeMs
     ) {
       return undefined
     }
+
+    const blocksPerYear = getBlocksPerYear(blockTimeMs)
 
     const stakingInitialized = initializedEvents.length
       ? initializedEvents[0]
@@ -122,7 +130,7 @@ export const useStakingAPR = (positionId: bigint) => {
     const pendingRewards = Big(potBalance.transferable.toString()).minus(
       pot_reserved_balance.toString(),
     )
-
+    const lengthOfStaking = getLengthOfStaking(blockTimeMs)
     const {
       filteredAccumulatedRpsUpdatedBefore,
       filteredAccumulatedRpsUpdatedAfter,
@@ -252,6 +260,7 @@ export const useStakingAPR = (positionId: bigint) => {
     initializedEvents,
     positionId,
     potBalance,
+    blockTimeMs,
     stakeValue,
   ])
 

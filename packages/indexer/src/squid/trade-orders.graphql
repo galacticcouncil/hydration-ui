@@ -39,6 +39,11 @@ fragment Swap on Swap {
   event {
     paraBlockHeight
     indexInBlock
+    call {
+      extrinsic {
+        indexInBlock
+      }
+    }
   }
   swapInputs {
     nodes {
@@ -57,6 +62,10 @@ fragment Swap on Swap {
     }
   }
   dcaScheduleExecutionEvent {
+    event {
+      paraBlockHeight
+      indexInBlock
+    }
     scheduleExecution {
       schedule {
         ...SwapDcaSchedule
@@ -139,7 +148,7 @@ query UserOpenOrdersCount($address: String!, $assetFilter: DcaScheduleFilter) {
   }
 }
 
-query DcaScheduleExecutions($scheduleId: String!) {
+query DcaScheduleExecutions($scheduleId: String!, $first: Int) {
   dcaSchedule(id: $scheduleId) {
     id
     assetIn {
@@ -149,8 +158,11 @@ query DcaScheduleExecutions($scheduleId: String!) {
       assetRegistryId
     }
     dcaScheduleExecutionsByScheduleId(
+      first: $first
+      orderBy: ID_DESC
       filter: { status: { in: ["Executed", "Failed"] } }
     ) {
+      totalCount
       nodes {
         id
         status
@@ -178,7 +190,20 @@ query DcaScheduleExecutions($scheduleId: String!) {
 }
 
 fragment RoutedTradeSwap on Swap {
+  event {
+    paraBlockHeight
+    indexInBlock
+    call {
+      extrinsic {
+        indexInBlock
+      }
+    }
+  }
   dcaScheduleExecutionEvent {
+    event {
+      paraBlockHeight
+      indexInBlock
+    }
     scheduleExecution {
       schedule {
         ...SwapDcaSchedule

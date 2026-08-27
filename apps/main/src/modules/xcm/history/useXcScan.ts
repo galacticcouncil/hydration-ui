@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react"
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import { mergeJourneys } from "@/modules/xcm/history/utils/journey"
 import {
-  isOptimisticJourneyForTxHash,
-  shouldIgnoreNewJourney,
+  addJourney,
+  mergeLoadedJourneys,
 } from "@/modules/xcm/history/utils/optimistic"
 
 import { useBasejumpScan } from "./useBasejumpScan"
@@ -78,39 +78,16 @@ export const useXcScanSubscription = (address: string) => {
 
       xcStore.subscribe(address, {
         onLoad(journeys) {
-          queryClient.setQueryData(queryKey, journeys)
+          queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
+            mergeLoadedJourneys(old, journeys, address),
+          )
           setIsLoading(false)
           setIsError(false)
         },
         onNew(journey) {
-          queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
-            if (!old) {
-              return [journey]
-            }
-
-            if (shouldIgnoreNewJourney(old, journey)) {
-              return old
-            }
-            const prev = old.filter((item) => {
-              const isOptimisticPrimary = isOptimisticJourneyForTxHash(
-                item,
-                journey.originTxPrimary ?? "",
-              )
-              const isOptimisticSecondary = isOptimisticJourneyForTxHash(
-                item,
-                journey.originTxSecondary ?? "",
-              )
-              const isSameCorrelationId =
-                item.correlationId === journey.correlationId
-              return (
-                !isOptimisticPrimary &&
-                !isOptimisticSecondary &&
-                !isSameCorrelationId
-              )
-            })
-
-            return [journey, ...prev]
-          })
+          queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
+            addJourney(old ?? [], journey, address),
+          )
         },
         onUpdate(journey, prev) {
           queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {

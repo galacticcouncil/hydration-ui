@@ -19,6 +19,8 @@ export const useInitialOtcOfferAmount = (
     ? {
         amountInInitial: eventArgs.amountIn || "0",
         amountOutInitial: eventArgs.amountOut || "0",
+        assetInId: String(eventArgs.assetIn),
+        assetOutId: String(eventArgs.assetOut),
       }
     : undefined
 

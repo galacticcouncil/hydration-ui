@@ -10,7 +10,8 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { Account, useWallet } from "@galacticcouncil/web3-connect"
+import { Account } from "@galacticcouncil/web3-connect"
+import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -35,13 +36,15 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
   onSelectAddress,
 }) => {
   const { t } = useTranslation("xcm")
-  const wallet = useWallet()
   const [isUsingCustomAddress, setIsUsingCustomAddress] = useState(false)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false)
   const { watch } = useFormContext<XcmFormValues>()
 
   const destChain = watch("destChain")
   const destAccount = watch("destAccount")
+  const destWallet = destAccount?.provider
+    ? getWallet(destAccount.provider)
+    : null
 
   const handleCustomAddressSubmit = (address: string) => {
     onSelectAddress(address.trim())
@@ -72,7 +75,7 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
                 {destAccount ? (
                   <RecipientConnectTile
                     account={destAccount}
-                    walletLogoSrc={wallet?.logo}
+                    walletLogoSrc={destWallet?.logo}
                     onSelect={onClose}
                     onConnect={() => setIsConnectModalOpen(true)}
                   />

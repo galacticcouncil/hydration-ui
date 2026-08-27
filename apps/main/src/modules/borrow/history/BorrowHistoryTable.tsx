@@ -8,10 +8,10 @@ import {
 import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo } from "react"
 
+import { useMoneyMarketEvents } from "@/api/borrow"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { BorrowHistoryFilter } from "@/modules/borrow/history/BorrowHistoryFilter"
 import { useBorrowHistoryColumns } from "@/modules/borrow/history/BorrowHistoryTable.columns"
-import { useMoneyMarketEvents } from "@/modules/borrow/history/BorrowHistoryTable.query"
 import {
   getOnUpdatePendingStyles,
   mapMoneyMarketEvents,
@@ -36,7 +36,10 @@ export const BorrowHistoryTable: FC<Props> = ({
     paginationProps.pagination,
   )
 
-  const eventsWithDays = useMemo(() => mapMoneyMarketEvents(data), [data])
+  const eventsWithDays = useMemo(
+    () => mapMoneyMarketEvents(data?.items),
+    [data],
+  )
   const columns = useBorrowHistoryColumns()
 
   const isUpdatePending = !isLoading && isFetching
@@ -51,7 +54,7 @@ export const BorrowHistoryTable: FC<Props> = ({
         sx={getOnUpdatePendingStyles(isUpdatePending)}
         paginated
         {...paginationProps}
-        rowCount={data?.moneyMarketEvents?.totalCount ?? 0}
+        rowCount={data?.totalCount ?? 0}
         data={eventsWithDays}
         columns={columns}
         isLoading={isLoading}

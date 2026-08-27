@@ -3,13 +3,15 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import React from "react"
 
-export type BreadcrumbItem = { label: string; path: string }
+import { Crumb, useCrumbs } from "@/modules/layout/hooks/useCrumbs"
 
-type BreadcrumbProps = {
-  crumbs: BreadcrumbItem[]
-}
+export type BreadcrumbItem = Crumb
 
-export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
+export const Breadcrumb = () => {
+  const crumbs = useCrumbs()
+
+  if (crumbs.length < 2) return null
+
   return (
     <Flex gap="base" align="center">
       {crumbs.map((crumb, index) => (

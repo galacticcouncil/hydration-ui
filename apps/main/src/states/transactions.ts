@@ -1,8 +1,9 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
-import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
+import { Asset } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
@@ -16,8 +17,13 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
+// Order matters - getPrimaryBridgeTag takes the first match, and an executor
+// route carries Wormhole too. NttExecutor has to win, or both Wormhole
+// variants collapse to one indistinguishable option and the executor route
+// becomes unreachable.
 export const BRIDGE_PROVIDER_TAGS: XcmTags = [
   XcmTag.Basejump,
+  XcmTag.NttExecutor,
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
 ]
@@ -35,16 +41,24 @@ export type TransactionAlert = Pick<
   requiresUserConsent?: boolean | string
 }
 
+export type TExecutedAmount = {
+  amount: string
+  assetId: string
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  signerFeeAsset?: Asset
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
+  executedAmount?: TExecutedAmount
+  activity?: ActivityType
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -92,6 +106,7 @@ type TransactionFee = {
 
 type TransactionMetaCommon = {
   srcChainKey: string
+  activity?: ActivityType
 }
 
 export type TransactionOnchainMeta = TransactionMetaCommon & {
@@ -138,6 +153,7 @@ export interface TransactionActions {
 
 export interface TransactionOptions extends TransactionActions {
   onBack?: () => void
+  resolveOn?: "submitted" | "success"
 }
 
 export type SingleTransaction = SingleTransactionInput &
@@ -172,6 +188,21 @@ export const isSubstrateTxResult = (
   return "type" in result && result.type === "txBestBlocksState"
 }
 
+/**
+ * Hydration block the tx landed in, for the substrate and EVM paths — the EVM
+ * runs on the same chain, so its receipt block number is directly comparable.
+ * Solana and Sui results are from other chains and yield null.
+ */
+export const getTxResultBlockHeight = (
+  result: TSuccessResult,
+): number | null => {
+  if (isSubstrateTxResult(result)) return result.block.number
+  if ("blockNumber" in result && typeof result.blockNumber === "bigint") {
+    return Number(result.blockNumber)
+  }
+  return null
+}
+
 export const isBridgeTransaction = (meta: TransactionMeta) => {
   return (
     meta.type === TransactionType.Xcm &&
@@ -183,7 +214,15 @@ export type PendingTransaction = {
   id: string
   meta: TransactionMeta
   nonce: number
+  address: string
+  isPermit: boolean
 }
+
+const PendingTxChannel = new BroadcastChannel("hydration:pending-tx")
+
+type PendingTxMessage =
+  | { type: "add"; transaction: PendingTransaction }
+  | { type: "remove"; id: string }
 
 interface TransactionsStore {
   transactions: Transaction[]
@@ -191,13 +230,9 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TSuccessResult>
+  ) => Promise<TSuccessResult | void>
   cancelTransaction: (id: string) => void
-  addPendingTransaction: (
-    id: string,
-    nonce: number,
-    meta: TransactionMeta,
-  ) => void
+  addPendingTransaction: (transaction: PendingTransaction) => void
   removePendingTransaction: (id: string) => void
 }
 
@@ -205,20 +240,28 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   pendingTransactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TSuccessResult>((resolve, reject) => {
+    return new Promise<TSuccessResult | void>((resolve, reject) => {
       set((state) => {
-        const meta: TransactionMeta =
-          "meta" in transaction && transaction.meta
+        const meta: TransactionMeta = {
+          ...("meta" in transaction && transaction.meta
             ? transaction.meta
             : {
                 type: TransactionType.Onchain,
                 srcChainKey: HYDRATION_CHAIN_KEY,
-              }
+              }),
+          ...("activity" in transaction &&
+            transaction.activity && { activity: transaction.activity }),
+        }
         const newTransaction: Transaction = {
           id: uuid(),
           ...transaction,
           meta,
-          onSubmitted: options?.onSubmitted,
+          onSubmitted: (txHash) => {
+            options?.onSubmitted?.(txHash)
+            if (!options?.resolveOn || options?.resolveOn === "submitted") {
+              resolve()
+            }
+          },
           onSuccess: (event) => {
             options?.onSuccess?.(event)
             resolve(event)
@@ -245,14 +288,41 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
       ),
     }))
   },
-  addPendingTransaction: (id, nonce, meta) => {
+  addPendingTransaction: (transaction) => {
     set((state) => ({
-      pendingTransactions: [...state.pendingTransactions, { id, meta, nonce }],
+      pendingTransactions: [...state.pendingTransactions, transaction],
     }))
+    PendingTxChannel.postMessage({ type: "add", transaction })
   },
   removePendingTransaction: (id) => {
     set((state) => ({
       pendingTransactions: state.pendingTransactions.filter((p) => p.id !== id),
     }))
+    PendingTxChannel.postMessage({ type: "remove", id })
   },
 }))
+
+PendingTxChannel.onmessage = (event: MessageEvent<PendingTxMessage>) => {
+  const message = event.data
+  switch (message.type) {
+    case "add":
+      useTransactionsStore.setState((state) =>
+        state.pendingTransactions.some((p) => p.id === message.transaction.id)
+          ? state
+          : {
+              pendingTransactions: [
+                ...state.pendingTransactions,
+                message.transaction,
+              ],
+            },
+      )
+      break
+    case "remove":
+      useTransactionsStore.setState((state) => ({
+        pendingTransactions: state.pendingTransactions.filter(
+          (p) => p.id !== message.id,
+        ),
+      }))
+      break
+  }
+}

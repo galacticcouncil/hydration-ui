@@ -1,11 +1,18 @@
-import { ArrowRightLeft } from "@galacticcouncil/ui/assets/icons"
 import {
+  ArrowRightLeft,
+  SquareArrowOutUpRight,
+} from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
+  ExternalLink,
   Flex,
   Icon,
   TableRowDetailsExpand,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { neckwork } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -29,16 +36,14 @@ export const useOrderHistoryColumns = () => {
     const fromToColumn = columnHelper.display({
       header: t("trade:trade.orders.orderHistory.inOut"),
       cell: ({ row }) => {
+        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+
         return (
           <SwapAmount
-            fromAmount={
-              row.original.isOpenBudget
-                ? (row.original.fromAmountExecuted ?? "0")
-                : row.original.fromAmountBudget
-            }
-            from={row.original.from}
-            toAmount={row.original.toAmountExecuted ?? "0"}
-            to={row.original.to}
+            fromAmount={fromAmountExecuted ?? "0"}
+            from={from}
+            toAmount={toAmountExecuted ?? "0"}
+            to={to}
             showLogo
           />
         )
@@ -47,11 +52,8 @@ export const useOrderHistoryColumns = () => {
 
     const fillPriceColumn = columnHelper.display({
       id: "price",
-      meta: {
-        sx: { textAlign: "center" },
-      },
       header: () => (
-        <Flex gap="s" align="center" justify="center">
+        <Flex gap="s" align="center">
           {t("trade:trade.orders.orderHistory.averagePrice")}
           <Icon
             size="xs"
@@ -61,22 +63,11 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const {
-          from,
-          to,
-          fromAmountBudget,
-          fromAmountExecuted,
-          toAmountExecuted,
-          isOpenBudget,
-        } = row.original
-
-        const fromAmount = isOpenBudget
-          ? (fromAmountExecuted ?? "0")
-          : fromAmountBudget
+        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
 
         const price =
-          toAmountExecuted && fromAmount && Big(toAmountExecuted).gt(0)
-            ? Big(fromAmount).div(toAmountExecuted).toString()
+          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
         return <SwapPrice from={from} to={to} price={price} />
@@ -102,12 +93,33 @@ export const useOrderHistoryColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
+      cell: ({ row }) =>
+        row.original.status && <DcaOrderStatus status={row.original.status} />,
+    })
+
+    const actionColumn = columnHelper.display({
+      id: "actions",
+      size: 50,
       cell: ({ row }) => (
-        <TableRowDetailsExpand>
-          {row.original.status && (
-            <DcaOrderStatus status={row.original.status} />
-          )}
-        </TableRowDetailsExpand>
+        <Flex align="center" justify="end" gap="base">
+          <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
+            <Button
+              sx={{ p: "base" }}
+              variant="muted"
+              outline
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+              asChild
+            >
+              <ExternalLink
+                href={neckwork.activityDca(row.original.scheduleId)}
+              >
+                <Icon component={SquareArrowOutUpRight} size="s" />
+              </ExternalLink>
+            </Button>
+          </Tooltip>
+        </Flex>
       ),
     })
 
@@ -138,6 +150,12 @@ export const useOrderHistoryColumns = () => {
       return [fromToColumnMobile, statusColumnMobile]
     }
 
-    return [fromToColumn, fillPriceColumn, typeColumn, statusColumn]
+    return [
+      fromToColumn,
+      fillPriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
   }, [t, isMobile])
 }

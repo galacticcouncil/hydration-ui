@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Flex,
   Paper,
@@ -29,14 +28,13 @@ import {
   ChainAssetFormField,
 } from "@/modules/xcm/transfer/components/FormField"
 import { RecipientSelectButton } from "@/modules/xcm/transfer/components/Recipient"
-import { SubmitButton } from "@/modules/xcm/transfer/components/SubmitButton"
 import { useChainSwitch } from "@/modules/xcm/transfer/hooks/useChainSwitch"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
-import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
+import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
 
@@ -47,20 +45,17 @@ export const XcmForm = () => {
   const handleChainSwitch = useChainSwitch()
 
   const {
-    status,
     transfer,
-    dryRunError,
     sourceChainAssetPairs,
     destChainAssetPairs,
     availableBridgeRoutes,
-    isLoading,
-    isLoadingCall,
-    isLoadingTransfer,
+    isLoadingSrcBalances,
+    isLoadingDestBalances,
     isConnectedAccountValid,
     registryChain,
   } = useXcmProvider()
 
-  const { watch, formState, handleSubmit, reset, setValue } =
+  const { watch, handleSubmit, reset, setValue } =
     useFormContext<XcmFormValues>()
 
   const resetAmounts = useResetAmounts()
@@ -161,18 +156,11 @@ export const XcmForm = () => {
 
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
-  const isTranferValid =
-    status === XcmTransferStatus.TransferValid ||
-    status === XcmTransferStatus.ApproveAndTransferValid
-  const isSubmitReady = formState.isValid && isTranferValid
-
   const spotPriceId = srcAsset
-    ? registryChain.getBalanceAssetId(srcAsset).toString()
+    ? registryChain.getAssetId(srcAsset).toString()
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)
-
-  const isLoadingCallOrTransfer = isLoadingCall || isLoadingTransfer
 
   return (
     <form
@@ -240,15 +228,21 @@ export const XcmForm = () => {
                 balance={srcBalances?.get(srcAsset?.key ?? "")}
                 balanceMax={transfer?.source.max}
                 withMaxButton
-                disabled={!srcAsset || !hasValidAccounts || isLoading}
-                isLoading={isLoading}
+                disabled={
+                  !srcAsset || !hasValidAccounts || isLoadingSrcBalances
+                }
+                isLoading={isLoadingSrcBalances}
+                isBalanceLoading={isLoadingSrcBalances}
                 assetPrice={price}
               />
             </Flex>
           </Stack>
         </Paper>
 
-        <ChainSwitch onClick={handleChainSwitch} />
+        <ChainSwitch
+          onClick={handleChainSwitch}
+          disabled={!!transfer && !transfer.reversible}
+        />
 
         <Paper>
           <Stack p={["l", "xl"]} gap="base">
@@ -296,7 +290,8 @@ export const XcmForm = () => {
                 fieldName="destAmount"
                 balance={destBalances?.get(destAsset?.key ?? "")}
                 disabled
-                isLoading={isLoading}
+                isLoading={isLoadingDestBalances}
+                isBalanceLoading={isLoadingDestBalances}
                 assetPrice={price}
               />
             </Flex>
@@ -311,32 +306,7 @@ export const XcmForm = () => {
           )}
           <XcmSummary />
           <Separator />
-          <Box p={["l", "xl"]}>
-            <Flex direction="column" gap="m">
-              {dryRunError && (
-                <Alert
-                  variant="error"
-                  title={dryRunError.name}
-                  tooltip={dryRunError.description}
-                />
-              )}
-              <SubmitButton
-                status={status}
-                disabled={
-                  isLoading ||
-                  isLoadingCallOrTransfer ||
-                  submit.isPending ||
-                  !isSubmitReady
-                }
-                isLoading={
-                  isLoading || isLoadingCallOrTransfer || submit.isPending
-                }
-                variant={isSubmitReady ? "primary" : "muted"}
-                loadingVariant="muted"
-                chain={srcChain}
-              />
-            </Flex>
-          </Box>
+          <XcmFooter isSubmitting={submit.isPending} />
         </Paper>
       </Stack>
     </form>

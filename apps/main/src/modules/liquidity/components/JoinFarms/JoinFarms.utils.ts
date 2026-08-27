@@ -7,17 +7,17 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { prop } from "remeda"
 import { z, ZodType } from "zod/v4"
-import { useShallow } from "zustand/shallow"
 
 import {
   omnipoolMiningPositionsKey,
   omnipoolPositionsKey,
+  useAccountXykMiningPositions,
   XykDeposit,
   xykMiningPositionsKey,
 } from "@/api/account"
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { Farm, LoyaltyCurve, useIsolatedPoolFarms } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
 import { PoolToken, useXykPool } from "@/api/pools"
@@ -30,8 +30,6 @@ import {
   AccountOmnipoolPosition,
   isDepositPosition,
   isOmnipoolDepositPosition,
-  useAccountBalances,
-  useAccountData,
 } from "@/states/account"
 import {
   TransactionOptions,
@@ -209,7 +207,7 @@ export const useJoinIsolatedPoolFarms = ({
   meta: TShareToken
 }) => {
   const { tokens } = pool
-  const positions = useAccountData(useShallow(prop("xykMining")))
+  const { data: positions } = useAccountXykMiningPositions()
   const { data: shareTokenPrices } = useShareTokenPrices([poolId])
   const { data: activeFarms } = useIsolatedPoolFarms(poolId)
   const farms = activeFarms?.filter((farm) => farm.apr !== "0") ?? []
@@ -220,7 +218,7 @@ export const useJoinIsolatedPoolFarms = ({
 
   const isDeposit = !!positionId
 
-  const position = positions.find((position) => position.id === positionId)
+  const position = positions?.find((position) => position.id === positionId)
   const availableFarms = position ? getAvailableFarms(farms, position) : farms
 
   const schema = useXYKJoinFarmsZodSchema({

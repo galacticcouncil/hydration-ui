@@ -25,7 +25,6 @@ export const SRpcListItem = styled(Box, {
     ${blocked &&
     css`
       opacity: 0.5;
-      pointer-events: none;
     `}
 
     ${isInteractive &&

@@ -69,12 +69,11 @@ export const AddIsolatedLiquidityForm = ({
 
   const {
     form,
+    getMaxBalance,
     reserveA,
     reserveB,
     ratio,
     mutation,
-    assetABalance,
-    assetBBalance,
     assetAMeta,
     assetBMeta,
     shares,
@@ -127,7 +126,7 @@ export const AddIsolatedLiquidityForm = ({
               assetFieldName="assetA"
               amountFieldName="amountA"
               assets={[]}
-              maxBalance={assetABalance}
+              maxBalance={getMaxBalance(assetAMeta)}
               disabledAssetSelector
               onAmountChange={(value) => {
                 form.setValue("lastUpdated", "assetA")
@@ -166,7 +165,7 @@ export const AddIsolatedLiquidityForm = ({
               assetFieldName="assetB"
               amountFieldName="amountB"
               assets={[]}
-              maxBalance={assetBBalance}
+              maxBalance={getMaxBalance(assetBMeta)}
               disabledAssetSelector
               onAmountChange={(value) => {
                 form.setValue("lastUpdated", "assetB")

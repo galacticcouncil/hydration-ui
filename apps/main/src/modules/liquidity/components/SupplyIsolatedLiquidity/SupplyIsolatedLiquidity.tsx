@@ -27,6 +27,7 @@ import {
   TAssetWithBalance,
   useAssetSelectModalAssets,
 } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { getApyLabel } from "@/modules/borrow/hooks/useApyBreakdownItems"
 import {
@@ -39,6 +40,7 @@ import {
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useAssets } from "@/providers/assetsProvider"
+import { formatApyPercent } from "@/utils/formatApyPercent"
 
 export const SupplyIsolatedLiquidity = ({
   assetId,
@@ -109,9 +111,10 @@ const SupplyIsolatedLiquidityBody = ({
   userReserve: ComputedUserReserveData
   onSubmitted: () => void
 }) => {
-  const { t } = useTranslation(["common", "liquidity", "borrow"])
+  const { t } = useTranslation(["common", "liquidity", "borrow", "trade"])
   const {
     form,
+    maxBalance,
     onSubmit,
     collateralType,
     healthFactor,
@@ -125,7 +128,9 @@ const SupplyIsolatedLiquidityBody = ({
     apys,
     spotPriceData,
     isPriceLoading,
+    isTradeLoading,
     isAaveSupply,
+    swap,
   } = useSupplyIsolatedLiquidity({
     initialAsset,
     supplyAssetId: assetId,
@@ -138,7 +143,9 @@ const SupplyIsolatedLiquidityBody = ({
   return (
     <FormProvider {...form}>
       <ModalHeader
-        title={t("borrow:supply.withSymbol", { symbol: initialAsset.symbol })}
+        title={t("borrow:supply.withSymbol", {
+          symbol: userReserve.reserve.symbol,
+        })}
         closable
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
@@ -149,6 +156,7 @@ const SupplyIsolatedLiquidityBody = ({
             amountFieldName="amount"
             sortedAssets={selectabledAssets}
             assets={[]}
+            maxBalance={maxBalance}
             sx={{ pt: 0 }}
           />
 
@@ -159,9 +167,7 @@ const SupplyIsolatedLiquidityBody = ({
               <SummaryRow
                 key={index}
                 label={getApyLabel(apy.apyType, true)}
-                content={t("percent", {
-                  value: apy.apy,
-                })}
+                content={formatApyPercent(t, apy.apy)}
                 sx={{ my: 0 }}
               />
             ))}
@@ -181,6 +187,20 @@ const SupplyIsolatedLiquidityBody = ({
               content={<TradeLimit type={TradeLimitType.Trade} />}
               sx={{ my: 0 }}
             />
+
+            {swap && (
+              <SummaryRow
+                label={t("trade:market.summary.estTradeFees")}
+                content={
+                  <TradeFee
+                    swap={swap}
+                    receiveAsset={aToken}
+                    isLoading={false}
+                  />
+                }
+                sx={{ my: 0 }}
+              />
+            )}
 
             {!isAaveSupply && (
               <SummaryRow
@@ -249,9 +269,13 @@ const SupplyIsolatedLiquidityBody = ({
             type="submit"
             size="large"
             width="100%"
-            disabled={isBlockedSupply || !form.formState.isValid}
+            disabled={
+              isBlockedSupply || !form.formState.isValid || isTradeLoading
+            }
           >
-            {t("borrow:supply")}
+            {t("borrow:supply.withSymbol", {
+              symbol: userReserve.reserve.symbol,
+            })}
           </Button>
         </ModalFooter>
       </form>

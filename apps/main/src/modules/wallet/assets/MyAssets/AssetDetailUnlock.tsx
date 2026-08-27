@@ -9,6 +9,10 @@ import { useUnlockNativeLocks } from "@/modules/wallet/assets/MyAssets/AssetDeta
 type Props = {
   readonly votesToRemove: ReadonlyArray<{ voteId: number; classId: number }>
   readonly classIds: ReadonlyArray<number>
+  readonly pendingPositions: ReadonlyArray<{
+    voteAtBlock: number
+    amount: bigint
+  }>
   readonly value: string
   readonly className?: string
 }
@@ -16,12 +20,18 @@ type Props = {
 export const AssetDetailUnlock: FC<Props> = ({
   votesToRemove,
   classIds,
+  pendingPositions,
   value,
   className,
 }) => {
   const { t } = useTranslation(["wallet"])
 
-  const unlock = useUnlockNativeLocks(votesToRemove, classIds, value)
+  const unlock = useUnlockNativeLocks(
+    votesToRemove,
+    pendingPositions,
+    classIds,
+    value,
+  )
   const isDisabled = votesToRemove.length === 0 && classIds.length === 0
 
   return (

@@ -1,16 +1,12 @@
 import { PRIME_APY } from "@galacticcouncil/money-market/ui-config"
 import { createQueryString, PRIME_ASSET_ID } from "@galacticcouncil/utils"
-import {
-  FetchQueryOptions,
-  useQuery,
-  WithRequired,
-} from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/react-query"
 import BN from "bignumber.js"
 import { subHours } from "date-fns"
 import { last } from "remeda"
 import { z } from "zod"
 
-import { useProxyUrl } from "@/api/provider"
+import { fetchExternalApyWithCache } from "@/states/externalApy"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 const KAMINO_YIELDS_HISTORY = "kamino/yields"
@@ -49,24 +45,12 @@ export const fetchKaminoApy = async (address: string, indexerUrl: string) => {
     .toNumber()
 }
 
-export const kaminoApyQuery = (
-  id: string,
-  indexerUrl: string,
-): WithRequired<FetchQueryOptions<number>, "queryKey"> => ({
-  queryKey: ["kaminoApyHistory", id],
-  queryFn: () => fetchKaminoApy(id, indexerUrl),
-  staleTime: STALE_TIME,
-  gcTime: GC_TIME,
-  retry: 0,
-})
-
-export const usePRIMEAPY = ({ enabled = true }: { enabled?: boolean }) => {
-  const id = ASSET_ID_TO_KAMINO_ID[PRIME_ASSET_ID]
-  const url = useProxyUrl()
-
-  return useQuery({
-    ...kaminoApyQuery(id ?? "", url),
-    refetchOnWindowFocus: false,
-    enabled: enabled && !!id,
+export const kaminoApyQuery = (id: string, indexerUrl: string) =>
+  queryOptions({
+    queryKey: ["kaminoApyHistory", id],
+    queryFn: () =>
+      fetchExternalApyWithCache(id, () => fetchKaminoApy(id, indexerUrl)),
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    retry: 0,
   })
-}

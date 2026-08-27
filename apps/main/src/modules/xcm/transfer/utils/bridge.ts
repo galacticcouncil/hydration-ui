@@ -1,0 +1,142 @@
+import { Basejumper, WormholeLogo } from "@galacticcouncil/ui/assets/icons"
+import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
+import { ComponentType } from "react"
+import { isNonNullish, sortBy } from "remeda"
+
+import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
+import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
+
+export const WORMHOLE_FAMILY_TAGS: XcmTags = [
+  XcmTag.NttExecutor,
+  XcmTag.Wormhole,
+  XcmTag.Basejump,
+]
+
+export const isWormholeFamilyTag = (tag: string | null | undefined): boolean =>
+  !!tag && WORMHOLE_FAMILY_TAGS.includes(tag as XcmTags[number])
+
+export const BRIDGE_TIME: Record<string, string> = {
+  [XcmTag.Basejump]: "≈ 22 sec",
+  [XcmTag.Wormhole]: "≈ 30 min",
+  [XcmTag.NttExecutor]: "≈ 30 min",
+}
+
+export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
+  [XcmTag.Basejump]: Basejumper,
+  [XcmTag.Wormhole]: WormholeLogo,
+  [XcmTag.NttExecutor]: WormholeLogo,
+}
+
+export const BRIDGE_LABEL: Record<string, string> = {
+  [XcmTag.NttExecutor]: "Wormhole",
+}
+
+export const BRIDGE_PRIORITY: Record<string, number> = {
+  [XcmTag.Basejump]: 1,
+  [XcmTag.NttExecutor]: 2,
+  [XcmTag.Wormhole]: 3,
+  [XcmTag.Snowbridge]: 4,
+}
+
+export const getPrimaryBridgeTag = (route: AssetRoute): string | null => {
+  const tags = (route.tags ?? []) as string[]
+  return BRIDGE_PROVIDER_TAGS.find((tag) => tags.includes(tag)) ?? null
+}
+
+export const isSnowbridgeRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as string[]
+  return tags.includes(XcmTag.Snowbridge)
+}
+
+export const isSnowbridgeV1Route = (route: AssetRoute): boolean => {
+  const tags = (route.tags ?? []) as string[]
+  return tags.includes(XcmTag.SnowbridgeV1)
+}
+
+export const isSnowbridgeV1Tag = (tag: string | null | undefined): boolean =>
+  tag === XcmTag.SnowbridgeV1
+
+// A Snowbridge "sub" selection is one that's not surfaced as a top-level
+// bridge tag (SnowbridgeV1 = V1) — it must be preserved across the
+// default-selection effect, which only knows about the top-level Snowbridge
+// tag.
+export const isSnowbridgeSubTag = (tag: string | null | undefined): boolean =>
+  isSnowbridgeV1Tag(tag)
+
+export const isSnowbridgeTag = (tag: string | null | undefined): boolean =>
+  tag === XcmTag.Snowbridge || isSnowbridgeSubTag(tag)
+
+export const pickSnowbridgeVariants = (
+  routes: AssetRoute[],
+): {
+  v2: AssetRoute | null
+  v1: AssetRoute | null
+} => {
+  const snowbridge = routes.filter(isSnowbridgeRoute)
+  return {
+    v2: snowbridge.find((r) => !isSnowbridgeV1Route(r)) ?? null,
+    v1: snowbridge.find(isSnowbridgeV1Route) ?? null,
+  }
+}
+
+// Drop bridgeTag / destAsset values that don't match any route in the
+// current pair — the SDK's ConfigBuilder.build asserts route non-null but
+// can return undefined when the (tag, destAsset) combo has no match, which
+// would crash downstream destructures. Falling back to `undefined` lets the
+// SDK pick the default route/asset instead.
+export const resolveRouteBuilderArgs = <T extends string | Asset>(
+  routes: AssetRoute[],
+  destAsset: T,
+  tag: string | undefined,
+): { tag: string | undefined; destAsset: T | undefined } => {
+  const validTag =
+    !tag || routes.some((r) => (r.tags ?? []).includes(tag)) ? tag : undefined
+
+  const candidates = validTag
+    ? routes.filter((r) => (r.tags ?? []).includes(validTag))
+    : routes
+
+  const destKey = typeof destAsset === "string" ? destAsset : destAsset.key
+  const validDestAsset = candidates.some(
+    (r) => r.destination.asset.key === destKey,
+  )
+    ? destAsset
+    : undefined
+
+  return { tag: validTag, destAsset: validDestAsset }
+}
+
+export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as XcmTags
+  return tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
+}
+
+export function shouldPreserveSnowbridgeSubSelection(
+  currentProvider: string | null,
+  destPair: ChainAssetPair,
+): boolean {
+  if (!isSnowbridgeSubTag(currentProvider)) return false
+  return destPair.routes.some((r) =>
+    (r.tags ?? []).includes(currentProvider as string),
+  )
+}
+
+export function resolveValidBridgeProvider(
+  currentProvider: string | null,
+  matchingRoutes: AssetRoute[],
+): string | null {
+  const isCurrentValid = matchingRoutes.some(
+    (r) => getPrimaryBridgeTag(r) === currentProvider,
+  )
+  if (isCurrentValid) return currentProvider
+
+  // Lowest BRIDGE_PRIORITY wins, so Basejump still beats the bridges and the
+  // auto-claiming Wormhole route (NttExecutor) is the default over the manual
+  // one.
+  const [fallbackTag = null] = sortBy(
+    matchingRoutes.map(getPrimaryBridgeTag).filter(isNonNullish),
+    (tag) => BRIDGE_PRIORITY[tag] ?? 99,
+  )
+
+  return fallbackTag
+}

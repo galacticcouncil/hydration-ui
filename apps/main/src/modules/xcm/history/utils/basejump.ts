@@ -7,7 +7,7 @@ import { isNonNullish, isNumber } from "remeda"
 import { Hex, parseAbiItem, toEventSelector } from "viem"
 import z from "zod"
 
-import { chainToUrn } from "@/modules/xcm/history/utils/optimistic"
+import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
 import { Papi } from "@/providers/rpcProvider"
 
 type SystemEvents = Awaited<
@@ -131,8 +131,8 @@ export function basejumpItemToXcJourney(
   if (!originTxPrimary) return undefined
 
   const { id, correlationId } = parseBasejumpId(item.id)
-  const originUrn = chainToUrn(sourceChain)
-  const destinationUrn = chainToUrn(destChain)
+  const originUrn = getChainXcScanUrn(sourceChain)
+  const destinationUrn = getChainXcScanUrn(destChain)
 
   return {
     id,

@@ -1,11 +1,17 @@
 import { Flex } from "@galacticcouncil/ui/components"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { Trade, TradeOrder, TradeOrderType, TradeType } from "@/api/trade"
+import {
+  Trade,
+  TradeOrder,
+  tradeOrderDurationQuery,
+  TradeType,
+} from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
@@ -41,9 +47,11 @@ export const MarketTradeOptions: FC<Props> = ({
   const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
 
   // Duration falls out of the order's own schedule (slices × cadence). Under the
-  // adaptive proposal the cadence varies with size, so read it from the order
+  // adaptive proposal the cadence varies with size, so read it from the chain
   // rather than assuming the fixed TWAP interval.
-  const twapDurationMs = twap ? twap.tradeCount * twap.tradePeriod * 6000 : 0
+  const { data: twapDurationMs = 0 } = useQuery(
+    tradeOrderDurationQuery(rpc, twap?.tradeCount ?? 0),
+  )
 
   if (isSwapLoading || !swap) {
     return (
@@ -114,7 +122,6 @@ export const MarketTradeOptions: FC<Props> = ({
               asset={asset}
               value={twapPrice}
               diff={diff}
-              isBuy={isIce ? false : twap.type === TradeOrderType.TwapBuy}
               approx={isIce && !isBuy}
               active={!field.value}
               onClick={(): void => {

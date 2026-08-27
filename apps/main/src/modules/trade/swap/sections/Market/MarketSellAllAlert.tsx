@@ -1,8 +1,8 @@
 import { Text } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalances } from "@/api/balances"
 import { TAsset } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 export type MarketSellAllAlertProps = {

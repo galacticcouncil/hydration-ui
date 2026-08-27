@@ -15,9 +15,17 @@ type Props = {
   readonly from: TAsset
   readonly fromAmount: string | null
   readonly status: DcaScheduleStatus | "filled" | null | undefined
+  readonly total?: string | null
+  readonly isOpenBudget?: boolean
 }
 
-export const AmountMobile: FC<Props> = ({ fromAmount, from, status }) => {
+export const AmountMobile: FC<Props> = ({
+  fromAmount,
+  from,
+  status,
+  total,
+  isOpenBudget,
+}) => {
   const { t } = useTranslation()
 
   return (
@@ -26,7 +34,15 @@ export const AmountMobile: FC<Props> = ({ fromAmount, from, status }) => {
         {t("currency", { value: fromAmount, symbol: from.symbol })}
       </Text>
       {status === "filled" && <SwapStatus />}
-      {isDcaScheduleStatus(status) && <DcaOrderStatus status={status} />}
+      {isDcaScheduleStatus(status) && (
+        <DcaOrderStatus
+          status={status}
+          sold={fromAmount}
+          total={total}
+          isOpenBudget={isOpenBudget}
+          from={from}
+        />
+      )}
     </Flex>
   )
 }

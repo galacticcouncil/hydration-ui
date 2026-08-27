@@ -1,9 +1,12 @@
-import { Send } from "@galacticcouncil/ui/assets/icons"
+import { Minus, Send } from "@galacticcouncil/ui/assets/icons"
+import { Plus } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { LINKS } from "@/config/navigation"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 
 type Modal = "send" | "withdraw" | "deposit"
@@ -16,22 +19,37 @@ export const WalletAssetsSubpageLayoutActions = () => {
   return (
     <Flex gap="m">
       <Button
-        css={{ paddingBlock: 14, paddingInline: 18 }}
         variant="accent"
         size="small"
         outline
         onClick={() => setModal("send")}
+        sx={isMobile ? { p: "base" } : undefined}
       >
         {isMobile ? <Icon component={Send} size="m" /> : t("send")}
       </Button>
-      {/* <Button variant="emphasis" outline disabled>
-        <Icon width={16} height={9} component={Minus} />
-        {t("withdraw")}
+      <Button
+        variant="emphasis"
+        outline
+        onClick={() => setModal("withdraw")}
+        asChild
+      >
+        <Link to={LINKS.withdraw}>
+          <Minus />
+          {t("withdraw")}
+        </Link>
       </Button>
-      <Button variant="emphasis" outline disabled>
-        <Icon width={16} height={9} component={Plus} />
-        {t("deposit")}
-      </Button> */}
+      <Button
+        variant="emphasis"
+        outline
+        onClick={() => setModal("deposit")}
+        asChild
+      >
+        <Link to={LINKS.deposit}>
+          <Plus />
+          {t("deposit")}
+        </Link>
+      </Button>
+
       <Modal
         variant="popup"
         open={modal !== null}

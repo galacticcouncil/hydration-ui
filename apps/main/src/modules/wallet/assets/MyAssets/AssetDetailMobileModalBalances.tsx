@@ -29,7 +29,7 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({ asset }) => {
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
   const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
 
-  const { price: assetPrice } = useAssetPrice(asset.id)
+  const { price: assetPrice, isValid } = useAssetPrice(asset.id)
 
   return (
     <>
@@ -39,9 +39,13 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({ asset }) => {
         value={t("common:number", {
           value: asset.transferable,
         })}
-        displayValue={t("common:currency", {
-          value: asset.transferableDisplay,
-        })}
+        displayValue={
+          isValid
+            ? t("common:currency", {
+                value: asset.transferableDisplay,
+              })
+            : "-"
+        }
       />
       <SAssetDetailMobileSeparator />
       <Amount
@@ -51,9 +55,13 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({ asset }) => {
         value={t("common:number", {
           value: dcaAmountHuman,
         })}
-        displayValue={t("common:currency", {
-          value: Big(dcaAmountHuman).times(assetPrice).toString(),
-        })}
+        displayValue={
+          isValid
+            ? t("common:currency", {
+                value: Big(dcaAmountHuman).times(assetPrice).toString(),
+              })
+            : "-"
+        }
       />
       {otc > 0n && (
         <>
@@ -65,9 +73,13 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: otcAmountHuman,
             })}
-            displayValue={t("common:currency", {
-              value: Big(otcAmountHuman).times(assetPrice).toString(),
-            })}
+            displayValue={
+              isValid
+                ? t("common:currency", {
+                    value: Big(otcAmountHuman).times(assetPrice).toString(),
+                  })
+                : "-"
+            }
           />
         </>
       )}
@@ -82,9 +94,13 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: xcmAmountHuman,
             })}
-            displayValue={t("common:currency", {
-              value: Big(xcmAmountHuman).times(assetPrice).toString(),
-            })}
+            displayValue={
+              isValid
+                ? t("common:currency", {
+                    value: Big(xcmAmountHuman).times(assetPrice).toString(),
+                  })
+                : "-"
+            }
           />
         </>
       )}

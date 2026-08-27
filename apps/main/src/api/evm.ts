@@ -26,6 +26,7 @@ import { formatEther, getContract, Hex } from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { spotPriceQuery } from "@/api/spotPrice"
+import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
@@ -87,12 +88,15 @@ export const useBindEvmAccount = (address: string) => {
 const permitNonceQuery = (
   { evm, isLoaded }: TProviderContext,
   address: string,
+  options?: UseBaseObservableQueryOptions,
 ) => {
   const evmAddress = isEvmParachainAccount(address)
     ? safeConvertAnyToH160(address)
     : ""
+
+  const enabled = options?.enabled || true
   return queryOptions({
-    enabled: isLoaded && !!evmAddress,
+    enabled: enabled && isLoaded && !!evmAddress,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "permitNonce", evmAddress],
     queryFn: async () => {
       const callPermitContract = getContract({
@@ -106,8 +110,11 @@ const permitNonceQuery = (
   })
 }
 
-export const usePermitNonce = (address: string) => {
-  return useQuery(permitNonceQuery(useRpcProvider(), address))
+export const usePermitNonce = (
+  address: string,
+  options?: UseBaseObservableQueryOptions,
+) => {
+  return useQuery(permitNonceQuery(useRpcProvider(), address, options))
 }
 
 const pendingPermitQuery = (

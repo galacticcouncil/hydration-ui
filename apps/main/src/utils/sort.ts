@@ -69,6 +69,19 @@ export const nullLast =
     return compare(a, b)
   }
 
+export const undefinedLast =
+  <T>(compare: Compare<T>): Compare<T | undefined> =>
+  (a, b) => {
+    if (a === undefined) {
+      return 1
+    }
+    if (b === undefined) {
+      return -1
+    }
+
+    return compare(a, b)
+  }
+
 export const naturally: Compare<string> = (a, b) => a.localeCompare(b)
 export const naturallyDesc = descending(naturally)
 

@@ -4,21 +4,22 @@ import {
   Landmark,
   Layers,
   LockOpen,
+  User,
 } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
+import { getIdentityQuery, useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TokenReserveType, useAccountTokenReserves } from "@/api/balances"
+import { useUnlockableNativeTokens } from "@/api/locks"
 import { AssetDetailUnlock } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock"
-import {
-  useNativeAssetLocks,
-  useUnlockableNativeTokens,
-} from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { useNativeAssetLocks } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
 import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
-import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -28,11 +29,21 @@ type Props = {
 
 export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
 
   const locks = useNativeAssetLocks()
-  const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
+  const unlockable = useUnlockableNativeTokens()
+
   const { data: reserves } = useAccountTokenReserves(asset.id)
   const xcm = reserves?.get(TokenReserveType.XCM) ?? 0n
+
+  const { data: identity } = useQuery({
+    ...getIdentityQuery(rpc.papi, account?.address ?? ""),
+    enabled: !!account?.address,
+  })
+
+  const identityReserves = identity?.deposit ?? 0n
   const { price: assetPrice } = useAssetPrice(asset.id)
 
   const dca = reserves?.get(TokenReserveType.DCA) ?? 0n
@@ -40,6 +51,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const xcmAmountHuman = scaleHuman(xcm, asset.decimals)
   const dcaAmountHuman = scaleHuman(dca, asset.decimals)
   const otcAmountHuman = scaleHuman(otc, asset.decimals)
+  const identityAmountHuman = scaleHuman(identityReserves, asset.decimals)
 
   return (
     <Flex direction="column" gap="xl">
@@ -70,6 +82,22 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           />
         </>
       )}
+      {identityReserves > 0n && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInIdentity")}
+            labelIcon={User}
+            value={t("common:number", {
+              value: identityAmountHuman,
+            })}
+            displayValue={t("common:currency", {
+              value: Big(identityAmountHuman).times(assetPrice).toString(),
+            })}
+          />
+        </>
+      )}
       {xcm > 0n && (
         <>
           <ExpandedRowSeparator />
@@ -94,8 +122,25 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
         value={t("common:number", {
           value: locks.lockedInStaking,
         })}
-        displayValue={locks.lockedInStakingDisplayPrice}
+        displayValue={t("common:currency", {
+          value: locks.lockedInStakingDisplay,
+        })}
       />
+      {new Big(locks.lockedInGigaStaking).gt(0) && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInGigaStaking")}
+            value={t("common:number", {
+              value: locks.lockedInGigaStaking,
+            })}
+            displayValue={t("common:currency", {
+              value: locks.lockedInGigaStakingDisplay,
+            })}
+          />
+        </>
+      )}
       {Big(locks.lockedInDemocracy).gt(0) && (
         <>
           <ExpandedRowSeparator />
@@ -105,7 +150,9 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInDemocracy,
             })}
-            displayValue={locks.lockedInDemocracyDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInDemocracyDisplay,
+            })}
           />
         </>
       )}
@@ -118,7 +165,9 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInOpenGov,
             })}
-            displayValue={locks.lockedInOpenGovDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInOpenGovDisplay,
+            })}
           />
         </>
       )}
@@ -132,19 +181,15 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           label={t("myAssets.expandedNative.unlockable")}
           labelIcon={LockOpen}
           value={t("common:number", {
-            value: unlockable.value,
+            value: unlockable.maxUnlockable,
           })}
-          displayValue={unlockable.displayValue}
-          descriptionCustom={
-            unlockable.lockedSeconds > 0 && (
-              <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
-            )
-          }
+          displayValue={unlockable.displayMaxUnlockable}
         />
         <AssetDetailUnlock
           votesToRemove={unlockable.votesToRemove}
+          pendingPositions={unlockable.unlockableGigaPendingPositions}
           classIds={unlockable.classIds}
-          value={unlockable.value}
+          value={unlockable.maxUnlockable}
         />
       </Flex>
 
@@ -157,7 +202,9 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             value={t("common:number", {
               value: locks.lockedInVesting,
             })}
-            displayValue={locks.lockedInVestingDisplayPrice}
+            displayValue={t("common:currency", {
+              value: locks.lockedInVestingDisplay,
+            })}
           />
         </>
       )}

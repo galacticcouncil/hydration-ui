@@ -11,6 +11,7 @@ import {
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
+import { PastExecutionsSquid } from "@/modules/trade/orders/PastExecutions/PastExecutionsSquid"
 
 type Props = {
   readonly allPairs: boolean
@@ -47,7 +48,13 @@ export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
       />
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
         {isDetailOpen && (
-          <DcaOrderDetailsModal details={isDetailOpen} onTerminate={null} />
+          <DcaOrderDetailsModal
+            details={isDetailOpen}
+            onTerminate={null}
+            pastExecutions={
+              <PastExecutionsSquid scheduleId={isDetailOpen.scheduleId} />
+            }
+          />
         )}
       </Modal>
     </>

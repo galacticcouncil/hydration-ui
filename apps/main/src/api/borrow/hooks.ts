@@ -1,7 +1,11 @@
+import { stablepoolYieldMetricsQuery as neckworkStablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/neckwork"
 import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
-import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
+import {
+  getUserClaimableRewards,
+  Pool,
+} from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
   getAssetIdFromAddress,
@@ -9,15 +13,17 @@ import {
 } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useMemo } from "react"
+import { constants, Contract } from "ethers"
+import { useCallback, useMemo } from "react"
 
 import {
+  convertEvmTxRawToPapiTx,
   ExternalApyType,
   useBorrowReserves,
   useExternalApys,
   useUserBorrowSummary,
 } from "@/api/borrow/queries"
-import { useSquidClient } from "@/api/provider"
+import { neckworkClient, useSquidClient } from "@/api/provider"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import {
@@ -25,12 +31,14 @@ import {
   TAssetsContext,
   useAssets,
 } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 type UnderlyingAssetApy = {
   id: string
   apyType?: ExternalApyType
-  supplyApy: number
-  borrowApy: number
+  supplyApy: number | null
+  borrowApy: number | null
 }
 
 export type ApyType = "supply" | "borrow"
@@ -41,17 +49,18 @@ export type BorrowAssetApyData = {
   incentivesNetAPR: number
   incentives: ReserveIncentiveResponse[]
   underlyingAssetsApyData: UnderlyingAssetApy[]
-  underlyingSupplyApy: number
-  underlyingBorrowApy: number
-  totalSupplyApy: number
-  totalBorrowApy: number
-  supplyMMApy: number
-  borrowMMApy: number
+  underlyingSupplyApy: number | null
+  underlyingBorrowApy: number | null
+  totalSupplyApy: number | null
+  totalBorrowApy: number | null
+  supplyMMApy: number | null
+  borrowMMApy: number | null
   stablepoolData: TStablepoolDetails | undefined
 }
 
 export const useBorrowAssetsApy = (assetIds: string[]) => {
   const squidClient = useSquidClient()
+  const neckworkEnabled = useNeckworkEnabled()
   const { getAsset, getErc20AToken, getRelatedAToken } = useAssets()
   const { data: borrowReserves, isLoading: isLoadingBorrowReserves } =
     useBorrowReserves()
@@ -67,18 +76,38 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
 
   const assetIdsMemo = useStableArray(assetIds)
 
-  const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
-    stablepoolYieldMetricsQuery(squidClient),
-  )
+  const {
+    data: neckworkYieldMetrics,
+    isLoading: isNeckworkYieldMetricsLoading,
+  } = useQuery({
+    ...neckworkStablepoolYieldMetricsQuery(neckworkClient),
+    enabled: neckworkEnabled,
+  })
+
+  const { data: squidYieldMetrics, isLoading: isSquidYieldMetricsLoading } =
+    useQuery({
+      ...stablepoolYieldMetricsQuery(squidClient),
+      enabled: !neckworkEnabled,
+    })
+
+  const isYieldMetricsLoading = neckworkEnabled
+    ? isNeckworkYieldMetricsLoading
+    : isSquidYieldMetricsLoading
 
   const yieldsMap = useMemo<Map<string, number>>(() => {
-    return new Map(
-      yieldMetrics?.map((item) => [
-        item.poolId,
-        Number(item.projectedApyPerc),
-      ]) ?? [],
+    return new Map<string, number>(
+      neckworkEnabled
+        ? (neckworkYieldMetrics ?? []).flatMap<[string, number]>((item) =>
+            item.feeApyPerc === null
+              ? []
+              : [[item.poolId, Number(item.feeApyPerc)]],
+          )
+        : (squidYieldMetrics?.map((item) => [
+            item.poolId,
+            Number(item.projectedApyPerc),
+          ]) ?? []),
     )
-  }, [yieldMetrics])
+  }, [neckworkEnabled, neckworkYieldMetrics, squidYieldMetrics])
 
   const reserves = useMemo(
     () => borrowReserves?.formattedReserves ?? [],
@@ -190,25 +219,42 @@ const calculateIncentivesNetAPR = (incentives: ReserveIncentiveResponse[]) => {
   return percent
 }
 
+type UnderlyingAssetApyDefined = UnderlyingAssetApy & {
+  supplyApy: number
+  borrowApy: number
+}
+const hasDefinedApy = (
+  assets: UnderlyingAssetApy[],
+): assets is UnderlyingAssetApyDefined[] =>
+  assets.every((asset) => asset.supplyApy !== null && asset.borrowApy !== null)
+
 const calculateTotalSupplyAndBorrowApy = (
   underlyingAssetsApyData: UnderlyingAssetApy[],
   incentivesNetAPR: number,
   lpAPY: number,
-  farmsAPR: number,
 ) => {
-  const underlyingSupplyApy = underlyingAssetsApyData.reduce(
-    (total, asset) => total + asset.supplyApy,
-    0,
-  )
+  if (!hasDefinedApy(underlyingAssetsApyData)) {
+    return {
+      underlyingSupplyApy: null,
+      underlyingBorrowApy: null,
+      supplyMMApy: null,
+      borrowMMApy: null,
+      totalSupplyApy: null,
+      totalBorrowApy: null,
+    }
+  }
 
-  const underlyingBorrowApy = underlyingAssetsApyData.reduce(
-    (total, asset) => total + asset.borrowApy,
-    0,
-  )
+  let underlyingSupplyApy: number = 0
+  let underlyingBorrowApy: number = 0
+
+  for (const asset of underlyingAssetsApyData) {
+    underlyingSupplyApy += asset.supplyApy
+    underlyingBorrowApy += asset.borrowApy
+  }
 
   const supplyMMApy = underlyingSupplyApy + incentivesNetAPR
   const borrowMMApy = underlyingBorrowApy + incentivesNetAPR
-  const totalSupplyApy = supplyMMApy + lpAPY + farmsAPR
+  const totalSupplyApy = supplyMMApy + lpAPY
   const totalBorrowApy = borrowMMApy + lpAPY
 
   return {
@@ -252,7 +298,10 @@ const calculateAssetApyTotals = (
   stableSwapAssetIds: string[],
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
-  externalApysMap: Map<string, { apyType: ExternalApyType; apy?: number }>,
+  externalApysMap: Map<
+    string,
+    { apyType: ExternalApyType; apy?: number | null }
+  >,
   stablepoolData: TStablepoolDetails | undefined,
   lpAPY: number,
   getRelatedAToken: TAssetsContext["getRelatedAToken"],
@@ -282,27 +331,29 @@ const calculateAssetApyTotals = (
   for (const id of stableSwapAssetIds) {
     const externalApy = externalApysMap.get(id)
 
-    if (externalApy?.apy) {
+    if (externalApy && externalApy.apy !== undefined) {
       const proportion =
         calculateAssetProportionInStablepool(id, stablepoolData) ||
         1 / assetCount
 
+      const apy =
+        externalApy.apy === null
+          ? null
+          : Big(externalApy.apy).times(proportion).toNumber()
+
       underlyingAssetsApyData.push({
         id,
         apyType: externalApy.apyType,
-        supplyApy: Big(externalApy.apy).times(proportion).toNumber(),
-        borrowApy: Big(externalApy.apy).times(proportion).toNumber(),
+        supplyApy: apy,
+        borrowApy: apy,
       })
     }
   }
-
-  const farmsAPR = 0 // @TODO farmsAPR
 
   const apySums = calculateTotalSupplyAndBorrowApy(
     underlyingAssetsApyData,
     incentivesNetAPR,
     lpAPY,
-    farmsAPR,
   )
 
   return {
@@ -322,4 +373,73 @@ export const useBorrowClaimableRewards = () => {
     data: rewards,
     isLoading,
   }
+}
+
+const ERC20_APPROVE_ABI = [
+  "function approve(address spender,uint256 amount) returns (bool)",
+] as const
+
+export const useApproveErc20 = () => {
+  const provider = useRpcProvider()
+
+  return useCallback(
+    async (pool: Pool, tokenAddress: string, evmAddress: string) => {
+      const spender = pool.poolAddress as `0x${string}`
+      const poolInstance = pool.getContractInstance(pool.poolAddress)
+
+      const erc20Contract = new Contract(
+        tokenAddress,
+        ERC20_APPROVE_ABI,
+        poolInstance.provider,
+      )
+
+      const populateApproveTx = erc20Contract.populateTransaction["approve"]
+
+      if (!populateApproveTx) {
+        throw new Error("Token approve method is unavailable")
+      }
+
+      const approveTxRaw = await populateApproveTx(
+        spender,
+        constants.MaxUint256.toString(),
+      )
+
+      const approveEvmCall = await convertEvmTxRawToPapiTx(
+        provider,
+        approveTxRaw,
+        evmAddress,
+      )
+      return approveEvmCall
+    },
+    [provider],
+  )
+}
+
+const ERC20_ALLOWANCE_ABI = [
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const
+
+export const useErc20Allowance = () => {
+  const provider = useRpcProvider()
+
+  return useCallback(
+    async (tokenAddress: string, evmAddress: string, spender: string) => {
+      return await provider.evm.readContract({
+        abi: ERC20_ALLOWANCE_ABI,
+        address: tokenAddress as `0x${string}`,
+        functionName: "allowance",
+        args: [evmAddress as `0x${string}`, spender as `0x${string}`],
+      })
+    },
+    [provider],
+  )
 }

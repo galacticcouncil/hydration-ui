@@ -3,6 +3,7 @@ import { isEthereumSigner, useWallet } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { CallType } from "@galacticcouncil/xc-core"
 
+import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { SingleTransaction } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
@@ -10,16 +11,20 @@ export const useTransactionEcosystem = (
   transaction: SingleTransaction,
 ): CallType => {
   const wallet = useWallet()
+  const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
 
   const { fee, meta } = transaction
   const chain = chainsMap.get(meta?.srcChainKey)
 
   if (!chain) return CallType.Substrate
 
+  const feePaymentAssetId =
+    fee?.feePaymentAssetId ?? accountFeePaymentAssetId?.toString()
+
   const isNativeHydrationEvmCall =
     chain.key === HYDRATION_CHAIN_KEY &&
     isEthereumSigner(wallet?.signer) &&
-    fee?.feePaymentAssetId === NATIVE_EVM_ASSET_ID
+    feePaymentAssetId === NATIVE_EVM_ASSET_ID
 
   const isExternalParachainEvmCall =
     chain.key !== HYDRATION_CHAIN_KEY &&

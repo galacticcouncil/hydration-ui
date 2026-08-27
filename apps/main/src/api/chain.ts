@@ -1,6 +1,8 @@
+import { SdkCtx } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { millisecondsInHour } from "date-fns/constants"
+import { useEffect, useMemo } from "react"
 
 import { useObservable } from "@/hooks/useObservable"
 import { usePapiValue } from "@/hooks/usePapiValue"
@@ -47,6 +49,11 @@ export const useBestNumber = () => {
   return useQuery(bestNumberQuery(useRpcProvider()))
 }
 
+const RECONNECT_GRACE_MS = 2_000
+const BLOCK_STALE_MS = 60_000
+
+let lastBlockAt = Date.now()
+
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
   const { papi, isApiLoaded } = useRpcProvider()
@@ -59,6 +66,7 @@ export const useInvalidateOnBlock = () => {
   useObservable(observable, {
     enabled: isApiLoaded,
     onUpdate: () => {
+      lastBlockAt = Date.now()
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEY_BLOCK_PREFIX],
       })
@@ -66,25 +74,33 @@ export const useInvalidateOnBlock = () => {
   })
 }
 
-export const blockTimeQuery = (context: TProviderContext) => {
-  const { isApiLoaded, sdk } = context
+/**
+ * Reloads the tab when the block subscription has gone silent. A slept or
+ * backgrounded tab can come back with a dead WS that never recovers, which
+ * freezes every block-driven query in the app.
+ */
+export const useReloadOnStaleBlocks = () => {
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>
 
-  return queryOptions({
-    enabled: isApiLoaded,
-    queryKey: ["blockTime"],
-    queryFn: () => sdk.api.scheduler.blockTime,
-    staleTime: Infinity,
-  })
-}
+    const onVisibilityChange = () => {
+      clearTimeout(timeout)
+      if (document.visibilityState !== "visible") return
 
-export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
-  const provider = useRpcProvider()
-  const { data } = useQuery(bestNumberQuery(provider))
+      timeout = setTimeout(() => {
+        const isStale = Date.now() - lastBlockAt > BLOCK_STALE_MS
+        if (isStale) {
+          window.location.reload()
+        }
+      }, RECONNECT_GRACE_MS)
+    }
 
-  const timestamp = data?.timestamp || 0
-  const periodMs = provider.slotDurationMs * blocksFromNow
-
-  return timestamp + periodMs
+    document.addEventListener("visibilitychange", onVisibilityChange)
+    return () => {
+      clearTimeout(timeout)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+    }
+  }, [])
 }
 
 export const useBlockTimestamp = () =>
@@ -124,4 +140,39 @@ export const blockWeightsQuery = (context: TProviderContext) => {
     queryFn: () => papi.constants.System.BlockWeights(),
     staleTime: Infinity,
   })
+}
+
+export const blockTimeQuery = (sdk: SdkCtx) => {
+  return queryOptions({
+    queryKey: ["blockTime"],
+    enabled: Object.keys(sdk).length > 0,
+    queryFn: () => sdk.client.params.getBlockTime(),
+    staleTime: millisecondsInHour,
+    gcTime: millisecondsInHour,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export const useBlockTime = () => {
+  const { sdk } = useRpcProvider()
+  return useQuery(blockTimeQuery(sdk))
+}
+
+export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
+  const provider = useRpcProvider()
+  const { data } = useQuery(bestNumberQuery(provider))
+  const { data: blockTimeMs } = useBlockTime()
+
+  const timestamp = data?.timestamp
+  if (
+    !timestamp ||
+    !blockTimeMs ||
+    !Number.isFinite(timestamp) ||
+    !Number.isFinite(blockTimeMs) ||
+    !Number.isFinite(blocksFromNow)
+  ) {
+    return null
+  }
+
+  return timestamp + blockTimeMs * blocksFromNow
 }

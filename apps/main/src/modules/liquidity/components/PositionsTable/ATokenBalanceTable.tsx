@@ -57,7 +57,10 @@ export const ATokenBalanceTable = ({
       lpFeeStablepool,
     }
 
-    const totalApr = (borrowApyData?.totalSupplyApy ?? 0).toString()
+    const totalApr =
+      borrowApyData?.totalSupplyApy === null
+        ? null
+        : (borrowApyData?.totalSupplyApy ?? 0).toString()
 
     return [
       {

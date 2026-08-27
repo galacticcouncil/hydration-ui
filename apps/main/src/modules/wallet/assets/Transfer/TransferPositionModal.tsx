@@ -4,6 +4,7 @@ import {
   Alert,
   Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
@@ -18,8 +19,13 @@ import {
   safeConvertSS58toPublicKey,
   stringEquals,
 } from "@galacticcouncil/utils"
-import { AddressBookModal, useAccount } from "@galacticcouncil/web3-connect"
-import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
+import {
+  AddressBookModal,
+  useAccount,
+  useAddresses,
+  useAddressStore,
+  WalletMode,
+} from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
@@ -30,7 +36,7 @@ import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TransferPositionFormValues,
-  useTransferPositionForm,
+  useTransferPosition,
 } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
 import { isErc20AToken, useAssets } from "@/providers/assetsProvider"
@@ -47,7 +53,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const { tradable, native } = useAssets()
 
   const transferPosition = useSubmitTransferPosition({ onClose })
-  const form = useTransferPositionForm({ assetId })
+  const { form, getMaxBalance } = useTransferPosition({ assetId })
   const shouldValidate = form.formState.isSubmitted
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
@@ -81,7 +87,16 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     }
   }, [watch])
 
-  const { addresses: userOwnedAddresses } = useAddressStore()
+  const { add: addAddressToAddressBook } = useAddressStore()
+  const userOwnedAddresses = useAddresses()
+
+  const addCustomRecipient = (recipient: string) => {
+    addAddressToAddressBook({
+      address: recipient,
+      name: "",
+      isCustom: true,
+    })
+  }
 
   const isUserOwnedAddress = userOwnedAddresses.some(({ publicKey }) =>
     stringEquals(
@@ -105,12 +120,8 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   if (isMyContactsOpen) {
     return (
       <AddressBookModal
-        header={
-          <ModalHeader
-            title={t("common:addressBook.modal.title")}
-            onBack={() => setIsMyContactsOpen(false)}
-          />
-        }
+        whitelist={[WalletMode.Substrate, WalletMode.EVM]}
+        onBack={() => setIsMyContactsOpen(false)}
         onSelect={(address) => {
           form.setValue("address", address.address, { shouldValidate })
           setIsMyContactsOpen(false)
@@ -122,9 +133,10 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit((values) =>
-          transferPosition.mutate(values),
-        )}
+        onSubmit={form.handleSubmit((values) => {
+          addCustomRecipient(values.address)
+          transferPosition.mutate(values)
+        })}
       >
         <ModalHeader align="center" title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
@@ -133,6 +145,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             label={t("transfer.modal.asset.label")}
             assetFieldName="asset"
             amountFieldName="amount"
+            maxBalance={getMaxBalance(asset)}
             assets={tradable}
           />
           <ModalContentDivider />
@@ -157,6 +170,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             justifyContent: "space-between",
             flexDirection: "row",
             gridTemplateColumns: "1fr",
+            gap: "xl",
           }}
         >
           {healthFactor && (
@@ -195,15 +209,18 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
           >
             {t("common:cancel")}
           </Button>
-          <Button
+          <LoadingButton
+            isLoading={transferPosition.isPending}
             size="large"
             type="submit"
             disabled={
-              !isHealthFactorCheckSatisfied || !isCexDisclaimerSatisfied
+              !isHealthFactorCheckSatisfied ||
+              !isCexDisclaimerSatisfied ||
+              !form.formState.isValid
             }
           >
             {t("common:confirm")}
-          </Button>
+          </LoadingButton>
         </ModalFooter>
       </form>
     </FormProvider>

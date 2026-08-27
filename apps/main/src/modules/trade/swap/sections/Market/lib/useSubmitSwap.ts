@@ -218,6 +218,7 @@ export const useSubmitSwap = () => {
 
       return createTransaction({
         tx: tx.get(),
+        activity: "swap",
         alerts: isSellAll
           ? [
               {

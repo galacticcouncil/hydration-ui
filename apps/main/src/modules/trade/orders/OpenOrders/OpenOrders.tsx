@@ -17,6 +17,7 @@ import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
+import { PastExecutionsSquid } from "@/modules/trade/orders/PastExecutions/PastExecutionsSquid"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 type Props = {
@@ -84,6 +85,13 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
           isDetailOpen.isTermination === false && (
             <DcaOrderDetailsModal
               details={isDetailOpen.detail}
+              pastExecutions={
+                isDcaScheduleOrder(isDetailOpen.detail) ? (
+                  <PastExecutionsSquid
+                    scheduleId={isDetailOpen.detail.scheduleId}
+                  />
+                ) : null
+              }
               onTerminate={() => {
                 const detail = isDetailOpen.detail
 

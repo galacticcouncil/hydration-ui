@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { RowData, SortingState, TableOptions } from "@tanstack/table-core"
-import { useMemo } from "react"
+import { ClipboardEvent, useMemo } from "react"
 
 import { Skeleton } from "@/components/Skeleton"
 import { useBreakpoints } from "@/theme"
@@ -92,9 +92,11 @@ export const useDataTable = <TData extends RowData>({
         ? options.columns.map((column) => ({
             ...column,
             enableSorting: false,
-            cell: () => (
-              <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
-            ),
+            cell:
+              column.meta?.skeletonCell ??
+              (() => (
+                <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
+              )),
           }))
         : options.columns,
     [isLoading, options.columns],
@@ -147,4 +149,16 @@ export const updateTableSortWithPriority = <TColumn extends string>(
     const bIndex = state.indexOf(b)
     return aIndex - bIndex
   })
+}
+
+/**
+ * Strip non-breaking space from the clipboard data: "1 000" -> "1000"
+ */
+export const handleCopyPlainNumbers = (e: ClipboardEvent) => {
+  const text = window.getSelection()?.toString() ?? ""
+  const plain = text.replace(/(?<=\d)\u00A0(?=\d)/g, "")
+  if (plain === text) return
+
+  e.clipboardData.setData("text/plain", plain)
+  e.preventDefault()
 }

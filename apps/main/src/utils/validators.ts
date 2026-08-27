@@ -5,9 +5,9 @@ import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
 
+import { useAccountBalances } from "@/api/balances"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 const requiredError = i18n.t("error.required")
@@ -80,7 +80,7 @@ export const validateFieldMaxBalance = (balance: string | number) =>
   })
 
 export const useValidateFormMaxBalance = () => {
-  const { getBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
 
   return <TFormValues extends FieldValues>(
     path: Path<NoInfer<TFormValues>>,
@@ -94,7 +94,7 @@ export const useValidateFormMaxBalance = () => {
           return true
         }
 
-        const balance = getBalance(asset.id)?.transferable.toString() || "0"
+        const balance = getTransferableBalance(asset.id)
         const balanceHuman = scaleHuman(balance, asset.decimals)
 
         return validateMaxBalance(balanceHuman, amount)

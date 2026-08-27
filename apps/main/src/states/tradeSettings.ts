@@ -1,9 +1,19 @@
+import {
+  CANDLE_BUCKETS,
+  CandleBucket,
+  PRICE_CHANGE_PERIODS,
+  PriceChangePeriod,
+} from "@galacticcouncil/indexer/neckwork"
 import { createZustandStorage, safeParse } from "@galacticcouncil/utils"
 import * as z from "zod/v4"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import i18n from "@/i18n"
+import {
+  TRADE_CHART_TYPES,
+  TradeChartType,
+} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
 import { validNumber } from "@/utils/validators"
 
 const legacyTradeSettingsSchema = z.object({
@@ -62,6 +72,14 @@ export const dcaOrderSchema = z.object({
   maxRetries: maxRetriesSchema,
 })
 
+export const chartSettingsSchema = z.object({
+  interval: z.enum(CANDLE_BUCKETS),
+  chartType: z.enum(TRADE_CHART_TYPES),
+  changePeriod: z.enum(PRICE_CHANGE_PERIODS),
+})
+
+export type ChartSettings = z.infer<typeof chartSettingsSchema>
+
 export const liquidityLimitSchema = z.object({
   slippage: slippageSchema,
 })
@@ -73,9 +91,16 @@ export const tradeSettingsSchema = z.object({
   swap: swapSettingsSchema,
   dca: dcaOrderSchema,
   liquidity: liquidityLimitSchema,
+  chart: chartSettingsSchema,
 })
 
 export type TradeSettings = z.infer<typeof tradeSettingsSchema>
+
+export const defaultChartSettings: ChartSettings = {
+  interval: "1h",
+  chartType: "candles",
+  changePeriod: "24h",
+}
 
 const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
@@ -99,6 +124,7 @@ const defaultState: TradeSettings = {
     slippage: 1,
     maxRetries: 5,
   },
+  chart: defaultChartSettings,
 }
 
 type TradeSettingsStore = TradeSettings & {
@@ -167,5 +193,44 @@ function migrateLegacySettings() {
           maxRetries: Number(legacyDca.data.maxRetries),
         }
       : defaultState.dca,
+  }
+}
+
+// createZustandStorage hands back the raw persisted blob when validation fails,
+// so a value dropped from CANDLE_BUCKETS would reach the indexer query as-is
+// and leave the user with a dead chart they can only fix by clearing storage
+const guard = <T extends string>(
+  options: readonly T[],
+  value: string,
+  fallback: T,
+): T => (options.includes(value as T) ? (value as T) : fallback)
+
+export const useTradeChartSettings = () => {
+  const { update, ...settings } = useTradeSettings()
+  const { chart } = settings
+
+  const setChart = (values: Partial<ChartSettings>) =>
+    update({ ...settings, chart: { ...chart, ...values } })
+
+  return {
+    interval: guard(
+      CANDLE_BUCKETS,
+      chart.interval,
+      defaultChartSettings.interval,
+    ),
+    chartType: guard(
+      TRADE_CHART_TYPES,
+      chart.chartType,
+      defaultChartSettings.chartType,
+    ),
+    changePeriod: guard(
+      PRICE_CHANGE_PERIODS,
+      chart.changePeriod,
+      defaultChartSettings.changePeriod,
+    ),
+    setInterval: (interval: CandleBucket) => setChart({ interval }),
+    setChartType: (chartType: TradeChartType) => setChart({ chartType }),
+    setChangePeriod: (changePeriod: PriceChangePeriod) =>
+      setChart({ changePeriod }),
   }
 }

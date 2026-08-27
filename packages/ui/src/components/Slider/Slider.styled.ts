@@ -23,7 +23,7 @@ export const SRange = styled.div(
     position: absolute;
     height: 100%;
 
-    background: ${theme.text.tint.secondary};
+    background: ${theme.controls.solid.accent};
 
     border-radius: ${theme.radii.full};
   `,
@@ -52,10 +52,10 @@ export const SThumb = styled(Thumb)(
     height: 32px;
 
     box-shadow:
-      0px 0px 17.2px 0px rgba(0, 0, 0, 0.13),
-      0px 4px 2.8px 0px rgba(0, 0, 0, 0.71);
+      0 0 17.2px 0 rgba(0, 0, 0, 0.03),
+      0 4px 2.8px 0 rgba(0, 0, 0, 0.1);
 
-    background: ${theme.text.tint.secondary};
+    background: ${theme.controls.solid.accent};
     border-radius: 12px;
     transition: all ${theme.transitions.transform};
 

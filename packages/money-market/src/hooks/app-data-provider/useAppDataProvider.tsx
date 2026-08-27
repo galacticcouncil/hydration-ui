@@ -146,6 +146,7 @@ export const AppDataProvider: React.FC<{
     )
 
     if (
+      formattedGhoUserData.userGhoDiscountPercent > 0 &&
       formattedGhoUserData.userDiscountedGhoInterest > 0 &&
       marketReferenceCurrencyPriceInUsd.gt(0)
     ) {
@@ -172,9 +173,9 @@ export const AppDataProvider: React.FC<{
 
   const userApyValues = getUserApyValues(
     user,
-    formattedPoolReserves,
     formattedGhoUserData,
     formattedGhoReserveData,
+    externalApyData,
   )
 
   return (

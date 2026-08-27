@@ -11,8 +11,13 @@ import {
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { useTransactionsStore } from "@/states/transactions"
+import {
+  getTxResultBlockHeight,
+  isSubstrateTxResult,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitDcaOrder = () => {
@@ -26,6 +31,7 @@ export const useSubmitDcaOrder = () => {
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
   return useMutation({
     mutationFn: async ([formValues, order]: [DcaFormValues, TradeDcaOrder]) => {
@@ -102,26 +108,49 @@ export const useSubmitDcaOrder = () => {
         frequency: isOpenBudget ? duration : frequency,
       }
 
-      return createTransaction({
-        tx: tx.get(),
-        toasts: {
-          submitted: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
-            params,
-          ),
-          success: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
-            params,
-          ),
-          error: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
-            params,
-          ),
+      return createTransaction(
+        {
+          tx: tx.get(),
+          toasts: {
+            submitted: t(
+              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
+              params,
+            ),
+            success: t(
+              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
+              params,
+            ),
+            error: t(
+              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
+              params,
+            ),
+          },
+          invalidateQueries: [
+            intentsByAccountQuery(rpc, account.address).queryKey,
+          ],
         },
-        invalidateQueries: [
-          intentsByAccountQuery(rpc, account.address).queryKey,
-        ],
-      })
+        {
+          // arm the indexer sync for the first execution rather than the block
+          // the schedule landed in, so the enrichment has an amount to report.
+          // Only the DCA-schedule path is indexed by neckwork - an ICE intent
+          // emits no ExecutionPlanned and is read straight from chain state.
+          onSuccess: (event) => {
+            if (featureFlags.isIceEnabled) return
+
+            const blockHeight = getTxResultBlockHeight(event)
+            if (blockHeight === null) return
+
+            const planned = isSubstrateTxResult(event)
+              ? (event.events.find(
+                  (e) =>
+                    e.type === "DCA" && e.value.type === "ExecutionPlanned",
+                )?.value.value as { block: number } | undefined)
+              : undefined
+
+            armNeckworkSync(planned?.block ?? blockHeight + 1)
+          },
+        },
+      )
     },
   })
 }

@@ -30,3 +30,5 @@ yarn-error.log*
 .cursor
 .claude.mcp.json
 .claude
+# agent task tracking
+TODO.md

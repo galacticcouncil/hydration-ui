@@ -1,21 +1,37 @@
+import { platformStatsQuery } from "@galacticcouncil/indexer/neckwork"
 import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import { ValueStats } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { useSquidClient } from "@/api/provider"
+import { neckworkClient, useSquidClient } from "@/api/provider"
 import { PoolsHeaderSeparator } from "@/modules/liquidity/components/PoolsHeader/PoolsHeaderSeparator"
 import { useXYKPools } from "@/states/liquidity"
+import { useNeckworkEnabled } from "@/states/neckwork"
+
+const NO_TOTALS = {
+  liquidity: NaN,
+  stablepool: NaN,
+  isolated: NaN,
+  volume: NaN,
+  totalLiquidity: NaN,
+}
 
 export const AllPools = () => {
   const { t } = useTranslation(["liquidity", "common"])
+  const neckworkEnabled = useNeckworkEnabled()
 
-  const {
-    data: platformTotal,
-    isLoading: isLoadingPlatformTotal,
-    isSuccess,
-  } = useQuery(platformTotalQuery(useSquidClient()))
+  const squidQuery = useQuery({
+    ...platformTotalQuery(useSquidClient()),
+    enabled: !neckworkEnabled,
+  })
+
+  const neckworkQuery = useQuery({
+    ...platformStatsQuery(neckworkClient),
+    enabled: neckworkEnabled,
+  })
+
   const { data: xykPools = [], isLoading: isLoadingXYK } = useXYKPools()
 
   const xykTotals = xykPools.reduce(
@@ -29,23 +45,49 @@ export const AllPools = () => {
     },
   )
 
-  const totals = isSuccess
-    ? {
-        liquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0"),
-        stablepool: Big(platformTotal?.stablepoolsTvlNorm ?? "0"),
-        volume: Big(platformTotal?.omnipoolVolNorm ?? "0")
-          .plus(platformTotal?.stableswapVolNorm ?? "0")
-          .plus(xykTotals.volume),
-        totalLiquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0")
-          .plus(platformTotal?.stablepoolsTvlNorm ?? "0")
-          .plus(xykTotals.liquidity),
-      }
-    : {
-        liquidity: NaN,
-        stablepool: NaN,
-        volume: NaN,
-        totalLiquidity: NaN,
-      }
+  const neckwork = neckworkQuery.data
+  const neckworkTotals =
+    neckwork &&
+    neckwork.omnipoolTvlNorm !== null &&
+    neckwork.stablepoolsTvlNorm !== null &&
+    neckwork.xykTvlNorm !== null &&
+    neckwork.totalTvlNorm !== null
+      ? {
+          liquidity: Big(neckwork.omnipoolTvlNorm),
+          stablepool: Big(neckwork.stablepoolsTvlNorm),
+          isolated: Big(neckwork.xykTvlNorm),
+          totalLiquidity: Big(neckwork.totalTvlNorm),
+          volume: Big(neckwork.omnipoolVolNorm)
+            .plus(neckwork.stableswapVolNorm)
+            .plus(neckwork.xykVolNorm),
+        }
+      : NO_TOTALS
+
+  const squid = squidQuery.data
+  const squidTotals =
+    squid &&
+    squid.omnipoolTvlNorm &&
+    squid.stablepoolsTvlNorm &&
+    squid.omnipoolVolNorm &&
+    squid.stableswapVolNorm
+      ? {
+          liquidity: Big(squid.omnipoolTvlNorm),
+          stablepool: Big(squid.stablepoolsTvlNorm),
+          isolated: xykTotals.liquidity,
+          totalLiquidity: Big(squid.omnipoolTvlNorm)
+            .plus(squid.stablepoolsTvlNorm)
+            .plus(xykTotals.liquidity),
+          volume: Big(squid.omnipoolVolNorm)
+            .plus(squid.stableswapVolNorm)
+            .plus(xykTotals.volume),
+        }
+      : { ...NO_TOTALS, isolated: xykTotals.liquidity }
+
+  const totals = neckworkEnabled ? neckworkTotals : squidTotals
+
+  const isLoading = neckworkEnabled
+    ? neckworkQuery.isLoading
+    : squidQuery.isLoading || isLoadingXYK
 
   return (
     <>
@@ -55,7 +97,7 @@ export const AllPools = () => {
           value: totals.totalLiquidity,
         })}
         size="medium"
-        isLoading={isLoadingPlatformTotal || isLoadingXYK}
+        isLoading={isLoading}
         wrap
       />
       <PoolsHeaderSeparator />
@@ -64,7 +106,7 @@ export const AllPools = () => {
         value={t("common:currency.compact", {
           value: totals.volume,
         })}
-        isLoading={isLoadingPlatformTotal || isLoadingXYK}
+        isLoading={isLoading}
         size="medium"
         wrap
       />
@@ -73,7 +115,7 @@ export const AllPools = () => {
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency.compact", { value: totals.liquidity })}
         size="medium"
-        isLoading={isLoadingPlatformTotal}
+        isLoading={isLoading}
         wrap
       />
       <PoolsHeaderSeparator />
@@ -81,16 +123,17 @@ export const AllPools = () => {
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency.compact", { value: totals.stablepool })}
         size="medium"
-        isLoading={isLoadingPlatformTotal}
+        isLoading={isLoading}
         wrap
       />
       <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
         value={t("common:currency.compact", {
-          value: xykTotals.liquidity,
+          value: totals.isolated,
         })}
         size="medium"
+        isLoading={isLoading}
         wrap
       />
     </>

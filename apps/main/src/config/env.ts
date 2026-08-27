@@ -6,6 +6,7 @@ const schema = z.object({
   VITE_PROVIDER_URL: z.url(),
   VITE_INDEXER_URL: z.url(),
   VITE_SQUID_URL: z.url(),
+  VITE_NECKWORK_URL: z.url(),
   VITE_GRAFANA_URL: z.url(),
   VITE_GRAFANA_DSN: z.coerce.number().positive(),
   VITE_ENV: z.enum(["development", "production"]),
@@ -14,6 +15,9 @@ const schema = z.object({
   VITE_DISPLAY_ASSET_ID: z.string().regex(/^\d+$/),
   VITE_HSM_ENABLED: coerceToBoolean,
   VITE_DRY_RUN_ENABLED: coerceToBoolean,
+  VITE_WORMHOLE_DISABLED: coerceToBoolean,
+  VITE_BASEJUMP_DISABLED: coerceToBoolean,
+  VITE_NECKWORK_ENABLED: coerceToBoolean,
 })
 
 export const ENV = schema.parse(import.meta.env)

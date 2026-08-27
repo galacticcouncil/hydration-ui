@@ -128,13 +128,14 @@ const OnchainSummary = () => {
 
 const XcmSummary = () => {
   const { t } = useTranslation(["common"])
-  const { meta } = useTransaction()
+  const { meta, nonce, isLoadingNonce } = useTransaction()
 
   if (meta.type !== TransactionType.Xcm) return null
 
   const srcChain = chainsMap.get(meta.srcChainKey)
 
   const isPolkadotEcosystem = srcChain?.ecosystem === ChainEcosystem.Polkadot
+  const isHydration = srcChain?.key === HYDRATION_CHAIN_KEY
 
   return (
     <Stack
@@ -168,6 +169,18 @@ const XcmSummary = () => {
         <SummaryRow
           label={t("transaction.summary.mortality.label")}
           content={<ReviewTransactionMortality />}
+        />
+      )}
+      {isHydration && (
+        <SummaryRow
+          label={t("transaction.summary.nonce.label")}
+          content={isLoadingNonce ? <Skeleton width={30} /> : nonce?.toString()}
+        />
+      )}
+      {isHydration && (
+        <SummaryRow
+          label={t("transaction.summary.tip.label")}
+          content={<ReviewTransactionTip />}
         />
       )}
     </Stack>

@@ -1,3 +1,4 @@
+import { h160 } from "@galacticcouncil/common"
 import { MultiSignature } from "@galacticcouncil/descriptors"
 import { DOT_ASSET_ID } from "@galacticcouncil/utils"
 import {
@@ -11,18 +12,17 @@ import { Binary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isBigInt, isNumber, pick, prop, unique, zip } from "remeda"
-import { useShallow } from "zustand/shallow"
+import { isBigInt, isNullish, isNumber, prop, unique, zip } from "remeda"
 
 import { useAccountInfo } from "@/api/account"
+import { useAccountBalances } from "@/api/balances"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiValue } from "@/hooks/usePapiValue"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountData } from "@/states/account"
 import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
+import { NATIVE_ASSET_ID, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 import { allPools } from "./pools"
 
@@ -82,6 +82,7 @@ export const useAcceptedFeePaymentAssets = (ids: string[]) => {
     },
   })
 }
+const { isEvmAccount, isEvmAddress } = h160
 
 export const useAccountFeePaymentAssetId = (
   options?: UseBaseObservableQueryOptions,
@@ -93,7 +94,15 @@ export const useAccountFeePaymentAssetId = (
     "MultiTransactionPayment.AccountCurrencyMap",
     [address, { at: "best" }],
     {
-      select: (assetId) => assetId || Number(NATIVE_ASSET_ID),
+      select: (assetId) => {
+        if (!isNullish(assetId)) {
+          return assetId
+        }
+
+        const isEvm = isEvmAddress(address) || isEvmAccount(address)
+
+        return Number(isEvm ? NATIVE_EVM_ASSET_ID : NATIVE_ASSET_ID)
+      },
       ...options,
     },
   )
@@ -102,9 +111,7 @@ export const useAccountFeePaymentAssetId = (
 export const useAccountFeePaymentAssets = () => {
   const { getAsset } = useAssets()
 
-  const { balances, isBalanceLoading } = useAccountData(
-    useShallow(pick(["balances", "isBalanceLoading"])),
-  )
+  const { balances, isBalanceLoading } = useAccountBalances()
   const { data: accountFeePaymentAssetId, isLoading: isPaymentAssetLoading } =
     useAccountFeePaymentAssetId()
 
@@ -116,11 +123,18 @@ export const useAccountFeePaymentAssets = () => {
     )
       return []
 
-    const assetIds = Object.keys(balances)
+    const assetIds: string[] = []
+
+    Object.entries(balances).forEach(([assetId, balance]) => {
+      if (balance.free - balance.frozen > 0 && getAsset(assetId)) {
+        assetIds.push(assetId)
+      }
+    })
     return unique([...assetIds, accountFeePaymentAssetId.toString()])
   }, [
     accountFeePaymentAssetId,
     balances,
+    getAsset,
     isPaymentAssetLoading,
     isBalanceLoading,
   ])
