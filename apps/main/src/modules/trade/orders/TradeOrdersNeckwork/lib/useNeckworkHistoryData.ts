@@ -11,6 +11,7 @@ import {
   DcaOrderData,
   OrderKind,
 } from "@/modules/trade/orders/lib/useOrdersData"
+import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -30,6 +31,7 @@ export const useNeckworkHistoryData = (
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
   const owner = safeConvertSS58toPublicKey(accountAddress)
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
 
   const { data, isLoading } = useQuery({
     ...dcaSchedulesQuery(neckworkClient, {
@@ -39,6 +41,7 @@ export const useNeckworkHistoryData = (
       page,
       pageSize,
     }),
+    enabled: neckworkEnabled,
     placeholderData: keepPreviousData,
   })
 

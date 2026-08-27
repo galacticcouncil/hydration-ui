@@ -9,6 +9,7 @@ import { useMemo } from "react"
 import { neckworkClient } from "@/api/provider"
 import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
 import { MarketSwapStatus } from "@/modules/trade/orders/lib/useSwapsData"
+import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -20,6 +21,8 @@ export const useNeckworkRoutedTradesData = (
   page: number,
   pageSize: number,
 ) => {
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+
   const { data, isLoading } = useQuery({
     ...routedTradesQuery(neckworkClient, {
       account: address,
@@ -27,6 +30,7 @@ export const useNeckworkRoutedTradesData = (
       page,
       pageSize,
     }),
+    enabled: neckworkEnabled,
     placeholderData: keepPreviousData,
   })
 

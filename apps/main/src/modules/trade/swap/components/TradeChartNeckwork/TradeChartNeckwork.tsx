@@ -53,6 +53,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     useTradeChartSettings()
   const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
   const rpc = useRpcProvider()
+  const { isFork } = rpc
 
   const [isInverted, setIsInverted] = useState(false)
 
@@ -118,7 +119,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   const spotOptions = spotPriceQuery(rpc, chartQuoteAssetId, chartBaseAssetId)
   const { data: spot } = useQuery({
     ...spotOptions,
-    enabled: !isPegged && spotOptions.enabled,
+    enabled: !isPegged && !isFork && spotOptions.enabled,
   })
   const spotPrice = (() => {
     const raw = spot?.spotPrice
@@ -145,7 +146,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   const liveRef = useRef<{ resetKey: string; candle: PairCandle } | null>(null)
 
   const live = useMemo(() => {
-    if (isPlaceholderData) {
+    if (isFork || isPlaceholderData) {
       liveRef.current = null
       return null
     }
@@ -167,7 +168,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
     liveRef.current = { resetKey, candle }
 
     return candle
-  }, [candles, spotPrice, interval, resetKey, isPlaceholderData])
+  }, [candles, spotPrice, interval, resetKey, isFork, isPlaceholderData])
 
   const prices = useMemo(() => {
     if (!live) return candles

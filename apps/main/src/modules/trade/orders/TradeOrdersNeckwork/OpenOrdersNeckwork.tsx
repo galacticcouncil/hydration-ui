@@ -41,7 +41,11 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
   // chain-only - neckwork does not index them - so they skip the enrichment.
   const { orders: chainOrders, isLoading: isChainLoading } =
     useChainOrdersData()
-  const { orders: enrichedOrders, refetch } = useDcaEnrichment(chainOrders)
+  const {
+    orders: enrichedOrders,
+    refetch,
+    neckworkEnabled,
+  } = useDcaEnrichment(chainOrders)
   const { orders: intentOrders, isLoading: isIntentsLoading } =
     useIntentOrdersData(assetFilter)
 
@@ -68,7 +72,7 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
         paginated
         {...paginationProps}
         onRowClick={(order) => {
-          void refetch()
+          if (neckworkEnabled) void refetch()
           setDetailKey(orderKey(order))
         }}
         emptyState={<OrdersEmptyState />}

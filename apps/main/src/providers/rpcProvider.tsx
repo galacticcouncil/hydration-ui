@@ -10,6 +10,7 @@ import {
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
@@ -18,6 +19,7 @@ import { StatusChange, WsEvent } from "polkadot-api/ws"
 import { createContext, ReactNode, useContext, useEffect } from "react"
 import { isFunction } from "remeda"
 
+import { chainSpecDataQueryOptions, isHydrationFork } from "@/api/chainSpec"
 import {
   getProviderDataEnv,
   rpcProviderQuery,
@@ -36,6 +38,7 @@ export type TProviderContext = TProviderData & {
   isApiLoaded: boolean
   dataEnv: TDataEnv
   endpoint: string
+  isFork: boolean
 }
 
 const defaultData: TProviderContext = {
@@ -58,6 +61,7 @@ const defaultData: TProviderContext = {
   isApiLoaded: false,
   dataEnv: "mainnet",
   endpoint: "",
+  isFork: false,
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -139,6 +143,19 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const isApiLoaded =
     Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
 
+  const dataEnv = getProviderDataEnv(rpcUrl)
+
+  const { data: chainSpec } = useQuery(
+    chainSpecDataQueryOptions(
+      connectedRpcUrl,
+      data.papiClient,
+      data.papi,
+      isApiLoaded,
+    ),
+  )
+
+  const isFork = isHydrationFork(chainSpec?.chainSpecData.genesisHash)
+
   return (
     <ProviderContext.Provider
       value={{
@@ -146,7 +163,8 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         isApiLoaded,
         isLoaded,
         endpoint: rpcUrl,
-        dataEnv: getProviderDataEnv(rpcUrl),
+        dataEnv,
+        isFork,
       }}
     >
       {children}

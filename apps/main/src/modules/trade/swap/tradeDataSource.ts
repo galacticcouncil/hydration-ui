@@ -9,7 +9,15 @@ import { TradeOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkEnabled } from "@/states/neckwork"
+
+export const useNeckworkTradeQueriesEnabled = (): boolean => {
+  const isNeckworkEnabled = useNeckworkEnabled()
+  const { isFork } = useRpcProvider()
+
+  return isNeckworkEnabled && !isFork
+}
 
 export const useTradeDataSource = (): "neckwork" | "legacy" | "squid" => {
   const { status } = useActiveIndexerStatus()

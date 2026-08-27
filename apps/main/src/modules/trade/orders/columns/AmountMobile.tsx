@@ -4,6 +4,7 @@ import {
 } from "@galacticcouncil/indexer/squid"
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { isValidBigSource } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -31,7 +32,9 @@ export const AmountMobile: FC<Props> = ({
   return (
     <Flex direction="column" gap="xs" align="end">
       <Text fw={600} fs="p5" lh={1} color={getToken("text.high")}>
-        {t("currency", { value: fromAmount, symbol: from.symbol })}
+        {isOpenBudget && !isValidBigSource(fromAmount)
+          ? from.symbol
+          : t("currency", { value: fromAmount, symbol: from.symbol })}
       </Text>
       {status === "filled" && <SwapStatus />}
       {isDcaScheduleStatus(status) && (
