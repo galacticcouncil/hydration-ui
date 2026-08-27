@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import {
   positive,
   positiveOptional,
@@ -78,7 +78,7 @@ type Args = {
 export const useLimitForm = ({ assetIn, assetOut }: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
+  const { isBalanceLoading } = useAccountBalances()
 
   const defaultValues: LimitFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -108,10 +108,12 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
       return
     }
 
-    if (isBalanceLoaded(sellAsset.id) || !isBalanceLoading) {
-      trigger("sellAmount")
+    if (isBalanceLoading) {
+      return
     }
-  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
+
+    trigger("sellAmount")
+  }, [account, isBalanceLoading, trigger, getValues])
 
   return form
 }

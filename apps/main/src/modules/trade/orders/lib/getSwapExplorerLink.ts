@@ -1,7 +1,8 @@
 import { neckwork } from "@galacticcouncil/utils"
 import { isNumber } from "remeda"
 
-import { OrderKind, OrderStatus } from "@/modules/trade/orders/lib/types"
+import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderStatus } from "@/modules/trade/orders/lib/useSwapsData"
 
 type BlockEventRef = {
   readonly paraBlockHeight: number
@@ -18,10 +19,6 @@ export const getSwapExplorerLink = (
   dcaExecutionEvent?: BlockEventRef | null,
   scheduleId?: number,
 ) => {
-  if (status?.kind === "marketDca") {
-    return neckwork.activityDca(status.scheduleId)
-  }
-
   const isDca =
     status?.kind === OrderKind.Dca || status?.kind === OrderKind.DcaRolling
 

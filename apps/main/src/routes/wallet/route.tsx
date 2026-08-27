@@ -1,8 +1,33 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
-const WalletRedirectLayout: FC = () => <Outlet />
+import { getPageMeta } from "@/config/navigation"
+import { SubpageLayout } from "@/modules/layout/SubpageLayout"
+import { WalletAssetsSubpageLayoutActions } from "@/modules/wallet/assets/WalletAssetsSubpageLayoutActions"
+
+const WalletSubpageLayout: FC = () => {
+  const { account } = useAccount()
+
+  const isAssetsPage = useMatch({
+    from: "/wallet/assets",
+    shouldThrow: false,
+  })
+
+  return (
+    <SubpageLayout
+      actions={isAssetsPage && account && <WalletAssetsSubpageLayoutActions />}
+    />
+  )
+}
 
 export const Route = createFileRoute("/wallet")({
-  component: WalletRedirectLayout,
+  component: WalletSubpageLayout,
+  staticData: { showSubNav: true },
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("wallet", i18n.t),
+  }),
 })

@@ -1,4 +1,4 @@
-import { Flex, ScrollArea } from "@galacticcouncil/ui/components"
+import { Box, Grid } from "@galacticcouncil/ui/components"
 import { useMatchRoute } from "@tanstack/react-router"
 import { FC, ReactNode, useMemo } from "react"
 
@@ -24,35 +24,24 @@ export const SubNavBar: FC<Props> = ({ actions, ignoreCurrentSearch }) => {
   return (
     <ContentContainer>
       <Content>
-        <ScrollArea
-          orientation="horizontal"
-          horizontalEdgeOffset="var(--layout-gutter)"
-          hideScrollbar
-        >
-          <Flex
-            align="center"
-            justify="space-between"
-            gap="m"
-            sx={{ width: "max-content", minWidth: "100%" }}
-          >
-            {hasSubNav &&
-              (isLiquidityPage ? (
-                <LiquidityTabMenu
-                  items={subNav}
-                  ignoreCurrentSearch={ignoreCurrentSearch}
-                />
-              ) : (
-                <TabMenu
-                  items={subNav}
-                  size="medium"
-                  variant="transparent"
-                  ignoreCurrentSearch={ignoreCurrentSearch}
-                  scrollable={false}
-                />
-              ))}
-            {actions}
-          </Flex>
-        </ScrollArea>
+        <Grid columnTemplate="1fr auto" align="center">
+          {hasSubNav &&
+            (isLiquidityPage ? (
+              <LiquidityTabMenu
+                items={subNav}
+                ignoreCurrentSearch={ignoreCurrentSearch}
+              />
+            ) : (
+              <TabMenu
+                items={subNav}
+                size="medium"
+                variant="transparent"
+                ignoreCurrentSearch={ignoreCurrentSearch}
+                horizontalEdgeOffset="var(--layout-gutter)"
+              />
+            ))}
+          <Box sx={{ gridColumn: 2 }}>{actions}</Box>
+        </Grid>
       </Content>
     </ContentContainer>
   )
@@ -78,7 +67,6 @@ const LiquidityTabMenu = ({
       size="medium"
       variant="transparent"
       ignoreCurrentSearch={ignoreCurrentSearch}
-      scrollable={false}
     />
   )
 }

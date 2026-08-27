@@ -5,6 +5,7 @@ const coerceToBoolean = z.string().transform((v) => v === "true")
 const schema = z.object({
   VITE_PROVIDER_URL: z.url(),
   VITE_INDEXER_URL: z.url(),
+  VITE_SQUID_URL: z.url(),
   VITE_NECKWORK_URL: z.url(),
   VITE_GRAFANA_URL: z.url(),
   VITE_GRAFANA_DSN: z.coerce.number().positive(),
@@ -16,7 +17,7 @@ const schema = z.object({
   VITE_DRY_RUN_ENABLED: coerceToBoolean,
   VITE_WORMHOLE_DISABLED: coerceToBoolean,
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
-  VITE_UNIV3_GAMMA_ENABLED: coerceToBoolean,
+  VITE_NECKWORK_ENABLED: coerceToBoolean,
 })
 
 export const ENV = schema.parse(import.meta.env)

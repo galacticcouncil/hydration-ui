@@ -9,7 +9,6 @@ import {
   basejumpscan,
   getChainId,
   isH160Address,
-  stringEquals,
   xcscan,
 } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
@@ -106,14 +105,6 @@ export function getFormattedAddresses(journey: XcJourney) {
 }
 
 export const journeyDate = (j: XcJourney) => j.sentAt ?? j.createdAt ?? 0
-
-export function isXcSwapReceiverJourney(journey: XcJourney): boolean {
-  return stringEquals(journey.to ?? "", XC_SWAP_CONFIG.receiver)
-}
-
-export function getVisibleJourneys(journeys: XcJourney[]): XcJourney[] {
-  return journeys.filter((j) => !isXcSwapReceiverJourney(j))
-}
 
 export function getJourneyExplorerLink(journey: XcJourney): string {
   const { originProtocol, correlationId } = journey

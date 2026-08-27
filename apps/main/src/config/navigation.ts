@@ -35,7 +35,6 @@ export const LINKS = {
   swapLimit: "/trade/swap/limit",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
-  walletTransactions: "/wallet/transactions",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
@@ -165,20 +164,8 @@ export const NAVIGATION: NavigationItem[] = [
     key: "portfolio",
     to: LINKS.portfolio,
     icon: WalletCardsIcon,
-    defaultChild: LINKS.portfolio,
-    children: [
-      {
-        key: "portfolioOverview",
-        to: LINKS.portfolioOverview,
-        exact: true,
-        icon: WalletCardsIcon,
-      },
-      {
-        key: "portfolioTracked",
-        to: LINKS.portfolioTracked,
-        icon: GlassesIcon,
-      },
-    ],
+    defaultChild: LINKS.walletAssets,
+    children: [{ key: "walletAssets", to: LINKS.walletAssets }],
   },
   {
     key: "crossChain",
@@ -251,10 +238,6 @@ export const getMenuTranslations = (t: TFunction) =>
     portfolioOverview: {
       title: t("navigation.portfolioOverview.title"),
       description: t("navigation.portfolioOverview.description"),
-    },
-    portfolioTracked: {
-      title: t("navigation.portfolioTracked.title"),
-      description: t("navigation.portfolioTracked.description"),
     },
     crossChain: {
       title: t("navigation.crossChain.title"),

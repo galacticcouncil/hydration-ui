@@ -339,10 +339,7 @@ export const GigaHDXPosition = () => {
                       .toString(),
                   })}
                 />
-                <Button
-                  disabled={Big(maxBorrowableHollar || "0").lte(0)}
-                  onClick={() => setBorrowModalOpen(true)}
-                >
+                <Button onClick={() => setBorrowModalOpen(true)}>
                   {t("common:borrow")}
                 </Button>
               </Flex>

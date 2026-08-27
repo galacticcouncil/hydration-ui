@@ -41,15 +41,8 @@ export const TabMenuItem: FC<Props> = ({
   })
 
   const isActive = useMemo(() => {
-    const normalizedPath = path.replace(/\/$/, "") || "/"
-    const normalizedTo = to.replace(/\/$/, "") || "/"
-
-    if (exact && normalizedPath !== normalizedTo) {
-      return false
-    }
-
-    const [, ...pathRoutes] = normalizedPath.split("/")
-    const [, ...toRoutes] = normalizedTo.split("/")
+    const [, ...pathRoutes] = path.split("/")
+    const [, ...toRoutes] = to.split("/")
     const isValid = toRoutes.every(
       (route, index) => route === pathRoutes[index],
     )
@@ -63,7 +56,7 @@ export const TabMenuItem: FC<Props> = ({
           )
         : true)
     )
-  }, [path, to, search, currentSearch, exact])
+  }, [path, to, search, currentSearch])
 
   return (
     <Button

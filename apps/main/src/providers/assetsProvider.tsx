@@ -163,6 +163,9 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
           acc.bonds.push(asset)
         } else if (isExternal(asset)) {
           acc.external.push({ ...asset })
+          // } else if (asset.externalId) {
+          //   acc.externalInvalid.push(asset)
+          // }
         } else if (isErc20(asset) && !blacklistedErc20AssetIds.has(asset.id)) {
           acc.erc20.push(asset)
         }

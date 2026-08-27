@@ -47,7 +47,7 @@ export const MarketWarnings: FC<Props> = ({
   const search = useSearch({ from: "/trade/_history/swap" })
 
   const { update, ...tradeSettings } = useTradeSettings()
-  const { info } = useToasts()
+  const { success } = useToasts()
 
   const {
     swap: {
@@ -85,7 +85,7 @@ export const MarketWarnings: FC<Props> = ({
       })
     }
 
-    info({
+    success({
       title: t(
         isSingleTrade
           ? "trade:swap.settings.single.toast"

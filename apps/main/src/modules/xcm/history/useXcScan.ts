@@ -4,10 +4,6 @@ import { useEffect, useState } from "react"
 
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import {
-  getVisibleJourneys,
-  isXcSwapReceiverJourney,
-} from "@/modules/xcm/history/utils/journey"
-import {
   addJourney,
   mergeLoadedJourneys,
 } from "@/modules/xcm/history/utils/optimistic"
@@ -61,14 +57,12 @@ export const useXcScanSubscription = (address: string) => {
       xcStore.subscribe(address, {
         onLoad(journeys) {
           queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
-            mergeLoadedJourneys(old, getVisibleJourneys(journeys), address),
+            mergeLoadedJourneys(old, journeys, address),
           )
           setIsLoading(false)
           setIsError(false)
         },
         onNew(journey) {
-          if (isXcSwapReceiverJourney(journey)) return
-
           queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
             addJourney(old ?? [], journey, address),
           )

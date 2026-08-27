@@ -7,7 +7,7 @@ export const PastExecutionsHeader: FC = () => {
   const { t } = useTranslation("trade")
 
   return (
-    <Box py="xl" px="l">
+    <Flex justify="space-between" align="center" py="xl" px="l" gap="l">
       <Text fw={500} fs="p2" font="primary" color={getToken("text.high")}>
         {t("trade.orders.pastExecutions.title")}
       </Text>

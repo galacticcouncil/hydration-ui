@@ -63,7 +63,15 @@ export const useEstimateFee = (
   const assetBalance = feeAsset ? getBalance(feeAsset.id) : null
   const feeAssetBalance =
     assetBalance && feeAsset
-      ? scaleHuman(assetBalance.transferable.toString(), feeAsset.decimals)
+      ? scaleHuman(
+          Big.max(
+            Big(assetBalance.free.toString()).minus(
+              assetBalance.frozen.toString(),
+            ),
+            0,
+          ).toString(),
+          feeAsset.decimals,
+        )
       : "0"
 
   return useQuery({
@@ -75,7 +83,7 @@ export const useEstimateFee = (
       }
     },
     enabled:
-      isReady &&
+      isLoaded &&
       !!anyTx &&
       !!feeAsset &&
       !isLoadingFeePaymentAssetId &&

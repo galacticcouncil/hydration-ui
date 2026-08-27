@@ -15,11 +15,7 @@ import {
   useToasts,
   useToastsStore,
 } from "@/states/toasts"
-import {
-  TransactionType,
-  TransactionXcSwapMeta,
-  useTransactionsStore,
-} from "@/states/transactions"
+import { TransactionType, useTransactionsStore } from "@/states/transactions"
 
 const TOAST_STALE_AFTER_MINUTES = 60
 
@@ -37,21 +33,8 @@ const isSubmittedXcmToast = (toast: TransactionToastData) => {
   )
 }
 
-// Deliberately not gated on meta.sequence: a submitted toast is neither
-// stale-swept nor retried, so one that never got a sequence has to enter the
-// processing set for the processor to resolve it.
-const isSubmittedXcSwapToast = (toast: TransactionToastData) => {
-  return (
-    toast.variant === "submitted" && toast.meta.type === TransactionType.XcSwap
-  )
-}
-
 const isValidToastForProcessing = (toast: TransactionToastData) => {
-  return (
-    isPendingOnChainToast(toast) ||
-    isSubmittedXcmToast(toast) ||
-    isSubmittedXcSwapToast(toast)
-  )
+  return isPendingOnChainToast(toast) || isSubmittedXcmToast(toast)
 }
 
 const isStaleToast = (toast: TransactionToastData) => {
@@ -69,11 +52,8 @@ const getToastProcessingRefetchInterval = (toast: TransactionToastData) => {
   return diffInMin >= 5 ? 60_000 : 10_000
 }
 
-type XcSwapToastStatus = "success" | "error" | "warning" | "unknown"
-
 export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
-  const { t } = useTranslation(["common", "trade"])
-  const { isReady } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
   const { edit } = useToasts()
   const { update } = useToastsStore()
   const { account } = useAccount()

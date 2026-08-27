@@ -1,4 +1,5 @@
 import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
+import { latestBlockHeightQuery } from "@galacticcouncil/indexer/squid"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import {
   DataProviderStatus,
@@ -6,15 +7,16 @@ import {
   getDataProviderStatus,
 } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
 import { isNumber } from "remeda"
 
 import { useBestNumber } from "@/api/chain"
-import { neckworkClient } from "@/api/neckwork"
+import { neckworkClient, useSquidClient, useSquidUrl } from "@/api/provider"
 import { getIndexerStatus } from "@/components/DataProviderSelect/DataProviderResolver.utils"
 import { ENV } from "@/config/env"
+import { SQUID_URLS } from "@/config/rpc"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
 const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
@@ -92,6 +94,29 @@ export const useBlockHeightStatus = (blockHeight: number | null) => {
   }
 }
 
+export const useActiveIndexerStatus = () => {
+  const url = useSquidUrl()
+  const squidSdk = useSquidClient()
+  const urlList = useFullSquidUrlList()
+
+  const {
+    data: blockHeight,
+    isLoading,
+    isError,
+  } = useQuery(latestBlockHeightQuery(squidSdk, url))
+
+  const blockHeightStatus = useBlockHeightStatus(blockHeight ?? null)
+
+  return {
+    name: urlList.find((item) => item.url === url)?.name ?? url,
+    url,
+    blockHeight: blockHeight ?? null,
+    isLoading,
+    isError,
+    ...blockHeightStatus,
+  }
+}
+
 export const useNeckworkIndexerStatus = () => {
   const neckworkEnabled = useNeckworkEnabled()
 
@@ -115,3 +140,21 @@ export const useNeckworkIndexerStatus = () => {
     ...blockHeightStatus,
   }
 }
+
+export const useActiveDataSourceStatus = () => {
+  const neckworkEnabled = useNeckworkEnabled()
+  const neckwork = useNeckworkIndexerStatus()
+  const squid = useActiveIndexerStatus()
+
+  return neckworkEnabled ? neckwork : squid
+}
+
+export const useFullSquidUrlList = () =>
+  useMemo(
+    () =>
+      uniqueBy(
+        SQUID_URLS.map(({ name, graphqlUrl }) => ({ name, url: graphqlUrl })),
+        prop("url"),
+      ),
+    [],
+  )

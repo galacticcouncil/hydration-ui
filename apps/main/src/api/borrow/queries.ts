@@ -196,7 +196,8 @@ export const borrowReservesQuery = (
     },
     retry: false,
     staleTime: RESERVES_STALE_TIME,
-    enabled: !!lendingPoolAddressProvider && !!poolDataContract && rpc.isReady,
+    enabled:
+      !!lendingPoolAddressProvider && !!poolDataContract && rpc.isApiLoaded,
   })
 
 export const useBorrowReserves = () => {
@@ -458,7 +459,7 @@ export const userBorrowSummaryQuery = (
     },
     retry: false,
     staleTime: USER_RESERVES_STALE_TIME,
-    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isReady,
+    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isApiLoaded,
   })
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
@@ -514,7 +515,7 @@ export const facilitatorBucketQuery = (
         facilitatorBucketLevel: facilitatorBucketLevel,
       }
     },
-    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isReady,
+    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isApiLoaded,
   })
 
 export const useFacilitatorBucket = (aTokenAddress: string) => {

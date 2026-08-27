@@ -14,7 +14,7 @@ import {
 } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import { getUniqueAccountKey } from "@/utils/wallet"
-import { ExternalWallet, getWallet } from "@/wallets"
+import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export enum WalletProviderStatus {

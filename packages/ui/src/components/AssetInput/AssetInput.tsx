@@ -3,7 +3,16 @@ import Big from "big.js"
 import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Button, Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import {
+  Button,
+  Flex,
+  FormLabel,
+  Icon,
+  LogoSkeleton,
+  MicroButton,
+  Skeleton,
+  Text,
+} from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
 
@@ -94,8 +103,7 @@ export const AssetInput = ({
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between" sx={{ minWidth: 0 }}>
-        {label &&
-          (typeof label === "string" ? <FormLabel>{label}</FormLabel> : label)}
+        {label && <FormLabel>{label}</FormLabel>}
         {!ignoreBalance && (
           <Flex
             align="center"
@@ -143,8 +151,21 @@ export const AssetInput = ({
         <Flex
           width="100%"
           align="center"
-          justify="space-between"
           gap="s"
+          sx={{
+            minWidth: 0,
+            overflow: "hidden",
+            display: "grid",
+            // the optional lock button sits between the asset button and the
+            // amount input, so it needs its own auto column
+            gridTemplateColumns: [
+              hideInput ? "minmax(0, 1fr)" : "auto",
+              onLock ? "auto" : null,
+              hideInput ? null : "minmax(0, 1fr)",
+            ]
+              .filter(Boolean)
+              .join(" "),
+          }}
         >
           <AssetButton
             symbol={symbol}

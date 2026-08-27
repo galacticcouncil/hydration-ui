@@ -93,12 +93,10 @@ export const useMarketTransactionsColumns = () => {
 
     const dateColumn = columnHelper.display({
       header: t("trade:trade.orders.marketTransactions.accountDate"),
-      meta: {
-        sx: { textAlign: "end" },
-      },
+
       cell: ({ row }) => (
         <AccountDate
-          align="flex-end"
+          align="flex-start"
           address={row.original.address}
           date={row.original.date}
         />

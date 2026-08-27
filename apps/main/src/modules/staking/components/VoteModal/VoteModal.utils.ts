@@ -19,7 +19,6 @@ import {
   Conviction,
   getConvictionBlocks,
   ongoingReferendaQuery,
-  VOTE_WEIGHT_BY_CONVICTION,
   voteLockingPeriodQuery,
 } from "@/api/democracy"
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
@@ -43,7 +42,7 @@ export const VOTE_TYPE_OPTIONS = [
 
 export type VoteModalFormValues = {
   voteType: VoteType
-  conviction: Conviction
+  multiplier: Conviction
   amount: string
   aye: string
   nay: string
@@ -85,7 +84,7 @@ export const useVoteModal = (
     mode: "onChange",
     defaultValues: {
       voteType: "aye",
-      conviction: 0,
+      multiplier: 0,
       amount: isGigaStaking ? ghdxLocksHuman : "",
       aye: "",
       nay: "",
@@ -101,7 +100,7 @@ export const useVoteModal = (
           abstain: z.string(),
           asset: z.custom<TAssetData>(),
           voteType: z.enum(VOTE_TYPES),
-          conviction: z.custom<Conviction>(),
+          multiplier: z.custom<Conviction>(),
         })
         .superRefine((data, { addIssue }) => {
           const parseHuman = (raw: string, path: VoteType) => {
@@ -220,8 +219,8 @@ export const useVoteModal = (
   })
 
   const voteType = form.watch("voteType")
-  const [conviction, amount, aye, nay, abstain] = form.watch([
-    "conviction",
+  const [multiplier, amount, aye, nay, abstain] = form.watch([
+    "multiplier",
     "amount",
     "aye",
     "nay",
@@ -229,7 +228,7 @@ export const useVoteModal = (
   ])
 
   const { data: voteLockingPeriod = 0 } = useQuery(voteLockingPeriodQuery(rpc))
-  const lockedBlocks = getConvictionBlocks(voteLockingPeriod, conviction) ?? 0
+  const lockedBlocks = getConvictionBlocks(voteLockingPeriod, multiplier) ?? 0
   const lockedDays = Math.round(
     (lockedBlocks * blockTimeMs) / millisecondsInDay,
   )
@@ -250,13 +249,15 @@ export const useVoteModal = (
 
   const totalVotesWithMultiplier =
     voteType === "aye" || voteType === "nay"
-      ? Big(totalVotes).mul(VOTE_WEIGHT_BY_CONVICTION[conviction]).toString()
+      ? Big(totalVotes)
+          .mul(multiplier || 0.1)
+          .toString()
       : totalVotes
 
   const mutation = useMutation({
     mutationFn: async ({
       voteType,
-      conviction,
+      multiplier,
       amount,
       aye,
       nay,
@@ -269,7 +270,7 @@ export const useVoteModal = (
           return {
             type: "Standard" as const,
             value: {
-              vote: (isAye ? 0x80 : 0x00) | (conviction & 0x7f),
+              vote: (isAye ? 0x80 : 0x00) | (multiplier & 0x7f),
               balance,
             },
           }

@@ -11,11 +11,10 @@ import {
   ModalHeader,
   Separator,
   Slider,
+  SliderTabs,
   Stack,
   Summary,
   Text,
-  ToggleGroup,
-  ToggleGroupItem,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -28,16 +27,10 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
 import {
-  Conviction,
-  CONVICTIONS,
-  REWARD_MULTIPLIER_BY_CONVICTION,
-  VOTE_WEIGHT_BY_CONVICTION,
-} from "@/api/democracy"
-import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
-  useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
+import { useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   SClaimableRewardsContainer,
@@ -56,14 +49,10 @@ import {
   VoteType,
 } from "./VoteModal.utils"
 
-const MAX_REWARD_MULTIPLIER = REWARD_MULTIPLIER_BY_CONVICTION[6]
-
-const getVoteWeightLabel = (conviction: Conviction) =>
-  `${VOTE_WEIGHT_BY_CONVICTION[conviction]}x`
-const getRewardMultiplierLabel = (conviction: Conviction) =>
-  `${REWARD_MULTIPLIER_BY_CONVICTION[conviction]}x`
-const getRewardMultiplierProgress = (conviction: Conviction) =>
-  REWARD_MULTIPLIER_BY_CONVICTION[conviction] / MAX_REWARD_MULTIPLIER
+const MULTIPLIER_LABELS = ["0.1x", "1x", "2x", "3x", "4x", "5x", "6x"]
+const getMultiplierLabel = (multiplier: number) => `${multiplier || 0.1}x`
+const getMultiplierProgress = (multiplier: number) =>
+  Math.min(Math.max(multiplier / 6, 0), 1)
 
 type VoteFormProps = {
   referendumId: number
@@ -116,7 +105,7 @@ const VoteForm = ({
     allLocksHuman,
   } = useVoteModal(referendumId, onClose, isGigaStaking)
 
-  const voteType = form.watch("voteType")
+  const [voteType] = form.watch(["voteType", "multiplier"])
   const isSingleInputField = voteType === "aye" || voteType === "nay"
 
   return (
@@ -128,22 +117,13 @@ const VoteForm = ({
               control={form.control}
               name="voteType"
               render={({ field: { value, onChange, disabled } }) => (
-                <Flex direction="column" flex={1}>
-                  <ToggleGroup
-                    type="single"
-                    value={value}
-                    onValueChange={(nextValue) =>
-                      nextValue && onChange(nextValue as VoteType)
-                    }
-                    disabled={disabled}
-                  >
-                    {VOTE_TYPE_OPTIONS.map((option) => (
-                      <ToggleGroupItem key={option.id} value={option.id}>
-                        {option.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                </Flex>
+                <SliderTabs
+                  options={VOTE_TYPE_OPTIONS}
+                  selected={value}
+                  onSelect={(option) => onChange(option.id)}
+                  sx={{ flex: 1 }}
+                  disabled={disabled}
+                />
               )}
             />
 
@@ -266,7 +246,7 @@ const VoteForm = ({
 
                 <Controller
                   control={form.control}
-                  name="conviction"
+                  name="multiplier"
                   render={({ field }) => (
                     <Stack gap="m">
                       <Flex align="center" gap="xs" justify="space-between">
@@ -281,7 +261,7 @@ const VoteForm = ({
 
                         <Flex align="center" gap="xs">
                           <Text fs="p5" fw={500}>
-                            {getVoteWeightLabel(field.value)}
+                            {getMultiplierLabel(field.value)}
                           </Text>
 
                           <Tooltip
@@ -303,19 +283,19 @@ const VoteForm = ({
                       />
 
                       <Flex justify="space-between">
-                        {CONVICTIONS.map((conviction) => (
+                        {MULTIPLIER_LABELS.map((label) => (
                           <Text
-                            key={conviction}
+                            key={label}
                             fs="p6"
                             color={getToken("text.medium")}
                           >
-                            {getVoteWeightLabel(conviction)}
+                            {label}
                           </Text>
                         ))}
                       </Flex>
 
                       {isGigaStaking && (
-                        <RewardMultiplierCard conviction={field.value} />
+                        <RewardMultiplierCard multiplier={field.value} />
                       )}
                     </Stack>
                   )}
@@ -538,9 +518,9 @@ const ClaimableRewardsField = () => {
   )
 }
 
-const RewardMultiplierCard = ({ conviction }: { conviction: Conviction }) => {
+const RewardMultiplierCard = ({ multiplier }: { multiplier: number }) => {
   const { t } = useTranslation("staking")
-  const progress = getRewardMultiplierProgress(conviction)
+  const progress = getMultiplierProgress(multiplier)
   const motionIntensity = progress ** 1.6
   const electricDurationSeconds = Math.max(1.45, 6 - motionIntensity * 4.15)
   const displacementOffsetY = motionIntensity * -2.5
@@ -690,7 +670,7 @@ const RewardMultiplierCard = ({ conviction }: { conviction: Conviction }) => {
             lh={1}
             color="var(--electric-border-color)"
           >
-            {getRewardMultiplierLabel(conviction)}
+            {getMultiplierLabel(multiplier)}
           </Text>
           <span className="reward-rocket" aria-hidden>
             <Icon component={Rocket} size="l" />

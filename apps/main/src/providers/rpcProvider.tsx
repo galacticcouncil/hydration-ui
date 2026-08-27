@@ -10,14 +10,20 @@ import {
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { StatusChange, WsEvent } from "polkadot-api/ws"
-import { createContext, ReactNode, useContext, useEffect, useMemo } from "react"
+import { createContext, ReactNode, useContext, useEffect } from "react"
+import { isFunction } from "remeda"
 
-import { rpcProviderQuery, switchRpc, TProviderData } from "@/api/rpcClient"
-import { getProviderDataEnv } from "@/api/rpcConfig"
+import { chainSpecDataQueryOptions, isHydrationFork } from "@/api/chainSpec"
+import {
+  getProviderDataEnv,
+  rpcProviderQuery,
+  TProviderData,
+} from "@/api/provider"
 import { TDataEnv } from "@/config/rpc"
 import { useAssetRegistryStore } from "@/states/assetRegistry"
 import { useProviderRpcUrlStore } from "@/states/provider"
@@ -33,6 +39,7 @@ export type TProviderContext = TProviderData & {
   isReady: boolean
   dataEnv: TDataEnv
   endpoint: string
+  isFork: boolean
 }
 
 /**
@@ -52,7 +59,6 @@ export type TProviderContext = TProviderData & {
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
-  slotDurationMs: 6000,
   papi: {} as Papi,
   papiNext: {} as PapiNext,
   papiIce: {} as PapiIce,
@@ -62,6 +68,7 @@ const defaultData: TProviderContext = {
   evm: {} as TProviderData["evm"],
   featureFlags: {
     hollarBondsEnabled: true,
+    bilEnabled: false,
     isIceEnabled: false,
   },
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
@@ -69,6 +76,7 @@ const defaultData: TProviderContext = {
   isReady: false,
   dataEnv: "mainnet",
   endpoint: "",
+  isFork: false,
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -94,17 +102,15 @@ const logWsStatusChange = (status: StatusChange) => {
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
-
-  const hasAssets = useAssetRegistryStore((state) => state.assets.length > 0)
-  const registryGenesisHash = useAssetRegistryStore(
-    (state) => state.genesisHash,
-  )
-
-  const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
-  const connectedRpcUrl = useProviderRpcUrlStore(
-    (state) => state.connectedRpcUrl,
-  )
-  const rpcUrlList = useProviderRpcUrlStore((state) => state.rpcUrlList)
+  const { assets } = useAssetRegistry()
+  const {
+    rpcUrl,
+    connectedRpcUrl,
+    rpcUrlList,
+    setRpcUrl,
+    setConnectedRpcUrl,
+    setIsRpcConnecting,
+  } = useProviderRpcUrlStore()
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
@@ -115,15 +121,10 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       wsProviderOpts: {
         onStatusChanged: (status) => {
           logWsStatusChange(status)
-          const {
-            rpcUrl,
-            connectedRpcUrl,
-            setRpcUrl,
-            setConnectedRpcUrl,
-            setIsRpcConnecting,
-          } = useProviderRpcUrlStore.getState()
           if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
+            const { rpcUrl, connectedRpcUrl } =
+              useProviderRpcUrlStore.getState()
             if (status.uri !== connectedRpcUrl) {
               setConnectedRpcUrl(status.uri)
             }
@@ -136,32 +137,51 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   )
 
   useEffect(() => {
+    const client = data.papiClient
+    if (!isFunction(client?.switch)) return
+
     // switch to best rpc when auto mode is enabled
     return useProviderRpcUrlStore.subscribe((state, prevState) => {
       if (!state.autoMode || state.rpcUrl === prevState.rpcUrl) return
-      switchRpc(state.rpcUrl, data)
+      client.switch(state.rpcUrl)
     })
-  }, [data])
+  }, [data.papiClient])
 
-  const isEndpointSettled = rpcUrl === connectedRpcUrl
-  const isRegistryReady = hasAssets && registryGenesisHash === data.genesisHash
-  const isReady = isEndpointSettled && isRegistryReady
+  useEffect(() => {
+    if (!Object.keys(data.sdk).length) return
+    return () => {
+      data.sdk.destroy()
+    }
+  }, [data?.sdk])
+
+  const isLoaded = assets.length > 0
+  const isApiLoaded =
+    Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
 
   const dataEnv = getProviderDataEnv(rpcUrl)
 
-  const value = useMemo<TProviderContext>(
-    () => ({
-      ...data,
-      isEndpointSettled,
-      isReady,
-      endpoint: rpcUrl,
-      dataEnv,
-    }),
-    [data, dataEnv, isEndpointSettled, isReady, rpcUrl],
+  const { data: chainSpec } = useQuery(
+    chainSpecDataQueryOptions(
+      connectedRpcUrl,
+      data.papiClient,
+      data.papi,
+      isApiLoaded,
+    ),
   )
 
+  const isFork = isHydrationFork(chainSpec?.chainSpecData.genesisHash)
+
   return (
-    <ProviderContext.Provider value={value}>
+    <ProviderContext.Provider
+      value={{
+        ...data,
+        isApiLoaded,
+        isLoaded,
+        endpoint: rpcUrl,
+        dataEnv,
+        isFork,
+      }}
+    >
       {children}
     </ProviderContext.Provider>
   )

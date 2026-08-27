@@ -341,7 +341,7 @@ export const getTransfarebleATokenBalance = (
       onSuccess?.(maxBalance)
       return maxBalance
     },
-    enabled: rpc.isReady && !!address,
+    enabled: rpc.isApiLoaded && !!address,
   })
 
 export const useTransfarebleATokenBalance = ({

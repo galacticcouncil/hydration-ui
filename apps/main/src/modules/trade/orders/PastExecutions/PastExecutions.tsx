@@ -1,16 +1,20 @@
 import {
   Flex,
+  LoadingButton,
   Separator,
   Skeleton,
+  Stack,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { PastExecutionData } from "@/modules/trade/orders/lib/types"
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
 import { PastExecutionsListHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsListHeader"
+import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
 import { TAsset } from "@/providers/assetsProvider"
 
 const PAST_EXECUTION_ITEM_SIZE = 65
@@ -85,10 +89,9 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
           />
         ) : (
           <VirtualizedList
+            {...pastExecutionsListProps}
             items={executions}
-            maxVisibleItems={5}
-            itemSize={60}
-            separated
+            onEndReached={onEndReached}
             renderItem={(execution) => (
               <PastExecutionItem
                 assetIn={assetIn}
@@ -97,6 +100,20 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
               />
             )}
           />
+        )}
+        {loadAll && hasMore && (
+          <Flex justify="center" px="l" pb="l">
+            <LoadingButton
+              variant="tertiary"
+              outline
+              isLoading={isLoadingAll ?? false}
+              onClick={loadAll}
+            >
+              {t("trade.orders.pastExecutions.loadAll", {
+                count: totalCount ?? 0,
+              })}
+            </LoadingButton>
+          </Flex>
         )}
       </Flex>
     </Flex>

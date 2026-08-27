@@ -1,8 +1,4 @@
-import {
-  Flex,
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@galacticcouncil/ui/components"
+import { Flex, SliderTabs } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -52,19 +48,11 @@ export const GigaStakePage: FC = () => {
         )}
         <GigaStakeTotalsHeader />
 
-        <ToggleGroup
-          type="single"
-          value={type}
-          onValueChange={(value) =>
-            value && setType(value as "dashboard" | "actions")
-          }
-        >
-          {gigaStakingOptions.map((option) => (
-            <ToggleGroupItem key={option.id} value={option.id}>
-              {option.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <SliderTabs
+          options={gigaStakingOptions}
+          selected={type}
+          onSelect={(option) => setType(option.id as "dashboard" | "actions")}
+        />
 
         {type === "dashboard" ? (
           <Flex direction="column" gap="xl">

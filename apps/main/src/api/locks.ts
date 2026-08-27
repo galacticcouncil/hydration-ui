@@ -14,7 +14,7 @@ import {
   gigaTwoSecBlocksSinceQuery,
   gigaUnstakePositionsQuery,
 } from "@/api/gigaStake"
-import { PROXY_URL } from "@/api/neckwork"
+import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -24,6 +24,7 @@ export const useUnlockableNativeTokens = () => {
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const { native } = useAssets()
+  const indexerUrl = useProxyUrl()
   const address = account?.address ?? ""
   const { data: locks, isSuccess } = useNativeTokenLocks()
 
@@ -31,7 +32,7 @@ export const useUnlockableNativeTokens = () => {
   const gigaLock = locks?.get(TokenLockType.GigaStaking) ?? 0n
 
   const { data, isLoading } = useQuery({
-    enabled: rpc.isReady && !!address && isSuccess,
+    enabled: rpc.isApiLoaded && !!address && isSuccess,
     queryKey: [
       "unlockable-native-tokens",
       address,
@@ -46,7 +47,7 @@ export const useUnlockableNativeTokens = () => {
 
       if (referendaLock > 0n) {
         const unlockedTokens = await rpc.queryClient.ensureQueryData(
-          openGovUnlockedTokensQuery(rpc, address, PROXY_URL),
+          openGovUnlockedTokensQuery(rpc, address, indexerUrl),
         )
 
         const stillLockedByVotes = BigInt(unlockedTokens.maxLockedValue)

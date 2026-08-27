@@ -36,7 +36,7 @@ export const SwapPageDesktop = () => {
         >
           <SSwapFormContainer width="100%">
             <FormHeader />
-            <Separator mx={-20} />
+            <Separator mx="-xl" />
             <Outlet />
           </SSwapFormContainer>
           <LimitPostFormDisclaimer />

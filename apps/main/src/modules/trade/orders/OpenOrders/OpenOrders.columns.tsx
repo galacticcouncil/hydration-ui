@@ -100,7 +100,10 @@ export const useOpenOrdersColumns = () => {
           kind === OrderKind.Limit ? fromAmountBudget : fromAmountExecuted
 
         const price =
-          toAmountExecuted && fromAmount && Big(toAmountExecuted).gt(0)
+          toAmountExecuted &&
+          fromAmount &&
+          Big(fromAmount).gt(0) &&
+          Big(toAmountExecuted).gt(0)
             ? Big(fromAmount).div(toAmountExecuted).toString()
             : null
 
@@ -139,7 +142,9 @@ export const useOpenOrdersColumns = () => {
               status={row.original.status}
               sold={row.original.fromAmountExecuted}
               total={row.original.fromAmountBudget}
-              isOpenBudget={row.original.isOpenBudget}
+              isOpenBudget={
+                "isOpenBudget" in row.original && row.original.isOpenBudget
+              }
               from={row.original.from}
             />
           )
@@ -159,21 +164,52 @@ export const useOpenOrdersColumns = () => {
 
         return (
           <Flex align="center" gap="base" justify="flex-end">
-            <Button
-              variant="danger"
-              outline
-              sx={{ p: "base" }}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (isIntent) {
-                  removeIntent.mutate(order.intentId)
-                } else {
-                  setModal("confirmation")
-                }
-              }}
+            {/* only a DCA schedule has a neckwork activity page - an intent
+                is read straight from chain state */}
+            {isDcaSchedule && (
+              <Tooltip
+                text={t("openInExplorer")}
+                size="small"
+                asChild
+                side="top"
+              >
+                <Button
+                  sx={{ p: "base" }}
+                  variant="muted"
+                  outline
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  asChild
+                >
+                  <ExternalLink href={neckwork.activityDca(order.scheduleId)}>
+                    <Icon component={SquareArrowOutUpRight} size="s" />
+                  </ExternalLink>
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip
+              text={t("trade:trade.cancelOrder.cta")}
+              size="small"
+              asChild
+              side="top"
             >
-              <Icon component={Trash} size="s" />
-            </Button>
+              <Button
+                variant="danger"
+                outline
+                sx={{ p: "base" }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (isIntent) {
+                    removeIntent.mutate(order.intentId)
+                  } else {
+                    setModal("confirmation")
+                  }
+                }}
+              >
+                <Icon component={Trash} size="s" />
+              </Button>
+            </Tooltip>
             <TableRowDetailsExpand />
             {isDcaSchedule && (
               <Modal
@@ -214,7 +250,9 @@ export const useOpenOrdersColumns = () => {
             from={row.original.from}
             status={row.original.status}
             total={row.original.fromAmountBudget}
-            isOpenBudget={row.original.isOpenBudget}
+            isOpenBudget={
+              "isOpenBudget" in row.original && row.original.isOpenBudget
+            }
           />
         </TableRowDetailsExpand>
       ),

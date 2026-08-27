@@ -3,7 +3,6 @@ import {
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
   QUERY_KEY_BLOCK_PREFIX,
-  resolveHydrationAssetId,
 } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
@@ -24,7 +23,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { isString } from "remeda"
 
 import { ENV } from "@/config/env"

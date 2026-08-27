@@ -4,7 +4,7 @@ import {
   SolanaAddr,
   Ss58Addr,
   SuiAddr,
-  ZecAddr,
+  ZcashAddr,
 } from "@galacticcouncil/utils"
 import { lazy, Suspense } from "react"
 
@@ -103,7 +103,7 @@ function getAutoTheme(address: string): AccountAvatarTheme | null {
       return "sui"
     case NearAddr.isValid(address):
       return "near"
-    case ZecAddr.isValid(address):
+    case ZcashAddr.isValid(address):
       return "zcash"
     default:
       return null
