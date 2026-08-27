@@ -476,22 +476,24 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
   }
 
   const vaultPosition =
-    state && managedBand === "base"
+    state && managedBand
       ? {
-          label: t("vaults.composition.base"),
-          amount0: state.base.amount0,
-          amount1: state.base.amount1,
+          label: t(
+            managedBand === "base"
+              ? "vaults.composition.base"
+              : "vaults.composition.limit",
+          ),
+          ...state[managedBand],
         }
-      : state && managedBand === "limit"
-        ? {
-            label: t("vaults.composition.limit"),
-            amount0: state.limit.amount0,
-            amount1: state.limit.amount1,
-          }
-        : null
+      : null
+
+  const share =
+    vaultPosition && bar.liquidity > 0
+      ? (Number(vaultPosition.liquidity) / bar.liquidity) * 100
+      : null
 
   return (
-    <Flex direction="column" gap="s" p="m" minWidth="12rem">
+    <Flex direction="column" gap="s" p="m" minWidth="4xl">
       <Flex justify="space-between" align="center" gap="m">
         <Text
           fs="p5"
@@ -501,54 +503,68 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
         >
           {t("common:number.range", { from: low, to: high })}
         </Text>
-        {bar.current && (
-          <Chip size="small" variant="lime">
-            {t("vaults.chart.tooltip.current")}
-          </Chip>
-        )}
+        <Flex align="center" gap="xs">
+          {managedBand && (
+            <Chip size="small" variant="blue">
+              {t(
+                managedBand === "base"
+                  ? "vaults.chart.band.base"
+                  : "vaults.chart.band.limit",
+              )}
+            </Chip>
+          )}
+          {bar.current && (
+            <Chip size="small" variant="lime">
+              {t("vaults.chart.tooltip.current")}
+            </Chip>
+          )}
+        </Flex>
       </Flex>
 
-      {vaultPosition ? (
+      <Text fs="p6" color={getToken("text.medium")}>
+        {t("vaults.chart.tooltip.locked")}
+      </Text>
+      <TickStatsRow
+        label={held.symbol}
+        isSymbolLabel={true}
+        icon={<AssetLogo id={held.id} size="extra-small" />}
+        value={t("common:number", {
+          value: bar.locked,
+          threshold: true,
+          thresholdMaximumFractionDigits: 2,
+        })}
+        displayValue={usd(held.id, bar.locked)}
+      />
+
+      {vaultPosition && (
         <>
-          <Text fs="p6" color={getToken("text.medium")}>
-            {vaultPosition.label}
+          <Text fs="p6" color={getToken("text.medium")} mt="xs">
+            {share !== null
+              ? t("vaults.chart.tooltip.vaultShare", {
+                  label: vaultPosition.label,
+                  value: share,
+                })
+              : vaultPosition.label}
           </Text>
           <TickStatsRow
             label={token0.symbol}
             isSymbolLabel={true}
             icon={<AssetLogo id={token0.id} size="extra-small" />}
-            value={human(vaultPosition.amount0, token0.decimals)}
+            value={human(vaultPosition.amount0, decimals0)}
             displayValue={usd(
               token0.id,
-              scaleHuman(vaultPosition.amount0.toString(), token0.decimals),
+              scaleHuman(vaultPosition.amount0.toString(), decimals0),
             )}
           />
           <TickStatsRow
             label={token1.symbol}
             isSymbolLabel={true}
             icon={<AssetLogo id={token1.id} size="extra-small" />}
-            value={human(vaultPosition.amount1, token1.decimals)}
+            value={human(vaultPosition.amount1, decimals1)}
             displayValue={usd(
               token1.id,
-              scaleHuman(vaultPosition.amount1.toString(), token1.decimals),
+              scaleHuman(vaultPosition.amount1.toString(), decimals1),
             )}
-          />
-        </>
-      ) : (
-        <>
-          <Text fs="p6" color={getToken("text.medium")}>
-            {t("vaults.chart.tooltip.locked")}
-          </Text>
-          <TickStatsRow
-            label={held.symbol}
-            isSymbolLabel={true}
-            icon={<AssetLogo id={held.id} size="extra-small" />}
-            value={t("common:number", {
-              value: bar.locked,
-              threshold: true,
-              thresholdMaximumFractionDigits: 2,
-            })}
-            displayValue={usd(held.id, bar.locked)}
           />
         </>
       )}

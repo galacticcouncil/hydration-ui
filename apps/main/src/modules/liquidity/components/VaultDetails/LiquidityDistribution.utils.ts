@@ -81,22 +81,24 @@ export const isSameRange = (
   (focused.datum.rangeFrom === bar.rangeFrom &&
     focused.datum.rangeTo === bar.rangeTo)
 
+/** A range the vault actually holds liquidity in. Bounds alone are not enough:
+ *  rebalance sets them every run and may mint nothing into either one. */
+export const hasBase = (state: VaultState) =>
+  state.baseUpper > state.baseLower && state.base.liquidity > 0n
+
+export const hasLimit = (state: VaultState) =>
+  state.limitUpper > state.limitLower && state.limit.liquidity > 0n
+
 export const getManagedBand = (
   tick: number,
   state: VaultState,
 ): "base" | "limit" | null => {
-  if (
-    state.limitUpper > state.limitLower &&
-    tick >= state.limitLower &&
-    tick <= state.limitUpper
-  )
+  // rebalance only forbids limit and base sharing both bounds, so they may
+  // overlap. The limit range is the narrower, more specific one, so it wins.
+  if (hasLimit(state) && tick >= state.limitLower && tick <= state.limitUpper)
     return "limit"
 
-  if (
-    state.baseUpper > state.baseLower &&
-    tick >= state.baseLower &&
-    tick <= state.baseUpper
-  )
+  if (hasBase(state) && tick >= state.baseLower && tick <= state.baseUpper)
     return "base"
 
   return null
@@ -135,14 +137,18 @@ export const getLiquidityDistribution = ({
   const ticks = [...(pool.ticks ?? [])].sort((a, b) => a.index - b.index)
   const marketSpot = pool.tick
   const bandWidth = state ? state.baseUpper - state.baseLower : 0
-  const from =
-    state && bandWidth > 0
-      ? Math.min(state.baseLower, marketSpot) - bandWidth
-      : marketSpot - 3000
-  const to =
-    state && bandWidth > 0
-      ? Math.max(state.baseUpper, marketSpot) + bandWidth
-      : marketSpot + 3000
+  // The limit range sits next to base, but nothing bounds it to one base width,
+  // so it has to be framed explicitly or it lands outside the plot.
+  const edges = state
+    ? [
+        marketSpot,
+        ...(bandWidth > 0 ? [state.baseLower, state.baseUpper] : []),
+        ...(hasLimit(state) ? [state.limitLower, state.limitUpper] : []),
+      ]
+    : []
+  const pad = bandWidth > 0 ? bandWidth : 3000
+  const from = edges.length ? Math.min(...edges) - pad : marketSpot - 3000
+  const to = edges.length ? Math.max(...edges) + pad : marketSpot + 3000
   const span = to - from
 
   // The lifecycle illustration keeps the pool's real depth and price window,
@@ -183,10 +189,10 @@ export const getLiquidityDistribution = ({
         },
       ]
     : [
-        ...(state && bandWidth > 0
+        ...(state && hasBase(state)
           ? [{ id: "base" as const, ...base, opacity: 0.6, height: 1.05 }]
           : []),
-        ...(state && state.limitUpper > state.limitLower
+        ...(state && hasLimit(state)
           ? [
               {
                 id: "limit" as const,
