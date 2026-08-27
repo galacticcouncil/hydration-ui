@@ -112,7 +112,15 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
       <Text as="h2" fs="base" fw={500} font="primary">
         {t("vaults.explainer.title")}
       </Text>
-      <Text fs="p6" color={getToken("text.low")} sx={{ mt: "xs" }}>
+      <Flex direction="column" gap="xs" sx={{ mt: "m" }}>
+        <Text fs="p5" color={getToken("text.medium")}>
+          {t("vaults.explainer.intro")}
+        </Text>
+        <Text fs="p5" color={getToken("text.medium")}>
+          {t("vaults.explainer.introDetails")}
+        </Text>
+      </Flex>
+      <Text fs="p6" color={getToken("text.low")} sx={{ pt: "10px" }}>
         {t("vaults.explainer.hint")}
       </Text>
 
