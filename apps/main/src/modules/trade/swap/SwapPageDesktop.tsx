@@ -22,7 +22,7 @@ export const SwapPageDesktop = () => {
   return (
     <Stack gap="xl">
       <PageHeader />
-      <TwoColumnGrid template="sidebar">
+      <TwoColumnGrid template="sidebar" sx={{ gridTemplateRows: "auto 1fr" }}>
         <TradeChart height={TRADE_CHART_DESKTOP_HEIGHT} />
         <SSwapFormContainer gridColumn={2} gridRow={[null, null, null, "1/-1"]}>
           <FormHeader />

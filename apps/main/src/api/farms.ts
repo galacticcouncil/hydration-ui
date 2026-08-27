@@ -10,7 +10,7 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { isXykDepositPosition } from "@/states/account"
 
 import { OmnipoolDepositFull, XykDeposit } from "./account"
-import { bestNumberQuery } from "./chain"
+import { bestNumberQuery, blockTimeQuery } from "./chain"
 
 export type Farm = farm.Farm
 export type FarmDepositReward = farm.FarmDepositReward
@@ -26,8 +26,8 @@ export type FarmRewards = {
 
 export const NEW_YIELD_FARMS_DAYS = 4
 const NEW_YIELD_FARMS_TIME = millisecondsInDay * NEW_YIELD_FARMS_DAYS
-const getNewYieldFarmsBlocks = (slotDurationMs: number) =>
-  Math.round(NEW_YIELD_FARMS_TIME / slotDurationMs)
+const getNewYieldFarmsBlocks = (blockTimeMs: number) =>
+  Math.round(NEW_YIELD_FARMS_TIME / blockTimeMs)
 
 const newFarmsDataSchema = z.object({
   events: z.array(
@@ -184,14 +184,16 @@ const newCreatedFarmsQuery = (
     enabled: rpcProvider.isApiLoaded,
     queryKey: ["newCreatedFarms"],
     queryFn: async () => {
-      const slotDurationMs = rpcProvider.slotDurationMs
+      const blockTimeMs = await rpcProvider.queryClient.ensureQueryData(
+        blockTimeQuery(rpcProvider.sdk),
+      )
       const { parachainBlockNumber } =
         await rpcProvider.queryClient.ensureQueryData(
           bestNumberQuery(rpcProvider),
         )
 
       const latestBlockNumber = Big(parachainBlockNumber)
-        .minus(getNewYieldFarmsBlocks(slotDurationMs))
+        .minus(getNewYieldFarmsBlocks(blockTimeMs))
         .toNumber()
 
       const data = await rpcProvider.queryClient.fetchQuery(
