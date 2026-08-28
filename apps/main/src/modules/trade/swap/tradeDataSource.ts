@@ -12,8 +12,8 @@ import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNe
 import { useNeckworkEnabled } from "@/states/neckwork"
 
 export const useTradeDataSource = (): "neckwork" | "legacy" | "squid" => {
-  const { status } = useActiveIndexerStatus()
   const isNeckworkEnabled = useNeckworkEnabled()
+  const { status } = useActiveIndexerStatus()
 
   if (isNeckworkEnabled) return "neckwork"
 
