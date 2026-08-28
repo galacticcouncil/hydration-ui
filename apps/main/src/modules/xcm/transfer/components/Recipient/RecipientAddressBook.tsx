@@ -28,9 +28,7 @@ export const RecipientAddressBook: FC<RecipientAddressBookProps> = ({
             {addresses.map((address) => (
               <AddressBookEntry
                 key={address.publicKey}
-                address={address.address}
-                mode={address.mode}
-                name={address.name}
+                {...address}
                 onSelect={() => onSelectAddress(address.address)}
                 onEdit={(name) =>
                   edit({

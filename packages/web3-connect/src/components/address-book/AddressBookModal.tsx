@@ -1,11 +1,7 @@
-import {
-  ModalBody,
-  ModalHeader,
-  ScrollArea,
-  Stack,
-} from "@galacticcouncil/ui/components"
+import { ModalHeader, ScrollArea, Stack } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { stringEquals } from "@galacticcouncil/utils"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { filter, pipe, sortBy } from "remeda"
 
@@ -21,6 +17,11 @@ import {
   AddressBookEmptyStateReason,
 } from "@/components/address-book/AddressBookEmptyState"
 import { AddressBookEntry } from "@/components/address-book/AddressBookEntry"
+import {
+  SAddressBookModalBody,
+  SAddressBookModalContent,
+  SAddressBookModalControls,
+} from "@/components/address-book/AddressBookModal.styled"
 import { AddressBookSearch } from "@/components/address-book/AddressBookSearch"
 import {
   WALLET_ACCOUNT_FILTER_OPTIONS,
@@ -29,8 +30,11 @@ import {
   WalletMode,
 } from "@/config/wallet"
 import i18n from "@/i18n"
-import { addressToPublicKey } from "@/utils/publicKey"
-import { getWalletModeByAddress, getWalletModeName } from "@/utils/wallet"
+import {
+  addressToPublicKey,
+  getWalletModeByAddress,
+  getWalletModeName,
+} from "@/utils/wallet"
 
 type Props = {
   readonly header?: React.ReactNode
@@ -63,8 +67,16 @@ export const AddressBookModal: FC<Props> = ({
       : WalletMode.Default,
   )
 
+  const { isMobile } = useBreakpoints()
   const { add, edit, remove } = useAddressStore()
   const allAddresses = useAddresses()
+
+  const availableAccountModes = new Set(
+    allAddresses.map((address) => address.mode),
+  )
+  const accountFilterWhitelist = whitelist.filter((mode) =>
+    availableAccountModes.has(mode),
+  )
 
   const addressOrder = new Map(
     allAddresses.map((address, index) => [address.publicKey, index]),
@@ -129,6 +141,20 @@ export const AddressBookModal: FC<Props> = ({
           mode: getWalletModeName(accountFilter),
         })
 
+  useEffect(() => {
+    if (
+      accountFilter !== WalletMode.Default &&
+      !accountFilterWhitelist.includes(accountFilter)
+    ) {
+      setAccountFilter(WalletMode.Default)
+    }
+  }, [accountFilter, accountFilterWhitelist])
+
+  const scrollAreaHeight =
+    searchedAddresses.length <= MAX_VISIBLE_ADDRESS_BOOK_ENTRIES
+      ? "auto"
+      : "45vh"
+
   if (publicKeyToRemove) {
     return (
       <AccountRemoveModal
@@ -152,6 +178,7 @@ export const AddressBookModal: FC<Props> = ({
       address: searchPhrase,
       name: "",
       isCustom: true,
+      isGlobal: true,
     })
 
     setSearchPhrase("")
@@ -167,66 +194,57 @@ export const AddressBookModal: FC<Props> = ({
         (onBack && (
           <ModalHeader title={selectTitle} align={align} onBack={onBack} />
         ))}
-      <ModalBody
-        scrollable={false}
-        sx={{ display: "flex", flexDirection: "column", gap: "xl" }}
-      >
-        <AddressBookSearch
-          canAdd={canAdd}
-          searchPhrase={searchPhrase}
-          onSearchPhraseChange={setSearchPhrase}
-          onAdd={addNewAddress}
-        />
-        {whitelist.length > 1 && (
-          <AccountFilter
-            active={accountFilter}
-            whitelist={whitelist}
-            onSetActive={setAccountFilter}
+      <SAddressBookModalBody scrollable={false} isMobile={isMobile}>
+        <SAddressBookModalControls>
+          <AddressBookSearch
+            canAdd={canAdd}
+            searchPhrase={searchPhrase}
+            onSearchPhraseChange={setSearchPhrase}
+            onAdd={addNewAddress}
           />
-        )}
-      </ModalBody>
-      <ModalBody scrollable={false} noPadding>
-        {searchedAddresses.length === 0 ? (
-          <AddressBookEmptyState
-            reason={emptyStateReason}
-            filterName={emptyStateFilterName}
-            {...(canAdd && {
-              address: searchPhrase,
-              addressMode: addressProvider,
-              onAdd: addNewAddress,
-            })}
-          />
-        ) : (
-          <ScrollArea
-            height={
-              searchedAddresses.length <= MAX_VISIBLE_ADDRESS_BOOK_ENTRIES
-                ? "auto"
-                : "45vh"
-            }
-          >
-            <Stack separated>
-              {searchedAddresses.map((address) => (
-                <AddressBookEntry
-                  key={address.publicKey}
-                  address={address.address}
-                  mode={address.mode}
-                  name={address.name}
-                  {...(onSelect && { onSelect: () => onSelect(address) })}
-                  {...(address.isCustom && {
-                    onEdit: (name: string) => {
-                      edit({
-                        ...address,
-                        name,
-                      })
-                    },
-                    onDelete: () => setPublicKeyToRemove(address.publicKey),
-                  })}
-                />
-              ))}
-            </Stack>
-          </ScrollArea>
-        )}
-      </ModalBody>
+          {accountFilterWhitelist.length > 1 && (
+            <AccountFilter
+              active={accountFilter}
+              whitelist={accountFilterWhitelist}
+              onSetActive={setAccountFilter}
+            />
+          )}
+        </SAddressBookModalControls>
+        <SAddressBookModalContent isMobile={isMobile}>
+          {searchedAddresses.length === 0 ? (
+            <AddressBookEmptyState
+              reason={emptyStateReason}
+              filterName={emptyStateFilterName}
+              {...(canAdd && {
+                address: searchPhrase,
+                addressMode: addressProvider,
+                onAdd: addNewAddress,
+              })}
+            />
+          ) : (
+            <ScrollArea height={isMobile ? "100%" : scrollAreaHeight}>
+              <Stack separated>
+                {searchedAddresses.map((address) => (
+                  <AddressBookEntry
+                    key={address.publicKey}
+                    {...address}
+                    {...(onSelect && { onSelect: () => onSelect(address) })}
+                    {...(address.isCustom && {
+                      onEdit: (name: string) => {
+                        edit({
+                          ...address,
+                          name,
+                        })
+                      },
+                      onDelete: () => setPublicKeyToRemove(address.publicKey),
+                    })}
+                  />
+                ))}
+              </Stack>
+            </ScrollArea>
+          )}
+        </SAddressBookModalContent>
+      </SAddressBookModalBody>
     </>
   )
 }

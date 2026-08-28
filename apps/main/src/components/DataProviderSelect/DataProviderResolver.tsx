@@ -1,3 +1,4 @@
+import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
 import {
   getSquidSdk,
   latestBlockHeightQuery,
@@ -8,15 +9,17 @@ import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { prop } from "remeda"
 
-import { PROVIDER_URLS } from "@/api/provider"
+import { neckworkClient, PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { ENV } from "@/config/env"
 import { SQUID_URLS } from "@/config/rpc"
+import { useNeckworkStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { pingWorker } from "@/workers/ping"
 
 import {
   fetchIndexerInfo,
+  fetchNeckworkStatus,
   getBestIndexer,
   getBestRpc,
 } from "./DataProviderResolver.utils"
@@ -32,47 +35,60 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
 }) => {
   const queryClient = useQueryClient()
 
-  const [isBestProviderFound, setIsBestProviderFound] = useState(
-    () => !useProviderRpcUrlStore.getState().autoMode,
-  )
+  const [isBestProviderFound, setIsBestProviderFound] = useState(false)
 
   const [, fetchBestProvider] = useAsyncFn(async () => {
-    const bestRpcs =
-      window.__HYDRATION_BEST_RPCS__ ??
-      (await pingWorker.getBestRpcs(PROVIDER_URLS))
+    const { autoMode } = useProviderRpcUrlStore.getState()
 
-    delete window.__HYDRATION_BEST_RPCS__
+    let referenceBlock: number | null = null
 
-    const bestRpc = getBestRpc(bestRpcs)
+    if (autoMode) {
+      const bestRpcs =
+        window.__HYDRATION_BEST_RPCS__ ??
+        (await pingWorker.getBestRpcs(PROVIDER_URLS))
 
-    if (bestRpc) {
+      delete window.__HYDRATION_BEST_RPCS__
+
+      const bestRpc = getBestRpc(bestRpcs)
+
+      if (bestRpc) {
+        queryClient.setQueryData(
+          rpcStatusQueryOptions(bestRpc.url).queryKey,
+          bestRpc,
+        )
+      }
+
+      const bestRpcsUrls = bestRpcs.map(prop("url"))
+      const sortedRpcList = Array.from(
+        new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
+      )
+
+      const bestRpcUrl = bestRpc?.url ?? ENV.VITE_PROVIDER_URL
+
+      useProviderRpcUrlStore.setState({
+        rpcUrl: bestRpcUrl,
+        rpcUrlList: sortedRpcList,
+        updatedAt: Date.now(),
+      })
+
+      referenceBlock = bestRpc?.blockNumber ?? null
+    }
+
+    const [indexerInfos, neckworkStatus] = await Promise.all([
+      Promise.all(SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer))),
+      ENV.VITE_NECKWORK_ENABLED ? fetchNeckworkStatus() : null,
+    ])
+
+    useNeckworkStore.setState({ alive: !!neckworkStatus })
+
+    if (neckworkStatus) {
       queryClient.setQueryData(
-        rpcStatusQueryOptions(bestRpc.url).queryKey,
-        bestRpc,
+        neckworkStatusQuery(neckworkClient).queryKey,
+        neckworkStatus,
       )
     }
 
-    const bestRpcsUrls = bestRpcs.map(prop("url"))
-    const sortedRpcList = Array.from(
-      new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
-    )
-
-    const bestRpcUrl = bestRpc?.url ?? ENV.VITE_PROVIDER_URL
-
-    useProviderRpcUrlStore.setState({
-      rpcUrl: bestRpcUrl,
-      rpcUrlList: sortedRpcList,
-      updatedAt: Date.now(),
-    })
-
-    const indexerInfos = await Promise.all(
-      SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer)),
-    )
-
-    const bestIndexer = getBestIndexer(
-      indexerInfos,
-      bestRpc?.blockNumber ?? null,
-    )
+    const bestIndexer = getBestIndexer(indexerInfos, referenceBlock)
 
     if (bestIndexer) {
       const url = bestIndexer.config.graphqlUrl

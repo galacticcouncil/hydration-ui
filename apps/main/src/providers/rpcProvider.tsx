@@ -36,7 +36,6 @@ export type TProviderContext = TProviderData & {
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
-  slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiNext: {} as TProviderData["papiNext"],
   sdk: {} as TProviderData["sdk"],
@@ -98,7 +97,11 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
           logWsStatusChange(status)
           if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
-            if (status.uri !== connectedRpcUrl) setConnectedRpcUrl(status.uri)
+            const { rpcUrl, connectedRpcUrl } =
+              useProviderRpcUrlStore.getState()
+            if (status.uri !== connectedRpcUrl) {
+              setConnectedRpcUrl(status.uri)
+            }
             if (status.uri !== rpcUrl) setRpcUrl(status.uri)
             setIsRpcConnecting(false)
           }

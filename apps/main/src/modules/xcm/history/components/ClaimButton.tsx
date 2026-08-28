@@ -42,9 +42,10 @@ export const ClaimButton: React.FC<ClaimButtonProps> = ({ journey }) => {
   const now = useNow(isJourneyClaimReady(journey) ? null : 1000)
   const isReady = isJourneyClaimReady(journey, now)
 
-  const { data: isRedeemed } = useJourneyRedeemed(journey)
+  const { data: isRedeemed, isLoading: isRedeemedLoading } =
+    useJourneyRedeemed(journey)
 
-  if (!isReady || isRedeemed) return null
+  if (!isReady || isRedeemedLoading || isRedeemed) return null
 
   const chain = resolveChainFromUrn(journey.destination)
   const isDeposit = chain?.key === HYDRATION_CHAIN_KEY

@@ -1,11 +1,12 @@
 import { useNow } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { type XcJourney, XcJourneyBuilder } from "@galacticcouncil/xc-scan"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { minutesToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 import { sortBy } from "remeda"
 
+import { journeyRedeemedQuery } from "@/modules/xcm/history/hooks/useJourneyRedeemed"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { useXcScan } from "@/modules/xcm/history/useXcScan"
 import {
@@ -51,7 +52,7 @@ export const useClaimableTransactions = () => {
   const shouldPoll = sources.some(isJourneyAwaitingMinAge)
   const now = useNow(shouldPoll ? 5000 : null)
 
-  return useMemo(() => {
+  const claimableCandidates = useMemo(() => {
     const byCorrelationId = new Map<string, XcJourney>()
     const nowMs = now.getTime()
     for (const journey of getClaimableJourneys(claimableBackfill, nowMs)) {
@@ -61,9 +62,18 @@ export const useClaimableTransactions = () => {
       byCorrelationId.set(journey.correlationId, journey)
     }
 
-    const sorted = sortBy([...byCorrelationId.values()], [journeyDate, "desc"])
+    return sortBy([...byCorrelationId.values()], [journeyDate, "desc"])
+  }, [claimableBackfill, now, xcscanJourneys])
 
+  const redeemedResults = useQueries({
+    queries: claimableCandidates.map(journeyRedeemedQuery),
+  })
+
+  return useMemo(() => {
     const pending = new Set(pendingCorrelationIds)
-    return sorted.filter(({ correlationId }) => !pending.has(correlationId))
-  }, [claimableBackfill, now, pendingCorrelationIds, xcscanJourneys])
+    return claimableCandidates.filter((journey, index) => {
+      if (pending.has(journey.correlationId)) return false
+      return redeemedResults[index]?.data !== true
+    })
+  }, [claimableCandidates, pendingCorrelationIds, redeemedResults])
 }

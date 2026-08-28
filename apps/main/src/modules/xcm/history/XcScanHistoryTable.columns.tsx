@@ -22,7 +22,10 @@ import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
-import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
+import {
+  getTransferAsset,
+  getTransferUsdValue,
+} from "@/modules/xcm/history/utils/assets"
 import { isJourneyPendingClaim } from "@/modules/xcm/history/utils/claim"
 import {
   getFormattedAddresses,
@@ -93,7 +96,7 @@ export const useXcScanHistoryColumns = () => {
 
         if (!transferAsset) return null
 
-        const usdValue = Big(row.original.totalUsd || transferAsset?.usd || 0)
+        const usdValue = Big(getTransferUsdValue(row.original, transferAsset))
 
         return (
           <Flex gap="base" align="center">

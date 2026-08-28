@@ -1,40 +1,16 @@
-import { Flex, Grid } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Flex } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useSearch } from "@tanstack/react-router"
-import { lazy } from "react"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
-import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
-import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyBonds } from "@/modules/wallet/assets/MyBonds/MyBonds"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
-import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
+import { WalletPortfolio } from "@/modules/wallet/assets/Portfolio/WalletPortfolio"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
-
-const WalletAssetFiltersDesktop = lazy(async () => ({
-  default: await import(
-    "@/modules/wallet/assets/WalletAssetsFilters.desktop"
-  ).then((m) => m.WalletAssetFiltersDesktop),
-}))
-
-const WalletAssetFiltersMobile = lazy(async () => ({
-  default: await import(
-    "@/modules/wallet/assets/WalletAssetsFilters.mobile"
-  ).then((m) => m.WalletAssetFiltersMobile),
-}))
 
 export const WalletAssetsPage = () => {
   const { account } = useAccount()
-  const { isMobile } = useBreakpoints()
-
-  const assetsPagination = useDataTableUrlPagination(
-    "/wallet/assets",
-    "assetsPage",
-    10,
-  )
 
   const liquidityPagination = useDataTableUrlPagination(
     "/wallet/assets",
@@ -53,16 +29,13 @@ export const WalletAssetsPage = () => {
     "search",
     {
       onChange: () => {
-        assetsPagination.onPageClick(1)
         bondsPagination.onPageClick(1)
         liquidityPagination.onPageClick(1)
       },
     },
   )
 
-  const assetsSorting = useDataTableUrlSorting("/wallet/assets", "assetsSort", {
-    onChange: () => assetsPagination.onPageClick(1),
-  })
+  const assetsSorting = useDataTableUrlSorting("/wallet/assets", "assetsSort")
 
   const liquiditySorting = useDataTableUrlSorting(
     "/wallet/assets",
@@ -76,14 +49,9 @@ export const WalletAssetsPage = () => {
 
   const changeSearch = (phrase: string): void => {
     setSearchPhrase(phrase)
-    assetsPagination.onPageClick(1)
     bondsPagination.onPageClick(1)
     liquidityPagination.onPageClick(1)
   }
-
-  const { category } = useSearch({
-    from: "/wallet/assets",
-  })
 
   if (!account) {
     return <WalletEmptyState />
@@ -91,56 +59,28 @@ export const WalletAssetsPage = () => {
 
   return (
     <Flex direction="column">
-      <Grid
-        sx={{
-          overflowX: "auto",
-        }}
-        columnGap={["base", "xl"]}
-        columnTemplate="1fr minmax(0, 25rem)"
-        pb={isMobile ? "base" : "xxl"}
-      >
-        <WalletBalances />
-        <WalletRewards />
-      </Grid>
-      {isMobile ? (
-        <WalletAssetFiltersMobile
-          category={category}
-          searchPhrase={searchPhrase}
-          onSearchPhraseChange={changeSearch}
-        />
-      ) : (
-        <WalletAssetFiltersDesktop
-          searchPhrase={searchPhrase}
-          onSearchPhraseChange={changeSearch}
-        />
-      )}
-
-      <Flex direction="column">
-        {(category === "all" || category === "assets") && (
-          <MyAssets
-            key={account.address + "_assets"}
-            searchPhrase={searchPhrase}
-            paginationProps={assetsPagination}
-            sortingProps={assetsSorting}
-          />
-        )}
-        {(category === "all" || category === "assets") && (
-          <MyBonds
-            key={account.address + "_bonds"}
-            searchPhrase={searchPhrase}
-            paginationProps={bondsPagination}
-            sortingProps={bondsSorting}
-          />
-        )}
-        {(category === "all" || category === "liquidity") && (
+      <WalletPortfolio
+        key={account.address + "_assets"}
+        searchPhrase={searchPhrase}
+        onSearchPhraseChange={changeSearch}
+        sortingProps={assetsSorting}
+        liquidityContent={
           <MyLiquidity
             key={account.address + "_liquidity"}
             searchPhrase={searchPhrase}
             paginationProps={liquidityPagination}
             sortingProps={liquiditySorting}
           />
-        )}
-      </Flex>
+        }
+        bondsContent={
+          <MyBonds
+            key={account.address + "_bonds"}
+            searchPhrase={searchPhrase}
+            paginationProps={bondsPagination}
+            sortingProps={bondsSorting}
+          />
+        }
+      />
     </Flex>
   )
 }

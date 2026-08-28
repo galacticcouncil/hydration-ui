@@ -18,7 +18,7 @@ export const ZcashIdenticon: React.FC<ZcashIdenticonProps> = ({
     {...props}
   >
     <Image
-      src="https://s2.coinmarketcap.com/static/img/coins/64x64/1437.png"
+      src="/images/platforms/zcash.png"
       alt="Zcash"
       width={size}
       height={size}

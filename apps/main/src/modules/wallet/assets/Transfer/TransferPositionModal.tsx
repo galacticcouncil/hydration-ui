@@ -4,6 +4,7 @@ import {
   Alert,
   Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
@@ -20,12 +21,11 @@ import {
 } from "@galacticcouncil/utils"
 import {
   AddressBookModal,
-  getWalletModeByAddress,
-  PROVIDERS_BY_WALLET_MODE,
   useAccount,
+  useAddresses,
+  useAddressStore,
   WalletMode,
 } from "@galacticcouncil/web3-connect"
-import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
@@ -87,17 +87,13 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     }
   }, [watch])
 
-  const { addresses: userOwnedAddresses, add: addAddressToAddressBook } =
-    useAddressStore()
+  const { add: addAddressToAddressBook } = useAddressStore()
+  const userOwnedAddresses = useAddresses()
 
   const addCustomRecipient = (recipient: string) => {
-    const mode = getWalletModeByAddress(recipient)
-    const provider = mode ? PROVIDERS_BY_WALLET_MODE[mode][0] : undefined
-    if (!provider) return
     addAddressToAddressBook({
       address: recipient,
       name: "",
-      provider,
       isCustom: true,
     })
   }
@@ -174,6 +170,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             justifyContent: "space-between",
             flexDirection: "row",
             gridTemplateColumns: "1fr",
+            gap: "xl",
           }}
         >
           {healthFactor && (
@@ -212,15 +209,18 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
           >
             {t("common:cancel")}
           </Button>
-          <Button
+          <LoadingButton
+            isLoading={transferPosition.isPending}
             size="large"
             type="submit"
             disabled={
-              !isHealthFactorCheckSatisfied || !isCexDisclaimerSatisfied
+              !isHealthFactorCheckSatisfied ||
+              !isCexDisclaimerSatisfied ||
+              !form.formState.isValid
             }
           >
             {t("common:confirm")}
-          </Button>
+          </LoadingButton>
         </ModalFooter>
       </form>
     </FormProvider>

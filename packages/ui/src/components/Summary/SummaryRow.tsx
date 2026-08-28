@@ -103,6 +103,7 @@ export const SummaryRowValue = (props: TextProps) => (
     fs="p5"
     fw={500}
     lh={1.2}
+    as="div"
     color={getToken("text.high")}
     sx={{ flexShrink: 0 }}
     {...props}

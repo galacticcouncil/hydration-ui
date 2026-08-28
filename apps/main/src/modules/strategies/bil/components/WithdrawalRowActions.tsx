@@ -1,4 +1,5 @@
 import { Button, Flex } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 import { parseUnits } from "viem"
 
@@ -24,7 +25,7 @@ export const WithdrawalRowActions: React.FC<WithdrawalRowActionsProps> = ({
   const claimMutation = useClaim()
   const instantRedeemMutation = useInstantRedeemFromQueue()
 
-  const claimable = row.claimableBil ?? 0
+  const claimable = row.claimableBil ?? "0"
 
   const run =
     (action: () => void) => (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,14 +35,12 @@ export const WithdrawalRowActions: React.FC<WithdrawalRowActionsProps> = ({
 
   return (
     <Flex justify="flex-end" align="center" gap="base">
-      {claimable > 0 && (
+      {Big(claimable).gt(0) && (
         <Button
           variant="primary"
           size="small"
           onClick={run(() =>
-            claimMutation.mutate(
-              parseUnits(claimable.toString(), bil.decimals),
-            ),
+            claimMutation.mutate(parseUnits(claimable, bil.decimals)),
           )}
           disabled={claimMutation.isPending}
         >

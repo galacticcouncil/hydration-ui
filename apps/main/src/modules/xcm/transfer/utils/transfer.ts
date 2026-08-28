@@ -7,6 +7,7 @@ import {
   isAnyEvmChain,
   isParachain,
   isValidBigSource,
+  Ss58Addr,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -27,8 +28,13 @@ import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSele
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import {
+  resolveRouteBuilderArgs,
+  WORMHOLE_FAMILY_TAGS,
+} from "@/modules/xcm/transfer/utils/bridge"
 import { getChainPriority } from "@/modules/xcm/transfer/utils/chain"
 import { Papi } from "@/providers/rpcProvider"
+import { XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export enum XcmTransferStatus {
@@ -111,6 +117,43 @@ export const isDestRouteSynced = (
   !!bestRoute &&
   bestRoute.destination.chain.key === destChain?.key &&
   bestRoute.destination.asset.key === destAsset?.key
+
+export const resolveSelectedRoute = (
+  destPair: ChainAssetPair | null | undefined,
+  destAsset: Asset | null | undefined,
+  bridgeProvider: string | null | undefined,
+): AssetRoute | null => {
+  if (!destPair || !destAsset) return null
+
+  const candidates = destPair.routes.filter(
+    (r) => r.destination.asset.key === destAsset.key,
+  )
+  if (!candidates.length) return null
+
+  const { tag } = resolveRouteBuilderArgs(
+    candidates,
+    destAsset,
+    bridgeProvider ?? undefined,
+  )
+
+  const tagged = tag
+    ? candidates.find((r) => (r.tags ?? []).includes(tag))
+    : undefined
+
+  return tagged ?? candidates[0] ?? null
+}
+
+export const requiresEvmBinding = (
+  route: AssetRoute | null,
+  destChain: AnyChain | null,
+  destAddress: string,
+): boolean => {
+  if (!destChain || destChain.key !== HYDRATION_CHAIN_KEY) return false
+  if (!Ss58Addr.isValid(destAddress)) return false
+
+  const tags = (route?.tags ?? []) as XcmTags
+  return tags.some((tag) => WORMHOLE_FAMILY_TAGS.includes(tag))
+}
 
 export const getXcmTransferArgs = (
   account: Account | null,

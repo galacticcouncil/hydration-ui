@@ -8,7 +8,6 @@ import {
   Modal,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { Link } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -27,6 +26,11 @@ import {
 } from "@/modules/layout/components/MobileTabBar/MobileTabBar.styled"
 import { MobileTabBarActions } from "@/modules/layout/components/MobileTabBar/MobileTabBarActions"
 import { MobileTabBarSubmenuItem } from "@/modules/layout/components/MobileTabBar/MobileTabBarSubMenu"
+import {
+  isExternalNavItem,
+  NavigationItemLabel,
+  NavigationItemLink,
+} from "@/modules/layout/components/NavigationItemLink"
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
 import { useHasMobNavbar } from "@/modules/layout/hooks/useHasMobNavbar"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
@@ -62,22 +66,24 @@ export const MobileTabBar: FC = () => {
 
   return (
     <SMobileTabBar>
-      {navItems
-        .slice(0, itemsShown)
-        .map(({ key, icon, to, defaultChild }, index) => {
-          const linkTo = defaultChild ?? to
-          return (
-            <STabBarItem
-              key={key}
-              as={Link}
-              {...{ to: linkTo }}
-              tabIndex={index + 1}
-            >
+      {navItems.slice(0, itemsShown).map((item, index) => {
+        const { key, icon } = item
+        const external = isExternalNavItem(item)
+
+        return (
+          <NavigationItemLink key={key} item={item}>
+            <STabBarItem tabIndex={index + 1}>
               <STabBarIcon component={icon ?? IconPlaceholder} />
-              <STabBarLabel>{translations[key]?.title}</STabBarLabel>
+              <STabBarLabel>
+                <NavigationItemLabel
+                  title={translations[key]?.title ?? ""}
+                  external={external}
+                />
+              </STabBarLabel>
             </STabBarItem>
-          )
-        })}
+          </NavigationItemLink>
+        )
+      })}
       {moreItems.length > 0 && (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -87,7 +93,12 @@ export const MobileTabBar: FC = () => {
             </STabBarItem>
           </DropdownMenuTrigger>
           {!drawer && (
-            <DropdownMenuContent fullWidth animation="slide-bottom">
+            <DropdownMenuContent
+              fullWidth
+              animation="slide-bottom"
+              mountInRoot
+              sx={{ zIndex: 1 }}
+            >
               <MobileTabBarActions onOpenDrawer={setDrawer} />
               <DropdownMenuContentDivider />
               {moreItems.map((item) => (

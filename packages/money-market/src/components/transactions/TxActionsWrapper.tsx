@@ -1,4 +1,4 @@
-import { Box, Button, Spinner } from "@galacticcouncil/ui/components"
+import { Box, LoadingButton } from "@galacticcouncil/ui/components"
 import { ReactNode } from "react"
 
 import { TxStateType, useModalContext } from "@/hooks/useModal"
@@ -83,28 +83,16 @@ export const TxActionsWrapper = ({
 
   return (
     <Box mt="var(--modal-content-padding)" className={className}>
-      <Button
+      <LoadingButton
         variant={isSubmitDisabled ? "tertiary" : "primary"}
         width="100%"
         disabled={isSubmitDisabled}
         onClick={() => handleClick?.()}
         size="large"
-        sx={{ position: "relative" }}
+        isLoading={!!loading}
       >
-        {loading && (
-          <span
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <Spinner />
-          </span>
-        )}
-        <span sx={{ opacity: loading ? 0 : 1 }}>{content || <>&nbsp;</>}</span>
-      </Button>
+        {content || <>&nbsp;</>}
+      </LoadingButton>
     </Box>
   )
 }

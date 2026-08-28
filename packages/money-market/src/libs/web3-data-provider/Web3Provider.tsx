@@ -1,5 +1,5 @@
 import { ProtocolAction } from "@aave/contract-helpers"
-import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
+import { ActivityType, safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { PopulatedTransaction } from "ethers"
@@ -40,6 +40,21 @@ export type Web3Data = {
 
 const convertTx = convertPopulatedTransactionToEvmCall
 
+const toActivity = (action?: ProtocolAction): ActivityType | undefined => {
+  switch (action) {
+    case ProtocolAction.supply:
+      return "lend"
+    case ProtocolAction.borrow:
+      return "borrow"
+    case ProtocolAction.repay:
+      return "repay"
+    case ProtocolAction.withdraw:
+      return "withdraw"
+    default:
+      return undefined
+  }
+}
+
 export const Web3ContextProvider: React.FC<{
   children: ReactElement
   onCreateTransaction: MoneyMarketTxFn
@@ -63,6 +78,7 @@ export const Web3ContextProvider: React.FC<{
         {
           tx: evmCall,
           toasts,
+          activity: toActivity(action),
         },
         {
           onSuccess: () => {
@@ -92,6 +108,9 @@ export const Web3ContextProvider: React.FC<{
         {
           tx: evmCalls,
           toasts,
+          activity: txs
+            .map((tx) => toActivity(tx.action))
+            .find((activity): activity is ActivityType => !!activity),
         },
         {
           onSuccess: () => {

@@ -1,7 +1,7 @@
 import React, { FC } from "react"
 
 import { BoxProps } from "@/components/Box"
-import { Spinner } from "@/components/Spinner"
+import { SpinnerIcon } from "@/components/Spinner"
 
 import {
   MicroButtonVariant,
@@ -61,7 +61,7 @@ export const LoadingButton: FC<
       variant={isLoading && loadingVariant ? loadingVariant : variant}
       {...props}
     >
-      {isLoading && <Spinner sx={{ mr: 4 }} />}
+      {isLoading && <SpinnerIcon />}
       {props.children}
     </SButton>
   )

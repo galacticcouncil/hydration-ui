@@ -116,13 +116,13 @@ export const AssetInput = ({
                 lineHeight: "120%",
               }}
             >
-              <span>{balanceLabel ?? "Balance"}: </span>
               {loading || maxBalanceLoading ? (
-                <span sx={{ height: 12, lineHeight: 1 }}>
-                  <Skeleton width={48} height={12} />
-                </span>
+                <Skeleton sx={{ width: "3xl" }} height="1em" />
               ) : (
-                <span>{maxBalance ? formatNumber(maxBalance) : ""}</span>
+                <>
+                  <span>{balanceLabel ?? "Balance"}: </span>
+                  <span>{maxBalance ? formatNumber(maxBalance) : ""}</span>
+                </>
               )}
             </Text>
             {!hideMaxBalanceAction && (

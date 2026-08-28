@@ -6,7 +6,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@galacticcouncil/ui/components"
-import { Link, useMatchRoute } from "@tanstack/react-router"
+import { useMatchRoute } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
 import { LINKS } from "@/config/navigation"
@@ -14,6 +14,11 @@ import {
   HIDDEN_DESKTOP_NAV_ROUTES,
   useMenuTranslations,
 } from "@/modules/layout/components/HeaderMenu.utils"
+import {
+  isExternalNavItem,
+  NavigationItemLabel,
+  NavigationItemLink,
+} from "@/modules/layout/components/NavigationItemLink"
 import { StrategiesHeaderSubmenu } from "@/modules/layout/components/StrategiesHeaderSubmenu"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 
@@ -34,8 +39,9 @@ export const HeaderMenu: React.FC<
   return (
     <NavigationMenu {...props}>
       <NavigationMenuList>
-        {navigation.map(({ key, children, to, search, defaultChild }) => {
-          const linkTo = defaultChild ?? to
+        {navigation.map((item) => {
+          const { key, children, to } = item
+          const external = isExternalNavItem(item)
 
           const isLiquidityPage = to === LINKS.liquidity
           const isStrategiesPage = to === LINKS.strategies
@@ -43,9 +49,12 @@ export const HeaderMenu: React.FC<
           return (
             <NavigationMenuItem key={key} data-intersect={key}>
               <NavigationMenuTrigger asChild>
-                <Link to={linkTo} search={search}>
-                  {translations[key].title}
-                </Link>
+                <NavigationItemLink item={item}>
+                  <NavigationItemLabel
+                    title={translations[key].title}
+                    external={external}
+                  />
+                </NavigationItemLink>
               </NavigationMenuTrigger>
               {children &&
                 children.length > 1 &&

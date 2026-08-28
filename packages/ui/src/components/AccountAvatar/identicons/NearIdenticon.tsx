@@ -18,7 +18,7 @@ export const NearIdenticon: React.FC<NearIdenticonProps> = ({
     {...props}
   >
     <Image
-      src="https://s2.coinmarketcap.com/static/img/coins/64x64/6535.png"
+      src="/images/platforms/near.png"
       alt="NEAR"
       width={size}
       height={size}

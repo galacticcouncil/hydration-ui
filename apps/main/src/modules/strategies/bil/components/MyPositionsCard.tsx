@@ -11,6 +11,7 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
+import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -27,9 +28,9 @@ import { useSupplyRawBil } from "@/modules/strategies/bil/hooks/useVaultWrites"
 export type PositionRow = {
   id: "supplied" | "raw"
   label: string
-  amount: number
-  usdValue: number
-  netWorthUsd: number
+  amount: string
+  usdValue: string
+  netWorthUsd: string
   netApyPercent: number
   isRaw: boolean
 }
@@ -48,18 +49,20 @@ export const MyPositionsCard = () => {
   const { data: poolPosition } = useBilPoolPosition(evmAddress)
   const supplyRawMutation = useSupplyRawBil()
 
-  const bilSupplied = balances?.bilSupplied ?? 0
-  const bilRaw = balances?.bilRaw ?? 0
+  const bilSupplied = balances?.bilSupplied ?? "0"
+  const bilRaw = balances?.bilRaw ?? "0"
   const exchangeRate = stats.exchangeRate
   const apyPercent = stats.apr
 
-  const netWorthUsd = Math.max(
+  const netWorthUsd = Big.max(
+    Big(poolPosition?.totalCollateralUsd ?? 0).minus(
+      poolPosition?.totalDebtUsd ?? 0,
+    ),
     0,
-    (poolPosition?.totalCollateralUsd ?? 0) - (poolPosition?.totalDebtUsd ?? 0),
-  )
+  ).toString()
 
-  const hasSupplied = bilSupplied > 0
-  const hasRaw = bilRaw > 0
+  const hasSupplied = Big(bilSupplied).gt(0)
+  const hasRaw = Big(bilRaw).gt(0)
 
   const rows: PositionRow[] = []
   if (hasSupplied) {
@@ -67,7 +70,7 @@ export const MyPositionsCard = () => {
       id: "supplied",
       label: bil.symbol,
       amount: bilSupplied,
-      usdValue: bilSupplied * exchangeRate,
+      usdValue: Big(bilSupplied).times(exchangeRate).toString(),
       netWorthUsd,
       netApyPercent: apyPercent,
       isRaw: false,
@@ -78,8 +81,8 @@ export const MyPositionsCard = () => {
       id: "raw",
       label: t("bil.positions.uncollateralised", { label: bil.symbol }),
       amount: bilRaw,
-      usdValue: bilRaw * exchangeRate,
-      netWorthUsd: bilRaw * exchangeRate,
+      usdValue: Big(bilRaw).times(exchangeRate).toString(),
+      netWorthUsd: Big(bilRaw).times(exchangeRate).toString(),
       netApyPercent: apyPercent,
       isRaw: true,
     })
@@ -97,7 +100,7 @@ export const MyPositionsCard = () => {
       <Separator />
       <Flex direction="column" gap="m" p="m">
         {rows.map((row) => {
-          const canWithdraw = row.amount >= stats.minRedeem
+          const canWithdraw = Big(row.amount).gte(stats.minRedeem)
 
           return (
             <PositionCard

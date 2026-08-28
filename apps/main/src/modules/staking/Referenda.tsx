@@ -121,6 +121,7 @@ export const Referenda: FC<Props> = ({
         classId={item.track}
         voted={voted}
         isGigaStaking={isGigaStaking}
+        title={subscanInfo?.title ?? ""}
       />
     </SReferenda>
   )

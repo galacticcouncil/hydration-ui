@@ -1,8 +1,10 @@
+import { BookOpen } from "@galacticcouncil/ui/assets/icons"
 import {
   AccountInput,
   Box,
   Button,
   FormError,
+  Icon,
   Label,
   ModalContentDivider,
 } from "@galacticcouncil/ui/components"
@@ -128,6 +130,7 @@ export const RecipientCustomAddressForm: React.FC<
       ) : (
         <EmptyState
           header=""
+          icon={<Icon component={BookOpen} size="xl" />}
           description={t("recipient.modal.empty.description")}
         />
       )}

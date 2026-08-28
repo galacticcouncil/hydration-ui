@@ -1,5 +1,5 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
-import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
@@ -17,8 +17,13 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
+// Order matters - getPrimaryBridgeTag takes the first match, and an executor
+// route carries Wormhole too. NttExecutor has to win, or both Wormhole
+// variants collapse to one indistinguishable option and the executor route
+// becomes unreachable.
 export const BRIDGE_PROVIDER_TAGS: XcmTags = [
   XcmTag.Basejump,
+  XcmTag.NttExecutor,
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
 ]
@@ -54,6 +59,7 @@ export type TransactionCommon = {
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
   executedAmount?: TExecutedAmount
+  activity?: ActivityType
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -101,6 +107,7 @@ type TransactionFee = {
 
 type TransactionMetaCommon = {
   srcChainKey: string
+  activity?: ActivityType
 }
 
 export type TransactionOnchainMeta = TransactionMetaCommon & {
@@ -200,6 +207,21 @@ export const isSubstrateTxResult = (
   return "type" in result && result.type === "txBestBlocksState"
 }
 
+/**
+ * Hydration block the tx landed in, for the substrate and EVM paths — the EVM
+ * runs on the same chain, so its receipt block number is directly comparable.
+ * Solana and Sui results are from other chains and yield null.
+ */
+export const getTxResultBlockHeight = (
+  result: TSuccessResult,
+): number | null => {
+  if (isSubstrateTxResult(result)) return result.block.number
+  if ("blockNumber" in result && typeof result.blockNumber === "bigint") {
+    return Number(result.blockNumber)
+  }
+  return null
+}
+
 export const isBridgeTransaction = (meta: TransactionMeta) => {
   return (
     meta.type === TransactionType.Xcm &&
@@ -239,13 +261,16 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   createTransaction: (transaction, options) => {
     return new Promise<TSuccessResult | void>((resolve, reject) => {
       set((state) => {
-        const meta: TransactionMeta =
-          "meta" in transaction && transaction.meta
+        const meta: TransactionMeta = {
+          ...("meta" in transaction && transaction.meta
             ? transaction.meta
             : {
                 type: TransactionType.Onchain,
                 srcChainKey: HYDRATION_CHAIN_KEY,
-              }
+              }),
+          ...("activity" in transaction &&
+            transaction.activity && { activity: transaction.activity }),
+        }
         const newTransaction: Transaction = {
           id: uuid(),
           ...transaction,

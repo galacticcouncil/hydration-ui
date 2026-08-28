@@ -1,5 +1,5 @@
 import {
-  Check,
+  CheckCircle,
   ExclamationMark,
   TriangleAlert,
 } from "@galacticcouncil/ui/assets/icons"
@@ -23,7 +23,7 @@ export const TransactionStatus: FC<Props> = ({ variant }) => {
   const [icon, status] = (
     {
       [TransactionStatusVariant.Pending]: [SpinnerIcon, t("pending")],
-      [TransactionStatusVariant.Success]: [Check, t("success")],
+      [TransactionStatusVariant.Success]: [CheckCircle, t("success")],
       [TransactionStatusVariant.Warning]: [TriangleAlert, t("warning")],
       [TransactionStatusVariant.Error]: [ExclamationMark, t("error")],
     } satisfies Record<TransactionStatusVariant, [React.ComponentType, string]>

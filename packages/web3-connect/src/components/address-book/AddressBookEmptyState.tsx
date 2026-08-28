@@ -1,4 +1,4 @@
-import { NotebookTabs } from "@galacticcouncil/ui/assets/icons"
+import { BookOpen, PlusCircle } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
@@ -68,43 +68,55 @@ export const AddressBookEmptyState = ({
 
   const modeIcon = addressMode ? getWalletModeIcon(addressMode) : undefined
 
+  const canAdd = Boolean(
+    reason === AddressBookEmptyStateReason.SearchNotInList &&
+      address &&
+      addressMode &&
+      displayAddress &&
+      onAdd,
+  )
+
   return (
     <Flex
       direction="column"
       align="center"
       color={getToken("text.medium")}
-      py={56}
+      py="xxxl"
+      mx="auto"
+      maxWidth="5xl"
     >
-      <Icon component={NotebookTabs} size={40} mb={16} />
-      <Text fw={500}>{title}</Text>
-      {description && <Text fw={500}>{description}</Text>}
-      {reason === AddressBookEmptyStateReason.SearchNotInList &&
-        address &&
-        addressMode &&
-        displayAddress &&
-        onAdd && (
-          <Button
-            variant="transparent"
-            outline
-            size="medium"
-            mt="m"
-            onClick={onAdd}
-          >
-            <Flex align="center" gap="s">
-              {t("addressBook.add")}
-              {modeIcon && (
-                <img
-                  sx={{ size: "xs", borderRadius: "full", overflow: "hidden" }}
-                  src={modeIcon}
-                  alt=""
-                />
-              )}
-              <Text as="span" fw={700}>
+      <Icon component={canAdd ? PlusCircle : BookOpen} size="xl" mb="base" />
+      <Text fs="p3" fw={500} align="center" textWrap="balance">
+        {title}
+      </Text>
+      {description && (
+        <Text fs="p4" fw={500} align="center" textWrap="balance">
+          {description}
+        </Text>
+      )}
+      {canAdd && (
+        <Button variant="muted" size="large" mt="m" onClick={onAdd}>
+          <Flex align="center" gap="base">
+            {t("addressBook.add")}
+            <Flex asChild align="center" gap="s">
+              <Text as="span" fw={700} color={getToken("text.high")}>
+                {modeIcon && (
+                  <img
+                    sx={{
+                      size: "m",
+                      borderRadius: "full",
+                      overflow: "hidden",
+                    }}
+                    src={modeIcon}
+                    alt=""
+                  />
+                )}
                 {displayAddress}
               </Text>
             </Flex>
-          </Button>
-        )}
+          </Flex>
+        </Button>
+      )}
     </Flex>
   )
 }

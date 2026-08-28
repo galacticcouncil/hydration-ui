@@ -1,12 +1,11 @@
 import { XcSwapClient, XcSwapTrade } from "@galacticcouncil/xc-swap"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useDebounce } from "react-use"
 
 import {
   bestBuyQuery,
-  bestBuyTwapQuery,
   bestSellQuery,
   bestSellTwapQuery,
   Trade,
@@ -24,7 +23,7 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scale } from "@/utils/formatting"
+import { scale, scaleHuman } from "@/utils/formatting"
 
 export type XcSwapQuote =
   | { kind: "xc"; swap: XcSwapTrade }
@@ -163,27 +162,33 @@ export const useXcSwapQuote = ({
     enabled: !isCrossChain && omnipoolQueryOptions.enabled,
   })
 
-  const { data: twap, isFetching: isTwapLoading } = useQuery(
-    isOnChainBuy
-      ? bestBuyTwapQuery(
-          rpc,
-          {
-            assetIn: omnipoolAssetIn,
-            assetOut: omnipoolAssetOut,
-            amountOut: debouncedBuyAmount,
-          },
-          !isCrossChain && isTwapEnabled(omnipoolTrade),
-        )
-      : bestSellTwapQuery(
-          rpc,
-          {
-            assetIn: omnipoolAssetIn,
-            assetOut: omnipoolAssetOut,
-            amountIn: debouncedAmount,
-          },
-          !isCrossChain && isTwapEnabled(omnipoolTrade),
-        ),
-  )
+  // The chain no longer accepts buy schedules, so a buy intent is scheduled as
+  // a sell of what the buy quote says it costs
+  const twapBudget = isOnChainBuy
+    ? omnipoolTrade && sellAsset
+      ? scaleHuman(omnipoolTrade.amountIn, sellAsset.decimals)
+      : ""
+    : debouncedAmount
+
+  const { data: twap, isFetching: isTwapFetching } = useQuery({
+    ...bestSellTwapQuery(
+      rpc,
+      {
+        assetIn: omnipoolAssetIn,
+        assetOut: omnipoolAssetOut,
+        amountIn: twapBudget,
+      },
+      !isCrossChain && isTwapEnabled(omnipoolTrade),
+    ),
+    // The budget is part of the query key, so every quote move would otherwise
+    // drop the order back to a skeleton.
+    placeholderData: isOnChainBuy && twapBudget ? keepPreviousData : undefined,
+  })
+
+  // On buy, the order query only starts once the quote it is budgeted from resolves
+  const isTwapLoading = isOnChainBuy
+    ? isOmnipoolQuoteLoading || isTwapFetching
+    : isTwapFetching
 
   const quote = useMemo<XcSwapQuote>(() => {
     if (isCrossChain) {

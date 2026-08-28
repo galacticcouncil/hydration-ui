@@ -1,8 +1,8 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, neckwork } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, SizedHex } from "polkadot-api"
-import { first, isBigInt, isObjectType } from "remeda"
+import { first, isBigInt, isNumber, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
 import { paymentInfoQuery } from "@/api/transaction"
@@ -20,6 +20,7 @@ import {
 } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { TransactionMeta } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
@@ -200,6 +201,33 @@ export const getExtraTxFeeByWeight = async (
   return queryClient.ensureQueryData(
     weightToEvmFeeQuery(rpc, weight, assetOutId),
   )
+}
+
+export const getExplorerTxLink = (
+  meta: Pick<TransactionMeta, "srcChainKey" | "activity">,
+  blockNumber: number,
+  extrinsicIndex: number,
+) => {
+  if (meta.srcChainKey !== HYDRATION_CHAIN_KEY) return
+
+  return meta.activity
+    ? neckwork.activityExtrinsic(meta.activity, blockNumber, extrinsicIndex)
+    : neckwork.extrinsic(blockNumber, extrinsicIndex)
+}
+
+export const getDcaScheduleIdFromEvents = (
+  events: ReadonlyArray<{ type: string; value: unknown }>,
+): number | null => {
+  for (const event of events) {
+    if (event.type !== "DCA" || !isObjectType(event.value)) continue
+    if (!("type" in event.value) || event.value.type !== "Scheduled") continue
+    if (!("value" in event.value) || !isObjectType(event.value.value)) continue
+    if (!("id" in event.value.value) || !isNumber(event.value.value.id)) {
+      continue
+    }
+    return event.value.value.id
+  }
+  return null
 }
 
 export const parseTxMethodName = (

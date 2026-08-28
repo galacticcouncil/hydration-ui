@@ -24,7 +24,7 @@ export const RpcRemoveModal: React.FC<RpcRemoveModalProps> = ({
   const { t } = useTranslation()
   return (
     <ModalRoot>
-      <Tooltip text={t("remove")} asChild side="top">
+      <Tooltip text={t("remove")} size="small" asChild side="top">
         <ModalTrigger asChild>{trigger}</ModalTrigger>
       </Tooltip>
       <ModalContent>

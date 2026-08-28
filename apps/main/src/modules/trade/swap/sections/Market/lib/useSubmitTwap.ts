@@ -1,6 +1,6 @@
 import { TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
 
@@ -25,8 +25,6 @@ export const useSubmitTwap = () => {
 
   const { createTransaction } = useTransactionsStore()
 
-  const { data: blockTime } = useQuery(blockTimeQuery(rpc))
-
   return useMutation({
     mutationFn: async ([values, twap]: [
       MarketFormValues,
@@ -35,14 +33,16 @@ export const useSubmitTwap = () => {
       const { sellAsset } = values
       const sellDecimals = sellAsset?.decimals ?? 0
       const sellSymbol = sellAsset?.symbol ?? ""
+      const blockTimeMs = await rpc.queryClient.ensureQueryData(
+        blockTimeQuery(sdk),
+      )
 
       const params = {
         noOfTrades: twap.tradeCount,
-        timeframe: blockTime
-          ? formatDistanceToNow(Date.now() + twap.tradeCount * blockTime, {
-              includeSeconds: true,
-            })
-          : t("unknown"),
+        timeframe: formatDistanceToNow(
+          Date.now() + twap.tradeCount * twap.tradePeriod * blockTimeMs,
+          { includeSeconds: true },
+        ),
         in: t("currency", {
           value: scaleHuman(twap.tradeAmountIn, sellDecimals),
           symbol: sellSymbol,

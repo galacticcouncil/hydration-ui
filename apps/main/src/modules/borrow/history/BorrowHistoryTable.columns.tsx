@@ -1,24 +1,17 @@
-import {
-  MoneyMarketEventFragment,
-  MoneyMarketEventName,
-} from "@galacticcouncil/indexer/squid"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { MoneyMarketEvent } from "@/api/borrow"
 import { AssetAmountDescription } from "@/modules/borrow/history/descriptions/AssetAmountDescription"
 import { CollateralDescription } from "@/modules/borrow/history/descriptions/CollateralDescription"
 import { EModeDescription } from "@/modules/borrow/history/descriptions/EModeDescription"
 import { LiquidationCallDescription } from "@/modules/borrow/history/descriptions/LiquidationCallDescription"
 import { useFormatEventName } from "@/modules/borrow/history/utils"
 
-export type MoneyMarketEventWithDate = MoneyMarketEventFragment & {
-  readonly date: Date
-}
-
-export type BorrowHistoryRow = MoneyMarketEventWithDate | Date
+export type BorrowHistoryRow = MoneyMarketEvent | Date
 
 const columnHelper = createColumnHelper<BorrowHistoryRow>()
 
@@ -44,12 +37,13 @@ export const useBorrowHistoryColumns = () => {
         }
 
         return (
-          <div>
-            <Text fs="p3" fw={500}>
-              {formatEventName(row.original.eventName as MoneyMarketEventName)}
+          <>
+            <Text fs="p3" color={getToken("text.high")}>
+              {formatEventName(row.original.eventName)}
             </Text>
             <Text color={getToken("text.medium")} fs="p5">
-              <span
+              <Text
+                as="span"
                 title={t("date.long", {
                   value: row.original.date,
                 })}
@@ -57,9 +51,9 @@ export const useBorrowHistoryColumns = () => {
                 {t("date.time", {
                   value: row.original.date,
                 })}
-              </span>
+              </Text>
             </Text>
-          </div>
+          </>
         )
       },
     })
@@ -76,80 +70,32 @@ export const useBorrowHistoryColumns = () => {
           return
         }
 
-        const event = row.original
+        const { eventName, assetId, amount, categoryId } = row.original
 
-        switch (event.eventName as MoneyMarketEventName) {
+        switch (eventName) {
           case "Supply":
-            return (
-              event.supply && (
-                <AssetAmountDescription
-                  assetId={event.supply.asset?.assetRegistryId}
-                  amount={event.supply.amount || "0"}
-                />
-              )
-            )
           case "Borrow":
-            return (
-              event.borrow && (
-                <AssetAmountDescription
-                  assetId={event.borrow.asset?.assetRegistryId}
-                  amount={event.borrow.amount || "0"}
-                />
-              )
-            )
           case "Repay":
-            return (
-              event.repay && (
-                <AssetAmountDescription
-                  assetId={event.repay.asset?.assetRegistryId}
-                  amount={event.repay.amount || "0"}
-                />
-              )
-            )
           case "Withdraw":
             return (
-              event.withdraw && (
-                <AssetAmountDescription
-                  assetId={event.withdraw.asset?.assetRegistryId}
-                  amount={event.withdraw.amount || "0"}
-                />
-              )
+              <AssetAmountDescription
+                assetId={assetId}
+                amount={amount || "0"}
+              />
             )
           case "ReserveUsedAsCollateralEnabled":
-            return (
-              event.reserveUsedAsCollateralEnabled && (
-                <CollateralDescription
-                  assetId={
-                    event.reserveUsedAsCollateralEnabled.asset?.assetRegistryId
-                  }
-                  enabled
-                />
-              )
-            )
+            return <CollateralDescription assetId={assetId} enabled />
           case "ReserveUsedAsCollateralDisabled":
-            return (
-              event.reserveUsedAsCollateralDisabled && (
-                <CollateralDescription
-                  assetId={
-                    event.reserveUsedAsCollateralDisabled.asset?.assetRegistryId
-                  }
-                  enabled={false}
-                />
-              )
-            )
+            return <CollateralDescription assetId={assetId} enabled={false} />
           case "LiquidationCall":
             return (
-              event.liquidationCall && (
-                <LiquidationCallDescription
-                  assetId={event.liquidationCall.asset?.assetRegistryId}
-                  amount={event.liquidationCall.amount || "0"}
-                />
-              )
+              <LiquidationCallDescription
+                assetId={assetId}
+                amount={amount || "0"}
+              />
             )
           case "UserEModeSet":
-            return (
-              event.userEModeSet && <EModeDescription {...event.userEModeSet} />
-            )
+            return <EModeDescription categoryId={categoryId} />
           default:
             return ""
         }

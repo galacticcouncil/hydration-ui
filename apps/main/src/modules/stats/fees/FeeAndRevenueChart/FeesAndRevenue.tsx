@@ -1,8 +1,8 @@
 import {
   AnimatedValue,
-  BarChart,
   Box,
-  ChartConfig,
+  Chart,
+  chartColorScale,
   ChartTimeRange,
   Flex,
   Paper,
@@ -13,6 +13,11 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
+import { barY, defineChart, stack } from "@tanstack/charts"
+import { scaleBand } from "@tanstack/charts/scales/band"
+import { scaleLinear } from "@tanstack/charts/scales/linear"
+import { tooltip } from "@tanstack/charts/tooltip"
+import { fold } from "@tanstack/charts/transform/fold"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -37,10 +42,19 @@ type ChartDataPoint = {
   [key: string]: string | number
 }
 
+export type FeeSegmentRow = {
+  timestamp: string
+  stream: string
+  value: number
+}
+
+const BAR_RADIUS = 4
+const CHART_HEIGHT = 380
+
 export const FeesAndRevenue = () => {
   const { t } = useTranslation(["common", "stats"])
   const { gte } = useBreakpoints()
-  const { themeProps: theme, getToken } = useTheme()
+  const { getToken } = useTheme()
   const [timeRange, setTimeRange] = useState<TimeRange>("1M")
   const [viewMode, setViewMode] = useState<ViewMode>("protocol")
   const [activeFilter, setActiveFilter] = useState<string>("all")
@@ -88,16 +102,83 @@ export const FeesAndRevenue = () => {
     ]),
   )
 
-  const seriesKeys = Array.from(fields.keys())
+  const visibleKeys = useMemo(() => {
+    const keys = Object.keys(feesChartsData ?? {})
+    return activeFilter === "all"
+      ? keys
+      : keys.filter((key) => key === activeFilter)
+  }, [feesChartsData, activeFilter])
 
-  const hiddenSeries = (() => {
-    if (activeFilter !== "all") {
-      const map = new Map(fields)
-      map.delete(activeFilter)
-      return map
-    }
-    return new Map()
-  })()
+  const rows = useMemo(
+    () =>
+      fold(chartData, {
+        fields: visibleKeys as [string],
+        as: { key: "stream", value: "value" },
+      })
+        .filter(({ value }) => typeof value === "number")
+        .map<FeeSegmentRow>(({ timestamp, stream, value }) => ({
+          timestamp: String(timestamp),
+          stream,
+          value: Number(value),
+        })),
+    [chartData, visibleKeys],
+  )
+
+  const definition = useMemo(
+    () =>
+      defineChart({
+        marks: [
+          barY(rows, {
+            x: "timestamp",
+            y: "value",
+            color: "stream",
+            layout: stack({ order: visibleKeys }),
+            radius: BAR_RADIUS,
+          }),
+        ],
+        x: {
+          scale: () => scaleBand<string>().padding(0.3),
+          grid: true,
+          axis: {
+            line: true,
+            ticks: {
+              size: 0,
+              padding: 8,
+              format: formatXAxisTick,
+            },
+          },
+        },
+        y: {
+          scale: scaleLinear,
+          grid: true,
+          axis: {
+            line: true,
+            ticks: {
+              size: 0,
+              padding: 8,
+              format: (value) => t("number.compact", { value }),
+            },
+          },
+        },
+        color: chartColorScale(
+          Object.fromEntries(
+            visibleKeys.map((key) => [
+              key,
+              feesAndRevenueConfig[key]?.color ?? "accents.info.accent",
+            ]),
+          ),
+          getToken,
+        ),
+        focus: "group-x",
+        tooltip: {
+          use: tooltip,
+          sort: "color-domain",
+          anchor: { x: "value", y: "plot-top" },
+          placement: "top",
+        },
+      }),
+    [rows, visibleKeys, getToken, t],
+  )
 
   const totalRevenue =
     activeFilter === "all"
@@ -150,41 +231,13 @@ export const FeesAndRevenue = () => {
         </Flex>
 
         <Box position="relative" flex={1}>
-          <BarChart
-            stacked
-            data={chartData}
-            height="100%"
-            horizontalGridHidden={false}
-            verticalGridHidden={false}
-            config={{
-              xAxisKey: "timestamp",
-              xAxisFormatter: (value) => formatXAxisTick(String(value)),
-              yAxisFormatter: (value) => t("number.compact", { value }),
-              series: seriesKeys
-                .filter((key) => !hiddenSeries.has(key))
-                .map((key) => {
-                  const fieldConfig = feesAndRevenueConfig[key]
-                  return {
-                    key,
-                    label: fieldConfig?.label ?? "N/A",
-                    color: fieldConfig
-                      ? getToken(fieldConfig.color)
-                      : getToken("accents.info.accent"),
-                  }
-                }) as never satisfies ChartConfig<ChartDataPoint>["series"],
-            }}
-            xAxisProps={{
-              tick: { fill: theme.text.low, fontSize: 11 },
-              axisLine: { stroke: theme.details.separators },
-              tickLine: false,
-            }}
-            yAxisProps={{
-              tick: { fill: theme.text.low, fontSize: 11 },
-              axisLine: { stroke: theme.details.separators },
-              tickLine: false,
-              width: 45,
-            }}
-            customTooltipContent={CustomTooltipContent}
+          <Chart
+            definition={definition}
+            ariaLabel={t("stats:fees.chart.ariaLabel")}
+            height={CHART_HEIGHT}
+            renderTooltipBody={({ points }) => (
+              <CustomTooltipContent points={points} />
+            )}
           />
         </Box>
 

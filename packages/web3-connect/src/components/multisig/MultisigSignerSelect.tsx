@@ -22,9 +22,9 @@ import { useTranslation } from "react-i18next"
 import { difference, pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { SAccountActionCopyButton } from "@/components/account/AccountActionButton.styled"
 import { AccountIdentity } from "@/components/account/AccountIdentity"
 import { AccountOption } from "@/components/account/AccountOption"
-import { SCopyButton } from "@/components/account/AccountOption.styled"
 import { MultisigAccount } from "@/components/multisig/components/MultisigAccount"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
 import { SUBSTRATE_PROVIDERS } from "@/config/providers"
@@ -184,7 +184,7 @@ export const MultisigSignerSelect: React.FC = () => {
                             >
                               {address}
                             </Text>
-                            <SCopyButton text={address} />
+                            <SAccountActionCopyButton text={address} />
                           </Flex>
                         </Stack>
                       </Paper>

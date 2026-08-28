@@ -25,6 +25,7 @@ import {
 import {
   WALLET_ACCOUNT_FILTER_OPTIONS,
   WalletAccountFilterOption,
+  WalletAccountFilterOptionOverride,
   WalletMode,
 } from "@/config/wallet"
 import {
@@ -36,7 +37,38 @@ import {
 } from "@/hooks/useWeb3Connect"
 import { Wallet, WalletAccount } from "@/types/wallet"
 
-export { getWalletModeName } from "@/utils/walletMode"
+const walletModeNames = {
+  [WalletMode.Substrate]: "Polkadot",
+  [WalletMode.EVM]: "EVM",
+  [WalletMode.Solana]: "Solana",
+  [WalletMode.Sui]: "Sui",
+  [WalletMode.SubstrateH160]: "Substrate H160",
+  [WalletMode.Near]: "NEAR",
+  [WalletMode.Zcash]: "Zcash",
+} satisfies Record<WalletAccountFilterOptionOverride, string>
+
+export const getWalletModeName = (
+  mode: WalletAccountFilterOptionOverride,
+): string => walletModeNames[mode]
+
+export const addressToPublicKey = (address: string): string => {
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return address.toLowerCase()
+    case Ss58Addr.isValid(address):
+      return safeConvertSS58toPublicKey(address)
+    case SolanaAddr.isValid(address):
+      return address
+    case SuiAddr.isValid(address):
+      return address
+    case NearAddr.isValid(address):
+      return address
+    case ZcashAddr.isValid(address):
+      return address
+    default:
+      return ""
+  }
+}
 
 const toStoredSolanaAccount = ({
   address,
@@ -227,9 +259,9 @@ export function getWalletModeIcon(mode: WalletMode) {
     case WalletMode.Sui:
       return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
     case WalletMode.Near:
-      return "https://s2.coinmarketcap.com/static/img/coins/64x64/6535.png"
+      return "/images/platforms/near.png"
     case WalletMode.Zcash:
-      return "https://s2.coinmarketcap.com/static/img/coins/64x64/1437.png"
+      return "/images/platforms/zcash.png"
     default:
       return ""
   }

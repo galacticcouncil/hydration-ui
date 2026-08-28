@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { hoursToMilliseconds } from "date-fns"
 import { useTranslation } from "react-i18next"
 
@@ -24,10 +25,10 @@ export const WithdrawalRowMobile = ({ row }: Props) => {
   const { isMobile } = useBreakpoints()
   const { bil, hollar } = useBilStrategy()
 
-  const claimable = row.claimableBil ?? 0
+  const claimable = row.claimableBil ?? "0"
 
   const timeRemainingValue = (() => {
-    if (claimable > 0) {
+    if (Big(claimable).gt(0)) {
       return (
         <Text fs="p4" fw={600} color={getToken("accents.success.primary")}>
           {t("bil.withdrawals.state.claimable")}

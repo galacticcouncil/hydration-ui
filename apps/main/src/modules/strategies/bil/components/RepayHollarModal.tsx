@@ -38,12 +38,12 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
   const { data: balances } = useUserBalances(evmAddress)
   const repayMutation = useRepayHollar({ onClose })
 
-  const walletHollar = balances?.hollar ?? 0
+  const walletHollar = balances?.hollar ?? "0"
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
 
   const { control, handleSubmit, watch, formState } = useRepayHollarForm({
     totalDebt: totalDebtUsd.toString(),
-    walletBalance: walletHollar.toString(),
+    walletBalance: walletHollar,
   })
 
   const amount = watch("amount")
@@ -52,7 +52,7 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
   const healthFactor = poolPosition
     ? getBilRepayHealthFactor(poolPosition, inputAmount)
     : null
-  const maxRepay = Math.min(walletHollar, totalDebtUsd)
+  const maxRepay = Big.min(walletHollar, totalDebtUsd.toString()).toString()
 
   const canSubmit =
     formState.isValid && !repayMutation.isPending && totalDebtUsd > 0
@@ -98,8 +98,8 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
                 displayValue={t("common:currency", {
                   value: inputAmount,
                 })}
-                maxBalance={maxRepay.toString()}
-                maxButtonBalance={maxRepay.toString()}
+                maxBalance={maxRepay}
+                maxButtonBalance={maxRepay}
                 amountError={fieldState.error?.message}
               />
             )}

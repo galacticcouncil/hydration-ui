@@ -18,7 +18,6 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TradeOrderType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { DynamicFee } from "@/components/DynamicFee"
@@ -70,8 +69,9 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
     useTwapFee(twap)
   const transactionCosts = transactionFee?.feeEstimate || "0"
 
-  const isBuy = twap.type === TradeOrderType.TwapBuy
-  const tradeFeeAsset = isBuy ? sellAsset : buyAsset
+  // Every twap executes as a sell, so the received side carries the fee and
+  // the price protection
+  const tradeFeeAsset = buyAsset
   const tradeFee = tradeFeeAsset
     ? scaleHuman(twap.tradeFee, tradeFeeAsset.decimals)
     : "0"
@@ -97,17 +97,6 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
       return [0n, 0n, "0", null]
     }
 
-    if (twap.type === TradeOrderType.TwapBuy) {
-      const twapPrice =
-        twap.amountIn + calculateSlippage(twap.amountIn, twapSlippage)
-      const twapPriceHuman = scaleHuman(twapPrice, sellAsset.decimals)
-
-      const swapPrice =
-        swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage)
-
-      return [twapPrice, swapPrice, twapPriceHuman, sellAsset]
-    }
-
     const twapPrice =
       twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage)
     const twapPriceHuman = scaleHuman(twapPrice, buyAsset.decimals)
@@ -125,7 +114,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
     return null
   }
 
-  const tradeAmount = isBuy ? twap.amountIn : twap.amountOut
+  const tradeAmount = twap.amountOut
 
   const tradeFeePct = Big(twap.tradeFee.toString())
     .div(tradeAmount.toString())
@@ -162,16 +151,8 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
             priceImpact={swap.priceImpactPct}
           />
           <CalculatedAmountSummaryRow
-            label={
-              isBuy
-                ? t("trade:market.summary.maxSent")
-                : t("trade:market.summary.minReceived")
-            }
-            tooltip={
-              isBuy
-                ? t("trade:market.summary.maxSent.tooltip")
-                : t("trade:market.summary.minReceived.tooltip")
-            }
+            label={t("trade:market.summary.minReceived")}
+            tooltip={t("trade:market.summary.minReceived.tooltip")}
             amount={
               <SummaryRowValue>
                 <span>

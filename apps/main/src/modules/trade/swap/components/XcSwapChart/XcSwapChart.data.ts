@@ -1,144 +1,140 @@
 import {
-  OhlcData,
-  toUTCTimestamp,
-} from "@galacticcouncil/ui/components/TradingViewChart/utils"
+  CandleBucket,
+  invertCandle,
+  PairCandle,
+  pairCandlesInfiniteQuery,
+} from "@galacticcouncil/indexer/neckwork"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
-import { useMemo } from "react"
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
+import { useCallback, useMemo } from "react"
 
 import { useKrakenOhlc } from "@/api/external/kraken"
-import { TIME_FRAME_MS } from "@/components/TimeFrame/TimeFrame.utils"
-import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
-import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
-
-export type XcSwapChartTimeFrame = TradeChartTimeFrameType | "all"
+import { neckworkClient } from "@/api/provider"
 
 /**
- * timeFrame -> Kraken interval (minutes). Chosen so the requested window stays
- * within Kraken's 720-candle REST cap:
- * hour  (1m)   -> 720m  = 12h   covers 1h
- * day   (5m)   -> 3600m = 60h   covers 24h
- * week  (60m)  -> 720h  = 30d   covers 7d
- * month (240m) -> 2880h = 120d  covers 30d
- * all   (1440m)-> 720d  ~ 2y
+ * CandleBucket -> Kraken OHLC interval (minutes). Kraken only serves this fixed
+ * set, and every bucket happens to have an exact match.
  */
-const KRAKEN_INTERVALS: Record<XcSwapChartTimeFrame, number> = {
-  hour: 1,
-  day: 5,
-  week: 60,
-  month: 240,
-  all: 1440,
-}
-
-const hasOhlc = (
-  candle: Pick<OhlcData, "open" | "high" | "low">,
-): candle is Required<Pick<OhlcData, "open" | "high" | "low">> => {
-  return (
-    !!candle.open &&
-    candle.open > 0 &&
-    !!candle.high &&
-    candle.high > 0 &&
-    !!candle.low &&
-    candle.low > 0
-  )
+const KRAKEN_INTERVALS: Record<CandleBucket, number> = {
+  "5m": 5,
+  "15m": 15,
+  "30m": 30,
+  "1h": 60,
+  "4h": 240,
+  "1d": 1440,
+  "1w": 10080,
 }
 
 type Args = {
   readonly sellAssetId: string
   readonly destPlatform: string
-  readonly timeFrame: XcSwapChartTimeFrame
-  readonly enabled?: boolean
+  readonly bucket: CandleBucket
 }
 
 /**
- * Cross-rate price series for a cross-chain swap pair (Hydration asset X ->
- * foreign asset Q on NEAR/ZEC), where we have no native pair data.
+ * Candles for a cross-chain swap pair (Hydration asset X -> foreign asset Q on
+ * NEAR/ZEC), which has no native pair data:
  *
- *   close = priceUSD(Q) / priceUSD(X)   // = X per Q (sell per buy)
+ *   close = priceUSD(Q) / priceUSD(X)   // = X per Q
  *
- * priceUSD(X) comes from our indexer (useTradeChartData), priceUSD(Q) from
- * Kraken; USD is treated as USDT (asset 10). `close` is X-per-Q (value in the
- * sell asset's units) to match the on-chain TradeChart: a chart labeled "X/Q"
- * shows "how much X is 1 Q". The toggle inverts to "1 X = Q".
+ * priceUSD(Q) is the Kraken candle, priceUSD(X) the latest Hydration close at
+ * or before that candle's time; USD is treated as USDT. Dividing the whole
+ * Kraken OHLC by that scalar keeps the candle well-formed (high stays highest)
+ * and matches the on-chain chart's convention — a chart labeled "Q/X" shows
+ * how much X one Q costs.
  */
-export const useXcSwapChartData = ({
+export const useXcSwapCandles = ({
   sellAssetId,
   destPlatform,
-  timeFrame,
-  enabled = true,
+  bucket,
 }: Args) => {
+  // the API only serves the pair with the lower asset id as assetIn
+  const isAligned = Number(USDT_ASSET_ID) >= Number(sellAssetId)
+
   const {
-    prices: hydraPrices,
+    data: hydraPages,
     isLoading: isHydraLoading,
     isError: isHydraError,
     isSuccess: isHydraSuccess,
-  } = useTradeChartData({
-    assetInId: USDT_ASSET_ID,
-    assetOutId: sellAssetId,
-    timeFrame: timeFrame === "all" ? null : timeFrame,
+    isFetching: isHydraFetching,
+    isPlaceholderData,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    ...pairCandlesInfiniteQuery(neckworkClient, {
+      assetIn: isAligned ? sellAssetId : USDT_ASSET_ID,
+      assetOut: isAligned ? USDT_ASSET_ID : sellAssetId,
+      bucket,
+    }),
+    placeholderData: keepPreviousData,
   })
 
   const {
-    data: foreignPrices,
+    data: foreignCandles,
     isLoading: isForeignLoading,
     isError: isForeignError,
     isSuccess: isForeignSuccess,
-  } = useKrakenOhlc(destPlatform, KRAKEN_INTERVALS[timeFrame], enabled)
+    isFetching: isForeignFetching,
+  } = useKrakenOhlc(destPlatform, KRAKEN_INTERVALS[bucket])
 
-  const prices = useMemo<OhlcData[]>(() => {
-    if (!hydraPrices.length || !foreignPrices?.length) {
-      return []
-    }
+  // USD per X, oldest first
+  const hydraCandles = useMemo(() => {
+    const series = (hydraPages?.pages ?? []).toReversed().flat()
+    return isAligned ? series : series.map(invertCandle)
+  }, [hydraPages, isAligned])
 
-    const foreignSorted = [...foreignPrices].sort(
+  const candles = useMemo<PairCandle[]>(() => {
+    const first = hydraCandles[0]
+    if (!first || !foreignCandles?.length) return []
+
+    const foreignSorted = [...foreignCandles].sort(
       (a, b) => a.timestamp - b.timestamp,
     )
 
-    const cutoffSec =
-      timeFrame === "all" ? 0 : (Date.now() - TIME_FRAME_MS[timeFrame]) / 1000
-
     let hi = 0
-    let lastHydra = hydraPrices[0]?.close ?? 0
-    const result: OhlcData[] = []
+    let usdPerX = first.close
+    const result: PairCandle[] = []
 
     for (const candle of foreignSorted) {
-      const tSec = candle.timestamp
-
-      while (hi < hydraPrices.length && Number(hydraPrices[hi]?.time) <= tSec) {
-        lastHydra = hydraPrices[hi]?.close ?? lastHydra
+      while (
+        hi < hydraCandles.length &&
+        (hydraCandles[hi]?.time ?? 0) <= candle.timestamp
+      ) {
+        usdPerX = hydraCandles[hi]?.close ?? usdPerX
         hi++
       }
 
-      if (
-        tSec < cutoffSec ||
-        !lastHydra ||
-        lastHydra <= 0 ||
-        candle.close <= 0
-      ) {
+      // drop anything older than the Hydration series — there is no price to
+      // scale it by, and carrying the oldest one backwards invents history
+      if (candle.timestamp < first.time || usdPerX <= 0 || candle.close <= 0) {
         continue
       }
 
-      const point: OhlcData = {
-        time: toUTCTimestamp(tSec * 1000),
-
-        close: candle.close / lastHydra,
-      }
-
-      if (hasOhlc(candle)) {
-        point.open = candle.open / lastHydra
-        point.high = candle.high / lastHydra
-        point.low = candle.low / lastHydra
-      }
-
-      result.push(point)
+      result.push({
+        time: candle.timestamp,
+        open: candle.open / usdPerX,
+        high: candle.high / usdPerX,
+        low: candle.low / usdPerX,
+        close: candle.close / usdPerX,
+        volume: 0,
+      })
     }
 
     return result
-  }, [hydraPrices, foreignPrices, timeFrame])
+  }, [hydraCandles, foreignCandles])
+
+  const onReachStart = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   return {
-    prices,
+    candles,
+    onReachStart,
     isLoading: isHydraLoading || isForeignLoading,
     isError: isHydraError || isForeignError,
     isSuccess: isHydraSuccess && isForeignSuccess,
+    isPlaceholderData,
+    isRefetching: (isHydraFetching && !isFetchingNextPage) || isForeignFetching,
   }
 }

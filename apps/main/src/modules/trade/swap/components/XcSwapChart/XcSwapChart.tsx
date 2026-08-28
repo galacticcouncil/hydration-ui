@@ -1,103 +1,50 @@
-import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
-import {
-  ArrowLeftRight,
-  CandlestickChart,
-  LineChartIcon,
-} from "@galacticcouncil/ui/assets/icons"
+import { invertCandle, PairCandle } from "@galacticcouncil/indexer/neckwork"
 import {
   Box,
-  ButtonIcon,
-  ChartValues,
   Flex,
-  Icon,
   Paper,
-  Separator,
-  TradingViewChart,
-  TradingViewChartRef,
+  ResponsiveScope,
+  Text,
 } from "@galacticcouncil/ui/components"
-import {
-  BaselineChartData,
-  OhlcData,
-} from "@galacticcouncil/ui/components/TradingViewChart/utils"
+import { ChartValues } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import React, { useMemo, useRef, useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { last } from "remeda"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
+import { CandleChart } from "@/modules/trade/swap/components/TradeChartNeckwork/CandleChart"
+import { TradeChartControls } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartControls"
 import {
-  ChartTimeRange,
-  ChartTimeRangeOptionType,
-} from "@/components/ChartTimeRange/ChartTimeRange"
-import i18n from "@/i18n"
-import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
-import {
-  useXcSwapChartData,
-  XcSwapChartTimeFrame,
-} from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart.data"
+  SChartHeader,
+  SChartValues,
+} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.styled"
+import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartPrice"
+import { useXcSwapCandles } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart.data"
+import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
+import { useTradeChartSettings } from "@/states/tradeSettings"
 
-type XcSwapChartType = "line" | "candles"
+const PRICE_CHANGE_SECONDS = {
+  "24h": 24 * 60 * 60,
+  "7d": 7 * 24 * 60 * 60,
+}
 
-export type { XcSwapChartType }
+const priceChangeOverPeriod = (
+  candles: ReadonlyArray<PairCandle>,
+  seconds: number,
+) => {
+  const latest = candles.at(-1)
+  if (!latest) return null
 
-const CHART_TYPE_OPTIONS: ReadonlyArray<{
-  key: XcSwapChartType
-  label: string
-  icon: React.ComponentType
-}> = [
-  { key: "line", label: "Line", icon: LineChartIcon },
-  { key: "candles", label: "Candles", icon: CandlestickChart },
-]
-
-const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
-
-const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
-  ChartTimeRangeOptionType<XcSwapChartTimeFrame>
->((option) => ({
-  key: option,
-  label: i18n.t(`chart.timeFrame.${option}`),
-}))
-
-const hasOhlc = (
-  point: OhlcData,
-): point is OhlcData & Required<Pick<OhlcData, "open" | "high" | "low">> => {
-  return (
-    !!point.open &&
-    point.open > 0 &&
-    !!point.high &&
-    point.high > 0 &&
-    !!point.low &&
-    point.low > 0
+  const reference = candles.findLast(
+    (candle) => candle.time <= latest.time - seconds,
   )
-}
+  if (!reference || reference.close <= 0) return null
 
-const isOhlcData = (
-  point: BaselineChartData | OhlcData | null,
-): point is OhlcData & Required<Pick<OhlcData, "open" | "high" | "low">> => {
-  return !!point && "close" in point && hasOhlc(point)
-}
-
-const invertChartPoint = (point: OhlcData): OhlcData => {
-  const close = point.close > 0 ? 1 / point.close : 0
-
-  if (!hasOhlc(point)) {
-    return { ...point, close }
-  }
-
-  return {
-    ...point,
-    open: 1 / point.open,
-    close,
-    high: 1 / point.low,
-    low: 1 / point.high,
-  }
+  return ((latest.close - reference.close) / reference.close) * 100
 }
 
 type XcSwapChartProps = {
   readonly height: number
-  readonly chartType: XcSwapChartType
-  readonly setChartType: (type: XcSwapChartType) => void
   // Hydration source asset (priced against USDT on the indexer).
   readonly sellAssetId: string
   readonly sellSymbol: string
@@ -108,202 +55,158 @@ type XcSwapChartProps = {
 
 export const XcSwapChart: React.FC<XcSwapChartProps> = ({
   height,
-  chartType,
-  setChartType,
   sellAssetId,
   sellSymbol,
   destPlatform,
   destSymbol,
 }) => {
   const { t } = useTranslation()
+  const { interval, chartType, changePeriod, setChangePeriod } =
+    useTradeChartSettings()
 
-  const chartRef = useRef<TradingViewChartRef>(null)
   const [isInverted, setIsInverted] = useState(false)
-  const [interval, setInterval] = useState<XcSwapChartTimeFrame>("week")
-  const [crosshair, setCrosshair] = useState<
-    BaselineChartData | OhlcData | null
-  >(null)
 
-  // close = sellAsset per buyAsset (X per Q), matching TradeChart's convention.
-  const { prices, isLoading, isSuccess, isError } = useXcSwapChartData({
-    sellAssetId,
-    destPlatform,
-    timeFrame: interval,
-  })
+  const {
+    candles: rawCandles,
+    onReachStart,
+    isLoading,
+    isSuccess,
+    isError,
+    isPlaceholderData,
+    isRefetching,
+  } = useXcSwapCandles({ sellAssetId, destPlatform, bucket: interval })
 
-  // Default close is X per Q ("1 buy = value sell", value in sell units, like
-  // the on-chain chart); invert toggles to Q per X.
-  const data = useMemo<OhlcData[]>(
-    () => (isInverted ? prices.map(invertChartPoint) : prices),
-    [prices, isInverted],
+  // default is X per Q ("1 destAsset = value sellAsset"), matching the
+  // on-chain chart; the toggle flips it to Q per X
+  const candles = useMemo(
+    () => (isInverted ? rawCandles.map(invertCandle) : rawCandles),
+    [rawCandles, isInverted],
   )
 
-  const hasCandleData = data.length > 0 && data.every(hasOhlc)
-  const selectedChartType =
-    chartType === "candles" && hasCandleData ? "candles" : "line"
-  const isEmpty = isSuccess && !data.length
+  const baseSymbol = isInverted ? sellSymbol : destSymbol
+  const quoteSymbol = isInverted ? destSymbol : sellSymbol
 
-  // value is shown in `valueSymbol` and prices 1 `subjectSymbol`.
-  // Default: "1 buyAsset (Q) = value sellAsset (X)" — matches on-chain.
-  const valueSymbol = isInverted ? destSymbol : sellSymbol
-  const subjectSymbol = isInverted ? sellSymbol : destSymbol
+  const isEmpty = isSuccess && !candles.length
 
-  const lastDataPoint = last(data)
-  const crosshairValue =
-    crosshair && "value" in crosshair ? crosshair.value : crosshair?.close
-  const value = crosshairValue ?? lastDataPoint?.close ?? 0
-  const candleCrosshair =
-    selectedChartType === "candles" && isOhlcData(crosshair) ? crosshair : null
-  const formattedCandleOhlc = candleCrosshair
-    ? [
-        `O: ${t("number", {
-          value: candleCrosshair.open,
-        })}`,
-        `H: ${t("number", {
-          value: candleCrosshair.high,
-        })}`,
-        `L: ${t("number", {
-          value: candleCrosshair.low,
-        })}`,
-        `C: ${t("number", {
-          value: candleCrosshair.close,
-        })}`,
-      ].join(" / ")
-    : null
+  const {
+    onCrosshairMove,
+    value,
+    open,
+    high,
+    low,
+    formattedAssetPrice,
+    isAssetPriceValid,
+    shouldShowValues,
+    isLoadingValues,
+    isLiveValue,
+  } = useTradeChartValues({
+    prices: candles,
+    priceAssetId: sellAssetId,
+    isEmpty,
+    isError,
+    isLoading,
+  })
 
-  // USD sub-line = USD value of 1 subject, always priced via the Hydration
-  // sell asset (the foreign asset has no on-chain price):
-  //   not inverted: value (sell-per-buy) × price(sell) = USD of 1 buy
-  //   inverted:     1 × price(sell)                    = USD of 1 sell
-  const usdValue = isInverted ? 1 : value
-  const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(sellAssetId, usdValue, {
-      maximumFractionDigits: null,
-    })
+  const priceChange = useMemo(
+    () => priceChangeOverPeriod(candles, PRICE_CHANGE_SECONDS[changePeriod]),
+    [candles, changePeriod],
+  )
 
-  // Render the value directly (no AnimatedValue tween): the value can jump
-  // across orders of magnitude on asset switch, and the tween would
-  // briefly show misleading intermediate numbers.
-  const chartValue =
-    !isEmpty && !isError
-      ? t("currency", { value, symbol: valueSymbol })
-      : undefined
+  const chartValue = shouldShowValues ? (
+    <TradeChartPrice
+      value={value}
+      symbol={quoteSymbol}
+      animationKey={`${sellAssetId}-${destPlatform}`}
+      isLiveValue={isLiveValue}
+      priceChange={priceChange}
+      changePeriod={changePeriod}
+      onChangePeriodToggle={() =>
+        setChangePeriod(changePeriod === "24h" ? "7d" : "24h")
+      }
+    />
+  ) : undefined
 
-  const chartDisplayValue =
-    !isEmpty && !isError ? (
-      <Box position="relative">
-        <Box>
+  // the USD line prices one unit of the base asset. Inverted, the base is the
+  // Hydration sell asset, so it would just restate that asset's own price —
+  // constant across the series and not worth the row.
+  const chartDisplayValue = shouldShowValues ? (
+    chartType === "line" ? (
+      <SChartValues>
+        <Text
+          fs="p6"
+          lh={1.3}
+          fontVariantNumeric="tabular-nums"
+          visibility={!isInverted && isAssetPriceValid ? "visible" : "hidden"}
+        >
           {t("price")}: {formattedAssetPrice}
-        </Box>
-        {formattedCandleOhlc && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {formattedCandleOhlc}
-          </Box>
-        )}
-      </Box>
-    ) : undefined
+        </Text>
+      </SChartValues>
+    ) : (
+      <SChartValues>
+        <Flex gap="s">
+          {(
+            [
+              ["O", open],
+              ["H", high],
+              ["L", low],
+              ["C", value],
+            ] as const
+          ).map(([label, price]) => (
+            <Text
+              key={label}
+              fs="p6"
+              lh={1.3}
+              fontVariantNumeric="tabular-nums"
+              whiteSpace="nowrap"
+            >
+              <Text as="span" color={getToken("text.low")}>
+                {label}
+              </Text>{" "}
+              {t("number", { value: price })}
+            </Text>
+          ))}
+        </Flex>
+      </SChartValues>
+    )
+  ) : undefined
 
   return (
     <Paper p="xl">
-      <Flex align="flex-start" gap="base" justify="space-between">
-        <ChartValues
-          value={chartValue}
-          displayValue={chartDisplayValue}
-          isLoading={isLoading || isAssetPriceLoading}
-        />
-        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <SChartInvertButton
-            size="small"
-            variant="tertiary"
-            outline
-            onClick={() => setIsInverted((prev) => !prev)}
-          >
-            <Icon component={ArrowLeftRight} size="m" />
-            {subjectSymbol}/{valueSymbol}
-          </SChartInvertButton>
-          {(hasCandleData || chartType === "candles") && (
-            <>
-              <Separator
-                orientation="vertical"
-                mx="base"
-                sx={{
-                  height: "l",
-                  mt: "xs",
-                  display: ["none", null, null, null, "block"],
-                }}
-              />
-              {CHART_TYPE_OPTIONS.map((opt) => (
-                <ButtonIcon
-                  key={opt.key}
-                  size="small"
-                  outline={selectedChartType !== opt.key}
-                  onClick={() => setChartType(opt.key)}
-                >
-                  <Icon
-                    component={opt.icon}
-                    color={
-                      chartType === opt.key
-                        ? getToken("text.tint.quart")
-                        : "onContainer"
-                    }
-                    size="m"
-                  />
-                </ButtonIcon>
-              ))}
-            </>
-          )}
-          <Separator
-            orientation="vertical"
-            mx="base"
-            sx={{
-              height: "l",
-              mt: "xs",
-              display: ["none", null, null, null, "block"],
-            }}
+      <ResponsiveScope>
+        <SChartHeader>
+          <ChartValues
+            sx={{ position: "relative" }}
+            value={chartValue}
+            displayValue={chartDisplayValue}
+            isLoading={shouldShowValues && isLoadingValues}
           />
-          <ChartTimeRange
-            sx={{ ml: "auto" }}
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={(option) => {
-              setInterval(option.key)
-              chartRef.current?.resetZoom()
-            }}
+          <TradeChartControls
+            pair={`${baseSymbol}/${quoteSymbol}`}
+            isInverted={isInverted}
+            onInvert={() => setIsInverted((prev) => !prev)}
           />
-        </Flex>
-      </Flex>
-      <ChartState
-        sx={{ height }}
-        isError={isError}
-        isLoading={isLoading}
-        isEmpty={isEmpty}
-      >
-        {selectedChartType === "candles" ? (
-          <TradingViewChart
-            ref={chartRef}
-            type="Candlestick"
+        </SChartHeader>
+      </ResponsiveScope>
+      <Box sx={{ height }}>
+        <ChartState
+          sx={{ height }}
+          isError={isError}
+          isLoading={isLoading}
+          isEmpty={isEmpty}
+        >
+          <CandleChart
             height={height}
-            data={data}
-            hidePriceIndicator
-            onCrosshairMove={setCrosshair}
+            candles={candles}
+            liveCandle={null}
+            type={chartType}
+            resetKey={`${sellAssetId}-${destPlatform}-${interval}-${isInverted}`}
+            isRefetching={isRefetching}
+            isPlaceholderData={isPlaceholderData}
+            onCrosshairMove={onCrosshairMove}
+            onReachStart={onReachStart}
           />
-        ) : (
-          <TradingViewChart
-            ref={chartRef}
-            height={height}
-            data={data}
-            hidePriceIndicator
-            onCrosshairMove={setCrosshair}
-          />
-        )}
-      </ChartState>
+        </ChartState>
+      </Box>
     </Paper>
   )
 }

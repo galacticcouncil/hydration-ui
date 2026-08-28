@@ -3,10 +3,13 @@ import { useMemo } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useHydrationDepositLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationDepositLimitAlerts"
-import { useHydrationGlobalWithdrawLimitAlerts } from "@/modules/xcm/transfer/hooks/useHydrationGlobalWithdrawLimitAlerts"
+import { useCBreakerInboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerInboundLimitAlerts"
+import { useCBreakerOutboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerOutboundLimitAlerts"
+import { useHydrationEvmBindingAlert } from "@/modules/xcm/transfer/hooks/useHydrationEvmBindingAlert"
+import { useWormholeNttLimitAlerts } from "@/modules/xcm/transfer/hooks/useWormholeNttLimitAlerts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { pickXcmLimitAlert } from "@/modules/xcm/transfer/utils/limits"
 
 const REPORT_ERROR_KEYS = [
   "fee.insufficientBalance",
@@ -24,13 +27,17 @@ const isReportErrorKey = (error: string): error is ReportErrorKey => {
 export const useXcmTransferAlerts = (
   form: UseFormReturn<XcmFormValues>,
   transferReport: TransferValidationReport[] | null,
-): XcmAlert[] => {
+  requiresEvmBinding: boolean,
+): { alerts: XcmAlert[]; isLoading: boolean } => {
   const { t } = useTranslation(["xcm"])
 
-  const depositLimitAlerts = useHydrationDepositLimitAlerts(form)
-  const globalWithdrawLimitAlerts = useHydrationGlobalWithdrawLimitAlerts(form)
+  const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
+  const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
+  const wormholeNttLimitAlerts = useWormholeNttLimitAlerts(form)
+  const { alerts: evmBindingAlerts, isLoading: isLoadingEvmBinding } =
+    useHydrationEvmBindingAlert(form, requiresEvmBinding)
 
-  return useMemo<XcmAlert[]>(() => {
+  const alerts = useMemo<XcmAlert[]>(() => {
     const transferReportAlerts: XcmAlert[] = []
     if (transferReport) {
       for (const e of transferReport) {
@@ -47,10 +54,23 @@ export const useXcmTransferAlerts = (
         }
       }
     }
-    return [
-      ...transferReportAlerts,
-      ...depositLimitAlerts,
-      ...globalWithdrawLimitAlerts,
-    ]
-  }, [t, transferReport, depositLimitAlerts, globalWithdrawLimitAlerts])
+    if (transferReportAlerts.length) return transferReportAlerts
+    if (evmBindingAlerts.length) return evmBindingAlerts
+
+    const limitAlert = pickXcmLimitAlert([
+      ...cBreakerInboundLimitAlerts,
+      ...cBreakerOutboundLimitAlerts,
+      ...wormholeNttLimitAlerts,
+    ])
+    return limitAlert ? [limitAlert] : []
+  }, [
+    t,
+    transferReport,
+    cBreakerInboundLimitAlerts,
+    cBreakerOutboundLimitAlerts,
+    wormholeNttLimitAlerts,
+    evmBindingAlerts,
+  ])
+
+  return { alerts, isLoading: isLoadingEvmBinding }
 }

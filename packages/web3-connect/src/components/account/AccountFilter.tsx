@@ -1,10 +1,12 @@
 import { Button, Flex, Logo } from "@galacticcouncil/ui/components"
+import { useTranslation } from "react-i18next"
 
 import {
   WalletAccountFilterOption,
   WalletAccountFilterOptionOverride,
   WalletMode,
 } from "@/config/wallet"
+import i18n from "@/i18n"
 import { getWalletModeIcon, getWalletModeName } from "@/utils/wallet"
 
 type ModeData = Record<
@@ -54,6 +56,7 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
   whitelist,
   onSetActive,
 }) => {
+  const { t } = useTranslation("translations", { i18n })
   return (
     <Flex gap="base" wrap>
       <Button
@@ -62,7 +65,7 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
         onClick={() => onSetActive(WalletMode.Default)}
         sx={{ py: "s" }}
       >
-        All
+        {t("button.all")}
       </Button>
       {Object.entries(MODE_DATA)
         .filter(

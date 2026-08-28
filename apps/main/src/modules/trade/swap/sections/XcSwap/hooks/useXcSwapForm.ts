@@ -5,10 +5,10 @@ import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import i18n from "@/i18n"
 import { XcAsset, XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
-import { useAccountBalances } from "@/states/account"
 import {
   positiveOptional,
   requiredObject,

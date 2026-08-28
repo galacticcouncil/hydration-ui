@@ -9,6 +9,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import type { ComponentType, SVGProps } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,7 +19,7 @@ import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyCont
 export type WithdrawMethod = "queue" | "instant"
 
 export interface InstantQuote {
-  expectedHollar: number
+  expectedHollar: string
   discountPct: number
   slippagePct: number
 }
@@ -26,7 +27,7 @@ export interface InstantQuote {
 interface Props {
   selected: WithdrawMethod
   onSelect: (method: WithdrawMethod) => void
-  amountBil: number
+  amountBil: string
   exchangeRate: number
   aprPercent: number
   worstCaseWaitDays: number
@@ -61,7 +62,9 @@ export const WithdrawMethodPicker = ({
   const { hollar } = useBilStrategy()
 
   const projectedRate = projectRate(exchangeRate, aprPercent, worstCaseWaitDays)
-  const queueHollarOut = amountBil * projectedRate
+  const queueHollarOut = Big(amountBil || "0")
+    .times(projectedRate)
+    .toString()
 
   return (
     <Flex direction="column" gap="base">
@@ -78,7 +81,9 @@ export const WithdrawMethodPicker = ({
           })}
           rightChipVariant="secondary"
         />
-        <CollapsibleRoot open={selected === "queue" && queueHollarOut > 0}>
+        <CollapsibleRoot
+          open={selected === "queue" && Big(queueHollarOut).gt(0)}
+        >
           <CollapsibleContent>
             <Separator
               my="m"
@@ -147,7 +152,9 @@ export const WithdrawMethodPicker = ({
                 <DetailRow
                   label={t("bil.method.instant.difference")}
                   value={(() => {
-                    const delta = instantQuote.expectedHollar - queueHollarOut
+                    const delta = Big(instantQuote.expectedHollar)
+                      .minus(queueHollarOut)
+                      .toString()
                     return `${t("common:currency", {
                       value: delta,
                       symbol: hollar.symbol,

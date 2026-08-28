@@ -10,10 +10,20 @@ import { useTranslation } from "react-i18next"
 import { useBondData } from "@/api/bonds"
 import { Markdown } from "@/components/Markdown"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
-import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
+import {
+  getBondApr,
+  getDefaultBondApr,
+} from "@/modules/strategies/stable-bonds/utils/apr"
 import { useAssets } from "@/providers/assetsProvider"
 
-export const StableBondsAbout: React.FC<PaperProps> = (props) => {
+export type StableBondsAboutProps = PaperProps & {
+  isSoldOut?: boolean
+}
+
+export const StableBondsAbout: React.FC<StableBondsAboutProps> = ({
+  isSoldOut,
+  ...props
+}) => {
   const { t } = useTranslation(["common", "strategies"])
   const config = useStableBondsConfig()
   const { getBond, getAssetWithFallback } = useAssets()
@@ -23,7 +33,9 @@ export const StableBondsAbout: React.FC<PaperProps> = (props) => {
   if (!config.contentId || !bond) return null
 
   const underlyingAsset = getAssetWithFallback(bond.underlyingAssetId)
-  const apr = getBondApr(config.bondId, timeLeft)
+  const apr = isSoldOut
+    ? getDefaultBondApr(config.bondId)
+    : getBondApr(config.bondId, timeLeft)
 
   return (
     <Paper p="xl" {...props}>
@@ -42,13 +54,19 @@ export const StableBondsAbout: React.FC<PaperProps> = (props) => {
         muted
         size="small"
         values={{
+          soldOut: isSoldOut ?? false,
           daysLeft: t("interval", {
             value: timeLeft,
             largest: 1,
             ...(timeLeft > millisecondsInDay && { unit: "d" }),
           }),
           apr: apr
-            ? t("common:percent", { value: apr, minimumFractionDigits: 2 })
+            ? t("common:percent", {
+                value: apr,
+                ...(isSoldOut
+                  ? { maximumFractionDigits: 2, suffix: "+" }
+                  : { minimumFractionDigits: 2 }),
+              })
             : "",
         }}
       />

@@ -25,7 +25,12 @@ export const Market: FC = () => {
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
 
-  const { maxSwapSellBalance, maxTwapSellBalance } = useMaxSellAmount({
+  const {
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+  } = useMaxSellAmount({
     assetIn,
     assetOut,
   })
@@ -102,6 +107,11 @@ export const Market: FC = () => {
           twap={twap}
           maxSellBalance={
             isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance
+          }
+          maxSellBalanceLoading={
+            isSingleTrade
+              ? isMaxSwapSellBalanceLoading
+              : isMaxTwapSellBalanceLoading
           }
         />
         {isExpanded && (

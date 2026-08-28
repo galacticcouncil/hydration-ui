@@ -2,10 +2,11 @@ import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
-import { useInvalidateOnBlock } from "@/api/chain"
-import { useSquidClient } from "@/api/provider"
+import { useAccountBalances } from "@/api/balances"
+import { useInvalidateOnBlock, useReloadOnStaleBlocks } from "@/api/chain"
+import { useNeckworkSync } from "@/api/neckworkSync"
+import { neckworkClient, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
-import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
@@ -20,6 +21,7 @@ import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -45,9 +47,15 @@ const Devtools = import.meta.env.DEV
     }))
   : lazy(async () => ({ default: () => null }))
 
+const RootPendingComponent = () => (
+  <AssetsProvider>
+    <LayoutSkeleton />
+  </AssetsProvider>
+)
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
-  pendingComponent: LayoutSkeleton,
+  pendingComponent: RootPendingComponent,
   head: ({
     match: {
       context: { i18n },
@@ -94,7 +102,9 @@ function RootComponent() {
 
 function ApiSubscriptions() {
   useInvalidateOnBlock()
-  useAccountBalanceSubscription()
+  useReloadOnStaleBlocks()
+  useNeckworkSync()
+  useAccountBalances()
   usePriceSubscriber()
 
   return null
@@ -112,10 +122,15 @@ function Services() {
   const squidSdk = useSquidClient()
   const { isConnected, account } = useAccount()
   const { isApiLoaded, papi } = useRpcProvider()
+  const neckworkEnabled = useNeckworkEnabled()
   return (
     <>
       <TransactionManager />
-      <Web3ConnectModal squidSdk={squidSdk} papi={papi} />
+      <Web3ConnectModal
+        squidSdk={squidSdk}
+        neckwork={neckworkEnabled ? neckworkClient : null}
+        papi={papi}
+      />
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>

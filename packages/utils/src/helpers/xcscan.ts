@@ -9,4 +9,7 @@ export const xcscan = {
   tx: (correlationId: string): string => {
     return xcscan.link("tx", correlationId)
   },
+  search: (query: string): string => {
+    return `${XCSCAN_URL}/?search=${query}`
+  },
 }

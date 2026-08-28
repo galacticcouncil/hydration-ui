@@ -1,8 +1,8 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
@@ -13,16 +13,18 @@ import {
   TokenLockType,
   useNativeTokenLocks,
 } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
+import { useBlockTime } from "@/api/chain"
 import {
   Conviction,
-  CONVICTIONS_BLOCKS_BY_INDEX,
+  getConvictionBlocks,
   ongoingReferendaQuery,
+  voteLockingPeriodQuery,
 } from "@/api/democracy"
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt } from "@/utils/formatting"
 import { positive } from "@/utils/validators"
@@ -57,6 +59,7 @@ export const useVoteModal = (
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { data: blockTimeMs = 0 } = useBlockTime()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getBalance } = useAccountBalances()
   const { data: locks } = useNativeTokenLocks()
@@ -224,8 +227,11 @@ export const useVoteModal = (
     "abstain",
   ])
 
-  const lockedBlocks = CONVICTIONS_BLOCKS_BY_INDEX[multiplier] ?? 0
-  const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
+  const { data: voteLockingPeriod = 0 } = useQuery(voteLockingPeriodQuery(rpc))
+  const lockedBlocks = getConvictionBlocks(voteLockingPeriod, multiplier) ?? 0
+  const lockedDays = Math.round(
+    (lockedBlocks * blockTimeMs) / millisecondsInDay,
+  )
   const totalVotes = (() => {
     if (voteType === "split") {
       return Big(aye || "0")

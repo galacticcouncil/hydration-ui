@@ -2,21 +2,22 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, blockTimeQuery } from "@/api/chain"
 import {
   accountUnlockClassesQuery,
   openGovUnlockedTokensQuery,
   TUnlockableVote,
 } from "@/api/democracy"
 import {
+  getCooldownExpiresAt,
   gigaStakeConstantsQuery,
+  gigaTwoSecBlocksSinceQuery,
   gigaUnstakePositionsQuery,
 } from "@/api/gigaStake"
 import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useUnlockableNativeTokens = () => {
@@ -41,7 +42,7 @@ export const useUnlockableNativeTokens = () => {
     queryFn: async () => {
       let referendaUnlockable = 0n
       let votesToRemove: TUnlockableVote[] = []
-      let lockedReferendaSeconds = 0
+      let lockedReferendaMilliseconds = 0
       let classIds: number[] = []
 
       if (referendaLock > 0n) {
@@ -57,8 +58,11 @@ export const useUnlockableNativeTokens = () => {
             : 0n
 
         votesToRemove = unlockedTokens.votesToRemove
-        lockedReferendaSeconds =
-          (unlockedTokens.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
+        const blockTimeMs = await rpc.queryClient.ensureQueryData(
+          blockTimeQuery(rpc.sdk),
+        )
+        lockedReferendaMilliseconds =
+          (unlockedTokens.maxLockedBlock ?? 0) * blockTimeMs
 
         classIds = await rpc.queryClient.ensureQueryData(
           accountUnlockClassesQuery(rpc, address),
@@ -72,19 +76,23 @@ export const useUnlockableNativeTokens = () => {
       }> = []
 
       if (gigaLock > 0n) {
-        const [pendingPositions, bestNumber, gigaStakeConstants] =
+        const [pendingPositions, bestNumber, gigaStakeConstants, twoSecSince] =
           await Promise.all([
             rpc.queryClient.ensureQueryData(
               gigaUnstakePositionsQuery(rpc, address),
             ),
             rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
             rpc.queryClient.ensureQueryData(gigaStakeConstantsQuery(rpc)),
+            rpc.queryClient.ensureQueryData(gigaTwoSecBlocksSinceQuery(rpc)),
           ])
 
         unlockableGigaPendingPositions = pendingPositions.filter(
           (position) =>
-            position.voteAtBlock + gigaStakeConstants.cooldownPeriod <
-            bestNumber.parachainBlockNumber,
+            getCooldownExpiresAt(
+              position.voteAtBlock,
+              gigaStakeConstants.cooldownPeriod,
+              twoSecSince,
+            ) < bestNumber.parachainBlockNumber,
         )
 
         gigaUnlockable = unlockableGigaPendingPositions.reduce(
@@ -103,7 +111,7 @@ export const useUnlockableNativeTokens = () => {
 
       return {
         maxUnlockable: scaleHuman(maxUnlockable.toString(), native.decimals),
-        lockedReferendaSeconds,
+        lockedReferendaMilliseconds,
         unlockableGigaPendingPositions,
         votesToRemove,
         classIds,
@@ -119,7 +127,7 @@ export const useUnlockableNativeTokens = () => {
   return {
     maxUnlockable: data?.maxUnlockable ?? "0",
     displayMaxUnlockable,
-    lockedReferendaSeconds: data?.lockedReferendaSeconds ?? 0,
+    lockedReferendaMilliseconds: data?.lockedReferendaMilliseconds ?? 0,
     unlockableGigaPendingPositions: data?.unlockableGigaPendingPositions ?? [],
     votesToRemove: data?.votesToRemove ?? [],
     classIds: data?.classIds ?? [],

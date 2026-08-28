@@ -1,13 +1,14 @@
-import { SubScan } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
   ButtonIcon,
   ExternalLink,
   Flex,
   Icon,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { replaceAaveWithBorrow } from "@galacticcouncil/utils"
+import { isMobileDevice, replaceAaveWithBorrow } from "@galacticcouncil/utils"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -64,10 +65,12 @@ export const TransactionItemMobile: FC<Props> = ({
           )}
         </Flex>
 
-        <Flex direction="column" align="end" gap="s">
-          <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-            {received ?? "⎯"}
-          </Text>
+        <Flex direction="column" justify="center" align="end" gap="s">
+          {received && (
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
+              {received}
+            </Text>
+          )}
           <TransactionStatus variant={statusProps.status} />
           {message && (
             <TransactionStatusMessage
@@ -81,15 +84,22 @@ export const TransactionItemMobile: FC<Props> = ({
       </Flex>
       {link && (
         <TransactionItemMobileAction>
-          <ButtonIcon asChild>
-            <ExternalLink href={link}>
-              <Icon
-                size="s"
-                component={SubScan}
-                color={getToken("text.high")}
-              />
-            </ExternalLink>
-          </ButtonIcon>
+          <Tooltip
+            text={isMobileDevice() ? null : t("openInExplorer")}
+            size="small"
+            asChild
+            side="top"
+          >
+            <ButtonIcon asChild>
+              <ExternalLink href={link}>
+                <Icon
+                  size="s"
+                  component={SquareArrowOutUpRight}
+                  color={getToken("text.high")}
+                />
+              </ExternalLink>
+            </ButtonIcon>
+          </Tooltip>
         </TransactionItemMobileAction>
       )}
     </TransactionItemMobileContainer>

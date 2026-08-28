@@ -92,9 +92,11 @@ export const useDataTable = <TData extends RowData>({
         ? options.columns.map((column) => ({
             ...column,
             enableSorting: false,
-            cell: () => (
-              <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
-            ),
+            cell:
+              column.meta?.skeletonCell ??
+              (() => (
+                <Skeleton sx={{ width: "min(80px, 100%)" }} height="1em" />
+              )),
           }))
         : options.columns,
     [isLoading, options.columns],

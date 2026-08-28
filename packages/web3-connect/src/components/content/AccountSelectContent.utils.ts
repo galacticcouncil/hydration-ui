@@ -1,3 +1,4 @@
+import { accountsBalancesQuery } from "@galacticcouncil/indexer/neckwork"
 import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import {
   arraySearch,
@@ -6,8 +7,7 @@ import {
 } from "@galacticcouncil/utils"
 import { QueriesResults, useQueries } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo } from "react"
-import { useLocalStorage } from "react-use"
-import { pick, pipe, sortBy } from "remeda"
+import { chunk, pick, pipe, sortBy } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { WalletProviderType } from "@/config/providers"
@@ -78,87 +78,102 @@ export const getFilteredAccounts = (
 
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()
-  const { squidSdk } = useWeb3ConnectContext()
+  const { neckwork, squidSdk } = useWeb3ConnectContext()
   const { setBalances } = useWeb3Connect(
     useShallow(pick(["accounts", "setBalances"])),
   )
 
-  const [accountBalancesStorage, setAccountBalancesStorage] = useLocalStorage<
-    ReadonlyMap<string, number>
-  >("account-balances", new Map(), {
-    raw: false,
-    serializer: (map) => JSON.stringify(Array.from(map.entries())),
-    deserializer: (entries) => {
-      try {
-        return new Map(JSON.parse(entries))
-      } catch {
-        return new Map()
-      }
-    },
+  const {
+    accountBalances: neckworkBalancesMap,
+    isLoading: areNeckworkBalancesLoading,
+  } = useQueries({
+    queries: neckwork
+      ? chunk(accounts, 50).map((batch) =>
+          accountsBalancesQuery(
+            neckwork,
+            batch.map((account) => account.publicKey),
+          ),
+        )
+      : [],
+    combine: useCallback(
+      (
+        queries: QueriesResults<
+          Array<ReturnType<typeof accountsBalancesQuery>>
+        >,
+      ) => {
+        const isLoading = queries.some((query) => query.isLoading)
+        const rows = queries.flatMap((query) => query.data ?? [])
+        const lookup = new Map(rows.map((row) => [row.account, row.balance]))
+
+        const accountBalances = isLoading
+          ? new Map<string, number>()
+          : new Map(
+              accounts.map((account) => [
+                account.publicKey,
+                lookup.get(account.publicKey) ?? 0,
+              ]),
+            )
+
+        return {
+          isLoading,
+          accountBalances,
+        }
+      },
+      [accounts],
+    ),
   })
 
-  const hasAllBalancesPreloaded =
-    !!accountBalancesStorage &&
-    accounts.every(
-      (account) => accountBalancesStorage.get(account.publicKey) !== undefined,
-    )
+  const {
+    accountBalances: squidBalancesMap,
+    isLoading: areSquidBalancesLoading,
+  } = useQueries({
+    queries: neckwork
+      ? []
+      : accounts.map((account) =>
+          latestAccountBalanceQuery(squidSdk, account.publicKey),
+        ),
+    combine: useCallback(
+      (
+        queries: QueriesResults<
+          Array<ReturnType<typeof latestAccountBalanceQuery>>
+        >,
+      ) => {
+        const isLoading = queries.some((query) => query.isLoading)
+        const accountBalances = isLoading
+          ? new Map<string, number>()
+          : new Map(
+              accounts.map((account, index) => {
+                const data = queries[index]?.data
+                const balances =
+                  data?.accountTotalBalanceHistoricalData?.nodes.at(0)
+                const transferable =
+                  Number(balances?.totalTransferableNorm) || 0
+                const locked = Number(balances?.totalLockedNorm) || 0
+                const balance = transferable + locked
 
-  const { accountBalances: balancesMap, isLoading: areBalancesLoading } =
-    useQueries({
-      queries: accounts.map((account) =>
-        latestAccountBalanceQuery(squidSdk, account.publicKey),
-      ),
-      combine: useCallback(
-        (
-          queries: QueriesResults<
-            Array<ReturnType<typeof latestAccountBalanceQuery>>
-          >,
-        ) => {
-          const isLoading = queries.some((query) => query.isLoading)
-          const accountBalances = isLoading
-            ? new Map<string, number>()
-            : new Map(
-                accounts.map((account, index) => {
-                  const data = queries[index]?.data
-                  const balances =
-                    data?.accountTotalBalanceHistoricalData?.nodes.at(0)
-                  const transferable =
-                    Number(balances?.totalTransferableNorm) || 0
-                  const locked = Number(balances?.totalLockedNorm) || 0
-                  const balance = transferable + locked
+                return [account.publicKey, balance]
+              }),
+            )
 
-                  return [account.publicKey, balance]
-                }),
-              )
+        return {
+          isLoading,
+          accountBalances,
+        }
+      },
+      [accounts],
+    ),
+  })
 
-          return {
-            isLoading,
-            accountBalances,
-          }
-        },
-        [accounts],
-      ),
-    })
-
-  useEffect(() => {
-    if (!areBalancesLoading) {
-      setAccountBalancesStorage(balancesMap)
-    }
-  }, [areBalancesLoading, balancesMap, setAccountBalancesStorage])
+  const balancesMap = neckwork ? neckworkBalancesMap : squidBalancesMap
+  const areBalancesLoading = neckwork
+    ? areNeckworkBalancesLoading
+    : areSquidBalancesLoading
 
   useEffect(() => {
     if (!areBalancesLoading) {
       setBalances(balancesMap)
-    } else if (hasAllBalancesPreloaded) {
-      setBalances(accountBalancesStorage)
     }
-  }, [
-    balancesMap,
-    accountBalancesStorage,
-    hasAllBalancesPreloaded,
-    areBalancesLoading,
-    setBalances,
-  ])
+  }, [balancesMap, areBalancesLoading, setBalances])
 
   const accountsWithBalances = useMemo(() => {
     const accountsWithActive = accounts.map((account) => {
@@ -182,6 +197,6 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
 
   return {
     accountsWithBalances,
-    areBalancesLoading: areBalancesLoading && !hasAllBalancesPreloaded,
+    areBalancesLoading,
   }
 }

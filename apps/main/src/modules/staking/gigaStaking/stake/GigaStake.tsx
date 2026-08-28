@@ -14,6 +14,7 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useNativeTokenLocks } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import {
   borrowReservesQuery,
   gigaLendingPoolAddressProvider,
@@ -24,7 +25,6 @@ import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useGigaStake } from "@/modules/staking/gigaStaking/stake/GigaStake.utils"
 import { GigaStakeSkeleton } from "@/modules/staking/gigaStaking/stake/GigaStakeSkeleton"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 
 export type GigaStakeProps = {
   minStake: bigint

@@ -21,6 +21,20 @@ import { bilVaultContractQuery } from "@/modules/strategies/bil/hooks/useBilVaul
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
+export type UserBalances = {
+  hollar: string
+  bil: string
+  bilRaw: string
+  bilSupplied: string
+}
+
+const DEFAULT_USER_BALANCES: UserBalances = {
+  hollar: "0",
+  bil: "0",
+  bilRaw: "0",
+  bilSupplied: "0",
+}
+
 export type VaultStats = {
   totalAssets: number
   totalSupply: number
@@ -231,7 +245,7 @@ export function useUserBalances(evmAddress: string | undefined) {
     queryKey: bilQueryKeys.vaultBalances(evmAddress),
     enabled: !!evmAddress,
     queryFn: async () => {
-      if (!evmAddress) return { hollar: 0, bil: 0 }
+      if (!evmAddress) return DEFAULT_USER_BALANCES
 
       const hollarToken = getContract({
         address: HOLLAR_ADDRESS,
@@ -282,13 +296,13 @@ export function useUserBalances(evmAddress: string | undefined) {
       ] as const)
 
       return {
-        hollar: Number(formatUnits(hollarBal, hollar.decimals)),
-        bil: Number(formatUnits(vaultBal + aTokenBal, bil.decimals)),
+        hollar: formatUnits(hollarBal, hollar.decimals),
+        bil: formatUnits(vaultBal + aTokenBal, bil.decimals),
         // Surface the split so callers that need to know where it sits
         // (e.g. the future batched-withdraw flow) can branch on it.
-        bilRaw: Number(formatUnits(vaultBal, bil.decimals)),
-        bilSupplied: Number(formatUnits(aTokenBal, bil.decimals)),
-      }
+        bilRaw: formatUnits(vaultBal, bil.decimals),
+        bilSupplied: formatUnits(aTokenBal, bil.decimals),
+      } satisfies UserBalances
     },
   })
 }

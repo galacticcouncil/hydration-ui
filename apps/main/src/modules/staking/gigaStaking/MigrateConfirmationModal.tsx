@@ -10,9 +10,10 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { Trans, useTranslation } from "react-i18next"
 
+import { useBlockTime } from "@/api/chain"
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -28,11 +29,13 @@ export const MigrateConfirmationModal = ({
 }) => {
   const { t } = useTranslation(["staking", "common"])
   const rpc = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
   const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
-  const cooldownPeriodDays = cooldownPeriod
-    ? millisecondsToHours(cooldownPeriod * rpc.slotDurationMs) / 24
-    : undefined
+  const cooldownPeriodDays =
+    cooldownPeriod && blockTimeMs
+      ? Math.round((cooldownPeriod * blockTimeMs) / millisecondsInDay)
+      : undefined
 
   return (
     <Modal open={open} onOpenChange={onClose}>

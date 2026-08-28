@@ -1,14 +1,11 @@
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { useQuery } from "@tanstack/react-query"
-import { FC, useMemo, useState } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { supplyRateChartDataQuery } from "@/api/grafana/reserveRate"
 import { ApyChart } from "@/modules/borrow/reserve/components/ApyChart"
-import {
-  ApyChartTimeRangeOption,
-  getApyChartTimeRange,
-} from "@/modules/borrow/reserve/components/ApyChart.utils"
+import { ApyChartTimeRangeOption } from "@/modules/borrow/reserve/components/ApyChart.utils"
 
 type Props = {
   readonly assetId: string
@@ -17,16 +14,12 @@ type Props = {
 export const SupplyApyChart: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation("borrow")
   const [timeRange, setTimeRange] = useState<ApyChartTimeRangeOption>("1M")
-  const { from, to } = useMemo(
-    () => getApyChartTimeRange(timeRange),
-    [timeRange],
-  )
 
   const {
     data = [],
     isLoading,
     isError,
-  } = useQuery(supplyRateChartDataQuery(assetId, from, to))
+  } = useQuery(supplyRateChartDataQuery(assetId, timeRange))
 
   const { themeProps } = useTheme()
 

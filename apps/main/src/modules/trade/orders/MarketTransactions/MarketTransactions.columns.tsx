@@ -1,10 +1,14 @@
-import { ArrowRightLeft, SubScan } from "@galacticcouncil/ui/assets/icons"
 import {
-  ButtonIcon,
+  ArrowRightLeft,
+  SquareArrowOutUpRight,
+} from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
   ExternalLink,
   Flex,
   Icon,
   TableRowDetailsExpand,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -78,28 +82,42 @@ export const useMarketTransactionsColumns = () => {
 
     const dateColumn = columnHelper.display({
       header: t("trade:trade.orders.marketTransactions.accountDate"),
-      meta: {
-        sx: { textAlign: "right", "tbody &": { pr: "0 !important" } },
-      },
+
       cell: ({ row }) => (
-        <Flex align="center" justify="end" gap="s">
-          <AccountDate
-            align="center"
-            address={row.original.address}
-            date={row.original.date}
-          />
-          {row.original.link && (
-            <ButtonIcon asChild>
-              <ExternalLink
-                href={row.original.link}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Icon component={SubScan} size="m" />
-              </ExternalLink>
-            </ButtonIcon>
-          )}
-        </Flex>
+        <AccountDate
+          align="flex-start"
+          address={row.original.address}
+          date={row.original.date}
+        />
       ),
+    })
+
+    const actionColumn = columnHelper.display({
+      id: "actions",
+      size: 50,
+      cell: ({ row }) => {
+        if (!row.original.link) return null
+
+        return (
+          <Flex align="center" justify="end" gap="base">
+            <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
+              <Button
+                sx={{ p: "base" }}
+                variant="muted"
+                outline
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+                asChild
+              >
+                <ExternalLink href={row.original.link}>
+                  <Icon component={SquareArrowOutUpRight} size="s" />
+                </ExternalLink>
+              </Button>
+            </Tooltip>
+          </Flex>
+        )
+      },
     })
 
     const fromToColumnMobile = columnHelper.display({
@@ -139,6 +157,6 @@ export const useMarketTransactionsColumns = () => {
       return [fromToColumnMobile, dateColumnMobile]
     }
 
-    return [fromToColumn, typeColumn, fillPriceColumn, dateColumn]
+    return [fromToColumn, typeColumn, fillPriceColumn, dateColumn, actionColumn]
   }, [t, isMobile])
 }

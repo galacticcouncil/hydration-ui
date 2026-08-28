@@ -1,23 +1,40 @@
 import { Basejumper, WormholeLogo } from "@galacticcouncil/ui/assets/icons"
 import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
+import { isNonNullish, sortBy } from "remeda"
 
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
+export const WORMHOLE_FAMILY_TAGS: XcmTags = [
+  XcmTag.NttExecutor,
+  XcmTag.Wormhole,
+  XcmTag.Basejump,
+]
+
+export const isWormholeFamilyTag = (tag: string | null | undefined): boolean =>
+  !!tag && WORMHOLE_FAMILY_TAGS.includes(tag as XcmTags[number])
+
 export const BRIDGE_TIME: Record<string, string> = {
   [XcmTag.Basejump]: "≈ 22 sec",
   [XcmTag.Wormhole]: "≈ 30 min",
+  [XcmTag.NttExecutor]: "≈ 30 min",
 }
 
 export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
   [XcmTag.Basejump]: Basejumper,
   [XcmTag.Wormhole]: WormholeLogo,
+  [XcmTag.NttExecutor]: WormholeLogo,
+}
+
+export const BRIDGE_LABEL: Record<string, string> = {
+  [XcmTag.NttExecutor]: "Wormhole",
 }
 
 export const BRIDGE_PRIORITY: Record<string, number> = {
   [XcmTag.Basejump]: 1,
-  [XcmTag.Wormhole]: 2,
+  [XcmTag.NttExecutor]: 2,
+  [XcmTag.Wormhole]: 3,
   [XcmTag.Snowbridge]: 4,
 }
 
@@ -113,9 +130,13 @@ export function resolveValidBridgeProvider(
   )
   if (isCurrentValid) return currentProvider
 
-  const fallbackRoute =
-    matchingRoutes.find((r) => getPrimaryBridgeTag(r) === XcmTag.Basejump) ??
-    matchingRoutes[0]
+  // Lowest BRIDGE_PRIORITY wins, so Basejump still beats the bridges and the
+  // auto-claiming Wormhole route (NttExecutor) is the default over the manual
+  // one.
+  const [fallbackTag = null] = sortBy(
+    matchingRoutes.map(getPrimaryBridgeTag).filter(isNonNullish),
+    (tag) => BRIDGE_PRIORITY[tag] ?? 99,
+  )
 
-  return fallbackRoute ? getPrimaryBridgeTag(fallbackRoute) : null
+  return fallbackTag
 }

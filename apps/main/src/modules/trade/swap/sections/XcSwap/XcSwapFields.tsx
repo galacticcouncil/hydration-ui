@@ -13,6 +13,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
 
+import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
@@ -32,7 +33,6 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {

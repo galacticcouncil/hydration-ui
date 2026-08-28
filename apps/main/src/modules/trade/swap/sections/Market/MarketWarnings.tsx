@@ -104,6 +104,7 @@ export const MarketWarnings: FC<Props> = ({
   }
 
   const shouldRenderSlippageWarning =
+    isFormValid &&
     Number(isSingleTrade ? swapSlippage : twapSlippage) < validSlippage
 
   const shouldRenderHealthFactorWarning =
