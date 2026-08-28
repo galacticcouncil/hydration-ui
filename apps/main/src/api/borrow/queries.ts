@@ -53,7 +53,7 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { TProviderData, useProxyUrl } from "@/api/provider"
+import { PROXY_URL, TProviderData } from "@/api/provider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -937,8 +937,6 @@ export enum ExternalApyType {
 }
 
 export const useExternalApys = (assetIds: string[]) => {
-  const url = useProxyUrl()
-
   const queryConfigs = assetIds
     .map((assetId) => {
       const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
@@ -947,7 +945,7 @@ export const useExternalApys = (assetIds: string[]) => {
           assetId,
           type: ExternalApyType.stake,
           query: {
-            ...defillamaLatestApyQuery(defillamaId, url),
+            ...defillamaLatestApyQuery(defillamaId, PROXY_URL),
             enabled: !!defillamaId,
           },
         }
@@ -959,7 +957,7 @@ export const useExternalApys = (assetIds: string[]) => {
           assetId,
           type: ExternalApyType.nativeYield,
           query: {
-            ...kaminoApyQuery(kaminoId, url),
+            ...kaminoApyQuery(kaminoId, PROXY_URL),
             enabled: !!kaminoId,
           },
         }
