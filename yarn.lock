@@ -1697,10 +1697,10 @@
   dependencies:
     "@galacticcouncil/xc-core" "^2.4.0"
 
-"@galacticcouncil/xc-swap@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-swap/-/xc-swap-0.7.0.tgz#e217d63a953e01014b6a6dae237dfe80b2b83d59"
-  integrity sha512-ZhCQzeyojGiclqsrtxK8i/84/iSD/xhgXF2+ENTUJafhfXKMKnLAKaSLo4ofE6Nkf2Oid1wpIEefUdii2Xehnw==
+"@galacticcouncil/xc-swap@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-swap/-/xc-swap-0.8.0.tgz#2aaba6e661cd56a927ea37d441a87afb93b2649b"
+  integrity sha512-ZhpfHwU3+66yca1TI4yHG1nusN9eJESiU41feDU/0Ez0bT3r96G6Ug26fhcUTAAe/tMFOxz5/3YrCKESOVH5zA==
   dependencies:
     "@defuse-protocol/one-click-sdk-typescript" "^0.1.17"
 
