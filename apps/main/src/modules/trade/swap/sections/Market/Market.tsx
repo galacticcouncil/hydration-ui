@@ -4,6 +4,7 @@ import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
 import { TradeType } from "@/api/trade"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
@@ -46,7 +47,7 @@ export const Market: FC = () => {
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
-  const { watch } = form
+  const { watch, setValue } = form
   useEffect(() => {
     const subscription = watch((_, { type }) => {
       if (type !== "change") {
@@ -74,6 +75,13 @@ export const Market: FC = () => {
     isTwapLoading,
     isHealthFactorLoading,
   } = useMarketData(form)
+
+  // Revert to single trade if scheduler cannot split the order
+  useEffect(() => {
+    if (swap && !isTwapEnabled(swap)) {
+      setValue("isSingleTrade", true, { shouldValidate: true })
+    }
+  }, [swap, setValue])
 
   const isTradeEnabled = isSingleTrade
     ? !!swap && !swap.swaps.flatMap((swap) => swap.errors).length
