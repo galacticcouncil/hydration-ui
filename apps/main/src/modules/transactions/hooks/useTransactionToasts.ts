@@ -13,6 +13,7 @@ import {
   getExplorerTxLink,
   parseTxMethodName,
 } from "@/modules/transactions/utils/tx"
+import { getXcSwapSequenceFromEvents } from "@/modules/transactions/utils/xcSwap"
 import { useToasts } from "@/states/toasts"
 import {
   isSubstrateTxResult,
@@ -135,8 +136,8 @@ function getTransactionLink(
   meta: TransactionMeta,
   txHash: string,
 ) {
-  if (meta.type === TransactionType.XcSwap && meta.intentId) {
-    return intentscan.intent(meta.intentId)
+  if (meta.type === TransactionType.XcSwap && meta.sequence) {
+    return intentscan.order(meta.sequence)
   }
 
   if (
@@ -154,6 +155,13 @@ function getFinalizedTransactionLink(
   result: TSuccessResult,
 ) {
   if (!isSubstrateTxResult(result)) return null
+
+  if (meta.type === TransactionType.XcSwap) {
+    const sequence = getXcSwapSequenceFromEvents(result.events)
+    if (sequence !== null) {
+      return intentscan.order(sequence.toString())
+    }
+  }
 
   const scheduleId = getDcaScheduleIdFromEvents(result.events)
   if (scheduleId !== null) {

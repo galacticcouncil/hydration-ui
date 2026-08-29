@@ -100,6 +100,7 @@
   "market.form.type.single.instant": "Instant execution",
   "market.form.type.split": "Split trade",
   "market.form.type.split.timeframe": "Execute within {{timeframe}}",
+  "market.form.type.split.unavailable": "Not available for this route",
   "market.summary.totalFees": "Total fees",
   "market.summary.transactionCosts": "Transaction costs",
   "market.summary.transactionCosts.tooltip": "Transaction signature costs.",

@@ -140,7 +140,7 @@ export type TransactionXcSwapMeta = TransactionMetaCommon & {
   dstAddress: string
   dstChainFee?: string
   dstChainFeeSymbol?: string
-  intentId?: string
+  sequence?: string
   depositAddress?: string
   correlationId?: string
 }

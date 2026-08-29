@@ -23,8 +23,7 @@ export const useSubmitXcSwap = () => {
       if (!buyAsset) throw new Error("Destination asset is required")
       if (!destAddress) throw new Error("Destination address is required")
 
-      const { calls, depositAddress, intentId, correlationId } =
-        await trade.buildCall()
+      const { calls, depositAddress, correlationId } = await trade.buildCall()
 
       const swapAndBridge = calls[calls.length - 1]
       if (!swapAndBridge) throw new Error("Failed to build the swap call")
@@ -54,7 +53,6 @@ export const useSubmitXcSwap = () => {
         dstAssetSymbol: buyAsset.symbol,
         dstAmount: trade.amountOut.toDecimal(),
         dstAddress: destAddress,
-        intentId,
         depositAddress,
         correlationId,
       }

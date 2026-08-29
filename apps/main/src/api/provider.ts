@@ -160,13 +160,7 @@ export const useSquidUrl = (): string => {
   return squidUrl
 }
 
-export const useProxyUrl = (): string => {
-  const squidUrl = useSquidUrl()
-
-  const url = new URL(squidUrl).origin
-
-  return `${url}/proxy`
-}
+export const PROXY_URL = `${new URL(ENV.VITE_NECKWORK_URL).origin}/proxy`
 
 export const useIndexerUrl = (): string => {
   return useState(() => ENV.VITE_INDEXER_URL)[0]
