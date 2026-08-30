@@ -44,6 +44,10 @@ export const SQUID_URLS_CONFIG = [
     name: "Catfish",
     url: "https://orca-prod-pool-02.catfish.hydration.cloud",
   },
+  {
+    name: "Unified",
+    url: "https://unified-main-aggr-indx.indexer.hydration.cloud",
+  },
 ]
 
 export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
