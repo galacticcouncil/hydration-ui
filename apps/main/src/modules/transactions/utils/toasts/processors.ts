@@ -20,6 +20,10 @@ import { QueryClient } from "@tanstack/react-query"
 import { first } from "remeda"
 import { PublicClient } from "viem"
 
+import {
+  fetchIntentOrder,
+  resolveIntentOrder,
+} from "@/modules/transactions/utils/toasts/intents"
 import { getExplorerTxLink } from "@/modules/transactions/utils/tx"
 import { createBasejumpScanQueryKey } from "@/modules/xcm/history/useBasejumpScan"
 import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
@@ -39,7 +43,7 @@ const TRANSFER_MATCH_WINDOW_MS = 5 * 60 * 1000
 type ToastStatus = {
   processed: boolean
   dateUpdated: string
-  status: "success" | "error" | "unknown"
+  status: "success" | "error" | "warning" | "unknown"
   link?: string
 }
 
@@ -292,10 +296,41 @@ const xcscan =
     return resolveJourneyToToastStatus(journey)
   }
 
+const xcSwap = (): ToastProcessorFn => async (toast) => {
+  const sequence =
+    toast.meta.type === TransactionType.XcSwap ? toast.meta.sequence : undefined
+
+  if (!sequence) {
+    return {
+      status: "unknown",
+      processed: true,
+      dateUpdated: new Date().toISOString(),
+    }
+  }
+
+  const order = await fetchIntentOrder(sequence)
+
+  if (!order) {
+    return {
+      status: "unknown",
+      processed: false,
+      dateUpdated: new Date().toISOString(),
+    }
+  }
+
+  const { dateUpdated, ...resolution } = resolveIntentOrder(order)
+
+  return {
+    ...resolution,
+    dateUpdated: dateUpdated ?? new Date().toISOString(),
+  }
+}
+
 export const processors = {
   evm,
   substrate,
   basejump,
   xcscan,
+  xcSwap,
   invalid,
 } as const

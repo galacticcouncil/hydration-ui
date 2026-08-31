@@ -13,7 +13,7 @@ import {
   getExplorerTxLink,
   parseTxMethodName,
 } from "@/modules/transactions/utils/tx"
-import { getXcSwapSequenceFromEvents } from "@/modules/transactions/utils/xcSwap"
+import { getXcSwapSequence } from "@/modules/transactions/utils/xcSwap"
 import { useToasts } from "@/states/toasts"
 import {
   isSubstrateTxResult,
@@ -41,11 +41,13 @@ export const useTransactionToasts = (
 
   // PAPI re-emits found:true on parachain re-orgs; show toast at most once
   const hasShownToastRef = useRef(false)
+  const txHashRef = useRef<string | undefined>(undefined)
 
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
         hasShownToastRef.current = false
+        txHashRef.current = txHash
         if (isMultisig) {
           pending({
             id,
@@ -77,13 +79,37 @@ export const useTransactionToasts = (
           return remove(id)
         }
 
-        const link = getFinalizedTransactionLink(meta, result)
+        const sequence =
+          meta.type === TransactionType.XcSwap
+            ? getXcSwapSequence(result)
+            : null
+
+        const link = sequence
+          ? intentscan.order(sequence)
+          : getFinalizedTransactionLink(meta, result)
 
         if (hasShownToastRef.current) {
           if (link) edit(id, { link })
           return
         }
         hasShownToastRef.current = true
+
+        if (meta.type === TransactionType.XcSwap) {
+          const txHash = txHashRef.current
+          return edit(id, {
+            variant: "submitted",
+            dateCreated: new Date().toISOString(),
+            ...(link && { link }),
+            ...(txHash && {
+              meta: {
+                ...meta,
+                txHash,
+                ecosystem,
+                ...(sequence && { sequence }),
+              },
+            }),
+          })
+        }
 
         if (isXcm) {
           return edit(id, {
@@ -155,13 +181,6 @@ function getFinalizedTransactionLink(
   result: TSuccessResult,
 ) {
   if (!isSubstrateTxResult(result)) return null
-
-  if (meta.type === TransactionType.XcSwap) {
-    const sequence = getXcSwapSequenceFromEvents(result.events)
-    if (sequence !== null) {
-      return intentscan.order(sequence.toString())
-    }
-  }
 
   const scheduleId = getDcaScheduleIdFromEvents(result.events)
   if (scheduleId !== null) {
