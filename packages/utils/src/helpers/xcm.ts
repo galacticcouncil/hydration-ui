@@ -35,8 +35,11 @@ export function getChainId(chain: AnyChain) {
       return chain.parachainId
     case isAnyEvmChain(chain):
       return chain.evmChain.id
-    default:
+    case isSolanaChain(chain):
+    case isSuiChain(chain):
       return chain.id
+    default:
+      return chain.key
   }
 }
 

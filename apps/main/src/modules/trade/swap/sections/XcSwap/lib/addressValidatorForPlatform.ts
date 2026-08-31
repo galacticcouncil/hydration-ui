@@ -1,4 +1,4 @@
-import { NearAddr, ZcashAddr } from "@galacticcouncil/utils"
+import { NearAddr, ZecAddr } from "@galacticcouncil/utils"
 import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 
 export const addressValidatorForPlatform = (
@@ -8,7 +8,7 @@ export const addressValidatorForPlatform = (
     case "near":
       return NearAddr.isValid
     case "zec":
-      return ZcashAddr.isValid
+      return ZecAddr.isValid
     case "hydration":
       return () => true
   }

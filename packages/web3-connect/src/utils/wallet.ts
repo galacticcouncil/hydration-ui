@@ -14,7 +14,7 @@ import {
   Ss58Addr,
   stringEquals,
   SuiAddr,
-  ZcashAddr,
+  ZecAddr,
 } from "@galacticcouncil/utils"
 
 import {
@@ -63,7 +63,7 @@ export const addressToPublicKey = (address: string): string => {
       return address
     case NearAddr.isValid(address):
       return address
-    case ZcashAddr.isValid(address):
+    case ZecAddr.isValid(address):
       return address
     default:
       return ""
@@ -173,7 +173,7 @@ export const getWalletModeByAddress = (address: string) => {
       return WalletMode.Sui
     case NearAddr.isValid(address):
       return WalletMode.Near
-    case ZcashAddr.isValid(address):
+    case ZecAddr.isValid(address):
       return WalletMode.Zcash
     default:
       return null

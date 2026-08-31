@@ -2,7 +2,7 @@ import {
   createZustandStorage,
   EvmAddr,
   isH160Address,
-  NearAddr,
+  parseNearAccountName,
   safeConvertSS58toPublicKey,
   stringEquals,
 } from "@galacticcouncil/utils"
@@ -98,7 +98,7 @@ function normalizeAddress(input: AddressInput): NormalizedAddress | null {
   return {
     ...rest,
     address,
-    name: input.name || NearAddr.parseAccountName(address),
+    name: input.name || parseNearAccountName(address),
     publicKey,
     mode: parsedMode.data,
     savedBy: input.savedBy ?? [],
