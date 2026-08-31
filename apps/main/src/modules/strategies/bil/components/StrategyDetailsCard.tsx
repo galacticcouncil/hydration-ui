@@ -33,10 +33,15 @@ import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStra
 export const StrategyDetailsCard = () => {
   const { t } = useTranslation(["strategies", "borrow", "common"])
   const { hollar, bil, bilReserve } = useBilStrategy()
-  const { data: metrics } = useBilStrategyMetrics()
+  const {
+    data: metrics,
+    isVaultStatsPending,
+    isReserveConfigLoading,
+  } = useBilStrategyMetrics()
   const { data: reserveConfig } = useBilReserveConfig()
 
   const hasGlobalBorrowCap = (reserveConfig?.borrowCapHollar ?? 0) > 0
+  const showBorrowCap = isReserveConfigLoading || hasGlobalBorrowCap
 
   return (
     <Paper>
@@ -52,6 +57,7 @@ export const StrategyDetailsCard = () => {
           <SDetailsStatItem>
             <ValueStats
               wrap
+              isLoading={isVaultStatsPending}
               label={t("bil.strategy.tvl")}
               customValue={
                 <Flex align="center" gap="s">
@@ -74,6 +80,7 @@ export const StrategyDetailsCard = () => {
           <SDetailsStatItem>
             <ValueStats
               wrap
+              isLoading={isVaultStatsPending || isReserveConfigLoading}
               label={t("bil.strategy.maxNetApy")}
               customValue={
                 <Text
@@ -90,20 +97,23 @@ export const StrategyDetailsCard = () => {
             />
           </SDetailsStatItem>
 
-          {hasGlobalBorrowCap && reserveConfig && (
+          {showBorrowCap && (
             <>
               <SDetailsStatsSeparator />
               <SDetailsStatItem>
                 <ValueStats
                   sx={{ alignSelf: "center" }}
                   wrap
+                  isLoading={isReserveConfigLoading}
                   label={t("common:totalBorrowed")}
                   customValue={
-                    <BilBorrowCapCurrency
-                      assetId={hollar.id}
-                      totalBorrowedHollar={reserveConfig.totalDebtHollar}
-                      borrowCapHollar={reserveConfig.borrowCapHollar}
-                    />
+                    reserveConfig ? (
+                      <BilBorrowCapCurrency
+                        assetId={hollar.id}
+                        totalBorrowedHollar={reserveConfig.totalDebtHollar}
+                        borrowCapHollar={reserveConfig.borrowCapHollar}
+                      />
+                    ) : null
                   }
                 />
               </SDetailsStatItem>
