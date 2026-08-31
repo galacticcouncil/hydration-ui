@@ -8,6 +8,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AddressBookModal, WalletMode } from "@galacticcouncil/web3-connect"
 import { useNavigate } from "@tanstack/react-router"
+import Big from "big.js"
 import { useCallback, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -70,6 +71,10 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     maxTwapSellBalance,
     isMaxSwapSellBalanceLoading,
     isMaxTwapSellBalanceLoading,
+    destBalance,
+    isDestBalanceLoading,
+    destSpotPrice,
+    isDestSpotPriceLoading,
   } = useXcSwap()
   const switchAssets = useSwitchXcAssets()
   const resetForm = useXcSwapFormReset()
@@ -149,9 +154,23 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     [getValues, navigate, resetForm, setValue, switchAssets],
   )
 
-  const [srcChain, destChain, buyAsset, buyAmount, type, isSingleTrade] = watch(
-    ["srcChain", "destChain", "buyAsset", "buyAmount", "type", "isSingleTrade"],
-  )
+  const [
+    srcChain,
+    destChain,
+    buyAsset,
+    buyAmount,
+    type,
+    isSingleTrade,
+    destAddress,
+  ] = watch([
+    "srcChain",
+    "destChain",
+    "buyAsset",
+    "buyAmount",
+    "type",
+    "isSingleTrade",
+    "destAddress",
+  ])
   const isSell = type === TradeType.Sell
   const contactsWhitelist =
     destChain?.platform === "near"
@@ -161,8 +180,21 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         : undefined
   const onChainDestAssetId =
     !isCrossChain && isNumber(buyAsset?.id) ? String(buyAsset.id) : ""
-  const [destDisplayValue, { isLoading: isDestDisplayValueLoading }] =
-    useDisplayAssetPrice(onChainDestAssetId, buyAmount || "0")
+  const [
+    onChainDestDisplayValue,
+    { isLoading: isOnChainDestDisplayValueLoading },
+  ] = useDisplayAssetPrice(onChainDestAssetId, buyAmount || "0")
+  const crossChainDestDisplayValue =
+    isCrossChain && destSpotPrice
+      ? t("currency", {
+          value: Big(buyAmount || "0")
+            .mul(destSpotPrice)
+            .toString(),
+        })
+      : undefined
+  const destDisplayValue = isCrossChain
+    ? crossChainDestDisplayValue
+    : onChainDestDisplayValue
   const destMaxBalance =
     onChainDestAssetId && buyAsset
       ? scaleHuman(
@@ -170,6 +202,11 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           buyAsset.decimals,
         )
       : undefined
+
+  const showDestBalance =
+    destChain?.platform === "near" &&
+    destChain.addressValidator(destAddress.trim()) &&
+    (isDestBalanceLoading || destBalance !== undefined)
 
   return (
     <Stack>
@@ -200,16 +237,19 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         chainAssetPairs={destChainAssetPairs}
         modalTitle={t("trade:xc.swap.field.destTitle")}
         hideMaxBalanceAction
-        ignoreBalance={isCrossChain}
-        ignoreDisplayValue={isCrossChain}
+        ignoreBalance={isCrossChain && !showDestBalance}
+        ignoreDisplayValue={isCrossChain && !destSpotPrice}
         ignoreErrors={isCrossChain}
-        maxBalance={destMaxBalance}
-        displayValue={!isCrossChain ? destDisplayValue : undefined}
+        maxBalance={showDestBalance ? destBalance : destMaxBalance}
+        maxBalanceLoading={isDestBalanceLoading}
+        displayValue={destDisplayValue}
         disabledInput={isCrossChain}
         loading={isSelectionLoading}
         valueLoading={isSell && isQuoteLoading}
         displayValueLoading={
-          !isCrossChain && (isQuoteLoading || isDestDisplayValueLoading)
+          isCrossChain
+            ? isDestSpotPriceLoading || (isSell && isQuoteLoading)
+            : isQuoteLoading || isOnChainDestDisplayValueLoading
         }
         onSelectionChange={handleBuySelectionChange}
         onAmountChange={() => {

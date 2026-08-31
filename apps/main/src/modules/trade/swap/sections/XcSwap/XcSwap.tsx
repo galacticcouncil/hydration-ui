@@ -106,10 +106,10 @@ export const XcSwap: React.FC = () => {
 
   const submitLabel = (() => {
     if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
+    if (hasBlockingAlerts) return t("trade:xc.swap.cta.unavailable")
     if (isCrossChain && !destAddress.trim())
       return t("trade:xc.swap.cta.enterRecipient")
-    if (hasBlockingAlerts || !form.formState.isValid)
-      return t("trade:xc.swap.cta.unavailable")
+    if (!isFormValid) return t("trade:xc.swap.cta.unavailable")
     if (!isHealthFactorCheckSatisfied)
       return t("trade:xc.swap.cta.acceptHealthFactor")
     return isSingleTrade ? t("swap") : t("trade:market.twap.cta")

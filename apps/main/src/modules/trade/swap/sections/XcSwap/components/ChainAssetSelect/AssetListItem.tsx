@@ -43,11 +43,13 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
                 value: asset.balance,
               })}
             </Text>
-            <Text fs="p6" color={getToken("text.low")}>
-              {t("currency", {
-                value: asset.balanceUsd,
-              })}
-            </Text>
+            {asset.balanceUsd && (
+              <Text fs="p6" color={getToken("text.low")}>
+                {t("currency", {
+                  value: asset.balanceUsd,
+                })}
+              </Text>
+            )}
           </Flex>
         ) : (
           <Icon

@@ -1,12 +1,13 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { queryOptions, useQueries } from "@tanstack/react-query"
+import { queryOptions, useQueries, useQueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
+import { xcDestBalanceQueryKey } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestBalance"
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -77,6 +78,7 @@ export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
   const { update } = useToastsStore()
   const { account } = useAccount()
   const transactions = useTransactionsStore(prop("transactions"))
+  const queryClient = useQueryClient()
 
   const toastsToMarkAsUnknown = toasts.filter(isStaleToast)
   useEffect(() => {
@@ -151,6 +153,18 @@ export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
             dateCreated: result.dateUpdated,
             ...copy,
           })
+
+          if (
+            toast.meta.type === TransactionType.XcSwap &&
+            result.status === "success"
+          ) {
+            queryClient.invalidateQueries({
+              queryKey: xcDestBalanceQueryKey(
+                toast.meta.dstChainKey,
+                toast.meta.dstAddress.trim(),
+              ),
+            })
+          }
 
           return result
         },

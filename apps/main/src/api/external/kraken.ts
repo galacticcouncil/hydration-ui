@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
+import { minutesToMilliseconds } from "date-fns"
 import z from "zod/v4"
 
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
@@ -105,5 +106,18 @@ export const useKrakenOhlc = (
   return useQuery({
     ...krakenOhlcQuery(pair ?? "", interval),
     enabled: enabled && !!pair,
+  })
+}
+
+const KRAKEN_SPOT_INTERVAL = 5
+
+export const useKrakenSpotPrice = (platform: string | undefined) => {
+  const pair = krakenPairForPlatform(platform)
+
+  return useQuery({
+    ...krakenOhlcQuery(pair ?? "", KRAKEN_SPOT_INTERVAL),
+    enabled: !!pair,
+    staleTime: minutesToMilliseconds(5),
+    select: (candles) => candles.at(-1)?.close,
   })
 }

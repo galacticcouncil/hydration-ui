@@ -3,10 +3,13 @@ import { HYDRATION_CHAIN_KEY, isH160Address } from "@galacticcouncil/utils"
 import { useAccount, WalletMode } from "@galacticcouncil/web3-connect"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useSearch } from "@tanstack/react-router"
-import { createContext, useContext } from "react"
+import Big from "big.js"
+import { createContext, useContext, useMemo } from "react"
 import { FormProvider } from "react-hook-form"
 
+import { useKrakenSpotPrice } from "@/api/external/kraken"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
+import { useXcDestBalance } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestBalance"
 import { useXcSwapAssetPairs } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAssetPairs"
 import { useXcSwapClient } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapClient"
 import {
@@ -48,6 +51,10 @@ type XcSwapContextValue = {
   readonly maxTwapSellBalance: string
   readonly isMaxSwapSellBalanceLoading: boolean
   readonly isMaxTwapSellBalanceLoading: boolean
+  readonly destBalance: string | undefined
+  readonly isDestBalanceLoading: boolean
+  readonly destSpotPrice: number | undefined
+  readonly isDestSpotPriceLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
   readonly quoteError: Error | null
@@ -73,6 +80,10 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   maxTwapSellBalance: "0",
   isMaxSwapSellBalanceLoading: false,
   isMaxTwapSellBalanceLoading: false,
+  destBalance: undefined,
+  isDestBalanceLoading: false,
+  destSpotPrice: undefined,
+  isDestSpotPriceLoading: false,
   onSubmit: () => {},
   isLoading: false,
   quoteError: null,
@@ -161,6 +172,34 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     swapSlippage,
   })
 
+  const { balance: destBalance, isLoading: isDestBalanceLoading } =
+    useXcDestBalance({ form })
+
+  const destChain = form.watch("destChain")
+  const { data: destSpotPrice, isLoading: isDestSpotPriceLoading } =
+    useKrakenSpotPrice(destChain?.platform)
+
+  // the balance is form-derived, so it is merged here rather than inside
+  // useXcSwapAssetPairs, which stays form-free
+  const destChainAssetPairsWithBalance = useMemo<XcChainAssetPair[]>(() => {
+    if (!destBalance || !destChain) return destChainAssetPairs
+
+    return destChainAssetPairs.map((pair) =>
+      pair.chain.key === destChain.key
+        ? {
+            ...pair,
+            asset: {
+              ...pair.asset,
+              balance: destBalance,
+              balanceUsd: destSpotPrice
+                ? Big(destBalance).mul(destSpotPrice).toString()
+                : undefined,
+            },
+          }
+        : pair,
+    )
+  }, [destChainAssetPairs, destChain, destBalance, destSpotPrice])
+
   const { requiredWalletMode, isWalletCompatible } =
     useXcSwapRequiredWalletMode({ form, isCrossChain })
 
@@ -174,7 +213,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         xcSwap,
         sourceChainAssetPairs,
         originAssetMap,
-        destChainAssetPairs,
+        destChainAssetPairs: destChainAssetPairsWithBalance,
         isCrossChain,
         refundTo,
         quote,
@@ -188,6 +227,10 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         maxTwapSellBalance,
         isMaxSwapSellBalanceLoading,
         isMaxTwapSellBalanceLoading,
+        destBalance,
+        isDestBalanceLoading,
+        destSpotPrice,
+        isDestSpotPriceLoading,
         onSubmit,
         isLoading: isOriginLoading || isDestLoading || isSubmitting,
         quoteError,
