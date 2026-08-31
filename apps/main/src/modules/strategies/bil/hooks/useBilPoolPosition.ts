@@ -94,13 +94,74 @@ export interface BilReserveConfig {
   remainingBorrowCapHollar: number
 }
 
-/** Effective max the user can borrow: collateral limit ∩ protocol borrow cap. */
+const BORROW_CAP_MAXED_PERCENT = 99.99
+const MAX_BORROW_SAFETY_MARGIN = 0.99
+
+function getEffectiveRemainingBorrowCap(
+  reserveConfig: BilReserveConfig,
+): number {
+  const { borrowCapHollar, totalDebtHollar, remainingBorrowCapHollar } =
+    reserveConfig
+  if (borrowCapHollar <= 0) return remainingBorrowCapHollar
+
+  const borrowCapUsage = (totalDebtHollar / borrowCapHollar) * 100
+  if (borrowCapUsage >= BORROW_CAP_MAXED_PERCENT) return 0
+
+  return remainingBorrowCapHollar
+}
+
 export function getBilMaxBorrowable(
   availableBorrowsUsd: number,
   reserveConfig: BilReserveConfig | undefined,
+  totalDebtUsd = 0,
 ): number {
-  if (!reserveConfig) return availableBorrowsUsd
-  return Math.min(availableBorrowsUsd, reserveConfig.remainingBorrowCapHollar)
+  if (availableBorrowsUsd <= 0) return 0
+
+  const effectiveRemainingCap = reserveConfig
+    ? getEffectiveRemainingBorrowCap(reserveConfig)
+    : Number.POSITIVE_INFINITY
+
+  if (effectiveRemainingCap <= 0) return 0
+
+  const maxBorrowable = Math.min(availableBorrowsUsd, effectiveRemainingCap)
+
+  const shouldAddMargin =
+    totalDebtUsd > 0 ||
+    maxBorrowable >= availableBorrowsUsd ||
+    (!!reserveConfig &&
+      reserveConfig.borrowCapHollar > 0 &&
+      reserveConfig.totalDebtHollar > 0 &&
+      maxBorrowable >= effectiveRemainingCap)
+
+  const amountWithMargin = shouldAddMargin
+    ? maxBorrowable * MAX_BORROW_SAFETY_MARGIN
+    : maxBorrowable
+
+  return Math.max(0, amountWithMargin)
+}
+
+export function useBilMaxBorrowable(evmAddress: string | undefined) {
+  const { data: poolPosition, isLoading: isPoolPositionLoading } =
+    useBilPoolPosition(evmAddress)
+  const { data: reserveConfig, isLoading: isReserveConfigLoading } =
+    useBilReserveConfig()
+
+  const isLoading = isPoolPositionLoading || isReserveConfigLoading
+
+  const maxBorrowableUsd = isLoading
+    ? 0
+    : getBilMaxBorrowable(
+        poolPosition?.availableBorrowsUsd ?? 0,
+        reserveConfig,
+        poolPosition?.totalDebtUsd ?? 0,
+      )
+
+  return {
+    maxBorrowableUsd,
+    isLoading,
+    poolPosition,
+    reserveConfig,
+  }
 }
 
 /**

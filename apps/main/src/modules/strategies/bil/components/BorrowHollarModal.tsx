@@ -7,6 +7,7 @@ import {
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Skeleton,
   Summary,
   SummaryRow,
   Text,
@@ -19,11 +20,7 @@ import { useTranslation } from "react-i18next"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useBorrowHollarForm } from "@/modules/strategies/bil/components/BorrowHollarModal.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
-import {
-  getBilMaxBorrowable,
-  useBilPoolPosition,
-  useBilReserveConfig,
-} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useBilMaxBorrowable } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useBorrowHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
 
@@ -38,12 +35,13 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
   const { hollar } = useBilStrategy()
 
   const evmAddress = useEvmAddress()
-  const { data: poolPosition } = useBilPoolPosition(evmAddress)
-  const { data: reserveConfig } = useBilReserveConfig()
+  const {
+    maxBorrowableUsd,
+    isLoading: isMaxBorrowableLoading,
+    poolPosition,
+  } = useBilMaxBorrowable(evmAddress)
   const borrowMutation = useBorrowHollar({ onClose })
 
-  const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
-  const maxBorrowableUsd = getBilMaxBorrowable(availableUsd, reserveConfig)
   const hasCollateral = !!poolPosition?.hasCollateral
   const maxBorrowableUsed = maxBorrowableUsd.toString()
 
@@ -66,6 +64,7 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
     formState.isValid &&
     !isLiquidationRisk &&
     !borrowMutation.isPending &&
+    !isMaxBorrowableLoading &&
     hasCollateral
 
   const showSummary = hasCollateral
@@ -124,12 +123,16 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
               <SummaryRow
                 label={t("borrow:borrow.available")}
                 content={
-                  <Text fs="p4" lh={1.5}>
-                    {t("common:currency.compact", {
-                      value: maxBorrowableUsd,
-                      symbol: hollar.symbol,
-                    })}
-                  </Text>
+                  isMaxBorrowableLoading ? (
+                    <Skeleton width="100%" height="1.5em" />
+                  ) : (
+                    <Text fs="p4" lh={1.5}>
+                      {t("common:currency.compact", {
+                        value: maxBorrowableUsd,
+                        symbol: hollar.symbol,
+                      })}
+                    </Text>
+                  )
                 }
               />
             </Summary>
