@@ -8,6 +8,10 @@ import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import i18n from "@/i18n"
+import {
+  getSharedSellAmount,
+  useSharedSellAmountSync,
+} from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { XcAsset, XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import {
   positiveOptional,
@@ -72,7 +76,7 @@ export const useXcSwapForm = () => {
   const defaultValues: XcSwapFormValues = {
     srcChain: null,
     sellAsset: null,
-    sellAmount: "",
+    sellAmount: getSharedSellAmount(),
     destChain: null,
     buyAsset: null,
     buyAmount: "",
@@ -86,6 +90,8 @@ export const useXcSwapForm = () => {
     mode: "onChange",
     resolver: standardSchemaResolver(useSchema()),
   })
+
+  useSharedSellAmountSync(form)
 
   const { trigger, getValues, getFieldState } = form
   useEffect(() => {
