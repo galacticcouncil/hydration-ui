@@ -194,6 +194,13 @@ export const useXcSwapQuote = ({
   const isTwapPreviousData = twapEnabled && isTwapPlaceholderData
   const isTwapQueryLoading = isTwapInitialLoading || isTwapPreviousData
 
+  const validTwap =
+    twap &&
+    String(twap.assetIn) === omnipoolAssetIn &&
+    String(twap.assetOut) === omnipoolAssetOut
+      ? twap
+      : undefined
+
   // On buy, the order query only starts once the quote it is budgeted from resolves
   const isTwapLoading = isOnChainBuy
     ? isOmnipoolQuoteLoading || isTwapQueryLoading
@@ -204,8 +211,10 @@ export const useXcSwapQuote = ({
       if (!xcQuoteEnabled) return null
       return xcTrade ? { kind: "xc", swap: xcTrade } : null
     }
-    return omnipoolTrade ? { kind: "oc", swap: omnipoolTrade, twap } : null
-  }, [isCrossChain, xcQuoteEnabled, xcTrade, omnipoolTrade, twap])
+    return omnipoolTrade
+      ? { kind: "oc", swap: omnipoolTrade, twap: validTwap }
+      : null
+  }, [isCrossChain, xcQuoteEnabled, xcTrade, omnipoolTrade, validTwap])
 
   const isQuoteLoading = isCrossChain
     ? isXcQuoteLoading

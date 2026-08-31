@@ -4,6 +4,7 @@ import { useFormContext } from "react-hook-form"
 import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketTradeOptions"
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { isXcSwapTradeEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isXcSwapTradeEnabled"
 import { XcSwapErrors } from "@/modules/trade/swap/sections/XcSwap/XcSwapErrors"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 
@@ -13,12 +14,8 @@ export const XcSwapOptions = () => {
 
   const isSingleTrade = form.watch("isSingleTrade")
   const onChainQuote = quote?.kind === "oc" ? quote : null
-  const swapErrors =
-    onChainQuote?.swap.swaps.flatMap((swap) => swap.errors) ?? []
-  const isTradeEnabled = isSingleTrade
-    ? !!quote && (!onChainQuote || !swapErrors.length)
-    : !!onChainQuote?.twap && !onChainQuote.twap.errors.length
-  const isFormValid = form.formState.isValid && isTradeEnabled
+  const isFormValid =
+    form.formState.isValid && isXcSwapTradeEnabled(quote, isSingleTrade)
   const isShown = !isCrossChain && (isQuoteLoading || !!onChainQuote)
 
   if (!isShown) {

@@ -62,7 +62,15 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common", "trade"])
   const navigate = useNavigate()
   const { watch, setValue, getValues } = useFormContext<XcSwapFormValues>()
-  const { isCrossChain, isSelectionLoading, isQuoteLoading } = useXcSwap()
+  const {
+    isCrossChain,
+    isSelectionLoading,
+    isQuoteLoading,
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+  } = useXcSwap()
   const switchAssets = useSwitchXcAssets()
   const resetForm = useXcSwapFormReset()
   const { getTransferableBalance } = useAccountBalances()
@@ -141,13 +149,9 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     [getValues, navigate, resetForm, setValue, switchAssets],
   )
 
-  const [srcChain, destChain, buyAsset, buyAmount, type] = watch([
-    "srcChain",
-    "destChain",
-    "buyAsset",
-    "buyAmount",
-    "type",
-  ])
+  const [srcChain, destChain, buyAsset, buyAmount, type, isSingleTrade] = watch(
+    ["srcChain", "destChain", "buyAsset", "buyAmount", "type", "isSingleTrade"],
+  )
   const isSell = type === TradeType.Sell
   const contactsWhitelist =
     destChain?.platform === "near"
@@ -172,6 +176,12 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
       <XcSrcAssetSelectField
         label={<ChainLabel label={t("from")} chain={srcChain} />}
         loading={isSelectionLoading}
+        maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
+        maxBalanceLoading={
+          isSingleTrade
+            ? isMaxSwapSellBalanceLoading
+            : isMaxTwapSellBalanceLoading
+        }
         onAssetChange={handleSellAssetChange}
         onAmountChange={() => {
           if (!isSell) {

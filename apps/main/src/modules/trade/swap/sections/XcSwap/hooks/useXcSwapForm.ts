@@ -14,9 +14,10 @@ import {
 } from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { XcAsset, XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import {
+  maxBalanceError,
   positiveOptional,
   requiredObject,
-  useValidateFormMaxBalance,
+  validateMaxBalance,
 } from "@/utils/validators"
 
 const schema = z
@@ -54,22 +55,37 @@ const schema = z
     }
   })
 
-const useSchema = () => {
+const useSchema = (maxSwapSellBalance: string, maxTwapSellBalance: string) => {
   const { account } = useAccount()
-  const refineMaxBalance = useValidateFormMaxBalance()
 
   if (!account) {
     return schema
   }
 
-  return schema.check(
-    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
+  return schema.refine(
+    (form) =>
+      validateMaxBalance(
+        form.isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance,
+        form.sellAmount,
+      ),
+    {
+      error: maxBalanceError,
+      path: ["sellAmount"],
+    },
   )
 }
 
 export type XcSwapFormValues = z.infer<ReturnType<typeof useSchema>>
 
-export const useXcSwapForm = () => {
+type Args = {
+  readonly maxSwapSellBalance: string
+  readonly maxTwapSellBalance: string
+}
+
+export const useXcSwapForm = ({
+  maxSwapSellBalance,
+  maxTwapSellBalance,
+}: Args) => {
   const { account } = useAccount()
   const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
 
@@ -88,7 +104,9 @@ export const useXcSwapForm = () => {
   const form = useForm<XcSwapFormValues>({
     defaultValues,
     mode: "onChange",
-    resolver: standardSchemaResolver(useSchema()),
+    resolver: standardSchemaResolver(
+      useSchema(maxSwapSellBalance, maxTwapSellBalance),
+    ),
   })
 
   useSharedSellAmountSync(form)

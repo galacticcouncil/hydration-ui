@@ -1,11 +1,12 @@
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { isH160Address } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, isH160Address } from "@galacticcouncil/utils"
 import { useAccount, WalletMode } from "@galacticcouncil/web3-connect"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useSearch } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 import { FormProvider } from "react-hook-form"
 
+import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
 import { useXcSwapAssetPairs } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAssetPairs"
 import { useXcSwapClient } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapClient"
 import {
@@ -42,6 +43,10 @@ type XcSwapContextValue = {
   readonly healthFactor: HealthFactorResult | undefined
   readonly isHealthFactorLoading: boolean
   readonly isSelectionLoading: boolean
+  readonly maxSwapSellBalance: string
+  readonly maxTwapSellBalance: string
+  readonly isMaxSwapSellBalanceLoading: boolean
+  readonly isMaxTwapSellBalanceLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
   readonly quoteError: Error | null
@@ -62,6 +67,10 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   healthFactor: undefined,
   isHealthFactorLoading: false,
   isSelectionLoading: true,
+  maxSwapSellBalance: "0",
+  maxTwapSellBalance: "0",
+  isMaxSwapSellBalanceLoading: false,
+  isMaxTwapSellBalanceLoading: false,
   onSubmit: () => {},
   isLoading: false,
   quoteError: null,
@@ -84,8 +93,20 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
 }) => {
   const { account } = useAccount()
   const rpc = useRpcProvider()
-  const form = useXcSwapForm()
   const { destPlatform } = useSearch({ from: "/trade/_history" })
+
+  const {
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+  } = useMaxSellAmount({
+    assetIn,
+    assetOut,
+    enabled: destPlatform === HYDRATION_CHAIN_KEY,
+  })
+
+  const form = useXcSwapForm({ maxSwapSellBalance, maxTwapSellBalance })
   const {
     swap: {
       single: { swapSlippage },
@@ -152,6 +173,10 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         healthFactor,
         isHealthFactorLoading,
         isSelectionLoading,
+        maxSwapSellBalance,
+        maxTwapSellBalance,
+        isMaxSwapSellBalanceLoading,
+        isMaxTwapSellBalanceLoading,
         onSubmit,
         isLoading: isOriginLoading || isDestLoading || isSubmitting,
         quoteError,

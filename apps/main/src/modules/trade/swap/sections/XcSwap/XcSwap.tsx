@@ -12,8 +12,10 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { isXcSwapTradeEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isXcSwapTradeEnabled"
 import { XcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/XcSwapAlerts"
 import { XcSwapFields } from "@/modules/trade/swap/sections/XcSwap/XcSwapFields"
 import { XcSwapOptions } from "@/modules/trade/swap/sections/XcSwap/XcSwapOptions"
@@ -48,7 +50,16 @@ export const XcSwap: React.FC = () => {
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
-  const { watch } = form
+  const { watch, setValue } = form
+
+  // Revert to single trade if scheduler cannot split the order
+  const onChainSwap = quote?.kind === "oc" ? quote.swap : undefined
+  useEffect(() => {
+    if (onChainSwap && !isTwapEnabled(onChainSwap)) {
+      setValue("isSingleTrade", true, { shouldValidate: true })
+    }
+  }, [onChainSwap, setValue])
+
   useEffect(() => {
     const subscription = watch((_, { type }) => {
       if (type !== "change") {
@@ -71,7 +82,10 @@ export const XcSwap: React.FC = () => {
     healthFactor.future < healthFactor.current
 
   const isFormValid =
-    form.formState.isValid && !alerts.length && !!quote && !isQuoteLoading
+    form.formState.isValid &&
+    !alerts.length &&
+    isXcSwapTradeEnabled(quote, isSingleTrade) &&
+    !isQuoteLoading
 
   const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired
     ? healthFactorRiskAccepted
