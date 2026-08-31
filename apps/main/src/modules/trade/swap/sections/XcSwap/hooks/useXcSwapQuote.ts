@@ -105,7 +105,7 @@ export const useXcSwapQuote = ({
 
   const {
     data: xcTrade,
-    isFetching: isXcQuoteLoading,
+    isLoading: isXcQuoteLoading,
     error: xcQuoteError,
   } = useQuery({
     enabled: xcQuoteEnabled,
@@ -155,7 +155,7 @@ export const useXcSwapQuote = ({
       })
   const {
     data: omnipoolTrade,
-    isFetching: isOmnipoolQuoteLoading,
+    isLoading: isOmnipoolQuoteLoading,
     error: omnipoolQuoteError,
   } = useQuery({
     ...omnipoolQueryOptions,
@@ -170,7 +170,13 @@ export const useXcSwapQuote = ({
       : ""
     : debouncedAmount
 
-  const { data: twap, isFetching: isTwapFetching } = useQuery({
+  const twapEnabled = !isCrossChain && isTwapEnabled(omnipoolTrade)
+
+  const {
+    data: twap,
+    isLoading: isTwapInitialLoading,
+    isPlaceholderData: isTwapPlaceholderData,
+  } = useQuery({
     ...bestSellTwapQuery(
       rpc,
       {
@@ -178,17 +184,20 @@ export const useXcSwapQuote = ({
         assetOut: omnipoolAssetOut,
         amountIn: twapBudget,
       },
-      !isCrossChain && isTwapEnabled(omnipoolTrade),
+      twapEnabled,
     ),
     // The budget is part of the query key, so every quote move would otherwise
     // drop the order back to a skeleton.
-    placeholderData: isOnChainBuy && twapBudget ? keepPreviousData : undefined,
+    placeholderData: twapBudget ? keepPreviousData : undefined,
   })
+
+  const isTwapPreviousData = twapEnabled && isTwapPlaceholderData
+  const isTwapQueryLoading = isTwapInitialLoading || isTwapPreviousData
 
   // On buy, the order query only starts once the quote it is budgeted from resolves
   const isTwapLoading = isOnChainBuy
-    ? isOmnipoolQuoteLoading || isTwapFetching
-    : isTwapFetching
+    ? isOmnipoolQuoteLoading || isTwapQueryLoading
+    : isTwapInitialLoading
 
   const quote = useMemo<XcSwapQuote>(() => {
     if (isCrossChain) {
