@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 
+import { TradeType } from "@/api/trade"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { getXcAssetId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
@@ -17,7 +18,7 @@ export const useSwitchXcAssets = () => {
 
   return useCallback(() => {
     const values = getValues()
-    const { sellAsset, buyAsset, sellAmount, buyAmount } = values
+    const { sellAsset, buyAsset, sellAmount, buyAmount, type } = values
 
     const newSellAsset =
       buyAsset?.id !== undefined
@@ -42,6 +43,8 @@ export const useSwitchXcAssets = () => {
       sellAmount: buyAmount,
       buyAsset: newBuyAsset,
       buyAmount: sellAmount,
+      type: type === TradeType.Sell ? TradeType.Buy : TradeType.Sell,
+      isSingleTrade: true,
     })
 
     navigate({

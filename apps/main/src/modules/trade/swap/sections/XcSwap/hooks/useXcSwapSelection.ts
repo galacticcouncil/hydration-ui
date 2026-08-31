@@ -87,7 +87,7 @@ export const useXcSwapSelection = ({
   }, [isSelectionDataReady, destChainAssetPairs, form, assetOut, destPlatform])
 
   const destChain = form.watch("destChain")
-  const isCrossChain = destChain?.platform !== "hydration"
+  const isCrossChain = destChain !== null && destChain.platform !== "hydration"
 
   useEffect(() => {
     if (isCrossChain && !form.getValues("isSingleTrade")) {

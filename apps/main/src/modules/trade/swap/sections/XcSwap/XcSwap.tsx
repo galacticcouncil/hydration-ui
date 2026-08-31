@@ -29,13 +29,15 @@ export const XcSwap: React.FC = () => {
     onSubmit,
     quote,
     isQuoteLoading,
+    isTwapLoading,
+    isQuoteRefreshing,
     isLoading,
     isCrossChain,
     healthFactor,
     requiredWalletMode,
     isWalletCompatible,
   } = useXcSwap()
-  const alerts = useXcSwapAlerts()
+  const { hasBlockingAlerts } = useXcSwapAlerts()
   const form = useFormContext<XcSwapFormValues>()
   const { t } = useTranslation(["common", "trade"])
   const { toggle } = useWeb3ConnectModal()
@@ -83,9 +85,10 @@ export const XcSwap: React.FC = () => {
 
   const isFormValid =
     form.formState.isValid &&
-    !alerts.length &&
+    !hasBlockingAlerts &&
     isXcSwapTradeEnabled(quote, isSingleTrade) &&
-    !isQuoteLoading
+    !isQuoteLoading &&
+    !isQuoteRefreshing
 
   const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired
     ? healthFactorRiskAccepted
@@ -96,11 +99,16 @@ export const XcSwap: React.FC = () => {
   const shouldRenderHealthFactorWarning =
     isHealthFactorConsentRequired && Big(healthFactor.future).gt(1)
 
+  const isSubmitLoading =
+    isLoading ||
+    isQuoteRefreshing ||
+    (isSingleTrade ? isQuoteLoading : isTwapLoading)
+
   const submitLabel = (() => {
     if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
     if (isCrossChain && !destAddress.trim())
       return t("trade:xc.swap.cta.enterRecipient")
-    if (alerts.length || !form.formState.isValid)
+    if (hasBlockingAlerts || !form.formState.isValid)
       return t("trade:xc.swap.cta.unavailable")
     if (!isHealthFactorCheckSatisfied)
       return t("trade:xc.swap.cta.acceptHealthFactor")
@@ -144,8 +152,8 @@ export const XcSwap: React.FC = () => {
               type="submit"
               size="large"
               width="100%"
-              isLoading={isLoading}
-              disabled={!canSubmit || isLoading}
+              isLoading={isSubmitLoading}
+              disabled={!canSubmit || isSubmitLoading}
               variant={canSubmit ? "primary" : "muted"}
               loadingVariant="muted"
               sx={{

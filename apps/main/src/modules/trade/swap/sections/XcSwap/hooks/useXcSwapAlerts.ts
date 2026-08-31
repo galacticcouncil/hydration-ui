@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { pickPrimaryXcSwapAlert } from "@/modules/trade/swap/sections/XcSwap/lib/pickPrimaryXcSwapAlert"
 import { getXcSwapErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapErrorMessages"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 
@@ -14,7 +15,12 @@ export type XcSwapAlert = {
   severity: XcSwapAlertSeverity
 }
 
-export const useXcSwapAlerts = (): XcSwapAlert[] => {
+export type XcSwapAlertsState = {
+  alerts: XcSwapAlert[]
+  hasBlockingAlerts: boolean
+}
+
+export const useXcSwapAlerts = (): XcSwapAlertsState => {
   const { t } = useTranslation("trade")
   const {
     originAssetMap,
@@ -29,43 +35,57 @@ export const useXcSwapAlerts = (): XcSwapAlert[] => {
   const sellAssetUnsupported =
     !!sellAsset && originAssetMap.size > 0 && !originAssetMap.has(sellAsset.id)
 
-  return useMemo<XcSwapAlert[]>(() => {
-    const alerts: XcSwapAlert[] = []
+  return useMemo<XcSwapAlertsState>(() => {
+    const blockingAlerts: XcSwapAlert[] = []
 
     if (requiredWalletMode && !isWalletCompatible) {
-      alerts.push({
+      blockingAlerts.push({
         key: "wallet-incompatible",
         message: t("xc.swap.alert.nonEvmWallet"),
         severity: "info",
       })
 
-      return alerts
+      return {
+        alerts: blockingAlerts,
+        hasBlockingAlerts: true,
+      }
     }
 
     if (sellAssetUnsupported) {
-      alerts.push({
+      blockingAlerts.push({
         key: "src-asset-unsupported",
         message: t("xc.swap.alert.srcAssetUnsupported"),
         severity: "error",
       })
     }
+
     if (quoteError) {
-      alerts.push({
+      blockingAlerts.push({
         key: "quote-error",
         message: quoteError.message,
         severity: "error",
       })
     }
+
     if (quote?.kind === "xc") {
       for (const error of quote.swap.errors) {
-        alerts.push({
+        blockingAlerts.push({
           key: `xc-trade-error-${error}`,
           message: getXcSwapErrorMessage(error, t),
           severity: "error",
         })
       }
     }
-    return alerts
+
+    const primaryAlert = pickPrimaryXcSwapAlert(blockingAlerts)
+    const alerts = primaryAlert ? [primaryAlert] : []
+
+    return {
+      alerts,
+      hasBlockingAlerts: blockingAlerts.some(
+        (alert) => alert.severity !== "info",
+      ),
+    }
   }, [
     isWalletCompatible,
     quote,

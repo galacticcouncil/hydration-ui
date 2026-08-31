@@ -3,7 +3,7 @@ import { Alert, Flex } from "@galacticcouncil/ui/components"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 
 export const XcSwapAlerts = () => {
-  const alerts = useXcSwapAlerts()
+  const { alerts } = useXcSwapAlerts()
 
   if (!alerts.length) {
     return null

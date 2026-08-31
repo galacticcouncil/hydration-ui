@@ -5,10 +5,11 @@ import {
 import { pxToRem } from "@galacticcouncil/ui/utils"
 
 import { AssetListItem } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/AssetListItem"
+import {
+  XC_SWAP_ASSET_ITEM_HEIGHT,
+  XC_SWAP_MAX_VISIBLE_ASSET_ITEMS,
+} from "@/modules/trade/swap/sections/XcSwap/config/ui"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
-
-const ASSET_ITEM_HEIGHT = 50
-const MAX_VISIBLE_ASSET_ITEMS = 8
 
 export type AssetListProps = {
   items: XcAsset[]
@@ -26,14 +27,18 @@ export const AssetList: React.FC<AssetListProps> = ({
     : 0
 
   const initialScrollIndex =
-    assetIndex >= MAX_VISIBLE_ASSET_ITEMS ? assetIndex : 0
+    assetIndex >= XC_SWAP_MAX_VISIBLE_ASSET_ITEMS ? assetIndex : 0
 
   return (
     <VirtualizedList
-      sx={{ height: pxToRem(ASSET_ITEM_HEIGHT * MAX_VISIBLE_ASSET_ITEMS) }}
+      sx={{
+        height: pxToRem(
+          XC_SWAP_ASSET_ITEM_HEIGHT * XC_SWAP_MAX_VISIBLE_ASSET_ITEMS,
+        ),
+      }}
       items={items}
-      itemSize={ASSET_ITEM_HEIGHT}
-      maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
+      itemSize={XC_SWAP_ASSET_ITEM_HEIGHT}
+      maxVisibleItems={XC_SWAP_MAX_VISIBLE_ASSET_ITEMS}
       initialScrollIndex={initialScrollIndex}
       renderItem={(asset) => (
         <ModalCloseTrigger asChild>

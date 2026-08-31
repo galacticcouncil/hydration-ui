@@ -7,10 +7,11 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
+import {
+  XC_SWAP_CHAIN_ITEM_HEIGHT,
+  XC_SWAP_MAX_VISIBLE_CHAIN_ITEMS,
+} from "@/modules/trade/swap/sections/XcSwap/config/ui"
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
-
-const CHAIN_ITEM_HEIGHT = 40
-const MAX_VISIBLE_CHAIN_ITEMS = 10
 
 export type ChainListProps = {
   items: XcChain[]
@@ -28,17 +29,17 @@ export const ChainList: React.FC<ChainListProps> = ({
     : 0
 
   const initialScrollIndex =
-    chainIndex >= MAX_VISIBLE_CHAIN_ITEMS ? chainIndex : 0
+    chainIndex >= XC_SWAP_MAX_VISIBLE_CHAIN_ITEMS ? chainIndex : 0
 
   return (
     <VirtualizedList
       items={items}
-      itemSize={CHAIN_ITEM_HEIGHT}
-      maxVisibleItems={MAX_VISIBLE_CHAIN_ITEMS}
+      itemSize={XC_SWAP_CHAIN_ITEM_HEIGHT}
+      maxVisibleItems={XC_SWAP_MAX_VISIBLE_CHAIN_ITEMS}
       initialScrollIndex={initialScrollIndex}
       sx={{
         px: "base",
-        minHeight: CHAIN_ITEM_HEIGHT * MAX_VISIBLE_CHAIN_ITEMS,
+        minHeight: XC_SWAP_CHAIN_ITEM_HEIGHT * XC_SWAP_MAX_VISIBLE_CHAIN_ITEMS,
       }}
       renderItem={(chain) => {
         const isActive = chain.key === selectedChain?.key

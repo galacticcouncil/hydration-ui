@@ -33,7 +33,8 @@ const schema = z
     isSingleTrade: z.boolean(),
   })
   .superRefine((data, ctx) => {
-    const isCrossChain = data.destChain?.platform !== "hydration"
+    const isCrossChain =
+      data.destChain !== null && data.destChain.platform !== "hydration"
 
     if (isCrossChain) {
       if (!data.destAddress.trim()) {

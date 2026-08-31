@@ -40,6 +40,7 @@ type XcSwapContextValue = {
   readonly quote: XcSwapQuote
   readonly isQuoteLoading: boolean
   readonly isTwapLoading: boolean
+  readonly isQuoteRefreshing: boolean
   readonly healthFactor: HealthFactorResult | undefined
   readonly isHealthFactorLoading: boolean
   readonly isSelectionLoading: boolean
@@ -59,11 +60,12 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   sourceChainAssetPairs: [],
   originAssetMap: new Map(),
   destChainAssetPairs: [],
-  isCrossChain: true,
+  isCrossChain: false,
   refundTo: null,
   quote: null,
   isQuoteLoading: false,
   isTwapLoading: false,
+  isQuoteRefreshing: false,
   healthFactor: undefined,
   isHealthFactorLoading: false,
   isSelectionLoading: true,
@@ -143,7 +145,13 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     isCrossChain,
   })
 
-  const { quote, isQuoteLoading, isTwapLoading, quoteError } = useXcSwapQuote({
+  const {
+    quote,
+    isQuoteLoading,
+    isTwapLoading,
+    isQuoteRefreshing,
+    quoteError,
+  } = useXcSwapQuote({
     form,
     rpc,
     xcSwap,
@@ -156,7 +164,9 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
   const { requiredWalletMode, isWalletCompatible } =
     useXcSwapRequiredWalletMode({ form, isCrossChain })
 
-  const { onSubmit, isSubmitting } = useXcSwapSubmit({ quote })
+  const { onSubmit, isSubmitting } = useXcSwapSubmit({
+    quote: isQuoteRefreshing ? null : quote,
+  })
 
   return (
     <XcSwapContext.Provider
@@ -170,6 +180,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         quote,
         isQuoteLoading,
         isTwapLoading,
+        isQuoteRefreshing,
         healthFactor,
         isHealthFactorLoading,
         isSelectionLoading,

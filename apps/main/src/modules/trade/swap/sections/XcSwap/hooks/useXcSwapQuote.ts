@@ -14,6 +14,7 @@ import {
 } from "@/api/trade"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { XC_SWAP_RECIPIENT_PLACEHOLDERS } from "@/modules/trade/swap/sections/XcSwap/config/meta"
+import { XC_SWAP_QUOTE_DEBOUNCE_MS } from "@/modules/trade/swap/sections/XcSwap/config/ui"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { assertXcSwapQuoteParams } from "@/modules/trade/swap/sections/XcSwap/lib/assertXcSwapQuoteParams"
 import { getQuoteFormUpdate } from "@/modules/trade/swap/sections/XcSwap/lib/getQuoteFormUpdate"
@@ -83,10 +84,16 @@ export const useXcSwapQuote = ({
     : recipientPlaceholder
 
   const [debouncedAmount, setDebouncedAmount] = useState("")
-  useDebounce(() => setDebouncedAmount(sellAmount), 200, [sellAmount])
+  useDebounce(() => setDebouncedAmount(sellAmount), XC_SWAP_QUOTE_DEBOUNCE_MS, [
+    sellAmount,
+  ])
 
   const [debouncedBuyAmount, setDebouncedBuyAmount] = useState("")
-  useDebounce(() => setDebouncedBuyAmount(buyAmount), 200, [buyAmount])
+  useDebounce(
+    () => setDebouncedBuyAmount(buyAmount),
+    XC_SWAP_QUOTE_DEBOUNCE_MS,
+    [buyAmount],
+  )
 
   const amountIn =
     sellAsset && debouncedAmount
@@ -106,10 +113,12 @@ export const useXcSwapQuote = ({
   const {
     data: xcTrade,
     isLoading: isXcQuoteLoading,
+    isPlaceholderData: isXcPlaceholderData,
     error: xcQuoteError,
   } = useQuery({
     enabled: xcQuoteEnabled,
     retry: false,
+    placeholderData: amountIn ? keepPreviousData : undefined,
     queryKey: [
       "xcSwap",
       "quote",
@@ -153,13 +162,16 @@ export const useXcSwapQuote = ({
         assetOut: omnipoolAssetOut,
         amountIn: debouncedAmount,
       })
+  const debouncedInput = isOnChainBuy ? debouncedBuyAmount : debouncedAmount
   const {
     data: omnipoolTrade,
     isLoading: isOmnipoolQuoteLoading,
+    isPlaceholderData: isOmnipoolPlaceholderData,
     error: omnipoolQuoteError,
   } = useQuery({
     ...omnipoolQueryOptions,
     enabled: !isCrossChain && omnipoolQueryOptions.enabled,
+    placeholderData: debouncedInput ? keepPreviousData : undefined,
   })
 
   // The chain no longer accepts buy schedules, so a buy intent is scheduled as
@@ -186,13 +198,27 @@ export const useXcSwapQuote = ({
       },
       twapEnabled,
     ),
-    // The budget is part of the query key, so every quote move would otherwise
-    // drop the order back to a skeleton.
     placeholderData: twapBudget ? keepPreviousData : undefined,
   })
 
   const isTwapPreviousData = twapEnabled && isTwapPlaceholderData
-  const isTwapQueryLoading = isTwapInitialLoading || isTwapPreviousData
+
+  const isTwapLoading = isOnChainBuy
+    ? isOmnipoolQuoteLoading || isTwapInitialLoading
+    : isTwapInitialLoading
+
+  const validXcTrade =
+    xcTrade && amountIn !== null && xcTrade.amountIn.amount === amountIn
+      ? xcTrade
+      : undefined
+
+  const validOmnipoolTrade =
+    omnipoolTrade &&
+    omnipoolTrade.type === (isOnChainBuy ? TradeType.Buy : TradeType.Sell) &&
+    String(omnipoolTrade.swaps[0]?.assetIn) === omnipoolAssetIn &&
+    String(omnipoolTrade.swaps.at(-1)?.assetOut) === omnipoolAssetOut
+      ? omnipoolTrade
+      : undefined
 
   const validTwap =
     twap &&
@@ -201,20 +227,33 @@ export const useXcSwapQuote = ({
       ? twap
       : undefined
 
-  // On buy, the order query only starts once the quote it is budgeted from resolves
-  const isTwapLoading = isOnChainBuy
-    ? isOmnipoolQuoteLoading || isTwapQueryLoading
-    : isTwapInitialLoading
-
   const quote = useMemo<XcSwapQuote>(() => {
     if (isCrossChain) {
       if (!xcQuoteEnabled) return null
-      return xcTrade ? { kind: "xc", swap: xcTrade } : null
+      return validXcTrade ? { kind: "xc", swap: validXcTrade } : null
     }
-    return omnipoolTrade
-      ? { kind: "oc", swap: omnipoolTrade, twap: validTwap }
+    return validOmnipoolTrade
+      ? { kind: "oc", swap: validOmnipoolTrade, twap: validTwap }
       : null
-  }, [isCrossChain, xcQuoteEnabled, xcTrade, omnipoolTrade, validTwap])
+  }, [
+    isCrossChain,
+    xcQuoteEnabled,
+    validXcTrade,
+    validOmnipoolTrade,
+    validTwap,
+  ])
+
+  const isInputSettled = isOnChainBuy
+    ? debouncedBuyAmount === buyAmount
+    : debouncedAmount === sellAmount
+
+  const isQuoteRefreshing =
+    !isInputSettled ||
+    (isCrossChain
+      ? isXcPlaceholderData
+      : isSingleTrade
+        ? isOmnipoolPlaceholderData
+        : isOmnipoolPlaceholderData || isTwapPreviousData)
 
   const isQuoteLoading = isCrossChain
     ? isXcQuoteLoading
@@ -235,5 +274,5 @@ export const useXcSwapQuote = ({
     }
   }, [quote, buyAsset, sellAsset, form, isSingleTrade, type])
 
-  return { quote, isQuoteLoading, isTwapLoading, quoteError }
+  return { quote, isQuoteLoading, isTwapLoading, isQuoteRefreshing, quoteError }
 }

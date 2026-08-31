@@ -5,6 +5,7 @@ import { UseFormReturn } from "react-hook-form"
 import { useDebounce } from "react-use"
 
 import { healthFactorQuery } from "@/api/aave"
+import { XC_SWAP_QUOTE_DEBOUNCE_MS } from "@/modules/trade/swap/sections/XcSwap/config/ui"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -30,10 +31,16 @@ export const useXcSwapHealthFactor = ({
   const buyAmount = form.watch("buyAmount")
 
   const [debouncedAmount, setDebouncedAmount] = useState("")
-  useDebounce(() => setDebouncedAmount(sellAmount), 200, [sellAmount])
+  useDebounce(() => setDebouncedAmount(sellAmount), XC_SWAP_QUOTE_DEBOUNCE_MS, [
+    sellAmount,
+  ])
 
   const [debouncedBuyAmount, setDebouncedBuyAmount] = useState("")
-  useDebounce(() => setDebouncedBuyAmount(buyAmount), 200, [buyAmount])
+  useDebounce(
+    () => setDebouncedBuyAmount(buyAmount),
+    XC_SWAP_QUOTE_DEBOUNCE_MS,
+    [buyAmount],
+  )
 
   // OnChain only: resolve the Hydration buy asset (CrossChain has no Aave dest)
   const healthFactorToAsset =
