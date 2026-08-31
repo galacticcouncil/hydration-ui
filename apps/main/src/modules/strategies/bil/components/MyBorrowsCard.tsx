@@ -22,6 +22,7 @@ import {
 } from "@/modules/strategies/bil/components/MyBorrowsCard.styled"
 import { RepayHollarModal } from "@/modules/strategies/bil/components/RepayHollarModal"
 import {
+  getBilMaxBorrowable,
   useBilPoolPosition,
   useBilReserveConfig,
 } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
@@ -42,7 +43,10 @@ export const MyBorrowsCard = () => {
 
   const totalCollateralUsd = poolPosition?.totalCollateralUsd ?? 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
-  const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
+  const availableUsd = getBilMaxBorrowable(
+    poolPosition?.availableBorrowsUsd ?? 0,
+    reserveConfig,
+  )
   const ltvPct = poolPosition?.ltvPct ?? 0
   const healthFactor = poolPosition?.healthFactor ?? Infinity
   const healthFactorValue =

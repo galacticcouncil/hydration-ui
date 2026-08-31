@@ -9,6 +9,7 @@ import {
   ModalHeader,
   Summary,
   SummaryRow,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
@@ -18,7 +19,11 @@ import { useTranslation } from "react-i18next"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useBorrowHollarForm } from "@/modules/strategies/bil/components/BorrowHollarModal.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
-import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import {
+  getBilMaxBorrowable,
+  useBilPoolPosition,
+  useBilReserveConfig,
+} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useBorrowHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
 
@@ -34,13 +39,16 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
 
   const evmAddress = useEvmAddress()
   const { data: poolPosition } = useBilPoolPosition(evmAddress)
+  const { data: reserveConfig } = useBilReserveConfig()
   const borrowMutation = useBorrowHollar({ onClose })
 
   const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
+  const maxBorrowableUsd = getBilMaxBorrowable(availableUsd, reserveConfig)
   const hasCollateral = !!poolPosition?.hasCollateral
+  const maxBorrowableUsed = maxBorrowableUsd.toString()
 
   const { control, handleSubmit, watch, formState } = useBorrowHollarForm({
-    maxBorrowable: availableUsd.toString(),
+    maxBorrowable: maxBorrowableUsed,
   })
 
   const amount = watch("amount")
@@ -59,6 +67,8 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
     !isLiquidationRisk &&
     !borrowMutation.isPending &&
     hasCollateral
+
+  const showSummary = hasCollateral
 
   const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
@@ -92,26 +102,41 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
                 displayValue={t("common:currency", {
                   value: inputAmount,
                 })}
-                maxBalance={availableUsd.toString()}
-                maxButtonBalance={availableUsd.toString()}
+                maxBalance={maxBorrowableUsed}
+                maxButtonBalance={maxBorrowableUsed}
                 amountError={fieldState.error?.message}
               />
             )}
           />
 
-          {healthFactor && hasCollateral && (
+          {showSummary && (
             <Summary
               withLeadingSeparator
               separator={<ModalContentDivider />}
               mb="var(--modal-content-inset)"
             >
+              {healthFactor && (
+                <SummaryRow
+                  label={t("common:healthFactor")}
+                  content={<HealthFactorChange {...healthFactor} />}
+                />
+              )}
               <SummaryRow
-                label={t("common:healthFactor")}
-                content={<HealthFactorChange {...healthFactor} />}
+                label={t("borrow:borrow.available")}
+                content={
+                  <Text fs="p4" lh={1.5}>
+                    {t("common:currency.compact", {
+                      value: maxBorrowableUsd,
+                      symbol: hollar.symbol,
+                    })}
+                  </Text>
+                }
               />
             </Summary>
           )}
         </ModalBody>
+
+        <ModalContentDivider />
 
         <ModalFooter>
           <LoadingButton

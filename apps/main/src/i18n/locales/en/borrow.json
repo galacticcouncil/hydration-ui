@@ -10,6 +10,7 @@
   "binding.toast.success": "Account bound successfully",
   "borrow": "Borrow",
   "borrow.available": "Available to borrow",
+  "borrow.maxExceeded": "Maximum available amount exceeded",
   "borrow.cap": "Borrow Cap",
   "borrow.cap.tooltip": "Maximum amount available to borrow is {{ value, number(notation: 'compact'; maximumFractionDigits: 2) }} {{ tokenSymbol }} ({{ usdValue, currency(notation: 'compact'; maximumFractionDigits: 2) }})",
   "borrow.table.title": "Assets to borrow",

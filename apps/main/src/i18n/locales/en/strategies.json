@@ -112,7 +112,6 @@
 
   "bil.borrow.title": "Borrow HOLLAR",
   "bil.borrow.selectAsset": "Select asset",
-  "bil.borrow.cta.exceeds": "Exceeds available",
 
   "bil.repay.title": "Repay HOLLAR",
   "bil.repay.cta.exceeds": "Exceeds debt",
