@@ -19,7 +19,7 @@
 
   "bonds.title.stableYieldBonds": "Fixed Yield {{ symbol }} Bonds",
   "bonds.soldOut": "Sold out",
-  "bonds.deposit.yourDeposit": "Your deposit",
+  "bonds.deposit.yourDeposit": "Deposit",
   "bonds.deposit.receiveAtMaturity": "Receive at maturity",
   "bonds.deposit.maturityPeriod": "Maturity period",
   "bonds.deposit.toast.submitted": "Depositing {{ amount, currency }} into {{ bond }}...",
@@ -71,7 +71,7 @@
   "bil.withdrawals.state.claimable": "Claim ready",
   "bil.withdrawals.action.instant": "Instant redeem",
 
-  "bil.deposit.your": "Your deposit",
+  "bil.deposit.your": "My deposit",
   "bil.deposit.youReceive": "You receive",
   "bil.deposit.lockup": "Lockup period",
   "bil.deposit.lockupValue": "up to {{days}} days",

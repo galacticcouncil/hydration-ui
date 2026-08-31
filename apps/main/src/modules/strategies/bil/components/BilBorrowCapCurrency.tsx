@@ -32,8 +32,12 @@ export const BilBorrowCapCurrency = ({
 
   return (
     <SBorrowCapItem>
-      <Flex align="center" gap="base">
-        <AssetLogo id={assetId} size="small" />
+      <Flex
+        align="center"
+        gap="base"
+        sx={{ pb: borrowCapHollar > 0 && borrowedPct > 0 && "base" }}
+      >
+        <AssetLogo id={assetId} size="medium" />
         <Text
           font="primary"
           fs="h6"
@@ -47,7 +51,6 @@ export const BilBorrowCapCurrency = ({
       {borrowCapHollar > 0 && borrowedPct > 0 && (
         <SBorrowCapProgress>
           <ProgressBar
-            size="small"
             value={borrowedPct}
             customLabel={
               <Text
