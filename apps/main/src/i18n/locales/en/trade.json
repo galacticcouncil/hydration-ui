@@ -172,7 +172,7 @@
   "dca.limit.invert": "Invert price denomination",
   "dca.limit.spot": "Spot:",
   "dca.limit.editDeviation": "Edit price deviation",
-  "dca.summary.limitClause": "Executes only when 1 {{ buySymbol }} is at or below <0>{{ price }} {{ sellSymbol }}</0>.",
+  "dca.summary.limitClause": "Executes only when 1 {{ buySymbol }} is at or below <0>{{ price, number }} {{ sellSymbol }}</0>.",
   "dca.errors.limitPriceRequired": "Enter a limit price",
   "dca.priceImpact.warning.confirmation": "I understand and want to proceed regardless.",
   "dca.summary.limitedBudget.description": "Swap <0>{{ sellAmount }}</0> for <0>{{ buySymbol }}</0> every <0>{{ frequency }}</0> over the period of <0>{{ duration }}.</0>",
