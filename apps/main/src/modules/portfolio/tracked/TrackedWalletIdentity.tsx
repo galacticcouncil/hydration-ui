@@ -1,5 +1,4 @@
 import { Flex, Text, TextProps } from "@galacticcouncil/ui/components"
-import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   isSS58Address,
@@ -14,8 +13,8 @@ import { FC } from "react"
 
 import { AccountIdentity } from "@/components/AccountIdentity"
 import {
-  getTrackedWalletAccent,
   TrackedWalletGlyph,
+  useTrackedWalletAccent,
 } from "@/modules/portfolio/tracked/TrackedWalletGlyph"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -53,8 +52,7 @@ export const TrackedWalletIdentity: FC<Props> = ({
   iconSize = 10,
   ...textProps
 }) => {
-  const { theme } = useTheme()
-  const accent = getTrackedWalletAccent(address, theme)
+  const accent = useTrackedWalletAccent(address)
   const displayName = useAccountDisplayName(address)
   const shortAddress = shortenAccountAddress(address)
   const showAddress =

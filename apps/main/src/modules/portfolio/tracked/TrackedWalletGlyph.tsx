@@ -2,9 +2,11 @@ import { WalletExtension } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { pxToRem } from "@galacticcouncil/ui/utils"
+import { stringEquals } from "@galacticcouncil/utils"
 import { FC } from "react"
 
 import trackedWalletAccentTokens from "@/modules/portfolio/tracked/trackedWalletAccentTokens.json"
+import { useTrackedWallets } from "@/states/trackedWallets"
 
 type AccentTheme = keyof typeof trackedWalletAccentTokens
 type Accent = (typeof trackedWalletAccentTokens)[AccentTheme][number]
@@ -15,18 +17,16 @@ const DEFAULT_ACCENT = {
   text: "oklch(70.26% 0.1410 250.00)",
 } satisfies Accent
 
-export const getTrackedWalletAccent = (
-  address: string | undefined,
-  theme: AccentTheme,
-): Accent => {
+export const useTrackedWalletAccent = (address: string | undefined): Accent => {
+  const { theme } = useTheme()
+  const wallets = useTrackedWallets()
   const tokens = trackedWalletAccentTokens[theme]
   const fallback = tokens[0] ?? DEFAULT_ACCENT
-  if (!address) return fallback
 
-  const index = Array.from(address).reduce(
-    (hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0,
-    0,
+  const index = wallets.findIndex((wallet) =>
+    stringEquals(wallet.address, address ?? ""),
   )
+  if (index < 0) return fallback
 
   return tokens[index % tokens.length] ?? fallback
 }
@@ -44,8 +44,8 @@ export const TrackedWalletGlyph: FC<Props> = ({
   address,
   accent,
 }) => {
-  const { theme } = useTheme()
-  const colors = accent ?? getTrackedWalletAccent(address, theme)
+  const fallbackAccent = useTrackedWalletAccent(address)
+  const colors = accent ?? fallbackAccent
 
   return (
     <Flex
