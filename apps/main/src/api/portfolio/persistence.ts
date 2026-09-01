@@ -134,6 +134,10 @@ export const portfolioPersister: Persister = {
 }
 
 export const setupPortfolioPersistence = (queryClient: QueryClient) => {
+  queryClient.setQueryDefaults([...PORTFOLIO_BALANCES_KEY], {
+    gcTime: PORTFOLIO_CACHE_MAX_AGE,
+  })
+
   persistQueryClientRestore({
     queryClient,
     persister: portfolioPersister,

@@ -17,6 +17,7 @@ import { DataProviderResolver } from "@/components/DataProviderSelect/DataProvid
 import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
+import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -64,6 +65,8 @@ declare module "@tanstack/react-router" {
 }
 
 export const App = () => {
+  useRemoveInitialLoader()
+
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
