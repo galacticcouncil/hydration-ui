@@ -72,7 +72,7 @@ function useBilPoolEvmCall({ onClose }: BilPoolWriteOptions = {}) {
           invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
         },
         {
-          onClose,
+          onSubmitted: onClose,
         },
       )
     },
