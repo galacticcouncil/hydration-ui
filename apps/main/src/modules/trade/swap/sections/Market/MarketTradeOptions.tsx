@@ -122,7 +122,10 @@ export const MarketTradeOptions: FC<Props> = ({
               asset={asset}
               value={twapPrice}
               diff={diff}
-              approx={isIce && !isBuy}
+              // Intent TWAP settles at market in BOTH directions, so the
+              // derived amount is an estimate whether the user fixed the sell
+              // (buy is derived) or the buy (the sell needed is derived).
+              approx={isIce}
               active={!field.value}
               onClick={(): void => {
                 field.onChange(false)
