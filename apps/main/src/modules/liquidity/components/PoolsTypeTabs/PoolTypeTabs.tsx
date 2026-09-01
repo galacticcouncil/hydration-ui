@@ -24,6 +24,10 @@ export const PoolTypeTabs = () => {
             label: t("tab.allPools"),
           },
           {
+            key: "vaults",
+            label: t("tab.vaults"),
+          },
+          {
             key: "omnipoolStablepool",
             label: t("tab.omnipoolStablepool"),
           },
@@ -37,7 +41,11 @@ export const PoolTypeTabs = () => {
             to: LINKS.liquidity,
             search: {
               myLiquidity: search?.myLiquidity,
-              type: value as "all" | "omnipoolStablepool" | "isolated",
+              type: value as
+                | "all"
+                | "omnipoolStablepool"
+                | "isolated"
+                | "vaults",
             },
           })
         }
@@ -54,6 +62,14 @@ export const PoolTypeTabs = () => {
           to: LINKS.liquidity,
           search: { type: "all", myLiquidity: search?.myLiquidity },
           title: t("tab.allPools"),
+        },
+        {
+          to: LINKS.liquidity,
+          search: {
+            type: "vaults",
+            myLiquidity: search?.myLiquidity,
+          },
+          title: t("tab.vaults"),
         },
         {
           to: LINKS.liquidity,

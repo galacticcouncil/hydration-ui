@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFull, AssetLabelXYK } from "@/components/AssetLabelFull"
 import { MyLiquidityTableActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.actions"
 import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { isVaultLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyVaultLiquidity.data"
+import { MyVaultLiquidityTableActions } from "@/modules/wallet/assets/MyLiquidity/MyVaultLiquidityTable.actions"
 import { useAssets } from "@/providers/assetsProvider"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
@@ -41,6 +43,16 @@ export const useMyLiquidityColumns = () => {
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
+        if (isVaultLiquidity(original)) {
+          return (
+            <AssetLabelXYK
+              iconIds={original.meta.iconId}
+              symbol={original.meta.symbol}
+              name={original.meta.name}
+            />
+          )
+        }
+
         return isShareToken(original.meta) ? (
           <AssetLabelXYK
             iconIds={original.meta.iconId}
@@ -63,12 +75,17 @@ export const useMyLiquidityColumns = () => {
       cell: ({ row: { original } }) => (
         <Amount
           value={
-            isShareToken(original.meta)
+            isVaultLiquidity(original)
               ? t("common:currency", {
                   value: original.currentValueHuman,
-                  symbol: "Shares",
+                  symbol: original.shareSymbol,
                 })
-              : format(original)
+              : isShareToken(original.meta)
+                ? t("common:currency", {
+                    value: original.currentValueHuman,
+                    symbol: "Shares",
+                  })
+                : format(original)
           }
           displayValue={t("common:currency", {
             value: original.currentTotalDisplay,
@@ -107,7 +124,9 @@ export const useMyLiquidityColumns = () => {
         },
       },
       cell: ({ row: { original } }) => {
-        return (
+        return isVaultLiquidity(original) ? (
+          <MyVaultLiquidityTableActions vault={original.vault} />
+        ) : (
           <MyLiquidityTableActions
             assetId={
               isShareToken(original.meta)
@@ -127,6 +146,15 @@ export const useMyLiquidityColumns = () => {
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
+        if (isVaultLiquidity(original)) {
+          return (
+            <AssetLabelXYK
+              iconIds={original.meta.iconId}
+              symbol={original.meta.symbol}
+            />
+          )
+        }
+
         return isShareToken(original.meta) ? (
           <AssetLabelXYK
             iconIds={original.meta.iconId}
@@ -156,12 +184,17 @@ export const useMyLiquidityColumns = () => {
           <TableRowDetailsExpand>
             <Amount
               value={
-                isShareToken(original.meta)
+                isVaultLiquidity(original)
                   ? t("common:currency", {
                       value: original.currentValueHuman,
-                      symbol: "Shares",
+                      symbol: original.shareSymbol,
                     })
-                  : format(original)
+                  : isShareToken(original.meta)
+                    ? t("common:currency", {
+                        value: original.currentValueHuman,
+                        symbol: "Shares",
+                      })
+                    : format(original)
               }
               displayValue={t("common:currency", {
                 value: original.currentTotalDisplay,

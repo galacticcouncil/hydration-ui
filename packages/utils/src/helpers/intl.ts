@@ -147,17 +147,32 @@ export const formatNumber = (
   }
 
   const numericValue = bigSourceToNumber(value)
+  const { threshold, thresholdMaximumFractionDigits, ...intlOptions } = options
+  const maxFractionDigits = intlOptions.maximumFractionDigits
 
-  return new Intl.NumberFormat(lng, {
+  const parts = new Intl.NumberFormat(lng, {
     maximumSignificantDigits:
-      options.maximumSignificantDigits || options.maximumFractionDigits
+      intlOptions.maximumSignificantDigits || maxFractionDigits
         ? undefined
-        : getMaxSignificantDigits(value, options),
-    ...options,
-  })
-    .formatToParts(numericValue)
-    .map(formatNumberParts)
-    .join("")
+        : getMaxSignificantDigits(value, intlOptions),
+    ...intlOptions,
+  }).formatToParts(numericValue)
+
+  if (
+    threshold === true &&
+    thresholdMaximumFractionDigits !== undefined &&
+    thresholdMaximumFractionDigits !== null &&
+    numericValue > 0
+  ) {
+    return formatFractionDigits(
+      numericValue,
+      Number(thresholdMaximumFractionDigits),
+      parts,
+      getDecimalSeparator(lng),
+    )
+  }
+
+  return parts.map(formatNumberParts).join("")
 }
 
 export const formatPercent = (

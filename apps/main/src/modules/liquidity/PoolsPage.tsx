@@ -30,6 +30,8 @@ import {
   useIsolatedPoolsColumns,
 } from "./IsolatedPools.columns"
 import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
+import { getVaultsColumnsVisibility, useVaultsColumns } from "./Vaults.columns"
+import { useVaults } from "./Vaults.utils"
 
 export const PoolsPage = () => {
   const isolatedPagination = useDataTableUrlPagination(
@@ -58,7 +60,7 @@ export const PoolsPage = () => {
     <>
       <PoolsHeader />
       <PoolsFilters search={search} onChange={setSearch} />
-
+      {(type === "vaults" || type === "all") && <VaultsTable search={search} />}
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable
           search={search}
@@ -73,6 +75,44 @@ export const PoolsPage = () => {
           sortingProps={isolatedSorting}
         />
       )}
+    </>
+  )
+}
+
+export const VaultsTable = ({ search }: { search: string }) => {
+  const { t } = useTranslation("liquidity")
+  const { data, isLoading } = useVaults()
+  const columns = useVaultsColumns()
+  const { isMobile } = useBreakpoints()
+  const router = useRouter()
+
+  if (!isLoading && !data.length) return null
+
+  return (
+    <>
+      <SectionHeader title={t("section.vaults")} />
+      <TableContainer as={Paper}>
+        <DataTable
+          size={isMobile ? "small" : "large"}
+          isLoading={isLoading}
+          data={data}
+          columns={columns}
+          globalFilter={search}
+          columnVisibility={getVaultsColumnsVisibility(isMobile)}
+          columnPinning={{ left: ["vault"] }}
+          globalFilterFn={(row) =>
+            row.original.tokens.some((token) =>
+              token.symbol.toLowerCase().includes(search.toLowerCase()),
+            )
+          }
+          onRowClick={(vault) =>
+            router.navigate({
+              to: "/liquidity/vault/$address",
+              params: { address: vault.id },
+            })
+          }
+        />
+      </TableContainer>
     </>
   )
 }

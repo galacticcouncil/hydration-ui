@@ -8,6 +8,8 @@ import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
+import { AddVaultLiquidity } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity"
+import { RemoveVaultLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity"
 import { LiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { LiquidityPositionModals } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionModals"
@@ -23,7 +25,13 @@ import {
   LiquidityPositionByAsset,
   StableswapPosition,
 } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import {
+  isVaultLiquidity,
+  VaultLiquidityByPool,
+} from "@/modules/wallet/assets/MyLiquidity/MyVaultLiquidity.data"
 import { StableSwapPositionModals } from "@/modules/wallet/assets/MyLiquidity/StableSwapPositionModals"
+import { VaultDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/VaultDetailMobileModal"
+import { VaultLiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/VaultLiquidityDetailExpanded"
 import { XYKLiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/XYKLiquidityDetailExpanded"
 import { XYKSharesPositionModals } from "@/modules/wallet/assets/MyLiquidity/XYKSharesPositionModals"
 import { AddLiquidityModalContent } from "@/routes/liquidity/$id.add"
@@ -63,6 +71,10 @@ type ModalType = {
         | LiquidityPositionAction.Join
     }
   | {
+      readonly type: "vault-add" | "vault-remove"
+      readonly vault: VaultLiquidityByPool["vault"]
+    }
+  | {
       readonly type: "stableswap-position"
       readonly position: StableswapPosition
       readonly action:
@@ -82,6 +94,13 @@ export const MyLiquidityTable: FC<Props> = ({
   const columns = useMyLiquidityColumns()
 
   const [isDetailOpen, setIsDetailOpen] = useState<ModalType | null>(null)
+
+  const mobileDetail =
+    isDetailOpen?.type === "mobile-modal-default" ? isDetailOpen.detail : null
+  const mobileVaultDetail =
+    mobileDetail && isVaultLiquidity(mobileDetail) ? mobileDetail : null
+  const mobileAssetDetail =
+    mobileDetail && !isVaultLiquidity(mobileDetail) ? mobileDetail : null
 
   return (
     <TableContainer>
@@ -105,7 +124,18 @@ export const MyLiquidityTable: FC<Props> = ({
         expandable={isMobile ? false : "single"}
         getIsExpandable={({ positions }) => positions.length >= 1}
         renderSubComponent={(detail) =>
-          isIsolatedPoolLiquidity(detail) ? (
+          isVaultLiquidity(detail) ? (
+            <VaultLiquidityDetailExpanded
+              detail={detail}
+              onRemoveLiquidity={() =>
+                setIsDetailOpen({
+                  type: "vault-remove",
+                  detail,
+                  vault: detail.vault,
+                })
+              }
+            />
+          ) : isIsolatedPoolLiquidity(detail) ? (
             <XYKLiquidityDetailExpanded
               asset={detail.meta}
               positions={detail.positions}
@@ -169,20 +199,39 @@ export const MyLiquidityTable: FC<Props> = ({
           )
         }
       >
-        {isDetailOpen?.type === "mobile-modal-default" && (
+        {mobileVaultDetail && (
+          <VaultDetailMobileModal
+            detail={mobileVaultDetail}
+            onAddLiquidity={() =>
+              setIsDetailOpen({
+                type: "vault-add",
+                detail: mobileVaultDetail,
+                vault: mobileVaultDetail.vault,
+              })
+            }
+            onRemoveLiquidity={() =>
+              setIsDetailOpen({
+                type: "vault-remove",
+                detail: mobileVaultDetail,
+                vault: mobileVaultDetail.vault,
+              })
+            }
+          />
+        )}
+        {mobileAssetDetail && (
           <LiquidityDetailMobileModal
-            detail={isDetailOpen.detail}
+            detail={mobileAssetDetail}
             onAddLiquidity={(assetId) =>
               setIsDetailOpen({
                 type: "add-liquidity",
-                detail: isDetailOpen.detail,
+                detail: mobileAssetDetail,
                 assetId,
               })
             }
             onLiquidityAction={(action, position, assetId) =>
               setIsDetailOpen({
                 type: "liquidity-position",
-                detail: isDetailOpen.detail,
+                detail: mobileAssetDetail,
                 position,
                 assetId,
                 action,
@@ -191,7 +240,7 @@ export const MyLiquidityTable: FC<Props> = ({
             onXykSharesAction={(action, position) =>
               setIsDetailOpen({
                 type: "xyk-shares-position",
-                detail: isDetailOpen.detail,
+                detail: mobileAssetDetail,
                 position,
                 action,
               })
@@ -199,13 +248,46 @@ export const MyLiquidityTable: FC<Props> = ({
             onStableSwapAction={(action, position) =>
               setIsDetailOpen({
                 type: "stableswap-position",
-                detail: isDetailOpen.detail,
+                detail: mobileAssetDetail,
                 position,
                 action,
               })
             }
           />
         )}
+        {(isDetailOpen?.type === "vault-add" ||
+          isDetailOpen?.type === "vault-remove") &&
+          (isDetailOpen.type === "vault-add" ? (
+            <AddVaultLiquidity
+              vault={isDetailOpen.vault}
+              closable
+              onSubmitted={() =>
+                setIsDetailOpen(
+                  isMobile
+                    ? {
+                        type: "mobile-modal-default",
+                        detail: isDetailOpen.detail,
+                      }
+                    : null,
+                )
+              }
+            />
+          ) : (
+            <RemoveVaultLiquidity
+              vault={isDetailOpen.vault}
+              closable
+              onSubmitted={() =>
+                setIsDetailOpen(
+                  isMobile
+                    ? {
+                        type: "mobile-modal-default",
+                        detail: isDetailOpen.detail,
+                      }
+                    : null,
+                )
+              }
+            />
+          ))}
         {isDetailOpen?.type === "add-liquidity" && (
           <AddLiquidityModalContent
             id={isDetailOpen.assetId}

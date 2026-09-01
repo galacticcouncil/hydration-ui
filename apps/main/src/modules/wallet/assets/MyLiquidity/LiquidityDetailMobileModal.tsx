@@ -12,7 +12,7 @@ import {
   XYKPositionDeposit,
 } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import {
-  LiquidityPositionByAsset,
+  NonVaultLiquidityByAsset,
   StableswapPosition,
 } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { isShareToken } from "@/providers/assetsProvider"
@@ -20,7 +20,7 @@ import { AccountOmnipoolPosition } from "@/states/account"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 type Props = {
-  readonly detail: LiquidityPositionByAsset
+  readonly detail: NonVaultLiquidityByAsset
   readonly onAddLiquidity: (assetId: string) => void
   readonly onLiquidityAction: (
     action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,

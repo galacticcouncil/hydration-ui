@@ -5,6 +5,7 @@ import { animations } from "@/styles/animations"
 import { easings } from "@/styles/easings"
 import { BREAKPOINTS_VALUES } from "@/styles/media"
 import { transitions } from "@/styles/transitions"
+import assetColors from "@/theme/assetColors.json"
 import { TokenProps, tokens } from "@/theme/tokens"
 import { Join, Paths } from "@/types"
 import { pxToRem } from "@/utils"
@@ -69,6 +70,7 @@ const base = makeTheme({
   fontWeights: {},
   lineHeights,
   colors: {},
+  assets: assetColors as Record<string, string>,
   transitions,
   animations,
   easings,

@@ -1,18 +1,10 @@
-import {
-  Button,
-  Flex,
-  Icon,
-  Skeleton,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Button, Icon, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { Plus, Repeat } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLogo } from "@/components/AssetLogo"
-import { SPoolDetailsActionsContainer } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeader.styled"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -20,6 +12,7 @@ import {
 } from "@/modules/liquidity/Liquidity.utils"
 
 import { AssetYields } from "./AssetYields"
+import { PoolDetailsHeaderShell } from "./PoolDetailsHeaderShell"
 
 export const PoolDetailsHeader = ({
   data,
@@ -33,77 +26,70 @@ export const PoolDetailsHeader = ({
   const { isMobile } = useBreakpoints()
 
   return (
-    <Flex justify="space-between" pb="m">
-      <Flex gap="base" align="flex-start" wrap>
-        <AssetLogo
-          id={isOmnipool ? data.meta.id : data.meta.iconId}
-          size="large"
-        />
-
-        <Flex direction="column">
-          <Text font="primary" fw={700} fs="p1" lh="130%">
-            {data.meta.name}
-          </Text>
-
-          <Text fw={600} fs="p6" color={getToken("text.medium")}>
-            {data.meta.symbol}
-          </Text>
-        </Flex>
-
-        {data.isFeeLoading ? (
+    <PoolDetailsHeaderShell
+      logoId={isOmnipool ? data.meta.id : data.meta.iconId}
+      title={data.meta.name}
+      subtitle={
+        <Text fw={600} fs="p6" color={getToken("text.medium")}>
+          {data.meta.symbol}
+        </Text>
+      }
+      badges={
+        data.isFeeLoading ? (
           <Skeleton width={60} height="1em" />
         ) : (
           <AssetYields data={data} />
-        )}
-      </Flex>
-
-      <SPoolDetailsActionsContainer align="center" gap="m">
-        <Button
-          size={isMobile ? "medium" : "small"}
-          width="100%"
-          asChild
-          disabled={!data.canAddLiquidity || isNative}
-        >
-          <Link
-            to="/liquidity/$id/add"
-            params={{
-              id: data.id,
-            }}
-            search={
-              stablepoolData
-                ? {
-                    stableswapId: stablepoolData.id.toString(),
-                    erc20Id: stablepoolData.aToken?.id.toString(),
-                  }
-                : undefined
-            }
-            resetScroll={false}
-          >
-            <Icon size="s" component={Plus} />
-            {t("addLiquidity")}
-          </Link>
-        </Button>
-        {isOmnipool && (
+        )
+      }
+      actions={
+        <>
           <Button
-            variant="secondary"
             size={isMobile ? "medium" : "small"}
             width="100%"
             asChild
+            disabled={!data.canAddLiquidity || isNative}
           >
             <Link
-              to="/trade/swap/market"
-              search={{
-                assetOut: stablepoolData
-                  ? stablepoolData.aToken?.id || data.id
-                  : data.id,
+              to="/liquidity/$id/add"
+              params={{
+                id: data.id,
               }}
+              search={
+                stablepoolData
+                  ? {
+                      stableswapId: stablepoolData.id.toString(),
+                      erc20Id: stablepoolData.aToken?.id.toString(),
+                    }
+                  : undefined
+              }
+              resetScroll={false}
             >
-              <Icon size="s" component={Repeat} />
-              {t("details.header.swap")}
+              <Icon size="s" component={Plus} />
+              {t("addLiquidity")}
             </Link>
           </Button>
-        )}
-      </SPoolDetailsActionsContainer>
-    </Flex>
+          {isOmnipool && (
+            <Button
+              variant="secondary"
+              size={isMobile ? "medium" : "small"}
+              width="100%"
+              asChild
+            >
+              <Link
+                to="/trade/swap/market"
+                search={{
+                  assetOut: stablepoolData
+                    ? stablepoolData.aToken?.id || data.id
+                    : data.id,
+                }}
+              >
+                <Icon size="s" component={Repeat} />
+                {t("details.header.swap")}
+              </Link>
+            </Button>
+          )}
+        </>
+      }
+    />
   )
 }

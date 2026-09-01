@@ -9,31 +9,34 @@ export type ToggleGroupSize = "small" | "medium" | "large"
 
 export type ToggleGroupProps = {
   size?: ToggleGroupSize
+  fullWidth?: boolean
 }
 
 const sizes = createVariants<ToggleGroupSize>((theme) => ({
   small: css`
-    padding: ${theme.space.s};
+    padding: ${theme.space.s} ${theme.space.m};
     font-size: ${theme.fontSizes.p6};
     svg {
-      width: ${theme.space.l};
-      height: ${theme.space.l};
+      width: ${theme.space.m};
+      height: ${theme.space.m};
     }
   `,
   medium: css`
-    padding: ${theme.space.base};
-    font-size: ${theme.fontSizes.p4};
+    line-height: 1.2;
+    height: 1.875rem;
+    font-size: ${theme.fontSizes.p6};
+    padding: ${theme.space.base} ${theme.buttons.paddings.primary};
     svg {
-      width: ${theme.space.xl};
-      height: ${theme.space.xl};
+      width: ${theme.space.l};
+      height: ${theme.space.l};
     }
   `,
   large: css`
     padding: ${theme.space.m};
     font-size: ${theme.fontSizes.p4};
     svg {
-      width: ${theme.space.m};
-      height: ${theme.space.m};
+      width: ${theme.space.l};
+      height: ${theme.space.l};
     }
   `,
 }))
@@ -46,16 +49,30 @@ const disabledStyles = css`
 `
 
 export const SToggleGroup = styled(ToggleGroupPrimitive.Root, {
-  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "size",
-})<ToggleGroupProps>(({ theme, size = "medium" }) => [
+  shouldForwardProp: (prop) =>
+    isPropValid(prop) && prop !== "size" && prop !== "fullWidth",
+})<ToggleGroupProps>(({ theme, size = "medium", fullWidth = false }) => [
   css`
     display: flex;
     align-items: center;
-    gap: ${size === "small" ? theme.space.xs : theme.space.s};
-    padding: ${size === "small" ? theme.space.xs : theme.space.s};
+    gap: ${size === "small"
+      ? theme.space.xs
+      : size === "medium"
+        ? theme.inputs.paddings.internal
+        : theme.space.s};
+    padding: ${size === "small"
+      ? theme.space.xs
+      : size === "medium"
+        ? `${theme.inputs.paddings.internal} 6px`
+        : theme.space.s};
 
     border-radius: ${theme.radii.full};
     border: 1px solid ${theme.buttons.secondary.low.borderRest};
+
+    ${fullWidth &&
+    css`
+      width: 100%;
+    `}
   `,
 ])
 
