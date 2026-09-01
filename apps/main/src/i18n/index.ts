@@ -4,6 +4,7 @@ import { initReactI18next } from "react-i18next"
 
 import borrow from "@/i18n/locales/en/borrow.json"
 import common from "@/i18n/locales/en/common.json"
+import dashboard from "@/i18n/locales/en/dashboard.json"
 import liquidity from "@/i18n/locales/en/liquidity.json"
 import onramp from "@/i18n/locales/en/onramp.json"
 import staking from "@/i18n/locales/en/staking.json"
@@ -17,6 +18,7 @@ export const defaultNS = "common"
 export const resources = {
   en: {
     common,
+    dashboard,
     liquidity,
     trade,
     wallet,

@@ -38,5 +38,13 @@ export const SHeader = styled.header(
     ${mq(FULL_HEADER_BREAKPOINT)} {
       gap: ${theme.space.xxxl};
     }
+
+    @media (width < 90rem) {
+      gap: ${theme.space.l};
+
+      nav button {
+        padding-inline: ${theme.space.base};
+      }
+    }
   `,
 )

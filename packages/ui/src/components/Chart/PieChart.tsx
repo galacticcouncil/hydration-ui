@@ -1,4 +1,5 @@
 import { defineChart } from "@tanstack/charts"
+import { motion } from "@tanstack/charts/motion"
 import { pie, polar, radialArc } from "@tanstack/charts/polar"
 import { tooltip } from "@tanstack/charts/tooltip"
 import { portal } from "@tanstack/charts/tooltip/portal"
@@ -30,6 +31,7 @@ export type PieChartProps = {
   readonly tooltipLabel?: ReactNode
   readonly formatValue?: (segment: PieSegment) => ReactNode
   readonly className?: string
+  readonly animationDurationMs?: number
 }
 
 export const PieChart = ({
@@ -41,6 +43,7 @@ export const PieChart = ({
   tooltipLabel,
   formatValue,
   className,
+  animationDurationMs,
 }: PieChartProps) => {
   const definition = useMemo(() => {
     const sum = segments.reduce((acc, { value }) => acc + value, 0)
@@ -79,10 +82,26 @@ export const PieChart = ({
     })
   }, [segments, innerRadius, total])
 
+  const renderer = useMemo(
+    () =>
+      animationDurationMs
+        ? motion({
+            initial: "always",
+            transition: {
+              type: "tween",
+              duration: animationDurationMs,
+              easing: "ease-out",
+            },
+          })
+        : undefined,
+    [animationDurationMs],
+  )
+
   return (
     <Chart
       className={className}
       definition={definition}
+      renderer={renderer}
       ariaLabel={ariaLabel}
       height={size}
       renderTooltipBody={({ points }) => (

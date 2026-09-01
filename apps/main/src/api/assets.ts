@@ -209,6 +209,7 @@ export const assetsQuery = (
           return {
             ...commonAssetData,
             type: AssetType.Unknown,
+            iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, id),
           }
         }
       })

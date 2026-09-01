@@ -8,6 +8,7 @@ import {
   SSettingsContent,
   SSettingsSection,
 } from "@/modules/layout/components/Settings/Settings.styled"
+import { StartPagePreference } from "@/modules/layout/components/Settings/StartPagePreference"
 import { ThemePreference } from "@/modules/layout/components/Settings/ThemePreference"
 
 type Props = {
@@ -30,6 +31,7 @@ export const SettingsModalDefault: FC<Props> = ({
         </SSettingsSection>
         <ModalContentDivider />
         <SSettingsSection>
+          <StartPagePreference />
           <ThemePreference />
         </SSettingsSection>
       </SSettingsContent>

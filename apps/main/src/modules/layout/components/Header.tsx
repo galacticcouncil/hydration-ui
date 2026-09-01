@@ -46,7 +46,7 @@ export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
         sx={{ flexShrink: 0, minWidth: "max-content" }}
         asChild
       >
-        <Link to={LINKS.swap}>
+        <Link to={LINKS.home}>
           <Logo sx={{ width: "auto", height: "100%", flexShrink: 0 }} />
         </Link>
       </Flex>

@@ -6,9 +6,11 @@ import {
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
 import {
+  AssetMetadataFactory,
   GDOT_ERC20_ID,
   GETH_ERC20_ID,
   GSOL_ERC20_ID,
+  HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
@@ -106,10 +108,25 @@ function getLogoMetadata(
   const asset = getAsset(id)
   if (!asset) return []
 
-  if (asset.iconSrc) {
+  const assetSrc =
+    asset.iconSrc ||
+    AssetMetadataFactory.getInstance().getAssetLogoSrc(
+      HYDRATION_PARACHAIN_ID,
+      id,
+    )
+
+  if (assetSrc) {
     const isAToken =
       isErc20AToken(asset) && !ATOKEN_DECOR_BLACKLIST.includes(asset.id)
-    return [buildMetadata(asset, isAToken)]
+    return [
+      {
+        id,
+        assetSrc,
+        chainSrc: asset.chainSrc,
+        alt: asset.id ? asset.symbol : id,
+        decoration: isAToken ? "atoken" : "none",
+      },
+    ]
   }
 
   if (isErc20AToken(asset) || isBond(asset) || isStableSwap(asset)) {

@@ -36,8 +36,11 @@ export const StrategiesPage = () => {
     ? getDefaultBondApr(bondId)
     : getBondApr(bondId, timeLeft)
 
-  const { data: bilMetrics, isLoading: isBilMetricsLoading } =
-    useBilStrategyMetrics()
+  const {
+    data: bilMetrics,
+    isError: isBilMetricsError,
+    isLoading: isBilMetricsLoading,
+  } = useBilStrategyMetrics()
 
   return (
     <>
@@ -53,7 +56,11 @@ export const StrategiesPage = () => {
             stats={[
               {
                 label: t("apy"),
-                value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
+                value: isBilMetricsError
+                  ? "-"
+                  : t("common:percent", {
+                      value: bilMetrics.maxNetApyPct,
+                    }),
                 isLoading: isBilMetricsLoading,
               },
             ]}

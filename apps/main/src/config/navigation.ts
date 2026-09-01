@@ -66,6 +66,8 @@ export const LINKS = {
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
+export const DASHBOARD_PATH = "/dashboard" satisfies Route
+
 export const EXTERNAL_LINKS = {
   explorer: neckwork.base,
 } as const
@@ -98,6 +100,11 @@ export type ExternalNavigationItem = NavigationItemCommon & {
 export type NavigationItem = InternalNavigationItem | ExternalNavigationItem
 
 export const NAVIGATION: NavigationItem[] = [
+  {
+    key: "home",
+    to: DASHBOARD_PATH,
+    icon: Grid2X2Icon,
+  },
   {
     key: "trade",
     to: LINKS.trade,
@@ -407,6 +414,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 }
 
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
+  "home",
   "trade",
   "borrow",
   "strategies",
@@ -418,6 +426,7 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "explorer",
 ]
 export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
+  "home",
   "portfolio",
   "trade",
   "liquidity",

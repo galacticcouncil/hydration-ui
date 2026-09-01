@@ -285,7 +285,7 @@ export const useStablepools = () => {
   }
 }
 
-export const useOmnipoolStablepools = () => {
+export const useOmnipoolStablepools = (syncStore = true) => {
   const squidClient = useSquidClient()
   const neckworkEnabled = useNeckworkEnabled()
   const {
@@ -542,11 +542,14 @@ export const useOmnipoolStablepools = () => {
   ])
 
   useEffect(() => {
+    if (!syncStore) return
     setOmnipoolAssets(data, isLoading)
-  }, [data, isLoading])
+  }, [data, isLoading, syncStore])
+
+  return { data, isLoading }
 }
 
-export const useIsolatedPools = () => {
+export const useIsolatedPools = (syncStore = true) => {
   const squidClient = useSquidClient()
   const { data: pools, isLoading: isPoolsLoading } = useXykPools()
   const { getShareTokenByAddress } = useAssets()
@@ -712,8 +715,11 @@ export const useIsolatedPools = () => {
   ])
 
   useEffect(() => {
+    if (!syncStore) return
     setXYKPools({ data, isLoading })
-  }, [data, isLoading])
+  }, [data, isLoading, syncStore])
+
+  return { data, isLoading }
 }
 
 export const isIsolatedPool = (
