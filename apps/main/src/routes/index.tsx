@@ -1,9 +1,9 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
 import { LINKS } from "@/config/navigation"
-import { SwapPageSkeleton } from "@/modules/trade/swap/SwapPageSkeleton"
 
 export const Route = createFileRoute("/")({
-  pendingComponent: SwapPageSkeleton,
-  component: () => <Navigate to={LINKS.swapMarket} />,
+  beforeLoad: () => {
+    throw redirect({ to: LINKS.swapMarket, replace: true })
+  },
 })
