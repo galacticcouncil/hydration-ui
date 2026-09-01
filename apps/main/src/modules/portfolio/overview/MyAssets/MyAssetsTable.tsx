@@ -74,6 +74,7 @@ export const MyAssetsTable: FC<Props> = memo(
           size="small"
           fixedLayout
           expandable={!isMobile && !isReadOnly}
+          hideExpandColumn
           renderSubComponent={(asset) =>
             asset.id === native.id ? (
               <ExpandedNativeRow asset={asset} />

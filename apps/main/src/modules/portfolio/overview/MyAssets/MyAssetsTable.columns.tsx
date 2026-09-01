@@ -22,15 +22,17 @@ import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-import { FC, useMemo, useState } from "react"
+import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { pick } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { LINKS } from "@/config/navigation"
 import { AssetDetailStaking } from "@/modules/portfolio/overview/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
+import { useDisplayAssetStore } from "@/states/displayAsset"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { naturally, numericallyStr, sortBy } from "@/utils/sort"
 
@@ -77,6 +79,12 @@ const DepositToHydrationAction: FC<{ readonly asset: MyAsset }> = ({
 
 const columnHelper = createColumnHelper<MyAsset>()
 
+const COLUMN_WIDTHS = {
+  asset: 320,
+  total: 230,
+  transferable: 230,
+} as const
+
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
 const AssetSkeletonCell = () => (
@@ -119,10 +127,29 @@ export const useMyAssetsColumns = (
   const { isMobile, gte } = useBreakpoints()
   const isWideDesktop = gte("xl")
 
+  const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
+    useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
+  )
+  const isDollar = isRealUSD || isStableCoin
+
+  const formatDisplayValue = useCallback(
+    (value: string | undefined) =>
+      value === undefined
+        ? "-"
+        : t("common:currency", {
+            value,
+            ...(isDollar ? {} : { currency: symbol }),
+          }),
+    [t, isDollar, symbol],
+  )
+
+  const formatDisplayValueRef = useRef(formatDisplayValue)
+  formatDisplayValueRef.current = formatDisplayValue
+
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       id: MyAssetsTableColumn.Asset,
-      size: isWideDesktop ? 350 : 280,
+      size: COLUMN_WIDTHS.asset,
       header: t("common:asset"),
       meta: {
         skeletonCell: AssetSkeletonCell,
@@ -139,7 +166,7 @@ export const useMyAssetsColumns = (
     const totalColumn = columnHelper.accessor("totalDisplay", {
       id: MyAssetsTableColumn.Total,
       header: t("myAssets.header.total"),
-      size: 230,
+      size: COLUMN_WIDTHS.total,
       sortUndefined: "last",
       meta: {
         skeletonCell: AmountSkeletonCell,
@@ -148,26 +175,22 @@ export const useMyAssetsColumns = (
         select: (row) => row.original.totalDisplay ?? "",
         compare: numericallyStr,
       }),
-      cell: function Cell({ row }) {
-        const [displayPrice] = useDisplayAssetPrice(
-          row.original.id,
-          row.original.total,
-        )
-
-        return (
-          <Amount
-            value={t("common:number", {
-              value: row.original.total,
-            })}
-            displayValue={displayPrice}
-          />
-        )
-      },
+      cell: ({ row }) => (
+        <Amount
+          value={t("common:number", {
+            value: row.original.total,
+          })}
+          displayValue={formatDisplayValueRef.current(
+            row.original.totalDisplay,
+          )}
+        />
+      ),
     })
 
     const transferableColumn = columnHelper.accessor("transferableDisplay", {
       id: MyAssetsTableColumn.Transferable,
       header: t("myAssets.header.transferable"),
+      size: COLUMN_WIDTHS.transferable,
       sortUndefined: "last",
       meta: {
         skeletonCell: AmountSkeletonCell,
@@ -176,21 +199,16 @@ export const useMyAssetsColumns = (
         select: (row) => row.original.transferableDisplay ?? "",
         compare: numericallyStr,
       }),
-      cell: function Cell({ row }) {
-        const [displayPrice] = useDisplayAssetPrice(
-          row.original.id,
-          row.original.transferable,
-        )
-
-        return (
-          <Amount
-            value={t("common:number", {
-              value: row.original.transferable,
-            })}
-            displayValue={displayPrice}
-          />
-        )
-      },
+      cell: ({ row }) => (
+        <Amount
+          value={t("common:number", {
+            value: row.original.transferable,
+          })}
+          displayValue={formatDisplayValueRef.current(
+            row.original.transferableDisplay,
+          )}
+        />
+      ),
     })
 
     const actionsColumn = columnHelper.display({
@@ -296,6 +314,17 @@ export const useMyAssetsColumns = (
       },
     })
 
+    const spacerColumn = columnHelper.display({
+      id: "spacer",
+      header: "",
+      size: COLUMN_WIDTHS.transferable,
+      enableSorting: false,
+      meta: {
+        skeletonCell: () => null,
+      },
+      cell: () => null,
+    })
+
     const assetColumnMobile = columnHelper.accessor("symbol", {
       enableSorting: false,
       header: t("common:asset"),
@@ -321,19 +350,16 @@ export const useMyAssetsColumns = (
         select: (row) => row.original.totalDisplay ?? "",
         compare: numericallyStr,
       }),
-      cell: function Cell({ row }) {
-        const [displayPrice] = useDisplayAssetPrice(
-          row.original.id,
-          row.original.total,
-        )
-
+      cell: ({ row }) => {
         const amount = (
           <Amount
             variant="default"
             value={t("common:number", {
               value: row.original.total,
             })}
-            displayValue={displayPrice}
+            displayValue={formatDisplayValueRef.current(
+              row.original.totalDisplay,
+            )}
           />
         )
 
@@ -367,7 +393,7 @@ export const useMyAssetsColumns = (
     }
 
     if (isReadOnly) {
-      return [assetColumn, totalColumn, actionsColumn] as Array<
+      return [assetColumn, totalColumn, spacerColumn, actionsColumn] as Array<
         ColumnDef<MyAsset>
       >
     }
@@ -378,5 +404,5 @@ export const useMyAssetsColumns = (
       transferableColumn,
       actionsColumn,
     ] as Array<ColumnDef<MyAsset>>
-  }, [isWideDesktop, isMobile, isEmpty, isReadOnly, showDepositAction, t])
+  }, [t, isReadOnly, showDepositAction, isEmpty, isMobile, isWideDesktop])
 }

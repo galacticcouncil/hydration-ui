@@ -10,7 +10,7 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query"
 import Big from "big.js"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useRef } from "react"
 import { isNonNullish, unique } from "remeda"
 
 import {
@@ -171,6 +171,14 @@ export const useMultichainPortfolio = (
 
   const { getAssetPrice } = useAssetsPrice(assetIds)
 
+  const getAssetPriceRef = useRef(getAssetPrice)
+  getAssetPriceRef.current = getAssetPrice
+
+  const chainEntriesByKeyRef = useRef(
+    new Map<string, MultichainBalanceEntry[]>(),
+  )
+  const refetchByChainKeyRef = useRef(new Map<string, () => void>())
+
   const refetchPair = useCallback(
     (address: string, chainKey: string) =>
       void queryClient.refetchQueries({
@@ -197,7 +205,7 @@ export const useMultichainPortfolio = (
         const balances = chainEntries.flatMap((entry) =>
           entry.balances.map((balance) => {
             const assetId = resolvePortfolioAssetId(balance, chainKey)
-            const price = assetId ? getAssetPrice(assetId) : null
+            const price = assetId ? getAssetPriceRef.current(assetId) : null
 
             return {
               balance,
@@ -219,6 +227,18 @@ export const useMultichainPortfolio = (
         // hide chains with nothing to show; keep errors visible for retry
         if (!isError && !isLoading && !hasAssets) return []
 
+        chainEntriesByKeyRef.current.set(chainKey, chainEntries)
+
+        let refetch = refetchByChainKeyRef.current.get(chainKey)
+        if (!refetch) {
+          refetch = () => {
+            chainEntriesByKeyRef.current
+              .get(chainKey)
+              ?.forEach((entry) => refetchPair(entry.address, entry.chainKey))
+          }
+          refetchByChainKeyRef.current.set(chainKey, refetch)
+        }
+
         return [
           {
             chainKey,
@@ -232,20 +252,16 @@ export const useMultichainPortfolio = (
               .toString(),
             isLoading,
             isError,
-            refetch: () =>
-              chainEntries.forEach((entry) =>
-                refetchPair(entry.address, entry.chainKey),
-              ),
+            refetch,
           },
         ]
       }),
     [
-      stableChains,
-      configService,
+      configService.chains,
       entries,
-      getAssetPrice,
-      resolvePortfolioAssetId,
       refetchPair,
+      resolvePortfolioAssetId,
+      stableChains,
     ],
   )
 

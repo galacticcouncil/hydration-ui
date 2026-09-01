@@ -5,6 +5,7 @@ import { BilVaultPage } from "@/modules/strategies/bil/BilVaultPage"
 
 export const Route = createFileRoute("/strategies/bil-vault/")({
   component: BilVaultPage,
+  staticData: { crumb: true },
   head: ({
     match: {
       context: { i18n },

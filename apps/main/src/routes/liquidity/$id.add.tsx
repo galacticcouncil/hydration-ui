@@ -24,6 +24,7 @@ export type AddLiquidityProps = AddLiquidityType & {
 }
 
 export const Route = createFileRoute("/liquidity/$id/add")({
+  staticData: { crumb: "liquidity:addLiquidity" },
   validateSearch: AddLiquiditySchema,
   component: function Component() {
     const { id } = useParams({ from: "/liquidity/$id/add" })

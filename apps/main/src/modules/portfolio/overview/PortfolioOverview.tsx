@@ -88,6 +88,7 @@ export const PortfolioOverview: FC<Props> = ({
   const { byChain } = useMultichainPortfolio(
     account ? [account.rawAddress] : [],
   )
+
   return (
     <Flex direction="column" gap="l">
       <Flex

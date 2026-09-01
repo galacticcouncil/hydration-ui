@@ -7,17 +7,6 @@ import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.util
 import { isInternalNavItem } from "@/modules/layout/components/NavigationItemLink"
 import { useNavigation } from "@/modules/layout/hooks/useNavigation"
 
-declare module "@tanstack/react-router" {
-  interface StaticDataRouteOption {
-    /**
-     * Forces the subpage menu on (`true`) or off (`false`), overriding the
-     * default "show it when there is more than one child" rule. Read by both
-     * SubpageLayout and LayoutSkeleton so the skeleton matches the page.
-     */
-    showSubNav?: boolean
-  }
-}
-
 export const useSubNav = () => {
   const navigation = useNavigation()
   const translations = useMenuTranslations()

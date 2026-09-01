@@ -103,6 +103,7 @@ const DataTable = <TData,>({
   fixedLayout = false,
   paginated = false,
   expandable = false,
+  hideExpandColumn = false,
   pageSize = DATA_TABLE_DEFAULT_PAGE_SIZE,
   pageNumber = 1,
   borderless,
@@ -135,6 +136,8 @@ const DataTable = <TData,>({
     size,
     borderless,
   }
+
+  const showExpandColumn = !!expandable && !hideExpandColumn
 
   const isControlledSorting =
     sorting !== undefined && onSortingChange !== undefined
@@ -219,7 +222,7 @@ const DataTable = <TData,>({
                   </TableHead>
                 )
               })}
-              {!!expandable && (
+              {showExpandColumn && (
                 <TableHead sx={{ pl: "0 !important", width: "xl" }} />
               )}
             </TableRow>
@@ -310,7 +313,7 @@ const DataTable = <TData,>({
                         )
                       })}
 
-                      {!!expandable && (
+                      {showExpandColumn && (
                         <TableCell sx={{ pl: "0 !important", width: "xl" }}>
                           {isRowExpandable && (
                             <Flex justify="end" align="center">
@@ -329,14 +332,20 @@ const DataTable = <TData,>({
                   </DataTableExternalLink>
                   {override && (
                     <TableRowOverride
-                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      colSpan={
+                        table.getVisibleLeafColumns().length +
+                        (showExpandColumn ? 1 : 0)
+                      }
                     >
                       {override}
                     </TableRowOverride>
                   )}
                   {isRowExpandable && renderSubComponent && (
                     <DataTableCollapsibleRow
-                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      colSpan={
+                        table.getVisibleLeafColumns().length +
+                        (showExpandColumn ? 1 : 0)
+                      }
                       isExpanded={isRowExpanded}
                     >
                       {renderSubComponent(row.original)}
@@ -347,7 +356,7 @@ const DataTable = <TData,>({
             })
           ) : (
             <TableRow isEmptyState data-variable-height data-empty-state>
-              <TableCell colSpan={columns.length + (expandable ? 1 : 0)}>
+              <TableCell colSpan={columns.length + (showExpandColumn ? 1 : 0)}>
                 {emptyState ?? "No results."}
               </TableCell>
             </TableRow>

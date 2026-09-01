@@ -6,7 +6,6 @@ import {
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
-  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
@@ -17,7 +16,6 @@ import { isFunction } from "remeda"
 
 import {
   getProviderDataEnv,
-  nominalBlockTimeQuery,
   rpcProviderQuery,
   TProviderData,
 } from "@/api/provider"
@@ -38,7 +36,6 @@ export type TProviderContext = TProviderData & {
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
-  slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiNext: {} as TProviderData["papiNext"],
   sdk: {} as TProviderData["sdk"],
@@ -135,17 +132,10 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const isApiLoaded =
     Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
 
-  // Tracks runtime upgrades that change the block time mid-session — the
-  // snapshot in `data.slotDurationMs` is only the initial value.
-  const { data: liveBlockTimeMs } = useQuery(
-    nominalBlockTimeQuery(data, rpcUrl),
-  )
-
   return (
     <ProviderContext.Provider
       value={{
         ...data,
-        slotDurationMs: liveBlockTimeMs ?? data.slotDurationMs,
         isApiLoaded,
         isLoaded,
         endpoint: rpcUrl,

@@ -13,6 +13,13 @@ const RouteComponent = () => {
 export const Route = createFileRoute("/strategies/hollar-bonds/$bondId")({
   component: RouteComponent,
   pendingComponent: StableBondsPageSkeleton,
+  staticData: {
+    crumb: {
+      type: "asset",
+      param: "bondId",
+      from: "/strategies/hollar-bonds/$bondId",
+    },
+  },
   head: ({
     match: {
       context: { i18n },

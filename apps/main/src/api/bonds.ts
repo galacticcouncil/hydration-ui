@@ -41,7 +41,7 @@ type RedeemBondArgs = {
 export const useRedeemBond = () => {
   const { t } = useTranslation(["wallet", "common"])
   const { papi } = useRpcProvider()
-  const { getBond } = useAssets()
+  const { getBond, getAssetWithFallback } = useAssets()
   const { createTransaction } = useTransactionsStore()
 
   return useMutation({
@@ -50,10 +50,11 @@ export const useRedeemBond = () => {
 
       if (!bond) throw new Error(`Bond (${bondId}) not found`)
 
-      const formattedAmount = t("common:currency", {
+      const underlyingAsset = getAssetWithFallback(bond.underlyingAssetId)
+      const toastValues = {
         value: toDecimal(amount, bond.decimals),
-        symbol: bond.symbol,
-      })
+        symbol: underlyingAsset.symbol,
+      }
 
       return createTransaction({
         tx: papi.tx.Bonds.redeem({
@@ -61,14 +62,8 @@ export const useRedeemBond = () => {
           amount,
         }),
         toasts: {
-          submitted: t("myBonds.redeem.toast.submitted", {
-            amount: formattedAmount,
-            symbol: bond.symbol,
-          }),
-          success: t("myBonds.redeem.toast.success", {
-            amount: formattedAmount,
-            symbol: bond.symbol,
-          }),
+          submitted: t("myBonds.redeem.toast.submitted", toastValues),
+          success: t("myBonds.redeem.toast.success", toastValues),
         },
       })
     },

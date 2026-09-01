@@ -2,7 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, blockTimeQuery } from "@/api/chain"
 import {
   accountUnlockClassesQuery,
   openGovUnlockedTokensQuery,
@@ -14,7 +14,7 @@ import {
   gigaTwoSecBlocksSinceQuery,
   gigaUnstakePositionsQuery,
 } from "@/api/gigaStake"
-import { useProxyUrl } from "@/api/provider"
+import { PROXY_URL } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -24,7 +24,6 @@ export const useUnlockableNativeTokens = () => {
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const { native } = useAssets()
-  const indexerUrl = useProxyUrl()
   const address = account?.address ?? ""
   const { data: locks, isSuccess } = useNativeTokenLocks()
 
@@ -47,7 +46,7 @@ export const useUnlockableNativeTokens = () => {
 
       if (referendaLock > 0n) {
         const unlockedTokens = await rpc.queryClient.ensureQueryData(
-          openGovUnlockedTokensQuery(rpc, address, indexerUrl),
+          openGovUnlockedTokensQuery(rpc, address, PROXY_URL),
         )
 
         const stillLockedByVotes = BigInt(unlockedTokens.maxLockedValue)
@@ -58,8 +57,11 @@ export const useUnlockableNativeTokens = () => {
             : 0n
 
         votesToRemove = unlockedTokens.votesToRemove
+        const blockTimeMs = await rpc.queryClient.ensureQueryData(
+          blockTimeQuery(rpc.sdk),
+        )
         lockedReferendaMilliseconds =
-          (unlockedTokens.maxLockedBlock ?? 0) * rpc.slotDurationMs
+          (unlockedTokens.maxLockedBlock ?? 0) * blockTimeMs
 
         classIds = await rpc.queryClient.ensureQueryData(
           accountUnlockClassesQuery(rpc, address),

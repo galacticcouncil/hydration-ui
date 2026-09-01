@@ -17,6 +17,7 @@ import { useBreakpoints } from "@/theme"
 export type UseDataTableOwnOptions = {
   paginated?: boolean
   expandable?: boolean | "single"
+  hideExpandColumn?: boolean
   isLoading?: boolean
   skeletonRowCount?: number
 }

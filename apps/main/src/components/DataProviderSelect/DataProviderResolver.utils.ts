@@ -28,8 +28,8 @@ const RPC_PING_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
 ]
 
 const INDEXER_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
-  { max: 10, status: DataProviderStatus.HEALTHY },
-  { max: 50, status: DataProviderStatus.LAGGING },
+  { max: 25, status: DataProviderStatus.HEALTHY },
+  { max: 100, status: DataProviderStatus.LAGGING },
   { max: Infinity, status: DataProviderStatus.DEGRADED },
 ]
 

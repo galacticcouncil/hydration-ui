@@ -18,6 +18,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { useBlockTime } from "@/api/chain"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { Status } from "@/modules/trade/orders/columns/SwapStatus"
@@ -28,7 +29,6 @@ import { useTradeOrderHistoryEnrichment } from "@/modules/trade/orders/lib/useTr
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
 import { PastExecutionsListHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsListHeader"
-import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly details: TradeOrderHistoryItem
@@ -37,7 +37,7 @@ type Props = {
 
 export const TradeOrderHistoryDetailsModal = ({ details, onClose }: Props) => {
   const { t } = useTranslation(["common", "trade"])
-  const rpc = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
 
   const terminateDcaSchedule = useTerminateDcaSchedule()
 
@@ -123,12 +123,12 @@ export const TradeOrderHistoryDetailsModal = ({ details, onClose }: Props) => {
         </Grid>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xl" py="xl">
-          {blocksPeriod && (
+          {blocksPeriod && blockTimeMs && (
             <>
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: blocksPeriod.times(rpc.slotDurationMs).toNumber(),
+                  timeframe: blocksPeriod.times(blockTimeMs).toNumber(),
                   count: blocksPeriod.toNumber(),
                 })}
               />

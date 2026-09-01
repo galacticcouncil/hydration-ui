@@ -24,6 +24,7 @@ import {
   useFacilitatorBucket,
 } from "@/api/borrow"
 import { useBorrowPoolDataContract } from "@/api/borrow/contracts"
+import { useBlockTime } from "@/api/chain"
 import { useGigaApr } from "@/api/gigaApr"
 import { gigaStakeConstantsQuery, gigaTotalLockedQuery } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
@@ -36,6 +37,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { data: blockTimeMs = 0 } = useBlockTime()
   const poolDataContract = useBorrowPoolDataContract()
   const { data: constants, isLoading: isConstantsLoading } = useQuery(
     gigaStakeConstantsQuery(rpc),
@@ -51,7 +53,7 @@ export const GigaStakeTotalsHeader: FC = () => {
   })
 
   const cooldownPeriodDays = Math.round(
-    ((constants?.cooldownPeriod ?? 0) * rpc.slotDurationMs) / millisecondsInDay,
+    ((constants?.cooldownPeriod ?? 0) * blockTimeMs) / millisecondsInDay,
   )
 
   const { data: gigaPoolReserves, isLoading: isGigaPoolReservesLoading } =

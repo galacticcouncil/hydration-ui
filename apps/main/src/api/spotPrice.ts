@@ -214,7 +214,7 @@ export const useSubscribedPriceKeys = (assetIds: string[]) => {
 }
 
 const combineShareTokenPrices = (
-  queries: UseQueryResult<string | undefined, Error>[],
+  queries: UseQueryResult<string | null, Error>[],
   addresses: Array<string>,
 ) => {
   const isLoading = queries.some((query) => query.isLoading)
@@ -248,7 +248,7 @@ const shareTokenPriceQuery = (
         xykPoolWithLiquidityQuery(rpc, ql, poolAddress),
       )
 
-      if (!pool) return undefined
+      if (!pool) return null
 
       const assetsWithPoolBalance = zipWith(
         pool.tokens,
@@ -259,7 +259,7 @@ const shareTokenPriceQuery = (
         }),
       )
 
-      let shareTokenPrice: string | undefined
+      let shareTokenPrice: string | null = null
 
       for (const { asset, balance } of assetsWithPoolBalance) {
         const spotPriceAsset = await ql.ensureQueryData(
