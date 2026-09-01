@@ -1,16 +1,10 @@
 import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import {
-  ExclamationMark,
-  TriangleAlert,
-} from "@galacticcouncil/ui/assets/icons"
-import {
   Box,
   Flex,
-  Icon,
   Summary,
   SummaryRowLabel,
-  SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -26,27 +20,17 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly order: TradeDcaOrder | undefined | null
-  readonly priceImpactLevel: "error" | "warning" | undefined
   readonly isLoading: boolean
 }
 
-export const DcaSummary: FC<Props> = ({
-  order,
-  priceImpactLevel,
-  isLoading,
-}) => {
+export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
   const { watch } = useFormContext<DcaFormValues>()
   const { getAsset } = useAssets()
-
-  const {
-    dca: { slippage },
-  } = useTradeSettings()
 
   const buyAsset = order ? getAsset(order.assetOut) : undefined
   const sellAsset = order ? getAsset(order.assetIn) : undefined
@@ -88,7 +72,7 @@ export const DcaSummary: FC<Props> = ({
       <div>
         <Flex direction="column" gap="base" py="base">
           <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
+          <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey={
@@ -110,7 +94,7 @@ export const DcaSummary: FC<Props> = ({
             </Trans>
           </Text>
           {limitEnabled && limitPrice && (
-            <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
               <Trans
                 t={t}
                 i18nKey="trade:dca.summary.limitClause"
@@ -135,46 +119,6 @@ export const DcaSummary: FC<Props> = ({
               })}
             />
           )}
-          <SwapSummaryRow
-            label={t("trade:dca.summary.slippage")}
-            content={
-              <SummaryRowValue color={getToken("text.tint.quart")}>
-                {t("percent", { value: slippage })}
-              </SummaryRowValue>
-            }
-          />
-          <SwapSummaryRow
-            label={t("trade:dca.summary.priceImpact")}
-            content={
-              <SummaryRowValue
-                as="div"
-                color={(() => {
-                  switch (priceImpactLevel) {
-                    case "error":
-                      return getToken("accents.danger.secondary")
-                    case "warning":
-                      return getToken("accents.alertAlt.primary")
-                    default:
-                      return undefined
-                  }
-                })()}
-              >
-                <Flex align="center" gap="s">
-                  {t("percent", { value: order.tradeImpactPct })}
-                  {(() => {
-                    switch (priceImpactLevel) {
-                      case "error":
-                        return <Icon size="s" component={ExclamationMark} />
-                      case "warning":
-                        return <Icon size="s" component={TriangleAlert} />
-                      default:
-                        return null
-                    }
-                  })()}
-                </Flex>
-              </SummaryRowValue>
-            }
-          />
         </Summary>
       </div>
     </>
