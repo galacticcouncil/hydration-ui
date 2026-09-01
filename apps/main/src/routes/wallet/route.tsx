@@ -1,34 +1,8 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { createFileRoute, useMatch } from "@tanstack/react-router"
+import { createFileRoute, Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
-import { getPageMeta } from "@/config/navigation"
-import { SubpageLayout } from "@/modules/layout/SubpageLayout"
-import { WalletAssetsSubpageLayoutActions } from "@/modules/wallet/assets/WalletAssetsSubpageLayoutActions"
-
-const WalletSubpageLayout: FC = () => {
-  const { account } = useAccount()
-
-  const isAssetsPage = useMatch({
-    from: "/wallet/assets",
-    shouldThrow: false,
-  })
-
-  return (
-    <SubpageLayout
-      actions={isAssetsPage && account && <WalletAssetsSubpageLayoutActions />}
-    />
-  )
-}
+const WalletRedirectLayout: FC = () => <Outlet />
 
 export const Route = createFileRoute("/wallet")({
-  component: WalletSubpageLayout,
-  staticData: { showSubNav: true },
-  head: ({
-    match: {
-      context: { i18n },
-    },
-  }) => ({
-    meta: getPageMeta("wallet", i18n.t),
-  }),
+  component: WalletRedirectLayout,
 })

@@ -5,8 +5,13 @@ import {
 import { bigShift } from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
+import { isNonNullish } from "remeda"
 
-import { useCrossChainBalance, useCrossChainBalancesFetch } from "@/api/xcm"
+import {
+  useCrossChainBalance,
+  useCrossChainBalancesFetch,
+  useHydrationAssetId,
+} from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -18,7 +23,6 @@ const MAX_VISIBLE_ASSET_ITEMS = 8
 type AssetListItem = { asset: Asset; route: AssetRoute | null }
 
 export type AssetListProps = {
-  registryChain: AnyChain
   address: string
   items: AssetListItem[]
   selectedChain?: AnyChain
@@ -27,19 +31,22 @@ export type AssetListProps = {
 }
 
 export const AssetList: React.FC<AssetListProps> = ({
-  registryChain,
   address,
   items,
   selectedAsset,
   selectedChain,
   setSelectedAsset,
 }) => {
-  const priceIds = useMemo(() => {
-    return items.map((item) => {
-      const registryId = registryChain.getAssetId(item.asset)
-      return registryId.toString()
-    })
-  }, [items, registryChain])
+  const getHydrationAssetId = useHydrationAssetId()
+  const chainKey = selectedChain?.key ?? ""
+
+  const priceIds = useMemo(
+    () =>
+      items
+        .map((item) => getHydrationAssetId(item.asset, chainKey))
+        .filter(isNonNullish),
+    [items, getHydrationAssetId, chainKey],
+  )
 
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
     useAssetsPrice(priceIds)
@@ -62,9 +69,9 @@ export const AssetList: React.FC<AssetListProps> = ({
     if (isLoadingBalances || isAssetPriceLoading) return items
 
     const assetsWithBalances = items.map((item) => {
-      const registryId = registryChain.getAssetId(item.asset)
+      const registryId = getHydrationAssetId(item.asset, chainKey)
       const balance = balances?.get(item.asset.key)
-      const { price } = getAssetPrice(registryId.toString())
+      const { price } = getAssetPrice(registryId ?? "")
       return {
         ...item,
         balance,
@@ -91,11 +98,12 @@ export const AssetList: React.FC<AssetListProps> = ({
     })
   }, [
     balances,
+    chainKey,
     getAssetPrice,
+    getHydrationAssetId,
     isAssetPriceLoading,
     isLoadingBalances,
     items,
-    registryChain,
   ])
 
   const assetIndex = selectedAsset
@@ -121,7 +129,6 @@ export const AssetList: React.FC<AssetListProps> = ({
             <AssetListItem
               {...item}
               chain={selectedChain}
-              registryChain={registryChain}
               isSelected={isSelectedAsset}
               isLoading={isLoading}
               balance={balance}
