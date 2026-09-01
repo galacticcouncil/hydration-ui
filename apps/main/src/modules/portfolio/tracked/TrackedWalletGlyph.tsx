@@ -28,7 +28,8 @@ export const useTrackedWalletAccent = (address: string | undefined): Accent => {
   )
   if (index < 0) return fallback
 
-  return tokens[index % tokens.length] ?? fallback
+  const reverseIndex = wallets.length - 1 - index
+  return tokens[reverseIndex % tokens.length] ?? fallback
 }
 
 type Props = {

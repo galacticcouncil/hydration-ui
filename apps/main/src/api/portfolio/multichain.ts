@@ -10,7 +10,7 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query"
 import Big from "big.js"
-import { useCallback, useMemo, useRef } from "react"
+import { useCallback, useMemo } from "react"
 import { isNonNullish, unique } from "remeda"
 
 import {
@@ -157,27 +157,30 @@ export const useMultichainPortfolio = (
     [getHydrationAssetId],
   )
 
-  const assetIds = useMemo(
+  // resolving an asset id walks xcm routes, so keep it off the price path
+  const resolved = useMemo(
     () =>
-      unique(
-        entries.flatMap((entry) =>
-          entry.balances
-            .map((balance) => resolvePortfolioAssetId(balance, entry.chainKey))
-            .filter(isNonNullish),
-        ),
-      ),
+      entries.map((entry) => ({
+        ...entry,
+        balances: entry.balances.map((balance) => ({
+          balance,
+          assetId: resolvePortfolioAssetId(balance, entry.chainKey),
+        })),
+      })),
     [entries, resolvePortfolioAssetId],
   )
 
-  const { getAssetPrice } = useAssetsPrice(assetIds)
-
-  const getAssetPriceRef = useRef(getAssetPrice)
-  getAssetPriceRef.current = getAssetPrice
-
-  const chainEntriesByKeyRef = useRef(
-    new Map<string, MultichainBalanceEntry[]>(),
+  const assetIds = useMemo(
+    () =>
+      unique(
+        resolved.flatMap((entry) =>
+          entry.balances.map(({ assetId }) => assetId).filter(isNonNullish),
+        ),
+      ),
+    [resolved],
   )
-  const refetchByChainKeyRef = useRef(new Map<string, () => void>())
+
+  const { getAssetPrice } = useAssetsPrice(assetIds)
 
   const refetchPair = useCallback(
     (address: string, chainKey: string) =>
@@ -185,6 +188,14 @@ export const useMultichainPortfolio = (
         queryKey: portfolioBalanceQueryKey(address, chainKey),
       }),
     [queryClient],
+  )
+
+  const refetchChain = useCallback(
+    (chainKey: string) =>
+      pairs
+        .filter((pair) => pair.chainKey === chainKey)
+        .forEach(({ address }) => refetchPair(address, chainKey)),
+    [pairs, refetchPair],
   )
 
   const refetchAll = useCallback(
@@ -196,16 +207,15 @@ export const useMultichainPortfolio = (
   const byChain = useMemo(
     () =>
       stableChains.flatMap((chainKey) => {
-        const chainEntries = entries.filter(
+        const chainEntries = resolved.filter(
           (entry) => entry.chainKey === chainKey,
         )
         const chain = configService.chains.get(chainKey)
         if (!chainEntries.length || !chain) return []
 
         const balances = chainEntries.flatMap((entry) =>
-          entry.balances.map((balance) => {
-            const assetId = resolvePortfolioAssetId(balance, chainKey)
-            const price = assetId ? getAssetPriceRef.current(assetId) : null
+          entry.balances.map(({ balance, assetId }) => {
+            const price = assetId ? getAssetPrice(assetId) : null
 
             return {
               balance,
@@ -227,18 +237,6 @@ export const useMultichainPortfolio = (
         // hide chains with nothing to show; keep errors visible for retry
         if (!isError && !isLoading && !hasAssets) return []
 
-        chainEntriesByKeyRef.current.set(chainKey, chainEntries)
-
-        let refetch = refetchByChainKeyRef.current.get(chainKey)
-        if (!refetch) {
-          refetch = () => {
-            chainEntriesByKeyRef.current
-              .get(chainKey)
-              ?.forEach((entry) => refetchPair(entry.address, entry.chainKey))
-          }
-          refetchByChainKeyRef.current.set(chainKey, refetch)
-        }
-
         return [
           {
             chainKey,
@@ -252,17 +250,11 @@ export const useMultichainPortfolio = (
               .toString(),
             isLoading,
             isError,
-            refetch,
+            refetch: () => refetchChain(chainKey),
           },
         ]
       }),
-    [
-      configService.chains,
-      entries,
-      refetchPair,
-      resolvePortfolioAssetId,
-      stableChains,
-    ],
+    [configService.chains, getAssetPrice, refetchChain, resolved, stableChains],
   )
 
   return { byChain, isLoading, isRefetching, lastUpdatedAt, refetchAll }
