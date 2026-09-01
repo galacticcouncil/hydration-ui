@@ -14,11 +14,16 @@ const PortfolioSubpageLayout: FC = () => {
     shouldThrow: false,
   })
 
+  const isTrackedPage = useMatch({
+    from: "/portfolio/tracked",
+    shouldThrow: false,
+  })
+
+  const showActions = (isOverviewPage || isTrackedPage) && account
+
   return (
     <SubpageLayout
-      actions={
-        isOverviewPage && account && <PortfolioOverviewSubpageLayoutActions />
-      }
+      actions={showActions && <PortfolioOverviewSubpageLayoutActions />}
     />
   )
 }

@@ -1,7 +1,5 @@
-import { Minus, Send } from "@galacticcouncil/ui/assets/icons"
-import { Plus } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
+import { Button, Flex, Modal } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,7 +11,6 @@ type Modal = "send" | "withdraw" | "deposit"
 
 export const PortfolioOverviewSubpageLayoutActions = () => {
   const { t } = useTranslation()
-  const { isMobile } = useBreakpoints()
   const [modal, setModal] = useState<Modal | null>(null)
 
   return (
@@ -23,9 +20,8 @@ export const PortfolioOverviewSubpageLayoutActions = () => {
         size="small"
         outline
         onClick={() => setModal("send")}
-        sx={isMobile ? { p: "base" } : undefined}
       >
-        {isMobile ? <Icon component={Send} size="m" /> : t("send")}
+        {t("send")}
       </Button>
       <Button
         variant="emphasis"

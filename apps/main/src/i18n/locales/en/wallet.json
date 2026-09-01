@@ -1,6 +1,6 @@
 {
   "emptyState.title": "No wallet connected",
-  "emptyState.description": "Connect a wallet to view your assets.",
+  "emptyState.description": "Connect a wallet to view your portfolio.",
   "balances.title": "Balances",
   "balances.header.netWorth": "Net worth",
   "balances.header.netWorth.pending_one": "1 chain still loading",

@@ -9,7 +9,6 @@ import {
   Paper,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -61,16 +60,6 @@ export const TrackedWallets: FC<Props> = ({
             variant="muted"
             outline
             onClick={() => setIsManageOpen(true)}
-            sx={{
-              height: 30,
-              px: getToken("buttons.paddings.primary"),
-              py: 0,
-              borderRadius: getToken("containers.cornerRadius.buttonsPrimary"),
-              gap: getToken("buttons.paddings.quart"),
-              color: getToken("buttons.secondary.low.onRest"),
-              bg: getToken("buttons.secondary.low.rest"),
-              borderColor: getToken("buttons.secondary.low.borderRest"),
-            }}
           >
             <Icon size="xs" component={ClassicWallet} />
             {t("myAssets.tracked.manage")}
