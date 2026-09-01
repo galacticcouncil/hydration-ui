@@ -18,6 +18,7 @@ type TradeChartPriceProps = {
   readonly priceChange: number | null
   readonly changePeriod: PriceChangePeriod
   readonly onChangePeriodToggle: () => void
+  readonly asCurrency?: boolean
 }
 
 const formatPriceChange = (priceChange: number, periodLabel: string) => {
@@ -33,6 +34,7 @@ export const TradeChartPrice: React.FC<TradeChartPriceProps> = ({
   priceChange,
   changePeriod,
   onChangePeriodToggle,
+  asCurrency = false,
 }) => {
   const { t } = useTranslation()
 
@@ -53,9 +55,13 @@ export const TradeChartPrice: React.FC<TradeChartPriceProps> = ({
           key={animationKey}
           value={value}
           valueFlash={isLiveValue}
-          format={(value) => t("number", { value })}
-        />{" "}
-        {symbol}
+          format={(value) =>
+            asCurrency
+              ? t("currency", { value, maximumFractionDigits: null })
+              : t("number", { value })
+          }
+        />
+        {!asCurrency && <> {symbol}</>}
       </Text>
       {priceChange !== null && (
         <Tooltip
