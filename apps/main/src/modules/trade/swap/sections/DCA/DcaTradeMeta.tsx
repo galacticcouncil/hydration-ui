@@ -31,7 +31,9 @@ export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
   } = useTradeSettings()
 
   return (
-    <Summary separator={<SwapSectionSeparator />}>
+    // Full width so the rows span the footer (DcaFooter's grid is
+    // center-justified) and label↔value keep their space-between spread.
+    <Summary sx={{ width: "100%" }} separator={<SwapSectionSeparator />}>
       <SwapSummaryRow
         label={t("trade:dca.summary.slippage")}
         content={
