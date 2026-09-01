@@ -49,11 +49,12 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
   const { t } = useTranslation(["trade", "common"])
   const { watch, setValue } = useFormContext<DcaFormValues>()
 
-  const [limitEnabled, limitPrice, sellAsset, buyAsset] = watch([
+  const [limitEnabled, limitPrice, sellAsset, buyAsset, isInverted] = watch([
     "limitEnabled",
     "limitPrice",
     "sellAsset",
     "buyAsset",
+    "limitInverted",
   ])
 
   // Prefill with spot the first time it's enabled so the field isn't empty.
@@ -103,7 +104,8 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
   // Denomination toggle: false = "1 BUY = X SELL" (default, matches the label),
   // true = "1 SELL = X BUY". Display-only — the canonical `limitPrice`
   // (SELL-per-BUY) is unchanged; only how it's shown/typed flips.
-  const [isInverted, setIsInverted] = useState(false)
+  const setIsInverted = (next: boolean) =>
+    setValue("limitInverted", next, { shouldValidate: false })
   // Preserve the user's raw keystrokes so the input doesn't reformat mid-type
   // (mirrors LimitPriceSection). Valid only while the canonical it produced and
   // the inversion still match.
@@ -287,7 +289,7 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
                 variant="tertiary"
                 size="medium"
                 outline
-                onClick={() => setIsInverted((prev) => !prev)}
+                onClick={() => setIsInverted(!isInverted)}
                 aria-label={t("trade:dca.limit.invert")}
               >
                 <Icon

@@ -8,6 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -37,12 +38,14 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
 
   const now = Date.now()
 
-  const [durationTimeFrame, type, limitEnabled, limitPrice] = watch([
-    "duration",
-    "orders.type",
-    "limitEnabled",
-    "limitPrice",
-  ])
+  const [durationTimeFrame, type, limitEnabled, limitPrice, limitInverted] =
+    watch([
+      "duration",
+      "orders.type",
+      "limitEnabled",
+      "limitPrice",
+      "limitInverted",
+    ])
   const isOpenBudget = type === DcaOrdersMode.OpenBudget
   const duration = getTimeFrameMillis(durationTimeFrame)
   const frequency =
@@ -65,6 +68,19 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
   }
 
   const tradeAmountIn = scaleHuman(order.tradeAmountIn, sellAsset.decimals)
+
+  // The summary limit clause mirrors the price section's denomination: not
+  // inverted -> "1 BUY at or below {limitPrice} SELL"; inverted -> "1 SELL at
+  // or above {1/limitPrice} BUY". limitPrice stays canonical (SELL per BUY).
+  const limitPriceForClause = (() => {
+    if (!limitInverted) return limitPrice
+    try {
+      const p = new Big(limitPrice)
+      return p.gt(0) ? new Big(1).div(p).toString() : limitPrice
+    } catch {
+      return limitPrice
+    }
+  })()
 
   return (
     <>
@@ -97,10 +113,14 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
             <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
               <Trans
                 t={t}
-                i18nKey="trade:dca.summary.limitClause"
+                i18nKey={
+                  limitInverted
+                    ? "trade:dca.summary.limitClauseAbove"
+                    : "trade:dca.summary.limitClause"
+                }
                 values={{
                   buySymbol: buyAsset.symbol,
-                  price: limitPrice,
+                  price: limitPriceForClause,
                   sellSymbol: sellAsset.symbol,
                 }}
               >
