@@ -5,6 +5,7 @@ import {
   AnyParachain,
   Asset,
   ChainType,
+  ConfigService,
   EvmChain,
   EvmParachain,
   Parachain,
@@ -145,4 +146,71 @@ export function formatDestChainAddress(
     return safeConvertH160toSS58(address)
   }
   return isAddressValidOnChain(address, chain) ? address : ""
+}
+
+const HYDRATION_REGISTRY_ID = /^\d+$/
+
+function toHydrationRegistryId(
+  hydrationChain: AnyChain,
+  asset: Asset,
+): string | null {
+  const id = hydrationChain.getAssetId(asset).toString()
+  return HYDRATION_REGISTRY_ID.test(id) ? id : null
+}
+
+export function hasRouteToHydration(
+  assetKey: string,
+  sourceChain: AnyChain,
+  configService: ConfigService,
+): boolean {
+  if (sourceChain.key === HYDRATION_CHAIN_KEY) return false
+
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return false
+
+  const asset =
+    configService.assets.get(assetKey) ?? sourceChain.getAsset(assetKey)
+  if (!asset) return false
+
+  return (
+    configService.getAssetRoutesOrEmpty(asset, sourceChain, hydrationChain)
+      .length > 0
+  )
+}
+
+export function resolveHydrationAssetId(
+  asset: Asset,
+  sourceChainKey: string,
+  configService: ConfigService,
+): string | null {
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return null
+
+  if (sourceChainKey === HYDRATION_CHAIN_KEY) {
+    return toHydrationRegistryId(hydrationChain, asset)
+  }
+
+  const sourceChain = configService.chains.get(sourceChainKey)
+  if (!sourceChain) return toHydrationRegistryId(hydrationChain, asset)
+
+  const canonical =
+    configService.assets.get(asset.key) ??
+    sourceChain.getAsset(asset.key) ??
+    asset
+
+  const routes = configService.getAssetRoutesOrEmpty(
+    canonical,
+    sourceChain,
+    hydrationChain,
+  )
+
+  const sameKey = routes.find(
+    (route) => route.destination?.asset?.key === canonical.key,
+  )
+  const fallback = routes.find((route) => route.destination?.asset)
+  const dest = (sameKey ?? fallback)?.destination?.asset
+
+  return dest
+    ? toHydrationRegistryId(hydrationChain, dest)
+    : toHydrationRegistryId(hydrationChain, asset)
 }

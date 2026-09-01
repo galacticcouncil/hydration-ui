@@ -5,6 +5,7 @@ import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
+import { portfolioBalanceQueryKey } from "@/api/portfolio"
 import { useCrossChainConfigService } from "@/api/xcm"
 import {
   isEvmApproveCall,
@@ -65,6 +66,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain,
         srcAsset,
         destAsset,
+        destAddress,
         bridgeProvider,
       } = assertTransferValues(values)
 
@@ -151,6 +153,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             ["xcm", "transfer"],
             // The picker's snapshot is stale the moment a transfer lands.
             ["xcm", "balanceSnapshot"],
+            [...portfolioBalanceQueryKey(account.rawAddress, srcChain.key)],
+            [...portfolioBalanceQueryKey(destAddress, destChain.key)],
           ],
           tx,
           signerFeeAsset,

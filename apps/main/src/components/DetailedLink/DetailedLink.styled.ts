@@ -6,7 +6,7 @@ export const SDetailedLink = styled(Box)(
   ({ theme }) => css`
     display: flex;
     align-items: center;
-    gap: ${theme.space.base};
+    gap: ${theme.space.m};
 
     width: 20rem;
 
