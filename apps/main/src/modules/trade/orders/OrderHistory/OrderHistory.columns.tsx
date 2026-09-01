@@ -40,9 +40,9 @@ export const useOrderHistoryColumns = () => {
 
         return (
           <SwapAmount
-            fromAmount={fromAmountExecuted ?? "0"}
+            fromAmount={fromAmountExecuted}
             from={from}
-            toAmount={toAmountExecuted ?? "0"}
+            toAmount={toAmountExecuted}
             to={to}
             showLogo
           />

@@ -2,6 +2,7 @@ import {
   ordersStatusQuery,
   scheduledOrdersQuery,
 } from "@galacticcouncil/indexer/indexer"
+import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { findNested, safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -9,10 +10,11 @@ import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
 import { useIndexerClient } from "@/api/provider"
+import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
 import {
-  TradeOrderHistoryItem,
-  TradeOrderHistoryStatus,
-} from "@/modules/trade/orders/lib/tradeOrdersHistory.types"
+  DcaOrderData,
+  OrderKind,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -57,8 +59,8 @@ export const useTradeOrdersHistoryData = () => {
 
   const { getAssetWithFallback } = useAssets()
 
-  const orders = useMemo<Array<TradeOrderHistoryItem>>(() => {
-    const statusMap = new Map<number, TradeOrderHistoryStatus>()
+  const orders = useMemo<Array<DcaOrderData>>(() => {
+    const statusMap = new Map<number, DcaScheduleStatus>()
 
     if (!scheduledData?.events.length || !statusData?.events.length) return []
 
@@ -66,13 +68,16 @@ export const useTradeOrdersHistoryData = () => {
       const args = event.args as StatusEventArgs | null
       if (!args) return
 
-      const type = event.name === "DCA.Terminated" ? "Terminated" : "Completed"
-
-      statusMap.set(args.id, { type, err: args.error })
+      statusMap.set(
+        args.id,
+        event.name === "DCA.Terminated"
+          ? DcaScheduleStatus.Terminated
+          : DcaScheduleStatus.Completed,
+      )
     })
 
-    const orders = scheduledData.events.map<TradeOrderHistoryItem | null>(
-      (event) => {
+    return scheduledData.events
+      .map<DcaOrderData | null>((event) => {
         const args = event.args as ScheduledEventArgs | null
         const callArgs = event.call?.args as ScheduledCallArgs | null
 
@@ -82,35 +87,48 @@ export const useTradeOrdersHistoryData = () => {
 
         if (!args || !schedule) return null
 
+        const status = statusMap.get(args.id)
+        // this indexer only emits Scheduled/Terminated/Completed - a schedule
+        // with no terminal event is still open, and those rows are served from
+        // chain state instead
+        if (!status) return null
+
         const { order, period, totalAmount } = schedule
 
         const from = getAssetWithFallback(order.assetIn)
         const to = getAssetWithFallback(order.assetOut)
 
-        const rawAmount = order.amountIn ?? order.maxAmountIn ?? null
-        const amount = rawAmount ? scaleHuman(rawAmount, from.decimals) : null
-
+        const rawSingleTradeSize = order.amountIn ?? order.maxAmountIn ?? null
         const isOpenBudget = totalAmount === "0"
-        const totalBudget =
-          !isOpenBudget && totalAmount
-            ? scaleHuman(totalAmount, from.decimals)
-            : null
 
         return {
-          id: args.id,
+          kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+          scheduleId: args.id,
           from,
           to,
-          intervalBlocks: period,
-          amount,
-          totalBudget,
+          fromAmountBudget: isOpenBudget
+            ? null
+            : scaleHuman(totalAmount, from.decimals),
+          fromAmountExecuted: null,
+          fromAmountRemaining: null,
+          singleTradeSize: rawSingleTradeSize
+            ? scaleHuman(rawSingleTradeSize, from.decimals)
+            : null,
+          toAmountExecuted: null,
+          status,
+          blocksPeriod: String(period),
           isOpenBudget,
-          status: statusMap.get(args.id) ?? null,
+          timestamp: null,
+          limitPrice: null,
         }
-      },
-    )
-
-    return orders.filter(isNonNullish)
+      })
+      .filter(isNonNullish)
   }, [scheduledData, statusData, getAssetWithFallback])
 
-  return { orders, isLoading: isScheduledLoading || isStatusLoading }
+  const { orders: enrichedOrders } = useDcaGrafanaEnrichment(orders)
+
+  return {
+    orders: enrichedOrders,
+    isLoading: isScheduledLoading || isStatusLoading,
+  }
 }

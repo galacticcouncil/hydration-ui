@@ -32,9 +32,9 @@ export const AmountMobile: FC<Props> = ({
   return (
     <Flex direction="column" gap="xs" align="end">
       <Text fw={600} fs="p5" lh={1} color={getToken("text.high")}>
-        {isOpenBudget && !isValidBigSource(fromAmount)
-          ? from.symbol
-          : t("currency", { value: fromAmount, symbol: from.symbol })}
+        {isValidBigSource(fromAmount)
+          ? t("currency", { value: fromAmount, symbol: from.symbol })
+          : from.symbol}
       </Text>
       {status === "filled" && <SwapStatus />}
       {isDcaScheduleStatus(status) && (

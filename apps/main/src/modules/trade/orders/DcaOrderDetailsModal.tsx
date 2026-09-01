@@ -71,9 +71,11 @@ export const DcaOrderDetailsModal = ({
     : `${t("remaining")} / ${t("budget")}`
 
   const spentOrBudgetValue = details.isOpenBudget
-    ? `${t("number", {
-        value: details.fromAmountExecuted,
-      })} ${details.from.symbol}`
+    ? `${
+        details.fromAmountExecuted
+          ? `${t("number", { value: details.fromAmountExecuted })} `
+          : ""
+      }${details.from.symbol}`
     : `${t("number", {
         value:
           details.status === DcaScheduleStatus.Completed
@@ -83,10 +85,14 @@ export const DcaOrderDetailsModal = ({
         value: details.fromAmountBudget,
       })} ${details.from.symbol}`
 
-  const receivedValue = t("currency", {
-    value: details.toAmountExecuted ?? "0",
-    symbol: details.to.symbol,
-  })
+  // the legacy source cannot always resolve filled amounts - show the asset
+  // alone rather than claiming a zero fill
+  const receivedValue = details.toAmountExecuted
+    ? t("currency", {
+        value: details.toAmountExecuted,
+        symbol: details.to.symbol,
+      })
+    : details.to.symbol
 
   const isActive = details.status === DcaScheduleStatus.Created
   const progressPercent = isActive
