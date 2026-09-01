@@ -62,7 +62,7 @@ export const PROVIDERS: ProviderProps[] = [
   createProvider(
     "Lark (Intents)",
     "wss://node3.lark.hydration.cloud",
-    MAINNET_INDEXER_URL,
+    "https://3-explorer.lark.hydration.cloud/graphql",
     MAINNET_SQUID_URL,
     ["development", "production"],
     "mainnet",
