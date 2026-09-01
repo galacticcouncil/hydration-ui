@@ -34,13 +34,20 @@ export type TUnlockableVote = {
   classId: number
 }
 
-/**
- * `pallet-conviction-voting` lock periods per conviction, in multiples of the
- * `VoteLockingPeriod` chain constant (None locks nothing, each conviction
- * step doubles). The unlock block is pure block arithmetic against the same
- * constant the pallet enforces — block time never enters eligibility math.
- */
-const LOCK_PERIODS_BY_INDEX = {
+export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
+export type Conviction = (typeof CONVICTIONS)[number]
+
+const CONVICTION_NAMES = [
+  "none",
+  "locked1x",
+  "locked2x",
+  "locked3x",
+  "locked4x",
+  "locked5x",
+  "locked6x",
+] as const
+
+const LOCK_PERIODS_BY_CONVICTION: Record<Conviction, number> = {
   0: 0,
   1: 1,
   2: 2,
@@ -48,40 +55,39 @@ const LOCK_PERIODS_BY_INDEX = {
   4: 8,
   5: 16,
   6: 32,
-} as const
-
-type ConvictionIndex = keyof typeof LOCK_PERIODS_BY_INDEX
-
-const LOCK_PERIODS_BY_NAME: { [key: string]: number } = {
-  none: LOCK_PERIODS_BY_INDEX[0],
-  locked1x: LOCK_PERIODS_BY_INDEX[1],
-  locked2x: LOCK_PERIODS_BY_INDEX[2],
-  locked3x: LOCK_PERIODS_BY_INDEX[3],
-  locked4x: LOCK_PERIODS_BY_INDEX[4],
-  locked5x: LOCK_PERIODS_BY_INDEX[5],
-  locked6x: LOCK_PERIODS_BY_INDEX[6],
 }
 
-export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
-export type Conviction = (typeof CONVICTIONS)[number]
+export const VOTE_WEIGHT_BY_CONVICTION: Record<Conviction, number> = {
+  0: 0.1,
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
+}
+
+export const REWARD_MULTIPLIER_BY_CONVICTION: Record<Conviction, number> = {
+  0: 0,
+  1: 0.25,
+  2: 0.5,
+  3: 1,
+  4: 2,
+  5: 4,
+  6: 8,
+}
+
+const toConviction = (value: string | number): Conviction | undefined =>
+  CONVICTIONS.find((c) => c === value || CONVICTION_NAMES[c] === value)
 
 export const getConvictionBlocks = (
   voteLockingPeriodBlocks: number,
   conviction: string | number,
 ) => {
-  if (typeof conviction === "number") {
-    if (!(conviction in LOCK_PERIODS_BY_INDEX)) return undefined
+  const index = toConviction(conviction)
+  if (index === undefined) return undefined
 
-    return (
-      LOCK_PERIODS_BY_INDEX[conviction as ConvictionIndex] *
-      voteLockingPeriodBlocks
-    )
-  }
-
-  const lockPeriods = LOCK_PERIODS_BY_NAME[conviction]
-  if (lockPeriods === undefined) return undefined
-
-  return lockPeriods * voteLockingPeriodBlocks
+  return LOCK_PERIODS_BY_CONVICTION[index] * voteLockingPeriodBlocks
 }
 
 type UnsafeVoteLockingPeriodConstants = {
@@ -102,21 +108,10 @@ export const voteLockingPeriodQuery = (rpc: TProviderContext) =>
     },
   })
 
-const CONVICTION_NAMES = [
-  "none",
-  "locked1x",
-  "locked2x",
-  "locked3x",
-  "locked4x",
-  "locked5x",
-  "locked6x",
-] as const
-
 export const decodeStandardVote = (packedVote: number) => {
   const aye = (packedVote & 0x80) !== 0
   const index = packedVote & 0x7f
-  const conviction =
-    (index <= 6 ? CONVICTION_NAMES[index] : CONVICTION_NAMES[0]) ?? "none"
+  const conviction = CONVICTION_NAMES[index] ?? "none"
   return { conviction, aye }
 }
 
@@ -141,22 +136,14 @@ const getVoteConviction = (vote: ConvictionVotingVoteAccountVote): string => {
 
 export type TVoteKind = "aye" | "nay" | "split" | "abstain"
 
-export const convictionVoteWeightFactor = (conviction: string): number => {
-  if (conviction === "none") return 0.1
-
-  const locked = /^locked([1-6])x$/u.exec(conviction)
-  if (locked?.[1]) return Number.parseInt(locked[1], 10)
-
-  return 0.1
-}
+export const convictionVoteWeightFactor = (
+  conviction: string | number,
+): number => VOTE_WEIGHT_BY_CONVICTION[toConviction(conviction) ?? 0]
 
 /** Human-facing multiplier for Standard conviction (0.1x … 6x). */
 export const convictionVoteMultiplierForDisplay = (
-  conviction: string,
-): string => {
-  const factor = convictionVoteWeightFactor(conviction)
-  return factor === 0.1 ? "0.1x" : `${factor}x`
-}
+  conviction: string | number,
+): string => `${convictionVoteWeightFactor(conviction)}x`
 
 const voteKindFromAccountVote = (
   vote: ConvictionVotingVoteAccountVote,

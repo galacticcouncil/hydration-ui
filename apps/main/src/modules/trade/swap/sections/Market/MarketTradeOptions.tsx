@@ -1,10 +1,11 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Flex, OptionCard } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { doNothing } from "remeda"
 
 import {
   Trade,
@@ -15,6 +16,7 @@ import {
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -115,7 +117,16 @@ export const MarketTradeOptions: FC<Props> = ({
             label={t("market.form.type.single")}
             time={t("market.form.type.single.instant")}
           />
-          {isTwapLoading || !twap ? (
+          {!isTwapEnabled(swap) ? (
+            <OptionCard
+              label={t("market.form.type.split")}
+              description={t("market.form.type.split.unavailable")}
+              value=""
+              isActive={false}
+              onClick={doNothing}
+              disabled
+            />
+          ) : isTwapLoading || !twap ? (
             <TradeOptionSkeleton />
           ) : (
             <TradeOption

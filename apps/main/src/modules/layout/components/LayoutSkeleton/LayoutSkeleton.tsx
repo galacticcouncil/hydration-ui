@@ -6,11 +6,8 @@ import { Container, MainContent } from "@/modules/layout/components/Content"
 import { Footer } from "@/modules/layout/components/Footer"
 import { Header } from "@/modules/layout/components/Header"
 import { SubNavBar } from "@/modules/layout/components/SubNavBar"
-import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
 
 export const LayoutSkeleton = () => {
-  useRemoveInitialLoader()
-
   const router = useRouter()
   const matches = useMatches()
   const leafMatch = matches.at(-1)

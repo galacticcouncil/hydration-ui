@@ -20,8 +20,8 @@ export const useNeckworkTradeQueriesEnabled = (): boolean => {
 }
 
 export const useTradeDataSource = (): "neckwork" | "legacy" | "squid" => {
-  const { status } = useActiveIndexerStatus()
   const isNeckworkEnabled = useNeckworkEnabled()
+  const { status } = useActiveIndexerStatus()
 
   if (isNeckworkEnabled) return "neckwork"
 

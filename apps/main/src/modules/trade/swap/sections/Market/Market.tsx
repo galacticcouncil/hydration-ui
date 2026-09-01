@@ -3,7 +3,9 @@ import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
+import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
@@ -21,6 +23,7 @@ import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
+  const { isBalanceLoading } = useAccountBalances()
 
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
@@ -46,7 +49,7 @@ export const Market: FC = () => {
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
-  const { watch } = form
+  const { watch, setValue } = form
   useEffect(() => {
     const subscription = watch((_, { type }) => {
       if (type !== "change") {
@@ -75,6 +78,13 @@ export const Market: FC = () => {
     isHealthFactorLoading,
   } = useMarketData(form)
 
+  // Revert to single trade if scheduler cannot split the order
+  useEffect(() => {
+    if (swap && !isTwapEnabled(swap)) {
+      setValue("isSingleTrade", true, { shouldValidate: true })
+    }
+  }, [swap, setValue])
+
   const isTradeEnabled = isSingleTrade
     ? !!swap && !swap.swaps.flatMap((swap) => swap.errors).length
     : !!twap && !twap?.errors.length
@@ -88,7 +98,8 @@ export const Market: FC = () => {
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 
   const isFormValid = isTradeEnabled && form.formState.isValid
-  const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
+  const isSubmitEnabled =
+    isFormValid && isHealthFactorCheckSatisfied && !isBalanceLoading
 
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError

@@ -33,6 +33,7 @@ export const AssetSelect = ({
   maxBalance: providedMaxBalance,
   maxBalanceFallback,
   setSelectedAsset,
+  onLockToggle,
   ...props
 }: AssetSelectProps) => {
   const [openModal, setOpeModal] = useState(false)
@@ -77,6 +78,7 @@ export const AssetSelect = ({
     <>
       <AssetInput
         {...props}
+        onLock={onLockToggle ?? props.onLock}
         selectedAssetIcon={
           selectedAsset ? (
             <AssetLogo id={selectedAsset.iconId ?? selectedAsset.id} />

@@ -54,7 +54,13 @@ export const useMarketBuyData = (
   const twapBudget =
     swap && sellAsset ? scaleHuman(swap.amountIn, sellAsset.decimals) : ""
 
-  const { data: twap, isLoading: isTwapLoading } = useQuery({
+  const twapEnabled = isTwapEnabled(swap)
+
+  const {
+    data: twap,
+    isLoading: isTwapLoading,
+    isPlaceholderData: isTwapPlaceholderData,
+  } = useQuery({
     ...bestSellTwapQuery(
       rpc,
       {
@@ -62,7 +68,7 @@ export const useMarketBuyData = (
         assetOut: buyAsset?.id ?? "",
         amountIn: twapBudget,
       },
-      isTwapEnabled(swap),
+      twapEnabled,
     ),
     // The budget is part of the query key, so every quote move would otherwise
     // drop the order back to a skeleton. Without a budget there is nothing to
@@ -70,13 +76,21 @@ export const useMarketBuyData = (
     placeholderData: twapBudget ? keepPreviousData : undefined,
   })
 
+  const isTwapPreviousData = twapEnabled && isTwapPlaceholderData
+  const isTwapQueryLoading = isTwapLoading || isTwapPreviousData
+
+  const isTwapValid =
+    !!twap &&
+    String(twap.assetIn) === sellAsset?.id &&
+    String(twap.assetOut) === buyAsset?.id
+
   return {
     swap,
-    twap,
+    twap: isTwapValid ? twap : undefined,
     healthFactor: healthFactorData,
     isSwapLoading,
     // The order query only starts once the quote it is budgeted from resolves
-    isTwapLoading: isSwapLoading || isTwapLoading,
+    isTwapLoading: isSwapLoading || isTwapQueryLoading,
     isHealthFactorLoading,
   }
 }

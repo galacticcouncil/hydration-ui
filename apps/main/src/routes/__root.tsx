@@ -12,11 +12,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
-import {
-  useBasejumpScanSubscription,
-  useXcScanSubscription,
-} from "@/modules/xcm/history"
-import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
+import { useXcScanSubscription } from "@/modules/xcm/history"
 import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
@@ -85,7 +81,11 @@ function RootComponent() {
               <MainLayout />
               <Services />
               <Footer />
-              {!hasTopNavbar && <MobileTabBar />}
+              {!hasTopNavbar && (
+                <Suspense>
+                  <MobileTabBar />
+                </Suspense>
+              )}
             </AssetRegistryGate>
           </MultisigProvider>
         </RpcProvider>
@@ -111,8 +111,6 @@ function ApiSubscriptions() {
 
 function AccountSubscriptions({ account }: { account: Account }) {
   useXcScanSubscription(account.address)
-  useBasejumpScanSubscription(account.address)
-  useProcessBasejumpScanJourneys(account.address)
 
   return null
 }
@@ -124,12 +122,14 @@ function Services() {
   const neckworkEnabled = useNeckworkEnabled()
   return (
     <>
-      <TransactionManager />
-      <Web3ConnectModal
-        squidSdk={squidSdk}
-        neckwork={neckworkEnabled ? neckworkClient : null}
-        papi={papi}
-      />
+      <Suspense fallback={null}>
+        <TransactionManager />
+        <Web3ConnectModal
+          squidSdk={squidSdk}
+          neckwork={neckworkEnabled ? neckworkClient : null}
+          papi={papi}
+        />
+      </Suspense>
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>
