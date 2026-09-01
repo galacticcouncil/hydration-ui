@@ -9,11 +9,6 @@ export const SAssetDetailModal = styled(Modal)(
 
 export const SAssetDetailModalBody = styled(ModalBody)(
   ({ theme }) => css`
-    --modal-body-padding: ${theme.space.l};
-    padding-inline: var(--modal-body-padding);
-    padding-block: 0;
-    padding-top: var(--modal-body-padding);
-
     display: flex;
     flex-direction: column;
     gap: ${theme.space.xl};

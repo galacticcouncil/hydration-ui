@@ -38,8 +38,10 @@ export const MyAssetsTable: FC<Props> = memo(
     isReadOnly = false,
     showDepositAction = true,
   }) => {
-    const { isMobile } = useBreakpoints()
+    const { isMobile, isTablet, isLaptop } = useBreakpoints()
     const { native } = useAssets()
+
+    const useCompactColumns = isMobile || (isReadOnly && (isTablet || isLaptop))
 
     const columns = useMyAssetsColumns(
       !isLoading && data.length === 0,
@@ -83,9 +85,9 @@ export const MyAssetsTable: FC<Props> = memo(
             )
           }
           onRowClick={
-            isReadOnly
-              ? undefined
-              : (asset) => setIsDetailOpen({ type: null, detail: asset })
+            !isReadOnly || useCompactColumns
+              ? (asset) => setIsDetailOpen({ type: null, detail: asset })
+              : undefined
           }
         />
         <Modal
@@ -99,7 +101,7 @@ export const MyAssetsTable: FC<Props> = memo(
         >
           {isDetailOpen?.type === null && (
             <>
-              {isDetailOpen.detail.id === native.id ? (
+              {isDetailOpen.detail.id === native.id && !isReadOnly ? (
                 <AssetDetailNativeMobileModal
                   asset={isDetailOpen.detail}
                   onModalOpen={(type) =>
@@ -109,6 +111,8 @@ export const MyAssetsTable: FC<Props> = memo(
               ) : (
                 <AssetDetailMobileModal
                   asset={isDetailOpen.detail}
+                  isReadOnly={isReadOnly}
+                  showDepositAction={showDepositAction}
                   onModalOpen={(type) =>
                     setIsDetailOpen({ ...isDetailOpen, type })
                   }

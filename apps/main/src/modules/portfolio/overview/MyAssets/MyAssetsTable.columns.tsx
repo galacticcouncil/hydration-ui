@@ -22,7 +22,7 @@ import { AnyChain } from "@galacticcouncil/xc-core"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
@@ -31,6 +31,7 @@ import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LINKS } from "@/config/navigation"
 import { AssetDetailStaking } from "@/modules/portfolio/overview/MyAssets/AssetDetailStaking"
+import { DepositToHydrationTableAction } from "@/modules/portfolio/overview/MyAssets/DepositToHydrationAction"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
@@ -55,34 +56,13 @@ export type MyAsset = TAssetData & {
   readonly canStake: boolean
 }
 
-const DepositToHydrationAction: FC<{ readonly asset: MyAsset }> = ({
-  asset,
-}) => {
-  const { t } = useTranslation("wallet")
-
-  if (!asset.canDeposit || !asset.origin || !asset.xcAssetKey) return null
-
-  return (
-    <TableRowAction asChild>
-      <Link
-        to={LINKS.crossChain}
-        search={{
-          srcChain: asset.origin.key,
-          srcAsset: asset.xcAssetKey,
-        }}
-      >
-        {t("myAssets.actions.depositToHydration")}
-      </Link>
-    </TableRowAction>
-  )
-}
-
 const columnHelper = createColumnHelper<MyAsset>()
 
 const COLUMN_WIDTHS = {
   asset: 320,
   total: 230,
   transferable: 230,
+  actions: 300,
 } as const
 
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
@@ -124,8 +104,7 @@ export const useMyAssetsColumns = (
   showDepositAction = true,
 ) => {
   const { t } = useTranslation(["wallet", "common"])
-  const { isMobile, gte } = useBreakpoints()
-  const isWideDesktop = gte("xl")
+  const { isMobile, isLaptop, isTablet, isLargeDesktop } = useBreakpoints()
 
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
@@ -187,7 +166,7 @@ export const useMyAssetsColumns = (
       ),
     })
 
-    const transferableColumn = columnHelper.accessor("transferableDisplay", {
+    const _transferableColumn = columnHelper.accessor("transferableDisplay", {
       id: MyAssetsTableColumn.Transferable,
       header: t("myAssets.header.transferable"),
       size: COLUMN_WIDTHS.transferable,
@@ -211,42 +190,39 @@ export const useMyAssetsColumns = (
       ),
     })
 
-    const actionsColumn = columnHelper.display({
+    const _actionsColumn = columnHelper.display({
       id: MyAssetsTableColumn.Actions,
-      header: isReadOnly && !showDepositAction ? "" : t("common:actions"),
+      header: t("common:actions"),
+      size: isLargeDesktop ? undefined : COLUMN_WIDTHS.actions,
       meta: {
         sx: {
           textAlign: "right",
           ...(isEmpty && { pr: "0 !important" }),
         },
         skeletonCell: isReadOnly
-          ? showDepositAction
-            ? DepositActionSkeletonCell
-            : () => null
+          ? DepositActionSkeletonCell
           : ActionsSkeletonCell,
       },
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
 
         if (isReadOnly) {
-          if (!showDepositAction) return null
-
           return (
             <Flex align="center" justify="flex-end">
-              <DepositToHydrationAction asset={row.original} />
+              <DepositToHydrationTableAction asset={row.original} />
             </Flex>
           )
         }
 
         return (
           <Flex
-            gap={isWideDesktop ? "base" : "s"}
+            gap={isLargeDesktop ? "base" : "s"}
             align="center"
             justify="flex-end"
           >
             {row.original.id === NATIVE_ASSET_ID && (
               <>
-                {isWideDesktop ? (
+                {isLargeDesktop ? (
                   <AssetDetailStaking asset={row.original} />
                 ) : null}
                 <DataTableExpandTrigger>
@@ -271,7 +247,7 @@ export const useMyAssetsColumns = (
                 {t("common:trade")}
               </Link>
             </TableRowAction>
-            {row.original.id === NATIVE_ASSET_ID && !isWideDesktop && (
+            {row.original.id === NATIVE_ASSET_ID && !isLargeDesktop && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <TableRowAction
@@ -314,12 +290,27 @@ export const useMyAssetsColumns = (
       },
     })
 
-    const spacerColumn = columnHelper.display({
+    const _transferableColumnPlaceholder = columnHelper.display({
       id: "spacer",
       header: "",
       size: COLUMN_WIDTHS.transferable,
       enableSorting: false,
       meta: {
+        skeletonCell: () => null,
+      },
+      cell: () => null,
+    })
+
+    const _actionsColumnPlaceholder = columnHelper.display({
+      id: "actions-spacer",
+      header: "",
+      size: isLargeDesktop ? undefined : COLUMN_WIDTHS.actions,
+      enableSorting: false,
+      meta: {
+        sx: {
+          textAlign: "right",
+          ...(isEmpty && { pr: "0 !important" }),
+        },
         skeletonCell: () => null,
       },
       cell: () => null,
@@ -363,20 +354,9 @@ export const useMyAssetsColumns = (
           />
         )
 
-        if (isReadOnly) {
-          if (!showDepositAction) return amount
-
-          return (
-            <Flex direction="column" align="flex-end" gap="xs" justify="center">
-              {amount}
-              <DepositToHydrationAction asset={row.original} />
-            </Flex>
-          )
-        }
-
         return (
           <TableRowDetailsExpand>
-            {row.original.id === NATIVE_ASSET_ID && (
+            {!isReadOnly && row.original.id === NATIVE_ASSET_ID && (
               <TableRowAction variant="accent" allowPropagation>
                 <Icon component={LockOpen} size="xs" />
                 <Text display={["none", "block"]}>{t("myAssets.locks")}</Text>
@@ -388,14 +368,19 @@ export const useMyAssetsColumns = (
       },
     })
 
-    if (isMobile) {
-      return [assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyAsset>>
-    }
+    const transferableColumn = isReadOnly
+      ? _transferableColumnPlaceholder
+      : _transferableColumn
 
-    if (isReadOnly) {
-      return [assetColumn, totalColumn, spacerColumn, actionsColumn] as Array<
-        ColumnDef<MyAsset>
-      >
+    const actionsColumn =
+      isReadOnly && !showDepositAction
+        ? _actionsColumnPlaceholder
+        : _actionsColumn
+
+    const useCompactColumns = isMobile || (isReadOnly && (isTablet || isLaptop))
+
+    if (useCompactColumns) {
+      return [assetColumnMobile, totalColumnMobile] as Array<ColumnDef<MyAsset>>
     }
 
     return [
@@ -404,5 +389,14 @@ export const useMyAssetsColumns = (
       transferableColumn,
       actionsColumn,
     ] as Array<ColumnDef<MyAsset>>
-  }, [t, isReadOnly, showDepositAction, isEmpty, isMobile, isWideDesktop])
+  }, [
+    t,
+    isReadOnly,
+    showDepositAction,
+    isEmpty,
+    isMobile,
+    isTablet,
+    isLaptop,
+    isLargeDesktop,
+  ])
 }

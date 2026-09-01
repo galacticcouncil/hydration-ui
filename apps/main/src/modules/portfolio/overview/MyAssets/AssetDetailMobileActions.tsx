@@ -6,33 +6,43 @@ import { useTranslation } from "react-i18next"
 
 import { SAssetDetailMobileActions } from "@/modules/portfolio/overview/MyAssets/AssetDetailMobileActions.styled"
 import {
+  canDepositToHydration,
+  DepositToHydrationButton,
+} from "@/modules/portfolio/overview/MyAssets/DepositToHydrationAction"
+import {
   AssetDetailModal,
   MyAsset,
 } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 
 type Props = {
   readonly asset: MyAsset
-  readonly onModalOpen: (action: AssetDetailModal) => void
+  readonly onModalOpen?: (action: AssetDetailModal) => void
+  readonly isReadOnly?: boolean
+  readonly showDepositAction?: boolean
 }
 
-export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
+export const AssetDetailMobileActions: FC<Props> = ({
+  asset,
+  onModalOpen,
+  isReadOnly = false,
+  showDepositAction = true,
+}) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
+  if (isReadOnly) {
+    if (!showDepositAction || !canDepositToHydration(asset)) return null
+
+    return (
+      <SAssetDetailMobileActions>
+        <DepositToHydrationButton asset={asset} />
+      </SAssetDetailMobileActions>
+    )
+  }
+
   return (
     <SAssetDetailMobileActions>
-      {/* TODO integrate later with deposit and withdraw functionality */}
-      {/* <Button size="large" onClick={() => onModalOpen("deposit")}>
-        {t("deposit")}
-      </Button>
-      <Button
-        variant="tertiary"
-        size="large"
-        onClick={() => onModalOpen("withdraw")}
-      >
-        {t("withdraw")}
-      </Button> */}
-      <Button size="large" onClick={() => onModalOpen("transfer")}>
+      <Button size="large" onClick={() => onModalOpen?.("transfer")}>
         <ArrowDownUp />
         {t("send")}
       </Button>

@@ -1,5 +1,6 @@
-import { Flex, ModalHeader } from "@galacticcouncil/ui/components"
+import { Amount, Flex, ModalHeader } from "@galacticcouncil/ui/components"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { AssetDetailMobileActions } from "@/modules/portfolio/overview/MyAssets/AssetDetailMobileActions"
@@ -18,14 +19,22 @@ import {
 
 type Props = {
   readonly asset: MyAsset
-  readonly onModalOpen: (action: AssetDetailModal) => void
+  readonly onModalOpen?: (action: AssetDetailModal) => void
+  readonly isReadOnly?: boolean
+  readonly showDepositAction?: boolean
 }
 
-export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
+export const AssetDetailMobileModal: FC<Props> = ({
+  asset,
+  onModalOpen,
+  isReadOnly = false,
+  showDepositAction = true,
+}) => {
+  const { t } = useTranslation(["wallet", "common"])
+
   return (
     <>
       <ModalHeader
-        sx={{ p: 16 }}
         title={asset.symbol}
         customTitle={<AssetLabelFull asset={asset} size="primary" />}
       />
@@ -39,14 +48,41 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
             <AssetOrigin origin={asset.origin} />
           </>
         )}
-        <div>
-          <SAssetDetailMobileSeparator />
-          <AssetDetailMobileModalBalancesHeader />
-          <SAssetDetailMobileSeparator />
-        </div>
+        {isReadOnly ? (
+          <>
+            <SAssetDetailMobileSeparator />
+            <Amount
+              variant="horizontalLabel"
+              label={t("myAssets.header.transferable")}
+              value={t("common:number", {
+                value: asset.transferable,
+              })}
+              displayValue={
+                asset.transferableDisplay
+                  ? t("common:currency", {
+                      value: asset.transferableDisplay,
+                    })
+                  : "-"
+              }
+            />
+          </>
+        ) : (
+          <>
+            <div>
+              <SAssetDetailMobileSeparator />
+              <AssetDetailMobileModalBalancesHeader />
+              <SAssetDetailMobileSeparator />
+            </div>
 
-        <AssetDetailMobileModalBalances asset={asset} />
-        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
+            <AssetDetailMobileModalBalances asset={asset} />
+          </>
+        )}
+        <AssetDetailMobileActions
+          asset={asset}
+          onModalOpen={onModalOpen}
+          isReadOnly={isReadOnly}
+          showDepositAction={showDepositAction}
+        />
       </SAssetDetailModalBody>
     </>
   )
