@@ -86,6 +86,10 @@ const schemaBase = z.object({
   // (same convention as the Limit screen's marketPrice = amountOut/amountIn).
   limitEnabled: z.boolean(),
   limitPrice: positiveOptional,
+  // Display denomination for the limit price / summary: false = "1 BUY = X
+  // SELL" (below), true = "1 SELL = X BUY" (above). Display-only; limitPrice
+  // stays canonical.
+  limitInverted: z.boolean(),
 })
 
 const MAX_OPEN_BUDGET_YEAR_FRAME = 1
@@ -275,6 +279,7 @@ export const useDcaForm = ({
     },
     limitEnabled: false,
     limitPrice: "",
+    limitInverted: false,
   }
 
   const form = useForm<DcaFormValues>({
