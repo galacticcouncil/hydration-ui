@@ -1,19 +1,14 @@
 import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import {
-  ExclamationMark,
-  TriangleAlert,
-} from "@galacticcouncil/ui/assets/icons"
-import {
   Box,
   Flex,
-  Icon,
   Summary,
   SummaryRowLabel,
-  SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -26,39 +21,31 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly order: TradeDcaOrder | undefined | null
-  readonly priceImpactLevel: "error" | "warning" | undefined
   readonly isLoading: boolean
 }
 
-export const DcaSummary: FC<Props> = ({
-  order,
-  priceImpactLevel,
-  isLoading,
-}) => {
+export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
   const { watch } = useFormContext<DcaFormValues>()
   const { getAsset } = useAssets()
-
-  const {
-    dca: { slippage },
-  } = useTradeSettings()
 
   const buyAsset = order ? getAsset(order.assetOut) : undefined
   const sellAsset = order ? getAsset(order.assetIn) : undefined
 
   const now = Date.now()
 
-  const [durationTimeFrame, type, limitEnabled, limitPrice] = watch([
-    "duration",
-    "orders.type",
-    "limitEnabled",
-    "limitPrice",
-  ])
+  const [durationTimeFrame, type, limitEnabled, limitPrice, limitInverted] =
+    watch([
+      "duration",
+      "orders.type",
+      "limitEnabled",
+      "limitPrice",
+      "limitInverted",
+    ])
   const isOpenBudget = type === DcaOrdersMode.OpenBudget
   const duration = getTimeFrameMillis(durationTimeFrame)
   const frequency =
@@ -82,13 +69,26 @@ export const DcaSummary: FC<Props> = ({
 
   const tradeAmountIn = scaleHuman(order.tradeAmountIn, sellAsset.decimals)
 
+  // The summary limit clause mirrors the price section's denomination: not
+  // inverted -> "1 BUY at or below {limitPrice} SELL"; inverted -> "1 SELL at
+  // or above {1/limitPrice} BUY". limitPrice stays canonical (SELL per BUY).
+  const limitPriceForClause = (() => {
+    if (!limitInverted) return limitPrice
+    try {
+      const p = new Big(limitPrice)
+      return p.gt(0) ? new Big(1).div(p).toString() : limitPrice
+    } catch {
+      return limitPrice
+    }
+  })()
+
   return (
     <>
       <SwapSectionSeparator />
       <div>
         <Flex direction="column" gap="base" py="base">
           <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
+          <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey={
@@ -110,13 +110,17 @@ export const DcaSummary: FC<Props> = ({
             </Trans>
           </Text>
           {limitEnabled && limitPrice && (
-            <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
               <Trans
                 t={t}
-                i18nKey="trade:dca.summary.limitClause"
+                i18nKey={
+                  limitInverted
+                    ? "trade:dca.summary.limitClauseAbove"
+                    : "trade:dca.summary.limitClause"
+                }
                 values={{
                   buySymbol: buyAsset.symbol,
-                  price: limitPrice,
+                  price: limitPriceForClause,
                   sellSymbol: sellAsset.symbol,
                 }}
               >
@@ -135,46 +139,6 @@ export const DcaSummary: FC<Props> = ({
               })}
             />
           )}
-          <SwapSummaryRow
-            label={t("trade:dca.summary.slippage")}
-            content={
-              <SummaryRowValue color={getToken("text.tint.quart")}>
-                {t("percent", { value: slippage })}
-              </SummaryRowValue>
-            }
-          />
-          <SwapSummaryRow
-            label={t("trade:dca.summary.priceImpact")}
-            content={
-              <SummaryRowValue
-                as="div"
-                color={(() => {
-                  switch (priceImpactLevel) {
-                    case "error":
-                      return getToken("accents.danger.secondary")
-                    case "warning":
-                      return getToken("accents.alertAlt.primary")
-                    default:
-                      return undefined
-                  }
-                })()}
-              >
-                <Flex align="center" gap="s">
-                  {t("percent", { value: order.tradeImpactPct })}
-                  {(() => {
-                    switch (priceImpactLevel) {
-                      case "error":
-                        return <Icon size="s" component={ExclamationMark} />
-                      case "warning":
-                        return <Icon size="s" component={TriangleAlert} />
-                      default:
-                        return null
-                    }
-                  })()}
-                </Flex>
-              </SummaryRowValue>
-            }
-          />
         </Summary>
       </div>
     </>

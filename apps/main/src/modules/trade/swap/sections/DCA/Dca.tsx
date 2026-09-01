@@ -55,6 +55,14 @@ export const Dca: FC = () => {
   const [duration, ordersType] = form.watch(["duration", "orders.type"])
   const { warnings, errors } = useDcaValidation(order, duration)
 
+  const priceImpactLevel: "error" | "warning" | undefined = errors.includes(
+    DcaValidationError.PriceImpact,
+  )
+    ? "error"
+    : warnings.includes(DcaValidationWarning.PriceImpact)
+      ? "warning"
+      : undefined
+
   const isOpenBudget = ordersType === DcaOrdersMode.OpenBudget
   const openBudgetHealthFactor = useOpenBudgetDcaHfValidation(
     order,
@@ -177,17 +185,7 @@ export const Dca: FC = () => {
             isOpenBudget ? openBudgetOrderMaxBalance : limitOrderMaxBalance
           }
         />
-        <DcaSummary
-          order={order}
-          priceImpactLevel={
-            errors.includes(DcaValidationError.PriceImpact)
-              ? "error"
-              : warnings.includes(DcaValidationWarning.PriceImpact)
-                ? "warning"
-                : undefined
-          }
-          isLoading={isLoading}
-        />
+        <DcaSummary order={order} isLoading={isLoading} />
         <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
         <DcaWarnings
           isFormValid={isFormValid}
@@ -210,6 +208,8 @@ export const Dca: FC = () => {
           isEnabled={isSubmitEnabled}
           isLoading={submitDcaOrder.isPending}
           isOpenBudget={isOpenBudget}
+          order={order}
+          priceImpactLevel={priceImpactLevel}
         />
       </form>
     </FormProvider>
