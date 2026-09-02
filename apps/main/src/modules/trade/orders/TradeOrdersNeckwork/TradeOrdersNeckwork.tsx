@@ -30,6 +30,7 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
 
   const resolvedTab = tab === "marketTransactions" ? "myActivity" : tab
 
+  const { scheduleIds } = useChainScheduleIds()
   const { data: intents } = useAccountIntents(account?.address ?? "")
 
   useEffect(() => {
