@@ -5,6 +5,7 @@ import { FC, useEffect } from "react"
 
 import { useAccountIntents } from "@/api/intents"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useInvalidateOrdersOnExecution } from "@/modules/trade/orders/lib/useInvalidateOrdersOnExecution"
 import { OpenOrdersLegacy } from "@/modules/trade/orders/OpenOrdersLegacy"
 import { OrderHistoryLegacy } from "@/modules/trade/orders/OrderHistoryLegacy"
 import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
@@ -32,6 +33,8 @@ export const TradeOrdersHistory: FC<PaperProps> = (props) => {
 
   const { scheduleIds } = useChainScheduleIds()
   const { data: intents } = useAccountIntents(account?.address ?? "")
+
+  useInvalidateOrdersOnExecution()
 
   useEffect(() => {
     if (isSupportedTab) return

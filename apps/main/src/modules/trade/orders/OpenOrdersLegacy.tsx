@@ -102,7 +102,7 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
       <DataTable
         data={allOrders}
         columns={columns}
-        isLoading={isChainLoading && isIntentsLoading}
+        isLoading={isChainLoading || isIntentsLoading}
         paginated
         {...paginationProps}
         onRowClick={(order) => {
