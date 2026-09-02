@@ -37,8 +37,11 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
 
   const { orders: chainOrders, isLoading: isChainLoading } =
     useChainOrdersData()
-  const { orders: enrichedOrders, refetch, isFetching: isGrafanaFetching } =
-    useDcaGrafanaEnrichment(chainOrders)
+  const {
+    orders: enrichedOrders,
+    refetch,
+    isFetching: isGrafanaFetching,
+  } = useDcaGrafanaEnrichment(chainOrders)
   const { orders: chainIntentOrders, isLoading: isIntentsLoading } =
     useIntentOrdersData()
   const {
@@ -63,25 +66,6 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
       return { isSpentLoading: false, isReceivedLoading: false }
     }
 
-    if (isDcaScheduleOrder(detail)) {
-      return {
-        isSpentLoading:
-          isGrafanaFetching &&
-          detail.isOpenBudget &&
-          !detail.fromAmountExecuted,
-        isReceivedLoading: isGrafanaFetching && !detail.toAmountExecuted,
-      }
-    }
-
-    if (detail.kind === OrderKind.Limit || isIntentOrder(detail)) {
-      return {
-        isSpentLoading:
-          isIntentFillFetching && !detail.fromAmountExecuted,
-        isReceivedLoading:
-          isIntentFillFetching && !detail.toAmountExecuted,
-      }
-    }
-
     if (isMergedOrder(detail)) {
       const isFetching = isGrafanaFetching || isIntentFillFetching
 
@@ -92,7 +76,20 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
       }
     }
 
-    return { isSpentLoading: false, isReceivedLoading: false }
+    if (isDcaScheduleOrder(detail)) {
+      return {
+        isSpentLoading:
+          isGrafanaFetching &&
+          detail.isOpenBudget &&
+          !detail.fromAmountExecuted,
+        isReceivedLoading: isGrafanaFetching && !detail.toAmountExecuted,
+      }
+    }
+
+    return {
+      isSpentLoading: isIntentFillFetching && !detail.fromAmountExecuted,
+      isReceivedLoading: isIntentFillFetching && !detail.toAmountExecuted,
+    }
   }, [detail, isGrafanaFetching, isIntentFillFetching])
 
   const close = () => {
