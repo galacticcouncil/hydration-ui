@@ -16,7 +16,6 @@ import Big from "big.js"
 import { FC, memo, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useAssetMetadata } from "@/api/metadata"
 import { MultichainValuedBalance } from "@/api/portfolio"
 import { useCrossChainConfigService } from "@/api/xcm"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
@@ -27,6 +26,7 @@ import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChai
 import { toSourceChainAssetData } from "@/modules/portfolio/overview/PortfolioChainSection.utils"
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
 type Props = {
@@ -55,7 +55,7 @@ export const PortfolioChainSection: FC<Props> = memo(
   }) => {
     const { t } = useTranslation(["wallet", "common"])
     const { getAsset } = useAssets()
-    const metadata = useAssetMetadata()
+    const { metadata } = useRpcProvider()
     const configService = useCrossChainConfigService()
     const [open, setOpen] = useState<boolean | null>(null)
 
@@ -66,14 +66,13 @@ export const PortfolioChainSection: FC<Props> = memo(
             const amount = toDecimal(balance.amount, balance.decimals)
             const chainId = getChainId(chain)
             const chainAssetId = getChainAssetId(chain, balance).toString()
-            const externalIconSrc =
-              (chainId
-                ? metadata.getAssetLogoSrc(
-                    chainId,
-                    chainAssetId,
-                    chain.ecosystem,
-                  )
-                : "") || undefined
+            const externalIconSrc = chainId
+              ? metadata.getAssetLogoSrc(
+                  chainId,
+                  chainAssetId,
+                  chain.ecosystem,
+                ) || undefined
+              : undefined
 
             const meta = toSourceChainAssetData(
               chain.key,

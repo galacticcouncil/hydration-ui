@@ -33,8 +33,8 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
     )
   }
 
-  const registryId = registryChain.getAssetId(asset)
-  const registryAsset = getAsset(registryId.toString())
+  const registryId = getHydrationAssetId(asset, chain.key)
+  const registryAsset = registryId ? getAsset(registryId) : undefined
 
   return (
     <AssetLogo id={registryAsset?.id?.toString() ?? ""} className={className} />

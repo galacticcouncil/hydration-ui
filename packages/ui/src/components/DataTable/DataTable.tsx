@@ -313,17 +313,19 @@ const DataTable = <TData,>({
                         )
                       })}
 
-                      {isRowExpandable && (
-                        <TableCell sx={{ pl: "0 !important", width: "s" }}>
-                          <Flex justify="end" align="center">
-                            <Icon
-                              size="m"
-                              color={getToken("icons.onSurface")}
-                              component={
-                                isRowExpanded ? ChevronUp : ChevronDown
-                              }
-                            />
-                          </Flex>
+                      {showExpandColumn && (
+                        <TableCell sx={{ pl: "0 !important", width: "xl" }}>
+                          {isRowExpandable && (
+                            <Flex justify="end" align="center">
+                              <Icon
+                                size="m"
+                                color={getToken("icons.onSurface")}
+                                component={
+                                  isRowExpanded ? ChevronUp : ChevronDown
+                                }
+                              />
+                            </Flex>
+                          )}
                         </TableCell>
                       )}
                     </TableRow>

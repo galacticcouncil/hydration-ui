@@ -7,7 +7,11 @@ import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import { useCrossChainBalance, useCrossChainBalancesFetch } from "@/api/xcm"
+import {
+  useCrossChainBalance,
+  useCrossChainBalancesFetch,
+  useHydrationAssetId,
+} from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -33,12 +37,16 @@ export const AssetList: React.FC<AssetListProps> = ({
   selectedChain,
   setSelectedAsset,
 }) => {
-  const priceIds = useMemo(() => {
-    return items.map((item) => {
-      const registryId = registryChain.getAssetId(item.asset)
-      return registryId.toString()
-    })
-  }, [items, registryChain])
+  const getHydrationAssetId = useHydrationAssetId()
+  const chainKey = selectedChain?.key ?? ""
+
+  const priceIds = useMemo(
+    () =>
+      items
+        .map((item) => getHydrationAssetId(item.asset, chainKey))
+        .filter(isNonNullish),
+    [items, getHydrationAssetId, chainKey],
+  )
 
   const { getAssetPrice, isLoading: isAssetPriceLoading } =
     useAssetsPrice(priceIds)
@@ -61,7 +69,7 @@ export const AssetList: React.FC<AssetListProps> = ({
     if (isLoadingBalances || isAssetPriceLoading) return items
 
     const assetsWithBalances = items.map((item) => {
-      const registryId = registryChain.getAssetId(item.asset)
+      const registryId = getHydrationAssetId(item.asset, chainKey)
       const balance = balances?.get(item.asset.key)
       const { price } = getAssetPrice(registryId ?? "")
       return {

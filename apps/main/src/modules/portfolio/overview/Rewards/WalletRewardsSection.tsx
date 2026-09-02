@@ -11,10 +11,10 @@ import { useTranslation } from "react-i18next"
 import { useGigaAccountBalance } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { LINKS } from "@/config/navigation"
-import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.claim"
-import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
-import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
-import { WalletRewardsSectionEmpty } from "@/modules/wallet/assets/Rewards/WalletRewardsSectionEmpty"
+import { useClaimAllWalletRewards } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.claim"
+import { useWalletRewardsSectionData } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.data"
+import { SWalletRewardsSection } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.styled"
+import { WalletRewardsSectionEmpty } from "@/modules/portfolio/overview/Rewards/WalletRewardsSectionEmpty"
 
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])

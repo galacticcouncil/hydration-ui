@@ -37,8 +37,8 @@ import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TransferPositionFormValues,
   useTransferPosition,
-} from "@/modules/wallet/assets/Transfer/TransferPosition.form"
-import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
+} from "@/modules/portfolio/overview/Transfer/TransferPosition.form"
+import { useSubmitTransferPosition } from "@/modules/portfolio/overview/Transfer/TransferPositionModal.submit"
 import { isErc20AToken, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 

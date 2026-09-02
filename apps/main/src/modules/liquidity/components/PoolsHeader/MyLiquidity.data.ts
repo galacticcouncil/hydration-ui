@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
 import { useAccountBalancesWithPriceByAssetType } from "@/api/balances"
-import { useMyIsolatedPoolsLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
+import { useMyIsolatedPoolsLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import {
   isOmnipoolDepositPosition,
   useAccountOmnipoolPositionsData,

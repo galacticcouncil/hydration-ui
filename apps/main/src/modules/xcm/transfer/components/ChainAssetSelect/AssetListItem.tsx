@@ -51,8 +51,8 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   const { getAsset } = useAssets()
   const getHydrationAssetId = useHydrationAssetId()
 
-  const registryId = registryChain.getAssetId(asset)
-  const registryAsset = getAsset(registryId.toString())
+  const registryId = chain ? getHydrationAssetId(asset, chain.key) : null
+  const registryAsset = registryId ? getAsset(registryId) : undefined
 
   const meta = registryAsset
     ? {

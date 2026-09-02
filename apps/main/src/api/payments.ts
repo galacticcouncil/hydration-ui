@@ -126,7 +126,7 @@ export const useAccountFeePaymentAssets = () => {
     const assetIds: string[] = []
 
     Object.entries(balances).forEach(([assetId, balance]) => {
-      if (balance.free - balance.frozen > 0 && getAsset(assetId)) {
+      if (balance.transferable > 0n && getAsset(assetId)) {
         assetIds.push(assetId)
       }
     })

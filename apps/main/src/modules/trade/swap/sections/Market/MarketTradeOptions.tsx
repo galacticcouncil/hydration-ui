@@ -1,4 +1,4 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Flex, OptionCard } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
@@ -16,6 +16,7 @@ import {
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -128,7 +129,7 @@ export const MarketTradeOptions: FC<Props> = ({
               onClick={doNothing}
               disabled
             />
-          ) : showSplitSkeleton ? (
+          ) : isTwapLoading || !twap ? (
             <TradeOptionSkeleton />
           ) : (
             <TradeOption

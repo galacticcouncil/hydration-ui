@@ -598,6 +598,20 @@ export const DECENTRAL_POOL_ABI = [
   },
 ] as const
 
+// GHO/HOLLAR facilitator bucket — the protocol borrow cap for mintable assets.
+export const GHO_FACILITATOR_ABI = [
+  {
+    type: "function",
+    name: "getFacilitatorBucket",
+    inputs: [{ name: "facilitator", type: "address" }],
+    outputs: [
+      { name: "bucketCapacity", type: "uint256" },
+      { name: "bucketLevel", type: "uint256" },
+    ],
+    stateMutability: "view",
+  },
+] as const
+
 export const ERC20_ABI = [
   {
     type: "function",

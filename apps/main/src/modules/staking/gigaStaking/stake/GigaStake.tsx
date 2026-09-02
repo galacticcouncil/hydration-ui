@@ -5,7 +5,7 @@ import {
   LoadingButton,
   Separator,
   Summary,
-  Text,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -98,35 +98,23 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
 
         <Separator />
 
-        <Box px="l" asChild>
-          <Summary
-            rows={[
-              {
-                label: t("gigaStaking.gigaStake.minStake.label"),
-                content: (
-                  <Text>
-                    {t("common:currency", {
-                      value: minStakeHuman,
-                      symbol: meta.symbol,
-                    })}
-                  </Text>
-                ),
-              },
-              {
-                label: t("gigaStaking.gigaStake.receive.label"),
-                content: (
-                  <Text>
-                    {t("common:currency", {
-                      prefix: "≈",
-                      value: amountInGigaHdx,
-                      symbol: gigaHdxMeta.symbol,
-                    })}
-                  </Text>
-                ),
-              },
-            ]}
+        <Summary px="l" separator={<Separator sx={{ mx: "-l" }} />}>
+          <SummaryRow
+            label={t("gigaStaking.gigaStake.minStake.label")}
+            content={t("common:currency", {
+              value: minStakeHuman,
+              symbol: meta.symbol,
+            })}
           />
-        </Box>
+          <SummaryRow
+            label={t("gigaStaking.gigaStake.receive.label")}
+            content={t("common:currency", {
+              prefix: "≈",
+              value: amountInGigaHdx,
+              symbol: gigaHdxMeta.symbol,
+            })}
+          />
+        </Summary>
 
         <Separator />
 

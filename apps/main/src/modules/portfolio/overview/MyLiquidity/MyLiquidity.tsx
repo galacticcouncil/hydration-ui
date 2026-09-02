@@ -5,7 +5,6 @@ import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { MyLiquidityEmptyState } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityEmptyState"
 import { MyLiquidityTable } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable"
 import { useMyLiquidityTableData } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.data"
-import { useMyVaultLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
 
 import { useMyIsolatedPoolsLiquidity } from "./MyIsolatedPoolsLiquidity.data"
 
