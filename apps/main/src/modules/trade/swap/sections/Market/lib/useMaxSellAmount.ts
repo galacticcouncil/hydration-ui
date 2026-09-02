@@ -12,9 +12,12 @@ import { scaleHuman } from "@/utils/formatting"
 export const useMaxSellAmount = ({
   assetIn,
   assetOut,
+  // Off for a cross-chain destination, where assetOut is not a Hydration id
+  enabled: isEnabled = true,
 }: {
   assetIn: string
   assetOut: string
+  enabled?: boolean
 }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
@@ -28,7 +31,10 @@ export const useMaxSellAmount = ({
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const enabled =
-    rpc.isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
+    isEnabled &&
+    rpc.isApiLoaded &&
+    !!account &&
+    accountFeePaymentAssetId === Number(assetIn)
 
   const { data: tx, isPending: isTxPending } = useQuery({
     enabled,

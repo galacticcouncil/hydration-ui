@@ -1,4 +1,4 @@
-import { etherscan, neckwork } from "@galacticcouncil/utils"
+import { etherscan, intentscan, neckwork } from "@galacticcouncil/utils"
 import {
   useAccount,
   useActiveMultisigConfig,
@@ -13,6 +13,7 @@ import {
   getExplorerTxLink,
   parseTxMethodName,
 } from "@/modules/transactions/utils/tx"
+import { getXcSwapSequence } from "@/modules/transactions/utils/xcSwap"
 import { useToasts } from "@/states/toasts"
 import {
   isSubstrateTxResult,
@@ -40,11 +41,13 @@ export const useTransactionToasts = (
 
   // PAPI re-emits found:true on parachain re-orgs; show toast at most once
   const hasShownToastRef = useRef(false)
+  const txHashRef = useRef<string | undefined>(undefined)
 
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
         hasShownToastRef.current = false
+        txHashRef.current = txHash
         if (isMultisig) {
           pending({
             id,
@@ -76,13 +79,37 @@ export const useTransactionToasts = (
           return remove(id)
         }
 
-        const link = getFinalizedTransactionLink(meta, result)
+        const sequence =
+          meta.type === TransactionType.XcSwap
+            ? getXcSwapSequence(result)
+            : null
+
+        const link = sequence
+          ? intentscan.order(sequence)
+          : getFinalizedTransactionLink(meta, result)
 
         if (hasShownToastRef.current) {
           if (link) edit(id, { link })
           return
         }
         hasShownToastRef.current = true
+
+        if (meta.type === TransactionType.XcSwap) {
+          const txHash = txHashRef.current
+          return edit(id, {
+            variant: "submitted",
+            dateCreated: new Date().toISOString(),
+            ...(link && { link }),
+            ...(txHash && {
+              meta: {
+                ...meta,
+                txHash,
+                ecosystem,
+                ...(sequence && { sequence }),
+              },
+            }),
+          })
+        }
 
         if (isXcm) {
           return edit(id, {
@@ -135,6 +162,10 @@ function getTransactionLink(
   meta: TransactionMeta,
   txHash: string,
 ) {
+  if (meta.type === TransactionType.XcSwap && meta.sequence) {
+    return intentscan.order(meta.sequence)
+  }
+
   if (
     meta.type === TransactionType.EvmApprove ||
     (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm)

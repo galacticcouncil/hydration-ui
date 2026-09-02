@@ -15,7 +15,11 @@ export const ChainLogo: React.FC<ChainLogoProps> = ({
 }) => {
   const { metadata } = useRpcProvider()
 
-  const src = metadata.getChainLogoSrc(chainId, ecosystem)
-
-  return <Logo src={src} alt={`${ecosystem} ${chainId}`} {...props} />
+  return (
+    <Logo
+      src={metadata.getChainLogoSrc(chainId, ecosystem)}
+      alt={`${ecosystem} ${chainId}`}
+      {...props}
+    />
+  )
 }

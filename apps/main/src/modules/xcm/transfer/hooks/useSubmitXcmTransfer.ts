@@ -167,7 +167,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             feeSymbol: sourceFee.symbol,
           },
           meta: {
-            type: TransactionType.Xcm,
+            type: TransactionType.Xcm as const,
             srcChainKey: srcChain.key,
             srcChainFee: sourceFeeValue,
             srcChainFeeSymbol: sourceFee.symbol,

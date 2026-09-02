@@ -43,7 +43,7 @@ export const FormHeader = () => {
             aria-label="Settings"
             mr="-s"
           >
-            <Icon size="s" component={Settings} />
+            <Icon size="m" component={Settings} />
           </ButtonIcon>
 
           <Modal
