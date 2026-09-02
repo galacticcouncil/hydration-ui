@@ -8,7 +8,9 @@ SELECT
     ) AS amount_out
 FROM event
 WHERE
-    event.args ->> 'id' IN ($scheduleIds)
-    AND event.name = 'DCA.TradeExecuted'
+    event.name = 'DCA.TradeExecuted'
+    -- containment hits the GIN index on event.args;
+    -- `args ->> 'id' IN (...)` is unindexable and scans every DCA event
+    AND event.args @> ANY (ARRAY[$scheduleIds]::jsonb[])
 GROUP BY
     schedule_id;

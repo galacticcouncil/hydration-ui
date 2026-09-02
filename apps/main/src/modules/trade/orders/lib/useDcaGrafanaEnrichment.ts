@@ -12,7 +12,7 @@ export const useDcaGrafanaEnrichment = (orders: Array<DcaOrderData>) => {
     [orders],
   )
 
-  const { data, refetch } = useQuery(dcaAmountsQuery(scheduleIds))
+  const { data, refetch, isFetching } = useQuery(dcaAmountsQuery(scheduleIds))
 
   const enriched = useMemo(
     () =>
@@ -46,5 +46,5 @@ export const useDcaGrafanaEnrichment = (orders: Array<DcaOrderData>) => {
     [orders, data],
   )
 
-  return { orders: enriched, refetch }
+  return { orders: enriched, refetch, isFetching }
 }

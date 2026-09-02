@@ -40,12 +40,16 @@ type Props = {
   readonly details: DcaOrderData | IntentDcaOrderData
   readonly onTerminate: (() => void) | null
   readonly pastExecutions: ReactNode
+  readonly isSpentLoading?: boolean
+  readonly isReceivedLoading?: boolean
 }
 
 export const DcaOrderDetailsModal = ({
   details,
   onTerminate,
   pastExecutions,
+  isSpentLoading = false,
+  isReceivedLoading = false,
 }: Props) => {
   const { data: blockTimeMs } = useBlockTime()
   const { t } = useTranslation(["common", "trade"])
@@ -145,9 +149,17 @@ export const DcaOrderDetailsModal = ({
         </Flex>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
-          <Amount label={spentOrBudgetLabel} value={spentOrBudgetValue} />
+          <Amount
+            label={spentOrBudgetLabel}
+            value={spentOrBudgetValue}
+            isLoading={isSpentLoading}
+          />
           <Separator orientation="vertical" />
-          <Amount label={t("received")} value={receivedValue} />
+          <Amount
+            label={t("received")}
+            value={receivedValue}
+            isLoading={isReceivedLoading}
+          />
         </Grid>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
@@ -197,7 +209,7 @@ export const DcaOrderDetailsModal = ({
                 }
               />
             </Grid>
-            {orderRate && (
+            {orderRate && isActive && (
               <>
                 <ModalContentDivider />
                 <Flex direction="column" gap="s" py="xl" align="flex-start">
@@ -257,13 +269,7 @@ export const DcaOrderDetailsModal = ({
             </Button>
           )}
         </Flex>
-        <Flex
-          direction="column"
-          sx={{ marginInline: "var(--modal-content-inset)" }}
-        >
-          {pastExecutions}
-        </Flex>
-        <ModalContentDivider />
+        {pastExecutions}
       </ModalBody>
     </>
   )

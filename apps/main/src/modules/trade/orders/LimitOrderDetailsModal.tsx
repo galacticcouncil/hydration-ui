@@ -29,12 +29,16 @@ type Props = {
   readonly details: IntentLimitOrderData
   readonly onCancel: () => void
   readonly pastExecutions?: ReactNode
+  readonly isSpentLoading?: boolean
+  readonly isReceivedLoading?: boolean
 }
 
 export const LimitOrderDetailsModal = ({
   details,
   onCancel,
   pastExecutions = null,
+  isSpentLoading = false,
+  isReceivedLoading = false,
 }: Props) => {
   const { t } = useTranslation(["common", "trade"])
   const removeIntent = useRemoveIntent()
@@ -71,6 +75,7 @@ export const LimitOrderDetailsModal = ({
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
           <Amount
             label={t("trade:trade.orders.limit.filledFrom")}
+            isLoading={isSpentLoading}
             value={
               details.fromAmountExecuted
                 ? t("currency", {
@@ -83,6 +88,7 @@ export const LimitOrderDetailsModal = ({
           <Separator orientation="vertical" />
           <Amount
             label={t("trade:trade.orders.limit.filledTo")}
+            isLoading={isReceivedLoading}
             value={
               details.toAmountExecuted
                 ? t("currency", {
@@ -113,7 +119,7 @@ export const LimitOrderDetailsModal = ({
             }
           />
         </Grid>
-        {orderRate && (
+        {orderRate && details.status === OrderStatus.Created && (
           <>
             <ModalContentDivider />
             <Flex direction="column" gap="s" py="xl" align="flex-start">
@@ -184,17 +190,7 @@ export const LimitOrderDetailsModal = ({
             </Flex>
           </>
         )}
-        {pastExecutions && (
-          <>
-            <Flex
-              direction="column"
-              sx={{ marginInline: "var(--modal-content-inset)" }}
-            >
-              {pastExecutions}
-            </Flex>
-            <ModalContentDivider />
-          </>
-        )}
+        {pastExecutions}
       </ModalBody>
     </>
   )

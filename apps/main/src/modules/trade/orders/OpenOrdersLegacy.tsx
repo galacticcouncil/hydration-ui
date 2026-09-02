@@ -37,12 +37,15 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
 
   const { orders: chainOrders, isLoading: isChainLoading } =
     useChainOrdersData()
-  const { orders: enrichedOrders, refetch } =
+  const { orders: enrichedOrders, refetch, isFetching: isGrafanaFetching } =
     useDcaGrafanaEnrichment(chainOrders)
   const { orders: chainIntentOrders, isLoading: isIntentsLoading } =
     useIntentOrdersData()
-  const { orders: intentOrders, refetch: refetchIntents } =
-    useIntentFillEnrichment(chainIntentOrders)
+  const {
+    orders: intentOrders,
+    refetch: refetchIntents,
+    isFetching: isIntentFillFetching,
+  } = useIntentFillEnrichment(chainIntentOrders)
 
   const concatenated = useMemo<Array<OrderData>>(
     () => [...intentOrders, ...enrichedOrders],
@@ -54,6 +57,43 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
   const columns = useOpenOrdersColumns()
 
   const detail = allOrders.find((order) => orderKey(order) === detailKey)
+
+  const detailAmountsLoading = useMemo(() => {
+    if (!detail) {
+      return { isSpentLoading: false, isReceivedLoading: false }
+    }
+
+    if (isDcaScheduleOrder(detail)) {
+      return {
+        isSpentLoading:
+          isGrafanaFetching &&
+          detail.isOpenBudget &&
+          !detail.fromAmountExecuted,
+        isReceivedLoading: isGrafanaFetching && !detail.toAmountExecuted,
+      }
+    }
+
+    if (detail.kind === OrderKind.Limit || isIntentOrder(detail)) {
+      return {
+        isSpentLoading:
+          isIntentFillFetching && !detail.fromAmountExecuted,
+        isReceivedLoading:
+          isIntentFillFetching && !detail.toAmountExecuted,
+      }
+    }
+
+    if (isMergedOrder(detail)) {
+      const isFetching = isGrafanaFetching || isIntentFillFetching
+
+      return {
+        isSpentLoading:
+          isFetching && detail.isOpenBudget && !detail.fromAmountExecuted,
+        isReceivedLoading: isFetching && !detail.toAmountExecuted,
+      }
+    }
+
+    return { isSpentLoading: false, isReceivedLoading: false }
+  }, [detail, isGrafanaFetching, isIntentFillFetching])
 
   const close = () => {
     setDetailKey(null)
@@ -69,8 +109,8 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
         paginated
         {...paginationProps}
         onRowClick={(order) => {
-          void refetch()
-          void refetchIntents()
+          if (!isGrafanaFetching) void refetch()
+          if (!isIntentFillFetching) void refetchIntents()
           setDetailKey(orderKey(order))
         }}
         emptyState={<OrdersEmptyState />}
@@ -91,6 +131,8 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
             <LimitOrderDetailsModal
               details={detail}
               onCancel={close}
+              isSpentLoading={detailAmountsLoading.isSpentLoading}
+              isReceivedLoading={detailAmountsLoading.isReceivedLoading}
               pastExecutions={
                 detail.isPartiallyFillable ? (
                   <PastExecutionsIntent
@@ -104,6 +146,8 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
           ) : (
             <DcaOrderDetailsModal
               details={detail}
+              isSpentLoading={detailAmountsLoading.isSpentLoading}
+              isReceivedLoading={detailAmountsLoading.isReceivedLoading}
               pastExecutions={
                 isMergedOrder(detail) ? (
                   <PastExecutionsMerged

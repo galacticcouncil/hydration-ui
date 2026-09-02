@@ -2,6 +2,7 @@ import { FC } from "react"
 
 import { useOrderTradesData } from "@/modules/trade/orders/lib/useOrderTradesData"
 import { PastExecutions } from "@/modules/trade/orders/PastExecutions/PastExecutions"
+import { PastExecutionsModalSection } from "@/modules/trade/orders/PastExecutions/PastExecutionsModalSection"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
@@ -24,12 +25,14 @@ export const PastExecutionsLegacy: FC<Props> = ({
   )
 
   return (
-    <PastExecutions
-      assetIn={assetIn}
-      assetOut={assetOut}
-      executions={executions}
-      isLoading={isLoading}
-      className={className}
-    />
+    <PastExecutionsModalSection executions={executions} isLoading={isLoading}>
+      <PastExecutions
+        assetIn={assetIn}
+        assetOut={assetOut}
+        executions={executions}
+        isLoading={isLoading}
+        className={className}
+      />
+    </PastExecutionsModalSection>
   )
 }

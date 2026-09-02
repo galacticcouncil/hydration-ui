@@ -21,7 +21,7 @@ export const dcaAmountsQuery = (scheduleIds: ReadonlyArray<number>) =>
     queryFn: async ({ signal }) => {
       const sql = dcaAmounts.replace(
         "$scheduleIds",
-        scheduleIds.map((id) => `'${Number(id)}'`).join(","),
+        scheduleIds.map((id) => `'{"id":${Number(id)}}'`).join(","),
       )
 
       const [ids = [], spent = [], received = []] = (await fetchGrafana(

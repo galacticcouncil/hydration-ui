@@ -20,7 +20,9 @@ export const useIntentFillEnrichment = (orders: Array<OrderData>) => {
     [orders],
   )
 
-  const { data, refetch } = useQuery(intentEventsQuery(indexerSdk, ids))
+  const { data, refetch, isFetching } = useQuery(
+    intentEventsQuery(indexerSdk, ids),
+  )
 
   const enriched = useMemo(
     () =>
@@ -28,5 +30,5 @@ export const useIntentFillEnrichment = (orders: Array<OrderData>) => {
     [orders, data],
   )
 
-  return { orders: enriched, refetch }
+  return { orders: enriched, refetch, isFetching }
 }
