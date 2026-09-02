@@ -15,7 +15,6 @@ import { FC, useCallback, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import {
   SCustomPill,
@@ -57,19 +56,36 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
     "limitInverted",
   ])
 
-  // Prefill with spot the first time it's enabled so the field isn't empty.
+  // One-shot flag: prefill spot only when limit is newly enabled or the pair
+  // changes — not when the user clears the price field to retype.
+  const shouldPrefillRef = useRef(false)
+
   useEffect(() => {
-    if (limitEnabled && !limitPrice && marketSellPerBuy) {
-      setValue("limitPrice", marketSellPerBuy, { shouldValidate: true })
+    if (limitEnabled) {
+      shouldPrefillRef.current = true
     }
-  }, [limitEnabled, limitPrice, marketSellPerBuy, setValue])
+  }, [limitEnabled])
 
   // Reset the price when the pair changes — a price for HDX/USDC is
   // meaningless for another pair.
   useEffect(() => {
     setValue("limitPrice", "")
     setUserPct(null)
+    shouldPrefillRef.current = true
   }, [sellAsset?.id, buyAsset?.id, setValue])
+
+  // Prefill with spot the first time it's enabled so the field isn't empty.
+  useEffect(() => {
+    if (
+      shouldPrefillRef.current &&
+      limitEnabled &&
+      !limitPrice &&
+      marketSellPerBuy
+    ) {
+      setValue("limitPrice", marketSellPerBuy, { shouldValidate: true })
+      shouldPrefillRef.current = false
+    }
+  }, [limitEnabled, limitPrice, marketSellPerBuy, setValue])
 
   // Inline ±% pill: user types a deviation from spot; we store the raw pct so
   // the pill shows exactly what they typed (avoids rounding drift), and set
@@ -160,32 +176,29 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
     (isInverted ? buyAsset?.symbol : sellAsset?.symbol) ?? ""
   const priceBaseSymbol =
     (isInverted ? sellAsset?.symbol : buyAsset?.symbol) ?? ""
-  const priceQuoteAssetId = (isInverted ? buyAsset?.id : sellAsset?.id) ?? ""
 
-  const [priceFiat] = useDisplayAssetPrice(
-    priceQuoteAssetId,
-    displayPrice || "0",
-    { compact: true, maximumFractionDigits: 2 },
-  )
+  const deviation = (() => {
+    if (!limitPrice || !marketSellPerBuy) return null
+    try {
+      const market = new Big(marketSellPerBuy)
+      if (market.lte(0)) return null
+      return new Big(limitPrice).minus(market).div(market).times(100).toNumber()
+    } catch {
+      return null
+    }
+  })()
 
   const deviationDisplay = (() => {
     if (userPct !== null) {
       const sign = userPct > 0 ? "+" : ""
       return `${sign}${userPct.toFixed(2)}%`
     }
-    if (!limitPrice || !marketSellPerBuy) return "0%"
-    try {
-      const dev = new Big(limitPrice)
-        .minus(marketSellPerBuy)
-        .div(marketSellPerBuy)
-        .times(100)
-        .toNumber()
-      const sign = dev > 0 ? "+" : ""
-      return `${sign}${dev.toFixed(2)}%`
-    } catch {
-      return "0%"
-    }
+    if (deviation === null) return "0%"
+    const sign = deviation > 0 ? "+" : ""
+    return `${sign}${deviation.toFixed(2)}%`
   })()
+
+  const signedDeviationPct = userPct ?? deviation ?? 0
 
   return (
     <Flex direction="column">
@@ -226,9 +239,9 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
               <SCustomPill
                 isActive={isEditingPill}
                 tone={
-                  userPct && userPct > 0
+                  signedDeviationPct > 0
                     ? "positive"
-                    : userPct && userPct < 0
+                    : signedDeviationPct < 0
                       ? "negative"
                       : "neutral"
                 }
@@ -326,21 +339,9 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
                 </Text>
               </Flex>
             </Flex>
-            {limitPrice && (
-              <Text
-                fs="p6"
-                lh={1}
-                fw={400}
-                color={getToken("text.low")}
-                truncate
-                sx={{ alignSelf: "flex-end" }}
-              >
-                {priceFiat}
-              </Text>
-            )}
 
             {marketSellPerBuy && (
-              <Flex justify="flex-end" mt="m">
+              <Flex justify="flex-end" mt="-base">
                 <SMarketButton
                   type="button"
                   onClick={() => {

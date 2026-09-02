@@ -89,8 +89,6 @@ export const AssetInput = ({
     }
   }
 
-  const errorMessage = assetError ?? amountError
-
   return (
     <Flex
       direction="column"
@@ -215,24 +213,34 @@ export const AssetInput = ({
                 }}
               />
 
-              {!ignoreDisplayValue && (
-                <Text
-                  color={getToken("text.low")}
-                  fs="p6"
-                  fw={400}
-                  truncate
-                  width="100%"
-                  align="right"
-                >
-                  {displayValueLoading ? <Skeleton width={48} /> : displayValue}
-                </Text>
+              {amountError ? (
+                <FormError lh={1} truncate width="100%" align="right">
+                  {amountError}
+                </FormError>
+              ) : (
+                !ignoreDisplayValue && (
+                  <Text
+                    color={getToken("text.low")}
+                    fs="p6"
+                    fw={400}
+                    truncate
+                    width="100%"
+                    align="right"
+                  >
+                    {displayValueLoading ? (
+                      <Skeleton width={48} />
+                    ) : (
+                      displayValue
+                    )}
+                  </Text>
+                )
               )}
             </Flex>
           )}
         </Flex>
-        {errorMessage && (
+        {assetError && (
           <FormError lh={1} ml="auto">
-            {errorMessage}
+            {assetError}
           </FormError>
         )}
       </Flex>

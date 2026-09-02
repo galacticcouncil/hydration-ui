@@ -5,7 +5,6 @@ import {
   Flex,
   Icon,
   MicroButton,
-  Skeleton,
   Text,
   Toggle,
   ToggleLabel,
@@ -19,7 +18,6 @@ import { FC, MouseEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import {
   computeDerived,
   getDerived,
@@ -151,26 +149,6 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
       return ""
     }
   })()
-
-  const denomAssetIdForFiat = (isInverted ? sellAsset?.id : buyAsset?.id) ?? ""
-
-  const priceHumanForFiat = (() => {
-    if (!displayPrice.trim()) return null
-    try {
-      const n = new Big(displayPrice.replace(/\s/g, "").replace(",", "."))
-      return n.gt(0) ? n.toString() : null
-    } catch {
-      return null
-    }
-  })()
-
-  const [priceFiatDisplay, { isLoading: priceFiatLoading }] =
-    useDisplayAssetPrice(denomAssetIdForFiat, priceHumanForFiat ?? "0", {
-      compact: true,
-      maximumFractionDigits: 2,
-    })
-
-  const showPriceFiatRow = Boolean(denomAssetIdForFiat && priceHumanForFiat)
 
   // ── Deviation from market price ──
   const deviation = (() => {
@@ -502,27 +480,11 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
                   : (buyAsset?.symbol ?? "")}
               </Text>
             </Flex>
-            {showPriceFiatRow && (
-              <Text
-                fs="p6"
-                lh={1}
-                fw={400}
-                color={getToken("text.low")}
-                truncate
-                mt="-xs"
-              >
-                {priceFiatLoading ? (
-                  <Skeleton sx={{ width: "2xl" }} />
-                ) : (
-                  priceFiatDisplay
-                )}
-              </Text>
-            )}
           </Flex>
         </Flex>
 
         {marketDisplayValue && (
-          <Flex justify="flex-end" mt="m">
+          <Flex justify="flex-end" mt="-s">
             <SMarketButton type="button" onClick={handleSetMarketPrice}>
               <Trans
                 i18nKey="trade:limit.market"
