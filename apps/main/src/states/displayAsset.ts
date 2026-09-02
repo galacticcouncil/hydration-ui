@@ -1,12 +1,15 @@
 import { useStableArray } from "@galacticcouncil/utils"
+import { minutesToMilliseconds } from "date-fns"
 import { useCallback, useMemo } from "react"
-import { isNonNullish } from "remeda"
+import { isNonNullish, pickBy, unique } from "remeda"
 import { create } from "zustand"
-import { combine, persist } from "zustand/middleware"
+import { persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
 import { useSubscribedPriceKeys } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
+
+const SPOT_PRICE_MAX_AGE = minutesToMilliseconds(5)
 
 type TDisplayAsset = {
   id: string | undefined
@@ -42,31 +45,62 @@ export type AssetPrice = { price: string; isLoading: boolean; isValid: boolean }
 
 type Store = {
   assets: TStoredAssetPrice
+  updatedAt: number
   setAssets: (asset: { id: string; price: string | null }[]) => void
 }
 
-export const useDisplaySpotPriceStore = create<Store>(
-  combine({ assets: {} as TStoredAssetPrice }, (set) => ({
-    setAssets: (assets) => {
-      set((state) => {
-        const hasChanges = assets.some(
-          (asset) => state.assets[asset.id] !== asset.price,
-        )
+export const useDisplaySpotPriceStore = create<Store>()(
+  persist(
+    (set) => ({
+      assets: {},
+      updatedAt: 0,
+      setAssets: (assets) => {
+        set((state) => {
+          const hasChanges = assets.some(
+            (asset) => state.assets[asset.id] !== asset.price,
+          )
 
-        if (!hasChanges) return state
+          if (!hasChanges) return state
 
-        const newValues = { ...state.assets }
+          const newValues = { ...state.assets }
 
-        assets.forEach((asset) => (newValues[asset.id] = asset.price))
+          assets.forEach((asset) => (newValues[asset.id] = asset.price))
 
-        return { assets: newValues }
-      })
+          return { assets: newValues, updatedAt: Date.now() }
+        })
+      },
+    }),
+    {
+      // prices are denominated in the display asset, so a different one
+      // must not read the previous denomination back off disk
+      name: `prices-${ENV.VITE_DISPLAY_ASSET_ID}`,
+      version: 1,
+      partialize: ({ assets, updatedAt }) => ({
+        assets: pickBy(assets, isNonNullish),
+        updatedAt,
+      }),
+      merge: (persisted, current) => {
+        const stored = persisted as Partial<Store> | undefined
+
+        if (
+          !stored?.assets ||
+          Date.now() - (stored.updatedAt ?? 0) > SPOT_PRICE_MAX_AGE
+        ) {
+          return current
+        }
+
+        return {
+          ...current,
+          assets: stored.assets,
+          updatedAt: stored.updatedAt ?? 0,
+        }
+      },
     },
-  })),
+  ),
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
-  const stableAssetIds = useStableArray(assetIds)
+  const stableAssetIds = useStableArray(unique(assetIds))
 
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>

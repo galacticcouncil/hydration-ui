@@ -3,6 +3,7 @@ import {
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
   QUERY_KEY_BLOCK_PREFIX,
+  resolveHydrationAssetId,
 } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
@@ -23,7 +24,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { isString } from "remeda"
 
 import { ENV } from "@/config/env"
@@ -94,6 +95,16 @@ const useHydrationClient = () => {
 export const useCrossChainConfigService = () => {
   const { data } = useCrossChainConfig()
   return data.config
+}
+
+export const useHydrationAssetId = () => {
+  const configService = useCrossChainConfigService()
+
+  return useCallback(
+    (asset: Asset, sourceChainKey: string): string | null =>
+      resolveHydrationAssetId(asset, sourceChainKey, configService),
+    [configService],
+  )
 }
 
 export const useCrossChainWallet = () => {

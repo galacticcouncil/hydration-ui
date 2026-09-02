@@ -82,7 +82,11 @@ function RootComponent() {
               <MainLayout />
               <Services />
               <Footer />
-              {!hasTopNavbar && <MobileTabBar />}
+              {!hasTopNavbar && (
+                <Suspense>
+                  <MobileTabBar />
+                </Suspense>
+              )}
             </AssetRegistryGate>
           </MultisigProvider>
         </RpcProvider>
@@ -119,12 +123,14 @@ function Services() {
   const neckworkEnabled = useNeckworkEnabled()
   return (
     <>
-      <TransactionManager />
-      <Web3ConnectModal
-        squidSdk={squidSdk}
-        neckwork={neckworkEnabled ? neckworkClient : null}
-        papi={papi}
-      />
+      <Suspense fallback={null}>
+        <TransactionManager />
+        <Web3ConnectModal
+          squidSdk={squidSdk}
+          neckwork={neckworkEnabled ? neckworkClient : null}
+          papi={papi}
+        />
+      </Suspense>
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>
