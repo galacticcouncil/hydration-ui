@@ -533,30 +533,6 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
             </SMarketButton>
           </Flex>
         )}
-        {limitPrice && displayPrice && (
-          <Text
-            fw={500}
-            fs="p6"
-            lh={1.3}
-            color={getToken("text.medium")}
-            mt="s"
-          >
-            {t(
-              isInverted
-                ? "trade:limit.fillsWhenBelow"
-                : "trade:limit.fillsWhenAbove",
-              {
-                base: isInverted
-                  ? (buyAsset?.symbol ?? "")
-                  : (sellAsset?.symbol ?? ""),
-                price: displayPrice,
-                quote: isInverted
-                  ? (sellAsset?.symbol ?? "")
-                  : (buyAsset?.symbol ?? ""),
-              },
-            )}
-          </Text>
-        )}
       </Flex>
 
       <SwapSectionSeparator />
