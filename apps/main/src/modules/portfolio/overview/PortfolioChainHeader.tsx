@@ -13,6 +13,7 @@ import {
 type Props = ComponentPropsWithoutRef<"button"> & {
   readonly name: string
   readonly chainId: string | number
+  readonly chainKey?: string
   readonly ecosystem?: ChainEcosystem
   readonly totalDisplay?: string
   readonly isLoading: boolean
@@ -25,6 +26,7 @@ export const PortfolioChainHeader = forwardRef<HTMLButtonElement, Props>(
     {
       name,
       chainId,
+      chainKey,
       ecosystem,
       totalDisplay,
       isLoading,
@@ -53,6 +55,7 @@ export const PortfolioChainHeader = forwardRef<HTMLButtonElement, Props>(
           ) : (
             <ChainLogo
               chainId={chainId}
+              chainKey={chainKey}
               ecosystem={ecosystem}
               size="extra-small"
             />

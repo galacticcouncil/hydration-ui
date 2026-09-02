@@ -17,6 +17,7 @@ import {
   fetchHydrationRegistryAssetAmounts,
   useAccountBalanceFilter,
 } from "@/api/balances"
+import { useKrakenSpotPrice } from "@/api/external/kraken"
 import { portfolioBalanceQueryKey } from "@/api/portfolio/queryKeys"
 import {
   useCrossChainConfigService,
@@ -181,6 +182,9 @@ export const useMultichainPortfolio = (
   )
 
   const { getAssetPrice } = useAssetsPrice(assetIds)
+  const { data: nearSpotPrice } = useKrakenSpotPrice(
+    stableChains.includes("near") ? "near" : undefined,
+  )
 
   const refetchPair = useCallback(
     (address: string, chainKey: string) =>
@@ -215,13 +219,18 @@ export const useMultichainPortfolio = (
 
         const balances = chainEntries.flatMap((entry) =>
           entry.balances.map(({ balance, assetId }) => {
-            const price = assetId ? getAssetPrice(assetId) : null
+            const registryPrice = assetId ? getAssetPrice(assetId) : null
+            const spotPrice = registryPrice?.isValid
+              ? registryPrice.price
+              : chainKey === "near" && nearSpotPrice != null
+                ? nearSpotPrice.toString()
+                : null
 
             return {
               balance,
               assetId,
-              displayValue: price?.isValid
-                ? Big(price.price)
+              displayValue: spotPrice
+                ? Big(spotPrice)
                     .times(toDecimal(balance.amount, balance.decimals))
                     .toString()
                 : null,
@@ -254,7 +263,7 @@ export const useMultichainPortfolio = (
           },
         ]
       }),
-    [configService.chains, getAssetPrice, refetchChain, resolved, stableChains],
+    [configService.chains, getAssetPrice, nearSpotPrice, refetchChain, resolved, stableChains],
   )
 
   return { byChain, isLoading, isRefetching, lastUpdatedAt, refetchAll }
