@@ -14,9 +14,15 @@ export type BilStrategyMetrics = {
 }
 
 export function useBilStrategyMetrics() {
-  const { data: vaultStats, isLoading: isVaultStatsLoading } = useVaultStats()
+  const {
+    data: vaultStats,
+    isLoading: isVaultStatsLoading,
+    isFetched: isVaultStatsFetched,
+  } = useVaultStats()
   const { data: reserveConfig, isLoading: isReserveConfigLoading } =
     useBilReserveConfig()
+
+  const isVaultStatsPending = isVaultStatsLoading || !isVaultStatsFetched
 
   const tvl = vaultStats.totalAssets * vaultStats.exchangeRate
   const maxLtvPct = reserveConfig?.maxLtvPct ?? NAX_LTV_PCT_DEFAULT
@@ -52,6 +58,8 @@ export function useBilStrategyMetrics() {
 
   return {
     data: metrics,
-    isLoading: isVaultStatsLoading || isReserveConfigLoading,
+    isLoading: isVaultStatsPending || isReserveConfigLoading,
+    isVaultStatsPending,
+    isReserveConfigLoading,
   }
 }

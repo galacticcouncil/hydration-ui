@@ -21,10 +21,7 @@ import {
   SBorrowsSeparator,
 } from "@/modules/strategies/bil/components/MyBorrowsCard.styled"
 import { RepayHollarModal } from "@/modules/strategies/bil/components/RepayHollarModal"
-import {
-  useBilPoolPosition,
-  useBilReserveConfig,
-} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useBilMaxBorrowable } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useVaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
 
 export const MyBorrowsCard = () => {
@@ -33,8 +30,12 @@ export const MyBorrowsCard = () => {
   const [showRepay, setShowRepay] = useState(false)
   const evmAddress = useEvmAddress()
 
-  const { data: poolPosition } = useBilPoolPosition(evmAddress)
-  const { data: reserveConfig } = useBilReserveConfig()
+  const {
+    maxBorrowableUsd: availableUsd,
+    isLoading: isAvailableToBorrowLoading,
+    poolPosition,
+    reserveConfig,
+  } = useBilMaxBorrowable(evmAddress)
   const { data: stats } = useVaultStats()
 
   const borrowApyPercent = reserveConfig?.borrowApyPct ?? 10
@@ -42,7 +43,6 @@ export const MyBorrowsCard = () => {
 
   const totalCollateralUsd = poolPosition?.totalCollateralUsd ?? 0
   const totalDebtUsd = poolPosition?.totalDebtUsd ?? 0
-  const availableUsd = poolPosition?.availableBorrowsUsd ?? 0
   const ltvPct = poolPosition?.ltvPct ?? 0
   const healthFactor = poolPosition?.healthFactor ?? Infinity
   const healthFactorValue =
@@ -150,6 +150,7 @@ export const MyBorrowsCard = () => {
             <ValueStats
               wrap
               size="medium"
+              isLoading={isAvailableToBorrowLoading}
               label={t("borrow:borrow.available")}
               value={t("common:currency", {
                 value: availableUsd,
@@ -160,7 +161,11 @@ export const MyBorrowsCard = () => {
               <Button
                 variant="primary"
                 onClick={() => setShowBorrow(true)}
-                disabled={!hasCollateral || availableUsd <= 0}
+                disabled={
+                  isAvailableToBorrowLoading ||
+                  !hasCollateral ||
+                  availableUsd <= 0
+                }
               >
                 {t("borrow:borrow")}
               </Button>

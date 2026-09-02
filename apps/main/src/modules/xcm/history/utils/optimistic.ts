@@ -179,15 +179,6 @@ function isIgnored(
   incoming: XcJourney,
   address: string,
 ): boolean {
-  // Basejump transfers are tracked through basejumpscan; xc-scan repeats them.
-  const duplicatesBasejump = list.some(
-    (item) =>
-      item.originProtocol === "basejump" &&
-      isOptimisticJourney(item) &&
-      sharesTxHash(item, incoming),
-  )
-  if (duplicatesBasejump) return true
-
   // Hop leg arriving after its canonical journey.
   return (
     isHopTx(address, incoming.originTxPrimary) &&

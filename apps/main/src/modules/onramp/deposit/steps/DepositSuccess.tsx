@@ -84,7 +84,7 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
         <StepButton
           title={t("deposit.success.cta.wallet.title")}
           description={t("deposit.success.cta.wallet.description")}
-          onClick={() => navigate({ to: LINKS.walletAssets })}
+          onClick={() => navigate({ to: LINKS.portfolio })}
         />
 
         <Button onClick={onConfirm} size="large">

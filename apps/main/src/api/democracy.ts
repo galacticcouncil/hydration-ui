@@ -34,73 +34,8 @@ export type TUnlockableVote = {
   classId: number
 }
 
-/**
- * `pallet-conviction-voting` lock periods per conviction, in multiples of the
- * `VoteLockingPeriod` chain constant (None locks nothing, each conviction
- * step doubles). The unlock block is pure block arithmetic against the same
- * constant the pallet enforces — block time never enters eligibility math.
- */
-const LOCK_PERIODS_BY_INDEX = {
-  0: 0,
-  1: 1,
-  2: 2,
-  3: 4,
-  4: 8,
-  5: 16,
-  6: 32,
-} as const
-
-type ConvictionIndex = keyof typeof LOCK_PERIODS_BY_INDEX
-
-const LOCK_PERIODS_BY_NAME: { [key: string]: number } = {
-  none: LOCK_PERIODS_BY_INDEX[0],
-  locked1x: LOCK_PERIODS_BY_INDEX[1],
-  locked2x: LOCK_PERIODS_BY_INDEX[2],
-  locked3x: LOCK_PERIODS_BY_INDEX[3],
-  locked4x: LOCK_PERIODS_BY_INDEX[4],
-  locked5x: LOCK_PERIODS_BY_INDEX[5],
-  locked6x: LOCK_PERIODS_BY_INDEX[6],
-}
-
 export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
 export type Conviction = (typeof CONVICTIONS)[number]
-
-export const getConvictionBlocks = (
-  voteLockingPeriodBlocks: number,
-  conviction: string | number,
-) => {
-  if (typeof conviction === "number") {
-    if (!(conviction in LOCK_PERIODS_BY_INDEX)) return undefined
-
-    return (
-      LOCK_PERIODS_BY_INDEX[conviction as ConvictionIndex] *
-      voteLockingPeriodBlocks
-    )
-  }
-
-  const lockPeriods = LOCK_PERIODS_BY_NAME[conviction]
-  if (lockPeriods === undefined) return undefined
-
-  return lockPeriods * voteLockingPeriodBlocks
-}
-
-type UnsafeVoteLockingPeriodConstants = {
-  ConvictionVoting: { VoteLockingPeriod: () => Promise<number> }
-}
-
-export const voteLockingPeriodQuery = (rpc: TProviderContext) =>
-  queryOptions({
-    queryKey: ["voteLockingPeriod"],
-    enabled: rpc.isApiLoaded,
-    staleTime: Infinity,
-    queryFn: async () => {
-      // Unsafe api — `ConvictionVoting` constants are not part of the
-      // generated descriptor set.
-      const constants = rpc.papiClient.getUnsafeApi()
-        .constants as unknown as UnsafeVoteLockingPeriodConstants
-      return Number(await constants.ConvictionVoting.VoteLockingPeriod())
-    },
-  })
 
 const CONVICTION_NAMES = [
   "none",
@@ -162,7 +97,7 @@ type UnsafeVoteLockingPeriodConstants = {
 export const voteLockingPeriodQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["voteLockingPeriod"],
-    enabled: rpc.isReady,
+    enabled: rpc.isApiLoaded,
     staleTime: Infinity,
     queryFn: async () => {
       // Unsafe api — `ConvictionVoting` constants are not part of the
@@ -201,22 +136,14 @@ const getVoteConviction = (vote: ConvictionVotingVoteAccountVote): string => {
 
 export type TVoteKind = "aye" | "nay" | "split" | "abstain"
 
-export const convictionVoteWeightFactor = (conviction: string): number => {
-  if (conviction === "none") return 0.1
-
-  const locked = /^locked([1-6])x$/u.exec(conviction)
-  if (locked?.[1]) return Number.parseInt(locked[1], 10)
-
-  return 0.1
-}
+export const convictionVoteWeightFactor = (
+  conviction: string | number,
+): number => VOTE_WEIGHT_BY_CONVICTION[toConviction(conviction) ?? 0]
 
 /** Human-facing multiplier for Standard conviction (0.1x … 6x). */
 export const convictionVoteMultiplierForDisplay = (
-  conviction: string,
-): string => {
-  const factor = convictionVoteWeightFactor(conviction)
-  return factor === 0.1 ? "0.1x" : `${factor}x`
-}
+  conviction: string | number,
+): string => `${convictionVoteWeightFactor(conviction)}x`
 
 const voteKindFromAccountVote = (
   vote: ConvictionVotingVoteAccountVote,

@@ -31,6 +31,7 @@
     "@galacticcouncil/utils": "*",
     "@galacticcouncil/web3-connect": "*",
     "@hookform/resolvers": "^5.0.1",
+    "@tanstack/query-persist-client-core": "5.101.4",
     "@tanstack/charts": "0.14.0",
     "@tanstack/react-query": "5.101.4",
     "@tanstack/react-router": "^1.170.10",

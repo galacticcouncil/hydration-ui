@@ -155,8 +155,10 @@ export const XcmForm = () => {
 
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
+  const getHydrationAssetId = useHydrationAssetId()
+
   const spotPriceId = srcAsset
-    ? registryChain.getAssetId(srcAsset).toString()
+    ? (getHydrationAssetId(srcAsset, srcChainKey) ?? undefined)
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)

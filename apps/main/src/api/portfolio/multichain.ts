@@ -17,7 +17,6 @@ import {
   fetchHydrationRegistryAssetAmounts,
   useAccountBalanceFilter,
 } from "@/api/balances"
-import { useKrakenSpotPrice } from "@/api/external/kraken"
 import { portfolioBalanceQueryKey } from "@/api/portfolio/queryKeys"
 import {
   useCrossChainConfigService,
@@ -51,7 +50,7 @@ export const useMultichainPortfolio = (
   const wallet = useCrossChainWallet()
   const configService = useCrossChainConfigService()
   const queryClient = useQueryClient()
-  const { sdk, isReady } = useRpcProvider()
+  const { sdk, isApiLoaded } = useRpcProvider()
   const { getAsset, isToken, isErc20 } = useAssets()
   const balanceFilter = useAccountBalanceFilter()
   const stableAddresses = useStableArray(addresses)
@@ -109,7 +108,7 @@ export const useMultichainPortfolio = (
         },
         enabled:
           chainKey !== HYDRATION_CHAIN_KEY ||
-          (isReady && !!Object.keys(sdk).length && !!balanceFilter),
+          (isApiLoaded && !!Object.keys(sdk).length && !!balanceFilter),
         staleTime: 60_000,
         gcTime: PORTFOLIO_CACHE_MAX_AGE,
         refetchOnWindowFocus: false,
@@ -119,7 +118,7 @@ export const useMultichainPortfolio = (
       fetchHydrationBalances,
       wallet,
       configService,
-      isReady,
+      isApiLoaded,
       sdk,
       balanceFilter,
     ],
@@ -182,9 +181,6 @@ export const useMultichainPortfolio = (
   )
 
   const { getAssetPrice } = useAssetsPrice(assetIds)
-  const { data: nearSpotPrice } = useKrakenSpotPrice(
-    stableChains.includes("near") ? "near" : undefined,
-  )
 
   const refetchPair = useCallback(
     (address: string, chainKey: string) =>
@@ -219,18 +215,13 @@ export const useMultichainPortfolio = (
 
         const balances = chainEntries.flatMap((entry) =>
           entry.balances.map(({ balance, assetId }) => {
-            const registryPrice = assetId ? getAssetPrice(assetId) : null
-            const spotPrice = registryPrice?.isValid
-              ? registryPrice.price
-              : chainKey === "near" && nearSpotPrice !== undefined
-                ? nearSpotPrice.toString()
-                : null
+            const price = assetId ? getAssetPrice(assetId) : null
 
             return {
               balance,
               assetId,
-              displayValue: spotPrice
-                ? Big(spotPrice)
+              displayValue: price?.isValid
+                ? Big(price.price)
                     .times(toDecimal(balance.amount, balance.decimals))
                     .toString()
                 : null,
@@ -263,14 +254,7 @@ export const useMultichainPortfolio = (
           },
         ]
       }),
-    [
-      configService.chains,
-      getAssetPrice,
-      nearSpotPrice,
-      refetchChain,
-      resolved,
-      stableChains,
-    ],
+    [configService.chains, getAssetPrice, refetchChain, resolved, stableChains],
   )
 
   return { byChain, isLoading, isRefetching, lastUpdatedAt, refetchAll }

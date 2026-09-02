@@ -95,6 +95,7 @@ export const useBlockHeightStatus = (blockHeight: number | null) => {
 }
 
 export const useActiveIndexerStatus = () => {
+  const neckworkEnabled = useNeckworkEnabled()
   const url = useSquidUrl()
   const squidSdk = useSquidClient()
   const urlList = useFullSquidUrlList()
@@ -103,7 +104,10 @@ export const useActiveIndexerStatus = () => {
     data: blockHeight,
     isLoading,
     isError,
-  } = useQuery(latestBlockHeightQuery(squidSdk, url))
+  } = useQuery({
+    ...latestBlockHeightQuery(squidSdk, url),
+    enabled: !neckworkEnabled,
+  })
 
   const blockHeightStatus = useBlockHeightStatus(blockHeight ?? null)
 

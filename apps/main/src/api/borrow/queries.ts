@@ -53,8 +53,7 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { PROXY_URL } from "@/api/neckwork"
-import { TProviderData } from "@/api/rpcClient"
+import { PROXY_URL, TProviderData } from "@/api/provider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
