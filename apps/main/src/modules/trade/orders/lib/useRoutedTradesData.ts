@@ -7,7 +7,7 @@ import { useSquidClient } from "@/api/provider"
 import { getSwapExplorerLink } from "@/modules/trade/orders/lib/getSwapExplorerLink"
 import {
   getOrderStatus,
-  OrderStatus,
+  SwapRowStatus,
 } from "@/modules/trade/orders/lib/useSwapsData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -20,7 +20,7 @@ export type RoutedTradeData = {
   readonly fillPrice: string
   readonly date: Date
   readonly link: string | null
-  readonly status: OrderStatus | null
+  readonly status: SwapRowStatus | null
 }
 
 export const useRoutedTradesData = (

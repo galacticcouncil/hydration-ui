@@ -56,7 +56,7 @@ export const useOpenOrdersColumns = () => {
 
         const toAmount =
           order.kind === OrderKind.Limit
-            ? order.toAmountExecuted
+            ? order.toAmountBudget
             : order.isOpenBudget
               ? order.toAmountExecuted
               : undefined
@@ -87,24 +87,14 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const {
-          kind,
-          from,
-          to,
-          fromAmountBudget,
-          fromAmountExecuted,
-          toAmountExecuted,
-        } = row.original
-
-        const fromAmount =
-          kind === OrderKind.Limit ? fromAmountBudget : fromAmountExecuted
+        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
 
         const price =
           toAmountExecuted &&
-          fromAmount &&
-          Big(fromAmount).gt(0) &&
+          fromAmountExecuted &&
+          Big(fromAmountExecuted).gt(0) &&
           Big(toAmountExecuted).gt(0)
-            ? Big(fromAmount).div(toAmountExecuted).toString()
+            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
         return <SwapPrice from={from} to={to} price={price} />

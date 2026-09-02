@@ -2,7 +2,6 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { intentsByAccountQuery } from "@/api/intents"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -25,9 +24,6 @@ export const useRemoveIntent = () => {
           submitted: t("trade.cancelIntent.loading"),
           error: t("trade.cancelIntent.error"),
         },
-        invalidateQueries: [
-          intentsByAccountQuery(rpc, account.address).queryKey,
-        ],
       })
     },
   })

@@ -24,9 +24,13 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { DcaOrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  isDcaScheduleOrder,
+  isIntentOrder,
+  OrderData,
+} from "@/modules/trade/orders/lib/useOrdersData"
 
-const columnHelper = createColumnHelper<DcaOrderData>()
+const columnHelper = createColumnHelper<OrderData>()
 
 export const useOrderHistoryColumns = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -40,9 +44,9 @@ export const useOrderHistoryColumns = () => {
 
         return (
           <SwapAmount
-            fromAmount={fromAmountExecuted ?? "0"}
+            fromAmount={fromAmountExecuted}
             from={from}
-            toAmount={toAmountExecuted ?? "0"}
+            toAmount={toAmountExecuted}
             to={to}
             showLogo
           />
@@ -82,7 +86,12 @@ export const useOrderHistoryColumns = () => {
       cell: ({ row }) => {
         return (
           <Flex justify="center">
-            <SwapType type={row.original.kind} />
+            <SwapType
+              type={row.original.kind}
+              isLimit={
+                "limitPrice" in row.original && !!row.original.limitPrice
+              }
+            />
           </Flex>
         )
       },
@@ -100,27 +109,42 @@ export const useOrderHistoryColumns = () => {
     const actionColumn = columnHelper.display({
       id: "actions",
       size: 50,
-      cell: ({ row }) => (
-        <Flex align="center" justify="end" gap="base">
-          <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
-            <Button
-              sx={{ p: "base" }}
-              variant="muted"
-              outline
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-              asChild
-            >
-              <ExternalLink
-                href={neckwork.activityDca(row.original.scheduleId)}
+      cell: ({ row }) => {
+        const order = row.original
+
+        const href = isDcaScheduleOrder(order)
+          ? neckwork.activityDca(order.scheduleId)
+          : isIntentOrder(order) && order.resolvedBlock !== null
+            ? neckwork.block(order.resolvedBlock)
+            : null
+
+        return (
+          href && (
+            <Flex align="center" justify="end" gap="base">
+              <Tooltip
+                text={t("openInExplorer")}
+                size="small"
+                asChild
+                side="top"
               >
-                <Icon component={SquareArrowOutUpRight} size="s" />
-              </ExternalLink>
-            </Button>
-          </Tooltip>
-        </Flex>
-      ),
+                <Button
+                  sx={{ p: "base" }}
+                  variant="muted"
+                  outline
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  asChild
+                >
+                  <ExternalLink href={href}>
+                    <Icon component={SquareArrowOutUpRight} size="s" />
+                  </ExternalLink>
+                </Button>
+              </Tooltip>
+            </Flex>
+          )
+        )
+      },
     })
 
     const fromToColumnMobile = columnHelper.display({

@@ -173,10 +173,6 @@ export const useSquidUrl = (): string => {
 
 export const PROXY_URL = `${new URL(ENV.VITE_NECKWORK_URL).origin}/proxy`
 
-export const useIndexerUrl = (): string => {
-  return useState(() => ENV.VITE_INDEXER_URL)[0]
-}
-
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
   const { rpcList } = useRpcListStore()
@@ -193,6 +189,11 @@ export const useActiveProviderProps = (): ProviderProps | null => {
       endpoint,
     )
   }, [endpoint, rpcList])
+}
+
+export const useIndexerUrl = (): string => {
+  const providerProps = useActiveProviderProps()
+  return providerProps?.indexerUrl ?? ENV.VITE_INDEXER_URL
 }
 
 export const useSquidClient = (): SquidSdk => {

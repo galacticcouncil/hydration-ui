@@ -9,7 +9,9 @@ import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrdersNeckwork/
 import { MyRecentActivityNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/MyRecentActivityNeckwork"
 import { OpenOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/OpenOrdersNeckwork"
 import { OrderHistoryNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/OrderHistoryNeckwork"
-import { TradeOrdersHeaderNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/TradeOrdersHeaderNeckwork"
+import { TradeOrdersTabs } from "@/modules/trade/orders/TradeOrdersTabs"
+
+const TABS = ["myActivity", "openOrders", "orderHistory"] as const
 
 type Props = PaperProps
 
@@ -28,8 +30,6 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
 
   const resolvedTab = tab === "marketTransactions" ? "myActivity" : tab
 
-  const { scheduleIds } = useChainScheduleIds()
-  // open orders are DCA schedules plus any open intents (limit + intent TWAP)
   const { data: intents } = useAccountIntents(account?.address ?? "")
 
   useEffect(() => {
@@ -45,7 +45,8 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
 
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersHeaderNeckwork
+      <TradeOrdersTabs
+        tabs={TABS}
         paginationProps={paginationProps}
         openOrdersCount={scheduleIds.length + (intents?.length ?? 0)}
       />

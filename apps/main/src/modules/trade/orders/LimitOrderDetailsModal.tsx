@@ -13,31 +13,37 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
-import { IntentLimitOrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  IntentLimitOrderData,
+  OrderStatus,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 
 type Props = {
   readonly details: IntentLimitOrderData
   readonly onCancel: () => void
+  readonly pastExecutions?: ReactNode
 }
 
-export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
+export const LimitOrderDetailsModal = ({
+  details,
+  onCancel,
+  pastExecutions = null,
+}: Props) => {
   const { t } = useTranslation(["common", "trade"])
   const removeIntent = useRemoveIntent()
 
-  // Everything price-related is shown as "receive per sell" (to per from),
-  // e.g. HDX per PRIME — the same orientation as the order row — so the limit
-  // price and the market price compare directly with no denomination flip.
   const { orderRate, marketRate, distancePct, fillable } = useLimitFillStatus({
     from: details.from,
     to: details.to,
     sellAmount: details.fromAmountBudget,
-    receiveAmount: details.toAmountExecuted,
+    receiveAmount: details.toAmountBudget,
   })
 
   return (
@@ -53,7 +59,7 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
             )}
             <SwapAmount
               fromAmount={details.fromAmountBudget}
-              toAmount={details.toAmountExecuted}
+              toAmount={details.toAmountBudget}
               from={details.from}
               to={details.to}
               showLogo
@@ -66,9 +72,9 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
           <Amount
             label={t("trade:trade.orders.limit.filledFrom")}
             value={
-              details.fromAmountBudget
+              details.fromAmountExecuted
                 ? t("currency", {
-                    value: details.fromAmountBudget,
+                    value: details.fromAmountExecuted,
                     symbol: details.from.symbol,
                   })
                 : "-"
@@ -78,9 +84,9 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
           <Amount
             label={t("trade:trade.orders.limit.filledTo")}
             value={
-              details.partialFilledAmount
+              details.toAmountExecuted
                 ? t("currency", {
-                    value: details.partialFilledAmount,
+                    value: details.toAmountExecuted,
                     symbol: details.to.symbol,
                   })
                 : "-"
@@ -157,21 +163,38 @@ export const LimitOrderDetailsModal = ({ details, onCancel }: Props) => {
             }
           />
         </Grid>
-        <ModalContentDivider />
-        <Flex justify="flex-end" pt="l">
-          <Button
-            variant="danger"
-            outline
-            onClick={() => {
-              removeIntent.mutate(details.intentId, {
-                onSuccess: () => onCancel(),
-              })
-            }}
-          >
-            <Icon component={Trash} size="s" />
-            {t("trade:trade.orders.limit.cancelOrder")}
-          </Button>
-        </Flex>
+        {/* Only a live order can be cancelled - a finished one has nothing
+            left on chain to remove, so the divider goes with the button. */}
+        {details.status === OrderStatus.Created && (
+          <>
+            <ModalContentDivider />
+            <Flex justify="flex-end" pt="l">
+              <Button
+                variant="danger"
+                outline
+                onClick={() => {
+                  removeIntent.mutate(details.intentId, {
+                    onSuccess: () => onCancel(),
+                  })
+                }}
+              >
+                <Icon component={Trash} size="s" />
+                {t("trade:trade.orders.limit.cancelOrder")}
+              </Button>
+            </Flex>
+          </>
+        )}
+        {pastExecutions && (
+          <>
+            <Flex
+              direction="column"
+              sx={{ marginInline: "var(--modal-content-inset)" }}
+            >
+              {pastExecutions}
+            </Flex>
+            <ModalContentDivider />
+          </>
+        )}
       </ModalBody>
     </>
   )

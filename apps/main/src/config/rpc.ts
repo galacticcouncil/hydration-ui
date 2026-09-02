@@ -53,16 +53,11 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 }))
 
 export const PROVIDERS: ProviderProps[] = [
-  // Lark: mainnet fork with the Intent/ICE pallet enabled. Required
-  // for testing limit orders and Intent-based DCA. Listed first so
-  // it's visible at the top of the RPC picker.
-  // dataEnv MUST be "mainnet" — Lark is forked from mainnet and uses
-  // the mainnet Aave / money market contracts; setting "testnet" here
-  // causes the supply/borrow screens to fail to load.
+  // Lark: mainnet fork with ICE. Keep dataEnv on "mainnet" or borrow screens break.
   createProvider(
     "Lark (Intents)",
     "wss://node3.lark.hydration.cloud",
-    MAINNET_INDEXER_URL,
+    "https://3-explorer.lark.hydration.cloud/graphql",
     MAINNET_SQUID_URL,
     ["development", "production"],
     "mainnet",

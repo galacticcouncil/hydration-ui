@@ -3,10 +3,15 @@ import { FC, useMemo, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
+import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
+import { useIntentFillEnrichment } from "@/modules/trade/orders/lib/useIntentFillEnrichment"
 import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
+import { useMigratedOrdersMerge } from "@/modules/trade/orders/lib/useMigratedOrdersMerge"
 import {
   DcaOrderData,
   isDcaScheduleOrder,
+  isIntentOrder,
+  isMergedOrder,
   OrderData,
   orderKey,
   OrderKind,
@@ -15,32 +20,36 @@ import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
+import { PastExecutionsIntent } from "@/modules/trade/orders/PastExecutions/PastExecutionsIntent"
+import { PastExecutionsLegacy } from "@/modules/trade/orders/PastExecutions/PastExecutionsLegacy"
+import { PastExecutionsMerged } from "@/modules/trade/orders/PastExecutions/PastExecutionsMerged"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 import { useChainOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
-import { useDcaEnrichment } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useDcaEnrichment"
-import { PastExecutionsNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/PastExecutionsNeckwork"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 
 type Props = {
   readonly paginationProps: PaginationProps
 }
 
-export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
+export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
   const [detailKey, setDetailKey] = useState<string | null>(null)
   const [terminating, setTerminating] = useState<DcaOrderData | null>(null)
   const removeIntent = useRemoveIntent()
 
   const { orders: chainOrders, isLoading: isChainLoading } =
     useChainOrdersData()
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
-  const { orders: enrichedOrders, refetch } = useDcaEnrichment(chainOrders)
-  const { orders: intentOrders, isLoading: isIntentsLoading } =
+  const { orders: enrichedOrders, refetch } =
+    useDcaGrafanaEnrichment(chainOrders)
+  const { orders: chainIntentOrders, isLoading: isIntentsLoading } =
     useIntentOrdersData()
+  const { orders: intentOrders, refetch: refetchIntents } =
+    useIntentFillEnrichment(chainIntentOrders)
 
-  const allOrders = useMemo<Array<OrderData>>(
+  const concatenated = useMemo<Array<OrderData>>(
     () => [...intentOrders, ...enrichedOrders],
     [intentOrders, enrichedOrders],
   )
+
+  const { orders: allOrders } = useMigratedOrdersMerge(concatenated)
 
   const columns = useOpenOrdersColumns()
 
@@ -60,7 +69,8 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
         paginated
         {...paginationProps}
         onRowClick={(order) => {
-          if (neckworkEnabled) void refetch()
+          void refetch()
+          void refetchIntents()
           setDetailKey(orderKey(order))
         }}
         emptyState={<OrdersEmptyState />}
@@ -78,22 +88,51 @@ export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
         ) : (
           detail &&
           (detail.kind === OrderKind.Limit ? (
-            <LimitOrderDetailsModal details={detail} onCancel={close} />
+            <LimitOrderDetailsModal
+              details={detail}
+              onCancel={close}
+              pastExecutions={
+                detail.isPartiallyFillable ? (
+                  <PastExecutionsIntent
+                    intentId={detail.intentId}
+                    assetIn={detail.from}
+                    assetOut={detail.to}
+                  />
+                ) : null
+              }
+            />
           ) : (
             <DcaOrderDetailsModal
               details={detail}
               pastExecutions={
-                isDcaScheduleOrder(detail) ? (
-                  <PastExecutionsNeckwork scheduleId={detail.scheduleId} />
+                isMergedOrder(detail) ? (
+                  <PastExecutionsMerged
+                    scheduleId={detail.scheduleId}
+                    intentId={detail.intentId}
+                    assetIn={detail.from}
+                    assetOut={detail.to}
+                  />
+                ) : isDcaScheduleOrder(detail) ? (
+                  <PastExecutionsLegacy
+                    scheduleId={detail.scheduleId}
+                    assetIn={detail.from}
+                    assetOut={detail.to}
+                  />
+                ) : isIntentOrder(detail) ? (
+                  <PastExecutionsIntent
+                    intentId={detail.intentId}
+                    assetIn={detail.from}
+                    assetOut={detail.to}
+                  />
                 ) : null
               }
               onTerminate={() => {
-                if (isDcaScheduleOrder(detail)) {
-                  setTerminating(detail)
+                if (isIntentOrder(detail)) {
+                  removeIntent.mutate(detail.intentId, { onSuccess: close })
                   return
                 }
 
-                removeIntent.mutate(detail.intentId, { onSuccess: close })
+                setTerminating(detail)
               }}
             />
           ))

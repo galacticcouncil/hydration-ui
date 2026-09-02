@@ -49,8 +49,16 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
     paginationProps.pagination.pageSize,
   )
 
-  const { orders: intentOrders, isLoading: isIntentsLoading } =
-    useIntentOrdersData(assetFilter)
+  const { orders: allIntentOrders, isLoading: isIntentsLoading } =
+    useIntentOrdersData()
+
+  const intentOrders = assetFilter.length
+    ? allIntentOrders.filter(
+        (order) =>
+          assetFilter.includes(order.from.id) ||
+          assetFilter.includes(order.to.id),
+      )
+    : allIntentOrders
 
   const allOrders = useMemo(
     () => [...intentOrders, ...dcaOrders],

@@ -4,7 +4,6 @@ import { useMutation } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
 
-import { intentsByAccountQuery } from "@/api/intents"
 import { tradeOrderDurationQuery } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -35,8 +34,6 @@ export const useSubmitTwap = () => {
       if (!sellAsset || !buyAsset) throw new Error("Invalid twap assets")
       if (!account) throw new Error("Account not connected")
 
-      // Same duration source as the split card ("Execute within X") —
-      // interval- and ICE-aware, unlike a plain tradeCount × blockTime.
       const duration = await rpc.queryClient
         .ensureQueryData(tradeOrderDurationQuery(rpc, twap.tradeCount))
         .catch(() => 0)
@@ -78,9 +75,6 @@ export const useSubmitTwap = () => {
           success: t("trade:market.twap.success", params),
           error: t("trade:market.twap.error", params),
         },
-        invalidateQueries: [
-          intentsByAccountQuery(rpc, account.address).queryKey,
-        ],
       })
     },
   })

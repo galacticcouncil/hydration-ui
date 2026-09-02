@@ -5,7 +5,6 @@ import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { intentsByAccountQuery } from "@/api/intents"
 import {
   DcaFormValues,
   DcaOrdersMode,
@@ -54,10 +53,6 @@ export const useSubmitDcaOrder = () => {
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
       const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
 
-      // Price condition ("limit TWAP"): each slice must deliver at least the
-      // amount implied by the user's price. limitPrice is SELL-per-BUY, so the
-      // per-slice floor = tradeAmountIn(SELL) / limitPrice, scaled to the BUY
-      // asset. Exact floor, no slippage — mirrors the Limit screen.
       const minAmountOut =
         limitEnabled && limitPrice && Big(limitPrice).gt(0)
           ? BigInt(
@@ -69,11 +64,7 @@ export const useSubmitDcaOrder = () => {
             )
           : undefined
 
-      // The intent Dca builder emits `amount_out` from the order's `assetOutEd`
-      // field. For a limit-TWAP we override it with the user's per-slice price
-      // floor (a market TWAP keeps the ED). Passing it through the order works
-      // with the published SDK as-is; the SDK also exposes an explicit
-      // `withMinAmountOut(...)` (same effect) to switch to once released.
+      // Limit TWAP: override assetOutEd with the per-slice min-out floor.
       const iceOrder =
         minAmountOut !== undefined
           ? { ...order, assetOutEd: minAmountOut }
@@ -125,15 +116,9 @@ export const useSubmitDcaOrder = () => {
               params,
             ),
           },
-          invalidateQueries: [
-            intentsByAccountQuery(rpc, account.address).queryKey,
-          ],
         },
         {
-          // arm the indexer sync for the first execution rather than the block
-          // the schedule landed in, so the enrichment has an amount to report.
-          // Only the DCA-schedule path is indexed by neckwork - an ICE intent
-          // emits no ExecutionPlanned and is read straight from chain state.
+          // Neckwork indexes DCA schedules only; sync from ExecutionPlanned.
           onSuccess: (event) => {
             if (featureFlags.isIceEnabled || rpc.isFork) return
 

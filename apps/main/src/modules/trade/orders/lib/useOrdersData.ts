@@ -10,68 +10,26 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import {
+  DcaOrderData,
+  OrderKind,
+  OrderStatus,
+} from "@/modules/trade/orders/lib/orderData"
+import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-export enum OrderKind {
-  Dca = "dca",
-  DcaRolling = "dcaRolling",
-  Limit = "limit",
+export * from "@/modules/trade/orders/lib/orderData"
+
+const SQUID_STATUS_MAP: Record<DcaScheduleStatus, OrderStatus> = {
+  [DcaScheduleStatus.Created]: OrderStatus.Created,
+  [DcaScheduleStatus.Completed]: OrderStatus.Completed,
+  [DcaScheduleStatus.Terminated]: OrderStatus.Terminated,
+  [DcaScheduleStatus.Cancelled]: OrderStatus.Cancelled,
 }
 
-export type OrderDataBase = {
-  readonly from: TAsset
-  readonly to: TAsset
-  readonly fromAmountBudget: string | null
-  readonly fromAmountExecuted: string | null
-  readonly fromAmountRemaining: string | null
-  readonly toAmountExecuted: string | null
-  readonly timestamp: number | null
-  readonly status: DcaScheduleStatus | null
-}
-
-export type IntentLimitOrderData = OrderDataBase & {
-  readonly kind: OrderKind.Limit
-  readonly intentId: bigint
-  readonly deadline: number | null
-  readonly isPartiallyFillable: boolean
-  readonly partialFilledAmount: string | null
-}
-
-export type DcaOrderDataBase = OrderDataBase & {
-  readonly kind: OrderKind.Dca | OrderKind.DcaRolling
-  readonly singleTradeSize: string | null
-  readonly blocksPeriod: string | null
-  readonly isOpenBudget: boolean
-  // Per-slice price condition ("limit TWAP"), expressed as SELL per BUY.
-  // Null for a plain market TWAP (whose on-chain floor is just the buy
-  // asset's existential deposit).
-  readonly limitPrice: string | null
-}
-
-export type DcaOrderData = DcaOrderDataBase & {
-  readonly scheduleId: number
-}
-
-export type IntentDcaOrderData = DcaOrderDataBase & {
-  readonly intentId: bigint
-}
-
-export type OrderData = IntentLimitOrderData | DcaOrderData | IntentDcaOrderData
-
-export const isIntentOrder = (
-  order: OrderData,
-): order is IntentLimitOrderData | IntentDcaOrderData => "intentId" in order
-
-export const isDcaScheduleOrder = (order: OrderData): order is DcaOrderData =>
-  "scheduleId" in order
-
-// A schedule is keyed on chain by scheduleId, an intent by intentId, so neither
-// alone identifies a row in a list that mixes the two.
-export const orderKey = (order: OrderData): string =>
-  isDcaScheduleOrder(order)
-    ? `schedule:${order.scheduleId}`
-    : `intent:${order.intentId}`
+export const toOrderStatus = (
+  status: DcaScheduleStatus | null,
+): OrderStatus | null => (status ? SQUID_STATUS_MAP[status] : null)
 
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,
@@ -127,7 +85,7 @@ export const useOrdersData = (
             ? scaleHuman(schedule.totalExecutedAmountOut, to.decimals)
             : null
 
-          const status = getDcaScheduleStatus(schedule)
+          const status = toOrderStatus(getDcaScheduleStatus(schedule))
 
           return {
             kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
