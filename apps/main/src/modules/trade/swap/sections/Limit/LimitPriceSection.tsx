@@ -489,7 +489,6 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
                   if (source === "prop") return
                   handlePriceChange(value)
                 }}
-                onFocus={(e) => e.target.select()}
                 placeholder="0"
               />
               <Text

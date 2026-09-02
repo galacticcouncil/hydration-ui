@@ -314,7 +314,6 @@ export const DcaLimitPrice: FC<Props> = ({ marketSellPerBuy }) => {
                     if (source === "prop") return
                     handlePriceChange(value)
                   }}
-                  onFocus={(e) => e.target.select()}
                   placeholder="0"
                 />
                 <Text
