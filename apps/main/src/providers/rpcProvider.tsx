@@ -44,6 +44,7 @@ const defaultData: TProviderContext = {
   featureFlags: {
     hollarBondsEnabled: true,
     bilEnabled: false,
+    propellerEnabled: true,
   },
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
