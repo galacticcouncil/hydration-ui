@@ -16,6 +16,7 @@ import {
   intervalOptions,
   PoolChart,
   PoolChartTimeFrameType,
+  usePoolChartNeckwork,
 } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import {
   isIsolatedPool,
@@ -116,6 +117,7 @@ const PoolStatsMobile = ({
 }) => {
   //const [chartType, setChartType] = useState<"price" | "volume">("price")
   const [type, setType] = useState<"chart" | "stats">("chart")
+  const isNeckwork = usePoolChartNeckwork(isEmptyData)
 
   return (
     <Paper
@@ -138,7 +140,7 @@ const PoolStatsMobile = ({
             onSelect={(option) => setType(option.id)}
           />
         </Flex>
-        {type === "chart" && (
+        {type === "chart" && !isNeckwork && (
           <ChartTimeRangeDropdown
             options={intervalOptions}
             selectedOption={interval}

@@ -18,6 +18,8 @@ import {
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
+import { PairChart } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
+import { useTradeDataSource } from "@/modules/trade/swap/tradeDataSource"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
@@ -31,21 +33,42 @@ export const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
   label: i18n.t(`chart.timeFrame.${option}`),
 }))
 
-export const PoolChart = ({
-  chartRef,
-  assetId,
-  height,
-  interval,
-  setInterval,
-  isEmptyData = false,
-}: {
+type PoolChartProps = {
   chartRef: RefObject<TradingViewChartRef | null>
   assetId: string
   height: number
   interval: PoolChartTimeFrameType | "all"
   setInterval: (interval: PoolChartTimeFrameType | "all") => void
   isEmptyData?: boolean
-}) => {
+}
+
+export const usePoolChartNeckwork = (isEmptyData = false) =>
+  useTradeDataSource() === "neckwork" && !isEmptyData
+
+export const PoolChart = (props: PoolChartProps) => {
+  const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
+  const isNeckwork = usePoolChartNeckwork(props.isEmptyData)
+
+  return isNeckwork ? (
+    <PairChart
+      variant="pool"
+      height={props.height}
+      assetIn={stableCoinId ?? ""}
+      assetOut={props.assetId}
+    />
+  ) : (
+    <PoolChartSquid {...props} />
+  )
+}
+
+const PoolChartSquid = ({
+  chartRef,
+  assetId,
+  height,
+  interval,
+  setInterval,
+  isEmptyData = false,
+}: PoolChartProps) => {
   const { t } = useTranslation()
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)

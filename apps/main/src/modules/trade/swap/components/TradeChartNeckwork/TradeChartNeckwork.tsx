@@ -40,17 +40,40 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeChartSettings } from "@/states/tradeSettings"
 
-type TradeChartNeckworkProps = {
+type PairChartProps = {
   readonly height: number
+  readonly assetIn: string
+  readonly assetOut: string
+  readonly variant?: "trade" | "pool"
 }
 
-export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
+export const TradeChartNeckwork: React.FC<{ readonly height: number }> = ({
   height,
 }) => {
-  const { t } = useTranslation()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
-  const { interval, chartType, changePeriod, setChangePeriod } =
-    useTradeChartSettings()
+
+  return (
+    <Paper p="xl">
+      <PairChart height={height} assetIn={assetIn} assetOut={assetOut} />
+    </Paper>
+  )
+}
+
+export const PairChart: React.FC<PairChartProps> = ({
+  height,
+  assetIn,
+  assetOut,
+  variant = "trade",
+}) => {
+  const { t } = useTranslation()
+  const isPool = variant === "pool"
+  const {
+    interval,
+    chartType: selectedChartType,
+    changePeriod,
+    setChangePeriod,
+  } = useTradeChartSettings()
+  const chartType = isPool ? "line" : selectedChartType
   const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
   const rpc = useRpcProvider()
 
@@ -229,20 +252,24 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
       onChangePeriodToggle={() =>
         setChangePeriod(changePeriod === "24h" ? "7d" : "24h")
       }
+      asCurrency={isPool}
     />
   ) : undefined
 
   const chartDisplayValue = shouldShowValues ? (
     chartType === "line" ? (
       <SChartValues>
-        <Text
-          fs="p6"
-          lh={1.3}
-          fontVariantNumeric="tabular-nums"
-          visibility={isAssetPriceValid ? "visible" : "hidden"}
-        >
-          {t("price")}: {formattedAssetPrice}
-        </Text>
+        {/* the pool variant already shows the price in the headline */}
+        {!isPool && (
+          <Text
+            fs="p6"
+            lh={1.3}
+            fontVariantNumeric="tabular-nums"
+            visibility={isAssetPriceValid ? "visible" : "hidden"}
+          >
+            {t("price")}: {formattedAssetPrice}
+          </Text>
+        )}
         <Text
           fs="p6"
           lh={1.3}
@@ -297,7 +324,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
   ) : undefined
 
   return (
-    <Paper p="xl">
+    <>
       <ResponsiveScope>
         <SChartHeader>
           <ChartValues
@@ -310,6 +337,7 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
             pair={`${baseMeta.symbol}/${quoteMeta.symbol}`}
             isInverted={isInverted}
             onInvert={() => setIsInverted((prev) => !prev)}
+            showPairControls={!isPool}
           />
         </SChartHeader>
       </ResponsiveScope>
@@ -333,6 +361,6 @@ export const TradeChartNeckwork: React.FC<TradeChartNeckworkProps> = ({
           />
         </ChartState>
       </Box>
-    </Paper>
+    </>
   )
 }
