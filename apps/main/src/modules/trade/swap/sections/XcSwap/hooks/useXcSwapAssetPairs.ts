@@ -3,6 +3,8 @@ import { XcSwapAsset, XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
+import { getXcSwapAssetLogoUrl } from "@/modules/trade/swap/sections/XcSwap/config/meta"
+import { useXcSwapDestinationAssetsQuery } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapDestinationAssetsQuery"
 import {
   XcAsset,
   XcChain,
@@ -25,12 +27,8 @@ export const useXcSwapAssetPairs = (
     staleTime: Infinity,
   })
 
-  const { data: destAssets, isLoading: isDestLoading } = useQuery({
-    queryKey: ["xcSwap", "destinationAssets"],
-    queryFn: () => xcSwap.getDestinationAssets(),
-    enabled: isApiLoaded,
-    staleTime: Infinity,
-  })
+  const { data: destAssets, isLoading: isDestLoading } =
+    useXcSwapDestinationAssetsQuery(xcSwap)
 
   const sourceChainAssetPairs = useMemo<XcChainAssetPair[]>(() => {
     const hydration = chains["hydration"]
@@ -80,9 +78,9 @@ export const useXcSwapAssetPairs = (
           asset: {
             key: asset.oneClickId ?? asset.key,
             symbol: asset.symbol,
-            name: asset.symbol,
+            name: chain.name,
             decimals: asset.decimals,
-            logo: "",
+            logo: getXcSwapAssetLogoUrl(asset.chain, asset.symbol),
             chain: asset.chain,
             oneClickId: asset.oneClickId,
           },

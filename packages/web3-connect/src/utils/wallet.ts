@@ -3,6 +3,7 @@ import {
   EvmAddr,
   isEvmParachainAccount,
   isH160Address,
+  METADATA_CDN_URL,
   NearAddr,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
@@ -250,18 +251,18 @@ export function getWalletModesByProviderType(
 export function getWalletModeIcon(mode: WalletMode) {
   switch (mode) {
     case WalletMode.EVM:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
+      return `${METADATA_CDN_URL}/v2/ethereum/1/icon.svg`
     case WalletMode.Substrate:
     case WalletMode.SubstrateH160:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
+      return `${METADATA_CDN_URL}/v2/polkadot/2034/assets/5/icon.svg`
     case WalletMode.Solana:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
+      return `${METADATA_CDN_URL}/v2/solana/101/icon.svg`
     case WalletMode.Sui:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
+      return `${METADATA_CDN_URL}/v2/polkadot/2034/assets/1000753/icon.svg`
     case WalletMode.Near:
-      return "/images/platforms/near.png"
+      return `${METADATA_CDN_URL}/v2/near/near/icon.svg`
     case WalletMode.Zcash:
-      return "/images/platforms/zcash.png"
+      return `${METADATA_CDN_URL}/v2/zcash/zec/icon.svg`
     default:
       return ""
   }

@@ -18,7 +18,7 @@ export const XcAssetLogo: React.FC<{
     return <AssetLogo id={logoId} size={size} />
   }
 
-  const logo = getXcSwapAssetLogoUrl(asset.key) || asset.logo
+  const logo = getXcSwapAssetLogoUrl(asset.chain, asset.symbol) || asset.logo
 
   return <XcLogo src={logo} size={size} />
 }

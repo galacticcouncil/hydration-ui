@@ -1,24 +1,13 @@
-import { WRAP_NEAR_ASSET, ZEC_ASSET } from "@galacticcouncil/xc-swap"
+import { AssetMetadataFactory } from "@galacticcouncil/utils"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 
-const CMC_COIN_LOGO_URL = "https://s2.coinmarketcap.com/static/img/coins/64x64"
+const XC_SWAP_CHAIN_ECOSYSTEMS: Record<string, ChainEcosystem> = {
+  near: ChainEcosystem.Near,
+  zec: ChainEcosystem.Zcash,
+}
 
-export const XC_SWAP_CHAIN_CMC_IDS = {
-  zec: 1437,
-  near: 6535,
-  bitcoin: 1,
-} as const
-
-export const XC_SWAP_ASSET_CMC_IDS = {
-  [ZEC_ASSET]: 1437,
-  [WRAP_NEAR_ASSET]: 6535,
-} as const
-
-export const XC_SWAP_ASSET_META: Record<
-  string,
-  { name: string; symbol: string }
-> = {
-  [WRAP_NEAR_ASSET]: { name: "NEAR", symbol: "NEAR" },
-  [ZEC_ASSET]: { name: "Zcash", symbol: "ZEC" },
+const XC_SWAP_ASSET_LOGO_SYMBOL: Record<string, Record<string, string>> = {
+  near: { wNEAR: "NEAR" },
 }
 
 export const XC_SWAP_RECIPIENT_PLACEHOLDERS: Record<string, string> = {
@@ -27,13 +16,23 @@ export const XC_SWAP_RECIPIENT_PLACEHOLDERS: Record<string, string> = {
 }
 
 export const getXcSwapChainLogoUrl = (chainKey: string): string => {
-  const id =
-    XC_SWAP_CHAIN_CMC_IDS[chainKey as keyof typeof XC_SWAP_CHAIN_CMC_IDS]
-  return id ? `${CMC_COIN_LOGO_URL}/${id}.png` : ""
+  const ecosystem = XC_SWAP_CHAIN_ECOSYSTEMS[chainKey]
+  if (!ecosystem) return ""
+  return AssetMetadataFactory.getInstance().getChainLogoSrc(chainKey, ecosystem)
 }
 
-export const getXcSwapAssetLogoUrl = (assetKey: string): string => {
-  const id =
-    XC_SWAP_ASSET_CMC_IDS[assetKey as keyof typeof XC_SWAP_ASSET_CMC_IDS]
-  return id ? `${CMC_COIN_LOGO_URL}/${id}.png` : ""
+export const getXcSwapAssetLogoUrl = (
+  chainKey: string,
+  symbol: string,
+): string => {
+  const ecosystem = XC_SWAP_CHAIN_ECOSYSTEMS[chainKey]
+  if (!ecosystem) return ""
+
+  const logoSymbol = XC_SWAP_ASSET_LOGO_SYMBOL[chainKey]?.[symbol] ?? symbol
+
+  return AssetMetadataFactory.getInstance().getAssetLogoSrc(
+    chainKey,
+    logoSymbol,
+    ecosystem,
+  )
 }

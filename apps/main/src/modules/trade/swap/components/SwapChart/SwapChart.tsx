@@ -5,7 +5,7 @@ import React from "react"
 import { krakenPairForPlatform } from "@/api/external/kraken"
 import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
 import { XcSwapChart } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart"
-import { XC_SWAP_ASSET_META } from "@/modules/trade/swap/sections/XcSwap/config/meta"
+import { useXcDestinationAsset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestinationAsset"
 import { useAssets } from "@/providers/assetsProvider"
 
 type SwapChartProps = {
@@ -19,13 +19,13 @@ export const SwapChart: React.FC<SwapChartProps> = ({ height }) => {
   })
 
   const sellAsset = getAsset(assetIn)
-  const destMeta = XC_SWAP_ASSET_META[assetOut]
+  const destAsset = useXcDestinationAsset(assetOut)
 
   const isCrossChain = destPlatform !== HYDRATION_CHAIN_KEY
   const showXcSwapChart =
     isCrossChain &&
     !!krakenPairForPlatform(destPlatform) &&
-    !!destMeta &&
+    !!destAsset &&
     !!sellAsset
 
   if (showXcSwapChart) {
@@ -35,7 +35,7 @@ export const SwapChart: React.FC<SwapChartProps> = ({ height }) => {
         sellAssetId={assetIn}
         sellSymbol={sellAsset.symbol}
         destPlatform={destPlatform}
-        destSymbol={destMeta.symbol}
+        destSymbol={destAsset.symbol}
       />
     )
   }

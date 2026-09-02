@@ -25,10 +25,6 @@ import { myAssetsMobileSorter } from "@/modules/portfolio/overview/MyAssets/MyAs
 import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChainHeader"
 import { toSourceChainAssetData } from "@/modules/portfolio/overview/PortfolioChainSection.utils"
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
-import {
-  getXcSwapAssetLogoUrl,
-  getXcSwapChainLogoUrl,
-} from "@/modules/trade/swap/sections/XcSwap/config/meta"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
@@ -77,10 +73,7 @@ export const PortfolioChainSection: FC<Props> = memo(
                     chainAssetId,
                     chain.ecosystem,
                   )
-                : "") ||
-              getXcSwapAssetLogoUrl(balance.key) ||
-              (chain.key === "near" ? getXcSwapChainLogoUrl("near") : "") ||
-              undefined
+                : "") || undefined
 
             const meta = toSourceChainAssetData(
               chain.key,
@@ -123,7 +116,6 @@ export const PortfolioChainSection: FC<Props> = memo(
             isExpandable
             name={chain.name}
             chainId={getChainId(chain)}
-            chainKey={chain.key}
             ecosystem={chain.ecosystem}
             totalDisplay={
               isError
