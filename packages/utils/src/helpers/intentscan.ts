@@ -1,4 +1,4 @@
-const INTENTSCAN_URL = "https://intents.play.hydration.cloud"
+const INTENTSCAN_URL = "https://explorer-intent.play.hydration.cloud"
 
 export const intentscan = {
   baseUrl: INTENTSCAN_URL,
