@@ -5,11 +5,11 @@ import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
 import { useAccountBalancesWithPriceByAssetType } from "@/api/balances"
-import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import {
   myAssetsMobileSorter,
   myAssetsSorter,
-} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
+} from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { getAssetOrigin } from "@/utils/externalAssets"

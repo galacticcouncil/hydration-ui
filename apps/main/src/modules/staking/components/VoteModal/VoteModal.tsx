@@ -27,10 +27,16 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { useUserGigaBorrowSummary } from "@/api/borrow"
 import {
+  Conviction,
+  CONVICTIONS,
+  REWARD_MULTIPLIER_BY_CONVICTION,
+  VOTE_WEIGHT_BY_CONVICTION,
+} from "@/api/democracy"
+import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
+  useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
-import { useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   SClaimableRewardsContainer,
@@ -49,10 +55,14 @@ import {
   VoteType,
 } from "./VoteModal.utils"
 
-const MULTIPLIER_LABELS = ["0.1x", "1x", "2x", "3x", "4x", "5x", "6x"]
-const getMultiplierLabel = (multiplier: number) => `${multiplier || 0.1}x`
-const getMultiplierProgress = (multiplier: number) =>
-  Math.min(Math.max(multiplier / 6, 0), 1)
+const MAX_REWARD_MULTIPLIER = REWARD_MULTIPLIER_BY_CONVICTION[6]
+
+const getVoteWeightLabel = (conviction: Conviction) =>
+  `${VOTE_WEIGHT_BY_CONVICTION[conviction]}x`
+const getRewardMultiplierLabel = (conviction: Conviction) =>
+  `${REWARD_MULTIPLIER_BY_CONVICTION[conviction]}x`
+const getRewardMultiplierProgress = (conviction: Conviction) =>
+  REWARD_MULTIPLIER_BY_CONVICTION[conviction] / MAX_REWARD_MULTIPLIER
 
 type VoteFormProps = {
   referendumId: number
@@ -105,7 +115,7 @@ const VoteForm = ({
     allLocksHuman,
   } = useVoteModal(referendumId, onClose, isGigaStaking)
 
-  const [voteType] = form.watch(["voteType", "multiplier"])
+  const voteType = form.watch("voteType")
   const isSingleInputField = voteType === "aye" || voteType === "nay"
 
   return (
@@ -246,7 +256,7 @@ const VoteForm = ({
 
                 <Controller
                   control={form.control}
-                  name="multiplier"
+                  name="conviction"
                   render={({ field }) => (
                     <Stack gap="m">
                       <Flex align="center" gap="xs" justify="space-between">
@@ -261,7 +271,7 @@ const VoteForm = ({
 
                         <Flex align="center" gap="xs">
                           <Text fs="p5" fw={500}>
-                            {getMultiplierLabel(field.value)}
+                            {getVoteWeightLabel(field.value)}
                           </Text>
 
                           <Tooltip
@@ -283,19 +293,19 @@ const VoteForm = ({
                       />
 
                       <Flex justify="space-between">
-                        {MULTIPLIER_LABELS.map((label) => (
+                        {CONVICTIONS.map((conviction) => (
                           <Text
-                            key={label}
+                            key={conviction}
                             fs="p6"
                             color={getToken("text.medium")}
                           >
-                            {label}
+                            {getVoteWeightLabel(conviction)}
                           </Text>
                         ))}
                       </Flex>
 
                       {isGigaStaking && (
-                        <RewardMultiplierCard multiplier={field.value} />
+                        <RewardMultiplierCard conviction={field.value} />
                       )}
                     </Stack>
                   )}
@@ -518,9 +528,9 @@ const ClaimableRewardsField = () => {
   )
 }
 
-const RewardMultiplierCard = ({ multiplier }: { multiplier: number }) => {
+const RewardMultiplierCard = ({ conviction }: { conviction: Conviction }) => {
   const { t } = useTranslation("staking")
-  const progress = getMultiplierProgress(multiplier)
+  const progress = getRewardMultiplierProgress(conviction)
   const motionIntensity = progress ** 1.6
   const electricDurationSeconds = Math.max(1.45, 6 - motionIntensity * 4.15)
   const displacementOffsetY = motionIntensity * -2.5
@@ -670,7 +680,7 @@ const RewardMultiplierCard = ({ multiplier }: { multiplier: number }) => {
             lh={1}
             color="var(--electric-border-color)"
           >
-            {getMultiplierLabel(multiplier)}
+            {getRewardMultiplierLabel(conviction)}
           </Text>
           <span className="reward-rocket" aria-hidden>
             <Icon component={Rocket} size="l" />

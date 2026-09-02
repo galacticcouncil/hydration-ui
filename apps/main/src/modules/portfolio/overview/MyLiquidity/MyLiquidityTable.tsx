@@ -9,8 +9,6 @@ import { FC, useState } from "react"
 import { SearchEmptyState } from "@/components/EmptyState"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
-import { AddVaultLiquidity } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity"
-import { RemoveVaultLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity"
 import { LiquidityDetailExpanded } from "@/modules/portfolio/overview/MyLiquidity/LiquidityDetailExpanded"
 import { LiquidityDetailMobileModal } from "@/modules/portfolio/overview/MyLiquidity/LiquidityDetailMobileModal"
 import { LiquidityPositionModals } from "@/modules/portfolio/overview/MyLiquidity/LiquidityPositionModals"
@@ -26,13 +24,7 @@ import {
   LiquidityPositionByAsset,
   StableswapPosition,
 } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.data"
-import {
-  isVaultLiquidity,
-  VaultLiquidityByPool,
-} from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
 import { StableSwapPositionModals } from "@/modules/portfolio/overview/MyLiquidity/StableSwapPositionModals"
-import { VaultDetailMobileModal } from "@/modules/portfolio/overview/MyLiquidity/VaultDetailMobileModal"
-import { VaultLiquidityDetailExpanded } from "@/modules/portfolio/overview/MyLiquidity/VaultLiquidityDetailExpanded"
 import { XYKLiquidityDetailExpanded } from "@/modules/portfolio/overview/MyLiquidity/XYKLiquidityDetailExpanded"
 import { XYKSharesPositionModals } from "@/modules/portfolio/overview/MyLiquidity/XYKSharesPositionModals"
 import { AddLiquidityModalContent } from "@/routes/liquidity/$id.add"

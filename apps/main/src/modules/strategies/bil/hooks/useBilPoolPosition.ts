@@ -1,8 +1,12 @@
 import { UINT256_MAX } from "@galacticcouncil/utils"
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { type Address, formatUnits } from "viem"
+import { type Address, formatUnits, getContract } from "viem"
 
+import {
+  ERC20_ABI,
+  GHO_FACILITATOR_ABI,
+} from "@/modules/strategies/bil/config/abi"
 import {
   DCL_PRECOMPILE_ADDRESS,
   HOLLAR_ADDRESS,
@@ -85,6 +89,79 @@ export interface BilReserveConfig {
   borrowAprPct: number
   borrowApyPct: number
   borrowingEnabled: boolean
+  borrowCapHollar: number
+  totalDebtHollar: number
+  remainingBorrowCapHollar: number
+}
+
+const BORROW_CAP_MAXED_PERCENT = 99.99
+const MAX_BORROW_SAFETY_MARGIN = 0.99
+
+function getEffectiveRemainingBorrowCap(
+  reserveConfig: BilReserveConfig,
+): number {
+  const { borrowCapHollar, totalDebtHollar, remainingBorrowCapHollar } =
+    reserveConfig
+  if (borrowCapHollar <= 0) return remainingBorrowCapHollar
+
+  const borrowCapUsage = (totalDebtHollar / borrowCapHollar) * 100
+  if (borrowCapUsage >= BORROW_CAP_MAXED_PERCENT) return 0
+
+  return remainingBorrowCapHollar
+}
+
+export function getBilMaxBorrowable(
+  availableBorrowsUsd: number,
+  reserveConfig: BilReserveConfig | undefined,
+  totalDebtUsd = 0,
+): number {
+  if (availableBorrowsUsd <= 0) return 0
+
+  const effectiveRemainingCap = reserveConfig
+    ? getEffectiveRemainingBorrowCap(reserveConfig)
+    : Number.POSITIVE_INFINITY
+
+  if (effectiveRemainingCap <= 0) return 0
+
+  const maxBorrowable = Math.min(availableBorrowsUsd, effectiveRemainingCap)
+
+  const shouldAddMargin =
+    totalDebtUsd > 0 ||
+    maxBorrowable >= availableBorrowsUsd ||
+    (!!reserveConfig &&
+      reserveConfig.borrowCapHollar > 0 &&
+      reserveConfig.totalDebtHollar > 0 &&
+      maxBorrowable >= effectiveRemainingCap)
+
+  const amountWithMargin = shouldAddMargin
+    ? maxBorrowable * MAX_BORROW_SAFETY_MARGIN
+    : maxBorrowable
+
+  return Math.max(0, amountWithMargin)
+}
+
+export function useBilMaxBorrowable(evmAddress: string | undefined) {
+  const { data: poolPosition, isLoading: isPoolPositionLoading } =
+    useBilPoolPosition(evmAddress)
+  const { data: reserveConfig, isLoading: isReserveConfigLoading } =
+    useBilReserveConfig()
+
+  const isLoading = isPoolPositionLoading || isReserveConfigLoading
+
+  const maxBorrowableUsd = isLoading
+    ? 0
+    : getBilMaxBorrowable(
+        poolPosition?.availableBorrowsUsd ?? 0,
+        reserveConfig,
+        poolPosition?.totalDebtUsd ?? 0,
+      )
+
+  return {
+    maxBorrowableUsd,
+    isLoading,
+    poolPosition,
+    reserveConfig,
+  }
 }
 
 /**
@@ -129,12 +206,69 @@ export function useBilReserveConfig() {
       // HOLLAR reserve's config is the BORROWING_ENABLED flag. Leverage — and
       // therefore the leveraged "Max Net APY" — is only real once it's on.
       const borrowingEnabled = ((reserveData.configuration >> 58n) & 1n) === 1n
+
+      const [bucketCapacity, bucketLevel] = await rpc.evm.readContract({
+        address: HOLLAR_ADDRESS,
+        abi: GHO_FACILITATOR_ABI,
+        functionName: "getFacilitatorBucket",
+        args: [reserveData.aTokenAddress],
+      })
+
+      const facilitatorRemainingHollar =
+        bucketCapacity > 0n
+          ? Number(
+              formatUnits(
+                bucketCapacity > bucketLevel
+                  ? bucketCapacity - bucketLevel
+                  : 0n,
+                EVM_DECIMALS,
+              ),
+            )
+          : Number.POSITIVE_INFINITY
+
+      const borrowCapHollar =
+        bucketCapacity > 0n
+          ? Number(formatUnits(bucketCapacity, EVM_DECIMALS))
+          : 0
+
+      // Aave V3 reserve borrow cap (bits 80-115) — fallback for non-GHO assets.
+      const hollarConfig = reserveData.configuration
+      const reserveBorrowCapHollar = Number(
+        (hollarConfig >> 80n) & 0xfffffffffn,
+      )
+
+      const variableDebtToken = getContract({
+        address: reserveData.variableDebtTokenAddress,
+        abi: ERC20_ABI,
+        client: rpc.evm,
+      })
+      const totalVariableDebt = await variableDebtToken.read.totalSupply()
+      const totalDebtHollar = Number(
+        formatUnits(totalVariableDebt, EVM_DECIMALS),
+      )
+
+      const reserveCapRemainingHollar =
+        reserveBorrowCapHollar > 0
+          ? Math.max(0, reserveBorrowCapHollar - totalDebtHollar)
+          : Number.POSITIVE_INFINITY
+
+      const remainingBorrowCapHollar = Math.min(
+        facilitatorRemainingHollar,
+        reserveCapRemainingHollar,
+      )
+
+      const effectiveBorrowCapHollar =
+        borrowCapHollar > 0 ? borrowCapHollar : reserveBorrowCapHollar
+
       return {
         maxLtvPct: ltvBps / 100,
         liquidationThresholdPct: liqThresholdBps / 100,
         borrowAprPct: borrowApr * 100,
         borrowApyPct: borrowApy * 100,
         borrowingEnabled,
+        borrowCapHollar: effectiveBorrowCapHollar,
+        totalDebtHollar,
+        remainingBorrowCapHollar,
       }
     },
   })

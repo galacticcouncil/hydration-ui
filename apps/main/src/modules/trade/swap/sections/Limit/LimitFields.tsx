@@ -246,7 +246,7 @@ export const LimitFields: FC = () => {
         label={t("sell")}
         assets={tradable}
         maxBalanceFallback="0"
-        onLock={sellAmount ? handleLockToggle : undefined}
+        onLockToggle={sellAmount ? handleLockToggle : undefined}
         isLocked={isLocked}
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()

@@ -1,4 +1,5 @@
 import { useStableArray } from "@galacticcouncil/utils"
+import { minutesToMilliseconds } from "date-fns"
 import { useCallback, useMemo } from "react"
 import { isNonNullish, pickBy, unique } from "remeda"
 import { create } from "zustand"
@@ -48,17 +49,16 @@ type Store = {
   setAssets: (asset: { id: string; price: string | null }[]) => void
 }
 
-export const useDisplaySpotPriceStore = create<Store>(
-  combine({ assets: {} as TStoredAssetPrice }, (set) => ({
-    setAssets: (assets) => {
-      set((state) => {
-        const hasChanges = assets.some(
-          (asset) => state.assets[asset.id] !== asset.price,
-        )
-
-        if (!hasChanges) return state
-
-        const newValues = { ...state.assets }
+export const useDisplaySpotPriceStore = create<Store>()(
+  persist(
+    (set) => ({
+      assets: {},
+      updatedAt: 0,
+      setAssets: (assets) => {
+        set((state) => {
+          const hasChanges = assets.some(
+            (asset) => state.assets[asset.id] !== asset.price,
+          )
 
           if (!hasChanges) return state
 
@@ -100,7 +100,7 @@ export const useDisplaySpotPriceStore = create<Store>(
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
-  const stableAssetIds = useStableArray(assetIds)
+  const stableAssetIds = useStableArray(unique(assetIds))
 
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>

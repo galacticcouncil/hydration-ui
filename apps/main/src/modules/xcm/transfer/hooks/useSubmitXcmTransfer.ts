@@ -153,6 +153,8 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             ["xcm", "transfer"],
             // The picker's snapshot is stale the moment a transfer lands.
             ["xcm", "balanceSnapshot"],
+            [...portfolioBalanceQueryKey(account.rawAddress, srcChain.key)],
+            [...portfolioBalanceQueryKey(destAddress, destChain.key)],
           ],
           tx,
           signerFeeAsset,
