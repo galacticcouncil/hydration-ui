@@ -36,7 +36,7 @@ export const FormHeader = () => {
           )
           .map((routeItem) => (
             <SHeaderTab key={routeItem.key} asChild>
-              <Link to={routeItem.to} search={search}>
+              <Link to={routeItem.to} search={search} resetScroll={false}>
                 {t(`common:navigation.${routeItem.key}.title`)}
               </Link>
             </SHeaderTab>

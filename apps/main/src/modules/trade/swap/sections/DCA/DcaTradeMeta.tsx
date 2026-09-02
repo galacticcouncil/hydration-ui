@@ -22,8 +22,6 @@ type Props = {
   readonly priceImpactLevel: "error" | "warning" | undefined
 }
 
-// Trade limit + price-impact rows. Rendered below the Schedule button (see
-// DcaFooter) rather than inside the summary.
 export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
   const { t } = useTranslation(["common", "trade"])
   const {
@@ -31,9 +29,12 @@ export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
   } = useTradeSettings()
 
   return (
-    // Full width so the rows span the footer (DcaFooter's grid is
-    // center-justified) and label↔value keep their space-between spread.
-    <Summary sx={{ width: "100%" }} separator={<SwapSectionSeparator />}>
+    <Summary
+      sx={{ width: "100%" }}
+      separator={<SwapSectionSeparator />}
+      withLeadingSeparator
+      withTrailingSeparator
+    >
       <SwapSummaryRow
         label={t("trade:dca.summary.slippage")}
         content={

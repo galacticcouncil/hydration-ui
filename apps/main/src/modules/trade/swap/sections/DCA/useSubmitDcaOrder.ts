@@ -58,13 +58,12 @@ export const useSubmitDcaOrder = () => {
           ? BigInt(
               Big(order.tradeAmountIn.toString())
                 .div(Big(10).pow(sellDecimals))
-                .div(limitPrice)
+                .times(limitPrice)
                 .times(Big(10).pow(buyAsset.decimals))
                 .toFixed(0),
             )
           : undefined
 
-      // Limit TWAP: override assetOutEd with the per-slice min-out floor.
       const iceOrder =
         minAmountOut !== undefined
           ? { ...order, assetOutEd: minAmountOut }
