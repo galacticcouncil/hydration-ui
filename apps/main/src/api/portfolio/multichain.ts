@@ -222,7 +222,7 @@ export const useMultichainPortfolio = (
             const registryPrice = assetId ? getAssetPrice(assetId) : null
             const spotPrice = registryPrice?.isValid
               ? registryPrice.price
-              : chainKey === "near" && nearSpotPrice != null
+              : chainKey === "near" && nearSpotPrice !== undefined
                 ? nearSpotPrice.toString()
                 : null
 
@@ -263,7 +263,14 @@ export const useMultichainPortfolio = (
           },
         ]
       }),
-    [configService.chains, getAssetPrice, nearSpotPrice, refetchChain, resolved, stableChains],
+    [
+      configService.chains,
+      getAssetPrice,
+      nearSpotPrice,
+      refetchChain,
+      resolved,
+      stableChains,
+    ],
   )
 
   return { byChain, isLoading, isRefetching, lastUpdatedAt, refetchAll }
