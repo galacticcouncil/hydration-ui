@@ -28,7 +28,7 @@ export const useMaxOrderBalance = ({
   } = useTradeSettings()
   const { getTransferableBalance } = useAccountBalances()
   const enabled =
-    rpc.isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
+    rpc.isReady && !!account && accountFeePaymentAssetId === Number(assetIn)
   const meta = getAssetWithFallback(assetIn)
 
   const { data: tx } = useQuery({

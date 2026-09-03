@@ -111,6 +111,25 @@ export const removeItemFromStore = async (
   })
 }
 
+export const clearIndexedDBStore = async (
+  storeName: IndexedDBStores,
+): Promise<void> => {
+  const db = await IndexedDBManager.getInstance()
+  if (!db) return
+
+  return new Promise((resolve) => {
+    const tx = db.transaction(storeName, "readwrite")
+    const store = tx.objectStore(storeName)
+    const request = store.clear()
+
+    request.onsuccess = () => resolve()
+    request.onerror = () => {
+      console.error("Error clearing IndexedDB store", { storeName })
+      resolve()
+    }
+  })
+}
+
 export const createIndexedDBStorage = (
   config: IndexedDBConfig,
 ): StateStorage => {

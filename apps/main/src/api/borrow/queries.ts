@@ -53,7 +53,8 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { PROXY_URL, TProviderData } from "@/api/provider"
+import { PROXY_URL } from "@/api/neckwork"
+import { TProviderData } from "@/api/rpcClient"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -135,7 +136,7 @@ export const borrowReserveQuery = (
       !!lendingPoolAddressProvider &&
       !!poolDataContract &&
       !!reserveId &&
-      rpc.isApiLoaded,
+      rpc.isReady,
   })
 
 export const borrowReservesQuery = (
@@ -195,8 +196,7 @@ export const borrowReservesQuery = (
     },
     retry: false,
     staleTime: RESERVES_STALE_TIME,
-    enabled:
-      !!lendingPoolAddressProvider && !!poolDataContract && rpc.isApiLoaded,
+    enabled: !!lendingPoolAddressProvider && !!poolDataContract && rpc.isReady,
   })
 
 export const useBorrowReserves = () => {
@@ -357,7 +357,7 @@ export const ghoUserDataQuery = (
       }
     },
     retry: false,
-    enabled: !!evmAddress && !!ghoServiceContract && rpc.isApiLoaded,
+    enabled: !!evmAddress && !!ghoServiceContract && rpc.isReady,
   })
 
 export const useGhoUserData = (evmAddress: string) => {
@@ -458,7 +458,7 @@ export const userBorrowSummaryQuery = (
     },
     retry: false,
     staleTime: USER_RESERVES_STALE_TIME,
-    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isApiLoaded,
+    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isReady,
   })
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
@@ -514,7 +514,7 @@ export const facilitatorBucketQuery = (
         facilitatorBucketLevel: facilitatorBucketLevel,
       }
     },
-    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isApiLoaded,
+    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isReady,
   })
 
 export const useFacilitatorBucket = (aTokenAddress: string) => {

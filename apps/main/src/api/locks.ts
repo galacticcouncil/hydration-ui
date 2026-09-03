@@ -14,7 +14,7 @@ import {
   gigaTwoSecBlocksSinceQuery,
   gigaUnstakePositionsQuery,
 } from "@/api/gigaStake"
-import { PROXY_URL } from "@/api/provider"
+import { PROXY_URL } from "@/api/neckwork"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -31,7 +31,7 @@ export const useUnlockableNativeTokens = () => {
   const gigaLock = locks?.get(TokenLockType.GigaStaking) ?? 0n
 
   const { data, isLoading } = useQuery({
-    enabled: rpc.isApiLoaded && !!address && isSuccess,
+    enabled: rpc.isReady && !!address && isSuccess,
     queryKey: [
       "unlockable-native-tokens",
       address,

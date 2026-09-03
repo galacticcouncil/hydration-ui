@@ -14,7 +14,18 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import {
+  getAssetIdFromAddress,
+  MONEY_MARKET_STRATEGY_ASSETS,
+} from "@galacticcouncil/utils"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import {
+  StrategySupplyModal,
+  StrategySupplyModalProps,
+} from "@/modules/borrow/components/StrategySupplyModal"
+import { useAssets } from "@/providers/assetsProvider"
 
 export type ReserveActionsProps = { reserve: ComputedReserveData }
 
@@ -22,6 +33,9 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
   const { t } = useTranslation(["common", "borrow"])
 
   const { openBorrow, openSupply } = useModalContext()
+  const { getRelatedAToken } = useAssets()
+  const [strategyModalProps, setStrategyModalProps] =
+    useState<StrategySupplyModalProps>()
 
   const {
     alerts,
@@ -35,6 +49,25 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
   } = useWalletData(reserve)
 
   const isGhoReserve = isGho(reserve)
+
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
+  const aTokenId = getRelatedAToken(assetId)?.id
+  const isStrategyReserve =
+    (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) || reserve.isIsolated) &&
+    !!aTokenId
+
+  const onSupplyClick = () => {
+    if (isStrategyReserve) {
+      setStrategyModalProps({
+        id: assetId,
+        erc20Id: aTokenId,
+        stableswapId: assetId,
+        isIsolated: reserve.isIsolated,
+      })
+    } else {
+      openSupply(reserve.underlyingAsset, reserve.symbol)
+    }
+  }
 
   return (
     <Stack separated gap="xl" separator={<Separator mx={-20} />}>
@@ -72,8 +105,12 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
             wrap
           />
           <Button
-            disabled={disableSupplyButton}
-            onClick={() => openSupply(reserve.underlyingAsset, reserve.symbol)}
+            disabled={
+              isStrategyReserve
+                ? !reserve.isActive || reserve.isPaused || reserve.isFrozen
+                : disableSupplyButton
+            }
+            onClick={onSupplyClick}
           >
             {t("borrow:supply")}
           </Button>
@@ -104,6 +141,10 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
         </Flex>
       )}
       {alerts.length > 0 && <Stack gap="base">{alerts}</Stack>}
+      <StrategySupplyModal
+        props={strategyModalProps}
+        onClose={() => setStrategyModalProps(undefined)}
+      />
     </Stack>
   )
 }

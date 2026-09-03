@@ -189,20 +189,20 @@ export const useAddressStore = create<AddressStore>()(
 
 export type { AddressFilter }
 
-export function useAddresses(filter: AddressFilter = {}): Address[] {
+export function useAddresses(
+  filter: AddressFilter = {},
+  { autoName = true }: { autoName?: boolean } = {},
+): Address[] {
   const addresses = useAddressStore((state) => state.addresses)
   const publicKey = useWeb3Connect((state) => state.account?.publicKey ?? null)
-  return useMemo(
-    () =>
-      getAllAddresses(
-        selectAddresses(
-          addresses.filter((a) => isVisibleToWallet(a, publicKey)),
-          filter,
-          publicKey,
-        ),
-      ),
-    [addresses, filter, publicKey],
-  )
+  return useMemo(() => {
+    const selected = selectAddresses(
+      addresses.filter((a) => isVisibleToWallet(a, publicKey)),
+      filter,
+      publicKey,
+    )
+    return autoName ? getAllAddresses(selected) : selected
+  }, [addresses, filter, publicKey, autoName])
 }
 
 function migrateAddressBookV3toV4(persistedState: unknown): State {

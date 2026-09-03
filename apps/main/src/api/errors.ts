@@ -1,12 +1,28 @@
 import { hydration } from "@galacticcouncil/descriptors"
-import { IndexerErrorState } from "@galacticcouncil/indexer/squid/lib/parseIndexerErrorState"
 import {
   metadata as metadataCodec,
   u32,
 } from "@polkadot-api/substrate-bindings"
 import { queryOptions } from "@tanstack/react-query"
+import { z } from "zod"
 
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
+
+const chainErrorStateSchema = z.object({
+  kind: z.string(),
+  error: z.string(),
+  index: z.number(),
+})
+
+export type ChainErrorState = z.infer<typeof chainErrorStateSchema>
+
+export const parseChainErrorState = (
+  errorState: unknown,
+): ChainErrorState | null => {
+  const parsedErrorState = chainErrorStateSchema.safeParse(errorState)
+
+  return parsedErrorState.success ? parsedErrorState.data : null
+}
 
 type DecodedError = {
   readonly pallet: string
@@ -83,7 +99,7 @@ const decodeModuleError = (
 }
 
 export const decodePjsErrorQuery = (
-  errorState: IndexerErrorState | null | undefined,
+  errorState: ChainErrorState | null | undefined,
 ) =>
   queryOptions({
     queryKey: ["errors", errorState],

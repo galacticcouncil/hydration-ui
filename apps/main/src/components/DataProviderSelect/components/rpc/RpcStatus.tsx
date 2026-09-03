@@ -17,7 +17,6 @@ import {
 export type RpcStatusProps = Partial<PingResponse> & {
   url: string
   name: string
-  squidUrl?: string
 }
 
 export const RpcStatusSuccess = () => {

@@ -13,18 +13,15 @@ export function useRelativeDate(
   { shortFormat = false }: UseRelativeDateOptions = {},
 ) {
   const { t } = useTranslation("common")
-
-  const [dateString, setDateString] = useState(() =>
-    t(shortFormat ? "date.relative.short" : "date.relative", { value: date }),
-  )
+  const [, setTick] = useState(0)
 
   useHarmonicIntervalFn(() => {
-    setDateString(
-      t(shortFormat ? "date.relative.short" : "date.relative", { value: date }),
-    )
+    setTick((tick) => tick + 1)
   }, getUpdateInterval(date))
 
-  return dateString
+  return t(shortFormat ? "date.relative.short" : "date.relative", {
+    value: date,
+  })
 }
 
 function getUpdateInterval(date: Date) {

@@ -7,7 +7,7 @@ import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const paymentInfoQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   from: string | undefined,
   anyTx: AnyTransaction,
 ) => {
@@ -23,6 +23,6 @@ export const paymentInfoQuery = (
       if (!tx) return null
       return tx.getPaymentInfo(from ?? "")
     },
-    enabled: isApiLoaded && !!from && isPapiTransaction(tx),
+    enabled: isReady && !!from && isPapiTransaction(tx),
   })
 }

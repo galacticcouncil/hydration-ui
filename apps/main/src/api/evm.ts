@@ -34,11 +34,11 @@ import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 const { isEvmAccount, isEvmAddress } = h160
 
 export const evmAccountBindingQuery = (
-  { papi, isLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
-    enabled: isLoaded && !!address,
+    enabled: isReady && !!address,
     queryKey: ["evm", "accountBinding", address],
     staleTime: millisecondsInHour,
     queryFn: async () => {
@@ -86,7 +86,7 @@ export const useBindEvmAccount = (address: string) => {
 }
 
 const permitNonceQuery = (
-  { evm, isLoaded }: TProviderContext,
+  { evm, isReady }: TProviderContext,
   address: string,
   options?: UseBaseObservableQueryOptions,
 ) => {
@@ -96,7 +96,7 @@ const permitNonceQuery = (
 
   const enabled = options?.enabled || true
   return queryOptions({
-    enabled: enabled && isLoaded && !!evmAddress,
+    enabled: enabled && isReady && !!evmAddress,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "permitNonce", evmAddress],
     queryFn: async () => {
       const callPermitContract = getContract({
@@ -118,7 +118,7 @@ export const usePermitNonce = (
 }
 
 const pendingPermitQuery = (
-  { papiClient, isLoaded }: TProviderContext,
+  { papiClient, isReady }: TProviderContext,
   address: string,
 ) => {
   const evmAddress = isEvmParachainAccount(address)
@@ -143,7 +143,7 @@ const pendingPermitQuery = (
       return false
     },
     gcTime: 0,
-    enabled: isLoaded && !!evmAddress,
+    enabled: isReady && !!evmAddress,
   })
 }
 

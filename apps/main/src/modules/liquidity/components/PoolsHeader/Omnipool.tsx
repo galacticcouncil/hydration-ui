@@ -1,12 +1,10 @@
 import { platformStatsQuery } from "@galacticcouncil/indexer/neckwork"
-import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import { ValueStats } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient, useSquidClient } from "@/api/provider"
-import { useNeckworkEnabled } from "@/states/neckwork"
+import { neckworkClient } from "@/api/neckwork"
 
 import { PoolsHeaderSeparator } from "./PoolsHeaderSeparator"
 
@@ -19,20 +17,12 @@ const NO_TOTALS = {
 
 export const Omnipool = () => {
   const { t } = useTranslation(["liquidity", "common"])
-  const neckworkEnabled = useNeckworkEnabled()
 
-  const squidQuery = useQuery({
-    ...platformTotalQuery(useSquidClient()),
-    enabled: !neckworkEnabled,
-  })
+  const { data: neckwork, isLoading } = useQuery(
+    platformStatsQuery(neckworkClient),
+  )
 
-  const neckworkQuery = useQuery({
-    ...platformStatsQuery(neckworkClient),
-    enabled: neckworkEnabled,
-  })
-
-  const neckwork = neckworkQuery.data
-  const neckworkTotals =
+  const totals =
     neckwork &&
     neckwork.omnipoolTvlNorm !== null &&
     neckwork.stablepoolsTvlNorm !== null
@@ -47,29 +37,6 @@ export const Omnipool = () => {
           ),
         }
       : NO_TOTALS
-
-  const squid = squidQuery.data
-  const squidTotals =
-    squid &&
-    squid.omnipoolTvlNorm &&
-    squid.stablepoolsTvlNorm &&
-    squid.omnipoolVolNorm &&
-    squid.stableswapVolNorm
-      ? {
-          liquidity: Big(squid.omnipoolTvlNorm),
-          stablepool: Big(squid.stablepoolsTvlNorm),
-          volume: Big(squid.omnipoolVolNorm).plus(squid.stableswapVolNorm),
-          totalLiquidity: Big(squid.omnipoolTvlNorm).plus(
-            squid.stablepoolsTvlNorm,
-          ),
-        }
-      : NO_TOTALS
-
-  const totals = neckworkEnabled ? neckworkTotals : squidTotals
-
-  const isLoading = neckworkEnabled
-    ? neckworkQuery.isLoading
-    : squidQuery.isLoading
 
   return (
     <>

@@ -376,16 +376,6 @@ export const SupplyModalContent = React.memo(
           )}
         </Stack>
 
-        {/* {showIsolationWarning && (
-          <IsolationModeWarning asset={poolReserve.symbol} />
-        )}
-        {supplyCapUsage.determineWarningDisplay({
-          supplyCap: supplyCapUsage,
-        })}
-        {debtCeilingUsage.determineWarningDisplay({
-          debtCeiling: debtCeilingUsage,
-        })} */}
-
         <SupplyActions {...supplyActionsProps} />
       </>
     )

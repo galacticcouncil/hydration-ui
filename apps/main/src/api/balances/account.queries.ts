@@ -44,7 +44,7 @@ export const useAccountBalanceFilter = (): AccountBalanceFilter | null => {
 }
 
 export const accountBalancesQuery = (
-  { isApiLoaded, sdk }: TProviderContext,
+  { isReady, sdk }: TProviderContext,
   address: string,
   filter: AccountBalanceFilter | null,
 ) =>
@@ -65,7 +65,7 @@ export const accountBalancesQuery = (
       initialValue: EMPTY_BALANCES,
     }),
     enabled:
-      isApiLoaded &&
+      isReady &&
       !!address &&
       !!filter?.followedTokenIds.length &&
       !!filter?.erc20AssetIds.length,
@@ -78,13 +78,13 @@ export const accountBalancesQuery = (
 export const MAX_WITHDRAW_ALL_QUERY_KEY = ["aave", "maxWithdrawAll"]
 
 export const maxWithdrawAllQuery = (
-  { isApiLoaded, sdk }: TProviderContext,
+  { isReady, sdk }: TProviderContext,
   address: string,
 ) =>
   queryOptions({
     queryKey: [...MAX_WITHDRAW_ALL_QUERY_KEY, address],
     queryFn: () => sdk.api.aave.getMaxWithdrawAll(address),
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
     staleTime: Infinity,
     refetchOnWindowFocus: true,
   })

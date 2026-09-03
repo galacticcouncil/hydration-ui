@@ -19,7 +19,9 @@ type AssetRegistryStore = {
   assets: Array<TAssetStored>
   shareTokens: Array<TShareTokenStored>
   aTokenPairs: TATokenPairStored[]
-  syncAssets: (assets: TAssetStored[]) => void
+  /** Genesis hash of the chain the stored assets were fetched from. */
+  genesisHash: string
+  syncAssets: (assets: TAssetStored[], genesisHash: string) => void
   syncShareTokens: (shareTokens: TShareTokenStored[]) => void
   syncATokenPairs: (pairs: TATokenPairStored[]) => void
 }
@@ -30,13 +32,16 @@ export const useAssetRegistryStore = createIndexedDBStore<AssetRegistryStore>(
     assets: [],
     shareTokens: [],
     aTokenPairs: [],
-    syncAssets(assets) {
-      const storedAssets = get().assets
-      const areDataEqual = isDeepEqual(storedAssets, assets)
+    genesisHash: "",
+    syncAssets(assets, genesisHash) {
+      const stored = get()
+      const areDataEqual =
+        isDeepEqual(stored.assets, assets) && stored.genesisHash === genesisHash
 
       if (!areDataEqual) {
         set({
           assets,
+          genesisHash,
         })
       }
     },
