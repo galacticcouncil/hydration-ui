@@ -1,11 +1,11 @@
 import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
+import { TWAP_EXECUTION_INTERVAL_MS } from "@galacticcouncil/sdk-next/sor"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { blockTimeQuery } from "@/api/chain"
 import { papiDryRunErrorQuery } from "@/api/dryRun"
-import { PoolType } from "@/api/pools"
-import { computeTwapProposal } from "@/api/twapProposal"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import { ENV } from "@/config/env"
 import {
@@ -135,76 +135,6 @@ export const bestSellWithTxQuery = (
   })
 }
 
-const TWAP_BLOCK_TIME_MS = 6000
-
-/**
- * The order's flow as a fraction of the Omnipool-hop asset's reserve — the input
- * to the fee-aware cadence. Reads the actual route from the quote and the reserve
- * from live pool state. Returns 0 when no Omnipool dynamic-fee hop is on the route
- * (flat XYK/Stableswap/Aave legs), which collapses pacing to the minimum period.
- */
-const getOmnipoolFraction = async (
-  sdk: SdkCtx,
-  quote: Trade,
-): Promise<number> => {
-  const hop = quote.swaps.find((s) => s.pool === PoolType.Omni)
-  if (!hop || hop.amountOut <= 0n) {
-    return 0
-  }
-  const pools = await sdk.ctx.pool.getPools()
-  const omni = pools.find((p) => p.type === PoolType.Omni)
-  const token = omni?.tokens.find((t) => Number(t.id) === Number(hop.assetOut))
-  if (!token || token.balance <= 0n) {
-    return 0
-  }
-  return Number(hop.amountOut) / Number(token.balance)
-}
-
-const getMinDcaPeriod = async ({
-  papiClient,
-}: TProviderContext): Promise<number> =>
-  Number(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (papiClient.getUnsafeApi() as any).constants.Intent.MinDcaPeriod(),
-  )
-
-/**
- * Build an inline TWAP order sized for any amount: impact-based fine slicing plus
- * a fee-aware cadence (`computeTwapProposal`), executed as a `Dca` order so there
- * are no 6h / 600-slice / `OrderImpactTooBig` caps and the swap page can always
- * offer a working setup. ICE-only; the legacy path keeps `getTwap*Order`.
- */
-const buildTwapProposalOrder = async (
-  rpc: TProviderContext,
-  assetIn: number,
-  assetOut: number,
-  quote: Trade,
-  sellAmount: string,
-): Promise<TradeOrder> => {
-  const { sdk } = rpc
-  const decimals = quote.swaps[0]?.assetInDecimals ?? 12
-  const [minOrderBudget, poolFraction, minDcaPeriod] = await Promise.all([
-    sdk.api.scheduler.getMinimumOrderBudget(assetIn, decimals),
-    getOmnipoolFraction(sdk, quote),
-    getMinDcaPeriod(rpc),
-  ])
-  const { slices, durationMs } = computeTwapProposal({
-    impactPct: quote.priceImpactPct,
-    amount: quote.amountIn,
-    minOrderBudget,
-    poolFraction,
-    minDcaPeriod,
-    blockTimeMs: TWAP_BLOCK_TIME_MS,
-  })
-  return sdk.api.scheduler.getDcaOrder(
-    assetIn,
-    assetOut,
-    sellAmount,
-    durationMs,
-    slices,
-  )
-}
-
 type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 
 export const bestSellTwapQuery = (
@@ -228,8 +158,12 @@ export const bestSellTwapQuery = (
       if (!rpc.featureFlags.isIceEnabled) {
         return rpc.sdk.api.scheduler.getTwapSellOrder(inId, outId, amountIn)
       }
+      const { scheduler } = rpc.sdk.api
       const quote = await rpc.sdk.api.router.getBestSell(inId, outId, amountIn)
-      return buildTwapProposalOrder(rpc, inId, outId, quote, amountIn)
+      const duration = scheduler.getTwapExecutionTime(
+        scheduler.getTwapTradeCount(quote.priceImpactPct),
+      )
+      return scheduler.getDcaOrder(inId, outId, amountIn, duration)
     },
     enabled:
       enabled &&
@@ -516,11 +450,8 @@ export const minimumOrderBudgetQuery = (
   })
 }
 
-/** Scheduler's TWAP execution interval in blocks (TWAP_EXECUTION_INTERVAL). */
-const TWAP_INTERVAL_BLOCKS = 6
-
 export const tradeOrderDurationQuery = (
-  { sdk, papiClient, featureFlags, isApiLoaded }: TProviderContext,
+  { sdk, papiClient, featureFlags, isApiLoaded, queryClient }: TProviderContext,
   tradeCount: number,
 ) =>
   queryOptions({
@@ -532,22 +463,22 @@ export const tradeOrderDurationQuery = (
       featureFlags.isIceEnabled,
     ],
     queryFn: async () => {
-      const duration = await sdk.api.scheduler.getTwapExecutionTime(tradeCount)
-
       if (!featureFlags.isIceEnabled) {
-        return duration
+        return sdk.api.scheduler.getTwapExecutionTime(tradeCount)
       }
 
-      // The intent pallet enforces a per-network minimum block period
-      // (MinDcaPeriod) and the tx builder clamps the order to it, so the
-      // real cadence can be slower than the scheduler's 6-block interval.
-      const minDcaPeriod: number =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (papiClient.getUnsafeApi() as any).constants.Intent.MinDcaPeriod()
+      const [blockTimeMs, minDcaPeriod] = await Promise.all([
+        queryClient.ensureQueryData(blockTimeQuery(sdk)),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (papiClient.getUnsafeApi() as any).constants.Intent.MinDcaPeriod(),
+      ])
 
-      return minDcaPeriod > TWAP_INTERVAL_BLOCKS
-        ? (duration * minDcaPeriod) / TWAP_INTERVAL_BLOCKS
-        : duration
+      const twapIntervalBlocks = Math.round(
+        TWAP_EXECUTION_INTERVAL_MS / blockTimeMs,
+      )
+      const intervalBlocks = Math.max(minDcaPeriod, twapIntervalBlocks)
+
+      return tradeCount * intervalBlocks * blockTimeMs
     },
     enabled: isApiLoaded && tradeCount > 0,
   })

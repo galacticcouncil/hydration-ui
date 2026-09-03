@@ -3,12 +3,18 @@ import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
-import { FC, useCallback, useEffect, useRef } from "react"
+import { FC, useCallback, useRef } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { bestSellQuery } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { QuotedPriceField } from "@/modules/trade/swap/components/QuotedPriceField/QuotedPriceField"
+import {
+  marketPriceFromQuote,
+  PriceSource,
+} from "@/modules/trade/swap/lib/quotedPrice"
+import { useQuotedPrice } from "@/modules/trade/swap/lib/quotedPrice.hook"
 import {
   computeDerived,
   FieldName,
@@ -16,14 +22,15 @@ import {
   lockSellIntoLastTwo,
   updateLastTwoOnTouch,
 } from "@/modules/trade/swap/sections/Limit/cascadeLogic"
-import { LimitPriceSection } from "@/modules/trade/swap/sections/Limit/LimitPriceSection"
+import { LimitOrderSettings } from "@/modules/trade/swap/sections/Limit/LimitOrderSettings"
 import { LimitSwitcher } from "@/modules/trade/swap/sections/Limit/LimitSwitcher"
-import { formatCalcValue } from "@/modules/trade/swap/sections/Limit/limitUtils"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+
 const RECALCULATE_DEBOUNCE_MS = 250
+
 export const LimitFields: FC = () => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
@@ -44,20 +51,6 @@ export const LimitFields: FC = () => {
     (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
   )
 
-  // Market reference price — exactly the same router quote the Market
-  // (swap) tab uses for "you get":
-  //   - User typed sellAmount → execution rate = amountOut / amountIn.
-  //     Fees + price impact at the user's size. `displayed_rate ×
-  //     sellAmount` equals what the swap tab would show as "you get"
-  //     for the same sell amount.
-  //   - sellAmount empty → probe the router with 1 whole unit. At that
-  //     tiny size impact is negligible, so the resulting rate is
-  //     effectively fee-adjusted spot (≈ spot × (1 − tradeFeePct)).
-  //     This gives the user a stable "top of book with fees" reference
-  //     before they commit to an amount; transitioning to execution
-  //     rate as they type reveals only the impact component.
-  // User slippage buffer is never included anywhere in the limit
-  // flow — limit orders submit `amount_out` exactly as displayed.
   const sellAmountForQuote =
     sellAmount && Big(sellAmount || "0").gt(0) ? sellAmount : "1"
 
@@ -69,26 +62,11 @@ export const LimitFields: FC = () => {
     }),
   )
 
-  const marketPrice = (() => {
-    if (!swap || !sellAsset || !buyAsset) return null
-    try {
-      const inHuman = Big(swap.amountIn.toString()).div(
-        Big(10).pow(sellAsset.decimals),
-      )
-      const outHuman = Big(swap.amountOut.toString()).div(
-        Big(10).pow(buyAsset.decimals),
-      )
-      if (inHuman.lte(0) || outHuman.lte(0)) return null
-      return formatCalcValue(outHuman.div(inHuman))
-    } catch {
-      return null
-    }
-  })()
-
-  // ── Cascade plumbing ──────────────────────────────────────────────
-  // The cascade rule lives in cascadeLogic.ts. This file just wires it
-  // into the form: every user touch updates `lastTwo`, then we
-  // recompute the derived field from the kept pair.
+  const marketPrice = marketPriceFromQuote(
+    swap,
+    sellAsset?.decimals,
+    buyAsset?.decimals,
+  )
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const debounced = useCallback((fn: () => void) => {
@@ -96,26 +74,79 @@ export const LimitFields: FC = () => {
     debounceRef.current = setTimeout(fn, RECALCULATE_DEBOUNCE_MS)
   }, [])
 
-  /**
-   * After a touch, recompute the derived field's value from the kept
-   * pair. Honours `priceAnchor` when price is part of the kept pair:
-   *   - priceAnchor === "market" + price kept → use live `marketPrice`
-   *     for the kept "price" value (caller should also write that
-   *     back into the limitPrice field via the market-mirror effect).
-   *   - priceAnchor === "user" + price kept → use whatever's currently
-   *     in form.limitPrice.
-   */
+  const applyPriceTouch = useCallback(
+    (newLimitPrice: string) => {
+      const values = getValues()
+      const lastTwo = updateLastTwoOnTouch(
+        values.lastTwo,
+        "price",
+        values.isLocked,
+      )
+      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo)
+      setValue("limitPrice", newLimitPrice)
+
+      const derived = getDerived(lastTwo)
+      if (derived !== "price") {
+        const computed = computeDerived(derived, {
+          sell: values.sellAmount ?? "",
+          buy: values.buyAmount ?? "",
+          price: newLimitPrice,
+        })
+        if (derived === "buy") setValue("buyAmount", computed ?? "")
+        else setValue("sellAmount", computed ?? "")
+      }
+      trigger()
+    },
+    [getValues, setValue, trigger],
+  )
+
+  const applyMarketPrice = useCallback(
+    (newLimitPrice: string) => {
+      const values = getValues()
+      if (values.limitPrice === newLimitPrice) return
+
+      const lastTwo = values.lastTwo.includes("price")
+        ? values.lastTwo
+        : updateLastTwoOnTouch(values.lastTwo, "price", values.isLocked)
+      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo)
+
+      setValue("limitPrice", newLimitPrice)
+
+      const derived = getDerived(lastTwo)
+      if (derived === "price") return
+
+      const computed = computeDerived(derived, {
+        sell: values.sellAmount ?? "",
+        buy: values.buyAmount ?? "",
+        price: newLimitPrice,
+      })
+      if (computed === null) return
+      if (derived === "buy") setValue("buyAmount", computed)
+      else setValue("sellAmount", computed)
+    },
+    [getValues, setValue],
+  )
+
+  const quotedPrice = useQuotedPrice({
+    marketPrice,
+    pair: [sellAsset?.id ?? "", buyAsset?.id ?? ""],
+    defaultInverted: false,
+    onCanonicalChange: (canonical: string, source: PriceSource) => {
+      if (source === "derived") return
+      if (source === "user") applyPriceTouch(canonical)
+      else applyMarketPrice(canonical)
+    },
+  })
+
+  const { dispatch } = quotedPrice
+
   const recomputeDerivedField = useCallback(() => {
     const values = getValues()
     const derived = getDerived(values.lastTwo)
-    const priceForCompute =
-      values.priceAnchor === "market" && values.lastTwo.includes("price")
-        ? (marketPrice ?? values.limitPrice ?? "")
-        : (values.limitPrice ?? "")
     const computed = computeDerived(derived, {
       sell: values.sellAmount ?? "",
       buy: values.buyAmount ?? "",
-      price: priceForCompute,
+      price: values.limitPrice ?? "",
     })
     if (derived === "buy") {
       setValue("buyAmount", computed ?? "")
@@ -123,26 +154,24 @@ export const LimitFields: FC = () => {
       setValue("sellAmount", computed ?? "")
     } else {
       setValue("limitPrice", computed ?? "")
+      dispatch({ type: "derived", value: computed })
     }
-  }, [getValues, setValue, marketPrice])
+  }, [getValues, setValue, dispatch])
 
-  /**
-   * Generic touch handler — used by sell/buy amount changes here, and
-   * exposed via callbacks for the price input + pill in
-   * LimitPriceSection. Updates `lastTwo`, then debounces a derived
-   * recompute so we don't thrash on every keystroke.
-   */
   const onFieldTouch = useCallback(
     (field: FieldName) => {
       const values = getValues()
       const next = updateLastTwoOnTouch(values.lastTwo, field, values.isLocked)
       if (next !== values.lastTwo) setValue("lastTwo", next)
+      if (getDerived(next) === "price") {
+        dispatch({ type: "derived", value: values.limitPrice ?? "" })
+      }
       debounced(() => {
         recomputeDerivedField()
         trigger()
       })
     },
-    [debounced, getValues, recomputeDerivedField, setValue, trigger],
+    [debounced, dispatch, getValues, recomputeDerivedField, setValue, trigger],
   )
 
   const handleSellAmountChange = useCallback(
@@ -154,48 +183,13 @@ export const LimitFields: FC = () => {
     [onFieldTouch],
   )
 
-  // ── Market-price mirror ───────────────────────────────────────────
-  // When `price` is in the kept pair AND priceAnchor === "market", we
-  // sync `limitPrice` to the latest `marketPrice` (which refetches
-  // every block) and recompute the derived field. When price is the
-  // derived field, this effect is a no-op — the cascade already sets
-  // limitPrice from the two kept amounts.
-  useEffect(() => {
-    if (!marketPrice) return
-    const values = getValues()
-    if (values.priceAnchor !== "market") return
-    if (!values.lastTwo.includes("price")) return
-    if (values.limitPrice === marketPrice) return
-
-    setValue("limitPrice", marketPrice)
-
-    const derived = getDerived(values.lastTwo)
-    if (derived === "price") return
-
-    const computed = computeDerived(derived, {
-      sell: values.sellAmount ?? "",
-      buy: values.buyAmount ?? "",
-      price: marketPrice,
-    })
-    // null = inputs missing → leave the derived field as-is rather
-    // than auto-filling something the user hasn't asked for.
-    if (computed === null) return
-    if (derived === "buy") setValue("buyAmount", computed)
-    else if (derived === "sell") setValue("sellAmount", computed)
-  }, [marketPrice, getValues, setValue])
-
-  // ── Lock toggle ──
   const handleLockToggle = useCallback(() => {
     const values = getValues()
     const nextLocked = !values.isLocked
     setValue("isLocked", nextLocked)
     if (nextLocked) {
-      // Force sell into the kept pair if it isn't already, so the
-      // first buy/price edit derives the third (non-sell) field.
       const next = lockSellIntoLastTwo(values.lastTwo)
       if (next !== values.lastTwo) setValue("lastTwo", next)
-      // If the act of locking displaced a kept field into derived,
-      // recompute it.
       debounced(() => {
         recomputeDerivedField()
         trigger()
@@ -203,35 +197,13 @@ export const LimitFields: FC = () => {
     }
   }, [getValues, setValue, debounced, recomputeDerivedField, trigger])
 
-  // ── Asset change handlers ──
-
-  const handleSellAssetChange = useCallback(
-    (newSellAsset: TAsset) => {
-      const values = getValues()
+  const handleAssetChange = useCallback(
+    (next: Partial<LimitFormValues>) => {
       reset({
-        ...values,
-        sellAsset: newSellAsset,
-        limitPrice: "",
-        buyAmount: "",
-        // Reset to "price kept, sell will fill on first sell touch".
-        lastTwo: ["price", "sell"],
-        priceAnchor: "market",
-      })
-      trigger()
-    },
-    [getValues, reset, trigger],
-  )
-
-  const handleBuyAssetChange = useCallback(
-    (newBuyAsset: TAsset) => {
-      const values = getValues()
-      reset({
-        ...values,
-        buyAsset: newBuyAsset,
-        limitPrice: "",
+        ...getValues(),
+        ...next,
         buyAmount: "",
         lastTwo: ["price", "sell"],
-        priceAnchor: "market",
       })
       trigger()
     },
@@ -254,7 +226,7 @@ export const LimitFields: FC = () => {
             setValue("sellAsset", previousSellAsset)
             return
           }
-          handleSellAssetChange(sellAsset)
+          handleAssetChange({ sellAsset })
           navigate({
             to: ".",
             search: (search) => ({
@@ -283,7 +255,7 @@ export const LimitFields: FC = () => {
             setValue("buyAsset", previousBuyAsset)
             return
           }
-          handleBuyAssetChange(buyAsset)
+          handleAssetChange({ buyAsset })
           navigate({
             to: ".",
             search: (search) => ({
@@ -299,7 +271,21 @@ export const LimitFields: FC = () => {
 
       <SwapSectionSeparator />
 
-      <LimitPriceSection marketPrice={marketPrice} />
+      <QuotedPriceField
+        binding={quotedPrice}
+        baseAssetId={quotedPrice.view.inverted ? buyAsset?.id : sellAsset?.id}
+        baseSymbol={
+          (quotedPrice.view.inverted ? buyAsset?.symbol : sellAsset?.symbol) ??
+          ""
+        }
+        quoteSymbol={
+          (quotedPrice.view.inverted ? sellAsset?.symbol : buyAsset?.symbol) ??
+          ""
+        }
+        marketLabel={t("trade:limit.market")}
+      />
+
+      <LimitOrderSettings />
     </Stack>
   )
 }

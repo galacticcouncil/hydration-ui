@@ -9,15 +9,17 @@ import { useEffect, useRef } from "react"
 import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
 import { UnsafeDcaQuery } from "@/api/dcaStorage"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, PapiIce, useRpcProvider } from "@/providers/rpcProvider"
 
 type QuerySources = {
   readonly typed: Papi["query"]
+  readonly ice: PapiIce["query"]
   readonly unsafe: UnsafeDcaQuery
 }
 
 const QUERY_MAP = {
   "DCA.ScheduleOwnership": ({ unsafe }) => unsafe.DCA.ScheduleOwnership,
+  "Intent.AccountIntents": ({ ice }) => ice.Intent.AccountIntents,
   "OTC.Orders": ({ typed }) => typed.OTC.Orders,
   "Uniques.Account": ({ typed }) => typed.Uniques.Account,
 } as const satisfies Record<string, (sources: QuerySources) => unknown>
@@ -82,11 +84,11 @@ export function usePapiEntries<
   options?: PapiEntriesQueryOptions<K, TMap, TSelect>,
 ): UseQueryResult<TSelect, Error> {
   const queryClient = useQueryClient()
-  const { papi, papiClient, isApiLoaded } = useRpcProvider()
-  const isWatcherInitializedRef = useRef(false)
+  const { papi, papiIce, papiClient, isApiLoaded } = useRpcProvider()
 
   const querySources = (): QuerySources => ({
     typed: papi.query,
+    ice: papiIce.query,
     unsafe: papiClient.getUnsafeApi().query as unknown as UnsafeDcaQuery,
   })
 
@@ -121,9 +123,7 @@ export function usePapiEntries<
   const { isSuccess } = query
 
   useEffect(() => {
-    if (isWatcherInitializedRef.current || !isSuccess) {
-      return
-    }
+    if (!isSuccess) return
 
     subscribe(key, () =>
       (
@@ -149,8 +149,6 @@ export function usePapiEntries<
         queryClient.setQueryData([key], result)
       }),
     )
-
-    isWatcherInitializedRef.current = true
 
     return () => {
       unsubscribe(key)

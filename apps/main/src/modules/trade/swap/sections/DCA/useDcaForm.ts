@@ -81,15 +81,8 @@ const schemaBase = z.object({
   buyAsset: requiredObject<TAsset>(),
   duration: getTimeFrameSchema(dcaTimeFrameTypes),
   orders: ordersSchema,
-  // Optional price condition ("limit TWAP"): when `limitEnabled`, each slice
-  // only fills at/above the user's price. Stored canonically as BUY-per-SELL
-  // (same convention as the Limit screen's marketPrice = amountOut/amountIn).
   limitEnabled: z.boolean(),
   limitPrice: positiveOptional,
-  // Display denomination for the limit price / summary: false = "1 BUY = X
-  // SELL" (below), true = "1 SELL = X BUY" (above). Display-only; limitPrice
-  // stays canonical.
-  limitInverted: z.boolean(),
 })
 
 const MAX_OPEN_BUDGET_YEAR_FRAME = 1
@@ -279,7 +272,6 @@ export const useDcaForm = ({
     },
     limitEnabled: false,
     limitPrice: "",
-    limitInverted: false,
   }
 
   const form = useForm<DcaFormValues>({

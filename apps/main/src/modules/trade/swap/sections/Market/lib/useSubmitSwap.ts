@@ -5,7 +5,6 @@ import React from "react"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
-import { intentsByAccountQuery } from "@/api/intents"
 import { Trade, TradeType } from "@/api/trade"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
@@ -20,10 +19,8 @@ import {
 } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
-/** Stop watching for an intent fill after this long. */
 const FILL_WATCH_TIMEOUT_MS = 3 * 60 * 1000
 
-/** `Intent.IntentResolved` event payload (actual executed amounts). */
 type IntentResolvedPayload = {
   id: bigint
   amount_in: bigint
@@ -81,10 +78,7 @@ export const useSubmitSwap = () => {
               }),
             }
 
-      // Intent-based market order. There is no Buy intent on the ICE
-      // pallet — the SDK builder translates a Buy trade to sell
-      // semantics: amount_out floor = exact requested buy amount,
-      // slippage pads amount_in instead (see IntentMarketTxBuilder).
+      // ICE has no Buy intent; the SDK maps Buy trades to sell semantics.
       if (featureFlags.isIceEnabled) {
         const tx = await sdk.tx
           .intentMarket(swap)
@@ -92,14 +86,9 @@ export const useSubmitSwap = () => {
           .withSlippage(swapSlippage)
           .build()
 
-        // The intent's on-chain bounds — same numbers the form displays
-        // (exact spend / guaranteed floor). Anything the solver delivers
-        // above the floor is user bonus, surfaced in the fill toast.
         const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
         const guaranteedOutRaw = iceAmounts.amountOut
 
-        // Toast copy uses the on-chain amounts too, so every number the
-        // user ever sees matches the signed extrinsic.
         const iceParams =
           type === TradeType.Sell
             ? {
@@ -123,12 +112,8 @@ export const useSubmitSwap = () => {
                 }),
               }
 
-        // Watch for the solver resolving the intent and toast the
-        // ACTUAL received amount — the tx success toast only means the
-        // intent was placed, not filled.
         const watchIntentFill = (intentId: bigint, txHash: string) => {
-          // The ICE descriptors don't include typed events (IEvent = {})
-          // so reach through the unsafe API for the Intent pallet events.
+          // ICE descriptors omit typed events; read IntentResolved via unsafe API.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const iceEvents = (papiClient.getUnsafeApi() as any).event
           const timer = setTimeout(
@@ -189,9 +174,6 @@ export const useSubmitSwap = () => {
                 iceParams,
               ),
             },
-            invalidateQueries: [
-              intentsByAccountQuery(rpc, account.address).queryKey,
-            ],
           },
           {
             onSuccess: (result) => {

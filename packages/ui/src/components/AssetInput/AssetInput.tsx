@@ -91,8 +91,6 @@ export const AssetInput = ({
     }
   }
 
-  const isLoading = valueLoading || displayValueLoading || loading
-
   return (
     <Flex
       direction="column"
@@ -221,15 +219,8 @@ export const AssetInput = ({
                 />
               )}
 
-              {amountError && !isLoading ? (
-                <FormError
-                  fs="p6"
-                  fw={400}
-                  lh={1}
-                  truncate
-                  width="100%"
-                  align="right"
-                >
+              {amountError ? (
+                <FormError lh={1} truncate width="100%" align="right">
                   {amountError}
                 </FormError>
               ) : (
@@ -238,7 +229,6 @@ export const AssetInput = ({
                     color={getToken("text.low")}
                     fs="p6"
                     fw={400}
-                    lh={1}
                     truncate
                     width="100%"
                     align="right"
@@ -254,7 +244,7 @@ export const AssetInput = ({
             </Flex>
           )}
         </Flex>
-        {assetError && !isLoading && (
+        {assetError && (
           <FormError lh={1} ml="auto">
             {assetError}
           </FormError>

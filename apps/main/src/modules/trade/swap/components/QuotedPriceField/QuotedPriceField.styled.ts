@@ -3,6 +3,8 @@ import styled from "@emotion/styled"
 import { NumberInput } from "@galacticcouncil/ui/components"
 import { NumericFormat } from "react-number-format"
 
+import { AssetLogo } from "@/components/AssetLogo"
+
 export const SPriceInput = styled(NumberInput)(
   ({ theme }) => css`
     font-weight: 600;
@@ -222,6 +224,10 @@ export const SPillInlineInput = styled(NumericFormat)(
   `,
 )
 
+export const SInlineAssetLogo = styled(AssetLogo)`
+  display: inline-flex;
+  margin-inline: 0.1em;
+`
 export const SMarketPrice = styled.span`
   text-decoration: underline dotted;
   text-underline-offset: 0.15em;
@@ -239,20 +245,6 @@ export const SMarketButton = styled.button(
 
     &:hover {
       color: ${theme.text.high};
-    }
-  `,
-)
-
-export const SBulletList = styled.ul(
-  ({ theme }) => css`
-    list-style-type: disc;
-    padding-left: ${theme.space.l};
-    margin: 0;
-    font-size: ${theme.fontSizes.p5};
-    line-height: 1.4;
-
-    li + li {
-      margin-top: ${theme.space.s};
     }
   `,
 )

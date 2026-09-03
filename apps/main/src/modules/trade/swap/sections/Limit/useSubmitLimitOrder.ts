@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { clamp } from "remeda"
 
 import { bestNumberQuery } from "@/api/chain"
-import { intentsByAccountQuery, maxIntentDurationQuery } from "@/api/intents"
+import { maxIntentDurationQuery } from "@/api/intents"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -94,9 +94,6 @@ export const useSubmitLimitOrder = () => {
             amountOut: formattedBuy,
           }),
         },
-        invalidateQueries: [
-          intentsByAccountQuery(rpc, account.address).queryKey,
-        ],
       })
     },
   })
