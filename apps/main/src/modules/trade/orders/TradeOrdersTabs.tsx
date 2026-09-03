@@ -9,20 +9,21 @@ import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { TradeOrderTab } from "@/modules/trade/orders/TradeOrdersHeader"
 import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
-const TABS = ["myActivity", "openOrders", "orderHistory"] as const
-
 const TAB_TITLE_KEYS = {
   myActivity: "trade.orders.myTrades",
   openOrders: "trade.orders.openOrders",
   orderHistory: "trade.orders.orderHistory",
-} as const
+  marketTransactions: "trade.orders.marketTransactions",
+} as const satisfies Record<TradeOrderTab, string>
 
 type Props = {
+  readonly tabs: ReadonlyArray<TradeOrderTab>
   readonly paginationProps: PaginationProps
   readonly openOrdersCount: number
 }
 
-export const TradeOrdersHeaderNeckwork: FC<Props> = ({
+export const TradeOrdersTabs: FC<Props> = ({
+  tabs,
   paginationProps,
   openOrdersCount,
 }) => {
@@ -38,7 +39,7 @@ export const TradeOrdersHeaderNeckwork: FC<Props> = ({
         gap="base"
         my="l"
         horizontalEdgeOffset="xl"
-        items={TABS.map<TabItem>((tab) => ({
+        items={tabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(TAB_TITLE_KEYS[tab]),
           search: {

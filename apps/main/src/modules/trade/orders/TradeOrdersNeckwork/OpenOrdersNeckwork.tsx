@@ -1,5 +1,4 @@
 import { DataTable, Modal } from "@galacticcouncil/ui/components"
-import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
@@ -27,25 +26,16 @@ type Props = {
 }
 
 export const OpenOrdersNeckwork: FC<Props> = ({ paginationProps }) => {
-  const { allPairs, assetIn, assetOut } = useSearch({
-    from: "/trade/_history",
-  })
-
   const [detailKey, setDetailKey] = useState<string | null>(null)
   const [terminating, setTerminating] = useState<DcaOrderData | null>(null)
   const removeIntent = useRemoveIntent()
 
-  const assetFilter = allPairs ? [] : [assetIn, assetOut]
-
-  // DCA schedules are read from chain state first, then topped up with the
-  // indexer's executed amounts. Intents (limit orders and intent TWAPs) are
-  // chain-only - neckwork does not index them - so they skip the enrichment.
   const { orders: chainOrders, isLoading: isChainLoading } =
     useChainOrdersData()
   const neckworkEnabled = useNeckworkTradeQueriesEnabled()
   const { orders: enrichedOrders, refetch } = useDcaEnrichment(chainOrders)
   const { orders: intentOrders, isLoading: isIntentsLoading } =
-    useIntentOrdersData(assetFilter)
+    useIntentOrdersData()
 
   const allOrders = useMemo<Array<OrderData>>(
     () => [...intentOrders, ...enrichedOrders],

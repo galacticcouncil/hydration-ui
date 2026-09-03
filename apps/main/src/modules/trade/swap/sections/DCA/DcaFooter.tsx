@@ -25,7 +25,7 @@ export const DcaFooter: FC<Props> = ({
   const { t } = useTranslation(["common", "trade"])
 
   return (
-    <Grid py="xl" rowGap="m" justifyItems="center">
+    <Grid py="xl" rowGap="xl" justifyItems="center">
       <AuthorizedAction size="large" width="100%">
         <LoadingButton
           type="submit"

@@ -26,33 +26,11 @@ const schemaBase = z.object({
   limitPrice: positiveOptional,
   expiry: z.enum(EXPIRY_OPTIONS),
   partiallyFillable: z.boolean(),
-  /**
-   * Lock toggle. When true, sell is forced to stay in `lastTwo`
-   * regardless of touch recency — buy/price edits derive each other
-   * around a fixed sell value.
-   */
   isLocked: z.boolean(),
-  /**
-   * The two most-recently-touched fields, ordered most-recent first.
-   * The third field (not in this pair) is the one that derives via
-   * `buy = sell × price`. Updated on every user touch via the cascade
-   * logic in cascadeLogic.ts.
-   *
-   * Initial value `["price", "sell"]` makes `buy` the derived field
-   * on form mount: as soon as the user types into sell, buy fills
-   * from `sell × marketPrice`. Typing buy first instead flips it.
-   */
   lastTwo: z.tuple([
     z.enum(["sell", "buy", "price"]),
     z.enum(["sell", "buy", "price"]),
   ]),
-  /**
-   * Only relevant when `price` is in `lastTwo` (i.e. price is one of
-   * the two kept fields). "market" → mirror live market price every
-   * block; "user" → frozen at user-typed value (or pill % preset).
-   * When price is the derived field, this flag is unused.
-   */
-  priceAnchor: z.enum(["market", "user"]),
 })
 
 export type LimitFormValues = z.infer<typeof schemaBase>
@@ -90,7 +68,6 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     partiallyFillable: true,
     isLocked: false,
     lastTwo: ["price", "sell"],
-    priceAnchor: "market",
   }
 
   const form = useForm<LimitFormValues>({

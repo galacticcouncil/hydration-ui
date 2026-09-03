@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import Big from "big.js"
 import { useFormContext } from "react-hook-form"
 
 import {
@@ -9,7 +8,7 @@ import {
 } from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 
-/** Swap "sell" ↔ "buy" in a LastTwo tuple, leaving "price" untouched. */
+/** Swap sell/buy in lastTwo; price stays put. */
 const flipAmountSidesInLastTwo = (lastTwo: LastTwo): LastTwo => {
   const flip = (f: FieldName): FieldName =>
     f === "sell" ? "buy" : f === "buy" ? "sell" : "price"
@@ -23,48 +22,15 @@ export const useSwitchAssets = () => {
   return useMutation({
     mutationFn: async () => {
       const values = getValues()
-      const {
-        sellAsset,
-        buyAsset,
-        sellAmount,
-        buyAmount,
-        limitPrice,
-        lastTwo,
-      } = values
-
-      // Invert the limit price. Store at full precision so the display
-      // layer (LimitPriceSection) can format without precision loss and
-      // flipping back still round-trips cleanly.
-      let newPrice = ""
-      if (limitPrice) {
-        try {
-          const priceBig = new Big(limitPrice)
-          if (priceBig.gt(0)) {
-            newPrice = Big(1).div(priceBig).toString()
-          }
-        } catch {
-          // ignore invalid price
-        }
-      }
-
-      // Swap amounts: old sellAmount becomes new buyAmount (user was
-      // "selling N of X" — after flip they're now "buying N of X" by
-      // selling the opposite asset), and vice versa.
-      const newSellAmount = buyAmount
-      const newBuyAmount = sellAmount
-
-      // Touch recency follows through the swap: the kept-pair entry
-      // for "sell" becomes "buy" and vice versa; "price" stays put.
-      const newLastTwo = flipAmountSidesInLastTwo(lastTwo)
+      const { sellAsset, buyAsset, sellAmount, buyAmount, lastTwo } = values
 
       reset({
         ...values,
         sellAsset: buyAsset,
         buyAsset: sellAsset,
-        sellAmount: newSellAmount,
-        buyAmount: newBuyAmount,
-        limitPrice: newPrice,
-        lastTwo: newLastTwo,
+        sellAmount: buyAmount,
+        buyAmount: sellAmount,
+        lastTwo: flipAmountSidesInLastTwo(lastTwo),
       })
 
       trigger()

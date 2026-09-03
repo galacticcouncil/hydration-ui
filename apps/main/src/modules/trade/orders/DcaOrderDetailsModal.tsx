@@ -1,4 +1,3 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { SquareArrowOutUpRight, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -33,6 +32,7 @@ import {
   DcaOrderData,
   IntentDcaOrderData,
   isDcaScheduleOrder,
+  OrderStatus,
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
 
@@ -40,12 +40,16 @@ type Props = {
   readonly details: DcaOrderData | IntentDcaOrderData
   readonly onTerminate: (() => void) | null
   readonly pastExecutions: ReactNode
+  readonly isSpentLoading?: boolean
+  readonly isReceivedLoading?: boolean
 }
 
 export const DcaOrderDetailsModal = ({
   details,
   onTerminate,
   pastExecutions,
+  isSpentLoading = false,
+  isReceivedLoading = false,
 }: Props) => {
   const { data: blockTimeMs } = useBlockTime()
   const { t } = useTranslation(["common", "trade"])
@@ -56,9 +60,6 @@ export const DcaOrderDetailsModal = ({
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
 
-  // For a limit TWAP, the same fill rule as a plain limit order applies — just
-  // per slice: a slice executes when the market pays at least the asked rate
-  // (receive per sell). Disabled for market TWAPs (no limitPrice).
   const { orderRate, marketRate, distancePct, fillable } = useLimitFillStatus({
     from: details.from,
     to: details.to,
@@ -71,24 +72,28 @@ export const DcaOrderDetailsModal = ({
     : `${t("remaining")} / ${t("budget")}`
 
   const spentOrBudgetValue = details.isOpenBudget
-    ? `${t("number", {
-        value: details.fromAmountExecuted,
-      })} ${details.from.symbol}`
+    ? `${
+        details.fromAmountExecuted
+          ? `${t("number", { value: details.fromAmountExecuted })} `
+          : ""
+      }${details.from.symbol}`
     : `${t("number", {
         value:
-          details.status === DcaScheduleStatus.Completed
+          details.status === OrderStatus.Completed
             ? "0"
             : (details.fromAmountRemaining ?? details.fromAmountBudget),
       })}/${t("number", {
         value: details.fromAmountBudget,
       })} ${details.from.symbol}`
 
-  const receivedValue = t("currency", {
-    value: details.toAmountExecuted ?? "0",
-    symbol: details.to.symbol,
-  })
+  const receivedValue = details.toAmountExecuted
+    ? t("currency", {
+        value: details.toAmountExecuted,
+        symbol: details.to.symbol,
+      })
+    : details.to.symbol
 
-  const isActive = details.status === DcaScheduleStatus.Created
+  const isActive = details.status === OrderStatus.Created
   const progressPercent = isActive
     ? getDcaCompletionPercent({
         sold: details.fromAmountExecuted,
@@ -144,9 +149,17 @@ export const DcaOrderDetailsModal = ({
         </Flex>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
-          <Amount label={spentOrBudgetLabel} value={spentOrBudgetValue} />
+          <Amount
+            label={spentOrBudgetLabel}
+            value={spentOrBudgetValue}
+            isLoading={isSpentLoading}
+          />
           <Separator orientation="vertical" />
-          <Amount label={t("received")} value={receivedValue} />
+          <Amount
+            label={t("received")}
+            value={receivedValue}
+            isLoading={isReceivedLoading}
+          />
         </Grid>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
@@ -196,7 +209,7 @@ export const DcaOrderDetailsModal = ({
                 }
               />
             </Grid>
-            {orderRate && (
+            {orderRate && isActive && (
               <>
                 <ModalContentDivider />
                 <Flex direction="column" gap="s" py="xl" align="flex-start">
@@ -249,20 +262,14 @@ export const DcaOrderDetailsModal = ({
               </ExternalLink>
             </Button>
           )}
-          {details.status === DcaScheduleStatus.Created && onTerminate && (
+          {details.status === OrderStatus.Created && onTerminate && (
             <Button variant="danger" outline onClick={onTerminate}>
               <Icon component={Trash} size="s" />
               {t("trade:trade.cancelOrder.cta")}
             </Button>
           )}
         </Flex>
-        <Flex
-          direction="column"
-          sx={{ marginInline: "var(--modal-content-inset)" }}
-        >
-          {pastExecutions}
-        </Flex>
-        <ModalContentDivider />
+        {pastExecutions}
       </ModalBody>
     </>
   )
