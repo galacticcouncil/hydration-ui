@@ -1,8 +1,10 @@
 import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
+import { TWAP_EXECUTION_INTERVAL_MS } from "@galacticcouncil/sdk-next/sor"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { blockTimeQuery } from "@/api/chain"
 import { papiDryRunErrorQuery } from "@/api/dryRun"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import { ENV } from "@/config/env"
@@ -450,11 +452,8 @@ export const minimumOrderBudgetQuery = (
   })
 }
 
-/** Scheduler's TWAP execution interval in blocks (TWAP_EXECUTION_INTERVAL). */
-const TWAP_INTERVAL_BLOCKS = 6
-
 export const tradeOrderDurationQuery = (
-  { sdk, papiClient, featureFlags, isApiLoaded }: TProviderContext,
+  { sdk, papiClient, featureFlags, isApiLoaded, queryClient }: TProviderContext,
   tradeCount: number,
 ) =>
   queryOptions({
@@ -466,22 +465,22 @@ export const tradeOrderDurationQuery = (
       featureFlags.isIceEnabled,
     ],
     queryFn: async () => {
-      const duration = await sdk.api.scheduler.getTwapExecutionTime(tradeCount)
-
       if (!featureFlags.isIceEnabled) {
-        return duration
+        return sdk.api.scheduler.getTwapExecutionTime(tradeCount)
       }
 
-      // The intent pallet enforces a per-network minimum block period
-      // (MinDcaPeriod) and the tx builder clamps the order to it, so the
-      // real cadence can be slower than the scheduler's 6-block interval.
-      const minDcaPeriod: number =
-        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (papiClient.getUnsafeApi() as any).constants.Intent.MinDcaPeriod()
+      const [blockTimeMs, minDcaPeriod] = await Promise.all([
+        queryClient.ensureQueryData(blockTimeQuery(sdk)),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (papiClient.getUnsafeApi() as any).constants.Intent.MinDcaPeriod(),
+      ])
 
-      return minDcaPeriod > TWAP_INTERVAL_BLOCKS
-        ? (duration * minDcaPeriod) / TWAP_INTERVAL_BLOCKS
-        : duration
+      const twapIntervalBlocks = Math.round(
+        TWAP_EXECUTION_INTERVAL_MS / blockTimeMs,
+      )
+      const intervalBlocks = Math.max(minDcaPeriod, twapIntervalBlocks)
+
+      return tradeCount * intervalBlocks * blockTimeMs
     },
     enabled: isApiLoaded && tradeCount > 0,
   })
