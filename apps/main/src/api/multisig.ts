@@ -9,11 +9,11 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
 export const useMultisigDeposit = (numSignatories: number) => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
   const { native } = useAssets()
 
   return useQuery({
-    enabled: isApiLoaded && numSignatories > 0,
+    enabled: isReady && numSignatories > 0,
     queryKey: ["multisig", "deposit", numSignatories],
     queryFn: async () => {
       const [base, factor] = await Promise.all([
@@ -30,10 +30,10 @@ export const useMultisigDeposit = (numSignatories: number) => {
 }
 
 export const useDecodedMultisigTx = (tx: MultisigPendingTx) => {
-  const { papi, papiClient, isLoaded } = useRpcProvider()
+  const { papi, papiClient, isReady } = useRpcProvider()
 
   return useQuery({
-    enabled: isLoaded && !!tx,
+    enabled: isReady && !!tx,
     queryKey: ["multisig", "tx", safeStringify(tx)],
     retry: false,
     queryFn: async () => {
@@ -68,7 +68,7 @@ export const useDecodedMultisigTx = (tx: MultisigPendingTx) => {
 
 export const useMultisigSignerBalance = () => {
   const { account } = useAccount()
-  const { sdk, isApiLoaded } = useRpcProvider()
+  const { sdk, isReady } = useRpcProvider()
   const { native } = useAssets()
 
   const signerAddress = account?.isMultisig
@@ -76,7 +76,7 @@ export const useMultisigSignerBalance = () => {
     : undefined
 
   return useQuery({
-    enabled: isApiLoaded && !!signerAddress,
+    enabled: isReady && !!signerAddress,
     queryKey: ["multisig", "signerBalance", signerAddress],
     queryFn: async () => {
       if (!signerAddress) throw new Error("Invalid signer address")

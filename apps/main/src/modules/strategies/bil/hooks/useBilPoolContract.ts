@@ -9,7 +9,7 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 export const bilPoolContractQuery = (rpc: TProviderContext) => {
   return queryOptions({
     queryKey: bilQueryKeys.poolContract(),
-    enabled: rpc.isLoaded,
+    enabled: rpc.isReady,
     staleTime: Infinity,
     gcTime: Infinity,
     queryFn: () => {

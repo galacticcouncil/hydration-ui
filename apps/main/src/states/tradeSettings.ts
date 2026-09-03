@@ -12,7 +12,7 @@ import { persist } from "zustand/middleware"
 import {
   TRADE_CHART_TYPES,
   TradeChartType,
-} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
+} from "@/modules/trade/swap/components/TradeChart/TradeChart.utils"
 import { validNumber } from "@/utils/validators"
 
 const legacyTradeSettingsSchema = z.object({

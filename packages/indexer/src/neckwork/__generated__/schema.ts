@@ -4,12 +4,12 @@
  */
 
 export interface paths {
-    readonly "/api/v1/fees/charts": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/api/v1/fees/charts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Bucketed protocol revenue by product and stream
@@ -33,53 +33,53 @@ export interface paths {
          *
          *     **Coverage.** `borrow_apr` starts where the money market's aToken anchor does, and returns an empty series (never zeros) while that anchor is unavailable. `asset`+`feeDestination=protocol` excludes pre-2025-01-25 legs, whose destination the runtime did not record; `total` includes them.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
-                    readonly bucketSize: "1hour" | "6hour" | "24hour" | "7day" | "30day";
-                    readonly endTime: string;
-                    readonly feeDestination?: "protocol" | "total" | "lp" | "burned";
-                    readonly productType: "omnipool" | "money-market" | "hollar";
-                    readonly startTime: string;
-                    readonly streamType: ("asset" | "protocol" | "liquidation_penalty" | "pepl_liquidation_profit" | "asset_reserve" | "borrow_apr" | "hsm_revenue") | "total";
+        get: {
+            parameters: {
+                query: {
+                    bucketSize: "1hour" | "6hour" | "24hour" | "7day" | "30day";
+                    endTime: string;
+                    feeDestination?: "protocol" | "total" | "lp" | "burned";
+                    productType: "omnipool" | "money-market" | "hollar";
+                    startTime: string;
+                    streamType: ("asset" | "protocol" | "liquidation_penalty" | "pepl_liquidation_profit" | "asset_reserve" | "borrow_apr" | "hsm_revenue") | "total";
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly data: readonly {
-                                readonly timestamp: string;
-                                readonly value: number;
+                        "application/json": {
+                            data: {
+                                timestamp: string;
+                                value: number;
                             }[];
-                            readonly periodAggregate: number;
+                            periodAggregate: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/coingecko/v1/tickers": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/coingecko/v1/tickers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * 24h DEX tickers per pool and pair
@@ -95,57 +95,57 @@ export interface paths {
          *
          *     Deviations from the incumbent feed, both deliberate: numeric fields are strings (CoinGecko's own spec form; the old feed emitted JSON numbers), and `pool_id` names the real pool instead of repeating `ticker_id`, so a pair traded in several pools reports each pool's own depth. `liquidity_in_usd` is real — the old feed hardcoded it to 0. The window is anchored to the newest indexed block, not to wall clock, and a cold cache computes on demand instead of answering 503.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": readonly {
-                            readonly base_currency: string;
+                        "application/json": {
+                            base_currency: string;
                             /** @description Base-asset volume over the window, counting both trade directions. */
-                            readonly base_volume: string;
-                            readonly high: string;
+                            base_volume: string;
+                            high: string;
                             /** @description Base units per one target unit, from the most recent fill in the window. */
-                            readonly last_price: string;
+                            last_price: string;
                             /** @description Current USD depth behind the pair. 0 where the venue holds no reserves (money-market wraps, OTC) or the pool is unpriced. */
-                            readonly liquidity_in_usd: string;
-                            readonly low: string;
+                            liquidity_in_usd: string;
+                            low: string;
                             /** @description `omnipool`, or `<venue>:<pool key>` — a stableswap pool id, an XYK pool account, an aToken contract account, an OTC order id. */
-                            readonly pool_id: string;
-                            readonly target_currency: string;
+                            pool_id: string;
+                            target_currency: string;
                             /** @description Target-asset volume over the window, counting both trade directions. */
-                            readonly target_volume: string;
+                            target_volume: string;
                             /** @description `<base>_<target>`. Not unique on its own: a pair traded in several pools has one row per pool, told apart by `pool_id`. */
-                            readonly ticker_id: string;
+                            ticker_id: string;
                         }[];
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/coingecko/v1/totalsupply/{token}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/coingecko/v1/totalsupply/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Total supply of a Hydration product token
@@ -155,74 +155,74 @@ export interface paths {
          *
          *     A source this model cannot read answers 503, never 0: a missing reserve entry, an unindexed balance or a reserve that has started lending are all "unknown supply", and publishing zero for any of them would be a wrong number an aggregator keeps.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path: {
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
                     /** @description hollar | gigadot | gigaeth | h2o */
-                    readonly token: string;
+                    token: string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
+                        "application/json": {
                             /** @description Whole tokens as a decimal string. */
-                            readonly result: string;
+                            result: string;
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 404: {
+                404: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
                 /** @description The supply exists but could not be read from indexed state. */
-                readonly 503: {
+                503: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/defillama/v1/backfill": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/defillama/v1/backfill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Per-day historical volume and fees
@@ -238,74 +238,74 @@ export interface paths {
          *
          *     Cost: the fold runs one calendar month at a time over the swap-leg projection, and each month is cached for an hour (stale-served for a day). A busy month reads ~2.7 M legs in ~5 s cold, the slowest month of the whole era took 11.8 s, and a warm range answers in milliseconds — so a reindex that walks the era in 62-day requests pays each month exactly once.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
+        get: {
+            parameters: {
+                query: {
                     /** @description Last day, inclusive. */
-                    readonly endDate: string;
+                    endDate: string;
                     /** @description First day, inclusive. */
-                    readonly startDate: string;
+                    startDate: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": readonly {
+                        "application/json": {
                             /** @description Every fee leg the day's trades paid, valued at event time — whatever the fee's destination. Fees are NOT part of `volume_usd`. */
-                            readonly dailyFees: number;
+                            dailyFees: number;
                             /** @description The part of `dailyFees` destroyed rather than credited — the Omnipool LRNA protocol fee for most of the chain's history. It accrues to nobody. */
-                            readonly dailyFeesBurned: number;
+                            dailyFeesBurned: number;
                             /** @description The part of `dailyFees` credited to an account: a pool, a referrer, staking, the treasury. This surface does not decide which. */
-                            readonly dailyFeesToAccounts: number;
+                            dailyFeesToAccounts: number;
                             /** @description The part of `dailyFees` whose destination the chain did not record. Pre-Broadcast Omnipool asset fees only; never book it as revenue. */
-                            readonly dailyFeesUnknownDestination: number;
+                            dailyFeesUnknownDestination: number;
                             /** @description The part of `dailyFees` charged in the Omnipool hub asset (LRNA) — the protocol fee. It overlaps the destination classes above rather than adding to them. */
-                            readonly dailyProtocolFees: number;
+                            dailyProtocolFees: number;
                             /** @description The UTC calendar day, `YYYY-MM-DD`. */
-                            readonly date: string;
+                            date: string;
                             /** @description Netted USD volume of the day's trades. */
-                            readonly volume_usd: number;
+                            volume_usd: number;
                         }[];
                     };
                 };
                 /** @description Default Response */
-                readonly 400: {
+                400: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/defillama/v1/volume": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/defillama/v1/volume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * 24h netted trading volume
@@ -315,43 +315,43 @@ export interface paths {
          *
          *     The window ends at the newest indexed block, not at wall clock, so an indexing lag shortens the window instead of reporting a partial period as a full one. Values are event-time priced, from the 1-hour candle that had already closed when each fill happened.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": readonly {
+                        "application/json": {
                             /** @description Netted USD volume over the rolling 24 hours, as a JSON number rounded to cents. */
-                            readonly volume_usd: number;
+                            volume_usd: number;
                         }[];
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/dexscreener/asset": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/dexscreener/asset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Asset metadata by registry id
@@ -361,51 +361,51 @@ export interface paths {
          *
          *     An id the registry does not know is a 404, never a synthesised placeholder token.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
-                    readonly id: string;
+        get: {
+            parameters: {
+                query: {
+                    id: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asset: {
-                                readonly id: string;
-                                readonly metadata: {
-                                    readonly decimals: string;
+                        "application/json": {
+                            asset: {
+                                id: string;
+                                metadata: {
+                                    decimals: string;
                                 };
-                                readonly name: string;
-                                readonly symbol: string;
+                                name: string;
+                                symbol: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/dexscreener/events": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/dexscreener/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Swap events in a block range
@@ -427,66 +427,66 @@ export interface paths {
          *
          *     Swap coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
-                    readonly fromBlock: string;
-                    readonly toBlock: string;
+        get: {
+            parameters: {
+                query: {
+                    fromBlock: string;
+                    toBlock: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly events: readonly {
-                                readonly asset0In?: string;
-                                readonly asset0Out?: string;
-                                readonly asset1In?: string;
-                                readonly asset1Out?: string;
-                                readonly block: {
-                                    readonly blockNumber: number;
-                                    readonly blockTimestamp: number;
+                        "application/json": {
+                            events: {
+                                asset0In?: string;
+                                asset0Out?: string;
+                                asset1In?: string;
+                                asset1Out?: string;
+                                block: {
+                                    blockNumber: number;
+                                    blockTimestamp: number;
                                 };
-                                readonly eventIndex: number;
+                                eventIndex: number;
                                 /** @enum {string} */
-                                readonly eventType: "swap";
-                                readonly maker: string;
-                                readonly pairId: string;
-                                readonly priceNative: string;
-                                readonly reserves?: {
-                                    readonly asset0: string;
-                                    readonly asset1: string;
+                                eventType: "swap";
+                                maker: string;
+                                pairId: string;
+                                priceNative: string;
+                                reserves?: {
+                                    asset0: string;
+                                    asset1: string;
                                 };
-                                readonly txnId: string;
-                                readonly txnIndex: number;
+                                txnId: string;
+                                txnIndex: number;
                             }[];
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/dexscreener/latest-block": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/dexscreener/latest-block": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Newest indexed block
@@ -494,45 +494,45 @@ export interface paths {
          *
          *     The head of the indexed chain, from the same source `/v1/status` reports. DexScreener only requests event windows at or below this height, so it is the read models' own progress rather than the raw pipeline's checkpoint.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly block: {
-                                readonly blockNumber: number;
-                                readonly blockTimestamp: number;
+                        "application/json": {
+                            block: {
+                                blockNumber: number;
+                                blockTimestamp: number;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/dexscreener/pair": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/dexscreener/pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Pair metadata by pair id
@@ -544,273 +544,273 @@ export interface paths {
          *
          *     The id is resolved against the pools that exist: a well-formed id whose pool does not hold both assets, or either of whose assets the registry cannot resolve, is a 404. The optional spec fields `createdAtBlockNumber`, `createdAtTxnId`, `creator`, `feeBps` and `pool` are omitted — pool creation is not projected per pair, and the Omnipool's fee is a dynamic per-asset value rather than a pair constant.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
-                    readonly id: string;
+        get: {
+            parameters: {
+                query: {
+                    id: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly pair: {
-                                readonly asset0Id: string;
-                                readonly asset1Id: string;
+                        "application/json": {
+                            pair: {
+                                asset0Id: string;
+                                asset1Id: string;
                                 /** @enum {string} */
-                                readonly dexKey: "hydration";
-                                readonly id: string;
+                                dexKey: "hydration";
+                                id: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/proxy/defillama/{*}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/proxy/defillama/{*}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * defillama passthrough
          * @description DefiLlama yield charts for a pool uuid, Hydration chain TVL history, and the hydration-dex volume summary. Allow-listed paths only — anything else is 404: ^(yields)\/(chart\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$ | ^(api)\/(v2\/historicalChainTvl\/HydraDX)$ | ^(api)\/(summary\/dexs\/hydration-dex)$. Responses are cached in this process for 600s and are never stored by a shared cache. An upstream 4xx is passed through; a 5xx or a timeout is reported as 502, and neither is cached. No caller header is forwarded upstream.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path: {
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
                     /** @description Allow-listed upstream path */
-                    readonly "*": string;
+                    "*": string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": unknown;
+                        "application/json": unknown;
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/proxy/kamino/{*}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/proxy/kamino/{*}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * kamino passthrough
          * @description Kamino yield history for one yield source (`yields/<source>/history`). Allow-listed paths only — anything else is 404: ^(yields\/[0-9A-Za-z]+\/history)$. Responses are cached in this process for 600s and are never stored by a shared cache. An upstream 4xx is passed through; a 5xx or a timeout is reported as 502, and neither is cached. No caller header is forwarded upstream.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path: {
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
                     /** @description Allow-listed upstream path */
-                    readonly "*": string;
+                    "*": string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": unknown;
+                        "application/json": unknown;
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/proxy/subsquare/{*}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/proxy/subsquare/{*}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * subsquare passthrough
          * @description A voter's OpenGov vote history and the referendum list from Subsquare's Hydration API. Allow-listed paths only — anything else is 404: ^(users\/[0-9A-Za-z]+\/referenda\/votes)$ | ^(gov2\/referendums)$. Responses are cached in this process for 60s and are never stored by a shared cache. An upstream 4xx is passed through; a 5xx or a timeout is reported as 502, and neither is cached. No caller header is forwarded upstream.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path: {
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
                     /** @description Allow-listed upstream path */
-                    readonly "*": string;
+                    "*": string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": unknown;
+                        "application/json": unknown;
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/rest/service/health": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/rest/service/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Liveness probe
          * @description Static liveness answer. It reports that this process is serving, not that the indexer is caught up — use /v1/status for lag.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
+                        "application/json": {
                             /** @enum {string} */
-                            readonly status: "healthy";
-                            readonly timestamp: string;
+                            status: "healthy";
+                            timestamp: string;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/rest/service/metadata": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/rest/service/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Indexer identity and coverage
          * @description Data-lake-compatible metadata probe. `master` comes from PUBLIC_API_MASTER (default true); a replica serving stale data should set it to "false" so a consumer's provider failover can prefer another host.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly coverage: {
-                                readonly blockBounds: {
-                                    readonly maxBlockHeight: number;
-                                    readonly minBlockHeight: number;
+                        "application/json": {
+                            coverage: {
+                                blockBounds: {
+                                    maxBlockHeight: number;
+                                    minBlockHeight: number;
                                 };
                             };
-                            readonly indexer: {
-                                readonly id: string;
-                                readonly master: boolean;
-                                readonly network: string;
-                                readonly version: string;
+                            indexer: {
+                                id: string;
+                                master: boolean;
+                                network: string;
+                                version: string;
                             };
                             /** @enum {number} */
-                            readonly metadataVersion: 1;
+                            metadataVersion: 1;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/accounts/{account}/balance-history": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/accounts/{account}/balance-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Bucketed net-worth series for one account
@@ -824,55 +824,55 @@ export interface paths {
          *
          *     Defaults to the most recent 168 hourly (or 90 daily) buckets. At most 1000 points per request; a wider window is a 400, never a silently truncated series.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly bucket?: "1h" | "1d";
-                    readonly from?: string;
-                    readonly to?: string;
+        get: {
+            parameters: {
+                query?: {
+                    bucket?: "1h" | "1d";
+                    from?: string;
+                    to?: string;
                 };
-                readonly header?: never;
-                readonly path: {
-                    readonly account: string;
+                header?: never;
+                path: {
+                    account: string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly debtUsd: string;
-                                readonly lockedUsd: string;
-                                readonly timestamp: string;
-                                readonly transferableUsd: string;
+                        "application/json": {
+                            items: {
+                                debtUsd: string;
+                                lockedUsd: string;
+                                timestamp: string;
+                                transferableUsd: string;
                             }[];
                             /** @enum {string} */
-                            readonly referenceCurrency: "usd";
+                            referenceCurrency: "usd";
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/accounts/{account}/money-market-events": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/accounts/{account}/money-market-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Money-market event history for one account
@@ -884,61 +884,61 @@ export interface paths {
          *
          *     `search` matches asset symbols and names, then widens each match to the ids the market files rows under (aDOT resolves to the DOT reserve, GDOT to the 2-Pool-GDOT reserve). A term matching no asset returns no rows.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
+        get: {
+            parameters: {
+                query?: {
                     /** @description Comma-separated lowercase event names, e.g. supply,borrow. Defaults to all. */
-                    readonly events?: string;
-                    readonly limit?: number;
-                    readonly offset?: number;
+                    events?: string;
+                    limit?: number;
+                    offset?: number;
                     /** @description Asset symbol or name substring. */
-                    readonly search?: string;
+                    search?: string;
                 };
-                readonly header?: never;
-                readonly path: {
-                    readonly account: string;
+                header?: never;
+                path: {
+                    account: string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly amount: string | null;
-                                readonly assetId: string | null;
-                                readonly blockHeight: number;
-                                readonly categoryId: number | null;
-                                readonly eventIndex: number;
+                        "application/json": {
+                            items: {
+                                amount: string | null;
+                                assetId: string | null;
+                                blockHeight: number;
+                                categoryId: number | null;
+                                eventIndex: number;
                                 /** @enum {string} */
-                                readonly eventName: "Supply" | "Withdraw" | "Borrow" | "Repay" | "LiquidationCall" | "ReserveUsedAsCollateralEnabled" | "ReserveUsedAsCollateralDisabled" | "UserEModeSet";
-                                readonly timestamp: string;
+                                eventName: "Supply" | "Withdraw" | "Borrow" | "Repay" | "LiquidationCall" | "ReserveUsedAsCollateralEnabled" | "ReserveUsedAsCollateralDisabled" | "UserEModeSet";
+                                timestamp: string;
                             }[];
-                            readonly totalCount: number;
+                            totalCount: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/accounts/balances": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/accounts/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Current valued balances for up to 50 accounts
@@ -956,105 +956,105 @@ export interface paths {
          *
          *     An EVM account and the AccountId32 bound to it are ONE account. Requesting both in one batch returns a row for each address, both carrying the same figures — index the response by `account`, and do not sum a batch's rows.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
+        get: {
+            parameters: {
+                query: {
                     /** @description Comma-separated lowercase hex account ids, 1 to 50. */
-                    readonly accounts: string;
+                    accounts: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly account: string;
-                                readonly blockHeight: number;
-                                readonly debtUsd: string | null;
-                                readonly lockedUsd: string;
-                                readonly lpUsd: string | null;
-                                readonly totalUsd: string;
-                                readonly transferableUsd: string;
+                        "application/json": {
+                            items: {
+                                account: string;
+                                blockHeight: number;
+                                debtUsd: string | null;
+                                lockedUsd: string;
+                                lpUsd: string | null;
+                                totalUsd: string;
+                                transferableUsd: string;
                             }[];
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/assets": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Asset registry
          * @description The full asset registry (including foreign, aToken, pool-share and bond assets). Consumers resolve decimals from here; ids are decimal strings everywhere on this surface. Served from the in-process registry snapshot, refreshed every 5 minutes.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly assetType: string | null;
-                                readonly decimals: number;
-                                readonly id: string;
-                                readonly name: string | null;
-                                readonly origin: {
-                                    readonly assetId: string | null;
-                                    readonly chainId: string;
-                                    readonly ecosystem: string;
+                        "application/json": {
+                            items: {
+                                assetType: string | null;
+                                decimals: number;
+                                id: string;
+                                name: string | null;
+                                origin: {
+                                    assetId: string | null;
+                                    chainId: string;
+                                    ecosystem: string;
                                 } | null;
-                                readonly symbol: string;
+                                symbol: string;
                             }[];
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/dca/schedules": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/dca/schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * DCA schedules of one owner, with computed status
@@ -1064,68 +1064,68 @@ export interface paths {
          *
          *     `isRollingBudget` means the schedule has no total budget: it keeps spending whatever the owner holds. `executedAmountIn`/`executedAmountOut` sum the schedule's DCA.TradeExecuted events. Sorted by most recent event first; a schedule with no events yet sorts last.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
+        get: {
+            parameters: {
+                query: {
                     /** @description Comma-separated registry ids; matches either side of the pair. */
-                    readonly assets?: string;
-                    readonly limit?: number;
-                    readonly offset?: number;
+                    assets?: string;
+                    limit?: number;
+                    offset?: number;
                     /** @description REQUIRED. The schedule owner, as a lowercase hex account id. */
-                    readonly owner: string;
+                    owner: string;
                     /** @description Comma-separated: created, completed, terminated, cancelled. Defaults to all. */
-                    readonly status?: string;
+                    status?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly assetIn: string;
-                                readonly assetOut: string;
-                                readonly budget: string;
-                                readonly createdAt: string;
-                                readonly createdAtBlock: number;
-                                readonly executedAmountIn: string;
-                                readonly executedAmountOut: string;
-                                readonly isRollingBudget: boolean;
-                                readonly lastEventAt: string | null;
-                                readonly owner: string;
-                                readonly periodBlocks: number;
-                                readonly scheduleId: number;
-                                readonly singleTradeAmount: string;
+                        "application/json": {
+                            items: {
+                                assetIn: string;
+                                assetOut: string;
+                                budget: string;
+                                createdAt: string;
+                                createdAtBlock: number;
+                                executedAmountIn: string;
+                                executedAmountOut: string;
+                                isRollingBudget: boolean;
+                                lastEventAt: string | null;
+                                owner: string;
+                                periodBlocks: number;
+                                scheduleId: number;
+                                singleTradeAmount: string;
                                 /** @enum {string} */
-                                readonly status: "created" | "completed" | "terminated" | "cancelled";
+                                status: "created" | "completed" | "terminated" | "cancelled";
                             }[];
-                            readonly totalCount: number;
+                            totalCount: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/dca/schedules/{id}/executions": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/dca/schedules/{id}/executions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Executions of one DCA schedule, newest first
@@ -1135,111 +1135,111 @@ export interface paths {
          *
          *     `assetIn`/`assetOut` are the schedule's registered pair. An unknown schedule id is a 404.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly limit?: number;
-                    readonly offset?: number;
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
                 };
-                readonly header?: never;
-                readonly path: {
-                    readonly id: number;
+                header?: never;
+                path: {
+                    id: number;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly assetIn: string;
-                            readonly assetOut: string;
-                            readonly items: readonly {
-                                readonly amountIn: string | null;
-                                readonly amountOut: string | null;
-                                readonly blockHeight: number;
-                                readonly errorState: {
-                                    readonly error: string;
-                                    readonly index: number;
-                                    readonly kind: string;
+                        "application/json": {
+                            assetIn: string;
+                            assetOut: string;
+                            items: {
+                                amountIn: string | null;
+                                amountOut: string | null;
+                                blockHeight: number;
+                                errorState: {
+                                    error: string;
+                                    index: number;
+                                    kind: string;
                                 } | null;
-                                readonly eventIndex: number;
+                                eventIndex: number;
                                 /** @enum {string} */
-                                readonly status: "executed" | "failed" | "planned";
-                                readonly timestamp: string;
+                                status: "executed" | "failed" | "planned";
+                                timestamp: string;
                             }[];
-                            readonly totalCount: number;
+                            totalCount: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/dca/schedules/count": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/dca/schedules/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * How many schedules match a filter
          * @description The totalCount GET /v1/dca/schedules reports for the same filter, without the page. Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of schedules before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
+        get: {
+            parameters: {
+                query: {
                     /** @description Comma-separated registry ids; matches either side of the pair. */
-                    readonly assets?: string;
+                    assets?: string;
                     /** @description REQUIRED. The schedule owner, as a lowercase hex account id. */
-                    readonly owner: string;
+                    owner: string;
                     /** @description Comma-separated: created, completed, terminated, cancelled. Defaults to all. */
-                    readonly status?: string;
+                    status?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly totalCount: number;
+                        "application/json": {
+                            totalCount: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/extrinsics/{blockHeight}/{index}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/extrinsics/{blockHeight}/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * One extrinsic by block height and index
@@ -1251,89 +1251,89 @@ export interface paths {
          *
          *     A Module error is named from `runtime_error_names` for the spec version active at that block. A triple the metadata index does not know reports `module`/`name`/`docs` as null while keeping `kind` and `raw`, rather than inventing a name.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path: {
-                    readonly blockHeight: number;
-                    readonly index: number;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    blockHeight: number;
+                    index: number;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly blockHeight: number;
-                            readonly error: {
-                                readonly docs: string | null;
+                        "application/json": {
+                            blockHeight: number;
+                            error: {
+                                docs: string | null;
                                 /** @description The DispatchError variant: Module, Token, Arithmetic, BadOrigin, Other, … */
-                                readonly kind: string;
+                                kind: string;
                                 /** @description Pallet name of a Module error, from the runtime metadata active at that block. */
-                                readonly module: string | null;
+                                module: string | null;
                                 /** @description Error name inside the pallet. */
-                                readonly name: string | null;
+                                name: string | null;
                                 /** @description The undecoded DispatchError JSON, always present, so a caller can decode a variant this service does not name. */
-                                readonly raw: string;
+                                raw: string;
                             } | null;
-                            readonly extrinsicIndex: number;
-                            readonly hash: string;
-                            readonly signer: string | null;
-                            readonly success: boolean;
-                            readonly timestamp: string;
+                            extrinsicIndex: number;
+                            hash: string;
+                            signer: string | null;
+                            success: boolean;
+                            timestamp: string;
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 400: {
+                400: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 404: {
+                404: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/extrinsics/{hash}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/extrinsics/{hash}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * One extrinsic by transaction hash
@@ -1351,91 +1351,91 @@ export interface paths {
          *
          *     A transaction that has been submitted but not yet indexed is also a 404: this endpoint reads indexed blocks only and has no view of the transaction pool. Poll until it appears.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
+        get: {
+            parameters: {
+                query?: {
                     /** @description How far back to search, in days. See the note above on why this is bounded. */
-                    readonly withinDays?: number;
+                    withinDays?: number;
                 };
-                readonly header?: never;
-                readonly path: {
-                    readonly hash: string;
+                header?: never;
+                path: {
+                    hash: string;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly blockHeight: number;
-                            readonly error: {
-                                readonly docs: string | null;
+                        "application/json": {
+                            blockHeight: number;
+                            error: {
+                                docs: string | null;
                                 /** @description The DispatchError variant: Module, Token, Arithmetic, BadOrigin, Other, … */
-                                readonly kind: string;
+                                kind: string;
                                 /** @description Pallet name of a Module error, from the runtime metadata active at that block. */
-                                readonly module: string | null;
+                                module: string | null;
                                 /** @description Error name inside the pallet. */
-                                readonly name: string | null;
+                                name: string | null;
                                 /** @description The undecoded DispatchError JSON, always present, so a caller can decode a variant this service does not name. */
-                                readonly raw: string;
+                                raw: string;
                             } | null;
-                            readonly extrinsicIndex: number;
-                            readonly hash: string;
-                            readonly signer: string | null;
-                            readonly success: boolean;
-                            readonly timestamp: string;
+                            extrinsicIndex: number;
+                            hash: string;
+                            signer: string | null;
+                            success: boolean;
+                            timestamp: string;
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 400: {
+                400: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 404: {
+                404: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/otc/orders/{orderId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/otc/orders/{orderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * One OTC order and its fill history
@@ -1447,94 +1447,94 @@ export interface paths {
          *
          *     `owner` is always null. OTC.Placed does not carry the order owner and no indexed model records it; reporting the placing extrinsic's signatory would be wrong for a proxied or batched placement, so the field is honestly empty rather than plausibly filled.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path: {
-                    readonly orderId: number;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    orderId: number;
                 };
-                readonly cookie?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly amountIn: string;
-                            readonly amountOut: string;
-                            readonly assetIn: string;
-                            readonly assetOut: string;
-                            readonly events: readonly {
+                        "application/json": {
+                            amountIn: string;
+                            amountOut: string;
+                            assetIn: string;
+                            assetOut: string;
+                            events: {
                                 /** @description The order size on `placed`; the fill size on `filled`/`partiallyFilled`; null on `cancelled`. */
-                                readonly amountIn: string | null;
-                                readonly amountOut: string | null;
-                                readonly blockHeight: number;
-                                readonly eventIndex: number;
+                                amountIn: string | null;
+                                amountOut: string | null;
+                                blockHeight: number;
+                                eventIndex: number;
                                 /** @description The filling account — carried only by the two fill events. */
-                                readonly filler: string | null;
-                                readonly timestamp: string;
+                                filler: string | null;
+                                timestamp: string;
                                 /** @enum {string} */
-                                readonly type: "placed" | "filled" | "partiallyFilled" | "cancelled";
+                                type: "placed" | "filled" | "partiallyFilled" | "cancelled";
                             }[];
-                            readonly filledAmountIn: string;
-                            readonly filledAmountOut: string;
-                            readonly orderId: number;
-                            readonly owner: string | null;
-                            readonly partiallyFillable: boolean;
+                            filledAmountIn: string;
+                            filledAmountOut: string;
+                            orderId: number;
+                            owner: string | null;
+                            partiallyFillable: boolean;
                             /** @enum {string} */
-                            readonly status: "open" | "filled" | "cancelled";
+                            status: "open" | "filled" | "cancelled";
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 400: {
+                400: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 404: {
+                404: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/pools/omnipool/volumes": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/pools/omnipool/volumes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Omnipool volume and fees per asset
@@ -1548,52 +1548,52 @@ export interface paths {
          *
          *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly period?: "1h" | "24h" | "7d" | "30d";
+        get: {
+            parameters: {
+                query?: {
+                    period?: "1h" | "24h" | "7d" | "30d";
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asOf: string | null;
-                            readonly items: readonly {
-                                readonly assetId: string;
-                                readonly feeUsd: string;
-                                readonly protocolFeeUsd: string;
-                                readonly volumeUsd: string;
+                        "application/json": {
+                            asOf: string | null;
+                            items: {
+                                assetId: string;
+                                feeUsd: string;
+                                protocolFeeUsd: string;
+                                volumeUsd: string;
                             }[];
                             /** @enum {string} */
-                            readonly period: "1h" | "24h" | "7d" | "30d";
+                            period: "1h" | "24h" | "7d" | "30d";
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/pools/omnipool/yield": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/pools/omnipool/yield": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Omnipool fee APR/APY per asset
@@ -1613,54 +1613,54 @@ export interface paths {
          *
          *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly window?: "24h" | "7d" | "30d";
+        get: {
+            parameters: {
+                query?: {
+                    window?: "24h" | "7d" | "30d";
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asOf: string | null;
-                            readonly items: readonly {
-                                readonly assetId: string;
-                                readonly farmAprPerc: string | null;
-                                readonly farmRewardAssets: readonly string[];
-                                readonly feeAprPerc: string | null;
-                                readonly feeApyPerc: string | null;
-                                readonly protocolFeeAprPerc: string | null;
+                        "application/json": {
+                            asOf: string | null;
+                            items: {
+                                assetId: string;
+                                farmAprPerc: string | null;
+                                farmRewardAssets: string[];
+                                feeAprPerc: string | null;
+                                feeApyPerc: string | null;
+                                protocolFeeAprPerc: string | null;
                             }[];
                             /** @enum {string} */
-                            readonly window: "24h" | "7d" | "30d";
+                            window: "24h" | "7d" | "30d";
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/pools/stableswap/volumes": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/pools/stableswap/volumes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Stableswap volume and fees per pool
@@ -1672,51 +1672,51 @@ export interface paths {
          *
          *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly period?: "1h" | "24h" | "7d" | "30d";
+        get: {
+            parameters: {
+                query?: {
+                    period?: "1h" | "24h" | "7d" | "30d";
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asOf: string | null;
-                            readonly items: readonly {
-                                readonly feeUsd: string;
-                                readonly poolId: string;
-                                readonly volumeUsd: string;
+                        "application/json": {
+                            asOf: string | null;
+                            items: {
+                                feeUsd: string;
+                                poolId: string;
+                                volumeUsd: string;
                             }[];
                             /** @enum {string} */
-                            readonly period: "1h" | "24h" | "7d" | "30d";
+                            period: "1h" | "24h" | "7d" | "30d";
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/pools/stableswap/yield": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/pools/stableswap/yield": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Stableswap fee APR/APY per pool
@@ -1730,52 +1730,52 @@ export interface paths {
          *
          *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly window?: "24h" | "7d" | "30d";
+        get: {
+            parameters: {
+                query?: {
+                    window?: "24h" | "7d" | "30d";
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asOf: string | null;
-                            readonly items: readonly {
-                                readonly farmAprPerc: string | null;
-                                readonly feeAprPerc: string | null;
-                                readonly feeApyPerc: string | null;
-                                readonly poolId: string;
+                        "application/json": {
+                            asOf: string | null;
+                            items: {
+                                farmAprPerc: string | null;
+                                feeAprPerc: string | null;
+                                feeApyPerc: string | null;
+                                poolId: string;
                             }[];
                             /** @enum {string} */
-                            readonly window: "24h" | "7d" | "30d";
+                            window: "24h" | "7d" | "30d";
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/pools/xyk/volumes": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/pools/xyk/volumes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * XYK volume and fees per pool
@@ -1789,55 +1789,55 @@ export interface paths {
          *
          *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly period?: "1h" | "24h" | "7d" | "30d";
-                    readonly pools?: string;
+        get: {
+            parameters: {
+                query?: {
+                    period?: "1h" | "24h" | "7d" | "30d";
+                    pools?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asOf: string | null;
-                            readonly items: readonly {
-                                readonly assetA: string | null;
-                                readonly assetB: string | null;
-                                readonly feeUsd: string;
-                                readonly poolAccount: string;
-                                readonly shareTokenId: string | null;
-                                readonly volumeUsd: string;
+                        "application/json": {
+                            asOf: string | null;
+                            items: {
+                                assetA: string | null;
+                                assetB: string | null;
+                                feeUsd: string;
+                                poolAccount: string;
+                                shareTokenId: string | null;
+                                volumeUsd: string;
                             }[];
                             /** @enum {string} */
-                            readonly period: "1h" | "24h" | "7d" | "30d";
+                            period: "1h" | "24h" | "7d" | "30d";
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/prices/pair": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/prices/pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * OHLCV candles for one pair
@@ -1851,56 +1851,56 @@ export interface paths {
          *
          *     PRECISION: the candle model stores Decimal(38,12), and the database client requests quoted decimals so no value passes through a JSON double. Cross-rate division is integer arithmetic on that exact decimal text.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query: {
-                    readonly assetIn: string;
-                    readonly assetOut: string;
-                    readonly bucket?: "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
-                    readonly from?: string;
-                    readonly to?: string;
+        get: {
+            parameters: {
+                query: {
+                    assetIn: string;
+                    assetOut: string;
+                    bucket?: "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+                    from?: string;
+                    to?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly close: string;
-                                readonly high: string;
-                                readonly low: string;
-                                readonly open: string;
-                                readonly timestamp: string;
-                                readonly volumeUsd: string;
+                        "application/json": {
+                            items: {
+                                close: string;
+                                high: string;
+                                low: string;
+                                open: string;
+                                timestamp: string;
+                                volumeUsd: string;
                             }[];
-                            readonly referenceAsset: string;
+                            referenceAsset: string;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/staking/events": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/staking/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Staking pallet event streams, oldest first
@@ -1910,76 +1910,76 @@ export interface paths {
          *
          *     Bounded: page with `fromBlock`, which prunes by the primary key, rather than with a deep `offset`. These events are ~1 per 1,200 blocks, so a page's cost is set by how far through the event stream it must walk, not by how many rows it returns — which is why `offset` is capped at 1000 and an offset past it is a 400 rather than a slow request. `totalCount` counts the same filter the page uses and is cached for 5 minutes per filter.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
-                    readonly fromBlock?: number;
-                    readonly limit?: number;
-                    readonly offset?: number;
-                    readonly toBlock?: number;
+        get: {
+            parameters: {
+                query?: {
+                    fromBlock?: number;
+                    limit?: number;
+                    offset?: number;
+                    toBlock?: number;
                     /** @description Comma-separated event types. Default: all of AccumulatedRpsUpdated, StakingInitialized. */
-                    readonly types?: string;
+                    types?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
+                        "application/json": {
+                            items: {
                                 /** @description AccumulatedRpsUpdated only: the reward-per-share accumulator, raw integer. */
-                                readonly accumulatedRps: string | null;
-                                readonly blockHeight: number;
-                                readonly eventIndex: number;
+                                accumulatedRps: string | null;
+                                blockHeight: number;
+                                eventIndex: number;
                                 /** @description StakingInitialized only: the staking pot's non-dustable balance, raw integer. */
-                                readonly nonDustableBalance: string | null;
-                                readonly timestamp: string;
+                                nonDustableBalance: string | null;
+                                timestamp: string;
                                 /** @description AccumulatedRpsUpdated only: total staked HDX at the update, raw integer. */
-                                readonly totalStake: string | null;
+                                totalStake: string | null;
                                 /** @enum {string} */
-                                readonly type: "AccumulatedRpsUpdated" | "StakingInitialized";
+                                type: "AccumulatedRpsUpdated" | "StakingInitialized";
                             }[];
-                            readonly totalCount: number;
+                            totalCount: number;
                         };
                     };
                 };
                 /** @description Default Response */
-                readonly 400: {
+                400: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly error: {
-                                readonly code: string;
-                                readonly message: string;
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/stats/platform": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/stats/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Chain-wide TVL and 24h volume
@@ -1991,102 +1991,102 @@ export interface paths {
          *
          *     `asOf`/`blockHeight` describe the indexed-block volume anchor. The TVL snapshot is another current-state model and can sit a few blocks apart. Both are null only while no swap legs are indexed at all.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly asOf: string | null;
-                            readonly blockHeight: number | null;
-                            readonly tvl: {
+                        "application/json": {
+                            asOf: string | null;
+                            blockHeight: number | null;
+                            tvl: {
                                 /** @enum {string|null} */
-                                readonly moneyMarketSupplyUsd: null;
-                                readonly omnipoolUsd: string | null;
-                                readonly stableswapUsd: string | null;
-                                readonly totalUsd: string | null;
-                                readonly xykUsd: string | null;
+                                moneyMarketSupplyUsd: null;
+                                omnipoolUsd: string | null;
+                                stableswapUsd: string | null;
+                                totalUsd: string | null;
+                                xykUsd: string | null;
                             };
-                            readonly volume24h: {
-                                readonly omnipoolUsd: string;
-                                readonly stableswapUsd: string;
-                                readonly totalRoutedUsd: string;
-                                readonly xykUsd: string;
+                            volume24h: {
+                                omnipoolUsd: string;
+                                stableswapUsd: string;
+                                totalRoutedUsd: string;
+                                xykUsd: string;
                             };
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/status": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Indexed head and lag
          * @description `chainBlockHeight` is the raw ingestion checkpoint, so `blocksBehindHead` measures distance from raw ingestion rather than from the chain head — this service performs no RPC.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: never;
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly blockHeight: number;
-                            readonly blocksBehindHead: number;
-                            readonly blockTimestamp: string;
-                            readonly chainBlockHeight: number;
-                            readonly lagSeconds: number;
+                        "application/json": {
+                            blockHeight: number;
+                            blocksBehindHead: number;
+                            blockTimestamp: string;
+                            chainBlockHeight: number;
+                            lagSeconds: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/trades": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/trades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Market swaps, newest first
@@ -2104,65 +2104,65 @@ export interface paths {
          *
          *     Without an address the global feed is served. `totalCount` counts the same filter the page uses and is cached for 30 s per filter.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
+        get: {
+            parameters: {
+                query?: {
                     /** @description Comma-separated registry ids; matches either side of the pair. */
-                    readonly assets?: string;
-                    readonly limit?: number;
-                    readonly offset?: number;
+                    assets?: string;
+                    limit?: number;
+                    offset?: number;
                     /** @description Scope to one account. Omit for the global feed. */
-                    readonly swapper?: string;
+                    swapper?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly amountIn: string;
-                                readonly amountOut: string;
-                                readonly assetIn: string;
-                                readonly assetOut: string;
-                                readonly blockHeight: number;
-                                readonly dca: {
-                                    readonly scheduleId: number;
+                        "application/json": {
+                            items: {
+                                amountIn: string;
+                                amountOut: string;
+                                assetIn: string;
+                                assetOut: string;
+                                blockHeight: number;
+                                dca: {
+                                    scheduleId: number;
                                 } | null;
-                                readonly eventIndex: number;
-                                readonly extrinsicIndex: number | null;
+                                eventIndex: number;
+                                extrinsicIndex: number | null;
                                 /** @enum {string|null} */
-                                readonly operationType: "exactIn" | "exactOut" | null;
-                                readonly swapper: string | null;
-                                readonly timestamp: string;
+                                operationType: "exactIn" | "exactOut" | null;
+                                swapper: string | null;
+                                timestamp: string;
                             }[];
-                            readonly totalCount: number;
+                            totalCount: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    readonly "/v1/trades/routed": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
+    "/v1/trades/routed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
         /**
          * Routed trades, newest first (equivalent to /v1/trades)
@@ -2182,58 +2182,58 @@ export interface paths {
          *
          *     Without an address the global feed is served. `totalCount` counts the same filter the page uses and is cached for 30 s per filter.
          */
-        readonly get: {
-            readonly parameters: {
-                readonly query?: {
+        get: {
+            parameters: {
+                query?: {
                     /** @description Comma-separated registry ids; matches either side of the pair. */
-                    readonly assets?: string;
-                    readonly limit?: number;
-                    readonly offset?: number;
+                    assets?: string;
+                    limit?: number;
+                    offset?: number;
                     /** @description Scope to one account. Omit for the global feed. */
-                    readonly participant?: string;
+                    participant?: string;
                 };
-                readonly header?: never;
-                readonly path?: never;
-                readonly cookie?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-            readonly requestBody?: never;
-            readonly responses: {
+            requestBody?: never;
+            responses: {
                 /** @description Default Response */
-                readonly 200: {
+                200: {
                     headers: {
-                        readonly [name: string]: unknown;
+                        [name: string]: unknown;
                     };
                     content: {
-                        readonly "application/json": {
-                            readonly items: readonly {
-                                readonly amountIn: string;
-                                readonly amountOut: string;
-                                readonly assetIn: string;
-                                readonly assetOut: string;
-                                readonly blockHeight: number;
-                                readonly dca: {
-                                    readonly scheduleId: number;
+                        "application/json": {
+                            items: {
+                                amountIn: string;
+                                amountOut: string;
+                                assetIn: string;
+                                assetOut: string;
+                                blockHeight: number;
+                                dca: {
+                                    scheduleId: number;
                                 } | null;
-                                readonly eventIndex: number;
-                                readonly extrinsicIndex: number | null;
+                                eventIndex: number;
+                                extrinsicIndex: number | null;
                                 /** @enum {string|null} */
-                                readonly operationType: "exactIn" | "exactOut" | null;
-                                readonly swapper: string | null;
-                                readonly timestamp: string;
+                                operationType: "exactIn" | "exactOut" | null;
+                                swapper: string | null;
+                                timestamp: string;
                             }[];
-                            readonly totalCount: number;
+                            totalCount: number;
                         };
                     };
                 };
             };
         };
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
 }
 export type webhooks = Record<string, never>;

@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 import { tradeChartQuery } from "@/api/grafana/tradeChart"
 import { TIME_FRAME_MS } from "@/components/TimeFrame/TimeFrame.utils"
-import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { useAssets } from "@/providers/assetsProvider"
 
 type TradeChartGrafanaTimeFrameType = TradeChartTimeFrameType | "all"

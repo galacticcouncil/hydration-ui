@@ -22,13 +22,14 @@ import {
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
-import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
-import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
 import { useTradeChartGrafanaData } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.data"
+import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.styled"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
+
+export type TradeChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
 
 const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
   ChartTimeRangeOptionType<TradeChartTimeFrameType | "all">

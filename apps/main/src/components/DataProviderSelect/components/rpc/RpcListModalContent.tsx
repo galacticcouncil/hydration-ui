@@ -9,12 +9,12 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { useActiveProviderProps } from "@/api/provider"
 import { RpcList } from "@/components/DataProviderSelect/components/rpc/RpcList"
 import {
   RpcListHeader,
   RpcListItemActive,
 } from "@/components/DataProviderSelect/components/rpc/RpcListItem"
+import { useActiveProviderProps } from "@/components/DataProviderSelect/useActiveProviderProps"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -28,12 +28,12 @@ export const RpcListModalContent = ({
   const { t } = useTranslation("common")
   const { autoMode } = useProviderRpcUrlStore()
   const activeProvider = useActiveProviderProps()
-  const { isLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
 
   if (autoMode) {
     return (
       <ModalBody>
-        {isLoaded && activeProvider ? (
+        {isReady && activeProvider ? (
           <Stack
             bg={getToken("surfaces.containers.dim.dimOnBg")}
             borderRadius="m"

@@ -1,4 +1,3 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -23,6 +22,7 @@ import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { Status } from "@/modules/trade/orders/columns/SwapStatus"
 import { TradeOrderHistoryItem } from "@/modules/trade/orders/lib/tradeOrdersHistory.types"
+import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
 import { useOrderTradesData } from "@/modules/trade/orders/lib/useOrderTradesData"
 import { useTerminateDcaSchedule } from "@/modules/trade/orders/lib/useTerminateDcaSchedule"
 import { useTradeOrderHistoryEnrichment } from "@/modules/trade/orders/lib/useTradeOrderHistoryEnrichment"

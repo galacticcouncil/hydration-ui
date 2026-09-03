@@ -6,13 +6,6 @@ import {
   xykVolumeQuery as neckworkXykVolumeQuery,
 } from "@galacticcouncil/indexer/neckwork"
 import {
-  omnipoolVolumeQuery,
-  omnipoolYieldMetricsQuery,
-  stablepoolVolumeQuery,
-  stablepoolYieldMetricsQuery,
-  xykVolumeQuery,
-} from "@galacticcouncil/indexer/squid"
-import {
   is_add_liquidity_allowed,
   is_buy_allowed,
   is_remove_liquidity_allowed,
@@ -24,8 +17,6 @@ import {
   HOLLAR_ASSET_ID,
   HOLLAR_ASSETS,
   PRIME_STABLESWAP_ASSET_ID,
-  safeConvertSS58toPublicKey,
-  useStableArray,
 } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
@@ -39,6 +30,7 @@ import { AssetType, TAssetData, TErc20, TErc20AToken } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
+import { neckworkClient } from "@/api/neckwork"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
   OmniPoolToken,
@@ -50,7 +42,6 @@ import {
   useStablePools,
   useXykPools,
 } from "@/api/pools"
-import { neckworkClient, useSquidClient } from "@/api/provider"
 import { useStableSwapTradability } from "@/api/stableswap"
 import { XYKPoolWithLiquidity } from "@/api/xyk"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
@@ -61,7 +52,6 @@ import {
 } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { setOmnipoolAssets, setXYKPools } from "@/states/liquidity"
-import { useNeckworkEnabled } from "@/states/neckwork"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -154,46 +144,24 @@ const isStablepoolData = (
 ): pool is TStablepoolData => !!(pool as TStablepoolData).isStablepool
 
 export const useStablepools = () => {
-  const squidClient = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
   const { data: pools, isLoading: isPoolsLoading } = useStablepoolsReserves()
 
-  const { data: neckworkVolumes, isLoading: isNeckworkVolumeLoading } =
-    useQuery({
-      ...neckworkStablepoolVolumeQuery(neckworkClient),
-      enabled: neckworkEnabled,
-    })
-  const { data: squidVolumes, isLoading: isSquidVolumeLoading } = useQuery({
-    ...stablepoolVolumeQuery(squidClient),
-    enabled: !neckworkEnabled,
-  })
+  const { data: volumes, isLoading: isVolumeLoading } = useQuery(
+    neckworkStablepoolVolumeQuery(neckworkClient),
+  )
 
-  const { data: neckworkYield, isLoading: isNeckworkYieldLoading } = useQuery({
-    ...neckworkStablepoolYieldMetricsQuery(neckworkClient),
-    enabled: neckworkEnabled,
-  })
-  const { data: squidYield, isLoading: isSquidYieldLoading } = useQuery({
-    ...stablepoolYieldMetricsQuery(squidClient),
-    enabled: !neckworkEnabled,
-  })
-
-  const isVolumeLoading = neckworkEnabled
-    ? isNeckworkVolumeLoading
-    : isSquidVolumeLoading
-  const isYieldMetricsLoading = neckworkEnabled
-    ? isNeckworkYieldLoading
-    : isSquidYieldLoading
+  const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
+    neckworkStablepoolYieldMetricsQuery(neckworkClient),
+  )
 
   const { getRelatedAToken, isErc20AToken } = useAssets()
 
   const volumeByAsset = useMemo(
     () =>
       new Map<string, string>(
-        neckworkEnabled
-          ? (neckworkVolumes ?? []).map((v) => [v.poolId, v.poolVolNorm])
-          : (squidVolumes ?? []).map((v) => [v.poolId, v.poolVolNorm]),
+        (volumes ?? []).map((v) => [v.poolId, v.poolVolNorm]),
       ),
-    [neckworkEnabled, neckworkVolumes, squidVolumes],
+    [volumes],
   )
 
   // The stablepool table consumes the APY. Neckwork returns null when a pool
@@ -201,14 +169,9 @@ export const useStablepools = () => {
   const feeByAsset = useMemo(
     () =>
       new Map<string, string | undefined>(
-        neckworkEnabled
-          ? (neckworkYield ?? []).map((m) => [
-              m.poolId,
-              m.feeApyPerc ?? undefined,
-            ])
-          : (squidYield ?? []).map((m) => [m.poolId, m.projectedApyPerc]),
+        (yieldMetrics ?? []).map((m) => [m.poolId, m.feeApyPerc ?? undefined]),
       ),
-    [neckworkEnabled, neckworkYield, squidYield],
+    [yieldMetrics],
   )
 
   const { stablePoolData, aTokens } = useMemo(() => {
@@ -286,8 +249,6 @@ export const useStablepools = () => {
 }
 
 export const useOmnipoolStablepools = () => {
-  const squidClient = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
   const {
     getAssetWithFallback,
     native: { id: nativeId },
@@ -304,52 +265,30 @@ export const useOmnipoolStablepools = () => {
   const { data: stablepools, isLoading: isStablepoolsLoading } =
     useStablepools()
 
-  const { data: neckworkVolumes, isLoading: isNeckworkVolumeLoading } =
-    useQuery({
-      ...neckworkOmnipoolVolumeQuery(neckworkClient),
-      enabled: neckworkEnabled,
-    })
-  const { data: squidVolumes, isLoading: isSquidVolumeLoading } = useQuery({
-    ...omnipoolVolumeQuery(squidClient),
-    enabled: !neckworkEnabled,
-  })
+  const { data: volumes, isLoading: isVolumeLoading } = useQuery(
+    neckworkOmnipoolVolumeQuery(neckworkClient),
+  )
 
-  const { data: neckworkYield, isLoading: isNeckworkYieldLoading } = useQuery({
-    ...neckworkOmnipoolYieldMetricsQuery(neckworkClient),
-    enabled: neckworkEnabled,
-  })
-  const { data: squidYield, isLoading: isSquidYieldLoading } = useQuery({
-    ...omnipoolYieldMetricsQuery(squidClient),
-    enabled: !neckworkEnabled,
-  })
-
-  const isVolumeLoading = neckworkEnabled
-    ? isNeckworkVolumeLoading
-    : isSquidVolumeLoading
-  const isYieldMetricsLoading = neckworkEnabled
-    ? isNeckworkYieldLoading
-    : isSquidYieldLoading
+  const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
+    neckworkOmnipoolYieldMetricsQuery(neckworkClient),
+  )
 
   const volumeByAsset = useMemo(
     () =>
       new Map<string, string>(
-        neckworkEnabled
-          ? (neckworkVolumes ?? []).map((v) => [v.assetId, v.assetVolNorm])
-          : (squidVolumes ?? []).map((v) => [v.assetId, v.assetVolNorm]),
+        (volumes ?? []).map((v) => [v.assetId, v.assetVolNorm]),
       ),
-    [neckworkEnabled, neckworkVolumes, squidVolumes],
+    [volumes],
   )
 
-  // The omnipool table consumes the APR. Both sources use the same field name
-  // here; only the neckwork one can be null.
+  // The omnipool table reads the APR. It is null when a pool had no sample in
+  // the window.
   const feeByAsset = useMemo(
     () =>
       new Map<string, string | undefined>(
-        neckworkEnabled
-          ? (neckworkYield ?? []).map((m) => [m.assetId, m.fee ?? undefined])
-          : (squidYield ?? []).map((m) => [m.assetId, m.fee]),
+        (yieldMetrics ?? []).map((m) => [m.assetId, m.fee ?? undefined]),
       ),
-    [neckworkEnabled, neckworkYield, squidYield],
+    [yieldMetrics],
   )
 
   const stablepoolsIds = useMemo(
@@ -547,33 +486,13 @@ export const useOmnipoolStablepools = () => {
 }
 
 export const useIsolatedPools = () => {
-  const squidClient = useSquidClient()
   const { data: pools, isLoading: isPoolsLoading } = useXykPools()
   const { getShareTokenByAddress } = useAssets()
   const { getPositions } = useAccountPositions()
-  const neckworkEnabled = useNeckworkEnabled()
 
-  const poolAddresses = useStableArray(
-    pools
-      ?.map((pool) => pool.address)
-      .filter((address) => !!safeConvertSS58toPublicKey(address)) ?? [],
+  const { data: xykVolumes, isLoading: isVolumeLoading } = useQuery(
+    neckworkXykVolumeQuery(neckworkClient),
   )
-
-  const { data: neckworkXykVolumes, isLoading: isNeckworkVolumeLoading } =
-    useQuery({
-      ...neckworkXykVolumeQuery(neckworkClient),
-      enabled: neckworkEnabled,
-    })
-
-  const { data: squidXykVolumes, isLoading: isSquidVolumeLoading } = useQuery({
-    ...xykVolumeQuery(squidClient, poolAddresses),
-    enabled: !neckworkEnabled && !!poolAddresses.length,
-  })
-
-  const xykVolumes = neckworkEnabled ? neckworkXykVolumes : squidXykVolumes
-  const isVolumeLoading = neckworkEnabled
-    ? isNeckworkVolumeLoading
-    : isSquidVolumeLoading
   const { data: isolatedPoolsFarms } = useIsolatedPoolsFarms()
   const { getTransferableBalance } = useAccountBalances()
 

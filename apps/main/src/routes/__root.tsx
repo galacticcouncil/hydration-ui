@@ -4,8 +4,8 @@ import { lazy, Suspense } from "react"
 
 import { useAccountBalances } from "@/api/balances"
 import { useInvalidateOnBlock, useReloadOnStaleBlocks } from "@/api/chain"
+import { neckworkClient } from "@/api/neckwork"
 import { useNeckworkSync } from "@/api/neckworkSync"
-import { neckworkClient, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { RouterContext } from "@/App"
 import { Footer } from "@/modules/layout/components/Footer"
@@ -17,7 +17,6 @@ import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -117,21 +116,15 @@ function AccountSubscriptions({ account }: { account: Account }) {
 }
 
 function Services() {
-  const squidSdk = useSquidClient()
   const { isConnected, account } = useAccount()
-  const { isApiLoaded, papi } = useRpcProvider()
-  const neckworkEnabled = useNeckworkEnabled()
+  const { isReady, papi } = useRpcProvider()
   return (
     <>
       <Suspense fallback={null}>
         <TransactionManager />
-        <Web3ConnectModal
-          squidSdk={squidSdk}
-          neckwork={neckworkEnabled ? neckworkClient : null}
-          papi={papi}
-        />
+        <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
       </Suspense>
-      {isApiLoaded && <ApiSubscriptions />}
+      {isReady && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>
   )

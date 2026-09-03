@@ -1,7 +1,7 @@
 import { Logo, LogoProps } from "@galacticcouncil/ui/components"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAssetMetadata } from "@/api/metadata"
 
 type ChainLogoProps = LogoProps & {
   ecosystem?: ChainEcosystem
@@ -13,7 +13,7 @@ export const ChainLogo: React.FC<ChainLogoProps> = ({
   chainId,
   ...props
 }) => {
-  const { metadata } = useRpcProvider()
+  const metadata = useAssetMetadata()
 
   const src = metadata.getChainLogoSrc(chainId, ecosystem)
 

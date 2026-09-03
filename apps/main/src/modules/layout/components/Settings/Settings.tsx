@@ -12,11 +12,11 @@ import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModa
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const Settings: FC = () => {
-  const { isLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
   return (
     <ModalRoot>
       <ModalTrigger asChild>
-        <ButtonIcon disabled={!isLoaded}>
+        <ButtonIcon disabled={!isReady}>
           <Icon component={SettingsIcon} size="l" />
         </ButtonIcon>
       </ModalTrigger>

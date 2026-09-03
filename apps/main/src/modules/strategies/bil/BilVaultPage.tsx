@@ -13,9 +13,9 @@ import { BilStrategyProvider } from "@/modules/strategies/bil/context/BilStrateg
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const BilVaultPage = () => {
-  const { featureFlags, isLoaded } = useRpcProvider()
+  const { featureFlags, isReady } = useRpcProvider()
 
-  if (isLoaded && !featureFlags.bilEnabled) {
+  if (isReady && !featureFlags.bilEnabled) {
     return <Navigate to="/strategies" />
   }
 

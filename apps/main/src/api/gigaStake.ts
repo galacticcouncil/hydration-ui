@@ -64,7 +64,7 @@ type UnsafeTwoSecBlocksSinceQuery = {
 export const gigaTwoSecBlocksSinceQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["gigaStake", "twoSecBlocksSince"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInHour,
     gcTime: GC_TIME,
     queryFn: async (): Promise<number | null> => {
@@ -113,7 +113,7 @@ export const gigaUnstakePositionsQuery = (
 ) =>
   queryOptions({
     queryKey: [...gigaQueryKey(address), "pendingPositions"],
-    enabled: !!address && rpc.isApiLoaded,
+    enabled: !!address && rpc.isReady,
     queryFn: async () => {
       const entries = await rpc.papi.query.GigaHdx.PendingUnstakes.getEntries(
         address,
@@ -133,7 +133,7 @@ export const gigaAccountStakesQuery = (
 ) =>
   queryOptions({
     queryKey: [...gigaQueryKey(address), "stakes"],
-    enabled: !!address && rpc.isApiLoaded,
+    enabled: !!address && rpc.isReady,
     queryFn: async () => {
       const stakes = await rpc.papi.query.GigaHdx.Stakes.getValue(address, {
         at: "best",
@@ -149,7 +149,7 @@ export const gigaAccountBalanceQuery = (
 ) =>
   queryOptions({
     queryKey: [...gigaQueryKey(address), "balance"],
-    enabled: !!address && rpc.isApiLoaded,
+    enabled: !!address && rpc.isReady,
     queryFn: async () => {
       const balance = await rpc.sdk.client.balance.getErc20Balance(
         address,
@@ -170,7 +170,7 @@ export const useGigaAccountBalance = () => {
 export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "gigaTotalLocked"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
     queryFn: async () => {
@@ -185,7 +185,7 @@ export const gigaTotalLockedQuery = (rpc: TProviderContext) =>
 export const gigaHDXIssuanceQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "totalIssuance", STHDX_ASSET_ID],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
     queryFn: async () => {
@@ -201,7 +201,7 @@ export const gigaHDXIssuanceQuery = (rpc: TProviderContext) =>
 export const gigapotBalanceQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "gigapotBalance"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
     queryFn: async () => {
@@ -215,7 +215,7 @@ export const gigapotBalanceQuery = (rpc: TProviderContext) =>
 export const referendaRewardPoolQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["referendaRewardPool"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       const entries =
@@ -235,7 +235,7 @@ export type ReferendaTotalWeightedVotesEntry = {
 export const referendaTotalWeightedVotesQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["referendaTotalWeightedVotes"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       const entries =
@@ -316,7 +316,7 @@ export const getRewardTrackPercentage = (trackId: number): number =>
 export const accumulatorPotBalanceQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["accumulatorPotBalance"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       return await rpc.sdk.client.balance.getSystemBalance(
@@ -332,7 +332,7 @@ export const gigaRewardPoolEstimateQuery = (
 ) =>
   queryOptions({
     queryKey: ["gigaRewardPoolEstimate", refId],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       const rewardPools = await rpc.queryClient.fetchQuery(
@@ -362,7 +362,7 @@ export const gigaRewardPoolEstimateQuery = (
 export const referendumTracksQuery = (rpc: TProviderContext, refId: number) =>
   queryOptions({
     queryKey: ["referendumTracks", refId],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       const data =
@@ -421,7 +421,7 @@ export const claimableVotingRewardsQuery = (
 ) =>
   queryOptions({
     queryKey: [...gigaQueryKey(who), "claimableVotingRewards"],
-    enabled: !!who && rpc.isApiLoaded,
+    enabled: !!who && rpc.isReady,
     staleTime: millisecondsInMinute,
     queryFn: async () => {
       const [pendingHdx, userVoteEntries] = await Promise.all([

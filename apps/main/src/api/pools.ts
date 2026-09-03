@@ -154,7 +154,7 @@ export const useStablePools = () => {
 }
 
 export const useOmnipoolIds = () => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
 
   return useQuery({
@@ -167,7 +167,7 @@ export const useOmnipoolIds = () => {
       return omnipoolTokens.map((token) => token.id.toString())
     },
     staleTime: Infinity,
-    enabled: isApiLoaded,
+    enabled: isReady,
     notifyOnChangeProps: [],
   })
 }

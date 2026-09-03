@@ -37,12 +37,8 @@ export const WalletBalances: FC = () => {
             isAssetsLoading || isLiquidityLoading || isBorrowLoading
           }
         />
-        <Separator
-          mt="base"
-          orientation="vertical"
-          display={["none", null, "initial"]}
-        />
-        <Separator mt="base" display={["initial", null, "none"]} />
+        <Separator orientation="vertical" display={["none", null, "initial"]} />
+        <Separator display={["initial", null, "none"]} />
         <Flex direction="column" gap={[20, 10]}>
           <ValueStats
             size="small"

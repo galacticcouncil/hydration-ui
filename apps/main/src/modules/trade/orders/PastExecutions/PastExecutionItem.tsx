@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { decodePjsErrorQuery } from "@/api/errors"
 import { TransactionItemMobile } from "@/components/TransactionItem/TransactionItemMobile"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
-import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
+import { PastExecutionData } from "@/modules/trade/orders/lib/types"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {

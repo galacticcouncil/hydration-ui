@@ -1,6 +1,6 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query"
 
-import { NeckworkClient } from "."
+import { NeckworkClient, NeckworkResponse } from "."
 
 export const CANDLE_BUCKETS = [
   "5m",
@@ -34,6 +34,17 @@ export type PairCandle = {
   close: number
   volume: number
 }
+
+const toPairCandle = (
+  item: NeckworkResponse<"/v1/prices/pair">["items"][number],
+): PairCandle => ({
+  time: Math.floor(new Date(item.timestamp).getTime() / 1000),
+  open: Number(item.open),
+  high: Number(item.high),
+  low: Number(item.low),
+  close: Number(item.close),
+  volume: Number(item.volumeUsd),
+})
 
 export const pairCandlesWindow = (
   bucket: CandleBucket,
@@ -155,7 +166,7 @@ export const pairReferencePriceQuery = (
         },
       })
 
-      const close = data && Array.from(data.items).at(-1)?.close
+      const close = data && data.items.at(-1)?.close
       return close === undefined ? null : Number(close)
     },
   })
@@ -190,14 +201,7 @@ export const pairCandlesInfiniteQuery = (
 
       if (!data) throw new Error("Neckwork API returned no pair candles")
 
-      return Array.from(data.items).map((item) => ({
-        time: Math.floor(new Date(item.timestamp).getTime() / 1000),
-        open: Number(item.open),
-        high: Number(item.high),
-        low: Number(item.low),
-        close: Number(item.close),
-        volume: Number(item.volumeUsd),
-      }))
+      return data.items.map(toPairCandle)
     },
     getNextPageParam: (lastPage, _pages, lastPageParam) => {
       const oldest = lastPage[0]
@@ -205,5 +209,46 @@ export const pairCandlesInfiniteQuery = (
 
       const next = oldest.time * 1000
       return lastPageParam === null || next < lastPageParam ? next : undefined
+    },
+  })
+
+/**
+ * One trailing window of candles, for charts that pick a time range instead of
+ * scrolling back through history. `to` rounds down to the bucket so the query
+ * key stays stable between renders.
+ */
+export const pairCandlesQuery = (
+  client: NeckworkClient,
+  { assetIn, assetOut, bucket, rangeMs }: PairCandlesArgs & { rangeMs: number },
+) =>
+  queryOptions({
+    queryKey: [
+      "neckwork",
+      "pairCandlesRange",
+      assetIn,
+      assetOut,
+      bucket,
+      rangeMs,
+    ],
+    staleTime: CANDLE_BUCKET_MS[bucket],
+    queryFn: async (): Promise<PairCandle[]> => {
+      const bucketMs = CANDLE_BUCKET_MS[bucket]
+      const to = Math.floor(Date.now() / bucketMs) * bucketMs
+
+      const { data } = await client.GET("/v1/prices/pair", {
+        params: {
+          query: {
+            assetIn,
+            assetOut,
+            bucket,
+            from: new Date(to - rangeMs).toISOString(),
+            to: new Date(to).toISOString(),
+          },
+        },
+      })
+
+      if (!data) throw new Error("Neckwork API returned no pair candles")
+
+      return data.items.map(toPairCandle)
     },
   })
