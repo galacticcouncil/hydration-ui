@@ -25,7 +25,9 @@ type Props = {
 export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
   const { t } = useTranslation(["common", "trade"])
   const {
-    dca: { slippage },
+    swap: {
+      split: { twapSlippage },
+    },
   } = useTradeSettings()
 
   return (
@@ -39,7 +41,7 @@ export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
         label={t("trade:dca.summary.slippage")}
         content={
           <SummaryRowValue color={getToken("text.tint.quart")}>
-            {t("percent", { value: slippage })}
+            {t("percent", { value: twapSlippage })}
           </SummaryRowValue>
         }
       />

@@ -26,7 +26,9 @@ export const useSubmitDcaOrder = () => {
   const { sdk, featureFlags } = rpc
 
   const {
-    dca: { slippage, maxRetries },
+    swap: {
+      split: { twapSlippage, twapMaxRetries },
+    },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
@@ -74,14 +76,14 @@ export const useSubmitDcaOrder = () => {
         tx = await sdk.tx
           .intentOrder(iceOrder)
           .withBeneficiary(account.address)
-          .withSlippage(slippage)
+          .withSlippage(twapSlippage)
           .build()
       } else {
         tx = await sdk.tx
           .order(order)
           .withBeneficiary(account.address)
-          .withSlippage(slippage)
-          .withMaxRetries(maxRetries)
+          .withSlippage(twapSlippage)
+          .withMaxRetries(twapMaxRetries)
           .build()
       }
 

@@ -14,12 +14,14 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
+import { SwapSettingsSection } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SwapSettingsModal"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { getMaxSlippageThreshold } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 
 type Props = {
   readonly tradeLimit: number
   readonly priceImpact: number
+  readonly settingsSection?: SwapSettingsSection
 }
 
 const WARING_TRADE_LIMIT = 3
@@ -27,6 +29,7 @@ const WARING_TRADE_LIMIT = 3
 export const TradeLimitSummaryRow: FC<Props> = ({
   tradeLimit,
   priceImpact,
+  settingsSection,
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const [openSettings, setOpenSettings] = useState(false)
@@ -76,7 +79,7 @@ export const TradeLimitSummaryRow: FC<Props> = ({
         }
       />
       <Modal variant="popup" open={openSettings} onOpenChange={setOpenSettings}>
-        <SettingsModal />
+        <SettingsModal swapSection={settingsSection} />
       </Modal>
     </>
   )

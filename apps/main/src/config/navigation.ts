@@ -31,7 +31,7 @@ export const LINKS = {
   pools: "/liquidity",
   swap: "/trade/swap",
   swapMarket: "/trade/swap/market",
-  swapDca: "/trade/swap/dca",
+  swapTwap: "/trade/swap/twap",
   swapLimit: "/trade/swap/limit",
   portfolio: "/portfolio",
   portfolioOverview: "/portfolio",
@@ -112,7 +112,7 @@ export const NAVIGATION: NavigationItem[] = [
         children: [
           { key: "swapMarket", to: LINKS.swapMarket },
           { key: "swapLimit", to: LINKS.swapLimit },
-          { key: "swapDca", to: LINKS.swapDca },
+          { key: "swapTwap", to: LINKS.swapTwap },
         ],
       },
       { key: "otc", to: LINKS.otc, icon: CoinsIcon },
@@ -276,8 +276,8 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.swapMarket.title"),
       description: "",
     },
-    swapDca: {
-      title: t("navigation.swapDca.title"),
+    swapTwap: {
+      title: t("navigation.swapTwap.title"),
       description: "",
     },
     swapLimit: {

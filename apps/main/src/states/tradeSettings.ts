@@ -139,13 +139,15 @@ export const useTradeSettings = create<TradeSettingsStore>()(
     }),
     createZustandStorage({
       name: "trade-settings",
-      version: 1,
+      version: 2,
       schema: tradeSettingsSchema,
       defaultState,
       migrate: (persistedState, storedVersion) => {
         switch (storedVersion) {
           case 0:
             return migrateLegacySettings()
+          case 1:
+            return migrateDcaSettingsToSplit(persistedState as TradeSettings)
           default:
             return persistedState as TradeSettings
         }
@@ -186,13 +188,48 @@ function migrateLegacySettings() {
             twapMaxRetries: Number(legacyTrade.data.maxRetries),
           },
         }
-      : defaultState.swap,
+      : legacyDca.success
+        ? {
+            ...defaultState.swap,
+            split: {
+              twapSlippage: Number(legacyDca.data.slippage),
+              twapMaxRetries: Number(legacyDca.data.maxRetries),
+            },
+          }
+        : defaultState.swap,
     dca: legacyDca.success
       ? {
           slippage: Number(legacyDca.data.slippage),
           maxRetries: Number(legacyDca.data.maxRetries),
         }
       : defaultState.dca,
+  }
+}
+
+// TWAP page settings moved from `dca` to `swap.split`; preserve values users
+// saved via the old DCA settings modal when they never touched market TWAP.
+function migrateDcaSettingsToSplit(state: TradeSettings): TradeSettings {
+  const splitIsDefault =
+    state.swap.split.twapSlippage === defaultState.swap.split.twapSlippage &&
+    state.swap.split.twapMaxRetries === defaultState.swap.split.twapMaxRetries
+
+  const dcaWasCustomized =
+    state.dca.slippage !== defaultState.dca.slippage ||
+    state.dca.maxRetries !== defaultState.dca.maxRetries
+
+  if (!splitIsDefault || !dcaWasCustomized) {
+    return state
+  }
+
+  return {
+    ...state,
+    swap: {
+      ...state.swap,
+      split: {
+        twapSlippage: state.dca.slippage,
+        twapMaxRetries: state.dca.maxRetries,
+      },
+    },
   }
 }
 

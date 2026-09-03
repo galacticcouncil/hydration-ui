@@ -163,6 +163,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
           <TradeLimitSummaryRow
             tradeLimit={twapSlippage}
             priceImpact={swap.priceImpactPct}
+            settingsSection="split"
           />
           <CalculatedAmountSummaryRow
             // an intent TWAP settles at market, so there is no guaranteed

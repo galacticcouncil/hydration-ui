@@ -142,7 +142,7 @@ export const MarketWarnings: FC<Props> = ({
                 sx={{ color: getToken("accents.alertAlt.primary") }}
               >
                 <Link
-                  to={LINKS.swapDca}
+                  to={LINKS.swapTwap}
                   search={search}
                   sx={{ textDecoration: "none" }}
                 >

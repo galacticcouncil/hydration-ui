@@ -24,7 +24,7 @@ export const FormHeader = () => {
   const matchRoute = useMatchRoute()
   const hasSettings =
     !!matchRoute({ to: LINKS.swapMarket }) ||
-    !!matchRoute({ to: LINKS.swapDca })
+    !!matchRoute({ to: LINKS.swapTwap })
 
   return (
     <SFormHeader justify="space-between" align="center">
