@@ -175,6 +175,10 @@ export const QuotedPriceField: FC<Props> = ({
             component={ArrowLeftRight}
             size="m"
             color={getToken("icons.onContainer")}
+            sx={{
+              transform: view.inverted ? "scaleX(1)" : "scaleX(-1)",
+              transition: getToken("transitions.transform"),
+            }}
           />
         </Button>
         <Flex align="center" flex={1} minWidth={0} gap="s" justify="flex-end">
