@@ -6,13 +6,11 @@ import { useTranslation } from "react-i18next"
 
 import { Trade, TradeOrder, TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -31,12 +29,6 @@ export const MarketFields: FC<Props> = ({
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
   const { featureFlags } = useRpcProvider()
-
-  const {
-    swap: {
-      single: { swapSlippage },
-    },
-  } = useTradeSettings()
 
   const navigate = useNavigate()
 
@@ -62,23 +54,19 @@ export const MarketFields: FC<Props> = ({
   const isSell = type === TradeType.Sell
   const isEmpty = isSell ? !sellAmount : !buyAmount
 
-  // Under ICE the derived field shows what the intent commits on-chain
-  // (floor / exact spend), not the raw quote — the form must display
-  // exactly what ends up in the extrinsic.
-  const iceSwap =
-    featureFlags.isIceEnabled && swap
-      ? getIceSwapAmounts(swap, swapSlippage)
-      : undefined
-
+  // Display the raw router quote — the expected amount, net of trade fees and
+  // price impact but NOT the user's slippage (same as the classic swap page).
+  // Slippage shows separately as "Minimum received" in the summary, and the
+  // ICE extrinsic still commits the floor via `.withSlippage()`.
   const amountOut = isEmpty
     ? undefined
     : isSingleTrade
-      ? (iceSwap?.amountOut ?? swap?.amountOut)
+      ? swap?.amountOut
       : twap?.amountOut
   const amountIn = isEmpty
     ? undefined
     : isSingleTrade
-      ? (iceSwap?.amountIn ?? swap?.amountIn)
+      ? swap?.amountIn
       : twap?.amountIn
 
   useEffect(() => {
