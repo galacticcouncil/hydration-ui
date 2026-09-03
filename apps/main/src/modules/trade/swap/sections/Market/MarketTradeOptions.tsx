@@ -15,11 +15,9 @@ import {
 } from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
-import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -38,12 +36,6 @@ export const MarketTradeOptions: FC<Props> = ({
   const { t } = useTranslation("trade")
   const rpc = useRpcProvider()
   const { featureFlags } = rpc
-
-  const {
-    swap: {
-      single: { swapSlippage },
-    },
-  } = useTradeSettings()
 
   const { control, watch } = useFormContext<MarketFormValues>()
   const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
@@ -70,16 +62,13 @@ export const MarketTradeOptions: FC<Props> = ({
 
   const isBuy = swap.type === TradeType.Buy
 
-  // Under ICE the single-trade card shows the intent's on-chain
-  // amounts (exact spend / guaranteed floor) so it matches the form
-  // field and the extrinsic. Split trade (TWAP) keeps the raw quote.
-  const iceSwap = featureFlags.isIceEnabled
-    ? getIceSwapAmounts(swap, swapSlippage)
-    : undefined
-
+  // Show the raw router quote — the expected amount, net of trade fees and
+  // price impact but NOT the user's slippage (same as the classic swap page).
+  // Slippage shows as "Minimum received" in the summary; the extrinsic still
+  // commits the floor. Split trade (TWAP) keeps the raw quote too.
   const [asset, amount, twapAmount] = isBuy
-    ? [sellAsset, iceSwap?.amountIn ?? swap.amountIn, twap?.amountIn]
-    : [buyAsset, iceSwap?.amountOut ?? swap.amountOut, twap?.amountOut]
+    ? [sellAsset, swap.amountIn, twap?.amountIn]
+    : [buyAsset, swap.amountOut, twap?.amountOut]
 
   const price = scaleHuman(amount, asset.decimals)
   const twapPrice = twapAmount ? scaleHuman(twapAmount, asset.decimals) : "0"
