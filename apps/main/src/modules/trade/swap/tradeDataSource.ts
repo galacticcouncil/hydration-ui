@@ -7,7 +7,6 @@ import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { TradeOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/TradeOrdersNeckwork"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
-import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkEnabled } from "@/states/neckwork"
@@ -21,7 +20,10 @@ export const useNeckworkTradeQueriesEnabled = (): boolean => {
 
 export const useTradeDataSource = (): "neckwork" | "legacy" | "squid" => {
   const isNeckworkEnabled = useNeckworkEnabled()
+  const { isFork } = useRpcProvider()
   const { status } = useActiveIndexerStatus()
+
+  if (isFork) return "legacy"
 
   if (isNeckworkEnabled) return "neckwork"
 
@@ -33,7 +35,7 @@ export const useTradeDataSource = (): "neckwork" | "legacy" | "squid" => {
 
 export const TRADE_CHART_BY_SOURCE = {
   neckwork: TradeChartNeckwork,
-  legacy: TradeChartGrafana,
+  legacy: TradeChartNeckwork,
   squid: TradeChart,
 } as const satisfies Record<string, FC<{ readonly height: number }>>
 

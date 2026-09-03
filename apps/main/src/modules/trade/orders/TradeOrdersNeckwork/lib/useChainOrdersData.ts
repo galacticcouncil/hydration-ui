@@ -1,4 +1,3 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { secondsToMilliseconds } from "date-fns"
@@ -9,6 +8,7 @@ import { usePapiEntries } from "@/hooks/usePapiEntries"
 import {
   DcaOrderData,
   OrderKind,
+  OrderStatus,
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -20,7 +20,6 @@ export const useChainScheduleIds = () => {
   const { account } = useAccount()
   const { isApiLoaded } = useRpcProvider()
 
-  // papi takes the account address as-is, no SS58 conversion
   const address = account?.address ?? ""
   const enabled = isApiLoaded && !!address
 
@@ -89,7 +88,6 @@ export const useChainOrdersData = () => {
               ? order.value.amount_in
               : order.value.max_amount_in
 
-          // a zero total budget means the schedule tops itself up indefinitely
           const isOpenBudget = schedule.total_amount === 0n
           const hasBudget = !isOpenBudget && remaining !== null
 
@@ -110,11 +108,9 @@ export const useChainOrdersData = () => {
               singleTradeSize: scaleHuman(singleTradeAmount, from.decimals),
               to,
               toAmountExecuted: null,
-              status: DcaScheduleStatus.Created,
+              status: OrderStatus.Created,
               blocksPeriod: String(schedule.period),
               isOpenBudget,
-              // chain state carries no creation time, and a schedule has no
-              // per-slice price condition - that is intent-only
               timestamp: null,
               limitPrice: null,
             },

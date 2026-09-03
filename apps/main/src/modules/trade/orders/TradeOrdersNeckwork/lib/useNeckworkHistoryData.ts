@@ -1,5 +1,4 @@
 import { dcaSchedulesQuery, DcaStatus } from "@galacticcouncil/indexer/neckwork"
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
@@ -10,16 +9,17 @@ import { neckworkClient } from "@/api/provider"
 import {
   DcaOrderData,
   OrderKind,
+  OrderStatus,
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-const STATUS_MAP: Record<DcaStatus, DcaScheduleStatus> = {
-  created: DcaScheduleStatus.Created,
-  completed: DcaScheduleStatus.Completed,
-  terminated: DcaScheduleStatus.Terminated,
-  cancelled: DcaScheduleStatus.Cancelled,
+const STATUS_MAP: Record<DcaStatus, OrderStatus> = {
+  created: OrderStatus.Created,
+  completed: OrderStatus.Completed,
+  terminated: OrderStatus.Terminated,
+  cancelled: OrderStatus.Cancelled,
 }
 
 export const useNeckworkHistoryData = (

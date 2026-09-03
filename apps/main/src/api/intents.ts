@@ -1,6 +1,7 @@
-import { queryOptions, useQuery } from "@tanstack/react-query"
-import { isNonNullish } from "remeda"
+import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
+import { usePapiEntries } from "@/hooks/usePapiEntries"
 import {
   PapiIce,
   TProviderContext,
@@ -16,42 +17,61 @@ export type AccountIntentEntry = {
   intent: IntentValue
 }
 
-export const intentsByAccountQuery = (
-  context: TProviderContext,
-  address: string,
-) => {
-  const { isApiLoaded, papiIce, featureFlags } = context
+// AccountIntents is a presence index (value is null). Subscribe so rows drop
+// when the chain removes an intent; a one-shot refetch on tx inclusion lags.
+const useAccountIntentIds = (address: string) => {
+  const { isApiLoaded, featureFlags } = useRpcProvider()
 
-  return queryOptions({
-    enabled: featureFlags.isIceEnabled && isApiLoaded && !!address,
-    queryKey: ["intents", "byAccount", address],
-    queryFn: async () => {
-      const accountEntries =
-        await papiIce.query.Intent.AccountIntents.getEntries(address, {
-          at: "best",
-        })
+  const { data, isLoading } = usePapiEntries(
+    "Intent.AccountIntents",
+    [address],
+    { enabled: featureFlags.isIceEnabled && isApiLoaded && !!address },
+  )
 
-      const intentIds = accountEntries.map((entry) => entry.keyArgs[1])
+  const ids = useMemo(
+    () => (data ?? []).map(({ keyArgs }) => keyArgs[1]),
+    [data],
+  )
 
-      if (!intentIds.length) return []
-
-      const results: Array<AccountIntentEntry | null> = await Promise.all(
-        intentIds.map(async (id) => {
-          const intent = await papiIce.query.Intent.Intents.getValue(id, {
-            at: "best",
-          })
-          return intent ? { id, intent } : null
-        }),
-      )
-
-      return results.filter(isNonNullish)
-    },
-  })
+  return { ids, isLoading }
 }
 
 export const useAccountIntents = (address: string) => {
-  const rpc = useRpcProvider()
-  return useQuery(intentsByAccountQuery(rpc, address))
+  const { papiIce } = useRpcProvider()
+  const { ids, isLoading: isIdsLoading } = useAccountIntentIds(address)
+
+  // Key values by id; the id list can change while getValues is in flight.
+  const { data: pairs, isLoading: isValuesLoading } = useQuery({
+    queryKey: ["intents", "values", ids.map(String)],
+    enabled: ids.length > 0,
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const values = await papiIce.query.Intent.Intents.getValues(
+        ids.map((id) => [id] as const),
+        { at: "best" },
+      )
+
+      return ids.map((id, index): [bigint, IntentValue | null] => [
+        id,
+        values[index] ?? null,
+      ])
+    },
+  })
+
+  const data = useMemo<Array<AccountIntentEntry>>(() => {
+    const byId = new Map(pairs ?? [])
+
+    return ids.flatMap((id) => {
+      const intent = byId.get(id)
+      return intent ? [{ id, intent }] : []
+    })
+  }, [ids, pairs])
+
+  return {
+    data,
+    isLoading: isIdsLoading || (ids.length > 0 && isValuesLoading),
+  }
 }
 
 export const maxIntentDurationQuery = (context: TProviderContext) => {

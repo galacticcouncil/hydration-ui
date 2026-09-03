@@ -7,15 +7,15 @@ import { useTranslation } from "react-i18next"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import {
-  DcaScheduleStatus,
-  isDcaScheduleStatus,
-} from "@/modules/trade/orders/lib/types"
+  isOrderStatus,
+  OrderStatus,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
   readonly from: TAsset
   readonly fromAmount: string | null
-  readonly status: DcaScheduleStatus | "filled" | null | undefined
+  readonly status: OrderStatus | "filled" | null | undefined
   readonly total?: string | null
   readonly isOpenBudget?: boolean
 }
@@ -32,12 +32,12 @@ export const AmountMobile: FC<Props> = ({
   return (
     <Flex direction="column" gap="xs" align="end">
       <Text fw={600} fs="p5" lh={1} color={getToken("text.high")}>
-        {isOpenBudget && !isValidBigSource(fromAmount)
-          ? from.symbol
-          : t("currency", { value: fromAmount, symbol: from.symbol })}
+        {isValidBigSource(fromAmount)
+          ? t("currency", { value: fromAmount, symbol: from.symbol })
+          : from.symbol}
       </Text>
       {status === "filled" && <SwapStatus />}
-      {isDcaScheduleStatus(status) && (
+      {isOrderStatus(status) && (
         <DcaOrderStatus
           status={status}
           sold={fromAmount}

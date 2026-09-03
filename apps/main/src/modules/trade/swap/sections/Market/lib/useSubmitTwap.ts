@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
 
-import { intentsByAccountQuery } from "@/api/intents"
 import {
   bestBuyQuery,
   bestSellTwapQuery,
@@ -63,8 +62,6 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
         }),
       )
 
-      // Same duration source as the split card ("Execute within X") —
-      // interval- and ICE-aware, unlike a plain tradeCount × blockTime.
       const duration = await rpc.queryClient
         .ensureQueryData(tradeOrderDurationQuery(rpc, twap.tradeCount))
         .catch(() => 0)
@@ -107,9 +104,6 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             success: t("trade:market.twap.success", params),
             error: t("trade:market.twap.error", params),
           },
-          invalidateQueries: [
-            intentsByAccountQuery(rpc, account.address).queryKey,
-          ],
         },
         actions,
       )
