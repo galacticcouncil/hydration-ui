@@ -44,7 +44,7 @@ export const MarketTradeOptions: FC<Props> = ({
   // adaptive proposal the cadence varies with size, so read it from the chain
   // rather than assuming the fixed TWAP interval.
   const { data: twapDurationMs = 0 } = useQuery(
-    tradeOrderDurationQuery(rpc, twap?.tradeCount ?? 0),
+    tradeOrderDurationQuery(rpc, twap?.tradeCount ?? 0, twap?.tradePeriod ?? 0),
   )
 
   if (isSwapLoading || !swap) {

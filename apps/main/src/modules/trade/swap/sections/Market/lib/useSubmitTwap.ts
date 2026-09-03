@@ -35,7 +35,9 @@ export const useSubmitTwap = () => {
       if (!account) throw new Error("Account not connected")
 
       const duration = await rpc.queryClient
-        .ensureQueryData(tradeOrderDurationQuery(rpc, twap.tradeCount))
+        .ensureQueryData(
+          tradeOrderDurationQuery(rpc, twap.tradeCount, twap.tradePeriod),
+        )
         .catch(() => 0)
 
       const params = {
