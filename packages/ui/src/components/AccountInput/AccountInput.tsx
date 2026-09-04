@@ -3,7 +3,6 @@ import { ArrowDownToLine } from "lucide-react"
 import { Close } from "@/assets/icons"
 import {
   AccountAvatar,
-  AccountAvatarTheme,
   ButtonIcon,
   Flex,
   Grid,
@@ -18,7 +17,6 @@ export type AccountInputProps = Omit<
 > & {
   value: string
   onChange: (value: string) => void
-  avatarTheme?: AccountAvatarTheme
   isError?: boolean
   className?: string
   pasteDisabled?: boolean
@@ -32,7 +30,6 @@ export type AccountInputProps = Omit<
 export const AccountInput: React.FC<AccountInputProps> = ({
   value,
   onChange,
-  avatarTheme = "auto",
   className,
   ref,
   pasteDisabled = false,
@@ -79,7 +76,7 @@ export const AccountInput: React.FC<AccountInputProps> = ({
       className={className}
     >
       <Flex align="center" gap="base">
-        <AccountAvatar address={value} theme={avatarTheme} />
+        <AccountAvatar address={value} />
         <Input
           ref={ref}
           variant="embedded"

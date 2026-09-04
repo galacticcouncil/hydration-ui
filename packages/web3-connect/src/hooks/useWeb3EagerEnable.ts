@@ -16,7 +16,7 @@ import { ExternalWallet, getWallet } from "@/wallets"
 
 const RESTORE_TIMEOUT_MS = 10_000
 
-export const useWeb3EagerEnable = (enabled = true) => {
+export const useWeb3EagerEnable = () => {
   const { enable, disconnect } = useWeb3Enable()
   const { enable: enableRestore } = useWeb3Enable({ restore: true })
   const { providers, setAccount } = useWeb3Connect(
@@ -28,7 +28,6 @@ export const useWeb3EagerEnable = (enabled = true) => {
   const hasTriedEagerEnable = useRef(false)
 
   useMount(() => {
-    if (!enabled) return
     window.dispatchEvent(new Event("eip6963:requestProvider"))
     setProvidersRequested(true)
   })
