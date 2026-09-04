@@ -249,8 +249,23 @@ export const useMultichainPortfolio = (
           Big(balance.amount.toString()).gt(0),
         )
 
+        const isOnlyChainForAnyAddress = stableAddresses.some((address) => {
+          const chainsForAddress = wallet.getChainsForAddress(
+            address,
+            stableChains,
+          )
+          return (
+            chainsForAddress.length === 1 &&
+            chainsForAddress[0]?.key === chainKey
+          )
+        })
+
         // hide chains with nothing to show; keep errors visible for retry
-        if (!isError && !isLoading && !hasAssets) return []
+        // keep a wallet's sole native chain visible so single-chain wallets
+        // (Solana, Sui, …) don't collapse to an empty portfolio shell
+        if (!isError && !isLoading && !hasAssets && !isOnlyChainForAnyAddress) {
+          return []
+        }
 
         return [
           {
@@ -275,7 +290,9 @@ export const useMultichainPortfolio = (
       nearSpotPrice,
       refetchChain,
       resolved,
+      stableAddresses,
       stableChains,
+      wallet,
     ],
   )
 
