@@ -18,42 +18,57 @@ export const useMaxSellAmount = ({
 }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const rpc = useRpcProvider()
+  const { sdk, featureFlags, isApiLoaded } = useRpcProvider()
   const {
     swap: {
       single: { swapSlippage },
+      split: { twapSlippage, twapMaxRetries },
     },
   } = useTradeSettings()
 
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const enabled =
-    rpc.isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
+    isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
 
   const { data: tx, isPending: isTxPending } = useQuery({
     enabled,
-    queryKey: ["maxSellAmount", assetIn, assetOut, swapSlippage],
+    queryKey: [
+      "maxSellAmount",
+      assetIn,
+      assetOut,
+      swapSlippage,
+      twapSlippage,
+      twapMaxRetries,
+      featureFlags.isIceEnabled,
+    ],
     queryFn: async () => {
-      const swap = await rpc.sdk.api.router.getBestSell(
+      const swap = await sdk.api.router.getBestSell(
         Number(assetIn),
         Number(assetOut),
         "1",
       )
-      const twap = await rpc.sdk.api.scheduler.getTwapSellOrder(
+      const twap = await sdk.api.scheduler.getTwapSellOrder(
         Number(assetIn),
         Number(assetOut),
         "1",
       )
 
-      const swapTx = await rpc.sdk.tx
+      const swapTx = await sdk.tx
         .trade(swap)
         .withSlippage(swapSlippage)
         .withBeneficiary(account?.address ?? "")
         .build()
         .then((tx) => tx.get())
 
-      const twapTx = await rpc.sdk.tx
-        .order(twap)
+      const twapBuilder = featureFlags.isIceEnabled
+        ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
+        : sdk.tx
+            .order(twap)
+            .withSlippage(twapSlippage)
+            .withMaxRetries(twapMaxRetries)
+
+      const twapTx = await twapBuilder
         .withBeneficiary(account?.address ?? "")
         .build()
         .then((tx) => tx.get())

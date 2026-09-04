@@ -13,13 +13,22 @@ import { SplitTradeSection } from "@/modules/trade/swap/components/SettingsModal
 import { useSwapSettingsForm } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/useSwapSettingsForm"
 import { useTradeSettings } from "@/states/tradeSettings"
 
-export const SwapSettingsModal: FC = () => {
+export type SwapSettingsSection = "single" | "split"
+
+type Props = {
+  readonly section?: SwapSettingsSection
+}
+
+export const SwapSettingsModal: FC<Props> = ({ section }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const { update, ...tradeSettings } = useTradeSettings()
   const form = useSwapSettingsForm(tradeSettings.swap, (swap) =>
     update({ ...tradeSettings, swap }),
   )
+
+  const showSingle = !section || section === "single"
+  const showSplit = !section || section === "split"
 
   return (
     <FormProvider {...form}>
@@ -29,9 +38,9 @@ export const SwapSettingsModal: FC = () => {
       />
       <ModalBody sx={{ minHeight: ["auto", 400], pt: 0 }}>
         <form onSubmit={preventDefault}>
-          <SingleTradeSection />
-          <ModalContentDivider />
-          <SplitTradeSection />
+          {showSingle && <SingleTradeSection />}
+          {showSingle && showSplit && <ModalContentDivider />}
+          {showSplit && <SplitTradeSection />}
         </form>
       </ModalBody>
     </FormProvider>

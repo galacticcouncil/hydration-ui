@@ -2,6 +2,7 @@ import { ApiOptions, SubstrateApis } from "@galacticcouncil/common"
 import {
   getMetadata,
   hydration,
+  hydrationIce,
   hydrationNext,
 } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
@@ -14,6 +15,7 @@ import {
   getHostnameFromUrl,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
+import { CompatibilityLevel } from "polkadot-api"
 import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
@@ -26,12 +28,18 @@ import {
   PROVIDERS,
   TDataEnv,
 } from "@/config/rpc"
-import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
+import {
+  Papi,
+  PapiIce,
+  PapiNext,
+  useRpcProvider,
+} from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   bilEnabled: boolean
+  isIceEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -40,6 +48,7 @@ export type TProviderData = {
   queryClient: QueryClient
   papi: Papi
   papiNext: PapiNext
+  papiIce: PapiIce
   sdk: SdkCtx
   papiClient: WsPolkadotClient
   evm: PublicClient
@@ -132,10 +141,17 @@ const getProviderData = async (
     sdk.ctx.pool.withHsm()
   }
 
+  const papiIce = papiClient.getTypedApi(hydrationIce)
+  const staticIceApis = await papiIce.getStaticApis()
+  const isIceEnabled = staticIceApis.compat.query.Intent.Intents.isCompatible(
+    CompatibilityLevel.Partial,
+  )
+
   return {
     queryClient,
     papi,
     papiNext,
+    papiIce,
     papiClient,
     evm,
     sdk,
@@ -143,6 +159,7 @@ const getProviderData = async (
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,
+      isIceEnabled,
     },
     metadata,
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
@@ -155,10 +172,6 @@ export const useSquidUrl = (): string => {
 }
 
 export const PROXY_URL = `${new URL(ENV.VITE_NECKWORK_URL).origin}/proxy`
-
-export const useIndexerUrl = (): string => {
-  return useState(() => ENV.VITE_INDEXER_URL)[0]
-}
 
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
@@ -176,6 +189,11 @@ export const useActiveProviderProps = (): ProviderProps | null => {
       endpoint,
     )
   }, [endpoint, rpcList])
+}
+
+export const useIndexerUrl = (): string => {
+  const providerProps = useActiveProviderProps()
+  return providerProps?.indexerUrl ?? ENV.VITE_INDEXER_URL
 }
 
 export const useSquidClient = (): SquidSdk => {

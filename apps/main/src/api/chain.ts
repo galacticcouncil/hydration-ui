@@ -106,31 +106,6 @@ export const useReloadOnStaleBlocks = () => {
 export const useBlockTimestamp = () =>
   usePapiValue("Timestamp.Now", [{ at: "best" }])
 
-export const chainSpecDataQuery = (context: TProviderContext) => {
-  const { papi, papiClient, isApiLoaded } = context
-
-  return queryOptions({
-    enabled: isApiLoaded,
-    queryKey: ["chainSpecData"],
-    queryFn: async () => {
-      const [chainSpecData, lastRuntimeUpgrade] = await Promise.all([
-        papiClient.getChainSpecData(),
-        papi.query.System.LastRuntimeUpgrade.getValue(),
-      ])
-
-      return {
-        chainSpecData,
-        lastRuntimeUpgrade,
-      }
-    },
-    staleTime: Infinity,
-  })
-}
-
-export const useChainSpecData = () => {
-  return useQuery(chainSpecDataQuery(useRpcProvider()))
-}
-
 export const blockWeightsQuery = (context: TProviderContext) => {
   const { isApiLoaded, papi } = context
 

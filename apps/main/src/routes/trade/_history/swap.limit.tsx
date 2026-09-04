@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { Dca } from "@/modules/trade/swap/sections/DCA/Dca"
+import { Limit } from "@/modules/trade/swap/sections/Limit/Limit"
 import { SwapPageSkeleton } from "@/modules/trade/swap/SwapPageSkeleton"
 
-export const Route = createFileRoute("/trade/_history/swap/dca")({
-  component: Dca,
+export const Route = createFileRoute("/trade/_history/swap/limit")({
+  component: Limit,
   pendingComponent: SwapPageSkeleton,
 })

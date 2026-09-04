@@ -8,10 +8,19 @@ import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 
 type Props = {
   readonly type: OrderKind | "market"
+  readonly isLimit?: boolean
 }
 
-export const SwapType: FC<Props> = ({ type }) => {
+export const SwapType: FC<Props> = ({ type, isLimit = false }) => {
   const { t } = useTranslation("trade")
+
+  const label = isLimit
+    ? t("trade.orders.type.limitTwap")
+    : type === OrderKind.DcaRolling
+      ? t("trade.orders.type.dca")
+      : type === OrderKind.Limit
+        ? t("trade.orders.type.limit")
+        : t(`trade.orders.type.${type}`)
 
   return (
     <Flex align="center" gap={2}>
@@ -23,9 +32,7 @@ export const SwapType: FC<Props> = ({ type }) => {
         />
       )}
       <Text fw={500} fs="p5" lh="s" color={getToken("text.high")}>
-        {type === OrderKind.DcaRolling
-          ? t("trade.orders.type.dca")
-          : t(`trade.orders.type.${type}`)}
+        {label}
       </Text>
     </Flex>
   )

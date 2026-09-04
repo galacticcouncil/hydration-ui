@@ -28,6 +28,7 @@ import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summ
 import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/TradeLimitSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 import { getTradeFeeIntervals } from "@/utils/trade"
@@ -41,6 +42,13 @@ type Props = {
 export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
+  const { featureFlags } = useRpcProvider()
+
+  // Intent TWAP (Dca intent) has no fixed output floor — per-slice
+  // protection is the pallet's adaptive oracle limit, so the headline
+  // amount is an estimate for BOTH directions (there is no guaranteed-Buy
+  // variant on intents).
+  const isIce = featureFlags.isIceEnabled
 
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 
@@ -94,6 +102,12 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
       return [0n, 0n, "0", null]
     }
 
+    if (isIce) {
+      // Raw SOR estimate — settles at market, nothing to pad or floor.
+      const twapPrice = twap.amountOut
+      return [twapPrice, 0n, scaleHuman(twapPrice, buyAsset.decimals), buyAsset]
+    }
+
     const twapPrice =
       twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage)
     const twapPriceHuman = scaleHuman(twapPrice, buyAsset.decimals)
@@ -124,7 +138,9 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
     mediumHigh = Number.MAX_SAFE_INTEGER,
   ] = getTradeFeeIntervals(0, 0)
 
-  const twapDiff = math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
+  const twapDiff = isIce
+    ? 0
+    : math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
   const twapDiffAbs = Math.abs(twapDiff)
   const twapSymbol = twapDiff >= 0 ? "+" : "-"
 
@@ -147,22 +163,40 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
           <TradeLimitSummaryRow
             tradeLimit={twapSlippage}
             priceImpact={swap.priceImpactPct}
+            settingsSection="split"
           />
           <CalculatedAmountSummaryRow
-            label={t("trade:market.summary.minReceived")}
-            tooltip={t("trade:market.summary.minReceived.tooltip")}
+            // an intent TWAP settles at market, so there is no guaranteed
+            // minimum to quote - only an estimate
+            label={
+              isIce
+                ? t("trade:market.summary.estReceived")
+                : t("trade:market.summary.minReceived")
+            }
+            tooltip={
+              isIce
+                ? t("trade:market.summary.estReceived.tooltip")
+                : t("trade:market.summary.minReceived.tooltip")
+            }
             amount={
-              <SummaryRowValue>
-                <span>
-                  {t("currency", {
-                    value: twapPriceHuman,
-                    symbol: twapPriceAsset.symbol,
-                  })}
-                </span>
-                <span sx={{ color: getToken("colors.skyBlue.500") }}>
-                  {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
-                </span>
-              </SummaryRowValue>
+              isIce ? (
+                `~${t("currency", {
+                  value: twapPriceHuman,
+                  symbol: twapPriceAsset.symbol,
+                })}`
+              ) : (
+                <SummaryRowValue>
+                  <span>
+                    {t("currency", {
+                      value: twapPriceHuman,
+                      symbol: twapPriceAsset.symbol,
+                    })}
+                  </span>
+                  <span sx={{ color: getToken("colors.skyBlue.500") }}>
+                    {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
+                  </span>
+                </SummaryRowValue>
+              )
             }
             amountDisplay={twapPriceDisplay}
             isLoading={twapPriceDisplayLoading}

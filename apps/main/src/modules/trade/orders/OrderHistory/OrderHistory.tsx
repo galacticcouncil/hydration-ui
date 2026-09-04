@@ -6,6 +6,8 @@ import { FC, useState } from "react"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
+  DcaOrderData,
+  isDcaScheduleOrder,
   OrderData,
   useOrdersData,
 } from "@/modules/trade/orders/lib/useOrdersData"
@@ -23,7 +25,7 @@ export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
     from: "/trade/_history",
   })
 
-  const [isDetailOpen, setIsDetailOpen] = useState<OrderData | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState<DcaOrderData | null>(null)
 
   const { orders, totalCount, isLoading } = useOrdersData(
     [DcaScheduleStatus.Completed, DcaScheduleStatus.Terminated],
@@ -36,14 +38,16 @@ export const OrderHistory: FC<Props> = ({ allPairs, paginationProps }) => {
 
   return (
     <>
-      <DataTable
+      <DataTable<OrderData>
         data={orders}
         columns={columns}
         isLoading={isLoading}
         paginated
         {...paginationProps}
         rowCount={totalCount}
-        onRowClick={setIsDetailOpen}
+        onRowClick={(order) =>
+          isDcaScheduleOrder(order) && setIsDetailOpen(order)
+        }
         emptyState={<OrdersEmptyState />}
       />
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>

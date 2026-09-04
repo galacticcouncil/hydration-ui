@@ -81,6 +81,8 @@ const schemaBase = z.object({
   buyAsset: requiredObject<TAsset>(),
   duration: getTimeFrameSchema(dcaTimeFrameTypes),
   orders: ordersSchema,
+  limitEnabled: z.boolean(),
+  limitPrice: positiveOptional,
 })
 
 const MAX_OPEN_BUDGET_YEAR_FRAME = 1
@@ -133,6 +135,15 @@ const schema = schemaBase
             : "error.timeFrameDurationMax",
           { value: valueFormatted },
         ),
+      })
+    }
+  })
+  .superRefine(({ limitEnabled, limitPrice }, { addIssue }) => {
+    if (limitEnabled && (!limitPrice || Big(limitPrice).lte(0))) {
+      addIssue({
+        code: "custom",
+        path: ["limitPrice" satisfies FieldPath<DcaFormValues>],
+        message: i18n.t("trade:dca.errors.limitPriceRequired"),
       })
     }
   })
@@ -259,6 +270,8 @@ export const useDcaForm = ({
     orders: {
       type: DcaOrdersMode.Auto,
     },
+    limitEnabled: false,
+    limitPrice: "",
   }
 
   const form = useForm<DcaFormValues>({

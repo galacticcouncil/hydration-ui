@@ -104,6 +104,10 @@ export const MarketWarnings: FC<Props> = ({
   }
 
   const shouldRenderSlippageWarning =
+    // Temporarily disabled: ICE no longer has the legacy price-impact limit
+    // this warning was designed for. Keep the condition in place so it can be
+    // restored without affecting the separate health-factor warning below.
+    false &&
     isFormValid &&
     Number(isSingleTrade ? swapSlippage : twapSlippage) < validSlippage
 
@@ -138,7 +142,7 @@ export const MarketWarnings: FC<Props> = ({
                 sx={{ color: getToken("accents.alertAlt.primary") }}
               >
                 <Link
-                  to={LINKS.swapDca}
+                  to={LINKS.swapTwap}
                   search={search}
                   sx={{ textDecoration: "none" }}
                 >

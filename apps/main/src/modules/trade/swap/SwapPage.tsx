@@ -1,7 +1,10 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Navigate, useMatchRoute } from "@tanstack/react-router"
 import { lazy } from "react"
 
+import { LINKS } from "@/config/navigation"
 import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 const SwapPageDesktop = lazy(async () => ({
   default: await import("@/modules/trade/swap/SwapPageDesktop").then(
@@ -19,6 +22,13 @@ export const SwapPage = () => {
   useResetSharedSellAmountOnUnmount()
 
   const { gte } = useBreakpoints()
+  const { featureFlags } = useRpcProvider()
+  const matchRoute = useMatchRoute()
+  const isLimitPage = !!matchRoute({ to: LINKS.swapLimit })
+
+  if (isLimitPage && !featureFlags.isIceEnabled) {
+    return <Navigate to={LINKS.swapMarket} />
+  }
 
   if (!gte("lg")) {
     return <SwapPageMobile />

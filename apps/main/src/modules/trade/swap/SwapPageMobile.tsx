@@ -3,6 +3,7 @@ import { Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
+import { LimitPostFormDisclaimer } from "@/modules/trade/swap/components/LimitPostFormDisclaimer"
 import {
   TRADE_CHART_BY_SOURCE,
   TRADE_ORDERS_BY_SOURCE,
@@ -20,11 +21,14 @@ export const SwapPageMobile: FC = () => {
 
   return (
     <Flex direction="column" gap="xxl">
-      <SSwapFormContainer>
-        <FormHeader />
-        <Separator mx={-20} />
-        <Outlet />
-      </SSwapFormContainer>
+      <Flex direction="column" gap="base" width="100%">
+        <SSwapFormContainer width="100%">
+          <FormHeader />
+          <Separator mx={-20} />
+          <Outlet />
+        </SSwapFormContainer>
+        <LimitPostFormDisclaimer />
+      </Flex>
       <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
       <TradeOrders />
     </Flex>

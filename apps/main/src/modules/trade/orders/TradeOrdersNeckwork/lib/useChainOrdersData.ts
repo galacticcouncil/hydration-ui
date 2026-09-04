@@ -1,4 +1,3 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { secondsToMilliseconds } from "date-fns"
@@ -6,7 +5,11 @@ import { useMemo } from "react"
 
 import { UnsafeDcaQuery } from "@/api/dcaStorage"
 import { usePapiEntries } from "@/hooks/usePapiEntries"
-import { OrderData, OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  DcaOrderData,
+  OrderKind,
+  OrderStatus,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -17,7 +20,6 @@ export const useChainScheduleIds = () => {
   const { account } = useAccount()
   const { isApiLoaded } = useRpcProvider()
 
-  // papi takes the account address as-is, no SS58 conversion
   const address = account?.address ?? ""
   const enabled = isApiLoaded && !!address
 
@@ -71,47 +73,50 @@ export const useChainOrdersData = () => {
 
   const openScheduleIds = useMemo(() => new Set(scheduleIds), [scheduleIds])
 
-  const orders = useMemo<Array<OrderData>>(
+  const orders = useMemo<Array<DcaOrderData>>(
     () =>
-      (data ?? []).flatMap<OrderData>(({ scheduleId, schedule, remaining }) => {
-        if (!schedule || !openScheduleIds.has(scheduleId)) return []
+      (data ?? []).flatMap<DcaOrderData>(
+        ({ scheduleId, schedule, remaining }) => {
+          if (!schedule || !openScheduleIds.has(scheduleId)) return []
 
-        const { order } = schedule
-        const from = getAssetWithFallback(String(order.value.asset_in))
-        const to = getAssetWithFallback(String(order.value.asset_out))
+          const { order } = schedule
+          const from = getAssetWithFallback(String(order.value.asset_in))
+          const to = getAssetWithFallback(String(order.value.asset_out))
 
-        const singleTradeAmount =
-          order.type === "Sell"
-            ? order.value.amount_in
-            : order.value.max_amount_in
+          const singleTradeAmount =
+            order.type === "Sell"
+              ? order.value.amount_in
+              : order.value.max_amount_in
 
-        // a zero total budget means the schedule tops itself up indefinitely
-        const isOpenBudget = schedule.total_amount === 0n
-        const hasBudget = !isOpenBudget && remaining !== null
+          const isOpenBudget = schedule.total_amount === 0n
+          const hasBudget = !isOpenBudget && remaining !== null
 
-        return [
-          {
-            kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
-            scheduleId,
-            from,
-            fromAmountBudget: isOpenBudget
-              ? null
-              : scaleHuman(schedule.total_amount, from.decimals),
-            fromAmountExecuted: hasBudget
-              ? scaleHuman(schedule.total_amount - remaining, from.decimals)
-              : null,
-            fromAmountRemaining: hasBudget
-              ? scaleHuman(remaining, from.decimals)
-              : null,
-            singleTradeSize: scaleHuman(singleTradeAmount, from.decimals),
-            to,
-            toAmountExecuted: null,
-            status: DcaScheduleStatus.Created,
-            blocksPeriod: String(schedule.period),
-            isOpenBudget,
-          },
-        ]
-      }),
+          return [
+            {
+              kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+              scheduleId,
+              from,
+              fromAmountBudget: isOpenBudget
+                ? null
+                : scaleHuman(schedule.total_amount, from.decimals),
+              fromAmountExecuted: hasBudget
+                ? scaleHuman(schedule.total_amount - remaining, from.decimals)
+                : null,
+              fromAmountRemaining: hasBudget
+                ? scaleHuman(remaining, from.decimals)
+                : null,
+              singleTradeSize: scaleHuman(singleTradeAmount, from.decimals),
+              to,
+              toAmountExecuted: null,
+              status: OrderStatus.Created,
+              blocksPeriod: String(schedule.period),
+              isOpenBudget,
+              timestamp: null,
+              limitPrice: null,
+            },
+          ]
+        },
+      ),
     [data, openScheduleIds, getAssetWithFallback],
   )
 

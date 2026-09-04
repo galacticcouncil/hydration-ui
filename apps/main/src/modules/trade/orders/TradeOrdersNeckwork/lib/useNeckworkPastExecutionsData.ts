@@ -12,6 +12,7 @@ import { useCallback, useMemo } from "react"
 import { neckworkClient } from "@/api/provider"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
 import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
+import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -28,8 +29,13 @@ const STATUS_MAP: Record<DcaExecution["status"], TransactionStatusVariant> = {
 }
 
 export const useNeckworkPastExecutionsData = (scheduleId: number) => {
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+
   const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useInfiniteQuery(dcaExecutionsInfiniteQuery(neckworkClient, { scheduleId }))
+    useInfiniteQuery({
+      ...dcaExecutionsInfiniteQuery(neckworkClient, { scheduleId }),
+      enabled: neckworkEnabled,
+    })
 
   const { getAssetWithFallback } = useAssets()
 
