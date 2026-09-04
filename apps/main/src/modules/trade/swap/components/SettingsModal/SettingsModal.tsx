@@ -1,16 +1,22 @@
 import { useMatchRoute } from "@tanstack/react-router"
 
-import { DcaSettingsModal } from "@/modules/trade/swap/components/SettingsModal/DcaSettings/DcaSettingsModal"
-import { SwapSettingsModal } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SwapSettingsModal"
+import {
+  SwapSettingsModal,
+  SwapSettingsSection,
+} from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SwapSettingsModal"
 
-export const SettingsModal = () => {
+type Props = {
+  readonly swapSection?: SwapSettingsSection
+}
+
+export const SettingsModal = ({ swapSection }: Props) => {
   const matchRoute = useMatchRoute()
 
   switch (true) {
-    case !!matchRoute({ to: "/trade/swap/dca" }):
-      return <DcaSettingsModal />
+    case !!matchRoute({ to: "/trade/swap/twap" }):
+      return <SwapSettingsModal section="split" />
     case !!matchRoute({ to: "/trade/swap/market" }):
-      return <SwapSettingsModal />
+      return <SwapSettingsModal section={swapSection} />
     default:
       throw new Error("Settings are not available for this route.")
   }

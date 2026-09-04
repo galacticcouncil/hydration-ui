@@ -1,22 +1,38 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
 import React from "react"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
 import { Trade, TradeType } from "@/api/trade"
+import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceAmounts"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSellAllAlert } from "@/modules/trade/swap/sections/Market/MarketSellAllAlert"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useToasts } from "@/states/toasts"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { useTransactionsStore } from "@/states/transactions"
+import {
+  isSubstrateTxResult,
+  TransactionType,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
+
+const FILL_WATCH_TIMEOUT_MS = 3 * 60 * 1000
+
+type IntentResolvedPayload = {
+  id: bigint
+  amount_in: bigint
+  amount_out: bigint
+}
 
 export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { sdk } = useRpcProvider()
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const rpc = useRpcProvider()
+  const { sdk, papiClient, featureFlags } = rpc
+
   const {
     swap: {
       single: { swapSlippage },
@@ -24,17 +40,15 @@ export const useSubmitSwap = () => {
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
+  const { success: successToast } = useToasts()
 
   return useMutation({
-    mutationFn: async ([values, swap]: [
-      MarketFormValues,
-      Trade,
-    ]): Promise<void> => {
+    mutationFn: async ([values, swap]: [MarketFormValues, Trade]) => {
       const { sellAsset, buyAsset } = values
       const { amountIn, amountOut, type } = swap
 
-      if (!sellAsset) throw new Error("Invalid sell asset")
-      if (!buyAsset) throw new Error("Invalid buy asset")
+      if (!sellAsset || !buyAsset) throw new Error("Invalid swap assets")
+      if (!account) throw new Error("Account not connected")
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
@@ -64,15 +78,127 @@ export const useSubmitSwap = () => {
               }),
             }
 
+      // ICE has no Buy intent; the SDK maps Buy trades to sell semantics.
+      if (featureFlags.isIceEnabled) {
+        const tx = await sdk.tx
+          .intentMarket(swap)
+          .withBeneficiary(account.address)
+          .withSlippage(swapSlippage)
+          .build()
+
+        const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
+        const guaranteedOutRaw = iceAmounts.amountOut
+
+        const iceParams =
+          type === TradeType.Sell
+            ? {
+                in: t("currency", {
+                  value: scaleHuman(iceAmounts.amountIn, sellDecimals),
+                  symbol: sellSymbol,
+                }),
+                out: t("currency", {
+                  value: scaleHuman(iceAmounts.amountOut, buyDecimals),
+                  symbol: buySymbol,
+                }),
+              }
+            : {
+                in: t("currency", {
+                  value: scaleHuman(iceAmounts.amountOut, buyDecimals),
+                  symbol: buySymbol,
+                }),
+                out: t("currency", {
+                  value: scaleHuman(iceAmounts.amountIn, sellDecimals),
+                  symbol: sellSymbol,
+                }),
+              }
+
+        const watchIntentFill = (intentId: bigint, txHash: string) => {
+          // ICE descriptors omit typed events; read IntentResolved via unsafe API.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const iceEvents = (papiClient.getUnsafeApi() as any).event
+          const timer = setTimeout(
+            () => subscription.unsubscribe(),
+            FILL_WATCH_TIMEOUT_MS,
+          )
+          const subscription = iceEvents.Intent.IntentResolved.watch(
+            (e: IntentResolvedPayload) => e.id === intentId,
+          ).subscribe({
+            next: (e: { payload: IntentResolvedPayload }) => {
+              clearTimeout(timer)
+              subscription.unsubscribe()
+              const received = e.payload.amount_out
+              const bonus = received - guaranteedOutRaw
+              successToast({
+                title:
+                  bonus > 0n
+                    ? t("trade:market.intent.filled.bonus", {
+                        out: t("currency", {
+                          value: scaleHuman(received, buyDecimals),
+                          symbol: buySymbol,
+                        }),
+                        bonus: t("currency", {
+                          value: scaleHuman(bonus, buyDecimals),
+                          symbol: buySymbol,
+                        }),
+                      })
+                    : t("trade:market.intent.filled", {
+                        out: t("currency", {
+                          value: scaleHuman(received, buyDecimals),
+                          symbol: buySymbol,
+                        }),
+                      }),
+                meta: {
+                  type: TransactionType.Onchain,
+                  srcChainKey: "hydration",
+                  txHash,
+                  ecosystem: CallType.Substrate,
+                },
+              })
+            },
+            error: () => clearTimeout(timer),
+          })
+        }
+
+        return createTransaction(
+          {
+            tx: tx.get(),
+            alerts: [],
+            toasts: {
+              submitted: t(
+                `trade:market.swap.${toLowerCase(type)}.loading`,
+                iceParams,
+              ),
+              success: t("trade:market.intent.placed", iceParams),
+              error: t(
+                `trade:market.swap.${toLowerCase(type)}.error`,
+                iceParams,
+              ),
+            },
+          },
+          {
+            onSuccess: (result) => {
+              if (!isSubstrateTxResult(result)) return
+              const intentEvent = result.events.find(
+                (e) =>
+                  e.type === "Intent" && e.value.type === "IntentSubmitted",
+              )
+              const intentId = intentEvent?.value.value?.id
+              if (typeof intentId !== "bigint") return
+              watchIntentFill(intentId, result.txHash)
+            },
+          },
+        )
+      }
+
       const tx = await sdk.tx
         .trade(swap)
         .withSlippage(swapSlippage)
-        .withBeneficiary(address)
+        .withBeneficiary(account.address)
         .build()
 
       const isSellAll = tx.name === "RouterSellAll"
 
-      await createTransaction({
+      return createTransaction({
         tx: tx.get(),
         activity: "swap",
         alerts: isSellAll

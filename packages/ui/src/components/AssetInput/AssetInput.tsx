@@ -1,9 +1,10 @@
 import { formatNumber } from "@galacticcouncil/utils"
 import Big from "big.js"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
 import { ReactNode } from "react"
 
 import {
+  Button,
   Flex,
   FormLabel,
   Icon,
@@ -11,6 +12,7 @@ import {
   MicroButton,
   Skeleton,
   Text,
+  Tooltip,
 } from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
@@ -39,6 +41,9 @@ export type AssetInputProps = {
   amountError?: string
   disabled?: boolean
   disabledInput?: boolean
+  isLocked?: boolean
+  onLock?: () => void
+  lockLabel?: string
   hideInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
@@ -73,6 +78,9 @@ export const AssetInput = ({
   modalDisabled,
   loading,
   onAsssetBtnClick,
+  onLock,
+  isLocked,
+  lockLabel,
   className,
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
@@ -83,8 +91,6 @@ export const AssetInput = ({
       onMaxButtonClick?.(usedMaxBalance)
     }
   }
-
-  const errorMessage = assetError ?? amountError
 
   return (
     <Flex
@@ -144,14 +150,20 @@ export const AssetInput = ({
         <Flex
           width="100%"
           align="center"
-          gap="m"
+          gap="s"
           sx={{
             minWidth: 0,
             overflow: "hidden",
             display: "grid",
-            gridTemplateColumns: hideInput
-              ? "minmax(0, 1fr)"
-              : "auto minmax(0, 1fr)",
+            // the optional lock button sits between the asset button and the
+            // amount input, so it needs its own auto column
+            gridTemplateColumns: [
+              hideInput ? "minmax(0, 1fr)" : "auto",
+              onLock ? "auto" : null,
+              hideInput ? null : "minmax(0, 1fr)",
+            ]
+              .filter(Boolean)
+              .join(" "),
           }}
         >
           <AssetButton
@@ -162,6 +174,24 @@ export const AssetInput = ({
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
+          {onLock && (
+            <Tooltip text={lockLabel} size="small" asChild>
+              <Button
+                variant={isLocked ? "accent" : "tertiary"}
+                outline
+                onClick={onLock}
+                p={0}
+                width="2rem"
+                height="2rem"
+                aria-label={lockLabel}
+              >
+                <Icon
+                  component={isLocked ? LockKeyhole : LockKeyholeOpen}
+                  size="s"
+                />
+              </Button>
+            </Tooltip>
+          )}
           {!hideInput && (
             <Flex
               direction="column"
@@ -191,24 +221,34 @@ export const AssetInput = ({
                 }}
               />
 
-              {!ignoreDisplayValue && (
-                <Text
-                  color={getToken("text.low")}
-                  fs="p6"
-                  fw={400}
-                  truncate
-                  width="100%"
-                  align="right"
-                >
-                  {displayValueLoading ? <Skeleton width={48} /> : displayValue}
-                </Text>
+              {amountError ? (
+                <FormError lh={1} truncate width="100%" align="right">
+                  {amountError}
+                </FormError>
+              ) : (
+                !ignoreDisplayValue && (
+                  <Text
+                    color={getToken("text.low")}
+                    fs="p6"
+                    fw={400}
+                    truncate
+                    width="100%"
+                    align="right"
+                  >
+                    {displayValueLoading ? (
+                      <Skeleton width={48} />
+                    ) : (
+                      displayValue
+                    )}
+                  </Text>
+                )
               )}
             </Flex>
           )}
         </Flex>
-        {errorMessage && (
+        {assetError && (
           <FormError lh={1} ml="auto">
-            {errorMessage}
+            {assetError}
           </FormError>
         )}
       </Flex>

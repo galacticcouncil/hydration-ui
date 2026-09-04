@@ -6,16 +6,39 @@ import { TradeOrder } from "@/api/trade"
 import { ENV } from "@/config/env"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useTwapFee = (twap: TradeOrder) => {
-  const { sdk } = useRpcProvider()
+  const { sdk, featureFlags } = useRpcProvider()
   const { account } = useAccount()
+  const {
+    swap: {
+      split: { twapSlippage, twapMaxRetries },
+    },
+  } = useTradeSettings()
+
+  // Estimate against the extrinsic that will actually be submitted:
+  // a Dca intent under ICE, a DCA schedule otherwise.
   const { data: tx, isLoading: isTxLoading } = useQuery({
     enabled: !!twap,
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "trade", "twapFee", twap.type],
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "twapFee",
+      twap.type,
+      featureFlags.isIceEnabled,
+      twapSlippage,
+      twapMaxRetries,
+    ],
     queryFn: async () => {
-      return sdk.tx
-        .order(twap)
+      const builder = featureFlags.isIceEnabled
+        ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
+        : sdk.tx
+            .order(twap)
+            .withSlippage(twapSlippage)
+            .withMaxRetries(twapMaxRetries)
+
+      return builder
         .withBeneficiary(account?.address ?? ENV.VITE_TRSRY_ADDR)
         .build()
         .then((tx) => tx.get())

@@ -9,12 +9,12 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { neckworkClient } from "@/api/provider"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { DcaOrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { scaleHuman } from "@/utils/formatting"
 
 const PAGE_SIZE = 100
 
-export const useDcaEnrichment = (orders: Array<OrderData>) => {
+export const useDcaEnrichment = (orders: Array<DcaOrderData>) => {
   const { account } = useAccount()
   const owner = safeConvertSS58toPublicKey(account?.address ?? "")
 

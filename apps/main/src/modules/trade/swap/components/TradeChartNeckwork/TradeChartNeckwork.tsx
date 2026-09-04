@@ -76,6 +76,7 @@ export const PairChart: React.FC<PairChartProps> = ({
   const chartType = isPool ? "line" : selectedChartType
   const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
   const rpc = useRpcProvider()
+  const { isFork } = rpc
 
   const [isInverted, setIsInverted] = useState(false)
 
@@ -141,7 +142,7 @@ export const PairChart: React.FC<PairChartProps> = ({
   const spotOptions = spotPriceQuery(rpc, chartQuoteAssetId, chartBaseAssetId)
   const { data: spot } = useQuery({
     ...spotOptions,
-    enabled: !isPegged && spotOptions.enabled,
+    enabled: !isPegged && !isFork && spotOptions.enabled,
   })
   const spotPrice = (() => {
     const raw = spot?.spotPrice
@@ -168,7 +169,7 @@ export const PairChart: React.FC<PairChartProps> = ({
   const liveRef = useRef<{ resetKey: string; candle: PairCandle } | null>(null)
 
   const live = useMemo(() => {
-    if (isPlaceholderData) {
+    if (isFork || isPlaceholderData) {
       liveRef.current = null
       return null
     }
@@ -190,7 +191,7 @@ export const PairChart: React.FC<PairChartProps> = ({
     liveRef.current = { resetKey, candle }
 
     return candle
-  }, [candles, spotPrice, interval, resetKey, isPlaceholderData])
+  }, [candles, spotPrice, interval, resetKey, isFork, isPlaceholderData])
 
   const prices = useMemo(() => {
     if (!live) return candles

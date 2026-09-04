@@ -1,13 +1,17 @@
 import { Paper, PaperProps, Separator } from "@galacticcouncil/ui/components"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { FC, useEffect } from "react"
 
+import { useAccountIntents } from "@/api/intents"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
 import { MyRecentActivityNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/MyRecentActivityNeckwork"
 import { OpenOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/OpenOrdersNeckwork"
 import { OrderHistoryNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/OrderHistoryNeckwork"
-import { TradeOrdersHeaderNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/TradeOrdersHeaderNeckwork"
+import { TradeOrdersTabs } from "@/modules/trade/orders/TradeOrdersTabs"
+
+const TABS = ["myActivity", "openOrders", "orderHistory"] as const
 
 type Props = PaperProps
 
@@ -16,6 +20,7 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
     from: "/trade/_history",
   })
   const navigate = useNavigate()
+  const { account } = useAccount()
 
   const paginationProps = useDataTableUrlPagination(
     "/trade/_history",
@@ -26,6 +31,7 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
   const resolvedTab = tab === "marketTransactions" ? "myActivity" : tab
 
   const { scheduleIds } = useChainScheduleIds()
+  const { data: intents } = useAccountIntents(account?.address ?? "")
 
   useEffect(() => {
     if (tab !== "marketTransactions") return
@@ -40,9 +46,10 @@ export const TradeOrdersNeckwork: FC<Props> = (props) => {
 
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersHeaderNeckwork
+      <TradeOrdersTabs
+        tabs={TABS}
         paginationProps={paginationProps}
-        openOrdersCount={scheduleIds.length}
+        openOrdersCount={scheduleIds.length + (intents?.length ?? 0)}
       />
       <Separator />
       <div sx={{ overflowX: "auto" }}>

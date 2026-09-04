@@ -53,6 +53,15 @@ export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
 }))
 
 export const PROVIDERS: ProviderProps[] = [
+  // Lark: mainnet fork with ICE. Keep dataEnv on "mainnet" or borrow screens break.
+  createProvider(
+    "Lark (Intents)",
+    "wss://node3.lark.hydration.cloud",
+    "https://3-explorer.lark.hydration.cloud/graphql",
+    MAINNET_SQUID_URL,
+    ["development", "production"],
+    "mainnet",
+  ),
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   // createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),

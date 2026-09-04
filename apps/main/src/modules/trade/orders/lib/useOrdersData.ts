@@ -10,28 +10,26 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import {
+  DcaOrderData,
+  OrderKind,
+  OrderStatus,
+} from "@/modules/trade/orders/lib/orderData"
+import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-export enum OrderKind {
-  Dca = "dca",
-  DcaRolling = "dcaRolling",
+export * from "@/modules/trade/orders/lib/orderData"
+
+const SQUID_STATUS_MAP: Record<DcaScheduleStatus, OrderStatus> = {
+  [DcaScheduleStatus.Created]: OrderStatus.Created,
+  [DcaScheduleStatus.Completed]: OrderStatus.Completed,
+  [DcaScheduleStatus.Terminated]: OrderStatus.Terminated,
+  [DcaScheduleStatus.Cancelled]: OrderStatus.Cancelled,
 }
 
-export type OrderData = {
-  readonly kind: OrderKind
-  readonly scheduleId: number
-  readonly from: TAsset
-  readonly fromAmountBudget: string | null
-  readonly fromAmountExecuted: string | null
-  readonly fromAmountRemaining: string | null
-  readonly singleTradeSize: string | null
-  readonly to: TAsset
-  readonly toAmountExecuted: string | null
-  readonly status: DcaScheduleStatus | null
-  readonly blocksPeriod: string | null
-  readonly isOpenBudget: boolean
-}
+export const toOrderStatus = (
+  status: DcaScheduleStatus | null,
+): OrderStatus | null => (status ? SQUID_STATUS_MAP[status] : null)
 
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,
@@ -51,11 +49,11 @@ export const useOrdersData = (
   const { getAssetWithFallback } = useAssets()
 
   const totalCount = data?.dcaSchedules?.totalCount ?? 0
-  const orders = useMemo<Array<OrderData>>(
+  const orders = useMemo<Array<DcaOrderData>>(
     () =>
       data?.dcaSchedules?.nodes
         .filter((schedule) => !!schedule)
-        .map<OrderData>((schedule) => {
+        .map<DcaOrderData>((schedule) => {
           const isOpenBudget = schedule.budgetAmountIn === "0"
 
           const from = getAssetWithFallback(
@@ -87,7 +85,7 @@ export const useOrdersData = (
             ? scaleHuman(schedule.totalExecutedAmountOut, to.decimals)
             : null
 
-          const status = getDcaScheduleStatus(schedule)
+          const status = toOrderStatus(getDcaScheduleStatus(schedule))
 
           return {
             kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
@@ -102,6 +100,8 @@ export const useOrdersData = (
             status,
             blocksPeriod: schedule.period ?? null,
             isOpenBudget,
+            limitPrice: null,
+            timestamp: null,
           }
         }) ?? [],
     [data, getAssetWithFallback],

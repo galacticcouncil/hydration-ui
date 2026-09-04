@@ -133,6 +133,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
           <TradeLimitSummaryRow
             tradeLimit={swapSlippage}
             priceImpact={swap.priceImpactPct}
+            settingsSection="single"
           />
           <CalculatedAmountSummaryRow
             label={

@@ -1,5 +1,4 @@
 import {
-  DcaScheduleStatus,
   getDcaScheduleStatus,
   isTradeOperation,
   RoutedTradeSwapFragment,
@@ -15,7 +14,11 @@ import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
 import { getSwapExplorerLink } from "@/modules/trade/orders/lib/getSwapExplorerLink"
-import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  OrderKind,
+  OrderStatus,
+  toOrderStatus,
+} from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -26,14 +29,14 @@ export type MarketSwapStatus = {
 
 export type MyActivityDcaOrderStatus = {
   readonly kind: OrderKind.Dca | OrderKind.DcaRolling
-  readonly status: DcaScheduleStatus | null
+  readonly status: OrderStatus | null
   readonly scheduleId: number
   readonly sold: string
   readonly total: string
   readonly symbol: string
 }
 
-export type OrderStatus = MarketSwapStatus | MyActivityDcaOrderStatus
+export type SwapRowStatus = MarketSwapStatus | MyActivityDcaOrderStatus
 
 export type SwapData = {
   readonly from: TAsset
@@ -45,7 +48,7 @@ export type SwapData = {
   readonly link: string | null
   readonly address: string | null
   readonly date: Date | null
-  readonly status: OrderStatus | null
+  readonly status: SwapRowStatus | null
 }
 
 export const useSwapsData = (
@@ -126,7 +129,7 @@ export const useSwapsData = (
 export const getOrderStatus = (
   swap: SwapFragment | RoutedTradeSwapFragment,
   getAsset: (id: string) => TAsset,
-): OrderStatus | null => {
+): SwapRowStatus | null => {
   if (
     !("dcaScheduleExecutionEvent" in swap) ||
     !swap.dcaScheduleExecutionEvent
@@ -142,7 +145,7 @@ export const getOrderStatus = (
 
   const asset = getAsset(schedule.assetInId ?? "")
   const isOpenBudget = schedule.budgetAmountIn === "0"
-  const status = getDcaScheduleStatus(schedule)
+  const status = toOrderStatus(getDcaScheduleStatus(schedule))
 
   return {
     kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,

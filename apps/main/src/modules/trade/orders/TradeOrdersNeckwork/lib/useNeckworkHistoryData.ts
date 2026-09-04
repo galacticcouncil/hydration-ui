@@ -1,5 +1,4 @@
 import { dcaSchedulesQuery, DcaStatus } from "@galacticcouncil/indexer/neckwork"
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
@@ -7,15 +6,20 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { neckworkClient } from "@/api/provider"
-import { OrderData, OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import {
+  DcaOrderData,
+  OrderKind,
+  OrderStatus,
+} from "@/modules/trade/orders/lib/useOrdersData"
+import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-const STATUS_MAP: Record<DcaStatus, DcaScheduleStatus> = {
-  created: DcaScheduleStatus.Created,
-  completed: DcaScheduleStatus.Completed,
-  terminated: DcaScheduleStatus.Terminated,
-  cancelled: DcaScheduleStatus.Cancelled,
+const STATUS_MAP: Record<DcaStatus, OrderStatus> = {
+  created: OrderStatus.Created,
+  completed: OrderStatus.Completed,
+  terminated: OrderStatus.Terminated,
+  cancelled: OrderStatus.Cancelled,
 }
 
 export const useNeckworkHistoryData = (
@@ -27,6 +31,7 @@ export const useNeckworkHistoryData = (
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
   const owner = safeConvertSS58toPublicKey(accountAddress)
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
 
   const { data, isLoading } = useQuery({
     ...dcaSchedulesQuery(neckworkClient, {
@@ -36,15 +41,16 @@ export const useNeckworkHistoryData = (
       page,
       pageSize,
     }),
+    enabled: neckworkEnabled,
     placeholderData: keepPreviousData,
   })
 
   const { getAssetWithFallback } = useAssets()
 
   const totalCount = data?.totalCount ?? 0
-  const orders = useMemo<Array<OrderData>>(
+  const orders = useMemo<Array<DcaOrderData>>(
     () =>
-      data?.items.map<OrderData>((schedule) => {
+      data?.items.map<DcaOrderData>((schedule) => {
         const from = getAssetWithFallback(schedule.assetIn)
         const to = getAssetWithFallback(schedule.assetOut)
 
@@ -72,6 +78,8 @@ export const useNeckworkHistoryData = (
           status: STATUS_MAP[schedule.status],
           blocksPeriod: String(schedule.periodBlocks),
           isOpenBudget: schedule.isRollingBudget,
+          timestamp: null,
+          limitPrice: null,
         }
       }) ?? [],
     [data, getAssetWithFallback],

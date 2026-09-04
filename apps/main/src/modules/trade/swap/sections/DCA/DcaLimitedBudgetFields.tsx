@@ -55,7 +55,12 @@ export const DcaLimitedBudgetFields: FC = () => {
         <ToggleRoot sx={{ maxHeight: 14 }}>
           <DcaFieldLabel>
             {t("trade:dca.orders.label")}:{" "}
-            <Box as="span" color={getToken("text.tint.secondary")}>
+            <Box
+              as="span"
+              color={
+                isAuto ? getToken("text.tint.secondary") : getToken("text.high")
+              }
+            >
               {isAuto ? t("auto") : t("custom")}
             </Box>
           </DcaFieldLabel>

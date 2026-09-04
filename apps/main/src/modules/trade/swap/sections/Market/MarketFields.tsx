@@ -10,6 +10,7 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -27,6 +28,7 @@ export const MarketFields: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
+  const { featureFlags } = useRpcProvider()
 
   const navigate = useNavigate()
 
@@ -51,6 +53,11 @@ export const MarketFields: FC<Props> = ({
 
   const isSell = type === TradeType.Sell
   const isEmpty = isSell ? !sellAmount : !buyAmount
+
+  // Display the raw router quote — the expected amount, net of trade fees and
+  // price impact but NOT the user's slippage (same as the classic swap page).
+  // Slippage shows separately as "Minimum received" in the summary, and the
+  // ICE extrinsic still commits the floor via `.withSlippage()`.
   const amountOut = isEmpty
     ? undefined
     : isSingleTrade
@@ -131,7 +138,14 @@ export const MarketFields: FC<Props> = ({
       <AssetSelectFormField<MarketFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
-        label={t("buy")}
+        label={
+          // Intent TWAP settles at market with no fixed output floor, so the
+          // received amount is an estimate in both entry directions — flag it
+          // on the receive field header.
+          featureFlags.isIceEnabled && !isSingleTrade
+            ? t("trade:market.form.buy.estimated")
+            : t("buy")
+        }
         assets={buyableAssets}
         hideMaxBalanceAction
         maxBalanceFallback="0"
