@@ -95,7 +95,7 @@ export const MarketTradeOptions: FC<Props> = ({
       control={control}
       name="isSingleTrade"
       render={({ field }) => (
-        <Flex sx={{ flexDirection: "column", gap: "base" }}>
+        <Flex direction="column" gap="base">
           <TradeOption
             asset={asset}
             value={price}

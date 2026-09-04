@@ -62,7 +62,12 @@ export const QuotedPriceField: FC<Props> = ({
   }
 
   const deviationPct = view.deviationPct ?? 0
-  const deviationDisplay = `${deviationPct > 0 ? "+" : ""}${deviationPct.toFixed(2)}%`
+  const deviationDisplay = t("common:percent", {
+    value: deviationPct,
+    prefix: deviationPct > 0 ? "+" : "",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
   const showResetAction = view.canReset && !isEditingPill
 
   return (
@@ -110,7 +115,11 @@ export const QuotedPriceField: FC<Props> = ({
               <SPillInlineInput
                 getInputRef={pillInputRef}
                 defaultValue={lastPillValue}
-                placeholder={deviationDisplay.replace("%", "")}
+                placeholder={t("common:number", {
+                  value: deviationPct,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
                 onFocus={(e) => e.target.select()}
                 onValueChange={({ value }) => dispatch({ type: "pct", value })}
                 onBlur={(e) => commitPill(e.target.value)}
@@ -167,9 +176,8 @@ export const QuotedPriceField: FC<Props> = ({
           size="medium"
           outline
           onClick={() => dispatch({ type: "flipDenomination" })}
-          aria-label={t("trade:limit.invert")}
-          title={t("trade:limit.invert")}
           sx={{ px: "m" }}
+          aria-label={t("trade:limit.invert")}
         >
           <Icon
             component={ArrowLeftRight}
@@ -191,7 +199,7 @@ export const QuotedPriceField: FC<Props> = ({
               if (source === "prop") return
               dispatch({ type: "typed", value })
             }}
-            placeholder="0"
+            placeholder={t("trade:limit.pricePlaceholder")}
           />
           <Text
             fw={600}

@@ -72,7 +72,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
       <div>
         <Flex direction="column" gap="base" py="base">
           <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
+          <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey={
@@ -98,7 +98,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
             </Trans>
           </Text>
           {limitEnabled && quotedPrice.view.display && (
-            <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
               <Trans
                 t={t}
                 i18nKey={

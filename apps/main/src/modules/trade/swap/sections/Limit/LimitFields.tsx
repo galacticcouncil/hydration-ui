@@ -220,6 +220,7 @@ export const LimitFields: FC = () => {
         maxBalanceFallback="0"
         onLockToggle={sellAmount ? handleLockToggle : undefined}
         isLocked={isLocked}
+        lockLabel={t("trade:limit.lockSell.aria")}
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
           if (sellAsset.id === buyAsset?.id) {
@@ -245,7 +246,7 @@ export const LimitFields: FC = () => {
       <AssetSelectFormField<LimitFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
-        label={t("trade:limit.receiveAtLeast")}
+        label={t("buy")}
         assets={buyableAssets}
         hideMaxBalanceAction
         maxBalanceFallback="0"

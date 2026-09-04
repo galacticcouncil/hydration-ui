@@ -57,7 +57,9 @@ export const DcaOrderStatus: FC<Props> = ({
       return (
         <Status
           color={getToken("accents.success.emphasis")}
-          sx={{ display: "inline-flex", alignItems: "center", gap: "s" }}
+          display="inline-flex"
+          alignItems="center"
+          gap="s"
         >
           {t("trade.orders.status.active")}
           {percent !== null && <CompletionBar percent={percent} />}

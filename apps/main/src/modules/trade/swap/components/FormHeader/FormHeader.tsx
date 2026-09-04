@@ -47,7 +47,7 @@ export const FormHeader = () => {
         <>
           <ButtonIcon
             onClick={() => setOpenSettings(true)}
-            aria-label="Settings"
+            aria-label={t("common:settings")}
             mr="-s"
           >
             <Icon size="s" component={Settings} />

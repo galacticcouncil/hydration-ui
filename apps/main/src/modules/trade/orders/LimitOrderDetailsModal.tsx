@@ -138,7 +138,7 @@ export const LimitOrderDetailsModal = ({
                 ) : (
                   <Chip variant="secondary" size="small">
                     {t("trade:trade.orders.limit.away", {
-                      pct: Math.abs(distancePct).toFixed(2),
+                      pct: Math.abs(distancePct),
                     })}
                   </Chip>
                 ))}

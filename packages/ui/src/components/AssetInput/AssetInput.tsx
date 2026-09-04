@@ -12,6 +12,7 @@ import {
   MicroButton,
   Skeleton,
   Text,
+  Tooltip,
 } from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
@@ -42,6 +43,7 @@ export type AssetInputProps = {
   disabledInput?: boolean
   isLocked?: boolean
   onLock?: () => void
+  lockLabel?: string
   hideInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
@@ -78,6 +80,7 @@ export const AssetInput = ({
   onAsssetBtnClick,
   onLock,
   isLocked,
+  lockLabel,
   className,
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
@@ -172,17 +175,22 @@ export const AssetInput = ({
             disabled={!!modalDisabled || !!disabled}
           />
           {onLock && (
-            <Button
-              variant={isLocked ? "accent" : "tertiary"}
-              outline
-              onClick={onLock}
-              sx={{ p: 0, size: "2rem" }}
-            >
-              <Icon
-                component={isLocked ? LockKeyhole : LockKeyholeOpen}
-                size="s"
-              />
-            </Button>
+            <Tooltip text={lockLabel} size="small" asChild>
+              <Button
+                variant={isLocked ? "accent" : "tertiary"}
+                outline
+                onClick={onLock}
+                p={0}
+                width="2rem"
+                height="2rem"
+                aria-label={lockLabel}
+              >
+                <Icon
+                  component={isLocked ? LockKeyhole : LockKeyholeOpen}
+                  size="s"
+                />
+              </Button>
+            </Tooltip>
           )}
           {!hideInput && (
             <Flex

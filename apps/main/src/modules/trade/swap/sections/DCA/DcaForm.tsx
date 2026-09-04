@@ -147,7 +147,7 @@ export const DcaForm: FC<Props> = ({ maxBalance, quotedPrice }) => {
               handleBuyAssetChange(buyAsset, field.value)
             }}
             assets={buyableAssets}
-            label={t("trade:dca.assetOut.title")}
+            label={t("buy")}
             hideInput
             ignoreBalance
             assetError={fieldState.error?.message}
