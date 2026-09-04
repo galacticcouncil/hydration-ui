@@ -16,7 +16,9 @@
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "theme": "node ./style-dictionary/build.mjs"
+    "theme": "node ./style-dictionary/build.mjs",
+    "sync:emoji": "node ./scripts/sync-emoji.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.12.0",
@@ -46,6 +48,7 @@
     "@theme-ui/css": "^0.17.1",
     "cmdk": "^1.1.1",
     "color": "^5.0.0",
+    "identican": "0.4.0",
     "jdenticon": "^3.3.0",
     "lightweight-charts": "^5.0.8",
     "lucide-react": "^0.459.0",
@@ -76,6 +79,7 @@
     "http-server": "^14.1.1",
     "storybook": "^10.3.5",
     "style-dictionary": "^4.1.4",
-    "vite-plugin-wasm": "^3.6.0"
+    "vite-plugin-wasm": "^3.6.0",
+    "vitest": "^3.2.7"
   }
 }
