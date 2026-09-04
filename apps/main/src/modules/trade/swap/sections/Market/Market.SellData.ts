@@ -62,7 +62,7 @@ export const useMarketSellData = (
 
   return {
     swap,
-    twap,
+    twap: twap ?? undefined,
     healthFactor: healthFactorData,
     isSwapLoading,
     isTwapLoading,
