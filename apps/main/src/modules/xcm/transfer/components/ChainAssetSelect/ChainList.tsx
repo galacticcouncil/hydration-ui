@@ -70,7 +70,7 @@ export const ChainList: React.FC<ChainListProps> = ({
             >
               <ChainLogo
                 ecosystem={chain.ecosystem}
-                chainId={getChainId(chain)}
+                chainId={getChainId(chain) ?? ""}
                 size={isMobile ? "medium" : "small"}
               />
               <Text

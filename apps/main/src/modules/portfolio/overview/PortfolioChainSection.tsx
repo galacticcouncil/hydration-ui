@@ -114,7 +114,7 @@ export const PortfolioChainSection: FC<Props> = memo(
           <PortfolioChainHeader
             isExpandable
             name={chain.name}
-            chainId={getChainId(chain)}
+            chainId={getChainId(chain) ?? ""}
             ecosystem={chain.ecosystem}
             totalDisplay={
               isError

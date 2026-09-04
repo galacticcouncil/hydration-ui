@@ -1646,28 +1646,29 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.5.0.tgz#179b6f7cc317698767b5a14391620d9ec0bcac77"
-  integrity sha512-ouKi3h5Z8naYmO1IzLVZAGpL1wFL4spNxmuMoKRkesddi3SfL8VErK6+tbDTMI3anI1aAwaGk0FqLce/Tf0Tbw==
+"@galacticcouncil/xc-cfg@2.6.1-pr362-f527d96":
+  version "2.6.1-pr362-f527d96"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.6.1-pr362-f527d96.tgz#2214f1a06b70c438228bc5cd8ea94b8c8dc9dc19"
+  integrity sha512-nwu4+P9tO7xeFdgBvIKeOGtQa+pxpj7rzVmBC/+AN578w7HkCMWrjr9KI1aVh0aZ3Ej/WlZfOIZx4VhY+bTiPQ==
   dependencies:
-    "@galacticcouncil/xc-core" "^2.4.0"
+    "@galacticcouncil/xc-core" "2.5.1-pr362-f527d96"
     "@thi.ng/memoize" "^4.0.2"
 
-"@galacticcouncil/xc-core@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-2.4.0.tgz#24c17a8f03bad5a1131e29f15d7fc4006d1a0de1"
-  integrity sha512-XtyXHmVD96+AKuBsCsPl67xSM0E8ChnasF3p2vgT2IBTQXviZzaF7Z4i5XlaXUstP6ZvsusACiQxEe7l8YqV/A==
+"@galacticcouncil/xc-core@2.5.1-pr362-f527d96", "@galacticcouncil/xc-core@^2.4.0":
+  version "2.5.1-pr362-f527d96"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-2.5.1-pr362-f527d96.tgz#b23f1d21c95a526106b2219d685610d96ad32651"
+  integrity sha512-yZ+nFlu4dLR+96i7y/b6HGLa/MaZXc7BcafysER5cd6ZbJQG/3N0+YwxBv8287UswGeVvT1p2ZKBHltSxttWNQ==
   dependencies:
     "@mysten/sui" "^1.21.2"
     "@noble/hashes" "^1.6.1"
+    "@scure/base" "^2.2.0"
     "@wormhole-foundation/sdk-base" "6.1.4"
     "@wormhole-foundation/sdk-connect" "6.1.4"
     "@wormhole-foundation/sdk-definitions" "6.1.4"
-    "@wormhole-foundation/sdk-definitions-ntt" "7.2.0"
+    "@wormhole-foundation/sdk-definitions-ntt" "8.0.1"
     "@wormhole-foundation/sdk-solana" "6.1.4"
     "@wormhole-foundation/sdk-solana-core" "6.1.4"
-    "@wormhole-foundation/sdk-solana-ntt" "7.2.0"
+    "@wormhole-foundation/sdk-solana-ntt" "8.0.1"
     big.js "^6.2.1"
     bigint-buffer "^1.1.5"
     bs58 "^6.0.0"
@@ -6252,10 +6253,10 @@
     "@wormhole-foundation/sdk-definitions" "6.1.4"
     axios "^1.4.0"
 
-"@wormhole-foundation/sdk-definitions-ntt@7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-definitions-ntt/-/sdk-definitions-ntt-7.2.0.tgz#5801a97b72a73bbcc83c4e7f5904d084babebe40"
-  integrity sha512-2dqLn53MOGE3+XTN6G+3tiVwfKYLHRJJQ0L3v3fXz1tqk6/onkLqssVmlxjaBRs1ijw+wjXfdUgPmSVre4tuLw==
+"@wormhole-foundation/sdk-definitions-ntt@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-definitions-ntt/-/sdk-definitions-ntt-8.0.1.tgz#ab21484dea0d6434dedacef7c149696fe5e3774f"
+  integrity sha512-+b1tCxJi8Lgtvw27YVo9OqfHdQkXgNQ1DFRPVYkldnNI+tgdSRe3YaMvUvVrXvQZY27K9lp3YypbjK/QO0eSbw==
 
 "@wormhole-foundation/sdk-definitions@6.1.4":
   version "6.1.4"
@@ -6277,16 +6278,16 @@
     "@wormhole-foundation/sdk-connect" "6.1.4"
     "@wormhole-foundation/sdk-solana" "6.1.4"
 
-"@wormhole-foundation/sdk-solana-ntt@7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-solana-ntt/-/sdk-solana-ntt-7.2.0.tgz#81a232d7a300a856c155d95b92b0cc1ec9e36724"
-  integrity sha512-rBjj2ys6QphOLb9WEgD4HxXfioln5PmA8x+ne7LlHjrsohEs06Og6Zi9rX7MpILhgUgQmhGdk+xoAoV7OfAkSg==
+"@wormhole-foundation/sdk-solana-ntt@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@wormhole-foundation/sdk-solana-ntt/-/sdk-solana-ntt-8.0.1.tgz#377003579227ea39c6fd7cf2a6461e88276f749b"
+  integrity sha512-kWyuIr27qC0d9o5VncbyM7xxA74yEBAUEDD0BPRq1ISLVprxSF4FQcA+P0x6GX4qWsAhnD6+QA75CuE4quBaHA==
   dependencies:
     "@coral-xyz/anchor" "0.29.0"
     "@coral-xyz/borsh" "0.29.0"
     "@solana/spl-token" "0.4.0"
     "@solana/web3.js" "^1.95.8"
-    "@wormhole-foundation/sdk-definitions-ntt" "7.2.0"
+    "@wormhole-foundation/sdk-definitions-ntt" "8.0.1"
     bn.js "5.2.1"
 
 "@wormhole-foundation/sdk-solana@6.1.4":

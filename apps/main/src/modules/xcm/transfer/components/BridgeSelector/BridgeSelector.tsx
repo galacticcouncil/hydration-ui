@@ -14,6 +14,7 @@ import {
   BRIDGE_LABEL,
   BRIDGE_TIME,
 } from "@/modules/xcm/transfer/utils/bridge"
+import { XcmTag } from "@/states/transactions"
 
 type BridgeSelectorProps = {
   routes: AssetRoute[]
@@ -30,6 +31,10 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
   const handleSelect = (id: string) => {
     setValue("bridgeProvider", id)
   }
+
+  const isWormholeOnlyOption = options.length === 1
+  const isWormholeActive =
+    bridgeProvider === XcmTag.NttExecutor || bridgeProvider === XcmTag.Wormhole
 
   return (
     <Stack gap="base">
@@ -58,11 +63,25 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
             )
           case BridgeEntryKind.Wormhole:
             return (
-              <WormholeOptions
-                key={BridgeEntryKind.Wormhole}
-                activeProvider={bridgeProvider ?? null}
-                onSelect={handleSelect}
-              />
+              <Stack key={BridgeEntryKind.Wormhole} gap="base">
+                {!isWormholeOnlyOption && (
+                  <OptionCard
+                    label={
+                      BRIDGE_LABEL[XcmTag.NttExecutor] ?? XcmTag.NttExecutor
+                    }
+                    value={BRIDGE_TIME[XcmTag.NttExecutor] ?? ""}
+                    icon={BRIDGE_ICON[XcmTag.NttExecutor]}
+                    isActive={isWormholeActive}
+                    onClick={() => handleSelect(XcmTag.NttExecutor)}
+                  />
+                )}
+                {(isWormholeOnlyOption || isWormholeActive) && (
+                  <WormholeOptions
+                    activeProvider={bridgeProvider ?? null}
+                    onSelect={handleSelect}
+                  />
+                )}
+              </Stack>
             )
         }
       })}

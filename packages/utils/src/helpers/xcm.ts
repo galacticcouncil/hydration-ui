@@ -30,14 +30,17 @@ export function getChainAssetId(chain: AnyChain, asset: Asset) {
   return chain.getAssetId(asset)
 }
 
-export function getChainId(chain: AnyChain) {
+export function getChainId(chain: AnyChain): string | number | undefined {
   switch (true) {
     case isAnyParachain(chain):
       return chain.parachainId
     case isAnyEvmChain(chain):
       return chain.evmChain.id
-    default:
+    case isSolanaChain(chain):
+    case isSuiChain(chain):
       return chain.id
+    default:
+      return undefined
   }
 }
 
