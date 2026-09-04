@@ -161,14 +161,22 @@ const getOmnipoolFraction = async (
 }
 
 /**
- * Floor-hold constant for the Omnipool dynamic asset fee = amplification / decay
- * = 2 / (1/20000). Spreading a flow worth fraction `f` of the hop asset's reserve
- * at the floor-hold rate takes K·f blocks, so that is the whole order's duration.
- * The slice count is left to the SDK (~0.1% impact per slice, min 3) and the
- * cadence falls out of both: on an Omnipool route impact% ~= 100·f, so the gap
- * settles around 40 blocks whatever the order size.
+ * Blocks it takes the Omnipool dynamic asset fee to decay back to its floor after
+ * a full-reserve flow: K = amplification / decay. Spreading a flow worth fraction
+ * `f` of the hop asset's reserve at that rate takes K·f blocks, which is the whole
+ * order's duration. The slice count is left to the SDK (~0.1% impact per slice,
+ * min 3) and the cadence falls out of both: on an Omnipool route impact% ~= 100·f,
+ * so the gap settles at ~K/1000 blocks whatever the order size. Governance can
+ * retune the fee params, so read them — the SDK reads the same constant but keeps
+ * its query protected.
  */
-const FEE_HOLD_CONSTANT = 40_000
+const getFeeHoldBlocks = async ({
+  papi,
+}: TProviderContext): Promise<number> => {
+  const { amplification, decay } =
+    await papi.constants.DynamicFees.AssetFeeParameters()
+  return decay > 0n ? Number(amplification) / Number(decay) : 0
+}
 
 /**
  * Duration floor. The SDK caps the trade count at 0.9 x duration / 15 blocks, so
@@ -178,6 +186,14 @@ const FEE_HOLD_CONSTANT = 40_000
 const MIN_ORDER_DURATION_BLOCKS = Math.ceil(
   (3 * sor.ORDER_MIN_BLOCK_PERIOD) / (1 - sor.DCA_TIME_RESERVE),
 )
+
+/**
+ * Schedule source for the ICE split trade. `true` takes the scheduler's own TWAP
+ * schedule (impact-based count, fixed interval, capped at its max duration) and
+ * builds it as a DCA order; `false` paces it against the Omnipool dynamic fee
+ * (see getFeeHoldBlocks) and lets the SDK pick the count.
+ */
+const USE_TWAP_CALCS: boolean = true
 
 type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 
@@ -203,15 +219,32 @@ export const bestSellTwapQuery = (
         return rpc.sdk.api.scheduler.getTwapSellOrder(inId, outId, amountIn)
       }
       const { sdk, queryClient } = rpc
+      const { scheduler } = sdk.api
       const quote = await sdk.api.router.getBestSell(inId, outId, amountIn)
+
+      if (USE_TWAP_CALCS) {
+        const tradeCount = scheduler.getTwapTradeCount(
+          Math.abs(quote.priceImpactPct),
+        )
+        return scheduler.getDcaOrder(
+          inId,
+          outId,
+          amountIn,
+          scheduler.getTwapExecutionTime(tradeCount),
+          tradeCount,
+        )
+      }
+
       const decimals = quote.swaps[0]?.assetInDecimals ?? 12
-      const [minOrderBudget, poolFraction, blockTimeMs] = await Promise.all([
-        queryClient.ensureQueryData(
-          minimumOrderBudgetQuery(rpc, assetIn, decimals),
-        ),
-        getOmnipoolFraction(sdk, quote),
-        queryClient.ensureQueryData(blockTimeQuery(sdk)),
-      ])
+      const [minOrderBudget, poolFraction, feeHoldBlocks, blockTimeMs] =
+        await Promise.all([
+          queryClient.ensureQueryData(
+            minimumOrderBudgetQuery(rpc, assetIn, decimals),
+          ),
+          getOmnipoolFraction(sdk, quote),
+          getFeeHoldBlocks(rpc),
+          queryClient.ensureQueryData(blockTimeQuery(sdk)),
+        ])
 
       // getDcaOrder divides by tradeCount, which is 0 below 20% of min budget.
       const minTradeAmount = (minOrderBudget * 2n) / 10n
@@ -220,10 +253,10 @@ export const bestSellTwapQuery = (
       }
 
       const durationMs = Math.round(
-        Math.max(FEE_HOLD_CONSTANT * poolFraction, MIN_ORDER_DURATION_BLOCKS) *
+        Math.max(feeHoldBlocks * poolFraction, MIN_ORDER_DURATION_BLOCKS) *
           blockTimeMs,
       )
-      return sdk.api.scheduler.getDcaOrder(inId, outId, amountIn, durationMs)
+      return scheduler.getDcaOrder(inId, outId, amountIn, durationMs)
     },
     enabled:
       enabled &&
