@@ -17,8 +17,8 @@ export const isWormholeFamilyTag = (tag: string | null | undefined): boolean =>
 
 export const BRIDGE_TIME: Record<string, string> = {
   [XcmTag.Basejump]: "≈ 10 sec",
-  [XcmTag.Wormhole]: "≈ 30 min",
-  [XcmTag.NttExecutor]: "≈ 30 min",
+  [XcmTag.Wormhole]: "≈ 20 min",
+  [XcmTag.NttExecutor]: "≈ 20 min",
 }
 
 export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
