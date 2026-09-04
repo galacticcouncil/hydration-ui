@@ -42,7 +42,7 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
         >
           <ChainLogo
             ecosystem={chain.ecosystem}
-            chainId={getChainId(chain)}
+            chainId={getChainId(chain) ?? ""}
             size="large"
           />
           <Text

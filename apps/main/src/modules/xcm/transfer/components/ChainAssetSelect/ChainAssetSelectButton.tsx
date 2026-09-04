@@ -33,7 +33,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
         <Flex align="center" gap="base">
           <ChainLogo
             ecosystem={currentSelection.chain.ecosystem}
-            chainId={getChainId(currentSelection.chain)}
+            chainId={getChainId(currentSelection.chain) ?? ""}
           />
           <XAssetLogo
             asset={currentSelection.asset}

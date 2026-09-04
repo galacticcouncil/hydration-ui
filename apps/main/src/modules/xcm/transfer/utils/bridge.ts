@@ -16,7 +16,7 @@ export const isWormholeFamilyTag = (tag: string | null | undefined): boolean =>
   !!tag && WORMHOLE_FAMILY_TAGS.includes(tag as XcmTags[number])
 
 export const BRIDGE_TIME: Record<string, string> = {
-  [XcmTag.Basejump]: "≈ 22 sec",
+  [XcmTag.Basejump]: "≈ 10 sec",
   [XcmTag.Wormhole]: "≈ 30 min",
   [XcmTag.NttExecutor]: "≈ 30 min",
 }

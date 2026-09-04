@@ -15,6 +15,7 @@
     "i18n": "turbo i18n"
   },
   "resolutions": {
+    "@galacticcouncil/xc-core": "2.5.1-pr362-f527d96",
     "polkadot-api": "^2.1.7",
     "strip-ansi": "6.0.1"
   },
