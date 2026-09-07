@@ -27,13 +27,13 @@ import {
   getDcaTradeProgress,
   useDcaFundingBalance,
 } from "@/modules/trade/orders/lib/dcaProgress"
-import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import {
   DcaOrderData,
   IntentDcaOrderData,
   isDcaScheduleOrder,
   OrderStatus,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
+import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
 
 type Props = {

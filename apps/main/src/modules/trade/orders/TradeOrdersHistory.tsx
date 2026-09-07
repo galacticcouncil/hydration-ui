@@ -8,10 +8,16 @@ import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useInvalidateOrdersOnExecution } from "@/modules/trade/orders/lib/useInvalidateOrdersOnExecution"
 import { OpenOrdersLegacy } from "@/modules/trade/orders/OpenOrdersLegacy"
 import { OrderHistoryLegacy } from "@/modules/trade/orders/OrderHistoryLegacy"
-import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
-import { TradeOrdersTabs } from "@/modules/trade/orders/TradeOrdersTabs"
+import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
+import {
+  TradeOrdersHeader,
+  TradeOrderTab,
+} from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
 
-const TABS = ["openOrders", "orderHistory"] as const
+const TABS = [
+  "openOrders",
+  "orderHistory",
+] as const satisfies ReadonlyArray<TradeOrderTab>
 
 type Tab = (typeof TABS)[number]
 
@@ -41,7 +47,10 @@ export const TradeOrdersHistory: FC<PaperProps> = (props) => {
 
     void navigate({
       to: ".",
-      search: (search) => ({ ...search, tab: "openOrders" }),
+      search: (search) => ({
+        ...search,
+        tab: "openOrders",
+      }),
       replace: true,
       resetScroll: false,
     })
@@ -49,7 +58,7 @@ export const TradeOrdersHistory: FC<PaperProps> = (props) => {
 
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersTabs
+      <TradeOrdersHeader
         tabs={TABS}
         paginationProps={paginationProps}
         openOrdersCount={scheduleIds.length + (intents?.length ?? 0)}

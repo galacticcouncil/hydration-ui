@@ -18,6 +18,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { DateText } from "@/components/RelativeDateText"
 import { AmountMobile } from "@/modules/trade/orders/columns/AmountMobile"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
@@ -28,7 +29,7 @@ import {
   isDcaScheduleOrder,
   isIntentOrder,
   OrderData,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -103,7 +104,19 @@ export const useOrderHistoryColumns = () => {
         sx: { textAlign: "end" },
       },
       cell: ({ row }) =>
-        row.original.status && <DcaOrderStatus status={row.original.status} />,
+        row.original.status && (
+          <Flex direction="column" gap="xs">
+            <DcaOrderStatus status={row.original.status} />
+            {row.original.timestamp && (
+              <DateText
+                date={new Date(row.original.timestamp)}
+                fw={500}
+                fs="p6"
+                color={getToken("text.medium")}
+              />
+            )}
+          </Flex>
+        ),
     })
 
     const actionColumn = columnHelper.display({

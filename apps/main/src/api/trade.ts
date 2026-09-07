@@ -35,7 +35,7 @@ type BestSellArgs = {
 }
 
 export const bestSellQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { assetIn, assetOut, amountIn, debug }: BestSellArgs,
 ) =>
   queryOptions({
@@ -60,8 +60,7 @@ export const bestSellQuery = (
 
       return swap
     },
-    enabled:
-      isApiLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+    enabled: isReady && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
 
 export const bestSellTxQuery = (
@@ -260,7 +259,7 @@ export const bestSellTwapQuery = (
     },
     enabled:
       enabled &&
-      rpc.isApiLoaded &&
+      rpc.isReady &&
       !!assetIn &&
       !!assetOut &&
       Big(amountIn || "0").gt(0),
@@ -274,7 +273,7 @@ type BestBuyArgs = {
 }
 
 export const bestBuyQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { assetIn, assetOut, amountOut, debug }: BestBuyArgs,
 ) =>
   queryOptions({
@@ -299,8 +298,7 @@ export const bestBuyQuery = (
 
       return swap
     },
-    enabled:
-      isApiLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+    enabled: isReady && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
 
 export const bestBuyTxQuery = (
@@ -376,7 +374,7 @@ export const bestBuyWithTxQuery = (
 }
 
 export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
-  const { sdk, isLoaded, queryClient } = rpc
+  const { sdk, isReady, queryClient } = rpc
   const duration = getTimeFrameMillis(form.duration)
 
   const orders =
@@ -434,7 +432,7 @@ export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
       )
     },
     enabled:
-      isLoaded &&
+      isReady &&
       !!form.sellAsset &&
       !!form.buyAsset &&
       Big(form.sellAmount || "0").gt(0) &&
@@ -444,7 +442,7 @@ export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
 }
 
 export const minimumOrderBudgetQuery = (
-  { isLoaded, sdk }: TProviderContext,
+  { isReady, sdk }: TProviderContext,
   assetId: string,
   assetDecimals: number,
 ) => {
@@ -458,14 +456,14 @@ export const minimumOrderBudgetQuery = (
     ],
     queryFn: async () =>
       sdk.api.scheduler.getMinimumOrderBudget(Number(assetId), assetDecimals),
-    enabled: isLoaded,
+    enabled: isReady,
     gcTime: GC_TIME,
     staleTime: STALE_TIME,
   })
 }
 
 export const tradeOrderDurationQuery = (
-  { sdk, featureFlags, isApiLoaded, queryClient }: TProviderContext,
+  { sdk, featureFlags, isReady, queryClient }: TProviderContext,
   tradeCount: number,
   tradePeriod = 0,
 ) =>
@@ -487,7 +485,7 @@ export const tradeOrderDurationQuery = (
       return tradeCount * tradePeriod * blockTimeMs
     },
     enabled:
-      isApiLoaded &&
+      isReady &&
       tradeCount > 0 &&
       (!featureFlags.isIceEnabled || tradePeriod > 0),
   })

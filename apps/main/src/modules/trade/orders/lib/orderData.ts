@@ -1,10 +1,7 @@
+import { OrderKind } from "@/modules/trade/orders/lib/types"
 import type { TAsset } from "@/providers/assetsProvider"
 
-export enum OrderKind {
-  Dca = "dca",
-  DcaRolling = "dcaRolling",
-  Limit = "limit",
-}
+export { OrderKind }
 
 // Row statuses, not squid query statuses. ICE adds values squid cannot filter on.
 export enum OrderStatus {
@@ -15,6 +12,14 @@ export enum OrderStatus {
   Expired = "Expired",
   MigrationCancelled = "MigrationCancelled",
 }
+
+export const DCA_OPEN_ORDER_STATUSES = [OrderStatus.Created] as const
+
+export const DCA_HISTORY_ORDER_STATUSES = [
+  OrderStatus.Completed,
+  OrderStatus.Terminated,
+  OrderStatus.Cancelled,
+] as const
 
 export const isOrderStatus = (status: unknown): status is OrderStatus =>
   Object.values(OrderStatus).includes(status as OrderStatus)

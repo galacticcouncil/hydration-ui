@@ -20,12 +20,12 @@ export type AccountIntentEntry = {
 // AccountIntents is a presence index (value is null). Subscribe so rows drop
 // when the chain removes an intent; a one-shot refetch on tx inclusion lags.
 const useAccountIntentIds = (address: string) => {
-  const { isApiLoaded, featureFlags } = useRpcProvider()
+  const { isReady, featureFlags } = useRpcProvider()
 
   const { data, isLoading } = usePapiEntries(
     "Intent.AccountIntents",
     [address],
-    { enabled: featureFlags.isIceEnabled && isApiLoaded && !!address },
+    { enabled: featureFlags.isIceEnabled && isReady && !!address },
   )
 
   const ids = useMemo(
@@ -75,10 +75,10 @@ export const useAccountIntents = (address: string) => {
 }
 
 export const maxIntentDurationQuery = (context: TProviderContext) => {
-  const { papiClient, isApiLoaded, featureFlags } = context
+  const { papiClient, isReady, featureFlags } = context
 
   return queryOptions({
-    enabled: featureFlags.isIceEnabled && isApiLoaded,
+    enabled: featureFlags.isIceEnabled && isReady,
     staleTime: Infinity,
     queryKey: ["intents", "maxAllowedIntentDuration"],
     queryFn: async () => {

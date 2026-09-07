@@ -38,7 +38,7 @@ import { TradeRouter } from "./trade"
 import { xykPoolWithLiquidityQuery } from "./xyk"
 
 export const usePriceSubscriber = () => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(useShallow(prop("setAssets")))
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
@@ -72,7 +72,7 @@ export const usePriceSubscriber = () => {
 
       return null
     },
-    enabled: isApiLoaded && !isNullish(stableCoinId),
+    enabled: isReady && !isNullish(stableCoinId),
     notifyOnChangeProps: [],
     staleTime: 10000,
   })
@@ -83,10 +83,10 @@ export const spotPriceQuery = (
   assetIn: string,
   assetOut: string,
 ) => {
-  const { isApiLoaded, sdk } = context
+  const { isReady, sdk } = context
 
   return queryOptions({
-    enabled: isApiLoaded && !!assetIn && !!assetOut,
+    enabled: isReady && !!assetIn && !!assetOut,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "spotPrice", assetIn, assetOut],
     queryFn: async () => {
       const spotPrice = await getSpotPrice(sdk.api.router, assetIn, assetOut)()
@@ -130,7 +130,7 @@ export const spotPriceKeyQuery = (
 ) => {
   const stableCoinId = useDisplayAssetStore.getState().stableCoinId
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
-  const { sdk, isApiLoaded } = context
+  const { sdk, isReady } = context
 
   return queryOptions({
     queryKey: spotPriceQueryKey(assetId),
@@ -147,7 +147,7 @@ export const spotPriceKeyQuery = (
     },
     notifyOnChangeProps: [],
     staleTime: Infinity,
-    enabled: isApiLoaded,
+    enabled: isReady,
   })
 }
 
@@ -159,7 +159,7 @@ export const scSpotPriceKeyQuery = (
   reserveId: string,
 ) => {
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
-  const { isApiLoaded } = rpc
+  const { isReady } = rpc
 
   return queryOptions({
     queryKey: spotPriceQueryKey(assetId),
@@ -180,7 +180,7 @@ export const scSpotPriceKeyQuery = (
 
       return price
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
   })
 }
 

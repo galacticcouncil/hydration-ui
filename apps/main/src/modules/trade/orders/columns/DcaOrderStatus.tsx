@@ -8,11 +8,12 @@ import {
   getDcaCompletionPercent,
   useDcaFundingBalance,
 } from "@/modules/trade/orders/lib/dcaProgress"
-import { OrderStatus } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderStatus } from "@/modules/trade/orders/lib/orderData"
+import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
-  readonly status: OrderStatus
+  readonly status: OrderStatus | DcaScheduleStatus
   readonly isDcaSwap?: boolean
   readonly sold?: string | null
   readonly total?: string | null

@@ -7,8 +7,8 @@ import { isNonNullish, isNumber } from "remeda"
 import { Hex, parseAbiItem, toEventSelector } from "viem"
 import z from "zod"
 
+import { Papi } from "@/api/rpcClient"
 import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
-import { Papi } from "@/providers/rpcProvider"
 
 type SystemEvents = Awaited<
   ReturnType<Papi["query"]["System"]["Events"]["getValue"]>

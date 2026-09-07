@@ -31,7 +31,7 @@ import {
   isIntentOrder,
   OrderData,
   OrderKind,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 

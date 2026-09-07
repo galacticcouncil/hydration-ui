@@ -18,7 +18,7 @@ export const useMaxSellAmount = ({
 }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const { sdk, featureFlags, isApiLoaded } = useRpcProvider()
+  const { sdk, featureFlags, isReady } = useRpcProvider()
   const {
     swap: {
       single: { swapSlippage },
@@ -29,7 +29,7 @@ export const useMaxSellAmount = ({
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const enabled =
-    isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
+    isReady && !!account && accountFeePaymentAssetId === Number(assetIn)
 
   const { data: tx, isPending: isTxPending } = useQuery({
     enabled,

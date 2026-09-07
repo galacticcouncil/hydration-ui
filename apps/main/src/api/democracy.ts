@@ -5,7 +5,8 @@ import { number, string, z } from "zod/v4"
 
 import { bestNumberQuery } from "@/api/chain"
 import { accountVotesQuery, SubsquareVoteState } from "@/api/external/subsquare"
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 export type CastingVoteInfo = Extract<
@@ -97,7 +98,7 @@ type UnsafeVoteLockingPeriodConstants = {
 export const voteLockingPeriodQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: ["voteLockingPeriod"],
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
     staleTime: Infinity,
     queryFn: async () => {
       // Unsafe api — `ConvictionVoting` constants are not part of the
@@ -156,11 +157,11 @@ const voteKindFromAccountVote = (
 }
 
 export const referendumInfoQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   referendumIndex: number,
 ) =>
   queryOptions({
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: millisecondsInMinute,
     queryKey: ["referendumInfoQuery", referendumIndex],
     queryFn: async () => {
@@ -175,13 +176,10 @@ export const referendumInfoQuery = (
     },
   })
 
-export const ongoingReferendaQuery = ({
-  papi,
-  isApiLoaded,
-}: TProviderContext) =>
+export const ongoingReferendaQuery = ({ papi, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: ["ongoingReferenda"],
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     queryFn: async () => {
@@ -219,7 +217,7 @@ type TAccountOpenGovVotesAccumulator = {
 }
 
 export const accountOpenGovVotesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
@@ -258,7 +256,7 @@ export const accountOpenGovVotesQuery = (
 
       return { votes, classIds: Array.from(classIds) }
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
     refetchInterval: millisecondsInMinute,
   })
 }
@@ -323,7 +321,7 @@ export const accountUnlockClassesQuery = (
   address: string,
 ) =>
   queryOptions({
-    enabled: rpc.isApiLoaded && !!address,
+    enabled: rpc.isReady && !!address,
     queryKey: ["accountUnlockClasses", address],
     queryFn: async () => {
       const classLocksRaw =

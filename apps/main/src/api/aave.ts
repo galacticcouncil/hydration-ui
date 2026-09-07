@@ -59,7 +59,7 @@ type HealthFactorQueryArgs = Pick<
 export const AAVE_GAS_LIMIT = aave.AAVE_GAS_LIMIT
 
 export const healthFactorAfterWithdrawQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { address, fromAssetId, fromAmount }: HealthFactorWithdrawArgs,
 ) =>
   queryOptions({
@@ -84,11 +84,11 @@ export const healthFactorAfterWithdrawQuery = (
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled: isLoaded && !!address && !!fromAssetId,
+    enabled: isReady && !!address && !!fromAssetId,
   })
 
 export const healthFactorAfterSupplyQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { address, toAssetId, toAmount }: HealthFactorSupplyArgs,
 ) =>
   queryOptions({
@@ -112,11 +112,11 @@ export const healthFactorAfterSupplyQuery = (
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled: isLoaded && !!address && !!toAssetId,
+    enabled: isReady && !!address && !!toAssetId,
   })
 
 export const healthFactorAfterSwapQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { address, fromAssetId, fromAmount, toAssetId, toAmount }: HealthFactorArgs,
 ) =>
   queryOptions({
@@ -145,7 +145,7 @@ export const healthFactorAfterSwapQuery = (
     },
     placeholderData: keepPreviousData,
     enabled:
-      isLoaded &&
+      isReady &&
       !!address &&
       !!fromAssetId &&
       Big(fromAmount || "0").gt(0) &&
@@ -193,14 +193,14 @@ export const healthFactorQuery = (
 }
 
 export const aaveSummaryQuery = (
-  { isApiLoaded, sdk }: TProviderContext,
+  { isReady, sdk }: TProviderContext,
   address: string,
   enabled = true,
 ) =>
   queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "aave", "summary", address],
     queryFn: () => sdk.api.aave.getSummary(address),
-    enabled: isApiLoaded && enabled && !!address,
+    enabled: isReady && enabled && !!address,
   })
 
 const TARGET_WITHDRAW_HF = 1.01
@@ -341,7 +341,7 @@ export const getTransfarebleATokenBalance = (
       onSuccess?.(maxBalance)
       return maxBalance
     },
-    enabled: rpc.isApiLoaded && !!address,
+    enabled: rpc.isReady && !!address,
   })
 
 export const useTransfarebleATokenBalance = ({

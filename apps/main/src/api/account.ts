@@ -4,9 +4,10 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { ObservedValueOf } from "rxjs"
 
 import { usePendingPermit, usePermitNonce } from "@/api/evm"
+import { Papi } from "@/api/rpcClient"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiValue } from "@/hooks/usePapiValue"
-import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 import {
   getOmnipoolMiningPositions,
@@ -71,11 +72,11 @@ export const omnipoolPositionsQuery = (
   context: TProviderContext,
   address: string,
 ) => {
-  const { isApiLoaded, papi, queryClient } = context
+  const { isReady, papi, queryClient } = context
 
   return queryOptions({
     queryKey: omnipoolPositionsKey(address),
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     placeholderData: [],
@@ -104,11 +105,11 @@ export const omnipoolMiningPositionsQuery = (
   context: TProviderContext,
   address: string,
 ) => {
-  const { isApiLoaded, papi, queryClient } = context
+  const { isReady, papi, queryClient } = context
 
   return queryOptions({
     queryKey: omnipoolMiningPositionsKey(address),
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     placeholderData: [],
@@ -137,11 +138,11 @@ export const xykMiningPositionsQuery = (
   context: TProviderContext,
   address: string,
 ) => {
-  const { isApiLoaded, papi, queryClient } = context
+  const { isReady, papi, queryClient } = context
 
   return queryOptions({
     queryKey: xykMiningPositionsKey(address),
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     placeholderData: [],

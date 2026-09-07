@@ -23,10 +23,11 @@ import {
   useOmnipoolAssetsData,
   useOraclePrice,
 } from "@/api/omnipool"
+import { Papi } from "@/api/rpcClient"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
   isDepositPosition,

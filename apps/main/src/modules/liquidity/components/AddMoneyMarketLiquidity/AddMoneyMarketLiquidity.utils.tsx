@@ -54,7 +54,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 }: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
-  const { sdk, isApiLoaded } = useRpcProvider()
+  const { sdk, isReady } = useRpcProvider()
   const { getTransferableBalance } = useAccountBalances()
   const {
     swap: {
@@ -79,7 +79,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 
   const { data: feeEstimationSwapTx } = useQuery({
     enabled:
-      isApiLoaded && !!account?.address && !isNullish(accountFeePaymentAssetId),
+      isReady && !!account?.address && !isNullish(accountFeePaymentAssetId),
     queryKey: [
       "addMoneyMarketLiquidityFeeEstimation",
       accountFeePaymentAssetId,

@@ -2,11 +2,12 @@ import { safeStringify } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { map, Observable, ObservedValueOf, shareReplay } from "rxjs"
 
+import { Papi } from "@/api/rpcClient"
 import {
   useObservableQuery,
   UseObservableQueryOptions,
 } from "@/hooks/useObservableQuery"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 const PAPI_OBSERVER_MAP = {
   "Timestamp.Now": (query) => query.Timestamp.Now,
@@ -44,13 +45,13 @@ export function usePapiValue<
   args: PapiObservableArgs<K>,
   options?: UsePapiObservableQueryOptions<PapiObservableReturn<K>, TData>,
 ) {
-  const { isApiLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
   const queryKey = [key, safeStringify(args)]
 
   // Leverage react-query cache to keep track of observables from multiple sources
   const { data: observable } = useQuery({
     queryKey: ["observable", ...queryKey],
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: () => {

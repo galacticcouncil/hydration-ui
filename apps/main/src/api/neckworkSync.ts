@@ -5,7 +5,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 
-import { neckworkClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkEnabled, useNeckworkSyncStore } from "@/states/neckwork"
 

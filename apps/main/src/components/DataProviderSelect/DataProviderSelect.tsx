@@ -9,10 +9,10 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { bestNumberQuery } from "@/api/chain"
-import { useActiveProviderProps, useSquidUrl } from "@/api/provider"
 import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
 import { StatusTooltipContent } from "@/components/DataProviderSelect/components/StatusTooltipContent"
 import { DataProviderSelectModal } from "@/components/DataProviderSelect/DataProviderSelectModal"
+import { useActiveProviderProps } from "@/components/DataProviderSelect/useActiveProviderProps"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const DataProviderSelect = () => {
@@ -22,7 +22,6 @@ export const DataProviderSelect = () => {
 
   const { data } = useQuery(bestNumberQuery(provider))
   const providerProps = useActiveProviderProps()
-  const squidUrl = useSquidUrl()
 
   return (
     <>
@@ -45,7 +44,6 @@ export const DataProviderSelect = () => {
               url={providerProps?.url ?? ""}
               name={providerProps?.name ?? ""}
               blockNumber={data.parachainBlockNumber}
-              squidUrl={squidUrl}
               timestamp={data.timestamp}
             />
           ) : (

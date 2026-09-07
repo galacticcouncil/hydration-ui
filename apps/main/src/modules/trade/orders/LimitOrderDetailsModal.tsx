@@ -18,11 +18,11 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
-import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import {
   IntentLimitOrderData,
   OrderStatus,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
+import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 
 type Props = {

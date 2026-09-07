@@ -6,6 +6,7 @@ import {
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
 
+import { assetMetadataQuery } from "@/api/metadata"
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
   TATokenPairStored,
@@ -132,7 +133,7 @@ export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
 ) => {
-  const { sdk, papi, isApiLoaded, dataEnv, metadata } = context
+  const { sdk, papi, isEndpointSettled, dataEnv, genesisHash } = context
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
@@ -140,10 +141,14 @@ export const assetsQuery = (
       const { syncAssets, syncATokenPairs, syncShareTokens } =
         useAssetRegistryStore.getState()
 
-      const [tradeAssets, pools, assets] = await Promise.all([
+      // Icons are baked into the stored registry, so the metadata singleton has
+      // to be warm before the assets are mapped - it is no longer warmed by the
+      // provider query.
+      const [tradeAssets, pools, assets, metadata] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
         sdk.client.asset.getSupported(true),
+        queryClient.ensureQueryData(assetMetadataQuery()),
       ])
       const tradeAssetsMap = new Set(tradeAssets)
 
@@ -213,12 +218,12 @@ export const assetsQuery = (
         }
       })
 
-      syncAssets(assetsData)
+      syncAssets(assetsData, genesisHash)
       syncShareTokens(shareTokens)
 
       return []
     },
-    enabled: isApiLoaded,
+    enabled: isEndpointSettled,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,

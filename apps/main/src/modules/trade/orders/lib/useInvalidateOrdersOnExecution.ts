@@ -5,7 +5,7 @@ import { filter, merge, Observable } from "rxjs"
 
 import { useAccountIntents } from "@/api/intents"
 import { useObservable } from "@/hooks/useObservable"
-import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
+import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const INVALIDATE_DELAY = 5_000
@@ -59,7 +59,7 @@ const ownedEvents = <T extends { readonly id: number | bigint }>(
 export const useInvalidateOrdersOnExecution = () => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
-  const { papiClient, isApiLoaded, featureFlags } = useRpcProvider()
+  const { papiClient, isReady, featureFlags } = useRpcProvider()
   const { isIceEnabled } = featureFlags
 
   const { scheduleIds, isLoading: isSchedulesLoading } = useChainScheduleIds()
@@ -119,7 +119,7 @@ export const useInvalidateOrdersOnExecution = () => {
   // Trigger 2: an execution against an order that is still open. Reads the id
   // sets through a ref so a changing set never resubscribes the watchers.
   const events$ = useMemo(() => {
-    if (!isApiLoaded) return
+    if (!isReady) return
 
     const { DCA, Intent } = papiClient.getUnsafeApi()
       .event as unknown as UnsafeOrderEvents
@@ -137,7 +137,7 @@ export const useInvalidateOrdersOnExecution = () => {
           ]
         : []),
     )
-  }, [isApiLoaded, papiClient, isIceEnabled])
+  }, [isReady, papiClient, isIceEnabled])
 
-  useObservable(events$, { enabled: isApiLoaded, onUpdate: invalidate })
+  useObservable(events$, { enabled: isReady, onUpdate: invalidate })
 }
