@@ -328,6 +328,7 @@
   "chart.interval.1w": "1W",
   "chart.priceChange.24h": "24H",
   "chart.priceChange.7d": "7D",
+  "chart.priceChange.value": "{{ value, percent(signDisplay: 'always') }} / {{ period }}",
   "chart.priceChange.tooltip": "Price change over the last {{ period }}",
   "chart.chartType.candles": "Candlestick chart",
   "chart.chartType.line": "Line chart",

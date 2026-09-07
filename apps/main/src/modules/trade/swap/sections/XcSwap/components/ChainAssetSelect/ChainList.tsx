@@ -4,7 +4,7 @@ import {
   Text,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import {
@@ -39,7 +39,9 @@ export const ChainList: React.FC<ChainListProps> = ({
       initialScrollIndex={initialScrollIndex}
       sx={{
         px: "base",
-        minHeight: XC_SWAP_CHAIN_ITEM_HEIGHT * XC_SWAP_MAX_VISIBLE_CHAIN_ITEMS,
+        minHeight: pxToRem(
+          XC_SWAP_CHAIN_ITEM_HEIGHT * XC_SWAP_MAX_VISIBLE_CHAIN_ITEMS,
+        ),
       }}
       renderItem={(chain) => {
         const isActive = chain.key === selectedChain?.key
