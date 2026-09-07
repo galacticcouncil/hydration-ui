@@ -3,7 +3,7 @@ import { useSearch } from "@tanstack/react-router"
 import React from "react"
 
 import { krakenPairForPlatform } from "@/api/external/kraken"
-import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
+import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { XcSwapChart } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart"
 import { useXcDestinationAsset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestinationAsset"
 import { useAssets } from "@/providers/assetsProvider"
@@ -40,5 +40,5 @@ export const SwapChart: React.FC<SwapChartProps> = ({ height }) => {
     )
   }
 
-  return <TradeChartNeckwork height={height} />
+  return <TradeChart height={height} />
 }

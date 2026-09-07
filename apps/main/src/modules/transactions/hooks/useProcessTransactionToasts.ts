@@ -73,7 +73,7 @@ type XcSwapToastStatus = "success" | "error" | "warning" | "unknown"
 
 export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
   const { t } = useTranslation(["common", "trade"])
-  const { isLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
   const { edit } = useToasts()
   const { update } = useToastsStore()
   const { account } = useAccount()
@@ -133,7 +133,7 @@ export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
     queries: toastsToProcess.map((toast) =>
       queryOptions({
         retry: false,
-        enabled: isLoaded,
+        enabled: isReady,
         notifyOnChangeProps: [],
         refetchInterval: getToastProcessingRefetchInterval(toast),
         queryKey: ["toast", "status", toast.id],

@@ -17,13 +17,13 @@ export const useXcSwapAssetPairs = (
   chains: Record<string, XcChain>,
   xcSwap: XcSwapClient,
 ) => {
-  const { isApiLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
   const { getAsset } = useAssets()
 
   const { data: originAssets, isLoading: isOriginLoading } = useQuery({
     queryKey: ["xcSwap", "originAssets"],
     queryFn: () => xcSwap.getOriginAssets(),
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
   })
 

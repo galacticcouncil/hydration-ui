@@ -50,7 +50,7 @@ export const useXcSwapQuote = ({
   refundTo,
   swapSlippage,
 }: UseXcSwapQuoteParams) => {
-  const { isApiLoaded } = rpc
+  const { isReady } = rpc
 
   const [
     sellAsset,
@@ -102,7 +102,7 @@ export const useXcSwapQuote = ({
 
   const xcQuoteEnabled =
     isCrossChain &&
-    isApiLoaded &&
+    isReady &&
     !!refundTo &&
     !!recipient &&
     !!sellAsset &&

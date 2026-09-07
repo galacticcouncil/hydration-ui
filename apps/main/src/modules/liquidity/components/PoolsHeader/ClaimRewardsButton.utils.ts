@@ -13,10 +13,11 @@ import {
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { FarmRewards, useFarmRewards } from "@/api/farms"
 import { PoolBase, useXykPools } from "@/api/pools"
+import { Papi } from "@/api/rpcClient"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   OmnipoolDepositFullWithData,
   useAccountPositions,

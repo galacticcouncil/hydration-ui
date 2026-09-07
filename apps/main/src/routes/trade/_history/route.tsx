@@ -7,7 +7,7 @@ import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
-import { tradeOrderTabs } from "@/modules/trade/orders/TradeOrdersHeader"
+import { tradeOrderTabs } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export const DEFAULT_TRADE_ASSET_IN_ID = HOLLAR_ASSET_ID

@@ -32,7 +32,7 @@ export const useMaxSellAmount = ({
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const enabled =
     isEnabled &&
-    rpc.isApiLoaded &&
+    rpc.isReady &&
     !!account &&
     accountFeePaymentAssetId === Number(assetIn)
 

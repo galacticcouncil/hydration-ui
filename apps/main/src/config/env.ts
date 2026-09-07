@@ -5,7 +5,6 @@ const coerceToBoolean = z.string().transform((v) => v === "true")
 const schema = z.object({
   VITE_PROVIDER_URL: z.url(),
   VITE_INDEXER_URL: z.url(),
-  VITE_SQUID_URL: z.url(),
   VITE_NECKWORK_URL: z.url(),
   VITE_GRAFANA_URL: z.url(),
   VITE_GRAFANA_DSN: z.coerce.number().positive(),

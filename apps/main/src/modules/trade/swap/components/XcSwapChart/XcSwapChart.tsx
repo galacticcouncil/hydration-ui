@@ -12,13 +12,13 @@ import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ChartState } from "@/components/ChartState"
-import { CandleChart } from "@/modules/trade/swap/components/TradeChartNeckwork/CandleChart"
-import { TradeChartControls } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartControls"
+import { CandleChart } from "@/modules/trade/swap/components/TradeChart/CandleChart"
 import {
   SChartHeader,
   SChartValues,
-} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.styled"
-import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartPrice"
+} from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+import { TradeChartControls } from "@/modules/trade/swap/components/TradeChart/TradeChartControls"
+import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChart/TradeChartPrice"
 import { useXcSwapCandles } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart.data"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useTradeChartSettings } from "@/states/tradeSettings"

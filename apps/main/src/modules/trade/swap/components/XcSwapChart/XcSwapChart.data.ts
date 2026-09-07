@@ -9,7 +9,7 @@ import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import { useCallback, useMemo } from "react"
 
 import { useKrakenOhlc } from "@/api/external/kraken"
-import { neckworkClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 
 /**
  * CandleBucket -> Kraken OHLC interval (minutes). Kraken only serves this fixed

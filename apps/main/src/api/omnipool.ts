@@ -1,5 +1,4 @@
 import { platformStatsQuery } from "@galacticcouncil/indexer/neckwork"
-import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
@@ -8,9 +7,8 @@ import type { SizedHex } from "polkadot-api"
 import { Binary, Enum } from "polkadot-api"
 import { useMemo } from "react"
 
-import { neckworkClient, useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
 import { hubTokenQuery, omnipoolTokensQuery } from "./pools"
 
@@ -44,11 +42,11 @@ export const useOmnipoolAssetsData = () => {
 }
 
 export const useMaxAddLiquidityLimit = () => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   return useQuery({
     staleTime: millisecondsInHour,
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: ["maxAddLiquidityLimit"],
     queryFn: async () => {
       const data =
@@ -66,11 +64,11 @@ export const useMaxAddLiquidityLimit = () => {
 }
 
 export const useOmnipoolMinLiquidity = () => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   return useQuery({
     staleTime: millisecondsInHour,
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: ["omnipoolMinLiquidity"],
     queryFn: async () => {
       const data = await papi.constants.Omnipool.MinimumPoolLiquidity()
@@ -81,11 +79,11 @@ export const useOmnipoolMinLiquidity = () => {
 }
 
 export const useMinWithdrawalFee = () => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   return useQuery({
     staleTime: millisecondsInHour,
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: ["minWithdrawalFee"],
     queryFn: async () => {
       const data = await papi.constants.Omnipool.MinWithdrawalFee()
@@ -96,11 +94,11 @@ export const useMinWithdrawalFee = () => {
 }
 
 export const useAssetFeeParameters = () => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   return useQuery({
     staleTime: millisecondsInHour,
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: ["assetFeeParameters"],
     queryFn: async () => {
       const { min_fee, max_fee } =
@@ -119,11 +117,11 @@ export const useOraclePrice = (
   assetB: number | undefined,
   type: OraclePricePoolType = "omnipool",
 ) => {
-  const { papi, isLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   return useQuery({
     staleTime: millisecondsInHour,
-    enabled: isLoaded && !!assetA && !!assetB,
+    enabled: isReady && !!assetA && !!assetB,
     queryKey: ["oracles", type, assetA, assetB],
     queryFn:
       !!assetA && !!assetB
@@ -165,23 +163,10 @@ export const useOraclePrice = (
 }
 
 export const useTotalOmnipoolLiquidity = () => {
-  const squidClient = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
-
-  const { data: neckworkData, isLoading: isNeckworkLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     ...platformStatsQuery(neckworkClient),
-    enabled: neckworkEnabled,
     select: (data) => data.omnipoolTvlNorm,
   })
 
-  const { data: squidData, isLoading: isSquidLoading } = useQuery({
-    ...platformTotalQuery(squidClient),
-    enabled: !neckworkEnabled,
-    select: (data) => data.omnipoolTvlNorm,
-  })
-
-  return {
-    data: neckworkEnabled ? neckworkData : squidData,
-    isLoading: neckworkEnabled ? isNeckworkLoading : isSquidLoading,
-  }
+  return { data, isLoading }
 }

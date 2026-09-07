@@ -1,4 +1,3 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { SquareArrowOutUpRight, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -26,7 +25,7 @@ import {
   getDcaTradeProgress,
   useDcaFundingBalance,
 } from "@/modules/trade/orders/lib/dcaProgress"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { DcaScheduleStatus, OrderData } from "@/modules/trade/orders/lib/types"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
 
 type Props = {

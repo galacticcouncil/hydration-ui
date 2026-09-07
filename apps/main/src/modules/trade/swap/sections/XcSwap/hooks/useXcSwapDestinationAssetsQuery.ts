@@ -9,12 +9,12 @@ export const xcSwapDestinationAssetsQueryKey = [
 ] as const
 
 export const useXcSwapDestinationAssetsQuery = (xcSwap: XcSwapClient) => {
-  const { isApiLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
 
   return useQuery({
     queryKey: xcSwapDestinationAssetsQueryKey,
     queryFn: () => xcSwap.getDestinationAssets(),
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
   })
 }

@@ -51,7 +51,7 @@ export const useMultichainPortfolio = (
   const wallet = useCrossChainWallet()
   const configService = useCrossChainConfigService()
   const queryClient = useQueryClient()
-  const { sdk, isApiLoaded } = useRpcProvider()
+  const { sdk, isReady } = useRpcProvider()
   const { getAsset, isToken, isErc20 } = useAssets()
   const balanceFilter = useAccountBalanceFilter()
   const stableAddresses = useStableArray(addresses)
@@ -109,7 +109,7 @@ export const useMultichainPortfolio = (
         },
         enabled:
           chainKey !== HYDRATION_CHAIN_KEY ||
-          (isApiLoaded && !!Object.keys(sdk).length && !!balanceFilter),
+          (isReady && !!Object.keys(sdk).length && !!balanceFilter),
         staleTime: 60_000,
         gcTime: PORTFOLIO_CACHE_MAX_AGE,
         refetchOnWindowFocus: false,
@@ -119,7 +119,7 @@ export const useMultichainPortfolio = (
       fetchHydrationBalances,
       wallet,
       configService,
-      isApiLoaded,
+      isReady,
       sdk,
       balanceFilter,
     ],
