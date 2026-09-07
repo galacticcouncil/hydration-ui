@@ -29,11 +29,11 @@ const isValidForProcessing = (journey: XcJourney) =>
   differenceInMinutes(new Date(), new Date(journey.sentAt ?? 0)) < 10
 
 export const useProcessBasejumpScanJourneys = (address: string) => {
-  const { papi, isLoaded, queryClient } = useRpcProvider()
+  const { papi, isReady, queryClient } = useRpcProvider()
   const { data: journeys } = useBasejumpScan(address)
 
   return useEffect(() => {
-    if (!isLoaded || !journeys) return
+    if (!isReady || !journeys) return
     const journeysToProcess = journeys.filter(isValidForProcessing)
     if (journeysToProcess.length === 0) return
 
@@ -91,5 +91,5 @@ export const useProcessBasejumpScanJourneys = (address: string) => {
     return () => {
       sub.unsubscribe()
     }
-  }, [address, isLoaded, journeys, papi, queryClient])
+  }, [address, isReady, journeys, papi, queryClient])
 }

@@ -1,270 +1,218 @@
 import {
+  FEE_STREAMS,
+  feesChartQuery,
+  FeesChartResult,
+  feesChartWindow,
+  FeeStreamKey,
+  FeeViewMode,
+  foldFeesChart,
+  TIME_RANGES,
+  TimeRange,
+} from "@galacticcouncil/indexer/neckwork"
+import {
   AnimatedValue,
   Box,
-  Chart,
-  chartColorScale,
-  ChartTimeRange,
   Flex,
   Paper,
   Select,
+  Skeleton,
   Text,
   ToggleGroup,
   ToggleGroupItem,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
-import { barY, defineChart, stack } from "@tanstack/charts"
-import { scaleBand } from "@tanstack/charts/scales/band"
-import { scaleLinear } from "@tanstack/charts/scales/linear"
-import { tooltip } from "@tanstack/charts/tooltip"
-import { fold } from "@tanstack/charts/transform/fold"
-import { useMemo, useState } from "react"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useQueries } from "@tanstack/react-query"
+import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  TIME_RANGES,
-  TimeRange,
-  useFeesChartsData,
-  VIEW_MODES,
-  ViewMode,
-} from "@/api/stats"
+import { neckworkClient } from "@/api/neckwork"
 import { ChartState } from "@/components/ChartState"
-import { CustomTooltipContent } from "@/modules/stats/fees/FeeAndRevenueChart/CustomTooltipContent"
-import {
-  feesAndRevenueConfig,
-  formatXAxisTick,
-  getTotalValueLabel,
-} from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
-import { FeeAndRevenueLegend } from "@/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenueLegend"
+import { ChartTimeRange } from "@/components/ChartTimeRange/ChartTimeRange"
+import { getTotalValueLabel } from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
+import { FeesLegend } from "@/modules/stats/fees/FeeAndRevenueChart/FeesLegend"
+import { FeesStackedBar } from "@/modules/stats/fees/FeeAndRevenueChart/FeesStackedBar"
 
-type ChartDataPoint = {
-  timestamp: string
-  [key: string]: string | number
-}
+const VIEW_MODES = [
+  "protocol",
+  "total",
+] as const satisfies readonly FeeViewMode[]
 
-export type FeeSegmentRow = {
-  timestamp: string
-  stream: string
-  value: number
-}
+const STREAM_KEYS = FEE_STREAMS.map(({ key }) => key)
 
-const BAR_RADIUS = 4
 const CHART_HEIGHT = 380
 
 export const FeesAndRevenue = () => {
   const { t } = useTranslation(["common", "stats"])
   const { gte } = useBreakpoints()
-  const { getToken } = useTheme()
   const [timeRange, setTimeRange] = useState<TimeRange>("1M")
-  const [viewMode, setViewMode] = useState<ViewMode>("protocol")
-  const [activeFilter, setActiveFilter] = useState<string>("all")
+  const [viewMode, setViewMode] = useState<FeeViewMode>("protocol")
+  const [activeFilter, setActiveFilter] = useState<FeeStreamKey | "all">("all")
 
-  const {
-    data: feesChartsData,
-    isLoading,
-    isError,
-  } = useFeesChartsData({
-    viewMode,
-    timeRange,
+  const chartWindow = feesChartWindow(timeRange, Date.now())
+
+  const result = useQueries({
+    queries: FEE_STREAMS.map((stream) =>
+      feesChartQuery(neckworkClient, {
+        productType: stream.productType,
+        streamType: stream.streamType,
+        feeDestination: stream.feeDestination(viewMode),
+        ...chartWindow,
+      }),
+    ),
+    combine: (results) => {
+      const byStream: Partial<Record<FeeStreamKey, FeesChartResult>> = {}
+      const failedStreams = new Set<FeeStreamKey>()
+
+      results.forEach(({ data, isError }, index) => {
+        const key = FEE_STREAMS[index]?.key
+        if (!key) return
+        if (data) byStream[key] = data
+        if (isError) failedStreams.add(key)
+      })
+
+      return {
+        ...foldFeesChart(byStream, STREAM_KEYS),
+        failedStreams,
+        isPending: results.some(({ isPending }) => isPending),
+        isError: results.every(({ isError }) => isError),
+      }
+    },
   })
 
-  const chartData = useMemo(() => {
-    if (!feesChartsData) return []
+  // useQueries matches observers by queryHash, so `placeholderData:
+  // keepPreviousData` does nothing the moment the range or mode changes.
+  // React Query drops the old observer along with its data. Hold the last
+  // loaded result here instead and keep it on screen (faded) until the new
+  // one lands.
+  const lastLoadedRef = useRef<typeof result | null>(null)
+  if (!result.isPending) lastLoadedRef.current = result
 
-    return Array.from(
-      Object.entries(feesChartsData)
-        .reduce((acc, [key, { data }]) => {
-          data.forEach(({ timestamp, value }) => {
-            const data = acc.get(timestamp)
-            if (data) {
-              acc.set(timestamp, {
-                ...data,
-                [key]: value,
-              })
-            } else {
-              acc.set(timestamp, {
-                [key]: value,
-                timestamp,
-              })
-            }
-          })
+  const previous = result.isPending ? lastLoadedRef.current : null
+  const { rows, totals, failedStreams, isError } = previous ?? result
 
-          return acc
-        }, new Map<string, ChartDataPoint>())
-        .values(),
-    )
-  }, [feesChartsData])
+  const isLoading = result.isPending && !previous
+  const isRefetching = result.isPending && !!previous
 
+  // null marks a failed stream so the legend can tell it apart from a dormant one
   const fields = new Map(
-    Object.entries(feesChartsData ?? {}).map(([key, value]) => [
+    STREAM_KEYS.map((key) => [
       key,
-      value.periodAggregate,
+      failedStreams.has(key) ? null : (totals.byStream[key] ?? 0),
     ]),
   )
 
-  const visibleKeys = useMemo(() => {
-    const keys = Object.keys(feesChartsData ?? {})
-    return activeFilter === "all"
-      ? keys
-      : keys.filter((key) => key === activeFilter)
-  }, [feesChartsData, activeFilter])
+  const selectedStream = activeFilter === "all" ? null : activeFilter
+  const visibleStreams = selectedStream ? [selectedStream] : STREAM_KEYS
+  const visibleRows = selectedStream
+    ? rows.filter(({ stream }) => stream === selectedStream)
+    : rows
 
-  const rows = useMemo(
-    () =>
-      fold(chartData, {
-        fields: visibleKeys as [string],
-        as: { key: "stream", value: "value" },
-      })
-        .filter(({ value }) => typeof value === "number")
-        .map<FeeSegmentRow>(({ timestamp, stream, value }) => ({
-          timestamp: String(timestamp),
-          stream,
-          value: Number(value),
-        })),
-    [chartData, visibleKeys],
-  )
-
-  const definition = useMemo(
-    () =>
-      defineChart({
-        marks: [
-          barY(rows, {
-            x: "timestamp",
-            y: "value",
-            color: "stream",
-            layout: stack({ order: visibleKeys }),
-            radius: BAR_RADIUS,
-          }),
-        ],
-        x: {
-          scale: () => scaleBand<string>().padding(0.3),
-          grid: true,
-          axis: {
-            line: true,
-            ticks: {
-              size: 0,
-              padding: 8,
-              format: formatXAxisTick,
-            },
-          },
-        },
-        y: {
-          scale: scaleLinear,
-          grid: true,
-          axis: {
-            line: true,
-            ticks: {
-              size: 0,
-              padding: 8,
-              format: (value) => t("number.compact", { value }),
-            },
-          },
-        },
-        color: chartColorScale(
-          Object.fromEntries(
-            visibleKeys.map((key) => [
-              key,
-              feesAndRevenueConfig[key]?.color ?? "accents.info.accent",
-            ]),
-          ),
-          getToken,
-        ),
-        focus: "group-x",
-        tooltip: {
-          use: tooltip,
-          sort: "color-domain",
-          anchor: { x: "value", y: "plot-top" },
-          placement: "top",
-        },
-      }),
-    [rows, visibleKeys, getToken, t],
-  )
-
-  const totalRevenue =
-    activeFilter === "all"
-      ? Array.from(fields.values()).reduce((acc, value = 0) => acc + value, 0)
-      : (fields.get(activeFilter) ?? 0)
+  const headlineTotal = selectedStream
+    ? (totals.byStream[selectedStream] ?? 0)
+    : totals.total
 
   const isBiggerScreen = gte("md")
 
   return (
-    <Flex as={Paper} direction="column" gap="xl" height={600} p="xl">
-      <ChartState
-        isLoading={isLoading}
-        isError={isError}
-        isEmpty={!chartData.length}
-        sx={{ height: "100%" }}
-      >
-        <Flex justify="space-between" align="center">
-          <ValueStats
-            customValue={
-              <Text fs="h6" fw={700} font="primary" lh={1}>
+    <Flex as={Paper} direction="column" gap="xl" p="xl">
+      <Flex justify="space-between" align="center">
+        <ValueStats
+          customValue={
+            <Text fs="h6" fw={700} font="primary" lh={1} position="relative">
+              {isLoading && (
+                <Skeleton
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "3xl",
+                    height: "100%",
+                  }}
+                />
+              )}
+              <Box
+                as="span"
+                sx={{ visibility: isLoading ? "hidden" : "visible" }}
+              >
                 <AnimatedValue
-                  value={totalRevenue}
+                  value={isLoading ? 0 : headlineTotal}
                   format={(value) => t("currency.compact", { value })}
                 />
-              </Text>
-            }
-            bottomLabel={getTotalValueLabel(timeRange)}
-          />
+              </Box>
+            </Text>
+          }
+          bottomLabel={getTotalValueLabel(timeRange)}
+        />
 
-          <Flex gap={16}>
-            {isBiggerScreen && (
-              <ToggleGroup
-                type="single"
-                value={viewMode}
-                onValueChange={(value) => value && setViewMode(value)}
-              >
-                {VIEW_MODES.map((mode) => (
-                  <ToggleGroupItem key={mode} value={mode}>
-                    {t(`stats:fees.chart.mode.${mode}`)}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            )}
-            <ChartTimeRange
-              selectedOption={timeRange}
-              options={TIME_RANGES}
-              onSelect={(value) => setTimeRange(value)}
-            />
-          </Flex>
+        <Flex gap={16}>
+          {isBiggerScreen && (
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={(value) =>
+                value && setViewMode(value as FeeViewMode)
+              }
+            >
+              {VIEW_MODES.map((mode) => (
+                <ToggleGroupItem key={mode} value={mode}>
+                  {t(`stats:fees.chart.mode.${mode}`)}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          )}
+          <ChartTimeRange
+            selectedOption={timeRange}
+            options={TIME_RANGES}
+            onSelect={(value) => setTimeRange(value)}
+          />
         </Flex>
+      </Flex>
 
-        <Box position="relative" flex={1}>
-          <Chart
-            definition={definition}
-            ariaLabel={t("stats:fees.chart.ariaLabel")}
+      <Box
+        height={CHART_HEIGHT}
+        sx={{
+          opacity: isRefetching ? 0.4 : 1,
+          transition: "opacity 150ms ease-in-out",
+        }}
+      >
+        <ChartState
+          isLoading={isLoading}
+          isError={isError}
+          isEmpty={!visibleRows.length}
+          variant="bar"
+          sx={{ height: "100%" }}
+        >
+          <FeesStackedBar
+            rows={visibleRows}
+            streams={visibleStreams}
             height={CHART_HEIGHT}
-            renderTooltipBody={({ points }) => (
-              <CustomTooltipContent points={points} />
-            )}
           />
-        </Box>
+        </ChartState>
+      </Box>
 
-        {isBiggerScreen ? (
-          <FeeAndRevenueLegend
+      {isBiggerScreen ? (
+        <FeesLegend
+          fields={fields}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+        />
+      ) : (
+        <Flex gap="base" justify="space-between">
+          <Select
+            value={viewMode}
+            items={VIEW_MODES.map((mode) => ({
+              key: mode,
+              label: t(`stats:fees.chart.mode.${mode}`),
+            }))}
+            onValueChange={setViewMode}
+          />
+          <FeesLegend
             fields={fields}
             activeFilter={activeFilter}
             setActiveFilter={setActiveFilter}
           />
-        ) : (
-          <Flex gap="base" justify="space-between">
-            <Select
-              value={viewMode}
-              items={VIEW_MODES.map((mode) => ({
-                key: mode,
-                label: t(`stats:fees.chart.mode.${mode}`),
-              }))}
-              onValueChange={setViewMode}
-            />
-            <FeeAndRevenueLegend
-              fields={fields}
-              activeFilter={activeFilter}
-              setActiveFilter={setActiveFilter}
-            />
-          </Flex>
-        )}
-      </ChartState>
+        </Flex>
+      )}
     </Flex>
   )
 }

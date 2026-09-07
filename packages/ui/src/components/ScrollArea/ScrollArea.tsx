@@ -22,6 +22,7 @@ export type ScrollAreaProps = React.ComponentPropsWithoutRef<
   horizontalEdgeOffset?: ResponsiveStyleValue<
     number | string | keyof ThemeBaseProps["space"]
   >
+  hideScrollbar?: boolean
   ref?: Ref<React.ElementRef<typeof ScrollAreaPrimitive.Root>>
 }
 
@@ -33,6 +34,7 @@ const ScrollArea: FC<ScrollAreaProps> = ({
   orientation = "vertical",
   ref,
   horizontalEdgeOffset,
+  hideScrollbar = false,
   ...props
 }) => {
   const offset = useResponsiveValue(horizontalEdgeOffset, 0)
@@ -44,6 +46,7 @@ const ScrollArea: FC<ScrollAreaProps> = ({
       sx={{ height, width }}
       data-orientation={orientation}
       horizontalEdgeOffset={getSpacingValue(offset)}
+      hideScrollbar={hideScrollbar}
     >
       <SViewport ref={viewportRef}>{children}</SViewport>
       <ScrollBar orientation={orientation} />

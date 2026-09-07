@@ -1,28 +1,19 @@
 import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
-import {
-  getSquidSdk,
-  latestBlockHeightQuery,
-} from "@galacticcouncil/indexer/squid"
 import { PingResponse } from "@galacticcouncil/utils"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { prop } from "remeda"
 
-import { neckworkClient, PROVIDER_URLS } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { rpcStatusQueryOptions } from "@/api/rpc"
+import { PROVIDER_URLS } from "@/api/rpcConfig"
 import { ENV } from "@/config/env"
-import { SQUID_URLS } from "@/config/rpc"
-import { useNeckworkStore } from "@/states/neckwork"
+import { classifyNeckworkProbe, useNeckworkStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { pingWorker } from "@/workers/ping"
 
-import {
-  fetchIndexerInfo,
-  fetchNeckworkStatus,
-  getBestIndexer,
-  getBestRpc,
-} from "./DataProviderResolver.utils"
+import { fetchNeckworkStatus, getBestRpc } from "./DataProviderResolver.utils"
 
 declare global {
   interface Window {
@@ -30,17 +21,44 @@ declare global {
   }
 }
 
+const NECKWORK_HEALTH_POLL_INTERVAL = 60_000
+
+const useNeckworkHealthPoll = () => {
+  const queryClient = useQueryClient()
+
+  const { data: probe } = useQuery({
+    queryKey: ["neckwork", "health"],
+    queryFn: fetchNeckworkStatus,
+    refetchInterval: NECKWORK_HEALTH_POLL_INTERVAL,
+    refetchIntervalInBackground: false,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (!probe) return
+
+    useNeckworkStore.setState({ health: classifyNeckworkProbe(probe) })
+
+    if (probe.kind === "ok") {
+      queryClient.setQueryData(
+        neckworkStatusQuery(neckworkClient).queryKey,
+        probe.status,
+      )
+    }
+  }, [probe, queryClient])
+}
+
 export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const queryClient = useQueryClient()
 
+  useNeckworkHealthPoll()
+
   const [isBestProviderFound, setIsBestProviderFound] = useState(false)
 
   const [, fetchBestProvider] = useAsyncFn(async () => {
     const { autoMode } = useProviderRpcUrlStore.getState()
-
-    let referenceBlock: number | null = null
 
     if (autoMode) {
       const bestRpcs =
@@ -69,35 +87,6 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
         rpcUrl: bestRpcUrl,
         rpcUrlList: sortedRpcList,
         updatedAt: Date.now(),
-      })
-
-      referenceBlock = bestRpc?.blockNumber ?? null
-    }
-
-    const [indexerInfos, neckworkStatus] = await Promise.all([
-      Promise.all(SQUID_URLS.map((indexer) => fetchIndexerInfo(indexer))),
-      ENV.VITE_NECKWORK_ENABLED ? fetchNeckworkStatus() : null,
-    ])
-
-    useNeckworkStore.setState({ alive: !!neckworkStatus })
-
-    if (neckworkStatus) {
-      queryClient.setQueryData(
-        neckworkStatusQuery(neckworkClient).queryKey,
-        neckworkStatus,
-      )
-    }
-
-    const bestIndexer = getBestIndexer(indexerInfos, referenceBlock)
-
-    if (bestIndexer) {
-      const url = bestIndexer.config.graphqlUrl
-      queryClient.setQueryData(
-        latestBlockHeightQuery(getSquidSdk(url), url).queryKey,
-        bestIndexer.blockHeight,
-      )
-      useProviderRpcUrlStore.setState({
-        squidUrl: url,
       })
     }
 

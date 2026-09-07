@@ -1,4 +1,3 @@
-import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { Trash } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -11,6 +10,7 @@ import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { Status } from "@/modules/trade/orders/columns/SwapStatus"
 import { TradeOrderHistoryItem } from "@/modules/trade/orders/lib/tradeOrdersHistory.types"
+import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
 import { useTerminateDcaSchedule } from "@/modules/trade/orders/lib/useTerminateDcaSchedule"
 
 const columnHelper = createColumnHelper<TradeOrderHistoryItem>()

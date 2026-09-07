@@ -5,15 +5,8 @@ import {
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useRef } from "react"
 
 import { ChartState } from "@/components/ChartState"
-import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
-import {
-  intervalOptions,
-  PoolChart,
-  PoolChartTimeFrameType,
-} from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import { PoolDetailsHeaderSkeleton } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderSkeleton"
 import { PoolDetailsValuesSkeleton } from "@/modules/liquidity/components/PoolDetailsValues/PoolDetailsValuesSkeleton"
 import {
@@ -23,7 +16,6 @@ import {
 
 export const PoolDetailsSkeleton = () => {
   const { isTablet, isMobile } = useBreakpoints()
-  const chartRef = useRef(null)
 
   if (isTablet || isMobile) {
     return (
@@ -32,13 +24,6 @@ export const PoolDetailsSkeleton = () => {
         sx={{ flex: 1, gap: "m", flexDirection: "column" }}
         as={Flex}
       >
-        <PoolChart
-          chartRef={chartRef}
-          assetId=""
-          height={350}
-          interval="all"
-          setInterval={() => null}
-        />
         <ChartState sx={{ height: 350 }} isLoading isEmpty />
         <Flex gap="base" justify="space-between" wrap align="center">
           <Flex align="center" gap="base">
@@ -58,12 +43,6 @@ export const PoolDetailsSkeleton = () => {
               ))}
             </ToggleGroup>
           </Flex>
-          <ChartTimeRangeDropdown
-            options={intervalOptions}
-            selectedOption={"all" as PoolChartTimeFrameType | "all"}
-            onSelect={() => null}
-            disabled
-          />
         </Flex>
       </Paper>
     )

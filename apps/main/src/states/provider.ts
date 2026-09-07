@@ -2,9 +2,7 @@ import { omit } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-import { getProviderDataEnv } from "@/api/provider"
 import { ENV } from "@/config/env"
-import { TDataEnv } from "@/config/rpc"
 
 type RpcListStore = {
   rpcList: Array<{
@@ -42,7 +40,6 @@ export const useRpcListStore = create<RpcListStore>()(
 
 type ProviderRpcUrlStoreState = {
   rpcUrl: string
-  squidUrl: string
   rpcUrlList: string[]
   updatedAt: number
   autoMode: boolean
@@ -52,9 +49,7 @@ type ProviderRpcUrlStoreState = {
 
 type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
   setRpcUrl: (rpcUrl: string | undefined) => void
-  setSquidUrl: (squidUrl: string | undefined) => void
   setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
-  getDataEnv: () => TDataEnv
   setAutoMode: (state: boolean) => void
   setConnectedRpcUrl: (connectedRpcUrl: string) => void
   setIsRpcConnecting: (isRpcConnecting: boolean) => void
@@ -62,24 +57,18 @@ type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
 
 export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       rpcUrl: ENV.VITE_PROVIDER_URL,
       connectedRpcUrl: ENV.VITE_PROVIDER_URL,
-      squidUrl: ENV.VITE_SQUID_URL,
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
       isRpcConnecting: false,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
-      setSquidUrl: (squidUrl) => set({ squidUrl }),
       setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
       setConnectedRpcUrl: (connectedRpcUrl) => set({ connectedRpcUrl }),
       setIsRpcConnecting: (isRpcConnecting) => set({ isRpcConnecting }),
-      getDataEnv: () => {
-        const { rpcUrl } = get()
-        return getProviderDataEnv(rpcUrl)
-      },
     }),
     {
       name: "rpcUrl",

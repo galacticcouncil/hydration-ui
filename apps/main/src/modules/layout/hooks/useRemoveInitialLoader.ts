@@ -1,7 +1,7 @@
-import { useEffect } from "react"
+import { useLayoutEffect } from "react"
 
 export const useRemoveInitialLoader = () => {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const loader = window.document.querySelector(".loader-container")
     if (loader) {
       // Removes initial static loader in index.html.

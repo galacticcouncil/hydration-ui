@@ -17,6 +17,11 @@ export const SFooter = styled(Flex)<{ readonly bottomPinned?: boolean }>(
     padding-bottom: ${pxToRem(80)};
 
     width: 100%;
+    pointer-events: none;
+
+    button {
+      pointer-events: auto;
+    }
 
     ${bottomPinned
       ? bottomPinnedStyle(theme)

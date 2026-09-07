@@ -18,6 +18,7 @@ import waitFor from "p-wait-for"
 import { Binary } from "polkadot-api"
 import { first, flatMap, pipe, sortBy } from "remeda"
 
+import { Papi } from "@/api/rpcClient"
 import { XcmTransferArgs } from "@/api/xcm"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import {
@@ -33,7 +34,6 @@ import {
   WORMHOLE_FAMILY_TAGS,
 } from "@/modules/xcm/transfer/utils/bridge"
 import { getChainPriority } from "@/modules/xcm/transfer/utils/chain"
-import { Papi } from "@/providers/rpcProvider"
 import { XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 

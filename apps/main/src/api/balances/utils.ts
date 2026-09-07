@@ -1,12 +1,26 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { AssetAmount } from "@galacticcouncil/xc-core"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
+import { firstValueFrom } from "rxjs"
 
-import { BalanceData, TokenLockType } from "@/api/balances/types"
+import { TAssetData } from "@/api/assets"
+import {
+  mergeBalances,
+  watchFilteredAccountBalances,
+} from "@/api/balances/account.utils"
+import {
+  AccountBalanceFilter,
+  Balance,
+  BalanceData,
+  EMPTY_BALANCES,
+  TokenLockType,
+} from "@/api/balances/types"
+import { Papi } from "@/api/rpcClient"
 import { ENV } from "@/config/env"
-import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 const isKnownTokenLockType = (type: string): type is TokenLockType => {
@@ -14,7 +28,7 @@ const isKnownTokenLockType = (type: string): type is TokenLockType => {
 }
 
 export const nativeTokenLocksQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
@@ -39,7 +53,7 @@ export const nativeTokenLocksQuery = (
         })
         .filter((lock) => lock !== null)
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
   })
 }
 
@@ -53,7 +67,7 @@ export const useNativeTokenLocks = () => {
 }
 
 export const tokenReservesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
   tokenId: string,
 ) => {
@@ -82,7 +96,7 @@ export const tokenReservesQuery = (
         }
       })
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
   })
 }
 
@@ -139,7 +153,7 @@ export const parseTokenBalanceData = (
 }
 
 export const tokenBalanceQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   tokenId: string,
   address: string | undefined | null,
 ) => {
@@ -164,7 +178,7 @@ export const tokenBalanceQuery = (
 
       return parseTokenBalanceData(res, tokenId, address ?? "")
     },
-    enabled: isApiLoaded && !!address && !!tokenId,
+    enabled: isReady && !!address && !!tokenId,
   })
 }
 
@@ -175,7 +189,7 @@ export const HDXStakingBalanceQuery = (
   staleTime: Infinity,
 })
 
-export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
+export const HDXIssuanceQuery = ({ papi, isReady }: TProviderContext) => {
   return queryOptions({
     queryKey: ["hdxIssuance"],
     queryFn: async () => {
@@ -186,7 +200,53 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
 
       return totalissuance - inactiveIssuance
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: millisecondsInMinute,
   })
+}
+
+export const mapHydrationBalancesToAssetAmounts = (
+  balances: Balance[],
+  getAsset: (id: string) => TAssetData | undefined,
+  includeAsset: (meta: TAssetData) => boolean,
+): AssetAmount[] =>
+  balances.flatMap((entry) => {
+    const meta = getAsset(entry.assetId)
+    if (!meta || !includeAsset(meta)) return []
+
+    return [
+      new AssetAmount({
+        key: meta.id,
+        originSymbol: meta.symbol,
+        amount: entry.total,
+        decimals: meta.decimals,
+        symbol: meta.symbol,
+      }),
+    ]
+  })
+
+export const fetchHydrationRegistryAssetAmounts = async ({
+  address,
+  sdk,
+  filter,
+  getAsset,
+  isToken,
+  isErc20,
+}: {
+  address: string
+  sdk: TProviderContext["sdk"]
+  filter: AccountBalanceFilter
+  getAsset: (id: string) => TAssetData | undefined
+  isToken: (asset: TAssetData) => boolean
+  isErc20: (asset: TAssetData) => boolean
+}): Promise<AssetAmount[]> => {
+  const chunk = await firstValueFrom(
+    watchFilteredAccountBalances(sdk, address, filter),
+  )
+
+  return mapHydrationBalancesToAssetAmounts(
+    Object.values(mergeBalances(EMPTY_BALANCES, chunk)),
+    getAsset,
+    (meta) => isToken(meta) || isErc20(meta),
+  )
 }

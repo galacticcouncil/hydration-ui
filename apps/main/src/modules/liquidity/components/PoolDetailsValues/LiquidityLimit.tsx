@@ -8,10 +8,14 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolCapacity } from "@/modules/liquidity/Liquidity.utils"
+import { useAssets } from "@/providers/assetsProvider"
 
 export const LiquidityLimit = ({ poolId }: { poolId: string }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { data: capacity, isLoading } = useOmnipoolCapacity(poolId)
+  const { getAssetWithFallback } = useAssets()
+
+  const { symbol } = getAssetWithFallback(poolId)
 
   return (
     <Flex direction="column">
@@ -30,11 +34,26 @@ export const LiquidityLimit = ({ poolId }: { poolId: string }) => {
         value={Number(capacity?.filledPercent ?? 0)}
         size="large"
         orientation="vertical"
-        format={() =>
-          `${t("number.compact", { value: capacity?.filled })} / ${t("number.compact", { value: capacity?.capacity })}`
-        }
-        customLabel={isLoading ? <Skeleton width={100} /> : undefined}
+        hideLabel
       />
+
+      <Flex justify="space-between" align="center" mt="-m">
+        {isLoading ? (
+          <Skeleton width={100} />
+        ) : (
+          <Text fw={500} fs="p4" color={getToken("text.high")}>
+            {t("number.compact", { value: capacity?.filled })} /{" "}
+            {t("number.compact", { value: capacity?.capacity })} {symbol}
+          </Text>
+        )}
+        {isLoading ? (
+          <Skeleton width={40} />
+        ) : (
+          <Text fw={600} fs="p4" color={getToken("text.tint.quart")}>
+            {t("percent", { value: capacity?.filledPercent })}
+          </Text>
+        )}
+      </Flex>
     </Flex>
   )
 }

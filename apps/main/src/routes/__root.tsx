@@ -4,24 +4,19 @@ import { lazy, Suspense } from "react"
 
 import { useAccountBalances } from "@/api/balances"
 import { useInvalidateOnBlock, useReloadOnStaleBlocks } from "@/api/chain"
+import { neckworkClient } from "@/api/neckwork"
 import { useNeckworkSync } from "@/api/neckworkSync"
-import { neckworkClient, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { RouterContext } from "@/App"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
-import {
-  useBasejumpScanSubscription,
-  useXcScanSubscription,
-} from "@/modules/xcm/history"
-import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
+import { useXcScanSubscription } from "@/modules/xcm/history"
 import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -86,7 +81,11 @@ function RootComponent() {
               <MainLayout />
               <Services />
               <Footer />
-              {!hasTopNavbar && <MobileTabBar />}
+              {!hasTopNavbar && (
+                <Suspense>
+                  <MobileTabBar />
+                </Suspense>
+              )}
             </AssetRegistryGate>
           </MultisigProvider>
         </RpcProvider>
@@ -112,26 +111,20 @@ function ApiSubscriptions() {
 
 function AccountSubscriptions({ account }: { account: Account }) {
   useXcScanSubscription(account.address)
-  useBasejumpScanSubscription(account.address)
-  useProcessBasejumpScanJourneys(account.address)
 
   return null
 }
 
 function Services() {
-  const squidSdk = useSquidClient()
   const { isConnected, account } = useAccount()
-  const { isApiLoaded, papi } = useRpcProvider()
-  const neckworkEnabled = useNeckworkEnabled()
+  const { isReady, papi } = useRpcProvider()
   return (
     <>
-      <TransactionManager />
-      <Web3ConnectModal
-        squidSdk={squidSdk}
-        neckwork={neckworkEnabled ? neckworkClient : null}
-        papi={papi}
-      />
-      {isApiLoaded && <ApiSubscriptions />}
+      <Suspense fallback={null}>
+        <TransactionManager />
+        <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
+      </Suspense>
+      {isReady && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>
   )

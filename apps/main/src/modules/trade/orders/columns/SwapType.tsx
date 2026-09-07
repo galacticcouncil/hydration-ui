@@ -4,7 +4,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderKind } from "@/modules/trade/orders/lib/types"
 
 type Props = {
   readonly type: OrderKind | "market"

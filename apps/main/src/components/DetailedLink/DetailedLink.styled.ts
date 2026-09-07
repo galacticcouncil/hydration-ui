@@ -6,7 +6,7 @@ export const SDetailedLink = styled(Box)(
   ({ theme }) => css`
     display: flex;
     align-items: center;
-    gap: ${theme.space.base};
+    gap: ${theme.space.m};
 
     width: 20rem;
 
@@ -14,6 +14,8 @@ export const SDetailedLink = styled(Box)(
     border-radius: ${theme.radii.m};
 
     text-decoration: none;
+
+    transition: ${theme.transitions.colors};
 
     &:hover {
       background: ${theme.surfaces.containers.high.hover};

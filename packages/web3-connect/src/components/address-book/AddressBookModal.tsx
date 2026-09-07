@@ -41,6 +41,8 @@ type Props = {
   readonly onBack?: () => void
   readonly align?: "default" | "center"
   readonly whitelist?: ReadonlyArray<WalletAccountFilterOptionOverride>
+  /** public keys that must not be listed or selectable */
+  readonly excludePublicKeys?: ReadonlyArray<string>
   readonly onSelect?: (address: Address) => void
 }
 
@@ -55,6 +57,7 @@ export const AddressBookModal: FC<Props> = ({
   onBack,
   align = "default",
   whitelist = defaultWhitelist,
+  excludePublicKeys,
   onSelect,
 }) => {
   const { t } = useTranslation("translations", { i18n })
@@ -84,6 +87,10 @@ export const AddressBookModal: FC<Props> = ({
 
   const filteredAddresses = pipe(
     allAddresses,
+    filter(
+      (address) =>
+        !excludePublicKeys?.some((key) => stringEquals(key, address.publicKey)),
+    ),
     filter((address) =>
       accountFilter === WalletMode.Default
         ? whitelist.includes(address.mode)

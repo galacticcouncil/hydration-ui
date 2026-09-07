@@ -36,7 +36,7 @@ export const useEstimateFee = (
   feePaymentAssetIdOverride?: string,
 ) => {
   const rpc = useRpcProvider()
-  const { papi, sdk, isLoaded } = rpc
+  const { papi, sdk, isReady } = rpc
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const wallet = useWallet()
@@ -63,15 +63,7 @@ export const useEstimateFee = (
   const assetBalance = feeAsset ? getBalance(feeAsset.id) : null
   const feeAssetBalance =
     assetBalance && feeAsset
-      ? scaleHuman(
-          Big.max(
-            Big(assetBalance.free.toString()).minus(
-              assetBalance.frozen.toString(),
-            ),
-            0,
-          ).toString(),
-          feeAsset.decimals,
-        )
+      ? scaleHuman(assetBalance.transferable.toString(), feeAsset.decimals)
       : "0"
 
   return useQuery({
@@ -83,7 +75,7 @@ export const useEstimateFee = (
       }
     },
     enabled:
-      isLoaded &&
+      isReady &&
       !!anyTx &&
       !!feeAsset &&
       !isLoadingFeePaymentAssetId &&

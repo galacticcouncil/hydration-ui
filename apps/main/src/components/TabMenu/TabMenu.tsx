@@ -17,6 +17,7 @@ export type TabItem = {
   readonly icon?: React.ComponentType
   readonly search?: Record<string, string | boolean>
   readonly resetScroll?: boolean
+  readonly exact?: boolean
 }
 
 type Props = FlexProps &
@@ -26,6 +27,7 @@ type Props = FlexProps &
     readonly ignoreCurrentSearch?: boolean
     readonly renderItem?: (item: TabItem) => React.ReactNode
     readonly horizontalEdgeOffset?: ScrollAreaProps["horizontalEdgeOffset"]
+    readonly scrollable?: boolean
   }
 
 export const TabMenu: FC<Props> = ({
@@ -37,29 +39,36 @@ export const TabMenu: FC<Props> = ({
   activeVariant,
   ignoreCurrentSearch,
   horizontalEdgeOffset,
+  scrollable = true,
   ...props
 }) => {
+  const menu = (
+    <Flex gap={gap} {...props}>
+      {items.map((item, index) =>
+        renderItem ? (
+          <Fragment key={`${item.to}_${index}`}>{renderItem(item)}</Fragment>
+        ) : (
+          <TabMenuItem
+            key={`${item.to}_${index}`}
+            item={item}
+            size={size}
+            variant={variant}
+            activeVariant={activeVariant}
+            ignoreCurrentSearch={ignoreCurrentSearch}
+          />
+        ),
+      )}
+    </Flex>
+  )
+
+  if (!scrollable) return menu
+
   return (
     <ScrollArea
       orientation="horizontal"
       horizontalEdgeOffset={horizontalEdgeOffset}
     >
-      <Flex gap={gap} {...props}>
-        {items.map((item, index) =>
-          renderItem ? (
-            <Fragment key={`${item.to}_${index}`}>{renderItem(item)}</Fragment>
-          ) : (
-            <TabMenuItem
-              key={`${item.to}_${index}`}
-              item={item}
-              size={size}
-              variant={variant}
-              activeVariant={activeVariant}
-              ignoreCurrentSearch={ignoreCurrentSearch}
-            />
-          ),
-        )}
-      </Flex>
+      {menu}
     </ScrollArea>
   )
 }
