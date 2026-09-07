@@ -4,12 +4,40 @@ import {
   PairCandle,
   pairCandlesInfiniteQuery,
 } from "@galacticcouncil/indexer/neckwork"
-import { USDT_ASSET_ID } from "@galacticcouncil/utils"
+import { GIGA_STABLESWAP_TO_ERC20, USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query"
 import { useCallback, useMemo } from "react"
 
 import { useKrakenOhlc } from "@/api/external/kraken"
 import { neckworkClient } from "@/api/neckwork"
+import { useAssets } from "@/providers/assetsProvider"
+
+const foreignCandlesToPair = (
+  foreignCandles: ReadonlyArray<{
+    timestamp: number
+    open: number
+    high: number
+    low: number
+    close: number
+  }>,
+  usdPerX: number,
+): PairCandle[] =>
+  [...foreignCandles]
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .flatMap((candle) =>
+      usdPerX <= 0 || candle.close <= 0
+        ? []
+        : [
+            {
+              time: candle.timestamp,
+              open: candle.open / usdPerX,
+              high: candle.high / usdPerX,
+              low: candle.low / usdPerX,
+              close: candle.close / usdPerX,
+              volume: 0,
+            },
+          ],
+    )
 
 /**
  * CandleBucket -> Kraken OHLC interval (minutes). Kraken only serves this fixed
@@ -48,8 +76,26 @@ export const useXcSwapCandles = ({
   destPlatform,
   bucket,
 }: Args) => {
+  const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
+
+  const chartSellAssetId = useMemo(() => {
+    const gigaErc20 = GIGA_STABLESWAP_TO_ERC20[sellAssetId]
+    if (gigaErc20) return gigaErc20
+
+    const aToken = getErc20AToken(sellAssetId)
+    if (!aToken) return sellAssetId
+    const underlying = getAssetWithFallback(aToken.underlyingAssetId)
+    if (isStableSwap(underlying)) return sellAssetId
+    return aToken.underlyingAssetId
+  }, [sellAssetId, getErc20AToken, getAssetWithFallback, isStableSwap])
+
+  // USDT is the chart's USD quote, so USDT/USDT is invalid and always 1:1 anyway.
+  const isUsdQuoted = chartSellAssetId === USDT_ASSET_ID
+
   // the API only serves the pair with the lower asset id as assetIn
-  const isAligned = Number(USDT_ASSET_ID) >= Number(sellAssetId)
+  const isAligned = Number(USDT_ASSET_ID) >= Number(chartSellAssetId)
+  const queryAssetIn = isAligned ? chartSellAssetId : USDT_ASSET_ID
+  const queryAssetOut = isAligned ? USDT_ASSET_ID : chartSellAssetId
 
   const {
     data: hydraPages,
@@ -63,10 +109,11 @@ export const useXcSwapCandles = ({
     fetchNextPage,
   } = useInfiniteQuery({
     ...pairCandlesInfiniteQuery(neckworkClient, {
-      assetIn: isAligned ? sellAssetId : USDT_ASSET_ID,
-      assetOut: isAligned ? USDT_ASSET_ID : sellAssetId,
+      assetIn: queryAssetIn,
+      assetOut: queryAssetOut,
       bucket,
     }),
+    enabled: !isUsdQuoted,
     placeholderData: keepPreviousData,
   })
 
@@ -85,8 +132,12 @@ export const useXcSwapCandles = ({
   }, [hydraPages, isAligned])
 
   const candles = useMemo<PairCandle[]>(() => {
+    if (!foreignCandles?.length) return []
+
+    if (isUsdQuoted) return foreignCandlesToPair(foreignCandles, 1)
+
     const first = hydraCandles[0]
-    if (!first || !foreignCandles?.length) return []
+    if (!first) return []
 
     const foreignSorted = [...foreignCandles].sort(
       (a, b) => a.timestamp - b.timestamp,
@@ -122,7 +173,7 @@ export const useXcSwapCandles = ({
     }
 
     return result
-  }, [hydraCandles, foreignCandles])
+  }, [hydraCandles, foreignCandles, isUsdQuoted])
 
   const onReachStart = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage()
@@ -131,10 +182,12 @@ export const useXcSwapCandles = ({
   return {
     candles,
     onReachStart,
-    isLoading: isHydraLoading || isForeignLoading,
-    isError: isHydraError || isForeignError,
-    isSuccess: isHydraSuccess && isForeignSuccess,
+    isLoading: (!isUsdQuoted && isHydraLoading) || isForeignLoading,
+    isError: (!isUsdQuoted && isHydraError) || isForeignError,
+    isSuccess: (isUsdQuoted || isHydraSuccess) && isForeignSuccess,
     isPlaceholderData,
-    isRefetching: (isHydraFetching && !isFetchingNextPage) || isForeignFetching,
+    isRefetching:
+      (!isUsdQuoted && isHydraFetching && !isFetchingNextPage) ||
+      isForeignFetching,
   }
 }
