@@ -180,7 +180,7 @@ export function useBilReserveConfig() {
   const queryClient = useQueryClient()
   return useQuery({
     queryKey: bilQueryKeys.reserveConfig(),
-    enabled: rpc.isLoaded,
+    enabled: rpc.isReady,
     queryFn: async (): Promise<BilReserveConfig> => {
       const pool = await queryClient.ensureQueryData(bilPoolContractQuery(rpc))
       // The DCL precompile (asset 550) is the actual reserve; BIL (asset 55,

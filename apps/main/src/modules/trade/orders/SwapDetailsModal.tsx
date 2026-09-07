@@ -17,9 +17,11 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
-import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
-import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
-import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
+import {
+  MarketDcaStatus,
+  SwapStatus,
+} from "@/modules/trade/orders/columns/SwapStatus"
+import { RoutedTradeData, SwapData } from "@/modules/trade/orders/lib/types"
 
 type Props = {
   readonly details: SwapData | RoutedTradeData
@@ -43,13 +45,13 @@ export const SwapDetailsModal = ({ details }: Props) => {
             to={details.to}
             showLogo
           />
-          {details.status?.kind === "market" ? (
-            <SwapStatus />
-          ) : (
+          {details.status?.kind === "market" && <SwapStatus />}
+          {details.status?.kind === "marketDca" && <MarketDcaStatus />}
+          {details.status?.kind !== "market" &&
+            details.status?.kind !== "marketDca" &&
             details.status?.status && (
               <DcaOrderStatus status={details.status.status} isDcaSwap />
-            )
-          )}
+            )}
         </Flex>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">

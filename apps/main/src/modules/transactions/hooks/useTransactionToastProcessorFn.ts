@@ -2,7 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import { createToastProcessorFn } from "@/modules/transactions/utils/toasts"
 import { useRpcProvider } from "@/providers/rpcProvider"
 

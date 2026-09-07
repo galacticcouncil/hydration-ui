@@ -1,7 +1,8 @@
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 export type ReferendaTrack = Awaited<
@@ -9,10 +10,10 @@ export type ReferendaTrack = Awaited<
 >[number][1]
 
 export const uniquesIds = (context: TProviderContext) => {
-  const { isApiLoaded, papi } = context
+  const { isReady, papi } = context
 
   return queryOptions({
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
     queryKey: ["uniquesIds"],
     queryFn: async () => {
@@ -29,10 +30,7 @@ export const uniquesIds = (context: TProviderContext) => {
   })
 }
 
-export const insufficientFeeQuery = ({
-  papi,
-  isApiLoaded,
-}: TProviderContext) => {
+export const insufficientFeeQuery = ({ papi, isReady }: TProviderContext) => {
   return queryOptions({
     queryKey: ["insufficientFee"],
     queryFn: async () => {
@@ -40,13 +38,13 @@ export const insufficientFeeQuery = ({
 
       return new Big(fee.toString()).times(1.1).toString()
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     gcTime: GC_TIME,
     staleTime: STALE_TIME,
   })
 }
 
-export const stakingConstsQuery = ({ papi, isApiLoaded }: TProviderContext) =>
+export const stakingConstsQuery = ({ papi, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: ["stakingConsts"],
     queryFn: async () => {
@@ -75,13 +73,13 @@ export const stakingConstsQuery = ({ papi, isApiLoaded }: TProviderContext) =>
         stakeWeight: stakeWeight.toString(),
       }
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     gcTime: GC_TIME,
     staleTime: STALE_TIME,
   })
 
 export const referendaTracksQuery = ({
-  isApiLoaded,
+  isReady,
   papi,
   endpoint,
 }: TProviderContext) =>
@@ -92,7 +90,7 @@ export const referendaTracksQuery = ({
 
       return new Map(tracks.map(([id, track]) => [id, track]))
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     gcTime: GC_TIME,
     staleTime: STALE_TIME,
   })

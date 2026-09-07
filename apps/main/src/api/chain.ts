@@ -9,10 +9,10 @@ import { usePapiValue } from "@/hooks/usePapiValue"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const bestNumberQuery = (context: TProviderContext) => {
-  const { isApiLoaded, papi, endpoint } = context
+  const { isReady, papi, endpoint } = context
 
   return queryOptions({
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "bestNumber", endpoint],
     queryFn: async () => {
       const [validationData, blockNumber, timestamp] = await Promise.all([
@@ -56,15 +56,15 @@ let lastBlockAt = Date.now()
 
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   const observable = useMemo(() => {
-    if (!isApiLoaded) return
+    if (!isReady) return
     return papi.query.System.Number.watchValue({ at: "best" })
-  }, [isApiLoaded, papi])
+  }, [isReady, papi])
 
   useObservable(observable, {
-    enabled: isApiLoaded,
+    enabled: isReady,
     onUpdate: () => {
       lastBlockAt = Date.now()
       queryClient.invalidateQueries({
@@ -107,19 +107,16 @@ export const useBlockTimestamp = () =>
   usePapiValue("Timestamp.Now", [{ at: "best" }])
 
 export const chainSpecDataQuery = (context: TProviderContext) => {
-  const { papi, papiClient, isApiLoaded } = context
+  const { papi, isReady } = context
 
   return queryOptions({
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: ["chainSpecData"],
     queryFn: async () => {
-      const [chainSpecData, lastRuntimeUpgrade] = await Promise.all([
-        papiClient.getChainSpecData(),
-        papi.query.System.LastRuntimeUpgrade.getValue(),
-      ])
+      const lastRuntimeUpgrade =
+        await papi.query.System.LastRuntimeUpgrade.getValue()
 
       return {
-        chainSpecData,
         lastRuntimeUpgrade,
       }
     },
@@ -132,10 +129,10 @@ export const useChainSpecData = () => {
 }
 
 export const blockWeightsQuery = (context: TProviderContext) => {
-  const { isApiLoaded, papi } = context
+  const { isReady, papi } = context
 
   return queryOptions({
-    enabled: isApiLoaded,
+    enabled: isReady,
     queryKey: ["blockWeights"],
     queryFn: () => papi.constants.System.BlockWeights(),
     staleTime: Infinity,

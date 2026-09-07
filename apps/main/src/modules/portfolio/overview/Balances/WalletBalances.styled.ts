@@ -6,14 +6,13 @@ export const SWalletBalances = styled.div(
     display: grid;
     row-gap: ${theme.containers.paddings.tertiary};
 
-    min-height: 18.25rem;
     padding: ${theme.containers.paddings.secondary};
     border-radius: ${theme.radii.xl};
     border: 1px solid ${theme.details.borders};
 
     background: ${theme.surfaces.containers.high.primary};
 
-    grid-template-rows: 1fr auto auto;
+    grid-template-rows: auto auto auto;
     row-gap: ${theme.space.s};
 
     ${mq("md")} {

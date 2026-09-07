@@ -28,7 +28,7 @@ export const useMaxSellAmount = ({
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const enabled =
-    rpc.isApiLoaded && !!account && accountFeePaymentAssetId === Number(assetIn)
+    rpc.isReady && !!account && accountFeePaymentAssetId === Number(assetIn)
 
   const { data: tx, isPending: isTxPending } = useQuery({
     enabled,

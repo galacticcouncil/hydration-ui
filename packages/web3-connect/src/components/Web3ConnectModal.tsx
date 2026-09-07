@@ -1,6 +1,5 @@
 import { hydration } from "@galacticcouncil/descriptors"
 import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
-import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { Modal } from "@galacticcouncil/ui/components"
 import { TypedApi } from "polkadot-api"
 import { FC, useMemo } from "react"
@@ -39,8 +38,7 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
 }
 
 type ControlledProps = {
-  readonly squidSdk: SquidSdk
-  readonly neckwork: NeckworkClient | null
+  readonly neckwork: NeckworkClient
   readonly papi: TypedApi<typeof hydration>
   readonly open: boolean
   readonly mode: WalletMode
@@ -49,15 +47,14 @@ type ControlledProps = {
 }
 
 type UncontrolledProps = {
-  readonly squidSdk: SquidSdk
-  readonly neckwork: NeckworkClient | null
+  readonly neckwork: NeckworkClient
   readonly papi: TypedApi<typeof hydration>
 }
 
 type Props = ControlledProps | UncontrolledProps
 
 const Web3ConnectModalContent: FC<Props> = (props) => {
-  const { squidSdk, neckwork, papi } = props
+  const { neckwork, papi } = props
 
   const isControlled =
     "open" in props &&
@@ -81,22 +78,12 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
       isControlled,
       page,
       setPage,
-      squidSdk,
       neckwork,
       papi,
       onAccountSelect,
       mode,
     }),
-    [
-      page,
-      setPage,
-      squidSdk,
-      neckwork,
-      onAccountSelect,
-      isControlled,
-      mode,
-      papi,
-    ],
+    [page, setPage, neckwork, onAccountSelect, isControlled, mode, papi],
   )
   return (
     <Web3ConnectProvider value={context}>

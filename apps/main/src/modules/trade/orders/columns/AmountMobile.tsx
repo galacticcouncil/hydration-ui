@@ -1,7 +1,3 @@
-import {
-  DcaScheduleStatus,
-  isDcaScheduleStatus,
-} from "@galacticcouncil/indexer/squid"
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
@@ -9,6 +5,10 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
+import {
+  DcaScheduleStatus,
+  isDcaScheduleStatus,
+} from "@/modules/trade/orders/lib/types"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {

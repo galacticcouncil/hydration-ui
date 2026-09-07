@@ -39,14 +39,14 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
   const setBannerVisible = useBannersStore((state) => state.setBannerVisible)
   const banner = useBannersStore((state) => state.banners["hollar-banner"])
 
-  const { isLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
   const { data: gho, isLoading: isLoadingGhoReserveData } = useGhoReserveData()
 
   const { ghoBorrowApyRange } = gho ?? {}
 
   if (banner.visible === false) return null
 
-  const isLoading = !isLoaded || isLoadingReserves || isLoadingGhoReserveData
+  const isLoading = !isReady || isLoadingReserves || isLoadingGhoReserveData
 
   const totalBorrowed = (() => {
     if (!reserve) return

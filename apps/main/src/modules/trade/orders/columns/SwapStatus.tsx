@@ -13,6 +13,16 @@ export const SwapStatus: FC = () => {
   )
 }
 
+export const MarketDcaStatus: FC = () => {
+  const { t } = useTranslation("trade")
+
+  return (
+    <Status color={getToken("text.tint.quart")}>
+      {t("trade.orders.type.dca")}
+    </Status>
+  )
+}
+
 export const Status: FC<ComponentProps<typeof Text>> = (props) => {
   return <Text as="div" fw={600} fs="p6" lh={1} {...props} />
 }

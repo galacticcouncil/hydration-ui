@@ -5,7 +5,7 @@ import {
   OmnipoolPosition,
   XykDeposit,
 } from "@/api/account"
-import { Papi } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
 
 export const getUniquesEntriesIds = (
   entries: AccountUniquesValues,

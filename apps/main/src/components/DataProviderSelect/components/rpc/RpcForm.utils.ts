@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
-import { PROVIDER_URLS } from "@/api/provider"
+import { PROVIDER_URLS } from "@/api/rpcConfig"
 import { useRpcListStore } from "@/states/provider"
 import { required, validWebsocketUrl } from "@/utils/validators"
 
