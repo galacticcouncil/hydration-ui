@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next"
 import { MultichainValuedBalance } from "@/api/portfolio"
 import { useCrossChainConfigService } from "@/api/xcm"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
+import { MyAssetsEmptyState } from "@/modules/portfolio/overview/MyAssets/MyAssetsEmptyState"
 import { MyAssetsTable } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable"
 import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import { myAssetsMobileSorter } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.utils"
@@ -105,7 +106,8 @@ export const PortfolioChainSection: FC<Props> = memo(
     const canDepositAny = data.some((asset) => asset.canDeposit)
 
     const hasAssets = data.length > 0
-    const defaultOpen = isError || (!isLoading && hasAssets)
+    const showEmptyState = !isLoading && !isError && !hasAssets
+    const defaultOpen = isError || showEmptyState || hasAssets
     const isOpen = open ?? defaultOpen
 
     return (
@@ -127,7 +129,7 @@ export const PortfolioChainSection: FC<Props> = memo(
           />
         </CollapsibleTrigger>
         <CollapsibleContent
-          forceMount={hasAssets || undefined}
+          forceMount={showEmptyState || hasAssets || undefined}
           animationDurationMs={400}
           sx={{ overflow: "hidden" }}
         >
@@ -146,6 +148,8 @@ export const PortfolioChainSection: FC<Props> = memo(
                   }
                 />
               </Box>
+            ) : showEmptyState ? (
+              <MyAssetsEmptyState />
             ) : (
               <SPortfolioTableWrapper>
                 <MyAssetsTable
