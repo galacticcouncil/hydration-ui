@@ -1,4 +1,4 @@
-import { OrderKind } from "@/modules/trade/orders/lib/types"
+import { DcaScheduleStatus, OrderKind } from "@/modules/trade/orders/lib/types"
 import type { TAsset } from "@/providers/assetsProvider"
 
 export { OrderKind }
@@ -23,6 +23,16 @@ export const DCA_HISTORY_ORDER_STATUSES = [
 
 export const isOrderStatus = (status: unknown): status is OrderStatus =>
   Object.values(OrderStatus).includes(status as OrderStatus)
+
+export const toOrderStatusFromSchedule = (
+  status: DcaScheduleStatus,
+): OrderStatus =>
+  ({
+    [DcaScheduleStatus.Created]: OrderStatus.Created,
+    [DcaScheduleStatus.Completed]: OrderStatus.Completed,
+    [DcaScheduleStatus.Terminated]: OrderStatus.Terminated,
+    [DcaScheduleStatus.Cancelled]: OrderStatus.Cancelled,
+  })[status]
 
 const INTENT_TERMINAL_STATUS_MAP: Record<string, OrderStatus> = {
   "Intent.IntentResolved": OrderStatus.Completed,

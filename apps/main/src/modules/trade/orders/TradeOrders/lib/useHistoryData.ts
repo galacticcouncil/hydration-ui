@@ -10,19 +10,12 @@ import { toApiDcaStatuses } from "@/modules/trade/orders/lib/apiVocabulary"
 import {
   DcaOrderData,
   OrderKind,
-  OrderStatus,
+  toOrderStatusFromSchedule,
 } from "@/modules/trade/orders/lib/orderData"
 import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
 import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
-
-const SCHEDULE_STATUS_MAP: Record<DcaScheduleStatus, OrderStatus> = {
-  [DcaScheduleStatus.Created]: OrderStatus.Created,
-  [DcaScheduleStatus.Completed]: OrderStatus.Completed,
-  [DcaScheduleStatus.Terminated]: OrderStatus.Terminated,
-  [DcaScheduleStatus.Cancelled]: OrderStatus.Cancelled,
-}
 
 export const useHistoryData = (
   statuses: ReadonlyArray<DcaScheduleStatus>,
@@ -77,7 +70,9 @@ export const useHistoryData = (
           ),
           to,
           toAmountExecuted: scaleHuman(schedule.executedAmountOut, to.decimals),
-          status: SCHEDULE_STATUS_MAP[schedule.status as DcaScheduleStatus],
+          status: toOrderStatusFromSchedule(
+            schedule.status as DcaScheduleStatus,
+          ),
           timestamp: schedule.lastEventAt ?? schedule.createdAt,
           blocksPeriod: String(schedule.periodBlocks),
           isOpenBudget: schedule.isRollingBudget,
