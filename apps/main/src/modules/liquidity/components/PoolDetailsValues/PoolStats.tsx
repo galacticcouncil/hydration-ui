@@ -1,13 +1,5 @@
-import { TradingViewChartRef } from "@galacticcouncil/ui/components"
-import { useRef, useState } from "react"
-
-import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
 import i18n from "@/i18n"
-import {
-  intervalOptions,
-  PoolChart,
-  PoolChartTimeFrameType,
-} from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
+import { PoolChart } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -33,22 +25,12 @@ export const PoolStats = ({
   data: OmnipoolAssetTable | IsolatedPoolTable
 }) => {
   const isOmnipool = !isIsolatedPool(data)
-  const chartRef = useRef<TradingViewChartRef>(null)
-  const [interval, setInterval] = useState<PoolChartTimeFrameType | "all">(
-    "week",
-  )
-
-  const changeInterval = (interval: PoolChartTimeFrameType | "all"): void => {
-    setInterval(interval)
-    chartRef.current?.resetZoom()
-  }
 
   return (
     <PoolStatsShell
       values={<PoolDetailsValues data={data} />}
       renderChart={(isMobile) => (
         <PoolChart
-          chartRef={chartRef}
           assetId={data.id}
           height={
             isMobile
@@ -57,20 +39,9 @@ export const PoolStats = ({
                 ? 500
                 : 420
           }
-          interval={interval}
-          setInterval={changeInterval}
           isEmptyData={!isOmnipool}
         />
       )}
-      renderChartHeader={(isMobile) =>
-        isMobile && (
-          <ChartTimeRangeDropdown
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={changeInterval}
-          />
-        )
-      }
     />
   )
 }
