@@ -337,6 +337,8 @@
   "contacts": "Contacts",
   "approvals": "Approvals",
   "contacts.description": "Manage & save adresses",
+  "transaction.pending.approval.title": "Approval Pending",
+  "transaction.pending.approval.description": "Your approval transaction is being confirmed on the blockchain.",
   "transaction.description": "Review transaction details",
   "transaction.sign": "Sign Transaction",
   "transaction.sign.openInPjs": "Open in Polkadot.js.org",

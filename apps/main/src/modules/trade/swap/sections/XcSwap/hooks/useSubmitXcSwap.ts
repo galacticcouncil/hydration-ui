@@ -1,8 +1,13 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { XcSwapTrade } from "@galacticcouncil/xc-swap"
 import { useMutation } from "@tanstack/react-query"
+import { minutesToMilliseconds } from "date-fns"
+import waitFor from "p-wait-for"
 import { useTranslation } from "react-i18next"
 
+import { useErc20Allowance } from "@/api/evm"
+import { PendingApproval } from "@/components/PendingApproval"
+import { XC_SWAP_CONFIG } from "@/config/xcSwap"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import {
   TransactionType,
@@ -13,6 +18,7 @@ import {
 export const useSubmitXcSwap = () => {
   const { t } = useTranslation(["common", "trade"])
   const { createTransaction } = useTransactionsStore()
+  const getErc20Allowance = useErc20Allowance()
 
   return useMutation({
     mutationFn: async ([values, trade]: [XcSwapFormValues, XcSwapTrade]) => {
@@ -74,6 +80,30 @@ export const useSubmitXcSwap = () => {
               meta: {
                 type: TransactionType.EvmApprove,
                 srcChainKey: HYDRATION_CHAIN_KEY,
+              },
+              pendingComponent: PendingApproval,
+              // The approve has to be visible to the node the swap is priced
+              // and executed against — a mined receipt on the wallet's rpc
+              // isn't that. The swap step stays out of reach until then, fee
+              // estimation included.
+              beforeNext: async () => {
+                await waitFor(
+                  async () => {
+                    const allowance = await getErc20Allowance(
+                      approve.to,
+                      approve.from,
+                      XC_SWAP_CONFIG.emitter,
+                    )
+                    return allowance >= trade.amountIn.amount
+                  },
+                  {
+                    interval: 1000,
+                    timeout: {
+                      milliseconds: minutesToMilliseconds(3),
+                      message: t("trade:xc.swap.approve.timeout"),
+                    },
+                  },
+                )
               },
             },
             {

@@ -104,6 +104,7 @@
   "xc.swap.step.approve": "Approve",
   "xc.swap.approve.toast.submitted": "Approving {{ symbol }}",
   "xc.swap.approve.toast.success": "{{ symbol }} approved",
+  "xc.swap.approve.timeout": "The approval hasn't been confirmed on-chain yet. Please try again.",
   "market.form.type.single": "Single trade",
   "market.form.type.single.instant": "Instant execution",
   "market.form.type.split": "Split trade",
