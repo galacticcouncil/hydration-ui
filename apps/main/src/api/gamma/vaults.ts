@@ -4,46 +4,14 @@ import { queryOptions, useQueries } from "@tanstack/react-query"
 import { Hex, parseAbi, PublicClient } from "viem"
 
 import { V3PoolBase } from "@/api/pools"
+import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
+
+import { GAMMA_CONTRACTS } from "./config"
 
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000"
 
-// Gamma addresses are not in chain state, so unlike the v3 factory they cannot be
-// discovered. A vault is only visible on a network listed below. Addresses of
-// record: mainnet/DEPLOYMENTS.md in galacticcouncil/uniswap-v3-deploy.
-type GammaDeployment = {
-  hypervisorFactory: `0x${string}`
-  /** Only address allowed to take deposits */
-  uniProxy: `0x${string}`
-  /** Fallback for lastRebalance; the fork still has an EOA as Hypervisor.owner() */
-  rebalanceProxy?: `0x${string}`
-}
-
-const GAMMA_DEPLOYMENT: (GammaDeployment & { hosts: string[] })[] = [
-  {
-    hosts: ["4.lark.hydration.cloud", "node4.lark.hydration.cloud"],
-    // redeployed after the 2026-08-26 fork reset
-    hypervisorFactory: "0x9E545E3C0baAB3E08CdfD552C960A1050f373042",
-    uniProxy: "0x851356ae760d987E095750cCeb3bC6014560891C",
-    rebalanceProxy: "0x4826533B4897376654Bb4d4AD88B7faFD0C98528",
-  },
-]
-
-const hostOf = (url: string) => {
-  try {
-    return new URL(url).host
-  } catch {
-    return ""
-  }
-}
-
-const deploymentFor = (urls: string[]): GammaDeployment | undefined => {
-  const hosts = new Set(urls.map(hostOf).filter(Boolean))
-
-  return GAMMA_DEPLOYMENT.find((entry) =>
-    entry.hosts.some((host) => hosts.has(host)),
-  )
-}
+type GammaContracts = typeof GAMMA_CONTRACTS
 
 const ERC20_BALANCE_ABI = parseAbi([
   "function balanceOf(address) view returns (uint256)",
@@ -129,15 +97,13 @@ export type VaultState = {
 
 const vaultQuery = (
   evm: PublicClient,
-  deployment: GammaDeployment | undefined,
+  contracts: GammaContracts,
   pool: V3PoolBase,
 ) =>
   queryOptions<VaultState | null>({
-    queryKey: ["vault", pool.address, deployment?.hypervisorFactory],
-    enabled: !!deployment,
+    queryKey: ["vault", pool.address, contracts.hypervisorFactory],
     queryFn: async () => {
-      if (!deployment) return null
-      const factory = deployment.hypervisorFactory
+      const factory = contracts.hypervisorFactory
 
       // Use the pool's own token contracts. An Erc20 asset does not live at its
       // id alias, so re-deriving them would address a different pool.
@@ -207,7 +173,7 @@ const vaultQuery = (
         }),
         evm.readContract({
           abi: UNIPROXY_CLEARANCE_ABI,
-          address: deployment.uniProxy,
+          address: contracts.uniProxy,
           functionName: "clearance",
         }),
       ])
@@ -244,16 +210,14 @@ const vaultQuery = (
               args: [hypervisor],
             })
             .catch(() =>
-              deployment.rebalanceProxy
-                ? evm
-                    .readContract({
-                      abi: REBALANCE_PROXY_ABI,
-                      address: deployment.rebalanceProxy,
-                      functionName: "lastRebalance",
-                      args: [hypervisor],
-                    })
-                    .catch(() => null)
-                : null,
+              evm
+                .readContract({
+                  abi: REBALANCE_PROXY_ABI,
+                  address: contracts.rebalanceProxy,
+                  functionName: "lastRebalance",
+                  args: [hypervisor],
+                })
+                .catch(() => null),
             ),
         ])
 
@@ -293,7 +257,7 @@ const vaultQuery = (
       return {
         address: hypervisor,
         shareSymbol,
-        uniProxy: deployment.uniProxy,
+        uniProxy: contracts.uniProxy,
         token0,
         token1,
         totalSupply,
@@ -322,12 +286,14 @@ const vaultQuery = (
 
 /** Managing vault per pool, null where none exists */
 export const useVaultStates = (pools: V3PoolBase[]) => {
-  const { evm, rpcUrlList, endpoint } = useRpcProvider()
-
-  const deployment = deploymentFor([endpoint, ...rpcUrlList].filter(Boolean))
+  const { evm } = useRpcProvider()
+  const enabled = ENV.VITE_UNIV3_GAMMA_ENABLED
 
   return useQueries({
-    queries: pools.map((pool) => vaultQuery(evm, deployment, pool)),
+    queries: pools.map((pool) => ({
+      ...vaultQuery(evm, GAMMA_CONTRACTS, pool),
+      enabled,
+    })),
     combine: (results) => ({
       data: results.map((result) => result.data ?? null),
       isLoading: results.some((result) => result.isLoading),

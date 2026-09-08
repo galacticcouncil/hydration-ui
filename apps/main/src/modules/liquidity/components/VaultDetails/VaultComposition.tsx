@@ -99,7 +99,7 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
             </Flex>
           ))}
 
-          {state.lastRebalance !== null && (
+          {
             <Box mt="auto">
               <Separator my="m" />
               <Flex justify="space-between" align="center">
@@ -107,13 +107,15 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
                   {t("liquidity:vaults.composition.lastRebalance")}
                 </Text>
                 <Text fs="p6">
-                  {t("common:date.relative", {
-                    value: new Date(state.lastRebalance * 1000),
-                  })}
+                  {state.lastRebalance !== null
+                    ? t("common:date.relative", {
+                        value: new Date(state.lastRebalance * 1000),
+                      })
+                    : t("common:unknown")}
                 </Text>
               </Flex>
             </Box>
-          )}
+          }
         </Stack>
       </Paper>
     </Stack>

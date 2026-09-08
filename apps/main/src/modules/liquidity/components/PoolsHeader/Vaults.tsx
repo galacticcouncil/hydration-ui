@@ -2,6 +2,7 @@ import { ValueStats } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { ENV } from "@/config/env"
 import { useVaults } from "@/modules/liquidity/Vaults.utils"
 
 import { PoolsHeaderSeparator } from "./PoolsHeaderSeparator"
@@ -36,6 +37,8 @@ export const VaultsValueTile = ({
 }: VaultsValueTileProps) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { vaults, pools, isLoading, hasVaults } = useVaultTotals()
+
+  if (!ENV.VITE_UNIV3_GAMMA_ENABLED) return null
 
   if (!withPoolValue && !hasVaults) return null
 

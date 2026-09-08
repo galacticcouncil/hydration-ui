@@ -6,7 +6,7 @@ import { useCallback } from "react"
 import { encodeFunctionData, Hex, parseAbi } from "viem"
 
 import { estimateGasLimit } from "@/api/borrow"
-import { VaultState } from "@/api/vaults"
+import { VaultState } from "@/api/gamma/vaults"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"

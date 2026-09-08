@@ -1,5 +1,5 @@
 import { V3PoolBase } from "@/api/pools"
-import { VaultState } from "@/api/vaults"
+import { VaultState } from "@/api/gamma/vaults"
 
 /** token1 per token0, decimal-adjusted, from a tick */
 export const priceAtTick = (

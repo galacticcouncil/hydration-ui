@@ -35,7 +35,7 @@ const STATUS_VARIANT: Record<VaultStatus, ChipVariant> = {
   inRange: "green",
   outOfRange: "amber",
   depositsClosed: "amber",
-  notStarted: "blue",
+  notStarted: "tertiary",
   noVault: "blue",
 }
 

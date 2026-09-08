@@ -1,4 +1,4 @@
-import { PoolType } from "@galacticcouncil/sdk-next/pool"
+import { PoolType, PoolTypeValue } from "@/api/pools"
 import { BuySwap, SellSwap, Swap } from "@galacticcouncil/sdk-next/sor"
 import {
   GDOT_ASSET_ID,
@@ -96,7 +96,7 @@ const HIDDEN_HOP_ASSET_IDS = [
 export type TradeRoute = ReturnType<typeof mapRoutes>[number]
 export type TradeRouteFee = TradeRoute["tradeFees"][number]
 
-const POOL_TYPE_LABEL: Record<PoolType, string> = {
+const POOL_TYPE_LABEL: Record<PoolTypeValue, string> = {
   [PoolType.Omni]: "Omnipool",
   [PoolType.Stable]: "Stableswap",
   [PoolType.XYK]: "XYK",
@@ -106,5 +106,5 @@ const POOL_TYPE_LABEL: Record<PoolType, string> = {
   [PoolType.V3]: "Concentrated liquidity",
 }
 
-export const formatPoolTypes = (pools: ReadonlyArray<PoolType>): string =>
+export const formatPoolTypes = (pools: ReadonlyArray<PoolTypeValue>): string =>
   [...new Set(pools)].map((pool) => POOL_TYPE_LABEL[pool] ?? pool).join(" + ")

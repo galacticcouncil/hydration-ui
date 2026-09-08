@@ -1,8 +1,9 @@
 import Big from "big.js"
 import { useMemo } from "react"
 
+import { useVaultShares, useVaultStates, VaultState } from "@/api/gamma/vaults"
 import { useV3Pools, V3PoolBase } from "@/api/pools"
-import { useVaultShares, useVaultStates, VaultState } from "@/api/vaults"
+import { ENV } from "@/config/env"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -34,10 +35,11 @@ export type VaultStatus =
   | "outOfRange"
 
 export const useVaults = () => {
+  const gammaEnabled = ENV.VITE_UNIV3_GAMMA_ENABLED
   const { data: pools, isLoading } = useV3Pools()
   const { getAssetWithFallback } = useAssets()
   const { data: vaults, isLoading: isVaultLoading } = useVaultStates(
-    pools ?? [],
+    gammaEnabled ? (pools ?? []) : [],
   )
   const sharesQuery = useVaultShares(vaults)
   const shares = sharesQuery.data
@@ -58,7 +60,7 @@ export const useVaults = () => {
   const { getAssetPrice } = useAssetsPrice(assetIds)
 
   const data = useMemo<VaultTable[]>(() => {
-    if (!pools?.length) return []
+    if (!gammaEnabled || !pools?.length) return []
 
     return pools.map((pool, index) => {
       const vault = vaults[index] ?? null
@@ -129,7 +131,7 @@ export const useVaults = () => {
         positionValueDisplay,
       }
     })
-  }, [pools, vaults, shares, getAssetWithFallback, getAssetPrice])
+  }, [gammaEnabled, pools, vaults, shares, getAssetWithFallback, getAssetPrice])
 
   return {
     data,

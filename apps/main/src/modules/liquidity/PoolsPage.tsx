@@ -12,6 +12,7 @@ import { Link, useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { ENV } from "@/config/env"
 import {
   PaginationProps,
   useDataTableUrlPagination,
@@ -60,7 +61,8 @@ export const PoolsPage = () => {
     <>
       <PoolsHeader />
       <PoolsFilters search={search} onChange={setSearch} />
-      {(type === "vaults" || type === "all") && <VaultsTable search={search} />}
+      {(type === "vaults" || type === "all") &&
+        ENV.VITE_UNIV3_GAMMA_ENABLED && <VaultsTable search={search} />}
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable
           search={search}

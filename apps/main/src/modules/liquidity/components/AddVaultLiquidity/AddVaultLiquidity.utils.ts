@@ -13,7 +13,7 @@ import z from "zod/v4"
 
 import { useAccountBalances } from "@/api/balances/account.hooks"
 import { estimateGasLimit } from "@/api/borrow"
-import { VaultState } from "@/api/vaults"
+import { VaultState } from "@/api/gamma/vaults"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"

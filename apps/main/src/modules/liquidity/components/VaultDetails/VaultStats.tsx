@@ -17,7 +17,15 @@ import { feeTierPercent, VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 type VaultChart = "distribution" | "price"
 
-export const VaultStats = ({ vault }: { vault: VaultTable }) => {
+type VaultStatsProps = {
+  vault: VaultTable
+  showPriceHistory?: boolean
+}
+
+export const VaultStats = ({
+  vault,
+  showPriceHistory = true,
+}: VaultStatsProps) => {
   const { t } = useTranslation(["common", "liquidity"])
   const [chart, setChart] = useState<VaultChart>("distribution")
 
@@ -25,28 +33,36 @@ export const VaultStats = ({ vault }: { vault: VaultTable }) => {
 
   const options: ReadonlyArray<{ id: VaultChart; label: string }> = [
     { id: "distribution", label: t("liquidity:vaults.chart.liquidity") },
-    { id: "price", label: t("liquidity:vaults.chart.price") },
+    ...(showPriceHistory
+      ? [{ id: "price" as const, label: t("liquidity:vaults.chart.price") }]
+      : []),
   ]
 
   return (
     <PoolStatsShell
       sx={{ mb: "xl" }}
       values={<VaultValues vault={vault} />}
-      renderChartHeader={() => (
-        <ToggleGroup
-          type="single"
-          fullWidth={isMobile}
-          size={isMobile ? "small" : "medium"}
-          value={chart}
-          onValueChange={(value) => value && setChart(value as VaultChart)}
-        >
-          {options.map((option) => (
-            <ToggleGroupItem key={option.id} value={option.id}>
-              {option.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      )}
+      renderChartHeader={
+        options.length > 1
+          ? () => (
+              <ToggleGroup
+                type="single"
+                fullWidth={isMobile}
+                size={isMobile ? "small" : "medium"}
+                value={chart}
+                onValueChange={(value) =>
+                  value && setChart(value as VaultChart)
+                }
+              >
+                {options.map((option) => (
+                  <ToggleGroupItem key={option.id} value={option.id}>
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            )
+          : undefined
+      }
       renderChart={() =>
         chart === "distribution" ? (
           <LiquidityDistribution vault={vault} />

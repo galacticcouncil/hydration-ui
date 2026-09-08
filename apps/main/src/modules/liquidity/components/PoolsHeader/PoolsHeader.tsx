@@ -1,6 +1,8 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 
+import { ENV } from "@/config/env"
+
 import { AllPools } from "./AllPools"
 import { Isolated } from "./Isolated"
 import { MyLiquidity } from "./MyLiquidity"
@@ -23,7 +25,7 @@ export const PoolsHeader = () => {
         <MyLiquidity />
       ) : type === "all" ? (
         <AllPools />
-      ) : type === "vaults" ? (
+      ) : type === "vaults" && ENV.VITE_UNIV3_GAMMA_ENABLED ? (
         <VaultsValueTile withPoolValue />
       ) : isIsolated ? (
         <Isolated />

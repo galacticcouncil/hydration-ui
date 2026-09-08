@@ -32,7 +32,7 @@ export const VaultDetails: FC<Props> = ({ address }) => {
         isPositionError={isPositionError}
       />
 
-      <VaultStats vault={vault} />
+      <VaultStats vault={vault} showPriceHistory={false} />
 
       <ResponsiveScope>
         <SVaultDetailsRow>
