@@ -92,7 +92,9 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
 
       if (isSwitch) {
         setValue("sellAsset", previousSellAsset)
-        switchAssets()
+        if (!isCrossChain) {
+          switchAssets()
+        }
         return
       }
 
@@ -110,7 +112,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         resetScroll: false,
       })
     },
-    [getValues, navigate, resetForm, setValue, switchAssets],
+    [getValues, isCrossChain, navigate, resetForm, setValue, switchAssets],
   )
 
   const handleBuySelectionChange = useCallback(
@@ -124,7 +126,9 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
       if (isSwitch) {
         setValue("destChain", previousSelection.chain)
         setValue("buyAsset", previousSelection.asset)
-        switchAssets()
+        if (!isCrossChain) {
+          switchAssets()
+        }
         return
       }
 
@@ -151,7 +155,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         resetScroll: false,
       })
     },
-    [getValues, navigate, resetForm, setValue, switchAssets],
+    [getValues, isCrossChain, navigate, resetForm, setValue, switchAssets],
   )
 
   const [

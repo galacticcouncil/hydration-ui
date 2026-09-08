@@ -48,7 +48,7 @@ export const CrossChainSwitcher: FC<Props> = ({ swap }) => {
   })()
 
   return (
-    <SAssetSwitcher sx={{ alignItems: "center", mx: "-xl" }}>
+    <SAssetSwitcher align="center" mx="-xl">
       <Separator />
       <SSwitchContainer disabled>
         <Icon

@@ -1,5 +1,6 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
+import Big from "big.js"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
@@ -81,11 +82,15 @@ export type XcSwapFormValues = z.infer<ReturnType<typeof useSchema>>
 type Args = {
   readonly maxSwapSellBalance: string
   readonly maxTwapSellBalance: string
+  readonly isMaxSwapSellBalanceLoading: boolean
+  readonly isMaxTwapSellBalanceLoading: boolean
 }
 
 export const useXcSwapForm = ({
   maxSwapSellBalance,
   maxTwapSellBalance,
+  isMaxSwapSellBalanceLoading,
+  isMaxTwapSellBalanceLoading,
 }: Args) => {
   const { account } = useAccount()
   const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
@@ -112,7 +117,38 @@ export const useXcSwapForm = ({
 
   useSharedSellAmountSync(form)
 
-  const { trigger, getValues, getFieldState } = form
+  const { trigger, getValues, getFieldState, setValue, watch } = form
+  const isSingleTrade = watch("isSingleTrade")
+
+  useEffect(() => {
+    const isMaxLoading = isSingleTrade
+      ? isMaxSwapSellBalanceLoading
+      : isMaxTwapSellBalanceLoading
+
+    if (isMaxLoading) {
+      return
+    }
+
+    const sellAmount = getValues("sellAmount")
+    const max = isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance
+
+    if (sellAmount && Big(sellAmount).gt(max)) {
+      setValue("sellAmount", max, { shouldValidate: true, shouldDirty: true })
+      return
+    }
+
+    void trigger("sellAmount")
+  }, [
+    isSingleTrade,
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+    getValues,
+    setValue,
+    trigger,
+  ])
+
   useEffect(() => {
     const { sellAsset } = getValues()
 

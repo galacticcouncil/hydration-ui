@@ -119,7 +119,12 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     enabled: destPlatform === HYDRATION_CHAIN_KEY,
   })
 
-  const form = useXcSwapForm({ maxSwapSellBalance, maxTwapSellBalance })
+  const form = useXcSwapForm({
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+  })
   const {
     swap: {
       single: { swapSlippage },

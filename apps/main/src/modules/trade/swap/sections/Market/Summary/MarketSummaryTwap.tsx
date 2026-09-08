@@ -10,6 +10,7 @@ import {
   Summary,
   SummaryRowDisplayValue,
   SummaryRowValue,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
@@ -155,19 +156,23 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
             tooltip={t("trade:market.summary.minReceived.tooltip")}
             amount={
               <SummaryRowValue>
-                <span>
-                  {t("currency", {
-                    value: twapPriceHuman,
-                    symbol: twapPriceAsset.symbol,
+                {t("currency", {
+                  value: twapPriceHuman,
+                  symbol: twapPriceAsset.symbol,
+                })}
+                <Text as="span" color={getToken("text.tint.quart")}>
+                  {t("trade:market.summary.twapPriceDiff", {
+                    value: twapDiffAbs,
                   })}
-                </span>
-                <span sx={{ color: getToken("text.tint.quart") }}>
-                  {` (${t("percent", { value: twapDiffAbs, signDisplay: "always" })})`}
-                </span>
+                </Text>
               </SummaryRowValue>
             }
             amountDisplay={
-              twapPriceDisplay ? `(${twapPriceDisplay})` : undefined
+              twapPriceDisplay
+                ? t("parenthesized", {
+                    value: twapPriceDisplay,
+                  })
+                : undefined
             }
             isLoading={twapPriceDisplayLoading}
             isExpanded={isSummaryExpanded}
@@ -208,7 +213,9 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
                     })}
                   </SummaryRowValue>
                   <SummaryRowDisplayValue>
-                    ({transactionCostsDisplay})
+                    {t("parenthesized", {
+                      value: transactionCostsDisplay,
+                    })}
                   </SummaryRowDisplayValue>
                 </Flex>
               }

@@ -1,10 +1,11 @@
 import {
   CollapsibleContent,
   CollapsibleRoot,
+  Flex,
   Summary,
-  Text,
+  SummaryRowDisplayValue,
+  SummaryRowValue,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { XcSwapTrade } from "@galacticcouncil/xc-swap"
 import { produce } from "immer"
 import { useFormContext } from "react-hook-form"
@@ -135,12 +136,12 @@ const CrossChainSummary = ({ swap }: { readonly swap: XcSwapTrade }) => {
             label={t("trade:market.summary.estTradeFees")}
             tooltip={t("trade:market.summary.estTradeFees.tooltip")}
             content={
-              <Text fs="p5" fw={500} lh={1.2}>
-                <span sx={{ color: getToken("text.high") }}>{feeUsd}</span>{" "}
-                <span sx={{ color: getToken("text.tint.quart") }}>
-                  ({feePct})
-                </span>
-              </Text>
+              <Flex gap="s" align="center" justify="flex-end">
+                <SummaryRowValue>{feeUsd}</SummaryRowValue>
+                <SummaryRowDisplayValue>
+                  {t("parenthesized", { value: feePct })}
+                </SummaryRowDisplayValue>
+              </Flex>
             }
           />
           <SwapSummaryRow

@@ -305,6 +305,7 @@
   "percent.apr": "{{ value, percent }} APR",
   "percent.range": "{{ from, percent }} - {{ to, percent }}",
   "currency": "{{prefix, default('')}}{{ value, currency }}{{suffix, default('')}}",
+  "parenthesized": "({{ value }})",
   "number.compact": "{{ value, number(notation: 'compact'; maximumFractionDigits: 2) }}",
   "currency.compact": "{{ value, currency(notation: 'compact'; maximumFractionDigits: 2) }}",
   "percent.compact": "{{ value, percent(notation: 'compact'; maximumFractionDigits: 2) }}",

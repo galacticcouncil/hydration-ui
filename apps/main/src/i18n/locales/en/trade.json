@@ -119,6 +119,7 @@
   "market.summary.priceImpact.tooltip": "The impact your trade has on the market price of pools in the route.",
   "market.summary.minReceived": "Minimum received",
   "market.summary.minReceived.tooltip": "Minimum amount that you are guaranteed to receive if the price slips by maximum slippage set for this trade. If the price slips any further, your transaction will be reverted. Your current settings:",
+  "market.summary.twapPriceDiff": " ({{ value, percent(signDisplay: 'always') }})",
   "market.summary.maxSent": "Maximum sent",
   "market.summary.maxSent.tooltip": "Maximum amount that you are guaranteed to pay if the price slips by maximum slippage set for this trade. If the price slips any further, your transaction will be reverted. Your current settings:",
   "market.summary.calculatedAmount.tooltip.single": "Max slippage Single trade",
