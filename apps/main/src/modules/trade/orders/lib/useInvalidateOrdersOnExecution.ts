@@ -7,6 +7,7 @@ import { useAccountIntents } from "@/api/intents"
 import { useObservable } from "@/hooks/useObservable"
 import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 
 const INVALIDATE_DELAY = 5_000
 
@@ -59,8 +60,8 @@ const ownedEvents = <T extends { readonly id: number | bigint }>(
 export const useInvalidateOrdersOnExecution = () => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
-  const { papiClient, isReady, featureFlags } = useRpcProvider()
-  const { isIceEnabled } = featureFlags
+  const { papiClient, isReady } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
 
   const { scheduleIds, isLoading: isSchedulesLoading } = useChainScheduleIds()
   const { data: intents, isLoading: isIntentsLoading } = useAccountIntents(

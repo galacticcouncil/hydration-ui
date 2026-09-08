@@ -18,6 +18,7 @@ import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -35,7 +36,7 @@ export const MarketTradeOptions: FC<Props> = ({
 }) => {
   const { t } = useTranslation("trade")
   const rpc = useRpcProvider()
-  const { featureFlags } = rpc
+  const isIce = useIsIceEnabled()
 
   const { control, watch } = useFormContext<MarketFormValues>()
   const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
@@ -79,7 +80,6 @@ export const MarketTradeOptions: FC<Props> = ({
   // the output difference: small slices pay a smaller dynamic fee no matter
   // how the market moves. Fee assets line up with the card asset in both
   // directions (sell → out asset, buy → in asset).
-  const isIce = featureFlags.isIceEnabled
   const feeSaving = twap
     ? Math.max(
         0,

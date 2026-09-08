@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { tradeOrderDurationQuery } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
@@ -15,7 +16,8 @@ export const useSubmitTwap = () => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
   const rpc = useRpcProvider()
-  const { sdk, featureFlags } = rpc
+  const { sdk } = rpc
+  const isIceEnabled = useIsIceEnabled()
 
   const {
     swap: {
@@ -57,7 +59,7 @@ export const useSubmitTwap = () => {
         }),
       }
 
-      const tx = featureFlags.isIceEnabled
+      const tx = isIceEnabled
         ? await sdk.tx
             .intentOrder(twap)
             .withBeneficiary(account.address)

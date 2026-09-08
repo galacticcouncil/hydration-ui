@@ -6,6 +6,7 @@ import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -18,7 +19,8 @@ export const useMaxSellAmount = ({
 }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const { sdk, featureFlags, isReady } = useRpcProvider()
+  const { sdk, isReady } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const {
     swap: {
       single: { swapSlippage },
@@ -40,7 +42,7 @@ export const useMaxSellAmount = ({
       swapSlippage,
       twapSlippage,
       twapMaxRetries,
-      featureFlags.isIceEnabled,
+      isIceEnabled,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestSell(
@@ -61,7 +63,7 @@ export const useMaxSellAmount = ({
         .build()
         .then((tx) => tx.get())
 
-      const twapBuilder = featureFlags.isIceEnabled
+      const twapBuilder = isIceEnabled
         ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
         : sdk.tx
             .order(twap)

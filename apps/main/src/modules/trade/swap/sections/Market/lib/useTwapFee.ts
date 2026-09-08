@@ -6,10 +6,12 @@ import { TradeOrder } from "@/api/trade"
 import { ENV } from "@/config/env"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useTwapFee = (twap: TradeOrder) => {
-  const { sdk, featureFlags } = useRpcProvider()
+  const { sdk } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const { account } = useAccount()
   const {
     swap: {
@@ -26,12 +28,12 @@ export const useTwapFee = (twap: TradeOrder) => {
       "trade",
       "twapFee",
       twap.type,
-      featureFlags.isIceEnabled,
+      isIceEnabled,
       twapSlippage,
       twapMaxRetries,
     ],
     queryFn: async () => {
-      const builder = featureFlags.isIceEnabled
+      const builder = isIceEnabled
         ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
         : sdk.tx
             .order(twap)

@@ -28,7 +28,7 @@ import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summ
 import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/TradeLimitSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 import { getTradeFeeIntervals } from "@/utils/trade"
@@ -42,13 +42,12 @@ type Props = {
 export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
-  const { featureFlags } = useRpcProvider()
 
   // Intent TWAP (Dca intent) has no fixed output floor — per-slice
   // protection is the pallet's adaptive oracle limit, so the headline
   // amount is an estimate for BOTH directions (there is no guaranteed-Buy
   // variant on intents).
-  const isIce = featureFlags.isIceEnabled
+  const isIce = useIsIceEnabled()
 
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 

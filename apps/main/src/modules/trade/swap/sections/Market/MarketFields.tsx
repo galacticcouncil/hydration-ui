@@ -10,7 +10,7 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -28,7 +28,7 @@ export const MarketFields: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
-  const { featureFlags } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
 
   const navigate = useNavigate()
 
@@ -142,7 +142,7 @@ export const MarketFields: FC<Props> = ({
           // Intent TWAP settles at market with no fixed output floor, so the
           // received amount is an estimate in both entry directions — flag it
           // on the receive field header.
-          featureFlags.isIceEnabled && !isSingleTrade
+          isIceEnabled && !isSingleTrade
             ? t("trade:market.form.buy.estimated")
             : t("buy")
         }

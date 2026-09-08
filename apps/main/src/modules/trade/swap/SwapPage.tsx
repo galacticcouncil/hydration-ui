@@ -4,7 +4,7 @@ import { lazy } from "react"
 
 import { LINKS } from "@/config/navigation"
 import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 
 const SwapPageDesktop = lazy(async () => ({
   default: await import("@/modules/trade/swap/SwapPageDesktop").then(
@@ -22,11 +22,11 @@ export const SwapPage = () => {
   useResetSharedSellAmountOnUnmount()
 
   const { gte } = useBreakpoints()
-  const { featureFlags } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const matchRoute = useMatchRoute()
   const isLimitPage = !!matchRoute({ to: LINKS.swapLimit })
 
-  if (isLimitPage && !featureFlags.isIceEnabled) {
+  if (isLimitPage && !isIceEnabled) {
     return <Navigate to={LINKS.swapMarket} />
   }
 

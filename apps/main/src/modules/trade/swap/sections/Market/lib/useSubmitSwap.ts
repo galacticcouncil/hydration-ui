@@ -10,6 +10,7 @@ import { getIceSwapAmounts } from "@/modules/trade/swap/sections/Market/lib/iceA
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSellAllAlert } from "@/modules/trade/swap/sections/Market/MarketSellAllAlert"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useToasts } from "@/states/toasts"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
@@ -31,7 +32,8 @@ export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
   const rpc = useRpcProvider()
-  const { sdk, papiClient, featureFlags } = rpc
+  const { sdk, papiClient } = rpc
+  const isIceEnabled = useIsIceEnabled()
 
   const {
     swap: {
@@ -79,7 +81,7 @@ export const useSubmitSwap = () => {
             }
 
       // ICE has no Buy intent; the SDK maps Buy trades to sell semantics.
-      if (featureFlags.isIceEnabled) {
+      if (isIceEnabled) {
         const tx = await sdk.tx
           .intentMarket(swap)
           .withBeneficiary(account.address)

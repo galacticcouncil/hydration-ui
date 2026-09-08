@@ -19,11 +19,11 @@ import {
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   DEFAULT_TRADE_ASSET_IN_ID,
   DEFAULT_TRADE_ASSET_OUT_ID,
 } from "@/routes/trade/_history/route"
+import { useIsIceEnabled } from "@/states/intents"
 
 type Props = {
   readonly maxBalance: string
@@ -32,7 +32,7 @@ type Props = {
 
 export const DcaForm: FC<Props> = ({ maxBalance, quotedPrice }) => {
   const { t } = useTranslation(["common", "trade"])
-  const { featureFlags } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const { control, getValues, setValue, reset, trigger, watch } =
     useFormContext<DcaFormValues>()
 
@@ -156,7 +156,7 @@ export const DcaForm: FC<Props> = ({ maxBalance, quotedPrice }) => {
       />
       <SwapSectionSeparator />
       {isOpenBudget ? <DcaOpenBudgetFields /> : <DcaLimitedBudgetFields />}
-      {featureFlags.isIceEnabled && <DcaLimitPrice quotedPrice={quotedPrice} />}
+      {isIceEnabled && <DcaLimitPrice quotedPrice={quotedPrice} />}
     </Box>
   )
 }

@@ -7,6 +7,7 @@ import {
   TProviderContext,
   useRpcProvider,
 } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 
 type IntentValue = NonNullable<
   Awaited<ReturnType<PapiIce["query"]["Intent"]["Intents"]["getValue"]>>
@@ -20,12 +21,13 @@ export type AccountIntentEntry = {
 // AccountIntents is a presence index (value is null). Subscribe so rows drop
 // when the chain removes an intent; a one-shot refetch on tx inclusion lags.
 const useAccountIntentIds = (address: string) => {
-  const { isReady, featureFlags } = useRpcProvider()
+  const { isReady } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
 
   const { data, isLoading } = usePapiEntries(
     "Intent.AccountIntents",
     [address],
-    { enabled: featureFlags.isIceEnabled && isReady && !!address },
+    { enabled: isIceEnabled && isReady && !!address },
   )
 
   const ids = useMemo(
