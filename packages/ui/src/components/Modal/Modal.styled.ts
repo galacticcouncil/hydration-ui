@@ -220,6 +220,7 @@ export const SModalFooter = styled(Flex)(
 
     ${mq("md")} {
       flex-direction: row;
+      gap: ${theme.space.xl};
     }
   `,
 )

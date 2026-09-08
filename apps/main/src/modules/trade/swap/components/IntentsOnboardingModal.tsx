@@ -49,11 +49,12 @@ export const IntentsOnboardingModal: FC = () => {
         customHeader={
           <SIntentsOnboardingHeader>
             <SIntentsOnboardingHeaderContent>
-              <Stack justify="center" align="center" gap="base" mb="-l">
+              <Stack justify="center" align="center" gap="m" mb="-l">
                 <Text
                   as="h2"
                   align="center"
-                  fs={["h6", "h5"]}
+                  fs={["h", "h5"]}
+                  lh={[1.2, 1]}
                   font="primary"
                   fw={500}
                   textWrap="balance"
@@ -63,8 +64,7 @@ export const IntentsOnboardingModal: FC = () => {
                 <Text
                   align="center"
                   fs="p4"
-                  lh={1.5}
-                  color={getToken("text.medium")}
+                  color={getToken("text.high")}
                   textWrap="balance"
                 >
                   {t("intents.onboarding.description")}
@@ -73,7 +73,6 @@ export const IntentsOnboardingModal: FC = () => {
                   as="p"
                   align="center"
                   fs="p4"
-                  lh={1.5}
                   fw={500}
                   color={getToken("text.tint.secondary")}
                   textWrap="balance"

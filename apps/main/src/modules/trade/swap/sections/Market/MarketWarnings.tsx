@@ -10,7 +10,7 @@ import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LINKS } from "@/config/navigation"
+import { swapTabLink } from "@/config/navigation"
 import { useToasts } from "@/states/toasts"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { TransactionType } from "@/states/transactions"
@@ -142,7 +142,7 @@ export const MarketWarnings: FC<Props> = ({
                 sx={{ color: getToken("accents.alertAlt.primary") }}
               >
                 <Link
-                  to={LINKS.swapTwap}
+                  {...swapTabLink("twap")}
                   search={search}
                   sx={{ textDecoration: "none" }}
                 >

@@ -1,5 +1,6 @@
 import { useMatchRoute } from "@tanstack/react-router"
 
+import { swapTabLink } from "@/config/navigation"
 import {
   SwapSettingsModal,
   SwapSettingsSection,
@@ -13,9 +14,9 @@ export const SettingsModal = ({ swapSection }: Props) => {
   const matchRoute = useMatchRoute()
 
   switch (true) {
-    case !!matchRoute({ to: "/trade/swap/twap" }):
+    case !!matchRoute(swapTabLink("twap")):
       return <SwapSettingsModal section="split" />
-    case !!matchRoute({ to: "/trade/swap/market" }):
+    case !!matchRoute(swapTabLink("market")):
       return <SwapSettingsModal section={swapSection} />
     default:
       throw new Error("Settings are not available for this route.")

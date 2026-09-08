@@ -4,7 +4,7 @@ import { Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LINKS, NAVIGATION } from "@/config/navigation"
+import { NAVIGATION, swapTabLink } from "@/config/navigation"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
 import { useIsIceEnabled } from "@/states/intents"
 
@@ -23,8 +23,7 @@ export const FormHeader = () => {
   const search = useSearch({ from: "/trade/_history/swap" })
   const matchRoute = useMatchRoute()
   const hasSettings =
-    !!matchRoute({ to: LINKS.swapMarket }) ||
-    !!matchRoute({ to: LINKS.swapTwap })
+    !!matchRoute(swapTabLink("market")) || !!matchRoute(swapTabLink("twap"))
 
   return (
     <SFormHeader justify="space-between" align="center">
@@ -33,7 +32,12 @@ export const FormHeader = () => {
           .filter((routeItem) => isIceEnabled || routeItem.key !== "swapLimit")
           .map((routeItem) => (
             <SHeaderTab key={routeItem.key} asChild>
-              <Link to={routeItem.to} search={search} resetScroll={false}>
+              <Link
+                to={routeItem.to}
+                params={routeItem.params}
+                search={search}
+                resetScroll={false}
+              >
                 {t(`common:navigation.${routeItem.key}.title`)}
               </Link>
             </SHeaderTab>

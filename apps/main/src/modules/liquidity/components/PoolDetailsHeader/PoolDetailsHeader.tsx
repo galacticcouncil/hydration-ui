@@ -12,6 +12,7 @@ import { Plus, Repeat } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { swapTabLink } from "@/config/navigation"
 import { SPoolDetailsActionsContainer } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeader.styled"
 import {
   isIsolatedPool,
@@ -91,7 +92,7 @@ export const PoolDetailsHeader = ({
             asChild
           >
             <Link
-              to="/trade/swap/market"
+              {...swapTabLink("market")}
               search={{
                 assetOut: stablepoolData
                   ? stablepoolData.aToken?.id || data.id

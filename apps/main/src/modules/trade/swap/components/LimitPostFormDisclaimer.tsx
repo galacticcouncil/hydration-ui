@@ -1,7 +1,7 @@
 import { useMatchRoute } from "@tanstack/react-router"
 import { FC } from "react"
 
-import { LINKS } from "@/config/navigation"
+import { swapTabLink } from "@/config/navigation"
 import { LimitWarning } from "@/modules/trade/swap/sections/Limit/LimitWarning"
 
 /**
@@ -10,7 +10,7 @@ import { LimitWarning } from "@/modules/trade/swap/sections/Limit/LimitWarning"
  */
 export const LimitPostFormDisclaimer: FC = () => {
   const matchRoute = useMatchRoute()
-  if (!matchRoute({ to: LINKS.swapLimit })) return null
+  if (!matchRoute(swapTabLink("limit"))) return null
 
   return <LimitWarning />
 }
