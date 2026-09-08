@@ -35,7 +35,9 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
     return (
       <SDetailedLink key={key} asChild>
         <Link to={to} search={search}>
-          {showAssetIcon ? <AssetLogo id={assetIconId} size="medium" /> : null}
+          {showAssetIcon ? (
+            <AssetLogo id={assetIconId} size="medium" hideChain />
+          ) : null}
           <Box>
             <Text fw={600} fs="p4" lh={1.4}>
               {translations[key].title}

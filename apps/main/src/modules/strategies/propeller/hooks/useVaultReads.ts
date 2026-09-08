@@ -80,9 +80,8 @@ export function useVaultStats() {
 }
 
 /**
- * SubLoop leverage/health read — drives the optional "Health factor" detail
- * line. Both values are WAD-scaled (1e18). Wrapped independently so a revert
- * on a partial deploy doesn't wipe the strategy page.
+ * SubLoop leverage/health/carry read. Each call is wrapped independently so a
+ * revert on a partial deploy doesn't wipe the strategy page.
  */
 export function useSubLoopStats(override?: PropellerVaultConfig) {
   const { evm } = useRpcProvider()
@@ -115,14 +114,14 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
       }
       const [
         healthFactor,
-        totalEquity,
+        negativeCarryBps,
         targetHf,
         account,
         collateralConfig,
         hollarRes,
       ] = await Promise.all([
         safe("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
-        safe("SubLoop.totalEquity", () => subLoop.read.totalEquity()),
+        safe("SubLoop.negativeCarryBps", () => subLoop.read.negativeCarryBps()),
         safe("SubLoop.targetHf", () => subLoop.read.targetHf()),
         safe("Pool.getUserAccountData(SubLoop)", () =>
           pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
@@ -170,8 +169,9 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         healthFactor:
           healthFactor === null ? null : Number(formatUnits(healthFactor, 18)),
         targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),
-        totalEquity:
-          totalEquity === null ? null : Number(formatUnits(totalEquity, 18)),
+        // bps → fraction. The redeemer's estimated haircut; see SUBLOOP_ABI.
+        negativeCarry:
+          negativeCarryBps === null ? null : Number(negativeCarryBps) / 1e4,
         leverage: loopLeverage,
         maxLtv,
         borrowRate,
@@ -222,32 +222,49 @@ export function usePropellerApy(
 }
 
 /**
- * This vault's share of the shared SubLoop's equity, in WAD.
+ * This vault's live position inside the shared SubLoop.
  *
- * `requestRedeem` is guarded by `if (yieldSource.equityOf(vault) == 0) revert
- * NoLoopEquity()` — requesting in that state used to orphan the request, so the
- * withdraw CTA has to be blocked upfront rather than let the tx revert.
- * Returns `null` while loading or if the read reverts, which never blocks.
+ * `equity` gates the withdraw CTA: `requestRedeem` is guarded by
+ * `if (yieldSource.equityOf(vault) == 0) revert NoLoopEquity()`, and requesting
+ * in that state used to orphan the request, so it has to be blocked upfront
+ * rather than letting the tx revert.
+ *
+ * `pendingUnwind` is the equity already asked for but not yet pulled back. It
+ * is the early-warning signal for a short payout: `_retireExhaustedHead` fires
+ * only once `pendingUnwindOf` and `freedOf` are both zero, so a request still
+ * short of its `debtShare` with nothing pending means the spiral has stalled
+ * and the remainder is about to be written off against the redeemer.
+ *
+ * Either field is `null` while loading or if the read reverts, which never blocks.
  */
-export function useLoopEquity() {
+export function useLoopPosition() {
   const { evm } = useRpcProvider()
   const { vaultAddress } = useActivePropellerVault()
   return useQuery({
-    queryKey: ["propeller-loop-equity", vaultAddress],
+    queryKey: ["propeller-loop-position", vaultAddress],
     queryFn: async () => {
       const subLoop = getContract({
         address: SUBLOOP_ADDRESS,
         abi: SUBLOOP_ABI,
         client: evm,
       })
-      try {
-        return await subLoop.read.equityOf([vaultAddress])
-      } catch (err) {
-        if (import.meta.env.DEV) {
-          console.warn("[propeller-vault] SubLoop.equityOf reverted", err)
+      const safe = async (label: string, read: () => Promise<bigint>) => {
+        try {
+          return await read()
+        } catch (err) {
+          if (import.meta.env.DEV) {
+            console.warn(`[propeller-vault] SubLoop.${label} reverted`, err)
+          }
+          return null
         }
-        return null
       }
+      const [equity, pendingUnwind] = await Promise.all([
+        safe("equityOf", () => subLoop.read.equityOf([vaultAddress])),
+        safe("pendingUnwindOf", () =>
+          subLoop.read.pendingUnwindOf([vaultAddress]),
+        ),
+      ])
+      return { equity, pendingUnwind }
     },
     refetchInterval: 30_000,
   })

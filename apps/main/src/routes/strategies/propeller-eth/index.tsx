@@ -6,6 +6,7 @@ import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
 
 export const Route = createFileRoute("/strategies/propeller-eth/")({
   component: () => <PropellerVaultPage vault={PROPELLER_VAULTS.eth} />,
+  staticData: { crumb: true },
   head: ({
     match: {
       context: { i18n },

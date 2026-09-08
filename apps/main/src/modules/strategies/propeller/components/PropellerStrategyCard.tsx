@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next"
 
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
-import { PropellerAssetLogo } from "@/modules/strategies/propeller/components/PropellerAssetLogo"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
   PROPELLER_VAULT_ROUTE,
@@ -21,7 +20,6 @@ export const PropellerStrategyCard = ({
   return (
     <StrategyCard
       logoId={vault.assetId}
-      logo={<PropellerAssetLogo id={vault.assetId} size="extra-large" />}
       title={t("strategies:cards.propeller.title", { symbol: vault.symbol })}
       description={t("strategies:cards.propeller.description", {
         symbol: vault.symbol,

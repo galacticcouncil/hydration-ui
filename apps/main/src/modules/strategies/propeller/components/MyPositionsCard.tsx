@@ -10,7 +10,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 interface Props {
@@ -30,7 +30,7 @@ export const MyPositionsCard = ({
   onWithdraw,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { symbol, shareSymbol } = useActivePropellerVault()
+  const { assetId, symbol, shareSymbol } = useActivePropellerVault()
 
   const assetValue = shares * exchangeRate
 
@@ -44,7 +44,7 @@ export const MyPositionsCard = ({
       <Separator />
       <Flex direction="column" gap="m" p="m">
         <PositionCard
-          logo={<PropellerLogo size="large" />}
+          logo={<AssetLogo id={assetId} size="medium" hideChain />}
           symbol={symbol}
           stats={
             <>

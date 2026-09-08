@@ -2,11 +2,11 @@ import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { AssetLogo } from "@/components/AssetLogo"
 import {
   StrategyBadge,
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
-import { PropellerAssetLogo } from "@/modules/strategies/propeller/components/PropellerAssetLogo"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
 
 export const StrategyHeader = () => {
@@ -16,7 +16,7 @@ export const StrategyHeader = () => {
   return (
     <Flex justify="space-between" align="center" gap="s" wrap>
       <Flex align="center" gap="base">
-        <PropellerAssetLogo id={vault.assetId} size="large" />
+        <AssetLogo id={vault.assetId} size="large" hideChain />
         <Text
           font="primary"
           fs="h6"

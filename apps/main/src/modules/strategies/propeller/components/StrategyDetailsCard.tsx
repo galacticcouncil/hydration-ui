@@ -5,7 +5,6 @@ import {
   Flex,
   Icon,
   Paper,
-  ProgressBar,
   ResponsiveScope,
   Separator,
   SummaryRow,
@@ -21,9 +20,11 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { AssetProgressStat } from "@/components/AssetProgressStat"
 import {
-  SDetailsContainer,
-  SStatItem,
+  SDetailsStatItem,
+  SDetailsStatsContainer,
+  SDetailsStatsSeparator,
 } from "@/modules/strategies/propeller/components/StrategyDetailsCard.styled"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
@@ -57,7 +58,11 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   // vault with no room — hide the stat until it resolves.
   const hasCap = tvlCap > 0
   const remainingCapacity = Math.max(tvlCap - totalAssets, 0)
-  const remainingPct = hasCap ? (remainingCapacity / tvlCap) * 100 : 0
+  const remaining = Math.max(
+    0,
+    hasCap ? Math.min(remainingCapacity, tvlCap) : remainingCapacity,
+  )
+  const remainingPct = hasCap ? (remaining / tvlCap) * 100 : 0
 
   return (
     <Paper>
@@ -69,51 +74,30 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
       <Separator />
 
       <ResponsiveScope>
-        <SDetailsContainer>
-          <SStatItem>
+        <SDetailsStatsContainer>
+          <SDetailsStatItem>
             <ValueStats
               wrap
               label={t("strategy.tvl")}
               customValue={
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={getToken("text.high")}
-                >
-                  {t("common:currency.compact", { value: tvlDisplay })}
-                </Text>
+                <Flex align="center" gap="s">
+                  <AssetLogo id={vault.assetId} size="medium" hideChain />
+                  <Text
+                    font="primary"
+                    fs="h6"
+                    fw={600}
+                    color={getToken("text.high")}
+                  >
+                    {t("common:currency.compact", { value: tvlDisplay })}
+                  </Text>
+                </Flex>
               }
             />
-          </SStatItem>
+          </SDetailsStatItem>
 
-          {hasCap && (
-            <SStatItem>
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("strategy.remainingCapacity")}
-              </Text>
-              <Flex align="center" gap="s" mt="xs">
-                <AssetLogo id={vault.assetId} size="medium" />
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={getToken("text.high")}
-                >
-                  {t("common:currency.compact", {
-                    value: remainingCapacity,
-                    symbol: vault.symbol,
-                    maximumFractionDigits: remainingCapacity > 100_000 ? 0 : 2,
-                  })}
-                </Text>
-              </Flex>
-              <Box mt="xs" sx={{ maxWidth: 200 }}>
-                <ProgressBar size="small" value={remainingPct} />
-              </Box>
-            </SStatItem>
-          )}
+          <SDetailsStatsSeparator />
 
-          <SStatItem>
+          <SDetailsStatItem>
             <ValueStats
               wrap
               label={t("strategy.netApy")}
@@ -136,9 +120,45 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
                 </Text>
               }
             />
-          </SStatItem>
+          </SDetailsStatItem>
 
-          <SStatItem>
+          {hasCap && (
+            <>
+              <SDetailsStatsSeparator />
+              <SDetailsStatItem>
+                <ValueStats
+                  sx={{ alignSelf: "center" }}
+                  wrap
+                  label={t("strategy.remainingCapacity")}
+                  customValue={
+                    <AssetProgressStat
+                      assetId={vault.assetId}
+                      progressPct={remainingPct}
+                      value={
+                        <Text
+                          font="primary"
+                          fs="h6"
+                          fw={600}
+                          color={getToken("text.high")}
+                          minWidth="10rem"
+                        >
+                          {t("common:currency.compact", {
+                            value: remaining,
+                            symbol: vault.symbol,
+                            maximumFractionDigits: remaining > 100_000 ? 0 : 2,
+                          })}
+                        </Text>
+                      }
+                    />
+                  }
+                />
+              </SDetailsStatItem>
+            </>
+          )}
+
+          <SDetailsStatsSeparator />
+
+          <SDetailsStatItem>
             <ValueStats
               wrap
               label={t("strategy.riskProfile")}
@@ -153,8 +173,8 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
                 </Text>
               }
             />
-          </SStatItem>
-        </SDetailsContainer>
+          </SDetailsStatItem>
+        </SDetailsStatsContainer>
       </ResponsiveScope>
 
       <Separator />
