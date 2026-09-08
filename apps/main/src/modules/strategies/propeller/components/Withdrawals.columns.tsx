@@ -13,33 +13,22 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
 export type WithdrawalRowState = "pending" | "partial" | "settled" | "claimed"
 
 export interface WithdrawalRow {
   id: number
-  /** Vault shares the request escrowed. */
   amountShares: number
-  /**
-   * Collateral for the request: the measured payout once any has been claimed,
-   * otherwise a carry-discounted estimate. `isEstimate` says which.
-   */
+  /** Measured payout once settled; otherwise a carry-discounted estimate. */
   estEth: number
   isEstimate?: boolean
   state: WithdrawalRowState
-  /**
-   * When the keeper first settled the request. There is no request timestamp:
-   * RedeemRequested never reaches eth_getLogs — see useRedemptionHistory.
-   */
   settledDate?: Date
-  /** Gross collateral snapshotted at request time — the ceiling, rarely paid. */
   collateralOwed?: number
-  /** Collateral settled and ready for the user to claim right now. */
   collateralSettled?: number
-  /** Collateral already claimed plus whatever is claimable now. */
   settledSoFar?: number
-  /** The unwind stalled — the remainder is about to be written off. */
+  /** Unwind stalled; remainder will be written off. */
   willSettleShort?: boolean
 }
 
@@ -50,10 +39,7 @@ type WithdrawalStateLabel =
   | "settlingShort"
   | "claimed"
 
-const stateChipVariant: Record<
-  WithdrawalStateLabel,
-  ChipProps["variant"]
-> = {
+const stateChipVariant: Record<WithdrawalStateLabel, ChipProps["variant"]> = {
   pending: "orange",
   settling: "amber",
   settlingShort: "orange",
@@ -61,9 +47,7 @@ const stateChipVariant: Record<
   claimed: "blue",
 }
 
-const getWithdrawalStateLabel = (
-  row: WithdrawalRow,
-): WithdrawalStateLabel => {
+const getWithdrawalStateLabel = (row: WithdrawalRow): WithdrawalStateLabel => {
   if (row.state === "claimed") return "claimed"
 
   const claimable = row.collateralSettled ?? 0
@@ -76,7 +60,6 @@ const getWithdrawalStateLabel = (
 const columnHelper = createColumnHelper<WithdrawalRow>()
 
 export type WithdrawalColumnHandlers = {
-  /** Claim a settled request — calls vault.claim(requestId, receiver). */
   onClaim: (requestId: number) => void
   isClaiming: boolean
 }
@@ -169,9 +152,6 @@ export const useWithdrawalColumns = ({
       meta: { sx: { textAlign: "right" } },
       cell: ({ row }) => {
         const r = row.original
-        // Claiming stays available for as long as there is settled collateral,
-        // including on a request already partially claimed — claim() burns
-        // shares pro-rata and leaves the request open for the next tranche.
         const claimable = r.collateralSettled ?? 0
         if (claimable <= 0 || r.state === "claimed") return null
         return (

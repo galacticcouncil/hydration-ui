@@ -37,7 +37,7 @@
   "deposit.cta.deposit": "Deposit",
   "withdraw.title": "Withdraw {{shareSymbol}}",
   "withdraw.amount": "Amount",
-  "withdraw.carryEstimate": "Estimate includes ~{{carry}} of accrued negative carry, which the redeemer absorbs on exit. The final amount depends on how much the vault realises while unwinding.",
+  "withdraw.carryEstimate": "Estimate includes ~{{carry, percent}} of accrued negative carry, which the redeemer absorbs on exit. The final amount depends on how much the vault realises while unwinding.",
   "withdraw.ack": "I understand my {{shareSymbol}} enters the async withdrawal queue and settles to {{symbol}} once the vault unwinds the position.",
   "withdraw.cta.pending": "Pending...",
   "withdraw.cta.insufficient": "Insufficient {{shareSymbol}}",

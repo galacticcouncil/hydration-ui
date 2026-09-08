@@ -8,7 +8,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 

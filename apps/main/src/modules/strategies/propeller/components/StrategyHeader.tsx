@@ -7,7 +7,7 @@ import {
   StrategyBadge,
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
 export const StrategyHeader = () => {
   const { t } = useTranslation("propeller")
