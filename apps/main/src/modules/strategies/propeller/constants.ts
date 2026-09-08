@@ -23,15 +23,17 @@ import { type Hex } from "viem"
 // ════════════════════════════════════════════════════════════════════════
 
 // SubLoop — the single leverage engine shared by every CollateralVault.
-// Read-only from the UI: `healthFactor()` and `totalEquity()` power the
-// optional leverage/HF detail line in the strategy card.
-export const SUBLOOP_ADDRESS: Hex = "0x8F790900596a2172F307250389CEEF3923B56ec6"
+// Read-only from the UI: `healthFactor()` powers the optional leverage/HF
+// detail line, `negativeCarryBps()` the withdraw modal's exit estimate.
+export const SUBLOOP_ADDRESS: Hex = "0x1e755ba323Dbfe80CAa1bDAe37255D6f18F38CE6"
 
-// First block to scan event logs from. On lark-4 the SubLoop landed at block
-// 287138 and the two CollateralVaults at 287140 / 287154; 287000 is a safe
-// lower bound. Over-scanning only costs a little time — under-scanning
-// silently truncates withdrawal history.
-export const VAULT_DEPLOY_BLOCK = 287000n
+// First block to scan event logs from. lark-4 was re-forked on 2026-09-07, so
+// every earlier deployment is gone and block numbers restarted: the SubLoop
+// first has code at 138983 (binary-searched via eth_getCode) and the two
+// CollateralVaults land just after it. 138900 is a safe lower bound.
+// Over-scanning only costs a little time — under-scanning silently truncates
+// withdrawal history, and a value ABOVE the chain head returns nothing at all.
+export const VAULT_DEPLOY_BLOCK = 138900n
 
 export const EVM_CALL_GAS = 2_000_000n
 
@@ -284,9 +286,16 @@ export const SUBLOOP_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  // Shortfall of the loop's equity against its basis (principalEquity +
+  // unwindTargetEquity), in bps. NOT priced into the vault's exchangeRate:
+  // pokeSettle releases collateral as `collateralOwed * repaid / debtShare`,
+  // and _retireExhaustedHead writes the unrealizable remainder off against the
+  // redeemer — so this is the redeemer's expected haircut, invisible in share
+  // price. Loop-wide (both vaults share one SubLoop), hence an estimate: a
+  // recent depositor dilutes the basis and absorbs proportionally less.
   {
     type: "function",
-    name: "totalEquity",
+    name: "negativeCarryBps",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
@@ -304,6 +313,17 @@ export const SUBLOOP_ABI = [
   {
     type: "function",
     name: "equityOf",
+    inputs: [{ name: "vault", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Equity this vault has asked the loop to unwind but has not yet pulled.
+  // Zero while a request is still unsettled means the unwind spiral has
+  // stalled and `_retireExhaustedHead` is about to write the remainder off —
+  // i.e. the payout will land short of `collateralOwed`.
+  {
+    type: "function",
+    name: "pendingUnwindOf",
     inputs: [{ name: "vault", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
