@@ -38,7 +38,12 @@ export const IntentsOnboardingModal: FC = () => {
   }
 
   return (
-    <Modal open={isOpen} onOpenChange={onOpenChange} disableInteractOutside>
+    <Modal
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      disableInteractOutside
+      centered
+    >
       <ModalHeader
         title=""
         customHeader={

@@ -4,7 +4,7 @@ import IcePromo from "@galacticcouncil/ui/assets/images/IcePromo.webp"
 import { mq } from "@galacticcouncil/ui/theme"
 import { hexToRgba } from "@galacticcouncil/utils"
 
-const PROMO_HEIGHT = "12rem"
+const PROMO_HEIGHT = "14rem"
 const FADE_EXTENSION = "2rem"
 
 export const SIntentsOnboardingHeader = styled.div(
