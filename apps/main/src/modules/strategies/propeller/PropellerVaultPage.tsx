@@ -36,9 +36,9 @@ export const PropellerVaultPage = ({
 }: {
   vault: PropellerVaultConfig
 }) => {
-  const { featureFlags, isLoaded } = useRpcProvider()
+  const { featureFlags, isReady } = useRpcProvider()
 
-  if (isLoaded && !featureFlags.propellerEnabled) {
+  if (isReady && !featureFlags.propellerEnabled) {
     return <Navigate to="/strategies" />
   }
 

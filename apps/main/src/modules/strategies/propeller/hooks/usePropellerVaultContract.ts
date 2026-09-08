@@ -11,7 +11,7 @@ export const propellerVaultContractQuery = (
 ) => {
   return queryOptions({
     queryKey: ["propeller-vault-contract", vaultAddress],
-    enabled: rpc.isLoaded,
+    enabled: rpc.isReady,
     staleTime: Infinity,
     gcTime: Infinity,
     queryFn: () => {
