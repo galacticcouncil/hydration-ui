@@ -87,6 +87,7 @@ export const RemoveLiquidityForm = ({
   deposits,
   feesBreakdown,
   displayValue,
+  receiveNote,
 }: RemoveLiquidityProps & {
   fee?: string
   totalPositionShifted: string
@@ -98,6 +99,7 @@ export const RemoveLiquidityForm = ({
   deposits?: Array<XykDeposit | OmnipoolDepositFull>
   feesBreakdown?: FeeBreakdown[]
   displayValue?: string
+  receiveNote?: string
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const {
@@ -161,6 +163,12 @@ export const RemoveLiquidityForm = ({
             <ModalContentDivider />
 
             <ReceiveAssets assets={receiveAssets} positions={deposits} />
+
+            {receiveNote && (
+              <Text fs="p6" color={getToken("text.low")}>
+                {receiveNote}
+              </Text>
+            )}
 
             {!isIsolatedPool && (
               <div>

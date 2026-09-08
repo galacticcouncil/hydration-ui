@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
 import { PoolsHeaderSeparator } from "@/modules/liquidity/components/PoolsHeader/PoolsHeaderSeparator"
+import { VaultsValueTile } from "@/modules/liquidity/components/PoolsHeader/Vaults"
 
 const NO_TOTALS = {
   liquidity: NaN,
@@ -61,6 +62,7 @@ export const AllPools = () => {
         wrap
       />
       <PoolsHeaderSeparator />
+      <VaultsValueTile />
       <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency.compact", { value: totals.liquidity })}
