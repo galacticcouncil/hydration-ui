@@ -250,5 +250,10 @@
   "limit.tx.submitted": "Limit order submitted: Sell {{ amountIn }} for {{ amountOut }}",
   "limit.tx.success": "Limit order placed: Sell {{ amountIn }} for {{ amountOut }}",
   "limit.tx.error": "Limit order failed: Sell {{ amountIn }} for {{ amountOut }}",
-  "limit.invert": "Invert price denomination"
+  "limit.invert": "Invert price denomination",
+  "intents.onboarding.title": "Intents are here in BETA. Give them a try.",
+  "intents.onboarding.description": "Help us test intents - a new way to place trades, including limit orders. If needed, you can switch back in Trade settings.",
+  "intents.onboarding.hint": "You can always get back to the old panel in Trade settings.",
+  "intents.onboarding.cta.dismiss": "Not now",
+  "intents.onboarding.cta.confirm": "Enable Intents"
 }

@@ -3,6 +3,7 @@ import { Navigate, useMatchRoute } from "@tanstack/react-router"
 import { lazy } from "react"
 
 import { LINKS } from "@/config/navigation"
+import { IntentsOnboardingModal } from "@/modules/trade/swap/components/IntentsOnboardingModal"
 import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { useIsIceEnabled } from "@/states/intents"
 
@@ -26,13 +27,19 @@ export const SwapPage = () => {
   const matchRoute = useMatchRoute()
   const isLimitPage = !!matchRoute({ to: LINKS.swapLimit })
 
-  if (isLimitPage && !isIceEnabled) {
-    return <Navigate to={LINKS.swapMarket} />
-  }
+  const content =
+    isLimitPage && !isIceEnabled ? (
+      <Navigate to={LINKS.swapMarket} />
+    ) : !gte("lg") ? (
+      <SwapPageMobile />
+    ) : (
+      <SwapPageDesktop />
+    )
 
-  if (!gte("lg")) {
-    return <SwapPageMobile />
-  }
-
-  return <SwapPageDesktop />
+  return (
+    <>
+      {content}
+      <IntentsOnboardingModal />
+    </>
+  )
 }
