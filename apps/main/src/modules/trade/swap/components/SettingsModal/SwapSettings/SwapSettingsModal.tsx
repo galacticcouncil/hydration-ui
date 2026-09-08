@@ -11,6 +11,8 @@ import { useTranslation } from "react-i18next"
 import { SingleTradeSection } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SingleTradeSection"
 import { SplitTradeSection } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SplitTradeSection"
 import { useSwapSettingsForm } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/useSwapSettingsForm"
+import { TradeExecutionSection } from "@/modules/trade/swap/components/SettingsModal/TradeExecutionSection"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 export type SwapSettingsSection = "single" | "split"
@@ -21,6 +23,7 @@ type Props = {
 
 export const SwapSettingsModal: FC<Props> = ({ section }) => {
   const { t } = useTranslation(["common", "trade"])
+  const { featureFlags } = useRpcProvider()
 
   const { update, ...tradeSettings } = useTradeSettings()
   const form = useSwapSettingsForm(tradeSettings.swap, (swap) =>
@@ -37,6 +40,12 @@ export const SwapSettingsModal: FC<Props> = ({ section }) => {
         description={t("trade:swap.settings.modal.description")}
       />
       <ModalBody sx={{ minHeight: ["auto", 400], pt: 0 }}>
+        {featureFlags.isIceEnabled && (
+          <>
+            <TradeExecutionSection />
+            <ModalContentDivider />
+          </>
+        )}
         <form onSubmit={preventDefault}>
           {showSingle && <SingleTradeSection />}
           {showSingle && showSplit && <ModalContentDivider />}
