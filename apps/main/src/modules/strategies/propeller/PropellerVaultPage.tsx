@@ -14,6 +14,8 @@ import { StrategyHeader } from "@/modules/strategies/propeller/components/Strate
 import type { WithdrawalRow } from "@/modules/strategies/propeller/components/Withdrawals.columns"
 import { WithdrawalsCard } from "@/modules/strategies/propeller/components/WithdrawalsCard"
 import { WithdrawModal } from "@/modules/strategies/propeller/components/WithdrawModal"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { PropellerVaultProvider } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 import { useRedemptionHistory } from "@/modules/strategies/propeller/hooks/useRedemptionHistory"
 import { useRedemptionQueue } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
 import {
@@ -28,8 +30,6 @@ import {
   useDeposit,
   useRequestRedeem,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
-import { PropellerVaultProvider } from "@/modules/strategies/propeller/PropellerVaultContext"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/vaults"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const PropellerVaultPage = ({
@@ -92,28 +92,16 @@ const PropellerVaultContent = () => {
   const userBalances = balances ?? { eth: 0, shares: 0 }
   const queue = queueData?.queue ?? []
 
-  // Build the withdrawal-rows model. The live queue read is the source of
-  // truth for state, ownership and amounts: `redemptions[id]` is never deleted
-  // (claim() only flips `active`), so every request the user ever made stays
-  // readable. The settlement scan supplies the one thing no view function
-  // reports — the collateral that actually left the vault — and the timestamps
-  // that go with it.
   const settlementByReqId = new Map(
     (settlementData ?? []).map((s) => [s.requestId, s]),
   )
 
-  // Same discount as the withdraw modal: `collateralOwed` is a gross snapshot
-  // and settlement releases it as `collateralOwed * repaid / debtShare`, so an
-  // undiscounted estimate promises more than the queue pays out.
   const carry = subLoop?.negativeCarry ?? 0
 
   const withdrawalRows: WithdrawalRow[] = queue
     .filter((e) => e.isUser)
     .map((e) => {
       const settlement = settlementByReqId.get(e.requestId)
-      // The request stays active until fully claimed. Settlement happens in
-      // tranches, so a live request is pending (nothing unwound yet),
-      // partial (some of it unwound) or settled (all of it unwound).
       const state: WithdrawalRow["state"] = !e.active
         ? "claimed"
         : e.settledProgress >= 1
@@ -122,10 +110,6 @@ const PropellerVaultContent = () => {
             ? "partial"
             : "pending"
 
-      // Once collateral has actually been released, report the measured sum
-      // instead of an estimate. `settledProgress` cannot stand in for it:
-      // _retireExhaustedHead snaps `debtShare` down to `repaid` when the unwind
-      // stalls, forcing progress to 100% on a request that paid out short.
       const settledSoFar = settlement?.collateralSettled ?? 0
       const hasSettled = settledSoFar > 0
       return {
@@ -138,15 +122,10 @@ const PropellerVaultContent = () => {
             : e.shares * stats.exchangeRate * (1 - carry),
         isEstimate: !hasSettled,
         state,
-        // RedeemRequested is invisible to eth_getLogs (see useRedemptionHistory),
-        // so a request has no knowable timestamp until the keeper settles it.
         settledDate: settlement?.firstSettledAt,
         collateralOwed: e.collateralOwed,
         collateralSettled: e.collateralSettled,
         settledSoFar,
-        // The unwind spiral has nothing left in flight for this vault while
-        // the request is still short of its snapshot — _retireExhaustedHead is
-        // about to write the remainder off against this redeemer.
         willSettleShort:
           e.active &&
           e.settledProgress < 1 &&
