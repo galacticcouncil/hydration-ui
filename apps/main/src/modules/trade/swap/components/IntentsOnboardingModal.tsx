@@ -1,15 +1,20 @@
 import {
-  Alert,
   Button,
   Modal,
-  ModalBody,
   ModalCloseTrigger,
   ModalFooter,
   ModalHeader,
+  Stack,
+  Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
+import {
+  SIntentsOnboardingHeader,
+  SIntentsOnboardingHeaderContent,
+} from "@/modules/trade/swap/components/IntentsOnboardingModal.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIntentsStore } from "@/states/intents"
 
@@ -33,22 +38,57 @@ export const IntentsOnboardingModal: FC = () => {
   }
 
   return (
-    <Modal open={isOpen} onOpenChange={onOpenChange}>
+    <Modal open={isOpen} onOpenChange={onOpenChange} disableInteractOutside>
       <ModalHeader
-        title={t("intents.onboarding.title")}
-        description={t("intents.onboarding.description")}
+        title=""
+        customHeader={
+          <SIntentsOnboardingHeader>
+            <SIntentsOnboardingHeaderContent>
+              <Stack justify="center" align="center" gap="base" mb="-l">
+                <Text
+                  as="h2"
+                  align="center"
+                  fs={["h6", "h5"]}
+                  font="primary"
+                  fw={500}
+                  textWrap="balance"
+                >
+                  <Trans i18nKey="intents.onboarding.title" t={t} />
+                </Text>
+                <Text
+                  align="center"
+                  fs="p4"
+                  lh={1.5}
+                  color={getToken("text.medium")}
+                  textWrap="balance"
+                >
+                  {t("intents.onboarding.description")}
+                </Text>
+                <Text
+                  as="p"
+                  align="center"
+                  fs="p4"
+                  lh={1.5}
+                  fw={500}
+                  color={getToken("text.tint.secondary")}
+                  textWrap="balance"
+                >
+                  {t("intents.onboarding.hint")}
+                </Text>
+              </Stack>
+            </SIntentsOnboardingHeaderContent>
+          </SIntentsOnboardingHeader>
+        }
       />
-      <ModalBody scrollable={false}>
-        <Alert variant="info" description={t("intents.onboarding.hint")} />
-      </ModalBody>
+
       <ModalFooter justify="space-between">
         <ModalCloseTrigger asChild>
-          <Button size="large" variant="secondary">
+          <Button size="large" variant="tertiary">
             {t("intents.onboarding.cta.dismiss")}
           </Button>
         </ModalCloseTrigger>
         <ModalCloseTrigger asChild>
-          <Button size="large" onClick={() => setEnabled(true)}>
+          <Button size="large" onClick={() => setEnabled(true)} width="100%">
             {t("intents.onboarding.cta.confirm")}
           </Button>
         </ModalCloseTrigger>

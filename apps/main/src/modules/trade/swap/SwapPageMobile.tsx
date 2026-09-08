@@ -8,6 +8,7 @@ import {
   TRADE_CHART_BY_SOURCE,
   TRADE_ORDERS_BY_SOURCE,
   useTradeDataSource,
+  useTradeOrdersDataSource,
 } from "@/modules/trade/swap/tradeDataSource"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
@@ -15,9 +16,10 @@ import { SSwapFormContainer } from "./SwapPage.styled"
 export const TRADE_CHART_MOBILE_HEIGHT = 300
 
 export const SwapPageMobile: FC = () => {
-  const source = useTradeDataSource()
-  const TradeChart = TRADE_CHART_BY_SOURCE[source]
-  const TradeOrders = TRADE_ORDERS_BY_SOURCE[source]
+  const chartSource = useTradeDataSource()
+  const ordersSource = useTradeOrdersDataSource()
+  const TradeChart = TRADE_CHART_BY_SOURCE[chartSource]
+  const TradeOrders = TRADE_ORDERS_BY_SOURCE[ordersSource]
 
   return (
     <Flex direction="column" gap="xxl">

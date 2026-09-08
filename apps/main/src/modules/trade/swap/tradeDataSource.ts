@@ -6,6 +6,7 @@ import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIntentsStore } from "@/states/intents"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
 export const useNeckworkTradeQueriesEnabled = (): boolean => {
@@ -17,6 +18,15 @@ export const useNeckworkTradeQueriesEnabled = (): boolean => {
 
 export const useTradeDataSource = (): "neckwork" | "legacy" => {
   const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+
+  return neckworkEnabled ? "neckwork" : "legacy"
+}
+
+export const useTradeOrdersDataSource = (): "neckwork" | "legacy" => {
+  const intentsEnabled = useIntentsStore((state) => state.enabled)
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+
+  if (intentsEnabled) return "legacy"
 
   return neckworkEnabled ? "neckwork" : "legacy"
 }

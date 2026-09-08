@@ -9,7 +9,7 @@ type Props = {
 export const SettingLabel: FC<Props> = ({ label, helpTooltip }) => {
   return (
     <Flex gap="xs" align="center">
-      <Text fw={500} fs="p5" lh={1.2}>
+      <Text fw={600} fs="p4" lh={1.2}>
         {label}
       </Text>
       {helpTooltip && <Tooltip text={helpTooltip} />}

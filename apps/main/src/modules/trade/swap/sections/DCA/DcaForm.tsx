@@ -49,6 +49,12 @@ export const DcaForm: FC<Props> = ({ maxBalance, quotedPrice }) => {
   )
 
   useEffect(() => {
+    if (!isIceEnabled) {
+      setValue("limitEnabled", false)
+    }
+  }, [isIceEnabled, setValue])
+
+  useEffect(() => {
     const { sellAsset, buyAsset, ...values } = getValues()
 
     if (!sellAsset || !buyAsset) {

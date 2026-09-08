@@ -9,6 +9,7 @@ import {
   TRADE_CHART_BY_SOURCE,
   TRADE_ORDERS_BY_SOURCE,
   useTradeDataSource,
+  useTradeOrdersDataSource,
 } from "@/modules/trade/swap/tradeDataSource"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
@@ -16,9 +17,10 @@ import { SSwapFormContainer } from "./SwapPage.styled"
 export const TRADE_CHART_DESKTOP_HEIGHT = 460
 
 export const SwapPageDesktop = () => {
-  const source = useTradeDataSource()
-  const TradeChart = TRADE_CHART_BY_SOURCE[source]
-  const TradeOrders = TRADE_ORDERS_BY_SOURCE[source]
+  const chartSource = useTradeDataSource()
+  const ordersSource = useTradeOrdersDataSource()
+  const TradeChart = TRADE_CHART_BY_SOURCE[chartSource]
+  const TradeOrders = TRADE_ORDERS_BY_SOURCE[ordersSource]
 
   return (
     <Stack gap="xl">
