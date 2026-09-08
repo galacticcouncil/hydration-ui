@@ -9,12 +9,14 @@ import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEn
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useMarketBuyData = (
   form: UseFormReturn<MarketFormValues>,
 ): TradeProviderProps => {
   const rpc = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const { account } = useAccount()
   const address = account?.address ?? ""
 
@@ -68,6 +70,7 @@ export const useMarketBuyData = (
         assetOut: buyAsset?.id ?? "",
         amountIn: twapBudget,
       },
+      isIceEnabled,
       twapEnabled,
     ),
     // The budget is part of the query key, so every quote move would otherwise

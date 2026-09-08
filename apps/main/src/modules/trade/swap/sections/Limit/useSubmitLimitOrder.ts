@@ -8,6 +8,7 @@ import { bestNumberQuery } from "@/api/chain"
 import { maxIntentDurationQuery } from "@/api/intents"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
@@ -24,6 +25,7 @@ export const useSubmitLimitOrder = () => {
 
   const rpc = useRpcProvider()
   const { sdk, queryClient } = rpc
+  const isIceEnabled = useIsIceEnabled()
 
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
@@ -59,7 +61,9 @@ export const useSubmitLimitOrder = () => {
 
       if (expiryMs) {
         const [maxDurationMs, { timestamp }] = await Promise.all([
-          queryClient.ensureQueryData(maxIntentDurationQuery(rpc)),
+          queryClient.ensureQueryData(
+            maxIntentDurationQuery(rpc, isIceEnabled),
+          ),
           queryClient.ensureQueryData(bestNumberQuery(rpc)),
         ])
         const effectiveMs = clamp(expiryMs, { min: 1, max: maxDurationMs })

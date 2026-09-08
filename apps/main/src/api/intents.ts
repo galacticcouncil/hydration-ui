@@ -76,11 +76,14 @@ export const useAccountIntents = (address: string) => {
   }
 }
 
-export const maxIntentDurationQuery = (context: TProviderContext) => {
-  const { papiClient, isReady, featureFlags } = context
+export const maxIntentDurationQuery = (
+  context: TProviderContext,
+  isIceEnabled: boolean,
+) => {
+  const { papiClient, isReady } = context
 
   return queryOptions({
-    enabled: featureFlags.isIceEnabled && isReady,
+    enabled: isIceEnabled && isReady,
     staleTime: Infinity,
     queryKey: ["intents", "maxAllowedIntentDuration"],
     queryFn: async () => {

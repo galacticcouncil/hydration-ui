@@ -9,11 +9,13 @@ import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEn
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 
 export const useMarketSellData = (
   form: UseFormReturn<MarketFormValues>,
 ): TradeProviderProps => {
   const rpc = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const { account } = useAccount()
   const address = account?.address ?? ""
 
@@ -56,6 +58,7 @@ export const useMarketSellData = (
         assetOut: buyAsset?.id ?? "",
         amountIn: debouncedSellAmount,
       },
+      isIceEnabled,
       isTwapEnabled(swap),
     ),
   )

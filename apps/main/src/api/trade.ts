@@ -199,6 +199,7 @@ type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 export const bestSellTwapQuery = (
   rpc: TProviderContext,
   { assetIn, assetOut, amountIn }: BestSellTwapArgs,
+  isIceEnabled: boolean,
   enabled = true,
 ) =>
   queryOptions({
@@ -209,12 +210,13 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
+      isIceEnabled,
     ],
     queryFn: async () => {
       const inId = Number(assetIn)
       const outId = Number(assetOut)
       // Legacy (non-ICE) path unchanged.
-      if (!rpc.featureFlags.isIceEnabled) {
+      if (!isIceEnabled) {
         return rpc.sdk.api.scheduler.getTwapSellOrder(inId, outId, amountIn)
       }
       const { sdk, queryClient } = rpc
@@ -463,7 +465,8 @@ export const minimumOrderBudgetQuery = (
 }
 
 export const tradeOrderDurationQuery = (
-  { sdk, featureFlags, isReady, queryClient }: TProviderContext,
+  { sdk, isReady, queryClient }: TProviderContext,
+  isIceEnabled: boolean,
   tradeCount: number,
   tradePeriod = 0,
 ) =>
@@ -474,18 +477,15 @@ export const tradeOrderDurationQuery = (
       "twapExecutionTime",
       tradeCount,
       tradePeriod,
-      featureFlags.isIceEnabled,
+      isIceEnabled,
     ],
     queryFn: async () => {
-      if (!featureFlags.isIceEnabled) {
+      if (!isIceEnabled) {
         return sdk.api.scheduler.getTwapExecutionTime(tradeCount)
       }
 
       const blockTimeMs = await queryClient.ensureQueryData(blockTimeQuery(sdk))
       return tradeCount * tradePeriod * blockTimeMs
     },
-    enabled:
-      isReady &&
-      tradeCount > 0 &&
-      (!featureFlags.isIceEnabled || tradePeriod > 0),
+    enabled: isReady && tradeCount > 0 && (!isIceEnabled || tradePeriod > 0),
   })

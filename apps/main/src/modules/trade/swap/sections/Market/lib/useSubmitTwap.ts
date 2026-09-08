@@ -38,7 +38,12 @@ export const useSubmitTwap = () => {
 
       const duration = await rpc.queryClient
         .ensureQueryData(
-          tradeOrderDurationQuery(rpc, twap.tradeCount, twap.tradePeriod),
+          tradeOrderDurationQuery(
+            rpc,
+            isIceEnabled,
+            twap.tradeCount,
+            twap.tradePeriod,
+          ),
         )
         .catch(() => 0)
 
