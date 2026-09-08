@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { NAVIGATION, swapTabLink } from "@/config/navigation"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
 import { useIsIceEnabled } from "@/states/intents"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 import { SFormHeader, SHeaderTab } from "./FormHeader.styled"
 
@@ -46,13 +47,15 @@ export const FormHeader = () => {
 
       {hasSettings && (
         <>
-          <ButtonIcon
-            onClick={() => setOpenSettings(true)}
-            aria-label={t("common:settings")}
-            mr="-s"
-          >
-            <Icon size="s" component={Settings} />
-          </ButtonIcon>
+          <TutorialAnchor tutorial="trade-intents" step={0} asChild>
+            <ButtonIcon
+              onClick={() => setOpenSettings(true)}
+              aria-label={t("common:settings")}
+              mr="-s"
+            >
+              <Icon size="s" component={Settings} />
+            </ButtonIcon>
+          </TutorialAnchor>
 
           <Modal
             variant="popup"

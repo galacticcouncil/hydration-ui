@@ -18,6 +18,8 @@ import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
 import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
+import { applyResetTutorialsParam } from "@/tutorials/resetTutorials"
+import { TutorialProvider } from "@/tutorials/TutorialProvider"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -35,6 +37,10 @@ const queryClient = new QueryClient({
 })
 
 setupPortfolioPersistence(queryClient)
+
+// Runs before the router reads the location, so the parameter is gone by the
+// time the first route resolves.
+applyResetTutorialsParam()
 
 export interface RouterContext {
   queryClient: QueryClient
@@ -73,7 +79,9 @@ export const App = () => {
         <DataProviderResolver>
           <ThemeProvider>
             <TooltipProvider>
-              <RouterProvider router={router} />
+              <TutorialProvider>
+                <RouterProvider router={router} />
+              </TutorialProvider>
               <Toaster />
             </TooltipProvider>
           </ThemeProvider>

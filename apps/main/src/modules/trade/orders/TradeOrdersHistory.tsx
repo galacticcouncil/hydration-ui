@@ -13,6 +13,7 @@ import {
   TradeOrdersHeader,
   TradeOrderTab,
 } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 const TABS = [
   "openOrders",
@@ -57,20 +58,22 @@ export const TradeOrdersHistory: FC<PaperProps> = (props) => {
   }, [isSupportedTab, navigate])
 
   return (
-    <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersHeader
-        tabs={TABS}
-        paginationProps={paginationProps}
-        openOrdersCount={scheduleIds.length + (intents?.length ?? 0)}
-      />
-      <Separator />
-      <div sx={{ overflowX: "auto" }}>
-        {resolvedTab === "openOrders" ? (
-          <OpenOrdersLegacy paginationProps={paginationProps} />
-        ) : (
-          <OrderHistoryLegacy paginationProps={paginationProps} />
-        )}
-      </div>
-    </Paper>
+    <TutorialAnchor tutorial="intro" step={5} asChild>
+      <Paper sx={{ overflow: "hidden" }} {...props}>
+        <TradeOrdersHeader
+          tabs={TABS}
+          paginationProps={paginationProps}
+          openOrdersCount={scheduleIds.length + (intents?.length ?? 0)}
+        />
+        <Separator />
+        <div sx={{ overflowX: "auto" }}>
+          {resolvedTab === "openOrders" ? (
+            <OpenOrdersLegacy paginationProps={paginationProps} />
+          ) : (
+            <OrderHistoryLegacy paginationProps={paginationProps} />
+          )}
+        </div>
+      </Paper>
+    </TutorialAnchor>
   )
 }

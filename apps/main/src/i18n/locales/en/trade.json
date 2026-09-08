@@ -255,5 +255,6 @@
   "intents.onboarding.description": "Help us test intents - a new way to place trades, including limit orders.",
   "intents.onboarding.hint": "If needed, you can switch back in Trade settings.",
   "intents.onboarding.cta.dismiss": "Not now",
-  "intents.onboarding.cta.confirm": "Enable Intents"
+  "intents.onboarding.cta.confirm": "Enable Intents",
+  "hints.intents.description": "Enable or disable intents here"
 }

@@ -11,6 +11,7 @@ import {
   useTradeDataSource,
   useTradeOrdersDataSource,
 } from "@/modules/trade/swap/tradeDataSource"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
@@ -36,11 +37,13 @@ export const SwapPageDesktop = () => {
           gridRow={[null, null, null, "1/-1"]}
           sx={{ alignSelf: "stretch" }}
         >
-          <SSwapFormContainer width="100%">
-            <FormHeader />
-            <Separator mx="-xl" />
-            <Outlet />
-          </SSwapFormContainer>
+          <TutorialAnchor tutorial="intro" step={4} asChild>
+            <SSwapFormContainer width="100%">
+              <FormHeader />
+              <Separator mx="-xl" />
+              <Outlet />
+            </SSwapFormContainer>
+          </TutorialAnchor>
           <LimitPostFormDisclaimer />
         </Flex>
         <TradeOrders gridColumn={[null, null, "1/-1", "1"]} />

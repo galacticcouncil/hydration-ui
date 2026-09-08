@@ -70,6 +70,9 @@
   "more": "More",
   "readMore": "Read more",
   "back": "Back",
+  "next": "Next",
+  "finish": "Finish",
+  "gotIt": "Got it",
   "submit": "Submit",
   "confirm": "Confirm",
   "confirmation": "Confirmation",
@@ -423,5 +426,17 @@
   "banners.bil.cta": "Get BIL",
   "gigaNews": "GIGA News",
   "closeAll": "Close all",
-  "externalApy.alert": "The external APY is not available"
+  "externalApy.alert": "The external APY is not available",
+  "hints.intro.settings.title": "Settings",
+  "hints.intro.settings.description": "Change your fee asset, theme and more.",
+  "hints.intro.deposit.title": "Deposit",
+  "hints.intro.deposit.description": "Bring funds in from any chain, right here.",
+  "hints.intro.connect.title": "Connect wallet",
+  "hints.intro.connect.description": "Connect a wallet to trade, deposit and earn.",
+  "hints.intro.chart.title": "Price chart",
+  "hints.intro.chart.description": "Price history for the selected pair.",
+  "hints.intro.swap.title": "Trade",
+  "hints.intro.swap.description": "Trade any asset - the best route is picked for you.",
+  "hints.intro.orders.title": "Order History",
+  "hints.intro.orders.description": "Your open orders and past trades show up here."
 }

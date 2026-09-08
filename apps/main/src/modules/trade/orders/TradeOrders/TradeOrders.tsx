@@ -9,6 +9,7 @@ import { MyRecentActivity } from "@/modules/trade/orders/TradeOrders/MyRecentAct
 import { OpenOrders } from "@/modules/trade/orders/TradeOrders/OpenOrders"
 import { OrderHistory } from "@/modules/trade/orders/TradeOrders/OrderHistory"
 import { TradeOrdersHeader } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 type Props = PaperProps
 
@@ -40,47 +41,49 @@ export const TradeOrders: FC<Props> = (props) => {
   )
 
   return (
-    <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersHeader
-        paginationProps={paginationProps}
-        openOrdersCount={openOrders.length}
-      />
-      <Separator />
-      <div sx={{ overflowX: "auto" }}>
-        {(() => {
-          switch (tab) {
-            case "myActivity":
-              return (
-                <MyRecentActivity
-                  paginationProps={paginationProps}
-                  assetIds={assetIds}
-                />
-              )
-            case "openOrders":
-              return (
-                <OpenOrders
-                  paginationProps={paginationProps}
-                  orders={openOrders}
-                  isLoading={isLoading}
-                />
-              )
-            case "orderHistory":
-              return (
-                <OrderHistory
-                  paginationProps={paginationProps}
-                  assetIds={assetIds}
-                />
-              )
-            case "marketTransactions":
-              return (
-                <MarketTransactions
-                  paginationProps={paginationProps}
-                  assetIds={assetIds}
-                />
-              )
-          }
-        })()}
-      </div>
-    </Paper>
+    <TutorialAnchor tutorial="intro" step={5} asChild>
+      <Paper sx={{ overflow: "hidden" }} {...props}>
+        <TradeOrdersHeader
+          paginationProps={paginationProps}
+          openOrdersCount={openOrders.length}
+        />
+        <Separator />
+        <div sx={{ overflowX: "auto" }}>
+          {(() => {
+            switch (tab) {
+              case "myActivity":
+                return (
+                  <MyRecentActivity
+                    paginationProps={paginationProps}
+                    assetIds={assetIds}
+                  />
+                )
+              case "openOrders":
+                return (
+                  <OpenOrders
+                    paginationProps={paginationProps}
+                    orders={openOrders}
+                    isLoading={isLoading}
+                  />
+                )
+              case "orderHistory":
+                return (
+                  <OrderHistory
+                    paginationProps={paginationProps}
+                    assetIds={assetIds}
+                  />
+                )
+              case "marketTransactions":
+                return (
+                  <MarketTransactions
+                    paginationProps={paginationProps}
+                    assetIds={assetIds}
+                  />
+                )
+            }
+          })()}
+        </div>
+      </Paper>
+    </TutorialAnchor>
   )
 }

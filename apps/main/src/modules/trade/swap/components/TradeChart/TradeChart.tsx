@@ -43,6 +43,7 @@ import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeChartSettings } from "@/states/tradeSettings"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 type PairChartProps = {
   readonly height: number
@@ -57,9 +58,11 @@ export const TradeChart: React.FC<{ readonly height: number }> = ({
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   return (
-    <Paper p="xl">
-      <PairChart height={height} assetIn={assetIn} assetOut={assetOut} />
-    </Paper>
+    <TutorialAnchor tutorial="intro" step={3} asChild>
+      <Paper p="xl">
+        <PairChart height={height} assetIn={assetIn} assetOut={assetOut} />
+      </Paper>
+    </TutorialAnchor>
   )
 }
 

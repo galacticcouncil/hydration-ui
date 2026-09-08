@@ -10,6 +10,7 @@ import {
   useTradeDataSource,
   useTradeOrdersDataSource,
 } from "@/modules/trade/swap/tradeDataSource"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
@@ -24,11 +25,13 @@ export const SwapPageMobile: FC = () => {
   return (
     <Flex direction="column" gap="xxl">
       <Flex direction="column" gap="base" width="100%">
-        <SSwapFormContainer width="100%">
-          <FormHeader />
-          <Separator mx={-20} />
-          <Outlet />
-        </SSwapFormContainer>
+        <TutorialAnchor tutorial="intro" step={4} asChild>
+          <SSwapFormContainer width="100%">
+            <FormHeader />
+            <Separator mx={-20} />
+            <Outlet />
+          </SSwapFormContainer>
+        </TutorialAnchor>
         <LimitPostFormDisclaimer />
       </Flex>
       <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />

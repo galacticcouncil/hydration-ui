@@ -26,6 +26,7 @@ import { useTradeChartGrafanaData } from "@/modules/trade/swap/components/TradeC
 import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.styled"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
 
@@ -106,58 +107,60 @@ export const TradeChartGrafana: React.FC<TradeChartGrafanaProps> = ({
   ) : undefined
 
   return (
-    <Paper p="xl">
-      <Flex align="flex-start" gap="base" justify="space-between">
-        <ChartValues
-          value={chartValue}
-          displayValue={chartDisplayValue}
-          isLoading={isLoadingValues}
-        />
-        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <SChartInvertButton
-            size="small"
-            variant="tertiary"
-            outline
-            onClick={() => setIsInverted((prev) => !prev)}
-            sx={{ width: "auto", px: "m", gap: "s" }}
-          >
-            <Icon component={ArrowLeftRight} size="m" />
-            {assetBMeta.symbol}/{assetAMeta.symbol}
-          </SChartInvertButton>
-          <Separator
-            orientation="vertical"
-            mx="base"
-            sx={{
-              height: "l",
-              mt: "xs",
-              display: ["none", null, null, null, "block"],
-            }}
+    <TutorialAnchor tutorial="intro" step={3} asChild>
+      <Paper p="xl">
+        <Flex align="flex-start" gap="base" justify="space-between">
+          <ChartValues
+            value={chartValue}
+            displayValue={chartDisplayValue}
+            isLoading={isLoadingValues}
           />
-          <ChartTimeRange
-            sx={{ ml: "auto" }}
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={(option) => {
-              setInterval(option.key)
-              chartRef.current?.resetZoom()
-            }}
-          />
+          <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
+            <SChartInvertButton
+              size="small"
+              variant="tertiary"
+              outline
+              onClick={() => setIsInverted((prev) => !prev)}
+              sx={{ width: "auto", px: "m", gap: "s" }}
+            >
+              <Icon component={ArrowLeftRight} size="m" />
+              {assetBMeta.symbol}/{assetAMeta.symbol}
+            </SChartInvertButton>
+            <Separator
+              orientation="vertical"
+              mx="base"
+              sx={{
+                height: "l",
+                mt: "xs",
+                display: ["none", null, null, null, "block"],
+              }}
+            />
+            <ChartTimeRange
+              sx={{ ml: "auto" }}
+              options={intervalOptions}
+              selectedOption={interval}
+              onSelect={(option) => {
+                setInterval(option.key)
+                chartRef.current?.resetZoom()
+              }}
+            />
+          </Flex>
         </Flex>
-      </Flex>
-      <ChartState
-        sx={{ height }}
-        isError={isError}
-        isLoading={isLoading}
-        isEmpty={isEmpty}
-      >
-        <TradingViewChart
-          ref={chartRef}
-          height={height}
-          data={prices}
-          hidePriceIndicator
-          onCrosshairMove={onCrosshairMove}
-        />
-      </ChartState>
-    </Paper>
+        <ChartState
+          sx={{ height }}
+          isError={isError}
+          isLoading={isLoading}
+          isEmpty={isEmpty}
+        >
+          <TradingViewChart
+            ref={chartRef}
+            height={height}
+            data={prices}
+            hidePriceIndicator
+            onCrosshairMove={onCrosshairMove}
+          />
+        </ChartState>
+      </Paper>
+    </TutorialAnchor>
   )
 }

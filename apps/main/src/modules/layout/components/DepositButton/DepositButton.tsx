@@ -9,6 +9,7 @@ import {
   selectPendingDepositsByAccount,
   useOnrampStore,
 } from "@/modules/onramp/store/useOnrampStore"
+import { TutorialAnchor } from "@/tutorials/TutorialAnchor"
 
 export const DepositButton = () => {
   const { t } = useTranslation(["common"])
@@ -22,10 +23,12 @@ export const DepositButton = () => {
   const count = pendingDeposits.length
 
   return (
-    <Button asChild variant="accent" outline glow={count > 0}>
-      <Link to={LINKS.deposit}>
-        {count > 0 ? t("deposit.pending", { count }) : t("deposit")}
-      </Link>
-    </Button>
+    <TutorialAnchor tutorial="intro" step={1} asChild>
+      <Button asChild variant="accent" outline glow={count > 0}>
+        <Link to={LINKS.deposit}>
+          {count > 0 ? t("deposit.pending", { count }) : t("deposit")}
+        </Link>
+      </Button>
+    </TutorialAnchor>
   )
 }
