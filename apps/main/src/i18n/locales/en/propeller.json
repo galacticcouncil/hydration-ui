@@ -7,12 +7,10 @@
   "strategy.riskProfile": "Risk profile",
   "strategy.risk.low": "Low",
   "strategy.contractAddress": "Contract address",
-
   "positions.title": "My positions",
   "positions.col.amount": "Amount",
   "positions.col.netApy": "Your net APY",
   "positions.action.withdraw": "Withdraw",
-
   "withdrawals.title": "Withdrawals",
   "withdrawals.showRedeemed": "Show Redeemed",
   "withdrawals.col.amount": "Amount",
@@ -24,11 +22,11 @@
   "withdrawals.state.pending": "Pending",
   "withdrawals.state.claimable": "Claim ready",
   "withdrawals.state.settling": "Settling",
+  "withdrawals.state.settlingShort": "Settling (short)",
   "withdrawals.state.claimed": "Claimed",
   "withdrawals.settledProgress": "{{settled}} / {{owed}} settled",
   "withdrawals.action.claim": "Claim",
-
-  "deposit.amount": "Deposit amount",
+  "deposit.amount": "Deposit",
   "deposit.benefit.noLiquidations": "No liquidations",
   "deposit.benefit.noLiquidationsDescription": "Protected from market-driven liquidations.",
   "deposit.benefit.noImpermanentLoss": "No impermanent loss",
@@ -37,9 +35,9 @@
   "deposit.cta.paused": "Deposits paused",
   "deposit.cta.exceedsCapacity": "Exceeds remaining capacity",
   "deposit.cta.deposit": "Deposit",
-
   "withdraw.title": "Withdraw {{shareSymbol}}",
   "withdraw.amount": "Amount",
+  "withdraw.carryEstimate": "Estimate includes ~{{carry}} of accrued negative carry, which the redeemer absorbs on exit. The final amount depends on how much the vault realises while unwinding.",
   "withdraw.ack": "I understand my {{shareSymbol}} enters the async withdrawal queue and settles to {{symbol}} once the vault unwinds the position.",
   "withdraw.cta.pending": "Pending...",
   "withdraw.cta.insufficient": "Insufficient {{shareSymbol}}",

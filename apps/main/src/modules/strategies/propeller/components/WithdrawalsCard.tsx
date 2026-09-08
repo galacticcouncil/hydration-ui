@@ -53,8 +53,12 @@ export const WithdrawalsCard = ({
       const bActive = isActionable(b)
       if (aActive && !bActive) return -1
       if (!aActive && bActive) return 1
-      if (aActive) return a.requestedDate.getTime() - b.requestedDate.getTime()
-      return b.requestedDate.getTime() - a.requestedDate.getTime()
+      // requestId is queueTail++ at request time, so it IS request order —
+      // and unlike a timestamp it exists for pending rows, whose RedeemRequested
+      // event never reaches eth_getLogs (see useRedemptionHistory).
+      // Actionable rows oldest-first (settle FIFO), the rest newest-first.
+      if (aActive) return a.id - b.id
+      return b.id - a.id
     })
   }, [rows, showRedeemed])
 

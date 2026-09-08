@@ -12,11 +12,16 @@ import {
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { PropellerLogo } from "@/modules/strategies/propeller/components/PropellerLogo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+
+// Carry below this reads as false precision next to ordinary pool slippage,
+// so the estimate is left gross and no explanatory line is shown.
+const CARRY_DISPLAY_FLOOR = 0.005
 
 interface VaultStats {
   exchangeRate: number
@@ -31,8 +36,14 @@ interface Props {
   vaultStats: VaultStats
   /** Vault share balance available to redeem. */
   shareBalance: number
-  /** This vault's share of the SubLoop equity (WAD); null while unknown. */
+  /** This vault's share of the SubLoop equity; null while unknown. */
   loopEquity: bigint | null
+  /**
+   * Loop-wide negative carry as a fraction (0.029 = 2.9%); null while unknown.
+   * The redeemer absorbs this, and it is NOT in `exchangeRate` — see
+   * SUBLOOP_ABI.negativeCarryBps.
+   */
+  negativeCarry: number | null
   onRequestRedeem: (amount: number) => void
   isPending: boolean
 }
@@ -43,11 +54,12 @@ export const WithdrawModal = ({
   vaultStats,
   shareBalance,
   loopEquity,
+  negativeCarry,
   onRequestRedeem,
   isPending,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { symbol, shareSymbol } = useActivePropellerVault()
+  const { assetId, symbol, shareSymbol } = useActivePropellerVault()
   const [amount, setAmount] = useState("")
   const [acknowledged, setAcknowledged] = useState(false)
 
@@ -59,9 +71,20 @@ export const WithdrawModal = ({
   }, [open])
 
   const inputNum = parseFloat(amount) || 0
-  // Shares → collateral at the current vault rate. `requestRedeem` snapshots
-  // the owed amount at request time, so this is what the request will lock in.
-  const assetOut = inputNum * vaultStats.exchangeRate
+  // Shares → collateral at the current vault rate, less the loop's accrued
+  // negative carry. `requestRedeem` snapshots `collateralOwed` at the GROSS
+  // rate, but settlement releases it as `collateralOwed * repaid / debtShare`
+  // and writes any unrealizable remainder off against the redeemer — so the
+  // gross figure systematically overstates the payout. Measured on lark-4:
+  // 233 bps carry produced a 2.4% shortfall.
+  //
+  // Below the threshold the correction is noise against pool slippage and a
+  // "−0.03%" line reads as false precision, so it isn't shown at all.
+  const carry =
+    negativeCarry !== null && negativeCarry >= CARRY_DISPLAY_FLOOR
+      ? negativeCarry
+      : 0
+  const assetOut = inputNum * vaultStats.exchangeRate * (1 - carry)
   const isBelowMin = inputNum > 0 && inputNum < vaultStats.minRedeem
   const overBalance = inputNum > shareBalance
 
@@ -121,7 +144,7 @@ export const WithdrawModal = ({
           <AssetInput
             label={t("withdraw.amount")}
             symbol={shareSymbol}
-            selectedAssetIcon={<PropellerLogo size="medium" />}
+            selectedAssetIcon={<AssetLogo id={assetId} size="medium" />}
             modalDisabled
             value={amount}
             onChange={setAmount}
@@ -131,6 +154,16 @@ export const WithdrawModal = ({
             amountError={amountError}
           />
         </Box>
+
+        {carry > 0 && !blockedReason && (
+          <Box px="xl" pt="l">
+            <Text fs="p6" color={getToken("text.low")}>
+              {t("withdraw.carryEstimate", {
+                carry: t("common:percent", { value: carry * 100 }),
+              })}
+            </Text>
+          </Box>
+        )}
 
         {blockedReason && (
           <Box px="xl" pt="l">
