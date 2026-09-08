@@ -17,16 +17,14 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
-// Carry below this reads as false precision next to ordinary pool slippage,
-// so the estimate is left gross and no explanatory line is shown.
+// Below 0.5% carry, the haircut is noise next to slippage; show the gross estimate.
 const CARRY_DISPLAY_FLOOR = 0.005
 
 interface VaultStats {
   exchangeRate: number
   minRedeem: number
-  /** global vault pause — `requestRedeem` is whenNotPaused. */
   paused: boolean
 }
 
@@ -34,15 +32,8 @@ interface Props {
   open: boolean
   onClose: () => void
   vaultStats: VaultStats
-  /** Vault share balance available to redeem. */
   shareBalance: number
-  /** This vault's share of the SubLoop equity; null while unknown. */
   loopEquity: bigint | null
-  /**
-   * Loop-wide negative carry as a fraction (0.029 = 2.9%); null while unknown.
-   * The redeemer absorbs this, and it is NOT in `exchangeRate` — see
-   * SUBLOOP_ABI.negativeCarryBps.
-   */
   negativeCarry: number | null
   onRequestRedeem: (amount: number) => void
   isPending: boolean
@@ -71,15 +62,6 @@ export const WithdrawModal = ({
   }, [open])
 
   const inputNum = parseFloat(amount) || 0
-  // Shares → collateral at the current vault rate, less the loop's accrued
-  // negative carry. `requestRedeem` snapshots `collateralOwed` at the GROSS
-  // rate, but settlement releases it as `collateralOwed * repaid / debtShare`
-  // and writes any unrealizable remainder off against the redeemer — so the
-  // gross figure systematically overstates the payout. Measured on lark-4:
-  // 233 bps carry produced a 2.4% shortfall.
-  //
-  // Below the threshold the correction is noise against pool slippage and a
-  // "−0.03%" line reads as false precision, so it isn't shown at all.
   const carry =
     negativeCarry !== null && negativeCarry >= CARRY_DISPLAY_FLOOR
       ? negativeCarry
@@ -88,9 +70,6 @@ export const WithdrawModal = ({
   const isBelowMin = inputNum > 0 && inputNum < vaultStats.minRedeem
   const overBalance = inputNum > shareBalance
 
-  // `requestRedeem` reverts on both of these — block the CTA instead of
-  // letting the user pay for a failing tx. A null equity read (loading or
-  // reverted) never blocks.
   const blockedReason = vaultStats.paused
     ? "paused"
     : loopEquity === 0n
@@ -159,7 +138,7 @@ export const WithdrawModal = ({
           <Box px="xl" pt="l">
             <Text fs="p6" color={getToken("text.low")}>
               {t("withdraw.carryEstimate", {
-                carry: t("common:percent", { value: carry * 100 }),
+                carry,
               })}
             </Text>
           </Box>

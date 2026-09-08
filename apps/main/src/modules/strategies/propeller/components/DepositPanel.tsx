@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
 interface VaultStats {
   exchangeRate: number
@@ -53,15 +53,12 @@ export const DepositPanel = ({
   const inputNum = parseFloat(amount) || 0
   const overBalance = inputNum > balances.eth
 
-  // The contract reverts ExceedsTvlCap when totalAssets + assets > tvlCap, so
-  // the exact headroom is tvlCap − totalAssets. A tvlCap of 0 is the "not read
-  // yet" default rather than a real zero-capacity vault, so it doesn't gate.
+  // Headroom is tvlCap - totalAssets. tvlCap 0 means the read has not loaded yet.
   const remainingCapacity = Math.max(
     vaultStats.tvlCap - vaultStats.totalAssets,
     0,
   )
   const overCapacity = vaultStats.tvlCap > 0 && inputNum > remainingCapacity
-  // deposit() is whenNotPaused on top of its own depositsPaused switch.
   const isPaused = vaultStats.depositsPaused || vaultStats.paused
 
   const handleSubmit = () => {

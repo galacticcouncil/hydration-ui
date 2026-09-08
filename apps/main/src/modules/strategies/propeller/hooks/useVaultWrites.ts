@@ -5,21 +5,23 @@ import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
+import {
+  type Abi,
+  encodeFunctionData,
+  erc20Abi,
+  type Hex,
+  parseUnits,
+} from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
-import {
-  ERC20_ABI,
-  EVM_CALL_GAS,
-  VAULT_ABI,
-} from "@/modules/strategies/propeller/constants"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
+import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
-/** A single EVM call to be wrapped + bundled into a substrate batch. */
 interface BatchEvmCall {
   to: Hex
   data: Hex
@@ -61,7 +63,7 @@ function useVaultEvmCall() {
         abi: safeStringify(abi),
       }
 
-      // If account not yet bound to EVM, batch bind + evm call
+      // Batch bind + evm call when the account is not yet mapped to EVM.
       if (isBound === false) {
         const bindTx = rpc.papi.tx.EVMAccounts.bind_evm_address()
         const evmPapiTx = transformEvmCallToPapiTx(rpc.papi, evmCall)
@@ -95,12 +97,8 @@ function useVaultEvmCall() {
   )
 
   /**
-   * Submit N EVM calls atomically as a single substrate `Utility.batch_all`.
-   * Each call is wrapped through `transformEvmCallToPapiTx` then bundled.
-   * If the user isn't yet bound to their EVM mapping, prepends the bind tx
-   * to the same batch so binding happens atomically with the first call.
-   *
-   * Used by the deposit flow (collateral.approve → vault.deposit).
+   * Submit EVM calls as one substrate Utility.batch_all.
+   * Prepends bind_evm_address when the account is not yet mapped.
    */
   const submitBatch = useCallback(
     async (
@@ -164,13 +162,6 @@ function useVaultEvmCall() {
   return { evmAddress, submitTx, submitBatch }
 }
 
-/**
- * Deposit the vault's collateral and end up holding its shares.
- *
- * Vault pulls the collateral via ERC-4626 `deposit(assets, receiver)`, so we
- * approve the vault for that amount (if needed) then call deposit. Both calls are
- * bundled into a single substrate `Utility.batch_all`.
- */
 export function useDeposit() {
   const { t } = useTranslation(["common"])
   const { evm } = useRpcProvider()
@@ -187,7 +178,7 @@ export function useDeposit() {
 
       const assetAllowance = await evm.readContract({
         address: assetAddress,
-        abi: ERC20_ABI,
+        abi: erc20Abi,
         functionName: "allowance",
         args: [evmAddress, vaultAddress],
       })
@@ -196,11 +187,11 @@ export function useDeposit() {
         calls.push({
           to: assetAddress,
           data: encodeFunctionData({
-            abi: ERC20_ABI,
+            abi: erc20Abi,
             functionName: "approve",
             args: [vaultAddress, assetBig],
           }),
-          abi: [...ERC20_ABI],
+          abi: [...erc20Abi],
         })
       }
 
@@ -227,20 +218,11 @@ export function useDeposit() {
   })
 }
 
-/**
- * Request an async redemption of `shares` back to the vault's collateral.
- *
- * `requestRedeem(shares, owner)` escrows the shares and appends a request to
- * the queue. The keeper later unwinds the loop and settles the request; the
- * user then calls `claim(requestId, receiver)` to collect their collateral.
- */
 export function useRequestRedeem() {
   const { t } = useTranslation(["common"])
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitTx } = useVaultEvmCall()
   const { vaultAddress, assetId, shareSymbol } = useActivePropellerVault()
-  // Shares carry the collateral's scale, not a fixed 18 — CollateralVault has
-  // no decimals() override and mints 1:1 against assets on the first deposit.
   const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
@@ -264,10 +246,6 @@ export function useRequestRedeem() {
   })
 }
 
-/**
- * Claim a single settled redemption request — pays the owed collateral out to the
- * caller's own address. `requestId` comes from the redemption queue read.
- */
 export function useClaim() {
   const { evmAddress, submitTx } = useVaultEvmCall()
   const { vaultAddress, symbol } = useActivePropellerVault()
