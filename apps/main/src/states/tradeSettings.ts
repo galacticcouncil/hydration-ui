@@ -106,11 +106,12 @@ const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
   swap: {
     single: {
-      // Intent fills land well within 0.5% of quote (measured on Lark);
-      // with intents a too-tight floor just waits a block instead of
-      // reverting, so the tighter default gives users a stronger
-      // guarantee at negligible fill risk.
-      swapSlippage: 0.5,
+      // Tuned for the legacy router path, which is what a user gets until
+      // they opt into intents: slippage is the extrinsic's minAmountOut, so
+      // too tight reverts the trade. Intents treat it as a limit and simply
+      // wait a block, so they tolerate less - but the default has to be safe
+      // for the path most new users are actually on.
+      swapSlippage: 1,
     },
     split: {
       twapSlippage: 3,
