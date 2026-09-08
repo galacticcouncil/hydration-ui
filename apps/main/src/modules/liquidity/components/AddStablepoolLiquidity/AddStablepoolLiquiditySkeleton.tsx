@@ -40,7 +40,7 @@ export const AddStablepoolLiquiditySkeleton = (
         onBack={props.onBack}
         customHeader={
           <Flex align="center" mt="l" gap="m">
-            <Flex sx={{ flex: 1 }}>
+            <Flex flex={1}>
               <ToggleGroup
                 type="single"
                 value={addStablepoolOptions[0]?.id}

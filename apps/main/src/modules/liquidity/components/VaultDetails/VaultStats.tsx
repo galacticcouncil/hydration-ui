@@ -6,6 +6,7 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,7 +41,7 @@ export const VaultStats = ({
 
   return (
     <PoolStatsShell
-      sx={{ mb: "xl" }}
+      mb="xl"
       values={<VaultValues vault={vault} />}
       renderChartHeader={
         options.length > 1
@@ -103,7 +104,7 @@ const VaultValues = ({ vault }: { vault: VaultTable }) => {
       label: t("liquidity:vaults.stats.sharePrice"),
       value: sharePrice
         ? t("currency", { value: sharePrice, maximumFractionDigits: null })
-        : "-",
+        : t("notAvailable"),
     },
     {
       label: t("liquidity:vaults.stats.poolFee"),
@@ -115,15 +116,17 @@ const VaultValues = ({ vault }: { vault: VaultTable }) => {
     },
     {
       label: t("liquidity:vaults.stats.band"),
-      value: bandWidthPct ? t("percent", { value: bandWidthPct }) : "-",
+      value: bandWidthPct
+        ? t("percent", { value: bandWidthPct })
+        : t("notAvailable"),
     },
   ]
 
   return (
     <Flex
       direction="column"
-      minWidth="16.25rem"
-      maxWidth={["none", "none", "22.5rem"]}
+      minWidth={pxToRem(260)}
+      maxWidth={["none", "none", pxToRem(360)]}
       gap="xl"
     >
       {rows.map((row, index) => (

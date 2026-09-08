@@ -3,16 +3,15 @@ import Big from "big.js"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { RemoveLiquidityForm } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquidity"
+import { useRemoveLiquidityForm } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquidity.utils"
+import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
+import { useVaultWithdraw } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity.utils"
 import { useLiquidityMinLimit } from "@/modules/liquidity/Liquidity.utils"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
-
-import { RemoveLiquidityForm } from "./RemoveLiquidity"
-import { useRemoveLiquidityForm } from "./RemoveLiquidity.utils"
-import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
-import { useVaultWithdraw } from "./RemoveVaultLiquidity.utils"
 
 type Props = {
   vault: VaultTable
@@ -34,11 +33,10 @@ const useRemoveVaultLiquidity = ({
   const state = vault.vault
   const [token0, token1] = vault.tokens
 
-  // The Hypervisor's ERC-20 is not in the asset registry, so fake the metadata
-  // the form reads. isShareToken keys off iconId, which renders the pair logo.
   const shareMeta = {
+    // hypervisor share isn't in the asset registry
     id: state?.address ?? vault.id,
-    symbol: state?.shareSymbol ?? "Shares",
+    symbol: state?.shareSymbol ?? t("common:shares"),
     decimals: SHARE_DECIMALS,
     iconId: [token0.id, token1.id],
   } as unknown as TShareToken
@@ -67,7 +65,6 @@ const useRemoveVaultLiquidity = ({
         })
       : undefined
 
-  // pro-rata claim on both balances, in raw amounts for ReceiveAssets
   const receiveAssets =
     state && state.totalSupply > 0n
       ? [
@@ -84,8 +81,6 @@ const useRemoveVaultLiquidity = ({
 
   const getMinLimit = useLiquidityMinLimit()
 
-  // [base0, base1, limit0, limit1], less the slippage tolerance. The idle
-  // balance pays out exactly, so it is not counted.
   const minAmounts =
     state && state.totalSupply > 0n
       ? ([
@@ -130,7 +125,6 @@ const useRemoveVaultLiquidity = ({
     mutation,
     editable: true,
     receiveNote: t("liquidity:vaults.remove.dualAssetNote"),
-    // hides the omnipool-only fee and trade-limit rows
     isIsolatedPool: true,
   }
 }

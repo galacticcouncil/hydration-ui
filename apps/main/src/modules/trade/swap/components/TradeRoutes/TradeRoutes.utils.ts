@@ -1,4 +1,3 @@
-import { PoolType, PoolTypeValue } from "@/api/pools"
 import { BuySwap, SellSwap, Swap } from "@galacticcouncil/sdk-next/sor"
 import {
   GDOT_ASSET_ID,
@@ -8,6 +7,7 @@ import {
 } from "@galacticcouncil/utils"
 import Big from "big.js"
 
+import { PoolType, PoolTypeValue } from "@/api/pools"
 import { TradeType } from "@/api/trade"
 import { TAsset } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -96,15 +96,23 @@ const HIDDEN_HOP_ASSET_IDS = [
 export type TradeRoute = ReturnType<typeof mapRoutes>[number]
 export type TradeRouteFee = TradeRoute["tradeFees"][number]
 
-const POOL_TYPE_LABEL: Record<PoolTypeValue, string> = {
-  [PoolType.Omni]: "Omnipool",
-  [PoolType.Stable]: "Stableswap",
-  [PoolType.XYK]: "XYK",
-  [PoolType.LBP]: "LBP",
-  [PoolType.Aave]: "Aave",
-  [PoolType.HSM]: "HSM",
-  [PoolType.V3]: "Concentrated liquidity",
-}
+const POOL_TYPE_LABEL_KEY = {
+  [PoolType.Omni]: "market.summary.routes.poolType.omnipool",
+  [PoolType.Stable]: "market.summary.routes.poolType.stableswap",
+  [PoolType.XYK]: "market.summary.routes.poolType.xyk",
+  [PoolType.LBP]: "market.summary.routes.poolType.lbp",
+  [PoolType.Aave]: "market.summary.routes.poolType.aave",
+  [PoolType.HSM]: "market.summary.routes.poolType.hsm",
+  [PoolType.V3]: "market.summary.routes.poolType.concentratedLiquidity",
+} as const satisfies Record<PoolTypeValue, string>
 
-export const formatPoolTypes = (pools: ReadonlyArray<PoolTypeValue>): string =>
-  [...new Set(pools)].map((pool) => POOL_TYPE_LABEL[pool] ?? pool).join(" + ")
+type PoolTypeLabelKey = (typeof POOL_TYPE_LABEL_KEY)[PoolTypeValue]
+
+export const formatPoolTypes = (
+  pools: ReadonlyArray<PoolTypeValue>,
+  translate: (key: PoolTypeLabelKey) => string,
+  separator: string,
+): string =>
+  [...new Set(pools)]
+    .map((pool) => translate(POOL_TYPE_LABEL_KEY[pool]))
+    .join(separator)

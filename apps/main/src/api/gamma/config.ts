@@ -6,7 +6,3 @@ export const GAMMA_CONTRACTS = {
   admin: "0x8fc8a0d7cb9c6B2366Ec08f1Bf03067D54b67bc5",
   rebalanceProxy: "0x8B7Dd119b7edb85D9cF166129DBec5D88DC78C94",
 } as const
-
-export const BOOTSTRAP_V3_POOLS = [
-  { token0: 1001, token1: 222, fee: 3000 },
-] as const

@@ -19,7 +19,10 @@ export const VaultHeader = ({ vault }: { vault: VaultTable }) => {
     <>
       <PoolDetailsHeaderShell
         logoId={[token0.id, token1.id]}
-        title={`${token0.symbol}, ${token1.symbol}`}
+        title={t("vaults.header.title", {
+          symbolA: token0.symbol,
+          symbolB: token1.symbol,
+        })}
         subtitle={
           <Flex align="center" gap="m" wrap>
             <AutoManagedBadge />

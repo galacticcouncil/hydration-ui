@@ -263,7 +263,7 @@ export const AddStablepoolLiquidityForm = ({
                 control={form.control}
                 name="option"
                 render={({ field: { value, onChange, disabled } }) => (
-                  <Flex sx={{ flex: 1 }}>
+                  <Flex flex={1}>
                     <ToggleGroup
                       type="single"
                       value={value}

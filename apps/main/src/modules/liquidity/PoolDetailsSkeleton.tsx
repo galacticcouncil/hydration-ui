@@ -5,6 +5,7 @@ import {
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 
 import { ChartState } from "@/components/ChartState"
 import { PoolDetailsHeaderSkeleton } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderSkeleton"
@@ -21,10 +22,10 @@ export const PoolDetailsSkeleton = () => {
     return (
       <Paper
         p={["secondary", "primary"]}
-        sx={{ flex: 1, gap: "m", flexDirection: "column" }}
         as={Flex}
+        sx={{ flex: 1, gap: "m", flexDirection: "column" }}
       >
-        <ChartState sx={{ height: 350 }} isLoading isEmpty />
+        <ChartState sx={{ height: pxToRem(350) }} isLoading isEmpty />
         <Flex gap="base" justify="space-between" wrap align="center">
           <Flex align="center" gap="base">
             <ToggleGroup type="single" value="price" disabled>
@@ -49,7 +50,7 @@ export const PoolDetailsSkeleton = () => {
   }
 
   return (
-    <Flex direction="column" sx={{ position: "relative" }}>
+    <Flex direction="column" position="relative">
       <PoolDetailsHeaderSkeleton />
 
       <Flex gap="xl">
@@ -58,9 +59,9 @@ export const PoolDetailsSkeleton = () => {
           p={["secondary", "primary"]}
           align="center"
           flex={1}
-          sx={{ flexBasis: "31.25rem" }}
+          sx={{ flexBasis: pxToRem(500) }}
         >
-          <ChartState sx={{ height: 420 }} isLoading isEmpty />
+          <ChartState sx={{ height: pxToRem(420) }} isLoading isEmpty />
         </Flex>
         <PoolDetailsValuesSkeleton />
       </Flex>

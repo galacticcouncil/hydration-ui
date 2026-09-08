@@ -70,7 +70,7 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
   return (
     <Stack asChild>
       <Paper p="l" flex={1}>
-        <Text as="h2" fs="base" fw={500} font="primary" mb="base">
+        <Text as="h2" fs="p2" fw={500} font="primary" mb="base">
           {t("vaults.composition.title")}
         </Text>
 
@@ -99,23 +99,21 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
             </Flex>
           ))}
 
-          {
-            <Box mt="auto">
-              <Separator my="m" />
-              <Flex justify="space-between" align="center">
-                <Text fs="p6" color={getToken("text.low")}>
-                  {t("liquidity:vaults.composition.lastRebalance")}
-                </Text>
-                <Text fs="p6">
-                  {state.lastRebalance !== null
-                    ? t("common:date.relative", {
-                        value: new Date(state.lastRebalance * 1000),
-                      })
-                    : t("common:unknown")}
-                </Text>
-              </Flex>
-            </Box>
-          }
+          <Box mt="auto">
+            <Separator my="m" />
+            <Flex justify="space-between" align="center">
+              <Text fs="p6" color={getToken("text.low")}>
+                {t("liquidity:vaults.composition.lastRebalance")}
+              </Text>
+              <Text fs="p6">
+                {state.lastRebalance !== null
+                  ? t("common:date.relative", {
+                      value: new Date(state.lastRebalance * 1000),
+                    })
+                  : t("common:unknown")}
+              </Text>
+            </Flex>
+          </Box>
         </Stack>
       </Paper>
     </Stack>
@@ -137,7 +135,7 @@ const Amount = ({
     <AssetLogo id={assetId} size="small" />
     <Flex direction="column" justify="center">
       <Flex align="center" gap="s">
-        <Text fs="p6" lh={1} fw={500} fontVariantNumeric="tabular-nums">
+        <Text fs="p6" lh={1} fw={500} font="mono">
           {value}
         </Text>
         <Text fs="p6" lh={1} fw={500} color={getToken("text.medium")}>
@@ -145,11 +143,7 @@ const Amount = ({
         </Text>
       </Flex>
       {displayValue && (
-        <Text
-          fs="p7"
-          color={getToken("text.low")}
-          fontVariantNumeric="tabular-nums"
-        >
+        <Text fs="p7" color={getToken("text.low")} font="mono">
           {displayValue}
         </Text>
       )}

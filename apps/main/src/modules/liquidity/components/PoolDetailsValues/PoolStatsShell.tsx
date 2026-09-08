@@ -36,6 +36,7 @@ export type PoolStatsShellProps = {
   renderChart: (isMobile: boolean) => ReactNode
   values: ReactNode
   renderChartHeader?: (isMobile: boolean) => ReactNode
+  mb?: ComponentProps<typeof Flex>["mb"]
   sx?: ComponentProps<typeof Flex>["sx"]
 }
 
@@ -43,6 +44,7 @@ export const PoolStatsShell = ({
   renderChart,
   values,
   renderChartHeader,
+  mb,
   sx,
 }: PoolStatsShellProps) => {
   const { isTablet, isMobile } = useBreakpoints()
@@ -54,8 +56,9 @@ export const PoolStatsShell = ({
     return (
       <Paper
         p={["secondary", "primary"]}
-        sx={{ flex: 1, gap: "m", flexDirection: "column", ...sx }}
+        mb={mb}
         as={Flex}
+        sx={{ flex: 1, gap: "m", flexDirection: "column", ...sx }}
       >
         <Flex direction="column" gap="base">
           <ToggleGroup
@@ -82,8 +85,8 @@ export const PoolStatsShell = ({
   const header = renderChartHeader?.(false)
 
   return (
-    <Flex gap="xl" sx={sx}>
-      <Paper p={["secondary", "primary"]} sx={{ flex: 2.5 }}>
+    <Flex gap="xl" mb={mb} sx={sx}>
+      <Paper p={["secondary", "primary"]} flex={2.5}>
         {header ? (
           <Flex direction="column" gap="l">
             <Flex>{header}</Flex>
@@ -94,12 +97,7 @@ export const PoolStatsShell = ({
         )}
       </Paper>
 
-      <Paper
-        p={["secondary", "primary"]}
-        sx={{
-          flex: 1,
-        }}
-      >
+      <Paper p={["secondary", "primary"]} flex={1}>
         {values}
       </Paper>
     </Flex>

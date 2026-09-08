@@ -9,7 +9,6 @@ import {
   useAssets,
 } from "@/providers/assetsProvider"
 
-/** guards against a cycle in the registry, e.g. an aToken over a pool share */
 const MAX_DEPTH = 2
 
 export const useAssetColor = () => {

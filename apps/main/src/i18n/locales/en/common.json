@@ -58,6 +58,7 @@
   "edit": "Edit",
   "source": "Source",
   "destination": "Destination",
+  "notAvailable": "—",
   "unknown": "Unknown",
   "sell": "Sell",
   "buy": "Buy",

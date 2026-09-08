@@ -233,7 +233,7 @@ export const PositionsTableShell = ({
   children?: React.ReactNode
 }) => (
   <CollapsibleRoot open={expanded}>
-    <TableContainer as={Paper} sx={{ mb: "xl" }}>
+    <TableContainer as={Paper} mb="xl">
       <PositionsHeader
         onClick={onToggle}
         showMore={expanded}

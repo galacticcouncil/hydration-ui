@@ -14,15 +14,14 @@ import { useTranslation } from "react-i18next"
 
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import {
+  TAddVaultLiquidityFormValues,
+  useAddVaultLiquidity,
+} from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity.utils"
 import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
 import { feeTierPercent, VaultTable } from "@/modules/liquidity/Vaults.utils"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
-
-import {
-  TAddVaultLiquidityFormValues,
-  useAddVaultLiquidity,
-} from "./AddVaultLiquidity.utils"
 
 type Props = {
   vault: VaultTable
@@ -61,8 +60,7 @@ export const AddVaultLiquidity = ({
   const amountA = form.watch("amountA")
   const amountB = form.watch("amountB")
 
-  // The vault wants aDOT while wallets hold DOT, so offer the money-market
-  // supply flow inline instead of sending the user to the Borrow page.
+  // Vault holds aToken; offer money-market supply for the underlying.
   const [supplyAssetId, setSupplyAssetId] = useState<string>()
 
   const wrapHintFor = (asset: TAsset, amount: string) => {
@@ -80,12 +78,10 @@ export const AddVaultLiquidity = ({
     }
   }
 
-  // balances read as zero with no wallet, which would fire the hint for everyone
   const wrapHint = account
     ? (wrapHintFor(assetA, amountA) ?? wrapHintFor(assetB, amountB))
     : undefined
 
-  // the paired amount comes from an on-chain read, so write it back once it lands
   useEffect(() => {
     if (pairedAmount === undefined) return
 
@@ -155,7 +151,7 @@ export const AddVaultLiquidity = ({
                         value: scaleHuman(shares.toString(), 18),
                         share: shareOfVault ?? 0,
                       })
-                    : "-",
+                    : t("common:notAvailable"),
                   loading: isPairLoading,
                 },
                 {
@@ -207,7 +203,7 @@ export const AddVaultLiquidity = ({
               {t("liquidity:vaults.add.managedNote")}
             </Text>
           </ModalBody>
-          <ModalFooter sx={{ pt: 0 }}>
+          <ModalFooter pt={0}>
             <Button
               type="submit"
               size="large"

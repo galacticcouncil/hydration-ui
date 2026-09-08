@@ -3,9 +3,8 @@ import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { ENV } from "@/config/env"
+import { PoolsHeaderSeparator } from "@/modules/liquidity/components/PoolsHeader/PoolsHeaderSeparator"
 import { useVaults } from "@/modules/liquidity/Vaults.utils"
-
-import { PoolsHeaderSeparator } from "./PoolsHeaderSeparator"
 
 const useVaultTotals = () => {
   const { data, isLoading } = useVaults()
@@ -24,11 +23,7 @@ const useVaultTotals = () => {
 }
 
 type VaultsValueTileProps = {
-  /**
-   * Renders the pool-value tile next to the vault one. Set on the Concentrated
-   * liquidity tab, where this is the whole header and always shows; elsewhere
-   * the tile is one stat among many and hides on a chain with no vaults.
-   */
+  /** Also show pool TVL (concentrated liquidity tab). */
   withPoolValue?: boolean
 }
 

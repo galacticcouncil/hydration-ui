@@ -1,23 +1,13 @@
 import { SdkCtx } from "@galacticcouncil/sdk-next"
+import { uniswapv3 } from "@galacticcouncil/sdk-next/pool"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
-import { parseAbi, PublicClient, zeroAddress } from "viem"
+import { PublicClient, zeroAddress } from "viem"
 
 import { AssetType, TAssetData, TToken } from "@/api/assets"
+import { HYPERVISOR_ABI, POOL_ABI } from "@/api/gamma/abi"
+import { GAMMA_CONTRACTS } from "@/api/gamma/config"
 import { PoolToken, PoolType, V3PoolBase } from "@/api/pools"
 import { useAssetRegistryStore } from "@/states/assetRegistry"
-
-import { BOOTSTRAP_V3_POOLS, GAMMA_CONTRACTS } from "./config"
-
-const HYPERVISOR_ABI = parseAbi(["function pool() view returns (address)"])
-
-const POOL_ABI = parseAbi([
-  "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
-  "function liquidity() view returns (uint128)",
-  "function fee() view returns (uint24)",
-  "function tickSpacing() view returns (int24)",
-  "function token0() view returns (address)",
-  "function token1() view returns (address)",
-])
 
 const toPoolToken = (asset: TAssetData, balance: bigint): PoolToken => ({
   id: Number(asset.id),
@@ -56,10 +46,7 @@ const resolveAsset = async (
   return fallback
 }
 
-/**
- * Loads curated v3 pools over EVM when the SDK venue is off (factory parameter
- * unset). The bootstrap hypervisor names the canonical pool address.
- */
+// EVM fallback when UniswapV3Factory is unset; pool address from bootstrap hypervisor.
 export const loadBootstrapV3Pools = async (
   evm: PublicClient,
   sdk: SdkCtx,
@@ -105,12 +92,12 @@ export const loadBootstrapV3Pools = async (
     }),
   ])
 
-  const cfg = BOOTSTRAP_V3_POOLS.find((entry) => entry.fee === Number(fee))
+  const cfg = uniswapv3.V3_POOLS.find((entry) => entry.fee === Number(fee))
   if (!cfg) return []
 
   const [meta0, meta1] = await Promise.all([
-    resolveAsset(cfg.token0, sdk),
-    resolveAsset(cfg.token1, sdk),
+    resolveAsset(cfg.assetA, sdk),
+    resolveAsset(cfg.assetB, sdk),
   ])
   if (!meta0 || !meta1) return []
 
@@ -121,8 +108,8 @@ export const loadBootstrapV3Pools = async (
     {
       address: poolAddress,
       type: PoolType.V3 as V3PoolBase["type"],
-      token0: cfg.token0,
-      token1: cfg.token1,
+      token0: cfg.assetA,
+      token1: cfg.assetB,
       addr0,
       addr1,
       fee: Number(fee),

@@ -24,6 +24,11 @@ import {
 } from "@/hooks/useDataTableUrlSorting"
 import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
+import {
+  getVaultsColumnsVisibility,
+  useVaultsColumns,
+} from "@/modules/liquidity/Vaults.columns"
+import { useVaults } from "@/modules/liquidity/Vaults.utils"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
 import {
@@ -31,8 +36,6 @@ import {
   useIsolatedPoolsColumns,
 } from "./IsolatedPools.columns"
 import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
-import { getVaultsColumnsVisibility, useVaultsColumns } from "./Vaults.columns"
-import { useVaults } from "./Vaults.utils"
 
 export const PoolsPage = () => {
   const isolatedPagination = useDataTableUrlPagination(

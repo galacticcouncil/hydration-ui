@@ -1,7 +1,7 @@
-import { Chart, Chip, Flex, Text } from "@galacticcouncil/ui/components"
+import { Box, Chart, Chip, Flex, Text } from "@galacticcouncil/ui/components"
 import { useResponsiveValue, useTheme } from "@galacticcouncil/ui/theme"
 import type { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { defineChart, dot, rect, ruleX, text } from "@tanstack/charts"
 import { decorative } from "@tanstack/charts/mark/decorative"
 import { scaleLinear } from "@tanstack/charts/scales/linear"
@@ -11,7 +11,13 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { ChartState } from "@/components/ChartState"
 import { useAssetColor } from "@/hooks/useAssetColor"
+import {
+  SLiquidityLegend,
+  SManagedBand,
+  SSpotLine,
+} from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.styled"
 import {
   Bar,
   BARS_ID,
@@ -54,7 +60,6 @@ export const LiquidityDistribution = ({
   height,
 }: {
   vault: VaultTable
-  /** set to stage the price and managed band over the pool's real depth */
   scenario?: RangeScenario
   height?: ResponsiveStyleValue<number>
 }) => {
@@ -67,7 +72,6 @@ export const LiquidityDistribution = ({
   const { decimals: decimals1 } = token1
 
   const tickFontSize = themeProps.paragraphSize.p5
-  /** puts a mark's label on the same baseline the axis gives its own tick labels */
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
 
   const colors = useMemo(
@@ -116,7 +120,6 @@ export const LiquidityDistribution = ({
               y2: () => top * height,
               fill: colors.rangeFill,
               fillOpacity: opacity,
-              // rect has no strokeOpacity channel, so it goes into the colour
               stroke: `color-mix(in srgb, ${colors.rangeEdge} ${
                 opacity * 58
               }%, transparent)`,
@@ -144,8 +147,6 @@ export const LiquidityDistribution = ({
           strokeWidth: BAR_GAP,
           fillOpacity: 1,
           motion: scenario ? SCENARIO_TRANSITION : undefined,
-          // a range is drawn as several slices, so hovering one lights them all;
-          // managed-band bars share one tooltip, so they highlight together too
           states: [
             {
               when: ({ datum, focus }) =>
@@ -180,8 +181,6 @@ export const LiquidityDistribution = ({
                 r: 4,
                 fill: colors.spot,
               }),
-              // the axis cannot colour one tick on its own, so the spot price
-              // is drawn as a mark into the bottom margin instead
               text([spotTick], {
                 id: "current-price-label",
                 key: () => "current-price",
@@ -212,7 +211,6 @@ export const LiquidityDistribution = ({
           },
           tickLabels: {
             fontSize: tickFontSize,
-            // the outer ticks hug the plot edges instead of straddling them
             anchor: ({ value }) => (value === lo ? "start" : "end"),
           },
         },
@@ -251,17 +249,7 @@ export const LiquidityDistribution = ({
   ])
 
   if (!bars.length)
-    return (
-      <Flex
-        direction="column"
-        justify="center"
-        sx={{ minHeight: resolvedHeight }}
-      >
-        <Text fs="p5" color={getToken("text.low")}>
-          {t("vaults.chart.empty")}
-        </Text>
-      </Flex>
-    )
+    return <ChartState sx={{ height: resolvedHeight }} isEmpty />
 
   const price = priceAtTick(spotTick, token0.decimals, token1.decimals)
 
@@ -273,7 +261,7 @@ export const LiquidityDistribution = ({
           align={["flex-start", "center"]}
           direction={["column", "row"]}
           gap="m"
-          sx={{ mb: "m" }}
+          mb="m"
         >
           <Flex direction="column" gap="xs">
             <Text fs="p6" color={getToken("text.low")}>
@@ -297,9 +285,8 @@ export const LiquidityDistribution = ({
         </Flex>
       )}
 
-      <Flex sx={{ position: "relative", minWidth: 0 }}>
+      <Flex position="relative" minWidth={0}>
         <Chart
-          // the grid has no dasharray option, so it is styled through its class
           css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
           definition={definition}
           ariaLabel={t(
@@ -307,7 +294,6 @@ export const LiquidityDistribution = ({
           )}
           height={resolvedHeight}
           renderTooltipBody={({ points }) => {
-            // the staged price makes per-tick amounts meaningless
             if (scenario) return null
 
             const [first] = points.filter(isBarPoint)
@@ -321,72 +307,53 @@ export const LiquidityDistribution = ({
         {scenario && (
           <>
             {bands.map((managedBand) => (
-              <Flex
+              <SManagedBand
                 key={managedBand.id}
                 aria-hidden
-                sx={{
-                  position: "absolute",
-                  zIndex: 1,
-                  top: 8,
-                  bottom: 25,
-                  left: `${((managedBand.lower - lo) / (hi - lo)) * 100}%`,
-                  width: `${
-                    ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
-                  }%`,
-                  border: `1px solid color-mix(in srgb, ${colors.rangeEdge} 28%, transparent)`,
-                  borderRadius: 5,
-                  bg: colors.rangeFill,
-                  opacity: managedBand.opacity,
-                  pointerEvents: "none",
-                  transitionProperty: "left, width, opacity",
-                  transitionDuration: "650ms",
-                  transitionTimingFunction: "ease-in-out",
-                }}
+                $edgeColor={colors.rangeEdge}
+                $bandOpacity={managedBand.opacity}
+                position="absolute"
+                top={pxToRem(8)}
+                bottom={pxToRem(25)}
+                left={`${((managedBand.lower - lo) / (hi - lo)) * 100}%`}
+                width={`${
+                  ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
+                }%`}
+                borderRadius="base"
+                bg={colors.rangeFill}
               />
             ))}
 
-            <Flex
+            <SSpotLine
               aria-hidden
-              sx={{
-                position: "absolute",
-                zIndex: 2,
-                top: 8,
-                bottom: 25,
-                left: `${Math.min(
-                  100,
-                  Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
-                )}%`,
-                width: 2,
-                bg: colors.spot,
-                transform: "translateX(-1px)",
-                pointerEvents: "none",
-                transitionProperty: "left",
-                transitionDuration: "650ms",
-                transitionTimingFunction: "ease-in-out",
-              }}
+              position="absolute"
+              top={pxToRem(8)}
+              bottom={pxToRem(25)}
+              left={`${Math.min(
+                100,
+                Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
+              )}%`}
+              width={pxToRem(2)}
+              bg={colors.spot}
+              transform="translateX(-1px)"
             >
               <Flex
-                sx={{
-                  position: "absolute",
-                  top: -4,
-                  left: "50%",
-                  width: 8,
-                  height: 8,
-                  borderRadius: "full",
-                  bg: colors.spot,
-                  transform: "translateX(-50%)",
-                }}
+                position="absolute"
+                top={pxToRem(-4)}
+                left="50%"
+                size={pxToRem(8)}
+                borderRadius="full"
+                bg={colors.spot}
+                transform="translateX(-50%)"
               />
               <Text
                 fs="p6"
-                sx={{
-                  position: "absolute",
-                  bottom: -22,
-                  left: "50%",
-                  color: colors.spot,
-                  transform: "translateX(-50%)",
-                  whiteSpace: "nowrap",
-                }}
+                position="absolute"
+                bottom={pxToRem(-22)}
+                left="50%"
+                color={colors.spot}
+                transform="translateX(-50%)"
+                whiteSpace="nowrap"
               >
                 {t("common:number", {
                   value: priceAtTick(
@@ -396,12 +363,12 @@ export const LiquidityDistribution = ({
                   ),
                 })}
               </Text>
-            </Flex>
+            </SSpotLine>
           </>
         )}
       </Flex>
 
-      <Flex gap="0.3rem 1.5rem" mt="s" wrap>
+      <SLiquidityLegend mt="s" wrap>
         <Legend
           color={colors.token1}
           label={
@@ -423,21 +390,19 @@ export const LiquidityDistribution = ({
           color={colors.rangeFill}
           label={t("vaults.chart.legend.ranges")}
         />
-      </Flex>
+      </SLiquidityLegend>
     </Flex>
   )
 }
 
 const Legend = ({ color, label }: { color: string; label: string }) => (
   <Flex align="center" gap="s">
-    <span
-      style={{
-        width: 11,
-        height: 11,
-        borderRadius: 3,
-        background: color,
-        display: "inline-block",
-      }}
+    <Box
+      as="span"
+      size={pxToRem(11)}
+      borderRadius="base"
+      bg={color}
+      display="inline-block"
     />
     <Text fs="p6" color={getToken("text.low")}>
       {label}

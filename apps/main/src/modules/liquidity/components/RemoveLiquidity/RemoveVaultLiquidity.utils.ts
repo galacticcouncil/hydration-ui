@@ -3,6 +3,7 @@ import { safeConvertAnyToH160, safeStringify } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { encodeFunctionData, Hex, parseAbi } from "viem"
 
 import { estimateGasLimit } from "@/api/borrow"
@@ -17,11 +18,9 @@ export const HYPERVISOR_WITHDRAW_ABI = parseAbi([
   "function withdraw(uint256 shares, address to, address from, uint256[4] minAmounts) returns (uint256 amount0, uint256 amount1)",
 ])
 
-// Unlike depositing, withdraw is a direct Hypervisor call: no whitelist, no
-// approval (from must be msg.sender), and no range guard, so it works while the
-// vault is out of range. minAmounts guards the two _burnLiquidity calls against
-// a keeper rebalance landing between quote and execution.
+// Direct hypervisor withdraw; minAmounts cover rebalance slippage.
 export const useVaultWithdraw = () => {
+  const { t } = useTranslation("liquidity")
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -65,12 +64,12 @@ export const useVaultWithdraw = () => {
       return createTransaction({
         tx: transformEvmCallToPapiTx(rpc.papi, evmCall),
         toasts: {
-          submitted: "Removing liquidity from the vault",
-          success: "Removed liquidity from the vault",
+          submitted: t("vaults.remove.toast.submitted"),
+          success: t("vaults.remove.toast.success"),
         },
         invalidateQueries: [["vault"], ["vaultShares"], ["pools", "v3"]],
       })
     },
-    [evmAddress, rpc, createTransaction],
+    [evmAddress, rpc, createTransaction, t],
   )
 }

@@ -1,12 +1,12 @@
 import { EVM_DECIMALS } from "@galacticcouncil/web3-connect/src/config/evm"
 import Big from "big.js"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useVaults, VaultTable } from "@/modules/liquidity/Vaults.utils"
+import { LiquidityPositionByAsset } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.data"
 import { XYKPoolMeta } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
-
-import { LiquidityPositionByAsset } from "./MyLiquidityTable.data"
 
 export type VaultLiquidityByPool = {
   readonly meta: XYKPoolMeta
@@ -23,6 +23,7 @@ export const isVaultLiquidity = (
 ): pool is VaultLiquidityByPool => "vault" in pool
 
 export const useMyVaultLiquidity = () => {
+  const { t } = useTranslation("common")
   const { data, isLoading } = useVaults()
 
   const vaults = useMemo<Array<VaultLiquidityByPool>>(
@@ -41,7 +42,7 @@ export const useMyVaultLiquidity = () => {
               decimals: EVM_DECIMALS,
             },
             vault,
-            shareSymbol: vault.vault?.shareSymbol ?? "Shares",
+            shareSymbol: vault.vault?.shareSymbol ?? t("shares"),
             currentValueHuman: scaleHuman(
               vault.positionShares,
               EVM_DECIMALS,
@@ -53,7 +54,7 @@ export const useMyVaultLiquidity = () => {
             positions: [vault],
           }
         }),
-    [data],
+    [data, t],
   )
 
   return { data: vaults, isLoading }

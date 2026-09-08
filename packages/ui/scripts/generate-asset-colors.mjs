@@ -11,8 +11,7 @@ const METADATA_BASE_URL =
   "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
 const CONCURRENCY = 8
 
-// 4 and 20 are both WETH: a black-and-white logo whose only saturated pixels are
-// a magenta ring, so the generator picks pink. Overrides always win over a rerun.
+// WETH logos skew magenta; force brand blue.
 const OVERRIDES = {
   4: "#627eea",
   20: "#627eea",
@@ -195,7 +194,6 @@ const getRasterColor = async (iconSrc) => {
 
     if (isBackgroundPixel(r, g, b, a)) continue
 
-    // quantize into 16-step buckets so near-identical shades vote together
     const key = `${Math.round(r / 16)},${Math.round(g / 16)},${Math.round(b / 16)}`
     const weight = 1 + getSaturation(r, g, b) * 1.5
     const bucket = buckets.get(key)
@@ -281,7 +279,6 @@ const main = async () => {
     }
   })
 
-  // entries are kept on failure so a hand-corrected color survives a rerun
   const next = { ...existing }
 
   icons.forEach((icon, index) => {

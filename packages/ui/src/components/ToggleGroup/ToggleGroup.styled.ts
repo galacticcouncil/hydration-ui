@@ -3,7 +3,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 
-import { createVariants } from "@/utils"
+import { createVariants, pxToRem } from "@/utils"
 
 export type ToggleGroupSize = "small" | "medium" | "large"
 
@@ -23,7 +23,7 @@ const sizes = createVariants<ToggleGroupSize>((theme) => ({
   `,
   medium: css`
     line-height: 1.2;
-    height: 1.875rem;
+    height: ${pxToRem(30)};
     font-size: ${theme.fontSizes.p6};
     padding: ${theme.space.base} ${theme.buttons.paddings.primary};
     svg {
@@ -63,7 +63,7 @@ export const SToggleGroup = styled(ToggleGroupPrimitive.Root, {
     padding: ${size === "small"
       ? theme.space.xs
       : size === "medium"
-        ? `${theme.inputs.paddings.internal} 6px`
+        ? `${theme.inputs.paddings.internal} ${theme.space.s}`
         : theme.space.s};
 
     border-radius: ${theme.radii.full};

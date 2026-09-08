@@ -10,7 +10,6 @@ import { SVaultDetailsRow } from "@/modules/liquidity/VaultDetails.styled"
 import { useVaults } from "@/modules/liquidity/Vaults.utils"
 
 type Props = {
-  /** pool address, which is what the row links to */
   readonly address: string
 }
 

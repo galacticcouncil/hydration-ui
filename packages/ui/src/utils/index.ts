@@ -34,10 +34,7 @@ export function getToken(token: ThemeToken | ThemeToken[]) {
     Array.isArray(token) ? token.map((t) => get(theme, t)) : get(theme, token)
 }
 
-/**
- * Even sRGB blend of any number of `#rrggbb` colors — the shape the generated
- * asset palette is written in.
- */
+// Even sRGB blend of `#rrggbb` colors.
 export const mixColors = (colors: string[]): string | undefined => {
   if (!colors.length) return undefined
 

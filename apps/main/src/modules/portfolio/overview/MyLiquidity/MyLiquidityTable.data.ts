@@ -2,6 +2,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { TAssetData, TStableswap } from "@/api/assets"
+import { VaultLiquidityByPool } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
 import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
@@ -13,7 +14,6 @@ import {
   XYKPosition,
 } from "./MyIsolatedPoolsLiquidity.data"
 import { useMyStableswapLiquidity } from "./MyStableswapLiquidity.data"
-import { VaultLiquidityByPool } from "./MyVaultLiquidity.data"
 
 export type StableswapPosition = {
   data: {

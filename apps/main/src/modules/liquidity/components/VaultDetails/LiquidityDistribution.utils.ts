@@ -1,20 +1,14 @@
-import { V3PoolBase } from "@/api/pools"
 import { VaultState } from "@/api/gamma/vaults"
+import { V3PoolBase } from "@/api/pools"
 
-/** token1 per token0, decimal-adjusted, from a tick */
 export const priceAtTick = (
   tick: number,
   decimals0: number,
   decimals1: number,
 ) => Math.pow(1.0001, tick) * Math.pow(10, decimals0 - decimals1)
 
-/** raw sqrt(token1/token0) at a tick, before decimals */
 const sqrtRatioAtTick = (tick: number) => Math.pow(1.0001, tick / 2)
 
-/**
- * Token the range actually holds. Below the spot tick a range is all token1,
- * above it all token0 — the standard v3 single-sided amounts.
- */
 const lockedAmount = (
   liquidity: number,
   lower: number,
@@ -29,46 +23,31 @@ const lockedAmount = (
     : (liquidity * (1 / sqrtRatioAtTick(lower) - 1 / sqrtRatioAtTick(upper))) /
       Math.pow(10, decimals0)
 
-/**
- * One painted slice. A range of constant liquidity is cut into several slices
- * purely so the chart reads as a histogram; every slice of a range carries the
- * same height and the same range bounds, so the tooltip is identical whichever
- * one the pointer lands on.
- */
 export type Bar = {
-  /** stable identity used to animate chart updates */
   key: string
   from: number
   to: number
   liquidity: number
   side: "token0" | "token1"
-  /** bounds of the range this slice was cut from */
   rangeFrom: number
   rangeTo: number
-  /** token amount the whole range holds, in the `side` token */
   locked: number
-  /** the range the spot tick falls in */
   current: boolean
 }
 
-/** A keeper range drawn behind the bars */
 type Band = {
   id: "active" | "previous" | "base" | "limit"
   lower: number
   upper: number
   opacity: number
-  /** share of the plot height, so overlapping bands stay tellable apart */
   height: number
 }
 
-/** Which step of the managed-range lifecycle the chart illustrates */
 export type RangeScenario = "inRange" | "outOfRange" | "recentered"
 
 export const BARS_ID = "liquidity-bars"
-/** slices across the whole window; each range gets its proportional share */
 const SLICE_TARGET = 30
 
-/** Bands and labels emit focus points too, so only bars may open a tooltip */
 export const isBarPoint = <TPoint extends { markId: string; datum: unknown }>(
   point: TPoint,
 ): point is TPoint & { datum: Bar } => point.markId === BARS_ID
@@ -81,8 +60,6 @@ export const isSameRange = (
   (focused.datum.rangeFrom === bar.rangeFrom &&
     focused.datum.rangeTo === bar.rangeTo)
 
-/** A range the vault actually holds liquidity in. Bounds alone are not enough:
- *  rebalance sets them every run and may mint nothing into either one. */
 export const hasBase = (state: VaultState) =>
   state.baseUpper > state.baseLower && state.base.liquidity > 0n
 
@@ -93,8 +70,7 @@ export const getManagedBand = (
   tick: number,
   state: VaultState,
 ): "base" | "limit" | null => {
-  // rebalance only forbids limit and base sharing both bounds, so they may
-  // overlap. The limit range is the narrower, more specific one, so it wins.
+  // limit wins when base and limit overlap
   if (hasLimit(state) && tick >= state.limitLower && tick <= state.limitUpper)
     return "limit"
 
@@ -131,14 +107,11 @@ export const getLiquidityDistribution = ({
   state: VaultState | null
   decimals0: number
   decimals1: number
-  /** set to stage the price and managed band over the pool's real depth */
   scenario?: RangeScenario
 }) => {
   const ticks = [...(pool.ticks ?? [])].sort((a, b) => a.index - b.index)
   const marketSpot = pool.tick
   const bandWidth = state ? state.baseUpper - state.baseLower : 0
-  // The limit range sits next to base, but nothing bounds it to one base width,
-  // so it has to be framed explicitly or it lands outside the plot.
   const edges = state
     ? [
         marketSpot,
@@ -151,8 +124,6 @@ export const getLiquidityDistribution = ({
   const to = edges.length ? Math.max(...edges) + pad : marketSpot + 3000
   const span = to - from
 
-  // The lifecycle illustration keeps the pool's real depth and price window,
-  // then stages where the price and keeper-managed band sit inside it.
   const base =
     state && bandWidth > 0
       ? { lower: state.baseLower, upper: state.baseUpper }
@@ -171,8 +142,6 @@ export const getLiquidityDistribution = ({
     upper: Math.min(to - span * 0.02, outside + halfBand),
   }
 
-  // Keep both scenario marks mounted so the active band can glide to its new
-  // position and the previous band can fade in behind it.
   const bands: ReadonlyArray<Band> = scenario
     ? [
         {
@@ -212,9 +181,7 @@ export const getLiquidityDistribution = ({
 
   const out: Bar[] = []
   const sliceWidth = (to - from) / SLICE_TARGET
-  // Keep the explainer's bar geometry anchored to the real market tick. The
-  // staged price may recolour slices, but it must not resize or repartition
-  // the pool-depth histogram as the user switches lifecycle states.
+  // explainer: bar sizes follow market tick, not the staged price
   const geometrySpot = scenario ? marketSpot : spot
   const push = (
     left: number,
@@ -284,11 +251,6 @@ export const getLiquidityDistribution = ({
     }
   }
 
-  // The explainer presents the vault's position as a schematic profile: its
-  // managed bars share one height and the background bars stay low. Recentering
-  // moves that same profile to the new band. Every slice stays mounted so the
-  // height transition remains smooth. The main chart continues to show the
-  // pool's unmodified on-chain liquidity distribution.
   const displayBars =
     scenario && out.length
       ? (() => {
@@ -326,8 +288,6 @@ export const getLiquidityDistribution = ({
   return {
     bars: displayBars,
     spotTick: spot,
-    // Preserve the real distribution's ceiling in the explainer so flattening
-    // its outlier does not rescale the uniform managed block to full height.
     max: out.reduce((value, bar) => Math.max(value, bar.liquidity), 0),
     lo: from,
     hi: to,

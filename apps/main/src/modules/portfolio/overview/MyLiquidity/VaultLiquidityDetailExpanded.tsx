@@ -40,7 +40,8 @@ export const VaultLiquidityDetailExpanded: FC<Props> = ({
         <Button
           variant="tertiary"
           outline
-          sx={{ width: "min-content", justifySelf: "flex-end" }}
+          width="min-content"
+          sx={{ justifySelf: "flex-end" }}
           onClick={onRemoveLiquidity}
         >
           <Minus />

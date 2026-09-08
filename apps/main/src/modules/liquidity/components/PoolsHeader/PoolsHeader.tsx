@@ -2,12 +2,12 @@ import { Flex } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 
 import { ENV } from "@/config/env"
+import { VaultsValueTile } from "@/modules/liquidity/components/PoolsHeader/Vaults"
 
 import { AllPools } from "./AllPools"
 import { Isolated } from "./Isolated"
 import { MyLiquidity } from "./MyLiquidity"
 import { Omnipool } from "./Omnipool"
-import { VaultsValueTile } from "./Vaults"
 
 export const PoolsHeader = () => {
   const { myLiquidity, type } = useSearch({
@@ -19,7 +19,8 @@ export const PoolsHeader = () => {
     <Flex
       gap={["l", isIsolated ? "5.625rem" : "xl"]}
       justify={isIsolated ? "flex-start" : "space-between"}
-      sx={{ pb: "xxl", overflowX: "auto" }}
+      pb="xxl"
+      sx={{ overflowX: "auto" }}
     >
       {myLiquidity ? (
         <MyLiquidity />

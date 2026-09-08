@@ -9,7 +9,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { Minus } from "lucide-react"
@@ -22,7 +22,6 @@ import { STableHeader } from "@/modules/liquidity/components/PositionsTable/Posi
 import { RemoveVaultLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
-/** One row per position; a vault holds exactly one per account */
 type PositionRow = {
   shares: bigint
   valueDisplay: string | undefined
@@ -74,12 +73,7 @@ const usePositionColumns = (
         meta: { sx: { textAlign: "right" } },
         cell: () => (
           <Flex gap="m" justify="end" align="center">
-            <Button
-              variant="tertiary"
-              outline
-              sx={{ flexShrink: 0 }}
-              onClick={onRemove}
-            >
+            <Button variant="tertiary" outline flex="none" onClick={onRemove}>
               <Trash />
               {t("common:remove")}
             </Button>
@@ -106,7 +100,7 @@ export const VaultPositions = ({
   const { isMobile } = useBreakpoints()
   const columns = usePositionColumns(
     vault,
-    vault.vault?.shareSymbol ?? "shares",
+    vault.vault?.shareSymbol ?? t("common:shares"),
     () => setIsRemoveOpen(true),
   )
 
@@ -156,7 +150,7 @@ export const VaultPositions = ({
         columns={columns}
         columnPinning={{ left: ["position"] }}
         columnVisibility={{ position: !isMobile }}
-        sx={{ minWidth: [undefined, 900] }}
+        sx={{ minWidth: [undefined, pxToRem(900)] }}
         emptyState={
           <Text fs="p5" color={getToken("text.low")}>
             {isDisconnected

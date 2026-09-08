@@ -1,61 +1,21 @@
 import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQueries } from "@tanstack/react-query"
-import { Hex, parseAbi, PublicClient } from "viem"
+import { erc20Abi, Hex, PublicClient, zeroAddress } from "viem"
 
+import {
+  CLEARING_ABI,
+  FACTORY_ABI,
+  HYPERVISOR_ABI,
+  REBALANCE_PROXY_ABI,
+  UNIPROXY_CLEARANCE_ABI,
+} from "@/api/gamma/abi"
+import { GAMMA_CONTRACTS } from "@/api/gamma/config"
 import { V3PoolBase } from "@/api/pools"
 import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-import { GAMMA_CONTRACTS } from "./config"
-
-const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000"
-
 type GammaContracts = typeof GAMMA_CONTRACTS
-
-const ERC20_BALANCE_ABI = parseAbi([
-  "function balanceOf(address) view returns (uint256)",
-])
-
-const FACTORY_ABI = parseAbi([
-  "function getHypervisor(address,address,uint24) view returns (address)",
-])
-
-const UNIPROXY_CLEARANCE_ABI = parseAbi([
-  "function clearance() view returns (address)",
-])
-
-// checkPriceChange is the exact TWAP test clearDeposit runs, so calling it is
-// the pre-check rather than an approximation.
-const CLEARING_ABI = parseAbi([
-  "function twapCheck() view returns (bool)",
-  "function twapInterval() view returns (uint32)",
-  "function priceThreshold() view returns (uint256)",
-  "function positions(address) view returns (bool customRatio, bool customTwap, bool ratioRemoved, bool depositOverride, bool twapOverride, uint8 version, uint32 twapInterval, uint256 priceThreshold, uint256 deposit0Max, uint256 deposit1Max, uint256 maxTotalSupply, uint256 fauxTotal0, uint256 fauxTotal1, uint256 customDepositDelta)",
-  "function checkPriceChange(address pos, uint32 _twapInterval, uint256 _priceThreshold) view returns (uint256 price)",
-])
-
-const REBALANCE_PROXY_ABI = parseAbi([
-  "function lastRebalance(address) view returns (uint256)",
-])
-
-const HYPERVISOR_ABI = parseAbi([
-  "function balanceOf(address) view returns (uint256)",
-  "function getBasePosition() view returns (uint128 liquidity, uint256 amount0, uint256 amount1)",
-  "function getLimitPosition() view returns (uint128 liquidity, uint256 amount0, uint256 amount1)",
-  "function symbol() view returns (string)",
-  "function totalSupply() view returns (uint256)",
-  "function getTotalAmounts() view returns (uint256,uint256)",
-  "function baseLower() view returns (int24)",
-  "function baseUpper() view returns (int24)",
-  "function limitLower() view returns (int24)",
-  "function limitUpper() view returns (int24)",
-  "function whitelistedAddress() view returns (address)",
-  "function maxTotalSupply() view returns (uint256)",
-  "function deposit0Max() view returns (uint256)",
-  "function deposit1Max() view returns (uint256)",
-  "function owner() view returns (address)",
-])
 
 type HypervisorFn = Extract<
   (typeof HYPERVISOR_ABI)[number],
@@ -64,13 +24,10 @@ type HypervisorFn = Extract<
 
 export type VaultState = {
   address: `0x${string}`
-  /** Deposit entry point, applies the ClearingV2 guards */
   uniProxy: `0x${string}`
-  /** Contract addresses, in the pool's own sort order */
   token0: `0x${string}`
   token1: `0x${string}`
   totalSupply: bigint
-  /** Underlying the vault holds, base + limit + idle */
   total0: bigint
   total1: bigint
   baseLower: number
@@ -78,20 +35,16 @@ export type VaultState = {
   limitLower: number
   limitUpper: number
   shareSymbol: string
-  /** Only address allowed to call deposit, the UniProxy once set */
+  /** Deposit whitelist; open when this is the UniProxy. */
   whitelisted: `0x${string}`
-  /** base straddles the price, limit holds the surplus side, idle is undeployed */
   base: { liquidity: bigint; amount0: bigint; amount1: bigint }
   limit: { liquidity: bigint; amount0: bigint; amount1: bigint }
   idle: { amount0: bigint; amount1: bigint }
-  /** Per-deposit caps as ClearingV2 enforces them. uint256 max means uncapped. */
   deposit0Max: bigint
   deposit1Max: bigint
-  /** Tightest total-supply cap on the deposit path. Zero means uncapped. */
   supplyCap: bigint
-  /** False means a deposit sent now reverts, until price and TWAP reconverge. */
+  /** false when a deposit would fail ClearingV2 TWAP checks */
   twapOk: boolean
-  /** Unix seconds of the keeper's last rebalance, null when unknowable */
   lastRebalance: number | null
 }
 
@@ -105,8 +58,6 @@ const vaultQuery = (
     queryFn: async () => {
       const factory = contracts.hypervisorFactory
 
-      // Use the pool's own token contracts. An Erc20 asset does not live at its
-      // id alias, so re-deriving them would address a different pool.
       const { addr0: token0, addr1: token1 } = pool
       if (!token0 || !token1) return null
 
@@ -117,7 +68,7 @@ const vaultQuery = (
         args: [token0, token1, pool.fee],
       })
 
-      if (hypervisor.toLowerCase() === ADDRESS_ZERO) return null
+      if (hypervisor.toLowerCase() === zeroAddress) return null
 
       const read = <T>(functionName: HypervisorFn) =>
         evm.readContract({
@@ -160,13 +111,13 @@ const vaultQuery = (
         read<[bigint, bigint, bigint]>("getBasePosition"),
         read<[bigint, bigint, bigint]>("getLimitPosition"),
         evm.readContract({
-          abi: ERC20_BALANCE_ABI,
+          abi: erc20Abi,
           address: token0,
           functionName: "balanceOf",
           args: [hypervisor],
         }),
         evm.readContract({
-          abi: ERC20_BALANCE_ABI,
+          abi: erc20Abi,
           address: token1,
           functionName: "balanceOf",
           args: [hypervisor],
@@ -201,7 +152,6 @@ const vaultQuery = (
             functionName: "positions",
             args: [hypervisor],
           }),
-          // Owner should be the RebalanceProxy; fall back to the pinned address.
           evm
             .readContract({
               abi: REBALANCE_PROXY_ABI,
@@ -231,8 +181,6 @@ const vaultQuery = (
         10: posMaxTotalSupply,
       } = position
 
-      // Mirrors ClearingV2.clearDeposit: the override swaps in its own window
-      // and threshold.
       const twapActive = twapCheck || twapOverride
       const twapOk = !twapActive
         ? true
@@ -284,7 +232,6 @@ const vaultQuery = (
     staleTime: 30_000,
   })
 
-/** Managing vault per pool, null where none exists */
 export const useVaultStates = (pools: V3PoolBase[]) => {
   const { evm } = useRpcProvider()
   const enabled = ENV.VITE_UNIV3_GAMMA_ENABLED
@@ -301,7 +248,6 @@ export const useVaultStates = (pools: V3PoolBase[]) => {
   })
 }
 
-/** Share balance per vault. Zero when no wallet is connected. */
 export const useVaultShares = (vaults: (VaultState | null)[]) => {
   const { evm } = useRpcProvider()
   const { account } = useAccount()
@@ -331,7 +277,6 @@ export const useVaultShares = (vaults: (VaultState | null)[]) => {
     combine: (results) => ({
       data: results.map((result) => result.data ?? 0n),
       isLoading: results.some((result) => result.isLoading),
-      // a failed read is not an empty position
       isError: results.some((result) => result.isError),
       isDisconnected: !owner,
     }),

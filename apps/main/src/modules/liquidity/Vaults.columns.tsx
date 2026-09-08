@@ -17,8 +17,7 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelXYK } from "@/components/AssetLabelFull/AssetLabelFull"
 import { AddVaultLiquidity } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity"
 import { AutoManagedBadge } from "@/modules/liquidity/components/AutoManagedBadge"
-
-import { VaultStatus, VaultTable } from "./Vaults.utils"
+import { VaultStatus, VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 const columnHelper = createColumnHelper<VaultTable>()
 
@@ -48,7 +47,7 @@ const VaultActions = ({ vault }: { vault: VaultTable }) => {
       gap="s"
       justify="end"
       onClick={(e) => e.stopPropagation()}
-      sx={{ position: "relative" }}
+      position="relative"
     >
       <Button
         variant="accent"
@@ -80,10 +79,8 @@ const VaultActions = ({ vault }: { vault: VaultTable }) => {
           color={getToken("text.tint.secondary")}
           fw={500}
           fs="p6"
-          sx={{
-            position: "absolute",
-            bottom: "-xl",
-          }}
+          position="absolute"
+          bottom="-xl"
         >
           {t("liquidity:liquidity.pool.positions.total", {
             value: vault.positionValueDisplay ?? 0,

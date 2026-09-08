@@ -31,7 +31,7 @@ export const VaultDetailMobileModal: FC<Props> = ({
 
   return (
     <>
-      <ModalHeader sx={{ p: 16 }} title={meta.symbol} description={meta.name} />
+      <ModalHeader p="l" title={meta.symbol} description={meta.name} />
       <SAssetDetailModalBody>
         <Amount
           value={t("common:currency", {
@@ -41,7 +41,7 @@ export const VaultDetailMobileModal: FC<Props> = ({
           displayValue={t("common:currency", { value: currentTotalDisplay })}
         />
         <SAssetDetailMobileSeparator />
-        <Grid columnGap={8} sx={{ gridTemplateColumns: "1fr 1fr" }}>
+        <Grid columns={2} gap="base">
           <Button size="large" asChild>
             <Link to="/liquidity/vault/$address" params={{ address: vault.id }}>
               {t("myLiquidity.actions.poolDetails")}

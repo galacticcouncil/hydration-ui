@@ -5,7 +5,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { Flex } from "@/components/Flex"
 import { Text } from "@/components/Text"
 import assetColors from "@/theme/assetColors.json"
-import { getToken } from "@/utils"
+import { getToken, pxToRem } from "@/utils"
 
 const METADATA_URL =
   "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master/assets-v2.json"
@@ -66,19 +66,21 @@ const AssetColorTile = ({
 }) => (
   <Flex
     direction="column"
-    gap={8}
-    p={12}
-    sx={{ borderRadius: "m", position: "relative", overflow: "hidden" }}
+    gap="base"
+    p="m"
+    borderRadius="m"
+    position="relative"
+    overflow="hidden"
   >
     <Flex
+      position="absolute"
+      bg={color}
       sx={{
-        position: "absolute",
         inset: 0,
-        background: color,
         opacity: 0.3,
       }}
     />
-    <Flex gap={8} align="center" sx={{ position: "relative" }}>
+    <Flex gap="base" align="center" position="relative">
       <AssetLogo src={src} alt={id} size="medium" />
       <Flex direction="column">
         <Text fs="p5" fw={600} color={getToken("text.high")}>
@@ -88,15 +90,7 @@ const AssetColorTile = ({
           {color}
         </Text>
       </Flex>
-      <Flex
-        sx={{
-          ml: "auto",
-          width: 24,
-          height: 24,
-          borderRadius: "full",
-          background: color,
-        }}
-      />
+      <Flex ml="auto" size={pxToRem(24)} borderRadius="full" bg={color} />
     </Flex>
   </Flex>
 )
@@ -106,9 +100,9 @@ const AssetColors = () => {
   const ids = Object.keys(colors).sort((a, b) => Number(a) - Number(b))
 
   return (
-    <Flex gap={12} wrap>
+    <Flex gap="m" wrap>
       {ids.map((id) => (
-        <Flex key={id} sx={{ width: 240 }}>
+        <Flex key={id} width={pxToRem(240)}>
           <AssetColorTile id={id} color={colors[id] ?? ""} src={srcs[id]} />
         </Flex>
       ))}

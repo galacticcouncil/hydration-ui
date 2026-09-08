@@ -20,32 +20,19 @@ export type PoolBase = Omit<pool.PoolBase, "tokens"> & {
 }
 export type PoolToken = pool.PoolToken
 export type PoolFee = pool.PoolFee
-export type V3Tick = {
-  index: number
-  liquidityNet: bigint
-  liquidityGross: bigint
-}
-/** Mirrors sdk UniswapV3PoolBase; tokens narrowed to a pair like XYK pools */
-export type V3PoolBase = Omit<pool.PoolBase, "tokens"> & {
+export type V3Tick = pool.uniswapv3.V3Tick
+// SDK V3 pool with optional ticks (EVM bootstrap reads omit them).
+export type V3PoolBase = Omit<
+  pool.uniswapv3.UniswapV3PoolBase,
+  "tokens" | "ticks"
+> & {
   tokens: [PoolToken, PoolToken]
-  token0: number
-  token1: number
-  addr0: `0x${string}`
-  addr1: `0x${string}`
-  fee: number
-  sqrtPriceX96: bigint
-  tick: number
-  liquidity: bigint
-  tickSpacing: number
   ticks?: V3Tick[]
 }
 
-export const PoolType = {
-  ...pool.PoolType,
-  V3: "UniswapV3",
-} as const
+export const PoolType = pool.PoolType
 
-export type PoolTypeValue = pool.PoolType | (typeof PoolType)["V3"]
+export type PoolTypeValue = pool.PoolType
 
 export const allPools = (sdk: SdkCtx) =>
   queryOptions({
@@ -86,7 +73,7 @@ export const allPools = (sdk: SdkCtx) =>
           }
         } else if (pool.type === PoolType.Aave) {
           aavePools.push(pool as aave.AavePool)
-        } else if (pool.type === (PoolType.V3 as pool.PoolType)) {
+        } else if (pool.type === PoolType.V3) {
           const [tokenA, tokenB] = pool.tokens
           if (!tokenA || !tokenB) continue
 
@@ -166,7 +153,6 @@ const v3PoolsQuery = (
     staleTime: 30_000,
   })
 
-/** SDK list plus EVM bootstrap pools while Parameters.UniswapV3Factory is unset */
 export const useV3Pools = () => {
   const queryClient = useQueryClient()
   const { sdk, evm } = useRpcProvider()

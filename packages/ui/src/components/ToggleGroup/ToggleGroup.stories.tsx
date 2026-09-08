@@ -9,6 +9,9 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 
+import { Flex } from "@/components/Flex"
+import { pxToRem } from "@/utils"
+
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -92,9 +95,9 @@ export const FullWidth: Story = {
   },
   decorators: [
     (Story) => (
-      <div style={{ width: 320 }}>
+      <Flex width={pxToRem(320)}>
         <Story />
-      </div>
+      </Flex>
     ),
   ],
 }

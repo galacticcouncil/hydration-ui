@@ -18,7 +18,6 @@ type PositionsHeaderProps = {
   onClick: () => void
   showMore: boolean
   totalBalanceDisplay: string
-  /** Farm totals & positions are absent for pools without farms (e.g. vaults) */
   totalInFarms?: string
   positions?: DepositPosition[]
 }

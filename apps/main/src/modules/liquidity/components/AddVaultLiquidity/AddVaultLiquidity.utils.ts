@@ -22,8 +22,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required } from "@/utils/validators"
 
-// u128, not uint256: Hydration's asset precompiles hold balances as u128, so a
-// MaxUint256 approval overflows and reverts.
+// u128 max: uint256 approval overflows on Hydration ERC20 precompiles.
 const U128_MAX = (1n << 128n) - 1n
 
 const EVM_CALL_GAS = 700_000
@@ -38,7 +37,6 @@ export const UNIPROXY_ABI = parseAbi([
   "function getDepositAmount(address pos, address token, uint256 _deposit) view returns (uint256 amountStart, uint256 amountEnd)",
 ])
 
-/** Pair amount the vault accepts alongside `amount` of `token`, as a tolerance band */
 export const useVaultDepositAmount = (
   vault: VaultState | null,
   token: Hex | undefined,
@@ -72,11 +70,9 @@ type DepositArgs = {
   amount1: bigint
 }
 
-// Approve both tokens and deposit in one signature. The spender is the
-// Hypervisor (it runs safeTransferFrom), but deposit must go through the
-// UniProxy, which applies the ClearingV2 guards. minIn is zeroed because
-// directDeposit is off, so no position is minted here.
+// Approve hypervisor, deposit through UniProxy (ClearingV2 guards).
 export const useVaultDeposit = () => {
+  const { t } = useTranslation("liquidity")
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createBatchTx = useCreateBatchTx()
@@ -147,14 +143,14 @@ export const useVaultDeposit = () => {
         txs: evmCalls.map((call) => transformEvmCallToPapiTx(rpc.papi, call)),
         transaction: {
           toasts: {
-            submitted: "Depositing into the vault",
-            success: "Deposited into the vault",
+            submitted: t("vaults.add.toast.submitted"),
+            success: t("vaults.add.toast.success"),
           },
           invalidateQueries: [["vault"], ["pools", "v3"]],
         },
       })
     },
-    [evmAddress, rpc, createBatchTx],
+    [evmAddress, rpc, createBatchTx, t],
   )
 }
 
@@ -174,8 +170,6 @@ export type TAddVaultLiquidityFormValues = {
   assetB: TAsset
 }
 
-// No fee headroom is reserved: an EVM call pays its fee in the account's
-// fee-payment asset, which is neither leg of this pair.
 const useAddVaultLiquidityZod = (balances: {
   amountA: string
   amountB: string
@@ -264,7 +258,6 @@ export const useAddVaultLiquidity = ({
         ? BigInt(scale(amountB, assetB.decimals))
         : 0n
 
-  /** Mirrors `Hypervisor.deposit`: value both legs in token1, then take a share */
   const shares = useMemo(() => {
     if (!state || raw0 === 0n) return null
 
@@ -289,8 +282,6 @@ export const useAddVaultLiquidity = ({
           .toString()
       : undefined
 
-  // token1 per token0. The vault's composition is the rate a deposit is taken
-  // at; an empty vault has none, so fall back to the pool's spot price.
   const price = useMemo(() => {
     if (state && state.total0 > 0n && state.total1 > 0n) {
       return Big(state.total1.toString())
@@ -308,8 +299,6 @@ export const useAddVaultLiquidity = ({
       .toString()
   }, [state, assetA.decimals, assetB.decimals, vault.pool.sqrtPriceX96])
 
-  // getDepositAmount returns a band, not an answer: an empty vault accepts any
-  // ratio and says so with [0, uint256 max]. Size from the rate, clamp to the band.
   const pairedAmount = useMemo(() => {
     if (!typed || typedRaw === 0n || !price) return undefined
 
@@ -319,7 +308,6 @@ export const useAddVaultLiquidity = ({
     const outDecimals =
       lastUpdated === "assetA" ? assetB.decimals : assetA.decimals
 
-    // price is token1 per token0, so multiply going A->B and divide going B->A
     const estimate =
       lastUpdated === "assetA" ? Big(typed).times(rate) : Big(typed).div(rate)
 
@@ -341,8 +329,6 @@ export const useAddVaultLiquidity = ({
     assetB.decimals,
   ])
 
-  // Each of these reverts on-chain, so disable the form with the reason instead
-  // of letting the user sign a guaranteed failure.
   const blocker = useMemo<
     { key: DepositBlockerKey; symbol?: string } | undefined
   >(() => {

@@ -5,14 +5,13 @@ import { Link } from "@tanstack/react-router"
 import { Plus, Repeat } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
+import { AssetYields } from "@/modules/liquidity/components/PoolDetailsHeader/AssetYields"
+import { PoolDetailsHeaderShell } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderShell"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
-
-import { AssetYields } from "./AssetYields"
-import { PoolDetailsHeaderShell } from "./PoolDetailsHeaderShell"
 
 export const PoolDetailsHeader = ({
   data,

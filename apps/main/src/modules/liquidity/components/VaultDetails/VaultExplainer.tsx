@@ -25,9 +25,11 @@ import {
   RangeScenario,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution"
 import {
+  SChartPreview,
   SExplainerSplit,
   SExplainerSplitDivider,
-} from "@/modules/liquidity/VaultDetails.styled"
+  SScenarioPanel,
+} from "@/modules/liquidity/components/VaultDetails/VaultExplainer.styled"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 type ScenarioCopy = {
@@ -108,11 +110,11 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
   const selected = copy[scenario]
 
   return (
-    <Paper sx={{ p: "l", flex: 2.5, minWidth: 0 }}>
-      <Text as="h2" fs="base" fw={500} font="primary">
+    <Paper p="l" flex={2.5} minWidth={0}>
+      <Text as="h2" fs="p2" fw={500} font="primary">
         {t("vaults.explainer.title")}
       </Text>
-      <Flex direction="column" gap="xs" sx={{ mt: "m" }}>
+      <Flex direction="column" gap="xs" mt="m">
         <Text fs="p5" color={getToken("text.medium")}>
           {t("vaults.explainer.intro")}
         </Text>
@@ -120,11 +122,11 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
           {t("vaults.explainer.introDetails")}
         </Text>
       </Flex>
-      <Text fs="p6" color={getToken("text.low")} sx={{ pt: "10px" }}>
+      <Text fs="p6" color={getToken("text.low")} pt="m">
         {t("vaults.explainer.hint")}
       </Text>
 
-      <Flex sx={{ mt: "m" }}>
+      <Flex mt="m">
         <ToggleGroup
           type="single"
           value={scenario}
@@ -140,37 +142,19 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
         </ToggleGroup>
       </Flex>
 
-      <ResponsiveScope sx={{ mt: "l" }}>
+      <ResponsiveScope mt="l">
         <SExplainerSplit>
-          <Flex
-            direction="column"
-            justify="center"
-            sx={{ flex: 3, minWidth: 0, pointerEvents: "none" }}
-          >
+          <SChartPreview direction="column" justify="center">
             <LiquidityDistribution
               vault={vault}
               scenario={scenario}
               height={180}
             />
-          </Flex>
+          </SChartPreview>
 
           <SExplainerSplitDivider />
 
-          <Flex
-            key={scenario}
-            direction="column"
-            gap="m"
-            sx={{
-              flex: 2,
-              minWidth: 0,
-              animationName: getToken("animations.fadeIn"),
-              animationDuration: "650ms",
-              animationTimingFunction: "ease-in-out",
-              "@media (prefers-reduced-motion: reduce)": {
-                animation: "none",
-              },
-            }}
-          >
+          <SScenarioPanel key={scenario} direction="column" gap="m">
             <Flex direction="column" gap="s">
               <Text as="h3" fs="p2" fw={500} font="primary">
                 {selected.title}
@@ -182,12 +166,12 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
 
             {selected.facts.map((fact) => (
               <Flex key={fact.title} align="flex-start" gap="m" asChild>
-                <Paper borderRadius="m" shadow={false} sx={{ p: "m" }}>
+                <Paper borderRadius="m" shadow={false} p="m">
                   <Icon
                     component={fact.icon}
                     size="m"
                     color={getToken("buttons.primary.high.rest")}
-                    sx={{ mt: "xs" }}
+                    mt="xs"
                   />
                   <Flex direction="column" gap="xs">
                     <Text fs="p5" fw={600}>
@@ -200,11 +184,11 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
                 </Paper>
               </Flex>
             ))}
-          </Flex>
+          </SScenarioPanel>
         </SExplainerSplit>
       </ResponsiveScope>
 
-      <Separator sx={{ my: "m" }} />
+      <Separator my="m" />
       <Text fs="p6" color={getToken("text.low")}>
         {t("vaults.explainer.footer")}
       </Text>

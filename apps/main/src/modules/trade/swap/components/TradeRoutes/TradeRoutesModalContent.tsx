@@ -91,7 +91,11 @@ export const TradeRoutesModalContent: FC<Props> = ({
                   color={getToken("text.low")}
                   whiteSpace="nowrap"
                 >
-                  {formatPoolTypes(route.pools)}
+                  {formatPoolTypes(
+                    route.pools,
+                    (key) => t(`trade:${key}`),
+                    t("trade:market.summary.routes.poolType.separator"),
+                  )}
                 </Text>
               </Flex>
               <TradeRouteAsset

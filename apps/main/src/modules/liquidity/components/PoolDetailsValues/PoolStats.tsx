@@ -1,15 +1,14 @@
 import i18n from "@/i18n"
 import { PoolChart } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
+import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues/PoolDetailsValues"
+import { PoolStatsShell } from "@/modules/liquidity/components/PoolDetailsValues/PoolStatsShell"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
 
-import { PoolDetailsValues } from "./PoolDetailsValues"
-import { PoolStatsShell } from "./PoolStatsShell"
-
-export { types } from "./PoolStatsShell"
+export { types } from "@/modules/liquidity/components/PoolDetailsValues/PoolStatsShell"
 
 export const chartTypes: ReadonlyArray<{
   id: "price" | "volume"
