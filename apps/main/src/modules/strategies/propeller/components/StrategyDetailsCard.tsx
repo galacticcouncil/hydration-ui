@@ -26,15 +26,13 @@ import {
   SDetailsStatsContainer,
   SDetailsStatsSeparator,
 } from "@/modules/strategies/propeller/components/StrategyDetailsCard.styled"
+import { PROPELLER_RISK_PROFILE } from "@/modules/strategies/propeller/config/vaults"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
-import { PROPELLER_RISK_PROFILE } from "@/modules/strategies/propeller/vaults"
 import { useAssetPrice } from "@/states/displayAsset"
 
 interface VaultStats {
-  /** vault size, denominated in the collateral */
   totalAssets: number
-  /** deposit ceiling, denominated in the collateral; 0 until the query loads */
   tvlCap: number
 }
 
@@ -46,16 +44,10 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const vault = useActivePropellerVault()
   const { price } = useAssetPrice(vault.assetId)
-  // live leveraged carry (Kamino PRIME yield − HOLLAR borrow); null unless
-  // positive — we never surface a 0% or negative APY.
   const apr = usePropellerApy()
 
   const { totalAssets, tvlCap } = vaultStats
-  // totalAssets is denominated in the collateral (the underlying).
   const tvlDisplay = totalAssets * Number(price || 0)
-  // The contract reverts when totalAssets + assets > tvlCap, so the headroom
-  // is exactly tvlCap − totalAssets. A cap of 0 is the pre-load default, not a
-  // vault with no room — hide the stat until it resolves.
   const hasCap = tvlCap > 0
   const remainingCapacity = Math.max(tvlCap - totalAssets, 0)
   const remaining = Math.max(
@@ -67,7 +59,7 @@ export const StrategyDetailsCard = ({ vaultStats }: Props) => {
   return (
     <Paper>
       <Box p="l">
-        <Text as="h2" font="primary" fs="base" fw={500}>
+        <Text as="h2" font="primary" fs="p2" fw={500}>
           {t("strategy.title")}
         </Text>
       </Box>

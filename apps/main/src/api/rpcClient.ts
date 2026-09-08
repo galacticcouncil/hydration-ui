@@ -15,7 +15,7 @@ import { createPublicClient, custom, PublicClient } from "viem"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import { ENV } from "@/config/env"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/vaults"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { clearIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
 
@@ -87,12 +87,6 @@ const getProviderData = async (
     }),
   })
 
-  // Propeller's contract addresses are per-deployment and the vaults do not
-  // exist on every chain this app can connect to. Probing for bytecode is
-  // chain-agnostic and survives a testnet re-fork (which wipes the contracts
-  // and restarts block numbers), so the pages disappear instead of silently
-  // reading a dead address — and come back on their own once the vaults are
-  // deployed. Any failure is treated as "not deployed".
   const propellerEnabled = await evm
     .getCode({ address: PROPELLER_VAULTS.eth.vaultAddress })
     .then((code) => !!code && code !== "0x")

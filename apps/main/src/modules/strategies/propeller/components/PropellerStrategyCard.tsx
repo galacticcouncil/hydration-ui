@@ -2,11 +2,11 @@ import { useTranslation } from "react-i18next"
 
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
-import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
   PROPELLER_VAULT_ROUTE,
   type PropellerVaultConfig,
-} from "@/modules/strategies/propeller/vaults"
+} from "@/modules/strategies/propeller/config/vaults"
+import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
 
 export const PropellerStrategyCard = ({
   vault,
@@ -14,7 +14,7 @@ export const PropellerStrategyCard = ({
   vault: PropellerVaultConfig
 }) => {
   const { t } = useTranslation(["common", "strategies"])
-  // no provider on the overview — read this vault through the override
+  // Overview page has no vault provider; pass the config in explicitly.
   const apy = usePropellerApy(vault)
 
   return (

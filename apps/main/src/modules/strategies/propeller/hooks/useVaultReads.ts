@@ -1,28 +1,26 @@
 import { PRIME_ASSET_ID } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { isNullish } from "remeda"
-import { formatUnits, getContract, type Hex } from "viem"
+import { erc20Abi, formatUnits, getContract, type Hex } from "viem"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
 import {
-  ERC20_ABI,
-  HOLLAR_ADDRESS,
   POOL_ABI,
-  POOL_ADDRESS,
   SUBLOOP_ABI,
-  SUBLOOP_ADDRESS,
   VAULT_ABI,
+} from "@/modules/strategies/propeller/config/abi"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  HOLLAR_ADDRESS,
+  POOL_ADDRESS,
+  SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 import { usePropellerVaultContract } from "@/modules/strategies/propeller/hooks/usePropellerVaultContract"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-// Propeller doesn't expose an on-chain APR view (no getAPYWad), and there's
-// no Decentral-style maturity schedule — the redeem queue settles as the
-// keeper unwinds the loop. These are first-paint UI fallbacks; the live
-// numbers users care about (exchangeRate, queued shares) come from chain.
+// No on-chain APR view; these are first-paint placeholders until chain reads load.
 const FALLBACK_APR = 0
 const FALLBACK_MIN_REDEEM = 0
 
@@ -30,9 +28,7 @@ export function useVaultStats() {
   const { data: vault } = usePropellerVaultContract()
   const { getAssetWithFallback } = useAssets()
   const { vaultAddress, assetId } = useActivePropellerVault()
-  // CollateralVault has no decimals() override — shares declare 18dp but are
-  // numerically scaled to the collateral (first mint = assets − DEAD_SHARES),
-  // so both asset and share amounts use the registry's collateral decimals.
+  // CollateralVault has no decimals() override; shares use the collateral scale.
   const decimals = getAssetWithFallback(assetId).decimals
   return useQuery({
     queryKey: ["propeller-vault-stats", vaultAddress, assetId],
@@ -64,8 +60,7 @@ export function useVaultStats() {
       return {
         totalAssets: Number(formatUnits(totalAssets, decimals)),
         totalSupply: Number(formatUnits(totalSupply, decimals)),
-        // exchangeRate is a dimensionless WAD ratio, not an asset amount — it
-        // is always 1e18-scaled regardless of the collateral's decimals.
+        // exchangeRate is WAD-scaled (1e18), not collateral decimals.
         exchangeRate: Number(formatUnits(exchangeRateWad, 18)),
         queueLength: Number(queueLength),
         tvlCap: Number(formatUnits(tvlCap, decimals)),
@@ -79,10 +74,7 @@ export function useVaultStats() {
   })
 }
 
-/**
- * SubLoop leverage/health/carry read. Each call is wrapped independently so a
- * revert on a partial deploy doesn't wipe the strategy page.
- */
+/** SubLoop reads; each call fails independently so a partial deploy does not blank the page. */
 export function useSubLoopStats(override?: PropellerVaultConfig) {
   const { evm } = useRpcProvider()
   const { vaultAddress, assetAddress } = useActivePropellerVault(override)
@@ -134,19 +126,9 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         ),
       ])
 
-      // loopLeverage = the SHARED SubLoop's collateral / equity — the same for
-      // every vault, since one SubLoop backs them all. maxLtv = the LTV THIS
-      // vault's collateral is borrowed at, read from the reserve configuration
-      // bitmap (bits 0–15, in bps).
-      //
-      // It must NOT come from getUserAccountData(vault): the vault supplies the
-      // synthetic (psHOLLAR) as extra Aave collateral, sized debt/LT·1.005, so
-      // that call's totalCollateralBase is inflated by 1 + 1.02·ltv (~1.34x
-      // observed on lark-4, ~1.77x at 75% LTV) and the derived LTV understates
-      // the real one by the same factor. The contract itself nets the synthetic
-      // out in rebalance() (ethValue8 = collBase8 − synthValue8).
-      //
-      // borrowRate = HOLLAR variable borrow rate (ray, 1e27) as a fraction.
+      // loopLeverage is SubLoop-wide. maxLtv comes from the reserve config bitmap.
+      // Do not derive LTV from getUserAccountData(vault): synthetic collateral
+      // inflates totalCollateralBase.
       let loopLeverage: number | null = null
       let maxLtv: number | null = null
       let borrowRate: number | null = null
@@ -169,7 +151,6 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         healthFactor:
           healthFactor === null ? null : Number(formatUnits(healthFactor, 18)),
         targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),
-        // bps → fraction. The redeemer's estimated haircut; see SUBLOOP_ABI.
         negativeCarry:
           negativeCarryBps === null ? null : Number(negativeCarryBps) / 1e4,
         leverage: loopLeverage,
@@ -182,17 +163,8 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
 }
 
 /**
- * Live net APY on the deposit = maxLtv·loopLeverage·(primeYield − borrowRate).
- *
- * Derivation: a deposit of collateral C borrows maxLtv·C of HOLLAR (the Main
- * leg), which seeds the shared SubLoop and is levered loopLeverage×. Per unit of
- * C the loop holds maxLtv·loopLeverage of PRIME (earning primeYield) and owes
- * the same notional of HOLLAR (costing borrowRate), so the net carry on the
- * DEPOSIT is maxLtv·loopLeverage·(primeYield − borrowRate). This is the honest
- * yield-on-collateral; it rises with the collateral's LTV (so tBTC at 80% > ETH
- * at 75%) and is independent of position size. PRIME yield = the money market's
- * total PRIME supply APY (Aave base + Kamino + farms). Returns null — never 0 or
- * negative — when an input is missing or the carry isn't positive.
+ * Net deposit APY = maxLtv * loopLeverage * (primeYield - borrowRate).
+ * Returns null when inputs are missing or carry is not positive.
  */
 export function usePropellerApy(
   override?: PropellerVaultConfig,
@@ -214,28 +186,15 @@ export function usePropellerApy(
   ) {
     return null
   }
-  const primeYield = primeSupplyApy / 100 // percent → fraction
+  const primeYield = primeSupplyApy / 100
   const apr = maxLtv * loopLeverage * (primeYield - borrowRate)
-  // return a PERCENT number (e.g. 9.4), the form `common:percent` expects
-  // (it divides by 100 internally). null — never 0/negative — so the UI hides it.
+  // Percent for common:percent (it divides by 100). Null hides 0/negative APY.
   return apr > 0 ? apr * 100 : null
 }
 
 /**
- * This vault's live position inside the shared SubLoop.
- *
- * `equity` gates the withdraw CTA: `requestRedeem` is guarded by
- * `if (yieldSource.equityOf(vault) == 0) revert NoLoopEquity()`, and requesting
- * in that state used to orphan the request, so it has to be blocked upfront
- * rather than letting the tx revert.
- *
- * `pendingUnwind` is the equity already asked for but not yet pulled back. It
- * is the early-warning signal for a short payout: `_retireExhaustedHead` fires
- * only once `pendingUnwindOf` and `freedOf` are both zero, so a request still
- * short of its `debtShare` with nothing pending means the spiral has stalled
- * and the remainder is about to be written off against the redeemer.
- *
- * Either field is `null` while loading or if the read reverts, which never blocks.
+ * SubLoop equity for this vault. equity gates withdraw; pendingUnwind signals
+ * a stalled unwind that may pay out short.
  */
 export function useLoopPosition() {
   const { evm } = useRpcProvider()
@@ -284,7 +243,7 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 
       const ethToken = getContract({
         address: assetAddress,
-        abi: ERC20_ABI,
+        abi: erc20Abi,
         client: evm,
       })
       const vault = getContract({
@@ -293,9 +252,6 @@ export function useUserBalances(evmAddress: Hex | undefined) {
         client: evm,
       })
 
-      // Each balance read is wrapped independently — on partial-deploy
-      // environments any one contract might not be reachable, and a single
-      // revert in a Promise.all would wipe the whole query.
       const safeBalance = async (
         label: string,
         read: () => Promise<bigint>,
@@ -339,7 +295,7 @@ export function useEthAllowance(evmAddress: Hex | undefined) {
       if (!evmAddress) return 0
       const ethToken = getContract({
         address: assetAddress,
-        abi: ERC20_ABI,
+        abi: erc20Abi,
         client: evm,
       })
       const allowance = await ethToken.read.allowance([

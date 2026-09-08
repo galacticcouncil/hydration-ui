@@ -19,7 +19,6 @@ import {
 
 export type StrategyCardProps = {
   logoId: string
-  /** Optional logo override. */
   logo?: ReactNode
   stats: ValueStatsProps[]
   badges?: StrategyBadgeType[]
@@ -45,9 +44,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          {logo ?? (
-            <AssetLogo id={logoId} size="extra-large" hideChain />
-          )}
+          {logo ?? <AssetLogo id={logoId} size="extra-large" hideChain />}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (

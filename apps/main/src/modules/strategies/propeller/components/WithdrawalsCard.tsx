@@ -14,12 +14,11 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
-
 import {
   useWithdrawalColumns,
   type WithdrawalColumnHandlers,
   type WithdrawalRow,
-} from "./Withdrawals.columns"
+} from "@/modules/strategies/propeller/components/Withdrawals.columns"
 
 interface Props {
   rows: WithdrawalRow[]
@@ -29,11 +28,6 @@ interface Props {
   isClaiming: boolean
 }
 
-/**
- * A row stays "actionable" until the request is fully claimed — that covers
- * requests still waiting on the keeper, partially settled ones, and settled
- * ones the user hasn't claimed yet. Claimed rows fall under "Show Redeemed".
- */
 const isActionable = (r: WithdrawalRow) => r.state !== "claimed"
 
 export const WithdrawalsCard = ({
@@ -53,10 +47,7 @@ export const WithdrawalsCard = ({
       const bActive = isActionable(b)
       if (aActive && !bActive) return -1
       if (!aActive && bActive) return 1
-      // requestId is queueTail++ at request time, so it IS request order —
-      // and unlike a timestamp it exists for pending rows, whose RedeemRequested
-      // event never reaches eth_getLogs (see useRedemptionHistory).
-      // Actionable rows oldest-first (settle FIFO), the rest newest-first.
+      // requestId is FIFO order and exists before any settlement timestamp.
       if (aActive) return a.id - b.id
       return b.id - a.id
     })
@@ -72,7 +63,7 @@ export const WithdrawalsCard = ({
   return (
     <Paper>
       <Flex justify="space-between" align="center" p="l" wrap gap="m">
-        <Text as="h2" font="primary" fs="base" fw={500}>
+        <Text as="h2" font="primary" fs="p2" fw={500}>
           {t("withdrawals.title")}
         </Text>
         <Flex align="center" gap="base">

@@ -7,7 +7,7 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { Markdown } from "@/components/Markdown"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
 export const AboutCard: React.FC<PaperProps> = (props) => {
   const { t } = useTranslation(["strategies", "propeller"])

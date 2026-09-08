@@ -11,14 +11,11 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/PropellerVaultContext"
+import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
 interface Props {
-  /** Vault shares held by the user. */
   shares: number
-  /** Share → collateral exchange rate. */
   exchangeRate: number
-  /** Strategy net APY as a fraction; null hides it (never show 0%/negative). */
   apy: number | null
   onWithdraw: () => void
 }
@@ -37,7 +34,7 @@ export const MyPositionsCard = ({
   return (
     <Paper>
       <Box p="l">
-        <Text as="h2" font="primary" fs="base" fw={500}>
+        <Text as="h2" font="primary" fs="p2" fw={500}>
           {t("positions.title")}
         </Text>
       </Box>
