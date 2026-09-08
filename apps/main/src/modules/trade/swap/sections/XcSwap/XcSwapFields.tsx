@@ -211,7 +211,12 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   return (
     <Stack>
       <XcSrcAssetSelectField
-        label={<ChainLabel label={t("from")} chain={srcChain} />}
+        label={
+          <ChainLabel
+            label={isCrossChain ? t("from") : t("sell")}
+            chain={isCrossChain ? srcChain : null}
+          />
+        }
         loading={isSelectionLoading}
         maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
         maxBalanceLoading={
@@ -233,7 +238,12 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         chainFieldName="destChain"
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
-        label={<ChainLabel label={t("to")} chain={destChain} />}
+        label={
+          <ChainLabel
+            label={isCrossChain ? t("to") : t("buy")}
+            chain={isCrossChain ? destChain : null}
+          />
+        }
         chainAssetPairs={destChainAssetPairs}
         modalTitle={t("trade:xc.swap.field.destTitle")}
         hideMaxBalanceAction
