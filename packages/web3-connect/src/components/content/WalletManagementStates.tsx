@@ -1,13 +1,10 @@
-import { HydrationLogo, WalletIcon } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { ChevronRight, CircleAlert, Download } from "lucide-react"
+import { ChevronRight, Download, LogOut } from "lucide-react"
+import type { ComponentType } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  SRightColumn,
-  SRightColumnBody,
-} from "@/components/content/WalletManagementContent.styled"
+import { SRightColumn } from "@/components/content/WalletManagementContent.styled"
 import {
   WalletSourceButton,
   WalletSourceGroup,
@@ -16,17 +13,18 @@ import { SSourceAction } from "@/components/content/WalletManagementSource.style
 import {
   SCenteredTextGroup,
   SChainSelectHeader,
-  SWalletConnectBody,
-  SWalletConnectButton,
-  SWalletConnectState,
-  SWalletErrorBody,
-  SWalletErrorIcon,
-  SWalletErrorRetryButton,
-  SWalletErrorState,
+  SWalletConnectionAction,
+  SWalletConnectionBody,
+  SWalletConnectionErrorRing,
+  SWalletConnectionLogo,
+  SWalletConnectionSpinner,
+  SWalletConnectionState,
+  SWalletConnectionStatusIcon,
+  SWalletConnectionVisual,
   SWalletMark,
 } from "@/components/content/WalletManagementStates.styled"
 import { WalletProviderType } from "@/config/providers"
-import { getWalletModeIcon, WalletMode } from "@/config/wallet"
+import { getWalletModeIcon } from "@/config/wallet"
 import { WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { Wallet } from "@/types/wallet"
 import {
@@ -35,22 +33,72 @@ import {
   getWalletSourceModeLabel,
 } from "@/utils/walletSource"
 
-/**
- * The three things the right panel shows instead of an account list: a failed
- * connection, a brand's chain picker, and a wallet that is not connected yet.
- */
-export const WalletErrorState: React.FC<{
-  readonly error: string
-  readonly onRetry?: () => void
-}> = ({ error, onRetry }) => {
-  const { t } = useTranslation()
+export type WalletConnectionStateVisual =
+  | {
+      readonly type: "icon"
+      readonly icon: ComponentType
+    }
+  | {
+      readonly type: "wallet"
+      readonly wallet: Wallet
+    }
+  | {
+      readonly type: "loading"
+      readonly wallet: Wallet
+    }
+  | {
+      readonly type: "error"
+      readonly wallet: Wallet
+    }
+
+type WalletConnectionStateAction = {
+  readonly label: string
+  readonly icon?: ComponentType
+  readonly disabled?: boolean
+  readonly onClick?: () => void
+}
+
+type WalletConnectionStateProps = {
+  readonly title: string
+  readonly description: string
+  readonly visual: WalletConnectionStateVisual
+  readonly action?: WalletConnectionStateAction
+}
+
+export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
+  title,
+  description,
+  visual,
+  action,
+}) => {
+  const isLoading = visual.type === "loading"
+  const isError = visual.type === "error"
 
   return (
-    <SWalletErrorState>
-      <SWalletErrorBody>
-        <SWalletErrorIcon>
-          <Icon size="xl" component={CircleAlert} />
-        </SWalletErrorIcon>
+    <SWalletConnectionState
+      role={visual.type === "icon" || isError ? "alert" : "status"}
+      aria-live="polite"
+    >
+      <SWalletConnectionBody>
+        <SWalletConnectionVisual>
+          {visual.type === "icon" ? (
+            <SWalletConnectionStatusIcon>
+              <Icon size="xl" component={visual.icon} />
+            </SWalletConnectionStatusIcon>
+          ) : (
+            <>
+              {isLoading && <SWalletConnectionSpinner />}
+              {isError && <SWalletConnectionErrorRing />}
+              <SWalletConnectionLogo
+                src={visual.wallet.logo}
+                alt=""
+                data-framed={isLoading || isError}
+                lazy={false}
+              />
+            </>
+          )}
+        </SWalletConnectionVisual>
+
         <SCenteredTextGroup>
           <Text
             fs="h7"
@@ -60,23 +108,34 @@ export const WalletErrorState: React.FC<{
             align="center"
             color={getToken("text.high")}
           >
-            {t("error.title")}
+            {title}
           </Text>
-          <Text fs="p5" lh={1.3} color={getToken("text.medium")} align="center">
-            {error || t("error.unknown")}
+          <Text
+            fs="p4"
+            lh={1.3}
+            color={getToken("text.medium")}
+            align="center"
+            textWrap="balance"
+            px="l"
+          >
+            {description}
           </Text>
         </SCenteredTextGroup>
-        {onRetry && (
-          <SWalletErrorRetryButton
+
+        {action && (
+          <SWalletConnectionAction
             variant="secondary"
-            size="small"
-            onClick={onRetry}
+            size="medium"
+            isLoading={isLoading}
+            disabled={action.disabled || isLoading}
+            onClick={action.onClick}
           >
-            {t("error.retry")}
-          </SWalletErrorRetryButton>
+            {action.icon && <Icon size="xs" component={action.icon} />}
+            {action.label}
+          </SWalletConnectionAction>
         )}
-      </SWalletErrorBody>
-    </SWalletErrorState>
+      </SWalletConnectionBody>
+    </SWalletConnectionState>
   )
 }
 
@@ -87,7 +146,8 @@ export const WalletChainSelectState: React.FC<{
   ) => WalletProviderStatus
   readonly onInstall: (wallet: Wallet) => void
   readonly onSelect: (wallet: Wallet) => void
-}> = ({ group, getStatus, onInstall, onSelect }) => {
+  readonly onDisconnect: (wallet: Wallet) => void
+}> = ({ group, getStatus, onInstall, onSelect, onDisconnect }) => {
   const { t } = useTranslation()
   const selectableWallets = group.wallets.filter((wallet) => {
     const status = getStatus(wallet.provider)
@@ -110,7 +170,7 @@ export const WalletChainSelectState: React.FC<{
         </Text>
       </SChainSelectHeader>
 
-      <SRightColumnBody>
+      <Box flex={1} sx={{ minHeight: 0, overflowY: "auto" }}>
         <Flex direction="column" gap="s">
           {selectableWallets.map((wallet) => {
             const status = getStatus(wallet.provider)
@@ -128,11 +188,10 @@ export const WalletChainSelectState: React.FC<{
                     ? t("provider.connected")
                     : wallet.installed
                       ? t("provider.connect")
-                      : t("provider.install")
+                      : t("provider.notInstalled")
                 }
                 connected={isConnected}
-                logo={mode === WalletMode.EVM ? undefined : modeIcon}
-                icon={mode === WalletMode.EVM ? HydrationLogo : undefined}
+                logo={modeIcon}
                 pending={isPending}
                 onClick={() => {
                   if (isPending) return
@@ -147,87 +206,35 @@ export const WalletChainSelectState: React.FC<{
                   onSelect(wallet)
                 }}
                 action={
-                  <SSourceAction as="span">
-                    <Icon
-                      size="xs"
-                      component={
-                        !wallet.installed && wallet.installUrl
-                          ? Download
-                          : ChevronRight
-                      }
-                    />
-                  </SSourceAction>
+                  isConnected ? (
+                    <SSourceAction
+                      as="span"
+                      aria-label={t("provider.disconnect")}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onDisconnect(wallet)
+                      }}
+                    >
+                      <Icon size="xs" component={LogOut} />
+                    </SSourceAction>
+                  ) : (
+                    <SSourceAction as="span">
+                      <Icon
+                        size="xs"
+                        component={
+                          !wallet.installed && wallet.installUrl
+                            ? Download
+                            : ChevronRight
+                        }
+                      />
+                    </SSourceAction>
+                  )
                 }
               />
             )
           })}
         </Flex>
-      </SRightColumnBody>
+      </Box>
     </SRightColumn>
-  )
-}
-
-export const WalletConnectState: React.FC<{
-  readonly wallet: Wallet
-  readonly isConnecting: boolean
-  readonly onConnect: () => void
-}> = ({ wallet, isConnecting, onConnect }) => {
-  const { t } = useTranslation()
-
-  return (
-    <SWalletConnectState>
-      <SWalletConnectBody>
-        <SWalletMark src={wallet.logo} alt="" />
-        <SCenteredTextGroup>
-          <Text
-            fs="h7"
-            fw={500}
-            lh={1}
-            font="primary"
-            align="center"
-            color={getToken("text.high")}
-          >
-            {wallet.title}
-          </Text>
-          <Text fs="p5" lh={1.3} color={getToken("text.medium")} align="center">
-            {!wallet.installed
-              ? t("provider.walletNotInstalledDescription", {
-                  wallet: wallet.title,
-                })
-              : isConnecting
-                ? t("provider.connectingWalletDescription")
-                : t("provider.walletNotConnectedDescription")}
-          </Text>
-        </SCenteredTextGroup>
-        <SWalletConnectButton
-          variant="secondary"
-          size="small"
-          disabled={isConnecting || (!wallet.installed && !wallet.installUrl)}
-          onClick={() => {
-            if (!wallet.installed) {
-              if (wallet.installUrl) {
-                window.open(wallet.installUrl, "_blank", "noopener,noreferrer")
-              }
-              return
-            }
-
-            onConnect()
-          }}
-        >
-          {isConnecting ? (
-            <Spinner size="xs" />
-          ) : !wallet.installed ? (
-            <Icon size="xs" component={Download} />
-          ) : (
-            <Icon size="xs" component={WalletIcon} />
-          )}
-          {!wallet.installed
-            ? t("provider.installWallet", { wallet: wallet.title })
-            : isConnecting
-              ? t("provider.connectingWallet")
-              : t("provider.connectWallet")}
-        </SWalletConnectButton>
-      </SWalletConnectBody>
-    </SWalletConnectState>
   )
 }

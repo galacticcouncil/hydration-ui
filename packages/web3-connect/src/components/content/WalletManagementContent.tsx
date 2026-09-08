@@ -1,7 +1,24 @@
-import { Search, WalletIcon } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, ScrollArea, Text } from "@galacticcouncil/ui/components"
+import { Plus, Search, WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Input,
+  ScrollArea,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { ChevronDown, ChevronUp, LogOut } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  CircleAlert,
+  Download,
+  LogOut,
+  Users,
+} from "lucide-react"
 import {
   useCallback,
   useEffect,
@@ -23,24 +40,16 @@ import {
 } from "@/components/content/WalletManagementAccounts"
 import {
   SAccountFilterButton,
-  SAccountScrollFrame,
-  SEmptyState,
   SLayoutGrid,
   SModalBody,
   SModalHeader,
   SRightColumn,
-  SRightColumnBody,
   SRightPanelFrame,
   SScrollAreaContent,
-  SSearchInput,
   SSourceColumn,
   SSourceFooter,
   SSourceFooterAction,
-  SSourceFooterGradient,
-  SSourceList,
-  SSourceOtherSectionLabel,
   SSourceScrollFrame,
-  SSourceSectionLabel,
   SWalletManagementShell,
 } from "@/components/content/WalletManagementContent.styled"
 import {
@@ -50,16 +59,21 @@ import {
   WalletSourceGroup,
 } from "@/components/content/WalletManagementSource"
 import {
+  SSourceAction,
+  SSourceCategoryLabel,
+} from "@/components/content/WalletManagementSource.styled"
+import {
   WalletChainSelectState,
-  WalletConnectState,
-  WalletErrorState,
+  WalletConnectionState,
 } from "@/components/content/WalletManagementStates"
 import {
   ExternalWalletForm,
   useExternalWalletConnection,
 } from "@/components/external/ExternalWalletForm"
 import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.form"
-import { ProviderLoader } from "@/components/provider/ProviderLoader"
+import { MultisigConfigList } from "@/components/multisig/MultisigConfigList"
+import { MultisigSetupPanel } from "@/components/multisig/MultisigSetupPanel"
+import { MultisigSignerSelect } from "@/components/multisig/MultisigSignerSelect"
 import { WalletProviderType } from "@/config/providers"
 import {
   chipModesForAccounts,
@@ -70,6 +84,7 @@ import {
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { useAccountsWithBalance } from "@/hooks/useAccountsWithBalance"
+import { useMultisigConfigs } from "@/hooks/useMultisigConfigs"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { Wallet } from "@/types/wallet"
@@ -89,6 +104,8 @@ import {
 } from "@/utils/walletSource"
 import { getWallet, getWallets } from "@/wallets"
 
+type MultisigStep = "list" | "setup" | "signer"
+
 const filterWalletGroups = (groups: WalletSourceGroup[], search: string) => {
   const phrase = search.toLowerCase().trim()
   if (!phrase) return groups
@@ -100,6 +117,8 @@ export const WalletManagementContent = () => {
   const { account: currentAccount } = useAccount()
   const { mode, onAccountSelect, isControlled, setModalContentWidth } =
     useWeb3ConnectContext()
+  const { gte } = useBreakpoints()
+  const isDesktop = gte("md")
   const { enable, disconnect } = useWeb3Enable()
   const { enable: enableWithDisconnectOnError } = useWeb3Enable({
     disconnectOnError: true,
@@ -134,6 +153,12 @@ export const WalletManagementContent = () => {
   const [accountFilter, setAccountFilter] = useState<WalletAccountFilterOption>(
     WalletMode.Default,
   )
+  /**
+   * Which of the two columns is on screen below `md`. Desktop shows both, so
+   * the flag is dead weight there and is set unconditionally - a flag that is
+   * always correct beats one maintained only on some viewports.
+   */
+  const [showAccounts, setShowAccounts] = useState(false)
   const [walletSearchValue, setWalletSearchValue] = useState("")
   const [accountSearchValue, setAccountSearchValue] = useState("")
   const [walletSearch, setWalletSearch] = useState("")
@@ -143,11 +168,27 @@ export const WalletManagementContent = () => {
   const externalWalletForm = useExternalWalletForm()
   const { connectExternalWallet } = useExternalWalletConnection()
   const showExternalWallet = !meta?.hideExternalWallet
+  const showMultisig =
+    mode === WalletMode.Default ||
+    mode === WalletMode.Substrate ||
+    mode === WalletMode.SubstrateEVM
+  const multisigConfigs = useMultisigConfigs()
+  const [multisigStep, setMultisigStep] = useState<MultisigStep>("list")
 
   useEffect(() => {
     if (!meta?.initialProvider) return
     setSelectedSource(meta.initialProvider)
   }, [meta?.initialProvider])
+
+  /**
+   * The single entry point for picking a wallet source. Seeding the initial
+   * provider above deliberately does not go through it: the modal always opens
+   * on the wallet list, even when a wallet is already connected.
+   */
+  const selectSource = useCallback((source: WalletSourceId) => {
+    setSelectedSource(source)
+    setShowAccounts(true)
+  }, [])
 
   useDebounce(() => setWalletSearch(walletSearchValue), 100, [
     walletSearchValue,
@@ -189,6 +230,9 @@ export const WalletManagementContent = () => {
   )
 
   const isProvidersConnecting = pendingProviderTypes.length > 0
+  const pendingProvider = pendingProviderTypes[0]
+  const pendingWallet = pendingProvider ? getWallet(pendingProvider) : undefined
+  const errorWallet = recentProvider ? getWallet(recentProvider) : undefined
   const hasConnectedWalletState =
     connectedProviderTypes.length > 0 || accounts.length > 0
   const connectedAccountsCount = useMemo(
@@ -230,10 +274,8 @@ export const WalletManagementContent = () => {
     : null
   const isExternalWalletSelected =
     selectedSource === WalletProviderType.ExternalWallet && showExternalWallet
-  const isSelectedWalletConnecting =
-    !!selectedWallet &&
-    selectedWallet.installed &&
-    selectedWalletStatus === WalletProviderStatus.Pending
+  const isMultisigSelected =
+    selectedSource === WalletProviderType.Multisig && showMultisig
   const showSelectedWalletConnectState =
     !!selectedWallet &&
     selectedWallet.provider !== WalletProviderType.ExternalWallet &&
@@ -246,14 +288,29 @@ export const WalletManagementContent = () => {
   const showAccountPanel =
     hasConnectedWalletState ||
     isExternalWalletSelected ||
-    isSelectedWalletConnecting ||
+    isMultisigSelected ||
+    isProvidersConnecting ||
     showSelectedWalletConnectState ||
     showWalletGroupChainSelectState ||
     showErrorState
 
+  /**
+   * `showAccountPanel` stays the authority on whether the right column has
+   * anything to render, so an emptied panel falls back to the wallet list on
+   * its own - no effect chasing the six async states that feed it.
+   */
+  const isAccountsView = showAccounts && showAccountPanel
+
+  /**
+   * Below `md` the width is pinned: only one column is ever on screen, and
+   * `--modal-content-width` lives two components up, so a change here is an
+   * unanimated jump on every forward/back press.
+   */
   useLayoutEffect(() => {
-    setModalContentWidth?.(showAccountPanel ? pxToRem(650) : pxToRem(452))
-  }, [setModalContentWidth, showAccountPanel])
+    setModalContentWidth?.(
+      !isDesktop || showAccountPanel ? pxToRem(650) : pxToRem(452),
+    )
+  }, [isDesktop, setModalContentWidth, showAccountPanel])
 
   const visibleRecentWalletGroups = useMemo(
     () => filterWalletGroups(recentWalletGroups, walletSearch),
@@ -363,7 +420,7 @@ export const WalletManagementContent = () => {
   )
 
   const handleProviderSelect = (wallet: Wallet) => {
-    setSelectedSource(wallet.provider)
+    selectSource(wallet.provider)
   }
 
   const handleWalletClick = (wallet: Wallet) => {
@@ -384,7 +441,7 @@ export const WalletManagementContent = () => {
       return
     }
 
-    setSelectedSource(group.id)
+    selectSource(group.id)
   }
 
   const renderWalletGroup = (group: WalletSourceGroup) => {
@@ -407,6 +464,10 @@ export const WalletManagementContent = () => {
       )
     }
 
+    const connectedGroupProviders = group.providers.filter((provider) =>
+      connectedProviderTypes.includes(provider),
+    )
+
     return (
       <WalletGroupSourceButton
         key={group.id}
@@ -415,14 +476,17 @@ export const WalletManagementContent = () => {
           selectedSource === group.id ||
           group.providers.includes(selectedSource as WalletProviderType)
         }
-        connected={group.providers.some((provider) =>
-          connectedProviderTypes.includes(provider),
-        )}
+        connected={connectedGroupProviders.length > 0}
         pending={group.providers.some((provider) =>
           pendingProviderTypes.includes(provider),
         )}
         variant={variant}
         onClick={() => handleWalletGroupSelect(group)}
+        onDisconnect={() => {
+          for (const provider of connectedGroupProviders) {
+            disconnect(provider)
+          }
+        }}
       />
     )
   }
@@ -454,14 +518,25 @@ export const WalletManagementContent = () => {
       ? visibleOtherWalletGroups
       : visibleOtherWalletGroups.slice(0, otherWalletsPreviewCount)
 
+  const selectedSourceTitle = isMultisigSelected
+    ? t("multisig.title")
+    : (selectedWallet?.title ?? selectedWalletGroup?.title)
+
   return (
     <SWalletManagementShell showAccountPanel={showAccountPanel}>
       <SModalHeader
         title={
           meta?.title ??
-          (showAccountPanel
-            ? t("provider.selectSourceWallet")
-            : t("provider.selectSourceWalletOnly"))
+          (!isDesktop && isAccountsView && selectedSourceTitle
+            ? selectedSourceTitle
+            : showAccountPanel
+              ? t("provider.selectSourceWallet")
+              : t("provider.selectSourceWalletOnly"))
+        }
+        onBack={
+          !isDesktop && isAccountsView
+            ? () => setShowAccounts(false)
+            : undefined
         }
         description={
           meta?.description ??
@@ -474,13 +549,15 @@ export const WalletManagementContent = () => {
       />
       <SModalBody noPadding scrollable={false}>
         <SLayoutGrid showAccountPanel={showAccountPanel}>
-          <SSourceColumn showAccountPanel={showAccountPanel}>
-            <SSearchInput
+          <SSourceColumn mobileHidden={isAccountsView}>
+            <Input
               value={walletSearchValue}
               onChange={(event) => setWalletSearchValue(event.target.value)}
               customSize="large"
               iconStart={Search}
               placeholder={t("provider.searchWallets")}
+              width="100%"
+              sx={{ flexShrink: 0 }}
             />
 
             <SSourceScrollFrame hasFooter={hasConnectedWalletState}>
@@ -489,11 +566,11 @@ export const WalletManagementContent = () => {
                   sx={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: showAccountPanel ? "m" : "base",
+                    gap: "base",
                   }}
                 >
                   {showAccountPanel && connectedAccountsCount > 0 && (
-                    <SSourceList>
+                    <Flex direction="column" gap="s">
                       <WalletSourceButton
                         active={selectedSource === "all"}
                         title={t("provider.allAccountsAndWallets")}
@@ -501,35 +578,38 @@ export const WalletManagementContent = () => {
                           count: connectedAccountsCount,
                         })}
                         icon={WalletIcon}
-                        onClick={() => setSelectedSource("all")}
+                        onClick={() => selectSource("all")}
                       />
-                    </SSourceList>
+                    </Flex>
                   )}
 
                   {visibleRecentWalletGroups.length > 0 && (
-                    <SSourceList>
-                      <SSourceSectionLabel
+                    <Flex direction="column" gap="s">
+                      <SSourceCategoryLabel
                         fs="p5"
                         fw={500}
+                        lh={1.25}
                         color={getToken("text.low")}
                       >
                         {t("provider.recentlyUsed")}
-                      </SSourceSectionLabel>
+                      </SSourceCategoryLabel>
                       {visibleRecentWalletGroups.map(renderWalletGroup)}
-                    </SSourceList>
+                    </Flex>
                   )}
 
                   {(visibleInstalledWalletGroups.length > 0 ||
-                    showExternalWallet) && (
-                    <SSourceList>
+                    showExternalWallet ||
+                    showMultisig) && (
+                    <Flex direction="column" gap="s">
                       {visibleInstalledWalletGroups.length > 0 && (
-                        <SSourceSectionLabel
+                        <SSourceCategoryLabel
                           fs="p5"
                           fw={500}
+                          lh={1.25}
                           color={getToken("text.low")}
                         >
                           {t("provider.installed")}
-                        </SSourceSectionLabel>
+                        </SSourceCategoryLabel>
                       )}
 
                       {visibleInstalledWalletGroups.map(renderWalletGroup)}
@@ -548,52 +628,58 @@ export const WalletManagementContent = () => {
                             showAccountPanel ? "management" : "firstConnection"
                           }
                           onClick={() =>
-                            setSelectedSource(WalletProviderType.ExternalWallet)
+                            selectSource(WalletProviderType.ExternalWallet)
                           }
                           onDisconnect={() =>
                             disconnect(WalletProviderType.ExternalWallet)
                           }
                         />
                       )}
-                    </SSourceList>
+
+                      {showMultisig && (
+                        <WalletSourceButton
+                          title={t("multisig.title")}
+                          subtitle={t("multisig.setup.short")}
+                          icon={Users}
+                          variant={
+                            showAccountPanel ? "management" : "firstConnection"
+                          }
+                          active={isMultisigSelected}
+                          onClick={() => {
+                            setMultisigStep(
+                              multisigConfigs.length > 0 ? "list" : "setup",
+                            )
+                            selectSource(WalletProviderType.Multisig)
+                          }}
+                        />
+                      )}
+                    </Flex>
                   )}
 
                   {visibleOtherWalletGroups.length > 0 && (
-                    <SSourceList>
-                      <SSourceOtherSectionLabel
+                    <Flex direction="column" gap="s">
+                      <SSourceCategoryLabel
                         fs="p5"
                         fw={500}
+                        lh={1.25}
                         color={getToken("text.low")}
-                        showAccountPanel={showAccountPanel}
                       >
-                        {showAccountPanel
-                          ? t("provider.otherWallets")
-                          : t("provider.otherWalletsFirstConnection")}
-                      </SSourceOtherSectionLabel>
+                        {t("provider.otherWallets")}
+                      </SSourceCategoryLabel>
                       {visibleOtherWallets.map(renderWalletGroup)}
                       {hasMoreOtherWallets && (
                         <WalletSourceButton
                           title={
                             isMoreWalletsListOpen
                               ? t("provider.hide")
-                              : showAccountPanel
-                                ? t("provider.moreWallets")
-                                : t("provider.showMore")
+                              : t("provider.showMore")
                           }
-                          icon={
-                            showAccountPanel
-                              ? undefined
-                              : isMoreWalletsListOpen
-                                ? ChevronUp
-                                : ChevronDown
-                          }
+                          icon={isMoreWalletsListOpen ? ChevronUp : ChevronDown}
                           variant={
-                            showAccountPanel
-                              ? undefined
-                              : "firstConnectionPlain"
+                            showAccountPanel ? "management" : "firstConnection"
                           }
                           action={
-                            showAccountPanel ? (
+                            <SSourceAction as="span">
                               <Icon
                                 size="xs"
                                 component={
@@ -602,18 +688,17 @@ export const WalletManagementContent = () => {
                                     : ChevronDown
                                 }
                               />
-                            ) : undefined
+                            </SSourceAction>
                           }
                           onClick={() => setIsMoreOpen((open) => !open)}
                         />
                       )}
-                    </SSourceList>
+                    </Flex>
                   )}
                 </SScrollAreaContent>
               </ScrollArea>
               {hasConnectedWalletState && (
                 <SSourceFooter>
-                  <SSourceFooterGradient />
                   <SSourceFooterAction>
                     <WalletSourceButton
                       title={t("provider.logOutAll")}
@@ -632,25 +717,78 @@ export const WalletManagementContent = () => {
           <SRightPanelFrame
             aria-hidden={!showAccountPanel}
             showAccountPanel={showAccountPanel}
+            mobileHidden={!isAccountsView}
           >
-            {selectedSource === WalletProviderType.ExternalWallet &&
-            showExternalWallet ? (
+            {isMultisigSelected ? (
               <SRightColumn>
-                <SRightColumnBody>
+                {multisigStep !== "list" && multisigConfigs.length > 0 && (
+                  <Button
+                    variant="muted"
+                    size="small"
+                    type="button"
+                    sx={{ flexShrink: 0, alignSelf: "flex-start" }}
+                    onClick={() => setMultisigStep("list")}
+                  >
+                    <Icon size="s" component={ChevronLeft} />
+                    {t("back")}
+                  </Button>
+                )}
+                <Box flex={1} sx={{ minHeight: 0, overflowY: "auto" }}>
+                  {multisigStep === "list" ? (
+                    <MultisigConfigList
+                      onSelected={() => setMultisigStep("signer")}
+                    />
+                  ) : multisigStep === "setup" ? (
+                    <MultisigSetupPanel
+                      onContinue={() => setMultisigStep("signer")}
+                    />
+                  ) : (
+                    <MultisigSignerSelect />
+                  )}
+                </Box>
+                {multisigStep === "list" && (
+                  <Button
+                    variant="accent"
+                    outline
+                    size="large"
+                    width="100%"
+                    type="button"
+                    sx={{ flexShrink: 0 }}
+                    onClick={() => setMultisigStep("setup")}
+                  >
+                    <Icon size="s" component={Plus} />
+                    {t("multisig.configSelect.setupNew")}
+                  </Button>
+                )}
+              </SRightColumn>
+            ) : selectedSource === WalletProviderType.ExternalWallet &&
+              showExternalWallet ? (
+              <SRightColumn>
+                <Box flex={1} sx={{ minHeight: 0, overflowY: "auto" }}>
                   <FormProvider {...externalWalletForm}>
                     <ExternalWalletForm
                       onAddressBookOpen={() => setIsAddressBookOpen(true)}
                       hideSubmitAction
                     />
                   </FormProvider>
-                </SRightColumnBody>
+                </Box>
               </SRightColumn>
             ) : showErrorState ? (
-              <WalletErrorState
-                error={error}
-                onRetry={
+              <WalletConnectionState
+                title={t("error.title")}
+                description={error || t("error.unknown")}
+                visual={
+                  errorWallet
+                    ? { type: "error", wallet: errorWallet }
+                    : { type: "icon", icon: CircleAlert }
+                }
+                action={
                   recentProvider
-                    ? () => enableWithDisconnectOnError(recentProvider)
+                    ? {
+                        label: t("error.retry"),
+                        onClick: () =>
+                          enableWithDisconnectOnError(recentProvider),
+                      }
                     : undefined
                 }
               />
@@ -668,18 +806,63 @@ export const WalletManagementContent = () => {
                   }
                 }}
                 onSelect={handleWalletClick}
+                onDisconnect={(wallet) => disconnect(wallet.provider)}
               />
             ) : showSelectedWalletConnectState && selectedWallet ? (
-              <WalletConnectState
-                wallet={selectedWallet}
-                isConnecting={
+              <WalletConnectionState
+                title={selectedWallet.title}
+                description={
                   selectedWalletStatus === WalletProviderStatus.Pending
+                    ? t("provider.connectingWalletDescription")
+                    : t("provider.walletNotInstalledDescription", {
+                        wallet: selectedWallet.title,
+                      })
                 }
-                onConnect={() => enable(selectedWallet.provider)}
+                visual={{
+                  type:
+                    selectedWalletStatus === WalletProviderStatus.Pending
+                      ? "loading"
+                      : "wallet",
+                  wallet: selectedWallet,
+                }}
+                action={
+                  selectedWalletStatus === WalletProviderStatus.Pending
+                    ? {
+                        label: t("provider.connectingWallet"),
+                      }
+                    : {
+                        label: t("provider.installWallet", {
+                          wallet: selectedWallet.title,
+                        }),
+                        icon: Download,
+                        disabled: !selectedWallet.installUrl,
+                        onClick: () => {
+                          if (selectedWallet.installUrl) {
+                            window.open(
+                              selectedWallet.installUrl,
+                              "_blank",
+                              "noopener,noreferrer",
+                            )
+                          }
+                        },
+                      }
+                }
+              />
+            ) : isProvidersConnecting && pendingWallet ? (
+              <WalletConnectionState
+                title={t("provider.waitingForAuth")}
+                description={t("provider.authorizeDescription")}
+                visual={{
+                  type: "loading",
+                  wallet: pendingWallet,
+                }}
+                action={{
+                  label: t("provider.connectingWallet"),
+                }}
               />
             ) : (
               <SRightColumn>
-                <SSearchInput
+                <Input
                   value={accountSearchValue}
                   onChange={(event) =>
                     setAccountSearchValue(event.target.value)
@@ -687,6 +870,8 @@ export const WalletManagementContent = () => {
                   customSize="large"
                   iconStart={Search}
                   placeholder={t("account.searchAccounts")}
+                  width="100%"
+                  sx={{ flexShrink: 0 }}
                 />
 
                 {chipModes.length > 0 && (
@@ -709,7 +894,12 @@ export const WalletManagementContent = () => {
                   </Flex>
                 )}
 
-                <SAccountScrollFrame>
+                <Box
+                  flex={1}
+                  height="100%"
+                  overflow="hidden"
+                  sx={{ minHeight: 0 }}
+                >
                   <ScrollArea>
                     <SScrollAreaContent
                       sx={{
@@ -718,9 +908,7 @@ export const WalletManagementContent = () => {
                         gap: "base",
                       }}
                     >
-                      {isProvidersConnecting ? (
-                        <ProviderLoader providers={pendingProviderTypes} />
-                      ) : accountsWithBalances.length > 0 ? (
+                      {accountsWithBalances.length > 0 ? (
                         selectedSource === "all" ? (
                           groupedAccounts.map((group) => (
                             <WalletAccountSection
@@ -748,15 +936,21 @@ export const WalletManagementContent = () => {
                           ))
                         )
                       ) : (
-                        <SEmptyState>
+                        <Flex
+                          align="center"
+                          justify="center"
+                          borderRadius="m"
+                          bg={getToken("surfaces.containers.dim.dimOnBg")}
+                          sx={{ minHeight: pxToRem(260) }}
+                        >
                           <Text fs="p4" color={getToken("text.medium")}>
                             {t("account.noResults")}
                           </Text>
-                        </SEmptyState>
+                        </Flex>
                       )}
                     </SScrollAreaContent>
                   </ScrollArea>
-                </SAccountScrollFrame>
+                </Box>
               </SRightColumn>
             )}
           </SRightPanelFrame>
