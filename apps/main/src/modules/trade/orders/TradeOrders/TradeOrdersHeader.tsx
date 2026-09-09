@@ -44,7 +44,7 @@ export const TradeOrdersHeader: FC<Props> = ({
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { allPairs, assetIn, assetOut } = useSearch({
+  const { allPairs, assetIn, assetOut, destPlatform } = useSearch({
     from: "/trade/_history",
   })
 
@@ -62,6 +62,7 @@ export const TradeOrdersHeader: FC<Props> = ({
             allPairs,
             assetIn,
             assetOut,
+            destPlatform,
           } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}

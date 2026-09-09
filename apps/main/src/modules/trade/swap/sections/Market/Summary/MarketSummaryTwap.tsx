@@ -6,8 +6,11 @@ import {
   Box,
   CollapsibleContent,
   CollapsibleRoot,
+  Flex,
   Summary,
+  SummaryRowDisplayValue,
   SummaryRowValue,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
@@ -87,6 +90,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
   const [transactionCostsDisplay] = useDisplayAssetPrice(
     transactionFee?.feeAssetId ?? "",
     transactionCosts,
+    { maximumFractionDigits: null },
   )
 
   const [twapPrice, swapPrice, twapPriceHuman, twapPriceAsset] = (() => {
@@ -126,7 +130,6 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
 
   const twapDiff = math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
   const twapDiffAbs = Math.abs(twapDiff)
-  const twapSymbol = twapDiff >= 0 ? "+" : "-"
 
   return (
     <Box>
@@ -153,18 +156,24 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
             tooltip={t("trade:market.summary.minReceived.tooltip")}
             amount={
               <SummaryRowValue>
-                <span>
-                  {t("currency", {
-                    value: twapPriceHuman,
-                    symbol: twapPriceAsset.symbol,
+                {t("currency", {
+                  value: twapPriceHuman,
+                  symbol: twapPriceAsset.symbol,
+                })}
+                <Text as="span" color={getToken("text.tint.quart")}>
+                  {t("trade:market.summary.twapPriceDiff", {
+                    value: twapDiffAbs,
                   })}
-                </span>
-                <span sx={{ color: getToken("colors.skyBlue.500") }}>
-                  {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
-                </span>
+                </Text>
               </SummaryRowValue>
             }
-            amountDisplay={twapPriceDisplay}
+            amountDisplay={
+              twapPriceDisplay
+                ? t("parenthesized", {
+                    value: twapPriceDisplay,
+                  })
+                : undefined
+            }
             isLoading={twapPriceDisplayLoading}
             isExpanded={isSummaryExpanded}
             onIsExpandedChange={changeSummaryExpanded}
@@ -196,14 +205,19 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, healthFactor }) => {
               label={t("trade:market.summary.transactionCosts")}
               loading={isTransactionFeeLoading}
               content={
-                <SummaryRowValue>
-                  {transactionCostsDisplay} (
-                  {t("currency", {
-                    value: transactionCosts,
-                    symbol: transactionFeeAsset.symbol,
-                  })}
-                  )
-                </SummaryRowValue>
+                <Flex gap="s" align="center" justify="flex-end">
+                  <SummaryRowValue>
+                    {t("currency", {
+                      value: transactionCosts,
+                      symbol: transactionFeeAsset.symbol,
+                    })}
+                  </SummaryRowValue>
+                  <SummaryRowDisplayValue>
+                    {t("parenthesized", {
+                      value: transactionCostsDisplay,
+                    })}
+                  </SummaryRowDisplayValue>
+                </Flex>
               }
               tooltip={t("trade:market.summary.transactionCosts.tooltip")}
             />

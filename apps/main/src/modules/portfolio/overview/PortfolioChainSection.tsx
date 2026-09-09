@@ -66,13 +66,14 @@ export const PortfolioChainSection: FC<Props> = memo(
             const amount = toDecimal(balance.amount, balance.decimals)
             const chainId = getChainId(chain)
             const chainAssetId = getChainAssetId(chain, balance).toString()
-            const externalIconSrc = chainId
-              ? metadata.getAssetLogoSrc(
-                  chainId,
-                  chainAssetId,
-                  chain.ecosystem,
-                ) || undefined
-              : undefined
+            const externalIconSrc =
+              (chainId
+                ? metadata.getAssetLogoSrc(
+                    chainId,
+                    chainAssetId,
+                    chain.ecosystem,
+                  )
+                : "") || undefined
 
             const meta = toSourceChainAssetData(
               chain.key,

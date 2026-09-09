@@ -31,7 +31,7 @@ const DEFAULT_ASSETS_METADATA: TMetadataResource["assets"] = {
   xcscanAssetUrnMap: {},
 }
 
-const BASE_URL =
+export const METADATA_CDN_URL =
   "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master"
 
 export class AssetMetadataFactory {
@@ -53,7 +53,7 @@ export class AssetMetadataFactory {
 
   private async fetchData<T>(path: string): Promise<T | null> {
     try {
-      const response = await fetch(BASE_URL + path)
+      const response = await fetch(METADATA_CDN_URL + path)
       if (!response.ok) {
         return null
       }
@@ -99,8 +99,7 @@ export class AssetMetadataFactory {
   }
 
   public getBaseUrl(data: TAssetResouce): string {
-    const { cdn, path, repository } = data
-    return [cdn["jsDelivr"], repository + "@latest", path].join("/")
+    return [METADATA_CDN_URL, data.path].join("/")
   }
 
   public getAssetLogoSrc(

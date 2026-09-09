@@ -23,10 +23,11 @@ import {
 import { defaultAssetValueFormatter } from "./AssetInput.utils"
 
 export type AssetInputProps = {
-  label?: string
+  label?: ReactNode
   balanceLabel?: string
   symbol?: string
   value?: string
+  valueLoading?: boolean
   displayValue?: string
   displayValueLoading?: boolean
   maxBalance?: string
@@ -53,6 +54,7 @@ export const AssetInput = ({
   symbol,
   selectedAssetIcon,
   value,
+  valueLoading,
   displayValue,
   displayValueLoading,
   label,
@@ -84,7 +86,7 @@ export const AssetInput = ({
     }
   }
 
-  const errorMessage = assetError ?? amountError
+  const isLoading = valueLoading || displayValueLoading || loading
 
   return (
     <Flex
@@ -96,7 +98,8 @@ export const AssetInput = ({
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between" sx={{ minWidth: 0 }}>
-        {label && <FormLabel>{label}</FormLabel>}
+        {label &&
+          (typeof label === "string" ? <FormLabel>{label}</FormLabel> : label)}
         {!ignoreBalance && (
           <Flex
             align="center"
@@ -158,7 +161,7 @@ export const AssetInput = ({
             symbol={symbol}
             icon={selectedAssetIcon}
             loading={loading}
-            error={!!assetError}
+            error={!!assetError && !isLoading}
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
@@ -170,45 +173,59 @@ export const AssetInput = ({
               align="end"
               sx={{ minWidth: 0, overflow: "hidden" }}
             >
-              <SAssetInput
-                isError={!!amountError}
-                placeholder="0"
-                variant="embedded"
-                autoComplete="off"
-                inputMode="decimal"
-                disabled={disabled || loading || !onChange || disabledInput}
-                value={defaultAssetValueFormatter(value ?? "")}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  if (e.target.validity.valid) {
-                    const formattedValue = e.target.value
-                      .replace(/\s+/g, "")
-                      .replace(/,/g, ".")
+              {valueLoading ? (
+                <Skeleton sx={{ width: "3xl" }} height="1em" />
+              ) : (
+                <SAssetInput
+                  isError={!!amountError && !isLoading}
+                  placeholder="0"
+                  variant="embedded"
+                  autoComplete="off"
+                  inputMode="decimal"
+                  disabled={disabled || loading || !onChange || disabledInput}
+                  value={defaultAssetValueFormatter(value ?? "")}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (e.target.validity.valid) {
+                      const formattedValue = e.target.value
+                        .replace(/\s+/g, "")
+                        .replace(/,/g, ".")
 
-                    if (!isNaN(Number(formattedValue))) {
-                      onChange?.(formattedValue)
+                      if (!isNaN(Number(formattedValue))) {
+                        onChange?.(formattedValue)
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              )}
 
-              {!ignoreDisplayValue && (
-                <Text
-                  color={getToken("text.low")}
-                  fs="p6"
-                  fw={400}
-                  truncate
-                  width="100%"
-                  align="right"
-                >
-                  {displayValueLoading ? <Skeleton width={48} /> : displayValue}
-                </Text>
+              {amountError && !isLoading ? (
+                <FormError lh={1} truncate width="100%" align="right">
+                  {amountError}
+                </FormError>
+              ) : (
+                !ignoreDisplayValue && (
+                  <Text
+                    color={getToken("text.low")}
+                    fs="p6"
+                    fw={400}
+                    truncate
+                    width="100%"
+                    align="right"
+                  >
+                    {displayValueLoading ? (
+                      <Skeleton width={48} />
+                    ) : (
+                      displayValue
+                    )}
+                  </Text>
+                )
               )}
             </Flex>
           )}
         </Flex>
-        {errorMessage && (
+        {assetError && !isLoading && (
           <FormError lh={1} ml="auto">
-            {errorMessage}
+            {assetError}
           </FormError>
         )}
       </Flex>

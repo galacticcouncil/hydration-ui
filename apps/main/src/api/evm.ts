@@ -20,6 +20,7 @@ import {
 import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import type { SizedHex } from "polkadot-api"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
 import { formatEther, getContract, Hex } from "viem"
@@ -177,4 +178,33 @@ export const weightToEvmFeeQuery = (
       return Big(eth).times(spot.spotPrice.toString()).toString()
     },
   })
+}
+
+const ERC20_ALLOWANCE_ABI = [
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const
+
+export const useErc20Allowance = () => {
+  const provider = useRpcProvider()
+
+  return useCallback(
+    async (tokenAddress: string, evmAddress: string, spender: string) => {
+      return await provider.evm.readContract({
+        abi: ERC20_ALLOWANCE_ABI,
+        address: tokenAddress as `0x${string}`,
+        functionName: "allowance",
+        args: [evmAddress as `0x${string}`, spender as `0x${string}`],
+      })
+    },
+    [provider],
+  )
 }

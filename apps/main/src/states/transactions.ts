@@ -32,6 +32,7 @@ export enum TransactionType {
   Onchain = "Onchain",
   Xcm = "Xcm",
   EvmApprove = "EvmApprove",
+  XcSwap = "XcSwap",
 }
 
 export type TransactionAlert = Pick<
@@ -79,6 +80,12 @@ type MultiTransactionConfig = (
   pendingComponent?: ComponentType
   //@TODO consider separate all transaction actions per tx
   onSubmitted?: (txHash: string) => void
+  /**
+   * Awaited after this step succeeds, before the stepper advances. For work
+   * that belongs to this step but outlives its receipt — waiting on state the
+   * next step reads. Rejecting aborts the whole sequence.
+   */
+  beforeNext?: () => Promise<void>
 }
 
 interface MultiTransactionInput {
@@ -127,10 +134,28 @@ export type TransactionErc20ApproveMeta = TransactionMetaCommon & {
   type: TransactionType.EvmApprove
 }
 
+export type TransactionXcSwapMeta = TransactionMetaCommon & {
+  type: TransactionType.XcSwap
+  srcAssetSymbol: string
+  srcAmount: string
+  srcChainFee: string
+  srcChainFeeSymbol: string
+  dstChainKey: string
+  dstAssetSymbol: string
+  dstAmount: string
+  dstAddress: string
+  dstChainFee?: string
+  dstChainFeeSymbol?: string
+  sequence?: string
+  depositAddress?: string
+  correlationId?: string
+}
+
 export type TransactionMeta =
   | TransactionOnchainMeta
   | TransactionXcmMeta
   | TransactionErc20ApproveMeta
+  | TransactionXcSwapMeta
 
 export type TSuccessResult =
   | TxBestBlocksStateResult

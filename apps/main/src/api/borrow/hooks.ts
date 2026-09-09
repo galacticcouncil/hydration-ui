@@ -391,32 +391,3 @@ export const useApproveErc20 = () => {
     [provider],
   )
 }
-
-const ERC20_ALLOWANCE_ABI = [
-  {
-    type: "function",
-    name: "allowance",
-    stateMutability: "view",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-    ],
-    outputs: [{ name: "", type: "uint256" }],
-  },
-] as const
-
-export const useErc20Allowance = () => {
-  const provider = useRpcProvider()
-
-  return useCallback(
-    async (tokenAddress: string, evmAddress: string, spender: string) => {
-      return await provider.evm.readContract({
-        abi: ERC20_ALLOWANCE_ABI,
-        address: tokenAddress as `0x${string}`,
-        functionName: "allowance",
-        args: [evmAddress as `0x${string}`, spender as `0x${string}`],
-      })
-    },
-    [provider],
-  )
-}

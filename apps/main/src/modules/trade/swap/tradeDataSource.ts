@@ -3,7 +3,7 @@ import { FC } from "react"
 
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { SwapChart } from "@/modules/trade/swap/components/SwapChart/SwapChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
@@ -11,7 +11,7 @@ export const useTradeDataSource = (): "neckwork" | "legacy" =>
   useNeckworkEnabled() ? "neckwork" : "legacy"
 
 export const TRADE_CHART_BY_SOURCE = {
-  neckwork: TradeChart,
+  neckwork: SwapChart,
   legacy: TradeChartGrafana,
 } as const satisfies Record<string, FC<{ readonly height: number }>>
 

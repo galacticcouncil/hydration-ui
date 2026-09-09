@@ -38,7 +38,10 @@ export const MarketTradeOptions: FC<Props> = ({
     tradeOrderDurationQuery(rpc, twap?.tradeCount ?? 0),
   )
 
-  if (isSwapLoading || !swap) {
+  const showFullSkeleton = isSwapLoading || !swap
+  const showSplitSkeleton = isTwapLoading || !twap
+
+  if (showFullSkeleton) {
     return (
       <Flex direction="column" gap="base">
         <TradeOptionSkeleton />
@@ -80,7 +83,7 @@ export const MarketTradeOptions: FC<Props> = ({
               onClick={doNothing}
               disabled
             />
-          ) : isTwapLoading || !twap ? (
+          ) : showSplitSkeleton ? (
             <TradeOptionSkeleton />
           ) : (
             <TradeOption
