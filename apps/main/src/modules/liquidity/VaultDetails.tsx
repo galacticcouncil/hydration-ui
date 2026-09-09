@@ -7,6 +7,7 @@ import { VaultHeader } from "@/modules/liquidity/components/VaultDetails/VaultHe
 import { VaultPositions } from "@/modules/liquidity/components/VaultDetails/VaultPositions"
 import { VaultStats } from "@/modules/liquidity/components/VaultDetails/VaultStats"
 import { SVaultDetailsRow } from "@/modules/liquidity/VaultDetails.styled"
+import { VaultDetailsSkeleton } from "@/modules/liquidity/VaultDetailsSkeleton"
 import { useVaults } from "@/modules/liquidity/Vaults.utils"
 
 type Props = {
@@ -20,7 +21,9 @@ export const VaultDetails: FC<Props> = ({ address }) => {
     (entry) => entry.id.toLowerCase() === address.toLowerCase(),
   )
 
-  if (isLoading || !vault) return null
+  if (isLoading) return <VaultDetailsSkeleton />
+
+  if (!vault) return null
 
   return (
     <Flex direction="column" gap="xl">

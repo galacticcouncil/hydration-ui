@@ -24,6 +24,7 @@ import {
   TSuccessResult,
   useTransactionsStore,
 } from "@/states/transactions"
+import { getErrorMessage } from "@/utils/errors"
 
 type ReviewMultiTransactionProps = {
   transaction: MultiTransaction
@@ -91,9 +92,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
         })
         .catch((error) => {
           setIsPendingResolution(false)
-          onResolutionErrorRef.current(
-            error instanceof Error ? error.message : String(error),
-          )
+          onResolutionErrorRef.current(getErrorMessage(error))
         })
     } else {
       setIsPendingResolution(false)
@@ -143,9 +142,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
           try {
             await currentBaseConfig.beforeNext()
           } catch (error) {
-            onResolutionErrorRef.current(
-              error instanceof Error ? error.message : String(error),
-            )
+            onResolutionErrorRef.current(getErrorMessage(error))
             return
           } finally {
             setIsPendingResolution(false)

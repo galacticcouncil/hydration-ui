@@ -1,3 +1,4 @@
+import { Flex } from "@galacticcouncil/ui/components"
 import { prop } from "remeda"
 
 import { ChartState } from "@/components/ChartState"
@@ -18,7 +19,9 @@ export const PoolChart = ({
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
 
   return isEmptyData ? (
-    <ChartState sx={{ height }} isEmpty />
+    <Flex flex={1} direction="column" justify="flex-end" sx={{ minHeight: 0 }}>
+      <ChartState sx={{ height }} isEmpty />
+    </Flex>
   ) : (
     <PairChart
       variant="pool"

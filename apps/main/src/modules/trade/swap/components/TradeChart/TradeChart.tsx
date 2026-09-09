@@ -336,44 +336,68 @@ export const PairChart: React.FC<PairChartProps> = ({
     )
   ) : undefined
 
+  const chartHeader = (
+    <ResponsiveScope>
+      <SChartHeader>
+        <ChartValues
+          sx={{ position: "relative" }}
+          value={chartValue}
+          displayValue={chartDisplayValue}
+          isLoading={shouldShowValues && isLoadingValues}
+        />
+        <TradeChartControls
+          pair={`${baseMeta.symbol}/${quoteMeta.symbol}`}
+          isInverted={isInverted}
+          onInvert={() => setIsInverted((prev) => !prev)}
+          showPairControls={!isPool}
+        />
+      </SChartHeader>
+    </ResponsiveScope>
+  )
+
+  const chartBody = (
+    <Box sx={{ height }}>
+      <ChartState
+        sx={{ height }}
+        isError={isError}
+        isLoading={hasValidAssetIds && isLoading}
+        isEmpty={isEmpty}
+      >
+        <CandleChart
+          height={height}
+          candles={candles}
+          liveCandle={live}
+          type={chartType}
+          resetKey={resetKey}
+          isRefetching={isRefetching}
+          isPlaceholderData={!isPegged && isPlaceholderData}
+          onCrosshairMove={onCrosshairMove}
+          onReachStart={onReachStart}
+        />
+      </ChartState>
+    </Box>
+  )
+
+  if (isPool) {
+    return (
+      <Flex direction="column" flex={1} sx={{ minHeight: 0 }}>
+        <Box sx={{ flexShrink: 0 }}>{chartHeader}</Box>
+        <Flex
+          flex={1}
+          direction="column"
+          justify="flex-end"
+          sx={{ minHeight: 0 }}
+        >
+          {chartBody}
+        </Flex>
+      </Flex>
+    )
+  }
+
   return (
     <>
-      <ResponsiveScope>
-        <SChartHeader>
-          <ChartValues
-            sx={{ position: "relative" }}
-            value={chartValue}
-            displayValue={chartDisplayValue}
-            isLoading={shouldShowValues && isLoadingValues}
-          />
-          <TradeChartControls
-            pair={`${baseMeta.symbol}/${quoteMeta.symbol}`}
-            isInverted={isInverted}
-            onInvert={() => setIsInverted((prev) => !prev)}
-            showPairControls={!isPool}
-          />
-        </SChartHeader>
-      </ResponsiveScope>
-      <Box sx={{ height }}>
-        <ChartState
-          sx={{ height }}
-          isError={isError}
-          isLoading={hasValidAssetIds && isLoading}
-          isEmpty={isEmpty}
-        >
-          <CandleChart
-            height={height}
-            candles={candles}
-            liveCandle={live}
-            type={chartType}
-            resetKey={resetKey}
-            isRefetching={isRefetching}
-            isPlaceholderData={!isPegged && isPlaceholderData}
-            onCrosshairMove={onCrosshairMove}
-            onReachStart={onReachStart}
-          />
-        </ChartState>
-      </Box>
+      {chartHeader}
+      {chartBody}
     </>
   )
 }

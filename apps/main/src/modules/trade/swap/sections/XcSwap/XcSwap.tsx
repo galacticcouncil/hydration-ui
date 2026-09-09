@@ -156,11 +156,12 @@ export const XcSwap: React.FC = () => {
               disabled={!canSubmit || isSubmitLoading}
               variant={canSubmit ? "primary" : "muted"}
               loadingVariant="muted"
+              loadingMode={canSubmit ? "inline" : "replace"}
               sx={{
                 "&:disabled": { cursor: "auto", opacity: 1 },
               }}
             >
-              {isSubmitLoading ? null : submitLabel}
+              {submitLabel}
             </LoadingButton>
           </AuthorizedAction>
         )}

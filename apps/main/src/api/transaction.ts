@@ -9,7 +9,7 @@ import { TProviderContext } from "@/providers/rpcProvider"
 export const paymentInfoQuery = (
   { papi, isReady }: TProviderContext,
   from: string | undefined,
-  anyTx: AnyTransaction,
+  anyTx: AnyTransaction | undefined,
 ) => {
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
   return queryOptions({

@@ -91,7 +91,6 @@
   "xc.swap.error.amountTooLow": "The swap amount is too low for this route.",
   "xc.swap.error.recipientInvalid": "The recipient address is invalid for the destination chain.",
   "xc.swap.error.quoteFailed": "Unable to get a quote for this swap.",
-  "xc.swap.error.submitFailed": "Unexpected error. Try changing your trade parameters or try again later.",
   "xc.swap.error.destAddressInvalid": "Invalid destination address",
   "xc.swap.select.placeholder": "Select chain & asset",
   "xc.swap.field.destTitle": "Destination chain & asset",

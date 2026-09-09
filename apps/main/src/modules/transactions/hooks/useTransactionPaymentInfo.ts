@@ -5,7 +5,13 @@ import { paymentInfoQuery } from "@/api/transaction"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-export const useTransactionPaymentInfo = (anyTx: AnyTransaction) => {
+export const useTransactionPaymentInfo = (
+  anyTx: AnyTransaction | undefined,
+) => {
   const { account } = useAccount()
-  return useQuery(paymentInfoQuery(useRpcProvider(), account?.address, anyTx))
+  const rpc = useRpcProvider()
+  return useQuery({
+    ...paymentInfoQuery(rpc, account?.address, anyTx),
+    enabled: !!anyTx && !!account?.address,
+  })
 }

@@ -19,7 +19,6 @@ const ALERT_SOURCE_PRIORITY = [
   "wallet-incompatible",
   "src-asset-unsupported",
   "quote-error",
-  "submit-error",
 ] as const
 
 export const pickPrimaryXcSwapError = (

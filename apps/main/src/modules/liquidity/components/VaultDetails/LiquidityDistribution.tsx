@@ -254,7 +254,7 @@ export const LiquidityDistribution = ({
   const price = priceAtTick(spotTick, token0.decimals, token1.decimals)
 
   return (
-    <Flex direction="column" sx={{ minHeight: resolvedHeight }}>
+    <Flex direction="column" flex={1} sx={{ minHeight: resolvedHeight }}>
       {!scenario && (
         <Flex
           justify="space-between"
@@ -262,6 +262,7 @@ export const LiquidityDistribution = ({
           direction={["column", "row"]}
           gap="m"
           mb="m"
+          sx={{ flexShrink: 0 }}
         >
           <Flex direction="column" gap="xs">
             <Text fs="p6" color={getToken("text.low")}>
@@ -285,112 +286,121 @@ export const LiquidityDistribution = ({
         </Flex>
       )}
 
-      <Flex position="relative" minWidth={0}>
-        <Chart
-          css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
-          definition={definition}
-          ariaLabel={t(
-            scenario ? "vaults.explainer.chartLabel" : "vaults.chart.liquidity",
-          )}
-          height={resolvedHeight}
-          renderTooltipBody={({ points }) => {
-            if (scenario) return null
+      <Flex
+        flex={1}
+        direction="column"
+        justify="flex-end"
+        sx={{ minHeight: 0 }}
+      >
+        <Flex position="relative" minWidth={0}>
+          <Chart
+            css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
+            definition={definition}
+            ariaLabel={t(
+              scenario
+                ? "vaults.explainer.chartLabel"
+                : "vaults.chart.liquidity",
+            )}
+            height={resolvedHeight}
+            renderTooltipBody={({ points }) => {
+              if (scenario) return null
 
-            const [first] = points.filter(isBarPoint)
+              const [first] = points.filter(isBarPoint)
 
-            if (!first) return null
+              if (!first) return null
 
-            return <TickStats bar={first.datum} vault={vault} />
-          }}
-        />
+              return <TickStats bar={first.datum} vault={vault} />
+            }}
+          />
 
-        {scenario && (
-          <>
-            {bands.map((managedBand) => (
-              <SManagedBand
-                key={managedBand.id}
+          {scenario && (
+            <>
+              {bands.map((managedBand) => (
+                <SManagedBand
+                  key={managedBand.id}
+                  aria-hidden
+                  $edgeColor={colors.rangeEdge}
+                  $bandOpacity={managedBand.opacity}
+                  position="absolute"
+                  top={pxToRem(8)}
+                  bottom={pxToRem(25)}
+                  left={`${((managedBand.lower - lo) / (hi - lo)) * 100}%`}
+                  width={`${
+                    ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
+                  }%`}
+                  borderRadius="base"
+                  bg={colors.rangeFill}
+                />
+              ))}
+
+              <SSpotLine
                 aria-hidden
-                $edgeColor={colors.rangeEdge}
-                $bandOpacity={managedBand.opacity}
                 position="absolute"
                 top={pxToRem(8)}
                 bottom={pxToRem(25)}
-                left={`${((managedBand.lower - lo) / (hi - lo)) * 100}%`}
-                width={`${
-                  ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
-                }%`}
-                borderRadius="base"
-                bg={colors.rangeFill}
-              />
-            ))}
-
-            <SSpotLine
-              aria-hidden
-              position="absolute"
-              top={pxToRem(8)}
-              bottom={pxToRem(25)}
-              left={`${Math.min(
-                100,
-                Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
-              )}%`}
-              width={pxToRem(2)}
-              bg={colors.spot}
-              transform="translateX(-1px)"
-            >
-              <Flex
-                position="absolute"
-                top={pxToRem(-4)}
-                left="50%"
-                size={pxToRem(8)}
-                borderRadius="full"
+                left={`${Math.min(
+                  100,
+                  Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
+                )}%`}
+                width={pxToRem(2)}
                 bg={colors.spot}
-                transform="translateX(-50%)"
-              />
-              <Text
-                fs="p6"
-                position="absolute"
-                bottom={pxToRem(-22)}
-                left="50%"
-                color={colors.spot}
-                transform="translateX(-50%)"
-                whiteSpace="nowrap"
+                transform="translateX(-1px)"
               >
-                {t("common:number", {
-                  value: priceAtTick(
-                    spotTick,
-                    token0.decimals,
-                    token1.decimals,
-                  ),
-                })}
-              </Text>
-            </SSpotLine>
-          </>
-        )}
-      </Flex>
+                <Flex
+                  position="absolute"
+                  top={pxToRem(-4)}
+                  left="50%"
+                  size={pxToRem(8)}
+                  borderRadius="full"
+                  bg={colors.spot}
+                  transform="translateX(-50%)"
+                />
+                <Text
+                  fs="p6"
+                  position="absolute"
+                  bottom={pxToRem(-22)}
+                  left="50%"
+                  color={colors.spot}
+                  transform="translateX(-50%)"
+                  whiteSpace="nowrap"
+                >
+                  {t("common:number", {
+                    value: priceAtTick(
+                      spotTick,
+                      token0.decimals,
+                      token1.decimals,
+                    ),
+                  })}
+                </Text>
+              </SSpotLine>
+            </>
+          )}
+        </Flex>
 
-      <SLiquidityLegend mt="s" wrap>
-        <Legend
-          color={colors.token1}
-          label={
-            scenario
-              ? t("vaults.explainer.legend.tokenB")
-              : t("vaults.chart.legend.token1", { symbol: token1.symbol })
-          }
-        />
-        <Legend
-          color={colors.token0}
-          label={
-            scenario
-              ? t("vaults.explainer.legend.tokenA")
-              : t("vaults.chart.legend.token0", { symbol: token0.symbol })
-          }
-        />
-        <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
-        <Legend
-          color={colors.rangeFill}
-          label={t("vaults.chart.legend.ranges")}
-        />
-      </SLiquidityLegend>
+        <SLiquidityLegend mt="s" wrap>
+          <Legend
+            color={colors.token1}
+            label={
+              scenario
+                ? t("vaults.explainer.legend.tokenB")
+                : t("vaults.chart.legend.token1", { symbol: token1.symbol })
+            }
+          />
+          <Legend
+            color={colors.token0}
+            label={
+              scenario
+                ? t("vaults.explainer.legend.tokenA")
+                : t("vaults.chart.legend.token0", { symbol: token0.symbol })
+            }
+          />
+          <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
+          <Legend
+            color={colors.rangeFill}
+            label={t("vaults.chart.legend.ranges")}
+          />
+        </SLiquidityLegend>
+      </Flex>
     </Flex>
   )
 }
