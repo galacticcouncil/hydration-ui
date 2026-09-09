@@ -152,6 +152,10 @@ export const useWrapTransaction = (
 
   const tx = useWrapEvmTransaction(transaction)
 
+  if (transaction.initialError) {
+    return transaction
+  }
+
   return account?.isMultisig && account.multisigSignerAddress
     ? wrapInMultisig(tx, account.multisigSignerAddress)
     : tx

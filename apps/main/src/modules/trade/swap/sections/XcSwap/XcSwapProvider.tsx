@@ -209,7 +209,10 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
     useXcSwapRequiredWalletMode({ form, isCrossChain })
 
   const { onSubmit, isSubmitting } = useXcSwapSubmit({
+    form,
     quote: isQuoteRefreshing ? null : quote,
+    maxSwapSellBalance,
+    maxTwapSellBalance,
   })
 
   return (

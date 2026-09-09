@@ -9,10 +9,10 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { MarketSellAllAlert } from "@/modules/trade/swap/sections/Market/MarketSellAllAlert"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { useTransactionsStore } from "@/states/transactions"
+import { TransactionActions, useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
-export const useSubmitSwap = () => {
+export const useSubmitSwap = (actions?: TransactionActions) => {
   const { t } = useTranslation(["common", "trade"])
   const { sdk } = useRpcProvider()
   const { account } = useAccount()
@@ -26,10 +26,7 @@ export const useSubmitSwap = () => {
   const { createTransaction } = useTransactionsStore()
 
   return useMutation({
-    mutationFn: async ([values, swap]: [
-      MarketFormValues,
-      Trade,
-    ]): Promise<void> => {
+    mutationFn: async ([values, swap]: [MarketFormValues, Trade]) => {
       const { sellAsset, buyAsset } = values
       const { amountIn, amountOut, type } = swap
 
@@ -72,29 +69,35 @@ export const useSubmitSwap = () => {
 
       const isSellAll = tx.name === "RouterSellAll"
 
-      await createTransaction({
-        tx: tx.get(),
-        activity: "swap",
-        alerts: isSellAll
-          ? [
-              {
-                requiresUserConsent: false,
-                variant: "warning",
-                description: React.createElement(MarketSellAllAlert, {
-                  asset: sellAsset,
-                }),
-              },
-            ]
-          : [],
-        toasts: {
-          submitted: t(
-            `trade:market.swap.${toLowerCase(type)}.loading`,
-            params,
-          ),
-          success: t(`trade:market.swap.${toLowerCase(type)}.success`, params),
-          error: t(`trade:market.swap.${toLowerCase(type)}.error`, params),
+      return createTransaction(
+        {
+          tx: tx.get(),
+          activity: "swap",
+          alerts: isSellAll
+            ? [
+                {
+                  requiresUserConsent: false,
+                  variant: "warning",
+                  description: React.createElement(MarketSellAllAlert, {
+                    asset: sellAsset,
+                  }),
+                },
+              ]
+            : [],
+          toasts: {
+            submitted: t(
+              `trade:market.swap.${toLowerCase(type)}.loading`,
+              params,
+            ),
+            success: t(
+              `trade:market.swap.${toLowerCase(type)}.success`,
+              params,
+            ),
+            error: t(`trade:market.swap.${toLowerCase(type)}.error`, params),
+          },
         },
-      })
+        actions,
+      )
     },
   })
 }

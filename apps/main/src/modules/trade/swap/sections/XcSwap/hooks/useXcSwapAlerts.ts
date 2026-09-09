@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { TradeType } from "@/api/trade"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { pickPrimaryXcSwapAlert } from "@/modules/trade/swap/sections/XcSwap/lib/pickPrimaryXcSwapAlert"
 import { getXcSwapErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapErrorMessages"
@@ -30,7 +31,13 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
     isWalletCompatible,
   } = useXcSwap()
   const { watch } = useFormContext<XcSwapFormValues>()
-  const sellAsset = watch("sellAsset")
+  const [sellAsset, sellAmount, buyAmount, type] = watch([
+    "sellAsset",
+    "sellAmount",
+    "buyAmount",
+    "type",
+  ])
+  const hasTradeAmount = type === TradeType.Sell ? !!sellAmount : !!buyAmount
 
   const sellAssetUnsupported =
     !!sellAsset && originAssetMap.size > 0 && !originAssetMap.has(sellAsset.id)
@@ -59,7 +66,7 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
       })
     }
 
-    if (quoteError) {
+    if (quoteError && hasTradeAmount) {
       blockingAlerts.push({
         key: "quote-error",
         message: quoteError.message,
@@ -87,6 +94,7 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
       ),
     }
   }, [
+    hasTradeAmount,
     isWalletCompatible,
     quote,
     quoteError,

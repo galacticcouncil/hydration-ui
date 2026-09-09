@@ -60,7 +60,7 @@ export const PoolStatsShell = ({
         as={Flex}
         sx={{ flex: 1, gap: "m", flexDirection: "column", ...sx }}
       >
-        <Flex direction="column" gap="base">
+        <Flex direction="column" gap="base" sx={{ flexShrink: 0 }}>
           <ToggleGroup
             type="single"
             value={type}
@@ -77,7 +77,13 @@ export const PoolStatsShell = ({
             <Flex justify="flex-end">{header}</Flex>
           )}
         </Flex>
-        {type === "chart" ? renderChart(true) : values}
+        {type === "chart" ? (
+          <Flex flex={1} direction="column" sx={{ minHeight: 0 }}>
+            {renderChart(true)}
+          </Flex>
+        ) : (
+          values
+        )}
       </Paper>
     )
   }
@@ -86,15 +92,20 @@ export const PoolStatsShell = ({
 
   return (
     <Flex gap="xl" mb={mb} sx={sx}>
-      <Paper p={["secondary", "primary"]} flex={2.5}>
-        {header ? (
-          <Flex direction="column" gap="l">
-            <Flex>{header}</Flex>
-            {renderChart(false)}
+      <Paper
+        p={["secondary", "primary"]}
+        flex={2.5}
+        as={Flex}
+        sx={{ flexDirection: "column" }}
+      >
+        {header && (
+          <Flex sx={{ flexShrink: 0 }} mb="l">
+            {header}
           </Flex>
-        ) : (
-          renderChart(false)
         )}
+        <Flex flex={1} direction="column" sx={{ minHeight: 0 }}>
+          {renderChart(false)}
+        </Flex>
       </Paper>
 
       <Paper p={["secondary", "primary"]} flex={1}>

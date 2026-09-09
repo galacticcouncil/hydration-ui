@@ -41,7 +41,6 @@ export const VaultStats = ({
 
   return (
     <PoolStatsShell
-      mb="xl"
       values={<VaultValues vault={vault} />}
       renderChartHeader={
         options.length > 1
@@ -132,7 +131,7 @@ const VaultValues = ({ vault }: { vault: VaultTable }) => {
       {rows.map((row, index) => (
         <Flex key={row.label} direction="column" gap="xl">
           {index > 0 && <Separator mx="-xl" />}
-          <ValueStats label={row.label} value={row.value} wrap />
+          <ValueStats size="medium" label={row.label} value={row.value} wrap />
         </Flex>
       ))}
     </Flex>

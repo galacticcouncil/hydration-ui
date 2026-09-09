@@ -60,6 +60,8 @@ export type TransactionCommon = {
   alerts?: TransactionAlert[]
   executedAmount?: TExecutedAmount
   activity?: ActivityType
+  /** When set, the review modal opens directly in the error state (no tx to sign). */
+  initialError?: string
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -228,6 +230,13 @@ export const getTxResultBlockHeight = (
   return null
 }
 
+export class TransactionClosedError extends Error {
+  constructor() {
+    super("Transaction closed")
+    this.name = "TransactionClosedError"
+  }
+}
+
 export const isBridgeTransaction = (meta: TransactionMeta) => {
   return (
     meta.type === TransactionType.Xcm &&
@@ -297,7 +306,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
           },
           onClose: () => {
             options?.onClose?.()
-            reject("Transaction closed")
+            reject(new TransactionClosedError())
           },
         }
         return {

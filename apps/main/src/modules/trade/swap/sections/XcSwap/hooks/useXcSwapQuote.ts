@@ -113,6 +113,7 @@ export const useXcSwapQuote = ({
   const {
     data: xcTrade,
     isLoading: isXcQuoteLoading,
+    isFetching: isXcQuoteFetching,
     isPlaceholderData: isXcPlaceholderData,
     error: xcQuoteError,
   } = useQuery({
@@ -166,6 +167,7 @@ export const useXcSwapQuote = ({
   const {
     data: omnipoolTrade,
     isLoading: isOmnipoolQuoteLoading,
+    isFetching: isOmnipoolQuoteFetching,
     isPlaceholderData: isOmnipoolPlaceholderData,
     error: omnipoolQuoteError,
   } = useQuery({
@@ -187,6 +189,7 @@ export const useXcSwapQuote = ({
   const {
     data: twap,
     isLoading: isTwapInitialLoading,
+    isFetching: isTwapQuoteFetching,
     isPlaceholderData: isTwapPlaceholderData,
   } = useQuery({
     ...bestSellTwapQuery(
@@ -201,7 +204,8 @@ export const useXcSwapQuote = ({
     placeholderData: twapBudget ? keepPreviousData : undefined,
   })
 
-  const isTwapPreviousData = twapEnabled && isTwapPlaceholderData
+  const isTwapPreviousData =
+    twapEnabled && isTwapQuoteFetching && isTwapPlaceholderData
 
   const isTwapLoading = isOnChainBuy
     ? isOmnipoolQuoteLoading || isTwapInitialLoading
@@ -250,10 +254,11 @@ export const useXcSwapQuote = ({
   const isQuoteRefreshing =
     !isInputSettled ||
     (isCrossChain
-      ? isXcPlaceholderData
+      ? isXcQuoteFetching && isXcPlaceholderData
       : isSingleTrade
-        ? isOmnipoolPlaceholderData
-        : isOmnipoolPlaceholderData || isTwapPreviousData)
+        ? isOmnipoolQuoteFetching && isOmnipoolPlaceholderData
+        : (isOmnipoolQuoteFetching && isOmnipoolPlaceholderData) ||
+          isTwapPreviousData)
 
   const isQuoteLoading = isCrossChain
     ? isXcQuoteLoading
