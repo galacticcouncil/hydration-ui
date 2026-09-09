@@ -1665,13 +1665,33 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.6.0.tgz#736352036931b9e2bad5f38f651c1506ae70daf1"
-  integrity sha512-DXAzIiNfWEXr558pslZeOuLksfM5m122V3VCu+Wq2l5NiHqCiwFsr1i2U0zxcW4yyyih2Etf9sOwEoTst6zLkQ==
+"@galacticcouncil/xc-cfg@2.6.1-pr364-c761409":
+  version "2.6.1-pr364-c761409"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.6.1-pr364-c761409.tgz#164da64ea8395b6c871a148914db14b9b12537bf"
+  integrity sha512-1/gjUyOO0nRhpMTRpxv1QRMJf9Q4Fm4SfsqqMmVs6A3VIwL47nI9bKsbrzVbPYJrckG+pvUwdZfuvDcX+4Smmg==
   dependencies:
-    "@galacticcouncil/xc-core" "^2.5.0"
+    "@galacticcouncil/xc-core" "2.5.1-pr364-c761409"
     "@thi.ng/memoize" "^4.0.2"
+
+"@galacticcouncil/xc-core@2.5.1-pr364-c761409":
+  version "2.5.1-pr364-c761409"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-2.5.1-pr364-c761409.tgz#ac4d748a5bf064b549aa4eb0bb9c41941c87a6bc"
+  integrity sha512-HCcU8YLHJT1AhmB/ycmJ3nVA8NDkiXXXYLheKIAk/JhImFUCV9hEnE04k47A2vk8wLmB4+tp1n7c3ZQgdyiS3Q==
+  dependencies:
+    "@mysten/sui" "^1.21.2"
+    "@noble/hashes" "^1.6.1"
+    "@scure/base" "^2.2.0"
+    "@wormhole-foundation/sdk-base" "6.1.4"
+    "@wormhole-foundation/sdk-connect" "6.1.4"
+    "@wormhole-foundation/sdk-definitions" "6.1.4"
+    "@wormhole-foundation/sdk-definitions-ntt" "8.0.1"
+    "@wormhole-foundation/sdk-solana" "6.1.4"
+    "@wormhole-foundation/sdk-solana-core" "6.1.4"
+    "@wormhole-foundation/sdk-solana-ntt" "8.0.1"
+    big.js "^6.2.1"
+    bigint-buffer "^1.1.5"
+    bs58 "^6.0.0"
+    buffer "^6.0.3"
 
 "@galacticcouncil/xc-core@^2.5.0":
   version "2.5.0"
