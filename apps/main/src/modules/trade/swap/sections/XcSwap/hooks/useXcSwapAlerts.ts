@@ -26,6 +26,7 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
     originAssetMap,
     quote,
     quoteError,
+    submitError,
     requiredWalletMode,
     isWalletCompatible,
   } = useXcSwap()
@@ -77,6 +78,14 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
       }
     }
 
+    if (submitError) {
+      blockingAlerts.push({
+        key: "submit-error",
+        message: t("xc.swap.error.submitFailed"),
+        severity: "error",
+      })
+    }
+
     const primaryAlert = pickPrimaryXcSwapAlert(blockingAlerts)
     const alerts = primaryAlert ? [primaryAlert] : []
 
@@ -90,6 +99,7 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
     isWalletCompatible,
     quote,
     quoteError,
+    submitError,
     requiredWalletMode,
     sellAssetUnsupported,
     t,

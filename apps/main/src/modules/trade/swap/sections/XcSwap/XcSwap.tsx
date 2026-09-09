@@ -160,7 +160,7 @@ export const XcSwap: React.FC = () => {
                 "&:disabled": { cursor: "auto", opacity: 1 },
               }}
             >
-              {submitLabel}
+              {isSubmitLoading ? null : submitLabel}
             </LoadingButton>
           </AuthorizedAction>
         )}

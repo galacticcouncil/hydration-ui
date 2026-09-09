@@ -1,3 +1,5 @@
+import { useCallback } from "react"
+
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
 import { useSubmitTwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitTwap"
@@ -41,5 +43,14 @@ export const useXcSwapSubmit = ({ quote }: UseXcSwapSubmitParams) => {
   const isSubmitting =
     submit.isPending || submitOmnipool.isPending || submitTwap.isPending
 
-  return { onSubmit, isSubmitting }
+  const submitError =
+    submit.error ?? submitOmnipool.error ?? submitTwap.error ?? null
+
+  const resetSubmitError = useCallback(() => {
+    submit.reset()
+    submitOmnipool.reset()
+    submitTwap.reset()
+  }, [submit, submitOmnipool, submitTwap])
+
+  return { onSubmit, isSubmitting, submitError, resetSubmitError }
 }

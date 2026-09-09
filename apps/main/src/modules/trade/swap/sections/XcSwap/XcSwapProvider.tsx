@@ -4,7 +4,7 @@ import { useAccount, WalletMode } from "@galacticcouncil/web3-connect"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { createContext, useContext, useMemo } from "react"
+import { createContext, useContext, useEffect, useMemo } from "react"
 import { FormProvider } from "react-hook-form"
 
 import { useKrakenSpotPrice } from "@/api/external/kraken"
@@ -58,6 +58,7 @@ type XcSwapContextValue = {
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
   readonly quoteError: Error | null
+  readonly submitError: unknown
   readonly requiredWalletMode: WalletMode | null
   readonly isWalletCompatible: boolean
 }
@@ -87,6 +88,7 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   onSubmit: () => {},
   isLoading: false,
   quoteError: null,
+  submitError: undefined,
   requiredWalletMode: null,
   isWalletCompatible: true,
 })
@@ -208,9 +210,24 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
   const { requiredWalletMode, isWalletCompatible } =
     useXcSwapRequiredWalletMode({ form, isCrossChain })
 
-  const { onSubmit, isSubmitting } = useXcSwapSubmit({
-    quote: isQuoteRefreshing ? null : quote,
-  })
+  const { onSubmit, isSubmitting, submitError, resetSubmitError } =
+    useXcSwapSubmit({
+      quote: isQuoteRefreshing ? null : quote,
+    })
+
+  useEffect(() => {
+    const subscription = form.watch((_, { type }) => {
+      if (type !== "change") {
+        return
+      }
+
+      resetSubmitError()
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [form, resetSubmitError])
 
   return (
     <XcSwapContext.Provider
@@ -239,6 +256,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         onSubmit,
         isLoading: isOriginLoading || isDestLoading || isSubmitting,
         quoteError,
+        submitError,
         requiredWalletMode,
         isWalletCompatible,
       }}
