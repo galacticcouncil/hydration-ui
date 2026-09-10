@@ -112,7 +112,6 @@ describe("the ± pill is an input method, not a source", () => {
   })
 
   it("applies the percentage to the number on screen when flipped", () => {
-    // Market 2 BUY per SELL shows as 0.5 SELL per BUY; +10% of that is 0.55.
     const state = run(flipped, { type: "pct", value: "10", market: "2" })
 
     expect(viewQuotedPrice(state, "2").display).toBe("0.55")
@@ -177,7 +176,6 @@ describe("pair changes", () => {
 
 describe("marketPriceFromQuote", () => {
   it("returns BUY per SELL, accounting for decimals", () => {
-    // 1 SELL (12dp) buys 2 BUY (6dp).
     const price = marketPriceFromQuote(
       { amountIn: 1_000_000_000_000n, amountOut: 2_000_000n },
       12,

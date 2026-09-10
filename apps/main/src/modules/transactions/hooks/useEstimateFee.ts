@@ -75,7 +75,7 @@ export const useEstimateFee = (
       }
     },
     enabled:
-      isLoaded &&
+      isReady &&
       !!anyTx &&
       !!feeAsset &&
       !isLoadingFeePaymentAssetId &&

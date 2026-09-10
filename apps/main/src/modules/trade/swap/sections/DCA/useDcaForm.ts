@@ -12,17 +12,14 @@ import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { useEffect } from "react"
-import { FieldPath, useForm } from "react-hook-form"
+import { FieldPath } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { useAccountBalances } from "@/api/balances"
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import i18n from "@/i18n"
-import {
-  getSharedSellAmount,
-  useSharedSellAmountSync,
-} from "@/modules/trade/swap/lib/useSharedSellAmount"
+import { useTradeForm } from "@/modules/trade/swap/lib/useTradeForm"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -264,7 +261,7 @@ export const useDcaForm = ({
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
-    sellAmount: getSharedSellAmount(),
+    sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
     duration: DEFAULT_DCA_DURATION,
     orders: {
@@ -274,15 +271,13 @@ export const useDcaForm = ({
     limitPrice: "",
   }
 
-  const form = useForm<DcaFormValues>({
+  const form = useTradeForm<DcaFormValues>({
     mode: "onChange",
     defaultValues,
     resolver: standardSchemaResolver(
       useSchema(account, limitOrderMaxBalance, openBudgetOrderMaxBalance),
     ),
   })
-
-  useSharedSellAmountSync(form)
 
   const { trigger, getValues } = form
 

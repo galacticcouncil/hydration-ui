@@ -9,7 +9,7 @@ import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import {
   isOrderStatus,
   OrderStatus,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {

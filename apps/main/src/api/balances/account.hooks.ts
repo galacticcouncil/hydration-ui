@@ -72,6 +72,11 @@ export const useAccountBalances = () => {
     [balances],
   )
 
+  const isBalanceLoaded = useCallback(
+    (assetId: string) => assetId in balances,
+    [balances],
+  )
+
   const isBalanceLoading = account
     ? isBalancesPending || isMaxWithdrawAllPending || !balanceFilter
     : false
@@ -79,6 +84,7 @@ export const useAccountBalances = () => {
   return {
     balances,
     isBalanceLoading,
+    isBalanceLoaded,
     getBalance,
     getTransferableBalance,
   }

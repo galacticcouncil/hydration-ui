@@ -1,12 +1,12 @@
 import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_STALE_TIME, NeckworkClient } from "."
+import { NECKWORK_BASE_STALE_TIME, NeckworkClient } from "."
 
 export const omnipoolVolumeQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "omnipoolVolumes"],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/pools/omnipool/volumes", {
         params: { query: { period: "24h" } },
@@ -14,7 +14,7 @@ export const omnipoolVolumeQuery = (client: NeckworkClient) =>
 
       if (!data) throw new Error("Neckwork API returned no omnipool volumes")
 
-      return Array.from(data.items).map((item) => ({
+      return data.items.map((item) => ({
         assetId: item.assetId,
         assetVolNorm: item.volumeUsd,
       }))
@@ -24,7 +24,7 @@ export const omnipoolVolumeQuery = (client: NeckworkClient) =>
 export const stablepoolVolumeQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "stablepoolVolumes"],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/pools/stableswap/volumes", {
         params: { query: { period: "24h" } },
@@ -32,7 +32,7 @@ export const stablepoolVolumeQuery = (client: NeckworkClient) =>
 
       if (!data) throw new Error("Neckwork API returned no stablepool volumes")
 
-      return Array.from(data.items).map((item) => ({
+      return data.items.map((item) => ({
         poolId: item.poolId,
         poolVolNorm: item.volumeUsd,
       }))
@@ -42,7 +42,7 @@ export const stablepoolVolumeQuery = (client: NeckworkClient) =>
 export const omnipoolYieldMetricsQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "omnipoolYieldMetrics", "30d"],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/pools/omnipool/yield", {
         params: { query: { window: "30d" } },
@@ -50,7 +50,7 @@ export const omnipoolYieldMetricsQuery = (client: NeckworkClient) =>
 
       if (!data) throw new Error("Neckwork API returned no omnipool yield")
 
-      return Array.from(data.items).map((item) => ({
+      return data.items.map((item) => ({
         assetId: item.assetId,
         fee: item.feeAprPerc,
       }))
@@ -60,7 +60,7 @@ export const omnipoolYieldMetricsQuery = (client: NeckworkClient) =>
 export const stablepoolYieldMetricsQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "stablepoolYieldMetrics", "30d"],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/pools/stableswap/yield", {
         params: { query: { window: "30d" } },
@@ -68,7 +68,7 @@ export const stablepoolYieldMetricsQuery = (client: NeckworkClient) =>
 
       if (!data) throw new Error("Neckwork API returned no stablepool yield")
 
-      return Array.from(data.items).map((item) => ({
+      return data.items.map((item) => ({
         poolId: item.poolId,
         feeAprPerc: item.feeAprPerc,
         feeApyPerc: item.feeApyPerc,
@@ -79,7 +79,7 @@ export const stablepoolYieldMetricsQuery = (client: NeckworkClient) =>
 export const xykVolumeQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "xykVolumes"],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/pools/xyk/volumes", {
         params: { query: { period: "24h" } },
@@ -87,7 +87,7 @@ export const xykVolumeQuery = (client: NeckworkClient) =>
 
       if (!data) throw new Error("Neckwork API returned no XYK volumes")
 
-      return Array.from(data.items).map((item) => ({
+      return data.items.map((item) => ({
         poolId: safeConvertPublicKeyToSS58(item.poolAccount),
         assetId: item.assetA,
         assetIdB: item.assetB,

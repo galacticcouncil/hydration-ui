@@ -21,7 +21,7 @@ export const LimitSwitcher: FC = () => {
     <AssetSwitcher
       assetInId={sellAsset?.id ?? ""}
       assetOutId={buyAsset?.id ?? ""}
-      priceDisabled
+      hidePrice
       disabled={isDisabled}
       onSwitchAssets={() => switchAssets.mutate()}
     />

@@ -12,6 +12,7 @@ import {
   MicroButton,
   Skeleton,
   Text,
+  Tooltip,
 } from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
@@ -24,7 +25,8 @@ import {
 import { defaultAssetValueFormatter } from "./AssetInput.utils"
 
 export type AssetInputProps = {
-  label?: ReactNode
+  label?: string
+  labelAdornment?: ReactNode
   balanceLabel?: string
   symbol?: string
   value?: string
@@ -43,6 +45,7 @@ export type AssetInputProps = {
   disabledInput?: boolean
   isLocked?: boolean
   onLock?: () => void
+  lockLabel?: string
   hideInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
@@ -61,6 +64,7 @@ export const AssetInput = ({
   displayValue,
   displayValueLoading,
   label,
+  labelAdornment,
   balanceLabel,
   maxBalance,
   maxBalanceLoading,
@@ -80,6 +84,7 @@ export const AssetInput = ({
   onAsssetBtnClick,
   onLock,
   isLocked,
+  lockLabel,
   className,
 }: AssetInputProps) => {
   const usedMaxBalance = maxButtonBalance || maxBalance
@@ -91,6 +96,8 @@ export const AssetInput = ({
     }
   }
 
+  const isLoading = valueLoading || displayValueLoading || loading
+
   return (
     <Flex
       direction="column"
@@ -100,8 +107,11 @@ export const AssetInput = ({
       sx={{ position: "relative", minWidth: 0, overflow: "hidden" }}
       className={className}
     >
-      <Flex align="center" gap="s" justify="space-between" sx={{ minWidth: 0 }}>
-        {label && <FormLabel>{label}</FormLabel>}
+      <Flex align="center" gap="s" justify="space-between" minWidth={0}>
+        <Flex align="center" gap="s" minWidth={0}>
+          {label && <FormLabel>{label}</FormLabel>}
+          {labelAdornment}
+        </Flex>
         {!ignoreBalance && (
           <Flex
             align="center"
@@ -154,8 +164,6 @@ export const AssetInput = ({
             minWidth: 0,
             overflow: "hidden",
             display: "grid",
-            // the optional lock button sits between the asset button and the
-            // amount input, so it needs its own auto column
             gridTemplateColumns: [
               hideInput ? "minmax(0, 1fr)" : "auto",
               onLock ? "auto" : null,
@@ -174,17 +182,22 @@ export const AssetInput = ({
             disabled={!!modalDisabled || !!disabled}
           />
           {onLock && (
-            <Button
-              variant={isLocked ? "accent" : "tertiary"}
-              outline
-              onClick={onLock}
-              sx={{ p: 0, size: "2rem" }}
-            >
-              <Icon
-                component={isLocked ? LockKeyhole : LockKeyholeOpen}
-                size="s"
-              />
-            </Button>
+            <Tooltip text={lockLabel} size="small" asChild>
+              <Button
+                variant={isLocked ? "accent" : "tertiary"}
+                outline
+                onClick={onLock}
+                p={0}
+                width="2rem"
+                height="2rem"
+                aria-label={lockLabel}
+              >
+                <Icon
+                  component={isLocked ? LockKeyhole : LockKeyholeOpen}
+                  size="s"
+                />
+              </Button>
+            </Tooltip>
           )}
           {!hideInput && (
             <Flex
@@ -219,8 +232,15 @@ export const AssetInput = ({
                 />
               )}
 
-              {amountError ? (
-                <FormError lh={1} truncate width="100%" align="right">
+              {amountError && !isLoading ? (
+                <FormError
+                  fs="p6"
+                  fw={400}
+                  lh={1}
+                  truncate
+                  width="100%"
+                  align="right"
+                >
                   {amountError}
                 </FormError>
               ) : (
@@ -229,6 +249,7 @@ export const AssetInput = ({
                     color={getToken("text.low")}
                     fs="p6"
                     fw={400}
+                    lh={1}
                     truncate
                     width="100%"
                     align="right"
@@ -244,7 +265,7 @@ export const AssetInput = ({
             </Flex>
           )}
         </Flex>
-        {assetError && (
+        {assetError && !isLoading && (
           <FormError lh={1} ml="auto">
             {assetError}
           </FormError>

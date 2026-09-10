@@ -178,7 +178,7 @@ const newCreatedFarmsQuery = (
   indexerSdk: IndexerSdk,
 ) =>
   queryOptions({
-    enabled: rpcProvider.isApiLoaded,
+    enabled: rpcProvider.isReady,
     queryKey: ["newCreatedFarms"],
     queryFn: async () => {
       const blockTimeMs = await rpcProvider.queryClient.ensureQueryData(

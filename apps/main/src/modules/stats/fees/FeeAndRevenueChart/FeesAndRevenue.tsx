@@ -12,9 +12,6 @@ import {
 import {
   AnimatedValue,
   Box,
-  Chart,
-  chartColorScale,
-  ChartTimeRange,
   Flex,
   Paper,
   Select,
@@ -24,13 +21,9 @@ import {
   ToggleGroupItem,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
-import { barY, defineChart, stack } from "@tanstack/charts"
-import { scaleBand } from "@tanstack/charts/scales/band"
-import { scaleLinear } from "@tanstack/charts/scales/linear"
-import { tooltip } from "@tanstack/charts/tooltip"
-import { fold } from "@tanstack/charts/transform/fold"
-import { useMemo, useState } from "react"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useQueries } from "@tanstack/react-query"
+import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
@@ -49,19 +42,9 @@ const STREAM_KEYS = FEE_STREAMS.map(({ key }) => key)
 
 const CHART_HEIGHT = 380
 
-export type FeeSegmentRow = {
-  timestamp: string
-  stream: string
-  value: number
-}
-
-const BAR_RADIUS = 4
-const CHART_HEIGHT = 380
-
 export const FeesAndRevenue = () => {
   const { t } = useTranslation(["common", "stats"])
   const { gte } = useBreakpoints()
-  const { getToken } = useTheme()
   const [timeRange, setTimeRange] = useState<TimeRange>("1M")
   const [viewMode, setViewMode] = useState<FeeViewMode>("protocol")
   const [activeFilter, setActiveFilter] = useState<FeeStreamKey | "all">("all")
@@ -119,88 +102,15 @@ export const FeesAndRevenue = () => {
     ]),
   )
 
-  const visibleKeys = useMemo(() => {
-    const keys = Object.keys(feesChartsData ?? {})
-    return activeFilter === "all"
-      ? keys
-      : keys.filter((key) => key === activeFilter)
-  }, [feesChartsData, activeFilter])
+  const selectedStream = activeFilter === "all" ? null : activeFilter
+  const visibleStreams = selectedStream ? [selectedStream] : STREAM_KEYS
+  const visibleRows = selectedStream
+    ? rows.filter(({ stream }) => stream === selectedStream)
+    : rows
 
-  const rows = useMemo(
-    () =>
-      fold(chartData, {
-        fields: visibleKeys as [string],
-        as: { key: "stream", value: "value" },
-      })
-        .filter(({ value }) => typeof value === "number")
-        .map<FeeSegmentRow>(({ timestamp, stream, value }) => ({
-          timestamp: String(timestamp),
-          stream,
-          value: Number(value),
-        })),
-    [chartData, visibleKeys],
-  )
-
-  const definition = useMemo(
-    () =>
-      defineChart({
-        marks: [
-          barY(rows, {
-            x: "timestamp",
-            y: "value",
-            color: "stream",
-            layout: stack({ order: visibleKeys }),
-            radius: BAR_RADIUS,
-          }),
-        ],
-        x: {
-          scale: () => scaleBand<string>().padding(0.3),
-          grid: true,
-          axis: {
-            line: true,
-            ticks: {
-              size: 0,
-              padding: 8,
-              format: formatXAxisTick,
-            },
-          },
-        },
-        y: {
-          scale: scaleLinear,
-          grid: true,
-          axis: {
-            line: true,
-            ticks: {
-              size: 0,
-              padding: 8,
-              format: (value) => t("number.compact", { value }),
-            },
-          },
-        },
-        color: chartColorScale(
-          Object.fromEntries(
-            visibleKeys.map((key) => [
-              key,
-              feesAndRevenueConfig[key]?.color ?? "accents.info.accent",
-            ]),
-          ),
-          getToken,
-        ),
-        focus: "group-x",
-        tooltip: {
-          use: tooltip,
-          sort: "color-domain",
-          anchor: { x: "value", y: "plot-top" },
-          placement: "top",
-        },
-      }),
-    [rows, visibleKeys, getToken, t],
-  )
-
-  const totalRevenue =
-    activeFilter === "all"
-      ? Array.from(fields.values()).reduce((acc, value = 0) => acc + value, 0)
-      : (fields.get(activeFilter) ?? 0)
+  const headlineTotal = selectedStream
+    ? (totals.byStream[selectedStream] ?? 0)
+    : totals.total
 
   const isBiggerScreen = gte("md")
 
@@ -258,14 +168,24 @@ export const FeesAndRevenue = () => {
         </Flex>
       </Flex>
 
-        <Box position="relative" flex={1}>
-          <Chart
-            definition={definition}
-            ariaLabel={t("stats:fees.chart.ariaLabel")}
+      <Box
+        height={CHART_HEIGHT}
+        sx={{
+          opacity: isRefetching ? 0.4 : 1,
+          transition: "opacity 150ms ease-in-out",
+        }}
+      >
+        <ChartState
+          isLoading={isLoading}
+          isError={isError}
+          isEmpty={!visibleRows.length}
+          variant="bar"
+          sx={{ height: "100%" }}
+        >
+          <FeesStackedBar
+            rows={visibleRows}
+            streams={visibleStreams}
             height={CHART_HEIGHT}
-            renderTooltipBody={({ points }) => (
-              <CustomTooltipContent points={points} />
-            )}
           />
         </ChartState>
       </Box>

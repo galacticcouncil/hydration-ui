@@ -97,7 +97,7 @@ const permitNonceQuery = (
 
   const enabled = options?.enabled || true
   return queryOptions({
-    enabled: enabled && isLoaded && !!evmAddress,
+    enabled: enabled && isReady && !!evmAddress,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "permitNonce", evmAddress],
     queryFn: async () => {
       const callPermitContract = getContract({

@@ -1,14 +1,12 @@
 import { PaperProps } from "@galacticcouncil/ui/components"
-import { DataProviderStatus } from "@galacticcouncil/utils"
 import { FC } from "react"
 
-import { useActiveIndexerStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
-import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
+import { TradeOrders } from "@/modules/trade/orders/TradeOrders/TradeOrders"
 import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
-import { TradeOrdersNeckwork } from "@/modules/trade/orders/TradeOrdersNeckwork/TradeOrdersNeckwork"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
-import { TradeChartNeckwork } from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork"
+import { SwapChart } from "@/modules/trade/swap/components/SwapChart/SwapChart"
+import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIntentsStore } from "@/states/intents"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
 export const useNeckworkTradeQueriesEnabled = (): boolean => {
@@ -18,29 +16,27 @@ export const useNeckworkTradeQueriesEnabled = (): boolean => {
   return isNeckworkEnabled && !isFork
 }
 
-export const useTradeDataSource = (): "neckwork" | "legacy" | "squid" => {
-  const isNeckworkEnabled = useNeckworkEnabled()
-  const { isFork } = useRpcProvider()
-  const { status } = useActiveIndexerStatus()
+export const useTradeDataSource = (): "neckwork" | "legacy" => {
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
 
-  if (isFork) return "legacy"
+  return neckworkEnabled ? "neckwork" : "legacy"
+}
 
-  if (isNeckworkEnabled) return "neckwork"
+export const useTradeOrdersDataSource = (): "neckwork" | "legacy" => {
+  const intentsEnabled = useIntentsStore((state) => state.enabled)
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
 
-  return status === DataProviderStatus.DEGRADED ||
-    status === DataProviderStatus.OFFLINE
-    ? "legacy"
-    : "squid"
+  if (intentsEnabled) return "legacy"
+
+  return neckworkEnabled ? "neckwork" : "legacy"
 }
 
 export const TRADE_CHART_BY_SOURCE = {
-  neckwork: TradeChartNeckwork,
-  legacy: TradeChartNeckwork,
-  squid: TradeChart,
+  neckwork: SwapChart,
+  legacy: TradeChartGrafana,
 } as const satisfies Record<string, FC<{ readonly height: number }>>
 
 export const TRADE_ORDERS_BY_SOURCE = {
-  neckwork: TradeOrdersNeckwork,
+  neckwork: TradeOrders,
   legacy: TradeOrdersHistory,
-  squid: TradeOrders,
 } as const satisfies Record<string, FC<PaperProps>>

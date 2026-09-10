@@ -1,19 +1,23 @@
-import { SliderTabs } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, useEffect, useState } from "react"
-import { Controller, FormProvider } from "react-hook-form"
+import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useAccountBalances } from "@/api/balances"
 import { bestSellQuery } from "@/api/trade"
+import { TradeFormShell } from "@/modules/trade/swap/components/TradeFormShell/TradeFormShell"
+import { TradeFormSubmit } from "@/modules/trade/swap/components/TradeFormSubmit"
 import { marketPriceFromQuote } from "@/modules/trade/swap/lib/quotedPrice"
 import { useQuotedPrice } from "@/modules/trade/swap/lib/quotedPrice.hook"
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
-import { DcaFooter } from "@/modules/trade/swap/sections/DCA/DcaFooter"
-import { DcaForm } from "@/modules/trade/swap/sections/DCA/DcaForm"
+import { DcaFields } from "@/modules/trade/swap/sections/DCA/DcaFields"
+import { DcaFooterNote } from "@/modules/trade/swap/sections/DCA/DcaFooterNote"
 import { DcaHealthFactor } from "@/modules/trade/swap/sections/DCA/DcaHealthFactor"
+import { DcaLimitedBudgetFields } from "@/modules/trade/swap/sections/DCA/DcaLimitedBudgetFields"
+import { DcaLimitPrice } from "@/modules/trade/swap/sections/DCA/DcaLimitPrice"
+import { DcaOpenBudgetFields } from "@/modules/trade/swap/sections/DCA/DcaOpenBudgetFields"
 import { DcaSummary } from "@/modules/trade/swap/sections/DCA/DcaSummary"
 import { DcaWarnings } from "@/modules/trade/swap/sections/DCA/DcaWarnings"
 import { useDcaTradeOrder } from "@/modules/trade/swap/sections/DCA/useDcaTradeOrder"
@@ -25,14 +29,15 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useMaxOrderBalance } from "@/modules/trade/swap/sections/DCA/useMaxOrderBalance"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
-import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { maxBalanceError } from "@/utils/validators"
 
-import { DcaOrdersMode, DEFAULT_DCA_DURATION, useDcaForm } from "./useDcaForm"
+import { DcaOrdersMode, useDcaForm } from "./useDcaForm"
 
 export const Dca: FC = () => {
-  const { t } = useTranslation(["trade"])
+  const { t } = useTranslation("common")
+  const isIceEnabled = useIsIceEnabled()
   const { isBalanceLoading } = useAccountBalances()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { limitOrderMaxBalance, openBudgetOrderMaxBalance } =
@@ -80,7 +85,7 @@ export const Dca: FC = () => {
       buyAsset?.decimals,
     ),
     pair: [sellAsset?.id ?? "", buyAsset?.id ?? ""],
-    defaultInverted: true,
+    defaultInverted: false,
     onCanonicalChange: (canonical) =>
       setValue("limitPrice", canonical, { shouldValidate: true }),
   })
@@ -155,97 +160,55 @@ export const Dca: FC = () => {
           (values) => order && submitDcaOrder.mutate([values, order]),
         )}
       >
-        <Controller
-          control={form.control}
-          name="orders"
-          render={({ field }) => (
-            <SliderTabs
-              sx={{ mt: "m" }}
-              options={[
-                {
-                  id: DcaOrdersMode.Auto,
-                  label: t("trade:trade.orders.limitedBudget"),
-                },
-                {
-                  id: DcaOrdersMode.OpenBudget,
-                  label: t("trade:trade.orders.openBudget"),
-                },
-              ]}
-              selected={
-                field.value.type === DcaOrdersMode.OpenBudget
-                  ? DcaOrdersMode.OpenBudget
-                  : DcaOrdersMode.Auto
+        <TradeFormShell
+          fields={
+            <DcaFields
+              maxBalance={
+                isOpenBudget ? openBudgetOrderMaxBalance : limitOrderMaxBalance
               }
-              onSelect={({ id: type }) => {
-                form.reset({
-                  ...form.getValues(),
-                  orders: {
-                    ...(type === DcaOrdersMode.OpenBudget
-                      ? { type, useSplitTrade: true }
-                      : { type }),
-                  },
-                  duration: DEFAULT_DCA_DURATION,
-                })
-
-                  form.reset({
-                    ...form.getValues(),
-                    orders: {
-                      ...(type === DcaOrdersMode.OpenBudget
-                        ? { type, useSplitTrade: true }
-                        : { type }),
-                    },
-                    duration: DEFAULT_DCA_DURATION,
-                  })
-
-                  form.trigger()
-                }}
-              >
-                <ToggleGroupItem value={DcaOrdersMode.Auto}>
-                  {t("trade:trade.orders.limitedBudget")}
-                </ToggleGroupItem>
-                <ToggleGroupItem value={DcaOrdersMode.OpenBudget}>
-                  {t("trade:trade.orders.openBudget")}
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </Box>
-          )}
-        />
-        <DcaForm
-          maxBalance={
-            isOpenBudget ? openBudgetOrderMaxBalance : limitOrderMaxBalance
+            />
           }
-          quotedPrice={quotedPrice}
-        />
-        <DcaSummary
-          order={order}
-          isLoading={isLoading}
-          quotedPrice={quotedPrice}
-        />
-        <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
-        <DcaWarnings
-          isFormValid={isFormValid}
-          order={order}
-          isOpenBudget={isOpenBudget}
-          warnings={warnings}
-          healthFactor={healthFactor}
-          priceImpactLossAccepted={priceImpactLossAccepted}
-          healthFactorRiskAccepted={healthFactorRiskAccepted}
-          onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
-          onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
-        />
-        <DcaHealthFactor
-          order={order}
-          healthFactor={isHealthFactorShown ? healthFactor : undefined}
-          isLoading={isLoading}
-        />
-        <SwapSectionSeparator />
-        <DcaFooter
-          isEnabled={isSubmitEnabled}
-          isLoading={submitDcaOrder.isPending}
-          isOpenBudget={isOpenBudget}
-          order={order}
-          priceImpactLevel={priceImpactLevel}
-        />
+          submit={
+            <TradeFormSubmit
+              isEnabled={isSubmitEnabled}
+              isLoading={submitDcaOrder.isPending}
+            >
+              {t("schedule")}
+            </TradeFormSubmit>
+          }
+          summary={
+            <DcaFooterNote
+              isOpenBudget={isOpenBudget}
+              order={order}
+              priceImpactLevel={priceImpactLevel}
+            />
+          }
+        >
+          {isOpenBudget ? <DcaOpenBudgetFields /> : <DcaLimitedBudgetFields />}
+          {isIceEnabled && <DcaLimitPrice quotedPrice={quotedPrice} />}
+          <DcaSummary
+            order={order}
+            isLoading={isLoading}
+            quotedPrice={quotedPrice}
+          />
+          <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
+          <DcaWarnings
+            isFormValid={isFormValid}
+            order={order}
+            isOpenBudget={isOpenBudget}
+            warnings={warnings}
+            healthFactor={healthFactor}
+            priceImpactLossAccepted={priceImpactLossAccepted}
+            healthFactorRiskAccepted={healthFactorRiskAccepted}
+            onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
+            onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
+          />
+          <DcaHealthFactor
+            order={order}
+            healthFactor={isHealthFactorShown ? healthFactor : undefined}
+            isLoading={isLoading}
+          />
+        </TradeFormShell>
       </form>
     </FormProvider>
   )

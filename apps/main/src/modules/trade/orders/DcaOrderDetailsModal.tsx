@@ -27,13 +27,13 @@ import {
   getDcaTradeProgress,
   useDcaFundingBalance,
 } from "@/modules/trade/orders/lib/dcaProgress"
-import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import {
   DcaOrderData,
   IntentDcaOrderData,
   isDcaScheduleOrder,
   OrderStatus,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
+import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
 
 type Props = {
@@ -72,19 +72,20 @@ export const DcaOrderDetailsModal = ({
     : `${t("remaining")} / ${t("budget")}`
 
   const spentOrBudgetValue = details.isOpenBudget
-    ? `${
-        details.fromAmountExecuted
-          ? `${t("number", { value: details.fromAmountExecuted })} `
-          : ""
-      }${details.from.symbol}`
-    : `${t("number", {
-        value:
+    ? details.fromAmountExecuted
+      ? t("currency", {
+          value: details.fromAmountExecuted,
+          symbol: details.from.symbol,
+        })
+      : details.from.symbol
+    : t("trade:trade.orders.dcaDetail.remainingBudget", {
+        remaining:
           details.status === OrderStatus.Completed
             ? "0"
             : (details.fromAmountRemaining ?? details.fromAmountBudget),
-      })}/${t("number", {
-        value: details.fromAmountBudget,
-      })} ${details.from.symbol}`
+        budget: details.fromAmountBudget,
+        symbol: details.from.symbol,
+      })
 
   const receivedValue = details.toAmountExecuted
     ? t("currency", {
@@ -195,7 +196,11 @@ export const DcaOrderDetailsModal = ({
                 label={t("trade:trade.orders.dcaDetail.limitPrice")}
                 value={
                   orderRate
-                    ? `${t("number", { value: orderRate })} ${details.to.symbol} / ${details.from.symbol}`
+                    ? t("trade:trade.orders.pricePair", {
+                        value: orderRate,
+                        leftSymbol: details.to.symbol,
+                        rightSymbol: details.from.symbol,
+                      })
                     : "-"
                 }
               />
@@ -204,7 +209,11 @@ export const DcaOrderDetailsModal = ({
                 label={t("trade:trade.orders.limit.marketPrice")}
                 value={
                   marketRate
-                    ? `${t("number", { value: marketRate })} ${details.to.symbol} / ${details.from.symbol}`
+                    ? t("trade:trade.orders.pricePair", {
+                        value: marketRate,
+                        leftSymbol: details.to.symbol,
+                        rightSymbol: details.from.symbol,
+                      })
                     : "-"
                 }
               />
@@ -228,7 +237,7 @@ export const DcaOrderDetailsModal = ({
                     ) : (
                       <Chip variant="secondary" size="small">
                         {t("trade:trade.orders.limit.away", {
-                          pct: Math.abs(distancePct).toFixed(2),
+                          pct: Math.abs(distancePct),
                         })}
                       </Chip>
                     ))}
@@ -250,8 +259,6 @@ export const DcaOrderDetailsModal = ({
         )}
         <ModalContentDivider />
         <Flex justify="space-between" gap="base" pt="l" pb="xl">
-          {/* only a DCA schedule is indexed by neckwork - an intent TWAP
-              lives in chain state and has no explorer activity page */}
           {isDcaScheduleOrder(details) && (
             <Button variant="tertiary" outline asChild>
               <ExternalLink href={neckwork.activityDca(details.scheduleId)}>

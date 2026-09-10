@@ -2,10 +2,6 @@ import {
   omnipoolYieldMetricsQuery as neckworkOmnipoolYieldMetricsQuery,
   stablepoolYieldMetricsQuery as neckworkStablepoolYieldMetricsQuery,
 } from "@galacticcouncil/indexer/neckwork"
-import {
-  omnipoolYieldMetricsQuery,
-  stablepoolYieldMetricsQuery,
-} from "@galacticcouncil/indexer/squid"
 import { Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
@@ -15,10 +11,9 @@ import { useTranslation } from "react-i18next"
 
 import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
-import { neckworkClient, useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { AssetLogo } from "@/components/AssetLogo"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
-import { useNeckworkEnabled } from "@/states/neckwork"
 import { formatApyPercent } from "@/utils/formatApyPercent"
 
 export const AddLiquidityYield = ({
@@ -33,52 +28,23 @@ export const AddLiquidityYield = ({
   borrowApyData?: BorrowAssetApyData
 }) => {
   const { t } = useTranslation("common")
-  const squidClient = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
-
   const {
-    data: neckworkOmnipoolYieldMetrics,
-    isLoading: isNeckworkOmnipoolYieldMetricsLoading,
+    data: omnipoolYieldMetrics,
+    isLoading: isOmnipoolYieldMetricsLoading,
   } = useQuery({
     ...neckworkOmnipoolYieldMetricsQuery(neckworkClient),
-    enabled: neckworkEnabled && !!omnipoolId,
+    enabled: !!omnipoolId,
     select: (data) => data?.find((item) => item.assetId === omnipoolId),
   })
 
   const {
-    data: squidOmnipoolYieldMetrics,
-    isLoading: isSquidOmnipoolYieldMetricsLoading,
-  } = useQuery({
-    ...omnipoolYieldMetricsQuery(squidClient),
-    enabled: !neckworkEnabled && !!omnipoolId,
-    select: (data) => data?.find((item) => item.assetId === omnipoolId),
-  })
-
-  const {
-    data: neckworkStablepoolYieldMetrics,
-    isLoading: isNeckworkStablepoolYieldMetricsLoading,
+    data: stablepoolYieldMetrics,
+    isLoading: isStablepoolYieldMetricsLoading,
   } = useQuery({
     ...neckworkStablepoolYieldMetricsQuery(neckworkClient),
-    enabled: neckworkEnabled && !!stablepoolId,
+    enabled: !!stablepoolId,
     select: (data) => data?.find((item) => item.poolId === stablepoolId),
   })
-
-  const {
-    data: squidStablepoolYieldMetrics,
-    isLoading: isSquidStablepoolYieldMetricsLoading,
-  } = useQuery({
-    ...stablepoolYieldMetricsQuery(squidClient),
-    enabled: !neckworkEnabled && !!stablepoolId,
-    select: (data) => data?.find((item) => item.poolId === stablepoolId),
-  })
-
-  const isOmnipoolYieldMetricsLoading = neckworkEnabled
-    ? isNeckworkOmnipoolYieldMetricsLoading
-    : isSquidOmnipoolYieldMetricsLoading
-
-  const isStablepoolYieldMetricsLoading = neckworkEnabled
-    ? isNeckworkStablepoolYieldMetricsLoading
-    : isSquidStablepoolYieldMetricsLoading
 
   if (isOmnipoolYieldMetricsLoading || isStablepoolYieldMetricsLoading) {
     return <Skeleton width={50} height="100%" />
@@ -86,13 +52,9 @@ export const AddLiquidityYield = ({
 
   const isFarms = !!farms.length
 
-  const omnipoolFee = neckworkEnabled
-    ? (neckworkOmnipoolYieldMetrics?.fee ?? undefined)
-    : squidOmnipoolYieldMetrics?.fee?.toString()
+  const omnipoolFee = omnipoolYieldMetrics?.fee ?? undefined
 
-  const stablepoolFee = neckworkEnabled
-    ? (neckworkStablepoolYieldMetrics?.feeAprPerc ?? undefined)
-    : squidStablepoolYieldMetrics?.projectedAprPerc
+  const stablepoolFee = stablepoolYieldMetrics?.feeAprPerc ?? undefined
 
   const borrowSupplyMMApy = borrowApyData?.supplyMMApy
 

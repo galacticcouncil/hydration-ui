@@ -31,7 +31,7 @@ import {
   isIntentOrder,
   OrderData,
   OrderKind,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
@@ -154,8 +154,6 @@ export const useOpenOrdersColumns = () => {
 
         return (
           <Flex align="center" gap="base" justify="flex-end">
-            {/* only a DCA schedule has a neckwork activity page - an intent
-                is read straight from chain state */}
             {isDcaSchedule && (
               <Tooltip
                 text={t("openInExplorer")}

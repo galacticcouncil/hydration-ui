@@ -8,7 +8,6 @@ import {
 } from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 
-/** Swap sell/buy in lastTwo; price stays put. */
 const flipAmountSidesInLastTwo = (lastTwo: LastTwo): LastTwo => {
   const flip = (f: FieldName): FieldName =>
     f === "sell" ? "buy" : f === "buy" ? "sell" : "price"

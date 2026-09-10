@@ -11,14 +11,14 @@ export const useRemoveIntent = () => {
   const { createTransaction } = useTransactionsStore()
   const { account } = useAccount()
 
-  const { papiIce } = rpc
+  const { papi } = rpc
 
   return useMutation({
     mutationFn: async (intentId: bigint) => {
       if (!account) throw new Error("Account not found")
 
       return createTransaction({
-        tx: papiIce.tx.Intent.remove_intent({ id: intentId }),
+        tx: papi.tx.Intent.remove_intent({ id: intentId }),
         toasts: {
           success: t("trade.cancelIntent.success"),
           submitted: t("trade.cancelIntent.loading"),

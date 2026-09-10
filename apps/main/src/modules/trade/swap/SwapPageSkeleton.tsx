@@ -9,7 +9,7 @@ import {
 } from "@/modules/layout/components/LayoutSkeleton"
 import { AssetHeaderSkeleton } from "@/modules/layout/components/LayoutSkeleton/AssetHeaderSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
-import { TradeChartValuesSkeleton } from "@/modules/trade/swap/components/TradeChart/TradeChartValuesSkeleton"
+import { TradeChartValuesSkeleton } from "@/modules/trade/swap/components/TradeChartValuesSkeleton"
 import { TRADE_CHART_DESKTOP_HEIGHT } from "@/modules/trade/swap/SwapPageDesktop"
 import { TRADE_CHART_MOBILE_HEIGHT } from "@/modules/trade/swap/SwapPageMobile"
 

@@ -1,5 +1,4 @@
-import { stablepoolYieldMetricsQuery as neckworkStablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/neckwork"
-import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
+import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/neckwork"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
 import {
@@ -23,7 +22,7 @@ import {
   useExternalApys,
   useUserBorrowSummary,
 } from "@/api/borrow/queries"
-import { neckworkClient, useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import {
@@ -32,7 +31,6 @@ import {
   useAssets,
 } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
 type UnderlyingAssetApy = {
   id: string
@@ -59,8 +57,6 @@ export type BorrowAssetApyData = {
 }
 
 export const useBorrowAssetsApy = (assetIds: string[]) => {
-  const squidClient = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
   const { getAsset, getErc20AToken, getRelatedAToken } = useAssets()
   const { data: borrowReserves, isLoading: isLoadingBorrowReserves } =
     useBorrowReserves()
@@ -76,38 +72,19 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
 
   const assetIdsMemo = useStableArray(assetIds)
 
-  const {
-    data: neckworkYieldMetrics,
-    isLoading: isNeckworkYieldMetricsLoading,
-  } = useQuery({
-    ...neckworkStablepoolYieldMetricsQuery(neckworkClient),
-    enabled: neckworkEnabled,
-  })
-
-  const { data: squidYieldMetrics, isLoading: isSquidYieldMetricsLoading } =
-    useQuery({
-      ...stablepoolYieldMetricsQuery(squidClient),
-      enabled: !neckworkEnabled,
-    })
-
-  const isYieldMetricsLoading = neckworkEnabled
-    ? isNeckworkYieldMetricsLoading
-    : isSquidYieldMetricsLoading
+  const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
+    stablepoolYieldMetricsQuery(neckworkClient),
+  )
 
   const yieldsMap = useMemo<Map<string, number>>(() => {
     return new Map<string, number>(
-      neckworkEnabled
-        ? (neckworkYieldMetrics ?? []).flatMap<[string, number]>((item) =>
-            item.feeApyPerc === null
-              ? []
-              : [[item.poolId, Number(item.feeApyPerc)]],
-          )
-        : (squidYieldMetrics?.map((item) => [
-            item.poolId,
-            Number(item.projectedApyPerc),
-          ]) ?? []),
+      (yieldMetrics ?? []).flatMap<[string, number]>((item) =>
+        item.feeApyPerc === null
+          ? []
+          : [[item.poolId, Number(item.feeApyPerc)]],
+      ),
     )
-  }, [neckworkEnabled, neckworkYieldMetrics, squidYieldMetrics])
+  }, [yieldMetrics])
 
   const reserves = useMemo(
     () => borrowReserves?.formattedReserves ?? [],
@@ -410,35 +387,6 @@ export const useApproveErc20 = () => {
         evmAddress,
       )
       return approveEvmCall
-    },
-    [provider],
-  )
-}
-
-const ERC20_ALLOWANCE_ABI = [
-  {
-    type: "function",
-    name: "allowance",
-    stateMutability: "view",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-    ],
-    outputs: [{ name: "", type: "uint256" }],
-  },
-] as const
-
-export const useErc20Allowance = () => {
-  const provider = useRpcProvider()
-
-  return useCallback(
-    async (tokenAddress: string, evmAddress: string, spender: string) => {
-      return await provider.evm.readContract({
-        abi: ERC20_ALLOWANCE_ABI,
-        address: tokenAddress as `0x${string}`,
-        functionName: "allowance",
-        args: [evmAddress as `0x${string}`, spender as `0x${string}`],
-      })
     },
     [provider],
   )

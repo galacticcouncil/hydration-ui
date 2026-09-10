@@ -41,10 +41,11 @@ export const TradeOption = ({
     <OptionCard
       label={label}
       description={time}
-      value={`${approx ? "~" : ""}${t("currency", {
-        value: value,
+      value={t("currency", {
+        value,
         symbol: asset.symbol,
-      })}`}
+        prefix: approx ? t("approx.short") : "",
+      })}
       displayValue={
         <Flex gap="s" align="center">
           <Text fs="p6" fw={400} color={getToken("text.medium")}>

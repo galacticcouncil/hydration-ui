@@ -52,7 +52,7 @@ export const DcaLimitedBudgetFields: FC = () => {
     >
       <DcaFieldLabel>{t("trade:dca.duration.label")}</DcaFieldLabel>
       <Flex sx={{ justifySelf: "end" }} gap="s" align="center">
-        <ToggleRoot sx={{ maxHeight: 14 }}>
+        <ToggleRoot>
           <DcaFieldLabel>
             {t("trade:dca.orders.label")}:{" "}
             <Box
