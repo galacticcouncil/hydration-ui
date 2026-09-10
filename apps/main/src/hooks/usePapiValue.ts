@@ -2,25 +2,37 @@ import { safeStringify } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { map, Observable, ObservedValueOf, shareReplay } from "rxjs"
 
+import { Papi } from "@/api/rpcClient"
 import {
   useObservableQuery,
   UseObservableQueryOptions,
 } from "@/hooks/useObservableQuery"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.length > 0
 
 const PAPI_OBSERVER_MAP = {
-  "Timestamp.Now": (query) => query.Timestamp.Now,
-  "System.Account": (query) => query.System.Account,
-  "System.Number": (query) => query.System.Number,
-  "MultiTransactionPayment.AccountCurrencyMap": (query) =>
-    query.MultiTransactionPayment.AccountCurrencyMap,
-} as const satisfies Record<string, (query: Papi["query"]) => unknown>
+  "Timestamp.Now": {
+    getObservable: (query: Papi["query"]) => query.Timestamp.Now,
+  },
+  "System.Account": {
+    getObservable: (query: Papi["query"]) => query.System.Account,
+    isArgsReady: (args: readonly unknown[]) => isNonEmptyString(args[0]),
+  },
+  "System.Number": {
+    getObservable: (query: Papi["query"]) => query.System.Number,
+  },
+  "MultiTransactionPayment.AccountCurrencyMap": {
+    getObservable: (query: Papi["query"]) =>
+      query.MultiTransactionPayment.AccountCurrencyMap,
+    isArgsReady: (args: readonly unknown[]) => isNonEmptyString(args[0]),
+  },
+} as const
 
 type PapiObservableKey = keyof typeof PAPI_OBSERVER_MAP
-type PapiObservableFn<K extends PapiObservableKey> =
-  (typeof PAPI_OBSERVER_MAP)[K]
 type PapiObservable<K extends PapiObservableKey> = ReturnType<
-  PapiObservableFn<K>
+  (typeof PAPI_OBSERVER_MAP)[K]["getObservable"]
 >
 
 type PapiObservableArgs<K extends PapiObservableKey> = Parameters<
@@ -44,19 +56,22 @@ export function usePapiValue<
   args: PapiObservableArgs<K>,
   options?: UsePapiObservableQueryOptions<PapiObservableReturn<K>, TData>,
 ) {
-  const { isApiLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
   const queryKey = [key, safeStringify(args)]
+  const entry = PAPI_OBSERVER_MAP[key]
+  const argsReady = "isArgsReady" in entry ? entry.isArgsReady(args) : true
+  const queryEnabled = isReady && argsReady && (options?.enabled ?? true)
 
   // Leverage react-query cache to keep track of observables from multiple sources
   const { data: observable } = useQuery({
     queryKey: ["observable", ...queryKey],
-    enabled: isApiLoaded,
+    enabled: queryEnabled,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: () => {
-      const observable = PAPI_OBSERVER_MAP[key](papi.query)
+      const observable = entry.getObservable(papi.query)
 
-      // @ts-expect-error Args are union here
+      // @ts-expect-error Args are a union keyed by observable type
       const watcher = observable.watchValue(...args) as Observable<{
         value: PapiObservableReturn<K>
       }>
@@ -77,5 +92,6 @@ export function usePapiValue<
       TData
     >["observable"],
     ...options,
+    enabled: queryEnabled,
   })
 }

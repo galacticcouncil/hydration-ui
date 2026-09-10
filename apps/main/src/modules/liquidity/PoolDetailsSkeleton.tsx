@@ -1,14 +1,13 @@
-import { Flex, Paper, SliderTabs } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  Paper,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useRef } from "react"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 
 import { ChartState } from "@/components/ChartState"
-import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
-import {
-  intervalOptions,
-  PoolChart,
-  PoolChartTimeFrameType,
-} from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import { PoolDetailsHeaderSkeleton } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderSkeleton"
 import { PoolDetailsValuesSkeleton } from "@/modules/liquidity/components/PoolDetailsValues/PoolDetailsValuesSkeleton"
 import {
@@ -18,50 +17,40 @@ import {
 
 export const PoolDetailsSkeleton = () => {
   const { isTablet, isMobile } = useBreakpoints()
-  const chartRef = useRef(null)
 
   if (isTablet || isMobile) {
     return (
       <Paper
         p={["secondary", "primary"]}
-        sx={{ flex: 1, gap: "m", flexDirection: "column" }}
         as={Flex}
+        sx={{ flex: 1, gap: "m", flexDirection: "column" }}
       >
-        <PoolChart
-          chartRef={chartRef}
-          assetId=""
-          height={350}
-          interval="all"
-          setInterval={() => null}
-        />
-        <ChartState sx={{ height: 350 }} isLoading isEmpty />
-        <Flex gap="base" justify="space-between">
+        <ChartState sx={{ height: pxToRem(350) }} isLoading isEmpty />
+        <Flex gap="base" justify="space-between" wrap align="center">
           <Flex align="center" gap="base">
-            <SliderTabs
-              options={chartTypes}
-              selected="price"
-              onSelect={() => null}
-              disabled
-            />
-            <SliderTabs
-              options={types}
-              selected="chart"
-              onSelect={() => null}
-            />
+            <ToggleGroup type="single" value="price" disabled>
+              {chartTypes.map((option) => (
+                <ToggleGroupItem key={option.id} value={option.id}>
+                  {option.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <ToggleGroup type="single" value="chart">
+              {types.map((option) => (
+                <ToggleGroupItem key={option.id} value={option.id}>
+                  {option.leadingElement}
+                  {option.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </Flex>
-          <ChartTimeRangeDropdown
-            options={intervalOptions}
-            selectedOption={"all" as PoolChartTimeFrameType | "all"}
-            onSelect={() => null}
-            disabled
-          />
         </Flex>
       </Paper>
     )
   }
 
   return (
-    <Flex direction="column" sx={{ position: "relative" }}>
+    <Flex direction="column" position="relative">
       <PoolDetailsHeaderSkeleton />
 
       <Flex gap="xl">
@@ -70,9 +59,9 @@ export const PoolDetailsSkeleton = () => {
           p={["secondary", "primary"]}
           align="center"
           flex={1}
-          sx={{ flexBasis: "31.25rem" }}
+          sx={{ flexBasis: pxToRem(500) }}
         >
-          <ChartState sx={{ height: 420 }} isLoading isEmpty />
+          <ChartState sx={{ height: pxToRem(420) }} isLoading isEmpty />
         </Flex>
         <PoolDetailsValuesSkeleton />
       </Flex>

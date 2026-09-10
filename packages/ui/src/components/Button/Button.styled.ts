@@ -462,3 +462,121 @@ export const SButtonIcon = styled(Box)(
     }
   `,
 )
+
+export type LoadingMode = "inline" | "replace"
+
+const LOADING_TRANSITION_MS = 250
+const LOADING_ICON_EASING = "cubic-bezier(0.2, 0, 0, 1)"
+
+const loadingLabelStyles = createStyles(
+  (theme) => css`
+    & > [data-loading-spinner],
+    & > [data-loading-content] {
+      display: inline-grid;
+      grid-auto-flow: column;
+      column-gap: ${theme.space.base};
+      place-items: center;
+    }
+
+    & > [data-loading-spinner] svg {
+      width: 1em;
+      height: 1em;
+
+      animation-play-state: paused;
+    }
+
+    [aria-busy="true"] > & > [data-loading-spinner] svg {
+      animation-play-state: running;
+    }
+  `,
+)
+
+const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
+  inline: css`
+    position: relative;
+    display: inline-grid;
+
+    transition: transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+
+    & > [data-loading-spinner] {
+      position: absolute;
+      top: 50%;
+      left: 0;
+
+      width: 1em;
+      height: 1em;
+
+      opacity: 0;
+      filter: blur(4px);
+      transform: translate(
+          calc(-100% - ${theme.space.base} + ${theme.space.s}),
+          -50%
+        )
+        scale(0.25);
+
+      transition:
+        opacity ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING},
+        transform ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING},
+        filter ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING};
+    }
+
+    [aria-busy="true"] > & {
+      transform: translateX(calc((1em + ${theme.space.base}) / 2));
+    }
+
+    [aria-busy="true"] > & > [data-loading-spinner] {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate(calc(-100% - 0.35em), -50%) scale(1);
+    }
+  `,
+  replace: css`
+    display: grid;
+    overflow: hidden;
+
+    line-height: 1.4;
+
+    & > * {
+      grid-area: 1 / 1;
+      align-self: stretch;
+      justify-self: center;
+
+      transition:
+        transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo},
+        opacity ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+    }
+
+    & > [data-loading-content] {
+      opacity: 1;
+    }
+
+    & > [data-loading-spinner] {
+      opacity: 0;
+    }
+
+    [aria-busy="true"] > & > [data-loading-content] {
+      opacity: 0;
+    }
+
+    [aria-busy="true"] > & > [data-loading-spinner] {
+      opacity: 1;
+    }
+
+    & > [data-loading-spinner] {
+      transform: translateY(100%);
+    }
+
+    [aria-busy="true"] > & > [data-loading-content] {
+      transform: translateY(-100%);
+    }
+
+    [aria-busy="true"] > & > [data-loading-spinner] {
+      transform: translateY(0);
+    }
+  `,
+}))
+
+export const SLoadingLabel = styled.span<{ loadingMode: LoadingMode }>(
+  loadingLabelStyles,
+  ({ loadingMode }) => loadingLabelVariants(loadingMode),
+)

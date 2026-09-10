@@ -17,9 +17,9 @@ import { ClaimCard } from "./ClaimCard"
 type PositionsHeaderProps = {
   onClick: () => void
   showMore: boolean
-  totalInFarms: string
   totalBalanceDisplay: string
-  positions: DepositPosition[]
+  totalInFarms?: string
+  positions?: DepositPosition[]
 }
 
 export const PositionsHeader = ({
@@ -91,7 +91,7 @@ export const PositionsHeader = ({
             </Text>
           }
           bottomLabel={
-            Big(totalInFarms).gt(0)
+            totalInFarms && Big(totalInFarms).gt(0)
               ? t("liquidity:header.myLiquidity.value", {
                   value: totalInFarms,
                 })
@@ -100,7 +100,7 @@ export const PositionsHeader = ({
           size="medium"
         />
 
-        <ClaimCard positions={positions} />
+        {positions && <ClaimCard positions={positions} />}
       </Flex>
     </Flex>
   )

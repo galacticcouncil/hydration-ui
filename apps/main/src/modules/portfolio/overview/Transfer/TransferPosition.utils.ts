@@ -32,7 +32,7 @@ export const useInsufficientTransferFee = (
     return { fee: undefined }
   }
 
-  const isLoading = !rpc.isLoaded || balanceIsLoading || feeIsLoading
+  const isLoading = !rpc.isReady || balanceIsLoading || feeIsLoading
 
   const balance = balanceData?.balance
 

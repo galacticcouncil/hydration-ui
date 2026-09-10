@@ -35,12 +35,12 @@ const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
 }
 
 export const useAcceptedFeePaymentAssets = (ids: string[]) => {
-  const { papi, isLoaded, sdk } = useRpcProvider()
+  const { papi, isReady, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
   const { getAsset } = useAssets()
 
   return useQuery({
-    enabled: isLoaded && ids.length > 0,
+    enabled: isReady && ids.length > 0,
     queryKey: ["acceptedCurrencies", ids],
     queryFn: async () => {
       const assetIds = ids.map<[number]>((id) => [Number(id)])

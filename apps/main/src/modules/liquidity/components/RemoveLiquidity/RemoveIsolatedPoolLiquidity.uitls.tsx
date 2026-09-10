@@ -12,6 +12,7 @@ import {
 } from "@/api/account"
 import { useAccountBalances } from "@/api/balances"
 import { useIsolatedPoolFarms } from "@/api/farms"
+import { Papi } from "@/api/rpcClient"
 import { useShareTokenPrices } from "@/api/spotPrice"
 import { useXYKPoolWithLiquidity, XYKPoolWithLiquidity } from "@/api/xyk"
 import {
@@ -20,7 +21,7 @@ import {
 } from "@/modules/liquidity/Liquidity.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionToasts, useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"

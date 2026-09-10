@@ -7,12 +7,12 @@ import { useTranslation } from "react-i18next"
 
 import { portfolioBalanceQueryKey } from "@/api/portfolio"
 import { useCrossChainConfigService } from "@/api/xcm"
+import { PendingApproval } from "@/components/PendingApproval"
 import {
   isEvmApproveCall,
   isEvmCall,
   isSubstrateCall,
 } from "@/modules/transactions/utils/xcm"
-import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
@@ -167,7 +167,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             feeSymbol: sourceFee.symbol,
           },
           meta: {
-            type: TransactionType.Xcm,
+            type: TransactionType.Xcm as const,
             srcChainKey: srcChain.key,
             srcChainFee: sourceFeeValue,
             srcChainFeeSymbol: sourceFee.symbol,

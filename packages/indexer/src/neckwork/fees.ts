@@ -212,7 +212,7 @@ export const feesChartQuery = (
       if (!data) throw new Error("Neckwork API returned no fees chart")
 
       return {
-        buckets: Array.from(data.data).map((bucket) => ({
+        buckets: data.data.map((bucket) => ({
           time: Number(new Date(bucket.timestamp)),
           value: bucket.value,
         })),

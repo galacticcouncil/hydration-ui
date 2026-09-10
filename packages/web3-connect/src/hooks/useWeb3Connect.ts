@@ -1,3 +1,4 @@
+import { updateQueryString } from "@galacticcouncil/utils"
 import { produce } from "immer"
 import { omit, uniqueBy } from "remeda"
 import { create } from "zustand"
@@ -13,7 +14,7 @@ import {
 } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import { getUniqueAccountKey } from "@/utils/wallet"
-import { getWallet } from "@/wallets"
+import { ExternalWallet, getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export enum WalletProviderStatus {
@@ -143,6 +144,9 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           }
         }),
       setAccount: (account) => {
+        const shouldDeactivateExternal =
+          !account || account.provider !== WalletProviderType.ExternalWallet
+
         if (account) {
           const wallet = getWallet(account.provider)
           if (wallet instanceof BaseSubstrateWallet) {
@@ -153,7 +157,29 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             wallet.setSigner(signerAddress)
           }
         }
-        return set((state) => ({ ...state, account }))
+
+        if (shouldDeactivateExternal) {
+          updateQueryString("account", undefined)
+          const externalWallet = getWallet(WalletProviderType.ExternalWallet)
+          if (externalWallet instanceof ExternalWallet) {
+            externalWallet.disconnect()
+          }
+        }
+
+        return set((state) => ({
+          ...state,
+          account,
+          ...(shouldDeactivateExternal
+            ? {
+                providers: state.providers.filter(
+                  (p) => p.type !== WalletProviderType.ExternalWallet,
+                ),
+                accounts: state.accounts.filter(
+                  (a) => a.provider !== WalletProviderType.ExternalWallet,
+                ),
+              }
+            : {}),
+        }))
       },
       setBalances: (balances) => {
         return set((state) =>

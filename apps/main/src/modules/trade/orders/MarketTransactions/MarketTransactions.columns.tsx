@@ -19,8 +19,8 @@ import { useTranslation } from "react-i18next"
 import { AccountDate } from "@/modules/trade/orders/columns/AccountDate"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
-import { TransactionType } from "@/modules/trade/orders/columns/TransactionType"
-import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
+import { SwapType } from "@/modules/trade/orders/columns/SwapType"
+import { OrderKind, SwapData } from "@/modules/trade/orders/lib/types"
 
 const columnHelper = createColumnHelper<SwapData>()
 
@@ -46,11 +46,22 @@ export const useMarketTransactionsColumns = () => {
 
     const typeColumn = columnHelper.display({
       id: "type",
+      header: t("trade:trade.orders.marketTransactions.type"),
       meta: {
         sx: { textAlign: "center" },
       },
       cell: ({ row }) => {
-        return row.original.type && <TransactionType type={row.original.type} />
+        const { status } = row.original
+
+        return (
+          status && (
+            <Flex justify="center">
+              <SwapType
+                type={status.kind === "marketDca" ? OrderKind.Dca : status.kind}
+              />
+            </Flex>
+          )
+        )
       },
     })
 
@@ -60,7 +71,7 @@ export const useMarketTransactionsColumns = () => {
         sx: { textAlign: "center" },
       },
       header: () => (
-        <Flex gap="s" align="center" justify="center">
+        <Flex gap="s" align="center">
           {t("trade:trade.orders.marketTransactions.fillPrice")}
           <Icon
             size="xs"
@@ -82,10 +93,12 @@ export const useMarketTransactionsColumns = () => {
 
     const dateColumn = columnHelper.display({
       header: t("trade:trade.orders.marketTransactions.accountDate"),
-
+      meta: {
+        sx: { textAlign: "end" },
+      },
       cell: ({ row }) => (
         <AccountDate
-          align="flex-start"
+          align="flex-end"
           address={row.original.address}
           date={row.original.date}
         />
@@ -124,15 +137,12 @@ export const useMarketTransactionsColumns = () => {
       header: t("trade:trade.orders.fromTo.mobile"),
       cell: ({ row }) => {
         return (
-          <div>
-            <SwapAmount
-              fromAmount={row.original.fromAmount}
-              from={row.original.from}
-              toAmount={row.original.toAmount}
-              to={row.original.to}
-            />
-            {row.original.type && <TransactionType type={row.original.type} />}
-          </div>
+          <SwapAmount
+            fromAmount={row.original.fromAmount}
+            from={row.original.from}
+            toAmount={row.original.toAmount}
+            to={row.original.to}
+          />
         )
       },
     })
@@ -142,15 +152,23 @@ export const useMarketTransactionsColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: ({ row }) => (
-        <TableRowDetailsExpand>
-          <AccountDate
-            align="end"
-            address={row.original.address}
-            date={row.original.date}
-          />
-        </TableRowDetailsExpand>
-      ),
+      cell: ({ row }) => {
+        const { status } = row.original
+
+        return (
+          <TableRowDetailsExpand>
+            {status && (
+              <Flex justify="center">
+                <SwapType
+                  type={
+                    status.kind === "marketDca" ? OrderKind.Dca : status.kind
+                  }
+                />
+              </Flex>
+            )}
+          </TableRowDetailsExpand>
+        )
+      },
     })
 
     if (isMobile) {

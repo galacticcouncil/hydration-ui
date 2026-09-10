@@ -23,7 +23,7 @@ export function useRedemptionQueue(evmAddress: string | undefined) {
   const queryClient = useQueryClient()
   const { bil, hollar } = useBilStrategy()
   return useQuery({
-    enabled: !!evmAddress && rpc.isLoaded,
+    enabled: !!evmAddress && rpc.isReady,
     queryKey: bilQueryKeys.vaultQueue(evmAddress),
     queryFn: async () => {
       const vault = await queryClient.ensureQueryData(

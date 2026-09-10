@@ -9,6 +9,9 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 
+import { Flex } from "@/components/Flex"
+import { pxToRem } from "@/utils"
+
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -83,4 +86,18 @@ export const Disabled: Story = {
   args: {
     disabled: true,
   },
+}
+
+export const FullWidth: Story = {
+  render: SingleSelectTemplate,
+  args: {
+    fullWidth: true,
+  },
+  decorators: [
+    (Story) => (
+      <Flex width={pxToRem(320)}>
+        <Story />
+      </Flex>
+    ),
+  ],
 }

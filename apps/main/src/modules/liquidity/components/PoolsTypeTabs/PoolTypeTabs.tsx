@@ -4,6 +4,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { TabMenu } from "@/components/TabMenu"
+import { ENV } from "@/config/env"
 import { LINKS } from "@/config/navigation"
 
 export const PoolTypeTabs = () => {
@@ -14,30 +15,39 @@ export const PoolTypeTabs = () => {
     from: "/liquidity/",
   })
 
+  const poolTypes = [
+    {
+      key: "all" as const,
+      label: t("tab.allPools"),
+    },
+    ...(ENV.VITE_UNIV3_GAMMA_ENABLED
+      ? [{ key: "vaults" as const, label: t("tab.vaults") }]
+      : []),
+    {
+      key: "omnipoolStablepool" as const,
+      label: t("tab.omnipoolStablepool"),
+    },
+    {
+      key: "isolated" as const,
+      label: t("tab.isolatedPools"),
+    },
+  ]
+
   if (isMobile) {
     return (
       <Select
         value={search?.type}
-        items={[
-          {
-            key: "all",
-            label: t("tab.allPools"),
-          },
-          {
-            key: "omnipoolStablepool",
-            label: t("tab.omnipoolStablepool"),
-          },
-          {
-            key: "isolated",
-            label: t("tab.isolatedPools"),
-          },
-        ]}
+        items={poolTypes}
         onValueChange={(value) =>
           navigate({
             to: LINKS.liquidity,
             search: {
               myLiquidity: search?.myLiquidity,
-              type: value as "all" | "omnipoolStablepool" | "isolated",
+              type: value as
+                | "all"
+                | "omnipoolStablepool"
+                | "isolated"
+                | "vaults",
             },
           })
         }
@@ -55,6 +65,18 @@ export const PoolTypeTabs = () => {
           search: { type: "all", myLiquidity: search?.myLiquidity },
           title: t("tab.allPools"),
         },
+        ...(ENV.VITE_UNIV3_GAMMA_ENABLED
+          ? [
+              {
+                to: LINKS.liquidity,
+                search: {
+                  type: "vaults" as const,
+                  myLiquidity: search?.myLiquidity,
+                },
+                title: t("tab.vaults"),
+              },
+            ]
+          : []),
         {
           to: LINKS.liquidity,
           search: {

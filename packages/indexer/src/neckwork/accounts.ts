@@ -1,6 +1,10 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
+import {
+  NECKWORK_ACCOUNT_KEY,
+  NECKWORK_BASE_STALE_TIME,
+  NeckworkClient,
+} from "."
 
 export const accountsBalancesQuery = (
   client: NeckworkClient,
@@ -8,7 +12,7 @@ export const accountsBalancesQuery = (
 ) =>
   queryOptions({
     queryKey: [...NECKWORK_ACCOUNT_KEY, "accountBalances", publicKeys],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/accounts/balances", {
         params: { query: { accounts: publicKeys.join(",") } },
@@ -16,7 +20,7 @@ export const accountsBalancesQuery = (
 
       if (!data) throw new Error("Neckwork API returned no account balances")
 
-      return Array.from(data.items).map((item) => ({
+      return data.items.map((item) => ({
         account: item.account,
         balance: Number(item.totalUsd) - Number(item.debtUsd ?? 0),
       }))

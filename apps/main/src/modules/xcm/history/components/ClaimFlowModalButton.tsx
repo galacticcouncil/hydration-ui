@@ -18,7 +18,7 @@ import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient, useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { TransactionStatus } from "@/components/TransactionStatus"
 import { ClaimPendingModalContent } from "@/modules/xcm/history/components/ClaimPendingModalContent"
 import { useDepositClaim } from "@/modules/xcm/history/hooks/useDepositClaim"
@@ -27,7 +27,6 @@ import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { resolveChainFromUrn } from "@/modules/xcm/history/utils/claim"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
 type DepositMutation = ReturnType<typeof useDepositClaim>
 type WithdrawMutation = ReturnType<typeof useWithdrawClaim>
@@ -51,8 +50,6 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
 }) => {
   const { t } = useTranslation("common")
   const { papi } = useRpcProvider()
-  const squidSdk = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
   const [modalOpen, setModalOpen] = useState(false)
   const { account } = useAccount()
 
@@ -79,8 +76,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
         {isPending ? t("claiming") : t("claim")}
       </Button>
       <Web3ConnectModal
-        squidSdk={squidSdk}
-        neckwork={neckworkEnabled ? neckworkClient : null}
+        neckwork={neckworkClient}
         papi={papi}
         open={modalOpen}
         mode={walletMode}

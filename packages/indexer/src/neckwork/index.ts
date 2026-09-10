@@ -11,7 +11,20 @@ export * from "./prices"
 export * from "./stats"
 export * from "./trades"
 
-export const NECKWORK_STALE_TIME = 60000
+export const NECKWORK_BASE_STALE_TIME = 60_000
+export const NECKWORK_STATUS_STALE_TIME = 10_000
+
+export type NeckworkResponse<P extends keyof paths> =
+  paths[P]["get"]["responses"][200]["content"]["application/json"]
+
+export type WithEpoch<T extends { readonly timestamp: string }> = Omit<
+  T,
+  "timestamp"
+> & { readonly timestamp: number }
+
+export const withEpoch = <T extends { readonly timestamp: string }>(
+  item: T,
+): WithEpoch<T> => ({ ...item, timestamp: new Date(item.timestamp).getTime() })
 
 /**
  * Key prefix for account-scoped neckwork queries. `useNeckworkSync` invalidates

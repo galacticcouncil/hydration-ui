@@ -18,8 +18,9 @@ import {
   EMPTY_BALANCES,
   TokenLockType,
 } from "@/api/balances/types"
+import { Papi } from "@/api/rpcClient"
 import { ENV } from "@/config/env"
-import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 const isKnownTokenLockType = (type: string): type is TokenLockType => {
@@ -27,7 +28,7 @@ const isKnownTokenLockType = (type: string): type is TokenLockType => {
 }
 
 export const nativeTokenLocksQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
@@ -52,7 +53,7 @@ export const nativeTokenLocksQuery = (
         })
         .filter((lock) => lock !== null)
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
   })
 }
 
@@ -66,7 +67,7 @@ export const useNativeTokenLocks = () => {
 }
 
 export const tokenReservesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
   tokenId: string,
 ) => {
@@ -95,7 +96,7 @@ export const tokenReservesQuery = (
         }
       })
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
   })
 }
 
@@ -152,7 +153,7 @@ export const parseTokenBalanceData = (
 }
 
 export const tokenBalanceQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   tokenId: string,
   address: string | undefined | null,
 ) => {
@@ -177,7 +178,7 @@ export const tokenBalanceQuery = (
 
       return parseTokenBalanceData(res, tokenId, address ?? "")
     },
-    enabled: isApiLoaded && !!address && !!tokenId,
+    enabled: isReady && !!address && !!tokenId,
   })
 }
 
@@ -188,7 +189,7 @@ export const HDXStakingBalanceQuery = (
   staleTime: Infinity,
 })
 
-export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
+export const HDXIssuanceQuery = ({ papi, isReady }: TProviderContext) => {
   return queryOptions({
     queryKey: ["hdxIssuance"],
     queryFn: async () => {
@@ -199,7 +200,7 @@ export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
 
       return totalissuance - inactiveIssuance
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: millisecondsInMinute,
   })
 }

@@ -6,6 +6,7 @@ export const SwapSummaryRow: FC<SummaryRowProps> = (props) => {
     <SummaryRow
       sx={{
         my: "s",
+        py: "xs",
         justifyContent: "space-between",
         mx: "var(--swap-section-inset-inline)",
         px: "var(--swap-section-padding-inline)",

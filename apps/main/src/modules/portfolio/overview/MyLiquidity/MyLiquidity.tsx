@@ -5,6 +5,7 @@ import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { MyLiquidityEmptyState } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityEmptyState"
 import { MyLiquidityTable } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable"
 import { useMyLiquidityTableData } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.data"
+import { useMyVaultLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
 
 import { useMyIsolatedPoolsLiquidity } from "./MyIsolatedPoolsLiquidity.data"
 
@@ -27,8 +28,14 @@ export const MyLiquidity: FC<Props> = ({
     isLoading: isLoadingIsolatedPoolsLiquidity,
   } = useMyIsolatedPoolsLiquidity()
 
-  const data = [...liquidityData, ...isolatedPoolsLiquidity]
-  const isLoading = liquidityLoading || isLoadingIsolatedPoolsLiquidity
+  const { data: vaultLiquidity, isLoading: isLoadingVaultLiquidity } =
+    useMyVaultLiquidity()
+
+  const data = [...liquidityData, ...isolatedPoolsLiquidity, ...vaultLiquidity]
+  const isLoading =
+    liquidityLoading ||
+    isLoadingIsolatedPoolsLiquidity ||
+    isLoadingVaultLiquidity
 
   if (!isLoading && data.length === 0) {
     return <MyLiquidityEmptyState />

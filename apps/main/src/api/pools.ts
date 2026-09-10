@@ -6,7 +6,10 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import { PublicClient } from "viem"
 
+import { loadBootstrapV3Pools } from "@/api/gamma/v3Bootstrap"
+import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID } from "@/utils/consts"
 
@@ -17,8 +20,19 @@ export type PoolBase = Omit<pool.PoolBase, "tokens"> & {
 }
 export type PoolToken = pool.PoolToken
 export type PoolFee = pool.PoolFee
+export type V3Tick = pool.uniswapv3.V3Tick
+// SDK V3 pool with optional ticks (EVM bootstrap reads omit them).
+export type V3PoolBase = Omit<
+  pool.uniswapv3.UniswapV3PoolBase,
+  "tokens" | "ticks"
+> & {
+  tokens: [PoolToken, PoolToken]
+  ticks?: V3Tick[]
+}
 
 export const PoolType = pool.PoolType
+
+export type PoolTypeValue = pool.PoolType
 
 export const allPools = (sdk: SdkCtx) =>
   queryOptions({
@@ -30,6 +44,7 @@ export const allPools = (sdk: SdkCtx) =>
       const xykPools: PoolBase[] = []
       const omnipoolTokens: OmniPoolToken[] = []
       const aavePools: aave.AavePool[] = []
+      const v3Pools: V3PoolBase[] = []
       let hub: PoolToken | undefined
 
       for (const pool of pools) {
@@ -58,6 +73,14 @@ export const allPools = (sdk: SdkCtx) =>
           }
         } else if (pool.type === PoolType.Aave) {
           aavePools.push(pool as aave.AavePool)
+        } else if (pool.type === PoolType.V3) {
+          const [tokenA, tokenB] = pool.tokens
+          if (!tokenA || !tokenB) continue
+
+          v3Pools.push({
+            ...pool,
+            tokens: [tokenA, tokenB],
+          } as V3PoolBase)
         }
       }
 
@@ -67,6 +90,7 @@ export const allPools = (sdk: SdkCtx) =>
         hub: hub,
         xykPools,
         aavePools,
+        v3Pools,
         allPools: pools,
       }
     },
@@ -106,6 +130,35 @@ export const omnipoolTokensQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
     },
     staleTime: Infinity,
   })
+
+const v3PoolsQuery = (
+  sdk: SdkCtx,
+  queryClient: QueryClient,
+  evm: PublicClient,
+) =>
+  queryOptions<V3PoolBase[]>({
+    queryKey: ["pools", "v3"],
+    enabled: ENV.VITE_UNIV3_GAMMA_ENABLED,
+    queryFn: async () => {
+      const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
+
+      const known = new Set(v3Pools.map((pool) => pool.address.toLowerCase()))
+      const bootstrap = await loadBootstrapV3Pools(evm, sdk)
+      const extra = bootstrap.filter(
+        (pool) => !known.has(pool.address.toLowerCase()),
+      )
+
+      return [...v3Pools, ...extra]
+    },
+    staleTime: 30_000,
+  })
+
+export const useV3Pools = () => {
+  const queryClient = useQueryClient()
+  const { sdk, evm } = useRpcProvider()
+
+  return useQuery(v3PoolsQuery(sdk, queryClient, evm))
+}
 
 export const xykPoolQuery = (
   sdk: SdkCtx,
@@ -154,7 +207,7 @@ export const useStablePools = () => {
 }
 
 export const useOmnipoolIds = () => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
 
   return useQuery({
@@ -167,7 +220,7 @@ export const useOmnipoolIds = () => {
       return omnipoolTokens.map((token) => token.id.toString())
     },
     staleTime: Infinity,
-    enabled: isApiLoaded,
+    enabled: isReady,
     notifyOnChangeProps: [],
   })
 }

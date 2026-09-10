@@ -1,3 +1,10 @@
+export const isHydrationAssetId = (id: string): boolean => {
+  if (!/^\d+$/.test(id)) return false
+
+  const value = Number(id)
+  return Number.isSafeInteger(value)
+}
+
 export const getTradeFeeIntervals = (
   min: number,
   max: number,

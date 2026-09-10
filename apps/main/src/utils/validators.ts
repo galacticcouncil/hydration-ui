@@ -16,7 +16,7 @@ export const required = z.string().trim().min(1, requiredError)
 
 export const validNumber = z.number({ error: i18n.t("error.validNumber") })
 
-export const requiredObject = <T extends Record<string, unknown>>() =>
+export const requiredObject = <T extends object>() =>
   z.custom<T | null>().check(
     z.refine((value) => value !== null, {
       error: requiredError,

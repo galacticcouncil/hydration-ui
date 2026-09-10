@@ -83,6 +83,6 @@ export class ExternalWallet implements Wallet {
   disconnect = () => {
     this._enabled = false
     this.account = undefined
-    updateQueryString("address", undefined)
+    updateQueryString("account", undefined)
   }
 }
