@@ -23,7 +23,7 @@ export const SwapType: FC<Props> = ({ type, isLimit = false }) => {
         : t(`trade.orders.type.${type}`)
 
   return (
-    <Flex align="center" gap={2}>
+    <Flex align="center" gap="xs">
       {type === OrderKind.DcaRolling && (
         <Icon
           component={Infinity}
@@ -31,7 +31,7 @@ export const SwapType: FC<Props> = ({ type, isLimit = false }) => {
           color={getToken("icons.primary")}
         />
       )}
-      <Text fw={500} fs="p5" lh="s" color={getToken("text.high")}>
+      <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
         {label}
       </Text>
     </Flex>

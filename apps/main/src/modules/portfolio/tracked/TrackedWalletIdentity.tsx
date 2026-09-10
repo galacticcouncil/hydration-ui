@@ -28,7 +28,7 @@ type Props = Omit<TextProps, "color"> & {
 
 const useAccountDisplayName = (address: string): string => {
   const { papi } = useRpcProvider()
-  const addresses = useAddresses()
+  const addresses = useAddresses({}, { autoName: false })
   const isSS58 = isSS58Address(address)
 
   const addressBookName = addresses.find((a) =>

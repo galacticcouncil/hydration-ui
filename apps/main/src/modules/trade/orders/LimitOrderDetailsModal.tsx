@@ -18,11 +18,11 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
-import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import {
   IntentLimitOrderData,
   OrderStatus,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
+import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 
 type Props = {
@@ -105,7 +105,11 @@ export const LimitOrderDetailsModal = ({
             label={t("trade:trade.orders.limit.limitPrice")}
             value={
               orderRate
-                ? `${t("number", { value: orderRate })} ${details.to.symbol} / ${details.from.symbol}`
+                ? t("trade:trade.orders.pricePair", {
+                    value: orderRate,
+                    leftSymbol: details.to.symbol,
+                    rightSymbol: details.from.symbol,
+                  })
                 : "-"
             }
           />
@@ -114,7 +118,11 @@ export const LimitOrderDetailsModal = ({
             label={t("trade:trade.orders.limit.marketPrice")}
             value={
               marketRate
-                ? `${t("number", { value: marketRate })} ${details.to.symbol} / ${details.from.symbol}`
+                ? t("trade:trade.orders.pricePair", {
+                    value: marketRate,
+                    leftSymbol: details.to.symbol,
+                    rightSymbol: details.from.symbol,
+                  })
                 : "-"
             }
           />
@@ -138,7 +146,7 @@ export const LimitOrderDetailsModal = ({
                 ) : (
                   <Chip variant="secondary" size="small">
                     {t("trade:trade.orders.limit.away", {
-                      pct: Math.abs(distancePct).toFixed(2),
+                      pct: Math.abs(distancePct),
                     })}
                   </Chip>
                 ))}
@@ -169,8 +177,6 @@ export const LimitOrderDetailsModal = ({
             }
           />
         </Grid>
-        {/* Only a live order can be cancelled - a finished one has nothing
-            left on chain to remove, so the divider goes with the button. */}
         {details.status === OrderStatus.Created && (
           <>
             <ModalContentDivider />

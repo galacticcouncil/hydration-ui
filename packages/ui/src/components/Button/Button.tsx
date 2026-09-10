@@ -75,8 +75,12 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
       variant={isLoading && loadingVariant ? loadingVariant : variant}
       {...props}
     >
-      {isLoading && <SpinnerIcon />}
-      {props.children}
+      <SLoadingLabel loadingMode={loadingMode}>
+        <span data-loading-spinner>
+          <SpinnerIcon size="1em" aria-hidden />
+        </span>
+        <span data-loading-content>{children}</span>
+      </SLoadingLabel>
     </SButton>
   )
 }

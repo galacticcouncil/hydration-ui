@@ -10,6 +10,7 @@ import {
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
@@ -24,10 +25,13 @@ export const useSubmitDcaOrder = () => {
 
   const { account } = useAccount()
   const rpc = useRpcProvider()
-  const { sdk, featureFlags } = rpc
+  const { sdk } = rpc
+  const isIceEnabled = useIsIceEnabled()
 
   const {
-    dca: { slippage, maxRetries },
+    swap: {
+      split: { twapSlippage, twapMaxRetries },
+    },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
@@ -77,18 +81,21 @@ export const useSubmitDcaOrder = () => {
           ? { ...order, assetOutEd: minAmountOut }
           : order
 
-      const tx = featureFlags.isIceEnabled
-        ? await sdk.tx
-            .intentOrder(iceOrder)
-            .withBeneficiary(account.address)
-            .withSlippage(slippage)
-            .build()
-        : await sdk.tx
-            .order(order)
-            .withBeneficiary(account.address)
-            .withSlippage(slippage)
-            .withMaxRetries(maxRetries)
-            .build()
+      let tx
+      if (isIceEnabled) {
+        tx = await sdk.tx
+          .intentOrder(iceOrder)
+          .withBeneficiary(account.address)
+          .withSlippage(twapSlippage)
+          .build()
+      } else {
+        tx = await sdk.tx
+          .order(order)
+          .withBeneficiary(account.address)
+          .withSlippage(twapSlippage)
+          .withMaxRetries(twapMaxRetries)
+          .build()
+      }
 
       const params = {
         amountIn: t("currency", {
@@ -122,9 +129,8 @@ export const useSubmitDcaOrder = () => {
           },
         },
         {
-          // Neckwork indexes DCA schedules only; sync from ExecutionPlanned.
           onSuccess: (event) => {
-            if (featureFlags.isIceEnabled || rpc.isFork) return
+            if (isIceEnabled || rpc.isFork) return
 
             const blockHeight = getTxResultBlockHeight(event)
             if (blockHeight === null) return

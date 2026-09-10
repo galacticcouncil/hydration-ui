@@ -52,12 +52,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
   const endDateValid = !isNaN(endDate.valueOf())
 
   if (isLoading) {
-    return (
-      <>
-        <SwapSectionSeparator />
-        <DcaSummarySkeleton />
-      </>
-    )
+    return <DcaSummarySkeleton />
   }
 
   if (!order || !sellAsset || !buyAsset) {
@@ -67,27 +62,43 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
   const tradeAmountIn = scaleHuman(order.tradeAmountIn, sellAsset.decimals)
 
   return (
-    <>
-      <SwapSectionSeparator />
-      <div>
-        <Flex direction="column" gap="base" py="base">
-          <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
+    <div>
+      <Flex direction="column" gap="base" py="base">
+        <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
+        <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
+          <Trans
+            t={t}
+            i18nKey={
+              isOpenBudget
+                ? "trade:dca.summary.openBudget.description"
+                : "trade:dca.summary.limitedBudget.description"
+            }
+            values={{
+              sellAmount: t("currency", {
+                value: tradeAmountIn,
+                symbol: sellAsset.symbol,
+              }),
+              buySymbol: buyAsset.symbol,
+              frequency: t("interval", { value: frequency }),
+              duration: t("interval", { value: duration }),
+            }}
+          >
+            <Text fw={600} as="span" color={getToken("text.tint.secondary")} />
+          </Trans>
+        </Text>
+        {limitEnabled && quotedPrice.view.display && (
+          <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey={
-                isOpenBudget
-                  ? "trade:dca.summary.openBudget.description"
-                  : "trade:dca.summary.limitedBudget.description"
+                quotedPrice.view.inverted
+                  ? "trade:dca.summary.limitClause"
+                  : "trade:dca.summary.limitClauseAbove"
               }
               values={{
-                sellAmount: t("currency", {
-                  value: tradeAmountIn,
-                  symbol: sellAsset.symbol,
-                }),
                 buySymbol: buyAsset.symbol,
-                frequency: t("interval", { value: frequency }),
-                duration: t("interval", { value: duration }),
+                price: quotedPrice.view.display,
+                sellSymbol: sellAsset.symbol,
               }}
             >
               <Text
@@ -97,42 +108,19 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
               />
             </Trans>
           </Text>
-          {limitEnabled && quotedPrice.view.display && (
-            <Text fw={500} fs="p4" lh="l" color={getToken("text.high")}>
-              <Trans
-                t={t}
-                i18nKey={
-                  quotedPrice.view.inverted
-                    ? "trade:dca.summary.limitClause"
-                    : "trade:dca.summary.limitClauseAbove"
-                }
-                values={{
-                  buySymbol: buyAsset.symbol,
-                  price: quotedPrice.view.display,
-                  sellSymbol: sellAsset.symbol,
-                }}
-              >
-                <Text
-                  fw={600}
-                  as="span"
-                  color={getToken("text.tint.secondary")}
-                />
-              </Trans>
-            </Text>
-          )}
-        </Flex>
-        <SwapSectionSeparator sx={{ mt: "s" }} />
-        <Summary separator={<SwapSectionSeparator />}>
-          {endDateValid && (
-            <SwapSummaryRow
-              label={t("trade:dca.summary.scheduleEnd")}
-              content={t("date.datetime.short", {
-                value: endDate,
-              })}
-            />
-          )}
-        </Summary>
-      </div>
-    </>
+        )}
+      </Flex>
+      <SwapSectionSeparator sx={{ mt: "s" }} />
+      <Summary separator={<SwapSectionSeparator />}>
+        {endDateValid && (
+          <SwapSummaryRow
+            label={t("trade:dca.summary.scheduleEnd")}
+            content={t("date.datetime.short", {
+              value: endDate,
+            })}
+          />
+        )}
+      </Summary>
+    </div>
   )
 }

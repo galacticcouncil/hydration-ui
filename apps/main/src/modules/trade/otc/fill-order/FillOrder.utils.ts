@@ -3,7 +3,6 @@ import Big from "big.js"
 
 import { Papi } from "@/api/rpcClient"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import { Papi } from "@/providers/rpcProvider"
 import { scale } from "@/utils/formatting"
 
 const FULL_ORDER_PCT_LBOUND = 99

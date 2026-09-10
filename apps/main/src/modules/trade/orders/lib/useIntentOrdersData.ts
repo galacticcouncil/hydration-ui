@@ -3,7 +3,7 @@ import { useMemo } from "react"
 
 import { useAccountIntents } from "@/api/intents"
 import { buildIntentOrderRows } from "@/modules/trade/orders/lib/buildOrderRows"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData } from "@/modules/trade/orders/lib/orderData"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyDesc } from "@/utils/sort"
 

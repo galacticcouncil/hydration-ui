@@ -19,7 +19,6 @@ import {
   EXPIRY_OPTIONS,
   LimitFormValues,
 } from "@/modules/trade/swap/sections/Limit/useLimitForm"
-import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 export const LimitOrderSettings: FC = () => {
   const { t } = useTranslation(["trade", "common"])
@@ -29,11 +28,9 @@ export const LimitOrderSettings: FC = () => {
 
   return (
     <>
-      <SwapSectionSeparator />
-
       <Flex justify="space-between" align="center" gap="base" py="base" wrap>
         <Text
-          fw={500}
+          fw={400}
           fs="p5"
           whiteSpace="nowrap"
           color={getToken("text.medium")}
@@ -61,10 +58,8 @@ export const LimitOrderSettings: FC = () => {
         </Flex>
       </Flex>
 
-      <SwapSectionSeparator />
-
       <Flex justify="space-between" align="center" py="base">
-        <Text fw={500} fs="p5" color={getToken("text.medium")}>
+        <Text fw={400} fs="p5" color={getToken("text.medium")}>
           {t("trade:limit.partiallyFillable")}
         </Text>
         <Flex align="center" gap="base">

@@ -22,12 +22,6 @@ import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable.columns"
 import { useNavigateToReserve } from "@/modules/borrow/hooks/useNavigateToReserve"
-import {
-  AddStablepoolLiquidityProps,
-  AddStablepoolLiquidityWrapper,
-} from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
-import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
-import { useAssets } from "@/providers/assetsProvider"
 
 export const SupplyAssetsTable = () => {
   const [modalProps, setModalProps] = useState<StrategySupplyModalProps>()

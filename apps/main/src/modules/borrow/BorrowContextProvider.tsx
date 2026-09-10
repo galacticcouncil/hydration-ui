@@ -9,7 +9,7 @@ import { TFunction } from "i18next"
 import { PropsWithChildren, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient, useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { TDataEnv } from "@/config/rpc"
 import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
@@ -19,7 +19,6 @@ import { useMaxBalance } from "@/modules/transactions/hooks/useMaxBalance"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 import { useTransactionsStore } from "@/states/transactions"
 
 const defaultMarketByEnv: Record<TDataEnv, CustomMarket> = {
@@ -39,8 +38,6 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const { createTransaction } = useTransactionsStore()
   const createBatchTx = useCreateBatchTx()
   const { evm, dataEnv, papi } = useRpcProvider()
-  const squidClient = useSquidClient()
-  const neckworkEnabled = useNeckworkEnabled()
   const { getRelatedAToken } = useAssets()
   const { market } = useSearch({ from: "/borrow" })
 
@@ -77,8 +74,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
       <MoneyMarketProvider
         market={selectedMarket}
         provider={evm.transport}
-        squidClient={squidClient}
-        neckwork={neckworkEnabled ? neckworkClient : null}
+        neckwork={neckworkClient}
         onCreateTransaction={createTx}
         useMaxBalance={useMaxBalance}
         formatCurrency={createFormatterFn(t, "currency")}

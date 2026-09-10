@@ -1,8 +1,8 @@
 import { useMemo } from "react"
 
+import { PastExecutionData } from "@/modules/trade/orders/lib/types"
 import { useIntentTradesData } from "@/modules/trade/orders/lib/useIntentTradesData"
 import { useOrderTradesData } from "@/modules/trade/orders/lib/useOrderTradesData"
-import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
 import { TAsset } from "@/providers/assetsProvider"
 import { chronologicallyDesc, sortBy } from "@/utils/sort"
 

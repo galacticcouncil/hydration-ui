@@ -8,7 +8,7 @@ import {
   getDcaCompletionPercent,
   useDcaFundingBalance,
 } from "@/modules/trade/orders/lib/dcaProgress"
-import { OrderStatus } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderStatus } from "@/modules/trade/orders/lib/orderData"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
@@ -57,7 +57,9 @@ export const DcaOrderStatus: FC<Props> = ({
       return (
         <Status
           color={getToken("accents.success.emphasis")}
-          sx={{ display: "inline-flex", alignItems: "center", gap: "s" }}
+          display="inline-flex"
+          alignItems="center"
+          gap="s"
         >
           {t("trade.orders.status.active")}
           {percent !== null && <CompletionBar percent={percent} />}

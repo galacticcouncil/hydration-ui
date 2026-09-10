@@ -3,12 +3,8 @@ import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { EvmParachain } from "@galacticcouncil/xc-core"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 
-import type { WsPolkadotClient } from "@/api/provider"
-import {
-  type Papi,
-  TProviderContext,
-  useRpcProvider,
-} from "@/providers/rpcProvider"
+import type { Papi, WsPolkadotClient } from "@/api/rpcClient"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const getHydrationGenesisHash = (): string | undefined => {
   const chain = chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain
@@ -55,13 +51,13 @@ export const chainSpecDataQuery = (context: TProviderContext) =>
     context.endpoint,
     context.papiClient,
     context.papi,
-    context.isApiLoaded,
+    context.isReady,
   )
 
 export const useChainSpecData = () => {
-  const { endpoint, papiClient, papi, isApiLoaded } = useRpcProvider()
+  const { endpoint, papiClient, papi, isReady } = useRpcProvider()
 
   return useQuery(
-    chainSpecDataQueryOptions(endpoint, papiClient, papi, isApiLoaded),
+    chainSpecDataQueryOptions(endpoint, papiClient, papi, isReady),
   )
 }

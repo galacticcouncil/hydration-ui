@@ -20,7 +20,7 @@ import {
   isPapiTransaction,
 } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { TProviderContext } from "@/providers/rpcProvider"
 import { TransactionMeta } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 

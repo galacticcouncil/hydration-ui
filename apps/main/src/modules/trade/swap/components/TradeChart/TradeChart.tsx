@@ -14,19 +14,31 @@ import {
   ResponsiveScope,
   Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import {
+  GIGA_STABLESWAP_TO_ERC20,
+  isUsdPeggedAsset,
+} from "@galacticcouncil/utils"
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
-import React, { useRef, useState } from "react"
+import Big from "big.js"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { neckworkClient } from "@/api/neckwork"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { ChartState } from "@/components/ChartState"
 import { CandleChart } from "@/modules/trade/swap/components/TradeChart/CandleChart"
 import {
-  ChartTimeRange,
-  ChartTimeRangeOptionType,
-} from "@/components/ChartTimeRange/ChartTimeRange"
-import i18n from "@/i18n"
-import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
-import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+  SChartHeader,
+  SChartValues,
+} from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+import { TradeChartControls } from "@/modules/trade/swap/components/TradeChart/TradeChartControls"
+import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChart/TradeChartPrice"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -40,128 +52,14 @@ type PairChartProps = {
   readonly variant?: "trade" | "pool"
 }
 
-export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
-  const { t } = useTranslation()
+export const TradeChart: React.FC<{ readonly height: number }> = ({
+  height,
+}) => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
-
-  const chartRef = useRef<TradingViewChartRef>(null)
-  const [isInverted, setIsInverted] = useState(false)
-  const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
-    "week",
-  )
-
-  const assetA = isInverted ? assetOut : assetIn
-  const assetB = isInverted ? assetIn : assetOut
-
-  const {
-    prices,
-    isLoading: isChartLoading,
-    isSuccess,
-    isError,
-  } = useTradeChartData({
-    assetInId: assetA,
-    assetOutId: assetB,
-    timeFrame: interval === "all" ? null : interval,
-  })
-
-  const isEmpty = isSuccess && !prices.length
-
-  const {
-    onCrosshairMove,
-    value,
-    volume,
-    formattedAssetPrice,
-    formattedVolumePrice,
-    shouldShowValues,
-    isLoadingValues,
-  } = useTradeChartValues({
-    prices,
-    priceAssetId: assetA,
-    isEmpty,
-    isError,
-    isLoading: isChartLoading,
-  })
-
-  const { getAssetWithFallback } = useAssets()
-
-  const assetAMeta = getAssetWithFallback(assetA)
-  const assetBMeta = getAssetWithFallback(assetB)
-
-  const chartValue = shouldShowValues ? (
-    <Text fs={["p3", "p1"]} fw={600}>
-      <AnimatedValue
-        value={value}
-        format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
-      />
-    </Text>
-  ) : undefined
-
-  const chartDisplayValue = shouldShowValues ? (
-    <Box>
-      <Text fs="p5">
-        {t("price")}: {formattedAssetPrice}
-      </Text>
-      <Text fs="p5" visibility={volume > 0 ? "visible" : "hidden"}>
-        {t("vol")}: {formattedVolumePrice}
-      </Text>
-    </Box>
-  ) : undefined
 
   return (
     <Paper p="xl">
-      <Flex align="flex-start" gap="base" justify="space-between">
-        <ChartValues
-          value={chartValue}
-          displayValue={chartDisplayValue}
-          isLoading={shouldShowValues && isLoadingValues}
-        />
-        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <SChartInvertButton
-            size="small"
-            variant="tertiary"
-            outline
-            onClick={() => setIsInverted((prev) => !prev)}
-            sx={{ width: "auto", px: "m", gap: "s" }}
-          >
-            <Icon component={ArrowLeftRight} size="m" />
-            {assetBMeta.symbol}/{assetAMeta.symbol}
-          </SChartInvertButton>
-          <Separator
-            orientation="vertical"
-            mx="base"
-            sx={{
-              height: "l",
-              mt: "xs",
-              display: ["none", null, null, null, "block"],
-            }}
-          />
-          <ChartTimeRange
-            sx={{ ml: "auto" }}
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={(option) => {
-              setInterval(option.key)
-              chartRef.current?.resetZoom()
-            }}
-          />
-        </Flex>
-      </Flex>
-      <Box sx={{ height }}>
-        <ChartState
-          sx={{ height }}
-          isError={isError}
-          isLoading={isChartLoading}
-          isEmpty={isEmpty}
-        >
-          <TradingViewChart
-            ref={chartRef}
-            height={height}
-            data={prices}
-            hidePriceIndicator
-            onCrosshairMove={onCrosshairMove}
-          />
-        </ChartState>
-      </Box>
+      <PairChart height={height} assetIn={assetIn} assetOut={assetOut} />
     </Paper>
   )
 }

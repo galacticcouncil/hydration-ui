@@ -7,14 +7,14 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import {
   buildMigratedScheduleHalves,
   mergeMigratedOrders,
   toMigrationLinks,
 } from "@/modules/trade/orders/lib/buildOrderRows"
+import { OrderData } from "@/modules/trade/orders/lib/orderData"
 import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const useMigratedOrdersMerge = (orders: Array<OrderData>) => {

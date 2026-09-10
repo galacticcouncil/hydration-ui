@@ -14,11 +14,11 @@ import { TAssetData } from "@/api/assets"
 import {
   convertEvmTxRawToPapiTx,
   useApproveErc20,
-  useErc20Allowance,
   useGigaBorrowPoolContract,
   userGigaBorrowSummaryQueryKey,
   useUserGigaBorrowSummary,
 } from "@/api/borrow"
+import { useErc20Allowance } from "@/api/evm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"

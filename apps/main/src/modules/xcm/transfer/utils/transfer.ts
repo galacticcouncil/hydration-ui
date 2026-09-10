@@ -34,7 +34,6 @@ import {
   WORMHOLE_FAMILY_TAGS,
 } from "@/modules/xcm/transfer/utils/bridge"
 import { getChainPriority } from "@/modules/xcm/transfer/utils/chain"
-import { Papi } from "@/providers/rpcProvider"
 import { XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 

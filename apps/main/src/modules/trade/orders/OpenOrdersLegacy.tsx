@@ -3,10 +3,6 @@ import { FC, useMemo, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
-import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
-import { useIntentFillEnrichment } from "@/modules/trade/orders/lib/useIntentFillEnrichment"
-import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
-import { useMigratedOrdersMerge } from "@/modules/trade/orders/lib/useMigratedOrdersMerge"
 import {
   DcaOrderData,
   isDcaScheduleOrder,
@@ -15,7 +11,11 @@ import {
   OrderData,
   orderKey,
   OrderKind,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
+import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
+import { useIntentFillEnrichment } from "@/modules/trade/orders/lib/useIntentFillEnrichment"
+import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
+import { useMigratedOrdersMerge } from "@/modules/trade/orders/lib/useMigratedOrdersMerge"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
@@ -24,7 +24,7 @@ import { PastExecutionsIntent } from "@/modules/trade/orders/PastExecutions/Past
 import { PastExecutionsLegacy } from "@/modules/trade/orders/PastExecutions/PastExecutionsLegacy"
 import { PastExecutionsMerged } from "@/modules/trade/orders/PastExecutions/PastExecutionsMerged"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
-import { useChainOrdersData } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
+import { useChainOrdersData } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 
 type Props = {
   readonly paginationProps: PaginationProps

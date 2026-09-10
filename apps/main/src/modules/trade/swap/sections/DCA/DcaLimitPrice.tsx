@@ -32,9 +32,8 @@ export const DcaLimitPrice: FC<Props> = ({ quotedPrice }) => {
 
   return (
     <Flex direction="column">
-      <SwapSectionSeparator />
       <Flex justify="space-between" align="center" py="base">
-        <Text fw={500} fs="p5" color={getToken("text.medium")}>
+        <Text fw={400} fs="p5" color={getToken("text.medium")}>
           {t("trade:dca.limit.title")}
         </Text>
         <ToggleRoot>

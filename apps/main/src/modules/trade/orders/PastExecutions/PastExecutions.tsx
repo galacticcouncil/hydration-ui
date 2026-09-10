@@ -14,7 +14,6 @@ import { PastExecutionData } from "@/modules/trade/orders/lib/types"
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
 import { PastExecutionsListHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsListHeader"
-import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
 import { TAsset } from "@/providers/assetsProvider"
 
 const PAST_EXECUTION_ITEM_SIZE = 65

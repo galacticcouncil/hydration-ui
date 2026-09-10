@@ -45,7 +45,7 @@ export const AccountSubstrateIdentity: React.FC<AccountIdentityProps> = ({
   withExplorerLink = true,
   ...props
 }) => {
-  const addresses = useAddresses()
+  const addresses = useAddresses({}, { autoName: false })
   const addressBookName = addresses.find((a) =>
     stringEquals(a.publicKey, safeConvertSS58toPublicKey(address)),
   )?.name
@@ -64,7 +64,7 @@ export const AccountSubstrateIdentity: React.FC<AccountIdentityProps> = ({
 export const AccountAddressBookIdentity: React.FC<
   Omit<AccountIdentityProps, "papi">
 > = ({ address, withExplorerLink = true, ...props }) => {
-  const addresses = useAddresses()
+  const addresses = useAddresses({}, { autoName: false })
   const addressBookName = addresses.find((a) =>
     stringEquals(a.address, address),
   )?.name
