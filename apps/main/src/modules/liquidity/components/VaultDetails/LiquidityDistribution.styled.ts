@@ -9,20 +9,30 @@ export const SLiquidityLegend = styled(Flex)(
 )
 
 export const SManagedBand = styled(Flex, {
-  shouldForwardProp: (prop) => prop !== "$edgeColor" && prop !== "$bandOpacity",
+  shouldForwardProp: (prop) =>
+    prop !== "$rangeColor" &&
+    prop !== "$fillOpacity" &&
+    prop !== "$borderOpacity",
 })<{
-  $edgeColor: string
-  $bandOpacity: number
+  $rangeColor: string
+  $fillOpacity: number
+  $borderOpacity: number
 }>(
-  ({ $edgeColor, $bandOpacity }) => css`
+  ({ $rangeColor, $fillOpacity, $borderOpacity }) => css`
     z-index: 1;
-    border: 1px solid color-mix(in srgb, ${$edgeColor} 28%, transparent);
-    opacity: ${$bandOpacity};
+    background: color-mix(
+      in srgb,
+      ${$rangeColor} ${$fillOpacity * 100}%,
+      transparent
+    );
+    border: 1px solid
+      color-mix(in srgb, ${$rangeColor} ${$borderOpacity * 100}%, transparent);
     pointer-events: none;
     transition:
       left 650ms ease-in-out,
       width 650ms ease-in-out,
-      opacity 650ms ease-in-out;
+      background 650ms ease-in-out,
+      border-color 650ms ease-in-out;
   `,
 )
 

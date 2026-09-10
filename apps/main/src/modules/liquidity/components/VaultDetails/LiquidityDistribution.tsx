@@ -23,7 +23,11 @@ import {
   BARS_ID,
   getLiquidityDistribution,
   getManagedBand,
+  getScenarioDistribution,
   isBarPoint,
+  MANAGED_RANGE,
+  managedRangeChartStroke,
+  managedRangeMixedColor,
   priceAtTick,
   RangeScenario,
   sharesFocusGroup,
@@ -35,8 +39,10 @@ import { scaleHuman } from "@/utils/formatting"
 export type { RangeScenario }
 
 const TICK_PADDING = 8
+const CHART_GUIDE_INSET = 4
 const BAR_RADIUS = 4
 const BAR_GAP = 4
+const MIN_BAR_HEIGHT = 12
 
 const FADED_OPACITY = 0.4
 const FOCUS_TRANSITION = {
@@ -52,7 +58,50 @@ const SCENARIO_TRANSITION = {
   },
 }
 
-const DEFAULT_HEIGHT: ResponsiveStyleValue<number> = [280, 420]
+const DEFAULT_DESKTOP_HEIGHT = 420
+const DEFAULT_HEIGHT: ResponsiveStyleValue<number> = [
+  280,
+  DEFAULT_DESKTOP_HEIGHT,
+]
+
+const Legend = ({ color, label }: { color: string; label: string }) => (
+  <Flex align="center" gap="s">
+    <Box
+      as="span"
+      size="xs"
+      borderRadius="base"
+      bg={color}
+      display="inline-block"
+    />
+    <Text fs="p6" color={getToken("text.low")}>
+      {label}
+    </Text>
+  </Flex>
+)
+
+const RangeLegend = ({
+  range,
+  label,
+}: {
+  range: { color: string; fillOpacity: number; borderOpacity: number }
+  label: string
+}) => (
+  <Flex align="center" gap="s">
+    <Box
+      as="span"
+      size="xs"
+      borderRadius="base"
+      display="inline-block"
+      sx={{
+        background: managedRangeMixedColor(range.color, range.fillOpacity),
+        border: `1px solid ${managedRangeMixedColor(range.color, range.borderOpacity)}`,
+      }}
+    />
+    <Text fs="p6" color={getToken("text.low")}>
+      {label}
+    </Text>
+  </Flex>
+)
 
 export const LiquidityDistribution = ({
   vault,
@@ -74,6 +123,15 @@ export const LiquidityDistribution = ({
   const tickFontSize = themeProps.paragraphSize.p5
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
 
+  const managedRange = useMemo(
+    () => ({
+      color: MANAGED_RANGE.getColor(themeProps),
+      fillOpacity: MANAGED_RANGE.fillOpacity,
+      borderOpacity: MANAGED_RANGE.borderOpacity,
+    }),
+    [themeProps],
+  )
+
   const colors = useMemo(
     () => ({
       token0: scenario
@@ -83,8 +141,6 @@ export const LiquidityDistribution = ({
         ? themeProps.controls.solid.base
         : getAssetColor(token1.id),
       spot: themeProps.buttons.primary.high.rest,
-      rangeFill: themeProps.controls.dim.active,
-      rangeEdge: themeProps.controls.outline.active,
       surface: themeProps.surfaces.themeBasePalette.surfaceHigh,
     }),
     [getAssetColor, scenario, themeProps, token0.id, token1.id],
@@ -92,39 +148,54 @@ export const LiquidityDistribution = ({
 
   const vaultState = vault.vault
 
-  const { bars, spotTick, max, lo, hi, bands } = useMemo(
-    () =>
-      getLiquidityDistribution({
+  const { bars, spotTick, max, lo, hi, bands, chartDecimals0, chartDecimals1 } =
+    useMemo(() => {
+      if (scenario) {
+        const staged = getScenarioDistribution(scenario)
+        return {
+          ...staged,
+          chartDecimals0: staged.decimals0,
+          chartDecimals1: staged.decimals1,
+        }
+      }
+
+      const result = getLiquidityDistribution({
         pool: vault.pool,
         state: vault.vault,
         decimals0,
         decimals1,
-        scenario,
-      }),
-    [vault.pool, vault.vault, decimals0, decimals1, scenario],
-  )
+      })
+
+      return {
+        ...result,
+        chartDecimals0: decimals0,
+        chartDecimals1: decimals1,
+      }
+    }, [vault.pool, vault.vault, decimals0, decimals1, scenario])
 
   const top = max || 1
   const ceiling = top * 1.12
+  const chartHeight = resolvedHeight ?? DEFAULT_DESKTOP_HEIGHT
+  const minVisibleLiquidity = ceiling * (MIN_BAR_HEIGHT / chartHeight)
 
   const definition = useMemo(() => {
     const bandMarks = scenario
       ? []
-      : bands.map(({ id, lower, upper, opacity, height }) =>
+      : bands.map(({ id, lower, upper, height }) =>
           decorative(
             rect([{ lower, upper }], {
               id: `managed-band-${id}`,
               x1: "lower",
               x2: "upper",
               y1: () => 0,
-              y2: () => top * height,
-              fill: colors.rangeFill,
-              fillOpacity: opacity,
-              stroke: `color-mix(in srgb, ${colors.rangeEdge} ${
-                opacity * 58
-              }%, transparent)`,
-              strokeWidth: 1,
-              radius: 5,
+              y2: () => Math.max(top * height, minVisibleLiquidity),
+              fill: managedRange.color,
+              fillOpacity: managedRange.fillOpacity,
+              ...managedRangeChartStroke(
+                managedRange.color,
+                managedRange.borderOpacity,
+              ),
+              radius: 3,
               inset: 0,
             }),
           ),
@@ -132,13 +203,14 @@ export const LiquidityDistribution = ({
 
     return defineChart({
       focusRing: false,
+      margin: scenario ? CHART_GUIDE_INSET : undefined,
       marks: [
         rect(bars, {
           id: BARS_ID,
           x1: "from",
           x2: "to",
           y1: () => 0,
-          y2: "liquidity",
+          y2: (bar) => Math.max(bar.liquidity, minVisibleLiquidity),
           color: "side",
           key: (bar) => bar.key,
           inset: 0,
@@ -188,7 +260,7 @@ export const LiquidityDistribution = ({
                 y: () => 0,
                 text: (tick) =>
                   t("common:number", {
-                    value: priceAtTick(tick, token0.decimals, token1.decimals),
+                    value: priceAtTick(tick, chartDecimals0, chartDecimals1),
                   }),
                 fill: colors.spot,
                 fontSize: tickFontSize,
@@ -198,22 +270,24 @@ export const LiquidityDistribution = ({
       ],
       x: {
         scale: scaleLinear().domain([lo, hi]),
-        axis: {
-          line: false,
-          ticks: {
-            values: [lo, hi],
-            size: 0,
-            padding: TICK_PADDING,
-            format: (tick) =>
-              t("common:number", {
-                value: priceAtTick(tick, token0.decimals, token1.decimals),
-              }),
-          },
-          tickLabels: {
-            fontSize: tickFontSize,
-            anchor: ({ value }) => (value === lo ? "start" : "end"),
-          },
-        },
+        axis: scenario
+          ? false
+          : {
+              line: false,
+              ticks: {
+                values: [lo, hi],
+                size: 0,
+                padding: TICK_PADDING,
+                format: (tick) =>
+                  t("common:number", {
+                    value: priceAtTick(tick, chartDecimals0, chartDecimals1),
+                  }),
+              },
+              tickLabels: {
+                fontSize: tickFontSize,
+                anchor: ({ value }) => (value === lo ? "start" : "end"),
+              },
+            },
       },
       y: {
         scale: scaleLinear().domain([0, ceiling]),
@@ -236,13 +310,15 @@ export const LiquidityDistribution = ({
     colors,
     hi,
     lo,
+    managedRange,
     spotTick,
     t,
     tickBaseline,
     tickFontSize,
-    token0.decimals,
-    token1.decimals,
+    chartDecimals0,
+    chartDecimals1,
     ceiling,
+    minVisibleLiquidity,
     top,
     scenario,
     vaultState,
@@ -319,25 +395,25 @@ export const LiquidityDistribution = ({
                 <SManagedBand
                   key={managedBand.id}
                   aria-hidden
-                  $edgeColor={colors.rangeEdge}
-                  $bandOpacity={managedBand.opacity}
+                  $rangeColor={managedRange.color}
+                  $fillOpacity={managedRange.fillOpacity}
+                  $borderOpacity={managedRange.borderOpacity}
                   position="absolute"
-                  top={pxToRem(8)}
-                  bottom={pxToRem(25)}
+                  top={`${CHART_GUIDE_INSET}px`}
+                  bottom={`${CHART_GUIDE_INSET}px`}
                   left={`${((managedBand.lower - lo) / (hi - lo)) * 100}%`}
                   width={`${
                     ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
                   }%`}
                   borderRadius="base"
-                  bg={colors.rangeFill}
                 />
               ))}
 
               <SSpotLine
                 aria-hidden
                 position="absolute"
-                top={pxToRem(8)}
-                bottom={pxToRem(25)}
+                top={`${CHART_GUIDE_INSET}px`}
+                bottom={`${CHART_GUIDE_INSET}px`}
                 left={`${Math.min(
                   100,
                   Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
@@ -355,23 +431,6 @@ export const LiquidityDistribution = ({
                   bg={colors.spot}
                   transform="translateX(-50%)"
                 />
-                <Text
-                  fs="p6"
-                  position="absolute"
-                  bottom={pxToRem(-22)}
-                  left="50%"
-                  color={colors.spot}
-                  transform="translateX(-50%)"
-                  whiteSpace="nowrap"
-                >
-                  {t("common:number", {
-                    value: priceAtTick(
-                      spotTick,
-                      token0.decimals,
-                      token1.decimals,
-                    ),
-                  })}
-                </Text>
               </SSpotLine>
             </>
           )}
@@ -395,8 +454,8 @@ export const LiquidityDistribution = ({
             }
           />
           <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
-          <Legend
-            color={colors.rangeFill}
+          <RangeLegend
+            range={managedRange}
             label={t("vaults.chart.legend.ranges")}
           />
         </SLiquidityLegend>
@@ -404,21 +463,6 @@ export const LiquidityDistribution = ({
     </Flex>
   )
 }
-
-const Legend = ({ color, label }: { color: string; label: string }) => (
-  <Flex align="center" gap="s">
-    <Box
-      as="span"
-      size={pxToRem(11)}
-      borderRadius="base"
-      bg={color}
-      display="inline-block"
-    />
-    <Text fs="p6" color={getToken("text.low")}>
-      {label}
-    </Text>
-  </Flex>
-)
 
 const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
   const { t } = useTranslation(["liquidity", "common"])
