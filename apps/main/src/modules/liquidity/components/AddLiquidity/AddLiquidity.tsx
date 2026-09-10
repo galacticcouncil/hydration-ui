@@ -76,8 +76,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
             assetFieldName="asset"
             amountFieldName="amount"
             assets={underlyingAssetMeta ? [underlyingAssetMeta, poolMeta] : []}
-            maxBalance={getMaxBalance(watch("asset"))}
-            sx={{ pt: 0 }}
+            balance={{ value: getMaxBalance(watch("asset")) }}
+            sx={{ pb: "l" }}
             disabledAssetSelector={!underlyingAssetMeta}
           />
 

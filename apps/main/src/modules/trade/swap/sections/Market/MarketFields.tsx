@@ -99,9 +99,8 @@ export const MarketFields: FC<Props> = ({
         amountFieldName="sellAmount"
         label={t("sell")}
         assets={tradable}
-        maxBalanceFallback="0"
-        maxBalance={maxSellBalance}
-        maxBalanceLoading={maxSellBalanceLoading}
+        balance={{ value: maxSellBalance, isLoading: maxSellBalanceLoading }}
+        sx={{ py: "l" }}
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
           const isSwitch = sellAsset.id === buyAsset?.id
@@ -133,8 +132,8 @@ export const MarketFields: FC<Props> = ({
         amountFieldName="buyAmount"
         label={t("buy")}
         assets={buyableAssets}
-        hideMaxBalanceAction
-        maxBalanceFallback="0"
+        balance={{ onMax: null }}
+        sx={{ py: "l" }}
         onAssetChange={(buyAsset, previousBuyAsset) => {
           const { sellAsset } = getValues()
           const isSwitch = buyAsset.id === sellAsset?.id

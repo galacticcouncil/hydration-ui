@@ -39,13 +39,13 @@ export const UnstakeForm: FC<Props> = ({
   return (
     <>
       <AssetSelect
-        sx={{ px: "xl" }}
+        sx={{ px: "xl", py: "l" }}
         label={t("staking:stake.unstake.amount")}
         assets={[]}
         selectedAsset={native}
-        disabled
+        isDisabled
         value={staked}
-        ignoreBalance
+        balance={false}
       />
       <Separator />
       {

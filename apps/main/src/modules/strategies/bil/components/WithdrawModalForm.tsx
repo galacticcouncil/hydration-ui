@@ -142,21 +142,22 @@ export const WithdrawModalForm = ({
             name="amount"
             render={({ field, fieldState }) => (
               <AssetInput
-                sx={{ pt: 0 }}
+                sx={{ pb: "l" }}
                 label={t("common:amount")}
-                symbol={bil.symbol}
-                selectedAssetIcon={<AssetLogo id={bil.id} />}
-                modalDisabled
+                asset={{ symbol: bil.symbol, icon: <AssetLogo id={bil.id} /> }}
                 value={field.value}
                 onChange={field.onChange}
-                balanceLabel={t("common:withdrawableBalance")}
                 displayValue={
                   Big(withdrawAmount || "0").gt(0)
                     ? t("common:currency", { value: usdValue })
                     : t("common:currency", { value: 0 })
                 }
-                maxBalance={maxWithdrawable.toString()}
-                maxButtonBalance={maxWithdrawable.toString()}
+                balance={{
+                  label: t("common:withdrawableBalance"),
+                  value: t("common:number", { value: maxWithdrawable }),
+                  onMax: () => field.onChange(maxWithdrawable.toString()),
+                  isMaxDisabled: Big(maxWithdrawable).lte(0),
+                }}
                 amountError={fieldState.error?.message}
               />
             )}

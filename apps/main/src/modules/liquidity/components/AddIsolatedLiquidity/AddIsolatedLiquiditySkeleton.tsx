@@ -24,8 +24,9 @@ export const AddIsolatedLiquiditySkeleton: FC<Props> = ({ closable }) => {
       <ModalBody>
         <AssetSelect
           label={t("liquidity.createPool.modal.assetA")}
-          disabled
-          loading
+          isDisabled
+          isLoading
+          sx={{ py: "l" }}
           assets={[]}
           selectedAsset={undefined}
         />
@@ -41,8 +42,9 @@ export const AddIsolatedLiquiditySkeleton: FC<Props> = ({ closable }) => {
 
         <AssetSelect
           label={t("liquidity.createPool.modal.assetB")}
-          disabled
-          loading
+          isDisabled
+          isLoading
+          sx={{ py: "l" }}
           assets={[]}
           selectedAsset={undefined}
         />

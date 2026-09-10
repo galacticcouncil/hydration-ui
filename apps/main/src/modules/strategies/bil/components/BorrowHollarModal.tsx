@@ -90,19 +90,23 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
             name="amount"
             render={({ field, fieldState }) => (
               <AssetInput
-                sx={{ pt: 0 }}
+                sx={{ pb: "l" }}
                 label={t("bil.borrow.selectAsset")}
-                balanceLabel={t("common:available")}
-                symbol={hollar.symbol}
-                selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-                modalDisabled
+                asset={{
+                  symbol: hollar.symbol,
+                  icon: <AssetLogo id={hollar.id} size="medium" />,
+                }}
                 value={field.value}
                 onChange={field.onChange}
                 displayValue={t("common:currency", {
                   value: inputAmount,
                 })}
-                maxBalance={maxBorrowableUsed}
-                maxButtonBalance={maxBorrowableUsed}
+                balance={{
+                  label: t("common:available"),
+                  value: t("common:number", { value: maxBorrowableUsed }),
+                  onMax: () => field.onChange(maxBorrowableUsed),
+                  isMaxDisabled: !(Number(maxBorrowableUsed) > 0),
+                }}
                 amountError={fieldState.error?.message}
               />
             )}

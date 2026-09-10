@@ -152,11 +152,11 @@ export const RemoveLiquidityForm = ({
               <AssetSelectFormField<TRemoveLiquidityFormValues>
                 assetFieldName="asset"
                 amountFieldName="amount"
-                maxBalance={totalPositionShifted}
+                balance={{ value: totalPositionShifted }}
                 displayValue={displayValue}
                 assets={[]}
                 disabledAssetSelector
-                sx={{ pt: 0 }}
+                sx={{ pb: "l" }}
               />
             )}
 

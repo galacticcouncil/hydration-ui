@@ -221,9 +221,9 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
             chain={isCrossChain ? srcChain : null}
           />
         }
-        loading={isSelectionLoading}
+        isLoading={isSelectionLoading}
         maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
-        maxBalanceLoading={
+        isMaxBalanceLoading={
           isSingleTrade
             ? isMaxSwapSellBalanceLoading
             : isMaxTwapSellBalanceLoading
@@ -250,17 +250,26 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
         }
         chainAssetPairs={destChainAssetPairs}
         modalTitle={t("trade:xc.swap.field.destTitle")}
-        hideMaxBalanceAction
-        ignoreBalance={isCrossChain && !showDestBalance}
-        ignoreDisplayValue={isCrossChain && !destSpotPrice}
+        balance={
+          isCrossChain && !showDestBalance
+            ? undefined
+            : {
+                label: t("common:balance"),
+                value: t("common:number", {
+                  value:
+                    (showDestBalance ? destBalance : destMaxBalance) || "0",
+                }),
+                isLoading: isDestBalanceLoading,
+              }
+        }
         ignoreErrors={isCrossChain}
-        maxBalance={showDestBalance ? destBalance : destMaxBalance}
-        maxBalanceLoading={isDestBalanceLoading}
-        displayValue={destDisplayValue}
-        disabledInput={isCrossChain}
-        loading={isSelectionLoading}
-        valueLoading={isSell && isQuoteLoading}
-        displayValueLoading={
+        displayValue={
+          isCrossChain && !destSpotPrice ? undefined : destDisplayValue
+        }
+        isReadOnly={isCrossChain}
+        isLoading={isSelectionLoading}
+        isValueLoading={isSell && isQuoteLoading}
+        isDisplayValueLoading={
           isCrossChain
             ? isDestSpotPriceLoading || (isSell && isQuoteLoading)
             : isQuoteLoading || isOnChainDestDisplayValueLoading

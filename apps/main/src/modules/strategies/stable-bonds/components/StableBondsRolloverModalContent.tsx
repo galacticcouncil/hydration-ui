@@ -100,10 +100,9 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
                     onChange={field.onChange}
                     assets={[]}
                     selectedAsset={order.assetIn}
-                    maxButtonBalance={assetInMax}
-                    maxBalance={depositAssetBalance}
-                    maxBalanceFallback="0"
+                    balance={{ value: depositAssetBalance, max: assetInMax }}
                     amountError={fieldState.error?.message}
+                    sx={{ py: "l" }}
                   />
                 )}
               />

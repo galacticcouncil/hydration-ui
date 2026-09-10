@@ -145,8 +145,9 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             label={t("transfer.modal.asset.label")}
             assetFieldName="asset"
             amountFieldName="amount"
-            maxBalance={getMaxBalance(asset)}
+            balance={{ value: getMaxBalance(asset) }}
             assets={tradable}
+            sx={{ py: "l" }}
           />
           <ModalContentDivider />
           <AddressBookFormField<TransferPositionFormValues>

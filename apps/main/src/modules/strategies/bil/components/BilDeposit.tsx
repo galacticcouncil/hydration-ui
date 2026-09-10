@@ -99,17 +99,23 @@ export const BilDeposit = () => {
               render={({ field, fieldState }) => (
                 <AssetInput
                   label={t("bil.deposit.your")}
-                  symbol={hollar.symbol}
-                  selectedAssetIcon={<AssetLogo id={hollar.id} />}
-                  modalDisabled
+                  asset={{
+                    symbol: hollar.symbol,
+                    icon: <AssetLogo id={hollar.id} />,
+                  }}
                   value={field.value}
                   onChange={field.onChange}
                   displayValue={t("common:currency", {
                     value: amount || "0",
                   })}
-                  maxBalance={balance}
-                  maxButtonBalance={effectiveMax}
+                  balance={{
+                    label: t("common:balance"),
+                    value: t("common:number", { value: balance }),
+                    onMax: () => field.onChange(effectiveMax),
+                    isMaxDisabled: !(Number(effectiveMax) > 0),
+                  }}
                   amountError={fieldState.error?.message}
+                  sx={{ py: "l" }}
                 />
               )}
             />
@@ -118,12 +124,10 @@ export const BilDeposit = () => {
 
             <AssetInput
               label={t("bil.deposit.youReceive")}
-              symbol={bil.symbol}
-              selectedAssetIcon={<AssetLogo id={bil.id} />}
-              modalDisabled
-              disabledInput
-              ignoreBalance
+              asset={{ symbol: bil.symbol, icon: <AssetLogo id={bil.id} /> }}
+              isReadOnly
               value={outputBil}
+              sx={{ py: "l" }}
               displayValue={t("common:currency", {
                 value: outputHollar,
               })}

@@ -156,8 +156,8 @@ const SupplyIsolatedLiquidityBody = ({
             amountFieldName="amount"
             sortedAssets={selectabledAssets}
             assets={[]}
-            maxBalance={maxBalance}
-            sx={{ pt: 0 }}
+            balance={{ value: maxBalance }}
+            sx={{ pb: "l" }}
           />
 
           <ModalContentDivider />

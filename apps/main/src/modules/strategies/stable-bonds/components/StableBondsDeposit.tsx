@@ -118,23 +118,22 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
               assetFieldName="depositAsset"
               amountFieldName="depositAmount"
               assets={depositAssets}
-              disabled={!isSelectedOrderFillable}
-              maxButtonBalance={assetInMax}
-              maxBalance={depositAssetBalance}
+              isDisabled={!isSelectedOrderFillable}
+              balance={{ value: depositAssetBalance, max: assetInMax }}
+              sx={{ py: "l" }}
             />
 
             <StableBondsExchangeRate order={selectedOrder} />
 
             <AssetInput
               label={t("strategies:bonds.deposit.receiveAtMaturity")}
-              symbol={underlyingAsset.symbol}
-              selectedAssetIcon={
-                <AssetLogo id={underlyingAsset.id} size="medium" />
-              }
-              modalDisabled
-              disabledInput
-              ignoreBalance
+              asset={{
+                symbol: underlyingAsset.symbol,
+                icon: <AssetLogo id={underlyingAsset.id} size="medium" />,
+              }}
+              isReadOnly
               value={receiveAmount}
+              sx={{ py: "l" }}
               displayValue={t("currency", {
                 value: receiveAmount,
               })}

@@ -148,13 +148,14 @@ export const FillOrderModalContent: FC<Props> = ({
                     }}
                     assets={[]}
                     selectedAsset={otcOffer.assetIn}
-                    disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
-                    modalDisabled
-                    maxButtonBalance={assetInMax}
-                    maxBalance={maxAccountBalance}
-                    maxBalanceFallback="0"
-                    hideMaxBalanceAction={!otcOffer.isPartiallyFillable}
+                    isDisabled={isUsersOffer || !otcOffer.isPartiallyFillable}
+                    balance={{
+                      value: maxAccountBalance,
+                      max: assetInMax,
+                      onMax: otcOffer.isPartiallyFillable ? undefined : null,
+                    }}
                     amountError={fieldState.error?.message}
+                    sx={{ py: "l" }}
                   />
                 )}
               />
@@ -189,11 +190,10 @@ export const FillOrderModalContent: FC<Props> = ({
                     }}
                     assets={[]}
                     selectedAsset={otcOffer.assetOut}
-                    disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
-                    modalDisabled
-                    maxBalanceFallback="0"
-                    hideMaxBalanceAction
+                    isDisabled={isUsersOffer || !otcOffer.isPartiallyFillable}
+                    balance={{ onMax: null }}
                     amountError={fieldState.error?.message}
+                    sx={{ py: "l" }}
                   />
                 )}
               />

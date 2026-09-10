@@ -22,7 +22,7 @@ const AssetSectionSkeleton = () => {
         </Text>
       </Flex>
       <Flex justify="space-between" align="center">
-        <AssetButton loading error={false} />
+        <AssetButton isLoading />
         <Flex gap="s" direction="column" align="end">
           <div sx={{ height: pxToRem(26), lineHeight: 1 }}>
             <Skeleton width={pxToRem(40)} height={pxToRem(26)} />

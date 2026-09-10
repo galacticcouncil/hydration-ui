@@ -116,10 +116,10 @@ export const AddVaultLiquidity = ({
               assetFieldName="assetA"
               amountFieldName="amountA"
               assets={[]}
-              maxBalance={getMaxBalance(assetA)}
+              balance={{ value: getMaxBalance(assetA) }}
               disabledAssetSelector
               onAmountChange={() => form.setValue("lastUpdated", "assetA")}
-              sx={{ pt: 0 }}
+              sx={{ pb: "l" }}
             />
 
             <AssetSwitcher
@@ -134,9 +134,10 @@ export const AddVaultLiquidity = ({
               assetFieldName="assetB"
               amountFieldName="amountB"
               assets={[]}
-              maxBalance={getMaxBalance(assetB)}
+              balance={{ value: getMaxBalance(assetB) }}
               disabledAssetSelector
               onAmountChange={() => form.setValue("lastUpdated", "assetB")}
+              sx={{ py: "l" }}
             />
 
             <ModalContentDivider />

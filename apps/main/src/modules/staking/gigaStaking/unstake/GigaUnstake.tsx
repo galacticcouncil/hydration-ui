@@ -63,11 +63,11 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
             label={t("gigaStaking.gigaUnstake.input.label")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={maxUnstake}
+            balance={{ value: maxUnstake, label: t("common:available") }}
             displayValue={t("common:currency", {
               value: displayAmount,
             })}
-            balanceLabel={t("common:available")}
+            sx={{ py: "l" }}
           />
         </Box>
 

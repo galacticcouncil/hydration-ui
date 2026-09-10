@@ -74,8 +74,9 @@ export const AddStablepoolLiquiditySkeleton = (
 
         <AssetSelect
           label={t("liquidity.add.modal.selectAsset")}
-          disabled
-          loading
+          isDisabled
+          isLoading
+          sx={{ py: "l" }}
           assets={[]}
           selectedAsset={undefined}
         />

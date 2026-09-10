@@ -324,8 +324,9 @@ export const AddStablepoolLiquidityForm = ({
                     label={t("liquidity.add.modal.selectAsset")}
                     assets={[]}
                     sortedAssets={assetsToSelect}
-                    maxBalance={getMaxBalance(asset)}
+                    balance={{ value: getMaxBalance(asset) }}
                     selectedAsset={getAssetWithFallback(value.assetId)}
+                    sx={{ py: "l" }}
                     amountError={error?.message}
                     value={value.amount}
                     onChange={(amount) => {

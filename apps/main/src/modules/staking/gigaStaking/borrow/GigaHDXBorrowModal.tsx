@@ -76,8 +76,8 @@ export const GigaHDXBorrowForm = ({
             label={t("amount")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={borrowableAmount}
-            balanceLabel={t("available")}
+            balance={{ value: borrowableAmount, label: t("available") }}
+            sx={{ py: "l" }}
           />
           <ModalContentDivider />
           <Summary

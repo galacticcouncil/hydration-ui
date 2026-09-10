@@ -17,8 +17,9 @@ export const GigaStakeSkeleton = () => {
       <Box px="l">
         <AssetSelect
           label={t("gigaStaking.gigaStake.input.label")}
-          disabled
-          loading
+          isDisabled
+          isLoading
+          sx={{ py: "l" }}
           assets={[]}
           selectedAsset={undefined}
         />

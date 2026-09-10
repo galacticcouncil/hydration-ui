@@ -405,11 +405,14 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 amountFieldName="offerAmount"
                 label={t("common:offer")}
                 assets={sufficientAssets}
-                maxBalanceFallback="0"
-                maxBalance={getMaxBalance(offerAsset)}
-                ignoreBalance={!areAssetsSelected}
-                ignoreDisplayValue={!areAssetsSelected}
-                disabledInput={!areAssetsSelected}
+                balance={
+                  areAssetsSelected
+                    ? { value: getMaxBalance(offerAsset) }
+                    : false
+                }
+                displayValue={areAssetsSelected ? undefined : null}
+                isReadOnly={!areAssetsSelected}
+                sx={{ py: "l" }}
                 onAmountChange={handleOfferAmountChange}
                 onAssetChange={handleOfferAssetChange}
               />
@@ -432,10 +435,10 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 amountFieldName="buyAmount"
                 label={t("otc.placeOrder.buy")}
                 assets={sufficientAssets}
-                maxBalanceFallback="0"
-                hideMaxBalanceAction
-                ignoreDisplayValue={!areAssetsSelected}
-                disabledInput={!areAssetsSelected}
+                balance={{ onMax: null }}
+                displayValue={areAssetsSelected ? undefined : null}
+                isReadOnly={!areAssetsSelected}
+                sx={{ py: "l" }}
                 onAmountChange={handleBuyAmountChange}
                 onAssetChange={handleBuyAssetChange}
               />

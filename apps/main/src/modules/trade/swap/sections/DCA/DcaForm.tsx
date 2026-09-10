@@ -122,9 +122,9 @@ export const DcaForm: FC<{ maxBalance: string }> = ({ maxBalance }) => {
             ? t("trade:dca.assetIn.title.open")
             : t("trade:dca.assetIn.title")
         }
-        maxBalanceFallback="0"
-        maxBalance={maxBalance}
+        balance={{ value: maxBalance }}
         onAssetChange={handleSellAssetChange}
+        sx={{ py: "l" }}
       />
       <DcaAssetSwitcher />
       <Controller
@@ -139,9 +139,10 @@ export const DcaForm: FC<{ maxBalance: string }> = ({ maxBalance }) => {
             }}
             assets={buyableAssets}
             label={t("trade:dca.assetOut.title")}
-            hideInput
-            ignoreBalance
+            isAmountHidden
+            balance={false}
             assetError={fieldState.error?.message}
+            sx={{ py: "l" }}
           />
         )}
       />

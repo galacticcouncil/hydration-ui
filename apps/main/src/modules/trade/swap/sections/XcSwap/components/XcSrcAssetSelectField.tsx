@@ -11,9 +11,9 @@ import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   readonly label: ReactNode
-  readonly loading?: boolean
+  readonly isLoading?: boolean
   readonly maxBalance?: string
-  readonly maxBalanceLoading?: boolean
+  readonly isMaxBalanceLoading?: boolean
   readonly onAssetChange?: (
     asset: TAssetData,
     previousAsset: TAssetData | null,
@@ -23,9 +23,9 @@ type Props = {
 
 export const XcSrcAssetSelectField: React.FC<Props> = ({
   label,
-  loading,
+  isLoading,
   maxBalance,
-  maxBalanceLoading,
+  isMaxBalanceLoading,
   onAssetChange,
   onAmountChange,
 }) => {
@@ -68,10 +68,8 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({
       }}
       assetError={assetFieldState.error?.message}
       amountError={amountFieldState.error?.message}
-      maxBalance={maxBalance}
-      maxBalanceLoading={maxBalanceLoading}
-      maxBalanceFallback="0"
-      loading={loading}
+      balance={{ value: maxBalance, isLoading: isMaxBalanceLoading }}
+      isLoading={isLoading}
     />
   )
 }

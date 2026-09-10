@@ -60,10 +60,13 @@ const GigaHDXRepayForm = ({ onClose }: GigaHDXRepayModalProps) => {
             label={t("amount")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={walletBalance}
-            maxButtonBalance={maxRepayAmountString}
+            balance={{
+              value: walletBalance,
+              max: maxRepayAmountString,
+              onMax: () => form.setValue("isMaxSelected", true),
+            }}
             onAmountChange={() => form.setValue("isMaxSelected", false)}
-            onMaxButtonClick={() => form.setValue("isMaxSelected", true)}
+            sx={{ py: "l" }}
           />
 
           <ModalContentDivider />

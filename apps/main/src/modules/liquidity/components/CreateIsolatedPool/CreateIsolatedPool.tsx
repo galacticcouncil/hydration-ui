@@ -100,8 +100,9 @@ export const CreateIsolatedPool: FC<Props> = ({
             amountFieldName="amountA"
             label={t("liquidity.createPool.modal.assetA")}
             assets={allowedAssetsA}
-            maxBalance={getMaxBalance(assetA)}
-            disabled={!assetA}
+            balance={{ value: getMaxBalance(assetA) }}
+            isDisabled={!assetA}
+            sx={{ py: "l" }}
             onAssetChange={() => form.trigger()}
           />
 
@@ -119,8 +120,9 @@ export const CreateIsolatedPool: FC<Props> = ({
             amountFieldName="amountB"
             label={t("liquidity.createPool.modal.assetB")}
             assets={allowedAssetsB}
-            maxBalance={getMaxBalance(assetB)}
-            disabled={!assetB}
+            balance={{ value: getMaxBalance(assetB) }}
+            isDisabled={!assetB}
+            sx={{ py: "l" }}
             onAssetChange={() => form.trigger()}
           />
 

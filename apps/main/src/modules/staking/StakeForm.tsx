@@ -77,12 +77,11 @@ export const StakeForm: FC<Props> = ({
           name="amount"
           render={({ field, fieldState }) => (
             <AssetSelect
-              sx={{ px: "xl" }}
+              sx={{ px: "xl", py: "l" }}
               label={t("staking:stake.stake.amount")}
               assets={[]}
               selectedAsset={native}
-              modalDisabled
-              maxBalance={maxBalanceHuman}
+              balance={{ value: maxBalanceHuman }}
               value={field.value}
               onChange={field.onChange}
               amountError={fieldState.error?.message}

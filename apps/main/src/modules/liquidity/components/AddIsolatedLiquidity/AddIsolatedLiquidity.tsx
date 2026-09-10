@@ -126,7 +126,7 @@ export const AddIsolatedLiquidityForm = ({
               assetFieldName="assetA"
               amountFieldName="amountA"
               assets={[]}
-              maxBalance={getMaxBalance(assetAMeta)}
+              balance={{ value: getMaxBalance(assetAMeta) }}
               disabledAssetSelector
               onAmountChange={(value) => {
                 form.setValue("lastUpdated", "assetA")
@@ -150,7 +150,7 @@ export const AddIsolatedLiquidityForm = ({
                   shouldTouch: true,
                 })
               }}
-              sx={{ pt: 0 }}
+              sx={{ pb: "l" }}
             />
 
             <AssetSwitcher
@@ -165,7 +165,8 @@ export const AddIsolatedLiquidityForm = ({
               assetFieldName="assetB"
               amountFieldName="amountB"
               assets={[]}
-              maxBalance={getMaxBalance(assetBMeta)}
+              balance={{ value: getMaxBalance(assetBMeta) }}
+              sx={{ py: "l" }}
               disabledAssetSelector
               onAmountChange={(value) => {
                 form.setValue("lastUpdated", "assetB")

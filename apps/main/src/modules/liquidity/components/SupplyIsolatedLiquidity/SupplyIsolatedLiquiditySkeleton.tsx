@@ -24,8 +24,9 @@ export const SupplyIsolatedLiquiditySkeleton = () => {
       <ModalBody sx={{ py: 0 }}>
         <AssetSelect
           label={t("amount")}
-          disabled
-          loading
+          isDisabled
+          isLoading
+          sx={{ py: "l" }}
           assets={[]}
           selectedAsset={undefined}
         />

@@ -88,18 +88,23 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
             name="amount"
             render={({ field, fieldState }) => (
               <AssetInput
-                sx={{ pt: 0 }}
+                sx={{ pb: "l" }}
                 label={t("common:amount")}
-                symbol={hollar.symbol}
-                selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-                modalDisabled
+                asset={{
+                  symbol: hollar.symbol,
+                  icon: <AssetLogo id={hollar.id} size="medium" />,
+                }}
                 value={field.value}
                 onChange={field.onChange}
                 displayValue={t("common:currency", {
                   value: inputAmount,
                 })}
-                maxBalance={maxRepay}
-                maxButtonBalance={maxRepay}
+                balance={{
+                  label: t("common:balance"),
+                  value: t("common:number", { value: maxRepay }),
+                  onMax: () => field.onChange(maxRepay),
+                  isMaxDisabled: !(Number(maxRepay) > 0),
+                }}
                 amountError={fieldState.error?.message}
               />
             )}

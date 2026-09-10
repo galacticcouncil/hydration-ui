@@ -169,12 +169,12 @@ const JoinFarmsForm = ({
                   <AssetSelect
                     assets={[]}
                     selectedAsset={meta}
-                    maxBalance={formValues.amount}
+                    balance={{ value: formValues.amount }}
                     value={value}
                     onChange={onChange}
                     amountError={error?.message}
-                    ignoreDisplayValue
-                    sx={{ pt: 0 }}
+                    displayValue={null}
+                    sx={{ pb: "l" }}
                   />
                 ) : (
                   <Flex direction="column">

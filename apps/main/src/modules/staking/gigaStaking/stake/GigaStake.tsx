@@ -92,7 +92,8 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
             label={t("gigaStaking.gigaStake.input.label")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={maxStakeHuman}
+            balance={{ value: maxStakeHuman }}
+            sx={{ py: "l" }}
           />
         </Box>
 
