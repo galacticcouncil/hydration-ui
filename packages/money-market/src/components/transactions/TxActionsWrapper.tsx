@@ -91,7 +91,7 @@ export const TxActionsWrapper = ({
         size="large"
         isLoading={!!loading}
       >
-        {content || <>&nbsp;</>}
+        {content}
       </LoadingButton>
     </Box>
   )

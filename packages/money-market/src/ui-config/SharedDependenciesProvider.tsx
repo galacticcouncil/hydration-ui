@@ -1,5 +1,4 @@
 import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
-import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createContext, useContext } from "react"
 import invariant from "tiny-invariant"
 
@@ -15,8 +14,7 @@ interface SharedDependenciesContextProps {
   approvedAmountService: ApprovedAmountService
   uiIncentivesService: UiIncentivesService
   uiPoolService: UiPoolService
-  squidClient: SquidSdk
-  neckwork: NeckworkClient | null
+  neckwork: NeckworkClient
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
 }
@@ -26,17 +24,10 @@ const SharedDependenciesContext =
 
 export const SharedDependenciesProvider: React.FC<{
   children?: React.ReactNode
-  squidClient: SquidSdk
-  neckwork: NeckworkClient | null
+  neckwork: NeckworkClient
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
-}> = ({
-  children,
-  squidClient,
-  neckwork,
-  useMaxBalance,
-  getRelatedATokenId,
-}) => {
+}> = ({ children, neckwork, useMaxBalance, getRelatedATokenId }) => {
   const poolTokensBalanceService = new WalletBalanceService(getProvider)
   const approvedAmountService = new ApprovedAmountService(getProvider)
 
@@ -50,7 +41,6 @@ export const SharedDependenciesProvider: React.FC<{
         approvedAmountService,
         uiPoolService,
         uiIncentivesService,
-        squidClient,
         neckwork,
         useMaxBalance,
         getRelatedATokenId,

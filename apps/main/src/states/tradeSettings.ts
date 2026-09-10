@@ -13,7 +13,7 @@ import i18n from "@/i18n"
 import {
   TRADE_CHART_TYPES,
   TradeChartType,
-} from "@/modules/trade/swap/components/TradeChartNeckwork/TradeChartNeckwork.utils"
+} from "@/modules/trade/swap/components/TradeChart/TradeChart.utils"
 import { validNumber } from "@/utils/validators"
 
 const legacyTradeSettingsSchema = z.object({
@@ -36,10 +36,6 @@ const maxRetriesSchema = validNumber.min(0).max(10)
 
 export const MIN_TRADE_SLIPPAGE = 0.5
 
-// Trade slippage feeds the SDK intent builders where it directly pads
-// or lowers on-chain amounts — enforce a floor so orders stay fillable
-// and the SDK fraction math (which rejects values below 0.01%) never
-// throws.
 const tradeSlippageSchema = validNumber
   .min(
     MIN_TRADE_SLIPPAGE,
@@ -106,11 +102,7 @@ const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
   swap: {
     single: {
-      // Intent fills land well within 0.5% of quote (measured on Lark);
-      // with intents a too-tight floor just waits a block instead of
-      // reverting, so the tighter default gives users a stronger
-      // guarantee at negligible fill risk.
-      swapSlippage: 0.5,
+      swapSlippage: 1,
     },
     split: {
       twapSlippage: 3,
@@ -139,13 +131,15 @@ export const useTradeSettings = create<TradeSettingsStore>()(
     }),
     createZustandStorage({
       name: "trade-settings",
-      version: 1,
+      version: 2,
       schema: tradeSettingsSchema,
       defaultState,
       migrate: (persistedState, storedVersion) => {
         switch (storedVersion) {
           case 0:
             return migrateLegacySettings()
+          case 1:
+            return migrateDcaSettingsToSplit(persistedState as TradeSettings)
           default:
             return persistedState as TradeSettings
         }
@@ -186,7 +180,15 @@ function migrateLegacySettings() {
             twapMaxRetries: Number(legacyTrade.data.maxRetries),
           },
         }
-      : defaultState.swap,
+      : legacyDca.success
+        ? {
+            ...defaultState.swap,
+            split: {
+              twapSlippage: Number(legacyDca.data.slippage),
+              twapMaxRetries: Number(legacyDca.data.maxRetries),
+            },
+          }
+        : defaultState.swap,
     dca: legacyDca.success
       ? {
           slippage: Number(legacyDca.data.slippage),
@@ -196,9 +198,31 @@ function migrateLegacySettings() {
   }
 }
 
-// createZustandStorage hands back the raw persisted blob when validation fails,
-// so a value dropped from CANDLE_BUCKETS would reach the indexer query as-is
-// and leave the user with a dead chart they can only fix by clearing storage
+function migrateDcaSettingsToSplit(state: TradeSettings): TradeSettings {
+  const splitIsDefault =
+    state.swap.split.twapSlippage === defaultState.swap.split.twapSlippage &&
+    state.swap.split.twapMaxRetries === defaultState.swap.split.twapMaxRetries
+
+  const dcaWasCustomized =
+    state.dca.slippage !== defaultState.dca.slippage ||
+    state.dca.maxRetries !== defaultState.dca.maxRetries
+
+  if (!splitIsDefault || !dcaWasCustomized) {
+    return state
+  }
+
+  return {
+    ...state,
+    swap: {
+      ...state.swap,
+      split: {
+        twapSlippage: state.dca.slippage,
+        twapMaxRetries: state.dca.maxRetries,
+      },
+    },
+  }
+}
+
 const guard = <T extends string>(
   options: readonly T[],
   value: string,

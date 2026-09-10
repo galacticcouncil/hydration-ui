@@ -1,10 +1,9 @@
 import {
   Box,
-  Flex,
+  FormLabel,
   Modal,
   Separator,
   Stack,
-  Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AddressBookModal, WalletMode } from "@galacticcouncil/web3-connect"
@@ -41,24 +40,15 @@ type Props = {
   readonly destChainAssetPairs: XcChainAssetPair[]
 }
 
-const ChainLabel: React.FC<{ label: string; chain: XcChain | null }> = ({
-  label,
-  chain,
-}) => (
-  <Flex align="center" gap="s">
-    <Text fs="p5" color={getToken("text.medium")}>
-      {label}
-    </Text>
-    {chain && (
-      <>
-        <XcLogo src={chain.logo} size="extra-small" />
-        <Text fs="p5" fw={600} color={getToken("text.high")}>
-          {chain.name}
-        </Text>
-      </>
-    )}
-  </Flex>
-)
+const ChainBadge: React.FC<{ chain: XcChain | null }> = ({ chain }) =>
+  chain ? (
+    <>
+      <XcLogo src={chain.logo} size="extra-small" />
+      <FormLabel fw={600} color={getToken("text.high")}>
+        {chain.name}
+      </FormLabel>
+    </>
+  ) : null
 
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common", "trade"])
@@ -217,12 +207,8 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     <Stack>
       <Box py="l" width="100%">
         <XcSrcAssetSelectField
-          label={
-            <ChainLabel
-              label={isCrossChain ? t("from") : t("sell")}
-              chain={isCrossChain ? srcChain : null}
-            />
-          }
+          label={isCrossChain ? t("from") : t("sell")}
+          labelAdornment={<ChainBadge chain={isCrossChain ? srcChain : null} />}
           isLoading={isSelectionLoading}
           maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
           isMaxBalanceLoading={
@@ -246,11 +232,9 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           chainFieldName="destChain"
           assetFieldName="buyAsset"
           amountFieldName="buyAmount"
-          label={
-            <ChainLabel
-              label={isCrossChain ? t("to") : t("buy")}
-              chain={isCrossChain ? destChain : null}
-            />
+          label={isCrossChain ? t("to") : t("buy")}
+          labelAdornment={
+            <ChainBadge chain={isCrossChain ? destChain : null} />
           }
           chainAssetPairs={destChainAssetPairs}
           modalTitle={t("trade:xc.swap.field.destTitle")}

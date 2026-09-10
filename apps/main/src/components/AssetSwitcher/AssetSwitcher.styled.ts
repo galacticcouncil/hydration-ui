@@ -59,5 +59,10 @@ export const SAssetSwitcher = styled(Flex)(
       flex-shrink: 0;
       width: ${theme.sizes.xl};
     }
+
+    & > div:nth-of-type(2):last-of-type {
+      flex-shrink: 1;
+      width: 100%;
+    }
   `,
 )

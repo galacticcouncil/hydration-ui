@@ -11,26 +11,25 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { stringEquals } from "@galacticcouncil/utils"
 import {
   AddressBookButton,
   AddressBookModal,
   addressToPublicKey,
-  getWalletModeByAddress,
   useAccount,
 } from "@galacticcouncil/web3-connect"
-import { FC, useRef, useState } from "react"
+import { FC, useState } from "react"
+import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import {
+  ManageTrackedWalletsFormValues,
+  useManageTrackedWalletsForm,
+} from "@/modules/portfolio/tracked/ManageTrackedWalletsModal.form"
 import { TrackedWalletEntry } from "@/modules/portfolio/tracked/TrackedWalletEntry"
 import {
   useTrackedWalletActions,
   useTrackedWallets,
 } from "@/states/trackedWallets"
-
-export const MAX_TRACKED_WALLETS = 5
-
-type Error = "invalid" | "own" | "duplicate" | "limit"
 
 type Props = {
   readonly onSaved?: (address: string) => void
@@ -43,35 +42,18 @@ export const ManageTrackedWalletsModal: FC<Props> = ({ onSaved }) => {
   const wallets = useTrackedWallets()
   const { add, remove } = useTrackedWalletActions()
 
-  const addressInputRef = useRef<HTMLInputElement | null>(null)
   const [isAddressBookOpen, setIsAddressBookOpen] = useState(false)
-  const [address, setAddress] = useState("")
-  const [error, setError] = useState<Error | null>(null)
+
+  const form = useManageTrackedWalletsForm()
+  const address = form.watch("address")
 
   const accountPublicKey = account ? addressToPublicKey(account.address) : ""
 
-  const validate = (value: string): Error | null => {
-    const publicKey = addressToPublicKey(value)
-
-    if (!publicKey || !getWalletModeByAddress(value)) return "invalid"
-    if (stringEquals(publicKey, accountPublicKey)) return "own"
-    if (wallets.some((wallet) => stringEquals(wallet.publicKey, publicKey)))
-      return "duplicate"
-    if (wallets.length >= MAX_TRACKED_WALLETS) return "limit"
-
-    return null
-  }
-
-  const save = (value: string): boolean => {
-    const nextError = validate(value)
-    setError(nextError)
-
-    if (nextError) return false
-
-    add(value)
-    setAddress("")
-    onSaved?.(value)
-    return true
+  const onSubmit = ({ address }: ManageTrackedWalletsFormValues) => {
+    const normalized = address.trim()
+    add(normalized)
+    form.reset()
+    onSaved?.(normalized)
   }
 
   if (isAddressBookOpen) {
@@ -80,8 +62,9 @@ export const ManageTrackedWalletsModal: FC<Props> = ({ onSaved }) => {
         excludePublicKeys={accountPublicKey ? [accountPublicKey] : []}
         onBack={() => setIsAddressBookOpen(false)}
         onSelect={(selected) => {
-          setAddress(selected.address)
-          setError(null)
+          form.setValue("address", selected.address.trim(), {
+            shouldValidate: true,
+          })
           setIsAddressBookOpen(false)
         }}
       />
@@ -91,44 +74,40 @@ export const ManageTrackedWalletsModal: FC<Props> = ({ onSaved }) => {
   return (
     <>
       <ModalHeader align="center" title={t("myAssets.tracked.modal.title")} />
-      <ModalBody scrollable={false}>
-        <Stack>
-          <Flex justify="space-between" align="center">
-            <FormLabel>{t("myAssets.tracked.modal.addressLabel")}</FormLabel>
-            <AddressBookButton onClick={() => setIsAddressBookOpen(true)} />
-          </Flex>
-          <AccountInput
-            ref={addressInputRef}
-            value={address}
-            isError={!!error}
-            placeholder={t("myAssets.tracked.modal.placeholder")}
-            onChange={(value) => {
-              setAddress(value)
-              setError(null)
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return
-              save(address)
-            }}
-          />
-          {error && (
-            <FormError>
-              {t(`myAssets.tracked.manage.error.${error}`, {
-                max: MAX_TRACKED_WALLETS,
-              })}
-            </FormError>
-          )}
-          <ModalContentDivider my="xl" />
-          <Button
-            disabled={!address}
-            size="large"
-            onClick={() => save(address)}
-            width="100%"
-          >
-            {t("myAssets.tracked.manage.save")}
-          </Button>
-        </Stack>
-      </ModalBody>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <ModalBody scrollable={false}>
+          <Stack>
+            <Flex justify="space-between" align="center">
+              <FormLabel>{t("myAssets.tracked.modal.addressLabel")}</FormLabel>
+              <AddressBookButton onClick={() => setIsAddressBookOpen(true)} />
+            </Flex>
+            <Controller
+              name="address"
+              control={form.control}
+              render={({ field, fieldState: { error } }) => (
+                <>
+                  <AccountInput
+                    {...field}
+                    isError={!!error}
+                    placeholder={t("myAssets.tracked.modal.placeholder")}
+                    onChange={(value) => field.onChange(value)}
+                  />
+                  {error && <FormError>{error.message}</FormError>}
+                </>
+              )}
+            />
+            <ModalContentDivider my="xl" />
+            <Button
+              disabled={!address.trim()}
+              size="large"
+              type="submit"
+              width="100%"
+            >
+              {t("myAssets.tracked.manage.save")}
+            </Button>
+          </Stack>
+        </ModalBody>
+      </form>
       {wallets.length > 0 && (
         <ModalBody noPadding>
           <Flex direction="column" gap="base" sx={{ flexShrink: 0 }}>

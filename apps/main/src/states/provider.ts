@@ -60,7 +60,6 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
     (set) => ({
       rpcUrl: ENV.VITE_PROVIDER_URL,
       connectedRpcUrl: ENV.VITE_PROVIDER_URL,
-      squidUrl: ENV.VITE_SQUID_URL,
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
@@ -70,10 +69,6 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
       setAutoMode: (state) => set({ autoMode: state }),
       setConnectedRpcUrl: (connectedRpcUrl) => set({ connectedRpcUrl }),
       setIsRpcConnecting: (isRpcConnecting) => set({ isRpcConnecting }),
-      getDataEnv: () => {
-        const { rpcUrl } = get()
-        return getProviderDataEnv(rpcUrl)
-      },
     }),
     {
       name: "rpcUrl",

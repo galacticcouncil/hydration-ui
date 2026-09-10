@@ -9,6 +9,7 @@ export const PORTFOLIO_CHAINS: string[] = [
   "base",
   "solana",
   "sui",
+  "near",
   "assethub",
   "bifrost",
 ]

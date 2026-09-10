@@ -51,7 +51,7 @@ export const ChartLegendTooltipBody = <
   return (
     <STooltipContainer>
       {(label || heading) && (
-        <Flex justify="space-between">
+        <Flex justify="space-between" gap="base">
           {label && (
             <Text fs="p3" fw={600}>
               {label}

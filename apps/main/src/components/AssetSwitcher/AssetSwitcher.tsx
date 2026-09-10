@@ -23,9 +23,9 @@ type AssetSwitcherProps = {
   readonly priceOut?: string | undefined | null
   readonly disabled?: boolean
   readonly switcherDisabled?: boolean
-  readonly priceDisabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean
+  readonly hidePrice?: boolean
   readonly onSwitchAssets?: () => void
 }
 
@@ -37,9 +37,9 @@ export const AssetSwitcher = ({
   priceOut,
   disabled,
   switcherDisabled,
-  priceDisabled,
   fallbackPrice,
   isFallbackPriceLoading,
+  hidePrice,
   onSwitchAssets,
 }: AssetSwitcherProps) => {
   const { t } = useTranslation()
@@ -88,9 +88,9 @@ export const AssetSwitcher = ({
           />
         </SSwitchContainer>
       )}
-      {!priceDisabled && (
+      <Separator />
+      {!hidePrice && (
         <>
-          <Separator />
           <SPriceContainer
             disabled={isPriceDisabled}
             onClick={() =>
@@ -108,10 +108,10 @@ export const AssetSwitcher = ({
                     })}`)}
             </Text>
           </SPriceContainer>
+
+          <Separator />
         </>
       )}
-
-      <Separator sx={{ flex: priceDisabled ? 1 : "auto" }} />
     </SAssetSwitcher>
   )
 }

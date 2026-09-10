@@ -41,7 +41,6 @@ export const intentsSubmittedQuery = (
     enabled: !!owner,
   })
 
-// Intent ids are u128; pass quoted decimal strings or the query matches nothing.
 export const intentEventsQuery = (indexerSdk: IndexerSdk, ids: string[]) =>
   queryOptions({
     queryKey: ["trade", "orders", "IntentEvents", ids],

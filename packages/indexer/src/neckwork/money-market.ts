@@ -1,27 +1,19 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_ACCOUNT_KEY, NECKWORK_STALE_TIME, NeckworkClient } from "."
+import {
+  NECKWORK_ACCOUNT_KEY,
+  NECKWORK_BASE_STALE_TIME,
+  NeckworkClient,
+  NeckworkResponse,
+} from "."
 
-export type MoneyMarketEventName =
-  | "Supply"
-  | "Withdraw"
-  | "Borrow"
-  | "Repay"
-  | "LiquidationCall"
-  | "ReserveUsedAsCollateralEnabled"
-  | "ReserveUsedAsCollateralDisabled"
-  | "UserEModeSet"
+type MoneyMarketEventsResponse =
+  NeckworkResponse<"/v1/accounts/{account}/money-market-events">
 
-export type NeckworkMoneyMarketEvent = {
-  amount: string | null
-  assetId: string | null
-  blockHeight: number
-  categoryId: number | null
-  eventIndex: number
-  eventName: MoneyMarketEventName
-  /** ISO 8601 */
-  timestamp: string
-}
+export type NeckworkMoneyMarketEvent =
+  MoneyMarketEventsResponse["items"][number]
+
+export type MoneyMarketEventName = NeckworkMoneyMarketEvent["eventName"]
 
 export const moneyMarketEventsQuery = (
   client: NeckworkClient,
@@ -41,12 +33,9 @@ export const moneyMarketEventsQuery = (
       limit,
       offset,
     ],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     enabled: !!account,
-    queryFn: async (): Promise<{
-      items: readonly NeckworkMoneyMarketEvent[]
-      totalCount: number
-    }> => {
+    queryFn: async (): Promise<MoneyMarketEventsResponse> => {
       const { data } = await client.GET(
         "/v1/accounts/{account}/money-market-events",
         {
@@ -64,9 +53,6 @@ export const moneyMarketEventsQuery = (
 
       if (!data) throw new Error("Neckwork API returned no money-market events")
 
-      return {
-        items: Array.from(data.items),
-        totalCount: data.totalCount,
-      }
+      return data
     },
   })

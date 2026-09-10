@@ -3,7 +3,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { dcaAmountsQuery } from "@/api/grafana/dcaAmounts"
-import { DcaOrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { DcaOrderData } from "@/modules/trade/orders/lib/orderData"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useDcaGrafanaEnrichment = (orders: Array<DcaOrderData>) => {

@@ -1,5 +1,4 @@
 import { accountsBalancesQuery } from "@galacticcouncil/indexer/neckwork"
-import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import {
   arraySearch,
   isEvmParachainAccount,
@@ -78,96 +77,46 @@ export const getFilteredAccounts = (
 
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()
-  const { neckwork, squidSdk } = useWeb3ConnectContext()
+  const { neckwork } = useWeb3ConnectContext()
   const { setBalances } = useWeb3Connect(
     useShallow(pick(["accounts", "setBalances"])),
   )
 
-  const {
-    accountBalances: neckworkBalancesMap,
-    isLoading: areNeckworkBalancesLoading,
-  } = useQueries({
-    queries: neckwork
-      ? chunk(accounts, 50).map((batch) =>
-          accountsBalancesQuery(
-            neckwork,
-            batch.map((account) => account.publicKey),
-          ),
-        )
-      : [],
-    combine: useCallback(
-      (
-        queries: QueriesResults<
-          Array<ReturnType<typeof accountsBalancesQuery>>
-        >,
-      ) => {
-        const isLoading = queries.some((query) => query.isLoading)
-        const rows = queries.flatMap((query) => query.data ?? [])
-        const lookup = new Map(rows.map((row) => [row.account, row.balance]))
-
-        const accountBalances = isLoading
-          ? new Map<string, number>()
-          : new Map(
-              accounts.map((account) => [
-                account.publicKey,
-                lookup.get(account.publicKey) ?? 0,
-              ]),
-            )
-
-        return {
-          isLoading,
-          accountBalances,
-        }
-      },
-      [accounts],
-    ),
-  })
-
-  const {
-    accountBalances: squidBalancesMap,
-    isLoading: areSquidBalancesLoading,
-  } = useQueries({
-    queries: neckwork
-      ? []
-      : accounts.map((account) =>
-          latestAccountBalanceQuery(squidSdk, account.publicKey),
+  const { accountBalances: balancesMap, isLoading: areBalancesLoading } =
+    useQueries({
+      queries: chunk(accounts, 50).map((batch) =>
+        accountsBalancesQuery(
+          neckwork,
+          batch.map((account) => account.publicKey),
         ),
-    combine: useCallback(
-      (
-        queries: QueriesResults<
-          Array<ReturnType<typeof latestAccountBalanceQuery>>
-        >,
-      ) => {
-        const isLoading = queries.some((query) => query.isLoading)
-        const accountBalances = isLoading
-          ? new Map<string, number>()
-          : new Map(
-              accounts.map((account, index) => {
-                const data = queries[index]?.data
-                const balances =
-                  data?.accountTotalBalanceHistoricalData?.nodes.at(0)
-                const transferable =
-                  Number(balances?.totalTransferableNorm) || 0
-                const locked = Number(balances?.totalLockedNorm) || 0
-                const balance = transferable + locked
+      ),
+      combine: useCallback(
+        (
+          queries: QueriesResults<
+            Array<ReturnType<typeof accountsBalancesQuery>>
+          >,
+        ) => {
+          const isLoading = queries.some((query) => query.isLoading)
+          const rows = queries.flatMap((query) => query.data ?? [])
+          const lookup = new Map(rows.map((row) => [row.account, row.balance]))
 
-                return [account.publicKey, balance]
-              }),
-            )
+          const accountBalances = isLoading
+            ? new Map<string, number>()
+            : new Map(
+                accounts.map((account) => [
+                  account.publicKey,
+                  lookup.get(account.publicKey) ?? 0,
+                ]),
+              )
 
-        return {
-          isLoading,
-          accountBalances,
-        }
-      },
-      [accounts],
-    ),
-  })
-
-  const balancesMap = neckwork ? neckworkBalancesMap : squidBalancesMap
-  const areBalancesLoading = neckwork
-    ? areNeckworkBalancesLoading
-    : areSquidBalancesLoading
+          return {
+            isLoading,
+            accountBalances,
+          }
+        },
+        [accounts],
+      ),
+    })
 
   useEffect(() => {
     if (!areBalancesLoading) {

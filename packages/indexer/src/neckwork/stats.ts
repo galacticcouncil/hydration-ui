@@ -1,11 +1,16 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { NECKWORK_STALE_TIME, NeckworkClient } from "."
+import {
+  NECKWORK_BASE_STALE_TIME,
+  NECKWORK_STATUS_STALE_TIME,
+  NeckworkClient,
+  NeckworkResponse,
+} from "."
 
 export const platformStatsQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "platformStats"],
-    staleTime: NECKWORK_STALE_TIME,
+    staleTime: NECKWORK_BASE_STALE_TIME,
     queryFn: async () => {
       const { data } = await client.GET("/v1/stats/platform")
 
@@ -25,26 +30,17 @@ export const platformStatsQuery = (client: NeckworkClient) =>
     },
   })
 
-export type NeckworkStatus = {
-  readonly blockHeight: number
-  readonly chainBlockHeight: number
-  readonly blocksBehindHead: number
-  readonly lagSeconds: number
-}
+export type NeckworkStatus = NeckworkResponse<"/v1/status">
 
 export const neckworkStatusQuery = (client: NeckworkClient) =>
   queryOptions({
     queryKey: ["neckwork", "status"],
+    staleTime: NECKWORK_STATUS_STALE_TIME,
     queryFn: async (): Promise<NeckworkStatus> => {
       const { data } = await client.GET("/v1/status")
 
       if (!data) throw new Error("Neckwork API returned no status")
 
-      return {
-        blockHeight: data.blockHeight,
-        chainBlockHeight: data.chainBlockHeight,
-        blocksBehindHead: data.blocksBehindHead,
-        lagSeconds: data.lagSeconds,
-      }
+      return data
     },
   })

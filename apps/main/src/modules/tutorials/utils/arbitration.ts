@@ -9,10 +9,9 @@ export const clampStepIndex = (stepIndex: number, stepCount: number) => {
 
 export const isTutorialId = (id: string): id is TutorialId => id in tutorials
 
-// via unknown: with no tutorials registered TutorialId is `never`
-export const tutorialEntries = Object.entries(
-  tutorials,
-) as unknown as ReadonlyArray<readonly [TutorialId, Tutorial]>
+export const tutorialEntries = Object.entries(tutorials) as ReadonlyArray<
+  readonly [TutorialId, Tutorial]
+>
 
 export type MountedAnchors = ReadonlyMap<string, number>
 

@@ -3,7 +3,6 @@ import Big from "big.js"
 
 import { scaleHuman } from "@/utils/formatting"
 
-/** `market` tracks the quote; `user` is typed or set via the pill; `derived` comes from the limit cascade. */
 export type PriceSource = "market" | "user" | "derived"
 
 type RawInput = {
@@ -48,11 +47,9 @@ export const emptyQuotedPrice = (inverted: boolean): QuotedPrice => ({
   inverted,
 })
 
-/** No grouping separators. The value goes back into a parseable input. */
 export const formatPrice = (value: Big): string =>
   formatNumber(value, undefined, { useGrouping: false })
 
-/** Reciprocal of a positive decimal string, or null if there isn't one. */
 const invert = (value: string): string | null => {
   try {
     const big = new Big(value)
@@ -207,7 +204,6 @@ export const viewQuotedPrice = (
   canReset: state.source !== "market" && market !== null,
 })
 
-/** BUY per SELL from a router quote, with decimals applied. */
 export const marketPriceFromQuote = (
   quote: { readonly amountIn: bigint; readonly amountOut: bigint } | undefined,
   sellDecimals: number | undefined,

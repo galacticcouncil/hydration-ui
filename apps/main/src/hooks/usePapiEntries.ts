@@ -8,18 +8,16 @@ import {
 import { useEffect, useRef } from "react"
 import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
-import { UnsafeDcaQuery } from "@/api/dcaStorage"
-import { Papi, PapiIce, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type QuerySources = {
   readonly typed: Papi["query"]
-  readonly ice: PapiIce["query"]
-  readonly unsafe: UnsafeDcaQuery
 }
 
 const QUERY_MAP = {
-  "DCA.ScheduleOwnership": ({ unsafe }) => unsafe.DCA.ScheduleOwnership,
-  "Intent.AccountIntents": ({ ice }) => ice.Intent.AccountIntents,
+  "DCA.ScheduleOwnership": ({ typed }) => typed.DCA.ScheduleOwnership,
+  "Intent.AccountIntents": ({ typed }) => typed.Intent.AccountIntents,
   "OTC.Orders": ({ typed }) => typed.OTC.Orders,
   "Uniques.Account": ({ typed }) => typed.Uniques.Account,
 } as const satisfies Record<string, (sources: QuerySources) => unknown>
@@ -84,12 +82,10 @@ export function usePapiEntries<
   options?: PapiEntriesQueryOptions<K, TMap, TSelect>,
 ): UseQueryResult<TSelect, Error> {
   const queryClient = useQueryClient()
-  const { papi, papiIce, papiClient, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   const querySources = (): QuerySources => ({
     typed: papi.query,
-    ice: papiIce.query,
-    unsafe: papiClient.getUnsafeApi().query as unknown as UnsafeDcaQuery,
   })
 
   const mapper =
@@ -129,25 +125,24 @@ export function usePapiEntries<
       (
         QUERY_MAP[queryKey](querySources())
           // @ts-expect-error Args vary by query type
-          .watchEntries(...args, { at: "best" })
-          .pipe(
-            skip(1),
-            distinctUntilChanged(
-              (_, current: WatchEntriesData) => !current.deltas,
-            ),
-          ) as Observable<WatchEntriesData>
-      ).subscribe((data) => {
-        const unified = data.entries.map(({ args, value }) => ({
-          keyArgs: args,
-          value,
-        }))
+          .watchEntries(...args, { at: "best" }) as Observable<WatchEntriesData>
+      )
+        .pipe(
+          skip(1),
+          distinctUntilChanged((_, current) => !current.deltas),
+        )
+        .subscribe((data) => {
+          const unified = data.entries.map(({ args, value }) => ({
+            keyArgs: args,
+            value,
+          }))
 
-        const result = mapperRef.current
-          ? mapperRef.current(unified as TData)
-          : unified
+          const result = mapperRef.current
+            ? mapperRef.current(unified as TData)
+            : unified
 
-        queryClient.setQueryData([key], result)
-      }),
+          queryClient.setQueryData([key], result)
+        }),
     )
 
     return () => {

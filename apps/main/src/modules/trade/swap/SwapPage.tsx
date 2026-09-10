@@ -1,10 +1,12 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { Navigate, useMatchRoute } from "@tanstack/react-router"
-import { lazy } from "react"
+import { lazy, Suspense } from "react"
 
-import { LINKS } from "@/config/navigation"
+import { swapTabLink } from "@/config/navigation"
+import { IntentsOnboardingModal } from "@/modules/trade/swap/components/IntentsOnboardingModal"
 import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { SwapPageSkeleton } from "@/modules/trade/swap/SwapPageSkeleton"
+import { useIsIceEnabled } from "@/states/intents"
 
 const SwapPageDesktop = lazy(async () => ({
   default: await import("@/modules/trade/swap/SwapPageDesktop").then(
@@ -22,17 +24,23 @@ export const SwapPage = () => {
   useResetSharedSellAmountOnUnmount()
 
   const { gte } = useBreakpoints()
-  const { featureFlags } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
   const matchRoute = useMatchRoute()
-  const isLimitPage = !!matchRoute({ to: LINKS.swapLimit })
+  const isLimitPage = !!matchRoute(swapTabLink("limit"))
 
-  if (isLimitPage && !featureFlags.isIceEnabled) {
-    return <Navigate to={LINKS.swapMarket} />
-  }
+  const content =
+    isLimitPage && !isIceEnabled ? (
+      <Navigate {...swapTabLink("market")} />
+    ) : !gte("lg") ? (
+      <SwapPageMobile />
+    ) : (
+      <SwapPageDesktop />
+    )
 
-  if (!gte("lg")) {
-    return <SwapPageMobile />
-  }
-
-  return <SwapPageDesktop />
+  return (
+    <>
+      <Suspense fallback={<SwapPageSkeleton />}>{content}</Suspense>
+      <IntentsOnboardingModal />
+    </>
+  )
 }

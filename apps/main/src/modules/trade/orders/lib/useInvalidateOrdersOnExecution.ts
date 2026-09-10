@@ -5,8 +5,9 @@ import { filter, merge, Observable } from "rxjs"
 
 import { useAccountIntents } from "@/api/intents"
 import { useObservable } from "@/hooks/useObservable"
-import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrdersNeckwork/lib/useChainOrdersData"
+import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 
 const INVALIDATE_DELAY = 5_000
 
@@ -16,20 +17,6 @@ type EventBatch<T> = {
 
 type EventWatcher<T> = {
   readonly watch: () => Observable<EventBatch<T>>
-}
-
-// Neither DCA nor Intent events are part of the whitelisted descriptors, so
-// they can only be watched through the unsafe api — typed here the same way
-// api/dcaStorage.ts types the storage side.
-type UnsafeOrderEvents = {
-  readonly DCA: {
-    readonly TradeExecuted: EventWatcher<{ readonly id: number }>
-    readonly TradeFailed: EventWatcher<{ readonly id: number }>
-  }
-  readonly Intent: {
-    readonly DcaTradeExecuted: EventWatcher<{ readonly id: bigint }>
-    readonly IntentResovedPartially: EventWatcher<{ readonly id: bigint }>
-  }
 }
 
 const ownedEvents = <T extends { readonly id: number | bigint }>(
@@ -44,23 +31,12 @@ const ownedEvents = <T extends { readonly id: number | bigint }>(
       ),
     )
 
-/**
- * Legacy orders read from chain, indexer and Grafana, and none of them poll.
- * The two papi subscriptions behind them watch presence indexes
- * (DCA.ScheduleOwnership, Intent.AccountIntents), so an execution — which only
- * moves DCA.RemainingAmounts and Intent.Intents — never fires them, and the
- * tables sit frozen until a hard refresh.
- *
- * Two triggers cover it: the id set changing (an order opened or closed, from
- * subscriptions we already pay for) and an execution event for an id that is
- * still open. Completion events are redundant under the first trigger, and
- * leaving them out avoids racing the id removal that happens in the same block.
- */
+/** Invalidate order queries when ids change or an open order executes. Presence subscriptions miss executions. */
 export const useInvalidateOrdersOnExecution = () => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
-  const { papiClient, isApiLoaded, featureFlags } = useRpcProvider()
-  const { isIceEnabled } = featureFlags
+  const { papi, isReady } = useRpcProvider()
+  const isIceEnabled = useIsIceEnabled()
 
   const { scheduleIds, isLoading: isSchedulesLoading } = useChainScheduleIds()
   const { data: intents, isLoading: isIntentsLoading } = useAccountIntents(
@@ -101,8 +77,6 @@ export const useInvalidateOrdersOnExecution = () => {
     }
   }, [scheduleKey, intentKey])
 
-  // Trigger 1: an order opened or closed. Skipped while either source is still
-  // loading so the initial empty -> populated transition doesn't count.
   const isLoading = isSchedulesLoading || isIntentsLoading
   const seenKey = useRef<string | null>(null)
 
@@ -116,13 +90,10 @@ export const useInvalidateOrdersOnExecution = () => {
     seenKey.current = key
   }, [isLoading, scheduleKey, intentKey, invalidate])
 
-  // Trigger 2: an execution against an order that is still open. Reads the id
-  // sets through a ref so a changing set never resubscribes the watchers.
   const events$ = useMemo(() => {
-    if (!isApiLoaded) return
+    if (!isReady) return
 
-    const { DCA, Intent } = papiClient.getUnsafeApi()
-      .event as unknown as UnsafeOrderEvents
+    const { DCA, Intent } = papi.event
 
     const scheduleSet = () => idsRef.current.schedules
     const intentSet = () => idsRef.current.intents
@@ -137,7 +108,7 @@ export const useInvalidateOrdersOnExecution = () => {
           ]
         : []),
     )
-  }, [isApiLoaded, papiClient, isIceEnabled])
+  }, [isReady, papi, isIceEnabled])
 
-  useObservable(events$, { enabled: isApiLoaded, onUpdate: invalidate })
+  useObservable(events$, { enabled: isReady, onUpdate: invalidate })
 }

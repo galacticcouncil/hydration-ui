@@ -12,9 +12,9 @@ import {
   TradeType,
 } from "@/api/trade"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
-import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { getQuoteFormUpdate } from "@/modules/trade/swap/sections/XcSwap/lib/getQuoteFormUpdate"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isTwapEnabled"
 import { isXcDestAsset } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import {
   getXcSwapAmountIn,

@@ -4,8 +4,6 @@ import { FC, useMemo, useState } from "react"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import { sortOrdersByCreation } from "@/modules/trade/orders/lib/buildOrderRows"
-import { useIntentOrdersHistoryData } from "@/modules/trade/orders/lib/useIntentOrdersHistoryData"
-import { useMigratedOrdersMerge } from "@/modules/trade/orders/lib/useMigratedOrdersMerge"
 import {
   isDcaScheduleOrder,
   isIntentOrder,
@@ -13,7 +11,9 @@ import {
   OrderData,
   orderKey,
   OrderKind,
-} from "@/modules/trade/orders/lib/useOrdersData"
+} from "@/modules/trade/orders/lib/orderData"
+import { useIntentOrdersHistoryData } from "@/modules/trade/orders/lib/useIntentOrdersHistoryData"
+import { useMigratedOrdersMerge } from "@/modules/trade/orders/lib/useMigratedOrdersMerge"
 import { useTradeOrdersHistoryData } from "@/modules/trade/orders/lib/useTradeOrdersHistoryData"
 import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"

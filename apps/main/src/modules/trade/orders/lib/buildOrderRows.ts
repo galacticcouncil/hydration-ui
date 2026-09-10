@@ -68,7 +68,6 @@ export const intentEntryToOrder = (
     const from = getAsset(String(swap.asset_in))
     const to = getAsset(String(swap.asset_out))
     const isPartiallyFillable = swap.partial.type === "Yes"
-    // Partial::Yes is cumulative amount_in filled, not one slice.
     const fromAmountExecuted =
       swap.partial.type === "Yes"
         ? scaleHuman(swap.partial.value, from.decimals)
@@ -115,7 +114,6 @@ export const intentEntryToOrder = (
     const amountIn = scaleHuman(dca.amount_in, from.decimals)
     const amountOut = scaleHuman(dca.amount_out, to.decimals)
 
-    // Limit TWAP: amount_out above the buy asset ED, not just the dust floor.
     const isLimit =
       !!to.existentialDeposit &&
       Big(dca.amount_out.toString()).gt(to.existentialDeposit)
@@ -132,7 +130,6 @@ export const intentEntryToOrder = (
       fromAmountExecuted,
       fromAmountRemaining,
       to,
-      // amount_out is the next slice target, not a running total.
       toAmountExecuted: null,
       status: OrderStatus.Created,
       timestamp: Number(entry.id >> 64n),
@@ -283,7 +280,6 @@ export const enrichIntentOrders = (
     const fills = totals.get(String(order.intentId))
     if (!fills) return order
 
-    // Do not overwrite unknown with zero when the indexer has no fills yet.
     const toAmountExecuted =
       fills.amountOut > 0n
         ? scaleHuman(fills.amountOut, order.to.decimals)

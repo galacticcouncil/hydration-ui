@@ -1,11 +1,12 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
+import { hoursToMilliseconds, minutesToMilliseconds } from "date-fns"
 import { useEffect } from "react"
-import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
+import { useTradeForm } from "@/modules/trade/swap/lib/useTradeForm"
 import { useAssets } from "@/providers/assetsProvider"
 import {
   positive,
@@ -17,6 +18,14 @@ import {
 
 export const EXPIRY_OPTIONS = ["15min", "30min", "1h", "1d", "open"] as const
 export type ExpiryOption = (typeof EXPIRY_OPTIONS)[number]
+
+/** `open` is absent on purpose - it submits without a deadline. */
+export const EXPIRY_MS: Partial<Record<ExpiryOption, number>> = {
+  "15min": minutesToMilliseconds(15),
+  "30min": minutesToMilliseconds(30),
+  "1h": minutesToMilliseconds(60),
+  "1d": hoursToMilliseconds(24),
+}
 
 const schemaBase = z.object({
   sellAsset: requiredObject<TAssetData>(),
@@ -70,7 +79,7 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     lastTwo: ["price", "sell"],
   }
 
-  const form = useForm<LimitFormValues>({
+  const form = useTradeForm<LimitFormValues>({
     defaultValues,
     mode: "onChange",
     resolver: standardSchemaResolver(useSchema()),

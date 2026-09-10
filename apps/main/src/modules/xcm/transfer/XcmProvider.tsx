@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { prop, unique } from "remeda"
 
-import { getSortedRpcUrlList } from "@/api/provider"
+import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,

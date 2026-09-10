@@ -3,7 +3,6 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcaValidationError } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
-import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
   readonly priceImpact: number
@@ -25,17 +24,14 @@ export const DcaErrors: FC<Props> = ({ priceImpact, errors }) => {
   }
 
   return (
-    <>
-      <SwapSectionSeparator />
-      <Flex direction="column" my="base" gap="s">
-        {errors.map((error) => (
-          <Alert
-            key={error}
-            variant="error"
-            description={errorDescriptions[error]}
-          />
-        ))}
-      </Flex>
-    </>
+    <Flex direction="column" my="base" gap="s">
+      {errors.map((error) => (
+        <Alert
+          key={error}
+          variant="error"
+          description={errorDescriptions[error]}
+        />
+      ))}
+    </Flex>
   )
 }

@@ -1,11 +1,11 @@
 import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
-import { TWAP_EXECUTION_INTERVAL_MS } from "@galacticcouncil/sdk-next/sor"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { blockTimeQuery } from "@/api/chain"
 import { papiDryRunErrorQuery } from "@/api/dryRun"
+import { PoolType } from "@/api/pools"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import { ENV } from "@/config/env"
 import {
@@ -135,11 +135,71 @@ export const bestSellWithTxQuery = (
   })
 }
 
+/**
+ * The order's flow as a fraction of the Omnipool-hop asset's reserve — the input
+ * to the fee-aware cadence. Reads the actual route from the quote and the reserve
+ * from live pool state. Returns 0 when no Omnipool dynamic-fee hop is on the route
+ * (flat XYK/Stableswap/Aave legs), which collapses the order to the minimum
+ * duration, and so to the SDK's 3-trade floor.
+ */
+const getOmnipoolFraction = async (
+  sdk: SdkCtx,
+  quote: Trade,
+): Promise<number> => {
+  const hop = quote.swaps.find((s) => s.pool === PoolType.Omni)
+  if (!hop || hop.amountOut <= 0n) {
+    return 0
+  }
+  const pools = await sdk.ctx.pool.getPools()
+  const omni = pools.find((p) => p.type === PoolType.Omni)
+  const token = omni?.tokens.find((t) => Number(t.id) === Number(hop.assetOut))
+  if (!token || token.balance <= 0n) {
+    return 0
+  }
+  return Number(hop.amountOut) / Number(token.balance)
+}
+
+/**
+ * Blocks it takes the Omnipool dynamic asset fee to decay back to its floor after
+ * a full-reserve flow: K = amplification / decay. Spreading a flow worth fraction
+ * `f` of the hop asset's reserve at that rate takes K·f blocks, which is the whole
+ * order's duration. The slice count is left to the SDK (~0.1% impact per slice,
+ * min 3) and the cadence falls out of both: on an Omnipool route impact% ~= 100·f,
+ * so the gap settles at ~K/1000 blocks whatever the order size. Governance can
+ * retune the fee params, so read them — the SDK reads the same constant but keeps
+ * its query protected.
+ */
+const getFeeHoldBlocks = async ({
+  papi,
+}: TProviderContext): Promise<number> => {
+  const { amplification, decay } =
+    await papi.constants.DynamicFees.AssetFeeParameters()
+  return decay > 0n ? Number(amplification) / Number(decay) : 0
+}
+
+/**
+ * Duration floor. The SDK caps the trade count at 0.9 x duration / 15 blocks, so
+ * anything shorter buys fewer than 3 trades — and at 0 trades it divides by the
+ * count. Binds only on routes with no Omnipool hop (f = 0).
+ */
+const MIN_ORDER_DURATION_BLOCKS = Math.ceil(
+  (3 * sor.ORDER_MIN_BLOCK_PERIOD) / (1 - sor.DCA_TIME_RESERVE),
+)
+
+/**
+ * Schedule source for the ICE split trade. `true` takes the scheduler's own TWAP
+ * schedule (impact-based count, fixed interval, capped at its max duration) and
+ * builds it as a DCA order; `false` paces it against the Omnipool dynamic fee
+ * (see getFeeHoldBlocks) and lets the SDK pick the count.
+ */
+const USE_TWAP_CALCS: boolean = true
+
 type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 
 export const bestSellTwapQuery = (
   rpc: TProviderContext,
   { assetIn, assetOut, amountIn }: BestSellTwapArgs,
+  isIceEnabled: boolean,
   enabled = true,
 ) =>
   queryOptions({
@@ -150,108 +210,60 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
+      isIceEnabled,
     ],
     queryFn: async () => {
       const inId = Number(assetIn)
       const outId = Number(assetOut)
-      // Legacy (non-ICE) path unchanged.
-      if (!rpc.featureFlags.isIceEnabled) {
+      if (!isIceEnabled) {
         return rpc.sdk.api.scheduler.getTwapSellOrder(inId, outId, amountIn)
       }
-      const { scheduler } = rpc.sdk.api
-      const quote = await rpc.sdk.api.router.getBestSell(inId, outId, amountIn)
-      const duration = scheduler.getTwapExecutionTime(
-        scheduler.getTwapTradeCount(quote.priceImpactPct),
+      const { sdk, queryClient } = rpc
+      const { scheduler } = sdk.api
+      const quote = await sdk.api.router.getBestSell(inId, outId, amountIn)
+
+      if (USE_TWAP_CALCS) {
+        const tradeCount = scheduler.getTwapTradeCount(
+          Math.abs(quote.priceImpactPct),
+        )
+        return scheduler.getDcaOrder(
+          inId,
+          outId,
+          amountIn,
+          scheduler.getTwapExecutionTime(tradeCount),
+          tradeCount,
+        )
+      }
+
+      const decimals = quote.swaps[0]?.assetInDecimals ?? 12
+      const [minOrderBudget, poolFraction, feeHoldBlocks, blockTimeMs] =
+        await Promise.all([
+          queryClient.ensureQueryData(
+            minimumOrderBudgetQuery(rpc, assetIn, decimals),
+          ),
+          getOmnipoolFraction(sdk, quote),
+          getFeeHoldBlocks(rpc),
+          queryClient.ensureQueryData(blockTimeQuery(sdk)),
+        ])
+
+      const minTradeAmount = (minOrderBudget * 2n) / 10n
+      if (minTradeAmount === 0n || quote.amountIn < minTradeAmount) {
+        return null
+      }
+
+      const durationMs = Math.round(
+        Math.max(feeHoldBlocks * poolFraction, MIN_ORDER_DURATION_BLOCKS) *
+          blockTimeMs,
       )
-      return scheduler.getDcaOrder(inId, outId, amountIn, duration)
+      return scheduler.getDcaOrder(inId, outId, amountIn, durationMs)
     },
     enabled:
       enabled &&
-      rpc.isApiLoaded &&
+      rpc.isReady &&
       !!assetIn &&
       !!assetOut &&
       Big(amountIn || "0").gt(0),
   })
-
-export const bestSellTwapTxQuery = (
-  { sdk }: TProviderContext,
-  twap: TradeOrder,
-  twapKey: QueryKey,
-  address: string,
-  slippage: number,
-  maxRetries: number,
-) =>
-  queryOptions({
-    queryKey: [twapKey, "tx"],
-    queryFn: () =>
-      sdk.tx
-        .order(twap)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get()),
-    enabled: !!address,
-  })
-
-type BestSellTwapWithTxArgs = BestSellTwapArgs & {
-  readonly slippage: number
-  readonly address: string
-  readonly maxRetries: number
-  readonly dryRun?: boolean
-}
-
-export const bestSellTwapWithTxQuery = (
-  rpc: TProviderContext,
-  {
-    slippage,
-    maxRetries,
-    address,
-    dryRun,
-    ...bestSellTwapArgs
-  }: BestSellTwapWithTxArgs,
-  enabled = true,
-) => {
-  const { queryClient } = rpc
-  const bestSellTwap = bestSellTwapQuery(rpc, bestSellTwapArgs)
-
-  return queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      bestSellTwap.queryKey,
-      slippage,
-      maxRetries,
-      address,
-      dryRun,
-    ],
-    queryFn: async () => {
-      const twap = await queryClient.ensureQueryData(bestSellTwap)
-
-      const txQuery = bestSellTwapTxQuery(
-        rpc,
-        twap,
-        bestSellTwap.queryKey,
-        address,
-        slippage,
-        maxRetries,
-      )
-
-      const tx = txQuery.enabled
-        ? await queryClient.ensureQueryData(txQuery)
-        : null
-
-      const dryRunError =
-        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
-          ? await queryClient.ensureQueryData(
-              papiDryRunErrorQuery(rpc, address, tx),
-            )
-          : null
-
-      return { twap, tx, dryRunError }
-    },
-    enabled: enabled && (bestSellTwap.enabled as boolean),
-  })
-}
 
 type BestBuyArgs = {
   readonly assetIn: string
@@ -362,7 +374,7 @@ export const bestBuyWithTxQuery = (
 }
 
 export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
-  const { sdk, isLoaded, queryClient } = rpc
+  const { sdk, isReady, queryClient } = rpc
   const duration = getTimeFrameMillis(form.duration)
 
   const orders =
@@ -451,8 +463,10 @@ export const minimumOrderBudgetQuery = (
 }
 
 export const tradeOrderDurationQuery = (
-  { sdk, papiClient, featureFlags, isApiLoaded, queryClient }: TProviderContext,
+  { sdk, isReady, queryClient }: TProviderContext,
+  isIceEnabled: boolean,
   tradeCount: number,
+  tradePeriod = 0,
 ) =>
   queryOptions({
     queryKey: [
@@ -460,25 +474,16 @@ export const tradeOrderDurationQuery = (
       "trade",
       "twapExecutionTime",
       tradeCount,
-      featureFlags.isIceEnabled,
+      tradePeriod,
+      isIceEnabled,
     ],
     queryFn: async () => {
-      if (!featureFlags.isIceEnabled) {
+      if (!isIceEnabled) {
         return sdk.api.scheduler.getTwapExecutionTime(tradeCount)
       }
 
-      const [blockTimeMs, minDcaPeriod] = await Promise.all([
-        queryClient.ensureQueryData(blockTimeQuery(sdk)),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (papiClient.getUnsafeApi() as any).constants.Intent.MinDcaPeriod(),
-      ])
-
-      const twapIntervalBlocks = Math.round(
-        TWAP_EXECUTION_INTERVAL_MS / blockTimeMs,
-      )
-      const intervalBlocks = Math.max(minDcaPeriod, twapIntervalBlocks)
-
-      return tradeCount * intervalBlocks * blockTimeMs
+      const blockTimeMs = await queryClient.ensureQueryData(blockTimeQuery(sdk))
+      return tradeCount * tradePeriod * blockTimeMs
     },
-    enabled: isApiLoaded && tradeCount > 0,
+    enabled: isReady && tradeCount > 0 && (!isIceEnabled || tradePeriod > 0),
   })

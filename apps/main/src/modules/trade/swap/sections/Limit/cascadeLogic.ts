@@ -2,10 +2,7 @@ import Big from "big.js"
 
 import { formatPrice } from "@/modules/trade/swap/lib/quotedPrice"
 
-/**
- * Last-two-wins cascade (CoW-style). Three fields obey `buy = sell × price`.
- * Two are kept from user input; the third derives. Lock forces sell into the kept pair.
- */
+/** Last-two-wins cascade: `buy = sell × price`; lock keeps sell in the pair. */
 
 export type FieldName = "sell" | "buy" | "price"
 export type LastTwo = [FieldName, FieldName]
@@ -30,7 +27,6 @@ export const updateLastTwoOnTouch = (
   return [touched, prev[0]]
 }
 
-/** Lock on: slot sell in as second-most-recent without a sell touch. */
 export const lockSellIntoLastTwo = (prev: LastTwo): LastTwo => {
   if (prev.includes("sell")) return prev
   return [prev[0], "sell"]
@@ -42,7 +38,6 @@ export interface FieldValues {
   readonly price: string
 }
 
-/** Returns null when inputs can't produce a value. */
 export const computeDerived = (
   derived: FieldName,
   values: FieldValues,

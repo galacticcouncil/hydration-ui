@@ -67,7 +67,7 @@ export const useSupplyIsolatedLiquidity = ({
 }) => {
   const { t } = useTranslation("common")
   const rpc = useRpcProvider()
-  const { sdk, isApiLoaded } = rpc
+  const { sdk, isReady } = rpc
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
@@ -84,7 +84,7 @@ export const useSupplyIsolatedLiquidity = ({
 
   const { data: feeEstimationSwapTx } = useQuery({
     enabled:
-      isApiLoaded && !!account?.address && !isNullish(accountFeePaymentAssetId),
+      isReady && !!account?.address && !isNullish(accountFeePaymentAssetId),
     queryKey: [
       "supplyIsolatedLiquidityFeeEstimation",
       accountFeePaymentAssetId,

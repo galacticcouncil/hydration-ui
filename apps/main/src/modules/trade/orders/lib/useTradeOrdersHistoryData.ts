@@ -7,10 +7,10 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import { buildScheduleHistoryRows } from "@/modules/trade/orders/lib/buildOrderRows"
+import { DcaOrderData } from "@/modules/trade/orders/lib/orderData"
 import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
-import { DcaOrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const useTradeOrdersHistoryData = () => {

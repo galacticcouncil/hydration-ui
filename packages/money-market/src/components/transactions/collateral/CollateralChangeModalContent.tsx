@@ -2,10 +2,6 @@ import {
   DCA_OPEN_STATUSES,
   dcaSchedulesQuery,
 } from "@galacticcouncil/indexer/neckwork"
-import {
-  DcaScheduleStatus,
-  userOrdersQuery,
-} from "@galacticcouncil/indexer/squid"
 import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
@@ -23,7 +19,7 @@ import {
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { QueriesResults, useQueries, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useState } from "react"
 
@@ -64,7 +60,7 @@ export const CollateralChangeModalContent: React.FC<
   const { user } = useAppDataContext()
   const { debtCeiling } = useAssetCaps()
   const { formatCurrency } = useAppFormatters()
-  const { squidClient, neckwork } = useSharedDependencies()
+  const { neckwork } = useSharedDependencies()
 
   const { account } = useAccount()
   const address = safeConvertSS58toPublicKey(account?.address ?? "")
@@ -75,49 +71,20 @@ export const CollateralChangeModalContent: React.FC<
 
   const assetId = getAssetIdFromAddress(poolReserve.underlyingAsset)
 
-  const neckworkQueries: Array<ReturnType<typeof dcaSchedulesQuery>> =
-    neckwork && usageAsCollateralModeAfterSwitch
-      ? [
-          dcaSchedulesQuery(neckwork, {
-            owner: address,
-            statuses: DCA_OPEN_STATUSES,
-            assetIds: [assetId],
-            page: 0,
-            pageSize: 200,
-          }),
-        ]
-      : []
-
-  const hasNeckworkOpenBudgetDca = useQueries({
-    queries: neckworkQueries,
-    combine: (
-      queries: QueriesResults<Array<ReturnType<typeof dcaSchedulesQuery>>>,
-    ) =>
-      queries[0]?.data?.items.some(
-        (schedule) => schedule.budget === "0" && schedule.assetIn === assetId,
-      ),
+  const { data: schedules } = useQuery({
+    ...dcaSchedulesQuery(neckwork, {
+      owner: address,
+      statuses: DCA_OPEN_STATUSES,
+      assetIds: [assetId],
+      page: 0,
+      pageSize: 200,
+    }),
+    enabled: usageAsCollateralModeAfterSwitch && !!address,
   })
 
-  const { data: openOrders } = useQuery({
-    ...userOrdersQuery(
-      squidClient,
-      address,
-      [DcaScheduleStatus.Created],
-      [],
-      undefined,
-      undefined,
-      usageAsCollateralModeAfterSwitch,
-    ),
-    enabled: !neckwork && usageAsCollateralModeAfterSwitch && !!address,
-  })
-
-  const hasSquidOpenBudgetDca = openOrders?.dcaSchedules?.nodes
-    .filter((node) => node?.budgetAmountIn === "0")
-    .some((node) => node?.assetIn?.assetRegistryId === assetId)
-
-  const hasOpenBudgetDca = neckwork
-    ? hasNeckworkOpenBudgetDca
-    : hasSquidOpenBudgetDca
+  const hasOpenBudgetDca = schedules?.items.some(
+    (schedule) => schedule.budget === "0" && schedule.assetIn === assetId,
+  )
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)

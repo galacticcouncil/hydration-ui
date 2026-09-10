@@ -59,12 +59,7 @@ export const AddressBookEmptyState = ({
     }
   })()
 
-  const displayAddress =
-    address && addressMode
-      ? addressMode === WalletMode.Near
-        ? address
-        : shortenAccountAddress(address)
-      : undefined
+  const displayAddress = address ? shortenAccountAddress(address) : undefined
 
   const modeIcon = addressMode ? getWalletModeIcon(addressMode) : undefined
 
@@ -95,22 +90,35 @@ export const AddressBookEmptyState = ({
         </Text>
       )}
       {canAdd && (
-        <Button variant="muted" size="large" mt="m" onClick={onAdd}>
-          <Flex align="center" gap="base">
+        <Button
+          variant="muted"
+          size="large"
+          mt="m"
+          onClick={onAdd}
+          sx={{ maxWidth: "100%" }}
+        >
+          <Flex align="center" gap="base" sx={{ minWidth: 0 }}>
             {t("addressBook.add")}
-            <Flex asChild align="center" gap="s">
-              <Text as="span" fw={700} color={getToken("text.high")}>
-                {modeIcon && (
-                  <img
-                    sx={{
-                      size: "m",
-                      borderRadius: "full",
-                      overflow: "hidden",
-                    }}
-                    src={modeIcon}
-                    alt=""
-                  />
-                )}
+            <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
+              {modeIcon && (
+                <img
+                  sx={{
+                    size: "m",
+                    borderRadius: "full",
+                    overflow: "hidden",
+                    flexShrink: 0,
+                  }}
+                  src={modeIcon}
+                  alt=""
+                />
+              )}
+              <Text
+                as="span"
+                fw={700}
+                color={getToken("text.high")}
+                truncate={160}
+                title={address}
+              >
                 {displayAddress}
               </Text>
             </Flex>

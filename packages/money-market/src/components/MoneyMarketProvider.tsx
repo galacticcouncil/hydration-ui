@@ -1,6 +1,5 @@
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
 import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
-import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { FC, lazy, Suspense, useEffect } from "react"
 import { useShallow } from "zustand/shallow"
 
@@ -58,8 +57,7 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
   provider: ExternalProvider
   market: CustomMarket
-  squidClient: SquidSdk
-  neckwork: NeckworkClient | null
+  neckwork: NeckworkClient
   onCreateTransaction: MoneyMarketTxFn
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
@@ -73,7 +71,6 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   useMaxBalance,
   getRelatedATokenId,
   provider: externalProvider,
-  squidClient,
   neckwork,
   externalApyData,
   ...formatters
@@ -104,7 +101,6 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
             <ModalContextProvider>
               <AppDataProvider externalApyData={externalApyData}>
                 <SharedDependenciesProvider
-                  squidClient={squidClient}
                   neckwork={neckwork}
                   useMaxBalance={useMaxBalance}
                   getRelatedATokenId={getRelatedATokenId}

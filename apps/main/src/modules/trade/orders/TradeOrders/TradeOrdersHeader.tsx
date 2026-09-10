@@ -33,11 +33,13 @@ const TAB_TITLE_KEYS = {
 type PairFilter = "all" | "current"
 
 type Props = {
+  readonly tabs?: ReadonlyArray<TradeOrderTab>
   readonly paginationProps: PaginationProps
   readonly openOrdersCount: number
 }
 
 export const TradeOrdersHeader: FC<Props> = ({
+  tabs = tradeOrderTabs,
   paginationProps,
   openOrdersCount,
 }) => {
@@ -48,15 +50,13 @@ export const TradeOrdersHeader: FC<Props> = ({
     from: "/trade/_history",
   })
 
-  const navigate = useNavigate()
-
   return (
     <Flex align="center" px="xl">
       <TabMenu
         gap="base"
         my="l"
         horizontalEdgeOffset="xl"
-        items={tradeOrderTabs.map<TabItem>((tab) => ({
+        items={tabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(TAB_TITLE_KEYS[tab]),
           search: {
@@ -92,28 +92,26 @@ export const TradeOrdersHeader: FC<Props> = ({
             onValueChange={(value) => {
               if (!value) return
 
-      <ToggleRoot ml="auto" pl="xl">
-        <ToggleLabel>
-          {allPairs
-            ? t("trade.orders.allPairs.on")
-            : t("trade.orders.allPairs.off")}
-        </ToggleLabel>
-        <Toggle
-          checked={allPairs}
-          onCheckedChange={(checked) => {
-            navigate({
-              to: ".",
-              search: {
-                tab,
-                allPairs: checked,
-                assetIn,
-                assetOut,
-              },
-              resetScroll: false,
-            })
-          }}
-        />
-      </ToggleRoot>
+              navigate({
+                to: ".",
+                search: (search) => ({
+                  ...search,
+                  allPairs: value === "all",
+                  page: 1,
+                }),
+                resetScroll: false,
+              })
+            }}
+          >
+            <ToggleGroupItem value="all">
+              {t("trade.orders.allPairs.on")}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="current">
+              {t("trade.orders.allPairs.off")}
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </Flex>
+      )}
     </Flex>
   )
 }

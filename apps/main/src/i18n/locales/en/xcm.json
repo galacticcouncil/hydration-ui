@@ -4,8 +4,6 @@
   "approve.title": "Approve spending cap",
   "approve.toast.submitted": "Approving {{ amount, number }} {{ symbol }} spending cap on {{ srcChain }}",
   "approve.toast.success": "Approved {{ amount, number }} {{ symbol }} spending cap on {{ srcChain }}",
-  "prerequisite.pending.title": "Transaction Pending",
-  "prerequisite.pending.description": "Your previous transaction is being confirmed on the blockchain.",
   "wrap": "Wrap",
   "wrap.title": "Wrap {{ symbol }}",
   "wrap.description": "Wrap {{ symbol }} on {{ srcChain }} before transferring",

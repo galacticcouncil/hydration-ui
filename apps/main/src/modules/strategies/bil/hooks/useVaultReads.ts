@@ -93,7 +93,7 @@ export function useVaultStats() {
   const queryClient = useQueryClient()
   return useQuery({
     queryKey: bilQueryKeys.vaultStats(),
-    enabled: rpc.isLoaded,
+    enabled: rpc.isReady,
     initialData: DEFAULT_VAULT_STATS,
     queryFn: async () => {
       const vault = await queryClient.ensureQueryData(

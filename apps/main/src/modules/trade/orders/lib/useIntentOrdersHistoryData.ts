@@ -8,9 +8,9 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import { buildIntentHistoryRows } from "@/modules/trade/orders/lib/buildOrderRows"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData } from "@/modules/trade/orders/lib/orderData"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const useIntentOrdersHistoryData = () => {

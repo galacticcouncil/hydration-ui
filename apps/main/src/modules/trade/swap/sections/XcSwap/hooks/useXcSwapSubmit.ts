@@ -2,9 +2,8 @@ import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useMemo, useRef } from "react"
 import { UseFormReturn } from "react-hook-form"
 
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
-import { useSubmitTwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitTwap"
+import { useSubmitSwap } from "@/modules/trade/swap/sections/XcSwap/hooks/useSubmitSwap"
+import { useSubmitTwap } from "@/modules/trade/swap/sections/XcSwap/hooks/useSubmitTwap"
 import { useSubmitXcSwap } from "@/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import {
@@ -12,7 +11,10 @@ import {
   shouldResetXcSwapFormAfterSubmit,
 } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapFormReset"
 import { XcSwapQuote } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapQuote"
-import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
+import {
+  SwapSubmitValues,
+  XcAsset,
+} from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { TransactionActions } from "@/states/transactions"
 
@@ -79,7 +81,7 @@ export const useXcSwapSubmit = ({
     submitTwap.reset()
   }
 
-  const toMarketFormValues = (values: XcSwapFormValues): MarketFormValues => ({
+  const toSwapSubmitValues = (values: XcSwapFormValues): SwapSubmitValues => ({
     sellAsset: values.sellAsset,
     sellAmount: values.sellAmount,
     buyAsset:
@@ -102,9 +104,9 @@ export const useXcSwapSubmit = ({
     if (quote?.kind === "xc") {
       submit.mutate(values)
     } else if (quote?.kind === "oc" && values.isSingleTrade) {
-      submitOmnipool.mutate(toMarketFormValues(values))
+      submitOmnipool.mutate(toSwapSubmitValues(values))
     } else if (quote?.kind === "oc" && quote.twap) {
-      submitTwap.mutate(toMarketFormValues(values))
+      submitTwap.mutate(toSwapSubmitValues(values))
     }
   }
 
