@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { TradeType } from "@/api/trade"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
@@ -63,8 +64,16 @@ export const XcSwap: React.FC = () => {
   }, [onChainSwap, setValue])
 
   useEffect(() => {
-    const subscription = watch((_, { type }) => {
+    const subscription = watch((values, { type, name }) => {
       if (type !== "change") {
+        return
+      }
+
+      const quoteDerivedField =
+        values.type === TradeType.Sell ? "buyAmount" : "sellAmount"
+      const shouldReset = name !== undefined && name !== quoteDerivedField
+
+      if (!shouldReset) {
         return
       }
 
@@ -83,12 +92,12 @@ export const XcSwap: React.FC = () => {
     healthFactor.isUserConsentRequired &&
     healthFactor.future < healthFactor.current
 
-  const isFormValid =
+  const isTradeReady =
     form.formState.isValid &&
     !hasBlockingAlerts &&
-    isXcSwapTradeEnabled(quote, isSingleTrade) &&
-    !isQuoteLoading &&
-    !isQuoteRefreshing
+    isXcSwapTradeEnabled(quote, isSingleTrade)
+
+  const isFormValid = isTradeReady && !isQuoteLoading && !isQuoteRefreshing
 
   const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired
     ? healthFactorRiskAccepted
@@ -124,7 +133,7 @@ export const XcSwap: React.FC = () => {
       {healthFactor && shouldRenderHealthFactorWarning && (
         <Box mt="base">
           <HealthFactorRiskWarning
-            canContinue={isFormValid}
+            canContinue={isTradeReady}
             message={t("healthFactor.warning")}
             accepted={healthFactorRiskAccepted}
             isUserConsentRequired={healthFactor.isUserConsentRequired}

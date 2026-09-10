@@ -199,7 +199,14 @@ export const AssetInput = ({
               )}
 
               {amountError && !isLoading ? (
-                <FormError lh={1} truncate width="100%" align="right">
+                <FormError
+                  fs="p6"
+                  fw={400}
+                  lh={1}
+                  truncate
+                  width="100%"
+                  align="right"
+                >
                   {amountError}
                 </FormError>
               ) : (
@@ -208,6 +215,7 @@ export const AssetInput = ({
                     color={getToken("text.low")}
                     fs="p6"
                     fw={400}
+                    lh={1}
                     truncate
                     width="100%"
                     align="right"
