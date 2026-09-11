@@ -1,4 +1,4 @@
-import { Stack } from "@galacticcouncil/ui/components"
+import { Box, Stack } from "@galacticcouncil/ui/components"
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { FC } from "react"
@@ -37,63 +37,65 @@ export const LimitFields: FC<Props> = ({
 
   return (
     <Stack>
-      <AssetSelectFormField<LimitFormValues>
-        assetFieldName="sellAsset"
-        amountFieldName="sellAmount"
-        label={t("sell")}
-        assets={tradable}
-        maxBalanceFallback="0"
-        onLockToggle={sellAmount ? onLockToggle : undefined}
-        isLocked={isLocked}
-        lockLabel={t("trade:limit.lockSell.aria")}
-        onAssetChange={(sellAsset, previousSellAsset) => {
-          const { buyAsset } = getValues()
-          if (sellAsset.id === buyAsset?.id) {
-            setValue("sellAsset", previousSellAsset)
-            return
-          }
-          onAssetChange({ sellAsset })
-          navigate({
-            to: ".",
-            search: (search) => ({
-              ...search,
-              assetIn: sellAsset.id,
-              assetOut: buyAsset?.id,
-            }),
-            resetScroll: false,
-          })
-        }}
-        onAmountChange={onSellAmountChange}
-      />
+      <Box py="l" width="100%">
+        <AssetSelectFormField<LimitFormValues>
+          assetFieldName="sellAsset"
+          amountFieldName="sellAmount"
+          label={t("sell")}
+          assets={tradable}
+          onLockToggle={sellAmount ? onLockToggle : undefined}
+          isLocked={isLocked}
+          lockLabel={t("trade:limit.lockSell.aria")}
+          onAssetChange={(sellAsset, previousSellAsset) => {
+            const { buyAsset } = getValues()
+            if (sellAsset.id === buyAsset?.id) {
+              setValue("sellAsset", previousSellAsset)
+              return
+            }
+            onAssetChange({ sellAsset })
+            navigate({
+              to: ".",
+              search: (search) => ({
+                ...search,
+                assetIn: sellAsset.id,
+                assetOut: buyAsset?.id,
+              }),
+              resetScroll: false,
+            })
+          }}
+          onAmountChange={onSellAmountChange}
+        />
+      </Box>
 
       <LimitSwitcher />
 
-      <AssetSelectFormField<LimitFormValues>
-        assetFieldName="buyAsset"
-        amountFieldName="buyAmount"
-        label={t("buy")}
-        assets={buyableAssets}
-        hideMaxBalanceAction
-        maxBalanceFallback="0"
-        onAssetChange={(buyAsset, previousBuyAsset) => {
-          const { sellAsset } = getValues()
-          if (buyAsset.id === sellAsset?.id) {
-            setValue("buyAsset", previousBuyAsset)
-            return
-          }
-          onAssetChange({ buyAsset })
-          navigate({
-            to: ".",
-            search: (search) => ({
-              ...search,
-              assetIn: sellAsset?.id,
-              assetOut: buyAsset.id,
-            }),
-            resetScroll: false,
-          })
-        }}
-        onAmountChange={onBuyAmountChange}
-      />
+      <Box py="l" width="100%">
+        <AssetSelectFormField<LimitFormValues>
+          assetFieldName="buyAsset"
+          amountFieldName="buyAmount"
+          label={t("buy")}
+          assets={buyableAssets}
+          balance={{ onMax: null }}
+          onAssetChange={(buyAsset, previousBuyAsset) => {
+            const { sellAsset } = getValues()
+            if (buyAsset.id === sellAsset?.id) {
+              setValue("buyAsset", previousBuyAsset)
+              return
+            }
+            onAssetChange({ buyAsset })
+            navigate({
+              to: ".",
+              search: (search) => ({
+                ...search,
+                assetIn: sellAsset?.id,
+                assetOut: buyAsset.id,
+              }),
+              resetScroll: false,
+            })
+          }}
+          onAmountChange={onBuyAmountChange}
+        />
+      </Box>
     </Stack>
   )
 }

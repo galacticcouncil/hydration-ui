@@ -466,7 +466,7 @@ export const SButtonIcon = styled(Box)(
 export type LoadingMode = "inline" | "replace"
 
 const LOADING_TRANSITION_MS = 500
-const LOADING_ENTER_DELAY_MS = 250
+const LOADING_ENTER_DELAY_MS = 150
 const LOADING_ICON_EASING = "cubic-bezier(0.2, 0, 0, 1)"
 
 const loadingLabelStyles = createStyles(

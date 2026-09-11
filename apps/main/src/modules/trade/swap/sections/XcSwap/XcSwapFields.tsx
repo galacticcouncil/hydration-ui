@@ -1,4 +1,5 @@
 import {
+  Box,
   FormLabel,
   Modal,
   Separator,
@@ -204,56 +205,71 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
 
   return (
     <Stack>
-      <XcSrcAssetSelectField
-        label={isCrossChain ? t("from") : t("sell")}
-        labelAdornment={<ChainBadge chain={isCrossChain ? srcChain : null} />}
-        loading={isSelectionLoading}
-        maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
-        maxBalanceLoading={
-          isSingleTrade
-            ? isMaxSwapSellBalanceLoading
-            : isMaxTwapSellBalanceLoading
-        }
-        onAssetChange={handleSellAssetChange}
-        onAmountChange={() => {
-          if (!isSell) {
-            setValue("type", TradeType.Sell)
+      <Box py="l" width="100%">
+        <XcSrcAssetSelectField
+          label={isCrossChain ? t("from") : t("sell")}
+          labelAdornment={<ChainBadge chain={isCrossChain ? srcChain : null} />}
+          isLoading={isSelectionLoading}
+          maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
+          isMaxBalanceLoading={
+            isSingleTrade
+              ? isMaxSwapSellBalanceLoading
+              : isMaxTwapSellBalanceLoading
           }
-        }}
-      />
+          onAssetChange={handleSellAssetChange}
+          onAmountChange={() => {
+            if (!isSell) {
+              setValue("type", TradeType.Sell)
+            }
+          }}
+        />
+      </Box>
 
       <XcSwapSwitcher />
 
-      <XcChainAssetSelectFormField<XcSwapFormValues>
-        chainFieldName="destChain"
-        assetFieldName="buyAsset"
-        amountFieldName="buyAmount"
-        label={isCrossChain ? t("to") : t("buy")}
-        labelAdornment={<ChainBadge chain={isCrossChain ? destChain : null} />}
-        chainAssetPairs={destChainAssetPairs}
-        modalTitle={t("trade:xc.swap.field.destTitle")}
-        hideMaxBalanceAction
-        ignoreBalance={isCrossChain && !showDestBalance}
-        ignoreDisplayValue={isCrossChain && !destSpotPrice}
-        ignoreErrors={isCrossChain}
-        maxBalance={showDestBalance ? destBalance : destMaxBalance}
-        maxBalanceLoading={isDestBalanceLoading}
-        displayValue={destDisplayValue}
-        disabledInput={isCrossChain}
-        loading={isSelectionLoading}
-        valueLoading={isSell && isQuoteLoading}
-        displayValueLoading={
-          isCrossChain
-            ? isDestSpotPriceLoading || (isSell && isQuoteLoading)
-            : isQuoteLoading || isOnChainDestDisplayValueLoading
-        }
-        onSelectionChange={handleBuySelectionChange}
-        onAmountChange={() => {
-          if (isSell) {
-            setValue("type", TradeType.Buy)
+      <Box py="l" width="100%">
+        <XcChainAssetSelectFormField<XcSwapFormValues>
+          chainFieldName="destChain"
+          assetFieldName="buyAsset"
+          amountFieldName="buyAmount"
+          label={isCrossChain ? t("to") : t("buy")}
+          labelAdornment={
+            <ChainBadge chain={isCrossChain ? destChain : null} />
           }
-        }}
-      />
+          chainAssetPairs={destChainAssetPairs}
+          modalTitle={t("trade:xc.swap.field.destTitle")}
+          balance={
+            isCrossChain && !showDestBalance
+              ? undefined
+              : {
+                  label: t("common:balance"),
+                  value: t("common:number", {
+                    value:
+                      (showDestBalance ? destBalance : destMaxBalance) || "0",
+                  }),
+                  isLoading: isDestBalanceLoading,
+                }
+          }
+          ignoreErrors={isCrossChain}
+          displayValue={
+            isCrossChain && !destSpotPrice ? undefined : destDisplayValue
+          }
+          isReadOnly={isCrossChain}
+          isLoading={isSelectionLoading}
+          isValueLoading={isSell && isQuoteLoading}
+          isDisplayValueLoading={
+            isCrossChain
+              ? isDestSpotPriceLoading || (isSell && isQuoteLoading)
+              : isQuoteLoading || isOnChainDestDisplayValueLoading
+          }
+          onSelectionChange={handleBuySelectionChange}
+          onAmountChange={() => {
+            if (isSell) {
+              setValue("type", TradeType.Buy)
+            }
+          }}
+        />
+      </Box>
 
       {isCrossChain && (
         <>
