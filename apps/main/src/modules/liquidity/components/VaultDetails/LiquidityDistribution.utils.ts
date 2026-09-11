@@ -23,6 +23,8 @@ const lockedAmount = (
     : (liquidity * (1 / sqrtRatioAtTick(lower) - 1 / sqrtRatioAtTick(upper))) /
       Math.pow(10, decimals0)
 
+const liquidityToChartScale = (value: bigint) => Number(value)
+
 export type Bar = {
   key: string
   from: number
@@ -35,38 +37,13 @@ export type Bar = {
   current: boolean
   /** explainer only: which illustrative tier the bar belongs to */
   tier?: "managed" | "limit" | "background"
-  /** colour scale key: the token side, or "background" for other LPs' liquidity */
   colorGroup: "token0" | "token1" | "background"
 }
 
-type ManagedRangeTheme = {
-  controls: {
-    outline: { active: string }
-  }
-}
+export type BandId = "active" | "previous" | "base" | "limit"
 
-export const MANAGED_RANGE = {
-  getColor: ({ controls }: ManagedRangeTheme) => controls.outline.active,
-  fillOpacity: 0.35,
-  borderOpacity: 0.85,
-} as const
-
-export const managedRangeMixedColor = (color: string, opacity: number) =>
-  `color-mix(in srgb, ${color} ${opacity * 100}%, transparent)`
-
-export const managedRangeChartStroke = (
-  color: string,
-  borderOpacity: number,
-) =>
-  borderOpacity <= 0
-    ? { stroke: "none", strokeWidth: 0 }
-    : {
-        stroke: managedRangeMixedColor(color, borderOpacity),
-        strokeWidth: 1,
-      }
-
-type Band = {
-  id: "active" | "previous" | "base" | "limit"
+export type Band = {
+  id: BandId
   lower: number
   upper: number
   height: number
@@ -78,13 +55,81 @@ export type RangeScenario =
   | "recentered"
   | "limitOrder"
 
+export const RANGE_SCENARIOS = [
+  "inRange",
+  "outOfRange",
+  "recentered",
+  "limitOrder",
+] as const satisfies ReadonlyArray<RangeScenario>
+
+export const isRangeScenario = (value: string): value is RangeScenario =>
+  RANGE_SCENARIOS.includes(value as RangeScenario)
+
+export type LiquidityDistributionResult = {
+  bars: Bar[]
+  spotTick: number
+  max: number
+  lo: number
+  hi: number
+  bands: ReadonlyArray<Band>
+}
+
 export const BARS_ID = "liquidity-bars"
+
 const SLICE_TARGET = 30
 const DEFAULT_DOMAIN_PADDING_RATIO = 1
 const ZOOMED_DOMAIN_PADDING_RATIO = 0.1
 const MEANINGFUL_LIQUIDITY_PERCENT = 5n
 /** keeps a tiny vault position visible as a range marker */
 const MIN_BAND_HEIGHT = 0.02
+
+const CHART_LAYOUT = {
+  defaultTickPadding: 3000,
+  fallbackBaseLowerRatio: 0.34,
+  fallbackBaseUpperRatio: 0.7,
+  outsideOffsetRatio: 0.12,
+  outsideMarginRatio: 0.05,
+  recenterEdgeInsetRatio: 0.02,
+  scenarioBandHeight: 1.05,
+} as const
+
+const SCENARIO_TIER_SCALE = {
+  managed: 0.8,
+  background: 0.5,
+} as const
+
+type LiquidityInterval = {
+  lower: number
+  upper: number
+  liquidity: bigint
+}
+
+type ChartBounds = {
+  from: number
+  to: number
+  span: number
+  base: { lower: number; upper: number }
+  recentered: { lower: number; upper: number }
+  outside: number
+  inside: number
+  marketSpot: number
+}
+
+type VaultBands = Pick<
+  VaultState,
+  "baseLower" | "baseUpper" | "limitLower" | "limitUpper" | "base" | "limit"
+>
+
+const barMidpoint = (bar: Bar) => (bar.from + bar.to) / 2
+
+const barsExtent = (bars: Bar[]) => {
+  if (!bars.length) return null
+
+  return {
+    lower: Math.min(...bars.map((bar) => bar.from)),
+    upper: Math.max(...bars.map((bar) => bar.to)),
+  }
+}
 
 export const isBarPoint = <TPoint extends { markId: string; datum: unknown }>(
   point: TPoint,
@@ -97,11 +142,6 @@ export const isSameRange = (
   !isBarPoint(focused) ||
   (focused.datum.rangeFrom === bar.rangeFrom &&
     focused.datum.rangeTo === bar.rangeTo)
-
-type VaultBands = Pick<
-  VaultState,
-  "baseLower" | "baseUpper" | "limitLower" | "limitUpper" | "base" | "limit"
->
 
 export const hasBase = (state: VaultBands) =>
   state.baseUpper > state.baseLower && state.base.liquidity > 0n
@@ -131,26 +171,15 @@ export const sharesFocusGroup = (
   if (isSameRange(focused, bar)) return true
   if (!state) return false
 
-  const mid = (bar: Bar) => (bar.rangeFrom + bar.rangeTo) / 2
-  const focusedBand = getManagedBand(mid(focused.datum), state)
-  const barBand = getManagedBand(mid(bar), state)
+  const focusedBand = getManagedBand(barMidpoint(focused.datum), state)
+  const barBand = getManagedBand(barMidpoint(bar), state)
 
   return focusedBand !== null && focusedBand === barBand
 }
 
-export const getLiquidityDistribution = ({
-  pool,
-  state,
-  decimals0,
-  decimals1,
-  scenario,
-}: {
-  pool: Pick<V3PoolBase, "tick" | "liquidity" | "ticks">
-  state: VaultBands | null
-  decimals0: number
-  decimals1: number
-  scenario?: RangeScenario
-}) => {
+const computeLiquidityIntervals = (
+  pool: Pick<V3PoolBase, "tick" | "liquidity" | "ticks">,
+) => {
   const ticks = [...(pool.ticks ?? [])].sort((a, b) => a.index - b.index)
   const marketSpot = pool.tick
 
@@ -159,11 +188,7 @@ export const getLiquidityDistribution = ({
     if (tick.index <= marketSpot) running -= tick.liquidityNet
   }
 
-  const liquidityIntervals: Array<{
-    lower: number
-    upper: number
-    liquidity: bigint
-  }> = []
+  const intervals: LiquidityInterval[] = []
 
   for (let i = 0; i < ticks.length - 1; i++) {
     const tick = ticks[i]
@@ -172,7 +197,7 @@ export const getLiquidityDistribution = ({
 
     running += tick.liquidityNet
     if (running > 0n) {
-      liquidityIntervals.push({
+      intervals.push({
         lower: tick.index,
         upper: next.index,
         liquidity: running,
@@ -180,6 +205,10 @@ export const getLiquidityDistribution = ({
     }
   }
 
+  return { intervals, marketSpot }
+}
+
+const computeEdgeSpan = (marketSpot: number, state: VaultBands | null) => {
   const bandWidth = state ? state.baseUpper - state.baseLower : 0
   const edges = state
     ? [
@@ -188,11 +217,22 @@ export const getLiquidityDistribution = ({
         ...(hasLimit(state) ? [state.limitLower, state.limitUpper] : []),
       ]
     : []
+
   const edgeSpan =
     edges.length > 1 ? Math.max(...edges) - Math.min(...edges) : 0
   const edgeLower = edges.length ? Math.min(...edges) : marketSpot
   const edgeUpper = edges.length ? Math.max(...edges) : marketSpot
-  const maxLiquidity = liquidityIntervals.reduce(
+
+  return { edges, edgeSpan, edgeLower, edgeUpper }
+}
+
+const hasMeaningfulOuterLiquidity = (
+  intervals: LiquidityInterval[],
+  edgeLower: number,
+  edgeUpper: number,
+  edgeSpan: number,
+) => {
+  const maxLiquidity = intervals.reduce(
     (value, interval) =>
       interval.liquidity > value ? interval.liquidity : value,
     0n,
@@ -201,230 +241,522 @@ export const getLiquidityDistribution = ({
     (maxLiquidity * MEANINGFUL_LIQUIDITY_PERCENT) / 100n
   const wideLower = edgeLower - edgeSpan
   const wideUpper = edgeUpper + edgeSpan
-  const hasMeaningfulOuterLiquidity = liquidityIntervals.some(
+
+  return intervals.some(
     (interval) =>
       interval.liquidity >= meaningfulLiquidity &&
       interval.upper > wideLower &&
       interval.lower < wideUpper &&
       (interval.lower < edgeLower || interval.upper > edgeUpper),
   )
-  const paddingRatio =
-    scenario || hasMeaningfulOuterLiquidity
-      ? DEFAULT_DOMAIN_PADDING_RATIO
-      : ZOOMED_DOMAIN_PADDING_RATIO
-  const pad = edgeSpan > 0 ? edgeSpan * paddingRatio : 3000
-  const from = edges.length ? edgeLower - pad : marketSpot - 3000
-  const to = edges.length ? edgeUpper + pad : marketSpot + 3000
+}
+
+const computeChartBounds = (
+  marketSpot: number,
+  state: VaultBands | null,
+  paddingRatio: number,
+): ChartBounds => {
+  const { edges, edgeSpan, edgeLower, edgeUpper } = computeEdgeSpan(
+    marketSpot,
+    state,
+  )
+  const pad =
+    edgeSpan > 0 ? edgeSpan * paddingRatio : CHART_LAYOUT.defaultTickPadding
+  const from = edges.length
+    ? edgeLower - pad
+    : marketSpot - CHART_LAYOUT.defaultTickPadding
+  const to = edges.length
+    ? edgeUpper + pad
+    : marketSpot + CHART_LAYOUT.defaultTickPadding
   const span = to - from
+  const bandWidth = state ? state.baseUpper - state.baseLower : 0
 
   const base =
     state && bandWidth > 0
       ? { lower: state.baseLower, upper: state.baseUpper }
-      : { lower: from + span * 0.34, upper: from + span * 0.7 }
+      : {
+          lower: from + span * CHART_LAYOUT.fallbackBaseLowerRatio,
+          upper: from + span * CHART_LAYOUT.fallbackBaseUpperRatio,
+        }
   const halfBand = (base.upper - base.lower) / 2
-  const outside = Math.min(to - span * 0.05, base.upper + span * 0.12)
+  const outside = Math.min(
+    to - span * CHART_LAYOUT.outsideMarginRatio,
+    base.upper + span * CHART_LAYOUT.outsideOffsetRatio,
+  )
   const inside =
     marketSpot >= base.lower && marketSpot <= base.upper
       ? marketSpot
       : base.lower + halfBand
-  const staged = {
-    inRange: inside,
-    outOfRange: outside,
-    recentered: outside,
-    limitOrder: inside,
-  }
-  const spot = scenario ? staged[scenario] : marketSpot
 
-  const recentered = {
-    lower: Math.max(from + span * 0.02, outside - halfBand),
-    upper: Math.min(to - span * 0.02, outside + halfBand),
+  return {
+    from,
+    to,
+    span,
+    base,
+    recentered: {
+      lower: Math.max(
+        from + span * CHART_LAYOUT.recenterEdgeInsetRatio,
+        outside - halfBand,
+      ),
+      upper: Math.min(
+        to - span * CHART_LAYOUT.recenterEdgeInsetRatio,
+        outside + halfBand,
+      ),
+    },
+    outside,
+    inside,
+    marketSpot,
+  }
+}
+
+const scenarioSpotTick = (scenario: RangeScenario, bounds: ChartBounds) => {
+  const staged: Record<RangeScenario, number> = {
+    inRange: bounds.inside,
+    outOfRange: bounds.outside,
+    recentered: bounds.outside,
+    limitOrder: bounds.inside,
   }
 
-  const out: Bar[] = []
-  const sliceWidth = (to - from) / SLICE_TARGET
-  // explainer: bar sizes follow market tick, not the staged price
-  const geometrySpot = scenario ? marketSpot : spot
-  const push = (
-    left: number,
-    right: number,
-    liquidity: number,
-    side: Bar["side"],
-    current: boolean,
-  ) => {
-    const locked = lockedAmount(
+  return staged[scenario]
+}
+
+const getSliceWidth = (from: number, to: number) => (to - from) / SLICE_TARGET
+
+const pushRealBarSlices = (
+  out: Bar[],
+  {
+    left,
+    right,
+    liquidity,
+    side,
+    current,
+    sliceWidth,
+    decimals0,
+    decimals1,
+  }: {
+    left: number
+    right: number
+    liquidity: number
+    side: Bar["side"]
+    current: boolean
+    sliceWidth: number
+    decimals0: number
+    decimals1: number
+  },
+) => {
+  const locked = lockedAmount(
+    liquidity,
+    left,
+    right,
+    side,
+    decimals0,
+    decimals1,
+  )
+  const count = Math.max(1, Math.round((right - left) / sliceWidth))
+  const step = (right - left) / count
+
+  for (let slice = 0; slice < count; slice++) {
+    const sliceFrom = left + slice * step
+    const sliceTo = left + (slice + 1) * step
+
+    out.push({
+      key: `${left}-${right}-${slice}`,
+      from: sliceFrom,
+      to: sliceTo,
       liquidity,
-      left,
-      right,
       side,
-      decimals0,
-      decimals1,
-    )
-    const count = Math.max(1, Math.round((right - left) / sliceWidth))
-    const step = (right - left) / count
-
-    for (let slice = 0; slice < count; slice++) {
-      const sliceFrom = left + slice * step
-      const sliceTo = left + (slice + 1) * step
-      const stagedSide =
-        scenario && (sliceFrom + sliceTo) / 2 > spot ? "token0" : "token1"
-
-      out.push({
-        key: `${left}-${right}-${slice}`,
-        from: sliceFrom,
-        to: sliceTo,
-        liquidity,
-        side: scenario ? stagedSide : side,
-        rangeFrom: left,
-        rangeTo: right,
-        locked,
-        current: scenario ? sliceFrom <= spot && sliceTo > spot : current,
-        colorGroup: scenario ? stagedSide : side,
-      })
-    }
+      rangeFrom: left,
+      rangeTo: right,
+      locked,
+      current,
+      colorGroup: side,
+    })
   }
+}
 
-  for (const interval of liquidityIntervals) {
+const buildRealBars = ({
+  intervals,
+  bounds,
+  spot,
+  decimals0,
+  decimals1,
+}: {
+  intervals: LiquidityInterval[]
+  bounds: ChartBounds
+  spot: number
+  decimals0: number
+  decimals1: number
+}) => {
+  const out: Bar[] = []
+  const { from, to } = bounds
+  const sliceWidth = getSliceWidth(from, to)
+
+  for (const interval of intervals) {
     const left = Math.max(interval.lower, from)
     const right = Math.min(interval.upper, to)
     if (right <= left) continue
 
-    const liquidity = Number(interval.liquidity)
-
+    const liquidity = liquidityToChartScale(interval.liquidity)
     const current = left <= spot && right > spot
 
-    if (left < geometrySpot && right > geometrySpot) {
-      push(left, geometrySpot, liquidity, "token1", current)
-      push(geometrySpot, right, liquidity, "token0", current)
+    if (left < spot && right > spot) {
+      pushRealBarSlices(out, {
+        left,
+        right: spot,
+        liquidity,
+        side: "token1",
+        current,
+        sliceWidth,
+        decimals0,
+        decimals1,
+      })
+      pushRealBarSlices(out, {
+        left: spot,
+        right,
+        liquidity,
+        side: "token0",
+        current,
+        sliceWidth,
+        decimals0,
+        decimals1,
+      })
     } else {
-      push(
+      pushRealBarSlices(out, {
         left,
         right,
         liquidity,
-        right <= geometrySpot ? "token1" : "token0",
+        side: right <= spot ? "token1" : "token0",
         current,
-      )
+        sliceWidth,
+        decimals0,
+        decimals1,
+      })
     }
   }
 
-  const displayBars =
-    scenario && out.length
-      ? (() => {
-          const midpoint = (bar: Bar) => (bar.from + bar.to) / 2
-          const rawFloor = out.reduce(
-            (value, bar) => Math.min(value, bar.liquidity),
-            Number.POSITIVE_INFINITY,
-          )
-          const managedValues = out
-            .filter((bar) => {
-              const center = midpoint(bar)
-              return center >= base.lower && center <= base.upper
-            })
-            .map((bar) => bar.liquidity)
-          const reference = managedValues.reduce(
-            (value, liquidity) => Math.max(value, liquidity),
-            rawFloor,
-          )
-          const managed = reference * 0.8
-          const background = reference * 0.5
-          // the surplus limit order is far denser than the base range
-          const limit = reference
-          const active = scenario === "recentered" ? recentered : base
-          const stagedLimit =
-            scenario === "limitOrder" && state && hasLimit(state)
-              ? { lower: state.limitLower, upper: state.limitUpper }
-              : null
+  return out
+}
 
-          return out.map((bar) => {
-            const center = midpoint(bar)
-            const isLimit =
-              !!stagedLimit &&
-              center >= stagedLimit.lower &&
-              center <= stagedLimit.upper
-            const isManaged = center >= active.lower && center <= active.upper
-            const tier: Bar["tier"] = isLimit
-              ? "limit"
-              : isManaged
-                ? "managed"
-                : "background"
-            // other LPs' liquidity is drawn in a neutral colour so the
-            // token-side colours only ever mean "the vault's own ranges"
-            const colorGroup: Bar["colorGroup"] =
-              tier === "background" ? "background" : bar.side
+const buildScenarioBars = ({
+  bounds,
+  spot,
+  liquidity,
+  decimals0,
+  decimals1,
+}: {
+  bounds: ChartBounds
+  spot: number
+  liquidity: bigint
+  decimals0: number
+  decimals1: number
+}) => {
+  const { from, to } = bounds
+  const sliceWidth = getSliceWidth(from, to)
+  const scaledLiquidity = liquidityToChartScale(liquidity)
+  const out: Bar[] = []
 
-            return {
-              ...bar,
-              liquidity: isLimit ? limit : isManaged ? managed : background,
-              tier,
-              colorGroup,
-            }
-          })
-        })()
-      : out
+  for (let slice = 0; slice < SLICE_TARGET; slice++) {
+    const sliceFrom = from + slice * sliceWidth
+    const sliceTo = from + (slice + 1) * sliceWidth
+    const stagedSide = (sliceFrom + sliceTo) / 2 > spot ? "token0" : "token1"
 
-  const max = out.reduce((value, bar) => Math.max(value, bar.liquidity), 0)
+    out.push({
+      key: `scenario-${slice}`,
+      from: sliceFrom,
+      to: sliceTo,
+      liquidity: scaledLiquidity,
+      side: stagedSide,
+      rangeFrom: sliceFrom,
+      rangeTo: sliceTo,
+      locked: lockedAmount(
+        scaledLiquidity,
+        sliceFrom,
+        sliceTo,
+        stagedSide,
+        decimals0,
+        decimals1,
+      ),
+      current: sliceFrom <= spot && sliceTo > spot,
+      colorGroup: stagedSide,
+    })
+  }
 
-  // band height = vault liquidity as a share of the chart's liquidity scale,
-  // so a position holding half the liquidity in its range draws half as tall
-  const bandHeight = (liquidity: bigint) =>
-    max > 0 ? Math.max(MIN_BAND_HEIGHT, Number(liquidity) / max) : 1
+  return out
+}
 
-  const bands: ReadonlyArray<Band> = scenario
-    ? [
-        ...(scenario === "recentered"
-          ? [
-              {
-                id: "previous" as const,
-                ...base,
-                height: 1.05,
-              },
-            ]
-          : []),
-        {
-          id: "active",
-          ...(scenario === "recentered" ? recentered : base),
-          height: 1.05,
-        },
-        ...(scenario === "limitOrder" && state && hasLimit(state)
-          ? [
-              {
-                id: "limit" as const,
-                lower: state.limitLower,
-                upper: state.limitUpper,
-                height: 1.05,
-              },
-            ]
-          : []),
-      ]
-    : [
-        ...(state && hasBase(state)
-          ? [
-              {
-                id: "base" as const,
-                ...base,
-                height: bandHeight(state.base.liquidity),
-              },
-            ]
-          : []),
-        ...(state && hasLimit(state)
-          ? [
-              {
-                id: "limit" as const,
-                lower: state.limitLower,
-                upper: state.limitUpper,
-                height: bandHeight(state.limit.liquidity),
-              },
-            ]
-          : []),
-      ]
+const remapScenarioDisplayBars = ({
+  bars,
+  scenario,
+  bounds,
+  state,
+}: {
+  bars: Bar[]
+  scenario: RangeScenario
+  bounds: ChartBounds
+  state: VaultBands | null
+}) => {
+  if (!bars.length) return bars
+
+  const rawFloor = bars.reduce(
+    (value, bar) => Math.min(value, bar.liquidity),
+    Number.POSITIVE_INFINITY,
+  )
+  const managedValues = bars
+    .filter((bar) => {
+      const center = barMidpoint(bar)
+      return center >= bounds.base.lower && center <= bounds.base.upper
+    })
+    .map((bar) => bar.liquidity)
+  const reference = managedValues.reduce(
+    (value, liquidity) => Math.max(value, liquidity),
+    rawFloor,
+  )
+  const managed = reference * SCENARIO_TIER_SCALE.managed
+  const background = reference * SCENARIO_TIER_SCALE.background
+  // the surplus limit order is far denser than the base range
+  const limit = reference
+  const active = scenario === "recentered" ? bounds.recentered : bounds.base
+  const stagedLimit =
+    scenario === "limitOrder" && state && hasLimit(state)
+      ? { lower: state.limitLower, upper: state.limitUpper }
+      : null
+
+  return bars.map((bar) => {
+    const center = barMidpoint(bar)
+    const isLimit =
+      !!stagedLimit &&
+      center >= stagedLimit.lower &&
+      center <= stagedLimit.upper
+    const isManaged = center >= active.lower && center <= active.upper
+    const tier: Bar["tier"] = isLimit
+      ? "limit"
+      : isManaged
+        ? "managed"
+        : "background"
+    // other LPs' liquidity is drawn in a neutral colour so the
+    // token-side colours only ever mean "the vault's own ranges"
+    const colorGroup: Bar["colorGroup"] =
+      tier === "background" ? "background" : bar.side
+
+    return {
+      ...bar,
+      liquidity: isLimit ? limit : isManaged ? managed : background,
+      tier,
+      colorGroup,
+    }
+  })
+}
+
+const bandHeightFromMax = (liquidity: bigint, max: number) =>
+  max > 0
+    ? Math.max(MIN_BAND_HEIGHT, liquidityToChartScale(liquidity) / max)
+    : 1
+
+const barInRange = (bar: Bar, lower: number, upper: number) => {
+  const center = barMidpoint(bar)
+  return center >= lower && center <= upper
+}
+
+const buildRealBands = ({
+  state,
+  bounds,
+  bars,
+}: {
+  state: VaultBands | null
+  bounds: ChartBounds
+  bars: Bar[]
+}) => {
+  const max = bars.reduce((value, bar) => Math.max(value, bar.liquidity), 0)
+
+  return [
+    ...(state && hasBase(state)
+      ? [
+          {
+            id: "base" as const,
+            ...bounds.base,
+            height: bandHeightFromMax(state.base.liquidity, max),
+          },
+        ]
+      : []),
+    ...(state && hasLimit(state)
+      ? [
+          {
+            id: "limit" as const,
+            lower: state.limitLower,
+            upper: state.limitUpper,
+            height: bandHeightFromMax(state.limit.liquidity, max),
+          },
+        ]
+      : []),
+  ]
+}
+
+const buildScenarioBands = ({
+  scenario,
+  bounds,
+  bars,
+  state,
+}: {
+  scenario: RangeScenario
+  bounds: ChartBounds
+  bars: Bar[]
+  state: VaultBands | null
+}) => {
+  const scenarioBands: Band[] = [
+    ...(scenario === "recentered"
+      ? [
+          {
+            id: "previous" as const,
+            ...bounds.base,
+            height: CHART_LAYOUT.scenarioBandHeight,
+          },
+        ]
+      : []),
+    {
+      id: "active",
+      ...(scenario === "recentered" ? bounds.recentered : bounds.base),
+      height: CHART_LAYOUT.scenarioBandHeight,
+    },
+    ...(scenario === "limitOrder" && state && hasLimit(state)
+      ? [
+          {
+            id: "limit" as const,
+            lower: state.limitLower,
+            upper: state.limitUpper,
+            height: CHART_LAYOUT.scenarioBandHeight,
+          },
+        ]
+      : []),
+  ]
+
+  return scenarioBands.map((band) => {
+    if (band.id === "limit") {
+      const extent = barsExtent(bars.filter((bar) => bar.tier === "limit"))
+      return extent ? { ...band, ...extent } : band
+    }
+
+    if (band.id === "active" && scenario === "recentered") {
+      const extent = barsExtent(bars.filter((bar) => bar.tier === "managed"))
+      return extent ? { ...band, ...extent } : band
+    }
+
+    if (band.id === "previous") {
+      const extent = barsExtent(
+        bars.filter((bar) =>
+          barInRange(bar, bounds.base.lower, bounds.base.upper),
+        ),
+      )
+      return extent ? { ...band, ...extent } : band
+    }
+
+    return band
+  })
+}
+
+const toDistributionResult = ({
+  bars,
+  spotTick,
+  bounds,
+  bands,
+  maxBars = bars,
+}: {
+  bars: Bar[]
+  spotTick: number
+  bounds: ChartBounds
+  bands: ReadonlyArray<Band>
+  /** pre-remap bars used for the chart liquidity scale (scenario tiers) */
+  maxBars?: Bar[]
+}): LiquidityDistributionResult => {
+  const max = maxBars.reduce((value, bar) => Math.max(value, bar.liquidity), 0)
 
   return {
-    bars: displayBars,
-    spotTick: spot,
+    bars,
+    spotTick,
     max,
-    lo: from,
-    hi: to,
+    lo: bounds.from,
+    hi: bounds.to,
     bands,
   }
+}
+
+export const getLiquidityDistribution = ({
+  pool,
+  state,
+  decimals0,
+  decimals1,
+}: {
+  pool: Pick<V3PoolBase, "tick" | "liquidity" | "ticks">
+  state: VaultBands | null
+  decimals0: number
+  decimals1: number
+}): LiquidityDistributionResult => {
+  const { intervals, marketSpot } = computeLiquidityIntervals(pool)
+  const { edgeSpan, edgeLower, edgeUpper } = computeEdgeSpan(marketSpot, state)
+  const paddingRatio = hasMeaningfulOuterLiquidity(
+    intervals,
+    edgeLower,
+    edgeUpper,
+    edgeSpan,
+  )
+    ? DEFAULT_DOMAIN_PADDING_RATIO
+    : ZOOMED_DOMAIN_PADDING_RATIO
+  const bounds = computeChartBounds(marketSpot, state, paddingRatio)
+  const bars = buildRealBars({
+    intervals,
+    bounds,
+    spot: bounds.marketSpot,
+    decimals0,
+    decimals1,
+  })
+
+  return toDistributionResult({
+    bars,
+    spotTick: bounds.marketSpot,
+    bounds,
+    bands: buildRealBands({ state, bounds, bars }),
+  })
+}
+
+const buildScenarioLiquidityDistribution = ({
+  pool,
+  state,
+  scenario,
+  decimals0,
+  decimals1,
+}: {
+  pool: Pick<V3PoolBase, "tick" | "liquidity" | "ticks">
+  state: VaultBands | null
+  scenario: RangeScenario
+  decimals0: number
+  decimals1: number
+}): LiquidityDistributionResult => {
+  const bounds = computeChartBounds(
+    pool.tick,
+    state,
+    DEFAULT_DOMAIN_PADDING_RATIO,
+  )
+  const spotTick = scenarioSpotTick(scenario, bounds)
+  const rawBars = buildScenarioBars({
+    bounds,
+    spot: spotTick,
+    liquidity: pool.liquidity,
+    decimals0,
+    decimals1,
+  })
+  const bars = remapScenarioDisplayBars({
+    bars: rawBars,
+    scenario,
+    bounds,
+    state,
+  })
+
+  return toDistributionResult({
+    bars,
+    spotTick,
+    bounds,
+    bands: buildScenarioBands({ scenario, bounds, bars, state }),
+    maxBars: rawBars,
+  })
 }
 
 export const SCENARIO_POOL = {
@@ -464,7 +796,7 @@ export const getScenarioDistribution = (
   ]
 
   return {
-    ...getLiquidityDistribution({
+    ...buildScenarioLiquidityDistribution({
       pool: {
         tick: spot,
         liquidity,

@@ -7,7 +7,7 @@ import { decorative } from "@tanstack/charts/mark/decorative"
 import { scaleLinear } from "@tanstack/charts/scales/linear"
 import { tooltip } from "@tanstack/charts/tooltip"
 import Big from "big.js"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -16,8 +16,14 @@ import { useAssetColor } from "@/hooks/useAssetColor"
 import {
   SLiquidityLegend,
   SManagedBand,
+  SRangeLegendToggle,
   SSpotLine,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.styled"
+import {
+  MANAGED_RANGE,
+  managedRangeChartStroke,
+  managedRangeMixedColor,
+} from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.theme"
 import {
   Bar,
   BARS_ID,
@@ -25,9 +31,6 @@ import {
   getManagedBand,
   getScenarioDistribution,
   isBarPoint,
-  MANAGED_RANGE,
-  managedRangeChartStroke,
-  managedRangeMixedColor,
   priceAtTick,
   RangeScenario,
   sharesFocusGroup,
@@ -40,12 +43,16 @@ export type { RangeScenario }
 
 const TICK_PADDING = 8
 const CHART_GUIDE_INSET = 4
+const CHART_PLOT_INSET = CHART_GUIDE_INSET * 2
+const plotCssPos = (fraction: number) =>
+  `calc(${CHART_GUIDE_INSET}px + ${fraction} * (100% - ${CHART_PLOT_INSET}px))`
+const plotCssWidth = (fraction: number) =>
+  `calc(${fraction} * (100% - ${CHART_PLOT_INSET}px))`
 const BAR_RADIUS = 4
 const BAR_GAP = 4
 const MIN_BAR_HEIGHT = 12
 
-const FADED_OPACITY = 0.4
-/** explainer: neutral tint for liquidity that belongs to other LPs, not the vault */
+const FADED_OPACITY = 0.3
 const BACKGROUND_TIER_TINT = 0.45
 const FOCUS_TRANSITION = {
   type: "tween" as const,
@@ -84,11 +91,23 @@ const Legend = ({ color, label }: { color: string; label: string }) => (
 const RangeLegend = ({
   range,
   label,
+  visible,
+  onToggle,
 }: {
   range: { color: string; fillOpacity: number; borderOpacity: number }
   label: string
+  visible: boolean
+  onToggle: () => void
 }) => (
-  <Flex align="center" gap="s">
+  <SRangeLegendToggle
+    as="button"
+    align="center"
+    gap="s"
+    aria-pressed={visible}
+    aria-label={label}
+    onClick={onToggle}
+    sx={{ opacity: visible ? 1 : FADED_OPACITY }}
+  >
     <Box
       as="span"
       size="xs"
@@ -102,7 +121,7 @@ const RangeLegend = ({
     <Text fs="p6" color={getToken("text.low")}>
       {label}
     </Text>
-  </Flex>
+  </SRangeLegendToggle>
 )
 
 export const LiquidityDistribution = ({
@@ -115,6 +134,7 @@ export const LiquidityDistribution = ({
   height?: ResponsiveStyleValue<number>
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
+  const [managedRangesVisible, setManagedRangesVisible] = useState(true)
   const { themeProps } = useTheme()
   const resolvedHeight = useResponsiveValue(height ?? DEFAULT_HEIGHT)
   const getAssetColor = useAssetColor()
@@ -185,27 +205,28 @@ export const LiquidityDistribution = ({
   const minVisibleLiquidity = ceiling * (MIN_BAR_HEIGHT / chartHeight)
 
   const definition = useMemo(() => {
-    const bandMarks = scenario
-      ? []
-      : bands.map(({ id, lower, upper, height }) =>
-          decorative(
-            rect([{ lower, upper }], {
-              id: `managed-band-${id}`,
-              x1: "lower",
-              x2: "upper",
-              y1: () => 0,
-              y2: () => Math.max(top * height, minVisibleLiquidity),
-              fill: managedRange.color,
-              fillOpacity: managedRange.fillOpacity,
-              ...managedRangeChartStroke(
-                managedRange.color,
-                managedRange.borderOpacity,
-              ),
-              radius: 3,
-              inset: 0,
-            }),
-          ),
-        )
+    const bandMarks =
+      managedRangesVisible && !scenario
+        ? bands.map(({ id, lower, upper, height }) =>
+            decorative(
+              rect([{ lower, upper }], {
+                id: `managed-band-${id}`,
+                x1: "lower",
+                x2: "upper",
+                y1: () => 0,
+                y2: () => Math.max(top * height, minVisibleLiquidity),
+                fill: managedRange.color,
+                fillOpacity: managedRange.fillOpacity,
+                ...managedRangeChartStroke(
+                  managedRange.color,
+                  managedRange.borderOpacity,
+                ),
+                radius: 3,
+                inset: 0,
+              }),
+            ),
+          )
+        : []
 
     return defineChart({
       focusRing: false,
@@ -327,6 +348,7 @@ export const LiquidityDistribution = ({
     minVisibleLiquidity,
     top,
     scenario,
+    managedRangesVisible,
     vaultState,
   ])
 
@@ -397,33 +419,41 @@ export const LiquidityDistribution = ({
 
           {scenario && (
             <>
-              {bands.map((managedBand) => (
-                <SManagedBand
-                  key={managedBand.id}
-                  aria-hidden
-                  $rangeColor={managedRange.color}
-                  $fillOpacity={managedRange.fillOpacity}
-                  $borderOpacity={managedRange.borderOpacity}
-                  position="absolute"
-                  top={`${CHART_GUIDE_INSET}px`}
-                  bottom={`${CHART_GUIDE_INSET}px`}
-                  left={`${((managedBand.lower - lo) / (hi - lo)) * 100}%`}
-                  width={`${
-                    ((managedBand.upper - managedBand.lower) / (hi - lo)) * 100
-                  }%`}
-                  borderRadius="base"
-                />
-              ))}
+              {managedRangesVisible &&
+                bands.map((managedBand) => {
+                  const span = hi - lo
+                  const leftFraction = (managedBand.lower - lo) / span
+                  const widthFraction =
+                    (managedBand.upper - managedBand.lower) / span
+
+                  return (
+                    <SManagedBand
+                      key={managedBand.id}
+                      aria-hidden
+                      $rangeColor={managedRange.color}
+                      $fillOpacity={managedRange.fillOpacity}
+                      $borderOpacity={managedRange.borderOpacity}
+                      $opacity={
+                        managedBand.id === "previous" ? FADED_OPACITY : 1
+                      }
+                      position="absolute"
+                      top={`${CHART_GUIDE_INSET}px`}
+                      bottom={`${CHART_GUIDE_INSET}px`}
+                      left={plotCssPos(leftFraction)}
+                      width={plotCssWidth(widthFraction)}
+                      borderRadius="base"
+                    />
+                  )
+                })}
 
               <SSpotLine
                 aria-hidden
                 position="absolute"
                 top={`${CHART_GUIDE_INSET}px`}
                 bottom={`${CHART_GUIDE_INSET}px`}
-                left={`${Math.min(
-                  100,
-                  Math.max(0, ((spotTick - lo) / (hi - lo)) * 100),
-                )}%`}
+                left={plotCssPos(
+                  Math.min(1, Math.max(0, (spotTick - lo) / (hi - lo))),
+                )}
                 width={pxToRem(2)}
                 bg={colors.spot}
                 transform="translateX(-1px)"
@@ -460,10 +490,14 @@ export const LiquidityDistribution = ({
             }
           />
           <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
-          <RangeLegend
-            range={managedRange}
-            label={t("vaults.chart.legend.ranges")}
-          />
+          {bands.length > 0 && (
+            <RangeLegend
+              range={managedRange}
+              label={t("vaults.chart.legend.ranges")}
+              visible={managedRangesVisible}
+              onToggle={() => setManagedRangesVisible((value) => !value)}
+            />
+          )}
           {scenario && (
             <Legend
               color={colors.background}
