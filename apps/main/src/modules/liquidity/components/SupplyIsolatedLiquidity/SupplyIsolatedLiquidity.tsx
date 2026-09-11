@@ -8,6 +8,7 @@ import {
 } from "@galacticcouncil/money-market/hooks"
 import {
   Alert,
+  Box,
   LoadingButton,
   ModalBody,
   ModalContentDivider,
@@ -152,15 +153,16 @@ const SupplyIsolatedLiquidityBody = ({
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
-          <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
-            label={t("amount")}
-            assetFieldName="asset"
-            amountFieldName="amount"
-            sortedAssets={selectabledAssets}
-            assets={[]}
-            maxBalance={maxBalance}
-            sx={{ pt: 0 }}
-          />
+          <Box py={0} pb="l" width="100%">
+            <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
+              label={t("amount")}
+              assetFieldName="asset"
+              amountFieldName="amount"
+              sortedAssets={selectabledAssets}
+              assets={[]}
+              balance={{ value: maxBalance }}
+            />
+          </Box>
 
           <ModalContentDivider />
 

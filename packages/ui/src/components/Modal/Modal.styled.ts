@@ -184,7 +184,7 @@ export const SModalHeaderButton = styled(ButtonIcon)<{
 
   position: absolute;
   top: 0;
-  ${({ align }) => `${align}: 0`};
+  ${({ align, theme }) => `${align}: -${theme.space.base}`};
 `
 
 export const SModalTitleContainer = styled(Flex)`

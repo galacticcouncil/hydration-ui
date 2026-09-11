@@ -1,4 +1,3 @@
-import { ReactNode } from "react"
 import { useController, useFormContext } from "react-hook-form"
 
 import { TAssetData } from "@/api/assets"
@@ -11,10 +10,10 @@ import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   readonly label: string
-  readonly labelAdornment?: ReactNode
-  readonly loading?: boolean
+  readonly labelAdornment?: React.ReactNode
+  readonly isLoading?: boolean
   readonly maxBalance?: string
-  readonly maxBalanceLoading?: boolean
+  readonly isMaxBalanceLoading?: boolean
   readonly onAssetChange?: (
     asset: TAssetData,
     previousAsset: TAssetData | null,
@@ -25,9 +24,9 @@ type Props = {
 export const XcSrcAssetSelectField: React.FC<Props> = ({
   label,
   labelAdornment,
-  loading,
+  isLoading,
   maxBalance,
-  maxBalanceLoading,
+  isMaxBalanceLoading,
   onAssetChange,
   onAmountChange,
 }) => {
@@ -71,10 +70,8 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({
       }}
       assetError={assetFieldState.error?.message}
       amountError={amountFieldState.error?.message}
-      maxBalance={maxBalance}
-      maxBalanceLoading={maxBalanceLoading}
-      maxBalanceFallback="0"
-      loading={loading}
+      balance={{ value: maxBalance, isLoading: isMaxBalanceLoading }}
+      isLoading={isLoading}
     />
   )
 }
