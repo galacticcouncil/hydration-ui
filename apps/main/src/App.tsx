@@ -1,4 +1,5 @@
 import "@galacticcouncil/ui/fonts.css"
+import "@/utils/appUpdate"
 
 import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
@@ -61,6 +62,8 @@ const router = createRouter({
   scrollRestoration: true,
   scrollRestorationBehavior: "smooth",
 })
+
+console.log("new build 11")
 
 declare module "@tanstack/react-router" {
   interface Register {
