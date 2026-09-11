@@ -172,8 +172,8 @@ export function useDeposit() {
   const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
-    mutationFn: async (assetAmount: number) => {
-      const assetBig = parseUnits(assetAmount.toString(), decimals)
+    mutationFn: async (assetAmount: string) => {
+      const assetBig = parseUnits(assetAmount, decimals)
       const calls: BatchEvmCall[] = []
 
       const assetAllowance = await evm.readContract({
