@@ -150,8 +150,11 @@ export const SAdvanceButton = styled(ButtonTransparent)(
     padding-inline: ${theme.space.base};
     padding-block: ${theme.space.s};
 
+    transition: ${theme.transitions.colors};
+
     &:hover {
-      background: ${theme.colors.darkBlue[800]};
+      background: ${theme.colors.azureBlue[700]};
+      color: ${theme.colors.azureBlue[100]};
     }
   `,
 )
