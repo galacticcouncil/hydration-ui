@@ -50,6 +50,7 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
     { id: "inRange", label: t("vaults.explainer.states.inRange") },
     { id: "outOfRange", label: t("vaults.explainer.states.outOfRange") },
     { id: "recentered", label: t("vaults.explainer.states.recentered") },
+    { id: "limitOrder", label: t("vaults.explainer.states.limitOrder") },
   ]
 
   const copy: Record<RangeScenario, ScenarioCopy> = {
@@ -102,6 +103,22 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
           icon: RefreshCw,
           title: t("vaults.explainer.recentered.compound.title"),
           description: t("vaults.explainer.recentered.compound.description"),
+        },
+      ],
+    },
+    limitOrder: {
+      title: t("vaults.explainer.limitOrder.title"),
+      description: t("vaults.explainer.limitOrder.description"),
+      facts: [
+        {
+          icon: MoveHorizontal,
+          title: t("vaults.explainer.limitOrder.fill.title"),
+          description: t("vaults.explainer.limitOrder.fill.description"),
+        },
+        {
+          icon: RefreshCw,
+          title: t("vaults.explainer.limitOrder.fold.title"),
+          description: t("vaults.explainer.limitOrder.fold.description"),
         },
       ],
     },
