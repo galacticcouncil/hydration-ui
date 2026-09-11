@@ -2,21 +2,23 @@ import { Scale, ShieldCheck } from "@galacticcouncil/ui/assets/icons"
 import {
   AssetInput,
   Box,
-  Button,
   Flex,
   Icon,
+  LoadingButton,
   Paper,
   Separator,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { type ComponentType, useState } from "react"
+import { type ComponentType } from "react"
+import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { useDepositForm } from "@/modules/strategies/propeller/components/DepositPanel.form"
 import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
 
 interface VaultStats {
@@ -35,7 +37,7 @@ interface Balances {
 interface Props {
   vaultStats: VaultStats
   balances: Balances
-  onDeposit: (amount: number) => void
+  onDeposit: (amount: string) => void
   isPending: boolean
 }
 
@@ -46,101 +48,103 @@ export const DepositPanel = ({
   isPending,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { isConnected } = useAccount()
-  const [amount, setAmount] = useState("")
   const vault = useActivePropellerVault()
 
-  const inputNum = parseFloat(amount) || 0
-  const overBalance = inputNum > balances.eth
-
-  // Headroom is tvlCap - totalAssets. tvlCap 0 means the read has not loaded yet.
+  const capacityKnown = vaultStats.tvlCap > 0
   const remainingCapacity = Math.max(
     vaultStats.tvlCap - vaultStats.totalAssets,
     0,
   )
-  const overCapacity = vaultStats.tvlCap > 0 && inputNum > remainingCapacity
+  const atCapacity = capacityKnown && remainingCapacity <= 0
   const isPaused = vaultStats.depositsPaused || vaultStats.paused
 
-  const handleSubmit = () => {
-    if (
-      !isConnected ||
-      inputNum <= 0 ||
-      overBalance ||
-      overCapacity ||
-      isPaused
-    )
-      return
-    onDeposit(inputNum)
-  }
+  const balance = balances.eth.toString()
+  const maxButtonBalance =
+    capacityKnown && balances.eth > remainingCapacity
+      ? remainingCapacity.toString()
+      : balance
+
+  const form = useDepositForm({
+    maxBalance: balance,
+    maxCapacity: capacityKnown ? remainingCapacity : Number.POSITIVE_INFINITY,
+  })
+  const { control, handleSubmit, watch, formState } = form
+  const amount = watch("amount")
+
+  const [spotDisplayValue, { isLoading: isSpotDisplayLoading }] =
+    useDisplayAssetPrice(vault.assetId, amount || "0")
+
+  const canSubmit = formState.isValid && !isPending && !isPaused && !atCapacity
 
   const ctaLabel = (() => {
-    if (isPending) return t("deposit.cta.pending")
     if (isPaused) return t("deposit.cta.paused")
-    if (overCapacity) return t("deposit.cta.exceedsCapacity")
+    if (atCapacity) return t("deposit.cta.exceedsCapacity")
     return t("deposit.cta.deposit")
   })()
 
-  const amountError = overBalance
-    ? t("withdraw.cta.insufficient")
-    : overCapacity
-      ? t("deposit.cta.exceedsCapacity")
-      : undefined
+  const onSubmit = handleSubmit(({ amount }) => onDeposit(amount))
 
   return (
-    <Paper px="xl" position="relative">
-      <Box>
-        <AssetInput
-          label={t("deposit.amount")}
-          symbol={vault.symbol}
-          selectedAssetIcon={<AssetLogo id={vault.assetId} size="medium" />}
-          modalDisabled
-          value={amount}
-          onChange={setAmount}
-          displayValue={t("common:currency", {
-            value: inputNum,
-          })}
-          maxBalance={balances.eth.toString()}
-          maxButtonBalance={balances.eth.toString()}
-          amountError={amountError}
-        />
-      </Box>
+    <FormProvider {...form}>
+      <form onSubmit={onSubmit}>
+        <Paper px="xl" position="relative">
+          <Box>
+            <Controller
+              control={control}
+              name="amount"
+              render={({ field, fieldState }) => (
+                <AssetInput
+                  label={t("deposit.amount")}
+                  symbol={vault.symbol}
+                  selectedAssetIcon={
+                    <AssetLogo id={vault.assetId} size="medium" />
+                  }
+                  modalDisabled
+                  value={field.value}
+                  onChange={field.onChange}
+                  displayValue={spotDisplayValue}
+                  displayValueLoading={isSpotDisplayLoading}
+                  maxBalance={balance}
+                  maxButtonBalance={maxButtonBalance}
+                  amountError={fieldState.error?.message}
+                />
+              )}
+            />
+          </Box>
 
-      <Separator mx="-xl" />
+          <Separator mx="-xl" />
 
-      <Stack gap="l" py="xl">
-        <BenefitCard
-          icon={ShieldCheck}
-          label={t("deposit.benefit.noLiquidations")}
-          description={t("deposit.benefit.noLiquidationsDescription")}
-        />
-        <BenefitCard
-          icon={Scale}
-          label={t("deposit.benefit.noImpermanentLoss")}
-          description={t("deposit.benefit.noImpermanentLossDescription")}
-        />
-      </Stack>
+          <Stack gap="l" py="xl">
+            <BenefitCard
+              icon={ShieldCheck}
+              label={t("deposit.benefit.noLiquidations")}
+              description={t("deposit.benefit.noLiquidationsDescription")}
+            />
+            <BenefitCard
+              icon={Scale}
+              label={t("deposit.benefit.noImpermanentLoss")}
+              description={t("deposit.benefit.noImpermanentLossDescription")}
+            />
+          </Stack>
 
-      <Separator mx="-xl" />
+          <Separator mx="-xl" />
 
-      <Box py="xl">
-        <AuthorizedAction size="large" width="100%">
-          <Button
-            size="large"
-            width="100%"
-            disabled={
-              inputNum <= 0 ||
-              isPending ||
-              overBalance ||
-              overCapacity ||
-              isPaused
-            }
-            onClick={handleSubmit}
-          >
-            {ctaLabel}
-          </Button>
-        </AuthorizedAction>
-      </Box>
-    </Paper>
+          <Box py="xl">
+            <AuthorizedAction size="large" width="100%">
+              <LoadingButton
+                type="submit"
+                size="large"
+                width="100%"
+                isLoading={isPending}
+                disabled={!canSubmit}
+              >
+                {ctaLabel}
+              </LoadingButton>
+            </AuthorizedAction>
+          </Box>
+        </Paper>
+      </form>
+    </FormProvider>
   )
 }
 
