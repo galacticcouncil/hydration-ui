@@ -217,7 +217,7 @@
   "vaults.explainer.inRange.title": "Price sits inside the managed range",
   "vaults.explainer.intro": "This is an auto-managed, two-token liquidity position.",
   "vaults.explainer.introDetails": "A keeper moves its active range with the market and compounds trading fees. You don't choose price ranges or rebalance it yourself.",
-  "vaults.explainer.legend.otherLps": "Other LPs' liquidity (illustrative)",
+  "vaults.explainer.legend.otherLps": "Other LPs' liquidity",
   "vaults.explainer.legend.tokenA": "Token A side",
   "vaults.explainer.legend.tokenB": "Token B side",
   "vaults.explainer.limitOrder.description": "The vault never swaps. When it holds more of one token than the main range can pair, the keeper parks the surplus in a narrow one-sided range right next to the price. The market converts it into the other token by trading through it.",
