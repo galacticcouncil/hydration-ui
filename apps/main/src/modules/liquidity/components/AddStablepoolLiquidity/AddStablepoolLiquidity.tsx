@@ -269,6 +269,7 @@ export const AddStablepoolLiquidityForm = ({
                   <Flex flex={1}>
                     <ToggleGroup
                       type="single"
+                      fullWidth
                       value={value}
                       onValueChange={(nextValue) =>
                         nextValue && onChange(nextValue)
