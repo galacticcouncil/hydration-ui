@@ -131,6 +131,7 @@ const VoteForm = ({
                 <Flex direction="column" flex={1}>
                   <ToggleGroup
                     type="single"
+                    fullWidth
                     value={value}
                     onValueChange={(nextValue) =>
                       nextValue && onChange(nextValue as VoteType)

@@ -134,6 +134,7 @@ export const DcaFields: FC<Props> = ({ maxBalance }) => {
           <Box mt="m">
             <ToggleGroup
               type="single"
+              fullWidth
               value={
                 field.value.type === DcaOrdersMode.OpenBudget
                   ? DcaOrdersMode.OpenBudget

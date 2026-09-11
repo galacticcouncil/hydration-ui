@@ -44,6 +44,7 @@ export const AddStablepoolLiquiditySkeleton = (
             <Flex flex={1}>
               <ToggleGroup
                 type="single"
+                fullWidth
                 value={addStablepoolOptions[0]?.id}
                 disabled
               >
