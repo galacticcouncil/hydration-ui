@@ -70,7 +70,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   const hasTopNavbar = useHasTopNavbar()
-
   return (
     <>
       <HeadContent />

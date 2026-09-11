@@ -320,30 +320,32 @@ export const AddStablepoolLiquidityForm = ({
                   field: { value, onChange },
                   fieldState: { error },
                 }) => (
-                  <AssetSelect
-                    label={t("liquidity.add.modal.selectAsset")}
-                    assets={[]}
-                    sortedAssets={assetsToSelect}
-                    maxBalance={getMaxBalance(asset)}
-                    selectedAsset={getAssetWithFallback(value.assetId)}
-                    amountError={error?.message}
-                    value={value.amount}
-                    onChange={(amount) => {
-                      const updatedValue = { ...value, amount }
-                      const allFields = form.getValues("fields")
-                      const fieldIndex = allFields.findIndex(
-                        (f) => f.assetId === field.assetId,
-                      )
+                  <Box py="l" width="100%">
+                    <AssetSelect
+                      label={t("liquidity.add.modal.selectAsset")}
+                      assets={[]}
+                      sortedAssets={assetsToSelect}
+                      balance={{ value: getMaxBalance(asset) }}
+                      selectedAsset={getAssetWithFallback(value.assetId)}
+                      amountError={error?.message}
+                      value={value.amount}
+                      onChange={(amount) => {
+                        const updatedValue = { ...value, amount }
+                        const allFields = form.getValues("fields")
+                        const fieldIndex = allFields.findIndex(
+                          (f) => f.assetId === field.assetId,
+                        )
 
-                      onChange(updatedValue)
+                        onChange(updatedValue)
 
-                      const indexToUpdate =
-                        fieldIndex === -1 ? allFields.length : fieldIndex
+                        const indexToUpdate =
+                          fieldIndex === -1 ? allFields.length : fieldIndex
 
-                      form.setValue(`fields.${indexToUpdate}`, updatedValue)
-                    }}
-                    setSelectedAsset={!split ? onSelectAsset : undefined}
-                  />
+                        form.setValue(`fields.${indexToUpdate}`, updatedValue)
+                      }}
+                      setSelectedAsset={!split ? onSelectAsset : undefined}
+                    />
+                  </Box>
                 )}
               />
               <ModalContentDivider />
