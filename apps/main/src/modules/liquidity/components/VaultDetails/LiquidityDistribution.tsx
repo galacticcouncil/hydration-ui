@@ -45,8 +45,8 @@ const BAR_GAP = 4
 const MIN_BAR_HEIGHT = 12
 
 const FADED_OPACITY = 0.4
-/** explainer: liquidity that belongs to other LPs, not the vault */
-const BACKGROUND_TIER_OPACITY = 0.35
+/** explainer: neutral tint for liquidity that belongs to other LPs, not the vault */
+const BACKGROUND_TIER_TINT = 0.45
 const FOCUS_TRANSITION = {
   type: "tween" as const,
   duration: 350,
@@ -144,6 +144,10 @@ export const LiquidityDistribution = ({
         : getAssetColor(token1.id),
       spot: themeProps.buttons.primary.high.rest,
       surface: themeProps.surfaces.themeBasePalette.surfaceHigh,
+      background: managedRangeMixedColor(
+        themeProps.text.low,
+        BACKGROUND_TIER_TINT,
+      ),
     }),
     [getAssetColor, scenario, themeProps, token0.id, token1.id],
   )
@@ -213,7 +217,7 @@ export const LiquidityDistribution = ({
           x2: "to",
           y1: () => 0,
           y2: (bar) => Math.max(bar.liquidity, minVisibleLiquidity),
-          color: "side",
+          color: "colorGroup",
           key: (bar) => bar.key,
           inset: 0,
           radius: BAR_RADIUS,
@@ -221,35 +225,20 @@ export const LiquidityDistribution = ({
           strokeWidth: BAR_GAP,
           fillOpacity: 1,
           motion: scenario ? SCENARIO_TRANSITION : undefined,
-          states: scenario
-            ? [
-                // the explainer has no hover focus; instead separate the
-                // illustrative "other LPs" tier from the vault's own ranges
-                {
-                  when: ({ datum }) => datum.tier === "background",
-                  style: { fillOpacity: BACKGROUND_TIER_OPACITY },
-                  transition: FOCUS_TRANSITION,
-                },
-                {
-                  when: ({ datum }) => datum.tier !== "background",
-                  style: { fillOpacity: 1 },
-                  transition: FOCUS_TRANSITION,
-                },
-              ]
-            : [
-                {
-                  when: ({ datum, focus }) =>
-                    !sharesFocusGroup(focus.primary, datum, vaultState),
-                  style: { fillOpacity: FADED_OPACITY },
-                  transition: FOCUS_TRANSITION,
-                },
-                {
-                  when: ({ datum, focus }) =>
-                    sharesFocusGroup(focus.primary, datum, vaultState),
-                  style: { fillOpacity: 1 },
-                  transition: FOCUS_TRANSITION,
-                },
-              ],
+          states: [
+            {
+              when: ({ datum, focus }) =>
+                !sharesFocusGroup(focus.primary, datum, vaultState),
+              style: { fillOpacity: FADED_OPACITY },
+              transition: FOCUS_TRANSITION,
+            },
+            {
+              when: ({ datum, focus }) =>
+                sharesFocusGroup(focus.primary, datum, vaultState),
+              style: { fillOpacity: 1 },
+              transition: FOCUS_TRANSITION,
+            },
+          ],
         }),
         ...bandMarks,
         ...(scenario
@@ -312,8 +301,8 @@ export const LiquidityDistribution = ({
         axis: false,
       },
       color: {
-        domain: ["token1", "token0"],
-        range: [colors.token1, colors.token0],
+        domain: ["token1", "token0", "background"],
+        range: [colors.token1, colors.token0, colors.background],
       },
       tooltip: {
         use: tooltip,
@@ -477,10 +466,7 @@ export const LiquidityDistribution = ({
           />
           {scenario && (
             <Legend
-              color={managedRangeMixedColor(
-                colors.token1,
-                BACKGROUND_TIER_OPACITY,
-              )}
+              color={colors.background}
               label={t("vaults.explainer.legend.otherLps")}
             />
           )}

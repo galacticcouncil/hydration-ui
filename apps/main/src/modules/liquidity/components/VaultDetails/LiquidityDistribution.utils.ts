@@ -35,6 +35,8 @@ export type Bar = {
   current: boolean
   /** explainer only: which illustrative tier the bar belongs to */
   tier?: "managed" | "limit" | "background"
+  /** colour scale key: the token side, or "background" for other LPs' liquidity */
+  colorGroup: "token0" | "token1" | "background"
 }
 
 type ManagedRangeTheme = {
@@ -276,6 +278,7 @@ export const getLiquidityDistribution = ({
         rangeTo: right,
         locked,
         current: scenario ? sliceFrom <= spot && sliceTo > spot : current,
+        colorGroup: scenario ? stagedSide : side,
       })
     }
   }
@@ -343,11 +346,16 @@ export const getLiquidityDistribution = ({
               : isManaged
                 ? "managed"
                 : "background"
+            // other LPs' liquidity is drawn in a neutral colour so the
+            // token-side colours only ever mean "the vault's own ranges"
+            const colorGroup: Bar["colorGroup"] =
+              tier === "background" ? "background" : bar.side
 
             return {
               ...bar,
               liquidity: isLimit ? limit : isManaged ? managed : background,
               tier,
+              colorGroup,
             }
           })
         })()
