@@ -24,6 +24,7 @@ export const VaultExplainerSkeleton = () => {
     t("vaults.explainer.states.inRange"),
     t("vaults.explainer.states.outOfRange"),
     t("vaults.explainer.states.recentered"),
+    t("vaults.explainer.states.limitOrder"),
   ]
 
   return (

@@ -1,12 +1,4 @@
 import {
-  BadgeDollarSign,
-  CirclePause,
-  MoveHorizontal,
-  RefreshCw,
-  SlidersHorizontal,
-  WalletCards,
-} from "@galacticcouncil/ui/assets/icons"
-import {
   Flex,
   Icon,
   Paper,
@@ -17,7 +9,7 @@ import {
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { ComponentType, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -30,83 +22,19 @@ import {
   SExplainerSplitDivider,
   SScenarioPanel,
 } from "@/modules/liquidity/components/VaultDetails/VaultExplainer.styled"
+import {
+  getScenarioCopy,
+  getScenarioOptions,
+  isRangeScenario,
+} from "@/modules/liquidity/components/VaultDetails/VaultExplainer.utils"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
-
-type ScenarioCopy = {
-  title: string
-  description: string
-  facts: ReadonlyArray<{
-    icon: ComponentType
-    title: string
-    description: string
-  }>
-}
 
 export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation("liquidity")
   const [scenario, setScenario] = useState<RangeScenario>("inRange")
 
-  const options: ReadonlyArray<{ id: RangeScenario; label: string }> = [
-    { id: "inRange", label: t("vaults.explainer.states.inRange") },
-    { id: "outOfRange", label: t("vaults.explainer.states.outOfRange") },
-    { id: "recentered", label: t("vaults.explainer.states.recentered") },
-  ]
-
-  const copy: Record<RangeScenario, ScenarioCopy> = {
-    inRange: {
-      title: t("vaults.explainer.inRange.title"),
-      description: t("vaults.explainer.inRange.description"),
-      facts: [
-        {
-          icon: BadgeDollarSign,
-          title: t("vaults.explainer.inRange.fees.title"),
-          description: t("vaults.explainer.inRange.fees.description"),
-        },
-        {
-          icon: SlidersHorizontal,
-          title: t("vaults.explainer.inRange.ticks.title"),
-          description: t("vaults.explainer.inRange.ticks.description"),
-        },
-      ],
-    },
-    outOfRange: {
-      title: t("vaults.explainer.outOfRangeState.title"),
-      description: t("vaults.explainer.outOfRangeState.description"),
-      facts: [
-        {
-          icon: CirclePause,
-          title: t("vaults.explainer.outOfRangeState.deposits.title"),
-          description: t(
-            "vaults.explainer.outOfRangeState.deposits.description",
-          ),
-        },
-        {
-          icon: WalletCards,
-          title: t("vaults.explainer.outOfRangeState.withdraw.title"),
-          description: t(
-            "vaults.explainer.outOfRangeState.withdraw.description",
-          ),
-        },
-      ],
-    },
-    recentered: {
-      title: t("vaults.explainer.recentered.title"),
-      description: t("vaults.explainer.recentered.description"),
-      facts: [
-        {
-          icon: MoveHorizontal,
-          title: t("vaults.explainer.recentered.range.title"),
-          description: t("vaults.explainer.recentered.range.description"),
-        },
-        {
-          icon: RefreshCw,
-          title: t("vaults.explainer.recentered.compound.title"),
-          description: t("vaults.explainer.recentered.compound.description"),
-        },
-      ],
-    },
-  }
-
+  const options = getScenarioOptions(t)
+  const copy = getScenarioCopy(t)
   const selected = copy[scenario]
 
   return (
@@ -131,7 +59,7 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
           type="single"
           value={scenario}
           onValueChange={(value) =>
-            value && setScenario(value as RangeScenario)
+            isRangeScenario(value) && setScenario(value)
           }
         >
           {options.map((option) => (
@@ -148,7 +76,7 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
             <LiquidityDistribution
               vault={vault}
               scenario={scenario}
-              height={180}
+              height={230}
             />
           </SChartPreview>
 
