@@ -132,56 +132,19 @@ export const SDashboardColumn = styled.div(
 
 export const SConnectedDiscovery = styled.section(
   ({ theme }) => css`
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: ${theme.space.l};
-
-    ${mq("md")} {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    }
-  `,
-)
-
-export const SCompactDiscoveryCard = styled.div(
-  ({ theme }) => css`
+    display: flex;
     min-width: 0;
-    padding: ${theme.space.l};
-    border: 1px solid ${theme.details.borders};
-    border-radius: ${theme.radii.xl};
-    background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
+    flex-direction: column;
+    gap: ${theme.space.m};
   `,
 )
 
-export const SCompactDiscoveryHeader = styled.div(
+export const SConnectedDiscoveryHeader = styled.div(
   ({ theme }) => css`
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: ${theme.space.m};
-    margin-bottom: ${theme.space.m};
-  `,
-)
-
-export const SPlatformMetricGrid = styled.div(
-  ({ theme }) => css`
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: ${theme.space.m};
-  `,
-)
-
-export const SPlatformMetric = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    gap: ${theme.space.xs};
-
-    & + & {
-      padding-left: ${theme.space.m};
-      border-left: 1px solid ${theme.details.separators};
-    }
   `,
 )
 
@@ -421,6 +384,44 @@ export const SListRow = styled.div(
   `,
 )
 
+export const SExternalPortfolioSection = styled.div(
+  ({ theme }) => css`
+    margin-inline: -${theme.space.xl};
+  `,
+)
+
+export const SExternalAssetRow = styled(SListRow)(
+  ({ theme }) => css`
+    padding-inline: ${theme.space.xl};
+  `,
+)
+
+export const SPositionLinkRow = styled(SListRow)(
+  ({ theme }) => css`
+    margin-inline: -${theme.space.m};
+    padding-inline: ${theme.space.m};
+    border-radius: ${theme.radii.m};
+    transition:
+      background-color 0.2s ease,
+      transform 0.25s ${theme.easings.outExpo};
+
+    [data-position-chevron] {
+      display: inline-flex;
+      color: ${theme.text.low};
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      background: ${theme.surfaces.containers.dim.dimOnBg};
+      transform: translateX(0.2rem);
+
+      [data-position-chevron] {
+        transform: translateX(0.15rem);
+      }
+    }
+  `,
+)
+
 export const SCuratedOpportunityRow = styled(SListRow)(
   ({ theme }) => css`
     min-height: 4rem;
@@ -576,6 +577,14 @@ export const SFilterBar = styled.div(
   `,
 )
 
+export const SCompactFilterBar = styled.div(
+  ({ theme }) => css`
+    [role="radio"] {
+      padding-inline: ${theme.space.base};
+    }
+  `,
+)
+
 export const SFilterButton = styled.button<{ active: boolean }>(
   ({ theme, active }) => css`
     flex-shrink: 0;
@@ -609,6 +618,11 @@ export const SOpportunityGrid = styled.div<{ compact?: boolean }>(
 
     ${mq("md")} {
       grid-template-columns: repeat(${compact ? 2 : 12}, minmax(0, 1fr));
+
+      ${compact &&
+      css`
+        grid-template-rows: repeat(3, minmax(10rem, auto));
+      `}
 
       > * {
         grid-column: ${compact ? "auto" : "span 4"};
