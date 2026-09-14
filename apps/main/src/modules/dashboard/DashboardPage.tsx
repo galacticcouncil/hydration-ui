@@ -126,7 +126,6 @@ const DASHBOARD_PREVIEW_STATES: DashboardPreviewState[] = [
   "hydration",
   "external",
   "empty",
-  "earner",
 ]
 
 export const DashboardPage = () => {
