@@ -7,6 +7,7 @@ export const SAppUpdateBannerContainer = styled(Flex)(
     position: fixed;
     left: ${theme.space.m};
     right: ${theme.space.m};
+    z-index: ${theme.zIndices.modal};
 
     bottom: ${pxToRem(70)};
 
@@ -24,7 +25,6 @@ export const SAppUpdateBannerContainer = styled(Flex)(
 export const SAppUpdateBanner = styled(Flex)(
   ({ theme }) => css`
     pointer-events: auto;
-    z-index: ${theme.zIndices.popover};
 
     width: 100%;
     align-items: center;
@@ -49,6 +49,7 @@ export const SAppUpdateBanner = styled(Flex)(
     ${mq("lg")} {
       padding-right: ${theme.space.base};
       padding-block: ${theme.space.base};
+      padding-left: ${theme.space.l};
     }
   `,
 )
@@ -57,5 +58,6 @@ export const SAppUpdateReloadButton = styled(SAdvanceButton)(
   ({ theme }) => css`
     padding-inline: ${theme.space.l};
     padding-block: ${theme.space.base};
+    border-radius: ${theme.radii.full};
   `,
 )
