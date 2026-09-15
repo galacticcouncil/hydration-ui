@@ -16,7 +16,7 @@ export const DcaSummarySkeleton: FC = () => {
 
   return (
     <div>
-      <Flex direction="column" gap="base" py="base">
+      <Flex direction="column" gap="base" py="l">
         <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
         <Text fs="p4" lh={1.4}>
           <Skeleton sx={{ width: "100%" }} height="1em" />

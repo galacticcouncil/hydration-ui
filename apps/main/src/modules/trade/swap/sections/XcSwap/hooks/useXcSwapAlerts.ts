@@ -5,7 +5,10 @@ import { useTranslation } from "react-i18next"
 import { TradeType } from "@/api/trade"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { pickPrimaryXcSwapAlert } from "@/modules/trade/swap/sections/XcSwap/lib/pickPrimaryXcSwapAlert"
-import { getXcSwapErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapErrorMessages"
+import {
+  getOnChainSwapErrorMessage,
+  getXcSwapErrorMessage,
+} from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapErrorMessages"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 
 export type XcSwapAlertSeverity = "error" | "warning" | "info"
@@ -31,11 +34,12 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
     isWalletCompatible,
   } = useXcSwap()
   const { watch } = useFormContext<XcSwapFormValues>()
-  const [sellAsset, sellAmount, buyAmount, type] = watch([
+  const [sellAsset, sellAmount, buyAmount, type, isSingleTrade] = watch([
     "sellAsset",
     "sellAmount",
     "buyAmount",
     "type",
+    "isSingleTrade",
   ])
   const hasTradeAmount = type === TradeType.Sell ? !!sellAmount : !!buyAmount
 
@@ -74,6 +78,18 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
       })
     }
 
+    if (quote?.kind === "oc" && isSingleTrade) {
+      const [error] = quote.swap.swaps.flatMap((swap) => swap.errors)
+
+      if (error) {
+        blockingAlerts.push({
+          key: `oc-trade-error-${error}`,
+          message: getOnChainSwapErrorMessage(error, t),
+          severity: "error",
+        })
+      }
+    }
+
     if (quote?.kind === "xc") {
       for (const error of quote.swap.errors) {
         blockingAlerts.push({
@@ -95,6 +111,7 @@ export const useXcSwapAlerts = (): XcSwapAlertsState => {
     }
   }, [
     hasTradeAmount,
+    isSingleTrade,
     isWalletCompatible,
     quote,
     quoteError,
