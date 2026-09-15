@@ -33,6 +33,10 @@ export type Bar = {
   rangeTo: number
   locked: number
   current: boolean
+  /** explainer only: which illustrative tier the bar belongs to */
+  tier?: "managed" | "limit" | "background"
+  /** colour scale key: the token side, or "background" for other LPs' liquidity */
+  colorGroup: "token0" | "token1" | "background"
 }
 
 type ManagedRangeTheme = {
@@ -68,7 +72,11 @@ type Band = {
   height: number
 }
 
-export type RangeScenario = "inRange" | "outOfRange" | "recentered"
+export type RangeScenario =
+  | "inRange"
+  | "outOfRange"
+  | "recentered"
+  | "limitOrder"
 
 export const BARS_ID = "liquidity-bars"
 const SLICE_TARGET = 30
@@ -219,7 +227,12 @@ export const getLiquidityDistribution = ({
     marketSpot >= base.lower && marketSpot <= base.upper
       ? marketSpot
       : base.lower + halfBand
-  const staged = { inRange: inside, outOfRange: outside, recentered: outside }
+  const staged = {
+    inRange: inside,
+    outOfRange: outside,
+    recentered: outside,
+    limitOrder: inside,
+  }
   const spot = scenario ? staged[scenario] : marketSpot
 
   const recentered = {
@@ -265,6 +278,7 @@ export const getLiquidityDistribution = ({
         rangeTo: right,
         locked,
         current: scenario ? sliceFrom <= spot && sliceTo > spot : current,
+        colorGroup: scenario ? stagedSide : side,
       })
     }
   }
@@ -312,15 +326,36 @@ export const getLiquidityDistribution = ({
           )
           const managed = reference * 0.8
           const background = reference * 0.5
+          // the surplus limit order is far denser than the base range
+          const limit = reference
           const active = scenario === "recentered" ? recentered : base
+          const stagedLimit =
+            scenario === "limitOrder" && state && hasLimit(state)
+              ? { lower: state.limitLower, upper: state.limitUpper }
+              : null
 
           return out.map((bar) => {
             const center = midpoint(bar)
+            const isLimit =
+              !!stagedLimit &&
+              center >= stagedLimit.lower &&
+              center <= stagedLimit.upper
             const isManaged = center >= active.lower && center <= active.upper
+            const tier: Bar["tier"] = isLimit
+              ? "limit"
+              : isManaged
+                ? "managed"
+                : "background"
+            // other LPs' liquidity is drawn in a neutral colour so the
+            // token-side colours only ever mean "the vault's own ranges"
+            const colorGroup: Bar["colorGroup"] =
+              tier === "background" ? "background" : bar.side
 
             return {
               ...bar,
-              liquidity: isManaged ? managed : background,
+              liquidity: isLimit ? limit : isManaged ? managed : background,
+              tier,
+              colorGroup,
             }
           })
         })()
@@ -349,6 +384,16 @@ export const getLiquidityDistribution = ({
           ...(scenario === "recentered" ? recentered : base),
           height: 1.05,
         },
+        ...(scenario === "limitOrder" && state && hasLimit(state)
+          ? [
+              {
+                id: "limit" as const,
+                lower: state.limitLower,
+                upper: state.limitUpper,
+                height: 1.05,
+              },
+            ]
+          : []),
       ]
     : [
         ...(state && hasBase(state)
@@ -401,12 +446,19 @@ export const getScenarioDistribution = (
     ...overrides,
   }
   const width = upper - lower
-  // initialized ticks: the band edges, the pair straddling spot, and the padding
+  // limit order: a narrow one-sided range placed just above the staged price,
+  // mirroring how the keeper parks surplus token0 (see Hypervisor.rebalance)
+  const limitLower = Math.floor(spot / spacing) * spacing + spacing
+  const limitUpper = limitLower + 2 * spacing
+  const hasStagedLimit = scenario === "limitOrder"
+  // initialized ticks: the band edges, the pair straddling spot, the limit
+  // order edges (when staged) and the padding
   const indexes = [
     lower - width,
     lower,
     Math.floor(spot / spacing) * spacing,
     Math.ceil(spot / spacing) * spacing,
+    ...(hasStagedLimit ? [limitLower, limitUpper] : []),
     upper,
     upper + width,
   ]
@@ -425,10 +477,14 @@ export const getScenarioDistribution = (
       state: {
         baseLower: lower,
         baseUpper: upper,
-        limitLower: 0,
-        limitUpper: 0,
+        limitLower: hasStagedLimit ? limitLower : 0,
+        limitUpper: hasStagedLimit ? limitUpper : 0,
         base: { liquidity, amount0: 0n, amount1: 0n },
-        limit: { liquidity: 0n, amount0: 0n, amount1: 0n },
+        limit: {
+          liquidity: hasStagedLimit ? liquidity : 0n,
+          amount0: 0n,
+          amount1: 0n,
+        },
       },
       decimals0,
       decimals1,
