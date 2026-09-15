@@ -10,6 +10,7 @@ type Props = {
   readonly intentId: bigint
   readonly assetIn: TAsset
   readonly assetOut: TAsset
+  readonly periodMs?: number | null
   readonly className?: string
 }
 
@@ -18,6 +19,7 @@ export const PastExecutionsMerged: FC<Props> = ({
   intentId,
   assetIn,
   assetOut,
+  periodMs,
   className,
 }) => {
   const { executions, isLoading } = useMergedTradesData(
@@ -34,6 +36,7 @@ export const PastExecutionsMerged: FC<Props> = ({
         assetOut={assetOut}
         executions={executions}
         isLoading={isLoading}
+        periodMs={periodMs}
         className={className}
       />
     </PastExecutionsModalSection>

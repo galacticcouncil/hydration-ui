@@ -9,6 +9,7 @@ type Props = {
   readonly scheduleId: number
   readonly assetIn: TAsset
   readonly assetOut: TAsset
+  readonly periodMs?: number | null
   readonly className?: string
 }
 
@@ -16,6 +17,7 @@ export const PastExecutionsLegacy: FC<Props> = ({
   scheduleId,
   assetIn,
   assetOut,
+  periodMs,
   className,
 }) => {
   const { executions, isLoading } = useOrderTradesData(
@@ -31,6 +33,7 @@ export const PastExecutionsLegacy: FC<Props> = ({
         assetOut={assetOut}
         executions={executions}
         isLoading={isLoading}
+        periodMs={periodMs}
         className={className}
       />
     </PastExecutionsModalSection>

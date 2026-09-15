@@ -6,7 +6,10 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { neckworkClient } from "@/api/neckwork"
-import { toApiDcaStatuses } from "@/modules/trade/orders/lib/apiVocabulary"
+import {
+  toApiDcaStatuses,
+  toDcaScheduleStatus,
+} from "@/modules/trade/orders/lib/apiVocabulary"
 import {
   DcaOrderData,
   OrderKind,
@@ -22,6 +25,7 @@ export const useHistoryData = (
   assetIds: Array<string>,
   page: number,
   pageSize: number,
+  enabled = true,
 ) => {
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
@@ -36,7 +40,7 @@ export const useHistoryData = (
       page,
       pageSize,
     }),
-    enabled: neckworkEnabled && !!owner,
+    enabled: enabled && neckworkEnabled && !!owner,
     placeholderData: keepPreviousData,
   })
 
@@ -49,7 +53,14 @@ export const useHistoryData = (
         const from = getAssetWithFallback(schedule.assetIn)
         const to = getAssetWithFallback(schedule.assetOut)
 
-        const fromAmountBudget = scaleHuman(schedule.budget, from.decimals)
+        // A pre-router schedule (id < 2354) never recorded its terms on chain,
+        // so the API reports budget, singleTradeAmount, isRollingBudget and
+        // periodBlocks as null. That is "not recorded", never zero — a schedule
+        // that really set no budget reports "0" with isRollingBudget: true.
+        const fromAmountBudget =
+          schedule.budget === null
+            ? null
+            : scaleHuman(schedule.budget, from.decimals)
         const fromAmountExecuted = scaleHuman(
           schedule.executedAmountIn,
           from.decimals,
@@ -61,21 +72,25 @@ export const useHistoryData = (
           from,
           fromAmountBudget,
           fromAmountExecuted,
-          fromAmountRemaining: Big(fromAmountBudget)
-            .minus(fromAmountExecuted)
-            .toString(),
-          singleTradeSize: scaleHuman(
-            schedule.singleTradeAmount,
-            from.decimals,
-          ),
+          fromAmountRemaining:
+            fromAmountBudget === null
+              ? null
+              : Big(fromAmountBudget).minus(fromAmountExecuted).toString(),
+          singleTradeSize:
+            schedule.singleTradeAmount === null
+              ? null
+              : scaleHuman(schedule.singleTradeAmount, from.decimals),
           to,
           toAmountExecuted: scaleHuman(schedule.executedAmountOut, to.decimals),
           status: toOrderStatusFromSchedule(
-            schedule.status as DcaScheduleStatus,
+            toDcaScheduleStatus(schedule.status),
           ),
           timestamp: schedule.lastEventAt ?? schedule.createdAt,
-          blocksPeriod: String(schedule.periodBlocks),
-          isOpenBudget: schedule.isRollingBudget,
+          blocksPeriod:
+            schedule.periodBlocks === null
+              ? null
+              : String(schedule.periodBlocks),
+          isOpenBudget: schedule.isRollingBudget ?? false,
           limitPrice: null,
         }
       }) ?? [],

@@ -1,8 +1,8 @@
-import { Trash } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
-  Chip,
+  ExternalLink,
   Flex,
   Grid,
   Icon,
@@ -13,10 +13,13 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { neckwork } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
+import { LimitOrderStatus } from "@/modules/trade/orders/columns/LimitOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import {
   IntentLimitOrderData,
@@ -33,6 +36,11 @@ type Props = {
   readonly isReceivedLoading?: boolean
 }
 
+const isFilled = (amount: string | null): boolean => {
+  if (!amount) return false
+  return Big(amount ?? "0").gt(0)
+}
+
 export const LimitOrderDetailsModal = ({
   details,
   onCancel,
@@ -43,12 +51,17 @@ export const LimitOrderDetailsModal = ({
   const { t } = useTranslation(["common", "trade"])
   const removeIntent = useRemoveIntent()
 
-  const { orderRate, marketRate, distancePct, fillable } = useLimitFillStatus({
+  const { orderRate, marketRate } = useLimitFillStatus({
     from: details.from,
     to: details.to,
     sellAmount: details.fromAmountBudget,
     receiveAmount: details.toAmountBudget,
   })
+
+  // Both sides stay hidden until something actually fills — a resting order has
+  // nothing to report, and the pair reads wrong with only one half populated.
+  const hasFills =
+    isFilled(details.fromAmountExecuted) || isFilled(details.toAmountExecuted)
 
   return (
     <>
@@ -71,34 +84,38 @@ export const LimitOrderDetailsModal = ({
           </Flex>
           {details.status && <DcaOrderStatus status={details.status} />}
         </Flex>
-        <ModalContentDivider />
-        <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
-          <Amount
-            label={t("trade:trade.orders.limit.filledFrom")}
-            isLoading={isSpentLoading}
-            value={
-              details.fromAmountExecuted
-                ? t("currency", {
-                    value: details.fromAmountExecuted,
-                    symbol: details.from.symbol,
-                  })
-                : "-"
-            }
-          />
-          <Separator orientation="vertical" />
-          <Amount
-            label={t("trade:trade.orders.limit.filledTo")}
-            isLoading={isReceivedLoading}
-            value={
-              details.toAmountExecuted
-                ? t("currency", {
-                    value: details.toAmountExecuted,
-                    symbol: details.to.symbol,
-                  })
-                : "-"
-            }
-          />
-        </Grid>
+        {hasFills && (
+          <>
+            <ModalContentDivider />
+            <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
+              <Amount
+                label={t("trade:trade.orders.limit.filledFrom")}
+                isLoading={isSpentLoading}
+                value={
+                  isFilled(details.fromAmountExecuted)
+                    ? t("currency", {
+                        value: details.fromAmountExecuted,
+                        symbol: details.from.symbol,
+                      })
+                    : "-"
+                }
+              />
+              <Separator orientation="vertical" />
+              <Amount
+                label={t("trade:trade.orders.limit.filledTo")}
+                isLoading={isReceivedLoading}
+                value={
+                  isFilled(details.toAmountExecuted)
+                    ? t("currency", {
+                        value: details.toAmountExecuted,
+                        symbol: details.to.symbol,
+                      })
+                    : "-"
+                }
+              />
+            </Grid>
+          </>
+        )}
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
           <Amount
@@ -130,27 +147,23 @@ export const LimitOrderDetailsModal = ({
         {orderRate && details.status === OrderStatus.Created && (
           <>
             <ModalContentDivider />
-            <Flex direction="column" gap="s" py="xl" align="flex-start">
-              <Text fs="p5" color={getToken("text.high")}>
-                {t("trade:trade.orders.limit.fillsWhen", {
-                  fromSymbol: details.from.symbol,
-                  rate: t("number", { value: orderRate }),
-                  toSymbol: details.to.symbol,
-                })}
-              </Text>
-              {distancePct !== null &&
-                (fillable ? (
-                  <Chip variant="green" size="small">
-                    {t("trade:trade.orders.limit.fillableNow")}
-                  </Chip>
-                ) : (
-                  <Chip variant="secondary" size="small">
-                    {t("trade:trade.orders.limit.away", {
-                      pct: Math.abs(distancePct),
-                    })}
-                  </Chip>
-                ))}
-            </Flex>
+            <Grid columnTemplate="1fr" gap="xxl" py="xl">
+              <Amount
+                label={t("trade:trade.orders.limit.fillsWhen")}
+                value={
+                  <Flex align="center" gap="s">
+                    <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
+                      {t("trade:trade.orders.limit.fillsWhenValue", {
+                        fromSymbol: details.from.symbol,
+                        rate: orderRate,
+                        toSymbol: details.to.symbol,
+                      })}
+                    </Text>
+                    <LimitOrderStatus order={details} long />
+                  </Flex>
+                }
+              />
+            </Grid>
           </>
         )}
         <ModalContentDivider />
@@ -177,25 +190,31 @@ export const LimitOrderDetailsModal = ({
             }
           />
         </Grid>
-        {details.status === OrderStatus.Created && (
-          <>
-            <ModalContentDivider />
-            <Flex justify="flex-end" pt="l">
-              <Button
-                variant="danger"
-                outline
-                onClick={() => {
-                  removeIntent.mutate(details.intentId, {
-                    onSuccess: () => onCancel(),
-                  })
-                }}
-              >
-                <Icon component={Trash} size="s" />
-                {t("trade:trade.orders.limit.cancelOrder")}
-              </Button>
-            </Flex>
-          </>
-        )}
+        <ModalContentDivider />
+        <Flex justify="space-between" gap="base" pt="l">
+          <Button variant="tertiary" outline asChild>
+            <ExternalLink href={neckwork.intent(details.intentId)}>
+              <Icon component={SquareArrowOutUpRight} size="xs" />
+              <Text fw={500} fs="p6" lh={1.4}>
+                {t("openInExplorer")}
+              </Text>
+            </ExternalLink>
+          </Button>
+          {details.status === OrderStatus.Created && (
+            <Button
+              variant="danger"
+              outline
+              onClick={() => {
+                removeIntent.mutate(details.intentId, {
+                  onSuccess: () => onCancel(),
+                })
+              }}
+            >
+              <Icon component={Trash} size="s" />
+              {t("trade:trade.orders.limit.cancelOrder")}
+            </Button>
+          )}
+        </Flex>
         {pastExecutions}
       </ModalBody>
     </>

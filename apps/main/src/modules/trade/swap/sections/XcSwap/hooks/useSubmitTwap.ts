@@ -57,12 +57,18 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
       })()
 
       const twap = await rpc.queryClient.ensureQueryData(
-        bestSellTwapQuery(rpc, {
-          assetIn: sellAsset.id,
-          assetOut: buyAsset.id,
-          amountIn: budget,
-        }),
+        bestSellTwapQuery(
+          rpc,
+          {
+            assetIn: sellAsset.id,
+            assetOut: buyAsset.id,
+            amountIn: budget,
+          },
+          isIceEnabled,
+        ),
       )
+
+      if (!twap) throw new Error("Failed to build TWAP order")
 
       const duration = await rpc.queryClient
         .ensureQueryData(

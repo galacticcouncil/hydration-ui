@@ -2,7 +2,6 @@ import { SquareArrowOutUpRight, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
-  Chip,
   ExternalLink,
   Flex,
   Grid,
@@ -21,6 +20,7 @@ import { useTranslation } from "react-i18next"
 
 import { useBlockTime } from "@/api/chain"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
+import { FillStatusChip } from "@/modules/trade/orders/columns/LimitOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import {
   getDcaCompletionPercent,
@@ -31,6 +31,7 @@ import {
   DcaOrderData,
   IntentDcaOrderData,
   isDcaScheduleOrder,
+  isIntentOrder,
   OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
@@ -60,11 +61,18 @@ export const DcaOrderDetailsModal = ({
 
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
 
+  const limitAmountOut =
+    details.limitPrice &&
+    details.singleTradeSize &&
+    Big(details.limitPrice).gt(0)
+      ? Big(details.singleTradeSize).div(details.limitPrice).toString()
+      : null
+
   const { orderRate, marketRate, distancePct, fillable } = useLimitFillStatus({
     from: details.from,
     to: details.to,
-    sellAmount: details.limitPrice ? details.singleTradeSize : null,
-    receiveAmount: details.limitPrice ? details.toAmountExecuted : null,
+    sellAmount: limitAmountOut ? details.singleTradeSize : null,
+    receiveAmount: limitAmountOut,
   })
 
   const spentOrBudgetLabel = details.isOpenBudget
@@ -221,27 +229,33 @@ export const DcaOrderDetailsModal = ({
             {orderRate && isActive && (
               <>
                 <ModalContentDivider />
-                <Flex direction="column" gap="s" py="xl" align="flex-start">
-                  <Text fs="p5" color={getToken("text.high")}>
-                    {t("trade:trade.orders.limit.fillsWhen", {
-                      fromSymbol: details.from.symbol,
-                      rate: t("number", { value: orderRate }),
-                      toSymbol: details.to.symbol,
-                    })}
-                  </Text>
-                  {distancePct !== null &&
-                    (fillable ? (
-                      <Chip variant="green" size="small">
-                        {t("trade:trade.orders.limit.fillableNow")}
-                      </Chip>
-                    ) : (
-                      <Chip variant="secondary" size="small">
-                        {t("trade:trade.orders.limit.away", {
-                          pct: Math.abs(distancePct),
-                        })}
-                      </Chip>
-                    ))}
-                </Flex>
+                <Grid columnTemplate="1fr" gap="xxl" py="xl">
+                  <Amount
+                    label={t("trade:trade.orders.limit.fillsWhen")}
+                    value={
+                      <Flex align="center" gap="s">
+                        <Text
+                          fw={500}
+                          fs="p4"
+                          lh={1}
+                          color={getToken("text.high")}
+                        >
+                          {t("trade:trade.orders.limit.fillsWhenValue", {
+                            fromSymbol: details.from.symbol,
+                            rate: orderRate,
+                            toSymbol: details.to.symbol,
+                          })}
+                        </Text>
+                        {distancePct !== null && (
+                          <FillStatusChip
+                            distancePct={distancePct}
+                            fillable={fillable}
+                          />
+                        )}
+                      </Flex>
+                    }
+                  />
+                </Grid>
               </>
             )}
           </>
@@ -259,9 +273,15 @@ export const DcaOrderDetailsModal = ({
         )}
         <ModalContentDivider />
         <Flex justify="space-between" gap="base" pt="l" pb="xl">
-          {isDcaScheduleOrder(details) && (
+          {(isDcaScheduleOrder(details) || isIntentOrder(details)) && (
             <Button variant="tertiary" outline asChild>
-              <ExternalLink href={neckwork.activityDca(details.scheduleId)}>
+              <ExternalLink
+                href={
+                  isDcaScheduleOrder(details)
+                    ? neckwork.activityDca(details.scheduleId)
+                    : neckwork.intent(details.intentId)
+                }
+              >
                 <Icon component={SquareArrowOutUpRight} size="xs" />
                 <Text fw={500} fs="p6" lh={1.4}>
                   {t("openInExplorer")}
