@@ -5,6 +5,13 @@ export const SChartPreview = styled(Flex)(css`
   flex: 7;
   min-width: 0;
   pointer-events: none;
+
+  ${containerQuery(
+    { conditions: [{ type: "inline-size", value: "36rem" }] },
+    css`
+      align-self: flex-start;
+    `,
+  )}
 `)
 
 export const SExplainerSplit = styled(Flex)(css`

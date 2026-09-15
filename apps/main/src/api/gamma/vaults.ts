@@ -12,7 +12,6 @@ import {
 } from "@/api/gamma/abi"
 import { GammaContracts, getGammaContracts } from "@/api/gamma/config"
 import { V3PoolBase } from "@/api/pools"
-import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type HypervisorFn = Extract<
@@ -234,13 +233,9 @@ const vaultQuery = (
 export const useVaultStates = (pools: V3PoolBase[]) => {
   const { evm, endpoint } = useRpcProvider()
   const contracts = getGammaContracts(endpoint)
-  const enabled = ENV.VITE_UNIV3_GAMMA_ENABLED
 
   return useQueries({
-    queries: pools.map((pool) => ({
-      ...vaultQuery(evm, contracts, pool),
-      enabled,
-    })),
+    queries: pools.map((pool) => vaultQuery(evm, contracts, pool)),
     combine: (results) => ({
       data: results.map((result) => result.data ?? null),
       isLoading: results.some((result) => result.isLoading),

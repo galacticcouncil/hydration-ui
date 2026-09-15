@@ -12,7 +12,6 @@ import { erc20Abi, PublicClient } from "viem"
 import { POOL_ABI } from "@/api/gamma/abi"
 import { getGammaContracts } from "@/api/gamma/config"
 import { loadBootstrapV3Pools } from "@/api/gamma/v3Bootstrap"
-import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID } from "@/utils/consts"
 
@@ -142,7 +141,6 @@ const v3PoolsQuery = (
 ) =>
   queryOptions<V3PoolBase[]>({
     queryKey: ["pools", "v3", endpoint],
-    enabled: ENV.VITE_UNIV3_GAMMA_ENABLED,
     queryFn: async () => {
       const { v3Pools } = await queryClient.fetchQuery(allPools(sdk))
 
@@ -194,7 +192,6 @@ export type V3PoolMetrics = {
 const v3PoolMetricsQuery = (evm: PublicClient, pool: V3PoolBase) =>
   queryOptions<V3PoolMetrics>({
     queryKey: ["pools", "v3", "metrics", pool.address],
-    enabled: ENV.VITE_UNIV3_GAMMA_ENABLED,
     queryFn: async () => {
       const address = pool.address as `0x${string}`
 

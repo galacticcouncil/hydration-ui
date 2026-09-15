@@ -6,7 +6,6 @@ import { useMemo } from "react"
 import { useVaultShares, useVaultStates, VaultState } from "@/api/gamma/vaults"
 import { neckworkClient } from "@/api/neckwork"
 import { useV3PoolMetrics, useV3Pools, V3PoolBase } from "@/api/pools"
-import { ENV } from "@/config/env"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -43,23 +42,21 @@ export type VaultStatus =
   | "outOfRange"
 
 export const useVaults = () => {
-  const gammaEnabled = ENV.VITE_UNIV3_GAMMA_ENABLED
   const { data: pools, isLoading } = useV3Pools()
   const { getAssetWithFallback } = useAssets()
   const { data: vaults, isLoading: isVaultLoading } = useVaultStates(
-    gammaEnabled ? (pools ?? []) : [],
+    pools ?? [],
   )
   const sharesQuery = useVaultShares(vaults)
   const shares = sharesQuery.data
 
-  const { data: volumes, isLoading: isVolumeLoading } = useQuery({
-    ...uniswapV3VolumeQuery(neckworkClient),
-    enabled: gammaEnabled,
-  })
+  const { data: volumes, isLoading: isVolumeLoading } = useQuery(
+    uniswapV3VolumeQuery(neckworkClient),
+  )
 
   // What each pool actually holds, and the part of its fees LPs keep.
   const { data: metrics, isLoading: isMetricsLoading } = useV3PoolMetrics(
-    gammaEnabled ? (pools ?? []) : [],
+    pools ?? [],
   )
 
   const assetIds = useMemo(
@@ -78,7 +75,7 @@ export const useVaults = () => {
   const { getAssetPrice } = useAssetsPrice(assetIds)
 
   const data = useMemo<VaultTable[]>(() => {
-    if (!gammaEnabled || !pools?.length) return []
+    if (!pools?.length) return []
 
     return pools.map((pool, index) => {
       const vault = vaults[index] ?? null
@@ -183,7 +180,6 @@ export const useVaults = () => {
       }
     })
   }, [
-    gammaEnabled,
     pools,
     vaults,
     shares,

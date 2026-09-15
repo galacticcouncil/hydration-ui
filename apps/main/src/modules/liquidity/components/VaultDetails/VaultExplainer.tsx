@@ -3,11 +3,13 @@ import {
   Icon,
   Paper,
   ResponsiveScope,
+  Select,
   Separator,
   Text,
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,7 +33,9 @@ import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation("liquidity")
+  const { isMobile, isTablet } = useBreakpoints()
   const [scenario, setScenario] = useState<RangeScenario>("inRange")
+  const isCompact = isMobile || isTablet
 
   const options = getScenarioOptions(t)
   const copy = getScenarioCopy(t)
@@ -54,25 +58,33 @@ export const VaultExplainer = ({ vault }: { vault: VaultTable }) => {
         {t("vaults.explainer.hint")}
       </Text>
 
-      <Flex mt="m">
-        <ToggleGroup
-          type="single"
-          value={scenario}
-          onValueChange={(value) =>
-            isRangeScenario(value) && setScenario(value)
-          }
-        >
-          {options.map((option) => (
-            <ToggleGroupItem key={option.id} value={option.id}>
-              {option.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+      <Flex mt="m" justify={isCompact ? "end" : "start"}>
+        {isCompact ? (
+          <Select
+            value={scenario}
+            items={options}
+            onValueChange={setScenario}
+          />
+        ) : (
+          <ToggleGroup
+            type="single"
+            value={scenario}
+            onValueChange={(value) =>
+              isRangeScenario(value) && setScenario(value)
+            }
+          >
+            {options.map((option) => (
+              <ToggleGroupItem key={option.key} value={option.key}>
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
       </Flex>
 
       <ResponsiveScope mt="l">
         <SExplainerSplit>
-          <SChartPreview direction="column" justify="center">
+          <SChartPreview direction="column">
             <LiquidityDistribution
               vault={vault}
               scenario={scenario}

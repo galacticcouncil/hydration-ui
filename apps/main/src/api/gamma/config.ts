@@ -40,6 +40,3 @@ export const getGammaContracts = (rpcUrl: string): GammaContracts => {
 
   return MAINNET_GAMMA_CONTRACTS
 }
-
-/** @deprecated Prefer getGammaContracts(endpoint) for RPC-aware resolution. */
-export const GAMMA_CONTRACTS = MAINNET_GAMMA_CONTRACTS

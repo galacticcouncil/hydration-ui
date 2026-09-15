@@ -30,11 +30,11 @@ export type ScenarioCopy = {
 
 export const getScenarioOptions = (
   t: TFunction<"liquidity">,
-): ReadonlyArray<{ id: RangeScenario; label: string }> => [
-  { id: "inRange", label: t("vaults.explainer.states.inRange") },
-  { id: "outOfRange", label: t("vaults.explainer.states.outOfRange") },
-  { id: "recentered", label: t("vaults.explainer.states.recentered") },
-  { id: "limitOrder", label: t("vaults.explainer.states.limitOrder") },
+): ReadonlyArray<{ key: RangeScenario; label: string }> => [
+  { key: "inRange", label: t("vaults.explainer.states.inRange") },
+  { key: "outOfRange", label: t("vaults.explainer.states.outOfRange") },
+  { key: "recentered", label: t("vaults.explainer.states.recentered") },
+  { key: "limitOrder", label: t("vaults.explainer.states.limitOrder") },
 ]
 
 export const getScenarioCopy = (

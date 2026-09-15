@@ -1,8 +1,10 @@
+import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Chip,
   ChipVariant,
   Flex,
+  Icon,
   Modal,
   Skeleton,
   Text,
@@ -12,20 +14,20 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
-import Big from "big.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelXYK } from "@/components/AssetLabelFull/AssetLabelFull"
+import { AssetLabelUniV3 } from "@/components/AssetLabelFull/AssetLabelFull"
+import { NoData } from "@/components/NoData/NoData"
 import { AddVaultLiquidity } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity"
-import { AutoManagedBadge } from "@/modules/liquidity/components/AutoManagedBadge"
 import { VaultStatus, VaultTable } from "@/modules/liquidity/Vaults.utils"
+import { numericallyStr, sortBy } from "@/utils/sort"
 
 const columnHelper = createColumnHelper<VaultTable>()
 
 export const getVaultsColumnsVisibility = (isMobile: boolean) => ({
   vaultTvlDisplay: !isMobile,
-  volumeDisplay: !isMobile,
+  volumeDisplay: true,
   apr: !isMobile,
   price: !isMobile,
   status: !isMobile,
@@ -105,10 +107,9 @@ export const useVaultsColumns = () => {
         size: 300,
         header: t("liquidity:vaults.column.vault"),
         cell: ({ row: { original } }) => (
-          <AssetLabelXYK
+          <AssetLabelUniV3
             iconIds={original.tokens.map((token) => token.id)}
             symbol={original.tokens.map((token) => token.symbol).join(" / ")}
-            badge={<AutoManagedBadge />}
           />
         ),
       }),
@@ -119,7 +120,7 @@ export const useVaultsColumns = () => {
           const [token0, token1] = original.tokens
 
           return (
-            <Text>
+            <Text whiteSpace="nowrap">
               {t("liquidity:vaults.price.pair", {
                 value: original.price ?? 0,
                 symbolA: token0.symbol,
@@ -129,6 +130,37 @@ export const useVaultsColumns = () => {
           )
         },
       }),
+      columnHelper.accessor("volumeDisplay", {
+        header: t("liquidity:24hVolume"),
+        meta: { sx: { textAlign: isMobile ? "right" : "left" } },
+        cell: ({ row: { original } }) => {
+          const volume =
+            original.volumeDisplay !== undefined ? (
+              t("currency", { value: Number(original.volumeDisplay) })
+            ) : (
+              <NoData />
+            )
+
+          return original.isVolumeLoading ? (
+            <Skeleton width={60} height="1em" />
+          ) : isMobile ? (
+            <Flex align="center" gap="s" justify="flex-end">
+              {volume}
+              <Icon
+                component={ChevronRight}
+                size="m"
+                color={getToken("text.low")}
+              />
+            </Flex>
+          ) : (
+            volume
+          )
+        },
+        sortingFn: sortBy({
+          select: (row) => row.original.volumeDisplay ?? "0",
+          compare: numericallyStr,
+        }),
+      }),
       columnHelper.accessor("vaultTvlDisplay", {
         header: t("liquidity:totalValueLocked"),
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
@@ -136,24 +168,12 @@ export const useVaultsColumns = () => {
           original.vault ? (
             t("currency", { value: Number(original.vaultTvlDisplay ?? 0) })
           ) : (
-            <Text color={getToken("text.low")}>&mdash;</Text>
+            <NoData />
           ),
-      }),
-      columnHelper.accessor("volumeDisplay", {
-        header: t("liquidity:24hVolume"),
-        meta: { sx: { textAlign: isMobile ? "right" : "left" } },
-        cell: ({ row: { original } }) =>
-          original.isVolumeLoading ? (
-            <Skeleton width={60} height="1em" />
-          ) : original.volumeDisplay !== undefined ? (
-            t("currency", { value: Number(original.volumeDisplay) })
-          ) : (
-            <Text color={getToken("text.low")}>&mdash;</Text>
-          ),
-        sortingFn: (a, b) =>
-          Big(a.original.volumeDisplay ?? 0).gt(b.original.volumeDisplay ?? 0)
-            ? 1
-            : -1,
+        sortingFn: sortBy({
+          select: (row) => row.original.vaultTvlDisplay ?? "0",
+          compare: numericallyStr,
+        }),
       }),
       columnHelper.accessor("apr", {
         header: t("liquidity:vaults.column.apr"),
@@ -166,10 +186,12 @@ export const useVaultsColumns = () => {
               <Text>{t("percent", { value: original.apr })}</Text>
             </Tooltip>
           ) : (
-            <Text color={getToken("text.low")}>&mdash;</Text>
+            <NoData />
           ),
-        sortingFn: (a, b) =>
-          Big(a.original.apr ?? 0).gt(b.original.apr ?? 0) ? 1 : -1,
+        sortingFn: sortBy({
+          select: (row) => row.original.apr ?? "0",
+          compare: numericallyStr,
+        }),
       }),
       columnHelper.display({
         id: "status",
