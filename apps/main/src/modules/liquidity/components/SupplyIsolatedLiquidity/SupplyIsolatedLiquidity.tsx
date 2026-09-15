@@ -14,6 +14,7 @@ import {
   ModalFooter,
   ModalHeader,
   Skeleton,
+  Stack,
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
@@ -239,31 +240,39 @@ const SupplyIsolatedLiquidityBody = ({
                 }
               />
             )}
-            {isolationWarning && (
-              <Alert
-                title={t("borrow:alert.enableIsolatedMode.title")}
-                description={t("borrow:alert.enableIsolatedMode.desc", {
-                  symbol: userReserve.reserve.symbol,
-                })}
-              />
-            )}
-            {supplyCapWarning}
-            {debtCeilingWarning}
-            {isBlockedByBorrowedAssets && (
-              <Alert
-                variant="warning"
-                description={t("borrow:alert.borrowIsolated", {
-                  symbol: userReserve.reserve.symbol,
-                })}
-              />
-            )}
-            {isEnablingIsolatedModeWarning && (
-              <Alert
-                variant="warning"
-                description={t("borrow:alert.supplyIsolated", {
-                  symbol: userReserve.reserve.symbol,
-                })}
-              />
+            {(isolationWarning ||
+              supplyCapWarning ||
+              debtCeilingWarning ||
+              isBlockedByBorrowedAssets ||
+              isEnablingIsolatedModeWarning) && (
+              <Stack gap="s" py="l">
+                {isolationWarning && (
+                  <Alert
+                    title={t("borrow:alert.enableIsolatedMode.title")}
+                    description={t("borrow:alert.enableIsolatedMode.desc", {
+                      symbol: userReserve.reserve.symbol,
+                    })}
+                  />
+                )}
+                {supplyCapWarning}
+                {debtCeilingWarning}
+                {isBlockedByBorrowedAssets && (
+                  <Alert
+                    variant="warning"
+                    description={t("borrow:alert.borrowIsolated", {
+                      symbol: userReserve.reserve.symbol,
+                    })}
+                  />
+                )}
+                {isEnablingIsolatedModeWarning && (
+                  <Alert
+                    variant="warning"
+                    description={t("borrow:alert.supplyIsolated", {
+                      symbol: userReserve.reserve.symbol,
+                    })}
+                  />
+                )}
+              </Stack>
             )}
           </Summary>
 
