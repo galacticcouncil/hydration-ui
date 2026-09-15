@@ -12,6 +12,7 @@ export const HDX_ERC20_ASSET_ID = "67"
 export const STHDX_ASSET_ID = "670"
 
 export const HEALTH_FACTOR_RISK_THRESHOLD = 1.1
+export const MAX_DISPLAY_HF = 1000
 export const HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1
 
 export const PRIME_APY = 0.075

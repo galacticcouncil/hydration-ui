@@ -1,4 +1,3 @@
-import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { Button, Text } from "@galacticcouncil/ui/components"
 import { useWeb3ConnectModal, WalletMode } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
@@ -159,16 +158,14 @@ const XcSwapForm: React.FC = () => {
         }
       >
         <XcSwapOptions />
-        <XcSwapAlerts />
-        {healthFactor && shouldRenderHealthFactorWarning && (
-          <HealthFactorRiskWarning
-            canContinue={isTradeReady}
-            message={t("healthFactor.warning")}
-            accepted={healthFactorRiskAccepted}
-            isUserConsentRequired={healthFactor.isUserConsentRequired}
-            onAcceptedChange={setHealthFactorRiskAccepted}
-          />
-        )}
+        <XcSwapAlerts
+          healthFactor={
+            shouldRenderHealthFactorWarning ? healthFactor : undefined
+          }
+          canContinue={isTradeReady}
+          isRiskAccepted={healthFactorRiskAccepted}
+          onIsRiskAcceptedChange={setHealthFactorRiskAccepted}
+        />
       </TradeFormShell>
     </form>
   )

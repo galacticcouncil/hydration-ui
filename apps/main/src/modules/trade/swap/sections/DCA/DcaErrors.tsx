@@ -24,7 +24,7 @@ export const DcaErrors: FC<Props> = ({ priceImpact, errors }) => {
   }
 
   return (
-    <Flex direction="column" my="base" gap="s">
+    <Flex direction="column" py="l" gap="s">
       {errors.map((error) => (
         <Alert
           key={error}

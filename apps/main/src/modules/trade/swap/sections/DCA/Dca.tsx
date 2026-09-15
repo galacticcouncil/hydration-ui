@@ -14,7 +14,6 @@ import { useQuotedPrice } from "@/modules/trade/swap/lib/quotedPrice.hook"
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
 import { DcaFields } from "@/modules/trade/swap/sections/DCA/DcaFields"
 import { DcaFooterNote } from "@/modules/trade/swap/sections/DCA/DcaFooterNote"
-import { DcaHealthFactor } from "@/modules/trade/swap/sections/DCA/DcaHealthFactor"
 import { DcaLimitedBudgetFields } from "@/modules/trade/swap/sections/DCA/DcaLimitedBudgetFields"
 import { DcaLimitPrice } from "@/modules/trade/swap/sections/DCA/DcaLimitPrice"
 import { DcaOpenBudgetFields } from "@/modules/trade/swap/sections/DCA/DcaOpenBudgetFields"
@@ -139,7 +138,7 @@ export const Dca: FC = () => {
 
   const isHealthFactorCheckSatisfied =
     healthFactor?.isUserConsentRequired &&
-    healthFactor.isSignificantChange &&
+    healthFactor.hasChanged &&
     healthFactor.future < healthFactor.current
       ? healthFactorRiskAccepted
       : true
@@ -180,6 +179,7 @@ export const Dca: FC = () => {
             <DcaFooterNote
               isOpenBudget={isOpenBudget}
               order={order}
+              healthFactor={isHealthFactorShown ? healthFactor : undefined}
               priceImpactLevel={priceImpactLevel}
             />
           }
@@ -202,11 +202,6 @@ export const Dca: FC = () => {
             healthFactorRiskAccepted={healthFactorRiskAccepted}
             onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
             onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
-          />
-          <DcaHealthFactor
-            order={order}
-            healthFactor={isHealthFactorShown ? healthFactor : undefined}
-            isLoading={isLoading}
           />
         </TradeFormShell>
       </form>
