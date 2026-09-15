@@ -95,3 +95,27 @@ export const xykVolumeQuery = (client: NeckworkClient) =>
       }))
     },
   })
+
+/**
+ * 24h traded volume and the fees it paid, per concentrated-liquidity (Uniswap
+ * v3) pool, keyed by the pool contract. `feeUsd` is amount in × fee tier — what
+ * the swaps paid the pool's liquidity providers.
+ */
+export const uniswapV3VolumeQuery = (client: NeckworkClient) =>
+  queryOptions({
+    queryKey: ["neckwork", "uniswapV3Volumes"],
+    staleTime: NECKWORK_BASE_STALE_TIME,
+    queryFn: async () => {
+      const { data } = await client.GET("/v1/pools/uniswapv3/volumes", {
+        params: { query: { period: "24h" } },
+      })
+
+      if (!data) throw new Error("Neckwork API returned no Uniswap v3 volumes")
+
+      return data.items.map((item) => ({
+        address: item.pool.toLowerCase(),
+        volumeUsd: item.volumeUsd,
+        feeUsd: item.feeUsd,
+      }))
+    },
+  })
