@@ -100,18 +100,12 @@ export const TradeWarnings: FC<Props> = ({
     isFormValid &&
     Number(isSingleTrade ? swapSlippage : twapSlippage) < validSlippage
 
-  const shouldRenderHealthFactorWarning =
-    !!healthFactor &&
-    Big(healthFactor.future).gt(1) &&
-    healthFactor.isUserConsentRequired &&
-    healthFactor.future < healthFactor.current
-
-  if (!shouldRenderSlippageWarning && !shouldRenderHealthFactorWarning) {
+  if (!shouldRenderSlippageWarning && !healthFactor) {
     return null
   }
 
   return (
-    <Flex direction="column" gap="s" mt="base">
+    <>
       {shouldRenderSlippageWarning && (
         <Alert
           variant="warning"
@@ -159,7 +153,7 @@ export const TradeWarnings: FC<Props> = ({
         />
       )}
 
-      {shouldRenderHealthFactorWarning && (
+      {healthFactor && (
         <HealthFactorRiskWarning
           canContinue={isFormValid}
           message={t("healthFactor.warning")}
@@ -168,6 +162,6 @@ export const TradeWarnings: FC<Props> = ({
           onAcceptedChange={setHealthFactorRiskAccepted}
         />
       )}
-    </Flex>
+    </>
   )
 }

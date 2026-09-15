@@ -41,7 +41,7 @@ export const DcaWarnings: FC<Props> = ({
     Big(healthFactor.future).gt(1) &&
     healthFactor.future < healthFactor.current &&
     healthFactor.isUserConsentRequired &&
-    healthFactor.isSignificantChange
+    healthFactor.hasChanged
 
   if (!warnings.length && !shouldRenderHealthFactorWarning) {
     return null
@@ -54,7 +54,7 @@ export const DcaWarnings: FC<Props> = ({
   }
 
   return (
-    <Flex direction="column" my="base" gap="s">
+    <Flex direction="column" py="l" gap="s">
       {warnings.map((warning) => {
         switch (warning) {
           case DcaValidationWarning.PriceImpact:

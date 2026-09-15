@@ -1,3 +1,5 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   ExclamationMark,
@@ -19,10 +21,15 @@ import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
   readonly order: TradeDcaOrder
+  readonly healthFactor: HealthFactorResult | undefined
   readonly priceImpactLevel: "error" | "warning" | undefined
 }
 
-export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
+export const DcaTradeMeta: FC<Props> = ({
+  order,
+  healthFactor,
+  priceImpactLevel,
+}) => {
   const { t } = useTranslation(["common", "trade"])
   const {
     swap: {
@@ -36,6 +43,12 @@ export const DcaTradeMeta: FC<Props> = ({ order, priceImpactLevel }) => {
       separator={<SwapSectionSeparator />}
       withTrailingSeparator
     >
+      {healthFactor?.isSignificantChange && (
+        <SwapSummaryRow
+          label={t("healthFactor")}
+          content={<HealthFactorChange {...healthFactor} />}
+        />
+      )}
       <SwapSummaryRow
         label={t("trade:dca.summary.slippage")}
         content={

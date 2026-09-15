@@ -63,7 +63,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
 
   return (
     <div>
-      <Flex direction="column" gap="base" py="base">
+      <Flex direction="column" gap="base" py="l">
         <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
         <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
           <Trans
