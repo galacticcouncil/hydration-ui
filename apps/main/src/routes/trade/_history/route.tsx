@@ -7,7 +7,10 @@ import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
-import { tradeOrderTabs } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
+import {
+  orderHistoryKinds,
+  tradeOrderTabs,
+} from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { isHydrationAssetId } from "@/utils/trade"
 
@@ -36,6 +39,7 @@ const searchSchema = z
       .default(HYDRATION_CHAIN_KEY)
       .catch(HYDRATION_CHAIN_KEY),
     allPairs: z.boolean().default(true),
+    kind: z.enum(orderHistoryKinds).default("intents").catch("intents"),
     page: z.number().optional(),
   })
   .overwrite((search) => {

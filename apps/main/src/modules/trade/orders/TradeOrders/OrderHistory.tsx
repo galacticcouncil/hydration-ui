@@ -1,18 +1,23 @@
 import { DataTable, Modal } from "@galacticcouncil/ui/components"
+import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
-  DcaOrderData,
   isDcaScheduleOrder,
   OrderData,
+  orderKey,
+  OrderKind,
 } from "@/modules/trade/orders/lib/orderData"
 import { DCA_HISTORY_ORDER_STATUSES } from "@/modules/trade/orders/lib/types"
+import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { useHistoryData } from "@/modules/trade/orders/TradeOrders/lib/useHistoryData"
+import { useIntentHistoryData } from "@/modules/trade/orders/TradeOrders/lib/useIntentHistoryData"
 import { PastExecutions } from "@/modules/trade/orders/TradeOrders/PastExecutions"
+import { PastExecutionsIntent } from "@/modules/trade/orders/TradeOrders/PastExecutionsIntent"
 
 type Props = {
   readonly paginationProps: PaginationProps
@@ -20,16 +25,34 @@ type Props = {
 }
 
 export const OrderHistory: FC<Props> = ({ paginationProps, assetIds }) => {
-  const [isDetailOpen, setIsDetailOpen] = useState<DcaOrderData | null>(null)
+  const [detailKey, setDetailKey] = useState<string | null>(null)
+  const { kind } = useSearch({ from: "/trade/_history" })
 
-  const { orders, totalCount, isLoading } = useHistoryData(
+  const { pageIndex, pageSize } = paginationProps.pagination
+
+  // One source at a time — the toggle picks which. Both hooks are called
+  // (rules-of-hooks), but only the selected one is enabled, so only one fetches.
+  const showIntents = kind === "intents"
+  const schedules = useHistoryData(
     DCA_HISTORY_ORDER_STATUSES,
     assetIds,
-    paginationProps.pagination.pageIndex,
-    paginationProps.pagination.pageSize,
+    pageIndex,
+    pageSize,
+    !showIntents,
+  )
+  const intents = useIntentHistoryData(
+    assetIds,
+    pageIndex,
+    pageSize,
+    showIntents,
   )
 
+  const { orders, totalCount, isLoading } = showIntents ? intents : schedules
+
   const columns = useOrderHistoryColumns()
+
+  const detail = orders.find((order) => orderKey(order) === detailKey)
+  const close = () => setDetailKey(null)
 
   return (
     <>
@@ -40,21 +63,34 @@ export const OrderHistory: FC<Props> = ({ paginationProps, assetIds }) => {
         paginated
         {...paginationProps}
         rowCount={totalCount}
-        onRowClick={(order) =>
-          isDcaScheduleOrder(order) && setIsDetailOpen(order)
-        }
+        onRowClick={(order) => setDetailKey(orderKey(order))}
         emptyState={<OrdersEmptyState />}
       />
-      <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
-        {isDetailOpen && (
-          <DcaOrderDetailsModal
-            details={isDetailOpen}
-            onTerminate={null}
-            pastExecutions={
-              <PastExecutions scheduleId={isDetailOpen.scheduleId} />
-            }
-          />
-        )}
+      <Modal open={!!detail} onOpenChange={close}>
+        {detail &&
+          (detail.kind === OrderKind.Limit ? (
+            <LimitOrderDetailsModal
+              details={detail}
+              onCancel={close}
+              pastExecutions={
+                detail.isPartiallyFillable ? (
+                  <PastExecutionsIntent intentId={detail.intentId} />
+                ) : undefined
+              }
+            />
+          ) : (
+            <DcaOrderDetailsModal
+              details={detail}
+              onTerminate={null}
+              pastExecutions={
+                isDcaScheduleOrder(detail) ? (
+                  <PastExecutions scheduleId={detail.scheduleId} />
+                ) : (
+                  <PastExecutionsIntent intentId={detail.intentId} />
+                )
+              }
+            />
+          ))}
       </Modal>
     </>
   )

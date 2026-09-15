@@ -6,7 +6,6 @@ import { TradeOrdersHistory } from "@/modules/trade/orders/TradeOrdersHistory"
 import { SwapChart } from "@/modules/trade/swap/components/SwapChart/SwapChart"
 import { TradeChartGrafana } from "@/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIntentsStore } from "@/states/intents"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
 export const useNeckworkTradeQueriesEnabled = (): boolean => {
@@ -22,11 +21,17 @@ export const useTradeDataSource = (): "neckwork" | "legacy" => {
   return neckworkEnabled ? "neckwork" : "legacy"
 }
 
+/**
+ * Identical to `useTradeDataSource` today, and deliberately NOT collapsed into
+ * it: the chart switch and the orders switch are separate decisions and have
+ * already diverged once (ICE used to force the orders tabs to legacy while the
+ * chart stayed on neckwork).
+ *
+ * Fork -> legacy, neckwork dead -> legacy, otherwise neckwork.
+ * `useNeckworkTradeQueriesEnabled` already excludes `isFork`.
+ */
 export const useTradeOrdersDataSource = (): "neckwork" | "legacy" => {
-  const intentsEnabled = useIntentsStore((state) => state.enabled)
   const neckworkEnabled = useNeckworkTradeQueriesEnabled()
-
-  if (intentsEnabled) return "legacy"
 
   return neckworkEnabled ? "neckwork" : "legacy"
 }

@@ -1,3 +1,4 @@
+import type { Intent } from "@galacticcouncil/indexer/neckwork"
 import { findNested } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { isNonNullish } from "remeda"
@@ -114,6 +115,15 @@ export const intentEntryToOrder = (
     const amountIn = scaleHuman(dca.amount_in, from.decimals)
     const amountOut = scaleHuman(dca.amount_out, to.decimals)
 
+    // NOT a loose heuristic, despite how it reads. A market TWAP leaves
+    // `amount_out` at the buy asset's existential deposit — the SDK field is
+    // literally named `assetOutEd` — and `useSubmitDcaOrder` overrides it with
+    // the computed limit amount ONLY when the user sets a limit price. So the
+    // comparison is exact: == ED means market, > ED means limit.
+    // Verified 2026-09-15 against 43 live dca intents: `amount_out` is a constant
+    // per buy asset (HDX's is 1000000000000, i.e. exactly 1 HDX = its ED) except
+    // on the rows that really are limit orders. Do not "fix" this to a
+    // price-based test without changing the placement path first.
     const isLimit =
       !!to.existentialDeposit &&
       Big(dca.amount_out.toString()).gt(to.existentialDeposit)
@@ -592,3 +602,93 @@ export const sortOrdersByCreation = (
 
     return b.timestamp - a.timestamp
   })
+
+/**
+ * A neckwork intent row -> an OrderData row. Unlike the chain path, every
+ * cumulative figure is asserted by the API, so there is nothing to derive:
+ * `filledAmountIn`/`filledAmountOut` are the totals for BOTH kinds, including a
+ * rolling-budget TWAP that chain state cannot count down.
+ *
+ * `status` is a parameter rather than mapped here, matching
+ * `scheduleEventToOrder` — the API-enum boundary lives in lib/apiVocabulary.ts
+ * and this module must stay Node-loadable.
+ */
+export const neckworkIntentToOrder = (
+  intent: Intent,
+  status: OrderStatus,
+  getAsset: GetAsset,
+): OrderData | null => {
+  const from = getAsset(intent.assetIn)
+  const to = getAsset(intent.assetOut)
+  // The API asserts these totals, so a "0" here is a real claim of no fill,
+  // not the unknown that a null means elsewhere in this module.
+  const fromAmountExecuted = scaleHuman(intent.filledAmountIn, from.decimals)
+  const toAmountExecuted = scaleHuman(intent.filledAmountOut, to.decimals)
+  const timestamp = intent.lastEventAt ?? intent.createdAt
+  const intentId = BigInt(intent.intentId)
+
+  if (intent.kind === "swap") {
+    return {
+      kind: OrderKind.Limit,
+      intentId,
+      from,
+      fromAmountBudget: scaleHuman(intent.amountIn, from.decimals),
+      fromAmountExecuted,
+      fromAmountRemaining: scaleHuman(intent.remainingAmountIn, from.decimals),
+      to,
+      toAmountBudget: scaleHuman(intent.amountOut, to.decimals),
+      toAmountExecuted,
+      status,
+      deadline: intent.deadline ? Number(intent.deadline) : null,
+      timestamp,
+      isPartiallyFillable: intent.partiallyFillable,
+      resolvedBlock: null,
+    } satisfies IntentLimitOrderData
+  }
+
+  // budget, isRollingBudget and periodBlocks are null TOGETHER on a swap
+  // intent, so branch on `kind` first — never on isRollingBudget alone.
+  const isOpenBudget = intent.isRollingBudget ?? false
+  const singleTradeSize = scaleHuman(intent.amountIn, from.decimals)
+  const amountOut = scaleHuman(intent.amountOut, to.decimals)
+
+  // NOT a loose heuristic, despite how it reads. A market TWAP leaves
+  // `amount_out` at the buy asset's existential deposit — the SDK field is
+  // literally named `assetOutEd` — and `useSubmitDcaOrder` overrides it with
+  // the computed limit amount ONLY when the user sets a limit price. So the
+  // comparison is exact: == ED means market, > ED means limit.
+  // Verified 2026-09-15 against 43 live dca intents: `amount_out` is a constant
+  // per buy asset (HDX's is 1000000000000, i.e. exactly 1 HDX = its ED) except
+  // on the rows that really are limit orders. Do not "fix" this to a
+  // price-based test without changing the placement path first.
+  const isLimit =
+    !!to.existentialDeposit && Big(intent.amountOut).gt(to.existentialDeposit)
+  const limitPrice =
+    isLimit && Big(amountOut).gt(0)
+      ? Big(singleTradeSize).div(amountOut).toString()
+      : null
+
+  return {
+    kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+    intentId,
+    from,
+    fromAmountBudget:
+      isOpenBudget || intent.budget === null
+        ? null
+        : scaleHuman(intent.budget, from.decimals),
+    fromAmountExecuted,
+    fromAmountRemaining: isOpenBudget
+      ? null
+      : scaleHuman(intent.remainingAmountIn, from.decimals),
+    to,
+    toAmountExecuted,
+    status,
+    timestamp,
+    singleTradeSize,
+    blocksPeriod:
+      intent.periodBlocks === null ? null : String(intent.periodBlocks),
+    isOpenBudget,
+    limitPrice,
+    resolvedBlock: null,
+  } satisfies IntentDcaOrderData
+}

@@ -15,6 +15,8 @@
   "trade.orders.orderHistory.averagePrice": "Average price",
   "trade.orders.orderHistory.type": "Type",
   "trade.orders.orderHistory.status": "Status/Date",
+  "trade.orders.orderHistory.source.dca": "DCA",
+  "trade.orders.orderHistory.source.intents": "Intents",
   "trade.orders.marketTransactions": "Market transactions",
   "trade.orders.marketTransactions.inOut": "Asset in / Asset out",
   "trade.orders.marketTransactions.fillPrice": "Fill price",
@@ -65,7 +67,10 @@
   "trade.orders.dcaDetail.tradesProgress": "{{ executed, number }} of ~{{ total, number }} trades",
   "trade.orders.dcaDetail.tradesCount_one": "{{ count, number }} trade",
   "trade.orders.dcaDetail.tradesCount_other": "{{ count, number }} trades",
-  "trade.cancelOrder.title": ["Sure you want", "to stop your trade?"],
+  "trade.cancelOrder.title": [
+    "Sure you want",
+    "to stop your trade?"
+  ],
   "trade.cancelOrder.recap.limitedBudget": [
     "Are you sure you want to close this trade?",
     "You've sold {{ sold }} of {{ total }}"

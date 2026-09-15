@@ -1,8 +1,9 @@
-import { Trash } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
   Chip,
+  ExternalLink,
   Flex,
   Grid,
   Icon,
@@ -13,6 +14,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { neckwork } from "@galacticcouncil/utils"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -177,25 +179,31 @@ export const LimitOrderDetailsModal = ({
             }
           />
         </Grid>
-        {details.status === OrderStatus.Created && (
-          <>
-            <ModalContentDivider />
-            <Flex justify="flex-end" pt="l">
-              <Button
-                variant="danger"
-                outline
-                onClick={() => {
-                  removeIntent.mutate(details.intentId, {
-                    onSuccess: () => onCancel(),
-                  })
-                }}
-              >
-                <Icon component={Trash} size="s" />
-                {t("trade:trade.orders.limit.cancelOrder")}
-              </Button>
-            </Flex>
-          </>
-        )}
+        <ModalContentDivider />
+        <Flex justify="space-between" gap="base" pt="l">
+          <Button variant="tertiary" outline asChild>
+            <ExternalLink href={neckwork.intent(details.intentId)}>
+              <Icon component={SquareArrowOutUpRight} size="xs" />
+              <Text fw={500} fs="p6" lh={1.4}>
+                {t("openInExplorer")}
+              </Text>
+            </ExternalLink>
+          </Button>
+          {details.status === OrderStatus.Created && (
+            <Button
+              variant="danger"
+              outline
+              onClick={() => {
+                removeIntent.mutate(details.intentId, {
+                  onSuccess: () => onCancel(),
+                })
+              }}
+            >
+              <Icon component={Trash} size="s" />
+              {t("trade:trade.orders.limit.cancelOrder")}
+            </Button>
+          )}
+        </Flex>
         {pastExecutions}
       </ModalBody>
     </>

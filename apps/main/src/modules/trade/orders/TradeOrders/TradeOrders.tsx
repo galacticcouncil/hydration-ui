@@ -3,6 +3,8 @@ import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo } from "react"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
+import { useInvalidateOrdersOnExecution } from "@/modules/trade/orders/lib/useInvalidateOrdersOnExecution"
 import { useChainOrdersData } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { MarketTransactions } from "@/modules/trade/orders/TradeOrders/MarketTransactions"
 import { MyRecentActivity } from "@/modules/trade/orders/TradeOrders/MyRecentActivity"
@@ -28,22 +30,31 @@ export const TradeOrders: FC<Props> = (props) => {
   )
 
   const { orders, isLoading } = useChainOrdersData()
-  const openOrders = useMemo(
-    () =>
-      assetIds.length
-        ? orders.filter(
-            ({ from, to }) =>
-              assetIds.includes(from.id) || assetIds.includes(to.id),
-          )
-        : orders,
-    [orders, assetIds],
-  )
+  const { orders: intentOrders, isLoading: isIntentsLoading } =
+    useIntentOrdersData()
+
+  // Presence subscriptions miss executions, and a fill is a solver's unsigned
+  // extrinsic rather than the trader's own tx, so neither the chain queries nor
+  // the neckwork subtree would refresh without this.
+  useInvalidateOrdersOnExecution()
+
+  const openOrders = useMemo(() => {
+    const all = [...intentOrders, ...orders]
+
+    return assetIds.length
+      ? all.filter(
+          ({ from, to }) =>
+            assetIds.includes(from.id) || assetIds.includes(to.id),
+        )
+      : all
+  }, [orders, intentOrders, assetIds])
 
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
       <TradeOrdersHeader
         paginationProps={paginationProps}
         openOrdersCount={openOrders.length}
+        sourceToggle
       />
       <Separator />
       <div sx={{ overflowX: "auto" }}>
@@ -61,7 +72,7 @@ export const TradeOrders: FC<Props> = (props) => {
                 <OpenOrders
                   paginationProps={paginationProps}
                   orders={openOrders}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isIntentsLoading}
                 />
               )
             case "orderHistory":

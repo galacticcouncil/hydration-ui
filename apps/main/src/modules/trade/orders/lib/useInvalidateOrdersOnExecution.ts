@@ -1,3 +1,4 @@
+import { NECKWORK_ACCOUNT_KEY } from "@galacticcouncil/indexer/neckwork"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef } from "react"
@@ -52,6 +53,10 @@ export const useInvalidateOrdersOnExecution = () => {
       timeout.current = null
       void queryClient.invalidateQueries({ queryKey: ["trade", "orders"] })
       void queryClient.invalidateQueries({ queryKey: ["intents", "values"] })
+      // A fill is a SOLVER's unsigned ICE.submit_solution, not the trader's own
+      // tx, so `useNeckworkSync` is never armed for it — the neckwork rows
+      // would stay stale without this.
+      void queryClient.invalidateQueries({ queryKey: NECKWORK_ACCOUNT_KEY })
     }, INVALIDATE_DELAY)
   }, [queryClient])
 

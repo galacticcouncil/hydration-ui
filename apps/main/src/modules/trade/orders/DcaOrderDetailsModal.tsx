@@ -31,6 +31,7 @@ import {
   DcaOrderData,
   IntentDcaOrderData,
   isDcaScheduleOrder,
+  isIntentOrder,
   OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
@@ -259,9 +260,15 @@ export const DcaOrderDetailsModal = ({
         )}
         <ModalContentDivider />
         <Flex justify="space-between" gap="base" pt="l" pb="xl">
-          {isDcaScheduleOrder(details) && (
+          {(isDcaScheduleOrder(details) || isIntentOrder(details)) && (
             <Button variant="tertiary" outline asChild>
-              <ExternalLink href={neckwork.activityDca(details.scheduleId)}>
+              <ExternalLink
+                href={
+                  isDcaScheduleOrder(details)
+                    ? neckwork.activityDca(details.scheduleId)
+                    : neckwork.intent(details.intentId)
+                }
+              >
                 <Icon component={SquareArrowOutUpRight} size="xs" />
                 <Text fw={500} fs="p6" lh={1.4}>
                   {t("openInExplorer")}
