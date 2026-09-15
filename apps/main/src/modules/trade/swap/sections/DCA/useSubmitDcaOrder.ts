@@ -36,9 +36,9 @@ export const useSubmitDcaOrder = () => {
     mutationFn: async (values: DcaFormValues) => {
       const { sellAsset, buyAsset, sellAmount, orders } = values
 
-      if (!sellAsset || !buyAsset || !address) {
-        return
-      }
+      if (!sellAsset) throw new Error("Invalid sell asset")
+      if (!buyAsset) throw new Error("Invalid buy asset")
+      if (!address) throw new Error("No account address")
 
       const { order, orderTx } = await rpc.queryClient.ensureQueryData(
         dcaTradeOrderQuery(rpc, {
@@ -46,13 +46,10 @@ export const useSubmitDcaOrder = () => {
           slippage,
           maxRetries,
           address,
-          dryRun: true,
         }),
       )
 
-      if (!order || !orderTx) {
-        return
-      }
+      if (!order || !orderTx) throw new Error("Failed to build DCA order")
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
