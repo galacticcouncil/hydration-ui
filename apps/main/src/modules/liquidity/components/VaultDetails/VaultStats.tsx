@@ -97,7 +97,10 @@ const VaultValues = ({ vault }: { vault: VaultTable }) => {
     },
     {
       label: t("liquidity:vaults.stats.poolLiquidity"),
-      value: t("currency", { value: Number(vault.tvlDisplay ?? 0) }),
+      value: t("currency", {
+        value: Number(vault.tvlDisplay ?? 0),
+        maximumFractionDigits: 0,
+      }),
     },
     {
       label: t("liquidity:vaults.stats.sharePrice"),

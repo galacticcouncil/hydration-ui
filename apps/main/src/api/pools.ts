@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query"
 import { PublicClient } from "viem"
 
+import { getGammaContracts } from "@/api/gamma/config"
 import { loadBootstrapV3Pools } from "@/api/gamma/v3Bootstrap"
 import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -135,15 +136,20 @@ const v3PoolsQuery = (
   sdk: SdkCtx,
   queryClient: QueryClient,
   evm: PublicClient,
+  endpoint: string,
 ) =>
   queryOptions<V3PoolBase[]>({
-    queryKey: ["pools", "v3"],
+    queryKey: ["pools", "v3", endpoint],
     enabled: ENV.VITE_UNIV3_GAMMA_ENABLED,
     queryFn: async () => {
-      const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
+      const { v3Pools } = await queryClient.fetchQuery(allPools(sdk))
 
       const known = new Set(v3Pools.map((pool) => pool.address.toLowerCase()))
-      const bootstrap = await loadBootstrapV3Pools(evm, sdk)
+      const bootstrap = await loadBootstrapV3Pools(
+        evm,
+        sdk,
+        getGammaContracts(endpoint),
+      )
       const extra = bootstrap.filter(
         (pool) => !known.has(pool.address.toLowerCase()),
       )
@@ -151,13 +157,14 @@ const v3PoolsQuery = (
       return [...v3Pools, ...extra]
     },
     staleTime: 30_000,
+    refetchInterval: 60_000,
   })
 
 export const useV3Pools = () => {
   const queryClient = useQueryClient()
-  const { sdk, evm } = useRpcProvider()
+  const { sdk, evm, endpoint } = useRpcProvider()
 
-  return useQuery(v3PoolsQuery(sdk, queryClient, evm))
+  return useQuery(v3PoolsQuery(sdk, queryClient, evm, endpoint))
 }
 
 export const xykPoolQuery = (
