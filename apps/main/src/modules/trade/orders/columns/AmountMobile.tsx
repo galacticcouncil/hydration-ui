@@ -5,9 +5,12 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
+import { LimitOrderStatus } from "@/modules/trade/orders/columns/LimitOrderStatus"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import {
   isOrderStatus,
+  OrderData,
+  OrderKind,
   OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { TAsset } from "@/providers/assetsProvider"
@@ -18,6 +21,7 @@ type Props = {
   readonly status: OrderStatus | "filled" | null | undefined
   readonly total?: string | null
   readonly isOpenBudget?: boolean
+  readonly order?: OrderData
 }
 
 export const AmountMobile: FC<Props> = ({
@@ -26,6 +30,7 @@ export const AmountMobile: FC<Props> = ({
   status,
   total,
   isOpenBudget,
+  order,
 }) => {
   const { t } = useTranslation()
 
@@ -37,15 +42,18 @@ export const AmountMobile: FC<Props> = ({
           : from.symbol}
       </Text>
       {status === "filled" && <SwapStatus />}
-      {isOrderStatus(status) && (
-        <DcaOrderStatus
-          status={status}
-          sold={fromAmount}
-          total={total}
-          isOpenBudget={isOpenBudget}
-          from={from}
-        />
-      )}
+      {isOrderStatus(status) &&
+        (order?.kind === OrderKind.Limit && status === OrderStatus.Created ? (
+          <LimitOrderStatus order={order} />
+        ) : (
+          <DcaOrderStatus
+            status={status}
+            sold={fromAmount}
+            total={total}
+            isOpenBudget={isOpenBudget}
+            from={from}
+          />
+        ))}
     </Flex>
   )
 }

@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next"
 
 import { AmountMobile } from "@/modules/trade/orders/columns/AmountMobile"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
+import { LimitOrderStatus } from "@/modules/trade/orders/columns/LimitOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
@@ -31,6 +32,7 @@ import {
   isIntentOrder,
   OrderData,
   OrderKind,
+  OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
@@ -122,22 +124,26 @@ export const useOpenOrdersColumns = () => {
 
     const statusColumn = columnHelper.display({
       header: t("trade:trade.orders.openOrders.status"),
-      meta: {
-        sx: { textAlign: "end" },
-      },
       cell: ({ row }) => {
+        const order = row.original
+
+        if (!order.status) return null
+
+        if (
+          order.kind === OrderKind.Limit &&
+          order.status === OrderStatus.Created
+        ) {
+          return <LimitOrderStatus order={order} />
+        }
+
         return (
-          row.original.status && (
-            <DcaOrderStatus
-              status={row.original.status}
-              sold={row.original.fromAmountExecuted}
-              total={row.original.fromAmountBudget}
-              isOpenBudget={
-                "isOpenBudget" in row.original && row.original.isOpenBudget
-              }
-              from={row.original.from}
-            />
-          )
+          <DcaOrderStatus
+            status={order.status}
+            sold={order.fromAmountExecuted}
+            total={order.fromAmountBudget}
+            isOpenBudget={"isOpenBudget" in order && order.isOpenBudget}
+            from={order.from}
+          />
         )
       },
     })
@@ -152,9 +158,15 @@ export const useOpenOrdersColumns = () => {
         const isIntent = isIntentOrder(order)
         const isDcaSchedule = isDcaScheduleOrder(order)
 
+        const explorerHref = isDcaSchedule
+          ? neckwork.activityDca(order.scheduleId)
+          : isIntent
+            ? neckwork.intent(order.intentId)
+            : null
+
         return (
           <Flex align="center" gap="base" justify="flex-end">
-            {isDcaSchedule && (
+            {explorerHref && (
               <Tooltip
                 text={t("openInExplorer")}
                 size="small"
@@ -170,7 +182,7 @@ export const useOpenOrdersColumns = () => {
                   }}
                   asChild
                 >
-                  <ExternalLink href={neckwork.activityDca(order.scheduleId)}>
+                  <ExternalLink href={explorerHref}>
                     <Icon component={SquareArrowOutUpRight} size="s" />
                   </ExternalLink>
                 </Button>
@@ -241,6 +253,7 @@ export const useOpenOrdersColumns = () => {
             isOpenBudget={
               "isOpenBudget" in row.original && row.original.isOpenBudget
             }
+            order={row.original}
           />
         </TableRowDetailsExpand>
       ),

@@ -2,20 +2,20 @@ import { FC } from "react"
 
 import { PastExecutions as PastExecutionsList } from "@/modules/trade/orders/PastExecutions/PastExecutions"
 import { PastExecutionsModalSection } from "@/modules/trade/orders/PastExecutions/PastExecutionsModalSection"
-import { usePastExecutionsData } from "@/modules/trade/orders/TradeOrders/lib/usePastExecutionsData"
+import { useIntentPastExecutionsData } from "@/modules/trade/orders/TradeOrders/lib/useIntentPastExecutionsData"
 
 type Props = {
-  readonly scheduleId: number
+  readonly intentId: bigint
   readonly periodMs?: number | null
   readonly className?: string
 }
 
-export const PastExecutions: FC<Props> = ({
-  scheduleId,
+export const PastExecutionsIntent: FC<Props> = ({
+  intentId,
   periodMs,
   className,
 }) => {
-  const data = usePastExecutionsData(scheduleId)
+  const data = useIntentPastExecutionsData(intentId)
 
   return (
     <PastExecutionsModalSection

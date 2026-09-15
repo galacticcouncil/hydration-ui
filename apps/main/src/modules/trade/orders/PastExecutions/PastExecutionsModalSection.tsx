@@ -1,4 +1,4 @@
-import { Flex, ModalContentDivider } from "@galacticcouncil/ui/components"
+import { Flex, Separator } from "@galacticcouncil/ui/components"
 import { FC, ReactNode } from "react"
 
 import { PastExecutionData } from "@/modules/trade/orders/lib/types"
@@ -19,14 +19,18 @@ export const PastExecutionsModalSection: FC<Props> = ({
   }
 
   return (
-    <>
-      <Flex
-        direction="column"
-        sx={{ marginInline: "var(--modal-content-inset)" }}
-      >
-        {children}
-      </Flex>
-      <ModalContentDivider />
-    </>
+    <Flex
+      direction="column"
+      overflow="hidden"
+      sx={{
+        marginInline: "var(--modal-content-inset)",
+        marginBottom: "var(--modal-content-inset)",
+        borderBottomLeftRadius: "xl",
+        borderBottomRightRadius: "xl",
+      }}
+    >
+      {children}
+      <Separator />
+    </Flex>
   )
 }

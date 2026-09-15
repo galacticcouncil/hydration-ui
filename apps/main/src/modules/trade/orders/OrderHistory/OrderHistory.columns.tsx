@@ -125,10 +125,11 @@ export const useOrderHistoryColumns = () => {
       cell: ({ row }) => {
         const order = row.original
 
+        // isDcaScheduleOrder first: a merged row answers yes to both guards.
         const href = isDcaScheduleOrder(order)
           ? neckwork.activityDca(order.scheduleId)
-          : isIntentOrder(order) && order.resolvedBlock !== null
-            ? neckwork.block(order.resolvedBlock)
+          : isIntentOrder(order)
+            ? neckwork.intent(order.intentId)
             : null
 
         return (

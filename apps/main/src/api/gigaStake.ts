@@ -45,14 +45,6 @@ export const gigaStakeConstantsQuery = (rpc: TProviderContext) =>
     gcTime: GC_TIME,
   })
 
-type UnsafeTwoSecBlocksSinceQuery = {
-  Parameters: {
-    TwoSecBlocksSince: { getValue: () => Promise<number | undefined> }
-  }
-}
-
-const U32_MAX = 4_294_967_295
-
 /**
  * `Parameters.TwoSecBlocksSince` — block height of the 6s→2s switch,
  * set once by the `SetTwoSecBlocksSince` runtime migration (`u32::MAX`

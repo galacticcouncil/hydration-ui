@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
-import { bestSellQuery } from "@/api/trade"
 import { TAsset } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export type LimitFillStatus = {
   readonly orderRate: string | null
@@ -20,7 +19,25 @@ type Args = {
   readonly receiveAmount: string | null
 }
 
-/** Fill status in "receive per sell" (to per from). Spot quote uses 1 unit; fill check uses the real slice size. */
+type QueryArgs = {
+  readonly assetIn: string
+  readonly assetOut: string
+  readonly amountIn: string
+}
+
+const limitFillQuery = (
+  { sdk, isReady }: TProviderContext,
+  { assetIn, assetOut, amountIn }: QueryArgs,
+) =>
+  queryOptions({
+    queryKey: ["limitFill", assetIn, assetOut, amountIn],
+    queryFn: () =>
+      sdk.api.router.getBestSell(Number(assetIn), Number(assetOut), amountIn),
+    enabled: isReady && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  })
+
 export const useLimitFillStatus = ({
   from,
   to,
@@ -34,29 +51,21 @@ export const useLimitFillStatus = ({
       ? Big(receiveAmount).div(sellAmount)
       : null
 
-  const { data: spotSwap, isLoading: spotLoading } = useQuery(
-    bestSellQuery(rpc, {
-      assetIn: from.id,
-      assetOut: to.id,
-      amountIn: sellAmount ? "1" : "0",
-    }),
-  )
-
-  const { data: fillSwap, isLoading: fillLoading } = useQuery(
-    bestSellQuery(rpc, {
+  const { data: swap, isLoading } = useQuery(
+    limitFillQuery(rpc, {
       assetIn: from.id,
       assetOut: to.id,
       amountIn: sellAmount ?? "0",
     }),
   )
 
-  const rateOf = (swap: typeof spotSwap) => {
-    if (!swap) return null
+  const rateOf = (trade: typeof swap) => {
+    if (!trade) return null
     try {
-      const inHuman = Big(swap.amountIn.toString()).div(
+      const inHuman = Big(trade.amountIn.toString()).div(
         Big(10).pow(from.decimals),
       )
-      const outHuman = Big(swap.amountOut.toString()).div(
+      const outHuman = Big(trade.amountOut.toString()).div(
         Big(10).pow(to.decimals),
       )
       return inHuman.gt(0) ? outHuman.div(inHuman) : null
@@ -65,8 +74,7 @@ export const useLimitFillStatus = ({
     }
   }
 
-  const marketRate = rateOf(spotSwap)
-  const fillRate = rateOf(fillSwap)
+  const fillRate = rateOf(swap)
 
   const fillable = !!orderRate && !!fillRate && fillRate.gte(orderRate)
 
@@ -77,9 +85,9 @@ export const useLimitFillStatus = ({
 
   return {
     orderRate: orderRate?.toString() ?? null,
-    marketRate: marketRate?.toString() ?? null,
+    marketRate: fillRate?.toString() ?? null,
     distancePct,
     fillable,
-    isLoading: spotLoading || fillLoading,
+    isLoading,
   }
 }

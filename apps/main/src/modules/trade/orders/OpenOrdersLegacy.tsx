@@ -13,6 +13,7 @@ import {
   OrderKind,
 } from "@/modules/trade/orders/lib/orderData"
 import { useDcaGrafanaEnrichment } from "@/modules/trade/orders/lib/useDcaGrafanaEnrichment"
+import { useDcaPeriodMs } from "@/modules/trade/orders/lib/useDcaPeriodMs"
 import { useIntentFillEnrichment } from "@/modules/trade/orders/lib/useIntentFillEnrichment"
 import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
 import { useMigratedOrdersMerge } from "@/modules/trade/orders/lib/useMigratedOrdersMerge"
@@ -60,6 +61,7 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
   const columns = useOpenOrdersColumns()
 
   const detail = allOrders.find((order) => orderKey(order) === detailKey)
+  const periodMs = useDcaPeriodMs(detail)
 
   const detailAmountsLoading = useMemo(() => {
     if (!detail) {
@@ -152,18 +154,21 @@ export const OpenOrdersLegacy: FC<Props> = ({ paginationProps }) => {
                     intentId={detail.intentId}
                     assetIn={detail.from}
                     assetOut={detail.to}
+                    periodMs={periodMs}
                   />
                 ) : isDcaScheduleOrder(detail) ? (
                   <PastExecutionsLegacy
                     scheduleId={detail.scheduleId}
                     assetIn={detail.from}
                     assetOut={detail.to}
+                    periodMs={periodMs}
                   />
                 ) : isIntentOrder(detail) ? (
                   <PastExecutionsIntent
                     intentId={detail.intentId}
                     assetIn={detail.from}
                     assetOut={detail.to}
+                    periodMs={periodMs}
                   />
                 ) : null
               }
