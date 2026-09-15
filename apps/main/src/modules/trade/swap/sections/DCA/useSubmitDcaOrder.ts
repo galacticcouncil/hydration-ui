@@ -1,15 +1,16 @@
 import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
+import { dcaTradeOrderQuery } from "@/api/trade"
 import {
   DcaFormValues,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
-import { AnyTransaction } from "@/modules/transactions/types"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkSyncStore } from "@/states/neckwork"
+import { useTradeSettings } from "@/states/tradeSettings"
 import {
   getTxResultBlockHeight,
   isSubstrateTxResult,
@@ -20,28 +21,43 @@ import { scaleHuman } from "@/utils/formatting"
 export const useSubmitDcaOrder = () => {
   const { t } = useTranslation(["common", "trade"])
 
+  const rpc = useRpcProvider()
   const { account } = useAccount()
   const address = account?.address
+
+  const {
+    dca: { slippage, maxRetries },
+  } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
   const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
   return useMutation({
-    mutationFn: async ([formValues, order, orderTx]: [
-      DcaFormValues,
-      TradeDcaOrder,
-      AnyTransaction,
-    ]) => {
-      const { sellAsset, buyAsset, sellAmount, orders } = formValues
+    mutationFn: async (values: DcaFormValues) => {
+      const { sellAsset, buyAsset, sellAmount, orders } = values
 
       if (!sellAsset || !buyAsset || !address) {
+        return
+      }
+
+      const { order, orderTx } = await rpc.queryClient.ensureQueryData(
+        dcaTradeOrderQuery(rpc, {
+          form: values,
+          slippage,
+          maxRetries,
+          address,
+          dryRun: true,
+        }),
+      )
+
+      if (!order || !orderTx) {
         return
       }
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
       const buySymbol = buyAsset.symbol
-      const duration = getTimeFrameMillis(formValues.duration)
+      const duration = getTimeFrameMillis(values.duration)
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
       const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
 
