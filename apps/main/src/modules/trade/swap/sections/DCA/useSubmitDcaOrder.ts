@@ -3,7 +3,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { dcaTradeOrderQuery } from "@/api/trade"
+import { dcaOrderQuery, dcaTxQuery } from "@/api/trade"
 import {
   DcaFormValues,
   DcaOrdersMode,
@@ -40,16 +40,21 @@ export const useSubmitDcaOrder = () => {
       if (!buyAsset) throw new Error("Invalid buy asset")
       if (!address) throw new Error("No account address")
 
-      const { order, orderTx } = await rpc.queryClient.ensureQueryData(
-        dcaTradeOrderQuery(rpc, {
-          form: values,
+      const orderQuery = dcaOrderQuery(rpc, values)
+      const order = await rpc.queryClient.fetchQuery(orderQuery)
+
+      if (!order) throw new Error("Failed to build DCA order")
+
+      const orderTx = await rpc.queryClient.fetchQuery(
+        dcaTxQuery(
+          rpc,
+          order,
+          orderQuery.queryKey,
+          address,
           slippage,
           maxRetries,
-          address,
-        }),
+        ),
       )
-
-      if (!order || !orderTx) throw new Error("Failed to build DCA order")
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
@@ -102,8 +107,6 @@ export const useSubmitDcaOrder = () => {
                     e.type === "DCA" && e.value.type === "ExecutionPlanned",
                 )?.value.value as { block: number } | undefined)
               : undefined
-
-            console.log({ planned, blockHeight })
 
             armNeckworkSync(planned?.block ?? blockHeight + 1)
           },

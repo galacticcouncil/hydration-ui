@@ -96,6 +96,7 @@ export const allPools = (sdk: SdkCtx) =>
         allPools: pools,
       }
     },
+    staleTime: 30_000,
   })
 
 export const stablePoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
@@ -142,7 +143,7 @@ const v3PoolsQuery = (
   queryOptions<V3PoolBase[]>({
     queryKey: ["pools", "v3", endpoint],
     queryFn: async () => {
-      const { v3Pools } = await queryClient.fetchQuery(allPools(sdk))
+      const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
 
       const known = new Set(v3Pools.map((pool) => pool.address.toLowerCase()))
       const bootstrap = await loadBootstrapV3Pools(
