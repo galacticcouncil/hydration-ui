@@ -1,6 +1,5 @@
 {
-  "trade.disabled": "Trading disabled",
-  "trade.disabled.description": "Trading is temporarily disabled.",
+  "trade.priceImpactLimit": "Trading is temporarily disabled for trades with a price impact above {{ percentage }}. Reduce your trade size to continue.",
   "trade.orders.myActivity": "My recent activity",
   "trade.orders.myTrades": "My recent trades",
   "trade.orders.myActivity.fromTo": "Filled from / Filled to",
@@ -99,6 +98,7 @@
   "xc.swap.summary.estimatedTime": "Estimated time",
   "xc.swap.cta.enterAmount": "Enter an amount",
   "xc.swap.cta.enterRecipient": "Enter destination address",
+  "xc.swap.cta.priceImpactTooHigh": "Price impact too high",
   "xc.swap.cta.unavailable": "Swap unavailable",
   "xc.swap.cta.acceptHealthFactor": "Accept health factor change",
   "xc.swap.alert.nonEvmWallet": "Cross-chain swap requires an EVM wallet. Connect an EVM-compatible wallet to continue.",

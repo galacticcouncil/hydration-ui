@@ -1,5 +1,6 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import {
+  Alert,
   Box,
   Button,
   LoadingButton,
@@ -13,7 +14,10 @@ import { useTranslation } from "react-i18next"
 
 import { TradeType } from "@/api/trade"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-import { ENV } from "@/config/env"
+import {
+  isPriceImpactBlocked,
+  MAX_PRICE_IMPACT_PCT,
+} from "@/modules/trade/swap/lib/isPriceImpactBlocked"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
@@ -104,7 +108,14 @@ export const XcSwap: React.FC = () => {
     ? healthFactorRiskAccepted
     : true
 
-  const canSubmit = isFormValid && isHealthFactorCheckSatisfied
+  const isPriceImpactTooHigh = isPriceImpactBlocked(
+    quote?.kind === "oc" && !isSingleTrade
+      ? quote.twap?.tradeImpactPct
+      : quote?.swap.priceImpactPct,
+  )
+
+  const canSubmit =
+    isFormValid && isHealthFactorCheckSatisfied && !isPriceImpactTooHigh
 
   const shouldRenderHealthFactorWarning =
     isHealthFactorConsentRequired && Big(healthFactor.future).gt(1)
@@ -114,11 +125,9 @@ export const XcSwap: React.FC = () => {
     isQuoteRefreshing ||
     (isSingleTrade ? isQuoteLoading : isTwapLoading)
 
-  const isTradingDisabled = ENV.VITE_TRADING_DISABLED
-
   const submitLabel = (() => {
-    if (isTradingDisabled) return t("trade:trade.disabled")
     if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
+    if (isPriceImpactTooHigh) return t("trade:xc.swap.cta.priceImpactTooHigh")
     if (hasBlockingAlerts) return t("trade:xc.swap.cta.unavailable")
     if (isCrossChain && !destAddress.trim())
       return t("trade:xc.swap.cta.enterRecipient")
@@ -134,6 +143,15 @@ export const XcSwap: React.FC = () => {
       <XcSwapOptions />
       <SwapSectionSeparator />
       <XcSwapAlerts />
+      {isPriceImpactTooHigh && (
+        <Alert
+          sx={{ mt: 8 }}
+          variant="error"
+          description={t("trade:trade.priceImpactLimit", {
+            percentage: t("percent", { value: MAX_PRICE_IMPACT_PCT }),
+          })}
+        />
+      )}
       {healthFactor && shouldRenderHealthFactorWarning && (
         <Box mt="base">
           <HealthFactorRiskWarning
@@ -166,8 +184,8 @@ export const XcSwap: React.FC = () => {
               size="large"
               width="100%"
               isLoading={isSubmitLoading}
-              disabled={isTradingDisabled || !canSubmit || isSubmitLoading}
-              variant={canSubmit && !isTradingDisabled ? "primary" : "muted"}
+              disabled={!canSubmit || isSubmitLoading}
+              variant={canSubmit ? "primary" : "muted"}
               loadingVariant="muted"
               loadingMode={canSubmit ? "inline" : "replace"}
               sx={{

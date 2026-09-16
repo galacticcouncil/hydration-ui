@@ -1,10 +1,15 @@
-import { Box } from "@galacticcouncil/ui/components"
+import { Alert, Box } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
+import {
+  isPriceImpactBlocked,
+  MAX_PRICE_IMPACT_PCT,
+} from "@/modules/trade/swap/lib/isPriceImpactBlocked"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/Market/lib/useMaxSellAmount"
@@ -22,6 +27,7 @@ import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
+  const { t } = useTranslation(["common", "trade"])
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { isBalanceLoading } = useAccountBalances()
 
@@ -97,9 +103,18 @@ export const Market: FC = () => {
 
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 
+  const isPriceImpactTooHigh = isPriceImpactBlocked(
+    isSingleTrade ? swap?.priceImpactPct : twap?.tradeImpactPct,
+  )
+
+  console.log({ isPriceImpactTooHigh })
+
   const isFormValid = isTradeEnabled && form.formState.isValid
   const isSubmitEnabled =
-    isFormValid && isHealthFactorCheckSatisfied && !isBalanceLoading
+    isFormValid &&
+    isHealthFactorCheckSatisfied &&
+    !isPriceImpactTooHigh &&
+    !isBalanceLoading
 
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError
@@ -136,6 +151,7 @@ export const Market: FC = () => {
             <MarketWarnings
               swap={swap}
               isFormValid={isFormValid}
+              isPriceImpactTooHigh={isPriceImpactTooHigh}
               isSingleTrade={isSingleTrade}
               twap={twap}
               healthFactor={healthFactor}
@@ -143,6 +159,15 @@ export const Market: FC = () => {
               setHealthFactorRiskAccepted={setHealthFactorRiskAccepted}
             />
             {swap && <MarketErrors swap={swap} />}
+            {isPriceImpactTooHigh && (
+              <Alert
+                sx={{ mt: 8 }}
+                variant="error"
+                description={t("trade:trade.priceImpactLimit", {
+                  percentage: t("percent", { value: MAX_PRICE_IMPACT_PCT }),
+                })}
+              />
+            )}
           </Box>
         )}
         <SwapSectionSeparator />

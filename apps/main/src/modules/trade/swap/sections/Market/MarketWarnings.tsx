@@ -17,6 +17,7 @@ import { TransactionType } from "@/states/transactions"
 
 type Props = {
   readonly isFormValid: boolean
+  readonly isPriceImpactTooHigh: boolean
   readonly isSingleTrade: boolean
   readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
@@ -36,6 +37,7 @@ export const getMaxSlippageThreshold = (priceImpact: number) => {
 
 export const MarketWarnings: FC<Props> = ({
   isFormValid,
+  isPriceImpactTooHigh,
   isSingleTrade,
   swap,
   twap,
@@ -103,8 +105,10 @@ export const MarketWarnings: FC<Props> = ({
     })
   }
 
+  // The price impact alert already explains why the trade cannot go through
   const shouldRenderSlippageWarning =
     isFormValid &&
+    !isPriceImpactTooHigh &&
     Number(isSingleTrade ? swapSlippage : twapSlippage) < validSlippage
 
   const shouldRenderHealthFactorWarning =

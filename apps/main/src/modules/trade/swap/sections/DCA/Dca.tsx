@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   ToggleGroup,
   ToggleGroupItem,
@@ -9,6 +10,10 @@ import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useAccountBalances } from "@/api/balances"
+import {
+  isPriceImpactBlocked,
+  MAX_PRICE_IMPACT_PCT,
+} from "@/modules/trade/swap/lib/isPriceImpactBlocked"
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
 import { DcaFooter } from "@/modules/trade/swap/sections/DCA/DcaFooter"
 import { DcaForm } from "@/modules/trade/swap/sections/DCA/DcaForm"
@@ -30,7 +35,7 @@ import { maxBalanceError } from "@/utils/validators"
 import { DcaOrdersMode, DEFAULT_DCA_DURATION, useDcaForm } from "./useDcaForm"
 
 export const Dca: FC = () => {
-  const { t } = useTranslation(["trade"])
+  const { t } = useTranslation(["common", "trade"])
   const { isBalanceLoading } = useAccountBalances()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { limitOrderMaxBalance, openBudgetOrderMaxBalance } =
@@ -102,10 +107,18 @@ export const Dca: FC = () => {
       ? healthFactorRiskAccepted
       : true
 
+  const isPriceImpactTooHigh = isPriceImpactBlocked(order?.tradeImpactPct)
+
+  // The price impact alert already explains why the order cannot go through
+  const visibleWarnings = isPriceImpactTooHigh
+    ? warnings.filter((warning) => warning !== DcaValidationWarning.PriceImpact)
+    : warnings
+
   const isSubmitEnabled =
     isFormValid &&
     isPriceImpactCheckSatisfied &&
     isHealthFactorCheckSatisfied &&
+    !isPriceImpactTooHigh &&
     !isBalanceLoading
 
   const isHealthFactorShown =
@@ -175,11 +188,20 @@ export const Dca: FC = () => {
           errors={errors}
           dryRunError={dryRunError}
         />
+        {isPriceImpactTooHigh && (
+          <Alert
+            sx={{ mt: 8 }}
+            variant="error"
+            description={t("trade:trade.priceImpactLimit", {
+              percentage: t("percent", { value: MAX_PRICE_IMPACT_PCT }),
+            })}
+          />
+        )}
         <DcaWarnings
           isFormValid={isFormValid}
           order={order}
           isOpenBudget={isOpenBudget}
-          warnings={warnings}
+          warnings={visibleWarnings}
           healthFactor={healthFactor}
           priceImpactLossAccepted={priceImpactLossAccepted}
           healthFactorRiskAccepted={healthFactorRiskAccepted}

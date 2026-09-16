@@ -14,7 +14,6 @@ import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
-import { ENV } from "@/config/env"
 import { CancelOtcOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelOtcOrderModalContent"
 import { AvailableAmount } from "@/modules/trade/otc/fill-order/AvailableAmount"
 import {
@@ -85,8 +84,6 @@ export const FillOrderModalContent: FC<Props> = ({
 
   const isSubmitEnabled =
     isUsersOffer || (!!sellAmount && form.formState.isValid)
-
-  const isTradingDisabled = ENV.VITE_TRADING_DISABLED && !isUsersOffer
 
   if (isSubmitCancelOpen) {
     return (
@@ -213,23 +210,15 @@ export const FillOrderModalContent: FC<Props> = ({
           <ModalFooter>
             <Button
               type="submit"
-              variant={
-                isTradingDisabled
-                  ? "muted"
-                  : isUsersOffer
-                    ? "danger"
-                    : "primary"
-              }
+              variant={isUsersOffer ? "danger" : "primary"}
               outline={isUsersOffer}
               size="large"
               width="100%"
-              disabled={isTradingDisabled || !isSubmitEnabled}
+              disabled={!isSubmitEnabled}
             >
-              {isTradingDisabled
-                ? t("trade.disabled")
-                : isUsersOffer
-                  ? t("trade.cancelOrder.cta")
-                  : t("otc.fillOrder.cta")}
+              {isUsersOffer
+                ? t("trade.cancelOrder.cta")
+                : t("otc.fillOrder.cta")}
             </Button>
           </ModalFooter>
         </form>

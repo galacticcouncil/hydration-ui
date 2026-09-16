@@ -1,6 +1,7 @@
 import { Box } from "@galacticcouncil/ui/components"
 import { useFormContext } from "react-hook-form"
 
+import { isPriceImpactBlocked } from "@/modules/trade/swap/lib/isPriceImpactBlocked"
 import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketTradeOptions"
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
@@ -18,6 +19,12 @@ export const XcSwapOptions = () => {
     form.formState.isValid && isXcSwapTradeEnabled(quote, isSingleTrade)
   const isShown = !isCrossChain && (isQuoteLoading || !!onChainQuote)
 
+  const isPriceImpactTooHigh = isPriceImpactBlocked(
+    isSingleTrade
+      ? onChainQuote?.swap.priceImpactPct
+      : onChainQuote?.twap?.tradeImpactPct,
+  )
+
   if (!isShown) {
     return null
   }
@@ -33,6 +40,7 @@ export const XcSwapOptions = () => {
       {onChainQuote && (
         <MarketWarnings
           isFormValid={isFormValid}
+          isPriceImpactTooHigh={isPriceImpactTooHigh}
           isSingleTrade={isSingleTrade}
           swap={onChainQuote.swap}
           twap={onChainQuote.twap}

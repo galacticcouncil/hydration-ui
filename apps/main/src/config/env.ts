@@ -16,7 +16,7 @@ const schema = z.object({
   VITE_DRY_RUN_ENABLED: coerceToBoolean,
   VITE_WORMHOLE_DISABLED: coerceToBoolean,
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
-  VITE_TRADING_DISABLED: coerceToBoolean,
+  VITE_PRICE_IMPACT_LIMIT_ENABLED: coerceToBoolean,
 })
 
 export const ENV = schema.parse(import.meta.env)
