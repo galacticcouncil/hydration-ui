@@ -92,6 +92,7 @@ export const useOrderHistoryColumns = () => {
               isLimit={
                 "limitPrice" in row.original && !!row.original.limitPrice
               }
+              isLegacyDca={isDcaScheduleOrder(row.original)}
             />
           </Flex>
         )

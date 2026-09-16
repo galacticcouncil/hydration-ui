@@ -8,7 +8,7 @@ import { useAccountIntents } from "@/api/intents"
 import { useObservable } from "@/hooks/useObservable"
 import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
+import { useHasIntentPallet } from "@/states/intents"
 
 const INVALIDATE_DELAY = 5_000
 
@@ -37,7 +37,7 @@ export const useInvalidateOrdersOnExecution = () => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
   const { papi, isReady } = useRpcProvider()
-  const isIceEnabled = useIsIceEnabled()
+  const hasIntentPallet = useHasIntentPallet()
 
   const { scheduleIds, isLoading: isSchedulesLoading } = useChainScheduleIds()
   const { data: intents, isLoading: isIntentsLoading } = useAccountIntents(
@@ -106,14 +106,14 @@ export const useInvalidateOrdersOnExecution = () => {
     return merge(
       ownedEvents(DCA.TradeExecuted, scheduleSet),
       ownedEvents(DCA.TradeFailed, scheduleSet),
-      ...(isIceEnabled
+      ...(hasIntentPallet
         ? [
             ownedEvents(Intent.DcaTradeExecuted, intentSet),
             ownedEvents(Intent.IntentResovedPartially, intentSet),
           ]
         : []),
     )
-  }, [isReady, papi, isIceEnabled])
+  }, [isReady, papi, hasIntentPallet])
 
   useObservable(events$, { enabled: isReady, onUpdate: invalidate })
 }

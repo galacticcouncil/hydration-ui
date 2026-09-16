@@ -14,16 +14,14 @@ export const GigaStakeSkeleton = () => {
 
   return (
     <>
-      <Box px="l">
-        <Box py="l" width="100%">
-          <AssetSelect
-            label={t("gigaStaking.gigaStake.input.label")}
-            isDisabled
-            isLoading
-            assets={[]}
-            selectedAsset={undefined}
-          />
-        </Box>
+      <Box p="l">
+        <AssetSelect
+          label={t("gigaStaking.gigaStake.input.label")}
+          isDisabled
+          isLoading
+          assets={[]}
+          selectedAsset={undefined}
+        />
       </Box>
 
       <Separator />

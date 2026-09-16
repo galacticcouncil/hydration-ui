@@ -27,7 +27,9 @@ export const useIntentsStore = create<IntentsStore>()(
   ),
 )
 
-/** Chain has Intent pallet and the user opted in. */
+export const useHasIntentPallet = () =>
+  useRpcProvider().featureFlags.isIceEnabled
+
 export const useIsIceEnabled = () => {
   const { featureFlags } = useRpcProvider()
   const enabled = useIntentsStore((state) => state.enabled)

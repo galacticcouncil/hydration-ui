@@ -1,6 +1,6 @@
 import { Paper, PaperProps, Separator } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
-import { FC, useMemo } from "react"
+import { FC, useMemo, useState } from "react"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
@@ -10,7 +10,11 @@ import { MarketTransactions } from "@/modules/trade/orders/TradeOrders/MarketTra
 import { MyRecentActivity } from "@/modules/trade/orders/TradeOrders/MyRecentActivity"
 import { OpenOrders } from "@/modules/trade/orders/TradeOrders/OpenOrders"
 import { OrderHistory } from "@/modules/trade/orders/TradeOrders/OrderHistory"
-import { TradeOrdersHeader } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
+import {
+  OrderHistoryKind,
+  TradeOrdersHeader,
+} from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
+import { useIsIceEnabled } from "@/states/intents"
 
 type Props = PaperProps
 
@@ -28,6 +32,12 @@ export const TradeOrders: FC<Props> = (props) => {
     () => (allPairs ? [] : [assetIn, assetOut]),
     [allPairs, assetIn, assetOut],
   )
+
+  const isIceEnabled = useIsIceEnabled()
+  const [pickedKind, setPickedKind] = useState<OrderHistoryKind | null>(null)
+
+  const kind: OrderHistoryKind =
+    pickedKind ?? (isIceEnabled ? "intents" : "dca")
 
   const { orders, isLoading } = useChainOrdersData()
   const { orders: intentOrders, isLoading: isIntentsLoading } =
@@ -54,7 +64,8 @@ export const TradeOrders: FC<Props> = (props) => {
       <TradeOrdersHeader
         paginationProps={paginationProps}
         openOrdersCount={openOrders.length}
-        sourceToggle
+        kind={kind}
+        onKindChange={setPickedKind}
       />
       <Separator />
       <div sx={{ overflowX: "auto" }}>
@@ -80,6 +91,7 @@ export const TradeOrders: FC<Props> = (props) => {
                 <OrderHistory
                   paginationProps={paginationProps}
                   assetIds={assetIds}
+                  kind={kind}
                 />
               )
             case "marketTransactions":

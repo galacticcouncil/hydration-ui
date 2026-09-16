@@ -53,29 +53,27 @@ type Props = {
   readonly tabs?: ReadonlyArray<TradeOrderTab>
   readonly paginationProps: PaginationProps
   readonly openOrdersCount: number
-  /** Only the neckwork container reads the `kind` param; the fork one ignores it. */
-  readonly sourceToggle?: boolean
+  readonly kind?: OrderHistoryKind
+  readonly onKindChange?: (kind: OrderHistoryKind) => void
 }
 
 export const TradeOrdersHeader: FC<Props> = ({
   tabs = tradeOrderTabs,
   paginationProps,
   openOrdersCount,
-  sourceToggle = false,
+  kind,
+  onKindChange,
 }) => {
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { allPairs, assetIn, assetOut, destPlatform, tab, kind } = useSearch({
+  const { allPairs, assetIn, assetOut, destPlatform, tab } = useSearch({
     from: "/trade/_history",
   })
   const { featureFlags } = useRpcProvider()
 
-  // Gated on the chain having the pallet, NOT on the user's ICE opt-in: a
-  // trader who switches intents off in settings still has intents to look back
-  // at.
   const showSourceToggle =
-    sourceToggle &&
+    !!onKindChange &&
     featureFlags.isIceEnabled &&
     tab === ("orderHistory" satisfies TradeOrderTab)
 
@@ -94,7 +92,6 @@ export const TradeOrdersHeader: FC<Props> = ({
             assetIn,
             assetOut,
             destPlatform,
-            kind,
           } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}
@@ -122,11 +119,8 @@ export const TradeOrdersHeader: FC<Props> = ({
             onValueChange={(value) => {
               if (!value) return
 
-              navigate({
-                to: ".",
-                search: (search) => ({ ...search, kind: value, page: 1 }),
-                resetScroll: false,
-              })
+              onKindChange(value)
+              paginationProps.onPageClick(1)
             }}
           >
             {orderHistoryKinds.map((value) => (
