@@ -14,7 +14,6 @@ type Props = {
   readonly children: ReactNode
 }
 
-/** Shared submit for swap tabs. Common blockers live here; tab-specific ones use `disabledLabel`. */
 export const TradeFormSubmit: FC<Props> = ({
   isEnabled,
   isLoading,
@@ -23,7 +22,7 @@ export const TradeFormSubmit: FC<Props> = ({
 }) => {
   const { t } = useTranslation("trade")
   const { control, watch } = useFormContext<TradeFormValues>()
-  const { errors } = useFormState({ control, name: "sellAmount" })
+  const { errors, isValid } = useFormState({ control, name: "sellAmount" })
   const sellAmount = watch("sellAmount")
 
   const label = (() => {
@@ -31,7 +30,8 @@ export const TradeFormSubmit: FC<Props> = ({
     if (errors.sellAmount?.message === maxBalanceError) {
       return t("xc.swap.cta.insufficientBalance")
     }
-    if (!isEnabled) return disabledLabel ?? t("swap.cta.unavailable")
+    if (!isEnabled)
+      return disabledLabel ?? (isLoading ? children : t("swap.cta.unavailable"))
     return children
   })()
 
@@ -42,11 +42,10 @@ export const TradeFormSubmit: FC<Props> = ({
         size="large"
         width="100%"
         isLoading={isLoading}
-        disabled={!isEnabled || isLoading}
+        disabled={!isEnabled}
         variant={isEnabled ? "primary" : "muted"}
         loadingVariant="muted"
-        loadingMode={isEnabled ? "inline" : "replace"}
-        sx={{ "&:disabled": { cursor: "auto", opacity: 1 } }}
+        loadingMode={isValid ? "inline" : "replace"}
       >
         {label}
       </LoadingButton>

@@ -10,6 +10,7 @@ import { DcaTradeMeta } from "@/modules/trade/swap/sections/DCA/DcaTradeMeta"
 type Props = {
   readonly isOpenBudget: boolean
   readonly order: TradeDcaOrder | undefined | null
+  readonly isLoading: boolean
   readonly healthFactor: HealthFactorResult | undefined
   readonly priceImpactLevel: "error" | "warning" | undefined
 }
@@ -17,6 +18,7 @@ type Props = {
 export const DcaFooterNote: FC<Props> = ({
   isOpenBudget,
   order,
+  isLoading,
   healthFactor,
   priceImpactLevel,
 }) => {
@@ -24,7 +26,7 @@ export const DcaFooterNote: FC<Props> = ({
 
   return (
     <Grid justifyItems="center">
-      {order && (
+      {(order || isLoading) && (
         <DcaTradeMeta
           order={order}
           healthFactor={healthFactor}

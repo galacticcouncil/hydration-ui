@@ -2,6 +2,7 @@ import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFra
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   Flex,
+  Skeleton,
   Summary,
   SummaryRowLabel,
   Text,
@@ -13,13 +14,11 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { QuotedPriceBinding } from "@/modules/trade/swap/lib/quotedPrice.hook"
-import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
 import {
   DcaFormValues,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -31,17 +30,15 @@ type Props = {
 export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
   const { t } = useTranslation(["common", "trade"])
   const { watch } = useFormContext<DcaFormValues>()
-  const { getAsset } = useAssets()
-
-  const buyAsset = order ? getAsset(order.assetOut) : undefined
-  const sellAsset = order ? getAsset(order.assetIn) : undefined
 
   const now = Date.now()
 
-  const [durationTimeFrame, type, limitEnabled] = watch([
+  const [durationTimeFrame, type, limitEnabled, sellAsset, buyAsset] = watch([
     "duration",
     "orders.type",
     "limitEnabled",
+    "sellAsset",
+    "buyAsset",
   ])
   const isOpenBudget = type === DcaOrdersMode.OpenBudget
   const duration = getTimeFrameMillis(durationTimeFrame)
@@ -51,40 +48,46 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
   const endDate = new Date(now + duration)
   const endDateValid = !isNaN(endDate.valueOf())
 
-  if (isLoading) {
-    return <DcaSummarySkeleton />
-  }
-
-  if (!order || !sellAsset || !buyAsset) {
+  if (!sellAsset || !buyAsset || (!order && !isLoading)) {
     return null
   }
 
-  const tradeAmountIn = scaleHuman(order.tradeAmountIn, sellAsset.decimals)
+  const tradeAmountIn = order
+    ? scaleHuman(order.tradeAmountIn, sellAsset.decimals)
+    : ""
 
   return (
     <div>
       <Flex direction="column" gap="base" py="l">
         <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
         <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
-          <Trans
-            t={t}
-            i18nKey={
-              isOpenBudget
-                ? "trade:dca.summary.openBudget.description"
-                : "trade:dca.summary.limitedBudget.description"
-            }
-            values={{
-              sellAmount: t("currency", {
-                value: tradeAmountIn,
-                symbol: sellAsset.symbol,
-              }),
-              buySymbol: buyAsset.symbol,
-              frequency: t("interval", { value: frequency }),
-              duration: t("interval", { value: duration }),
-            }}
-          >
-            <Text fw={600} as="span" color={getToken("text.tint.secondary")} />
-          </Trans>
+          {order ? (
+            <Trans
+              t={t}
+              i18nKey={
+                isOpenBudget
+                  ? "trade:dca.summary.openBudget.description"
+                  : "trade:dca.summary.limitedBudget.description"
+              }
+              values={{
+                sellAmount: t("currency", {
+                  value: tradeAmountIn,
+                  symbol: sellAsset.symbol,
+                }),
+                buySymbol: buyAsset.symbol,
+                frequency: t("interval", { value: frequency }),
+                duration: t("interval", { value: duration }),
+              }}
+            >
+              <Text
+                fw={600}
+                as="span"
+                color={getToken("text.tint.secondary")}
+              />
+            </Trans>
+          ) : (
+            <Skeleton count={2} />
+          )}
         </Text>
         {limitEnabled && quotedPrice.view.display && (
           <Text fw={500} fs="p4" lh={1.4} color={getToken("text.high")}>
