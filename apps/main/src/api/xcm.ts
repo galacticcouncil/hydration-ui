@@ -4,6 +4,7 @@ import {
   isEvmParachain,
   QUERY_KEY_BLOCK_PREFIX,
   resolveHydrationAssetId,
+  resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
@@ -103,6 +104,16 @@ export const useHydrationAssetId = () => {
   return useCallback(
     (asset: Asset, sourceChainKey: string): string | null =>
       resolveHydrationAssetId(asset, sourceChainKey, configService),
+    [configService],
+  )
+}
+
+export const useHydrationDisplayAssetId = () => {
+  const configService = useCrossChainConfigService()
+
+  return useCallback(
+    (asset: Asset): string | null =>
+      resolveHydrationDisplayAssetId(asset, configService),
     [configService],
   )
 }
