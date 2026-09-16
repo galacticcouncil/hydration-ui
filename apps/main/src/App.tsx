@@ -63,8 +63,6 @@ const router = createRouter({
   scrollRestorationBehavior: "smooth",
 })
 
-console.log("new build 11")
-
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router
