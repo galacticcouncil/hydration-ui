@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useCallback, useRef } from "react"
+import { useCallback, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 
 import { bestSellQuery } from "@/api/trade"
@@ -26,6 +26,8 @@ const RECALCULATE_DEBOUNCE_MS = 250
 
 type LimitCascade = {
   readonly quotedPrice: QuotedPriceBinding
+  readonly isMarketLoading: boolean
+  readonly isRecalculating: boolean
   readonly onSellAmountChange: () => void
   readonly onBuyAmountChange: () => void
   readonly onLockToggle: () => void
@@ -46,24 +48,47 @@ export const useLimitCascade = (): LimitCascade => {
   const sellAmountForQuote =
     sellAmount && Big(sellAmount || "0").gt(0) ? sellAmount : "1"
 
-  const { data: swap } = useQuery(
-    bestSellQuery(rpc, {
+  const {
+    data: swap,
+    isFetching: isSwapFetching,
+    isPending: isSwapPending,
+  } = useQuery({
+    ...bestSellQuery(rpc, {
       assetIn: sellAsset?.id ?? "",
       assetOut: buyAsset?.id ?? "",
       amountIn: sellAmountForQuote,
     }),
-  )
+    // Amount keystrokes change the query key; keep the last quote for the
+    // same pair so the market-price row does not unmount and shift the form.
+    placeholderData: (previousData, previousQuery) => {
+      if (!previousData || !previousQuery) return undefined
+      const [, , , prevIn, prevOut] = previousQuery.queryKey
+      if (
+        prevIn === (sellAsset?.id ?? "") &&
+        prevOut === (buyAsset?.id ?? "")
+      ) {
+        return previousData
+      }
+      return undefined
+    },
+  })
 
   const marketPrice = marketPriceFromQuote(
     swap,
     sellAsset?.decimals,
     buyAsset?.decimals,
   )
+  const isMarketLoading = isSwapPending || (isSwapFetching && !marketPrice)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [isRecalculating, setIsRecalculating] = useState(false)
   const debounced = useCallback((fn: () => void) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(fn, RECALCULATE_DEBOUNCE_MS)
+    setIsRecalculating(true)
+    debounceRef.current = setTimeout(() => {
+      fn()
+      setIsRecalculating(false)
+    }, RECALCULATE_DEBOUNCE_MS)
   }, [])
 
   const applyPriceTouch = useCallback(
@@ -204,6 +229,8 @@ export const useLimitCascade = (): LimitCascade => {
 
   return {
     quotedPrice,
+    isMarketLoading,
+    isRecalculating,
     onSellAmountChange,
     onBuyAmountChange,
     onLockToggle,

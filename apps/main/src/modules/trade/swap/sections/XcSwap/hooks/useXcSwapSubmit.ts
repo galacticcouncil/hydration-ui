@@ -107,6 +107,11 @@ export const useXcSwapSubmit = ({
       submitOmnipool.mutate(toSwapSubmitValues(values))
     } else if (quote?.kind === "oc" && quote.twap) {
       submitTwap.mutate(toSwapSubmitValues(values))
+    } else {
+      // `isXcSwapTradeEnabled` gates the button on the same quote, so this is
+      // only reachable if the gate and these branches drift apart. Fail loudly
+      // rather than leaving the user with a button that does nothing.
+      throw new Error("Submitted without a matching quote")
     }
   }
 

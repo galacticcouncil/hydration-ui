@@ -32,6 +32,22 @@ import {
 } from "@/utils/validators"
 
 export const MIN_DCA_ORDERS = 3
+
+export const isOpenBudgetMinTradesExceeded = (
+  sellAmount: string,
+  transferableBalance: bigint | string,
+  decimals: number,
+): boolean => {
+  if (!sellAmount) return false
+
+  const minAmountHuman = scaleHuman(
+    Big(transferableBalance.toString()).div(MIN_DCA_ORDERS).toString(),
+    decimals,
+  )
+
+  return Big(sellAmount).gt(minAmountHuman)
+}
+
 // once per block (600) and accounted for a buffer
 const MAX_DCA_ORDERS_PER_HOUR = 540
 
@@ -216,18 +232,13 @@ const useSchema = (
         return
       }
 
-      const minAmount = Big(getTransferableBalance(sellAsset.id).toString())
-        .div(MIN_DCA_ORDERS)
-        .toString()
-
-      const minAmountHuman = scaleHuman(
-        minAmount.toString(),
-        sellAsset.decimals,
-      )
-
-      const isValid = Big(sellAmount).lte(minAmountHuman)
-
-      if (isValid) {
+      if (
+        !isOpenBudgetMinTradesExceeded(
+          sellAmount,
+          getTransferableBalance(sellAsset.id),
+          sellAsset.decimals,
+        )
+      ) {
         return
       }
 
@@ -235,7 +246,7 @@ const useSchema = (
         code: "custom",
         input: sellAmount,
         path: ["sellAmount" satisfies keyof DcaFormValues],
-        message: t("trade:dca.errors.minTrades"),
+        message: t("trade:dca.errors.minTrades", { count: MIN_DCA_ORDERS }),
       })
     })
 

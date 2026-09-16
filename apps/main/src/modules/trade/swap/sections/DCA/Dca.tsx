@@ -32,12 +32,17 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { maxBalanceError } from "@/utils/validators"
 
-import { DcaOrdersMode, useDcaForm } from "./useDcaForm"
+import {
+  DcaOrdersMode,
+  isOpenBudgetMinTradesExceeded,
+  MIN_DCA_ORDERS,
+  useDcaForm,
+} from "./useDcaForm"
 
 export const Dca: FC = () => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "trade"])
   const isIceEnabled = useIsIceEnabled()
-  const { isBalanceLoading } = useAccountBalances()
+  const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { limitOrderMaxBalance, openBudgetOrderMaxBalance } =
     useMaxOrderBalance({
@@ -152,6 +157,17 @@ export const Dca: FC = () => {
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError
 
+  const disabledLabel =
+    isOpenBudget &&
+    sellAsset &&
+    isOpenBudgetMinTradesExceeded(
+      sellAmount ?? "",
+      getTransferableBalance(sellAsset.id),
+      sellAsset.decimals,
+    )
+      ? t("trade:dca.cta.minTrades", { count: MIN_DCA_ORDERS })
+      : undefined
+
   return (
     <FormProvider {...form}>
       <form
@@ -169,6 +185,7 @@ export const Dca: FC = () => {
             <TradeFormSubmit
               isEnabled={isSubmitEnabled}
               isLoading={submitDcaOrder.isPending}
+              disabledLabel={disabledLabel}
             >
               {t("schedule")}
             </TradeFormSubmit>

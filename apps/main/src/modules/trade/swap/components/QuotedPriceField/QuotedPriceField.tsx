@@ -1,5 +1,11 @@
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Icon,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Pencil, X } from "lucide-react"
 import { FC, MouseEvent, useRef, useState } from "react"
@@ -26,6 +32,7 @@ type Props = {
   readonly baseSymbol: string
   readonly quoteSymbol: string
   readonly marketLabel: string
+  readonly isMarketLoading?: boolean
 }
 
 export const QuotedPriceField: FC<Props> = ({
@@ -34,6 +41,7 @@ export const QuotedPriceField: FC<Props> = ({
   baseSymbol,
   quoteSymbol,
   marketLabel,
+  isMarketLoading = false,
 }) => {
   const { t } = useTranslation(["trade", "common"])
   const { view, dispatch } = binding
@@ -176,7 +184,7 @@ export const QuotedPriceField: FC<Props> = ({
           size="medium"
           outline
           onClick={() => dispatch({ type: "flipDenomination" })}
-          px="m"
+          sx={{ px: "m" }}
           aria-label={t("trade:limit.invert")}
         >
           <Icon
@@ -212,14 +220,20 @@ export const QuotedPriceField: FC<Props> = ({
         </Flex>
       </Flex>
 
-      {view.marketDisplay && (
-        <Flex justify="flex-end">
-          <SMarketButton
-            type="button"
-            onClick={() => dispatch({ type: "resetToMarket" })}
-          >
-            {marketLabel} <SMarketPrice>{view.marketDisplay}</SMarketPrice>
-          </SMarketButton>
+      {(view.marketDisplay || isMarketLoading) && (
+        <Flex justify="flex-end" align="center" sx={{ minHeight: "1.2em" }}>
+          {view.marketDisplay ? (
+            <SMarketButton
+              type="button"
+              onClick={() => dispatch({ type: "resetToMarket" })}
+            >
+              {marketLabel} <SMarketPrice>{view.marketDisplay}</SMarketPrice>
+            </SMarketButton>
+          ) : (
+            <SMarketButton type="button">
+              <Skeleton sx={{ width: "2xl" }} height="1em" />
+            </SMarketButton>
+          )}
         </Flex>
       )}
     </Flex>

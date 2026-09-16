@@ -1,4 +1,5 @@
 import { useSearch } from "@tanstack/react-router"
+import Big from "big.js"
 import { FC } from "react"
 import { FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -34,7 +35,11 @@ const LimitForm: FC = () => {
   const form = useFormContext<LimitFormValues>()
   const submitLimitOrder = useSubmitLimitOrder()
 
-  const { quotedPrice, ...cascade } = useLimitCascade()
+  const { quotedPrice, isMarketLoading, isRecalculating, ...cascade } =
+    useLimitCascade()
+
+  const buyAmount = form.watch("buyAmount")
+  const hasBuyAmount = !!buyAmount && Big(buyAmount).gt(0)
 
   return (
     <form
@@ -44,8 +49,11 @@ const LimitForm: FC = () => {
         fields={<LimitFields {...cascade} />}
         submit={
           <TradeFormSubmit
-            isLoading={submitLimitOrder.isPending}
-            isEnabled={form.formState.isValid}
+            isLoading={submitLimitOrder.isPending || isRecalculating}
+            isEnabled={form.formState.isValid && hasBuyAmount}
+            disabledLabel={
+              hasBuyAmount ? undefined : t("limit.cta.enterBuyAmount")
+            }
           >
             {t("limit.submit")}
           </TradeFormSubmit>
@@ -57,7 +65,10 @@ const LimitForm: FC = () => {
           </>
         }
       >
-        <LimitPriceField quotedPrice={quotedPrice} />
+        <LimitPriceField
+          quotedPrice={quotedPrice}
+          isMarketLoading={isMarketLoading}
+        />
         <LimitOrderSettings />
       </TradeFormShell>
     </form>
