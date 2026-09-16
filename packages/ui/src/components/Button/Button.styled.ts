@@ -480,12 +480,6 @@ const loadingLabelStyles = createStyles(
     & > [data-loading-spinner] svg {
       width: 1em;
       height: 1em;
-
-      animation-play-state: paused;
-    }
-
-    [aria-busy="true"] > & > [data-loading-spinner] svg {
-      animation-play-state: running;
     }
   `,
 )

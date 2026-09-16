@@ -78,8 +78,10 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
       aria-busy={isBusy}
       variant={isBusy && loadingVariant ? loadingVariant : variant}
       onClick={(e) => {
-        // stays focusable and hoverable while busy, unlike `disabled`
-        if (isBusy) return e.preventDefault()
+        // `isLoading` blocks from the first frame; `isBusy` keeps it blocked
+        // while the spinner animates out. Swallowing the click rather than
+        // setting `disabled` keeps the button focusable and hoverable.
+        if (isLoading || isBusy) return e.preventDefault()
         onClick?.(e)
       }}
       {...props}

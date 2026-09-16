@@ -160,40 +160,44 @@ export const Loading: StoryObj<typeof LoadingButton> = {
 }
 
 const LoadingTimingTemplate = () => {
+  const [ms, setMs] = useState(120)
   const [isLoading, setIsLoading] = useState(false)
   const [clicks, setClicks] = useState(0)
-
-  const load = (ms: number) => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), ms)
-  }
 
   return (
     <Flex direction="column" gap="xl" align="start">
       <Flex gap="m">
-        <Button variant="tertiary" onClick={() => load(120)}>
-          120ms — must never show a spinner
-        </Button>
-        <Button variant="tertiary" onClick={() => load(400)}>
-          400ms — must complete, never reverse mid-flight
-        </Button>
-        <Button variant="tertiary" onClick={() => load(2000)}>
-          2000ms
-        </Button>
+        {[120, 400, 2000].map((value) => (
+          <Button
+            key={value}
+            variant={value === ms ? "primary" : "tertiary"}
+            onClick={() => setMs(value)}
+          >
+            {value}ms
+          </Button>
+        ))}
       </Flex>
       <LoadingButton
         isLoading={isLoading}
         size="large"
         width={300}
-        onClick={() => setClicks((value) => value + 1)}
+        onClick={() => {
+          setClicks((value) => value + 1)
+          setIsLoading(true)
+          setTimeout(() => setIsLoading(false), ms)
+        }}
       >
-        Clicked {clicks}×
+        Accepted {clicks} click{clicks === 1 ? "" : "s"}
       </LoadingButton>
     </Flex>
   )
 }
 
-/** Clicks registered while busy must stay at 0; a 120ms load must not flicker. */
+/**
+ * Click the button, then immediately click it again. The second click must be
+ * refused for the whole load — including at 120ms, where the spinner never
+ * renders at all, so the counter is the only evidence the guard ran.
+ */
 export const LoadingTimings: StoryObj<typeof LoadingButton> = {
   render: LoadingTimingTemplate,
 }
