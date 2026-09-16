@@ -42,11 +42,10 @@ export const TradeFormSubmit: FC<Props> = ({
         size="large"
         width="100%"
         isLoading={isLoading}
-        disabled={!isEnabled || isLoading}
+        disabled={!isEnabled}
         variant={isEnabled ? "primary" : "muted"}
         loadingVariant="muted"
-        loadingMode={isEnabled ? "inline" : "replace"}
-        sx={{ "&:disabled": { cursor: "auto", opacity: 1 } }}
+        loadingMode="inline"
       >
         {label}
       </LoadingButton>

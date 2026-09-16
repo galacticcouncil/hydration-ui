@@ -4,6 +4,8 @@ import styled from "@emotion/styled"
 import { Box } from "@/components/Box"
 import { createStyles, createVariants } from "@/utils"
 
+import { LOADING_ENTER_MS, LOADING_EXIT_MS } from "./useLoadingState"
+
 export type ButtonVariant =
   | "primary"
   | "secondary"
@@ -32,9 +34,6 @@ export type SButtonProps = {
 
 export type LoadingMode = "inline" | "replace"
 
-const LOADING_TRANSITION_MS = 500
-const LOADING_ENTER_DELAY_MS = 250
-
 const defaulStyles = createStyles(
   (theme) => css`
     position: relative;
@@ -54,10 +53,6 @@ const defaulStyles = createStyles(
     cursor: pointer;
 
     transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
-
-    &[aria-busy="true"] {
-      transition-delay: ${LOADING_ENTER_DELAY_MS}ms;
-    }
 
     &:is(:link) {
       text-decoration: none;
@@ -492,11 +487,6 @@ const loadingLabelStyles = createStyles(
     [aria-busy="true"] > & > [data-loading-spinner] svg {
       animation-play-state: running;
     }
-
-    [aria-busy="true"] > &&,
-    [aria-busy="true"] > && > * {
-      transition-delay: ${LOADING_ENTER_DELAY_MS}ms;
-    }
   `,
 )
 
@@ -508,8 +498,8 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
     display: inline-grid;
 
     transition:
-      transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo},
-      margin ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+      transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad},
+      margin ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
 
     & > [data-loading-spinner] {
       position: absolute;
@@ -527,18 +517,26 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
         scale(0.25);
 
       transition:
-        opacity ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo},
-        transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+        opacity ${LOADING_EXIT_MS}ms ${theme.easings.inQuad},
+        transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
     }
 
     [aria-busy="true"] > & {
       margin-inline: calc(var(--loading-spinner-space) / 2);
       transform: translateX(calc(var(--loading-spinner-space) / 2));
+
+      transition:
+        transform ${LOADING_ENTER_MS}ms ${theme.easings.outExpo},
+        margin ${LOADING_ENTER_MS}ms ${theme.easings.outExpo};
     }
 
     [aria-busy="true"] > & > [data-loading-spinner] {
       opacity: 1;
       transform: translate(calc(-100% - 0.5em), -50%) scale(1);
+
+      transition:
+        opacity ${LOADING_ENTER_MS}ms ${theme.easings.outExpo},
+        transform ${LOADING_ENTER_MS}ms ${theme.easings.outExpo};
     }
   `,
   replace: css`
@@ -553,8 +551,14 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
       justify-self: center;
 
       transition:
-        transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo},
-        opacity ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+        transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad},
+        opacity ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
+    }
+
+    [aria-busy="true"] > & > * {
+      transition:
+        transform ${LOADING_ENTER_MS}ms ${theme.easings.outExpo},
+        opacity ${LOADING_ENTER_MS}ms ${theme.easings.outExpo};
     }
 
     & > [data-loading-content] {

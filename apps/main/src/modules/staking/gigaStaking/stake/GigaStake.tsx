@@ -124,7 +124,7 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
             type="submit"
             size="large"
             width="100%"
-            disabled={!form.formState.isValid || isSubmitting}
+            disabled={!form.formState.isValid}
           >
             {t("gigaStaking.gigaStake.cta")}
           </LoadingButton>

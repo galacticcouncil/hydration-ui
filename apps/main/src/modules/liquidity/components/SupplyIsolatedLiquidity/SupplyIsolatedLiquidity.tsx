@@ -286,9 +286,7 @@ const SupplyIsolatedLiquidityBody = ({
             size="large"
             width="100%"
             isLoading={isTradeLoading}
-            disabled={
-              isBlockedSupply || !form.formState.isValid || isTradeLoading
-            }
+            disabled={isBlockedSupply || !form.formState.isValid}
           >
             {t("borrow:supply.withSymbol", {
               symbol: userReserve.reserve.symbol,

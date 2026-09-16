@@ -13,6 +13,7 @@ import {
   SLoadingLabel,
   SMicroButton,
 } from "./Button.styled"
+import { useLoadingState } from "./useLoadingState"
 
 export type ButtonProps = BoxProps &
   SButtonProps &
@@ -64,15 +65,23 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
   loadingVariant = "tertiary",
   loadingMode = "inline",
   isLoading,
+  onClick,
   children,
   ...props
 }) => {
+  const isBusy = useLoadingState(isLoading)
+
   return (
     <SButton
       as="button"
       type="button"
-      aria-busy={isLoading}
-      variant={isLoading && loadingVariant ? loadingVariant : variant}
+      aria-busy={isBusy}
+      variant={isBusy && loadingVariant ? loadingVariant : variant}
+      onClick={(e) => {
+        // stays focusable and hoverable while busy, unlike `disabled`
+        if (isBusy) return e.preventDefault()
+        onClick?.(e)
+      }}
       {...props}
     >
       <SLoadingLabel loadingMode={loadingMode}>

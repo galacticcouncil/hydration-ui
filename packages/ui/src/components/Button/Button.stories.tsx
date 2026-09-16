@@ -158,3 +158,42 @@ const LoadingTemplate = () => {
 export const Loading: StoryObj<typeof LoadingButton> = {
   render: LoadingTemplate,
 }
+
+const LoadingTimingTemplate = () => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [clicks, setClicks] = useState(0)
+
+  const load = (ms: number) => {
+    setIsLoading(true)
+    setTimeout(() => setIsLoading(false), ms)
+  }
+
+  return (
+    <Flex direction="column" gap="xl" align="start">
+      <Flex gap="m">
+        <Button variant="tertiary" onClick={() => load(120)}>
+          120ms — must never show a spinner
+        </Button>
+        <Button variant="tertiary" onClick={() => load(400)}>
+          400ms — must complete, never reverse mid-flight
+        </Button>
+        <Button variant="tertiary" onClick={() => load(2000)}>
+          2000ms
+        </Button>
+      </Flex>
+      <LoadingButton
+        isLoading={isLoading}
+        size="large"
+        width={300}
+        onClick={() => setClicks((value) => value + 1)}
+      >
+        Clicked {clicks}×
+      </LoadingButton>
+    </Flex>
+  )
+}
+
+/** Clicks registered while busy must stay at 0; a 120ms load must not flicker. */
+export const LoadingTimings: StoryObj<typeof LoadingButton> = {
+  render: LoadingTimingTemplate,
+}

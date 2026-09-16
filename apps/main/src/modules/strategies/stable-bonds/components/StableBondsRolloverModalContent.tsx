@@ -171,9 +171,7 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
                 type="submit"
                 size="large"
                 width="100%"
-                disabled={
-                  !form.formState.isValid || isFeePending || submit.isPending
-                }
+                disabled={!form.formState.isValid || isFeePending}
               >
                 {t("strategies:bonds.rollover.modal.cta")}
               </LoadingButton>
