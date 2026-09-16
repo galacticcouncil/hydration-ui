@@ -36,6 +36,7 @@ const { H160 } = h160
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
   "ethereum",
+  "robinhood",
   "base",
   "solana",
   "sui",

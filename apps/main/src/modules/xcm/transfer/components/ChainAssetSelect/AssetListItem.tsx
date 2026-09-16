@@ -17,7 +17,7 @@ import Big from "big.js"
 import { useTranslation } from "react-i18next"
 import { isBigInt } from "remeda"
 
-import { useHydrationAssetId } from "@/api/xcm"
+import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetBridgeTags"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
@@ -49,9 +49,9 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
 }) => {
   const { t } = useTranslation(["common"])
   const { getAsset } = useAssets()
-  const getHydrationAssetId = useHydrationAssetId()
+  const getDisplayAssetId = useHydrationDisplayAssetId()
 
-  const registryId = chain ? getHydrationAssetId(asset, chain.key) : null
+  const registryId = getDisplayAssetId(asset)
   const registryAsset = registryId ? getAsset(registryId) : undefined
 
   const meta = {
