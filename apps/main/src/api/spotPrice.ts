@@ -26,7 +26,7 @@ import {
   useBorrowIncentivesContract,
   useBorrowPoolDataContract,
 } from "@/api/borrow"
-import { TShareToken, useAssets } from "@/providers/assetsProvider"
+import { AssetId, TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
   useDisplayAssetStore,
@@ -52,7 +52,13 @@ export const usePriceSubscriber = () => {
           type: "active",
         })
         .reduce<string[]>((acc, [key, data]) => {
-          if (data) acc.push(key[1] as string)
+          const assetId = key[1]
+          if (
+            data &&
+            (typeof assetId === "string" || typeof assetId === "number")
+          ) {
+            acc.push(String(assetId))
+          }
 
           return acc
         }, [])
@@ -80,14 +86,19 @@ export const usePriceSubscriber = () => {
 
 export const spotPriceQuery = (
   context: TProviderContext,
-  assetIn: string,
-  assetOut: string,
+  assetIn: AssetId,
+  assetOut: AssetId,
 ) => {
   const { isReady, sdk } = context
 
   return queryOptions({
     enabled: isReady && !!assetIn && !!assetOut,
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "spotPrice", assetIn, assetOut],
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "spotPrice",
+      String(assetIn),
+      String(assetOut),
+    ],
     queryFn: async () => {
       const spotPrice = await getSpotPrice(sdk.api.router, assetIn, assetOut)()
 
@@ -97,12 +108,13 @@ export const spotPriceQuery = (
 }
 
 export const getSpotPrice =
-  (tradeRouter: TradeRouter, tokenIn: string, tokenOut: string) => async () => {
-    const tokenInParam = tokenIn
-    const tokenOutParam = tokenOut
-    // X -> X would return undefined, no need for spot price in such case
-    if (tokenIn === tokenOut || tokenInParam === tokenOutParam)
-      return { tokenIn, tokenOut, spotPrice: "1" }
+  (tradeRouter: TradeRouter, tokenIn: AssetId, tokenOut: AssetId) =>
+  async () => {
+    // Normalize so string/number ids compare equal (USDT→USDT self-price).
+    const tokenInParam = String(tokenIn)
+    const tokenOutParam = String(tokenOut)
+    if (tokenInParam === tokenOutParam)
+      return { tokenIn: tokenInParam, tokenOut: tokenOutParam, spotPrice: "1" }
 
     // error replies are valid in case token has no spot price
     let spotPrice: string | null = null
@@ -117,31 +129,31 @@ export const getSpotPrice =
         spotPrice = toDecimal(res.amount, res.decimals)
       }
     } catch (e) {
-      return { tokenIn, tokenOut, spotPrice }
+      return { tokenIn: tokenInParam, tokenOut: tokenOutParam, spotPrice }
     }
-    return { tokenIn, tokenOut, spotPrice }
+    return { tokenIn: tokenInParam, tokenOut: tokenOutParam, spotPrice }
   }
 
-export const spotPriceQueryKey = (assetId: string) => ["spotPriceKey", assetId]
+export const spotPriceQueryKey = (assetId: AssetId) => [
+  "spotPriceKey",
+  String(assetId),
+]
 
 export const spotPriceKeyQuery = (
   context: TProviderContext,
-  assetId: string,
+  assetId: AssetId,
 ) => {
   const stableCoinId = useDisplayAssetStore.getState().stableCoinId
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
   const { sdk, isReady } = context
+  const id = String(assetId)
 
   return queryOptions({
-    queryKey: spotPriceQueryKey(assetId),
+    queryKey: spotPriceQueryKey(id),
     queryFn: async () => {
-      const price = await getSpotPrice(
-        sdk.api.router,
-        assetId,
-        stableCoinId ?? "",
-      )()
+      const price = await getSpotPrice(sdk.api.router, id, stableCoinId ?? "")()
 
-      setAssets([{ id: assetId, price: price.spotPrice }])
+      setAssets([{ id, price: price.spotPrice }])
 
       return price.spotPrice
     },
@@ -155,14 +167,15 @@ export const scSpotPriceKeyQuery = (
   rpc: TProviderContext,
   poolDataContract: UiPoolDataProvider | null,
   incentivesContract: UiIncentiveDataProvider | null,
-  assetId: string,
+  assetId: AssetId,
   reserveId: string,
 ) => {
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
   const { isReady } = rpc
+  const id = String(assetId)
 
   return queryOptions({
-    queryKey: spotPriceQueryKey(assetId),
+    queryKey: spotPriceQueryKey(id),
     queryFn: async () => {
       const reserve = await rpc.queryClient.ensureQueryData(
         borrowReserveQuery(
@@ -176,7 +189,7 @@ export const scSpotPriceKeyQuery = (
 
       const price = reserve?.priceInUSD ?? null
 
-      setAssets([{ id: assetId, price }])
+      setAssets([{ id, price }])
 
       return price
     },
@@ -189,8 +202,8 @@ const SC_ASSETS = new Map<string, string>([
   ["1816", getAddressFromAssetId("816")], // AssetType: Erc20
 ])
 
-export const useSubscribedPriceKeys = (assetIds: string[]) => {
-  const stableAssetIds = useStableArray(unique(assetIds))
+export const useSubscribedPriceKeys = (assetIds: AssetId[]) => {
+  const stableAssetIds = useStableArray(unique(assetIds.map(String)))
   const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()
