@@ -3,6 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { ENV } from "@/config/env"
 
 type Props = {
   readonly isSingleTrade: boolean
@@ -17,16 +18,23 @@ export const MarketSubmit: FC<Props> = ({
 }) => {
   const { t } = useTranslation("trade")
 
+  const isTradingDisabled = ENV.VITE_TRADING_DISABLED
+
   return (
     <Grid py="m">
       <AuthorizedAction size="large">
         <LoadingButton
           type="submit"
           size="large"
-          disabled={!isEnabled || isLoading}
+          variant={isTradingDisabled ? "muted" : "primary"}
+          disabled={isTradingDisabled || !isEnabled || isLoading}
           isLoading={isLoading}
         >
-          {isSingleTrade ? t("market.footer.swap") : t("market.twap.cta")}
+          {isTradingDisabled
+            ? t("trade.disabled")
+            : isSingleTrade
+              ? t("market.footer.swap")
+              : t("market.twap.cta")}
         </LoadingButton>
       </AuthorizedAction>
     </Grid>

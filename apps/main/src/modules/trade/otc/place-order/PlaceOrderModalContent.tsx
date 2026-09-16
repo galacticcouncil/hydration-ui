@@ -15,6 +15,7 @@ import { FormProvider, useController } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { spotPriceQuery } from "@/api/spotPrice"
+import { ENV } from "@/config/env"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { PartiallyFillableToggle } from "@/modules/trade/otc/place-order/PartiallyFillableToggle"
 import {
@@ -464,9 +465,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
               type="submit"
               size="large"
               width="100%"
-              disabled={!isSubmitEnabled}
+              variant={ENV.VITE_TRADING_DISABLED ? "muted" : "primary"}
+              disabled={ENV.VITE_TRADING_DISABLED || !isSubmitEnabled}
             >
-              {t("otc.placeOrder.cta")}
+              {ENV.VITE_TRADING_DISABLED
+                ? t("trade.disabled")
+                : t("otc.placeOrder.cta")}
             </Button>
           </ModalFooter>
         </form>

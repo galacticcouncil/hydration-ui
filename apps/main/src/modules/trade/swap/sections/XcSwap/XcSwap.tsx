@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next"
 
 import { TradeType } from "@/api/trade"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { ENV } from "@/config/env"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
@@ -113,7 +114,10 @@ export const XcSwap: React.FC = () => {
     isQuoteRefreshing ||
     (isSingleTrade ? isQuoteLoading : isTwapLoading)
 
+  const isTradingDisabled = ENV.VITE_TRADING_DISABLED
+
   const submitLabel = (() => {
+    if (isTradingDisabled) return t("trade:trade.disabled")
     if (!sellAmount) return t("trade:xc.swap.cta.enterAmount")
     if (hasBlockingAlerts) return t("trade:xc.swap.cta.unavailable")
     if (isCrossChain && !destAddress.trim())
@@ -162,8 +166,8 @@ export const XcSwap: React.FC = () => {
               size="large"
               width="100%"
               isLoading={isSubmitLoading}
-              disabled={!canSubmit || isSubmitLoading}
-              variant={canSubmit ? "primary" : "muted"}
+              disabled={isTradingDisabled || !canSubmit || isSubmitLoading}
+              variant={canSubmit && !isTradingDisabled ? "primary" : "muted"}
               loadingVariant="muted"
               loadingMode={canSubmit ? "inline" : "replace"}
               sx={{

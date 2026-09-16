@@ -4,6 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { ENV } from "@/config/env"
 
 type Props = {
   readonly isEnabled: boolean
@@ -18,6 +19,8 @@ export const DcaFooter: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "trade"])
 
+  const isTradingDisabled = ENV.VITE_TRADING_DISABLED
+
   return (
     <Grid py="xl" rowGap="m" justifyItems="center">
       <AuthorizedAction size="large" width="100%">
@@ -25,10 +28,11 @@ export const DcaFooter: FC<Props> = ({
           type="submit"
           size="large"
           width="100%"
-          disabled={!isEnabled || isLoading}
+          variant={isTradingDisabled ? "muted" : "primary"}
+          disabled={isTradingDisabled || !isEnabled || isLoading}
           isLoading={isLoading}
         >
-          {t("schedule")}
+          {isTradingDisabled ? t("trade:trade.disabled") : t("schedule")}
         </LoadingButton>
       </AuthorizedAction>
       <Text fs="p5" lh={1.4} color={getToken("text.high")}>

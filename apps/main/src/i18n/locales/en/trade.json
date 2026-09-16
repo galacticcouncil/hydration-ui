@@ -1,4 +1,6 @@
 {
+  "trade.disabled": "Trading disabled",
+  "trade.disabled.description": "Trading is temporarily disabled.",
   "trade.orders.myActivity": "My recent activity",
   "trade.orders.myTrades": "My recent trades",
   "trade.orders.myActivity.fromTo": "Filled from / Filled to",
