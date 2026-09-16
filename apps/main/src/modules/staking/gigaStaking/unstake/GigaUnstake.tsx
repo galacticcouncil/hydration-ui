@@ -56,20 +56,18 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
-        <Box px="l" asChild>
-          <Box py="l" width="100%">
-            <AssetSelectFormField
-              assetFieldName="asset"
-              amountFieldName="amount"
-              label={t("gigaStaking.gigaUnstake.input.label")}
-              assets={[]}
-              disabledAssetSelector
-              balance={{ value: maxUnstake, label: t("common:available") }}
-              displayValue={t("common:currency", {
-                value: displayAmount,
-              })}
-            />
-          </Box>
+        <Box p="l">
+          <AssetSelectFormField
+            assetFieldName="asset"
+            amountFieldName="amount"
+            label={t("gigaStaking.gigaUnstake.input.label")}
+            assets={[]}
+            disabledAssetSelector
+            balance={{ value: maxUnstake, label: t("common:available") }}
+            displayValue={t("common:currency", {
+              value: displayAmount,
+            })}
+          />
         </Box>
 
         <Separator />

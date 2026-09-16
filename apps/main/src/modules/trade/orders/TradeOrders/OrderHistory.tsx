@@ -1,5 +1,4 @@
 import { DataTable, Modal } from "@galacticcouncil/ui/components"
-import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
@@ -18,15 +17,20 @@ import { useHistoryData } from "@/modules/trade/orders/TradeOrders/lib/useHistor
 import { useIntentHistoryData } from "@/modules/trade/orders/TradeOrders/lib/useIntentHistoryData"
 import { PastExecutions } from "@/modules/trade/orders/TradeOrders/PastExecutions"
 import { PastExecutionsIntent } from "@/modules/trade/orders/TradeOrders/PastExecutionsIntent"
+import { OrderHistoryKind } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
 
 type Props = {
   readonly paginationProps: PaginationProps
   readonly assetIds: Array<string>
+  readonly kind: OrderHistoryKind
 }
 
-export const OrderHistory: FC<Props> = ({ paginationProps, assetIds }) => {
+export const OrderHistory: FC<Props> = ({
+  paginationProps,
+  assetIds,
+  kind,
+}) => {
   const [detailKey, setDetailKey] = useState<string | null>(null)
-  const { kind } = useSearch({ from: "/trade/_history" })
 
   const { pageIndex, pageSize } = paginationProps.pagination
 

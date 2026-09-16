@@ -9,18 +9,29 @@ import { OrderKind } from "@/modules/trade/orders/lib/types"
 type Props = {
   readonly type: OrderKind | "market"
   readonly isLimit?: boolean
+  // Placed through the old DCA pallet rather than as an intent. Both kinds are
+  // TWAPs, but the old ones were labelled "DCA" in the UI that created them.
+  readonly isLegacyDca?: boolean
 }
 
-export const SwapType: FC<Props> = ({ type, isLimit = false }) => {
+export const SwapType: FC<Props> = ({
+  type,
+  isLimit = false,
+  isLegacyDca = false,
+}) => {
   const { t } = useTranslation("trade")
 
   const label = isLimit
     ? t("trade.orders.type.limitTwap")
-    : type === OrderKind.DcaRolling
-      ? t("trade.orders.type.dca")
-      : type === OrderKind.Limit
-        ? t("trade.orders.type.limit")
-        : t(`trade.orders.type.${type}`)
+    : type === OrderKind.Limit
+      ? t("trade.orders.type.limit")
+      : type === "market"
+        ? t("trade.orders.type.market")
+        : t(
+            isLegacyDca
+              ? "trade.orders.type.dcaLegacy"
+              : "trade.orders.type.dca",
+          )
 
   return (
     <Flex align="center" gap="xs">

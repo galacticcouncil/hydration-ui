@@ -75,12 +75,12 @@ export const useOpenOrdersColumns = () => {
       },
     })
 
-    const averagePriceColumn = columnHelper.display({
+    const priceColumn = columnHelper.display({
       id: "price",
 
       header: () => (
         <Flex gap="s" align="center">
-          {t("trade:trade.orders.openOrders.averagePrice")}
+          {t("trade:trade.orders.openOrders.price")}
           <Icon
             size="xs"
             component={ArrowRightLeft}
@@ -89,9 +89,10 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const order = row.original
+        const { from, to, fromAmountExecuted, toAmountExecuted } = order
 
-        const price =
+        const averagePrice =
           toAmountExecuted &&
           fromAmountExecuted &&
           Big(fromAmountExecuted).gt(0) &&
@@ -99,7 +100,18 @@ export const useOpenOrdersColumns = () => {
             ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
-        return <SwapPrice from={from} to={to} price={price} />
+        const limitPrice =
+          "limitPrice" in order
+            ? order.limitPrice
+            : order.fromAmountBudget &&
+                order.toAmountBudget &&
+                Big(order.toAmountBudget).gt(0)
+              ? Big(order.fromAmountBudget).div(order.toAmountBudget).toString()
+              : null
+
+        return (
+          <SwapPrice from={from} to={to} price={averagePrice ?? limitPrice} />
+        )
       },
     })
 
@@ -116,6 +128,7 @@ export const useOpenOrdersColumns = () => {
               isLimit={
                 "limitPrice" in row.original && !!row.original.limitPrice
               }
+              isLegacyDca={isDcaScheduleOrder(row.original)}
             />
           </Flex>
         )
@@ -263,12 +276,6 @@ export const useOpenOrdersColumns = () => {
       return [fromToColumnMobile, statusColumnMobile]
     }
 
-    return [
-      fromToColumn,
-      averagePriceColumn,
-      typeColumn,
-      statusColumn,
-      actionColumn,
-    ]
+    return [fromToColumn, priceColumn, typeColumn, statusColumn, actionColumn]
   }, [t, isMobile])
 }

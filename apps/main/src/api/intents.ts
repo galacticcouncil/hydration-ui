@@ -3,7 +3,7 @@ import { useMemo } from "react"
 
 import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
+import { useHasIntentPallet } from "@/states/intents"
 
 type IntentValue = NonNullable<
   Awaited<ReturnType<Papi["query"]["Intent"]["Intents"]["getValue"]>>
@@ -16,29 +16,31 @@ export type AccountIntentEntry = {
 
 const useAccountIntentIds = (address: string) => {
   const { isReady } = useRpcProvider()
-  const isIceEnabled = useIsIceEnabled()
+  const hasIntentPallet = useHasIntentPallet()
 
+  const queryEnabled = hasIntentPallet && isReady && !!address
   const { data, isLoading } = usePapiEntries(
     "Intent.AccountIntents",
     [address],
-    { enabled: isIceEnabled && isReady && !!address },
+    { enabled: queryEnabled },
   )
 
   const ids = useMemo(
-    () => (data ?? []).map(({ keyArgs }) => keyArgs[1]),
-    [data],
+    () => (queryEnabled ? (data ?? []).map(({ keyArgs }) => keyArgs[1]) : []),
+    [data, queryEnabled],
   )
 
-  return { ids, isLoading }
+  return { ids, isLoading: queryEnabled && isLoading }
 }
 
 export const useAccountIntents = (address: string) => {
   const { papi } = useRpcProvider()
+  const hasIntentPallet = useHasIntentPallet()
   const { ids, isLoading: isIdsLoading } = useAccountIntentIds(address)
 
   const { data: pairs, isLoading: isValuesLoading } = useQuery({
     queryKey: ["intents", "values", ids.map(String)],
-    enabled: ids.length > 0,
+    enabled: hasIntentPallet && ids.length > 0,
     staleTime: Infinity,
     placeholderData: keepPreviousData,
     queryFn: async () => {
@@ -55,13 +57,15 @@ export const useAccountIntents = (address: string) => {
   })
 
   const data = useMemo<Array<AccountIntentEntry>>(() => {
+    if (!hasIntentPallet) return []
+
     const byId = new Map(pairs ?? [])
 
     return ids.flatMap((id) => {
       const intent = byId.get(id)
       return intent ? [{ id, intent }] : []
     })
-  }, [ids, pairs])
+  }, [ids, pairs, hasIntentPallet])
 
   return {
     data,
