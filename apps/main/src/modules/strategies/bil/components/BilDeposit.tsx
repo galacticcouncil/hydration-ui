@@ -238,7 +238,7 @@ export const BilDeposit = () => {
                 type="submit"
                 size="large"
                 width="100%"
-                variant={!canSubmit ? "tertiary" : "primary"}
+                variant={!canSubmit ? "muted" : "primary"}
                 isLoading={depositMutation.isPending}
                 disabled={!canSubmit}
               >

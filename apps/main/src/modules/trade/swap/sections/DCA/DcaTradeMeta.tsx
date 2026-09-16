@@ -8,6 +8,7 @@ import {
 import {
   Flex,
   Icon,
+  Skeleton,
   Summary,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
@@ -20,7 +21,7 @@ import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
-  readonly order: TradeDcaOrder
+  readonly order: TradeDcaOrder | undefined | null
   readonly healthFactor: HealthFactorResult | undefined
   readonly priceImpactLevel: "error" | "warning" | undefined
 }
@@ -74,7 +75,11 @@ export const DcaTradeMeta: FC<Props> = ({
             })()}
           >
             <Flex align="center" gap="s">
-              {t("percent", { value: order.tradeImpactPct })}
+              {order ? (
+                t("percent", { value: order.tradeImpactPct })
+              ) : (
+                <Skeleton sx={{ width: "3xl" }} height="1em" />
+              )}
               {(() => {
                 switch (priceImpactLevel) {
                   case "error":

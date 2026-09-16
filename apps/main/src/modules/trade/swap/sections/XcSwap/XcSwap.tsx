@@ -102,7 +102,9 @@ const XcSwapForm: React.FC = () => {
     !hasBlockingAlerts &&
     isXcSwapTradeEnabled(quote, isSingleTrade)
 
-  const isFormValid = isTradeReady && !isQuoteLoading && !isQuoteRefreshing
+  // A refresh must not un-enable the form: every submit path re-quotes via
+  // ensureQueryData before building the tx, so staleness is guarded there.
+  const isFormValid = isTradeReady && !isQuoteLoading
 
   const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired
     ? healthFactorRiskAccepted

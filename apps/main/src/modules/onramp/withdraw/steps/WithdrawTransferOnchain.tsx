@@ -144,7 +144,7 @@ export const WithdrawTransferOnchain: React.FC<
             size="large"
             variant="primary"
             width="100%"
-            disabled={!disclaimerAccepted || isSubmitting}
+            disabled={!disclaimerAccepted}
             isLoading={isSubmitting}
           >
             {t("withdraw.transfer.button")}

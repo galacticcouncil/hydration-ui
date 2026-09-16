@@ -153,7 +153,7 @@ const SupplyIsolatedLiquidityBody = ({
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
-          <Box py={0} pb="l" width="100%">
+          <Box pb="l">
             <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
               label={t("amount")}
               assetFieldName="asset"
@@ -286,9 +286,7 @@ const SupplyIsolatedLiquidityBody = ({
             size="large"
             width="100%"
             isLoading={isTradeLoading}
-            disabled={
-              isBlockedSupply || !form.formState.isValid || isTradeLoading
-            }
+            disabled={isBlockedSupply || !form.formState.isValid}
           >
             {t("borrow:supply.withSymbol", {
               symbol: userReserve.reserve.symbol,

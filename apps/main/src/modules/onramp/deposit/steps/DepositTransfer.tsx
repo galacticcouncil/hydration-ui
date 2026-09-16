@@ -311,7 +311,6 @@ const DepositTransferForm: React.FC<DepositTransferProps> = ({
             size="large"
             variant="primary"
             width="100%"
-            disabled={isLoadingTransfer || isSubmitting}
             isLoading={isLoadingTransfer || isSubmitting}
           >
             {t("deposit.cex.transfer.button")}

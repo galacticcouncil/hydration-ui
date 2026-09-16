@@ -176,8 +176,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
                 disabled={
                   !form.formState.isValid ||
                   !isSelectedOrderFillable ||
-                  isFeePending ||
-                  submit.isPending
+                  isFeePending
                 }
               >
                 {t("confirm")}

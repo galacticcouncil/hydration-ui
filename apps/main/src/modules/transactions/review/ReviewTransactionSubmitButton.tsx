@@ -66,7 +66,6 @@ export const ReviewTransactionSubmitButton = ({
         size="large"
         onClick={() => setFeePaymentModalOpen(true)}
         isLoading={isChangingFeePaymentAsset}
-        disabled={isChangingFeePaymentAsset}
       >
         {t("transaction.sign.changeFeePaymentAsset")}
       </LoadingButton>
@@ -75,7 +74,7 @@ export const ReviewTransactionSubmitButton = ({
 
   const isLoading =
     isSigning || isTransactionLoading || isChangingFeePaymentAsset
-  const isDisabled = disabled || isSigningBlocked || hasAlerts || isLoading
+  const isDisabled = disabled || isSigningBlocked || hasAlerts
 
   return (
     <LoadingButton

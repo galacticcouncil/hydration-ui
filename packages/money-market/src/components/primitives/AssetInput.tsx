@@ -60,7 +60,7 @@ export const AssetInput = <T extends Asset = Asset>({
 
   return (
     <>
-      <Box py={0} pb="l" width="100%">
+      <Box pb="l" width="100%">
         <BaseAssetInput
           {...props}
           label="Amount"

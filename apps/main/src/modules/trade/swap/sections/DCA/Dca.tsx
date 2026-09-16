@@ -154,8 +154,9 @@ export const Dca: FC = () => {
     isHealthFactorCheckSatisfied &&
     !isBalanceLoading
 
-  const isHealthFactorShown =
-    form.formState.errors.sellAmount?.message !== maxBalanceError
+  const sellAmountError = form.formState.errors.sellAmount?.message
+
+  const isHealthFactorShown = sellAmountError !== maxBalanceError
 
   const disabledLabel =
     isOpenBudget &&
@@ -166,7 +167,9 @@ export const Dca: FC = () => {
       sellAsset.decimals,
     )
       ? t("trade:dca.cta.minTrades", { count: MIN_DCA_ORDERS })
-      : undefined
+      : sellAmountError
+        ? t("trade:dca.cta.minBudget")
+        : undefined
 
   return (
     <FormProvider {...form}>
@@ -184,7 +187,11 @@ export const Dca: FC = () => {
           submit={
             <TradeFormSubmit
               isEnabled={isSubmitEnabled}
-              isLoading={submitDcaOrder.isPending}
+              isLoading={
+                submitDcaOrder.isPending ||
+                isLoading ||
+                form.formState.isValidating
+              }
               disabledLabel={disabledLabel}
             >
               {t("schedule")}
@@ -194,6 +201,7 @@ export const Dca: FC = () => {
             <DcaFooterNote
               isOpenBudget={isOpenBudget}
               order={order}
+              isLoading={isLoading}
               healthFactor={isHealthFactorShown ? healthFactor : undefined}
               priceImpactLevel={priceImpactLevel}
             />

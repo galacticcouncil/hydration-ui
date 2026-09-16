@@ -58,8 +58,6 @@ export const useLimitCascade = (): LimitCascade => {
       assetOut: buyAsset?.id ?? "",
       amountIn: sellAmountForQuote,
     }),
-    // Amount keystrokes change the query key; keep the last quote for the
-    // same pair so the market-price row does not unmount and shift the form.
     placeholderData: (previousData, previousQuery) => {
       if (!previousData || !previousQuery) return undefined
       const [, , , prevIn, prevOut] = previousQuery.queryKey

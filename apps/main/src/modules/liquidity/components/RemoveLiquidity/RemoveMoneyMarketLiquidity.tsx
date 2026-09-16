@@ -233,10 +233,7 @@ const RemoveMoneyMarketLiquidityForm = (
               width="100%"
               isLoading={isTradePending}
               disabled={
-                !isValid ||
-                !isHealthFactorCheckSatisfied ||
-                isLoadingMaxBalance ||
-                isTradePending
+                !isValid || !isHealthFactorCheckSatisfied || isLoadingMaxBalance
               }
             >
               {title ?? t("removeLiquidity")}

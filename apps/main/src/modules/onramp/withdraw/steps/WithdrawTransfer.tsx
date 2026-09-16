@@ -226,12 +226,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
               size="large"
               variant="primary"
               width="100%"
-              disabled={
-                isLoadingTransfer ||
-                !isAccountAllowed ||
-                !disclaimerAccepted ||
-                isPending
-              }
+              disabled={!isAccountAllowed || !disclaimerAccepted}
               isLoading={isLoadingTransfer || isPending}
             >
               {t("withdraw.transfer.button")}

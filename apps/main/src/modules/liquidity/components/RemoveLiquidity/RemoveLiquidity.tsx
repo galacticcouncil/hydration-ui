@@ -150,7 +150,7 @@ export const RemoveLiquidityForm = ({
                 </Text>
               </Flex>
             ) : (
-              <Box py={0} pb="l" width="100%">
+              <Box pb="l">
                 <AssetSelectFormField<TRemoveLiquidityFormValues>
                   assetFieldName="asset"
                   amountFieldName="amount"

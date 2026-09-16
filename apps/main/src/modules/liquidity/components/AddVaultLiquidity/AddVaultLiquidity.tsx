@@ -118,7 +118,7 @@ export const AddVaultLiquidity = ({
       <FormProvider {...form}>
         <form autoComplete="off" onSubmit={form.handleSubmit(submit)}>
           <ModalBody>
-            <Box py={0} pb="l" width="100%">
+            <Box pb="l">
               <AssetSelectFormField<TAddVaultLiquidityFormValues>
                 label={t("liquidity:liquidity.createPool.modal.assetA")}
                 assetFieldName="assetA"

@@ -90,7 +90,7 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
             control={control}
             name="amount"
             render={({ field, fieldState }) => (
-              <Box py={0} pb="l" width="100%">
+              <Box pb="l">
                 <AssetInput
                   label={t("bil.borrow.selectAsset")}
                   asset={{

@@ -71,7 +71,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
       />
       <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
-          <Box py={0} pb="l" width="100%">
+          <Box pb="l">
             <AssetSelectFormField<TAddLiquidityFormValues>
               label={t("liquidity.add.modal.selectAsset")}
               assetFieldName="asset"

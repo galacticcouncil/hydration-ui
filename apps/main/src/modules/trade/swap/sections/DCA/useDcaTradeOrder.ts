@@ -1,11 +1,13 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
 import { dcaOrderQuery } from "@/api/trade"
 import {
   DcaFormValues,
+  DcaOrders,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useAssets } from "@/providers/assetsProvider"
@@ -21,9 +23,21 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
 
   const formValues = form.watch()
 
-  const { data: order, isLoading: isOrderLoading } = useQuery(
-    dcaOrderQuery(rpc, formValues),
-  )
+  const { data: order, isLoading: isOrderLoading } = useQuery({
+    ...dcaOrderQuery(rpc, formValues),
+    placeholderData: (previousData, previousQuery) => {
+      if (!previousData || !previousQuery) return undefined
+      if (!Big(formValues.sellAmount || "0").gt(0)) return undefined
+
+      const [, , , prevIn, prevOut, , , prevOrders] = previousQuery.queryKey
+
+      return prevIn === formValues.sellAsset?.id &&
+        prevOut === formValues.buyAsset?.id &&
+        (prevOrders as DcaOrders).type === formValues.orders.type
+        ? previousData
+        : undefined
+    },
+  })
 
   const assetInId = order?.assetIn
   const assetOutId = order?.assetOut
@@ -32,7 +46,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
 
   const isOpenBudget = formValues.orders.type === DcaOrdersMode.OpenBudget
 
-  const { data: healthFactorData, isLoading: isHealthFactorLoading } = useQuery(
+  const { data: healthFactorData } = useQuery(
     healthFactorQuery(rpc, {
       fromAsset: formValues.sellAsset,
       fromAmount:
@@ -61,7 +75,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
   return {
     order,
     healthFactor: healthFactorData,
-    isLoading: isOrderLoading || isHealthFactorLoading,
+    isLoading: isOrderLoading,
   }
 }
 

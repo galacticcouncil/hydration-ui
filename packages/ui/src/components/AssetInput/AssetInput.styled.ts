@@ -2,6 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
 import { Input } from "@/components/Input"
+import { pressScale, pressScaleTransition } from "@/styles/press"
 import { pxToRem } from "@/utils"
 
 const MAIN_ROW_HEIGHT = pxToRem(32)
@@ -132,7 +133,9 @@ export const SAssetButton = styled.button<{
           ? "transparent"
           : theme.buttons.secondary.low.borderRest};
 
-    transition: ${theme.transitions.colors};
+    transition: ${theme.transitions.colors}, ${pressScaleTransition};
+
+    ${pressScale};
 
     &:enabled {
       cursor: pointer;

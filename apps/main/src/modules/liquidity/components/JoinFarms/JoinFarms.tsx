@@ -167,7 +167,7 @@ const JoinFarmsForm = ({
                 fieldState: { error },
               }) =>
                 isEditable ? (
-                  <Box py={0} pb="l" width="100%">
+                  <Box pb="l">
                     <AssetSelect
                       assets={[]}
                       selectedAsset={meta}
