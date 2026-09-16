@@ -30,6 +30,11 @@ export type SButtonProps = {
   glow?: boolean
 }
 
+export type LoadingMode = "inline" | "replace"
+
+const LOADING_TRANSITION_MS = 500
+const LOADING_ENTER_DELAY_MS = 250
+
 const defaulStyles = createStyles(
   (theme) => css`
     position: relative;
@@ -49,6 +54,10 @@ const defaulStyles = createStyles(
     cursor: pointer;
 
     transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
+
+    &[aria-busy="true"] {
+      transition-delay: ${LOADING_ENTER_DELAY_MS}ms;
+    }
 
     &:is(:link) {
       text-decoration: none;
@@ -463,12 +472,6 @@ export const SButtonIcon = styled(Box)(
   `,
 )
 
-export type LoadingMode = "inline" | "replace"
-
-const LOADING_TRANSITION_MS = 500
-const LOADING_ENTER_DELAY_MS = 150
-const LOADING_ICON_EASING = "cubic-bezier(0.2, 0, 0, 1)"
-
 const loadingLabelStyles = createStyles(
   (theme) => css`
     & > [data-loading-spinner],
@@ -517,7 +520,6 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
       height: 1em;
 
       opacity: 0;
-      filter: blur(4px);
       transform: translate(
           calc(-100% - ${theme.space.base} + ${theme.space.s}),
           -50%
@@ -525,9 +527,8 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
         scale(0.25);
 
       transition:
-        opacity ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING},
-        transform ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING},
-        filter ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING};
+        opacity ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo},
+        transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
     }
 
     [aria-busy="true"] > & {
@@ -537,7 +538,6 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
 
     [aria-busy="true"] > & > [data-loading-spinner] {
       opacity: 1;
-      filter: blur(0);
       transform: translate(calc(-100% - 0.5em), -50%) scale(1);
     }
   `,

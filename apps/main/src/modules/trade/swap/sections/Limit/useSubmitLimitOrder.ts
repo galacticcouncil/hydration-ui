@@ -40,6 +40,8 @@ export const useSubmitLimitOrder = () => {
 
       const amountOutRaw = BigInt(scale(buyAmount || "0", buyAsset.decimals))
 
+      if (amountOutRaw <= 0n) throw new Error("Invalid min amount out")
+
       const trade = await sdk.api.router.getBestSell(
         Number(sellAsset.id),
         Number(buyAsset.id),
