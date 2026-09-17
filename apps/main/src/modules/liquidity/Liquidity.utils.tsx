@@ -53,6 +53,7 @@ import {
 import { useAssetsPrice } from "@/states/displayAsset"
 import { setOmnipoolAssets, setXYKPools } from "@/states/liquidity"
 import { useTradeSettings } from "@/states/tradeSettings"
+import { isBlacklistedAsset } from "@/utils/assets"
 import { scaleHuman } from "@/utils/formatting"
 
 export type OmnipoolAssetTable = {
@@ -462,7 +463,7 @@ export const useOmnipoolStablepools = () => {
       }
     })
 
-    return omnipoolData
+    return omnipoolData.filter((pool) => !isBlacklistedAsset(pool.id))
   }, [
     getAssetWithFallback,
     getAssetPrice,
@@ -506,6 +507,16 @@ export const useIsolatedPools = () => {
 
     for (const pool of pools ?? []) {
       const { tokens } = pool
+      const [tokenA, tokenB] = tokens
+
+      if (
+        !tokenA ||
+        !tokenB ||
+        isBlacklistedAsset(tokenA.id) ||
+        isBlacklistedAsset(tokenB.id)
+      ) {
+        continue
+      }
 
       let knownAssetPrice: (typeof tokens)[number] | undefined
 
@@ -578,6 +589,8 @@ export const useIsolatedPools = () => {
         if (!meta || !tokenA || !tokenB) return acc
 
         const shareTokenId = meta.id
+
+        if (isBlacklistedAsset(shareTokenId)) return acc
         const { xykMiningPositions } = getPositions(address)
 
         const volumeDisplay = xykVolumes?.find(

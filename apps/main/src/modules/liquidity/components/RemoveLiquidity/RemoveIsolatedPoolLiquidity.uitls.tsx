@@ -59,14 +59,17 @@ export const useRemoveSelectableXYKPositions = ({
   const [selectedPositionIds, setSelectedPositionIds] = useState<Set<string>>(
     new Set(),
   )
-  const { data: positions = [] } = useAccountXykMiningPositions()
+  const { data: allMiningPositions = [], isLoading: isMiningLoading } =
+    useAccountXykMiningPositions()
   const { data: shareTokenPrices } = useShareTokenPrices([poolId])
   const { data: pool } = useXYKPoolWithLiquidity(poolId)
   const { data: farms } = useIsolatedPoolFarms(poolId)
 
   const price = shareTokenPrices.get(poolId)
   const meta = getShareTokenByAddress(poolId)
-  if (!pool || !price || !meta) return undefined
+  if (!pool || !price || !meta || isMiningLoading) return undefined
+
+  const positions = allMiningPositions.filter((p) => p.amm_pool_id === poolId)
 
   const positionsData = positions.map((position) => {
     const isSelected = selectedPositionIds.has(position.id)
