@@ -59,18 +59,22 @@ export type LoadingButtonProps = ButtonProps & {
   isLoading: boolean
   loadingVariant?: ButtonProps["variant"]
   loadingMode?: LoadingMode
+  loadingDelay?: number
+  loadingFade?: boolean
 }
 
 export const LoadingButton: FC<LoadingButtonProps> = ({
   variant = "primary",
   loadingVariant = "muted",
   loadingMode = "inline",
+  loadingDelay,
+  loadingFade = false,
   isLoading,
   onClick,
   children,
   ...props
 }) => {
-  const isBusy = useLoadingState(isLoading)
+  const isBusy = useLoadingState(isLoading, loadingDelay)
   const labelRef = useRef<HTMLSpanElement>(null)
   const [isTight, setIsTight] = useState(false)
 
@@ -90,6 +94,7 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
       as="button"
       type="button"
       aria-busy={isBusy}
+      loadingFade={loadingFade}
       variant={isBusy && loadingVariant ? loadingVariant : variant}
       onClick={(e) => {
         if (isLoading || isBusy) return e.preventDefault()

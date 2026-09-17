@@ -134,6 +134,7 @@
   "market.form.type.single.instant": "Instant execution",
   "market.form.type.split": "TWAP",
   "market.form.type.split.timeframe": "Execute within {{timeframe}}",
+  "market.form.type.split.pending": "Execute within...",
   "market.form.buy.estimated": "Buy (estimated)",
   "market.form.type.split.unavailable": "Not available for this route",
   "market.summary.totalFees": "Total fees",

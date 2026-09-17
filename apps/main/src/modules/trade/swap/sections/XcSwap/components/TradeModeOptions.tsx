@@ -45,7 +45,7 @@ export const TradeModeOptions: FC<Props> = ({
 
   const { control } = useFormContext<XcSwapFormValues>()
 
-  const { data: twapDurationMs = 0 } = useQuery(
+  const { data: twapDurationMs, isPending: isDurationPending } = useQuery(
     tradeOrderDurationQuery(
       rpc,
       isIce,
@@ -127,11 +127,15 @@ export const TradeModeOptions: FC<Props> = ({
                 field.onChange(false)
               }}
               label={t("market.form.type.split")}
-              time={t("market.form.type.split.timeframe", {
-                timeframe: formatDistanceToNowStrict(
-                  Date.now() + twapDurationMs,
-                ),
-              })}
+              time={
+                isDurationPending || !twapDurationMs
+                  ? t("market.form.type.split.pending")
+                  : t("market.form.type.split.timeframe", {
+                      timeframe: formatDistanceToNowStrict(
+                        Date.now() + twapDurationMs,
+                      ),
+                    })
+              }
               disabled={!!twap.errors.length}
             />
           )}

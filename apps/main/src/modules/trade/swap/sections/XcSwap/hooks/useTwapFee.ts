@@ -1,4 +1,3 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
@@ -9,7 +8,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 
-export const useTwapFee = (twap: TradeOrder) => {
+export const useTwapFee = (twap: TradeOrder | null, enabled = true) => {
   const { sdk } = useRpcProvider()
   const isIceEnabled = useIsIceEnabled()
   const { account } = useAccount()
@@ -20,17 +19,23 @@ export const useTwapFee = (twap: TradeOrder) => {
   } = useTradeSettings()
 
   const { data: tx, isLoading: isTxLoading } = useQuery({
-    enabled: !!twap,
+    enabled: !!twap && enabled,
+    staleTime: 30_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
       "trade",
       "twapFee",
-      twap.type,
+      twap?.type,
+      twap?.amountIn.toString(),
+      twap?.amountOut.toString(),
+      twap?.tradeCount,
       isIceEnabled,
       twapSlippage,
       twapMaxRetries,
+      account?.address,
     ],
     queryFn: async () => {
+      if (!twap) throw new Error("TWAP order is required")
+
       const builder = isIceEnabled
         ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
         : sdk.tx
@@ -46,11 +51,11 @@ export const useTwapFee = (twap: TradeOrder) => {
   })
 
   const { data, isPending: isTransactionFeeLoading } = useEstimateFee(
-    tx ?? null,
+    enabled ? (tx ?? null) : null,
   )
 
   return {
     data,
-    isLoading: isTxLoading || isTransactionFeeLoading,
+    isLoading: enabled && (isTxLoading || isTransactionFeeLoading),
   }
 }

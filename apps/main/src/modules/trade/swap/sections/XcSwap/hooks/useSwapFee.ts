@@ -1,4 +1,3 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
@@ -7,13 +6,24 @@ import { ENV } from "@/config/env"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-export const useSwapFee = (swap: Trade) => {
+export const useSwapFee = (swap: Trade | null, enabled = true) => {
   const { sdk } = useRpcProvider()
   const { account } = useAccount()
   const { data: tx, isLoading: isTxLoading } = useQuery({
-    enabled: !!swap,
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "trade", "swapFee", swap.type],
+    enabled: !!swap && enabled,
+    staleTime: 30_000,
+    queryKey: [
+      "trade",
+      "swapFee",
+      swap?.type,
+      swap?.amountIn.toString(),
+      swap?.amountOut.toString(),
+      account?.address,
+    ],
+
     queryFn: async () => {
+      if (!swap) throw new Error("Swap is required")
+
       return sdk.tx
         .trade(swap)
         .withBeneficiary(account?.address ?? ENV.VITE_TRSRY_ADDR)
@@ -23,11 +33,11 @@ export const useSwapFee = (swap: Trade) => {
   })
 
   const { data, isPending: isTransactionFeeLoading } = useEstimateFee(
-    tx ?? null,
+    enabled ? (tx ?? null) : null,
   )
 
   return {
     data,
-    isLoading: isTxLoading || isTransactionFeeLoading,
+    isLoading: enabled && (isTxLoading || isTransactionFeeLoading),
   }
 }

@@ -35,6 +35,8 @@ export type SButtonProps = {
 
 export type LoadingMode = "inline" | "replace"
 
+const DISABLED_OPACITY = 0.2
+
 const defaulStyles = createStyles(
   (theme) => css`
     position: relative;
@@ -134,7 +136,7 @@ const disabledStyles = css`
   &[aria-disabled="true"] {
     cursor: not-allowed;
 
-    opacity: 0.2;
+    opacity: ${DISABLED_OPACITY};
   }
 `
 
@@ -596,12 +598,25 @@ export const SLoadingLabel = styled.span<{ loadingMode: LoadingMode }>(
   ({ loadingMode }) => loadingLabelVariants(loadingMode),
 )
 
-export const SLoadingButton = styled(SButton)`
-  &:disabled,
-  &[aria-disabled="true"] {
-    opacity: 1;
-  }
-  &[aria-busy="true"] {
-    pointer-events: none;
-  }
-`
+export const SLoadingButton = styled(SButton, {
+  shouldForwardProp: (prop) => prop !== "loadingFade",
+})<{ loadingFade?: boolean }>(({ loadingFade = false }) => [
+  css`
+    &[aria-busy="true"] {
+      pointer-events: none;
+    }
+  `,
+  loadingFade
+    ? css`
+        &:disabled,
+        &[aria-busy="true"] {
+          opacity: ${DISABLED_OPACITY};
+        }
+      `
+    : css`
+        &:disabled,
+        &[aria-disabled="true"] {
+          opacity: 1;
+        }
+      `,
+])
