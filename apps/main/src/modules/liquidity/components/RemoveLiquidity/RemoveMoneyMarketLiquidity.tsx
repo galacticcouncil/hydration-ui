@@ -8,7 +8,9 @@ import {
   LoadingButton,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
+  Separator,
   Skeleton,
   Summary,
   SummaryRow,
@@ -138,9 +140,9 @@ const RemoveMoneyMarketLiquidityForm = (
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <Flex direction="column" gap="m" asChild>
-          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+      <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+        <ModalBody sx={{ pb: 0 }}>
+          <Flex direction="column" gap="m">
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
@@ -216,7 +218,11 @@ const RemoveMoneyMarketLiquidityForm = (
                 isTradePending={isTradePending}
               />
             )}
-
+          </Flex>
+        </ModalBody>
+        <Separator />
+        <ModalFooter>
+          <Flex direction="column" width="100%" gap="m">
             {healthFactor?.isUserConsentRequired && (
               <HealthFactorRiskWarning
                 message={t("common:healthFactor.warning")}
@@ -225,9 +231,6 @@ const RemoveMoneyMarketLiquidityForm = (
                 isUserConsentRequired={healthFactor.isUserConsentRequired}
               />
             )}
-
-            <ModalContentDivider />
-
             <LoadingButton
               type="submit"
               size="large"
@@ -242,9 +245,9 @@ const RemoveMoneyMarketLiquidityForm = (
             >
               {title ?? t("removeLiquidity")}
             </LoadingButton>
-          </form>
-        </Flex>
-      </ModalBody>
+          </Flex>
+        </ModalFooter>
+      </form>
     </FormProvider>
   )
 }
