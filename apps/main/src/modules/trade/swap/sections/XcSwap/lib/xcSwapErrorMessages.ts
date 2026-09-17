@@ -1,6 +1,28 @@
 import { XcSwapError } from "@galacticcouncil/xc-swap"
 import { TFunction } from "i18next"
 
+import { Trade } from "@/api/trade"
+
+type OnChainSwapError = Trade["swaps"][number]["errors"][number]
+
+export const getOnChainSwapErrorMessage = (
+  error: OnChainSwapError,
+  t: TFunction<"trade">,
+): string => {
+  switch (error) {
+    case "InsufficientTradingAmount":
+      return t("market.error.insufficientTradingAmount")
+    case "MaxOutRatioExceeded":
+      return t("market.error.maxOutRatioExceeded")
+    case "MaxInRatioExceeded":
+      return t("market.error.maxInRatioExceeded")
+    case "TradeNotAllowed":
+      return t("market.error.tradeNotAllowed")
+    default:
+      return error
+  }
+}
+
 export const getXcSwapErrorMessage = (
   error: XcSwapError,
   t: TFunction<"trade">,

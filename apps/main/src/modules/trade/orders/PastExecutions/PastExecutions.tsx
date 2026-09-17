@@ -35,6 +35,7 @@ export type PastExecutionsProps = {
   readonly loadAll?: () => void
   readonly totalCount?: number
   readonly onEndReached?: () => void
+  readonly periodMs?: number | null
   readonly className?: string
 }
 
@@ -48,9 +49,23 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
   loadAll,
   totalCount,
   onEndReached,
+  periodMs,
   className,
 }) => {
   const { t } = useTranslation("trade")
+
+  // Max rather than [0] or [-1]: the list is paged straight from the API and
+  // nothing here pins its order.
+  const lastExecutionAt = executions.reduce<number | null>(
+    (latest, { timestamp }) =>
+      timestamp && (latest === null || timestamp.getTime() > latest)
+        ? timestamp.getTime()
+        : latest,
+    null,
+  )
+
+  const nextExecutionAt =
+    periodMs && lastExecutionAt !== null ? lastExecutionAt + periodMs : null
 
   return (
     <Flex
@@ -58,7 +73,7 @@ export const PastExecutions: FC<PastExecutionsProps> = ({
       bg={getToken("surfaces.containers.dim.dimOnBg")}
       className={className}
     >
-      <PastExecutionsHeader />
+      <PastExecutionsHeader nextExecutionAt={nextExecutionAt} />
       <Flex direction="column" gap="s">
         <PastExecutionsListHeader />
         <Separator />

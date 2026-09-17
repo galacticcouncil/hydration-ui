@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Flex,
   ModalBody,
@@ -149,15 +150,16 @@ export const RemoveLiquidityForm = ({
                 </Text>
               </Flex>
             ) : (
-              <AssetSelectFormField<TRemoveLiquidityFormValues>
-                assetFieldName="asset"
-                amountFieldName="amount"
-                maxBalance={totalPositionShifted}
-                displayValue={displayValue}
-                assets={[]}
-                disabledAssetSelector
-                sx={{ pt: 0 }}
-              />
+              <Box pb="l">
+                <AssetSelectFormField<TRemoveLiquidityFormValues>
+                  assetFieldName="asset"
+                  amountFieldName="amount"
+                  balance={{ value: totalPositionShifted }}
+                  displayValue={displayValue}
+                  assets={[]}
+                  disabledAssetSelector
+                />
+              </Box>
             )}
 
             <ModalContentDivider />
