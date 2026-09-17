@@ -64,7 +64,7 @@ export const SwapSummary: FC<Props> = ({
     )
 
   const { data: transactionFee, isLoading: isTransactionFeeLoading } =
-    useSwapFee(swap)
+    useSwapFee(swap, isSummaryExpanded)
   const transactionCosts = transactionFee?.feeEstimate || "0"
 
   const isBuy = swap.type === TradeType.Buy

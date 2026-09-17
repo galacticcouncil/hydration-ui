@@ -73,7 +73,7 @@ export const TwapSummary: FC<Props> = ({
     )
 
   const { data: transactionFee, isLoading: isTransactionFeeLoading } =
-    useTwapFee(twap)
+    useTwapFee(twap, isSummaryExpanded)
   const transactionCosts = transactionFee?.feeEstimate || "0"
 
   const tradeFeeAsset = buyAsset
