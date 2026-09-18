@@ -50,16 +50,6 @@ export const GIGA_ERC20 = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
 export const GIGA_STABLESWAP_TO_ERC20: Record<string, string> =
   Object.fromEntries(GIGA_ASSETS.map((id, index) => [id, GIGA_ERC20[index]!]))
 
-export const USD_PEGGED_ASSET_IDS = [
-  USDT_ASSET_ID,
-  USDC_ASSET_ID,
-  HOLLAR_ASSET_ID,
-  ...HOLLAR_ASSETS,
-] as const
-
-export const isUsdPeggedAsset = (id: string) =>
-  (USD_PEGGED_ASSET_IDS as readonly string[]).includes(id)
-
 export const EXTERNAL_APY_ASSET_IDS = [
   APYUSD_ASSET_ID,
   USDT_POOL_ASSET_ID,

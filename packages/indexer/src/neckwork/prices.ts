@@ -26,6 +26,22 @@ export const CANDLE_BUCKET_MS: Record<CandleBucket, number> = {
 
 export const CANDLE_PAGE_SIZE = 300
 
+/**
+ * Epoch day 0 was a Thursday, so flooring a timestamp to a whole number of
+ * weeks lands on Thursday.
+ */
+const WEEK_ORIGIN_MS = 4 * 24 * 60 * 60_000
+
+export const bucketOpenMs = (bucket: CandleBucket, nowMs: number): number => {
+  const bucketMs = CANDLE_BUCKET_MS[bucket]
+
+  if (bucket !== "1w") return Math.floor(nowMs / bucketMs) * bucketMs
+
+  return (
+    Math.floor((nowMs - WEEK_ORIGIN_MS) / bucketMs) * bucketMs + WEEK_ORIGIN_MS
+  )
+}
+
 export type PairCandle = {
   time: number
   open: number
@@ -66,9 +82,8 @@ export const peggedCandles = (
   bucket: CandleBucket,
   count: number = CANDLE_PAGE_SIZE,
 ): PairCandle[] => {
-  const bucketMs = CANDLE_BUCKET_MS[bucket]
-  const step = bucketMs / 1000
-  const latest = Math.floor(Date.now() / bucketMs) * step
+  const step = CANDLE_BUCKET_MS[bucket] / 1000
+  const latest = bucketOpenMs(bucket, Date.now()) / 1000
 
   return Array.from({ length: count }, (_, index) => ({
     time: latest - (count - 1 - index) * step,
@@ -89,37 +104,89 @@ export const invertCandle = (candle: PairCandle): PairCandle => ({
   volume: candle.volume,
 })
 
+/** How many closed buckets the tail covers, and so how long an indexer
+ * outage can be absorbed before a synthetic candle is dropped as
+ * uncorrectable. */
+export const TAIL_BUCKETS = 24
+
 /**
- * Advance the in-progress candle. `previous` must be the most recent candle
- * known — the running live one when there is one, otherwise the newest from
- * the API. Passing the API candle on every tick makes high/low static and
- * every new bucket a copy of the last fetched one.
+ * Extend the synthetic run with the latest spot price. The last entry is the
+ * tip; when the clock crosses into a new bucket the old tip stays behind to
+ * wait for the tail to confirm it, and a fresh tip opens at its close.
+ *
+ * A fresh tip opens at the previous close rather than at the bucket's first
+ * traded price, which is what a confirmed candle would report. The tail
+ * corrects it once the bucket closes.
  */
-export const liveCandle = (
-  previous: PairCandle,
+export const advanceSynthetics = (
+  synthetics: ReadonlyArray<PairCandle>,
+  newestConfirmed: PairCandle | undefined,
   price: number,
   bucket: CandleBucket,
   nowMs: number = Date.now(),
-): PairCandle => {
-  const bucketMs = CANDLE_BUCKET_MS[bucket]
-  const openTime = Math.floor(nowMs / bucketMs) * (bucketMs / 1000)
+): ReadonlyArray<PairCandle> => {
+  if (!isFinite(price) || price <= 0) return synthetics
 
-  if (previous.time >= openTime)
-    return {
-      ...previous,
-      high: Math.max(previous.high, price),
-      low: Math.min(previous.low, price),
+  const openTime = bucketOpenMs(bucket, nowMs) / 1000
+  const tip = synthetics.at(-1)
+
+  if (tip && tip.time === openTime)
+    return synthetics.with(-1, {
+      ...tip,
+      high: Math.max(tip.high, price),
+      low: Math.min(tip.low, price),
       close: price,
-    }
+    })
 
-  return {
-    time: openTime,
-    open: previous.close,
-    high: Math.max(previous.close, price),
-    low: Math.min(previous.close, price),
-    close: price,
-    volume: 0,
+  // drop what the API has already confirmed, and anything at or past the open
+  // bucket so the run stays in ascending order if the clock moves backwards
+  const kept = synthetics.filter(
+    (candle) =>
+      candle.time < openTime &&
+      (!newestConfirmed || candle.time > newestConfirmed.time),
+  )
+
+  const open = tip?.close ?? newestConfirmed?.close ?? price
+
+  return [
+    ...kept,
+    {
+      time: openTime,
+      open,
+      high: Math.max(open, price),
+      low: Math.min(open, price),
+      close: price,
+      volume: 0,
+    },
+  ]
+}
+
+/**
+ * One series out of the three sources. A confirmed candle always wins over a
+ * synthetic one for the same bucket, and a synthetic candle older than the
+ * tail's reach is dropped rather than left on the chart with no way of ever
+ * being corrected.
+ */
+export const mergeCandles = (
+  history: ReadonlyArray<PairCandle>,
+  tail: ReadonlyArray<PairCandle>,
+  synthetics: ReadonlyArray<PairCandle>,
+): PairCandle[] => {
+  const byTime = new Map<number, PairCandle>()
+
+  for (const candle of history) byTime.set(candle.time, candle)
+  for (const candle of tail) byTime.set(candle.time, candle)
+
+  // an empty tail has no reach yet, so nothing is uncorrectable
+  const oldestCorrectable = tail[0]?.time ?? 0
+
+  for (const candle of synthetics) {
+    if (candle.time < oldestCorrectable) continue
+    if (byTime.has(candle.time)) continue
+    byTime.set(candle.time, candle)
   }
+
+  return [...byTime.values()].sort((a, b) => a.time - b.time)
 }
 
 export const PRICE_CHANGE_PERIODS = ["24h", "7d"] as const
@@ -232,8 +299,7 @@ export const pairCandlesQuery = (
     ],
     staleTime: CANDLE_BUCKET_MS[bucket],
     queryFn: async (): Promise<PairCandle[]> => {
-      const bucketMs = CANDLE_BUCKET_MS[bucket]
-      const to = Math.floor(Date.now() / bucketMs) * bucketMs
+      const to = bucketOpenMs(bucket, Date.now())
 
       const { data } = await client.GET("/v1/prices/pair", {
         params: {

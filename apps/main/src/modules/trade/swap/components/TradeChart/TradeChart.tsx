@@ -1,11 +1,4 @@
-import {
-  invertCandle,
-  liveCandle as toLiveCandle,
-  PairCandle,
-  pairCandlesInfiniteQuery,
-  pairReferencePriceQuery,
-  peggedCandles,
-} from "@galacticcouncil/indexer/neckwork"
+import { pairReferencePriceQuery } from "@galacticcouncil/indexer/neckwork"
 import {
   Box,
   ChartValues,
@@ -15,24 +8,15 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  GIGA_STABLESWAP_TO_ERC20,
-  isUsdPeggedAsset,
-} from "@galacticcouncil/utils"
-import {
-  keepPreviousData,
-  useInfiniteQuery,
-  useQuery,
-} from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
-import Big from "big.js"
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
-import { spotPriceQuery } from "@/api/spotPrice"
 import { ChartState } from "@/components/ChartState"
 import { CandleChart } from "@/modules/trade/swap/components/TradeChart/CandleChart"
+import { usePairCandleSeries } from "@/modules/trade/swap/components/TradeChart/hooks/usePairCandleSeries"
 import {
   SChartHeader,
   SChartValues,
@@ -41,9 +25,7 @@ import { TradeChartControls } from "@/modules/trade/swap/components/TradeChart/T
 import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChart/TradeChartPrice"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeChartSettings } from "@/states/tradeSettings"
-import { isHydrationAssetId } from "@/utils/trade"
 
 type PairChartProps = {
   readonly height: number
@@ -79,145 +61,37 @@ export const PairChart: React.FC<PairChartProps> = ({
     setChangePeriod,
   } = useTradeChartSettings()
   const chartType = isPool ? "line" : selectedChartType
-  const { getAssetWithFallback, getErc20AToken, isStableSwap } = useAssets()
-  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
 
   const [isInverted, setIsInverted] = useState(false)
 
   const baseAssetId = isInverted ? assetIn : assetOut
   const quoteAssetId = isInverted ? assetOut : assetIn
 
-  const resolveChartAssetId = (id: string) => {
-    const gigaErc20 = GIGA_STABLESWAP_TO_ERC20[id]
-    if (gigaErc20) return gigaErc20
-
-    const aToken = getErc20AToken(id)
-    if (!aToken) return id
-    const underlying = getAssetWithFallback(aToken.underlyingAssetId)
-    if (isStableSwap(underlying)) return id
-    return aToken.underlyingAssetId
-  }
-
-  // an aToken and its underlying are always 1:1, so they never trade against
-  // each other and the API has no candles for the pair. H-dollar tokens and
-  // other USD-pegged stables likewise have no cross candles in Neckwork.
-  const isPegged =
-    baseAssetId === quoteAssetId ||
-    getErc20AToken(baseAssetId)?.underlyingAssetId === quoteAssetId ||
-    getErc20AToken(quoteAssetId)?.underlyingAssetId === baseAssetId ||
-    (isUsdPeggedAsset(baseAssetId) && isUsdPeggedAsset(quoteAssetId))
-
-  const chartBaseAssetId = isPegged
-    ? baseAssetId
-    : resolveChartAssetId(baseAssetId)
-  const chartQuoteAssetId = isPegged
-    ? quoteAssetId
-    : resolveChartAssetId(quoteAssetId)
-
-  const hasValidAssetIds =
-    isHydrationAssetId(assetIn) && isHydrationAssetId(assetOut)
-
-  const isFetchAligned = Number(chartQuoteAssetId) >= Number(chartBaseAssetId)
-  const fetchAssetIn = isFetchAligned ? chartBaseAssetId : chartQuoteAssetId
-  const fetchAssetOut = isFetchAligned ? chartQuoteAssetId : chartBaseAssetId
-  const needsInvert = !isFetchAligned
-
   const {
-    data,
+    series,
+    spotPrice,
+    quoteAssetId: priceAssetId,
+    pair,
+    isPegged,
     isLoading,
-    isSuccess,
     isError,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching,
+    isEmpty,
+    isRefetching,
     isPlaceholderData,
-    fetchNextPage,
-  } = useInfiniteQuery({
-    ...pairCandlesInfiniteQuery(neckworkClient, {
-      assetIn: fetchAssetIn,
-      assetOut: fetchAssetOut,
-      bucket: interval,
-    }),
-    enabled: !isPegged && hasValidAssetIds,
-    placeholderData: keepPreviousData,
-  })
-
-  const isRefetching = isFetching && !isFetchingNextPage
-
-  const candles = useMemo(() => {
-    if (isPegged) return peggedCandles(interval)
-
-    const series = (data?.pages ?? []).toReversed().flat()
-    return needsInvert ? series.map(invertCandle) : series
-  }, [data, needsInvert, isPegged, interval])
-
-  const spotOptions = spotPriceQuery(rpc, chartQuoteAssetId, chartBaseAssetId)
-  const { data: spot } = useQuery({
-    ...spotOptions,
-    enabled: !isPegged && hasValidAssetIds && spotOptions.enabled,
-  })
-  const spotPrice = (() => {
-    const raw = spot?.spotPrice
-    if (raw === undefined || raw === null) return Number.NaN
-    try {
-      const asBig = Big(raw)
-      if (asBig.lte(0)) return Number.NaN
-      return Big(1).div(asBig).toNumber()
-    } catch {
-      return Number.NaN
-    }
-  })()
+    onReachStart,
+  } = usePairCandleSeries(baseAssetId, quoteAssetId, interval)
 
   const { data: referencePrice } = useQuery({
     ...pairReferencePriceQuery(neckworkClient, {
-      assetIn: fetchAssetIn,
-      assetOut: fetchAssetOut,
+      assetIn: pair.assetIn,
+      assetOut: pair.assetOut,
       period: changePeriod,
     }),
-    enabled: !isPegged && hasValidAssetIds,
+    enabled: !isPegged,
   })
 
   const resetKey = `${baseAssetId}-${quoteAssetId}-${interval}`
-  const liveRef = useRef<{ resetKey: string; candle: PairCandle } | null>(null)
-
-  const live = useMemo(() => {
-    if (isPlaceholderData) {
-      liveRef.current = null
-      return null
-    }
-
-    const last = candles.at(-1)
-    if (!last || !spotPrice || !isFinite(spotPrice)) return null
-
-    const running = liveRef.current
-    const sameSeries =
-      running?.resetKey === resetKey && running.candle.time >= last.time
-    const consistentWithTip =
-      !!running &&
-      last.close > 0 &&
-      running.candle.low > last.close * 0.5 &&
-      running.candle.high < last.close * 2
-    const seed = sameSeries && consistentWithTip ? running.candle : last
-
-    const candle = toLiveCandle(seed, spotPrice, interval)
-    liveRef.current = { resetKey, candle }
-
-    return candle
-  }, [candles, spotPrice, interval, resetKey, isPlaceholderData])
-
-  const prices = useMemo(() => {
-    if (!live) return candles
-
-    return candles.at(-1)?.time === live.time
-      ? candles.with(-1, live)
-      : [...candles, live]
-  }, [candles, live])
-
-  const onReachStart = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
-
-  const isEmpty = !hasValidAssetIds || (isSuccess && !candles.length)
 
   const {
     onCrosshairMove,
@@ -234,8 +108,8 @@ export const PairChart: React.FC<PairChartProps> = ({
     isLoadingValues,
     isLiveValue,
   } = useTradeChartValues({
-    prices,
-    priceAssetId: chartQuoteAssetId,
+    prices: series,
+    priceAssetId,
     isEmpty,
     isError,
     isLoading,
@@ -248,7 +122,7 @@ export const PairChart: React.FC<PairChartProps> = ({
   const reference =
     !referencePrice || !hasSpot
       ? null
-      : needsInvert
+      : pair.invert
         ? 1 / referencePrice
         : referencePrice
   const priceChange =
@@ -360,17 +234,17 @@ export const PairChart: React.FC<PairChartProps> = ({
       <ChartState
         sx={{ height }}
         isError={isError}
-        isLoading={hasValidAssetIds && isLoading}
+        isLoading={isLoading}
         isEmpty={isEmpty}
       >
         <CandleChart
           height={height}
-          candles={candles}
-          liveCandle={live}
+          bucket={interval}
+          candles={series}
           type={chartType}
           resetKey={resetKey}
           isRefetching={isRefetching}
-          isPlaceholderData={!isPegged && isPlaceholderData}
+          isPlaceholderData={isPlaceholderData}
           onCrosshairMove={onCrosshairMove}
           onReachStart={onReachStart}
         />
