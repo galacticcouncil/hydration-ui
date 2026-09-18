@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React, { useContext, useMemo } from "react"
 
 import { FormatterFn, ReserveFormatterFn } from "@/types"
 
@@ -25,15 +25,13 @@ export const AppFormattersProvider: React.FC<
   formatPercent,
   children,
 }) => {
+  const value = useMemo(
+    () => ({ formatReserve, formatNumber, formatCurrency, formatPercent }),
+    [formatReserve, formatNumber, formatCurrency, formatPercent],
+  )
+
   return (
-    <AppFormattersProvidersContext.Provider
-      value={{
-        formatReserve,
-        formatNumber,
-        formatCurrency,
-        formatPercent,
-      }}
-    >
+    <AppFormattersProvidersContext.Provider value={value}>
       {children}
     </AppFormattersProvidersContext.Provider>
   )

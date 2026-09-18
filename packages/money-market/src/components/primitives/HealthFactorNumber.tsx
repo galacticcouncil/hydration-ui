@@ -9,6 +9,7 @@ import { useFormattedHealthFactor } from "@/hooks"
 export type HealthFactorNumberProps = {
   value: string
   fontSize?: ThemeUICSSProperties["fontSize"]
+  decimals?: number
 }
 
 export const MAX_DISPLAY_HF = 1000

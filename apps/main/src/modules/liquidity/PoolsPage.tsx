@@ -63,7 +63,9 @@ export const PoolsPage = () => {
     <>
       <PoolsHeader />
       <PoolsFilters search={search} onChange={setSearch} />
-      {(type === "vaults" || type === "all") && <VaultsTable search={search} />}
+      {(type === "vaults" || type === "all") && (
+        <VaultsTable search={search} withPositions={myLiquidity} />
+      )}
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable
           search={search}
@@ -82,14 +84,26 @@ export const PoolsPage = () => {
   )
 }
 
-export const VaultsTable = ({ search }: { search: string }) => {
+export const VaultsTable = ({
+  search,
+  withPositions,
+}: {
+  search: string
+  withPositions?: boolean
+}) => {
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useVaults()
   const columns = useVaultsColumns()
   const { isMobile } = useBreakpoints()
   const router = useRouter()
 
-  if (!isLoading && !data.length) return null
+  const filteredData = useMemo(
+    () =>
+      withPositions ? data.filter((vault) => vault.positionShares > 0n) : data,
+    [data, withPositions],
+  )
+
+  if (!isLoading && !filteredData.length) return null
 
   return (
     <>
@@ -99,7 +113,7 @@ export const VaultsTable = ({ search }: { search: string }) => {
           size={isMobile ? "small" : "large"}
           isLoading={isLoading}
           skeletonRowCount={1}
-          data={data}
+          data={filteredData}
           columns={columns}
           globalFilter={search}
           columnVisibility={getVaultsColumnsVisibility(isMobile)}

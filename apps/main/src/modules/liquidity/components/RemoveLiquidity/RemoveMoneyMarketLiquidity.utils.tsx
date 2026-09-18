@@ -168,11 +168,22 @@ export const useRemoveMoneyMarketLiquidity = ({
     }),
   )
 
-  const erc20ReserveRatio = split ? receiveErc20Asset?.ratio : "1"
+  // Aave checks the health factor the moment the aToken leaves the account,
+  // before the pool pays the underlying assets back. That intermediate value is
+  // the one that has to hold, so the risk warning gates on it rather than on
+  // the net result shown in the summary.
+  const { data: intermediateHealthFactor } = useQuery(
+    healthFactorQuery(rpc, {
+      address: account?.address ?? "",
+      fromAsset: meta,
+      fromAmount: debouncedAmountIn,
+      toAsset: null,
+      toAmount: "",
+    }),
+  )
+
   const { isLoading: isLoadingMaxBalance } = useTransfarebleATokenBalance({
     assetIn: meta,
-    assetOut: toAsset,
-    amountOutRatio: erc20ReserveRatio,
     onSuccess: setMaxATokenBalance,
   })
 
@@ -185,7 +196,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   }, [amountOutShifted, form, split])
 
   const mutation = useMutation({
-    mutationFn: async (): Promise<void> => {
+    mutationFn: async () => {
       if (!trade?.tx) throw new Error("Trade tx not found")
       if (!account) throw new Error("Account not found")
 
@@ -200,95 +211,104 @@ export const useRemoveMoneyMarketLiquidity = ({
         // them is a different balance entirely.
         const initialShares = getTransferableBalance(pool.id.toString())
 
-        await createTransaction({
-          tx: [
-            {
-              stepTitle: t("liquidity.remove.modal.stepper.sellAsset", {
-                symbol: meta.symbol,
-              }),
-              tx: async () => {
-                const tx = papi.tx.Dispatcher.dispatch_with_extra_gas({
-                  call: swapTx.decodedCall,
-                  extra_gas: AAVE_GAS_LIMIT,
-                })
-
-                const tOptions = {
-                  value: debouncedAmountIn,
+        return createTransaction(
+          {
+            tx: [
+              {
+                stepTitle: t("liquidity.remove.modal.stepper.sellAsset", {
                   symbol: meta.symbol,
-                }
+                }),
+                tx: async () => {
+                  const tx = papi.tx.Dispatcher.dispatch_with_extra_gas({
+                    call: swapTx.decodedCall,
+                    extra_gas: AAVE_GAS_LIMIT,
+                  })
 
-                const toasts = {
-                  submitted: t(
-                    "liquidity.remove.sell.modal.toast.submitted",
-                    tOptions,
-                  ),
-                  success: t(
-                    "liquidity.remove.sell.modal.toast.success",
-                    tOptions,
-                  ),
-                }
+                  const tOptions = {
+                    value: debouncedAmountIn,
+                    symbol: meta.symbol,
+                  }
 
-                return {
-                  tx,
-                  toasts,
-                }
+                  const toasts = {
+                    submitted: t(
+                      "liquidity.remove.sell.modal.toast.submitted",
+                      tOptions,
+                    ),
+                    success: t(
+                      "liquidity.remove.sell.modal.toast.success",
+                      tOptions,
+                    ),
+                  }
+
+                  return {
+                    title: t("liquidity.remove.modal.stepper.sellAsset", {
+                      symbol: meta.symbol,
+                    }),
+                    tx,
+                    toasts,
+                  }
+                },
               },
-            },
-            {
-              stepTitle: t("liquidity.remove.modal.stepper.withdrawLiquidity"),
-              onSubmitted,
-              tx: async () => {
-                const { client } = sdk
-                const { balance } = client
+              {
+                stepTitle: t(
+                  "liquidity.remove.modal.stepper.withdrawLiquidity",
+                ),
+                onSubmitted,
+                tx: async () => {
+                  const { client } = sdk
+                  const { balance } = client
 
-                const allShares = await balance.getBalance(
-                  account?.address ?? "",
-                  pool.id,
-                )
+                  const allShares = await balance.getBalance(
+                    account?.address ?? "",
+                    pool.id,
+                  )
 
-                const diffShares = allShares.transferable - initialShares
+                  const diffShares = allShares.transferable - initialShares
 
-                const limits = getMinAssetsOut(diffShares.toString()).map(
-                  (minAssetOut) => ({
-                    amount: BigInt(minAssetOut.value),
-                    asset_id: Number(minAssetOut.asset.id),
-                  }),
-                )
+                  const limits = getMinAssetsOut(diffShares.toString()).map(
+                    (minAssetOut) => ({
+                      amount: BigInt(minAssetOut.value),
+                      asset_id: Number(minAssetOut.asset.id),
+                    }),
+                  )
 
-                const tOptions = {
-                  value: removeAmountShifted,
-                  symbol: t("shares"),
-                  where: meta.symbol,
-                }
-                const toasts = {
-                  submitted: t(
-                    "liquidity.remove.moneyMarket.modal.toast.submitted",
-                    tOptions,
-                  ),
-                  success: t(
-                    "liquidity.remove.moneyMarket.modal.toast.success",
-                    tOptions,
-                  ),
-                }
+                  const tOptions = {
+                    value: removeAmountShifted,
+                    symbol: t("shares"),
+                    where: meta.symbol,
+                  }
+                  const toasts = {
+                    submitted: t(
+                      "liquidity.remove.moneyMarket.modal.toast.submitted",
+                      tOptions,
+                    ),
+                    success: t(
+                      "liquidity.remove.moneyMarket.modal.toast.success",
+                      tOptions,
+                    ),
+                  }
 
-                const tx = papi.tx.Stableswap.remove_liquidity({
-                  pool_id: Number(pool.id),
-                  // the sell decides how many shares there are to burn, so the
-                  // limits above and this amount stay on the same base
-                  share_amount: diffShares,
-                  min_amounts_out: limits,
-                })
+                  const tx = papi.tx.Stableswap.remove_liquidity({
+                    pool_id: Number(pool.id),
+                    // the sell decides how many shares there are to burn, so the
+                    // limits above and this amount stay on the same base
+                    share_amount: diffShares,
+                    min_amounts_out: limits,
+                  })
 
-                return {
-                  tx,
-                  toasts: toasts,
-                }
+                  return {
+                    title: t(
+                      "liquidity.remove.modal.stepper.withdrawLiquidity",
+                    ),
+                    tx,
+                    toasts,
+                  }
+                },
               },
-            },
-          ],
-        })
-
-        return
+            ],
+          },
+          { resolveOn: "success" },
+        )
       }
 
       let tx: AnyTransaction | undefined
@@ -333,7 +353,7 @@ export const useRemoveMoneyMarketLiquidity = ({
         ),
       }
 
-      await createTransaction(
+      return createTransaction(
         {
           tx,
           toasts,
@@ -354,6 +374,7 @@ export const useRemoveMoneyMarketLiquidity = ({
     tradeMinReceive: tradeMinReceiveShifted,
     mutation,
     healthFactor,
+    intermediateHealthFactor,
     isLoadingMaxBalance,
     isTradePending,
     swap: trade?.swap,

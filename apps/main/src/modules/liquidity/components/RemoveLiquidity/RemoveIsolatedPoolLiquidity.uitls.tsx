@@ -145,7 +145,7 @@ export const useRemoveMultipleXYKPositions = ({
   })
 
   const mutation = useMutation({
-    mutationFn: async (): Promise<void> => {
+    mutationFn: async () => {
       const [assetA, assetB] = tokens
 
       if (!assetA || !assetB) throw new Error("Pool not found")
@@ -198,7 +198,7 @@ export const useRemoveMultipleXYKPositions = ({
         shareTokenMeta.symbol,
       )
 
-      await createBatch({
+      return createBatch({
         txs: [...exitingFarmsTxs, ...liquidityTxs],
         transaction: {
           toasts,
@@ -269,7 +269,7 @@ export const useRemoveSingleXYKPosition = ({
   const removeSharesAmount = balance
 
   const mutation = useMutation({
-    mutationFn: async (): Promise<void> => {
+    mutationFn: async () => {
       const [assetA, assetB] = tokens
 
       if (!assetA || !assetB) throw new Error("Pool not found")
@@ -300,7 +300,7 @@ export const useRemoveSingleXYKPosition = ({
         min_amount_b: BigInt(minAssetB.value),
       })
 
-      await createBatch({
+      return createBatch({
         txs: [...exitFarmsTxs, removeLiquidityTx],
         transaction: {
           toasts,
@@ -401,7 +401,7 @@ export const useRemoveXYKShares = ({
   })
 
   const mutation = useMutation({
-    mutationFn: async (): Promise<void> => {
+    mutationFn: async () => {
       const [assetA, assetB] = receiveAssets
 
       if (!assetA || !assetB) throw new Error("Pool not found")
@@ -422,7 +422,7 @@ export const useRemoveXYKShares = ({
         min_amount_b: BigInt(minAssetB),
       })
 
-      await createTransaction(
+      return createTransaction(
         {
           tx,
           toasts,

@@ -1,4 +1,3 @@
-import type { ComputedUserReserveData } from "@galacticcouncil/money-market/hooks"
 import {
   calculateMaxWithdrawAmount,
   formatHealthFactorResult,
@@ -203,44 +202,15 @@ export const aaveSummaryQuery = (
     enabled: isReady && enabled && !!address,
   })
 
-const TARGET_WITHDRAW_HF = 1.01
-const SWAP_AMOUNT_THRESHOLD = 0.98 // 2% slippage + fee
-
-const calculateSwapToAmount = (
-  fromAmount: string,
-  reserveIn: ComputedUserReserveData,
-  reserveOut: ComputedUserReserveData,
-  amountOutRatio: string,
-) =>
-  Big(fromAmount || "0")
-    .mul(reserveIn.reserve.formattedPriceInMarketReferenceCurrency)
-    .div(reserveOut.reserve.formattedPriceInMarketReferenceCurrency)
-    .mul(SWAP_AMOUNT_THRESHOLD)
-    .mul(amountOutRatio)
-    .toFixed(reserveOut.reserve.decimals, Big.roundDown)
-
-const getWithdrawHF = (
-  currentHF: number,
-  futureHF: number,
-  hasReferenceAmount: boolean,
-) => {
-  if (!hasReferenceAmount || futureHF < 0 || currentHF <= TARGET_WITHDRAW_HF) {
-    return currentHF
-  }
-
-  const excessHF = currentHF - TARGET_WITHDRAW_HF
-  const hfDrop = currentHF - futureHF || 1
-
-  return TARGET_WITHDRAW_HF + (excessHF * excessHF) / hfDrop
-}
-
+// Aave validates the health factor the moment the aToken leaves the account,
+// with no credit for collateral the same batch supplies back afterwards
+// (the stableswap withdrawal / the second leg of a router swap both land
+// after that check). So the cap is always the plain withdraw one.
 export const getTransfarebleATokenBalance = (
   rpc: TProviderContext,
   address: string,
   balanceShifted: string,
   assetIn: TAssetData,
-  assetOut: TAssetData | null,
-  amountOutRatio: string,
   poolDataContract: UiPoolDataProvider | null,
   ghoServiceContract: GhoService | null,
   incentivesContract: UiIncentiveDataProvider | null,
@@ -252,16 +222,11 @@ export const getTransfarebleATokenBalance = (
       address,
       balanceShifted,
       assetIn.id,
-      assetOut?.id,
-      amountOutRatio,
     ],
     queryFn: async () => {
-      const isSwappingATokens =
-        isErc20AToken(assetIn) && assetOut && isErc20AToken(assetOut)
-
       let maxBalance = balanceShifted
 
-      if (isSwappingATokens) {
+      if (isErc20AToken(assetIn)) {
         const evmAddress = safeConvertAnyToH160(address)
         const underlyingAsset = getAddressFromAssetId(assetIn.underlyingAssetId)
 
@@ -287,54 +252,16 @@ export const getTransfarebleATokenBalance = (
           ),
         ])
 
-        const underlyingAssetOut = getAddressFromAssetId(
-          assetOut.underlyingAssetId,
-        )
-
-        let userReserveIn: ComputedUserReserveData | undefined
-        let userReserveOut: ComputedUserReserveData | undefined
-
-        for (const reserve of user.userReservesData) {
-          if (reserve.underlyingAsset === underlyingAsset) {
-            userReserveIn = reserve
-          }
-          if (reserve.underlyingAsset === underlyingAssetOut) {
-            userReserveOut = reserve
-          }
-          if (userReserveIn && userReserveOut) break
-        }
-
-        const toAmount =
-          userReserveIn && userReserveOut
-            ? calculateSwapToAmount(
-                balanceShifted,
-                userReserveIn,
-                userReserveOut,
-                amountOutRatio ?? "1",
-              )
-            : "0"
-
-        const { current, future } = await rpc.queryClient.fetchQuery(
-          healthFactorAfterSwapQuery(rpc, {
-            address,
-            fromAssetId: assetIn.underlyingAssetId,
-            fromAmount: balanceShifted,
-            toAssetId: assetOut.underlyingAssetId,
-            toAmount,
-          }),
+        const userReserveIn = user.userReservesData.find(
+          (reserve) => reserve.underlyingAsset === underlyingAsset,
         )
 
         if (userReserveIn && poolReserve) {
-          const maxWithdrawableAmount = calculateMaxWithdrawAmount(
+          maxBalance = calculateMaxWithdrawAmount(
             user,
             userReserveIn,
             poolReserve,
-            getWithdrawHF(Number(current), Number(future), true),
-          )
-
-          maxBalance = maxWithdrawableAmount.toString()
-        } else {
-          maxBalance = balanceShifted
+          ).toString()
         }
       }
 
@@ -346,13 +273,9 @@ export const getTransfarebleATokenBalance = (
 
 export const useTransfarebleATokenBalance = ({
   assetIn,
-  assetOut,
-  amountOutRatio,
   onSuccess,
 }: {
   assetIn: TAssetData
-  assetOut: TAssetData | null
-  amountOutRatio?: string
   onSuccess?: (maxBalance: string) => void
 }) => {
   const rpc = useRpcProvider()
@@ -372,8 +295,6 @@ export const useTransfarebleATokenBalance = ({
       address,
       balanceShifted,
       assetIn,
-      assetOut,
-      amountOutRatio ?? "1",
       poolDataContract,
       ghoServiceContract,
       incentivesContract,

@@ -1,6 +1,6 @@
 import {
-  Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
@@ -111,7 +111,10 @@ export const RemoveLiquidityForm = ({
   totalPositionShifted: string
   receiveAssets: TReceiveAsset[]
   editable?: boolean
-  mutation: UseMutationResult<void, Error, void>
+  mutation: Pick<
+    UseMutationResult<unknown, Error, void>,
+    "mutate" | "isPending"
+  >
   isIsolatedPool?: boolean
   meta: TAssetData | TShareToken
   deposits?: Array<XykDeposit | OmnipoolDepositFull>
@@ -211,9 +214,15 @@ export const RemoveLiquidityForm = ({
         </ModalBody>
         <Separator />
         <ModalFooter>
-          <Button type="submit" size="large" width="100%" disabled={!isValid}>
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={mutation.isPending}
+            disabled={!isValid || mutation.isPending}
+          >
             {t("removeLiquidity")}
-          </Button>
+          </LoadingButton>
         </ModalFooter>
       </form>
     </>

@@ -98,6 +98,7 @@ const RemoveMoneyMarketLiquidityForm = (
     isTradePending,
     mutation,
     healthFactor,
+    intermediateHealthFactor,
     isLoadingMaxBalance,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
   const { closable, onBack, receiveAssets, title } = props
@@ -125,9 +126,10 @@ const RemoveMoneyMarketLiquidityForm = (
     }
   }, [watch])
 
-  const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
-    ? healthFactorRiskAccepted
-    : true
+  const isHealthFactorCheckSatisfied =
+    intermediateHealthFactor?.isUserConsentRequired
+      ? healthFactorRiskAccepted
+      : true
 
   const onSubmit = () => {
     mutation.mutate()
@@ -203,7 +205,13 @@ const RemoveMoneyMarketLiquidityForm = (
                     <ModalContentDivider />
                     <SummaryRow
                       label={t("common:healthFactor")}
-                      content={<HealthFactorChange {...healthFactor} />}
+                      content={
+                        <HealthFactorChange
+                          {...healthFactor}
+                          intermediate={intermediateHealthFactor?.future}
+                          decimals={4}
+                        />
+                      }
                     />
                   </>
                 ) : null}
@@ -214,6 +222,7 @@ const RemoveMoneyMarketLiquidityForm = (
                 minReceive={tradeMinReceive}
                 erc20={meta}
                 healthFactor={healthFactor}
+                intermediateHealthFactor={intermediateHealthFactor}
                 swap={swap}
                 isTradePending={isTradePending}
               />
@@ -223,24 +232,27 @@ const RemoveMoneyMarketLiquidityForm = (
         <Separator />
         <ModalFooter>
           <Flex direction="column" width="100%" gap="m">
-            {healthFactor?.isUserConsentRequired && (
+            {intermediateHealthFactor?.isUserConsentRequired && (
               <HealthFactorRiskWarning
                 message={t("common:healthFactor.warning")}
                 accepted={healthFactorRiskAccepted}
                 onAcceptedChange={setHealthFactorRiskAccepted}
-                isUserConsentRequired={healthFactor.isUserConsentRequired}
+                isUserConsentRequired={
+                  intermediateHealthFactor.isUserConsentRequired
+                }
               />
             )}
             <LoadingButton
               type="submit"
               size="large"
               width="100%"
-              isLoading={isTradePending}
+              isLoading={mutation.isPending}
               disabled={
                 !isValid ||
                 !isHealthFactorCheckSatisfied ||
                 isLoadingMaxBalance ||
-                isTradePending
+                isTradePending ||
+                mutation.isPending
               }
             >
               {title ?? t("removeLiquidity")}
@@ -257,6 +269,7 @@ const TradeSummary = ({
   minReceive,
   erc20,
   healthFactor,
+  intermediateHealthFactor,
   swap,
   isTradePending,
 }: {
@@ -264,6 +277,7 @@ const TradeSummary = ({
   minReceive: string
   erc20: TAssetData
   healthFactor: HealthFactorResult | undefined
+  intermediateHealthFactor: HealthFactorResult | undefined
   swap?: Trade
   isTradePending: boolean
 }) => {
@@ -313,7 +327,13 @@ const TradeSummary = ({
             ? [
                 {
                   label: t("healthFactor"),
-                  content: <HealthFactorChange {...healthFactor} />,
+                  content: (
+                    <HealthFactorChange
+                      {...healthFactor}
+                      intermediate={intermediateHealthFactor?.future}
+                      decimals={4}
+                    />
+                  ),
                 },
               ]
             : []),
