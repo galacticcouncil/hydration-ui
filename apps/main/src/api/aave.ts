@@ -8,7 +8,6 @@ import {
 import { aave } from "@galacticcouncil/sdk-next"
 import {
   getAddressFromAssetId,
-  QUERY_KEY_BLOCK_PREFIX,
   safeConvertAnyToH160,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -57,20 +56,27 @@ type HealthFactorQueryArgs = Pick<
 
 export const AAVE_GAS_LIMIT = aave.AAVE_GAS_LIMIT
 
+export const TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY = [
+  "transfarebleATokenBalance",
+] as const
+
+export const AAVE_HEALTH_FACTOR_QUERY_KEY = ["healthFactor"] as const
+
+export const AAVE_SUMMARY_QUERY_KEY = ["aave", "summary"] as const
+
 export const healthFactorAfterWithdrawQuery = (
   { sdk, isReady }: TProviderContext,
   { address, fromAssetId, fromAmount }: HealthFactorWithdrawArgs,
 ) =>
   queryOptions({
+    refetchInterval: 60_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
+      ...AAVE_HEALTH_FACTOR_QUERY_KEY,
       "withdraw",
       address,
       fromAssetId,
       fromAmount,
     ],
-
     queryFn: async () => {
       const [currentHF, futureHF] = await Promise.all([
         sdk.api.aave.getHealthFactor(address),
@@ -91,9 +97,9 @@ export const healthFactorAfterSupplyQuery = (
   { address, toAssetId, toAmount }: HealthFactorSupplyArgs,
 ) =>
   queryOptions({
+    refetchInterval: 60_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
+      ...AAVE_HEALTH_FACTOR_QUERY_KEY,
       "supply",
       address,
       toAssetId,
@@ -119,9 +125,9 @@ export const healthFactorAfterSwapQuery = (
   { address, fromAssetId, fromAmount, toAssetId, toAmount }: HealthFactorArgs,
 ) =>
   queryOptions({
+    refetchInterval: 60_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
+      ...AAVE_HEALTH_FACTOR_QUERY_KEY,
       "swap",
       address,
       fromAssetId,
@@ -197,7 +203,7 @@ export const aaveSummaryQuery = (
   enabled = true,
 ) =>
   queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "aave", "summary", address],
+    queryKey: [...AAVE_SUMMARY_QUERY_KEY, address],
     queryFn: () => sdk.api.aave.getSummary(address),
     enabled: isReady && enabled && !!address,
   })
@@ -214,11 +220,10 @@ export const getTransfarebleATokenBalance = (
   poolDataContract: UiPoolDataProvider | null,
   ghoServiceContract: GhoService | null,
   incentivesContract: UiIncentiveDataProvider | null,
-  onSuccess?: (maxBalance: string) => void,
 ) =>
   queryOptions({
     queryKey: [
-      "transfarebleATokenBalance",
+      ...TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY,
       address,
       balanceShifted,
       assetIn.id,
@@ -230,17 +235,19 @@ export const getTransfarebleATokenBalance = (
         const evmAddress = safeConvertAnyToH160(address)
         const underlyingAsset = getAddressFromAssetId(assetIn.underlyingAssetId)
 
+        const userSummaryQuery = userBorrowSummaryQuery(
+          evmAddress,
+          rpc,
+          lendingPoolAddressProvider,
+          poolDataContract,
+          ghoServiceContract,
+          incentivesContract,
+        )
+
         const [user, poolReserve] = await Promise.all([
-          rpc.queryClient.ensureQueryData(
-            userBorrowSummaryQuery(
-              evmAddress,
-              rpc,
-              lendingPoolAddressProvider,
-              poolDataContract,
-              ghoServiceContract,
-              incentivesContract,
-            ),
-          ),
+          // Always refetch: user summary has a 30s staleTime and may still
+          // hold pre-withdraw HF when this query runs after another asset exit.
+          rpc.queryClient.fetchQuery({ ...userSummaryQuery, staleTime: 0 }),
           rpc.queryClient.ensureQueryData(
             borrowReserveQuery(
               rpc,
@@ -265,7 +272,6 @@ export const getTransfarebleATokenBalance = (
         }
       }
 
-      onSuccess?.(maxBalance)
       return maxBalance
     },
     enabled: rpc.isReady && !!address,
@@ -273,10 +279,8 @@ export const getTransfarebleATokenBalance = (
 
 export const useTransfarebleATokenBalance = ({
   assetIn,
-  onSuccess,
 }: {
   assetIn: TAssetData
-  onSuccess?: (maxBalance: string) => void
 }) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
@@ -298,7 +302,6 @@ export const useTransfarebleATokenBalance = ({
       poolDataContract,
       ghoServiceContract,
       incentivesContract,
-      onSuccess,
     ),
   )
 }

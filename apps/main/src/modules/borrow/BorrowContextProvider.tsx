@@ -9,6 +9,7 @@ import { TFunction } from "i18next"
 import { PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY } from "@/api/aave"
 import { neckworkClient } from "@/api/neckwork"
 import { TDataEnv } from "@/config/rpc"
 import { ApyProvider } from "@/modules/borrow/context/ApyContext"
@@ -51,7 +52,10 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts, activity }, options, withExtraGas) => {
-      const invalidateQueries = [["borrow"]]
+      const invalidateQueries = [
+        ["borrow"],
+        [...TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY],
+      ]
       if (Array.isArray(tx)) {
         createBatchTx({
           txs: tx.map((evmTx) => transformEvmCallToPapiTx(papi, evmTx)),

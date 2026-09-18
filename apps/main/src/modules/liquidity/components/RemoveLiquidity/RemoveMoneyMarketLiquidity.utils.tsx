@@ -3,7 +3,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
@@ -64,7 +64,11 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const balance = getTransferableBalance(erc20Id)
   const balanceShifted = scaleHuman(balance.toString(), meta.decimals)
-  const [maxATokenBalance, setMaxATokenBalance] = useState(balanceShifted)
+
+  const { data: transferableMaxBalance, isLoading: isLoadingMaxBalance } =
+    useTransfarebleATokenBalance({ assetIn: meta })
+
+  const maxATokenBalance = transferableMaxBalance ?? balanceShifted
 
   const initialReceiveAsset = reserves[0]?.meta
 
@@ -181,11 +185,6 @@ export const useRemoveMoneyMarketLiquidity = ({
       toAmount: "",
     }),
   )
-
-  const { isLoading: isLoadingMaxBalance } = useTransfarebleATokenBalance({
-    assetIn: meta,
-    onSuccess: setMaxATokenBalance,
-  })
 
   useEffect(() => {
     if (!split) {
