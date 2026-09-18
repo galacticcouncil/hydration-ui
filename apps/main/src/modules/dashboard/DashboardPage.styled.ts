@@ -357,6 +357,36 @@ export const SMetricGrid = styled.div(
   `,
 )
 
+export const SNetworkBreakdown = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.space.s};
+    min-width: 0;
+  `,
+)
+
+export const SNetworkBalanceRow = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: ${theme.space.s};
+    font-variant-numeric: tabular-nums;
+  `,
+)
+
+export const SHydrationSummary = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.space.m};
+    margin-top: ${theme.space.l};
+    padding-top: ${theme.space.l};
+    border-top: 1px solid ${theme.details.separators};
+  `,
+)
+
 export const SMetric = styled.div(
   ({ theme }) => css`
     display: flex;

@@ -33,12 +33,14 @@ import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   DOT_ASSET_ID,
+  getChainAssetId,
   HDX_ASSET_ID,
   HOLLAR_ASSET_ID,
   USDC_ASSET_ID,
   USDT_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { Web3ConnectButton } from "@galacticcouncil/web3-connect"
+import { assetsMap, chainsMap } from "@galacticcouncil/xc-cfg"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { Link, useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
@@ -46,7 +48,9 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { ChainLogo } from "@/components/ChainLogo"
 import { EmptyState } from "@/components/EmptyState"
+import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
 import { RelativeDateText } from "@/components/RelativeDateText"
 import { LINKS } from "@/config/navigation"
 import {
@@ -55,6 +59,18 @@ import {
   DashboardOpportunityKind,
   useDashboardData,
 } from "@/modules/dashboard/DashboardPage.data"
+import {
+  DASHBOARD_PREVIEW_STATES,
+  DashboardPreviewState,
+  EXTERNAL_PREVIEW_NETWORKS,
+  getPreviewNetWorth,
+  MIXED_HYDRATION_BALANCES,
+  MIXED_PREVIEW_NETWORKS,
+  PortfolioNetworkBalance,
+  PREVIEW_ASSETS,
+  PREVIEW_EXTERNAL_ASSETS,
+  PreviewAsset,
+} from "@/modules/dashboard/DashboardPage.preview"
 import {
   SAssetIdentity,
   SCardHeader,
@@ -78,10 +94,13 @@ import {
   SExternalPortfolioSection,
   SFilterBar,
   SFilterButton,
+  SHydrationSummary,
   SList,
   SListRow,
   SMetric,
   SMetricGrid,
+  SNetworkBalanceRow,
+  SNetworkBreakdown,
   SNetWorth,
   SOpportunityCard,
   SOpportunityDesktopRate,
@@ -108,33 +127,22 @@ import { StableBondsDeposit } from "@/modules/strategies/stable-bonds/components
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
 import { StableBondsConfigProvider } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import { useStableBondsOtcOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import { Route as DashboardRoute } from "@/routes/dashboard"
 import { AddLiquidityModalContent } from "@/routes/liquidity/$id.add"
 
 type OpportunityFilter = "all" | "matched" | DashboardOpportunityKind
 type PortfolioPreviewTab = "assets" | "strategies" | "liquidity"
-type DashboardPreviewState =
-  | "live"
-  | "hydration"
-  | "external"
-  | "empty"
-  | "earner"
 type StableBondsOpportunity = Omit<DashboardOpportunity, "destination"> & {
   destination: Extract<DashboardOpportunity["destination"], { type: "bonds" }>
 }
 
 const OPPORTUNITIES_LIMIT = 6
 const PORTFOLIO_ASSETS_PER_PAGE = 5
-const DASHBOARD_PREVIEW_STATES: DashboardPreviewState[] = [
-  "live",
-  "hydration",
-  "external",
-  "empty",
-]
-
 export const DashboardPage = () => {
+  const { preview } = DashboardRoute.useSearch()
+  const navigate = useNavigate()
   const [filter, setFilter] = useState<OpportunityFilter>("all")
-  const [previewState, setPreviewState] =
-    useState<DashboardPreviewState>("live")
+  const previewState: DashboardPreviewState = preview ?? "live"
   const [quickStartOpportunity, setQuickStartOpportunity] =
     useState<DashboardOpportunity | null>(null)
   const {
@@ -216,7 +224,14 @@ export const DashboardPage = () => {
         <SDashboardPage>
           <DashboardStateToolbar
             value={previewState}
-            onChange={setPreviewState}
+            onChange={(value) => {
+              void navigate({
+                to: "/dashboard",
+                search: { preview: value === "earner" ? undefined : value },
+                replace: true,
+                resetScroll: false,
+              })
+            }}
           />
 
           {resolvedState === "hydration" && (
@@ -289,6 +304,16 @@ export const DashboardPage = () => {
 
           {resolvedState === "external" && (
             <ExternalFundsState
+              opportunities={opportunities}
+              filter={filter}
+              onFilterChange={setFilter}
+              isLoading={isOpportunitiesLoading}
+              onQuickStart={setQuickStartOpportunity}
+            />
+          )}
+
+          {resolvedState === "multichain" && (
+            <MixedNetworkState
               opportunities={opportunities}
               filter={filter}
               onFilterChange={setFilter}
@@ -421,63 +446,6 @@ const DashboardStateToolbar = ({
   )
 }
 
-const PREVIEW_ASSETS = [
-  {
-    id: USDC_ASSET_ID,
-    symbol: "USDC",
-    name: "USD Coin (Ethereum native)",
-    value: "635.53",
-    amount: "635.8143",
-  },
-  {
-    id: USDT_ASSET_ID,
-    symbol: "USDT",
-    name: "Tether (Ethereum native)",
-    value: "608.45",
-    amount: "608.6272",
-  },
-  {
-    id: USDT_ASSET_ID,
-    symbol: "USDT",
-    name: "Tether",
-    value: "395.80",
-    amount: "395.8042",
-  },
-  {
-    id: HOLLAR_ASSET_ID,
-    symbol: "HOLLAR",
-    name: "Hydration Dollar",
-    value: "325.24",
-    amount: "325.2400",
-  },
-  {
-    id: DOT_ASSET_ID,
-    symbol: "DOT",
-    name: "Polkadot",
-    value: "145.45",
-    amount: "31.1324",
-  },
-] as const
-
-const PREVIEW_EXTERNAL_ASSETS = [
-  {
-    id: USDC_ASSET_ID,
-    symbol: "USDC",
-    name: "USD Coin",
-    value: "1840.32",
-    amount: "1840.8241",
-    assetKey: "usdc",
-  },
-  {
-    id: USDT_ASSET_ID,
-    symbol: "USDT",
-    name: "Tether",
-    value: "979.82",
-    amount: "980.0137",
-    assetKey: "usdt",
-  },
-] as const
-
 const PREVIEW_EARNER_IDLE_ASSETS = [
   {
     id: USDC_ASSET_ID,
@@ -511,7 +479,6 @@ const PREVIEW_EARNER_IDLE_ASSETS = [
 
 const PreviewAssetsCard = () => {
   const { t } = useTranslation(["dashboard", "common"])
-  const [activeTab, setActiveTab] = useState<PortfolioPreviewTab>("assets")
 
   return (
     <SDashboardCard transparent>
@@ -523,6 +490,21 @@ const PreviewAssetsCard = () => {
           <Link to={LINKS.portfolio}>{t("dashboard:portfolio.view")}</Link>
         </Button>
       </SCardHeader>
+      <PreviewHydrationHoldings />
+    </SDashboardCard>
+  )
+}
+
+const PreviewHydrationHoldings = ({
+  assets = PREVIEW_ASSETS,
+}: {
+  assets?: PreviewAsset[]
+}) => {
+  const { t } = useTranslation(["dashboard", "common"])
+  const [activeTab, setActiveTab] = useState<PortfolioPreviewTab>("assets")
+
+  return (
+    <>
       <Flex
         mb="m"
         width="100%"
@@ -540,11 +522,10 @@ const PreviewAssetsCard = () => {
           <ToggleGroupItem value="liquidity">Liquidity</ToggleGroupItem>
         </ToggleGroup>
       </Flex>
-
       {activeTab === "assets" && (
         <ScrollArea height="14rem" width="100%">
           <SList sx={{ pr: "m" }}>
-            {PREVIEW_ASSETS.map((asset, index) => (
+            {assets.map((asset, index) => (
               <SListRow key={`${asset.id}-${index}`}>
                 <SAssetIdentity>
                   <AssetLogo id={asset.id} size="small" />
@@ -616,7 +597,7 @@ const PreviewAssetsCard = () => {
           </SListRow>
         </SList>
       )}
-    </SDashboardCard>
+    </>
   )
 }
 
@@ -841,24 +822,31 @@ const ExternalFundsState = ({
   isLoading: boolean
   onQuickStart: (opportunity: DashboardOpportunity) => void
 }) => {
+  const { t } = useTranslation("dashboard")
+
   return (
     <SDashboardSplitView>
       <SDashboardColumn>
         <PortfolioCard
           accountConnected
-          badge="Ethereum"
+          badge={t("portfolio.acrossChains")}
           netWorth="2820.14"
           claimableRewards="0"
           isRewardsLoading={false}
-          assets="2820.14"
+          assets="0"
           liquidity="0"
           borrowed="0"
           assetAllocation={100}
           liquidityAllocation={0}
           borrowedAllocation={0}
           isLoading={false}
+          networks={EXTERNAL_PREVIEW_NETWORKS}
         />
-        <PreviewExternalAssetsCard />
+        <PreviewNetworkPortfolioCard
+          networks={EXTERNAL_PREVIEW_NETWORKS.filter((network) =>
+            Big(network.value).gt(0),
+          )}
+        />
       </SDashboardColumn>
       <SDashboardColumn>
         <PreviewIdleCapitalCard
@@ -878,6 +866,125 @@ const ExternalFundsState = ({
         />
       </SDashboardColumn>
     </SDashboardSplitView>
+  )
+}
+
+const MixedNetworkState = ({
+  opportunities,
+  filter,
+  onFilterChange,
+  isLoading,
+  onQuickStart,
+}: {
+  opportunities: DashboardOpportunity[]
+  filter: OpportunityFilter
+  onFilterChange: (filter: OpportunityFilter) => void
+  isLoading: boolean
+  onQuickStart: (opportunity: DashboardOpportunity) => void
+}) => {
+  const { t } = useTranslation("dashboard")
+
+  return (
+    <SDashboardSplitView>
+      <SDashboardColumn>
+        <PortfolioCard
+          accountConnected
+          badge={t("portfolio.demoBalances")}
+          netWorth={getPreviewNetWorth(MIXED_PREVIEW_NETWORKS)}
+          claimableRewards={MIXED_HYDRATION_BALANCES.rewards}
+          isRewardsLoading={false}
+          assets={MIXED_HYDRATION_BALANCES.assets}
+          liquidity={MIXED_HYDRATION_BALANCES.liquidity}
+          borrowed={MIXED_HYDRATION_BALANCES.borrowed}
+          assetAllocation={77.69}
+          liquidityAllocation={21.46}
+          borrowedAllocation={0.85}
+          isLoading={false}
+          networks={MIXED_PREVIEW_NETWORKS}
+        />
+        <PreviewNetworkPortfolioCard networks={MIXED_PREVIEW_NETWORKS} />
+        <PreviewActivityCard />
+      </SDashboardColumn>
+      <SDashboardColumn>
+        <PreviewIdleCapitalCard
+          opportunities={opportunities}
+          onQuickStart={onQuickStart}
+        />
+        <EarnOpportunitiesSection
+          accountConnected
+          compact
+          filter={filter}
+          onFilterChange={onFilterChange}
+          opportunities={opportunities.slice(0, OPPORTUNITIES_LIMIT)}
+          isLoading={isLoading}
+          onQuickStart={onQuickStart}
+        />
+      </SDashboardColumn>
+    </SDashboardSplitView>
+  )
+}
+
+const PreviewExternalAssetList = ({
+  network,
+}: {
+  network: PortfolioNetworkBalance
+}) => {
+  const { t } = useTranslation(["dashboard", "common"])
+  const chain = chainsMap.get(network.key)
+
+  return (
+    <SList>
+      {network.assets.map((asset) => {
+        const chainAsset = assetsMap.get(asset.assetKey ?? "")
+        return (
+          <SExternalAssetRow key={asset.id}>
+            <SAssetIdentity>
+              {chain && chainAsset ? (
+                <ExternalAssetLogo
+                  id={getChainAssetId(chain, chainAsset).toString()}
+                  chainId={network.chainId}
+                  ecosystem={network.ecosystem ?? ChainEcosystem.Ethereum}
+                  size="small"
+                  alt={asset.symbol}
+                />
+              ) : (
+                <AssetLogo id={asset.id} size="small" />
+              )}
+              <Flex direction="column" gap="xs" sx={{ minWidth: 0 }}>
+                <Text fs="p4" fw={600} truncate>
+                  {asset.symbol}
+                </Text>
+                <Text fs="p6" color={getToken("text.low")} truncate>
+                  {asset.name}
+                </Text>
+              </Flex>
+            </SAssetIdentity>
+            <Flex align="center" gap="m">
+              <Flex direction="column" gap="xs" align="flex-end">
+                <Text fs="p4" fw={600}>
+                  {t("common:currency", { value: asset.value })}
+                </Text>
+                <Text fs="p6" color={getToken("text.low")}>
+                  {asset.amount}
+                </Text>
+              </Flex>
+              <Button variant="muted" size="small" asChild>
+                <Link
+                  to={LINKS.crossChain}
+                  search={{
+                    srcChain: network.key,
+                    srcAsset: asset.assetKey,
+                    destChain: "hydration",
+                  }}
+                >
+                  {t("dashboard:actions.move")}
+                </Link>
+              </Button>
+            </Flex>
+          </SExternalAssetRow>
+        )
+      })}
+    </SList>
   )
 }
 
@@ -964,7 +1071,11 @@ const ActiveEarnerState = ({
   )
 }
 
-const PreviewExternalAssetsCard = () => {
+const PreviewNetworkPortfolioCard = ({
+  networks,
+}: {
+  networks: PortfolioNetworkBalance[]
+}) => {
   const { t } = useTranslation(["dashboard", "common"])
 
   return (
@@ -975,58 +1086,29 @@ const PreviewExternalAssetsCard = () => {
         </Text>
       </SCardHeader>
       <SExternalPortfolioSection>
-        <CollapsibleRoot defaultOpen>
-          <CollapsibleTrigger asChild>
-            <PortfolioChainHeader
-              isExpandable
-              name="Ethereum"
-              chainId={1}
-              ecosystem={ChainEcosystem.Ethereum}
-              totalDisplay={t("common:currency", { value: "2820.14" })}
-              isLoading={false}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent animationDurationMs={400}>
-            <SList>
-              {PREVIEW_EXTERNAL_ASSETS.map((asset) => (
-                <SExternalAssetRow key={asset.id}>
-                  <SAssetIdentity>
-                    <AssetLogo id={asset.id} size="small" />
-                    <Flex direction="column" gap="xs" sx={{ minWidth: 0 }}>
-                      <Text fs="p4" fw={600} truncate>
-                        {asset.symbol}
-                      </Text>
-                      <Text fs="p6" color={getToken("text.low")} truncate>
-                        {asset.name}
-                      </Text>
-                    </Flex>
-                  </SAssetIdentity>
-                  <Flex align="center" gap="m">
-                    <Flex direction="column" gap="xs" align="flex-end">
-                      <Text fs="p4" fw={600}>
-                        {t("common:currency", { value: asset.value })}
-                      </Text>
-                      <Text fs="p6" color={getToken("text.low")}>
-                        {asset.amount}
-                      </Text>
-                    </Flex>
-                    <Button variant="muted" size="small" asChild>
-                      <Link
-                        to={LINKS.crossChain}
-                        search={{
-                          srcChain: "ethereum",
-                          srcAsset: asset.assetKey,
-                        }}
-                      >
-                        {t("dashboard:actions.move")}
-                      </Link>
-                    </Button>
-                  </Flex>
-                </SExternalAssetRow>
-              ))}
-            </SList>
-          </CollapsibleContent>
-        </CollapsibleRoot>
+        {networks.map((network) => (
+          <CollapsibleRoot key={network.key} defaultOpen>
+            <CollapsibleTrigger asChild>
+              <PortfolioChainHeader
+                isExpandable
+                name={network.name}
+                chainId={network.chainId}
+                ecosystem={network.ecosystem}
+                totalDisplay={t("common:currency", { value: network.value })}
+                isLoading={false}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent animationDurationMs={400}>
+              {network.key === "hydration" ? (
+                <Flex direction="column" px="xl" py="m">
+                  <PreviewHydrationHoldings assets={network.assets} />
+                </Flex>
+              ) : (
+                <PreviewExternalAssetList network={network} />
+              )}
+            </CollapsibleContent>
+          </CollapsibleRoot>
+        ))}
       </SExternalPortfolioSection>
     </SDashboardCard>
   )
@@ -1535,6 +1617,7 @@ type PortfolioCardProps = {
   liquidityAllocation: number
   borrowedAllocation: number
   isLoading: boolean
+  networks?: PortfolioNetworkBalance[]
 }
 
 const PORTFOLIO_TONE_TOKENS = {
@@ -1542,6 +1625,12 @@ const PORTFOLIO_TONE_TOKENS = {
   liquidity: "tags.soft.teal.foreground",
   borrowed: "text.tint.primary",
 } as const
+
+const NETWORK_TONE_TOKENS = [
+  "controls.solid.activeHover",
+  "text.tint.primary",
+  "tags.soft.teal.foreground",
+] as const
 
 const PortfolioCard = ({
   accountConnected,
@@ -1558,10 +1647,11 @@ const PortfolioCard = ({
   liquidityAllocation,
   borrowedAllocation,
   isLoading,
+  networks,
 }: PortfolioCardProps) => {
   const { t } = useTranslation(["dashboard", "common", "wallet"])
   const { getToken: getThemeToken } = useTheme()
-  const allocationSegments = [
+  const assetAllocationSegments = [
     {
       value: assetAllocation,
       label: assetsLabel ?? t("dashboard:portfolio.assets"),
@@ -1578,6 +1668,18 @@ const PortfolioCard = ({
       color: getThemeToken(PORTFOLIO_TONE_TOKENS.borrowed),
     },
   ]
+  const locationTotal = networks ? Big(getPreviewNetWorth(networks)) : Big(0)
+  const allocationSegments = networks
+    ? networks.map((network, index) => ({
+        value: locationTotal.gt(0)
+          ? Big(network.value).div(locationTotal).times(100).toNumber()
+          : 0,
+        label: network.name,
+        color: getThemeToken(
+          NETWORK_TONE_TOKENS[index % NETWORK_TONE_TOKENS.length]!,
+        ),
+      }))
+    : assetAllocationSegments
 
   return (
     <SPlainDashboardCard columns={7}>
@@ -1607,113 +1709,269 @@ const PortfolioCard = ({
           <Web3ConnectButton variant="secondary" />
         </SEmptyState>
       ) : (
-        <SPortfolioContent>
-          <SPortfolioChart>
-            {isLoading ? (
-              <Skeleton width="6.5rem" height="6.5rem" borderRadius="full" />
-            ) : isEmpty ? (
-              <SEmptyPortfolioChart
-                role="img"
-                aria-label={t("dashboard:portfolio.emptyComposition")}
-              />
-            ) : (
-              <PieChart
-                size={[72, null, 112]}
-                innerRadius={0.64}
-                animationDurationMs={750}
-                ariaLabel={t("dashboard:portfolio.composition")}
-                tooltipLabel={t("dashboard:portfolio.composition")}
-                formatValue={({ value }: { value: number }) =>
-                  t("common:percent", { value })
-                }
-                segments={allocationSegments}
-              />
-            )}
-          </SPortfolioChart>
-          <SPortfolioBalances>
-            <SPortfolioHeadline>
-              <SNetWorth>
-                <Text fs="p5" color={getToken("text.low")}>
-                  {t("dashboard:portfolio.netWorth")}
-                </Text>
-                {isLoading ? (
-                  <Skeleton width="13rem" height="3rem" />
-                ) : (
-                  <Text
-                    fs={["h5", null, "h4"]}
-                    lh={1}
-                    fw={600}
-                    font="primary"
-                    sx={{ fontVariantNumeric: "tabular-nums" }}
-                  >
-                    {t("common:currency", { value: netWorth })}
+        <>
+          <SPortfolioContent>
+            <SPortfolioChart>
+              {isLoading ? (
+                <Skeleton width="6.5rem" height="6.5rem" borderRadius="full" />
+              ) : isEmpty ? (
+                <SEmptyPortfolioChart
+                  role="img"
+                  aria-label={t("dashboard:portfolio.emptyComposition")}
+                />
+              ) : (
+                <PieChart
+                  size={[72, null, 112]}
+                  innerRadius={0.64}
+                  animationDurationMs={750}
+                  ariaLabel={t(
+                    networks
+                      ? "dashboard:portfolio.locationComposition"
+                      : "dashboard:portfolio.composition",
+                  )}
+                  tooltipLabel={t(
+                    networks
+                      ? "dashboard:portfolio.locationComposition"
+                      : "dashboard:portfolio.composition",
+                  )}
+                  formatValue={({ value }: { value: number }) =>
+                    t("common:percent", { value })
+                  }
+                  segments={allocationSegments}
+                />
+              )}
+            </SPortfolioChart>
+            <SPortfolioBalances>
+              <SPortfolioHeadline>
+                <SNetWorth>
+                  <Text fs="p5" color={getToken("text.low")}>
+                    {t(
+                      networks
+                        ? "dashboard:portfolio.totalNetWorth"
+                        : "dashboard:portfolio.netWorth",
+                    )}
                   </Text>
+                  {isLoading ? (
+                    <Skeleton width="13rem" height="3rem" />
+                  ) : (
+                    <Text
+                      fs={["h5", null, "h4"]}
+                      lh={1}
+                      fw={600}
+                      font="primary"
+                      sx={{ fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {t("common:currency", { value: netWorth })}
+                    </Text>
+                  )}
+                </SNetWorth>
+                {!networks && (
+                  <SRewardsMetric>
+                    <Text fs="p6" color={getToken("text.low")}>
+                      {t("wallet:myAssets.claimableRewards")}
+                    </Text>
+                    {isRewardsLoading ? (
+                      <Skeleton width="4.5rem" height="1.25rem" />
+                    ) : (
+                      <Flex align="center" gap="xs">
+                        <Text
+                          fs="p4"
+                          fw={600}
+                          font="primary"
+                          color={getToken("accents.success.emphasis")}
+                          sx={{ fontVariantNumeric: "tabular-nums" }}
+                        >
+                          {t("common:currency", { value: claimableRewards })}
+                        </Text>
+                        {Big(claimableRewards).gt(0) && (
+                          <Tooltip
+                            asChild
+                            side="top"
+                            text={t("dashboard:portfolio.claimRewards")}
+                          >
+                            <ButtonIcon
+                              asChild
+                              sx={{
+                                color: getToken("accents.success.emphasis"),
+                              }}
+                            >
+                              <Link
+                                to={LINKS.portfolio}
+                                aria-label={t(
+                                  "dashboard:portfolio.claimRewards",
+                                )}
+                              >
+                                <Icon component={BadgeDollarSign} size="s" />
+                              </Link>
+                            </ButtonIcon>
+                          </Tooltip>
+                        )}
+                      </Flex>
+                    )}
+                  </SRewardsMetric>
                 )}
-              </SNetWorth>
-              <SRewardsMetric>
+              </SPortfolioHeadline>
+              {networks ? (
+                <PortfolioNetworkBreakdown networks={networks} />
+              ) : (
+                <SMetricGrid>
+                  <PortfolioMetric
+                    label={assetsLabel ?? t("dashboard:portfolio.assets")}
+                    value={assets}
+                    tone="assets"
+                    isLoading={isLoading}
+                  />
+                  <PortfolioMetric
+                    label={t("dashboard:portfolio.liquidity")}
+                    value={liquidity}
+                    tone="liquidity"
+                    isLoading={isLoading}
+                  />
+                  <PortfolioMetric
+                    label={t("dashboard:portfolio.borrowed")}
+                    value={borrowed}
+                    tone="borrowed"
+                    isLoading={isLoading}
+                  />
+                </SMetricGrid>
+              )}
+            </SPortfolioBalances>
+          </SPortfolioContent>
+          {networks && (
+            <SHydrationSummary>
+              <Flex justify="space-between" align="center" gap="m">
+                <Flex align="center" gap="s">
+                  <ChainLogo
+                    chainId={
+                      networks.find((network) => network.key === "hydration")
+                        ?.chainId ?? 2034
+                    }
+                    size="extra-small"
+                  />
+                  <Text fs="p4" fw={600}>
+                    {t("dashboard:portfolio.onHydration")}
+                  </Text>
+                </Flex>
+                <Text
+                  fs="p4"
+                  font="primary"
+                  fw={600}
+                  color={getToken("controls.solid.activeHover")}
+                >
+                  {t("common:currency", {
+                    value:
+                      networks.find((network) => network.key === "hydration")
+                        ?.value ?? "0",
+                  })}
+                </Text>
+              </Flex>
+              <SMetricGrid>
+                <PortfolioMetric
+                  label={t("dashboard:portfolio.assets")}
+                  value={assets}
+                  tone="assets"
+                  isLoading={isLoading}
+                />
+                <PortfolioMetric
+                  label={t("dashboard:portfolio.liquidity")}
+                  value={liquidity}
+                  tone="liquidity"
+                  isLoading={isLoading}
+                />
+                <PortfolioMetric
+                  label={t("dashboard:portfolio.borrowed")}
+                  value={borrowed}
+                  tone="borrowed"
+                  isLoading={isLoading}
+                />
+              </SMetricGrid>
+              <Flex align="center" justify="space-between" gap="s">
                 <Text fs="p6" color={getToken("text.low")}>
                   {t("wallet:myAssets.claimableRewards")}
                 </Text>
-                {isRewardsLoading ? (
-                  <Skeleton width="4.5rem" height="1.25rem" />
-                ) : (
-                  <Flex align="center" gap="xs">
-                    <Text
-                      fs="p4"
-                      fw={600}
-                      font="primary"
-                      color={getToken("accents.success.emphasis")}
-                      sx={{ fontVariantNumeric: "tabular-nums" }}
+                <Flex align="center" gap="xs">
+                  <Text
+                    fs="p4"
+                    font="primary"
+                    fw={600}
+                    color={getToken("accents.success.emphasis")}
+                  >
+                    {t("common:currency", { value: claimableRewards })}
+                  </Text>
+                  {Big(claimableRewards).gt(0) && (
+                    <ButtonIcon
+                      asChild
+                      sx={{ color: getToken("accents.success.emphasis") }}
                     >
-                      {t("common:currency", { value: claimableRewards })}
-                    </Text>
-                    {Big(claimableRewards).gt(0) && (
-                      <Tooltip
-                        asChild
-                        side="top"
-                        text={t("dashboard:portfolio.claimRewards")}
+                      <Link
+                        to={LINKS.portfolio}
+                        aria-label={t("dashboard:portfolio.claimRewards")}
                       >
-                        <ButtonIcon
-                          asChild
-                          sx={{ color: getToken("accents.success.emphasis") }}
-                        >
-                          <Link
-                            to={LINKS.portfolio}
-                            aria-label={t("dashboard:portfolio.claimRewards")}
-                          >
-                            <Icon component={BadgeDollarSign} size="s" />
-                          </Link>
-                        </ButtonIcon>
-                      </Tooltip>
-                    )}
-                  </Flex>
-                )}
-              </SRewardsMetric>
-            </SPortfolioHeadline>
-            <SMetricGrid>
-              <PortfolioMetric
-                label={assetsLabel ?? t("dashboard:portfolio.assets")}
-                value={assets}
-                tone="assets"
-                isLoading={isLoading}
-              />
-              <PortfolioMetric
-                label={t("dashboard:portfolio.liquidity")}
-                value={liquidity}
-                tone="liquidity"
-                isLoading={isLoading}
-              />
-              <PortfolioMetric
-                label={t("dashboard:portfolio.borrowed")}
-                value={borrowed}
-                tone="borrowed"
-                isLoading={isLoading}
-              />
-            </SMetricGrid>
-          </SPortfolioBalances>
-        </SPortfolioContent>
+                        <Icon component={BadgeDollarSign} size="s" />
+                      </Link>
+                    </ButtonIcon>
+                  )}
+                </Flex>
+              </Flex>
+            </SHydrationSummary>
+          )}
+        </>
       )}
     </SPlainDashboardCard>
+  )
+}
+
+const PortfolioNetworkBreakdown = ({
+  networks,
+}: {
+  networks: PortfolioNetworkBalance[]
+}) => {
+  const { t } = useTranslation(["dashboard", "common"])
+  const [showAll, setShowAll] = useState(false)
+
+  return (
+    <SNetworkBreakdown
+      aria-label={t("dashboard:portfolio.locationComposition")}
+    >
+      {(showAll ? networks : networks.slice(0, 3)).map((network, index) => (
+        <SNetworkBalanceRow key={network.key}>
+          <Flex align="center" gap="xs">
+            <ChainLogo
+              chainId={network.chainId}
+              ecosystem={network.ecosystem}
+              size="extra-small"
+            />
+            <Text fs="p6" color={getToken("text.medium")}>
+              {network.name}
+            </Text>
+          </Flex>
+          <Text
+            fs="p5"
+            fw={600}
+            color={getToken(
+              NETWORK_TONE_TOKENS[index % NETWORK_TONE_TOKENS.length]!,
+            )}
+          >
+            {t("common:currency", { value: network.value })}
+          </Text>
+        </SNetworkBalanceRow>
+      ))}
+      {networks.length > 3 && (
+        <Button
+          size="small"
+          variant="muted"
+          onClick={() => setShowAll(!showAll)}
+          aria-expanded={showAll}
+        >
+          {t(
+            showAll
+              ? "dashboard:portfolio.fewerNetworks"
+              : "dashboard:portfolio.allNetworks",
+            { count: networks.length },
+          )}
+        </Button>
+      )}
+    </SNetworkBreakdown>
   )
 }
 
@@ -1725,7 +1983,7 @@ const PortfolioMetric = ({
 }: {
   label: string
   value: string
-  tone: "assets" | "liquidity" | "borrowed"
+  tone: keyof typeof PORTFOLIO_TONE_TOKENS
   isLoading: boolean
 }) => {
   const { t } = useTranslation("common")
