@@ -84,13 +84,16 @@ import {
   SMetricGrid,
   SNetWorth,
   SOpportunityCard,
+  SOpportunityDesktopRate,
   SOpportunityFooter,
   SOpportunityGrid,
+  SOpportunityMobileRate,
   SOpportunityPill,
   SOpportunityPills,
   SOpportunityTop,
   SPlainDashboardCard,
   SPortfolioBalances,
+  SPortfolioCardHeader,
   SPortfolioChart,
   SPortfolioContent,
   SPortfolioHeadline,
@@ -1578,7 +1581,7 @@ const PortfolioCard = ({
 
   return (
     <SPlainDashboardCard columns={7}>
-      <SCardHeader>
+      <SPortfolioCardHeader>
         <Text as="h2" fs="h7" fw={600} font="primary">
           {t("dashboard:portfolio.title")}
         </Text>
@@ -1591,7 +1594,7 @@ const PortfolioCard = ({
             {t("dashboard:portfolio.notFunded")}
           </Chip>
         ) : null}
-      </SCardHeader>
+      </SPortfolioCardHeader>
 
       {!accountConnected ? (
         <SEmptyState>
@@ -1615,7 +1618,7 @@ const PortfolioCard = ({
               />
             ) : (
               <PieChart
-                size={[88, null, 112]}
+                size={[72, null, 112]}
                 innerRadius={0.64}
                 animationDurationMs={750}
                 ariaLabel={t("dashboard:portfolio.composition")}
@@ -1637,7 +1640,7 @@ const PortfolioCard = ({
                   <Skeleton width="13rem" height="3rem" />
                 ) : (
                   <Text
-                    fs="h4"
+                    fs={["h5", null, "h4"]}
                     lh={1}
                     fw={600}
                     font="primary"
@@ -1737,7 +1740,7 @@ const PortfolioMetric = ({
         <Skeleton width="5rem" height="1.25rem" />
       ) : (
         <Text
-          fs="p4"
+          fs={["p5", "p4"]}
           fw={600}
           font="primary"
           color={getToken(toneToken)}
@@ -2364,7 +2367,12 @@ const OpportunityCard = ({
       }
     >
       <SOpportunityTop>
-        <AssetLogo id={opportunity.logoIds} size="medium" />
+        <Flex align="center" gap="s">
+          <AssetLogo id={opportunity.logoIds} size="medium" />
+          <SOpportunityMobileRate>
+            <OpportunityRate opportunity={opportunity} />
+          </SOpportunityMobileRate>
+        </Flex>
         <Flex gap="s" sx={{ flexWrap: "wrap" }} justify="flex-end">
           {investedValue && (
             <Chip variant="green" size="small" rounded>
@@ -2388,8 +2396,12 @@ const OpportunityCard = ({
           {opportunity.description}
         </Text>
       </Flex>
-      <SOpportunityFooter>
-        <OpportunityRate opportunity={opportunity} />
+      <SOpportunityFooter
+        $hasAction={context === "external" || !!investedValue}
+      >
+        <SOpportunityDesktopRate>
+          <OpportunityRate opportunity={opportunity} />
+        </SOpportunityDesktopRate>
         {context === "external" ? (
           <Button as="span" variant="tertiary" outline size="small">
             {t("dashboard:external.moveAction")} →
@@ -2442,7 +2454,7 @@ const OpportunityRate = ({
         sx={{ fontVariantNumeric: "tabular-nums" }}
       >
         {opportunity.rate
-          ? t("common:percent", { value: opportunity.rate })
+          ? `${t("common:percent", { value: opportunity.rate })} APR`
           : "—"}
       </Text>
     </Flex>

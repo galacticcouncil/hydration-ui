@@ -235,6 +235,16 @@ export const SCardHeader = styled.div(
   `,
 )
 
+export const SPortfolioCardHeader = styled(SCardHeader)(
+  ({ theme }) => css`
+    margin-bottom: ${theme.space.m};
+
+    ${mq("md")} {
+      margin-bottom: ${theme.space.xl};
+    }
+  `,
+)
+
 export const SNetWorth = styled.div(
   ({ theme }) => css`
     position: relative;
@@ -253,7 +263,7 @@ export const SPortfolioContent = styled.div(
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    gap: ${theme.space.l};
+    gap: ${theme.space.m};
     flex: 1;
 
     ${mq("md")} {
@@ -266,18 +276,27 @@ export const SPortfolioBalances = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.space.m};
+    gap: ${theme.space.s};
     min-width: 0;
+
+    ${mq("md")} {
+      gap: ${theme.space.m};
+    }
   `,
 )
 
 export const SPortfolioHeadline = styled.div(
   ({ theme }) => css`
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: ${theme.space.m};
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+
+    ${mq("md")} {
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
   `,
 )
 
@@ -297,8 +316,8 @@ export const SPortfolioChart = styled.div(
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 5.5rem;
-    height: 5.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
 
     ${mq("md")} {
       width: 7rem;
@@ -322,12 +341,14 @@ export const SMetricGrid = styled.div(
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 1fr;
-    gap: ${theme.space.m};
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: ${theme.space.s};
+
+    > * + * {
+      padding-left: ${theme.space.s};
+    }
 
     ${mq("sm")} {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-
       > * + * {
         padding-left: ${theme.space.m};
         border-left: 1px solid ${theme.details.separators};
@@ -341,6 +362,7 @@ export const SMetric = styled.div(
     display: flex;
     flex-direction: column;
     gap: ${theme.space.xs};
+    min-width: 0;
   `,
 )
 
@@ -446,28 +468,40 @@ export const SCuratedOpportunityRow = styled(SListRow)(
 export const SOpportunityPills = styled.div(
   ({ theme }) => css`
     display: flex;
-    flex: 1 1 14rem;
+    flex: 0 0 auto;
     align-items: center;
-    justify-content: flex-end;
-    gap: ${theme.space.s};
+    justify-content: stretch;
+    gap: ${theme.space.xs};
+    width: 100%;
     min-width: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+
+    ${mq("sm")} {
+      flex: 1 1 14rem;
+      justify-content: flex-end;
+      gap: ${theme.space.s};
+      width: auto;
+      flex-wrap: wrap;
+    }
   `,
 )
 
 export const SOpportunityPill = styled.button(
   ({ theme }) => css`
     display: inline-flex;
+    flex: 1 1 auto;
     align-items: center;
-    gap: ${theme.space.s};
+    justify-content: center;
+    gap: ${theme.space.xs};
+    min-width: 0;
     min-height: 2rem;
-    padding: ${theme.space.base} ${theme.space.m};
+    padding: ${theme.space.base} ${theme.space.xs};
     border: 1px solid transparent;
     border-radius: ${theme.radii.full};
     background-color: ${theme.tags.soft.green.background};
     color: ${theme.tags.soft.green.foreground};
     font: inherit;
-    font-size: ${theme.fontSizes.p5};
+    font-size: ${theme.fontSizes.p6};
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
@@ -476,14 +510,32 @@ export const SOpportunityPill = styled.button(
       border-color 0.2s ease;
 
     strong {
+      flex-shrink: 0;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
 
+    > span:first-of-type {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     > [data-opportunity-chevron] {
-      display: inline-flex;
+      display: none;
       opacity: 0.6;
       transition: transform 0.2s ease;
+    }
+
+    ${mq("sm")} {
+      flex: 0 0 auto;
+      justify-content: flex-start;
+      gap: ${theme.space.s};
+      padding-inline: ${theme.space.m};
+      font-size: ${theme.fontSizes.p5};
+
+      > [data-opportunity-chevron] {
+        display: inline-flex;
+      }
     }
 
     &:hover {
@@ -649,9 +701,10 @@ export const SOpportunityCard = styled.button(
     display: flex;
     width: 100%;
     height: 100%;
-    min-height: 10rem;
+    min-height: 0;
     flex-direction: column;
     padding: ${theme.space.l};
+    padding-bottom: ${theme.space.m};
     border: 1px solid ${theme.details.borders};
     border-radius: ${theme.radii.xl};
     background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
@@ -681,6 +734,11 @@ export const SOpportunityCard = styled.button(
       outline: 2px solid ${theme.buttons.primary.medium.rest};
       outline-offset: 2px;
     }
+
+    ${mq("sm")} {
+      min-height: 10rem;
+      padding-bottom: ${theme.space.l};
+    }
   `,
 )
 
@@ -694,13 +752,37 @@ export const SOpportunityTop = styled.div(
   `,
 )
 
-export const SOpportunityFooter = styled.div(
-  ({ theme }) => css`
+export const SOpportunityMobileRate = styled.div(
+  () => css`
     display: flex;
+
+    ${mq("sm")} {
+      display: none;
+    }
+  `,
+)
+
+export const SOpportunityDesktopRate = styled.div(
+  () => css`
+    display: none;
+
+    ${mq("sm")} {
+      display: flex;
+    }
+  `,
+)
+
+export const SOpportunityFooter = styled.div<{ $hasAction?: boolean }>(
+  ({ theme, $hasAction }) => css`
+    display: ${$hasAction ? "flex" : "none"};
     align-items: flex-end;
     justify-content: space-between;
     gap: ${theme.space.base};
     margin-top: auto;
     padding-top: ${theme.space.s};
+
+    ${mq("sm")} {
+      display: flex;
+    }
   `,
 )
