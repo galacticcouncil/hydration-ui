@@ -109,21 +109,29 @@ export const tradeCrosshair = (theme: ThemeProps) => {
   }
 }
 
+/**
+ * The price axis and the crosshair label are drawn by the chart library, which
+ * wants a decimal count and a tick size rather than a formatted string. A tick
+ * ladder has to stay aligned with the prices it labels, so the tier is chosen
+ * from the history's median close rather than from the tip, which a single
+ * spike would otherwise drag.
+ */
 export const getPriceFormat = (
   candles: ReadonlyArray<PairCandle>,
-): Partial<PriceFormat> | undefined => {
-  const value = candles.at(-1)?.close
+): Partial<PriceFormat> => {
+  const closes = candles
+    .map((candle) => candle.close)
+    .filter((close) => close > 0 && isFinite(close))
+    .sort((a, b) => a - b)
 
-  if (!value || value <= 0 || !isFinite(value)) return
+  const median = closes[Math.floor(closes.length / 2)]
 
-  if (value >= 100) return { precision: 2, minMove: 0.01 }
+  if (median === undefined) return { precision: 2, minMove: 0.01 }
+  if (median >= 1000) return { precision: 2, minMove: 0.01 }
+  if (median >= 1) return { precision: 4, minMove: 0.0001 }
+  if (median >= 0.01) return { precision: 6, minMove: 0.000001 }
 
-  const leadingZeros = Math.floor(Math.abs(Math.log10(value)))
-
-  return {
-    precision: leadingZeros + 4,
-    minMove: Math.pow(10, -(leadingZeros + 4)),
-  }
+  return { precision: 8, minMove: 0.00000001 }
 }
 
 /**
