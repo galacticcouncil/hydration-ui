@@ -50,18 +50,17 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
           </TableRowAction>
           <DropdownMenuContent>
             <DropdownMenuItem asChild>
-              <MenuSelectionItem variant="filterLink" asChild>
-                <div>
-                  <MenuItemLabel
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                      setIsRemoveAllModalOpen(true)
-                    }}
-                  >
-                    {t("myLiquidity.actions.removeLiquidity")}
-                  </MenuItemLabel>
-                </div>
+              <MenuSelectionItem
+                variant="filterLink"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  setIsRemoveAllModalOpen(true)
+                }}
+              >
+                <MenuItemLabel>
+                  {t("myLiquidity.actions.removeLiquidity")}
+                </MenuItemLabel>
               </MenuSelectionItem>
             </DropdownMenuItem>
           </DropdownMenuContent>

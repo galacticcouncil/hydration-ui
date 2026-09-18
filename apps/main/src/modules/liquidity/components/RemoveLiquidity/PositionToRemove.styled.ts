@@ -1,4 +1,4 @@
-import { css, styled } from "@galacticcouncil/ui/utils"
+import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 export const SPositionToRemove = styled.div<{ selected: boolean }>`
   ${({ theme, selected }) => css`
@@ -9,10 +9,11 @@ export const SPositionToRemove = styled.div<{ selected: boolean }>`
 
     ${selected && `background: ${theme.controls.dim.base}`};
 
+    height: ${pxToRem(45)};
+    cursor: pointer;
+
     &:hover {
       background: ${theme.controls.dim.base};
-      opacity: 0.6;
-      cursor: pointer;
     }
   `}
 `

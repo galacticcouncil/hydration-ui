@@ -19,10 +19,10 @@ import {
   TToken,
 } from "@/api/assets"
 import { TAssetStored, useAssetRegistry } from "@/states/assetRegistry"
+import { isBlacklistedAsset } from "@/utils/assets"
 import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
 
-const bannedAssets = ["1000042"]
 const blacklistedErc20AssetIds = new Set([HDX_ERC20_ASSET_ID])
 
 type TAssetsState = {
@@ -145,7 +145,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   } = useMemo(() => {
     return assets.reduce<TAssetsState>(
       (acc, asset) => {
-        if (bannedAssets.includes(asset.id)) return acc
+        if (isBlacklistedAsset(asset.id)) return acc
 
         if (
           isExternal(asset) &&
