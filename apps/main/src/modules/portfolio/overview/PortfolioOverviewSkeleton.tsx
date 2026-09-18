@@ -12,14 +12,20 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
+import { useSearch } from "@tanstack/react-router"
 
 import { useMyAssetsColumns } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
+import { useMyBondsColumns } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
+import { useMyLiquidityColumns } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.columns"
 import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChainHeader"
 import { portfolioOverviewTabs } from "@/modules/portfolio/overview/PortfolioOverview"
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 
 export const PortfolioOverviewSkeleton = () => {
-  const columns = useMyAssetsColumns(false)
+  const { category } = useSearch({ from: "/portfolio/" })
+  const assetsColumns = useMyAssetsColumns(false)
+  const liquidityColumns = useMyLiquidityColumns()
+  const bondsColumns = useMyBondsColumns()
 
   return (
     <Flex direction="column" gap="l">
@@ -73,7 +79,28 @@ export const PortfolioOverviewSkeleton = () => {
         <Separator />
         <SPortfolioTableWrapper>
           <TableContainer>
-            <DataTable isLoading data={[]} columns={columns} size="small" />
+            {category === "liquidity" ? (
+              <DataTable
+                isLoading
+                data={[]}
+                columns={liquidityColumns}
+                size="small"
+              />
+            ) : category === "bonds" ? (
+              <DataTable
+                isLoading
+                data={[]}
+                columns={bondsColumns}
+                size="small"
+              />
+            ) : (
+              <DataTable
+                isLoading
+                data={[]}
+                columns={assetsColumns}
+                size="small"
+              />
+            )}
           </TableContainer>
         </SPortfolioTableWrapper>
       </Paper>

@@ -52,7 +52,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   initialOption,
   split: initialSplit,
 }: AddMoneyMarketLiquidityWrapperProps) => {
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, isErc20AToken } = useAssets()
   const { account } = useAccount()
   const { sdk, isReady } = useRpcProvider()
   const { getTransferableBalance } = useAccountBalances()
@@ -147,6 +147,19 @@ export const useAddMoneyMarketLiquidityWrapper = ({
       amount,
     }))
 
+  const aTokenProvided = first(
+    assetsToProvide.flatMap(({ asset, amount }) =>
+      isErc20AToken(asset) ? [{ asset, amount }] : [],
+    ),
+  )
+  const [debouncedATokenAmount] = useDebouncedValue(
+    aTokenProvided?.amount ?? "",
+  )
+
+  const aTokenToWithdraw = aTokenProvided
+    ? { asset: aTokenProvided.asset, amount: debouncedATokenAmount }
+    : undefined
+
   useEffect(() => {
     if (!selectedAssetId && initialAssetIdToAdd) {
       form.setValue("selectedAssetId", initialAssetIdToAdd, {
@@ -163,6 +176,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserveIds,
     displayOption: false,
     assetsToProvide,
+    aTokenToWithdraw,
     stablepoolAssets,
     erc20Id,
     defaultOption,
@@ -178,7 +192,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
   props: AddMoneyMarketLiquidityWrapperProps
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { getAssetWithFallback, isErc20AToken } = useAssets()
+  const { getAssetWithFallback } = useAssets()
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -188,7 +202,8 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
       single: { swapSlippage },
     },
   } = useTradeSettings()
-  const { erc20Id, assetsToProvide, stablepoolAssets } = formData
+  const { erc20Id, assetsToProvide, aTokenToWithdraw, stablepoolAssets } =
+    formData
   const {
     onSubmitted,
     stablepoolDetails: { pool },
@@ -285,21 +300,13 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
   const omnipoolShares = getOmnipoolGetShares(minERC20ToGet)
   const minSharesToGet = omnipoolShares?.minSharesToGet ?? "0"
   const minReceiveAmount = scaleHuman(minSharesToGet, meta.decimals)
-  const assetInMeta = getAssetWithFallback(assetIn)
-
-  const { data: healthFactorQueryData } = useQuery(
+  const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
-      fromAssetId: isErc20AToken(assetInMeta)
-        ? assetInMeta.underlyingAssetId
-        : "",
-      fromAmount: debouncedAmountIn,
+      fromAssetId: aTokenToWithdraw?.asset.underlyingAssetId ?? "",
+      fromAmount: aTokenToWithdraw?.amount ?? "0",
     }),
   )
-
-  const healthFactor = isErc20AToken(assetInMeta)
-    ? healthFactorQueryData
-    : undefined
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
@@ -700,7 +707,8 @@ export const useAddMoneyMarketLiquidity = ({
   const getMinimumTradeAmount = useMinimumTradeAmount()
 
   const { papi, sdk } = rpc
-  const { erc20Id, assetsToProvide, stablepoolAssets } = formData
+  const { erc20Id, assetsToProvide, aTokenToWithdraw, stablepoolAssets } =
+    formData
   const {
     stableswapId,
     stablepoolDetails: { pool },
@@ -762,12 +770,11 @@ export const useAddMoneyMarketLiquidity = ({
     : (getMinimumTradeAmount(trade?.swap)?.toString() ?? "0")
   const minReceiveAmount = scaleHuman(tradeAmountOut, meta.decimals)
 
-  //@TODO: decide how to display health factor when providing liquidity to shares and then trade to erc20
   const { data: healthFactor } = useQuery(
     healthFactorQuery(rpc, {
       address: account?.address ?? "",
-      fromAsset: getAssetWithFallback(assetIn),
-      fromAmount: debouncedAmountIn,
+      fromAsset: aTokenToWithdraw?.asset ?? null,
+      fromAmount: aTokenToWithdraw?.amount ?? "0",
       toAsset: getAssetWithFallback(erc20Id),
       toAmount: minReceiveAmount,
     }),

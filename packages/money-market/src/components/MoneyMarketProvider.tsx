@@ -1,6 +1,7 @@
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
 import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { FC, lazy, Suspense, useEffect } from "react"
+import { useShallow } from "zustand/shallow"
 
 import { BackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
 import { AppDataProvider } from "@/hooks/app-data-provider/useAppDataProvider"
@@ -75,10 +76,9 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   ...formatters
 }) => {
   const provider = useRootStore((state) => state.provider)
-  const [setProvider, setCurrentMarket] = useRootStore((state) => [
-    state.setProvider,
-    state.setCurrentMarket,
-  ])
+  const [setProvider, setCurrentMarket] = useRootStore(
+    useShallow((state) => [state.setProvider, state.setCurrentMarket]),
+  )
 
   useEffect(() => {
     if (!externalProvider) return

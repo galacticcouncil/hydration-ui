@@ -47,6 +47,7 @@ export type Band = {
   lower: number
   upper: number
   height: number
+  offset: number
 }
 
 export type RangeScenario =
@@ -552,6 +553,10 @@ const bandHeightFromMax = (liquidity: bigint, max: number) =>
     ? Math.max(MIN_BAND_HEIGHT, liquidityToChartScale(liquidity) / max)
     : 1
 
+type Span = { lower: number; upper: number }
+
+const overlaps = (a: Span, b: Span) => a.lower < b.upper && b.lower < a.upper
+
 const barInRange = (bar: Bar, lower: number, upper: number) => {
   const center = barMidpoint(bar)
   return center >= lower && center <= upper
@@ -568,27 +573,34 @@ const buildRealBands = ({
 }) => {
   const max = bars.reduce((value, bar) => Math.max(value, bar.liquidity), 0)
 
-  return [
-    ...(state && hasBase(state)
-      ? [
-          {
-            id: "base" as const,
-            ...bounds.base,
-            height: bandHeightFromMax(state.base.liquidity, max),
-          },
-        ]
-      : []),
-    ...(state && hasLimit(state)
-      ? [
-          {
-            id: "limit" as const,
-            lower: state.limitLower,
-            upper: state.limitUpper,
-            height: bandHeightFromMax(state.limit.liquidity, max),
-          },
-        ]
-      : []),
-  ]
+  const base =
+    state && hasBase(state)
+      ? {
+          id: "base" as const,
+          ...bounds.base,
+          height: bandHeightFromMax(state.base.liquidity, max),
+          offset: 0,
+        }
+      : null
+
+  const limit =
+    state && hasLimit(state)
+      ? {
+          id: "limit" as const,
+          lower: state.limitLower,
+          upper: state.limitUpper,
+          height: bandHeightFromMax(state.limit.liquidity, max),
+          // the limit band overlaps the base band horizontally, so it starts
+          // where the base band ends instead of hiding behind it
+          offset:
+            base &&
+            overlaps(base, { lower: state.limitLower, upper: state.limitUpper })
+              ? base.height
+              : 0,
+        }
+      : null
+
+  return [base, limit].filter((band) => band !== null)
 }
 
 const buildScenarioBands = ({
@@ -609,6 +621,7 @@ const buildScenarioBands = ({
             id: "previous" as const,
             ...bounds.base,
             height: CHART_LAYOUT.scenarioBandHeight,
+            offset: 0,
           },
         ]
       : []),
@@ -616,6 +629,7 @@ const buildScenarioBands = ({
       id: "active",
       ...(scenario === "recentered" ? bounds.recentered : bounds.base),
       height: CHART_LAYOUT.scenarioBandHeight,
+      offset: 0,
     },
     ...(scenario === "limitOrder" && state && hasLimit(state)
       ? [
@@ -624,6 +638,7 @@ const buildScenarioBands = ({
             lower: state.limitLower,
             upper: state.limitUpper,
             height: CHART_LAYOUT.scenarioBandHeight,
+            offset: 0,
           },
         ]
       : []),

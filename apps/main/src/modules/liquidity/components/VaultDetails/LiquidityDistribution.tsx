@@ -51,6 +51,7 @@ const plotCssWidth = (fraction: number) =>
 const BAR_RADIUS = 4
 const BAR_GAP = 4
 const MIN_BAR_HEIGHT = 12
+const BAND_GAP = 2
 
 const FADED_OPACITY = 0.3
 const BACKGROUND_TIER_TINT = 0.45
@@ -203,18 +204,23 @@ export const LiquidityDistribution = ({
   const ceiling = top * 1.12
   const chartHeight = resolvedHeight ?? DEFAULT_DESKTOP_HEIGHT
   const minVisibleLiquidity = ceiling * (MIN_BAR_HEIGHT / chartHeight)
+  const bandGap = ceiling * (BAND_GAP / chartHeight)
 
   const definition = useMemo(() => {
     const bandMarks =
       managedRangesVisible && !scenario
-        ? bands.map(({ id, lower, upper, height }) =>
+        ? bands.map(({ id, lower, upper, height, offset }) =>
             decorative(
               rect([{ lower, upper }], {
                 id: `managed-band-${id}`,
                 x1: "lower",
                 x2: "upper",
-                y1: () => 0,
-                y2: () => Math.max(top * height, minVisibleLiquidity),
+                y1: () => top * offset + (offset > 0 ? bandGap : 0),
+                y2: () =>
+                  Math.max(
+                    top * (offset + height),
+                    top * offset + minVisibleLiquidity,
+                  ),
                 fill: managedRange.color,
                 fillOpacity: managedRange.fillOpacity,
                 ...managedRangeChartStroke(
@@ -332,6 +338,7 @@ export const LiquidityDistribution = ({
       },
     })
   }, [
+    bandGap,
     bands,
     bars,
     colors,
