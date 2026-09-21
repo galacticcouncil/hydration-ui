@@ -1,0 +1,33 @@
+{
+  "name": "@galacticcouncil/money-market-v2",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./core": "./src/core/index.ts",
+    "./react": "./src/react/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "yarn lint:eslint && yarn lint:ts",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "lint:eslint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.101.4",
+    "@wagmi/core": "^2.22.1",
+    "big.js": "^6.2.2",
+    "viem": "^2.38.3",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "@types/react": "^19.1.1",
+    "react": "^19.1.1",
+    "vitest": "^4.1.11"
+  }
+}
