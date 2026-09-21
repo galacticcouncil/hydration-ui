@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 
 import { bestSellQuery } from "@/api/trade"
@@ -15,14 +15,22 @@ import {
 import {
   computeDerived,
   FieldName,
+  FieldValues,
   getDerived,
   lockSellIntoLastTwo,
+  repairLastTwo,
   updateLastTwoOnTouch,
 } from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const RECALCULATE_DEBOUNCE_MS = 250
+
+const readFieldValues = (values: LimitFormValues): FieldValues => ({
+  sell: values.sellAmount ?? "",
+  buy: values.buyAmount ?? "",
+  price: values.limitPrice ?? "",
+})
 
 type LimitCascade = {
   readonly quotedPrice: QuotedPriceBinding
@@ -89,6 +97,13 @@ export const useLimitCascade = (): LimitCascade => {
     }, RECALCULATE_DEBOUNCE_MS)
   }, [])
 
+  useEffect(
+    () => () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    },
+    [],
+  )
+
   const applyPriceTouch = useCallback(
     (newLimitPrice: string) => {
       const values = getValues()
@@ -103,8 +118,7 @@ export const useLimitCascade = (): LimitCascade => {
       const derived = getDerived(lastTwo)
       if (derived !== "price") {
         const computed = computeDerived(derived, {
-          sell: values.sellAmount ?? "",
-          buy: values.buyAmount ?? "",
+          ...readFieldValues(values),
           price: newLimitPrice,
         })
         if (derived === "buy") setValue("buyAmount", computed ?? "")
@@ -131,8 +145,7 @@ export const useLimitCascade = (): LimitCascade => {
       if (derived === "price") return
 
       const computed = computeDerived(derived, {
-        sell: values.sellAmount ?? "",
-        buy: values.buyAmount ?? "",
+        ...readFieldValues(values),
         price: newLimitPrice,
       })
       if (computed === null) return
@@ -158,11 +171,8 @@ export const useLimitCascade = (): LimitCascade => {
   const recomputeDerivedField = useCallback(() => {
     const values = getValues()
     const derived = getDerived(values.lastTwo)
-    const computed = computeDerived(derived, {
-      sell: values.sellAmount ?? "",
-      buy: values.buyAmount ?? "",
-      price: values.limitPrice ?? "",
-    })
+    const computed = computeDerived(derived, readFieldValues(values))
+
     if (derived === "buy") {
       setValue("buyAmount", computed ?? "")
     } else if (derived === "sell") {
@@ -176,9 +186,20 @@ export const useLimitCascade = (): LimitCascade => {
   const onFieldTouch = useCallback(
     (field: FieldName) => {
       const values = getValues()
-      const next = updateLastTwoOnTouch(values.lastTwo, field, values.isLocked)
+      const afterTouch = updateLastTwoOnTouch(
+        values.lastTwo,
+        field,
+        values.isLocked,
+      )
+      const next = repairLastTwo(
+        afterTouch,
+        readFieldValues(values),
+        field,
+        values.isLocked,
+      )
+      const derivedAfterTouch = getDerived(next)
       if (next !== values.lastTwo) setValue("lastTwo", next)
-      if (getDerived(next) === "price") {
+      if (derivedAfterTouch === "price") {
         dispatch({ type: "derived", value: values.limitPrice ?? "" })
       }
       debounced(() => {
