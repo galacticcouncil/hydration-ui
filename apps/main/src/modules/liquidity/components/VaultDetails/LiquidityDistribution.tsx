@@ -1,4 +1,11 @@
-import { Box, Chart, Chip, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Chart,
+  Chip,
+  Flex,
+  Stack,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { useResponsiveValue, useTheme } from "@galacticcouncil/ui/theme"
 import type { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
@@ -7,7 +14,7 @@ import { decorative } from "@tanstack/charts/mark/decorative"
 import { scaleLinear } from "@tanstack/charts/scales/linear"
 import { tooltip } from "@tanstack/charts/tooltip"
 import Big from "big.js"
-import { useMemo, useState } from "react"
+import { Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -20,59 +27,44 @@ import {
   SSpotLine,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.styled"
 import {
-  MANAGED_RANGE,
+  BACKGROUND_TIER_TINT,
+  BAND_GAP,
+  BAND_RADIUS,
+  BAR_GAP,
+  BAR_RADIUS,
+  CHART_GUIDE_INSET,
+  DEFAULT_DESKTOP_HEIGHT,
+  DEFAULT_HEIGHT,
+  FADED_OPACITY,
+  FOCUS_TRANSITION,
   managedRangeChartStroke,
   managedRangeMixedColor,
+  ManagedRangeStyle,
+  managedRangeStyle,
+  MIN_BAR_HEIGHT,
+  plotCssPos,
+  plotCssWidth,
+  SCENARIO_TRANSITION,
+  TICK_PADDING,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.theme"
 import {
+  BandId,
+  bandSegments,
   Bar,
   BARS_ID,
   getLiquidityDistribution,
-  getManagedBand,
+  getManagedBands,
   getScenarioDistribution,
   isBarPoint,
+  isSameRange,
   priceAtTick,
   RangeScenario,
-  sharesFocusGroup,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.utils"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
 export type { RangeScenario }
-
-const TICK_PADDING = 8
-const CHART_GUIDE_INSET = 4
-const CHART_PLOT_INSET = CHART_GUIDE_INSET * 2
-const plotCssPos = (fraction: number) =>
-  `calc(${CHART_GUIDE_INSET}px + ${fraction} * (100% - ${CHART_PLOT_INSET}px))`
-const plotCssWidth = (fraction: number) =>
-  `calc(${fraction} * (100% - ${CHART_PLOT_INSET}px))`
-const BAR_RADIUS = 4
-const BAR_GAP = 4
-const MIN_BAR_HEIGHT = 12
-const BAND_GAP = 2
-
-const FADED_OPACITY = 0.3
-const BACKGROUND_TIER_TINT = 0.45
-const FOCUS_TRANSITION = {
-  type: "tween" as const,
-  duration: 350,
-  easing: "ease-out" as const,
-}
-const SCENARIO_TRANSITION = {
-  transition: {
-    type: "tween" as const,
-    duration: 650,
-    easing: "ease-in-out" as const,
-  },
-}
-
-const DEFAULT_DESKTOP_HEIGHT = 420
-const DEFAULT_HEIGHT: ResponsiveStyleValue<number> = [
-  280,
-  DEFAULT_DESKTOP_HEIGHT,
-]
 
 const Legend = ({ color, label }: { color: string; label: string }) => (
   <Flex align="center" gap="s">
@@ -95,7 +87,7 @@ const RangeLegend = ({
   visible,
   onToggle,
 }: {
-  range: { color: string; fillOpacity: number; borderOpacity: number }
+  range: ManagedRangeStyle
   label: string
   visible: boolean
   onToggle: () => void
@@ -146,12 +138,8 @@ export const LiquidityDistribution = ({
   const tickFontSize = themeProps.paragraphSize.p5
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
 
-  const managedRange = useMemo(
-    () => ({
-      color: MANAGED_RANGE.getColor(themeProps),
-      fillOpacity: MANAGED_RANGE.fillOpacity,
-      borderOpacity: MANAGED_RANGE.borderOpacity,
-    }),
+  const rangeStyle = useCallback(
+    (id?: BandId) => managedRangeStyle(themeProps, id),
     [themeProps],
   )
 
@@ -172,8 +160,6 @@ export const LiquidityDistribution = ({
     }),
     [getAssetColor, scenario, themeProps, token0.id, token1.id],
   )
-
-  const vaultState = vault.vault
 
   const { bars, spotTick, max, lo, hi, bands, chartDecimals0, chartDecimals1 } =
     useMemo(() => {
@@ -209,27 +195,34 @@ export const LiquidityDistribution = ({
   const definition = useMemo(() => {
     const bandMarks =
       managedRangesVisible && !scenario
-        ? bands.map(({ id, lower, upper, height, offset }) =>
-            decorative(
-              rect([{ lower, upper }], {
-                id: `managed-band-${id}`,
-                x1: "lower",
-                x2: "upper",
-                y1: () => top * offset + (offset > 0 ? bandGap : 0),
-                y2: () =>
-                  Math.max(
-                    top * (offset + height),
-                    top * offset + minVisibleLiquidity,
-                  ),
-                fill: managedRange.color,
-                fillOpacity: managedRange.fillOpacity,
-                ...managedRangeChartStroke(
-                  managedRange.color,
-                  managedRange.borderOpacity,
+        ? bands.flatMap((band) =>
+            bandSegments(band, bars, top, minVisibleLiquidity).map(
+              (segment, index) =>
+                decorative(
+                  rect([segment], {
+                    id: `managed-band-${band.id}-${index}`,
+                    x1: "lower",
+                    x2: "upper",
+                    // the band caps the bars it covers instead of stacking
+                    // above them; a stacked band is trimmed at the bottom so
+                    // it doesn't touch the band underneath
+                    y1: () =>
+                      Math.max(
+                        0,
+                        segment.barTop -
+                          Math.max(top * band.height, minVisibleLiquidity),
+                      ) + (band.offset ? bandGap : 0),
+                    y2: () => segment.barTop,
+                    fill: rangeStyle(band.id).color,
+                    fillOpacity: rangeStyle(band.id).fillOpacity,
+                    ...managedRangeChartStroke(
+                      rangeStyle(band.id).color,
+                      rangeStyle(band.id).borderOpacity,
+                    ),
+                    radius: BAND_RADIUS,
+                    inset: 0,
+                  }),
                 ),
-                radius: 3,
-                inset: 0,
-              }),
             ),
           )
         : []
@@ -254,14 +247,12 @@ export const LiquidityDistribution = ({
           motion: scenario ? SCENARIO_TRANSITION : undefined,
           states: [
             {
-              when: ({ datum, focus }) =>
-                !sharesFocusGroup(focus.primary, datum, vaultState),
+              when: ({ datum, focus }) => !isSameRange(focus.primary, datum),
               style: { fillOpacity: FADED_OPACITY },
               transition: FOCUS_TRANSITION,
             },
             {
-              when: ({ datum, focus }) =>
-                sharesFocusGroup(focus.primary, datum, vaultState),
+              when: ({ datum, focus }) => isSameRange(focus.primary, datum),
               style: { fillOpacity: 1 },
               transition: FOCUS_TRANSITION,
             },
@@ -344,7 +335,7 @@ export const LiquidityDistribution = ({
     colors,
     hi,
     lo,
-    managedRange,
+    rangeStyle,
     spotTick,
     t,
     tickBaseline,
@@ -356,7 +347,6 @@ export const LiquidityDistribution = ({
     top,
     scenario,
     managedRangesVisible,
-    vaultState,
   ])
 
   if (!bars.length)
@@ -437,9 +427,9 @@ export const LiquidityDistribution = ({
                     <SManagedBand
                       key={managedBand.id}
                       aria-hidden
-                      $rangeColor={managedRange.color}
-                      $fillOpacity={managedRange.fillOpacity}
-                      $borderOpacity={managedRange.borderOpacity}
+                      $rangeColor={rangeStyle(managedBand.id).color}
+                      $fillOpacity={rangeStyle(managedBand.id).fillOpacity}
+                      $borderOpacity={rangeStyle(managedBand.id).borderOpacity}
                       $opacity={
                         managedBand.id === "previous" ? FADED_OPACITY : 1
                       }
@@ -497,14 +487,28 @@ export const LiquidityDistribution = ({
             }
           />
           <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
-          {bands.length > 0 && (
-            <RangeLegend
-              range={managedRange}
-              label={t("vaults.chart.legend.ranges")}
-              visible={managedRangesVisible}
-              onToggle={() => setManagedRangesVisible((value) => !value)}
-            />
-          )}
+          {scenario
+            ? bands.length > 0 && (
+                <RangeLegend
+                  range={rangeStyle()}
+                  label={t("vaults.chart.legend.ranges")}
+                  visible={managedRangesVisible}
+                  onToggle={() => setManagedRangesVisible((value) => !value)}
+                />
+              )
+            : bands.map((band) => (
+                <RangeLegend
+                  key={band.id}
+                  range={rangeStyle(band.id)}
+                  label={
+                    band.id === "limit"
+                      ? t("vaults.chart.legend.limit")
+                      : t("vaults.chart.legend.base")
+                  }
+                  visible={managedRangesVisible}
+                  onToggle={() => setManagedRangesVisible((value) => !value)}
+                />
+              ))}
           {scenario && (
             <Legend
               color={colors.background}
@@ -523,13 +527,14 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
   const { decimals: decimals0 } = token0
   const { decimals: decimals1 } = token1
   const { getAssetPrice } = useAssetsPrice([token0.id, token1.id])
+  const { themeProps } = useTheme()
 
   const low = priceAtTick(bar.rangeFrom, decimals0, decimals1)
   const high = priceAtTick(bar.rangeTo, decimals0, decimals1)
   const held = bar.side === "token0" ? token0 : token1
   const state = vault.vault
   const mid = (bar.rangeFrom + bar.rangeTo) / 2
-  const managedBand = state ? getManagedBand(mid, state) : null
+  const managedBands = state ? getManagedBands(mid, state) : []
 
   const human = (raw: bigint, decimals: number) =>
     t("common:number", {
@@ -547,22 +552,21 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
     })
   }
 
-  const vaultPosition =
-    state && managedBand
-      ? {
-          label: t(
-            managedBand === "base"
-              ? "vaults.composition.base"
-              : "vaults.composition.limit",
-          ),
-          ...state[managedBand],
-        }
-      : null
-
-  const share =
-    vaultPosition && bar.liquidity > 0
-      ? (Number(vaultPosition.liquidity) / bar.liquidity) * 100
-      : null
+  const vaultPositions = state
+    ? managedBands.map((band) => ({
+        band,
+        label: t(
+          band === "base"
+            ? "vaults.composition.base"
+            : "vaults.composition.limit",
+        ),
+        share:
+          bar.liquidity > 0
+            ? (Number(state[band].liquidity) / bar.liquidity) * 100
+            : null,
+        ...state[band],
+      }))
+    : []
 
   return (
     <Flex direction="column" gap="s" p="m" minWidth="4xl">
@@ -576,15 +580,19 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
           {t("common:number.range", { from: low, to: high })}
         </Text>
         <Flex align="center" gap="xs">
-          {managedBand && (
-            <Chip size="small" variant="blue">
+          {managedBands.map((band) => (
+            <Chip
+              key={band}
+              size="small"
+              variant={band === "base" ? "blue" : "orange"}
+            >
               {t(
-                managedBand === "base"
+                band === "base"
                   ? "vaults.chart.band.base"
                   : "vaults.chart.band.limit",
               )}
             </Chip>
-          )}
+          ))}
           {bar.current && (
             <Chip size="small" variant="lime">
               {t("vaults.chart.tooltip.current")}
@@ -608,37 +616,54 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
         displayValue={usd(held.id, bar.locked)}
       />
 
-      {vaultPosition && (
-        <>
-          <Text fs="p6" color={getToken("text.medium")} mt="xs">
-            {share !== null
-              ? t("vaults.chart.tooltip.vaultShare", {
-                  label: vaultPosition.label,
-                  value: share,
-                })
-              : vaultPosition.label}
-          </Text>
-          <TickStatsRow
-            label={token0.symbol}
-            isSymbolLabel={true}
-            icon={<AssetLogo id={token0.id} size="extra-small" />}
-            value={human(vaultPosition.amount0, decimals0)}
-            displayValue={usd(
-              token0.id,
-              scaleHuman(vaultPosition.amount0.toString(), decimals0),
-            )}
-          />
-          <TickStatsRow
-            label={token1.symbol}
-            isSymbolLabel={true}
-            icon={<AssetLogo id={token1.id} size="extra-small" />}
-            value={human(vaultPosition.amount1, decimals1)}
-            displayValue={usd(
-              token1.id,
-              scaleHuman(vaultPosition.amount1.toString(), decimals1),
-            )}
-          />
-        </>
+      {vaultPositions.length > 0 && (
+        <Stack gap="base" mt="base" separated withLeadingSeparator>
+          {vaultPositions.map((position) => (
+            <Fragment key={position.band}>
+              <Flex align="center" gap="xs">
+                <Box
+                  as="span"
+                  size="2xs"
+                  borderRadius="full"
+                  display="inline-block"
+                  borderStyle="solid"
+                  borderColor={
+                    managedRangeStyle(themeProps, position.band).color
+                  }
+                  borderWidth="1px"
+                />
+                <Text fs="p6" color={getToken("text.medium")}>
+                  {position.share !== null
+                    ? t("vaults.chart.tooltip.vaultShare", {
+                        label: position.label,
+                        value: position.share,
+                      })
+                    : position.label}
+                </Text>
+              </Flex>
+              <TickStatsRow
+                label={token0.symbol}
+                isSymbolLabel={true}
+                icon={<AssetLogo id={token0.id} size="extra-small" />}
+                value={human(position.amount0, decimals0)}
+                displayValue={usd(
+                  token0.id,
+                  scaleHuman(position.amount0.toString(), decimals0),
+                )}
+              />
+              <TickStatsRow
+                label={token1.symbol}
+                isSymbolLabel={true}
+                icon={<AssetLogo id={token1.id} size="extra-small" />}
+                value={human(position.amount1, decimals1)}
+                displayValue={usd(
+                  token1.id,
+                  scaleHuman(position.amount1.toString(), decimals1),
+                )}
+              />
+            </Fragment>
+          ))}
+        </Stack>
       )}
     </Flex>
   )
