@@ -1,10 +1,12 @@
 import {
   Box,
-  Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
+  Separator,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -23,7 +25,12 @@ import {
   TradeLimitRow,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
-import { isShareToken, TShareToken } from "@/providers/assetsProvider"
+import {
+  isShareToken,
+  isStableSwap,
+  TShareToken,
+  useAssets,
+} from "@/providers/assetsProvider"
 import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 import { useAssetPrice } from "@/states/displayAsset"
 
@@ -49,13 +56,24 @@ export type RemoveLiquidityProps = RemoveLiquidityType & {
 
 export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
   const isIsolatedPool = isSS58Address(props.poolId)
+  const { getAsset } = useAssets()
+  const asset = !isIsolatedPool ? getAsset(props.poolId) : undefined
+  const isStablepool = !!asset && isStableSwap(asset)
 
   if (props.selectable) {
-    return isIsolatedPool ? (
-      <RemoveSelectableXYKPositions {...props} />
-    ) : (
-      <RemoveSelectablePositions {...props} />
-    )
+    if (isIsolatedPool) {
+      return <RemoveSelectableXYKPositions {...props} />
+    }
+    // Stablepools have a single share balance — no NFT positions to pick
+    if (isStablepool) {
+      return (
+        <RemoveStablepoolLiquidity
+          {...props}
+          stableswapId={props.stableswapId ?? props.poolId}
+        />
+      )
+    }
+    return <RemoveSelectablePositions {...props} />
   } else if (isIsolatedPool) {
     return <RemoveIsolatedPoolsLiquidity {...props} />
   } else if (props.positionId) {
@@ -94,7 +112,10 @@ export const RemoveLiquidityForm = ({
   totalPositionShifted: string
   receiveAssets: TReceiveAsset[]
   editable?: boolean
-  mutation: UseMutationResult<void, Error, void>
+  mutation: Pick<
+    UseMutationResult<unknown, Error, void>,
+    "mutate" | "isPending"
+  >
   isIsolatedPool?: boolean
   meta: TAssetData | TShareToken
   deposits?: Array<XykDeposit | OmnipoolDepositFull>
@@ -128,9 +149,9 @@ export const RemoveLiquidityForm = ({
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <Flex direction="column" gap="l" asChild>
-          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+      <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+        <ModalBody sx={{ pb: 0 }}>
+          <Flex direction="column" gap="l">
             {!editable ? (
               <Flex align="center" gap="base">
                 <AssetLogo
@@ -191,15 +212,21 @@ export const RemoveLiquidityForm = ({
                 )}
               </div>
             )}
-
-            <ModalContentDivider />
-
-            <Button type="submit" size="large" width="100%" disabled={!isValid}>
-              {t("removeLiquidity")}
-            </Button>
-          </form>
-        </Flex>
-      </ModalBody>
+          </Flex>
+        </ModalBody>
+        <Separator />
+        <ModalFooter>
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={mutation.isPending}
+            disabled={!isValid || mutation.isPending}
+          >
+            {t("removeLiquidity")}
+          </LoadingButton>
+        </ModalFooter>
+      </form>
     </>
   )
 }

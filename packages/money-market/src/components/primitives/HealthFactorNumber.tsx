@@ -10,6 +10,7 @@ import { MAX_DISPLAY_HF } from "@/ui-config/misc"
 export type HealthFactorNumberProps = {
   value: string
   fontSize?: ThemeUICSSProperties["fontSize"]
+  decimals?: number
 }
 
 export { MAX_DISPLAY_HF }

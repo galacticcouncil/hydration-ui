@@ -194,7 +194,7 @@ export const useRemoveSingleOmnipoolPosition = ({
   const minAmountOut = values?.tokensToGet
 
   const mutation = useMutation({
-    mutationFn: async (): Promise<void> => {
+    mutationFn: async () => {
       if (!minAmountOut) throw new Error("Min amount is not defined")
 
       const isMiningPosition = isOmnipoolDepositPosition(position)
@@ -232,7 +232,7 @@ export const useRemoveSingleOmnipoolPosition = ({
           )
         : []
 
-      await createBatch({
+      return createBatch({
         txs: isMiningPosition
           ? [...exitFarmsTxs, removeLiquidityTx]
           : [removeLiquidityTx],
@@ -361,7 +361,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
   }
 
   const mutation = useMutation({
-    mutationFn: async (): Promise<void> => {
+    mutationFn: async () => {
       const { liquidityTxs, exitingFarmsTxs } = liquidityOutValues.reduce<{
         liquidityTxs: ReturnType<
           Papi["tx"]["Omnipool"]["remove_liquidity_with_limit"]
@@ -415,7 +415,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
         success: t("liquidity.remove.modal.all.toast.success", { value }),
       }
 
-      await createBatch({
+      return createBatch({
         txs,
         transaction: {
           toasts,
