@@ -10,12 +10,11 @@ import {
   rayMul,
   rayPow,
   rayToWad,
+  SECONDS_PER_YEAR,
   WAD,
   WAD_RAY_RATIO,
   wadToRay,
 } from "@/core"
-
-const SECONDS_PER_YEAR = 31536000n
 
 /** Upstream's `normalize(n, decimals)` — shift right, render as a decimal. */
 const normalize = (n: bigint, decimals: number): string =>
