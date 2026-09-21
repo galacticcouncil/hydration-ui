@@ -103,6 +103,47 @@ export type Reserve = {
   eModeLiquidationBonus: number
 }
 
+/** One reward emission configured on one side of one reserve. */
+export type IncentiveEmission = {
+  rewardTokenSymbol: string
+  rewardTokenAddress: Address
+  rewardOracleAddress: Address
+  emissionPerSecond: string
+  incentivesLastUpdateTimestamp: number
+  tokenIncentivesIndex: string
+  emissionEndTimestamp: number
+  rewardPriceFeed: string
+  rewardTokenDecimals: number
+  precision: number
+  priceFeedDecimals: number
+}
+
+/**
+ * The emissions configured against one incentivised token — an aToken for the
+ * supply side, a variable debt token for the borrow side. The controller is
+ * recorded here rather than on the market descriptor because a claim is made
+ * against whichever controller the reward itself names.
+ */
+export type IncentiveSide = {
+  tokenAddress: Address
+  incentiveControllerAddress: Address
+  emissions: IncentiveEmission[]
+}
+
+/** Both incentivised sides of one reserve. Stable-side incentives are cut. */
+export type ReserveIncentives = {
+  underlyingAsset: Address
+  supply: IncentiveSide
+  variableBorrow: IncentiveSide
+}
+
+/** Everything one reserves read returns for a market. */
+export type MarketReserves = {
+  reserves: Reserve[]
+  baseCurrency: BaseCurrency
+  incentives: ReserveIncentives[]
+}
+
 /** What one user has supplied to and borrowed from one reserve. */
 export type Position = {
   underlyingAsset: Address
