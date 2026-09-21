@@ -1,0 +1,42 @@
+import { describe, expect, it } from "vitest"
+
+import { getMarket, markets } from "@/core"
+import { CustomMarket } from "@/types"
+
+const keys: ReadonlyArray<CustomMarket> = [
+  "hydration_v3",
+  "hydration_testnet_v3",
+  "bil_v3",
+  "gigahdx_v3",
+]
+
+describe("market registry", () => {
+  it("describes exactly the four markets", () => {
+    expect(Object.keys(markets).sort()).toEqual([...keys].sort())
+  })
+
+  it("resolves a key to a descriptor that agrees with its own key", () => {
+    keys.forEach((key) => expect(getMarket(key).market).toBe(key))
+  })
+
+  it("gives every market the same seven addresses", () => {
+    keys.forEach((key) => {
+      expect(Object.keys(getMarket(key).addresses).sort()).toEqual([
+        "HOLLAR_TOKEN",
+        "HOLLAR_UI_DATA_PROVIDER",
+        "POOL",
+        "POOL_ADDRESSES_PROVIDER",
+        "UI_INCENTIVE_DATA_PROVIDER",
+        "UI_POOL_DATA_PROVIDER",
+        "WALLET_BALANCE_PROVIDER",
+      ])
+    })
+  })
+
+  it("points the testnet market at the mainnet addresses", () => {
+    // v1's separate testnet addresses have no contract deployed at them.
+    expect(getMarket("hydration_testnet_v3").addresses).toEqual(
+      getMarket("hydration_v3").addresses,
+    )
+  })
+})
