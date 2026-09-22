@@ -7,11 +7,9 @@ import {
   SECONDS_PER_YEAR,
   USD_DECIMALS,
 } from "@/core/constants"
-import {
-  calculateCompoundedInterest,
-  calculateCompoundedRate,
-} from "@/core/pool-math"
-import { rayMul } from "@/core/ray-math"
+import { incentiveAprs } from "@/core/derive-incentives"
+import { calculateCompoundedRate } from "@/core/pool-math"
+import { reserveTotals } from "@/core/reserve-totals"
 import type {
   BaseCurrency,
   Reserve,
@@ -42,9 +40,9 @@ export type SummarizeReservesRequest = {
   reserves: Reserve[]
   baseCurrency: BaseCurrency
   /**
-   * Reward emissions for these reserves. Carried here so a summary and its
-   * rewards can never come from different blocks; the per-reward APRs
-   * themselves are derived by the incentives pass.
+   * Reward emissions for these reserves, so a summary and its reward rates can
+   * never come from different blocks. They stay a separate list of per-reward
+   * APRs on the summary and are never folded into the base APY.
    */
   incentives: ReserveIncentives[]
   /** Unix seconds to accrue interest to. */
@@ -54,16 +52,25 @@ export type SummarizeReservesRequest = {
 export function summarizeReserves({
   reserves,
   baseCurrency,
+  incentives,
   currentTimestamp,
 }: SummarizeReservesRequest): ReserveSummary[] {
   return reserves.map((reserve) =>
-    summarizeReserve(reserve, baseCurrency, currentTimestamp),
+    summarizeReserve(
+      reserve,
+      baseCurrency,
+      incentives.find(
+        (candidate) => candidate.underlyingAsset === reserve.underlyingAsset,
+      ),
+      currentTimestamp,
+    ),
   )
 }
 
 function summarizeReserve(
   reserve: Reserve,
   baseCurrency: BaseCurrency,
+  incentives: ReserveIncentives | undefined,
   currentTimestamp: number,
 ): ReserveSummary {
   const { decimals } = reserve
@@ -87,18 +94,7 @@ function summarizeReserve(
   const capToUsd = (wholeTokens: string): Big =>
     toUsd(shift(Decimal(wholeTokens), decimals))
 
-  const totalDebt = rayMul(
-    rayMul(
-      BigInt(reserve.totalScaledVariableDebt),
-      BigInt(reserve.variableBorrowIndex),
-    ),
-    calculateCompoundedInterest({
-      rate: BigInt(reserve.variableBorrowRate),
-      currentTimestamp,
-      lastUpdateTimestamp: reserve.lastUpdateTimestamp,
-    }),
-  )
-  const totalLiquidity = totalDebt + BigInt(reserve.availableLiquidity)
+  const { totalDebt, totalLiquidity } = reserveTotals(reserve, currentTimestamp)
   const unbacked = BigInt(reserve.unbacked)
 
   /**
@@ -210,9 +206,31 @@ function summarizeReserve(
     ),
     eModeLiquidationBonus: bonus(reserve.eModeLiquidationBonus),
 
-    // Filled in by the incentives pass; base APY and reward APRs stay apart.
-    supplyIncentives: [],
-    borrowIncentives: [],
+    // Per reward and never composed with the base APY (ADR-0005, ADR-0009).
+    supplyIncentives: incentives
+      ? incentiveAprs({
+          reserve,
+          side: incentives.supply,
+          totalTokenSupply: totalLiquidity,
+          priceInMarketReferenceCurrency:
+            reserve.priceInMarketReferenceCurrency,
+          marketReferenceCurrencyDecimals,
+          marketReferencePriceInUsd,
+          currentTimestamp,
+        })
+      : [],
+    borrowIncentives: incentives
+      ? incentiveAprs({
+          reserve,
+          side: incentives.variableBorrow,
+          totalTokenSupply: totalDebt,
+          priceInMarketReferenceCurrency:
+            reserve.priceInMarketReferenceCurrency,
+          marketReferenceCurrencyDecimals,
+          marketReferencePriceInUsd,
+          currentTimestamp,
+        })
+      : [],
   }
 }
 

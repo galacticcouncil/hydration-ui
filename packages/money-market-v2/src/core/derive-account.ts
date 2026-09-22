@@ -2,6 +2,7 @@ import type Big from "big.js"
 
 import { Decimal, Integer, normalize, shift } from "@/core/big"
 import { LTV_PRECISION, USD_DECIMALS } from "@/core/constants"
+import { positionRewards } from "@/core/derive-incentives"
 import {
   calculateAvailableBorrowsMarketReferenceCurrency,
   calculateHealthFactorFromBalances,
@@ -11,12 +12,14 @@ import {
 } from "@/core/pool-math"
 import type {
   Account,
+  ClaimableReward,
   MarketPositions,
   MarketReserves,
   Position,
   PositionSummary,
   Reserve,
   ReserveSummary,
+  UserReserveIncentives,
 } from "@/types"
 
 /**
@@ -42,6 +45,12 @@ export type SummarizeAccountRequest = {
   summaries: ReserveSummary[]
   /** The user's per-reserve state and the e-mode category they are in. */
   positions: MarketPositions
+  /**
+   * The user's reward state, from `readUserIncentives`. Optional because
+   * rewards are their own read and must not be able to take an account
+   * summary down with them; omitted, every position reports no rewards.
+   */
+  userIncentives?: UserReserveIncentives[]
   /** Unix seconds to accrue balances to. */
   currentTimestamp: number
 }
@@ -55,6 +64,7 @@ export function summarizeAccount({
   reserves,
   summaries,
   positions,
+  userIncentives = [],
   currentTimestamp,
 }: SummarizeAccountRequest): AccountSummary {
   const { marketReferenceCurrencyDecimals } = reserves.baseCurrency
@@ -87,6 +97,13 @@ export function summarizeAccount({
             marketReferenceCurrencyDecimals,
             marketReferencePriceInUsd,
             currentTimestamp,
+            rewards: positionRewards({
+              reserves,
+              positions,
+              position,
+              userIncentives,
+              currentTimestamp,
+            }),
           }),
         ]
       : []
@@ -176,6 +193,8 @@ type ValuePositionRequest = {
   marketReferenceCurrencyDecimals: number
   marketReferencePriceInUsd: Big
   currentTimestamp: number
+  /** What this position has earned since its reserve's reward index moved. */
+  rewards: ClaimableReward[]
 }
 
 function valuePosition({
@@ -185,6 +204,7 @@ function valuePosition({
   marketReferenceCurrencyDecimals,
   marketReferencePriceInUsd,
   currentTimestamp,
+  rewards,
 }: ValuePositionRequest): ValuedPosition {
   const { decimals, priceInMarketReferenceCurrency } = reserve
 
@@ -245,8 +265,7 @@ function valuePosition({
       ),
       variableBorrowsUsd: borrows.usdBalance.toFixed(),
 
-      // Filled in by the incentives pass.
-      rewards: [],
+      rewards,
     },
   }
 }

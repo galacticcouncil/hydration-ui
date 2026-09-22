@@ -144,6 +144,37 @@ export type MarketReserves = {
   incentives: ReserveIncentives[]
 }
 
+/** What one user has accrued against one reward token on one incentivised side. */
+export type UserRewardState = {
+  rewardTokenSymbol: string
+  rewardTokenAddress: Address
+  rewardOracleAddress: Address
+  /**
+   * What the controller has already booked for this user in this reward token.
+   * It is accumulated per controller, not per reserve, so the same figure is
+   * repeated on every reserve entry and must be counted once.
+   */
+  userUnclaimedRewards: string
+  tokenIncentivesUserIndex: string
+  rewardPriceFeed: string
+  priceFeedDecimals: number
+  rewardTokenDecimals: number
+}
+
+/** One user's reward state against one incentivised token. */
+export type UserIncentiveSide = {
+  tokenAddress: Address
+  incentiveControllerAddress: Address
+  rewards: UserRewardState[]
+}
+
+/** One user's reward state on both sides of one reserve. */
+export type UserReserveIncentives = {
+  underlyingAsset: Address
+  supply: UserIncentiveSide
+  variableBorrow: UserIncentiveSide
+}
+
 /** What one user has supplied to and borrowed from one reserve. */
 export type Position = {
   underlyingAsset: Address
@@ -180,7 +211,12 @@ export type IncentiveApr = {
   rewardPriceInUsd: string
 }
 
-/** What a user has accrued in one reward token and can claim. */
+/**
+ * What a user has accrued in one reward token. The controller it names is the
+ * one a claim is sent to; there is one entry per reward token, never per
+ * reserve, because a controller books a user's rewards across every reserve it
+ * incentivises.
+ */
 export type ClaimableReward = {
   rewardTokenAddress: Address
   rewardTokenSymbol: string
@@ -262,6 +298,13 @@ export type PositionSummary = {
   variableBorrowsMarketReferenceCurrency: string
   variableBorrowsUsd: string
 
+  /**
+   * What this position alone has accrued since the reserve's reward index was
+   * last updated. It excludes the balance the controller has already booked,
+   * which is held per controller and so belongs only to the market-wide list
+   * `summarizeRewards` returns — adding these up would count it once per
+   * reserve.
+   */
   rewards: ClaimableReward[]
 }
 

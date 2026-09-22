@@ -8,6 +8,9 @@ import type {
   Position,
   Reserve,
   ReserveIncentives,
+  UserIncentiveSide,
+  UserReserveIncentives,
+  UserRewardState,
 } from "@/types"
 
 /**
@@ -143,6 +146,47 @@ const reserveIncentives: z.ZodType<ReserveIncentives> = z
     variableBorrow: vIncentiveData,
   }))
 
+const userReward: z.ZodType<UserRewardState> = z.object({
+  rewardTokenSymbol: z.string(),
+  rewardOracleAddress: address,
+  rewardTokenAddress: address,
+  userUnclaimedRewards: numeric,
+  tokenIncentivesUserIndex: numeric,
+  rewardPriceFeed: numeric,
+  priceFeedDecimals: count,
+  rewardTokenDecimals: count,
+})
+
+const userIncentiveSide: z.ZodType<UserIncentiveSide> = z
+  .object({
+    tokenAddress: address,
+    incentiveControllerAddress: address,
+    userRewardsInformation: z.array(userReward),
+  })
+  .transform(({ userRewardsInformation, ...rest }) => ({
+    ...rest,
+    rewards: userRewardsInformation,
+  }))
+
+/** The stable side (`sTokenIncentivesUserData`) is not carried across. */
+const userReserveIncentives: z.ZodType<UserReserveIncentives> = z
+  .object({
+    underlyingAsset: address,
+    aTokenIncentivesUserData: userIncentiveSide,
+    vTokenIncentivesUserData: userIncentiveSide,
+  })
+  .transform(
+    ({
+      underlyingAsset,
+      aTokenIncentivesUserData,
+      vTokenIncentivesUserData,
+    }) => ({
+      underlyingAsset,
+      supply: aTokenIncentivesUserData,
+      variableBorrow: vTokenIncentivesUserData,
+    }),
+  )
+
 /**
  * The stable-rate fields the struct still carries (`stableBorrowRate`,
  * `principalStableDebt`, `stableBorrowLastUpdateTimestamp`) are simply not
@@ -167,3 +211,9 @@ export const reservesIncentivesDataSchema = z.array(reserveIncentives)
  * the contract reports for an address that has never used the market.
  */
 export const userReservesDataSchema = z.tuple([z.array(position), count])
+
+/**
+ * `getUserReservesIncentivesData`. A user who has never touched an incentivised
+ * reserve decodes to an empty array, which is an ordinary result.
+ */
+export const userReservesIncentivesDataSchema = z.array(userReserveIncentives)

@@ -9,6 +9,8 @@ export type {
   SummarizeAccountRequest,
 } from "@/core/derive-account"
 export { summarizeAccount } from "@/core/derive-account"
+export type { SummarizeRewardsRequest } from "@/core/derive-incentives"
+export { summarizeRewards } from "@/core/derive-incentives"
 export type { SummarizeReservesRequest } from "@/core/derive-reserves"
 export { summarizeReserves } from "@/core/derive-reserves"
 export {
@@ -44,3 +46,4 @@ export {
 } from "@/core/ray-math"
 export { readPositions } from "@/core/read-positions"
 export { readReserves } from "@/core/read-reserves"
+export { readUserIncentives } from "@/core/read-user-incentives"

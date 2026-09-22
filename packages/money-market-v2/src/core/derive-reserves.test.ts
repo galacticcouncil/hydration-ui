@@ -154,10 +154,20 @@ describe("summarizeReserves", () => {
     }
   })
 
-  it("leaves incentive APRs to the incentives pass, never folding them into APY", () => {
-    for (const summary of summaries) {
-      expect(summary.supplyIncentives).toEqual([])
-      expect(summary.borrowIncentives).toEqual([])
+  it("keeps incentive APRs separate, never folding them into the base APY", () => {
+    const incentivised = summaries.filter((s) => s.supplyIncentives.length > 0)
+    expect(incentivised.length).toBeGreaterThan(0)
+
+    for (const summary of incentivised) {
+      // The base APY is the interest-rate model's alone: it is the compounded
+      // supply APR and nothing else, whatever rewards the reserve pays.
+      expect(Number(summary.supplyApy)).toBeGreaterThanOrEqual(
+        Number(summary.supplyApr),
+      )
+      expect(Number(summary.supplyApy)).toBeLessThan(
+        Number(summary.supplyApr) +
+          Number(summary.supplyIncentives[0]!.rewardApr),
+      )
     }
   })
 
