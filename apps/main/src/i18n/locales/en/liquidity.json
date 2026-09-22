@@ -186,6 +186,8 @@
   "vaults.chart.band.base": "Base",
   "vaults.chart.band.limit": "Limit",
   "vaults.chart.currentPrice": "Current pool price",
+  "vaults.chart.legend.base": "Base position",
+  "vaults.chart.legend.limit": "Limit position",
   "vaults.chart.legend.ranges": "Managed ranges",
   "vaults.chart.legend.spot": "Current price",
   "vaults.chart.legend.token0": "{{ symbol }} side",
