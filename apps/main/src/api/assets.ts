@@ -3,10 +3,15 @@ import {
   AssetMetadataFactory,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
+import { PublicClient, zeroAddress } from "viem"
 
+import { FACTORY_ABI, HYPERVISOR_ABI } from "@/api/gamma/abi"
+import { getGammaContracts } from "@/api/gamma/config"
 import { assetMetadataQuery } from "@/api/metadata"
+import { allPools, V3PoolBase } from "@/api/pools"
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
   TATokenPairStored,
@@ -30,10 +35,6 @@ export enum AssetType {
   Unknown = "Unknown",
   XYK = "XYK",
 }
-
-import { ChainEcosystem } from "@galacticcouncil/xc-core"
-
-import { allPools } from "./pools"
 
 /**
  * Assets that predate the direct NTT route still carry moonbeam branding the
@@ -98,11 +99,56 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
+const fetchGammaVaultShareSymbols = async (
+  evm: PublicClient,
+  endpoint: string,
+  pools: V3PoolBase[],
+): Promise<Set<string>> => {
+  const contracts = getGammaContracts(endpoint)
+  const discoveredHypervisors = await Promise.all(
+    pools.map(async ({ addr0, addr1, fee }) => {
+      if (!addr0 || !addr1) return null
+
+      return evm
+        .readContract({
+          abi: FACTORY_ABI,
+          address: contracts.hypervisorFactory,
+          functionName: "getHypervisor",
+          args: [addr0, addr1, fee],
+        })
+        .catch(() => null)
+    }),
+  )
+  const hypervisors = new Set([
+    contracts.hypervisor,
+    ...discoveredHypervisors.filter(isNonNullish),
+  ])
+
+  hypervisors.delete(zeroAddress)
+
+  const symbols = await Promise.all(
+    [...hypervisors].map((address) =>
+      evm
+        .readContract({
+          abi: HYPERVISOR_ABI,
+          address,
+          functionName: "symbol",
+        })
+        .catch(() => null),
+    ),
+  )
+
+  return new Set(
+    symbols.filter(isNonNullish).map((symbol) => symbol.toLowerCase()),
+  )
+}
+
 export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
 ) => {
-  const { sdk, papi, isEndpointSettled, dataEnv, genesisHash } = context
+  const { sdk, papi, evm, endpoint, isEndpointSettled, dataEnv, genesisHash } =
+    context
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
@@ -116,10 +162,15 @@ export const assetsQuery = (
       const [tradeAssets, pools, assets, metadata] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
-        sdk.client.asset.getSupported(true),
+        sdk.client.asset.getSupported(false),
         queryClient.ensureQueryData(assetMetadataQuery()),
       ])
       const tradeAssetsMap = new Set(tradeAssets)
+      const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
+        evm,
+        endpoint,
+        pools.v3Pools,
+      )
 
       const xykPoolsAddress = pools.xykPools.map<[string]>((p) => [p.address])
       const xykPoolsShareTokens =
@@ -155,37 +206,43 @@ export const assetsQuery = (
 
       syncATokenPairs(aTokenPairs)
 
-      const assetsData = assets.map((asset): TAssetData => {
-        const isTradable = tradeAssetsMap.has(asset.id)
-        const id = asset.id.toString()
+      const assetsData = assets
+        .filter(
+          (asset) =>
+            asset.type !== AssetType.ERC20 ||
+            !gammaVaultShareSymbols.has((asset.symbol ?? "").toLowerCase()),
+        )
+        .map((asset): TAssetData => {
+          const isTradable = tradeAssetsMap.has(asset.id)
+          const id = asset.id.toString()
 
-        const commonAssetData: TCommonAssetData = {
-          id,
-          existentialDeposit: asset.existentialDeposit.toString(),
-          symbol: asset.symbol ?? "",
-          decimals: asset.decimals ?? 0,
-          name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
-          isTradable,
-          isSufficient: asset.isSufficient,
-        }
-
-        if (asset.type === AssetType.TOKEN) {
-          return assetToTokenType(asset, commonAssetData, metadata)
-        } else if (asset.type === AssetType.ERC20) {
-          return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
-        } else if (asset.type === AssetType.BOND) {
-          return assetToBondType(asset, commonAssetData, metadata)
-        } else if (asset.type === AssetType.STABLESWAP) {
-          return assetToStableSwapType(asset, commonAssetData)
-        } else if (asset.type === AssetType.External) {
-          return assetToExternalType(asset, commonAssetData)
-        } else {
-          return {
-            ...commonAssetData,
-            type: AssetType.Unknown,
+          const commonAssetData: TCommonAssetData = {
+            id,
+            existentialDeposit: asset.existentialDeposit.toString(),
+            symbol: asset.symbol ?? "",
+            decimals: asset.decimals ?? 0,
+            name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
+            isTradable,
+            isSufficient: asset.isSufficient,
           }
-        }
-      })
+
+          if (asset.type === AssetType.TOKEN) {
+            return assetToTokenType(asset, commonAssetData, metadata)
+          } else if (asset.type === AssetType.ERC20) {
+            return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
+          } else if (asset.type === AssetType.BOND) {
+            return assetToBondType(asset, commonAssetData, metadata)
+          } else if (asset.type === AssetType.STABLESWAP) {
+            return assetToStableSwapType(asset, commonAssetData)
+          } else if (asset.type === AssetType.External) {
+            return assetToExternalType(asset, commonAssetData)
+          } else {
+            return {
+              ...commonAssetData,
+              type: AssetType.Unknown,
+            }
+          }
+        })
 
       syncAssets(assetsData, genesisHash)
       syncShareTokens(shareTokens)
