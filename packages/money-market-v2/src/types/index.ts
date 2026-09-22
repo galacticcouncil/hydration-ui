@@ -152,6 +152,17 @@ export type Position = {
   usageAsCollateralEnabledOnUser: boolean
 }
 
+/**
+ * Everything one positions read returns for a user in a market. An empty
+ * `positions` array is an ordinary result — it is what a market with reserves
+ * reports for an address that has never interacted with it.
+ */
+export type MarketPositions = {
+  user: Address
+  positions: Position[]
+  eModeCategoryId: number
+}
+
 /* -------------------------------------------------------------------------- */
 /* Derived values — computed from chain state                                  */
 /* -------------------------------------------------------------------------- */

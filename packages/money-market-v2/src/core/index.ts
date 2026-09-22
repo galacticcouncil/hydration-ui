@@ -37,4 +37,5 @@ export {
   WAD_RAY_RATIO,
   wadToRay,
 } from "@/core/ray-math"
+export { readPositions } from "@/core/read-positions"
 export { readReserves } from "@/core/read-reserves"

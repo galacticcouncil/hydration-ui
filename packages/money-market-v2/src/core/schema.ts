@@ -5,6 +5,7 @@ import type {
   BaseCurrency,
   IncentiveEmission,
   IncentiveSide,
+  Position,
   Reserve,
   ReserveIncentives,
 } from "@/types"
@@ -142,8 +143,27 @@ const reserveIncentives: z.ZodType<ReserveIncentives> = z
     variableBorrow: vIncentiveData,
   }))
 
+/**
+ * The stable-rate fields the struct still carries (`stableBorrowRate`,
+ * `principalStableDebt`, `stableBorrowLastUpdateTimestamp`) are simply not
+ * listed, so `z.object` strips them.
+ */
+const position: z.ZodType<Position> = z.object({
+  underlyingAsset: address,
+  scaledATokenBalance: numeric,
+  scaledVariableDebt: numeric,
+  usageAsCollateralEnabledOnUser: z.boolean(),
+})
+
 /** `getReservesData` returns the reserve array and the base currency together. */
 export const reservesDataSchema = z.tuple([z.array(reserve), baseCurrency])
 
 /** `getReservesIncentivesData`. An empty array is a valid, ordinary result. */
 export const reservesIncentivesDataSchema = z.array(reserveIncentives)
+
+/**
+ * `getUserReservesData` returns the user's per-reserve state and their e-mode
+ * category id together. An empty array is a valid, ordinary result — it is what
+ * the contract reports for an address that has never used the market.
+ */
+export const userReservesDataSchema = z.tuple([z.array(position), count])
