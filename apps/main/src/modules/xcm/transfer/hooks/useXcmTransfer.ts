@@ -39,6 +39,7 @@ export const useXcmTransfer = (
     queries: [
       xcmTransferReportQuery(
         form.formState.isValid && syncedTransfer ? syncedTransfer : null,
+        values.srcAmount,
         transferArgs,
       ),
       xcmTransferCallQuery(

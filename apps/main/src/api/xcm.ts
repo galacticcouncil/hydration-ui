@@ -4,6 +4,7 @@ import {
   isEvmParachain,
   QUERY_KEY_BLOCK_PREFIX,
   resolveHydrationAssetId,
+  resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
@@ -107,6 +108,16 @@ export const useHydrationAssetId = () => {
   )
 }
 
+export const useHydrationDisplayAssetId = () => {
+  const configService = useCrossChainConfigService()
+
+  return useCallback(
+    (asset: Asset): string | null =>
+      resolveHydrationDisplayAssetId(asset, configService),
+    [configService],
+  )
+}
+
 export const useCrossChainWallet = () => {
   const { data } = useCrossChainConfig()
   return data.wallet
@@ -145,6 +156,25 @@ export const useNttInboundLimit = (
         throw new Error("chain, asset, and from are required")
       }
       return clients.nttClient(chain, asset).getInboundLimit(from)
+    },
+  })
+}
+
+/**
+ * Custody a locking ntt manager can release - `null` for a burning
+ * destination, which mints and is not bound by it.
+ */
+export const useNttCustody = (chain: AnyChain | null, asset: Asset | null) => {
+  const enabled = !!chain && !!asset && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "custody", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: async () => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+      const custody = await clients.nttClient(chain, asset).getCustody()
+      return custody ?? null
     },
   })
 }
@@ -398,14 +428,16 @@ export const xcmTransferQuery = (
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
+  amount: string,
   transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
     enabled: !!transfer && !!transferArgs,
-    queryKey: ["xcm", "report", transferArgs],
+    queryKey: ["xcm", "report", amount, transferArgs],
     queryFn: async () => {
       if (!transfer) return []
-      return transfer.validate()
+      // Amount-bound checks (ntt rate limits, custody) see zero without it.
+      return transfer.validate(undefined, amount || undefined)
     },
   })
 
