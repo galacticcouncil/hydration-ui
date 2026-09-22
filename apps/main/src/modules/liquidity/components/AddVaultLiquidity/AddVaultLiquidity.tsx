@@ -3,6 +3,7 @@ import {
   Button,
   Stack,
   Summary,
+  SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
 import {
@@ -55,6 +56,7 @@ export const AddVaultLiquidity = ({
     pairedAmount,
     isPairLoading,
     price,
+    spotPrice,
     shares,
     shareOfVault,
     blocker,
@@ -131,7 +133,7 @@ export const AddVaultLiquidity = ({
             <AssetSwitcher
               assetInId={assetA.id}
               assetOutId={assetB.id}
-              fallbackPrice={price}
+              fallbackPrice={spotPrice}
               isFallbackPriceLoading={isPairLoading}
             />
 
@@ -147,28 +149,36 @@ export const AddVaultLiquidity = ({
 
             <ModalContentDivider />
 
-            <Summary
-              separator={<ModalContentDivider />}
-              withTrailingSeparator
-              rows={[
-                {
-                  label: t("liquidity:liquidity.add.modal.sharesToGet.label"),
-                  content: shares
+            <Summary separator={<ModalContentDivider />} withTrailingSeparator>
+              <SummaryRow
+                label={t("liquidity:liquidity.add.modal.sharesToGet.label")}
+                content={
+                  shares
                     ? t("liquidity:vaults.add.sharesSummary", {
                         value: scaleHuman(shares.toString(), 18),
                         share: shareOfVault ?? 0,
                       })
-                    : t("common:notAvailable"),
-                  loading: isPairLoading,
-                },
-                {
-                  label: t("liquidity:vaults.add.feeTier"),
-                  content: t("common:percent", {
-                    value: feeTierPercent(vault.feeTier),
-                  }),
-                },
-              ]}
-            />
+                    : t("common:notAvailable")
+                }
+                loading={isPairLoading}
+              />
+
+              <SummaryRow
+                label={t("liquidity:vaults.add.depositRatio")}
+                content={t("liquidity:vaults.price.pair", {
+                  symbolA: assetA.symbol,
+                  value: price,
+                  symbolB: assetB.symbol,
+                })}
+              />
+
+              <SummaryRow
+                label={t("liquidity:vaults.add.feeTier")}
+                content={t("common:percent", {
+                  value: feeTierPercent(vault.feeTier),
+                })}
+              />
+            </Summary>
 
             <Stack gap="base" my="base">
               <Text fs="p6" lh={1.4} color={getToken("text.low")}>

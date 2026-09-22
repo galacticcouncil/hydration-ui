@@ -19,7 +19,6 @@ type AssetRegistryStore = {
   assets: Array<TAssetStored>
   shareTokens: Array<TShareTokenStored>
   aTokenPairs: TATokenPairStored[]
-  /** Genesis hash of the chain the stored assets were fetched from. */
   genesisHash: string
   syncAssets: (assets: TAssetStored[], genesisHash: string) => void
   syncShareTokens: (shareTokens: TShareTokenStored[]) => void

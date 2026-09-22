@@ -150,33 +150,18 @@ export const hasBase = (state: VaultBands) =>
 export const hasLimit = (state: VaultBands) =>
   state.limitUpper > state.limitLower && state.limit.liquidity > 0n
 
-export const getManagedBand = (
+/** every vault position covering the tick, bottom band first */
+export const getManagedBands = (
   tick: number,
   state: VaultBands,
-): "base" | "limit" | null => {
-  if (hasLimit(state) && tick >= state.limitLower && tick <= state.limitUpper)
-    return "limit"
-
-  if (hasBase(state) && tick >= state.baseLower && tick <= state.baseUpper)
-    return "base"
-
-  return null
-}
-
-export const sharesFocusGroup = (
-  focused: { markId: string; datum: unknown },
-  bar: Bar,
-  state: VaultState | null,
-) => {
-  if (!isBarPoint(focused)) return true
-  if (isSameRange(focused, bar)) return true
-  if (!state) return false
-
-  const focusedBand = getManagedBand(barMidpoint(focused.datum), state)
-  const barBand = getManagedBand(barMidpoint(bar), state)
-
-  return focusedBand !== null && focusedBand === barBand
-}
+): ReadonlyArray<"base" | "limit"> => [
+  ...(hasBase(state) && tick >= state.baseLower && tick <= state.baseUpper
+    ? (["base"] as const)
+    : []),
+  ...(hasLimit(state) && tick >= state.limitLower && tick <= state.limitUpper
+    ? (["limit"] as const)
+    : []),
+]
 
 const computeLiquidityIntervals = (
   pool: Pick<V3PoolBase, "tick" | "liquidity" | "ticks">,
@@ -840,4 +825,41 @@ export const getScenarioDistribution = (
     decimals0,
     decimals1,
   }
+}
+
+export type BandSegment = { lower: number; upper: number; barTop: number }
+
+/**
+ * Splits a stacked band into segments capped by the bars underneath, so it
+ * covers them instead of floating over empty space where they are shorter.
+ */
+export const bandSegments = (
+  band: Band,
+  bars: ReadonlyArray<Bar>,
+  max: number,
+  minBarHeight: number,
+): BandSegment[] => {
+  // unstacked bands keep their own top; stacked ones are capped by the bars
+  const ownTop = Math.max(max * (band.offset + band.height), minBarHeight)
+  const fallback = [{ lower: band.lower, upper: band.upper, barTop: ownTop }]
+
+  if (!band.offset) return fallback
+
+  const covered = bars.filter(
+    (bar) => bar.to > band.lower && bar.from < band.upper,
+  )
+
+  if (!covered.length) return fallback
+
+  return covered.reduce<BandSegment[]>((segments, bar) => {
+    const barTop = Math.max(bar.liquidity, minBarHeight)
+    const lower = Math.max(bar.from, band.lower)
+    const upper = Math.min(bar.to, band.upper)
+    const last = segments.at(-1)
+
+    if (last && last.barTop === barTop) last.upper = upper
+    else segments.push({ lower, upper, barTop })
+
+    return segments
+  }, [])
 }
