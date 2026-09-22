@@ -217,3 +217,15 @@ export const userReservesDataSchema = z.tuple([z.array(position), count])
  * reserve decodes to an empty array, which is an ordinary result.
  */
 export const userReservesIncentivesDataSchema = z.array(userReserveIncentives)
+
+/**
+ * `getUserWalletBalances` returns the reserve addresses and the user's balance
+ * in each as two parallel arrays. Their lengths are checked here because every
+ * consumer joins them by index, and a truncated pair would silently drop or
+ * misattribute a balance rather than fail.
+ */
+export const walletBalancesSchema = z
+  .tuple([z.array(address), z.array(numeric)])
+  .refine(([assets, amounts]) => assets.length === amounts.length, {
+    error: "Asset and balance arrays differ in length",
+  })

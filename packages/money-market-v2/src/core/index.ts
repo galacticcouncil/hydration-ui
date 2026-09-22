@@ -47,3 +47,4 @@ export {
 export { readPositions } from "@/core/read-positions"
 export { readReserves } from "@/core/read-reserves"
 export { readUserIncentives } from "@/core/read-user-incentives"
+export { readWalletBalances } from "@/core/read-wallet-balances"

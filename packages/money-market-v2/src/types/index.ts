@@ -194,6 +194,32 @@ export type MarketPositions = {
   eModeCategoryId: number
 }
 
+/**
+ * How much of one reserve's underlying asset a user holds in their wallet — the
+ * ceiling on what they can supply.
+ *
+ * `amount` is a human-unit fixed-point string, which makes this the one chain
+ * read whose result is not in raw base units. The wallet balance provider
+ * reports amounts with no decimals alongside them, so the read has to join
+ * against the market's reserves to mean anything at all; once that join has
+ * happened there is nothing left to derive from a base-unit balance, and
+ * carrying one forward would only invite a second, unjoined conversion.
+ */
+export type WalletBalance = {
+  underlyingAsset: Address
+  amount: string
+}
+
+/**
+ * Everything one wallet balance read returns for a user in a market. A reserve
+ * the user holds none of is still listed, with a zero amount — the provider
+ * answers for every reserve of the pool.
+ */
+export type MarketWalletBalances = {
+  user: Address
+  balances: WalletBalance[]
+}
+
 /* -------------------------------------------------------------------------- */
 /* Derived values — computed from chain state                                  */
 /* -------------------------------------------------------------------------- */
