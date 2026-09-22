@@ -53,17 +53,9 @@ export const useEnabledBanners = () => {
         return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
       }
 
-      if (banner.id === "bil-vault") {
-        return featureFlags.bilEnabled
-      }
-
       return banner.enabled
     })
-  }, [
-    featureFlags.bilEnabled,
-    featureFlags.hollarBondsEnabled,
-    hasFillableStableBondsOrders,
-  ])
+  }, [featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders])
 }
 
 export const bannerConfig: BannerConfig[] = [...bannerEntries].sort(
