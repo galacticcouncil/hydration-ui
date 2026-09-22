@@ -93,17 +93,27 @@ const formatFractionDigits = (
       value: "<",
     })
 
-    if (!newParts.some(({ type }) => type === "decimal")) {
-      newParts.push({
-        type: "decimal",
-        value: decimalSeparator,
-      })
+    // Splice the threshold fraction in right after the integer part - trailing
+    // parts (a currency symbol appended by formatCurrency) must stay last.
+    const integerIndex = newParts.findLastIndex(
+      ({ type }) => type === "integer",
+    )
+    const decimalIndex = newParts.findIndex(({ type }) => type === "decimal")
+    const fraction: Intl.NumberFormatPart = {
+      type: "fraction",
+      value: minValue.toString().split(".")[1] ?? "",
     }
 
-    newParts.push({
-      type: "fraction",
-      value: minValue.toString().split(".")[1],
-    })
+    if (decimalIndex !== -1) {
+      newParts.splice(decimalIndex + 1, 0, fraction)
+    } else {
+      newParts.splice(
+        integerIndex + 1,
+        0,
+        { type: "decimal", value: decimalSeparator },
+        fraction,
+      )
+    }
 
     return newParts.map(formatNumberParts).join("")
   }

@@ -54,7 +54,7 @@ export const WormholeCustodySummaryRow = ({
                 })}
               </Text>
               <Text fs="p5" fw={600} color={getToken("text.tint.secondary")}>
-                {t("number.compact", {
+                {t("number", {
                   value: toDecimal(custody, decimals),
                 })}{" "}
                 {symbol}
@@ -71,7 +71,7 @@ export const WormholeCustodySummaryRow = ({
         >
           <Flex align="center" gap="xs" asChild>
             <Text fs="p5" fw={600} color={getToken("text.high")}>
-              {t("currency.compact", {
+              {t("currency", {
                 value: toDecimal(custody, decimals),
                 symbol,
               })}
