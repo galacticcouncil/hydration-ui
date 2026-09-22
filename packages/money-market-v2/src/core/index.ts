@@ -4,6 +4,11 @@ export {
   SECONDS_PER_YEAR,
   USD_DECIMALS,
 } from "@/core/constants"
+export type {
+  AccountSummary,
+  SummarizeAccountRequest,
+} from "@/core/derive-account"
+export { summarizeAccount } from "@/core/derive-account"
 export type { SummarizeReservesRequest } from "@/core/derive-reserves"
 export { summarizeReserves } from "@/core/derive-reserves"
 export {
