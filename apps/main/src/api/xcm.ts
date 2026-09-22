@@ -160,6 +160,25 @@ export const useNttInboundLimit = (
   })
 }
 
+/**
+ * Custody a locking ntt manager can release - `null` for a burning
+ * destination, which mints and is not bound by it.
+ */
+export const useNttCustody = (chain: AnyChain | null, asset: Asset | null) => {
+  const enabled = !!chain && !!asset && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "custody", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: async () => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+      const custody = await clients.nttClient(chain, asset).getCustody()
+      return custody ?? null
+    },
+  })
+}
+
 const createCrossChainBalanceQueryKey = (chainKey: string, address: string) => {
   const normalizedAddress = isString(address) ? address.toLowerCase() : ""
   return ["xcm", "balance", chainKey, normalizedAddress] as const
@@ -409,14 +428,16 @@ export const xcmTransferQuery = (
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
+  amount: string,
   transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
     enabled: !!transfer && !!transferArgs,
-    queryKey: ["xcm", "report", transferArgs],
+    queryKey: ["xcm", "report", amount, transferArgs],
     queryFn: async () => {
       if (!transfer) return []
-      return transfer.validate()
+      // Amount-bound checks (ntt rate limits, custody) see zero without it.
+      return transfer.validate(undefined, amount || undefined)
     },
   })
 
