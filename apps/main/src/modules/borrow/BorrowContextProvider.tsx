@@ -6,14 +6,16 @@ import {
 import { CustomMarket } from "@galacticcouncil/money-market/utils"
 import { useSearch } from "@tanstack/react-router"
 import { TFunction } from "i18next"
-import { PropsWithChildren, useCallback } from "react"
+import { PropsWithChildren, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY } from "@/api/aave"
 import { neckworkClient } from "@/api/neckwork"
 import { TDataEnv } from "@/config/rpc"
 import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
+import { useMoneyMarketPostTxRefresh } from "@/modules/borrow/hooks/useMoneyMarketPostTxRefresh"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useMaxBalance } from "@/modules/transactions/hooks/useMaxBalance"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
@@ -31,6 +33,11 @@ const createFormatterFn =
   (value, options) =>
     t(type, { value, ...options })
 
+const MoneyMarketPostTxRefresh = () => {
+  useMoneyMarketPostTxRefresh()
+  return null
+}
+
 export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
@@ -45,7 +52,10 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts, activity }, options, withExtraGas) => {
-      const invalidateQueries = [["borrow"]]
+      const invalidateQueries = [
+        ["borrow"],
+        [...TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY],
+      ]
       if (Array.isArray(tx)) {
         createBatchTx({
           txs: tx.map((evmTx) => transformEvmCallToPapiTx(papi, evmTx)),
@@ -69,6 +79,14 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
     [getRelatedAToken],
   )
 
+  // Stable identities: these land in context values that gate every money
+  // market re-render, so re-allocating them per render invalidates the world.
+  const formatCurrency = useMemo(() => createFormatterFn(t, "currency"), [t])
+  const formatNumber = useMemo(() => createFormatterFn(t, "number"), [t])
+  const formatPercent = useMemo(() => createFormatterFn(t, "percent"), [t])
+  const formatReserve = useFormatReserve()
+  const externalApyData = useExternalApyData()
+
   return (
     <ApyProvider>
       <MoneyMarketProvider
@@ -77,13 +95,14 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
         neckwork={neckworkClient}
         onCreateTransaction={createTx}
         useMaxBalance={useMaxBalance}
-        formatCurrency={createFormatterFn(t, "currency")}
-        formatNumber={createFormatterFn(t, "number")}
-        formatPercent={createFormatterFn(t, "percent")}
-        formatReserve={useFormatReserve()}
-        externalApyData={useExternalApyData()}
+        formatCurrency={formatCurrency}
+        formatNumber={formatNumber}
+        formatPercent={formatPercent}
+        formatReserve={formatReserve}
+        externalApyData={externalApyData}
         getRelatedATokenId={getRelatedATokenId}
       >
+        <MoneyMarketPostTxRefresh />
         {children}
       </MoneyMarketProvider>
     </ApyProvider>

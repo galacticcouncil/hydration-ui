@@ -1,5 +1,5 @@
 import { ChainId, InterestRate, Stake } from "@aave/contract-helpers"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
 
 import { TxErrorType } from "@/ui-config/errorMapping"
 
@@ -102,66 +102,65 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
   const [loadingTxns, setLoadingTxns] = useState(false)
   const [txError, setTxError] = useState<TxErrorType>()
 
-  return (
-    <ModalContext.Provider
-      value={{
-        openSupply: (underlyingAsset, symbol) => {
-          setType(ModalType.Supply)
-          setArgs({ underlyingAsset, symbol })
-        },
-        openWithdraw: (underlyingAsset) => {
-          setType(ModalType.Withdraw)
-          setArgs({ underlyingAsset })
-        },
-        openBorrow: (underlyingAsset) => {
-          setType(ModalType.Borrow)
-          setArgs({ underlyingAsset })
-        },
-        openRepay: (underlyingAsset, currentRateMode, isFrozen) => {
-          setType(ModalType.Repay)
-          setArgs({ underlyingAsset, currentRateMode, isFrozen })
-        },
-        openCollateralChange: (underlyingAsset) => {
-          setType(ModalType.CollateralChange)
-          setArgs({ underlyingAsset })
-        },
-        openRateSwitch: (underlyingAsset, currentRateMode) => {
-          setType(ModalType.RateSwitch)
-          setArgs({ underlyingAsset, currentRateMode })
-        },
-        openClaimRewards: (underlyingAsset) => {
-          setType(ModalType.ClaimRewards)
-          setArgs({ underlyingAsset })
-        },
-        openEmode: (mode) => {
-          setType(ModalType.Emode)
-          setArgs({ emode: mode })
-        },
-        close: () => {
-          setType(undefined)
-          setArgs({})
-          setMainTxState({})
-          setApprovalTxState({})
-          setGasLimit("")
-          setTxError(undefined)
-        },
-        type,
-        args,
-        approvalTxState,
-        mainTxState,
-        setApprovalTxState,
-        setMainTxState,
-        gasLimit,
-        setGasLimit,
-        loadingTxns,
-        setLoadingTxns,
-        txError,
-        setTxError,
-      }}
-    >
-      {children}
-    </ModalContext.Provider>
+  const value = useMemo<ModalContextType<ModalArgsType>>(
+    () => ({
+      openSupply: (underlyingAsset, symbol) => {
+        setType(ModalType.Supply)
+        setArgs({ underlyingAsset, symbol })
+      },
+      openWithdraw: (underlyingAsset) => {
+        setType(ModalType.Withdraw)
+        setArgs({ underlyingAsset })
+      },
+      openBorrow: (underlyingAsset) => {
+        setType(ModalType.Borrow)
+        setArgs({ underlyingAsset })
+      },
+      openRepay: (underlyingAsset, currentRateMode, isFrozen) => {
+        setType(ModalType.Repay)
+        setArgs({ underlyingAsset, currentRateMode, isFrozen })
+      },
+      openCollateralChange: (underlyingAsset) => {
+        setType(ModalType.CollateralChange)
+        setArgs({ underlyingAsset })
+      },
+      openRateSwitch: (underlyingAsset, currentRateMode) => {
+        setType(ModalType.RateSwitch)
+        setArgs({ underlyingAsset, currentRateMode })
+      },
+      openClaimRewards: (underlyingAsset) => {
+        setType(ModalType.ClaimRewards)
+        setArgs({ underlyingAsset })
+      },
+      openEmode: (mode) => {
+        setType(ModalType.Emode)
+        setArgs({ emode: mode })
+      },
+      close: () => {
+        setType(undefined)
+        setArgs({})
+        setMainTxState({})
+        setApprovalTxState({})
+        setGasLimit("")
+        setTxError(undefined)
+      },
+      type,
+      args,
+      approvalTxState,
+      mainTxState,
+      setApprovalTxState,
+      setMainTxState,
+      gasLimit,
+      setGasLimit,
+      loadingTxns,
+      setLoadingTxns,
+      txError,
+      setTxError,
+    }),
+    [type, args, approvalTxState, mainTxState, gasLimit, loadingTxns, txError],
   )
+
+  return <ModalContext.Provider value={value}>{children}</ModalContext.Provider>
 }
 
 export const useModalContext = () => {
