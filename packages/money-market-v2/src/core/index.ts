@@ -1,5 +1,24 @@
+export type {
+  BorrowRequest,
+  RepayRequest,
+  RepayWithATokensRequest,
+  SetUsageAsCollateralRequest,
+  SetUserEModeRequest,
+  SupplyRequest,
+  WithdrawRequest,
+} from "@/core/build-pool-actions"
+export {
+  buildBorrow,
+  buildRepay,
+  buildRepayWithATokens,
+  buildSetUsageAsCollateral,
+  buildSetUserEMode,
+  buildSupply,
+  buildWithdraw,
+} from "@/core/build-pool-actions"
 export {
   LTV_PRECISION,
+  MAX_UINT_AMOUNT,
   RAY_DECIMALS,
   SECONDS_PER_YEAR,
   USD_DECIMALS,

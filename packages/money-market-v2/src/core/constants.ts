@@ -16,3 +16,10 @@ export const RAY_DECIMALS = 27
 
 /** The market's USD price feed is quoted with this many decimals. */
 export const USD_DECIMALS = 8
+
+/**
+ * `type(uint256).max` — the pool's own sentinel for "all of it". Callers pass
+ * it through as an amount rather than resolving a balance, which would race
+ * with interest accrual between planning and submission (ADR-0007).
+ */
+export const MAX_UINT_AMOUNT = 2n ** 256n - 1n

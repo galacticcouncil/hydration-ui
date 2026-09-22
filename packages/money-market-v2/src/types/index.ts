@@ -1,4 +1,4 @@
-import { Address } from "viem"
+import { Abi, Address, Hex } from "viem"
 
 /**
  * The vocabulary of CONTEXT.md, expressed as types.
@@ -363,3 +363,40 @@ export type Account = {
   isInIsolationMode: boolean
   isolatedReserve: Address | null
 }
+
+/* -------------------------------------------------------------------------- */
+/* Action plans — what to send                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Per-call gas overrides, carried but never computed. The module estimates no
+ * gas and simulates nothing, so a hint is only ever a caller's (ADR-0007). A
+ * hint of `0n` is falsy downstream and already reads as absent.
+ */
+export type GasHints = {
+  gasLimit?: bigint
+  maxFeePerGas?: bigint
+  maxPriorityFeePerGas?: bigint
+}
+
+/**
+ * One plain EVM call. `data` is produced by viem's `encodeFunctionData`, so the
+ * ABI is known at construction and travels with the call — nothing downstream
+ * has to recover it by matching method-hash prefixes.
+ */
+export type EvmCall = GasHints & {
+  to: Address
+  data: Hex
+  /** The single ABI item `data` encodes, not the whole contract's. */
+  abi: Abi
+  functionName: string
+  args: readonly unknown[]
+}
+
+/**
+ * An ordered list of plain calls — the only shape an action takes (ADR-0007).
+ * There is no approval step, no allowance read, no permit concept and no step
+ * kinds, because approvals are not required on Hydration and whether a call is
+ * permit-signed is decided by the app at signing time, not here.
+ */
+export type ActionPlan = EvmCall[]
