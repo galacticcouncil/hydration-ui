@@ -1,3 +1,4 @@
+export { incentiveControllerAbi } from "@/core/abi/incentive-controller"
 export { poolAbi } from "@/core/abi/pool"
 export { uiIncentiveDataProviderAbi } from "@/core/abi/ui-incentive-data-provider"
 export { uiPoolDataProviderAbi } from "@/core/abi/ui-pool-data-provider"

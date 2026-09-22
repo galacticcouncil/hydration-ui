@@ -1,4 +1,12 @@
 export type {
+  ClaimAllRewardsRequest,
+  ClaimRewardRequest,
+} from "@/core/build-claim-actions"
+export {
+  buildClaimAllRewards,
+  buildClaimReward,
+} from "@/core/build-claim-actions"
+export type {
   BorrowRequest,
   RepayRequest,
   RepayWithATokensRequest,
