@@ -1,8 +1,9 @@
 {
   "extends": "@galacticcouncil/typescript-config/base.json",
-  "include": ["src"],
+  "include": ["src", "src/**/*.json"],
   "compilerOptions": {
     "composite": true,
+    "resolveJsonModule": true,
     "outDir": "./build",
     "baseUrl": ".",
     "jsx": "react-jsx",
