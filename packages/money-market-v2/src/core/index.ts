@@ -1,4 +1,11 @@
-export { LTV_PRECISION, SECONDS_PER_YEAR } from "@/core/constants"
+export {
+  LTV_PRECISION,
+  RAY_DECIMALS,
+  SECONDS_PER_YEAR,
+  USD_DECIMALS,
+} from "@/core/constants"
+export type { SummarizeReservesRequest } from "@/core/derive-reserves"
+export { summarizeReserves } from "@/core/derive-reserves"
 export {
   ChainReadError,
   DecodeError,
@@ -8,6 +15,7 @@ export { getMarket, markets } from "@/core/markets"
 export {
   calculateAvailableBorrowsMarketReferenceCurrency,
   calculateCompoundedInterest,
+  calculateCompoundedRate,
   calculateHealthFactorFromBalances,
   calculateHealthFactorFromBalancesBigUnits,
   calculateLinearInterest,

@@ -13,42 +13,17 @@
 
 import Big, { BigSource } from "big.js"
 
+import { Decimal, Integer, shift } from "@/core/big"
 import { LTV_PRECISION, SECONDS_PER_YEAR } from "@/core/constants"
 import {
   binomialApproximatedRayPow,
   RAY,
   rayDiv,
   rayMul,
+  rayPow,
   rayToWad,
   wadToRay,
 } from "@/core/ray-math"
-
-/**
- * Big.js is configured per constructor rather than globally, so nothing in this
- * package can be perturbed by — or perturb — `Big.DP` / `Big.RM` elsewhere.
- *
- * `Decimal` divides at twenty places, half up, matching the BigNumber.js
- * defaults the blueprint's quotients were produced under. `Integer` is the
- * blueprint's `BigNumberZeroDecimal`: quotients truncate to whole units, as the
- * contracts do.
- */
-const Decimal = Big()
-Decimal.DP = 20
-Decimal.RM = Big.roundHalfUp
-
-const Integer = Big()
-Integer.DP = 0
-Integer.RM = Big.roundDown
-
-/**
- * Moves the decimal point exactly, the way BigNumber.js's `shiftedBy` does.
- * Dividing by a power of ten would round instead, and these shifts only change
- * the unit a value is expressed in.
- */
-function shift(value: Big, places: number): Big {
-  const [mantissa, exponent] = value.toExponential().split("e")
-  return new Big(`${mantissa}e${Number(exponent) + places}`)
-}
 
 type InterestRequest = {
   rate: bigint
@@ -76,6 +51,25 @@ export function calculateLinearInterest({
   const timeDeltaInSeconds = rayDiv(timeDelta, wadToRay(SECONDS_PER_YEAR))
 
   return rayMul(rate, timeDeltaInSeconds) + RAY
+}
+
+type CompoundedRateRequest = {
+  /** Per-annum rate in ray, as the pool reports it. */
+  rate: bigint
+  /** Seconds to compound over — `SECONDS_PER_YEAR` turns an APR into an APY. */
+  duration: bigint
+}
+
+/**
+ * Compounds a per-annum rate over a duration, the exact way the pool does: the
+ * per-second rate truncates before `rayPow`, and the principal ray is taken
+ * back off at the end so the result is the interest, not the multiplier.
+ */
+export function calculateCompoundedRate({
+  rate,
+  duration,
+}: CompoundedRateRequest): bigint {
+  return rayPow(rate / SECONDS_PER_YEAR + RAY, duration) - RAY
 }
 
 type CompoundedBalanceRequest = {
