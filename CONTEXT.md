@@ -117,6 +117,35 @@ and claimable. Hydration mainnet emits GDOT and PRIME; other markets emit
 nothing, which is a normal state rather than an error.
 _Avoid_: Rewards, emissions, farming
 
+### Actions
+
+**Assessment**:
+What one action would do for one account, with one amount, at one instant, and
+whether it may proceed: the most that could be moved, the account the action
+would leave behind, and the findings. Evaluated with no amount, it says whether
+the action can be started at all.
+_Avoid_: Validation, action state
+
+**Finding**:
+One thing an assessment reports about an action, identified by a code. Every
+finding is exactly one of a blocker, a risk acknowledgement or a notice. Where
+it is shown is the form's concern, not the finding's.
+_Avoid_: Error (reserved for thrown failures), alert (a UI component), issue
+
+**Blocker**:
+A finding that means the action cannot proceed — it would revert, breach a
+limit, or cause liquidation.
+_Avoid_: Blocking error
+
+**Risk acknowledgement**:
+A finding that lets the action proceed only once the user explicitly accepts the
+risk it describes.
+_Avoid_: Consent, confirmation
+
+**Notice**:
+A finding that informs without blocking, in a warning or an info tone.
+_Avoid_: Warning (as the noun), alert
+
 ### Data origin
 
 The boundary that matters is where a value came from, not how far it has been
