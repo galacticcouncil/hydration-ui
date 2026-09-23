@@ -50,6 +50,14 @@ export const emptyQuotedPrice = (inverted: boolean): QuotedPrice => ({
 export const formatPrice = (value: Big): string =>
   formatNumber(value, undefined, { useGrouping: false })
 
+const isZero = (value: string): boolean => {
+  try {
+    return new Big(value.replace(/\s+/g, "").replace(/,/g, ".")).eq(0)
+  } catch {
+    return false
+  }
+}
+
 const invert = (value: string): string | null => {
   try {
     const big = new Big(value)
@@ -79,6 +87,16 @@ export const nextQuotedPrice = (
 ): QuotedPrice => {
   switch (event.type) {
     case "typed": {
+      const trimmed = event.value.trim()
+      if (trimmed === "" || isZero(trimmed)) {
+        return {
+          ...state,
+          canonical: "",
+          source: "user",
+          raw: { value: event.value, inverted: state.inverted, canonical: "" },
+        }
+      }
+
       const canonical = state.inverted ? invert(event.value) : event.value
       if (canonical === null) return state
 
@@ -147,6 +165,7 @@ export const nextQuotedPrice = (
         ...state,
         canonical: state.canonical ? (invert(state.canonical) ?? "") : "",
         raw: null,
+        inverted: !state.inverted,
       }
 
     case "pairChanged":

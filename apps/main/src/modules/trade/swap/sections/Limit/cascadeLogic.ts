@@ -7,10 +7,15 @@ import { formatPrice } from "@/modules/trade/swap/lib/quotedPrice"
 export type FieldName = "sell" | "buy" | "price"
 export type LastTwo = [FieldName, FieldName]
 export type FieldValues = Readonly<Record<FieldName, string>>
+export type MarketQuoteDirection = "sell" | "buy"
 export const ALL_FIELDS: readonly FieldName[] = ["sell", "buy", "price"]
 
 export const getDerived = ([a, b]: LastTwo): FieldName =>
   ALL_FIELDS.find((f) => f !== a && f !== b) ?? "price"
+
+export const getMarketQuoteDirection = (
+  lastTwo: LastTwo,
+): MarketQuoteDirection => (getDerived(lastTwo) === "sell" ? "buy" : "sell")
 
 export const updateLastTwoOnTouch = (
   prev: LastTwo,
@@ -29,13 +34,18 @@ export const updateLastTwoOnTouch = (
 export const lockSellIntoLastTwo = (prev: LastTwo): LastTwo =>
   prev.includes("sell") ? prev : [prev[0], "sell"]
 
-const positive = (raw: string): Big | null => {
+const nonNegative = (raw: string): Big | null => {
   try {
-    const value = new Big(raw || "0")
-    return value.gt(0) ? value : null
+    const value = new Big(raw.trim() || "0")
+    return value.gte(0) ? value : null
   } catch {
     return null
   }
+}
+
+const positive = (raw: string): Big | null => {
+  const value = nonNegative(raw)
+  return value !== null && value.gt(0) ? value : null
 }
 
 export const computeDerived = (
@@ -44,12 +54,19 @@ export const computeDerived = (
 ): string | null => {
   const sell = positive(values.sell)
   const buy = positive(values.buy)
-  const price = positive(values.price)
+  const price = nonNegative(values.price)
 
-  if (derived === "buy")
-    return sell && price ? formatPrice(sell.times(price)) : null
-  if (derived === "sell")
-    return buy && price ? formatPrice(buy.div(price)) : null
+  if (price === null) return null
+
+  if (derived === "buy") {
+    if (!sell) return null
+    if (price.eq(0)) return ""
+    return formatPrice(sell.times(price))
+  }
+  if (derived === "sell") {
+    if (!buy || price.eq(0)) return null
+    return formatPrice(buy.div(price))
+  }
   return sell && buy ? formatPrice(buy.div(sell)) : null
 }
 

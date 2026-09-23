@@ -63,60 +63,59 @@ export const LimitOrderSettings: FC = () => {
           {t("trade:limit.partiallyFillable")}
         </Text>
         <Flex align="center" gap="base">
-          <Tooltip
-            side="top"
-            asChild
-            text={
-              <Flex direction="column" gap="s">
-                <Text fs="p5" fw={500}>
-                  {t("trade:limit.partiallyFillable.tooltip.intro")}
-                </Text>
-                <SBulletList>
-                  <Text as="li" fw={500} fs="p5">
-                    {t("trade:limit.partiallyFillable.tooltip.partial")}
-                  </Text>
-                  <Text as="li" fw={500} fs="p5">
-                    {t("trade:limit.partiallyFillable.tooltip.fillOrKill")}
-                  </Text>
-                </SBulletList>
-              </Flex>
-            }
-          >
-            <Flex align="center" gap="s">
-              <Icon
-                component={CircleInfo}
-                size="s"
-                color={
-                  partiallyFillable
-                    ? getToken("text.tint.secondary")
-                    : getToken("text.low")
-                }
-              />
-              <Text
-                fw={500}
-                fs="p5"
-                color={
-                  partiallyFillable
-                    ? getToken("text.tint.secondary")
-                    : getToken("text.low")
-                }
-              >
-                {t("trade:limit.partiallyFillable.enabled")}
-              </Text>
-            </Flex>
-          </Tooltip>
-
           <ToggleRoot>
+            <Tooltip
+              side="top"
+              asChild
+              text={
+                <Flex direction="column" gap="s">
+                  <Text fw={500}>
+                    {t("trade:limit.partiallyFillable.tooltip.intro")}
+                  </Text>
+                  <SBulletList>
+                    <Text as="li" fw={500}>
+                      {t("trade:limit.partiallyFillable.tooltip.partial")}
+                    </Text>
+                    <Text as="li" fw={500}>
+                      {t("trade:limit.partiallyFillable.tooltip.fillOrKill")}
+                    </Text>
+                  </SBulletList>
+                </Flex>
+              }
+            >
+              <ToggleLabel htmlFor="partiallyFillable">
+                <Flex align="center" gap="s">
+                  <Icon
+                    component={CircleInfo}
+                    size="s"
+                    color={
+                      partiallyFillable
+                        ? getToken("text.tint.secondary")
+                        : getToken("text.low")
+                    }
+                  />
+                  <Text
+                    fw={500}
+                    fs="p5"
+                    color={
+                      partiallyFillable
+                        ? getToken("text.tint.secondary")
+                        : getToken("text.low")
+                    }
+                  >
+                    {t("trade:limit.partiallyFillable.enabled")}
+                  </Text>
+                </Flex>
+              </ToggleLabel>
+            </Tooltip>
             <Toggle
+              aria-label={t("trade:limit.partiallyFillable")}
               name="partiallyFillable"
               checked={partiallyFillable}
               onCheckedChange={(checked) =>
                 setValue("partiallyFillable", !!checked)
               }
             />
-            <ToggleLabel hidden>
-              {t("trade:limit.partiallyFillable")}
-            </ToggleLabel>
           </ToggleRoot>
         </Flex>
       </Flex>

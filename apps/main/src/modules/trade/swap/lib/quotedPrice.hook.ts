@@ -35,10 +35,6 @@ export const useQuotedPrice = ({
     emptyQuotedPrice,
   )
 
-  useEffect(() => {
-    if (marketPrice) dispatchEvent({ type: "market", value: marketPrice })
-  }, [marketPrice])
-
   const seenPair = useRef(pair)
   const [sellAssetId, buyAssetId] = pair
   useEffect(() => {
@@ -46,13 +42,18 @@ export const useQuotedPrice = ({
     if (prevSell === sellAssetId && prevBuy === buyAssetId) return
     seenPair.current = [sellAssetId, buyAssetId]
 
-    dispatchEvent({
-      type:
-        prevSell === buyAssetId && prevBuy === sellAssetId
-          ? "flipAssets"
-          : "pairChanged",
-    })
+    const type =
+      prevSell === buyAssetId && prevBuy === sellAssetId
+        ? "flipAssets"
+        : "pairChanged"
+    dispatchEvent({ type })
   }, [sellAssetId, buyAssetId])
+
+  useEffect(() => {
+    if (marketPrice) {
+      dispatchEvent({ type: "market", value: marketPrice })
+    }
+  }, [marketPrice])
 
   const notify = useRef(onCanonicalChange)
   notify.current = onCanonicalChange
