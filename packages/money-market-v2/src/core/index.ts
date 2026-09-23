@@ -39,7 +39,7 @@ export { summarizeAccount } from "@/core/derive-account"
 export type { SummarizeRewardsRequest } from "@/core/derive-incentives"
 export { summarizeRewards } from "@/core/derive-incentives"
 export type { SummarizeReservesRequest } from "@/core/derive-reserves"
-export { summarizeReserves } from "@/core/derive-reserves"
+export { canBorrowAgainst, summarizeReserves } from "@/core/derive-reserves"
 export {
   ChainReadError,
   DecodeError,

@@ -139,6 +139,14 @@ function summarizeReserve(
     borrowUsageRatio:
       totalLiquidity === 0n ? "0" : divide(totalDebt, totalLiquidity),
 
+    baseVariableBorrowRate: normalize(
+      reserve.baseVariableBorrowRate,
+      RAY_DECIMALS,
+    ),
+    variableRateSlope1: normalize(reserve.variableRateSlope1, RAY_DECIMALS),
+    variableRateSlope2: normalize(reserve.variableRateSlope2, RAY_DECIMALS),
+    optimalUsageRatio: normalize(reserve.optimalUsageRatio, RAY_DECIMALS),
+
     totalLiquidity: normalize(totalLiquidity.toString(), decimals),
     totalLiquidityUsd: toUsd(Decimal(totalLiquidity.toString())).toFixed(),
     availableLiquidity: normalize(availableLiquidity.toString(), decimals),
@@ -233,6 +241,28 @@ function summarizeReserve(
       : [],
   }
 }
+
+const isOpen = (reserve: ReserveSummary) =>
+  reserve.isActive && !reserve.isFrozen && !reserve.isPaused
+
+/**
+ * Whether supplying `collateral` can back a new borrow of `borrowed`, judged on
+ * the two reserves' configuration alone.
+ *
+ * It says nothing about a particular account: e-mode, an account's isolation
+ * state and its health factor can each narrow the answer further, and none of
+ * them is known here. A reserve can be borrowed against itself.
+ */
+export const canBorrowAgainst = (
+  collateral: ReserveSummary,
+  borrowed: ReserveSummary,
+): boolean =>
+  isOpen(collateral) &&
+  isOpen(borrowed) &&
+  collateral.usageAsCollateralEnabled &&
+  Decimal(collateral.ltv).gt(0) &&
+  borrowed.borrowingEnabled &&
+  (!collateral.isIsolated || borrowed.borrowableInIsolation)
 
 function min(a: bigint, b: bigint): bigint {
   return a < b ? a : b

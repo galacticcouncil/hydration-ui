@@ -5,13 +5,12 @@ import { CustomMarket } from "@/types"
 
 const keys: ReadonlyArray<CustomMarket> = [
   "hydration_v3",
-  "hydration_testnet_v3",
   "bil_v3",
   "gigahdx_v3",
 ]
 
 describe("market registry", () => {
-  it("describes exactly the four markets", () => {
+  it("describes exactly the three markets", () => {
     expect(Object.keys(markets).sort()).toEqual([...keys].sort())
   })
 
@@ -31,12 +30,5 @@ describe("market registry", () => {
         "WALLET_BALANCE_PROVIDER",
       ])
     })
-  })
-
-  it("points the testnet market at the mainnet addresses", () => {
-    // v1's separate testnet addresses have no contract deployed at them.
-    expect(getMarket("hydration_testnet_v3").addresses).toEqual(
-      getMarket("hydration_v3").addresses,
-    )
   })
 })

@@ -19,11 +19,7 @@ import { Abi, Address, Hex } from "viem"
  */
 
 /** Opaque key for one deployed lending pool. A chain id never identifies one. */
-export type CustomMarket =
-  | "hydration_v3"
-  | "hydration_testnet_v3"
-  | "bil_v3"
-  | "gigahdx_v3"
+export type CustomMarket = "hydration_v3" | "bil_v3" | "gigahdx_v3"
 
 /** The seven contracts v2 reads from or writes to for a single market. */
 export type MarketAddresses = {
@@ -82,6 +78,11 @@ export type Reserve = {
   liquidityRate: string
   variableBorrowRate: string
   lastUpdateTimestamp: number
+
+  baseVariableBorrowRate: string
+  variableRateSlope1: string
+  variableRateSlope2: string
+  optimalUsageRatio: string
 
   availableLiquidity: string
   totalScaledVariableDebt: string
@@ -263,6 +264,12 @@ export type ReserveSummary = {
   variableBorrowApy: string
   supplyUsageRatio: string
   borrowUsageRatio: string
+
+  /** The interest-rate model's parameters, as fractions like the rates above. */
+  baseVariableBorrowRate: string
+  variableRateSlope1: string
+  variableRateSlope2: string
+  optimalUsageRatio: string
 
   totalLiquidity: string
   totalLiquidityUsd: string

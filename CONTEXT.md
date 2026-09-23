@@ -54,6 +54,21 @@ reserve or a position.
 **LTV**, **Liquidation threshold**:
 Ratios that exist in two distinct forms: configured per reserve, and the
 collateral-weighted average across an account. Say which is meant.
+_Avoid_: Collateral factor (for LTV)
+
+**Liquidation bonus**:
+The premium over par a liquidator receives on the collateral it seizes. The same
+figure, seen from the borrower's side, is shown to users as the liquidation
+penalty; it is one parameter, not two.
+_Avoid_: Liquidation fee
+
+**Borrowing against**:
+A reserve can be borrowed against another when the second, supplied as
+collateral, could back a new borrow of the first under the two reserves'
+configuration alone. It is a relation between reserves, not an account's
+standing: e-mode, isolation mode and health factor can each narrow it for a
+particular account. The reserves one can borrow against are its supported
+collateral.
 
 ### Constraints
 
@@ -75,6 +90,24 @@ _Avoid_: Efficiency mode, category
 
 **Siloed borrowing**:
 A reserve restriction: when borrowed, it must be the account's only borrow.
+
+### Rates
+
+**Utilization**:
+The share of a reserve's supplied liquidity currently borrowed. It is the input
+to the reserve's interest-rate model.
+_Avoid_: Usage ratio (outside contract field names)
+
+**Interest-rate model**:
+The curve that sets a reserve's variable borrow rate from its utilization: a
+base rate, rising by one slope up to the optimal utilization and by a second,
+steeper slope beyond it.
+_Avoid_: Rate strategy (outside contract names)
+
+**Reserve factor**:
+The share of borrowers' interest the protocol keeps rather than passing to
+suppliers.
+_Avoid_: Liquidity fee, protocol fee
 
 ### Incentives
 

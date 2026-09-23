@@ -2,7 +2,12 @@ import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { getMarket, readReserves, summarizeReserves } from "@/core"
+import {
+  canBorrowAgainst,
+  getMarket,
+  readReserves,
+  summarizeReserves,
+} from "@/core"
 import {
   fixtureTimestamp,
   getReservesDataFixture,
@@ -175,5 +180,99 @@ describe("summarizeReserves", () => {
     expect(
       summarizeReserves({ ...chain, currentTimestamp: fixtureTimestamp }),
     ).toEqual(summaries)
+  })
+
+  it("reports the interest-rate model the current borrow rate sits on", () => {
+    // Off the kink, the model's rate at the current utilisation is the rate the
+    // pool last set; accrual since then moves utilisation only slightly.
+    const dot = find(summaries, "DOT")
+    const u = Number(dot.borrowUsageRatio)
+    const optimal = Number(dot.optimalUsageRatio)
+    const base = Number(dot.baseVariableBorrowRate)
+    const slope1 = Number(dot.variableRateSlope1)
+    const slope2 = Number(dot.variableRateSlope2)
+
+    expect(optimal).toBeGreaterThan(0)
+    expect(optimal).toBeLessThanOrEqual(1)
+
+    const modelled =
+      u <= optimal
+        ? base + (slope1 * u) / optimal
+        : base + slope1 + (slope2 * (u - optimal)) / (1 - optimal)
+    expect(modelled).toBeCloseTo(Number(dot.variableBorrowApr), 3)
+  })
+})
+
+describe("canBorrowAgainst", () => {
+  let collateral: ReserveSummary
+  let borrowed: ReserveSummary
+
+  beforeEach(async () => {
+    vi.resetAllMocks()
+    mockedReadContract.mockImplementation(async (_config, parameters) => {
+      const { functionName } = parameters as { functionName: string }
+      if (functionName === "getReservesData") return getReservesDataFixture()
+      return getReservesIncentivesDataFixture()
+    })
+    const summaries = summarizeReserves({
+      ...(await readReserves(config, market)),
+      currentTimestamp: fixtureTimestamp,
+    })
+    const base = find(summaries, "DOT")
+    const open = {
+      isActive: true,
+      isFrozen: false,
+      isPaused: false,
+      isIsolated: false,
+    }
+    collateral = {
+      ...base,
+      ...open,
+      usageAsCollateralEnabled: true,
+      ltv: "0.5",
+    }
+    borrowed = {
+      ...base,
+      ...open,
+      borrowingEnabled: true,
+      borrowableInIsolation: false,
+    }
+  })
+
+  it("lets an open collateral back an open, borrowable reserve", () => {
+    expect(canBorrowAgainst(collateral, borrowed)).toBe(true)
+  })
+
+  it("needs a collateral with a non-zero LTV", () => {
+    expect(canBorrowAgainst({ ...collateral, ltv: "0" }, borrowed)).toBe(false)
+    expect(
+      canBorrowAgainst(
+        { ...collateral, usageAsCollateralEnabled: false },
+        borrowed,
+      ),
+    ).toBe(false)
+  })
+
+  it("needs the borrowed reserve to have borrowing enabled", () => {
+    expect(
+      canBorrowAgainst(collateral, { ...borrowed, borrowingEnabled: false }),
+    ).toBe(false)
+  })
+
+  it("lets an isolated collateral back only what is borrowable in isolation", () => {
+    const isolated = { ...collateral, isIsolated: true }
+    expect(canBorrowAgainst(isolated, borrowed)).toBe(false)
+    expect(
+      canBorrowAgainst(isolated, { ...borrowed, borrowableInIsolation: true }),
+    ).toBe(true)
+  })
+
+  it("excludes frozen or paused reserves on either side", () => {
+    expect(canBorrowAgainst({ ...collateral, isFrozen: true }, borrowed)).toBe(
+      false,
+    )
+    expect(canBorrowAgainst(collateral, { ...borrowed, isPaused: true })).toBe(
+      false,
+    )
   })
 })

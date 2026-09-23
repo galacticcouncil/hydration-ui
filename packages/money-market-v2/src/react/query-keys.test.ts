@@ -53,7 +53,7 @@ describe("moneyMarketKeys", () => {
     const other = "0x0000000000000000000000000000000000000222" as Address
 
     expect(moneyMarketKeys.reserves("hydration_v3")).not.toEqual(
-      moneyMarketKeys.reserves("hydration_testnet_v3"),
+      moneyMarketKeys.reserves("bil_v3"),
     )
     expect(moneyMarketKeys.positions("hydration_v3", user)).not.toEqual(
       moneyMarketKeys.positions("hydration_v3", other),

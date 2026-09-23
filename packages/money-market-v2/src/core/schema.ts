@@ -70,6 +70,11 @@ const reserve: z.ZodType<Reserve> = z.object({
   variableBorrowRate: numeric,
   lastUpdateTimestamp: count,
 
+  baseVariableBorrowRate: numeric,
+  variableRateSlope1: numeric,
+  variableRateSlope2: numeric,
+  optimalUsageRatio: numeric,
+
   availableLiquidity: numeric,
   totalScaledVariableDebt: numeric,
   unbacked: numeric,
