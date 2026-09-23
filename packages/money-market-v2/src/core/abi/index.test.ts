@@ -31,6 +31,7 @@ describe("abi", () => {
       "repayWithATokens",
       "setUserUseReserveAsCollateral",
       "setUserEMode",
+      "getReserveData",
     ])
   })
 

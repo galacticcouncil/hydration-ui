@@ -1,6 +1,7 @@
 import { useMoneyMarket } from "@galacticcouncil/money-market-v2/react"
 import type {
   IncentiveApr,
+  MarketDescriptor,
   PositionSummary,
   ReserveSummary,
 } from "@galacticcouncil/money-market-v2/types"
@@ -13,8 +14,11 @@ import {
   Chip,
   DataTable,
   Icon,
+  LogoSize,
   SectionHeader,
+  Separator,
   TableContainer,
+  TableSize,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -30,9 +34,8 @@ import {
 } from "@galacticcouncil/utils"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { isAddressEqual } from "viem"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
@@ -58,27 +61,39 @@ const LOGO_OVERRIDES: Record<string, string> = {
   [GSOL_ASSET_ID]: GSOL_ERC20_ID,
 }
 
+/**
+ * The registry asset behind a reserve's token. HOLLAR's token is not an asset
+ * precompile, so it can't be decoded from its address. Takes any string, as
+ * it also resolves raw URL params.
+ */
+export const reserveAssetId = (address: string, market: MarketDescriptor) =>
+  isHollar(address, market) ? HOLLAR_ASSET_ID : getAssetIdFromAddress(address)
+
+/**
+ * Hollar is minted rather than lent: nothing is supplied to its reserve, its
+ * rate is set by governance rather than by utilization, and its borrowing is
+ * capped by the facilitator bucket instead of the reserve's borrow cap.
+ */
+export const isHollar = (address: string, market: MarketDescriptor) =>
+  address.toLowerCase() === market.addresses.HOLLAR_TOKEN.toLowerCase()
+
+export const useReserveLogoId = (reserve: ReserveSummary) => {
+  const { market } = useMoneyMarket()
+  const assetId = reserveAssetId(reserve.underlyingAsset, market)
+
+  return LOGO_OVERRIDES[assetId] ?? assetId
+}
+
 export const ReserveAsset: FC<{
   reserve: ReserveSummary
-  size?: "medium" | "large"
-  withName?: boolean
-}> = ({ reserve, size = "medium", withName = false }) => {
-  const { market } = useMoneyMarket()
-  const assetId = isAddressEqual(
-    reserve.underlyingAsset,
-    market.addresses.HOLLAR_TOKEN,
-  )
-    ? HOLLAR_ASSET_ID
-    : getAssetIdFromAddress(reserve.underlyingAsset)
+  size?: LogoSize
+}> = ({ reserve, size }) => {
+  const logoId = useReserveLogoId(reserve)
 
   return (
     <AssetLabelFullContainer>
-      <AssetLogo id={LOGO_OVERRIDES[assetId] ?? assetId} size={size} />
-      <AssetLabel
-        size={size}
-        symbol={reserve.symbol}
-        name={withName ? reserve.name : undefined}
-      />
+      <AssetLogo id={logoId} size={size} />
+      <AssetLabel symbol={reserve.symbol} />
     </AssetLabelFullContainer>
   )
 }
@@ -303,18 +318,21 @@ export const ReserveDataTable = <T extends { reserve: ReserveSummary }>({
   columns,
   empty,
   isLoading = false,
+  size,
 }: {
   data: T[]
   columns: ColumnDef<T>[]
   empty: string
   isLoading?: boolean
+  size?: TableSize
 }) => {
   const navigateToReserve = useNavigateToReserve()
 
   return (
-    <TableContainer>
+    <TableContainer borderRadius="xl">
       <DataTable
         fixedLayout
+        size={size}
         skeletonRowCount={4}
         isLoading={isLoading}
         data={data}
@@ -332,10 +350,12 @@ export const ReserveDataTable = <T extends { reserve: ReserveSummary }>({
 
 export const ReserveTable = <T extends { reserve: ReserveSummary }>({
   title,
+  header,
   error,
   ...table
 }: TableState & {
   title: string
+  header?: ReactNode
   data: T[]
   columns: ColumnDef<T>[]
   empty: string
@@ -346,6 +366,12 @@ export const ReserveTable = <T extends { reserve: ReserveSummary }>({
       <ReadError error={error} />
     ) : (
       <TablePaper>
+        {header && (
+          <>
+            {header}
+            <Separator />
+          </>
+        )}
         <ReserveDataTable {...table} />
       </TablePaper>
     )}

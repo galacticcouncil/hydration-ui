@@ -1,3 +1,4 @@
+export { hollarTokenAbi } from "@/core/abi/hollar-token"
 export { incentiveControllerAbi } from "@/core/abi/incentive-controller"
 export { poolAbi } from "@/core/abi/pool"
 export { uiIncentiveDataProviderAbi } from "@/core/abi/ui-incentive-data-provider"

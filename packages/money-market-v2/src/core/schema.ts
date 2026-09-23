@@ -234,3 +234,9 @@ export const walletBalancesSchema = z
   .refine(([assets, amounts]) => assets.length === amounts.length, {
     error: "Asset and balance arrays differ in length",
   })
+
+/** Only the aToken is kept; the rest of the struct is stripped. */
+export const poolReserveATokenSchema = z.object({ aTokenAddress: address })
+
+/** `getFacilitatorBucket` returns `[capacity, level]`. */
+export const hollarFacilitatorSchema = z.tuple([numeric, numeric])

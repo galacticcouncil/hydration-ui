@@ -30,6 +30,9 @@ export const moneyMarketKeys = {
   reserves: (market: CustomMarket) =>
     [...moneyMarketKeys.market(market), "reserves"] as const,
 
+  hollar: (market: CustomMarket) =>
+    [...moneyMarketKeys.market(market), "hollar"] as const,
+
   positions: (market: CustomMarket, user: Address | undefined) =>
     [...moneyMarketKeys.market(market), "positions", user] as const,
 

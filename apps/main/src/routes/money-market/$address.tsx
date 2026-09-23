@@ -1,6 +1,9 @@
 import { createFileRoute, useParams } from "@tanstack/react-router"
 
-import { ReserveDetailPage } from "@/modules/money-market-v2/ReserveDetailPage"
+import {
+  ReserveCrumb,
+  ReserveDetailPage,
+} from "@/modules/money-market-v2/ReserveDetailPage"
 
 const RouteComponent = () => {
   const { address } = useParams({ from: "/money-market/$address" })
@@ -10,4 +13,5 @@ const RouteComponent = () => {
 
 export const Route = createFileRoute("/money-market/$address")({
   component: RouteComponent,
+  staticData: { crumb: ReserveCrumb },
 })

@@ -23,3 +23,6 @@ export const USD_DECIMALS = 8
  * with interest accrual between planning and submission (ADR-0007).
  */
 export const MAX_UINT_AMOUNT = 2n ** 256n - 1n
+
+/** Hollar, like the GHO it forks, is an 18-decimal token. */
+export const HOLLAR_DECIMALS = 18

@@ -4,6 +4,7 @@ import { Address } from "viem"
 
 import {
   AccountSummary,
+  readHollarFacilitator,
   readPositions,
   readReserves,
   readWalletBalances,
@@ -14,6 +15,7 @@ import { useMoneyMarket } from "@/react/provider"
 import { moneyMarketKeys } from "@/react/query-keys"
 import { useTick } from "@/react/use-tick"
 import {
+  HollarFacilitator,
   MarketPositions,
   MarketReserves,
   MarketWalletBalances,
@@ -175,6 +177,23 @@ export const useWalletBalances = (
       user && reserves
         ? () => readWalletBalances(config, market, user, reserves)
         : skipToken,
+    staleTime: POSITIONS_STALE_TIME,
+  })
+}
+
+/**
+ * The market's Hollar facilitator bucket — the real cap on Hollar borrowing.
+ * Minting moves it, so it goes stale on the same clock as a user's state.
+ */
+export const useHollarFacilitator = (): UseQueryResult<
+  HollarFacilitator,
+  Error
+> => {
+  const { config, market } = useMoneyMarket()
+
+  return useQuery({
+    queryKey: moneyMarketKeys.hollar(market.market),
+    queryFn: () => readHollarFacilitator(config, market),
     staleTime: POSITIONS_STALE_TIME,
   })
 }

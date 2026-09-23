@@ -21,7 +21,7 @@ import { Abi, Address, Hex } from "viem"
 /** Opaque key for one deployed lending pool. A chain id never identifies one. */
 export type CustomMarket = "hydration_v3" | "bil_v3" | "gigahdx_v3"
 
-/** The seven contracts v2 reads from or writes to for a single market. */
+/** The six contracts v2 reads from or writes to for a single market. */
 export type MarketAddresses = {
   POOL_ADDRESSES_PROVIDER: Address
   POOL: Address
@@ -29,7 +29,6 @@ export type MarketAddresses = {
   UI_INCENTIVE_DATA_PROVIDER: Address
   WALLET_BALANCE_PROVIDER: Address
   HOLLAR_TOKEN: Address
-  HOLLAR_UI_DATA_PROVIDER: Address
 }
 
 /** Everything needed to address one market. Carries no chain id by design. */
@@ -219,6 +218,16 @@ export type WalletBalance = {
 export type MarketWalletBalances = {
   user: Address
   balances: WalletBalance[]
+}
+
+/**
+ * The Hollar the pool may mint, in human units. `maxCapacity` is the real
+ * borrow cap on the Hollar reserve — the pool's own `borrowCap` there is unset —
+ * and `level` is how much of it is minted.
+ */
+export type HollarFacilitator = {
+  level: string
+  maxCapacity: string
 }
 
 /* -------------------------------------------------------------------------- */

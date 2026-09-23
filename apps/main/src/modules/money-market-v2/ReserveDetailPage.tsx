@@ -1,19 +1,27 @@
-import { canBorrowAgainst } from "@galacticcouncil/money-market-v2/core"
+import {
+  canBorrowAgainst,
+  markets,
+} from "@galacticcouncil/money-market-v2/core"
 import {
   useAccountSummary,
+  useHollarFacilitator,
   useMoneyMarket,
   useReserveSummaries,
   useWalletBalances,
 } from "@galacticcouncil/money-market-v2/react"
 import type { ReserveSummary } from "@galacticcouncil/money-market-v2/types"
+import { Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
-  Box,
-  Button,
+  Card,
+  CardBody,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Flex,
   Grid,
   Icon,
-  Paper,
+  Separator,
   Spinner,
   Stack,
   Summary,
@@ -21,27 +29,32 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { Link, useSearch } from "@tanstack/react-router"
+import { Web3ConnectButton } from "@galacticcouncil/web3-connect"
+import { useParams, useSearch } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
-import { ChevronLeft } from "lucide-react"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AssetLogo } from "@/components/AssetLogo"
 import { CapProgressCircle } from "@/modules/borrow/reserve/components/CapProgressCircle"
-import { ReserveSectionDivider } from "@/modules/borrow/reserve/components/ReserveSectionDivider"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
-import { useUserAddress } from "@/modules/money-market-v2/hooks"
+import { DEFAULT_MARKET, useUserAddress } from "@/modules/money-market-v2/hooks"
 import { InterestRateModelChart } from "@/modules/money-market-v2/InterestRateModelChart"
+import { MarketSelect } from "@/modules/money-market-v2/MoneyMarketV2Layout"
 import {
-  AmountCell,
   ApyCell,
   CollateralCell,
+  isHollar,
   ReadError,
   ReserveAsset,
+  reserveAssetId,
   ReserveDataTable,
+  useReserveLogoId,
 } from "@/modules/money-market-v2/MoneyMarketV2Tables"
+import { SStickyCard } from "@/modules/money-market-v2/ReserveDetailPage.styled"
 import { ReserveRatesChart } from "@/modules/money-market-v2/ReserveRatesChart"
+import { useAssets } from "@/providers/assetsProvider"
 
 type Row = { reserve: ReserveSummary }
 
@@ -71,37 +84,40 @@ export const ReserveDetailPage: FC<{ address: string }> = ({ address }) => {
     )
   }
 
-  const reserve = reserves.data.find(
-    (r) => r.underlyingAsset === address.toLowerCase(),
-  )
+  const reserve = findReserve(reserves.data, address)
 
   if (!reserve) {
     return (
-      <Stack gap="xl" align="flex-start">
-        <BackLink />
-        <Alert
-          variant="warning"
-          title="Reserve not found"
-          description={`${address} is not a reserve of the ${market.marketTitle} market.`}
-        />
-      </Stack>
+      <Alert
+        variant="warning"
+        title="Reserve not found"
+        description={`${address} is not a reserve of the ${market.marketTitle} market.`}
+      />
     )
   }
 
   return <ReserveDetail reserve={reserve} reserves={reserves.data} />
 }
 
-const BackLink: FC = () => {
-  const { market } = useSearch({ from: "/money-market" })
+const findReserve = (reserves: ReserveSummary[], address: string) =>
+  reserves.find((r) => r.underlyingAsset === address.toLowerCase())
 
-  return (
-    <Button variant="tertiary" size="small" asChild>
-      <Link to="/money-market" search={{ market }}>
-        <Icon component={ChevronLeft} size="s" />
-        Back
-      </Link>
-    </Button>
-  )
+/**
+ * Renders in the pending layout too, outside the MoneyMarketProvider, so it
+ * reads the asset registry rather than the market's reserves.
+ */
+export const ReserveCrumb: FC = () => {
+  const params = useParams({
+    from: "/money-market/$address",
+    shouldThrow: false,
+  })
+  const search = useSearch({ from: "/money-market", shouldThrow: false })
+  const { getAsset } = useAssets()
+
+  if (!params) return null
+
+  const market = markets[search?.market ?? DEFAULT_MARKET]
+  return getAsset(reserveAssetId(params.address, market))?.symbol ?? null
 }
 
 const ReserveDetail: FC<{
@@ -109,6 +125,8 @@ const ReserveDetail: FC<{
   reserves: ReserveSummary[]
 }> = ({ reserve, reserves }) => {
   const { symbol, borrowingEnabled } = reserve
+  const { market } = useMoneyMarket()
+  const hollar = isHollar(reserve.underlyingAsset, market)
 
   const collateral = useMemo(
     () =>
@@ -128,91 +146,110 @@ const ReserveDetail: FC<{
     [reserves, reserve],
   )
 
-  const sections: ReadonlyArray<[string, ReactNode] | false> = [
-    ["rates", <InterestRates key="rates" reserve={reserve} />],
-    ["params", <ProtocolParameters key="params" reserve={reserve} />],
-    borrowingEnabled && [
-      "model",
-      <InterestRateModel key="model" reserve={reserve} />,
-    ],
-    borrowingEnabled && [
-      "collateral",
-      <Section
-        key="collateral"
-        title="Supported collateral"
-        description={`Assets that can be supplied as collateral to borrow ${symbol} in this market. E-mode and an account's own state can narrow this further.`}
-      >
-        <Paper variant="bordered">
-          <ReserveDataTable
-            data={collateral}
-            columns={collateralColumns}
-            empty={`Nothing can currently back a ${symbol} borrow.`}
-          />
-        </Paper>
-      </Section>,
-    ],
-    canBeCollateral(reserve) && [
-      "borrowable",
-      <Section
-        key="borrowable"
-        title="Assets you can borrow"
-        description={`What can be borrowed with ${symbol} as collateral.`}
-      >
-        <Paper variant="bordered">
-          <ReserveDataTable
-            data={borrowable}
-            columns={borrowableColumns}
-            empty={`Nothing can currently be borrowed against ${symbol}.`}
-          />
-        </Paper>
-      </Section>,
-    ],
-  ]
-
   return (
     <Stack gap="xxl">
-      <Stack gap="xl" align="flex-start">
-        <BackLink />
-        <ReserveAsset reserve={reserve} size="large" withName />
-      </Stack>
+      <Flex justify="space-between" align="center" gap="base" wrap>
+        <ReserveTitle reserve={reserve} />
+        <MarketSelect />
+      </Flex>
 
-      <ReserveHeader reserve={reserve} />
+      {hollar ? (
+        <HollarHeader reserve={reserve} />
+      ) : (
+        <ReserveHeader reserve={reserve} />
+      )}
 
       <TwoColumnGrid template="sidebar">
-        <Paper p="xl">
-          {sections
-            .filter((section) => section !== false)
-            .map(([key, node], index) => (
-              <Box key={key}>
-                {index > 0 && <ReserveSectionDivider />}
-                {node}
-              </Box>
-            ))}
-        </Paper>
-        <Paper p="xl">
-          <YourPosition reserve={reserve} />
-        </Paper>
+        <Stack gap="xl" sx={{ order: [1, null, 0] }}>
+          {hollar ? (
+            <>
+              <AboutHollar />
+              <HollarBorrowInfo reserve={reserve} />
+            </>
+          ) : (
+            <InterestRates reserve={reserve} />
+          )}
+          <ProtocolParameters reserve={reserve} hollar={hollar} />
+          {borrowingEnabled && !hollar && (
+            <InterestRateModel reserve={reserve} />
+          )}
+          {borrowingEnabled && (
+            <Section
+              flush
+              title="Supported collateral"
+              description={`Assets that can be supplied as collateral to borrow ${symbol} in this market. E-mode and an account's own state can narrow this further.`}
+            >
+              <ReserveDataTable
+                size="compact"
+                data={collateral}
+                columns={collateralColumns}
+                empty={`Nothing can currently back a ${symbol} borrow.`}
+              />
+            </Section>
+          )}
+          {canBeCollateral(reserve) && (
+            <Section
+              flush
+              title="Assets you can borrow"
+              description={`What can be borrowed with ${symbol} as collateral.`}
+            >
+              <ReserveDataTable
+                size="compact"
+                data={borrowable}
+                columns={borrowableColumns}
+                empty={`Nothing can currently be borrowed against ${symbol}.`}
+              />
+            </Section>
+          )}
+        </Stack>
+        <SStickyCard>
+          <YourPosition reserve={reserve} hollar={hollar} />
+        </SStickyCard>
       </TwoColumnGrid>
     </Stack>
   )
 }
 
+/** `flush` drops the body padding, so a table runs edge to edge. */
 const Section: FC<{
   title: string
   description: string
+  flush?: boolean
   children: ReactNode
-}> = ({ title, description, children }) => (
-  <Stack gap="xl">
-    <Stack gap="s">
-      <Text fs="p3" fw={500}>
-        {title}
+}> = ({ title, description, flush = false, children }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+      <CardDescription>{description}</CardDescription>
+    </CardHeader>
+    {flush ? (
+      children
+    ) : (
+      <CardBody>
+        <Stack gap="xl">{children}</Stack>
+      </CardBody>
+    )}
+  </Card>
+)
+
+const ReserveTitle: FC<{ reserve: ReserveSummary }> = ({ reserve }) => (
+  <Flex align="center" gap="base">
+    <AssetLogo id={useReserveLogoId(reserve)} size="large" />
+    <Flex direction="column">
+      <Text
+        font="primary"
+        fs="h6"
+        lh={1}
+        fw={600}
+        color={getToken("text.high")}
+      >
+        {reserve.name}
       </Text>
-      <Text fs="p5" color={getToken("text.low")}>
-        {description}
+      <Text fs="p5" color={getToken("text.medium")}>
+        {reserve.symbol}
       </Text>
-    </Stack>
-    {children}
-  </Stack>
+    </Flex>
+  </Flex>
 )
 
 const ReserveHeader: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
@@ -266,6 +303,112 @@ const ReserveHeader: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
         value={t("currency", { value: reserve.priceInUsd })}
       />
     </Stack>
+  )
+}
+
+const HollarHeader: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+  const { t } = useTranslation()
+  const facilitator = useHollarFacilitator()
+  const cap = facilitator.data?.maxCapacity
+
+  return (
+    <Stack
+      direction={["column", null, "row"]}
+      justify="flex-start"
+      gap={["base", null, "xxxl"]}
+      separated
+    >
+      <ValueStats
+        size="large"
+        wrap={[false, false, true]}
+        label="Total borrowed"
+        value={t("currency.compact", { value: reserve.totalDebtUsd })}
+        bottomLabel={`${t("number.compact", { value: reserve.totalDebt })} ${reserve.symbol}`}
+      />
+      <ValueStats
+        size="large"
+        wrap={[false, false, true]}
+        isLoading={facilitator.isPending}
+        label="Borrow cap"
+        value={
+          cap
+            ? t("currency.compact", {
+                value: Big(cap).times(reserve.priceInUsd).toFixed(),
+              })
+            : "-"
+        }
+        bottomLabel={
+          cap
+            ? `${t("number.compact", { value: cap })} ${reserve.symbol}`
+            : undefined
+        }
+      />
+      <ValueStats
+        size="large"
+        wrap={[false, false, true]}
+        label="Oracle price"
+        value={t("currency", { value: reserve.priceInUsd })}
+      />
+    </Stack>
+  )
+}
+
+const AboutHollar: FC = () => {
+  const { t } = useTranslation("borrow")
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("reserve.hollar.title")}</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Text fs="p4" color={getToken("text.medium")}>
+          {t("reserve.hollar.description")}
+        </Text>
+      </CardBody>
+    </Card>
+  )
+}
+
+/**
+ * Hollar is minted on borrow, so its only cap is the facilitator bucket and its
+ * rate is set by governance - there is no supply side and no utilization curve.
+ */
+const HollarBorrowInfo: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+  const facilitator = useHollarFacilitator()
+
+  return (
+    <Section
+      title="Borrow info"
+      description={`${reserve.symbol} is minted when borrowed, up to a cap set by governance, at a rate set by governance rather than by utilization.`}
+    >
+      <Flex gap="xxxl" align="center" wrap>
+        {facilitator.error ? (
+          <ReadError error={facilitator.error} />
+        ) : facilitator.data ? (
+          <CapStat
+            label="Total borrowed"
+            amount={reserve.totalDebt}
+            amountUsd={reserve.totalDebtUsd}
+            cap={facilitator.data.maxCapacity}
+            capUsd={Big(facilitator.data.maxCapacity)
+              .times(reserve.priceInUsd)
+              .toFixed()}
+          />
+        ) : (
+          <ValueStats size="small" wrap isLoading label="Total borrowed" />
+        )}
+        <Stack gap="s">
+          <Text fs="p5" color={getToken("text.medium")}>
+            Borrow APY
+          </Text>
+          <ApyCell
+            apy={reserve.variableBorrowApy}
+            incentives={reserve.borrowIncentives}
+          />
+        </Stack>
+      </Flex>
+    </Section>
   )
 }
 
@@ -340,7 +483,10 @@ const CapStat: FC<{
   )
 }
 
-const ProtocolParameters: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+const ProtocolParameters: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
+  reserve,
+  hollar,
+}) => {
   const { t } = useTranslation(["common", "borrow"])
   const percent = usePercent()
   const { market } = useMoneyMarket()
@@ -364,104 +510,113 @@ const ProtocolParameters: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
       ? "Isolated collateral"
       : "Can be collateral"
 
+  // one list split evenly, so a reserve with few rows still fills both columns
+  const rows = [
+    { label: "Market", content: market.marketTitle },
+    { label: "Status", content: status },
+    // Hollar's real cap is its facilitator bucket, shown in Borrow info
+    ...(hollar
+      ? []
+      : [
+          { label: "Supply cap", content: capLabel(reserve.supplyCap) },
+          { label: "Borrow cap", content: capLabel(reserve.borrowCap) },
+        ]),
+    { label: "Collateral usage", content: collateralUsage },
+    {
+      label: "Borrowing",
+      content: reserve.borrowingEnabled ? "Enabled" : "Disabled",
+    },
+    {
+      label: "Borrowable in isolation",
+      content: yesNo(reserve.borrowableInIsolation),
+    },
+    {
+      label: "Siloed borrowing",
+      content: yesNo(reserve.isSiloedBorrowing),
+    },
+    {
+      label: "Flash loans",
+      content: yesNo(reserve.flashLoanEnabled),
+    },
+    // unset on a reserve that cannot back a borrow, so meaningless there
+    ...(canBeCollateral(reserve)
+      ? [
+          { label: "Max LTV", content: percent(reserve.ltv) },
+          {
+            label: "Liquidation threshold",
+            content: percent(reserve.liquidationThreshold),
+          },
+          {
+            label: "Liquidation penalty",
+            content: percent(reserve.liquidationBonus),
+          },
+        ]
+      : []),
+    {
+      label: "Reserve factor",
+      content: percent(reserve.reserveFactor),
+    },
+    ...(reserve.isIsolated
+      ? [
+          {
+            label: "Debt ceiling",
+            content: t("borrow:cap.range.usd", {
+              valueA: reserve.isolationModeTotalDebtUsd,
+              valueB: reserve.debtCeilingUsd,
+            }),
+          },
+        ]
+      : []),
+    ...(reserve.eModeCategoryId !== 0
+      ? [
+          { label: "E-mode", content: reserve.eModeLabel },
+          {
+            label: "E-mode max LTV",
+            content: percent(reserve.eModeLtv),
+          },
+          {
+            label: "E-mode liquidation threshold",
+            content: percent(reserve.eModeLiquidationThreshold),
+          },
+          {
+            label: "E-mode liquidation penalty",
+            content: percent(reserve.eModeLiquidationBonus),
+          },
+        ]
+      : []),
+  ]
+  const half = Math.ceil(rows.length / 2)
+
   return (
     <Section
       title="Protocol parameters"
       description={`How ${reserve.symbol} is configured in this market.`}
     >
-      <Grid columns={[1, 2]} gap="xl">
-        <CapStat
-          label="Total supplied"
-          amount={reserve.totalLiquidity}
-          amountUsd={reserve.totalLiquidityUsd}
-          cap={reserve.supplyCap}
-          capUsd={reserve.supplyCapUsd}
-        />
-        {reserve.borrowingEnabled && (
+      {!hollar && (
+        <Grid columns={[1, 2]} gap="xl">
           <CapStat
-            label="Total borrowed"
-            amount={reserve.totalDebt}
-            amountUsd={reserve.totalDebtUsd}
-            cap={reserve.borrowCap}
-            capUsd={reserve.borrowCapUsd}
+            label="Total supplied"
+            amount={reserve.totalLiquidity}
+            amountUsd={reserve.totalLiquidityUsd}
+            cap={reserve.supplyCap}
+            capUsd={reserve.supplyCapUsd}
           />
-        )}
-      </Grid>
-
-      <Paper variant="bordered" p="base">
-        <Grid columns={[1, null, 2]} gap="xl" align="start">
-          <Summary
-            rows={[
-              { label: "Market", content: market.marketTitle },
-              { label: "Status", content: status },
-              { label: "Supply cap", content: capLabel(reserve.supplyCap) },
-              { label: "Borrow cap", content: capLabel(reserve.borrowCap) },
-              { label: "Collateral usage", content: collateralUsage },
-              {
-                label: "Borrowing",
-                content: reserve.borrowingEnabled ? "Enabled" : "Disabled",
-              },
-              {
-                label: "Borrowable in isolation",
-                content: yesNo(reserve.borrowableInIsolation),
-              },
-              {
-                label: "Siloed borrowing",
-                content: yesNo(reserve.isSiloedBorrowing),
-              },
-              {
-                label: "Flash loans",
-                content: yesNo(reserve.flashLoanEnabled),
-              },
-            ]}
-          />
-          <Summary
-            rows={[
-              { label: "Max LTV", content: percent(reserve.ltv) },
-              {
-                label: "Liquidation threshold",
-                content: percent(reserve.liquidationThreshold),
-              },
-              {
-                label: "Liquidation penalty",
-                content: percent(reserve.liquidationBonus),
-              },
-              {
-                label: "Reserve factor",
-                content: percent(reserve.reserveFactor),
-              },
-              ...(reserve.isIsolated
-                ? [
-                    {
-                      label: "Debt ceiling",
-                      content: t("borrow:cap.range.usd", {
-                        valueA: reserve.isolationModeTotalDebtUsd,
-                        valueB: reserve.debtCeilingUsd,
-                      }),
-                    },
-                  ]
-                : []),
-              ...(reserve.eModeCategoryId !== 0
-                ? [
-                    { label: "E-mode", content: reserve.eModeLabel },
-                    {
-                      label: "E-mode max LTV",
-                      content: percent(reserve.eModeLtv),
-                    },
-                    {
-                      label: "E-mode liquidation threshold",
-                      content: percent(reserve.eModeLiquidationThreshold),
-                    },
-                    {
-                      label: "E-mode liquidation penalty",
-                      content: percent(reserve.eModeLiquidationBonus),
-                    },
-                  ]
-                : []),
-            ]}
-          />
+          {reserve.borrowingEnabled && (
+            <CapStat
+              label="Total borrowed"
+              amount={reserve.totalDebt}
+              amountUsd={reserve.totalDebtUsd}
+              cap={reserve.borrowCap}
+              capUsd={reserve.borrowCapUsd}
+            />
+          )}
         </Grid>
-      </Paper>
+      )}
+
+      <Grid columns={[1, null, 2]} gap="xl" align="start">
+        <Summary rows={rows.slice(0, half)} />
+        <Summary rows={rows.slice(half)} />
+      </Grid>
     </Section>
   )
 }
@@ -510,12 +665,16 @@ const InterestRateModel: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
   )
 }
 
-const YourPosition: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+const YourPosition: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
+  reserve,
+  hollar,
+}) => {
   const { t } = useTranslation()
   const user = useUserAddress()
   const account = useAccountSummary(user)
   const balances = useWalletBalances(user)
 
+  const acc = account.data?.account
   const position = account.data?.positions.find(
     (p) => p.underlyingAsset === reserve.underlyingAsset,
   )
@@ -524,66 +683,114 @@ const YourPosition: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
       (b) => b.underlyingAsset === reserve.underlyingAsset,
     )?.amount ?? "0"
 
-  const amount = (value: string, usd: string) => (
-    <AmountCell amount={value} usd={usd} />
-  )
+  const usd = (value: string) =>
+    t("currency", { value, maximumFractionDigits: 2 })
+  const tokens = (value: string) =>
+    `${t("number", { value })} ${reserve.symbol}`
 
   return (
-    <Stack gap="xl">
-      <Text fs="p3" fw={500}>
-        Your position
-      </Text>
+    <>
+      <CardHeader>
+        <CardTitle>Your position</CardTitle>
+      </CardHeader>
       {!user ? (
-        <Text fs="p5" color={getToken("text.low")}>
-          Connect a wallet to see your {reserve.symbol} position.
-        </Text>
+        <Stack p="l" gap="l">
+          <Text fs="p5" color={getToken("text.low")}>
+            Connect a wallet to see your {reserve.symbol} position.
+          </Text>
+          <Web3ConnectButton size="large" width="100%" />
+        </Stack>
       ) : account.error ? (
-        <ReadError error={account.error} />
+        <CardBody>
+          <ReadError error={account.error} />
+        </CardBody>
       ) : (
-        <Summary
-          rows={[
-            {
-              label: "Wallet balance",
-              loading: balances.isPending,
-              content: amount(
-                walletBalance,
-                Big(walletBalance).times(reserve.priceInUsd).toFixed(),
-              ),
-            },
-            {
-              label: "Supplied",
-              loading: account.isPending,
-              content: amount(
-                position?.underlyingBalance ?? "0",
-                position?.underlyingBalanceUsd ?? "0",
-              ),
-            },
-            {
-              label: "Used as collateral",
-              loading: account.isPending,
-              content: (
-                <CollateralCell
-                  enabled={!!position?.usageAsCollateralEnabledOnUser}
-                  isolated={reserve.isIsolated}
+        <>
+          <Stack p="l" gap="xl">
+            <Grid
+              columns={reserve.borrowingEnabled && !hollar ? 2 : 1}
+              gap="xl"
+            >
+              {!hollar && (
+                <ValueStats
+                  size="medium"
+                  wrap
+                  isLoading={account.isPending}
+                  label="Supplied"
+                  value={usd(position?.underlyingBalanceUsd ?? "0")}
+                  bottomLabel={tokens(position?.underlyingBalance ?? "0")}
                 />
-              ),
-            },
-            {
-              label: "Borrowed",
-              loading: account.isPending,
-              content: amount(
-                position?.variableBorrows ?? "0",
-                position?.variableBorrowsUsd ?? "0",
-              ),
-            },
-            ...(position?.rewards ?? []).map((reward) => ({
-              label: `Accrued ${reward.rewardTokenSymbol}`,
-              content: t("number", { value: reward.amount }),
-            })),
-          ]}
-        />
+              )}
+              {reserve.borrowingEnabled && (
+                <ValueStats
+                  size="medium"
+                  wrap
+                  isLoading={account.isPending}
+                  label="Borrowed"
+                  value={usd(position?.variableBorrowsUsd ?? "0")}
+                  bottomLabel={tokens(position?.variableBorrows ?? "0")}
+                />
+              )}
+            </Grid>
+            <Flex gap="m" align="center">
+              <Icon component={Wallet} sx={{ color: getToken("text.low") }} />
+              <ValueStats
+                size="small"
+                font="secondary"
+                wrap
+                isLoading={balances.isPending}
+                label="Wallet balance"
+                value={tokens(walletBalance)}
+                bottomLabel={usd(
+                  Big(walletBalance).times(reserve.priceInUsd).toFixed(),
+                )}
+              />
+            </Flex>
+          </Stack>
+          <Separator />
+          <CardBody>
+            <Summary
+              rows={[
+                ...(canBeCollateral(reserve)
+                  ? [
+                      {
+                        label: "Used as collateral",
+                        loading: account.isPending,
+                        content: (
+                          <CollateralCell
+                            enabled={!!position?.usageAsCollateralEnabledOnUser}
+                            isolated={reserve.isIsolated}
+                          />
+                        ),
+                      },
+                    ]
+                  : []),
+                {
+                  label: "Health factor",
+                  loading: account.isPending,
+                  content:
+                    acc && acc.healthFactor !== "-1"
+                      ? t("number", {
+                          value: acc.healthFactor,
+                          maximumFractionDigits: 2,
+                        })
+                      : "-",
+                },
+                {
+                  label: "Available to borrow",
+                  loading: account.isPending,
+                  content: usd(acc?.availableBorrowsUsd ?? "0"),
+                },
+                ...(position?.rewards ?? []).map((reward) => ({
+                  label: `Accrued ${reward.rewardTokenSymbol}`,
+                  content: t("number", { value: reward.amount }),
+                })),
+              ]}
+            />
+          </CardBody>
+        </>
       )}
-    </Stack>
+    </>
   )
 }
 
@@ -592,26 +799,23 @@ const columnHelper = createColumnHelper<Row>()
 const collateralColumns = [
   columnHelper.display({
     header: "Asset",
-    cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
+    cell: ({ row }) => (
+      <ReserveAsset reserve={row.original.reserve} size="small" />
+    ),
   }),
   columnHelper.display({
     header: "Max LTV",
     meta: { sx: { textAlign: "right" } },
     cell: ({ row }) => <PercentCell value={row.original.reserve.ltv} />,
   }),
-  columnHelper.display({
-    header: "Liquidation threshold",
-    meta: { sx: { textAlign: "right" } },
-    cell: ({ row }) => (
-      <PercentCell value={row.original.reserve.liquidationThreshold} />
-    ),
-  }),
 ]
 
 const borrowableColumns = [
   columnHelper.display({
     header: "Asset",
-    cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
+    cell: ({ row }) => (
+      <ReserveAsset reserve={row.original.reserve} size="small" />
+    ),
   }),
   columnHelper.display({
     header: "Borrow APY",

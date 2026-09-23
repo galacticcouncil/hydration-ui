@@ -18,11 +18,10 @@ describe("market registry", () => {
     keys.forEach((key) => expect(getMarket(key).market).toBe(key))
   })
 
-  it("gives every market the same seven addresses", () => {
+  it("gives every market the same six addresses", () => {
     keys.forEach((key) => {
       expect(Object.keys(getMarket(key).addresses).sort()).toEqual([
         "HOLLAR_TOKEN",
-        "HOLLAR_UI_DATA_PROVIDER",
         "POOL",
         "POOL_ADDRESSES_PROVIDER",
         "UI_INCENTIVE_DATA_PROVIDER",

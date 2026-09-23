@@ -3,6 +3,7 @@ export {
   POSITIONS_STALE_TIME,
   RESERVES_STALE_TIME,
   useAccountSummary,
+  useHollarFacilitator,
   useMarketPositions,
   useMarketReserves,
   useReserveSummaries,
