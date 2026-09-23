@@ -22,14 +22,7 @@ export const Summary = ({
   ...props
 }: SummaryProps) => (
   <Stack separated={separated} {...props}>
-    {rows?.map((row, i) => (
-      <SummaryRow
-        key={`${row.label}_${i}`}
-        label={row.label}
-        description={row.description}
-        content={row.content}
-        loading={row.loading}
-      />
-    )) ?? children}
+    {rows?.map((row, i) => <SummaryRow key={`${row.label}_${i}`} {...row} />) ??
+      children}
   </Stack>
 )

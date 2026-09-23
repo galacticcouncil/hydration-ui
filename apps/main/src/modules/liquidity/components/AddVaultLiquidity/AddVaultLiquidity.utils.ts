@@ -8,7 +8,14 @@ import Big from "big.js"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Abi, encodeFunctionData, erc20Abi, Hex, maxUint128 } from "viem"
+import {
+  Abi,
+  encodeFunctionData,
+  erc20Abi,
+  Hex,
+  maxUint128,
+  maxUint256,
+} from "viem"
 import z from "zod/v4"
 
 import { useAccountBalances } from "@/api/balances/account.hooks"
@@ -71,9 +78,23 @@ export const useVaultDeposit = () => {
     async ({ vault, token0, token1, amount0, amount1 }: DepositArgs) => {
       const calls: { to: Hex; data: Hex; abi: Abi }[] = []
 
+      // Re-quote, the band drifts while the modal sits open.
+      const [start, end] = await rpc.evm.readContract({
+        abi: UNIPROXY_ABI,
+        address: vault.uniProxy,
+        functionName: "getDepositAmount",
+        args: [vault.address, token0, amount0],
+      })
+
+      // Empty vault accepts any ratio.
+      const amount1Safe =
+        end === maxUint256 || (amount1 >= start && amount1 <= end)
+          ? amount1
+          : (start + end) / 2n
+
       const approvals: [Hex, bigint][] = [
         [token0, amount0],
-        [token1, amount1],
+        [token1, amount1Safe],
       ]
 
       for (const [token, amount] of approvals) {
@@ -105,7 +126,13 @@ export const useVaultDeposit = () => {
         data: encodeFunctionData({
           abi: UNIPROXY_ABI,
           functionName: "deposit",
-          args: [amount0, amount1, evmAddress, vault.address, [0n, 0n, 0n, 0n]],
+          args: [
+            amount0,
+            amount1Safe,
+            evmAddress,
+            vault.address,
+            [0n, 0n, 0n, 0n],
+          ],
         }),
         abi: [...UNIPROXY_ABI],
       })
@@ -271,22 +298,27 @@ export const useAddVaultLiquidity = ({
           .toString()
       : undefined
 
+  // Pool spot price, what 1 assetA is actually worth in assetB.
+  const spotPrice = useMemo(
+    () =>
+      Big(vault.pool.sqrtPriceX96.toString())
+        .pow(2)
+        .div(Big(2).pow(192))
+        .times(Big(10).pow(assetA.decimals - assetB.decimals))
+        .toString(),
+    [assetA.decimals, assetB.decimals, vault.pool.sqrtPriceX96],
+  )
+
+  // Ratio the vault's current reserves must be topped up in, diverges from
+  // spot whenever the managed position sits off-center.
   const price = useMemo(() => {
-    if (state && state.total0 > 0n && state.total1 > 0n) {
-      return Big(state.total1.toString())
-        .div(Big(10).pow(assetB.decimals))
-        .div(Big(state.total0.toString()).div(Big(10).pow(assetA.decimals)))
-        .toString()
-    }
+    if (!state || state.total0 === 0n || state.total1 === 0n) return spotPrice
 
-    const sqrt = Big(vault.pool.sqrtPriceX96.toString())
-
-    return sqrt
-      .pow(2)
-      .div(Big(2).pow(192))
-      .times(Big(10).pow(assetA.decimals - assetB.decimals))
+    return Big(state.total1.toString())
+      .div(Big(10).pow(assetB.decimals))
+      .div(Big(state.total0.toString()).div(Big(10).pow(assetA.decimals)))
       .toString()
-  }, [state, assetA.decimals, assetB.decimals, vault.pool.sqrtPriceX96])
+  }, [state, assetA.decimals, assetB.decimals, spotPrice])
 
   const pairedAmount = useMemo(() => {
     if (!typed || typedRaw === 0n || !price) return undefined
@@ -302,10 +334,8 @@ export const useAddVaultLiquidity = ({
 
     let raw = BigInt(scale(estimate.toFixed(outDecimals), outDecimals))
 
-    if (pair) {
-      if (raw < pair.start) raw = pair.start
-      if (raw > pair.end) raw = pair.end
-    }
+    // Never autofill onto the band edge, one block of drift rejects it.
+    if (pair && (raw < pair.start || raw > pair.end)) raw = pair.mid
 
     return scaleHuman(raw.toString(), outDecimals)
   }, [
@@ -369,6 +399,7 @@ export const useAddVaultLiquidity = ({
     pairedAmount,
     isPairLoading,
     price,
+    spotPrice,
     shares,
     shareOfVault,
     blocker,
