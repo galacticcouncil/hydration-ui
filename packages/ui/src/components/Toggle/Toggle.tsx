@@ -51,6 +51,7 @@ export const ToggleLabel: FC<
       color={getToken("text.high")}
       whiteSpace="nowrap"
       as="label"
+      sx={{ cursor: "pointer" }}
       {...(htmlFor ? { htmlFor } : {})}
       {...props}
     />

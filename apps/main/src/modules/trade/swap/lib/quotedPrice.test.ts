@@ -141,6 +141,23 @@ describe("the ± pill is an input method, not a source", () => {
 })
 
 describe("raw keystrokes", () => {
+  it("clears canonical when the input is emptied, even when inverted", () => {
+    const typed = run(flipped, { type: "typed", value: "4" })
+    const cleared = run(typed, { type: "typed", value: "" })
+
+    expect(cleared.canonical).toBe("")
+    expect(cleared.source).toBe("user")
+    expect(viewQuotedPrice(cleared, null).display).toBe("")
+  })
+
+  it("treats a typed zero like an empty price", () => {
+    const typed = run(direct, { type: "typed", value: "3" })
+    const zeroed = run(typed, { type: "typed", value: "0" })
+
+    expect(zeroed.canonical).toBe("")
+    expect(viewQuotedPrice(zeroed, null).display).toBe("0")
+  })
+
   it("echoes what was typed, then formats again once the value moves", () => {
     const typing = run(direct, { type: "typed", value: "0.00012000" })
     const reset = run(typing, { type: "resetToMarket", value: "2.5000" })
@@ -151,7 +168,7 @@ describe("raw keystrokes", () => {
 })
 
 describe("pair changes", () => {
-  it("inverts the price when the assets swap places", () => {
+  it("inverts the canonical price while preserving a direct display", () => {
     const state = run(
       direct,
       { type: "typed", value: "4" },
@@ -159,6 +176,8 @@ describe("pair changes", () => {
     )
 
     expect(state.canonical).toBe("0.25")
+    expect(state.inverted).toBe(true)
+    expect(viewQuotedPrice(state, null).display).toBe("4")
   })
 
   it("clears the price for a different pair but keeps the denomination", () => {

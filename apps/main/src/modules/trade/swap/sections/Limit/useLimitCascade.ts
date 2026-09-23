@@ -3,7 +3,7 @@ import Big from "big.js"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 
-import { bestSellQuery } from "@/api/trade"
+import { bestBuyQuery, bestSellQuery } from "@/api/trade"
 import {
   marketPriceFromQuote,
   PriceSource,
@@ -17,6 +17,7 @@ import {
   FieldName,
   FieldValues,
   getDerived,
+  getMarketQuoteDirection,
   lockSellIntoLastTwo,
   repairLastTwo,
   updateLastTwoOnTouch,
@@ -25,6 +26,29 @@ import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitFor
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const RECALCULATE_DEBOUNCE_MS = 250
+
+const SILENT_SET = { shouldValidate: false, shouldTouch: false } as const
+
+const positiveAmountOrOne = (amount: string | undefined): string => {
+  try {
+    return amount && Big(amount).gt(0) ? amount : "1"
+  } catch {
+    return "1"
+  }
+}
+
+const cascadeFieldName = (
+  field: FieldName,
+): "sellAmount" | "buyAmount" | "limitPrice" => {
+  switch (field) {
+    case "sell":
+      return "sellAmount"
+    case "buy":
+      return "buyAmount"
+    case "price":
+      return "limitPrice"
+  }
+}
 
 const readFieldValues = (values: LimitFormValues): FieldValues => ({
   sell: values.sellAmount ?? "",
@@ -44,32 +68,43 @@ type LimitCascade = {
 
 export const useLimitCascade = (): LimitCascade => {
   const rpc = useRpcProvider()
-  const { reset, getValues, setValue, trigger, watch } =
+  const { reset, getValues, setValue, clearErrors, trigger, watch } =
     useFormContext<LimitFormValues>()
 
-  const [sellAsset, buyAsset, sellAmount] = watch([
+  const [sellAsset, buyAsset, sellAmount, buyAmount, lastTwo] = watch([
     "sellAsset",
     "buyAsset",
     "sellAmount",
+    "buyAmount",
+    "lastTwo",
   ])
 
-  const sellAmountForQuote =
-    sellAmount && Big(sellAmount || "0").gt(0) ? sellAmount : "1"
+  const marketQuoteDirection = getMarketQuoteDirection(lastTwo)
+  const marketQuery =
+    marketQuoteDirection === "buy"
+      ? bestBuyQuery(rpc, {
+          assetIn: sellAsset?.id ?? "",
+          assetOut: buyAsset?.id ?? "",
+          amountOut: positiveAmountOrOne(buyAmount),
+        })
+      : bestSellQuery(rpc, {
+          assetIn: sellAsset?.id ?? "",
+          assetOut: buyAsset?.id ?? "",
+          amountIn: positiveAmountOrOne(sellAmount),
+        })
 
   const {
     data: swap,
     isFetching: isSwapFetching,
     isPending: isSwapPending,
   } = useQuery({
-    ...bestSellQuery(rpc, {
-      assetIn: sellAsset?.id ?? "",
-      assetOut: buyAsset?.id ?? "",
-      amountIn: sellAmountForQuote,
-    }),
+    ...marketQuery,
     placeholderData: (previousData, previousQuery) => {
       if (!previousData || !previousQuery) return undefined
-      const [, , , prevIn, prevOut] = previousQuery.queryKey
+      const [, , prevDirection, prevIn, prevOut] = previousQuery.queryKey
+      const direction = marketQuoteDirection === "buy" ? "bestBuy" : "bestSell"
       if (
+        prevDirection === direction &&
         prevIn === (sellAsset?.id ?? "") &&
         prevOut === (buyAsset?.id ?? "")
       ) {
@@ -104,6 +139,15 @@ export const useLimitCascade = (): LimitCascade => {
     [],
   )
 
+  const setDerivedField = useCallback(
+    (field: FieldName, value: string | null) => {
+      const name = cascadeFieldName(field)
+      setValue(name, value ?? "", SILENT_SET)
+      clearErrors(name)
+    },
+    [clearErrors, setValue],
+  )
+
   const applyPriceTouch = useCallback(
     (newLimitPrice: string) => {
       const values = getValues()
@@ -112,7 +156,7 @@ export const useLimitCascade = (): LimitCascade => {
         "price",
         values.isLocked,
       )
-      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo)
+      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo, SILENT_SET)
       setValue("limitPrice", newLimitPrice)
 
       const derived = getDerived(lastTwo)
@@ -121,12 +165,11 @@ export const useLimitCascade = (): LimitCascade => {
           ...readFieldValues(values),
           price: newLimitPrice,
         })
-        if (derived === "buy") setValue("buyAmount", computed ?? "")
-        else setValue("sellAmount", computed ?? "")
+        setDerivedField(derived, computed)
       }
-      trigger()
+      trigger("limitPrice")
     },
-    [getValues, setValue, trigger],
+    [getValues, setDerivedField, setValue, trigger],
   )
 
   const applyMarketPrice = useCallback(
@@ -137,9 +180,9 @@ export const useLimitCascade = (): LimitCascade => {
       const lastTwo = values.lastTwo.includes("price")
         ? values.lastTwo
         : updateLastTwoOnTouch(values.lastTwo, "price", values.isLocked)
-      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo)
+      if (lastTwo !== values.lastTwo) setValue("lastTwo", lastTwo, SILENT_SET)
 
-      setValue("limitPrice", newLimitPrice)
+      setValue("limitPrice", newLimitPrice, SILENT_SET)
 
       const derived = getDerived(lastTwo)
       if (derived === "price") return
@@ -149,16 +192,15 @@ export const useLimitCascade = (): LimitCascade => {
         price: newLimitPrice,
       })
       if (computed === null) return
-      if (derived === "buy") setValue("buyAmount", computed)
-      else setValue("sellAmount", computed)
+      setDerivedField(derived, computed)
     },
-    [getValues, setValue],
+    [getValues, setDerivedField, setValue],
   )
 
   const quotedPrice = useQuotedPrice({
     marketPrice,
     pair: [sellAsset?.id ?? "", buyAsset?.id ?? ""],
-    defaultInverted: true,
+    defaultInverted: false,
     onCanonicalChange: (canonical: string, source: PriceSource) => {
       if (source === "derived") return
       if (source === "user") applyPriceTouch(canonical)
@@ -173,15 +215,13 @@ export const useLimitCascade = (): LimitCascade => {
     const derived = getDerived(values.lastTwo)
     const computed = computeDerived(derived, readFieldValues(values))
 
-    if (derived === "buy") {
-      setValue("buyAmount", computed ?? "")
-    } else if (derived === "sell") {
-      setValue("sellAmount", computed ?? "")
-    } else {
-      setValue("limitPrice", computed ?? "")
+    if (derived === "price") {
+      setDerivedField("price", computed)
       dispatch({ type: "derived", value: computed })
+    } else {
+      setDerivedField(derived, computed)
     }
-  }, [getValues, setValue, dispatch])
+  }, [dispatch, getValues, setDerivedField])
 
   const onFieldTouch = useCallback(
     (field: FieldName) => {
@@ -198,13 +238,13 @@ export const useLimitCascade = (): LimitCascade => {
         values.isLocked,
       )
       const derivedAfterTouch = getDerived(next)
-      if (next !== values.lastTwo) setValue("lastTwo", next)
+      if (next !== values.lastTwo) setValue("lastTwo", next, SILENT_SET)
       if (derivedAfterTouch === "price") {
         dispatch({ type: "derived", value: values.limitPrice ?? "" })
       }
       debounced(() => {
         recomputeDerivedField()
-        trigger()
+        trigger(cascadeFieldName(field))
       })
     },
     [debounced, dispatch, getValues, recomputeDerivedField, setValue, trigger],
@@ -225,13 +265,10 @@ export const useLimitCascade = (): LimitCascade => {
     setValue("isLocked", nextLocked)
     if (nextLocked) {
       const next = lockSellIntoLastTwo(values.lastTwo)
-      if (next !== values.lastTwo) setValue("lastTwo", next)
-      debounced(() => {
-        recomputeDerivedField()
-        trigger()
-      })
+      if (next !== values.lastTwo) setValue("lastTwo", next, SILENT_SET)
+      debounced(recomputeDerivedField)
     }
-  }, [getValues, setValue, debounced, recomputeDerivedField, trigger])
+  }, [getValues, setValue, debounced, recomputeDerivedField])
 
   const onAssetChange = useCallback(
     (next: Partial<LimitFormValues>) => {

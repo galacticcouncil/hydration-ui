@@ -6,7 +6,6 @@ export const SBulletList = styled.ul(
     list-style-type: disc;
     padding-left: ${theme.space.l};
     margin: 0;
-    font-size: ${theme.fontSizes.p5};
     line-height: 1.4;
 
     li + li {

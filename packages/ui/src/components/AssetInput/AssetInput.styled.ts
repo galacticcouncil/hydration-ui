@@ -211,7 +211,6 @@ export const SAmount = styled.div(
     & input {
       text-align: right;
       font-size: ${theme.fontSizes.p2};
-      font-variant-numeric: tabular-nums;
     }
 
     & input[aria-busy="true"] {

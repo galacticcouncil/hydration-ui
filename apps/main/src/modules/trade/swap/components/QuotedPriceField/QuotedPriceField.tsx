@@ -5,11 +5,12 @@ import {
   Icon,
   Skeleton,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Pencil, X } from "lucide-react"
 import { FC, MouseEvent, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 
 import {
   SCustomPill,
@@ -81,148 +82,145 @@ export const QuotedPriceField: FC<Props> = ({
   return (
     <Flex direction="column" gap="xs" py="l">
       <Flex justify="space-between" align="center">
-        <Flex asChild align="center">
-          <Text
-            as="div"
-            fw={500}
-            lh={1}
-            fs="p5"
-            gap="0.25em"
-            color={getToken("text.medium")}
-          >
-            <Trans
-              t={t}
-              i18nKey={
-                view.inverted
-                  ? "trade:limit.priceLabelBelow"
-                  : "trade:limit.priceLabelAbove"
-              }
-              values={{ symbol: baseSymbol }}
-            >
-              <Text as="span" fw={500} color={getToken("text.high")} />
-              {baseAssetId ? (
-                <SInlineAssetLogo id={baseAssetId} size="extra-small" />
-              ) : (
-                <span />
-              )}
-            </Trans>
-          </Text>
-        </Flex>
-        <SCustomPill
-          isActive={isEditingPill}
-          tone={
-            deviationPct > 0
-              ? "positive"
-              : deviationPct < 0
-                ? "negative"
-                : "neutral"
-          }
-        >
-          {isEditingPill ? (
-            <>
-              <SPillInlineInput
-                getInputRef={pillInputRef}
-                defaultValue={lastPillValue}
-                placeholder={t("common:number", {
-                  value: deviationPct,
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-                onFocus={(e) => e.target.select()}
-                onValueChange={({ value }) => dispatch({ type: "pct", value })}
-                onBlur={(e) => commitPill(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    commitPill((e.target as HTMLInputElement).value)
-                  }
-                  if (e.key === "Escape") setIsEditingPill(false)
-                }}
-              />
-              <SPercentSuffix>%</SPercentSuffix>
-            </>
-          ) : (
-            <>
-              <SPillTrigger
-                type="button"
-                onClick={startEditingPill}
-                aria-label={t("trade:limit.deviation.editAria")}
-              >
-                {deviationDisplay}
-              </SPillTrigger>
-              <SPillActions>
-                <SPillSeparator aria-hidden />
-                {showResetAction ? (
-                  <SPillSliceButton
-                    type="button"
-                    onClick={resetToMarket}
-                    aria-label={t("trade:limit.deviation.resetAria")}
-                  >
-                    <X />
-                  </SPillSliceButton>
-                ) : (
-                  <SPillSliceButton
-                    type="button"
-                    tabIndex={-1}
-                    aria-hidden
-                    onClick={(e) => {
-                      e.preventDefault()
-                      startEditingPill()
-                    }}
-                  >
-                    <Pencil />
-                  </SPillSliceButton>
-                )}
-              </SPillActions>
-            </>
+        <Text as="div" fw={500} lh={1} fs="p5" color={getToken("text.medium")}>
+          {t("trade:limit.rateLabel")}
+        </Text>
+        <Flex align="center" gap="xs">
+          {!isEditingPill && (
+            <Text fs="p6" color={getToken("text.low")} whiteSpace="nowrap">
+              {t("trade:limit.vsMarket")}
+            </Text>
           )}
-        </SCustomPill>
+          <SCustomPill
+            isActive={isEditingPill}
+            tone={
+              deviationPct > 0
+                ? "positive"
+                : deviationPct < 0
+                  ? "negative"
+                  : "neutral"
+            }
+          >
+            {isEditingPill ? (
+              <>
+                <SPillInlineInput
+                  getInputRef={pillInputRef}
+                  defaultValue={lastPillValue}
+                  placeholder={t("common:number", {
+                    value: deviationPct,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                  onFocus={(e) => e.target.select()}
+                  onValueChange={({ value }) =>
+                    dispatch({ type: "pct", value })
+                  }
+                  onBlur={(e) => commitPill(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      commitPill((e.target as HTMLInputElement).value)
+                    }
+                    if (e.key === "Escape") setIsEditingPill(false)
+                  }}
+                />
+                <SPercentSuffix>%</SPercentSuffix>
+              </>
+            ) : (
+              <>
+                <SPillTrigger
+                  type="button"
+                  onClick={startEditingPill}
+                  aria-label={t("trade:limit.deviation.editAria")}
+                >
+                  {deviationDisplay}
+                </SPillTrigger>
+                <SPillActions>
+                  <SPillSeparator aria-hidden />
+                  {showResetAction ? (
+                    <SPillSliceButton
+                      type="button"
+                      onClick={resetToMarket}
+                      aria-label={t("trade:limit.deviation.resetAria")}
+                    >
+                      <X />
+                    </SPillSliceButton>
+                  ) : (
+                    <SPillSliceButton
+                      type="button"
+                      tabIndex={-1}
+                      aria-hidden
+                      onClick={(e) => {
+                        e.preventDefault()
+                        startEditingPill()
+                      }}
+                    >
+                      <Pencil />
+                    </SPillSliceButton>
+                  )}
+                </SPillActions>
+              </>
+            )}
+          </SCustomPill>
+        </Flex>
       </Flex>
 
-      <Flex align="center" width="100%" gap="s">
-        <Button
-          variant="tertiary"
-          size="medium"
-          outline
-          onClick={() => dispatch({ type: "flipDenomination" })}
-          sx={{ px: "m" }}
-          aria-label={t("trade:limit.invert")}
-        >
-          <Icon
-            component={ArrowLeftRight}
-            size="m"
-            color={getToken("icons.onContainer")}
-            sx={{
-              transform: view.inverted ? "scaleX(1)" : "scaleX(-1)",
-              transition: getToken("transitions.transform"),
-            }}
-          />
-        </Button>
-        <Flex align="center" flex={1} minWidth={0} gap="s" justify="flex-end">
+      <Flex align="center" gap="base">
+        <Tooltip size="small" text={t("trade:limit.invert")} asChild>
+          <Button
+            variant="tertiary"
+            size="medium"
+            outline
+            onClick={() => dispatch({ type: "flipDenomination" })}
+            sx={{ px: "m" }}
+            aria-label={t("trade:limit.invert")}
+          >
+            <Icon
+              component={ArrowLeftRight}
+              size="m"
+              color={getToken("icons.onContainer")}
+              sx={{
+                transform: view.inverted ? "scaleX(1)" : "scaleX(-1)",
+                transition: getToken("transitions.transform"),
+              }}
+            />
+          </Button>
+        </Tooltip>
+        <Flex align="center" flex={1} gap="s" justify="flex-end">
+          <Flex asChild align="center" gap="0.25em">
+            <Text as="div" fw={500} fs="p4" whiteSpace="nowrap">
+              {baseAssetId ? (
+                <SInlineAssetLogo id={baseAssetId} size="extra-small" />
+              ) : null}
+              {t("trade:limit.priceUnit", { symbol: baseSymbol })}
+            </Text>
+          </Flex>
           <SPriceInput
             variant="embedded"
             customSize="small"
             value={view.display}
+            valueIsNumericString
             allowNegative={false}
+            suffix={quoteSymbol ? ` ${quoteSymbol}` : undefined}
             onValueChange={({ value }, { source }) => {
               if (source === "prop") return
               dispatch({ type: "typed", value })
             }}
             placeholder={t("trade:limit.pricePlaceholder")}
           />
-          <Text
-            fw={600}
-            fs="p2"
-            color={getToken("text.medium")}
-            whiteSpace="nowrap"
-          >
-            {quoteSymbol}
-          </Text>
         </Flex>
       </Flex>
 
-      {(view.marketDisplay || isMarketLoading) && (
-        <Flex justify="flex-end" align="center" sx={{ minHeight: "1.2em" }}>
-          {view.marketDisplay ? (
+      <Flex
+        justify="space-between"
+        align="center"
+        gap="s"
+        sx={{ minHeight: "1.2em" }}
+      >
+        <Text fs="p6" color={getToken("text.low")} whiteSpace="nowrap">
+          {t("trade:limit.fillsAtRateOrBetter")}
+        </Text>
+        {(view.marketDisplay || isMarketLoading) &&
+          (view.marketDisplay ? (
             <SMarketButton
               type="button"
               onClick={() => dispatch({ type: "resetToMarket" })}
@@ -233,9 +231,8 @@ export const QuotedPriceField: FC<Props> = ({
             <SMarketButton type="button">
               <Skeleton sx={{ width: "2xl" }} height="1em" />
             </SMarketButton>
-          )}
-        </Flex>
-      )}
+          ))}
+      </Flex>
     </Flex>
   )
 }

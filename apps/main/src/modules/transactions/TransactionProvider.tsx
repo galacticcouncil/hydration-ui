@@ -257,13 +257,6 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     isLoadingFeeEstimate ||
     isLoadingPaymentInfo
 
-  console.log({
-    hasRendered,
-    isLoadingNonce,
-    isLoadingFeeEstimate,
-    isLoadingPaymentInfo,
-  })
-
   return (
     <TransactionContext.Provider
       value={{
