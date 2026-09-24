@@ -26,3 +26,15 @@ export const MAX_UINT_AMOUNT = 2n ** 256n - 1n
 
 /** Hollar, like the GHO it forks, is an 18-decimal token. */
 export const HOLLAR_DECIMALS = 18
+
+/**
+ * A projected health factor below this with debt outstanding is liquidatable,
+ * which is where the pool itself reverts — the same blocker for every action.
+ */
+export const HF_BLOCKER_THRESHOLD = "1"
+
+/** Below this the action may proceed only once the user accepts the risk. */
+export const HF_ACKNOWLEDGEMENT_THRESHOLD = "1.1"
+
+/** The health factor a computed maximum leaves behind, never lower. */
+export const HF_MAX_TARGET = "1.01"

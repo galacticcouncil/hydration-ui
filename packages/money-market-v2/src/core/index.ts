@@ -25,6 +25,9 @@ export {
   buildWithdraw,
 } from "@/core/build-pool-actions"
 export {
+  HF_ACKNOWLEDGEMENT_THRESHOLD,
+  HF_BLOCKER_THRESHOLD,
+  HF_MAX_TARGET,
   HOLLAR_DECIMALS,
   LTV_PRECISION,
   MAX_UINT_AMOUNT,
@@ -46,6 +49,7 @@ export {
   DecodeError,
   MarketNotDeployedError,
 } from "@/core/errors"
+export { hasAcknowledgement, hasBlocker } from "@/core/findings"
 export { getMarket, markets } from "@/core/markets"
 export {
   calculateAvailableBorrowsMarketReferenceCurrency,

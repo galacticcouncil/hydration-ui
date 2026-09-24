@@ -416,3 +416,36 @@ export type EvmCall = GasHints & {
  * permit-signed is decided by the app at signing time, not here.
  */
 export type ActionPlan = EvmCall[]
+
+/* -------------------------------------------------------------------------- */
+/* Assessments — whether an action may proceed                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Every code an assessment can report. A code means the same thing in every
+ * action, so each action adds its codes here rather than declaring its own.
+ */
+export type FindingCode = never
+
+/**
+ * What a finding's text is filled with. Plain values only — the app formats
+ * them, so no `Big`, no `bigint` and no rendered text travel in a finding.
+ */
+export type FindingParams = Readonly<
+  Record<string, string | number | readonly string[]>
+>
+
+/**
+ * One thing an assessment reports about an action (ADR-0011). Where it is shown
+ * is the form's concern, not the finding's. Generic over the code so the app
+ * can append codes of its own to v2's.
+ */
+export type Finding<Code extends string = FindingCode> =
+  | { kind: "blocker"; code: Code; params: FindingParams }
+  | { kind: "acknowledgement"; code: Code; params: FindingParams }
+  | {
+      kind: "notice"
+      tone: "warning" | "info"
+      code: Code
+      params: FindingParams
+    }
