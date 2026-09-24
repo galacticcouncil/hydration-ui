@@ -20,8 +20,9 @@ export type AppFinding = Finding<AppFindingCode>
 
 type Props = {
   readonly findings: readonly AppFinding[]
-  readonly acknowledged: boolean
-  readonly onAcknowledgedChange: (acknowledged: boolean) => void
+  /** Only needed by actions whose assessment can ask for acknowledgement. */
+  readonly acknowledged?: boolean
+  readonly onAcknowledgedChange?: (acknowledged: boolean) => void
 }
 
 const toInterpolation = (params: FindingParams) =>
@@ -34,7 +35,7 @@ const toInterpolation = (params: FindingParams) =>
 
 export const FindingsList: FC<Props> = ({
   findings,
-  acknowledged,
+  acknowledged = false,
   onAcknowledgedChange,
 }) => {
   const { t } = useTranslation("moneyMarket")
@@ -72,7 +73,7 @@ export const FindingsList: FC<Props> = ({
         <ToggleRoot as="label">
           <Toggle
             checked={acknowledged}
-            onCheckedChange={onAcknowledgedChange}
+            onCheckedChange={(checked) => onAcknowledgedChange?.(checked)}
           />
           <ToggleLabel>{t("acknowledgeRisks")}</ToggleLabel>
         </ToggleRoot>
