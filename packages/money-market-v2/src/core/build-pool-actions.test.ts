@@ -159,14 +159,101 @@ describe("pool actions", () => {
     })
   })
 
-  it("carries gas hints when given and omits the keys when not", () => {
+  it("defaults a gas limit per action", () => {
+    const limits = [
+      [buildSupply({ market, asset, amount, onBehalfOf: user }), 1_000_000n],
+      [buildWithdraw({ market, asset, amount, to: user }), 1_000_000n],
+      [buildBorrow({ market, asset, amount, onBehalfOf: user }), 1_300_000n],
+      [buildRepay({ market, asset, amount, onBehalfOf: user }), 1_000_000n],
+      [buildRepayWithATokens({ market, asset, amount }), 1_000_000n],
+      [
+        buildSetUsageAsCollateral({ market, asset, useAsCollateral: true }),
+        1_000_000n,
+      ],
+      [buildSetUserEMode({ market, categoryId: 1 }), 1_000_000n],
+    ] as const
+
+    for (const [plan, gasLimit] of limits) {
+      expect(only(plan).gasLimit).toBe(gasLimit)
+    }
+  })
+
+  it("lets a caller's gas hints override the default", () => {
     const gas = { gasLimit: 500_000n, maxFeePerGas: 7n }
 
     expect(
-      only(buildSupply({ market, asset, amount, onBehalfOf: user, gas })),
+      only(buildBorrow({ market, asset, amount, onBehalfOf: user, gas })),
     ).toMatchObject(gas)
     expect(
-      only(buildSupply({ market, asset, amount, onBehalfOf: user })),
-    ).not.toHaveProperty("gasLimit")
+      only(
+        buildBorrow({
+          market,
+          asset,
+          amount,
+          onBehalfOf: user,
+          gas: { maxFeePerGas: 7n },
+        }),
+      ),
+    ).toMatchObject({ gasLimit: 1_300_000n, maxFeePerGas: 7n })
+  })
+})
+
+describe("isolation join", () => {
+  const collateralA = "0x0000000000000000000000000000000000000444" as Address
+  const collateralB = "0x0000000000000000000000000000000000000555" as Address
+
+  const plan = buildSupply({
+    market,
+    asset,
+    amount,
+    onBehalfOf: user,
+    isolationJoin: { disableCollateral: [collateralA, collateralB] },
+  })
+
+  it("disables the other collateral, supplies, then enables the asset", () => {
+    expect(
+      plan.map((call) =>
+        decodeFunctionData({ abi: call.abi, data: call.data }),
+      ),
+    ).toEqual([
+      {
+        functionName: "setUserUseReserveAsCollateral",
+        args: [collateralA, false],
+      },
+      {
+        functionName: "setUserUseReserveAsCollateral",
+        args: [collateralB, false],
+      },
+      { functionName: "supply", args: [asset, amount, user, 0] },
+      { functionName: "setUserUseReserveAsCollateral", args: [asset, true] },
+    ])
+  })
+
+  it("sends every call to the pool with its default gas limit", () => {
+    for (const call of plan) {
+      expect(call.to).toBe(market.addresses.POOL)
+      expect(call.gasLimit).toBe(1_000_000n)
+    }
+  })
+
+  it("applies a caller's gas hints to every call", () => {
+    const withGas = buildSupply({
+      market,
+      asset,
+      amount,
+      onBehalfOf: user,
+      isolationJoin: { disableCollateral: [collateralA] },
+      gas: { gasLimit: 800_000n },
+    })
+
+    expect(withGas).toHaveLength(3)
+    for (const call of withGas) expect(call.gasLimit).toBe(800_000n)
+  })
+
+  it("is a plain supply without a join", () => {
+    expect(
+      only(buildSupply({ market, asset, amount, onBehalfOf: user }))
+        .functionName,
+    ).toBe("supply")
   })
 })

@@ -38,10 +38,16 @@ type ClaimRequest = {
   gas?: GasHints
 }
 
+/** The gas limit each claim carries unless the caller passes its own. */
+const DEFAULT_GAS_LIMIT = {
+  claimRewards: 1_000_000n,
+  claimAllRewards: 1_000_000n,
+} as const
+
 /** Encodes one controller call, carrying the ABI item it encoded. */
 const controllerCall = (
   controller: Address,
-  functionName: "claimRewards" | "claimAllRewards",
+  functionName: keyof typeof DEFAULT_GAS_LIMIT,
   args: readonly unknown[],
   gas?: GasHints,
 ): EvmCall => ({
@@ -55,6 +61,7 @@ const controllerCall = (
   functionName,
   args,
   ...gas,
+  gasLimit: gas?.gasLimit ?? DEFAULT_GAS_LIMIT[functionName],
 })
 
 /** Both sides of every reserve, flattened — a claim does not care which is which. */

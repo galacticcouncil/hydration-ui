@@ -180,6 +180,18 @@ describe("claim actions", () => {
     ).toBe("claimRewards")
   })
 
+  it("defaults a gas limit on both claims", () => {
+    const [one] = buildClaimReward({
+      reward: claimable(gdot),
+      userIncentives,
+      to: user,
+    })
+    const [all] = buildClaimAllRewards({ userIncentives, to: user })
+
+    expect(one?.gasLimit).toBe(1_000_000n)
+    expect(all?.gasLimit).toBe(1_000_000n)
+  })
+
   it("claims nothing when the user has no reward state", () => {
     expect(buildClaimAllRewards({ userIncentives: [], to: user })).toEqual([])
   })

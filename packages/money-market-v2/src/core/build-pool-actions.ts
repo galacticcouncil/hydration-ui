@@ -2,7 +2,13 @@ import type { Address } from "viem"
 import { encodeFunctionData } from "viem"
 
 import { poolAbi } from "@/core/abi"
-import type { ActionPlan, EvmCall, GasHints, MarketDescriptor } from "@/types"
+import type {
+  ActionPlan,
+  EvmCall,
+  GasHints,
+  IsolationJoin,
+  MarketDescriptor,
+} from "@/types"
 
 /**
  * Builds the pool's state-changing actions as ordered lists of plain calls.
@@ -13,9 +19,11 @@ import type { ActionPlan, EvmCall, GasHints, MarketDescriptor } from "@/types"
  * caller means "all of it" — this module never resolves a max against a
  * balance.
  *
- * Every plan is one call today. They are returned as lists anyway because that
- * is the shape the app batches, and because a second call is the only way this
- * module could ever grow a prerequisite.
+ * Every plan is one call except an isolation join, whose collateral switches
+ * have to land around the supply in one order (see `buildSupply`).
+ *
+ * Every call carries a default `gasLimit`, so every signing path works without
+ * live estimation. A caller's `gas` overrides it key by key.
  */
 
 /** The pool's variable interest rate mode. Stable-rate borrowing is cut. */
@@ -24,10 +32,23 @@ const VARIABLE_INTEREST_RATE_MODE = 2n
 /** Aave's referral programme is disabled; the pool ignores a non-zero code. */
 const NO_REFERRAL = 0
 
-type PoolFunctionName = Extract<
-  (typeof poolAbi)[number],
-  { type: "function" }
->["name"]
+/** The gas limit each pool action carries unless the caller passes its own. */
+const DEFAULT_GAS_LIMIT = {
+  supply: 1_000_000n,
+  withdraw: 1_000_000n,
+  borrow: 1_300_000n,
+  repay: 1_000_000n,
+  repayWithATokens: 1_000_000n,
+  setUserUseReserveAsCollateral: 1_000_000n,
+  setUserEMode: 1_000_000n,
+} as const satisfies Partial<
+  Record<
+    Extract<(typeof poolAbi)[number], { type: "function" }>["name"],
+    bigint
+  >
+>
+
+type PoolFunctionName = keyof typeof DEFAULT_GAS_LIMIT
 
 /**
  * Encodes one pool call, carrying the ABI item it encoded. `abi` is narrowed to
@@ -50,6 +71,7 @@ const poolCall = (
   functionName,
   args,
   ...gas,
+  gasLimit: gas?.gasLimit ?? DEFAULT_GAS_LIMIT[functionName],
 })
 
 /** What every pool action needs: which market, and optional gas overrides. */
@@ -69,18 +91,48 @@ type AssetAmountRequest = PoolRequest & {
 export type SupplyRequest = AssetAmountRequest & {
   /** Who ends up holding the aTokens. */
   onBehalfOf: Address
+  /** From `assessSupply`, when the asset is isolated and joins other collateral. */
+  isolationJoin?: IsolationJoin
 }
 
-/** Supplies `amount` of `asset`, crediting `onBehalfOf` with the aTokens. */
+/**
+ * Supplies `amount` of `asset`, crediting `onBehalfOf` with the aTokens.
+ *
+ * With `isolationJoin`, the other collateral is switched off first — the pool
+ * refuses an isolated asset as collateral beside anything else — and the
+ * supplied asset switched on last, since the pool never enables an isolated
+ * asset as collateral on a plain supplier's behalf.
+ */
 export const buildSupply = ({
   market,
   asset,
   amount,
   onBehalfOf,
+  isolationJoin,
   gas,
-}: SupplyRequest): ActionPlan => [
-  poolCall(market, "supply", [asset, amount, onBehalfOf, NO_REFERRAL], gas),
-]
+}: SupplyRequest): ActionPlan => {
+  const supply = poolCall(
+    market,
+    "supply",
+    [asset, amount, onBehalfOf, NO_REFERRAL],
+    gas,
+  )
+
+  if (!isolationJoin) return [supply]
+
+  return [
+    ...isolationJoin.disableCollateral.map((collateral) =>
+      poolCall(
+        market,
+        "setUserUseReserveAsCollateral",
+        [collateral, false],
+        gas,
+      ),
+    ),
+    supply,
+    poolCall(market, "setUserUseReserveAsCollateral", [asset, true], gas),
+  ]
+}
 
 export type WithdrawRequest = AssetAmountRequest & {
   /** Who receives the underlying. */
