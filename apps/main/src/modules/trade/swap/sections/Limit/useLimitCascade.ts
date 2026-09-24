@@ -200,7 +200,6 @@ export const useLimitCascade = (): LimitCascade => {
   const quotedPrice = useQuotedPrice({
     marketPrice,
     pair: [sellAsset?.id ?? "", buyAsset?.id ?? ""],
-    defaultInverted: false,
     onCanonicalChange: (canonical: string, source: PriceSource) => {
       if (source === "derived") return
       if (source === "user") applyPriceTouch(canonical)

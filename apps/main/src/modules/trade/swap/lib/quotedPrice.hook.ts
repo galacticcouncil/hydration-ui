@@ -14,7 +14,6 @@ type Pair = readonly [sellAssetId: string, buyAssetId: string]
 type Args = {
   readonly marketPrice: string | null
   readonly pair: Pair
-  readonly defaultInverted: boolean
   readonly onCanonicalChange: (canonical: string, source: PriceSource) => void
 }
 
@@ -26,12 +25,11 @@ export type QuotedPriceBinding = {
 export const useQuotedPrice = ({
   marketPrice,
   pair,
-  defaultInverted,
   onCanonicalChange,
 }: Args): QuotedPriceBinding => {
   const [state, dispatchEvent] = useReducer(
     nextQuotedPrice,
-    defaultInverted,
+    false, // sell→buy ("1 SELL = X BUY") across all forms
     emptyQuotedPrice,
   )
 
