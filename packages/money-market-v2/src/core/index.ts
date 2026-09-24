@@ -8,6 +8,8 @@ export type {
   CollateralAssessment,
 } from "@/core/assess-collateral"
 export { assessCollateral } from "@/core/assess-collateral"
+export type { AssessEModeRequest, EModeAssessment } from "@/core/assess-emode"
+export { assessEMode } from "@/core/assess-emode"
 export type { AssessRepayRequest, RepayAssessment } from "@/core/assess-repay"
 export { assessRepay } from "@/core/assess-repay"
 export type {

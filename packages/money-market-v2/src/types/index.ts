@@ -501,6 +501,12 @@ export type FindingCode =
   | "exitingIsolationMode"
   /** The asset starts counting towards what the account can borrow. */
   | "collateralIncreasesBorrowingPower"
+  /** A debt of the account is outside the target category; `category` label. */
+  | "borrowsOutsideCategory"
+  /** The account is already in the target e-mode category. */
+  | "sameEModeCategory"
+  /** Only the category's assets can be borrowed while in e-mode. */
+  | "eModeRestrictsBorrowing"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats
