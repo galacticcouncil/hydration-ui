@@ -437,7 +437,19 @@ export type ActionPlan = EvmCall[]
  * Every code an assessment can report. A code means the same thing in every
  * action, so each action adds its codes here rather than declaring its own.
  */
-export type FindingCode = never
+export type FindingCode =
+  /** The projected health factor is below 1 with debt outstanding. */
+  | "healthFactorBelowOne"
+  /** The projected health factor is below 1.1 and would visibly drop. */
+  | "healthFactorRisk"
+  /** The reserve's supply cap is at least 98% used; `percent`. */
+  | "supplyCapNearlyReached"
+  /** The reserve's borrow cap is at least 98% used; `percent`. */
+  | "borrowCapNearlyReached"
+  /** The isolated reserve's debt ceiling is at least 98% used; `percent`. */
+  | "debtCeilingNearlyReached"
+  /** Zero-LTV collateral must be withdrawn or disabled first; `symbols`. */
+  | "zeroLtvCollateralBlocks"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats
