@@ -89,7 +89,6 @@ export const Dca: FC = () => {
       buyAsset?.decimals,
     ),
     pair: [sellAsset?.id ?? "", buyAsset?.id ?? ""],
-    defaultInverted: true,
     onCanonicalChange: (canonical) =>
       setValue("limitPrice", canonical, { shouldValidate: true }),
   })
