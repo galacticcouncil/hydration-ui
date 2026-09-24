@@ -1,13 +1,14 @@
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  Button,
   Flex,
   Icon,
+  MicroButton,
   Skeleton,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { Pencil, X } from "lucide-react"
 import { FC, MouseEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import {
   SCustomPill,
   SInlineAssetLogo,
+  SInvertDenominationButton,
   SMarketButton,
   SMarketPrice,
   SPercentSuffix,
@@ -26,6 +28,8 @@ import {
   SPriceInput,
 } from "@/modules/trade/swap/components/QuotedPriceField/QuotedPriceField.styled"
 import { QuotedPriceBinding } from "@/modules/trade/swap/lib/quotedPrice.hook"
+
+const PRESET_STEPS = [1, 5, 10] as const
 
 type Props = {
   readonly binding: QuotedPriceBinding
@@ -78,18 +82,50 @@ export const QuotedPriceField: FC<Props> = ({
     maximumFractionDigits: 2,
   })
   const showResetAction = view.canReset && !isEditingPill
+  const presetBase =
+    view.deviationPct === null ? null : Big(view.deviationPct).round(2)
+  const presetSign = view.inverted ? -1 : 1
 
   return (
-    <Flex direction="column" gap="xs" py="l">
+    <Flex direction="column" gap="xs" py="l" sx={{ minWidth: 0 }}>
       <Flex justify="space-between" align="center">
         <Text as="div" fw={500} lh={1} fs="p5" color={getToken("text.medium")}>
           {t("trade:limit.rateLabel")}
         </Text>
         <Flex align="center" gap="xs">
           {!isEditingPill && (
-            <Text fs="p6" color={getToken("text.low")} whiteSpace="nowrap">
-              {t("trade:limit.vsMarket")}
-            </Text>
+            <>
+              <Text
+                fs="p6"
+                color={getToken("text.low")}
+                whiteSpace="nowrap"
+                mr="s"
+                display={["none", "block"]}
+              >
+                {t("trade:limit.vsMarket")}
+              </Text>
+              {PRESET_STEPS.map((step) => {
+                const signedStep = step * presetSign
+                const next = presetBase?.plus(signedStep)
+
+                return (
+                  <MicroButton
+                    key={step}
+                    disabled={!next || next.lte(-100)}
+                    onClick={() => {
+                      if (!next) return
+                      dispatch({ type: "pct", value: next.toString() })
+                      setLastPillValue(next.toString())
+                    }}
+                  >
+                    {t("common:percent", {
+                      value: signedStep,
+                      signDisplay: "always",
+                    })}
+                  </MicroButton>
+                )
+              })}
+            </>
           )}
           <SCustomPill
             isActive={isEditingPill}
@@ -164,14 +200,18 @@ export const QuotedPriceField: FC<Props> = ({
         </Flex>
       </Flex>
 
-      <Flex align="center" gap="base">
+      <Flex
+        align="center"
+        gap={["s", "base"]}
+        py={["l", "s"]}
+        sx={{ minWidth: 0 }}
+      >
         <Tooltip size="small" text={t("trade:limit.invert")} asChild>
-          <Button
+          <SInvertDenominationButton
             variant="tertiary"
             size="medium"
             outline
             onClick={() => dispatch({ type: "flipDenomination" })}
-            sx={{ px: "m" }}
             aria-label={t("trade:limit.invert")}
           >
             <Icon
@@ -183,11 +223,28 @@ export const QuotedPriceField: FC<Props> = ({
                 transition: getToken("transitions.transform"),
               }}
             />
-          </Button>
+          </SInvertDenominationButton>
         </Tooltip>
-        <Flex align="center" flex={1} gap="s" justify="flex-end">
-          <Flex asChild align="center" gap="0.25em">
-            <Text as="div" fw={500} fs="p4" whiteSpace="nowrap">
+        <Flex
+          align="center"
+          flex={1}
+          gap="s"
+          justify="flex-end"
+          sx={{ minWidth: 0 }}
+        >
+          <Flex
+            asChild
+            align="center"
+            gap="0.25em"
+            sx={{ minWidth: 0, flexShrink: 1, overflow: "hidden" }}
+          >
+            <Text
+              as="div"
+              fw={500}
+              fs="p4"
+              whiteSpace="nowrap"
+              sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+            >
               {baseAssetId ? (
                 <SInlineAssetLogo id={baseAssetId} size="extra-small" />
               ) : null}
