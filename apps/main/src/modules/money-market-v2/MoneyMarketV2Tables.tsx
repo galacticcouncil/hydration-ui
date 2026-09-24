@@ -11,8 +11,10 @@ import {
   Amount,
   AssetLabel,
   Box,
+  Button,
   Chip,
   DataTable,
+  Flex,
   Icon,
   LogoSize,
   SectionHeader,
@@ -20,6 +22,7 @@ import {
   TableContainer,
   TableSize,
   Text,
+  Toggle,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -36,6 +39,7 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { Address } from "viem"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
@@ -53,6 +57,18 @@ export type BorrowRow = {
   available: string
   availableUsd: string
 }
+
+export type RowAction =
+  | "supply"
+  | "withdraw"
+  | "borrow"
+  | "repay"
+  | "collateral"
+
+/** Opens an action on a row's reserve - absent while no wallet is connected. */
+export type OnRowAction =
+  | ((action: RowAction, asset: Address) => void)
+  | undefined
 
 // ponytail: mirrors ReserveLabel's override map, which is typed to v1 reserves
 const LOGO_OVERRIDES: Record<string, string> = {
@@ -162,11 +178,58 @@ export const CollateralCell: FC<{ enabled: boolean; isolated: boolean }> = ({
   )
 }
 
+/** A supplied position's collateral flag; flipping it opens the collateral form. */
+const CollateralSwitch: FC<{ row: SuppliedRow; onAction: OnRowAction }> = ({
+  row: { reserve, position },
+  onAction,
+}) => (
+  <Flex direction="column" align="center" gap="xs">
+    <Toggle
+      checked={position.usageAsCollateralEnabledOnUser}
+      disabled={!onAction}
+      onClick={(e) => e.stopPropagation()}
+      onCheckedChange={() => onAction?.("collateral", reserve.underlyingAsset)}
+    />
+    {reserve.isIsolated && (
+      <Chip variant="warning" size="small">
+        Isolated
+      </Chip>
+    )}
+  </Flex>
+)
+
+const ActionsCell: FC<{
+  asset: Address
+  actions: Exclude<RowAction, "collateral">[]
+  onAction: OnRowAction
+}> = ({ asset, actions, onAction }) => {
+  const { t } = useTranslation("moneyMarket")
+
+  return (
+    <Flex justify="flex-end" gap="s">
+      {actions.map((action) => (
+        <Button
+          key={action}
+          variant="tertiary"
+          size="small"
+          disabled={!onAction}
+          onClick={(e) => {
+            e.stopPropagation()
+            onAction?.(action, asset)
+          }}
+        >
+          {t(action)}
+        </Button>
+      ))}
+    </Flex>
+  )
+}
+
 const right = { meta: { sx: { textAlign: "right" } } } as const
 const center = { meta: { sx: { textAlign: "center" } } } as const
 
 const supplied = createColumnHelper<SuppliedRow>()
-export const suppliedColumns = [
+export const suppliedColumns = (onAction: OnRowAction) => [
   supplied.display({
     header: "Asset",
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
@@ -195,15 +258,22 @@ export const suppliedColumns = [
     header: "Collateral",
     ...center,
     cell: ({ row }) => (
-      <CollateralCell
-        enabled={row.original.position.usageAsCollateralEnabledOnUser}
-        isolated={row.original.reserve.isIsolated}
+      <CollateralSwitch row={row.original} onAction={onAction} />
+    ),
+  }),
+  supplied.display({
+    id: "actions",
+    cell: ({ row }) => (
+      <ActionsCell
+        asset={row.original.reserve.underlyingAsset}
+        actions={["withdraw"]}
+        onAction={onAction}
       />
     ),
   }),
 ]
 
-export const borrowedColumns = [
+export const borrowedColumns = (onAction: OnRowAction) => [
   supplied.display({
     header: "Asset",
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
@@ -228,10 +298,20 @@ export const borrowedColumns = [
       />
     ),
   }),
+  supplied.display({
+    id: "actions",
+    cell: ({ row }) => (
+      <ActionsCell
+        asset={row.original.reserve.underlyingAsset}
+        actions={["repay", "borrow"]}
+        onAction={onAction}
+      />
+    ),
+  }),
 ]
 
 const toSupply = createColumnHelper<SupplyRow>()
-export const toSupplyColumns = [
+export const toSupplyColumns = (onAction: OnRowAction) => [
   toSupply.display({
     header: "Asset",
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
@@ -271,10 +351,20 @@ export const toSupplyColumns = [
       />
     ),
   }),
+  toSupply.display({
+    id: "actions",
+    cell: ({ row }) => (
+      <ActionsCell
+        asset={row.original.reserve.underlyingAsset}
+        actions={["supply"]}
+        onAction={onAction}
+      />
+    ),
+  }),
 ]
 
 const toBorrow = createColumnHelper<BorrowRow>()
-export const toBorrowColumns = [
+export const toBorrowColumns = (onAction: OnRowAction) => [
   toBorrow.display({
     header: "Asset",
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
@@ -296,6 +386,16 @@ export const toBorrowColumns = [
       <ApyCell
         apy={row.original.reserve.variableBorrowApy}
         incentives={row.original.reserve.borrowIncentives}
+      />
+    ),
+  }),
+  toBorrow.display({
+    id: "actions",
+    cell: ({ row }) => (
+      <ActionsCell
+        asset={row.original.reserve.underlyingAsset}
+        actions={["borrow"]}
+        onAction={onAction}
       />
     ),
   }),
