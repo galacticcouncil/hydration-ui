@@ -13,6 +13,7 @@ import type { ReserveSummary } from "@galacticcouncil/money-market-v2/types"
 import { Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
+  Button,
   Card,
   CardBody,
   CardDescription,
@@ -25,6 +26,10 @@ import {
   Spinner,
   Stack,
   Summary,
+  TabsContent,
+  TabsList,
+  TabsRoot,
+  TabsTrigger,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
@@ -33,12 +38,14 @@ import { Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { useParams, useSearch } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
-import { FC, ReactNode, useMemo } from "react"
+import { FC, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { CapProgressCircle } from "@/modules/borrow/reserve/components/CapProgressCircle"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
+import { BorrowForm } from "@/modules/money-market-v2/actions/BorrowForm"
+import { SupplyForm } from "@/modules/money-market-v2/actions/SupplyForm"
 import { DEFAULT_MARKET, useUserAddress } from "@/modules/money-market-v2/hooks"
 import { InterestRateModelChart } from "@/modules/money-market-v2/InterestRateModelChart"
 import { MarketSelect } from "@/modules/money-market-v2/MoneyMarketV2Layout"
@@ -202,9 +209,12 @@ const ReserveDetail: FC<{
             </Section>
           )}
         </Stack>
-        <SStickyCard>
-          <YourPosition reserve={reserve} hollar={hollar} />
-        </SStickyCard>
+        <Stack gap="xl">
+          <ReserveActions reserve={reserve} hollar={hollar} />
+          <SStickyCard>
+            <YourPosition reserve={reserve} hollar={hollar} />
+          </SStickyCard>
+        </Stack>
       </TwoColumnGrid>
     </Stack>
   )
@@ -662,6 +672,70 @@ const InterestRateModel: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
         <InterestRateModelChart reserve={reserve} />
       </Grid>
     </Section>
+  )
+}
+
+type ReserveTab = "supply" | "borrow"
+
+/**
+ * The same forms the dashboard opens in a modal, hosted inline. A submit
+ * remounts the form (a fresh key) instead of closing anything.
+ */
+const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
+  reserve,
+  hollar,
+}) => {
+  const { t } = useTranslation("moneyMarket")
+  const [tab, setTab] = useState<ReserveTab>("supply")
+  const [submissions, setSubmissions] = useState(0)
+
+  const tabs: ReserveTab[] = [
+    ...(hollar ? [] : ["supply" as const]),
+    ...(reserve.borrowingEnabled ? ["borrow" as const] : []),
+  ]
+  const active = tabs.includes(tab) ? tab : tabs[0]
+
+  if (!active) return null
+
+  const asset = reserve.underlyingAsset
+  const formKey = `${asset}-${submissions}`
+  const onSubmitted = () => setSubmissions((n) => n + 1)
+
+  return (
+    <Card>
+      <TabsRoot
+        value={active}
+        onValueChange={(value) =>
+          setTab(tabs.find((candidate) => candidate === value) ?? tab)
+        }
+      >
+        <CardHeader>
+          <TabsList asChild>
+            <Flex gap="s">
+              {tabs.map((value) => (
+                <TabsTrigger key={value} value={value} asChild>
+                  <Button
+                    variant={
+                      value === active ? "sliderTabActive" : "sliderTabInactive"
+                    }
+                  >
+                    {t(value)}
+                  </Button>
+                </TabsTrigger>
+              ))}
+            </Flex>
+          </TabsList>
+        </CardHeader>
+        <CardBody>
+          <TabsContent value="supply">
+            <SupplyForm key={formKey} asset={asset} onSubmitted={onSubmitted} />
+          </TabsContent>
+          <TabsContent value="borrow">
+            <BorrowForm key={formKey} asset={asset} onSubmitted={onSubmitted} />
+          </TabsContent>
+        </CardBody>
+      </TabsRoot>
+    </Card>
   )
 }
 
