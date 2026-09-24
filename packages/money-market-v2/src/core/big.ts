@@ -41,3 +41,22 @@ export function shift(value: Big, places: number): Big {
 export function normalize(value: BigSource, decimals: number): string {
   return shift(Decimal(value), -decimals).toFixed()
 }
+
+/**
+ * A human-unit amount as raw base units, truncated to the asset's decimals.
+ * Anything that is not a non-negative number — an empty field, a half-typed
+ * `-` — reads as zero, since assessments run on every keystroke.
+ */
+export function toBaseUnits(amount: string, decimals: number): bigint {
+  try {
+    const raw = shift(Decimal(amount), decimals).round(0, Big.roundDown)
+    return raw.gt(0) ? BigInt(raw.toFixed()) : 0n
+  } catch {
+    return 0n
+  }
+}
+
+/** Truncates a human-unit value to the asset's decimals, never below zero. */
+export function truncate(value: Big, decimals: number): string {
+  return value.gt(0) ? value.round(decimals, Big.roundDown).toFixed() : "0"
+}

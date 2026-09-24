@@ -434,6 +434,15 @@ export type ActionPlan = EvmCall[]
 /* -------------------------------------------------------------------------- */
 
 /**
+ * What supplying an isolated asset beside other collateral takes: those
+ * collateral flags off first, so the supplied asset becomes the account's only
+ * collateral. The addresses are the other collateral's underlying assets.
+ */
+export type IsolationJoin = {
+  disableCollateral: Address[]
+}
+
+/**
  * Every code an assessment can report. A code means the same thing in every
  * action, so each action adds its codes here rather than declaring its own.
  */
@@ -450,6 +459,18 @@ export type FindingCode =
   | "debtCeilingNearlyReached"
   /** Zero-LTV collateral must be withdrawn or disabled first; `symbols`. */
   | "zeroLtvCollateralBlocks"
+  /** The reserve is not active; the pool accepts no action on it. */
+  | "reserveInactive"
+  /** The reserve is paused; the pool accepts no action on it. */
+  | "reservePaused"
+  /** The reserve is frozen; it takes no new supply or borrow. */
+  | "reserveFrozen"
+  /** An isolated asset cannot become collateral while the account has debt. */
+  | "isolationSupplyWithDebt"
+  /** Supplying this isolated asset turns the other collateral off; `symbol`. */
+  | "isolationJoinDisablesCollateral"
+  /** The asset becomes the account's only, isolated collateral. */
+  | "enteringIsolationMode"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats
