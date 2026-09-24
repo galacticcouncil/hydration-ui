@@ -491,6 +491,16 @@ export type FindingCode =
   | "noDebt"
   /** The wallet cannot cover the whole debt; some of it remains. */
   | "repayLeavesDebt"
+  /** The account holds none of this asset to use as collateral. */
+  | "noSupply"
+  /** The reserve's LTV or liquidation threshold is zero; it backs nothing. */
+  | "cannotBeCollateral"
+  /** Isolated collateral must be the account's only collateral. */
+  | "isolationCollateralConflict"
+  /** Disabling the isolated collateral takes the account out of isolation. */
+  | "exitingIsolationMode"
+  /** The asset starts counting towards what the account can borrow. */
+  | "collateralIncreasesBorrowingPower"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats
