@@ -473,6 +473,20 @@ export type FindingCode =
   | "enteringIsolationMode"
   /** The amount exceeds what the reserve holds uncommitted to borrowers. */
   | "insufficientLiquidity"
+  /** The reserve does not lend; nothing can be borrowed from it. */
+  | "borrowingDisabled"
+  /** The account has no collateral with an LTV to borrow against. */
+  | "noCollateral"
+  /** The asset is outside the account's e-mode category; `category` label. */
+  | "eModeCategoryMismatch"
+  /** The account is in isolation mode and the asset is not borrowable there. */
+  | "notBorrowableInIsolation"
+  /** Siloed debt must be the account's only debt, and it would not be. */
+  | "siloedBorrowingConflict"
+  /** The Hollar facilitator has no capacity left to mint. */
+  | "hollarCapacityExhausted"
+  /** Rates, prices and risk parameters can move the health factor later. */
+  | "parameterChangesMayAffectHealthFactor"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats

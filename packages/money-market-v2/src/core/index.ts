@@ -1,4 +1,9 @@
 export type {
+  AssessBorrowRequest,
+  BorrowAssessment,
+} from "@/core/assess-borrow"
+export { assessBorrow } from "@/core/assess-borrow"
+export type {
   AssessSupplyRequest,
   SupplyAssessment,
 } from "@/core/assess-supply"
