@@ -36,6 +36,7 @@ export type AssetInputBalance = {
   isLoading?: boolean
   onMax?: (() => void) | null
   onPercentage?: ((percent: number) => void) | null
+  withPercentageButton?: boolean
   isMaxDisabled?: boolean
 }
 
@@ -187,6 +188,7 @@ const AssetInputBalanceView = ({
   isLoading,
   onMax,
   onPercentage,
+  withPercentageButton = false,
   isMaxDisabled,
   isDisabled,
 }: AssetInputBalance & { isDisabled: boolean }) => (
@@ -203,9 +205,11 @@ const AssetInputBalanceView = ({
         max
       </MicroButton>
     )}
-    {onPercentage && !isLoading && !isDisabled && !isMaxDisabled && (
-      <PercentageButton onSelect={onPercentage} />
-    )}
+    {withPercentageButton &&
+      onPercentage &&
+      !isLoading &&
+      !isDisabled &&
+      !isMaxDisabled && <PercentageButton onSelect={onPercentage} />}
   </SBalance>
 )
 

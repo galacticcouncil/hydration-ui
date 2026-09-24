@@ -34,6 +34,7 @@ type AmountFormFieldProps = FlexProps & {
   isLoading?: boolean
   isBalanceLoading?: boolean
   withMaxButton?: boolean
+  withPercentageButton?: boolean
   assetPrice?: string
 }
 
@@ -46,6 +47,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   isLoading = false,
   isBalanceLoading = false,
   withMaxButton = false,
+  withPercentageButton = false,
   assetPrice,
   ...props
 }) => {
@@ -101,6 +103,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
               </MicroButton>
             )}
             {withMaxButton &&
+              withPercentageButton &&
               !disabled &&
               balanceMax &&
               balanceMax.toBig().gt(0) && (

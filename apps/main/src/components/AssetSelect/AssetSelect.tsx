@@ -104,6 +104,7 @@ export const AssetSelect = ({
                 props.onChange?.(
                   percentageOf(max, percent, selectedAsset?.decimals ?? 0),
                 ),
+          withPercentageButton: override.withPercentageButton,
           isMaxDisabled:
             override.isMaxDisabled ?? (!props.onChange || Big(max).lte(0)),
         }
