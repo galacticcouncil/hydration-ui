@@ -12,8 +12,8 @@ import {
   summarizeAccount,
   summarizeReserves,
 } from "@/core"
-import type { PositionChange } from "@/core/project-account"
-import { projectAccount, projectPositions } from "@/core/project-account"
+import type { PositionChange } from "@/core/assess/project-account"
+import { projectAccount, projectPositions } from "@/core/assess/project-account"
 import {
   fixtureTimestamp,
   fixtureUser,

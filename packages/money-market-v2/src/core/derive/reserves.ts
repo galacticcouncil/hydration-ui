@@ -7,9 +7,9 @@ import {
   SECONDS_PER_YEAR,
   USD_DECIMALS,
 } from "@/core/constants"
-import { incentiveAprs } from "@/core/derive-incentives"
-import { calculateCompoundedRate } from "@/core/pool-math"
-import { reserveTotals } from "@/core/reserve-totals"
+import { incentiveAprs } from "@/core/derive/incentives"
+import { calculateCompoundedRate } from "@/core/derive/pool-math"
+import { reserveTotals } from "@/core/derive/reserve-totals"
 import type {
   BaseCurrency,
   Reserve,

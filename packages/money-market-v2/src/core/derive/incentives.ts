@@ -3,8 +3,8 @@ import type { Address } from "viem"
 
 import { Decimal, normalize, shift } from "@/core/big"
 import { SECONDS_PER_YEAR, USD_DECIMALS } from "@/core/constants"
-import { rayDiv } from "@/core/ray-math"
-import { reserveTotals } from "@/core/reserve-totals"
+import { rayDiv } from "@/core/derive/ray-math"
+import { reserveTotals } from "@/core/derive/reserve-totals"
 import type {
   ClaimableReward,
   IncentiveApr,

@@ -1,37 +1,8 @@
 export type {
-  AssessBorrowRequest,
-  BorrowAssessment,
-} from "@/core/assess-borrow"
-export { assessBorrow } from "@/core/assess-borrow"
-export type { AssessClaimRequest, ClaimAssessment } from "@/core/assess-claim"
-export { assessClaim } from "@/core/assess-claim"
-export type {
-  AssessCollateralRequest,
-  CollateralAssessment,
-} from "@/core/assess-collateral"
-export { assessCollateral } from "@/core/assess-collateral"
-export type { AssessEModeRequest, EModeAssessment } from "@/core/assess-emode"
-export { assessEMode } from "@/core/assess-emode"
-export type { AssessRepayRequest, RepayAssessment } from "@/core/assess-repay"
-export { assessRepay } from "@/core/assess-repay"
-export type {
-  AssessSupplyRequest,
-  SupplyAssessment,
-} from "@/core/assess-supply"
-export { assessSupply } from "@/core/assess-supply"
-export type {
-  AssessWithdrawRequest,
-  WithdrawAssessment,
-} from "@/core/assess-withdraw"
-export { assessWithdraw } from "@/core/assess-withdraw"
-export type {
   ClaimAllRewardsRequest,
   ClaimRewardRequest,
-} from "@/core/build-claim-actions"
-export {
-  buildClaimAllRewards,
-  buildClaimReward,
-} from "@/core/build-claim-actions"
+} from "@/core/actions/claim"
+export { buildClaimAllRewards, buildClaimReward } from "@/core/actions/claim"
 export type {
   BorrowRequest,
   RepayRequest,
@@ -40,7 +11,7 @@ export type {
   SetUserEModeRequest,
   SupplyRequest,
   WithdrawRequest,
-} from "@/core/build-pool-actions"
+} from "@/core/actions/pool"
 export {
   buildBorrow,
   buildRepay,
@@ -49,7 +20,44 @@ export {
   buildSetUserEMode,
   buildSupply,
   buildWithdraw,
-} from "@/core/build-pool-actions"
+} from "@/core/actions/pool"
+export type {
+  AssessBorrowRequest,
+  BorrowAssessment,
+} from "@/core/assess/borrow"
+export { assessBorrow } from "@/core/assess/borrow"
+export type { AssessClaimRequest, ClaimAssessment } from "@/core/assess/claim"
+export { assessClaim } from "@/core/assess/claim"
+export type {
+  AssessCollateralRequest,
+  CollateralAssessment,
+} from "@/core/assess/collateral"
+export { assessCollateral } from "@/core/assess/collateral"
+export type { AssessEModeRequest, EModeAssessment } from "@/core/assess/emode"
+export { assessEMode } from "@/core/assess/emode"
+export { hasAcknowledgement, hasBlocker } from "@/core/assess/findings"
+export type { AssessRepayRequest, RepayAssessment } from "@/core/assess/repay"
+export { assessRepay } from "@/core/assess/repay"
+export type {
+  AssessSupplyRequest,
+  SupplyAssessment,
+} from "@/core/assess/supply"
+export { assessSupply } from "@/core/assess/supply"
+export type {
+  AssessWithdrawRequest,
+  WithdrawAssessment,
+} from "@/core/assess/withdraw"
+export { assessWithdraw } from "@/core/assess/withdraw"
+export {
+  ChainReadError,
+  DecodeError,
+  MarketNotDeployedError,
+} from "@/core/chain/errors"
+export { readHollarFacilitator } from "@/core/chain/hollar-facilitator"
+export { readPositions } from "@/core/chain/positions"
+export { readReserves } from "@/core/chain/reserves"
+export { readUserIncentives } from "@/core/chain/user-incentives"
+export { readWalletBalances } from "@/core/chain/wallet-balances"
 export {
   HF_ACKNOWLEDGEMENT_THRESHOLD,
   HF_BLOCKER_THRESHOLD,
@@ -64,20 +72,11 @@ export {
 export type {
   AccountSummary,
   SummarizeAccountRequest,
-} from "@/core/derive-account"
-export { summarizeAccount } from "@/core/derive-account"
-export { eModeCategories } from "@/core/derive-emode"
-export type { SummarizeRewardsRequest } from "@/core/derive-incentives"
-export { summarizeRewards } from "@/core/derive-incentives"
-export type { SummarizeReservesRequest } from "@/core/derive-reserves"
-export { canBorrowAgainst, summarizeReserves } from "@/core/derive-reserves"
-export {
-  ChainReadError,
-  DecodeError,
-  MarketNotDeployedError,
-} from "@/core/errors"
-export { hasAcknowledgement, hasBlocker } from "@/core/findings"
-export { getMarket, markets } from "@/core/markets"
+} from "@/core/derive/account"
+export { summarizeAccount } from "@/core/derive/account"
+export { eModeCategories } from "@/core/derive/emode"
+export type { SummarizeRewardsRequest } from "@/core/derive/incentives"
+export { summarizeRewards } from "@/core/derive/incentives"
 export {
   calculateAvailableBorrowsMarketReferenceCurrency,
   calculateCompoundedInterest,
@@ -90,7 +89,7 @@ export {
   getMarketReferenceCurrencyAndUsdBalance,
   getReserveNormalizedIncome,
   getReserveNormalizedVariableDebt,
-} from "@/core/pool-math"
+} from "@/core/derive/pool-math"
 export {
   binomialApproximatedRayPow,
   HALF_RAY,
@@ -103,9 +102,7 @@ export {
   WAD,
   WAD_RAY_RATIO,
   wadToRay,
-} from "@/core/ray-math"
-export { readHollarFacilitator } from "@/core/read-hollar-facilitator"
-export { readPositions } from "@/core/read-positions"
-export { readReserves } from "@/core/read-reserves"
-export { readUserIncentives } from "@/core/read-user-incentives"
-export { readWalletBalances } from "@/core/read-wallet-balances"
+} from "@/core/derive/ray-math"
+export type { SummarizeReservesRequest } from "@/core/derive/reserves"
+export { canBorrowAgainst, summarizeReserves } from "@/core/derive/reserves"
+export { getMarket, markets } from "@/core/markets"

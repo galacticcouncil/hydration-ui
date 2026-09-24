@@ -2,8 +2,11 @@ import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
 
 import { uiIncentiveDataProviderAbi, uiPoolDataProviderAbi } from "@/core/abi"
-import { chainRead, decode } from "@/core/chain"
-import { reservesDataSchema, reservesIncentivesDataSchema } from "@/core/schema"
+import { chainRead, decode } from "@/core/chain/read"
+import {
+  reservesDataSchema,
+  reservesIncentivesDataSchema,
+} from "@/core/chain/schema"
 import type { MarketDescriptor, MarketReserves } from "@/types"
 
 /**

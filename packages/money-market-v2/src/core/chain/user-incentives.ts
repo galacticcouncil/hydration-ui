@@ -3,8 +3,8 @@ import { readContract } from "@wagmi/core"
 import type { Address } from "viem"
 
 import { uiIncentiveDataProviderAbi } from "@/core/abi"
-import { chainRead, decode } from "@/core/chain"
-import { userReservesIncentivesDataSchema } from "@/core/schema"
+import { chainRead, decode } from "@/core/chain/read"
+import { userReservesIncentivesDataSchema } from "@/core/chain/schema"
 import type { MarketDescriptor, UserReserveIncentives } from "@/types"
 
 /**

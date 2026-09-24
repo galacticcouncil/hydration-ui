@@ -1,15 +1,18 @@
 import type { Address } from "viem"
 
+import {
+  healthFactorFindings,
+  zeroLtvLockFindings,
+} from "@/core/assess/finding-rules"
+import { projectAccount } from "@/core/assess/project-account"
 import { findByAsset, isAsset } from "@/core/assets"
 import { Decimal, normalize, toBaseUnits, truncate } from "@/core/big"
 import { HF_MAX_TARGET, LTV_PRECISION } from "@/core/constants"
 import type {
   AccountSummary,
   SummarizeAccountRequest,
-} from "@/core/derive-account"
-import { summarizeAccount } from "@/core/derive-account"
-import { healthFactorFindings, zeroLtvLockFindings } from "@/core/finding-rules"
-import { projectAccount } from "@/core/project-account"
+} from "@/core/derive/account"
+import { summarizeAccount } from "@/core/derive/account"
 import type { Finding, ReserveSummary } from "@/types"
 
 /**

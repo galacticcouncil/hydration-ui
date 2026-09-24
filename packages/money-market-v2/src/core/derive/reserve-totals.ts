@@ -1,5 +1,5 @@
-import { calculateCompoundedInterest } from "@/core/pool-math"
-import { rayMul } from "@/core/ray-math"
+import { calculateCompoundedInterest } from "@/core/derive/pool-math"
+import { rayMul } from "@/core/derive/ray-math"
 import type { Reserve } from "@/types"
 
 /**

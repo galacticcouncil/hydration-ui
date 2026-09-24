@@ -1,18 +1,18 @@
 import type { Address } from "viem"
 
+import {
+  debtCeilingFindings,
+  healthFactorFindings,
+  zeroLtvLockFindings,
+} from "@/core/assess/finding-rules"
+import { projectAccount } from "@/core/assess/project-account"
 import { findByAsset, isAsset } from "@/core/assets"
 import { Decimal } from "@/core/big"
 import type {
   AccountSummary,
   SummarizeAccountRequest,
-} from "@/core/derive-account"
-import { summarizeAccount } from "@/core/derive-account"
-import {
-  debtCeilingFindings,
-  healthFactorFindings,
-  zeroLtvLockFindings,
-} from "@/core/finding-rules"
-import { projectAccount } from "@/core/project-account"
+} from "@/core/derive/account"
+import { summarizeAccount } from "@/core/derive/account"
 import type { Finding } from "@/types"
 
 export type AssessCollateralRequest = SummarizeAccountRequest & {

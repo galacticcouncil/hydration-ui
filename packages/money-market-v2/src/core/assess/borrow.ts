@@ -1,21 +1,21 @@
 import type Big from "big.js"
 import type { Address } from "viem"
 
+import {
+  borrowCapFindings,
+  debtCeilingFindings,
+  healthFactorFindings,
+} from "@/core/assess/finding-rules"
+import { projectAccount } from "@/core/assess/project-account"
 import { findByAsset, isAsset } from "@/core/assets"
 import { Decimal, toBaseUnits, truncate } from "@/core/big"
 import { HF_MAX_TARGET } from "@/core/constants"
 import type {
   AccountSummary,
   SummarizeAccountRequest,
-} from "@/core/derive-account"
-import { summarizeAccount } from "@/core/derive-account"
-import { eModeCategories } from "@/core/derive-emode"
-import {
-  borrowCapFindings,
-  debtCeilingFindings,
-  healthFactorFindings,
-} from "@/core/finding-rules"
-import { projectAccount } from "@/core/project-account"
+} from "@/core/derive/account"
+import { summarizeAccount } from "@/core/derive/account"
+import { eModeCategories } from "@/core/derive/emode"
 import type { Finding, HollarFacilitator } from "@/types"
 
 export type AssessBorrowRequest = SummarizeAccountRequest & {

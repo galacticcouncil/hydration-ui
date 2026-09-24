@@ -2,14 +2,14 @@ import type Big from "big.js"
 
 import { Decimal, Integer, normalize, shift } from "@/core/big"
 import { LTV_PRECISION, USD_DECIMALS } from "@/core/constants"
-import { positionRewards } from "@/core/derive-incentives"
+import { positionRewards } from "@/core/derive/incentives"
 import {
   calculateAvailableBorrowsMarketReferenceCurrency,
   calculateHealthFactorFromBalances,
   getCompoundedBalance,
   getLinearBalance,
   getMarketReferenceCurrencyAndUsdBalance,
-} from "@/core/pool-math"
+} from "@/core/derive/pool-math"
 import type {
   Account,
   ClaimableReward,

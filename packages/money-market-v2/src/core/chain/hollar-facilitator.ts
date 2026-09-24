@@ -3,9 +3,12 @@ import { readContract } from "@wagmi/core"
 
 import { hollarTokenAbi, poolAbi } from "@/core/abi"
 import { normalize } from "@/core/big"
-import { chainRead, decode } from "@/core/chain"
+import { chainRead, decode } from "@/core/chain/read"
+import {
+  hollarFacilitatorSchema,
+  poolReserveATokenSchema,
+} from "@/core/chain/schema"
 import { HOLLAR_DECIMALS } from "@/core/constants"
-import { hollarFacilitatorSchema, poolReserveATokenSchema } from "@/core/schema"
 import type { HollarFacilitator, MarketDescriptor } from "@/types"
 
 /**

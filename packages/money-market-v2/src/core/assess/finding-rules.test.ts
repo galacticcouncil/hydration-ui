@@ -7,7 +7,7 @@ import {
   healthFactorFindings,
   supplyCapFindings,
   zeroLtvLockFindings,
-} from "@/core/finding-rules"
+} from "@/core/assess/finding-rules"
 
 describe("healthFactorFindings", () => {
   it("blocks a projected HF below 1 with debt", () => {

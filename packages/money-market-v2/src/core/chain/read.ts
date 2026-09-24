@@ -6,7 +6,7 @@ import {
   ChainReadError,
   DecodeError,
   MarketNotDeployedError,
-} from "@/core/errors"
+} from "@/core/chain/errors"
 import type { MarketDescriptor } from "@/types"
 
 /**

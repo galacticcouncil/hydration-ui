@@ -4,13 +4,13 @@ import { findByAsset, isAsset } from "@/core/assets"
 import type {
   AccountSummary,
   SummarizeAccountRequest,
-} from "@/core/derive-account"
-import { summarizeAccount } from "@/core/derive-account"
+} from "@/core/derive/account"
+import { summarizeAccount } from "@/core/derive/account"
 import {
   getReserveNormalizedIncome,
   getReserveNormalizedVariableDebt,
-} from "@/core/pool-math"
-import { rayDiv } from "@/core/ray-math"
+} from "@/core/derive/pool-math"
+import { rayDiv } from "@/core/derive/ray-math"
 import type {
   MarketPositions,
   MarketReserves,

@@ -1,13 +1,13 @@
 import type { Address } from "viem"
 
+import { projectAccount } from "@/core/assess/project-account"
 import { findByAsset, isAsset } from "@/core/assets"
 import { Decimal, toBaseUnits, truncate } from "@/core/big"
 import type {
   AccountSummary,
   SummarizeAccountRequest,
-} from "@/core/derive-account"
-import { summarizeAccount } from "@/core/derive-account"
-import { projectAccount } from "@/core/project-account"
+} from "@/core/derive/account"
+import { summarizeAccount } from "@/core/derive/account"
 import type { Finding, MarketWalletBalances } from "@/types"
 
 export type AssessRepayRequest = SummarizeAccountRequest & {

@@ -23,7 +23,7 @@ import {
   rayPow,
   rayToWad,
   wadToRay,
-} from "@/core/ray-math"
+} from "@/core/derive/ray-math"
 
 type InterestRequest = {
   rate: bigint

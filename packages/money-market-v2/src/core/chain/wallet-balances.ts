@@ -4,8 +4,8 @@ import type { Address } from "viem"
 
 import { walletBalanceProviderAbi } from "@/core/abi"
 import { normalize } from "@/core/big"
-import { chainRead, decode } from "@/core/chain"
-import { walletBalancesSchema } from "@/core/schema"
+import { chainRead, decode } from "@/core/chain/read"
+import { walletBalancesSchema } from "@/core/chain/schema"
 import type {
   MarketDescriptor,
   MarketWalletBalances,
