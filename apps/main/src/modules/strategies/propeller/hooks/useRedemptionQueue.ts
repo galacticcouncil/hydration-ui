@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
-import { formatUnits, type Hex } from "viem"
+import { queryOptions } from "@tanstack/react-query"
+import { formatUnits, getContract, type Hex, zeroAddress } from "viem"
 
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
-import { usePropellerVaultContract } from "@/modules/strategies/propeller/hooks/usePropellerVaultContract"
-import { useAssets } from "@/providers/assetsProvider"
+import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
+import { TProviderContext } from "@/providers/rpcProvider"
 
 export interface QueueEntry {
   requestId: number
@@ -21,56 +22,73 @@ export interface QueueEntry {
   isUser: boolean
 }
 
-export function useRedemptionQueue(evmAddress: Hex | undefined) {
-  const { data: vault } = usePropellerVaultContract()
-  const { getAssetWithFallback } = useAssets()
-  const { vaultAddress, assetId } = useActivePropellerVault()
-  const decimals = getAssetWithFallback(assetId).decimals
-  return useQuery({
-    enabled: !!vault && !!evmAddress,
-    queryKey: ["propeller-vault-queue", vaultAddress, evmAddress, assetId],
+export const vaultQueueQuery = (
+  rpc: TProviderContext,
+  vault: PropellerVaultConfig,
+  decimals: number,
+  evmAddress: Hex | undefined,
+) =>
+  queryOptions({
+    enabled: rpc.isReady && !!evmAddress,
+    queryKey: propellerQueryKeys.vaultQueue(vault.vaultAddress, evmAddress),
     queryFn: async () => {
-      if (!vault) throw new Error("Vault contract not found")
+      const contract = getContract({
+        address: vault.vaultAddress,
+        abi: VAULT_ABI,
+        client: rpc.evm,
+      })
 
       const [tail, totalQueued] = await Promise.all([
-        vault.read.queueTail(),
-        vault.read.totalQueuedShares(),
+        contract.read.queueTail(),
+        contract.read.totalQueuedShares(),
       ])
 
       const queueTail = Number(tail)
       const totalQueuedShares = Number(formatUnits(totalQueued, decimals))
 
-      const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
 
+      // ponytail: queue length × vaults reads every 30 s; no multicall on lark, index when queues grow
       // Scan from 0, not queueHead: settled-but-unclaimed requests sit below the head.
-      for (let i = 0; i < queueTail; i++) {
-        const [
-          owner,
-          shares,
-          collateralOwed,
-          debtShare,
-          ,
-          repaid,
-          collateralSettled,
-          ,
-          active,
-        ] = await vault.read.redemptions([BigInt(i)])
+      const redemptions = await Promise.all(
+        Array.from({ length: queueTail }, (_, i) =>
+          contract.read.redemptions([BigInt(i)]),
+        ),
+      )
 
-        if (owner === "0x0000000000000000000000000000000000000000") continue
-
-        entries.push({
-          requestId: i,
-          owner,
-          shares: Number(formatUnits(shares, decimals)),
-          collateralOwed: Number(formatUnits(collateralOwed, decimals)),
-          collateralSettled: Number(formatUnits(collateralSettled, decimals)),
-          settledProgress:
-            debtShare > 0n ? Number(repaid) / Number(debtShare) : 0,
-          active,
-          isUser: addr ? owner.toLowerCase() === addr : false,
-        })
-      }
+      const entries = redemptions.flatMap<QueueEntry>(
+        (
+          [
+            owner,
+            shares,
+            collateralOwed,
+            debtShare,
+            ,
+            repaid,
+            collateralSettled,
+            ,
+            active,
+          ],
+          i,
+        ) =>
+          owner === zeroAddress
+            ? []
+            : [
+                {
+                  requestId: i,
+                  owner,
+                  shares: Number(formatUnits(shares, decimals)),
+                  collateralOwed: Number(formatUnits(collateralOwed, decimals)),
+                  collateralSettled: Number(
+                    formatUnits(collateralSettled, decimals),
+                  ),
+                  settledProgress:
+                    debtShare > 0n ? Number(repaid) / Number(debtShare) : 0,
+                  active,
+                  isUser: addr ? owner.toLowerCase() === addr : false,
+                },
+              ],
+      )
 
       return {
         queue: entries,
@@ -79,4 +97,3 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
     },
     refetchInterval: 30_000,
   })
-}

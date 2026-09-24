@@ -1,92 +1,107 @@
 import {
-  Box,
   Button,
-  Flex,
-  Paper,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   PositionCard,
-  Separator,
+  Stack,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { type PropellerPosition } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
-  shares: number
-  exchangeRate: number
-  apy: number | null
-  onWithdraw: () => void
+  positions: PropellerPosition[]
+  onWithdraw: (vault: PropellerVaultConfig) => void
 }
 
-export const MyPositionsCard = ({
-  shares,
-  exchangeRate,
-  apy,
-  onWithdraw,
-}: Props) => {
+export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { assetId, symbol, shareSymbol } = useActivePropellerVault()
+  const { getAssetWithFallback } = useAssets()
 
-  const assetValue = shares * exchangeRate
+  if (!positions.length) return null
 
   return (
-    <Paper>
-      <Box p="l">
-        <Text as="h2" font="primary" fs="p2" fw={500}>
-          {t("positions.title")}
-        </Text>
-      </Box>
-      <Separator />
-      <Flex direction="column" gap="m" p="m">
-        <PositionCard
-          logo={<AssetLogo id={assetId} size="medium" hideChain />}
-          symbol={symbol}
-          stats={
-            <>
-              <ValueStats
-                wrap
-                size="small"
-                font="secondary"
-                label={t("positions.col.amount")}
-                customValue={
-                  <Text fs="p3" fw={500} lh={1}>
-                    {t("common:currency", {
-                      value: shares,
-                      symbol: shareSymbol,
-                    })}
-                  </Text>
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("positions.title")}</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Stack gap="m">
+          {positions.map(({ vault, shares, assetValue, usdValue, apy }) => {
+            const { symbol } = getAssetWithFallback(vault.assetId)
+
+            return (
+              <PositionCard
+                key={vault.vaultAddress}
+                logo={<AssetLogo id={vault.assetId} size="medium" hideChain />}
+                symbol={symbol}
+                stats={
+                  <>
+                    <ValueStats
+                      wrap
+                      size="small"
+                      font="secondary"
+                      label={t("positions.col.amount")}
+                      customValue={
+                        <Text fs="p3" fw={500} lh={1}>
+                          {t("common:currency", {
+                            value: shares,
+                            symbol: vault.shareSymbol,
+                          })}
+                        </Text>
+                      }
+                      bottomLabel={t("common:currency", {
+                        value: assetValue,
+                        symbol,
+                      })}
+                    />
+                    <ValueStats
+                      wrap
+                      size="small"
+                      font="secondary"
+                      label={t("positions.col.value")}
+                      customValue={
+                        <Text fs="p3" fw={500} lh={1}>
+                          {t("common:currency", { value: usdValue })}
+                        </Text>
+                      }
+                    />
+                    <ValueStats
+                      wrap
+                      size="small"
+                      font="secondary"
+                      label={t("positions.col.netApy")}
+                      customValue={
+                        <Text fs="p3" fw={500} lh={1}>
+                          {apy === null
+                            ? "—"
+                            : t("common:percent", { value: apy })}
+                        </Text>
+                      }
+                    />
+                  </>
                 }
-                bottomLabel={t("common:currency", {
-                  value: assetValue,
-                  symbol,
-                })}
-              />
-              <ValueStats
-                wrap
-                size="small"
-                font="secondary"
-                label={t("positions.col.netApy")}
-                customValue={
-                  <Text fs="p3" fw={500} lh={1}>
-                    {apy === null
-                      ? "—"
-                      : t("common:percent", {
-                          value: apy,
-                        })}
-                  </Text>
+                cta={
+                  <Button
+                    variant="tertiary"
+                    size="small"
+                    onClick={() => onWithdraw(vault)}
+                  >
+                    {t("positions.action.withdraw")}
+                  </Button>
                 }
               />
-            </>
-          }
-          cta={
-            <Button variant="tertiary" size="small" onClick={onWithdraw}>
-              {t("positions.action.withdraw")}
-            </Button>
-          }
-        />
-      </Flex>
-    </Paper>
+            )
+          })}
+        </Stack>
+      </CardBody>
+    </Card>
   )
 }

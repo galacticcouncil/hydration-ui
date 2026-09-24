@@ -13,44 +13,64 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { type Hex } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  subLoopQuery,
+  vaultBalancesQuery,
+  vaultLoopPositionQuery,
+  vaultStatsQuery,
+} from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { useRequestRedeem } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 // Below 0.5% carry, the haircut is noise next to slippage; show the gross estimate.
 const CARRY_DISPLAY_FLOOR = 0.005
 
-interface VaultStats {
-  exchangeRate: number
-  minRedeem: number
-  paused: boolean
-}
-
-interface Props {
+type Props = {
+  vault: PropellerVaultConfig
   open: boolean
   onClose: () => void
-  vaultStats: VaultStats
-  shareBalance: number
-  loopEquity: bigint | null
-  negativeCarry: number | null
-  onRequestRedeem: (amount: number) => void
-  isPending: boolean
 }
 
-export const WithdrawModal = ({
-  open,
-  onClose,
-  vaultStats,
-  shareBalance,
-  loopEquity,
-  negativeCarry,
-  onRequestRedeem,
-  isPending,
-}: Props) => {
+export const WithdrawModal = ({ vault, open, onClose }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { assetId, symbol, shareSymbol } = useActivePropellerVault()
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
+  const { getAssetWithFallback } = useAssets()
+  const { assetId, shareSymbol } = vault
+  const { symbol, decimals } = getAssetWithFallback(assetId)
+
+  const address = account?.address ?? ""
+  const evmAddress = address
+    ? (safeConvertSS58toH160(address) as Hex)
+    : undefined
+
+  const { data: stats } = useQuery(vaultStatsQuery(rpc, vault, decimals))
+  const { data: balances } = useQuery(
+    vaultBalancesQuery(rpc, vault, decimals, evmAddress),
+  )
+  const { data: loopPosition } = useQuery(vaultLoopPositionQuery(rpc, vault))
+  const { data: subLoop } = useQuery(subLoopQuery(rpc))
+  const redeem = useRequestRedeem(vault, { onSuccess: onClose })
+
+  const vaultStats = {
+    exchangeRate: stats?.exchangeRate ?? 1,
+    minRedeem: stats?.minRedeem ?? 0,
+    paused: stats?.paused ?? false,
+  }
+  const shareBalance = balances?.shares ?? 0
+  const loopEquity = loopPosition?.equity ?? null
+  const negativeCarry = subLoop?.negativeCarry ?? null
+  const isPending = redeem.isPending
   const [amount, setAmount] = useState("")
   const [acknowledged, setAcknowledged] = useState(false)
 
@@ -107,7 +127,7 @@ export const WithdrawModal = ({
 
   const handleSubmit = () => {
     if (!canSubmit) return
-    onRequestRedeem(inputNum)
+    redeem.mutate(inputNum)
   }
 
   return (

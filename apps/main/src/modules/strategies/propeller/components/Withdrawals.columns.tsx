@@ -1,9 +1,10 @@
 import {
   Amount,
-  Button,
   Chip,
   ChipProps,
   Flex,
+  LoadingButton,
+  Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -13,24 +14,8 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
-
-export type WithdrawalRowState = "pending" | "partial" | "settled" | "claimed"
-
-export interface WithdrawalRow {
-  id: number
-  amountShares: number
-  /** Measured payout once settled; otherwise a carry-discounted estimate. */
-  estEth: number
-  isEstimate?: boolean
-  state: WithdrawalRowState
-  settledDate?: Date
-  collateralOwed?: number
-  collateralSettled?: number
-  settledSoFar?: number
-  /** Unwind stalled; remainder will be written off. */
-  willSettleShort?: boolean
-}
+import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { useAssets } from "@/providers/assetsProvider"
 
 type WithdrawalStateLabel =
   | "pending"
@@ -47,7 +32,9 @@ const stateChipVariant: Record<WithdrawalStateLabel, ChipProps["variant"]> = {
   claimed: "blue",
 }
 
-const getWithdrawalStateLabel = (row: WithdrawalRow): WithdrawalStateLabel => {
+const getWithdrawalStateLabel = (
+  row: PropellerWithdrawalRow,
+): WithdrawalStateLabel => {
   if (row.state === "claimed") return "claimed"
 
   const claimable = row.collateralSettled ?? 0
@@ -57,31 +44,32 @@ const getWithdrawalStateLabel = (row: WithdrawalRow): WithdrawalStateLabel => {
   return "pending"
 }
 
-const columnHelper = createColumnHelper<WithdrawalRow>()
+const columnHelper = createColumnHelper<PropellerWithdrawalRow>()
 
 export type WithdrawalColumnHandlers = {
-  onClaim: (requestId: number) => void
-  isClaiming: boolean
+  onClaim: (row: PropellerWithdrawalRow) => void
+  /** Row ids with a claim in flight. */
+  claimingIds: string[]
 }
 
 export const useWithdrawalColumns = ({
   onClaim,
-  isClaiming,
+  claimingIds,
 }: WithdrawalColumnHandlers) => {
   const { t } = useTranslation(["propeller", "common"])
   const { isMobile } = useBreakpoints()
-  const { assetId, symbol, shareSymbol } = useActivePropellerVault()
+  const { getAssetWithFallback } = useAssets()
 
   return useMemo(() => {
     const amountColumn = columnHelper.accessor("amountShares", {
       header: t("withdrawals.col.amount"),
       cell: ({ row }) => (
         <Flex align="center" gap="s">
-          <AssetLogo id={assetId} size="small" />
+          <AssetLogo id={row.original.vault.assetId} size="small" />
           <Text fs="p4" fw={500} color={getToken("text.high")}>
             {t("common:currency", {
               value: row.original.amountShares,
-              symbol: shareSymbol,
+              symbol: row.original.vault.shareSymbol,
             })}
           </Text>
         </Flex>
@@ -95,10 +83,10 @@ export const useWithdrawalColumns = ({
         <Amount
           value={t("common:currency", {
             value: row.original.estEth,
-            symbol,
+            symbol: getAssetWithFallback(row.original.vault.assetId).symbol,
           })}
           displayValue={t("common:currency", {
-            value: row.original.estEth,
+            value: row.original.estUsd,
           })}
         />
       ),
@@ -106,15 +94,18 @@ export const useWithdrawalColumns = ({
 
     const dateColumn = columnHelper.accessor("settledDate", {
       header: t("withdrawals.col.date"),
-      cell: ({ row }) => (
-        <Text fs="p4" color={getToken("text.medium")}>
-          {row.original.settledDate
-            ? t("common:date.datetime.short", {
-                value: row.original.settledDate,
-              })
-            : "—"}
-        </Text>
-      ),
+      cell: ({ row }) =>
+        row.original.isSettlementLoading ? (
+          <Skeleton width={80} />
+        ) : (
+          <Text fs="p4" color={getToken("text.medium")}>
+            {row.original.settledDate
+              ? t("common:date.datetime.short", {
+                  value: row.original.settledDate,
+                })
+              : "—"}
+          </Text>
+        ),
     })
 
     const stateColumn = columnHelper.display({
@@ -126,6 +117,7 @@ export const useWithdrawalColumns = ({
         const label = getWithdrawalStateLabel(r)
         const owed = r.collateralOwed ?? 0
         const isPartial = r.state === "partial"
+        const { symbol } = getAssetWithFallback(r.vault.assetId)
 
         return (
           <Flex direction="column" gap="s" align="flex-end">
@@ -154,19 +146,21 @@ export const useWithdrawalColumns = ({
         const r = row.original
         const claimable = r.collateralSettled ?? 0
         if (claimable <= 0 || r.state === "claimed") return null
+        const isClaiming = claimingIds.includes(r.id)
         return (
           <Flex justify="flex-end" align="center" gap="base">
-            <Button
-              variant="primary"
+            <LoadingButton
+              variant="secondary"
               size="small"
               onClick={(e) => {
                 e.stopPropagation()
-                onClaim(r.id)
+                onClaim(r)
               }}
+              isLoading={isClaiming}
               disabled={isClaiming}
             >
               {t("withdrawals.action.claim")}
-            </Button>
+            </LoadingButton>
           </Flex>
         )
       },
@@ -179,5 +173,5 @@ export const useWithdrawalColumns = ({
       stateColumn,
       actionsColumn,
     ]
-  }, [t, isMobile, isClaiming, onClaim, assetId, symbol, shareSymbol])
+  }, [t, isMobile, claimingIds, onClaim, getAssetWithFallback])
 }

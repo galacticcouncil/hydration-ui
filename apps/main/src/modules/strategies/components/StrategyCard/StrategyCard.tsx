@@ -17,9 +17,10 @@ import {
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
 
-export type StrategyCardProps = {
-  logoId: string
-  logo?: ReactNode
+export type StrategyCardProps = (
+  | { logoId: string; logo?: never }
+  | { logo: ReactNode; logoId?: never }
+) & {
   stats: ValueStatsProps[]
   badges?: StrategyBadgeType[]
   title: string
@@ -44,7 +45,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          {logo ?? <AssetLogo id={logoId} size="extra-large" hideChain />}
+          {logoId !== undefined ? (
+            <AssetLogo id={logoId} size="extra-large" hideChain />
+          ) : (
+            logo
+          )}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (
@@ -54,7 +59,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           )}
         </Flex>
 
-        <Flex gap="xl">
+        <Flex gap="xxxl">
           {stats.map((stat) => (
             <ValueStats
               key={stat.label}
