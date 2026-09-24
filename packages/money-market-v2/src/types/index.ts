@@ -507,6 +507,8 @@ export type FindingCode =
   | "sameEModeCategory"
   /** Only the category's assets can be borrowed while in e-mode. */
   | "eModeRestrictsBorrowing"
+  /** The selected rewards have accrued nothing to claim. */
+  | "nothingToClaim"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats

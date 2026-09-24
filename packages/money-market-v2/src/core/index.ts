@@ -3,6 +3,8 @@ export type {
   BorrowAssessment,
 } from "@/core/assess-borrow"
 export { assessBorrow } from "@/core/assess-borrow"
+export type { AssessClaimRequest, ClaimAssessment } from "@/core/assess-claim"
+export { assessClaim } from "@/core/assess-claim"
 export type {
   AssessCollateralRequest,
   CollateralAssessment,
