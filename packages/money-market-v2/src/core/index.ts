@@ -63,6 +63,7 @@ export {
   getLinearBalance,
   getMarketReferenceCurrencyAndUsdBalance,
   getReserveNormalizedIncome,
+  getReserveNormalizedVariableDebt,
 } from "@/core/pool-math"
 export {
   binomialApproximatedRayPow,

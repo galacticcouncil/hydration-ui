@@ -123,6 +123,27 @@ export function getReserveNormalizedIncome({
   return rayMul(cumulatedInterest, index)
 }
 
+/**
+ * The variable debt index at a timestamp: the stored index compounded forward
+ * at the variable borrow rate. Borrowing or repaying `amount` moves the scaled
+ * debt by `rayDiv(amount, this)`.
+ */
+export function getReserveNormalizedVariableDebt({
+  rate,
+  index,
+  currentTimestamp,
+  lastUpdateTimestamp,
+}: ReserveNormalizedIncomeRequest): bigint {
+  return rayMul(
+    calculateCompoundedInterest({
+      rate,
+      currentTimestamp,
+      lastUpdateTimestamp,
+    }),
+    index,
+  )
+}
+
 type LinearBalanceRequest = {
   balance: bigint
   index: bigint

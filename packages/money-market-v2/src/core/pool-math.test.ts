@@ -10,6 +10,10 @@ import {
   getLinearBalance,
   getMarketReferenceCurrencyAndUsdBalance,
   getReserveNormalizedIncome,
+  getReserveNormalizedVariableDebt,
+  rayMul,
+  rayToWad,
+  wadToRay,
 } from "@/core"
 
 describe("pool math", () => {
@@ -91,6 +95,45 @@ describe("pool math", () => {
     })
 
     expect(income).toBe(1048540642417873800000000000n)
+  })
+
+  it("returns the variable debt index when no time has passed", () => {
+    const index = 1048540642417873765200833079n
+    const debt = getReserveNormalizedVariableDebt({
+      rate: 500000000000000000n,
+      index,
+      currentTimestamp: 1729942300,
+      lastUpdateTimestamp: 1729942300,
+    })
+
+    expect(debt).toBe(index)
+  })
+
+  it("accrues variable debt by the index getCompoundedBalance uses", () => {
+    const request = {
+      rate: 500000000000000000n,
+      index: 1048540642417873765200833079n,
+      currentTimestamp: 1729942300,
+      lastUpdateTimestamp: 1629942200,
+    }
+    const principalBalance = 1000000000000000000n
+
+    expect(
+      rayToWad(
+        rayMul(
+          wadToRay(principalBalance),
+          getReserveNormalizedVariableDebt(request),
+        ),
+      ),
+    ).toBe(
+      getCompoundedBalance({
+        principalBalance,
+        reserveIndex: request.index,
+        reserveRate: request.rate,
+        currentTimestamp: request.currentTimestamp,
+        lastUpdateTimestamp: request.lastUpdateTimestamp,
+      }),
+    )
   })
 
   it("calculates a health factor", () => {
