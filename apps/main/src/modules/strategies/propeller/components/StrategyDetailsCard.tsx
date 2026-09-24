@@ -1,191 +1,92 @@
-import { MoveUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
-  ExternalLink,
-  Flex,
-  Icon,
-  Paper,
-  ResponsiveScope,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  DataTable,
+  Grid,
   Separator,
-  SummaryRow,
-  Text,
+  TableContainer,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  HYDRATION_CHAIN_KEY,
-  shortenAccountAddress,
-  subscan,
-} from "@galacticcouncil/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { isNullish } from "remeda"
 
-import { AssetLogo } from "@/components/AssetLogo"
-import { AssetProgressStat } from "@/components/AssetProgressStat"
+import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
+import { DepositModal } from "@/modules/strategies/propeller/components/DepositModal"
+import { useStrategyVaultColumns } from "@/modules/strategies/propeller/components/StrategyVaults.columns"
 import {
-  SDetailsStatItem,
-  SDetailsStatsContainer,
-  SDetailsStatsSeparator,
-} from "@/modules/strategies/propeller/components/StrategyDetailsCard.styled"
-import { PROPELLER_RISK_PROFILE } from "@/modules/strategies/propeller/config/vaults"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
-import { usePropellerApy } from "@/modules/strategies/propeller/hooks/useVaultReads"
-import { useAssetPrice } from "@/states/displayAsset"
+  PROPELLER_RISK_PROFILE,
+  type PropellerVaultConfig,
+} from "@/modules/strategies/propeller/config/vaults"
+import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 
-interface VaultStats {
-  totalAssets: number
-  tvlCap: number
-}
-
-interface Props {
-  vaultStats: VaultStats
-}
-
-export const StrategyDetailsCard = ({ vaultStats }: Props) => {
+export const StrategyDetailsCard = () => {
   const { t } = useTranslation(["propeller", "common"])
-  const vault = useActivePropellerVault()
-  const { price } = useAssetPrice(vault.assetId)
-  const apr = usePropellerApy()
-
-  const { totalAssets, tvlCap } = vaultStats
-  const tvlDisplay = totalAssets * Number(price || 0)
-  const hasCap = tvlCap > 0
-  const remainingCapacity = Math.max(tvlCap - totalAssets, 0)
-  const remaining = Math.max(
-    0,
-    hasCap ? Math.min(remainingCapacity, tvlCap) : remainingCapacity,
+  const { isMobile, isTablet } = useBreakpoints()
+  const { vaults, subLoop, totalTvlUsd, isLoading } = usePropellerVaults()
+  const [depositVault, setDepositVault] = useState<PropellerVaultConfig | null>(
+    null,
   )
-  const remainingPct = hasCap ? (remaining / tvlCap) * 100 : 0
+
+  const columns = useStrategyVaultColumns(setDepositVault)
+  const leverage = subLoop?.leverage
 
   return (
-    <Paper>
-      <Box p="l">
-        <Text as="h2" font="primary" fs="p2" fw={500}>
-          {t("strategy.title")}
-        </Text>
-      </Box>
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("strategy.title")}</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Grid
+          columnTemplate={["repeat(2, 1fr)", null, "repeat(4, auto)"]}
+          gap="xl"
+          justify="space-between"
+        >
+          <ValueStats
+            wrap
+            size="medium"
+            label={t("strategy.totalTvl")}
+            value={t("common:currency.compact", { value: totalTvlUsd })}
+            isLoading={isLoading}
+          />
+          <ValueStats
+            wrap
+            size="medium"
+            label={t("strategy.loopLeverage")}
+            value={
+              isNullish(leverage)
+                ? "—"
+                : t("strategy.loopLeverageValue", { value: leverage })
+            }
+            isLoading={isLoading}
+          />
+          <ValueStats
+            wrap
+            size="medium"
+            label={t("strategy.riskProfile")}
+            value={t(`strategy.risk.${PROPELLER_RISK_PROFILE}`)}
+          />
+        </Grid>
+      </CardBody>
       <Separator />
+      {isMobile || isTablet ? (
+        <Box px="m" pb="m">
+          <StackedTable data={vaults} columns={columns} />
+        </Box>
+      ) : (
+        <TableContainer borderRadius="xl">
+          <DataTable data={vaults} columns={columns} size="small" />
+        </TableContainer>
+      )}
 
-      <ResponsiveScope>
-        <SDetailsStatsContainer>
-          <SDetailsStatItem>
-            <ValueStats
-              wrap
-              label={t("strategy.tvl")}
-              customValue={
-                <Flex align="center" gap="s">
-                  <AssetLogo id={vault.assetId} size="medium" hideChain />
-                  <Text
-                    font="primary"
-                    fs="h6"
-                    fw={600}
-                    color={getToken("text.high")}
-                  >
-                    {t("common:currency.compact", { value: tvlDisplay })}
-                  </Text>
-                </Flex>
-              }
-            />
-          </SDetailsStatItem>
-
-          <SDetailsStatsSeparator />
-
-          <SDetailsStatItem>
-            <ValueStats
-              wrap
-              label={t("strategy.netApy")}
-              customValue={
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={getToken(
-                    apr === null ? "text.high" : "accents.success.emphasis",
-                  )}
-                >
-                  {apr === null
-                    ? "—"
-                    : t("common:percent", {
-                        prefix: "+",
-                        value: apr,
-                        maximumFractionDigits: 2,
-                      })}
-                </Text>
-              }
-            />
-          </SDetailsStatItem>
-
-          {hasCap && (
-            <>
-              <SDetailsStatsSeparator />
-              <SDetailsStatItem>
-                <ValueStats
-                  sx={{ alignSelf: "center" }}
-                  wrap
-                  label={t("strategy.remainingCapacity")}
-                  customValue={
-                    <AssetProgressStat
-                      assetId={vault.assetId}
-                      progressPct={remainingPct}
-                      value={
-                        <Text
-                          font="primary"
-                          fs="h6"
-                          fw={600}
-                          color={getToken("text.high")}
-                          minWidth="10rem"
-                        >
-                          {t("common:currency.compact", {
-                            value: remaining,
-                            symbol: vault.symbol,
-                            maximumFractionDigits: remaining > 100_000 ? 0 : 2,
-                          })}
-                        </Text>
-                      }
-                    />
-                  }
-                />
-              </SDetailsStatItem>
-            </>
-          )}
-
-          <SDetailsStatsSeparator />
-
-          <SDetailsStatItem>
-            <ValueStats
-              wrap
-              label={t("strategy.riskProfile")}
-              customValue={
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={getToken("text.high")}
-                >
-                  {t(`strategy.risk.${PROPELLER_RISK_PROFILE}`)}
-                </Text>
-              }
-            />
-          </SDetailsStatItem>
-        </SDetailsStatsContainer>
-      </ResponsiveScope>
-
-      <Separator />
-
-      <Box p="l">
-        <SummaryRow
-          label={t("strategy.contractAddress")}
-          content={
-            <Text fs="p4" lh={1.5}>
-              <ExternalLink
-                href={subscan.account(HYDRATION_CHAIN_KEY, vault.vaultAddress)}
-              >
-                {shortenAccountAddress(vault.vaultAddress)}
-                <Icon component={MoveUpRight} size="xs" />
-              </ExternalLink>
-            </Text>
-          }
-        />
-      </Box>
-    </Paper>
+      <DepositModal
+        vault={depositVault}
+        onClose={() => setDepositVault(null)}
+      />
+    </Card>
   )
 }

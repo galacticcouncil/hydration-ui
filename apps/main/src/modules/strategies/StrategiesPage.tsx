@@ -8,7 +8,6 @@ import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStra
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { PropellerStrategyCard } from "@/modules/strategies/propeller/components/PropellerStrategyCard"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
 import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import {
@@ -48,10 +47,7 @@ export const StrategiesPage = () => {
         columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
         gap="xl"
       >
-        {featureFlags.propellerEnabled &&
-          Object.values(PROPELLER_VAULTS).map((vault) => (
-            <PropellerStrategyCard key={vault.key} vault={vault} />
-          ))}
+        {featureFlags.propellerEnabled && <PropellerStrategyCard />}
         {featureFlags.bilEnabled && (
           <StrategyCard
             logoId={BIL_ERC20_ID}

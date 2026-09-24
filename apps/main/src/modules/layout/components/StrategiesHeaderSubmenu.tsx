@@ -12,11 +12,12 @@ import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-const STRATEGY_ASSET_ICON_BY_KEY: Partial<Record<NavigationKey, string>> = {
+const STRATEGY_ASSET_ICON_BY_KEY: Partial<
+  Record<NavigationKey, string | string[]>
+> = {
   strategiesBil: BIL_ERC20_ID,
   strategiesHollarBonds: HOLLAR_ASSET_ID,
-  strategiesPropellerEth: PROPELLER_VAULTS.eth.assetId,
-  strategiesPropellerTbtc: PROPELLER_VAULTS.tbtc.assetId,
+  strategiesPropeller: PROPELLER_VAULTS.map((vault) => vault.assetId),
 }
 
 type Props = {
@@ -30,7 +31,10 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
 
   return items.map(({ key, to, search }) => {
     const assetIconId = STRATEGY_ASSET_ICON_BY_KEY[key]
-    const showAssetIcon = isReady && assetIconId && !!getAsset(assetIconId)
+    const showAssetIcon =
+      isReady &&
+      assetIconId &&
+      [assetIconId].flat().every((id) => !!getAsset(id))
 
     return (
       <SDetailedLink key={key} asChild>

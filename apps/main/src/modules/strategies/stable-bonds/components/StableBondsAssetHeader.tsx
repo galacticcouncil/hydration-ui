@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next"
 
 import { TBond } from "@/api/assets"
-import { AssetHeader } from "@/components/AssetHeader"
+import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge"
+import { StrategyHeader } from "@/modules/strategies/components/StrategyHeader"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type StableBondsAssetHeaderProps = {
@@ -16,14 +17,18 @@ export const StableBondsAssetHeader: React.FC<StableBondsAssetHeaderProps> = ({
   const { t } = useTranslation("strategies")
   const { getAssetWithFallback } = useAssets()
   const underlyingAsset = getAssetWithFallback(asset.underlyingAssetId)
-  const headerAsset = useAssetName
-    ? asset
-    : {
-        ...asset,
-        name: t("bonds.title.stableYieldBonds", {
-          symbol: underlyingAsset.symbol,
-        }),
-      }
+  const title = useAssetName
+    ? asset.name
+    : t("bonds.title.stableYieldBonds", {
+        symbol: underlyingAsset.symbol,
+      })
 
-  return <AssetHeader asset={headerAsset} />
+  return (
+    <StrategyHeader
+      logoId={asset.id}
+      title={title}
+      subtitle={asset.symbol}
+      badges={[StrategyBadgeType.FixedYield]}
+    />
+  )
 }

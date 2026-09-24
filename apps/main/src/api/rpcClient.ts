@@ -15,7 +15,7 @@ import { createPublicClient, custom, PublicClient } from "viem"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import { ENV } from "@/config/env"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { SUBLOOP_ADDRESS } from "@/modules/strategies/propeller/constants"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { clearIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
 
@@ -88,7 +88,7 @@ const getProviderData = async (
   })
 
   const propellerEnabled = await evm
-    .getCode({ address: PROPELLER_VAULTS.eth.vaultAddress })
+    .getCode({ address: SUBLOOP_ADDRESS })
     .then((code) => !!code && code !== "0x")
     .catch(() => false)
 

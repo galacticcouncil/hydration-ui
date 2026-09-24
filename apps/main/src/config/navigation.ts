@@ -62,8 +62,7 @@ export const LINKS = {
   // memepad: "/memepad",
   strategies: "/strategies",
   strategiesBil: "/strategies/bil-vault",
-  strategiesPropellerEth: "/strategies/propeller-eth",
-  strategiesPropellerTbtc: "/strategies/propeller-tbtc",
+  strategiesPropeller: "/strategies/propeller",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -136,13 +135,8 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
       {
-        key: "strategiesPropellerEth",
-        to: LINKS.strategiesPropellerEth,
-        icon: GoalIcon,
-      },
-      {
-        key: "strategiesPropellerTbtc",
-        to: LINKS.strategiesPropellerTbtc,
+        key: "strategiesPropeller",
+        to: LINKS.strategiesPropeller,
         icon: GoalIcon,
       },
       {
@@ -370,13 +364,9 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.strategiesBil.title"),
       description: t("navigation.strategiesBil.description"),
     },
-    strategiesPropellerEth: {
-      title: t("navigation.strategiesPropellerEth.title"),
-      description: t("navigation.strategiesPropellerEth.description"),
-    },
-    strategiesPropellerTbtc: {
-      title: t("navigation.strategiesPropellerTbtc.title"),
-      description: t("navigation.strategiesPropellerTbtc.description"),
+    strategiesPropeller: {
+      title: t("navigation.strategiesPropeller.title"),
+      description: t("navigation.strategiesPropeller.description"),
     },
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),

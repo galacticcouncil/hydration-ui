@@ -1,9 +1,8 @@
-import { PRIME_ASSET_ID } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
+import { getAddressFromAssetId } from "@galacticcouncil/utils"
+import { queryOptions } from "@tanstack/react-query"
 import { isNullish } from "remeda"
 import { erc20Abi, formatUnits, getContract, type Hex } from "viem"
 
-import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   POOL_ABI,
   SUBLOOP_ABI,
@@ -15,26 +14,49 @@ import {
   POOL_ADDRESS,
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
-import { usePropellerVaultContract } from "@/modules/strategies/propeller/hooks/usePropellerVaultContract"
-import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
+import { TProviderContext } from "@/providers/rpcProvider"
 
 // No on-chain APR view; these are first-paint placeholders until chain reads load.
 const FALLBACK_APR = 0
 const FALLBACK_MIN_REDEEM = 0
 
-export function useVaultStats() {
-  const { data: vault } = usePropellerVaultContract()
-  const { getAssetWithFallback } = useAssets()
-  const { vaultAddress, assetId } = useActivePropellerVault()
+/** Runs a read and returns fallback when it reverts, so one failed read does not blank the page. */
+const safeRead = async <T, F = null>(
+  label: string,
+  read: () => Promise<T>,
+  fallback: F = null as F,
+): Promise<T | F> => {
+  try {
+    return await read()
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      console.warn(`[propeller-vault] ${label} reverted`, err)
+    }
+    return fallback
+  }
+}
+
+export const vaultStatsQuery = (
+  { isReady, evm }: TProviderContext,
+  vault: PropellerVaultConfig,
   // CollateralVault has no decimals() override; shares use the collateral scale.
-  const decimals = getAssetWithFallback(assetId).decimals
-  return useQuery({
-    queryKey: ["propeller-vault-stats", vaultAddress, assetId],
-    enabled: !!vault,
+  decimals: number,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.vaultStats(vault.vaultAddress),
+    enabled: isReady,
     queryFn: async () => {
-      if (!vault) throw new Error("Vault contract not found")
+      const contract = getContract({
+        address: vault.vaultAddress,
+        abi: VAULT_ABI,
+        client: evm,
+      })
+      const pool = getContract({
+        address: POOL_ADDRESS,
+        abi: POOL_ABI,
+        client: evm,
+      })
       const [
         totalAssets,
         totalSupply,
@@ -44,18 +66,30 @@ export function useVaultStats() {
         depositsPaused,
         queueHead,
         queueTail,
+        collateralConfig,
       ] = await Promise.all([
-        vault.read.totalAssets(),
-        vault.read.totalSupply(),
-        vault.read.exchangeRate(),
-        vault.read.tvlCap(),
-        vault.read.paused(),
-        vault.read.depositsPaused(),
-        vault.read.queueHead(),
-        vault.read.queueTail(),
+        contract.read.totalAssets(),
+        contract.read.totalSupply(),
+        contract.read.exchangeRate(),
+        contract.read.tvlCap(),
+        contract.read.paused(),
+        contract.read.depositsPaused(),
+        contract.read.queueHead(),
+        contract.read.queueTail(),
+        safeRead("Pool.getConfiguration(collateral)", () =>
+          pool.read.getConfiguration([
+            getAddressFromAssetId(vault.assetId) as Hex,
+          ]),
+        ),
       ])
 
       const queueLength = queueTail > queueHead ? queueTail - queueHead : 0n
+
+      // maxLtv comes from the collateral's reserve config bitmap. Do not derive
+      // LTV from getUserAccountData(vault): synthetic collateral inflates
+      // totalCollateralBase.
+      const ltvBps =
+        collateralConfig === null ? 0 : Number(collateralConfig & 0xffffn)
 
       return {
         totalAssets: Number(formatUnits(totalAssets, decimals)),
@@ -66,20 +100,19 @@ export function useVaultStats() {
         tvlCap: Number(formatUnits(tvlCap, decimals)),
         paused,
         depositsPaused,
+        maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
         minRedeem: FALLBACK_MIN_REDEEM,
         apr: FALLBACK_APR,
       }
     },
     refetchInterval: 30_000,
   })
-}
 
 /** SubLoop reads; each call fails independently so a partial deploy does not blank the page. */
-export function useSubLoopStats(override?: PropellerVaultConfig) {
-  const { evm } = useRpcProvider()
-  const { vaultAddress, assetAddress } = useActivePropellerVault(override)
-  return useQuery({
-    queryKey: ["propeller-subloop-stats", vaultAddress],
+export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.subLoop(),
+    enabled: isReady,
     queryFn: async () => {
       const subLoop = getContract({
         address: SUBLOOP_ADDRESS,
@@ -91,46 +124,23 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         abi: POOL_ABI,
         client: evm,
       })
-      const safe = async <T>(
-        label: string,
-        read: () => Promise<T>,
-      ): Promise<T | null> => {
-        try {
-          return await read()
-        } catch (err) {
-          if (import.meta.env.DEV) {
-            console.warn(`[propeller-vault] ${label} reverted`, err)
-          }
-          return null
-        }
-      }
-      const [
-        healthFactor,
-        negativeCarryBps,
-        targetHf,
-        account,
-        collateralConfig,
-        hollarRes,
-      ] = await Promise.all([
-        safe("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
-        safe("SubLoop.negativeCarryBps", () => subLoop.read.negativeCarryBps()),
-        safe("SubLoop.targetHf", () => subLoop.read.targetHf()),
-        safe("Pool.getUserAccountData(SubLoop)", () =>
-          pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
-        ),
-        safe("Pool.getConfiguration(collateral)", () =>
-          pool.read.getConfiguration([assetAddress]),
-        ),
-        safe("Pool.getReserveData(HOLLAR)", () =>
-          pool.read.getReserveData([HOLLAR_ADDRESS]),
-        ),
-      ])
+      const [healthFactor, negativeCarryBps, targetHf, account, hollarRes] =
+        await Promise.all([
+          safeRead("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
+          safeRead("SubLoop.negativeCarryBps", () =>
+            subLoop.read.negativeCarryBps(),
+          ),
+          safeRead("SubLoop.targetHf", () => subLoop.read.targetHf()),
+          safeRead("Pool.getUserAccountData(SubLoop)", () =>
+            pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
+          ),
+          safeRead("Pool.getReserveData(HOLLAR)", () =>
+            pool.read.getReserveData([HOLLAR_ADDRESS]),
+          ),
+        ])
 
-      // loopLeverage is SubLoop-wide. maxLtv comes from the reserve config bitmap.
-      // Do not derive LTV from getUserAccountData(vault): synthetic collateral
-      // inflates totalCollateralBase.
+      // loopLeverage is SubLoop-wide.
       let loopLeverage: number | null = null
-      let maxLtv: number | null = null
       let borrowRate: number | null = null
       if (account) {
         const loopColl = account[0]
@@ -139,56 +149,49 @@ export function useSubLoopStats(override?: PropellerVaultConfig) {
         if (loopEquity > 0n)
           loopLeverage = Number(loopColl) / Number(loopEquity)
       }
-      if (collateralConfig !== null) {
-        const ltvBps = Number(collateralConfig & 0xffffn)
-        if (ltvBps > 0) maxLtv = ltvBps / 1e4
-      }
       if (hollarRes) {
         borrowRate = Number(hollarRes.currentVariableBorrowRate) / 1e27
       }
 
       return {
+        leverage: loopLeverage,
         healthFactor:
           healthFactor === null ? null : Number(formatUnits(healthFactor, 18)),
         targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),
+        borrowRate,
         negativeCarry:
           negativeCarryBps === null ? null : Number(negativeCarryBps) / 1e4,
-        leverage: loopLeverage,
-        maxLtv,
-        borrowRate,
       }
     },
     refetchInterval: 30_000,
   })
-}
 
 /**
- * Net deposit APY = maxLtv * loopLeverage * (primeYield - borrowRate).
- * Returns null when inputs are missing or carry is not positive.
+ * Net deposit APY = maxLtv * loopLeverage * (primeYield - borrowRate), in
+ * percent for common:percent (it divides by 100). Returns null when inputs are
+ * missing or carry is not positive.
  */
-export function usePropellerApy(
-  override?: PropellerVaultConfig,
-): number | null {
-  const { data: subLoop } = useSubLoopStats(override)
-  const { data: apyData } = useBorrowAssetsApy([PRIME_ASSET_ID])
-  const primeSupplyApy = apyData?.find(
-    (a) => a.assetId === PRIME_ASSET_ID,
-  )?.totalSupplyApy
-
-  const loopLeverage = subLoop?.leverage ?? null
-  const maxLtv = subLoop?.maxLtv ?? null
-  const borrowRate = subLoop?.borrowRate ?? null
+export const computeVaultApy = ({
+  maxLtv,
+  leverage,
+  borrowRate,
+  primeSupplyApy,
+}: {
+  maxLtv: number | null | undefined
+  leverage: number | null | undefined
+  borrowRate: number | null | undefined
+  primeSupplyApy: number | null | undefined
+}): number | null => {
   if (
-    isNullish(loopLeverage) ||
     isNullish(maxLtv) ||
+    isNullish(leverage) ||
     isNullish(borrowRate) ||
     isNullish(primeSupplyApy)
   ) {
     return null
   }
   const primeYield = primeSupplyApy / 100
-  const apr = maxLtv * loopLeverage * (primeYield - borrowRate)
-  // Percent for common:percent (it divides by 100). Null hides 0/negative APY.
+  const apr = maxLtv * leverage * (primeYield - borrowRate)
   return apr > 0 ? apr * 100 : null
 }
 
@@ -196,83 +199,67 @@ export function usePropellerApy(
  * SubLoop equity for this vault. equity gates withdraw; pendingUnwind signals
  * a stalled unwind that may pay out short.
  */
-export function useLoopPosition() {
-  const { evm } = useRpcProvider()
-  const { vaultAddress } = useActivePropellerVault()
-  return useQuery({
-    queryKey: ["propeller-loop-position", vaultAddress],
+export const vaultLoopPositionQuery = (
+  { isReady, evm }: TProviderContext,
+  vault: PropellerVaultConfig,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.vaultLoopPosition(vault.vaultAddress),
+    enabled: isReady,
     queryFn: async () => {
       const subLoop = getContract({
         address: SUBLOOP_ADDRESS,
         abi: SUBLOOP_ABI,
         client: evm,
       })
-      const safe = async (label: string, read: () => Promise<bigint>) => {
-        try {
-          return await read()
-        } catch (err) {
-          if (import.meta.env.DEV) {
-            console.warn(`[propeller-vault] SubLoop.${label} reverted`, err)
-          }
-          return null
-        }
-      }
       const [equity, pendingUnwind] = await Promise.all([
-        safe("equityOf", () => subLoop.read.equityOf([vaultAddress])),
-        safe("pendingUnwindOf", () =>
-          subLoop.read.pendingUnwindOf([vaultAddress]),
+        safeRead("SubLoop.equityOf", () =>
+          subLoop.read.equityOf([vault.vaultAddress]),
+        ),
+        safeRead("SubLoop.pendingUnwindOf", () =>
+          subLoop.read.pendingUnwindOf([vault.vaultAddress]),
         ),
       ])
       return { equity, pendingUnwind }
     },
     refetchInterval: 30_000,
   })
-}
 
-export function useUserBalances(evmAddress: Hex | undefined) {
-  const { evm } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-  const { vaultAddress, assetAddress, assetId } = useActivePropellerVault()
-  const decimals = getAssetWithFallback(assetId).decimals
-
-  return useQuery({
-    queryKey: ["propeller-vault-balances", vaultAddress, evmAddress, assetId],
-    enabled: !!evmAddress,
+export const vaultBalancesQuery = (
+  { isReady, evm }: TProviderContext,
+  vault: PropellerVaultConfig,
+  decimals: number,
+  evmAddress: Hex | undefined,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.vaultBalances(vault.vaultAddress, evmAddress),
+    enabled: isReady && !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return { eth: 0, shares: 0 }
 
-      const ethToken = getContract({
-        address: assetAddress,
+      const collateralToken = getContract({
+        address: getAddressFromAssetId(vault.assetId) as Hex,
         abi: erc20Abi,
         client: evm,
       })
-      const vault = getContract({
-        address: vaultAddress,
+      const contract = getContract({
+        address: vault.vaultAddress,
         abi: VAULT_ABI,
         client: evm,
       })
 
-      const safeBalance = async (
-        label: string,
-        read: () => Promise<bigint>,
-      ) => {
-        try {
-          return await read()
-        } catch (err) {
-          if (import.meta.env.DEV) {
-            console.warn(
-              `[propeller-vault] ${label}.balanceOf reverted — treating as 0.`,
-              err,
-            )
-          }
-          return 0n
-        }
-      }
-
       const [collateralBal, shareBal] = await Promise.all([
-        safeBalance("collateral", () => ethToken.read.balanceOf([evmAddress])),
-        safeBalance("vault shares", () => vault.read.balanceOf([evmAddress])),
-      ] as const)
+        safeRead(
+          "collateral.balanceOf",
+          () => collateralToken.read.balanceOf([evmAddress]),
+          0n,
+        ),
+        safeRead(
+          "vault shares.balanceOf",
+          () => contract.read.balanceOf([evmAddress]),
+          0n,
+        ),
+      ])
 
       return {
         eth: Number(formatUnits(collateralBal, decimals)),
@@ -281,29 +268,3 @@ export function useUserBalances(evmAddress: Hex | undefined) {
     },
     refetchInterval: 15_000,
   })
-}
-
-export function useEthAllowance(evmAddress: Hex | undefined) {
-  const { evm } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-  const { vaultAddress, assetAddress, assetId } = useActivePropellerVault()
-  const decimals = getAssetWithFallback(assetId).decimals
-  return useQuery({
-    queryKey: ["propeller-vault-allowance", vaultAddress, evmAddress, assetId],
-    enabled: !!evmAddress,
-    queryFn: async () => {
-      if (!evmAddress) return 0
-      const ethToken = getContract({
-        address: assetAddress,
-        abi: erc20Abi,
-        client: evm,
-      })
-      const allowance = await ethToken.read.allowance([
-        evmAddress,
-        vaultAddress,
-      ])
-      return Number(formatUnits(allowance, decimals))
-    },
-    refetchInterval: 15_000,
-  })
-}

@@ -1,8 +1,17 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
+import {
+  getAddressFromAssetId,
+  safeConvertSS58toH160,
+  safeStringify,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useMutation,
+  useMutationState,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -15,12 +24,21 @@ import {
 
 import { evmAccountBindingQuery } from "@/api/evm"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
-import { useActivePropellerVault } from "@/modules/strategies/propeller/context/PropellerVaultContext"
+import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
+import {
+  type TransactionOptions,
+  useTransactionsStore,
+} from "@/states/transactions"
+
+type VaultWriteOptions = {
+  onSuccess?: () => void
+}
 
 interface BatchEvmCall {
   to: Hex
@@ -28,21 +46,46 @@ interface BatchEvmCall {
   abi: Abi
 }
 
-function useVaultEvmCall() {
+function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   const rpc = useRpcProvider()
 
   const { account } = useAccount()
   const { createTransaction } = useTransactionsStore()
   const queryClient = useQueryClient()
+  const onWriteSuccess = writeOptions.onSuccess
 
   const address = account?.address ?? ""
   const evmAddress = safeConvertSS58toH160(address) as Hex
 
   const { data: isBound } = useQuery(evmAccountBindingQuery(rpc, address))
 
+  // accountBalances is a live subscription and updates itself; invalidating it
+  // would reset every balance in the app to pending.
+  const invalidateVault = useCallback(
+    (vaultAddress: Hex) =>
+      queryClient.invalidateQueries({
+        queryKey: propellerQueryKeys.vault(vaultAddress),
+      }),
+    [queryClient],
+  )
+
+  const txOptionsForVault = useCallback(
+    (vaultAddress: Hex): TransactionOptions => ({
+      onSuccess: () => {
+        invalidateVault(vaultAddress)
+        if (isBound === false) {
+          queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+        }
+        onWriteSuccess?.()
+      },
+      resolveOn: "success",
+    }),
+    [address, invalidateVault, isBound, onWriteSuccess, queryClient, rpc],
+  )
+
   const submitTx = useCallback(
     async (
-      to: Hex,
+      vaultAddress: Hex,
       data: Hex,
       abi: Abi,
       toasts: { submitted: string; success: string },
@@ -53,7 +96,7 @@ function useVaultEvmCall() {
 
       const evmCall: ExtendedEvmCall = {
         from: evmAddress,
-        to,
+        to: vaultAddress,
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
@@ -73,27 +116,16 @@ function useVaultEvmCall() {
 
         return createTransaction(
           { tx: batchTx, toasts },
-          {
-            onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: ["propeller-vault"] })
-              queryClient.invalidateQueries(
-                evmAccountBindingQuery(rpc, address),
-              )
-            },
-          },
+          txOptionsForVault(vaultAddress),
         )
       }
 
       return createTransaction(
         { tx: evmCall, toasts },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["propeller-vault"] })
-          },
-        },
+        txOptionsForVault(vaultAddress),
       )
     },
-    [evmAddress, isBound, rpc, address, createTransaction, queryClient],
+    [evmAddress, isBound, rpc, createTransaction, txOptionsForVault],
   )
 
   /**
@@ -102,9 +134,9 @@ function useVaultEvmCall() {
    */
   const submitBatch = useCallback(
     async (
+      vaultAddress: Hex,
       calls: BatchEvmCall[],
       toasts: { submitted: string; success: string },
-      invalidateKeys: string[][] = [["propeller-vault"]],
     ) => {
       if (calls.length === 0) {
         throw new Error("submitBatch called with no calls")
@@ -142,34 +174,26 @@ function useVaultEvmCall() {
 
       return createTransaction(
         { tx: batchTx, toasts },
-        {
-          onSuccess: () => {
-            for (const k of invalidateKeys) {
-              queryClient.invalidateQueries({ queryKey: k })
-            }
-            if (isBound === false) {
-              queryClient.invalidateQueries(
-                evmAccountBindingQuery(rpc, address),
-              )
-            }
-          },
-        },
+        txOptionsForVault(vaultAddress),
       )
     },
-    [evmAddress, isBound, rpc, address, createTransaction, queryClient],
+    [evmAddress, isBound, rpc, createTransaction, txOptionsForVault],
   )
 
   return { evmAddress, submitTx, submitBatch }
 }
 
-export function useDeposit() {
+export function useDeposit(
+  vault: PropellerVaultConfig,
+  options: VaultWriteOptions = {},
+) {
   const { t } = useTranslation(["common"])
   const { evm } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { evmAddress, submitBatch } = useVaultEvmCall()
-  const { vaultAddress, assetAddress, assetId, symbol } =
-    useActivePropellerVault()
-  const decimals = getAssetWithFallback(assetId).decimals
+  const { evmAddress, submitBatch } = useVaultEvmCall(options)
+  const { vaultAddress, assetId } = vault
+  const assetAddress = getAddressFromAssetId(assetId) as Hex
+  const { decimals, symbol } = getAssetWithFallback(assetId)
 
   return useMutation({
     mutationFn: async (assetAmount: string) => {
@@ -210,7 +234,7 @@ export function useDeposit() {
         symbol,
         maximumFractionDigits: 4,
       })
-      return submitBatch(calls, {
+      return submitBatch(vaultAddress, calls, {
         submitted: `Depositing ${fmt}...`,
         success: `${fmt} deposited`,
       })
@@ -218,11 +242,14 @@ export function useDeposit() {
   })
 }
 
-export function useRequestRedeem() {
+export function useRequestRedeem(
+  vault: PropellerVaultConfig,
+  options: VaultWriteOptions = {},
+) {
   const { t } = useTranslation(["common"])
   const { getAssetWithFallback } = useAssets()
-  const { evmAddress, submitTx } = useVaultEvmCall()
-  const { vaultAddress, assetId, shareSymbol } = useActivePropellerVault()
+  const { evmAddress, submitTx } = useVaultEvmCall(options)
+  const { vaultAddress, assetId, shareSymbol } = vault
   const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
@@ -246,21 +273,39 @@ export function useRequestRedeem() {
   })
 }
 
-export function useClaim() {
-  const { evmAddress, submitTx } = useVaultEvmCall()
-  const { vaultAddress, symbol } = useActivePropellerVault()
+export type ClaimVariables = {
+  vault: PropellerVaultConfig
+  requestId: number
+}
+
+export function useClaim(options: VaultWriteOptions = {}) {
+  const { getAssetWithFallback } = useAssets()
+  const { evmAddress, submitTx } = useVaultEvmCall(options)
 
   return useMutation({
-    mutationFn: (requestId: number) => {
+    mutationKey: propellerQueryKeys.claim(),
+    mutationFn: ({ vault, requestId }: ClaimVariables) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "claim",
         args: [BigInt(requestId), evmAddress],
       })
-      return submitTx(vaultAddress, data, [...VAULT_ABI], {
+      const { symbol } = getAssetWithFallback(vault.assetId)
+      return submitTx(vault.vaultAddress, data, [...VAULT_ABI], {
         submitted: `Claiming ${symbol}...`,
         success: "Claim sent",
       })
+    },
+  })
+}
+
+/** Withdrawal row ids (`vaultAddress:requestId`) with a claim in flight. */
+export function usePendingClaimIds() {
+  return useMutationState({
+    filters: { mutationKey: propellerQueryKeys.claim(), status: "pending" },
+    select: (mutation) => {
+      const { vault, requestId } = mutation.state.variables as ClaimVariables
+      return withdrawalRowId(vault.vaultAddress, requestId)
     },
   })
 }
