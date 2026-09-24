@@ -39,6 +39,8 @@ const Field = (args: AssetInputProps) => {
         label: "Balance",
         value: MAX_BALANCE,
         onMax: () => setValue(MAX_BALANCE),
+        onPercentage: (percent) =>
+          setValue(String((Number(MAX_BALANCE) * percent) / 100)),
       }}
       {...args}
     />

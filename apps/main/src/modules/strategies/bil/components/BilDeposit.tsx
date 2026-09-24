@@ -29,6 +29,7 @@ import {
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/bil/hooks/useVaultWrites"
+import { percentageOf } from "@/utils/formatting"
 
 export const BilDeposit = () => {
   const { t } = useTranslation(["strategies", "common"])
@@ -118,6 +119,14 @@ export const BilDeposit = () => {
                       label: t("common:balance"),
                       value: t("common:number", { value: balance }),
                       onMax: () => field.onChange(maxButtonBalance),
+                      onPercentage: (percent) =>
+                        field.onChange(
+                          percentageOf(
+                            maxButtonBalance,
+                            percent,
+                            hollar.decimals,
+                          ),
+                        ),
                       isMaxDisabled: !(Number(maxButtonBalance) > 0),
                     }}
                     amountError={fieldState.error?.message}

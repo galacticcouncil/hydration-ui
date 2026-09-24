@@ -71,6 +71,12 @@ export const scaleHuman = (
   return amountBig.div(10 ** _decimals).toString()
 }
 
+export const percentageOf = (
+  value: string,
+  percent: number,
+  decimals: number,
+) => Big(value).times(percent).div(100).round(decimals, Big.roundDown).toFixed()
+
 export const isNegative = (amount: string | number | bigint) => {
   return normalizeValue(amount) < 0n
 }

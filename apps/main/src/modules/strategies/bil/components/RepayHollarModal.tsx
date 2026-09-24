@@ -23,6 +23,7 @@ import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPos
 import { useRepayHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { useUserBalances } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { getBilRepayHealthFactor } from "@/modules/strategies/bil/utils/hf"
+import { percentageOf } from "@/utils/formatting"
 
 interface Props {
   open: boolean
@@ -104,6 +105,10 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
                     label: t("common:balance"),
                     value: t("common:number", { value: maxRepay }),
                     onMax: () => field.onChange(maxRepay),
+                    onPercentage: (percent) =>
+                      field.onChange(
+                        percentageOf(maxRepay, percent, hollar.decimals),
+                      ),
                     isMaxDisabled: !(Number(maxRepay) > 0),
                   }}
                   amountError={fieldState.error?.message}

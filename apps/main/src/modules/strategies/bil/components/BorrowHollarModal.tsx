@@ -24,6 +24,7 @@ import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyCont
 import { useBilMaxBorrowable } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useBorrowHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
+import { percentageOf } from "@/utils/formatting"
 
 interface Props {
   open: boolean
@@ -106,6 +107,14 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
                     label: t("common:available"),
                     value: t("common:number", { value: maxBorrowableUsed }),
                     onMax: () => field.onChange(maxBorrowableUsed),
+                    onPercentage: (percent) =>
+                      field.onChange(
+                        percentageOf(
+                          maxBorrowableUsed,
+                          percent,
+                          hollar.decimals,
+                        ),
+                      ),
                     isMaxDisabled: !(Number(maxBorrowableUsed) > 0),
                   }}
                   amountError={fieldState.error?.message}

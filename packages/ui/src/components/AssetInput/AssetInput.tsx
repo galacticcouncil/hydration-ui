@@ -23,6 +23,7 @@ import {
   SSubline,
 } from "./AssetInput.styled"
 import { defaultAssetValueFormatter } from "./AssetInput.utils"
+import { PercentageButton } from "./PercentageButton"
 
 export type AssetInputAsset = {
   symbol: string
@@ -34,6 +35,7 @@ export type AssetInputBalance = {
   value: ReactNode
   isLoading?: boolean
   onMax?: (() => void) | null
+  onPercentage?: ((percent: number) => void) | null
   isMaxDisabled?: boolean
 }
 
@@ -184,6 +186,7 @@ const AssetInputBalanceView = ({
   value,
   isLoading,
   onMax,
+  onPercentage,
   isMaxDisabled,
   isDisabled,
 }: AssetInputBalance & { isDisabled: boolean }) => (
@@ -199,6 +202,9 @@ const AssetInputBalanceView = ({
       >
         max
       </MicroButton>
+    )}
+    {onPercentage && !isLoading && !isDisabled && !isMaxDisabled && (
+      <PercentageButton onSelect={onPercentage} />
     )}
   </SBalance>
 )

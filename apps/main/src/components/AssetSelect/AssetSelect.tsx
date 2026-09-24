@@ -14,7 +14,7 @@ import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetSelectModal } from "@/components/AssetSelectModal"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
-import { scaleHuman } from "@/utils/formatting"
+import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 export type TSelectedAsset = {
   id: string
@@ -27,11 +27,8 @@ export type AssetSelectBalance = Omit<
   Partial<AssetInputBalance>,
   "value" | "onMax"
 > & {
-  /** Human amount; defaults to the account balance of the selected asset */
   value?: string
-  /** Amount the max button sets; defaults to `value` */
   max?: string
-  /** Called after max is applied; `null` hides the max button */
   onMax?: (() => void) | null
 }
 
@@ -101,6 +98,12 @@ export const AssetSelect = ({
                 props.onChange?.(max)
                 override.onMax?.()
               },
+          onPercentage: isMaxHidden
+            ? null
+            : (percent) =>
+                props.onChange?.(
+                  percentageOf(max, percent, selectedAsset?.decimals ?? 0),
+                ),
           isMaxDisabled:
             override.isMaxDisabled ?? (!props.onChange || Big(max).lte(0)),
         }

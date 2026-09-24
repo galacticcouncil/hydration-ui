@@ -40,6 +40,7 @@ import {
   getBilMaxWithdrawable,
   getBilWithdrawHealthFactor,
 } from "@/modules/strategies/bil/utils/hf"
+import { percentageOf } from "@/utils/formatting"
 
 interface Props {
   withdrawSource: "supplied" | "raw"
@@ -159,6 +160,14 @@ export const WithdrawModalForm = ({
                     label: t("common:withdrawableBalance"),
                     value: t("common:number", { value: maxWithdrawable }),
                     onMax: () => field.onChange(maxWithdrawable.toString()),
+                    onPercentage: (percent) =>
+                      field.onChange(
+                        percentageOf(
+                          maxWithdrawable.toString(),
+                          percent,
+                          bil.decimals,
+                        ),
+                      ),
                     isMaxDisabled: Big(maxWithdrawable).lte(0),
                   }}
                   amountError={fieldState.error?.message}
