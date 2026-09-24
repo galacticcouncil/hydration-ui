@@ -18,13 +18,14 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { DateText } from "@/components/RelativeDateText"
 import { AmountMobile } from "@/modules/trade/orders/columns/AmountMobile"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData } from "@/modules/trade/orders/lib/types"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -94,7 +95,19 @@ export const useOrderHistoryColumns = () => {
         sx: { textAlign: "end" },
       },
       cell: ({ row }) =>
-        row.original.status && <DcaOrderStatus status={row.original.status} />,
+        row.original.status && (
+          <Flex direction="column" gap="xs">
+            <DcaOrderStatus status={row.original.status} />
+            {row.original.date && (
+              <DateText
+                date={row.original.date}
+                fw={500}
+                fs="p6"
+                color={getToken("text.medium")}
+              />
+            )}
+          </Flex>
+        ),
     })
 
     const actionColumn = columnHelper.display({

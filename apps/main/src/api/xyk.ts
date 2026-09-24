@@ -13,13 +13,13 @@ export type TXYKConsts = NonNullable<ReturnType<typeof useXYKConsts>["data"]>
 export type XYKPoolWithLiquidity = PoolBase & { totalLiquidity: bigint }
 
 export const xykPoolWithLiquidityQuery = (
-  { papi, sdk, isApiLoaded }: TProviderContext,
+  { papi, sdk, isReady }: TProviderContext,
   queryClient: QueryClient,
   address: string,
 ) =>
   queryOptions<XYKPoolWithLiquidity | undefined>({
     queryKey: ["xyk", "totalLiquidity", address],
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
 
     queryFn: async () => {
       const xykPool = await queryClient.ensureQueryData(
@@ -41,10 +41,10 @@ export const useXYKPoolWithLiquidity = (poolAddress: string) =>
   )
 
 export const useXYKConsts = () => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papi, isReady } = useRpcProvider()
 
   return useQuery({
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
     gcTime: Infinity,
     queryKey: ["xykConsts"],
@@ -63,7 +63,7 @@ export const useXYKConsts = () => {
 }
 
 export const useXykShareTokenEntries = () => {
-  const { isApiLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
 
   return useQuery({
     queryKey: ["xyk", "shareTokenEntries"],
@@ -73,7 +73,7 @@ export const useXykShareTokenEntries = () => {
       return new Map(pools.map((pool) => [pool.keyArgs[0], pool.value]))
     },
     staleTime: Infinity,
-    enabled: isApiLoaded,
+    enabled: isReady,
     notifyOnChangeProps: [],
   })
 }

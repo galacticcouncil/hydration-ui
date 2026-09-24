@@ -8,6 +8,7 @@ import {
   ConfigService,
   EvmChain,
   EvmParachain,
+  NearChain,
   Parachain,
   SolanaChain,
   SuiChain,
@@ -21,7 +22,7 @@ import {
   safeConvertSS58ToSolanaAddress,
   safeConvertSS58ToSuiAddress,
 } from "../helpers"
-import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
+import { EvmAddr, NearAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
 
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
   if (chain instanceof Parachain) {
@@ -30,7 +31,7 @@ export function getChainAssetId(chain: AnyChain, asset: Asset) {
   return chain.getAssetId(asset)
 }
 
-export function getChainId(chain: AnyChain): string | number | undefined {
+export function getChainId(chain: AnyChain) {
   switch (true) {
     case isAnyParachain(chain):
       return chain.parachainId
@@ -40,7 +41,7 @@ export function getChainId(chain: AnyChain): string | number | undefined {
     case isSuiChain(chain):
       return chain.id
     default:
-      return undefined
+      return chain.key
   }
 }
 
@@ -98,6 +99,10 @@ export function isSuiChain(chain: AnyChain): chain is SuiChain {
   return chain.getType() === ChainType.SuiChain
 }
 
+export function isNearChain(chain: AnyChain): chain is NearChain {
+  return chain.getType() === ChainType.NearChain
+}
+
 export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
   return (
     chain.getType() === ChainType.EvmChain ||
@@ -133,6 +138,10 @@ export function formatSourceChainAddress(
     return EvmAddr.isValid(address)
       ? safeConvertH160toSS58(address)
       : safeConvertAddressSS58(address)
+  }
+
+  if (isNearChain(chain)) {
+    return NearAddr.isValid(address) ? address : ""
   }
 
   return safeConvertAddressSS58(address)

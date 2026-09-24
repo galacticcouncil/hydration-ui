@@ -1,12 +1,13 @@
 import {
+  Box,
   Button,
   Checkbox,
   Flex,
   ModalBody,
   ModalContentDivider,
   ModalHeader,
-  Stack,
   Text,
+  VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
@@ -64,14 +65,31 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
     })
   }
 
-  if (confirmedSelection) {
+  // Share-token only liquidity (no mining deposits) — go straight to shares form
+  if (positions.length === 0) {
     return (
-      <RemoveMultipleIsolatedPoolLiquidity
-        positions={selectedPositions}
+      <RemoveXYKShares
+        shareTokenId={shareTokenMeta.id}
         pool={pool}
         shareTokenMeta={shareTokenMeta}
         {...props}
-        onBack={() => setConfirmedSelection(false)}
+      />
+    )
+  }
+
+  // nothing to pick from with a single position — go straight to the form
+  const onlyPosition = positions.length === 1 ? positions : undefined
+
+  if (confirmedSelection || onlyPosition) {
+    return (
+      <RemoveMultipleIsolatedPoolLiquidity
+        positions={onlyPosition ?? selectedPositions}
+        pool={pool}
+        shareTokenMeta={shareTokenMeta}
+        {...props}
+        onBack={
+          onlyPosition ? props.onBack : () => setConfirmedSelection(false)
+        }
       />
     )
   }
@@ -112,23 +130,33 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
             </Text>
           </Flex>
 
-          <Stack separated sx={{ maxHeight: 250, overflowY: "auto", mx: -20 }}>
-            {positions.map((position) => (
-              <PositionToRemove
-                key={position.id}
-                position={position}
-                value={t("common:number", { value: position.sharesShifted })}
-                displayValue={position.sharesDisplay}
-                activeFarms={activeFarms}
-                selected={position.isSelected}
-                onClick={() =>
-                  position.isSelected
-                    ? onUnselectPosition(position)
-                    : onSelectPosition(position)
-                }
-              />
-            ))}
-          </Stack>
+          <Box mx="var(--modal-content-inset)">
+            <ModalContentDivider />
+            <VirtualizedList
+              items={positions}
+              maxVisibleItems={5}
+              itemSize={60}
+              separated
+              getItemKey={(index) => positions[index]?.id ?? index}
+              renderItem={(position) => (
+                <PositionToRemove
+                  position={position}
+                  value={t("common:number", {
+                    value: position.sharesShifted,
+                  })}
+                  displayValue={position.sharesDisplay}
+                  activeFarms={activeFarms}
+                  selected={position.isSelected}
+                  onClick={() =>
+                    position.isSelected
+                      ? onUnselectPosition(position)
+                      : onSelectPosition(position)
+                  }
+                />
+              )}
+            />
+            <ModalContentDivider />
+          </Box>
 
           <ModalContentDivider />
 

@@ -1,4 +1,3 @@
-import type { ComputedUserReserveData } from "@galacticcouncil/money-market/hooks"
 import {
   calculateMaxWithdrawAmount,
   formatHealthFactorResult,
@@ -9,7 +8,6 @@ import {
 import { aave } from "@galacticcouncil/sdk-next"
 import {
   getAddressFromAssetId,
-  QUERY_KEY_BLOCK_PREFIX,
   safeConvertAnyToH160,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -58,20 +56,27 @@ type HealthFactorQueryArgs = Pick<
 
 export const AAVE_GAS_LIMIT = aave.AAVE_GAS_LIMIT
 
+export const TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY = [
+  "transfarebleATokenBalance",
+] as const
+
+export const AAVE_HEALTH_FACTOR_QUERY_KEY = ["healthFactor"] as const
+
+export const AAVE_SUMMARY_QUERY_KEY = ["aave", "summary"] as const
+
 export const healthFactorAfterWithdrawQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { address, fromAssetId, fromAmount }: HealthFactorWithdrawArgs,
 ) =>
   queryOptions({
+    refetchInterval: 60_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
+      ...AAVE_HEALTH_FACTOR_QUERY_KEY,
       "withdraw",
       address,
       fromAssetId,
       fromAmount,
     ],
-
     queryFn: async () => {
       const [currentHF, futureHF] = await Promise.all([
         sdk.api.aave.getHealthFactor(address),
@@ -84,17 +89,17 @@ export const healthFactorAfterWithdrawQuery = (
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled: isLoaded && !!address && !!fromAssetId,
+    enabled: isReady && !!address && !!fromAssetId,
   })
 
 export const healthFactorAfterSupplyQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { address, toAssetId, toAmount }: HealthFactorSupplyArgs,
 ) =>
   queryOptions({
+    refetchInterval: 60_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
+      ...AAVE_HEALTH_FACTOR_QUERY_KEY,
       "supply",
       address,
       toAssetId,
@@ -112,17 +117,17 @@ export const healthFactorAfterSupplyQuery = (
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled: isLoaded && !!address && !!toAssetId,
+    enabled: isReady && !!address && !!toAssetId,
   })
 
 export const healthFactorAfterSwapQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { address, fromAssetId, fromAmount, toAssetId, toAmount }: HealthFactorArgs,
 ) =>
   queryOptions({
+    refetchInterval: 60_000,
     queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "healthFactor",
+      ...AAVE_HEALTH_FACTOR_QUERY_KEY,
       "swap",
       address,
       fromAssetId,
@@ -145,7 +150,7 @@ export const healthFactorAfterSwapQuery = (
     },
     placeholderData: keepPreviousData,
     enabled:
-      isLoaded &&
+      isReady &&
       !!address &&
       !!fromAssetId &&
       Big(fromAmount || "0").gt(0) &&
@@ -193,89 +198,56 @@ export const healthFactorQuery = (
 }
 
 export const aaveSummaryQuery = (
-  { isApiLoaded, sdk }: TProviderContext,
+  { isReady, sdk }: TProviderContext,
   address: string,
   enabled = true,
 ) =>
   queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "aave", "summary", address],
+    queryKey: [...AAVE_SUMMARY_QUERY_KEY, address],
     queryFn: () => sdk.api.aave.getSummary(address),
-    enabled: isApiLoaded && enabled && !!address,
+    enabled: isReady && enabled && !!address,
   })
 
-const TARGET_WITHDRAW_HF = 1.01
-const SWAP_AMOUNT_THRESHOLD = 0.98 // 2% slippage + fee
-
-const calculateSwapToAmount = (
-  fromAmount: string,
-  reserveIn: ComputedUserReserveData,
-  reserveOut: ComputedUserReserveData,
-  amountOutRatio: string,
-) =>
-  Big(fromAmount || "0")
-    .mul(reserveIn.reserve.formattedPriceInMarketReferenceCurrency)
-    .div(reserveOut.reserve.formattedPriceInMarketReferenceCurrency)
-    .mul(SWAP_AMOUNT_THRESHOLD)
-    .mul(amountOutRatio)
-    .toFixed(reserveOut.reserve.decimals, Big.roundDown)
-
-const getWithdrawHF = (
-  currentHF: number,
-  futureHF: number,
-  hasReferenceAmount: boolean,
-) => {
-  if (!hasReferenceAmount || futureHF < 0 || currentHF <= TARGET_WITHDRAW_HF) {
-    return currentHF
-  }
-
-  const excessHF = currentHF - TARGET_WITHDRAW_HF
-  const hfDrop = currentHF - futureHF || 1
-
-  return TARGET_WITHDRAW_HF + (excessHF * excessHF) / hfDrop
-}
-
+// Aave validates the health factor the moment the aToken leaves the account,
+// with no credit for collateral the same batch supplies back afterwards
+// (the stableswap withdrawal / the second leg of a router swap both land
+// after that check). So the cap is always the plain withdraw one.
 export const getTransfarebleATokenBalance = (
   rpc: TProviderContext,
   address: string,
   balanceShifted: string,
   assetIn: TAssetData,
-  assetOut: TAssetData | null,
-  amountOutRatio: string,
   poolDataContract: UiPoolDataProvider | null,
   ghoServiceContract: GhoService | null,
   incentivesContract: UiIncentiveDataProvider | null,
-  onSuccess?: (maxBalance: string) => void,
 ) =>
   queryOptions({
     queryKey: [
-      "transfarebleATokenBalance",
+      ...TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY,
       address,
       balanceShifted,
       assetIn.id,
-      assetOut?.id,
-      amountOutRatio,
     ],
     queryFn: async () => {
-      const isSwappingATokens =
-        isErc20AToken(assetIn) && assetOut && isErc20AToken(assetOut)
-
       let maxBalance = balanceShifted
 
-      if (isSwappingATokens) {
+      if (isErc20AToken(assetIn)) {
         const evmAddress = safeConvertAnyToH160(address)
         const underlyingAsset = getAddressFromAssetId(assetIn.underlyingAssetId)
 
+        const userSummaryQuery = userBorrowSummaryQuery(
+          evmAddress,
+          rpc,
+          lendingPoolAddressProvider,
+          poolDataContract,
+          ghoServiceContract,
+          incentivesContract,
+        )
+
         const [user, poolReserve] = await Promise.all([
-          rpc.queryClient.ensureQueryData(
-            userBorrowSummaryQuery(
-              evmAddress,
-              rpc,
-              lendingPoolAddressProvider,
-              poolDataContract,
-              ghoServiceContract,
-              incentivesContract,
-            ),
-          ),
+          // Always refetch: user summary has a 30s staleTime and may still
+          // hold pre-withdraw HF when this query runs after another asset exit.
+          rpc.queryClient.fetchQuery({ ...userSummaryQuery, staleTime: 0 }),
           rpc.queryClient.ensureQueryData(
             borrowReserveQuery(
               rpc,
@@ -287,73 +259,28 @@ export const getTransfarebleATokenBalance = (
           ),
         ])
 
-        const underlyingAssetOut = getAddressFromAssetId(
-          assetOut.underlyingAssetId,
-        )
-
-        let userReserveIn: ComputedUserReserveData | undefined
-        let userReserveOut: ComputedUserReserveData | undefined
-
-        for (const reserve of user.userReservesData) {
-          if (reserve.underlyingAsset === underlyingAsset) {
-            userReserveIn = reserve
-          }
-          if (reserve.underlyingAsset === underlyingAssetOut) {
-            userReserveOut = reserve
-          }
-          if (userReserveIn && userReserveOut) break
-        }
-
-        const toAmount =
-          userReserveIn && userReserveOut
-            ? calculateSwapToAmount(
-                balanceShifted,
-                userReserveIn,
-                userReserveOut,
-                amountOutRatio ?? "1",
-              )
-            : "0"
-
-        const { current, future } = await rpc.queryClient.fetchQuery(
-          healthFactorAfterSwapQuery(rpc, {
-            address,
-            fromAssetId: assetIn.underlyingAssetId,
-            fromAmount: balanceShifted,
-            toAssetId: assetOut.underlyingAssetId,
-            toAmount,
-          }),
+        const userReserveIn = user.userReservesData.find(
+          (reserve) => reserve.underlyingAsset === underlyingAsset,
         )
 
         if (userReserveIn && poolReserve) {
-          const maxWithdrawableAmount = calculateMaxWithdrawAmount(
+          maxBalance = calculateMaxWithdrawAmount(
             user,
             userReserveIn,
             poolReserve,
-            getWithdrawHF(Number(current), Number(future), true),
-          )
-
-          maxBalance = maxWithdrawableAmount.toString()
-        } else {
-          maxBalance = balanceShifted
+          ).toString()
         }
       }
 
-      onSuccess?.(maxBalance)
       return maxBalance
     },
-    enabled: rpc.isApiLoaded && !!address,
+    enabled: rpc.isReady && !!address,
   })
 
 export const useTransfarebleATokenBalance = ({
   assetIn,
-  assetOut,
-  amountOutRatio,
-  onSuccess,
 }: {
   assetIn: TAssetData
-  assetOut: TAssetData | null
-  amountOutRatio?: string
-  onSuccess?: (maxBalance: string) => void
 }) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
@@ -372,12 +299,9 @@ export const useTransfarebleATokenBalance = ({
       address,
       balanceShifted,
       assetIn,
-      assetOut,
-      amountOutRatio ?? "1",
       poolDataContract,
       ghoServiceContract,
       incentivesContract,
-      onSuccess,
     ),
   )
 }

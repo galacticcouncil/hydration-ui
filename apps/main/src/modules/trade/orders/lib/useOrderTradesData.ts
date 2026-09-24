@@ -6,9 +6,9 @@ import { neckwork } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
-import { PastExecutionData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
+import { PastExecutionData } from "@/modules/trade/orders/lib/types"
 import { TAsset } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 

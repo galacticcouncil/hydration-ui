@@ -3,17 +3,18 @@ import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Box,
-  Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
   Skeleton,
-  SliderTabs,
   Summary,
   Text,
   Toggle,
+  ToggleGroup,
+  ToggleGroupItem,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
@@ -87,7 +88,9 @@ type AddStablepoolLiquidityFormProps = AddStablepoolLiquidityProps &
     | (ReturnType<typeof useAddMoneyMarketLiquidity> &
         TAddMoneyMarketLiquidityWrapperReturn),
     "form"
-  >
+  > & {
+    isTradeLoading?: boolean
+  }
 
 export const AddStablepoolLiquidityWrapper = (
   props: AddStablepoolLiquidityProps,
@@ -170,6 +173,7 @@ export const AddStablepoolLiquidityForm = ({
   isAddableToOmnipool,
   title,
   swap,
+  isTradeLoading = false,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -192,7 +196,7 @@ export const AddStablepoolLiquidityForm = ({
 
   const customErrors = getCustomErrors(formState.errors.sharesAmount)
 
-  const isSubmitDisabled = !formState.isValid
+  const isSubmitDisabled = !formState.isValid || isTradeLoading
 
   if (!split && !selectedAssetId)
     return (
@@ -262,13 +266,22 @@ export const AddStablepoolLiquidityForm = ({
                 control={form.control}
                 name="option"
                 render={({ field: { value, onChange, disabled } }) => (
-                  <SliderTabs
-                    options={addStablepoolOptions}
-                    selected={value}
-                    onSelect={(option) => onChange(option.id)}
-                    sx={{ flex: 1 }}
-                    disabled={disabled}
-                  />
+                  <Flex flex={1}>
+                    <ToggleGroup
+                      type="single"
+                      value={value}
+                      onValueChange={(nextValue) =>
+                        nextValue && onChange(nextValue)
+                      }
+                      disabled={disabled}
+                    >
+                      {addStablepoolOptions.map((option) => (
+                        <ToggleGroupItem key={option.id} value={option.id}>
+                          {option.label}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </Flex>
                 )}
               />
               <AddStablepoolLiquidityTooltip />
@@ -399,16 +412,17 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
       </ModalBody>
       <ModalFooter sx={{ pt: 0 }}>
-        <Button
+        <LoadingButton
           type="submit"
           size="large"
           width="100%"
+          isLoading={isTradeLoading}
           disabled={isSubmitDisabled}
         >
           {isJoinFarms
             ? t("liquidity.add.modal.submitAndjoinFarms")
             : (title ?? t("liquidity.add.modal.submit"))}
-        </Button>
+        </LoadingButton>
       </ModalFooter>
     </form>
   )

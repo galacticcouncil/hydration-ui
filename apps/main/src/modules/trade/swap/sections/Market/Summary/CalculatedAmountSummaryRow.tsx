@@ -47,8 +47,8 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
       label={label}
       loading={isLoading}
       content={
-        <Flex align="center" gap="base">
-          <Flex direction="column" align="flex-end">
+        <Flex align="center">
+          <Flex gap="s" align="center" justify="flex-end">
             {typeof amount === "string" ? (
               <SummaryRowValue>{amount}</SummaryRowValue>
             ) : (
@@ -62,7 +62,8 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
           </Flex>
           <Icon
             component={isExpanded ? ChevronUp : ChevronDown}
-            size="l"
+            size="m"
+            sx={{ mr: "-s" }}
             color={getToken("icons.onContainer")}
           />
         </Flex>

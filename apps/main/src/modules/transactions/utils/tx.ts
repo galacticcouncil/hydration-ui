@@ -5,6 +5,7 @@ import { Binary, SizedHex } from "polkadot-api"
 import { first, isBigInt, isNumber, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
+import { Papi } from "@/api/rpcClient"
 import { paymentInfoQuery } from "@/api/transaction"
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import {
@@ -19,7 +20,7 @@ import {
   isPapiTransaction,
 } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { TProviderContext } from "@/providers/rpcProvider"
 import { TransactionMeta } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 

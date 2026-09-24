@@ -1,5 +1,7 @@
 import {
   Amount,
+  Flex,
+  Skeleton,
   TableRowDetailsExpand,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -12,6 +14,8 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFull, AssetLabelXYK } from "@/components/AssetLabelFull"
 import { MyLiquidityTableActions } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.actions"
 import { LiquidityPositionByAsset } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.data"
+import { isVaultLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
+import { MyVaultLiquidityTableActions } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidityTable.actions"
 import { useAssets } from "@/providers/assetsProvider"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
@@ -25,6 +29,44 @@ export enum MyLiquidityTableColumnId {
 
 const columnHelper = createColumnHelper<LiquidityPositionByAsset>()
 
+const AssetSkeletonCell = () => (
+  <Flex align="center" gap="base">
+    <Skeleton circle width="2rem" height="2rem" />
+    <Flex direction="column" gap="xs">
+      <Skeleton width="4rem" height="1rem" />
+      <Skeleton width="7rem" height="0.875rem" />
+    </Flex>
+  </Flex>
+)
+
+const AssetSkeletonCellMobile = () => (
+  <Flex align="center" gap="base">
+    <Skeleton circle width="2rem" height="2rem" />
+    <Skeleton width="4rem" height="1rem" />
+  </Flex>
+)
+
+const AmountSkeletonCell = () => (
+  <Flex direction="column" gap="xs">
+    <Skeleton width="6rem" height="1rem" />
+    <Skeleton width="4rem" height="0.875rem" />
+  </Flex>
+)
+
+const PositionsSkeletonCell = () => (
+  <Flex justify="center">
+    <Skeleton width="1.5rem" height="1rem" />
+  </Flex>
+)
+
+const ActionsSkeletonCell = () => (
+  <Flex justify="flex-end" gap="base">
+    <Skeleton width="8.875rem" height="1.875rem" borderRadius="1rem" />
+    <Skeleton width="6.5rem" height="1.875rem" borderRadius="1rem" />
+    <Skeleton width="1.875rem" height="1.875rem" borderRadius="1rem" />
+  </Flex>
+)
+
 export const useMyLiquidityColumns = () => {
   const { isShareToken } = useAssets()
   const { t } = useTranslation(["wallet", "common"])
@@ -36,11 +78,24 @@ export const useMyLiquidityColumns = () => {
     const assetColumn = columnHelper.accessor("meta.symbol", {
       id: MyLiquidityTableColumnId.META,
       header: t("common:asset"),
+      meta: {
+        skeletonCell: AssetSkeletonCell,
+      },
       sortingFn: sortBy({
         select: (row) => row.original.meta.symbol,
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
+        if (isVaultLiquidity(original)) {
+          return (
+            <AssetLabelXYK
+              iconIds={original.meta.iconId}
+              symbol={original.meta.symbol}
+              name={original.meta.name}
+            />
+          )
+        }
+
         return isShareToken(original.meta) ? (
           <AssetLabelXYK
             iconIds={original.meta.iconId}
@@ -56,6 +111,9 @@ export const useMyLiquidityColumns = () => {
     const currentValueColumn = columnHelper.accessor("currentTotalDisplay", {
       id: MyLiquidityTableColumnId.CurrentValue,
       header: t("myLiquidity.header.currentValue"),
+      meta: {
+        skeletonCell: AmountSkeletonCell,
+      },
       sortingFn: sortBy({
         select: (row) => row.original.currentTotalDisplay,
         compare: numericallyStr,
@@ -63,12 +121,17 @@ export const useMyLiquidityColumns = () => {
       cell: ({ row: { original } }) => (
         <Amount
           value={
-            isShareToken(original.meta)
+            isVaultLiquidity(original)
               ? t("common:currency", {
                   value: original.currentValueHuman,
-                  symbol: "Shares",
+                  symbol: original.shareSymbol,
                 })
-              : format(original)
+              : isShareToken(original.meta)
+                ? t("common:currency", {
+                    value: original.currentValueHuman,
+                    symbol: "Shares",
+                  })
+                : format(original)
           }
           displayValue={t("common:currency", {
             value: original.currentTotalDisplay,
@@ -84,6 +147,7 @@ export const useMyLiquidityColumns = () => {
         sx: {
           textAlign: "center",
         },
+        skeletonCell: PositionsSkeletonCell,
       },
       sortingFn: sortBy({
         select: (row) => row.original.positions.length,
@@ -105,9 +169,12 @@ export const useMyLiquidityColumns = () => {
         sx: {
           textAlign: "right",
         },
+        skeletonCell: ActionsSkeletonCell,
       },
       cell: ({ row: { original } }) => {
-        return (
+        return isVaultLiquidity(original) ? (
+          <MyVaultLiquidityTableActions vault={original.vault} />
+        ) : (
           <MyLiquidityTableActions
             assetId={
               isShareToken(original.meta)
@@ -122,11 +189,23 @@ export const useMyLiquidityColumns = () => {
     const assetColumnMobile = columnHelper.accessor("meta.symbol", {
       id: MyLiquidityTableColumnId.META,
       header: t("common:asset"),
+      meta: {
+        skeletonCell: AssetSkeletonCellMobile,
+      },
       sortingFn: sortBy({
         select: (row) => row.original.meta.symbol,
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
+        if (isVaultLiquidity(original)) {
+          return (
+            <AssetLabelXYK
+              iconIds={original.meta.iconId}
+              symbol={original.meta.symbol}
+            />
+          )
+        }
+
         return isShareToken(original.meta) ? (
           <AssetLabelXYK
             iconIds={original.meta.iconId}
@@ -147,6 +226,7 @@ export const useMyLiquidityColumns = () => {
           sx: {
             textAlign: "right",
           },
+          skeletonCell: AmountSkeletonCell,
         },
         sortingFn: sortBy({
           select: (row) => row.original.currentTotalDisplay,
@@ -156,12 +236,17 @@ export const useMyLiquidityColumns = () => {
           <TableRowDetailsExpand>
             <Amount
               value={
-                isShareToken(original.meta)
+                isVaultLiquidity(original)
                   ? t("common:currency", {
                       value: original.currentValueHuman,
-                      symbol: "Shares",
+                      symbol: original.shareSymbol,
                     })
-                  : format(original)
+                  : isShareToken(original.meta)
+                    ? t("common:currency", {
+                        value: original.currentValueHuman,
+                        symbol: "Shares",
+                      })
+                    : format(original)
               }
               displayValue={t("common:currency", {
                 value: original.currentTotalDisplay,

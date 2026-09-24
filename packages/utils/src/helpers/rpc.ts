@@ -5,6 +5,7 @@ export type PingResponse = {
   timestamp: number
   ping: number | null
   blockNumber: number | null
+  genesisHash: string | null
 }
 
 export function parseHydrationRpcName(url: string): string {

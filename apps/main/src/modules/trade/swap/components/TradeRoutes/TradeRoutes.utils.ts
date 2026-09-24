@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/utils"
 import Big from "big.js"
 
+import { PoolType, PoolTypeValue } from "@/api/pools"
 import { TradeType } from "@/api/trade"
 import { TAsset } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -54,6 +55,7 @@ export const mapRoutes = (
           asset: tradeFeeAsset,
         },
       ],
+      pools: [route.pool],
     }
   })
 
@@ -68,6 +70,7 @@ export const mapRoutes = (
     previousRoute.assetOut = route.assetOut
     previousRoute.amountOut = route.amountOut
     previousRoute.tradeFees.push(...route.tradeFees)
+    previousRoute.pools.push(...route.pools)
 
     // accumulates percentage fee loss
     previousRoute.tradeFeePct = Big(1)
@@ -92,3 +95,24 @@ const HIDDEN_HOP_ASSET_IDS = [
 
 export type TradeRoute = ReturnType<typeof mapRoutes>[number]
 export type TradeRouteFee = TradeRoute["tradeFees"][number]
+
+const POOL_TYPE_LABEL_KEY = {
+  [PoolType.Omni]: "market.summary.routes.poolType.omnipool",
+  [PoolType.Stable]: "market.summary.routes.poolType.stableswap",
+  [PoolType.XYK]: "market.summary.routes.poolType.xyk",
+  [PoolType.LBP]: "market.summary.routes.poolType.lbp",
+  [PoolType.Aave]: "market.summary.routes.poolType.aave",
+  [PoolType.HSM]: "market.summary.routes.poolType.hsm",
+  [PoolType.V3]: "market.summary.routes.poolType.concentratedLiquidity",
+} as const satisfies Record<PoolTypeValue, string>
+
+type PoolTypeLabelKey = (typeof POOL_TYPE_LABEL_KEY)[PoolTypeValue]
+
+export const formatPoolTypes = (
+  pools: ReadonlyArray<PoolTypeValue>,
+  translate: (key: PoolTypeLabelKey) => string,
+  separator: string,
+): string =>
+  [...new Set(pools)]
+    .map((pool) => translate(POOL_TYPE_LABEL_KEY[pool]))
+    .join(separator)

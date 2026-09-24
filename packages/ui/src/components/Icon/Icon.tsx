@@ -1,5 +1,7 @@
 import { BoxProps } from "@/components/Box"
-import { Flex } from "@/components/Flex"
+import { pxToRem } from "@/utils"
+
+import { SIcon } from "./Icon.styled"
 
 type IconProps = BoxProps & {
   component: React.ComponentType
@@ -11,19 +13,12 @@ export const Icon: React.FC<IconProps> = ({
   color = "currentColor",
   ...props
 }) => (
-  <Flex
+  <SIcon
     color={color}
     as="span"
-    inline
-    align="center"
-    justify="center"
-    size={size}
-    sx={{ flexShrink: 0 }}
-    css={{
-      "& > *": { width: "100%", height: "100%" },
-    }}
+    size={typeof size === "number" ? pxToRem(size) : size}
     {...props}
   >
     <SvgComponent />
-  </Flex>
+  </SIcon>
 )

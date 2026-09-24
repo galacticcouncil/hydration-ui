@@ -205,6 +205,8 @@ export const useToasts = () => {
     [add],
   )
 
+  const info = useCallback((toast: ToastParams) => add(toast, "info"), [add])
+
   return {
     toasts,
     add,
@@ -214,6 +216,7 @@ export const useToasts = () => {
     error,
     pending,
     unknown,
+    info,
   }
 }
 

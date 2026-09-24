@@ -1,14 +1,15 @@
 import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
 import { PingResponse } from "@galacticcouncil/utils"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
 import { prop } from "remeda"
 
-import { neckworkClient, PROVIDER_URLS } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { rpcStatusQueryOptions } from "@/api/rpc"
+import { PROVIDER_URLS } from "@/api/rpcConfig"
 import { ENV } from "@/config/env"
-import { useNeckworkStore } from "@/states/neckwork"
+import { classifyNeckworkProbe, useNeckworkStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { pingWorker } from "@/workers/ping"
 
@@ -20,10 +21,39 @@ declare global {
   }
 }
 
+const NECKWORK_HEALTH_POLL_INTERVAL = 60_000
+
+const useNeckworkHealthPoll = () => {
+  const queryClient = useQueryClient()
+
+  const { data: probe } = useQuery({
+    queryKey: ["neckwork", "health"],
+    queryFn: fetchNeckworkStatus,
+    refetchInterval: NECKWORK_HEALTH_POLL_INTERVAL,
+    refetchIntervalInBackground: false,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (!probe) return
+
+    useNeckworkStore.setState({ health: classifyNeckworkProbe(probe) })
+
+    if (probe.kind === "ok") {
+      queryClient.setQueryData(
+        neckworkStatusQuery(neckworkClient).queryKey,
+        probe.status,
+      )
+    }
+  }, [probe, queryClient])
+}
+
 export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const queryClient = useQueryClient()
+
+  useNeckworkHealthPoll()
 
   const [isBestProviderFound, setIsBestProviderFound] = useState(false)
 
@@ -58,17 +88,6 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
         rpcUrlList: sortedRpcList,
         updatedAt: Date.now(),
       })
-    }
-
-    const neckworkStatus = await fetchNeckworkStatus()
-
-    useNeckworkStore.setState({ alive: !!neckworkStatus })
-
-    if (neckworkStatus) {
-      queryClient.setQueryData(
-        neckworkStatusQuery(neckworkClient).queryKey,
-        neckworkStatus,
-      )
     }
 
     setIsBestProviderFound(true)

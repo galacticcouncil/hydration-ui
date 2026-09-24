@@ -40,8 +40,14 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
 
   return (
     <AuthorizedActionForChain chain={chain} size="large" width="100%">
-      <SSubmitButton {...props} size="large" type="submit" width="100%">
-        {!props.isLoading && getSubmitButtonText()}
+      <SSubmitButton
+        {...props}
+        size="large"
+        type="submit"
+        width="100%"
+        loadingMode="replace"
+      >
+        {getSubmitButtonText()}
       </SSubmitButton>
     </AuthorizedActionForChain>
   )

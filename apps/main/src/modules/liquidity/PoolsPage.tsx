@@ -23,6 +23,11 @@ import {
 } from "@/hooks/useDataTableUrlSorting"
 import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
+import {
+  getVaultsColumnsVisibility,
+  useVaultsColumns,
+} from "@/modules/liquidity/Vaults.columns"
+import { useVaults } from "@/modules/liquidity/Vaults.utils"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
 import {
@@ -58,7 +63,9 @@ export const PoolsPage = () => {
     <>
       <PoolsHeader />
       <PoolsFilters search={search} onChange={setSearch} />
-
+      {(type === "vaults" || type === "all") && (
+        <VaultsTable search={search} withPositions={myLiquidity} />
+      )}
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable
           search={search}
@@ -73,6 +80,57 @@ export const PoolsPage = () => {
           sortingProps={isolatedSorting}
         />
       )}
+    </>
+  )
+}
+
+export const VaultsTable = ({
+  search,
+  withPositions,
+}: {
+  search: string
+  withPositions?: boolean
+}) => {
+  const { t } = useTranslation("liquidity")
+  const { data, isLoading } = useVaults()
+  const columns = useVaultsColumns()
+  const { isMobile } = useBreakpoints()
+  const router = useRouter()
+
+  const filteredData = useMemo(
+    () =>
+      withPositions ? data.filter((vault) => vault.positionShares > 0n) : data,
+    [data, withPositions],
+  )
+
+  if (!isLoading && !filteredData.length) return null
+
+  return (
+    <>
+      <SectionHeader title={t("section.vaults")} />
+      <TableContainer as={Paper}>
+        <DataTable
+          size={isMobile ? "small" : "large"}
+          isLoading={isLoading}
+          skeletonRowCount={1}
+          data={filteredData}
+          columns={columns}
+          globalFilter={search}
+          columnVisibility={getVaultsColumnsVisibility(isMobile)}
+          columnPinning={{ left: ["vault"] }}
+          globalFilterFn={(row) =>
+            row.original.tokens.some((token) =>
+              token.symbol.toLowerCase().includes(search.toLowerCase()),
+            )
+          }
+          onRowClick={(vault) =>
+            router.navigate({
+              to: "/liquidity/vault/$address",
+              params: { address: vault.id },
+            })
+          }
+        />
+      </TableContainer>
     </>
   )
 }

@@ -2,7 +2,8 @@ import { Flex, FlexProps, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
+
+import { DateText } from "@/components/RelativeDateText"
 
 type Props = {
   readonly address: string | null
@@ -11,16 +12,20 @@ type Props = {
 }
 
 export const AccountDate: FC<Props> = ({ address, date, align }) => {
-  const { t } = useTranslation()
-
   return (
-    <Flex direction="column" align={align}>
+    <Flex direction="column" gap="xs" align={align}>
       <Text fw={500} fs="p6" lh="xs" color={getToken("text.high")}>
         {shortenAccountAddress(address ?? "")}
       </Text>
-      <Text fw={500} fs="p6" lh="xs" color={getToken("text.medium")}>
-        {t("date.datetime", { value: date })}
-      </Text>
+      {date && (
+        <DateText
+          date={date}
+          fw={500}
+          fs="p6"
+          lh="xs"
+          color={getToken("text.medium")}
+        />
+      )}
     </Flex>
   )
 }

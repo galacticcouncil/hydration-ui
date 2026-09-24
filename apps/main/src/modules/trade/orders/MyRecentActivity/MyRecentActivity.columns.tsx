@@ -21,10 +21,12 @@ import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
-import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
+import {
+  MarketDcaStatus,
+  SwapStatus,
+} from "@/modules/trade/orders/columns/SwapStatus"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
-import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
+import { OrderKind, RoutedTradeData } from "@/modules/trade/orders/lib/types"
 
 const columnHelper = createColumnHelper<RoutedTradeData>()
 
@@ -77,10 +79,14 @@ export const useMyRecentActivityColumns = () => {
         sx: { textAlign: "center" },
       },
       cell: ({ row }) => {
+        const { status } = row.original
+
         return (
-          row.original.status && (
+          status && (
             <Flex justify="center">
-              <SwapType type={row.original.status.kind} />
+              <SwapType
+                type={status.kind === "marketDca" ? OrderKind.Dca : status.kind}
+              />
             </Flex>
           )
         )
@@ -97,6 +103,10 @@ export const useMyRecentActivityColumns = () => {
 
         if (!status) {
           return null
+        }
+
+        if (status.kind === "marketDca") {
+          return <MarketDcaStatus />
         }
 
         return status.kind === OrderKind.Dca ||

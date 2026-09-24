@@ -88,21 +88,31 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     useTransactionsStore()
   const { account } = useAccount()
 
+  const hasInitialError = !!config.initialError
   const transaction = useWrapTransaction(config)
 
-  const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
+  const [state, dispatch] = useReducer(
+    transactionStatusReducer,
+    config.initialError
+      ? {
+          ...INITIAL_STATUS,
+          status: "error",
+          error: config.initialError,
+        }
+      : INITIAL_STATUS,
+  )
   const ecosystem = useTransactionEcosystem(transaction)
   const toasts = useTransactionToasts(transaction, ecosystem)
 
   const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
-    transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+    !hasInitialError && transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
       ? transaction.tx
       : null,
     transaction?.fee?.feePaymentAssetId,
   )
 
   const { data: paymentInfo, isLoading: isLoadingPaymentInfo } =
-    useTransactionPaymentInfo(transaction.tx)
+    useTransactionPaymentInfo(hasInitialError ? undefined : transaction.tx)
 
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
@@ -205,8 +215,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         transaction.invalidateQueries?.forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         )
-        // the indexer can't have this block yet — arm the sync instead of
-        // invalidating the neckwork queries now
+
         const blockHeight = getTxResultBlockHeight(event)
         if (blockHeight !== null) armNeckworkSync(blockHeight)
         queryClient.invalidateQueries({

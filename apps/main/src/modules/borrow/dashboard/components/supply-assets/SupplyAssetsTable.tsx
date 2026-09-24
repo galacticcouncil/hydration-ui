@@ -1,7 +1,6 @@
 import { useSupplyAssetsData } from "@galacticcouncil/money-market/hooks"
 import {
   DataTable,
-  Modal,
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
@@ -12,30 +11,20 @@ import {
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
 import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { sortBy } from "remeda"
 
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import {
+  StrategySupplyModal,
+  StrategySupplyModalProps,
+} from "@/modules/borrow/components/StrategySupplyModal"
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable.columns"
 import { useNavigateToReserve } from "@/modules/borrow/hooks/useNavigateToReserve"
-import {
-  AddStablepoolLiquidityProps,
-  AddStablepoolLiquidityWrapper,
-} from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
-import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
-import { useAssets } from "@/providers/assetsProvider"
 
 export const SupplyAssetsTable = () => {
-  const { t } = useTranslation("borrow")
-  const { getAssetWithFallback } = useAssets()
-  const [modalProps, setModalProps] = useState<
-    | (Omit<AddStablepoolLiquidityProps, "onSubmitted"> & {
-        isIsolated?: boolean
-      })
-    | undefined
-  >()
+  const [modalProps, setModalProps] = useState<StrategySupplyModalProps>()
   const baseColumns = useSupplyAssetsTableColumns("base")
   const strategyColumns = useSupplyAssetsTableColumns("strategy", setModalProps)
 
@@ -110,31 +99,10 @@ export const SupplyAssetsTable = () => {
         </TableContainer>
       )}
 
-      <Modal
-        open={!!modalProps}
-        onOpenChange={() => setModalProps(undefined)}
-        variant="popup"
-      >
-        {modalProps &&
-          (!modalProps.isIsolated ? (
-            <AddStablepoolLiquidityWrapper
-              {...modalProps}
-              initialOption="stablepool"
-              title={t("supply.withSymbol", {
-                symbol: modalProps.erc20Id
-                  ? getAssetWithFallback(modalProps.erc20Id).symbol
-                  : undefined,
-              })}
-              closable
-              onSubmitted={() => setModalProps(undefined)}
-            />
-          ) : (
-            <SupplyIsolatedLiquidity
-              assetId={modalProps.id}
-              onSubmitted={() => setModalProps(undefined)}
-            />
-          ))}
-      </Modal>
+      <StrategySupplyModal
+        props={modalProps}
+        onClose={() => setModalProps(undefined)}
+      />
     </>
   )
 }

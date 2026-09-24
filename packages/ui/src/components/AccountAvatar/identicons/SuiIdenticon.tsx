@@ -1,5 +1,9 @@
+import { METADATA_CDN_URL } from "@galacticcouncil/utils"
+
 import { Flex, FlexProps } from "@/components/Flex"
 import { Image } from "@/components/Image"
+
+const ICON_URL = `${METADATA_CDN_URL}/v2/sui/0x35834a8a/icon.svg`
 
 export type SuiIdenticonProps = Omit<FlexProps, "size"> & {
   size: number
@@ -16,11 +20,6 @@ export const SuiIdenticon: React.FC<SuiIdenticonProps> = ({
     justify="center"
     {...props}
   >
-    <Image
-      src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/sui/0x35834a8a/icon.svg"
-      alt="Sui"
-      width={size}
-      height={size}
-    />
+    <Image src={ICON_URL} alt="Sui" width={size} height={size} />
   </Flex>
 )

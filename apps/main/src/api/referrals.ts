@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const accountReferralSharesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   accountAddress: string,
 ) => {
   return queryOptions({
@@ -22,6 +22,6 @@ export const accountReferralSharesQuery = (
         totalShares: totalSharesRaw,
       }
     },
-    enabled: isApiLoaded && !!accountAddress,
+    enabled: isReady && !!accountAddress,
   })
 }

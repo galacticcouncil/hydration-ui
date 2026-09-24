@@ -1,38 +1,41 @@
-import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
-import {
-  AssetMetadataFactory,
-  DryRunErrorDecoder,
-  logger,
-} from "@galacticcouncil/utils"
+import { DryRunErrorDecoder, logger } from "@galacticcouncil/utils"
 import {
   QueryClient,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query"
-import { TypedApi } from "polkadot-api"
 import { StatusChange, WsEvent } from "polkadot-api/ws"
-import { createContext, ReactNode, useContext, useEffect } from "react"
-import { isFunction } from "remeda"
+import { createContext, ReactNode, useContext, useEffect, useMemo } from "react"
 
-import {
-  getProviderDataEnv,
-  rpcProviderQuery,
-  TProviderData,
-} from "@/api/provider"
+import { rpcProviderQuery, switchRpc, TProviderData } from "@/api/rpcClient"
+import { getProviderDataEnv } from "@/api/rpcConfig"
 import { TDataEnv } from "@/config/rpc"
-import { useAssetRegistry } from "@/states/assetRegistry"
+import { useAssetRegistryStore } from "@/states/assetRegistry"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
-export type Papi = TypedApi<typeof hydration>
-export type PapiNext = TypedApi<typeof hydrationNext>
-
 export type TProviderContext = TProviderData & {
-  isLoaded: boolean
-  isApiLoaded: boolean
+  /** The endpoint is connected and not mid-switch. */
+  isEndpointSettled: boolean
+  /** The endpoint is settled AND the asset registry is populated for it. */
+  isReady: boolean
   dataEnv: TDataEnv
   endpoint: string
 }
 
+/**
+ * The boot shell's context, and load-bearing despite the casts.
+ *
+ * The root route's `pendingComponent` is the router's top-level Suspense
+ * fallback, and the root match gets no boundary of its own - so while
+ * `RpcProvider`'s suspense query is pending, `LayoutSkeleton` renders OUTSIDE
+ * this provider. Its tree calls `useRpcProvider()` unconditionally (Footer ->
+ * DataProviderSelect, SubNavBar -> useNavigation, Settings). Those reads only
+ * touch `featureFlags` and `isReady: false`; everything that would touch
+ * `papi`/`sdk` is gated behind `isReady`, which is why the casts never blow up.
+ *
+ * Removing this default - or making `useRpcProvider()` throw - white-screens
+ * every cold boot until that shell tree is made provider-free.
+ */
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
   rpcUrlList: [],
@@ -40,15 +43,15 @@ const defaultData: TProviderContext = {
   papiNext: {} as TProviderData["papiNext"],
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
+  genesisHash: "",
   evm: {} as TProviderData["evm"],
   featureFlags: {
     hollarBondsEnabled: true,
     bilEnabled: false,
   },
-  metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
-  isLoaded: false,
-  isApiLoaded: false,
+  isEndpointSettled: false,
+  isReady: false,
   dataEnv: "mainnet",
   endpoint: "",
 }
@@ -76,15 +79,17 @@ const logWsStatusChange = (status: StatusChange) => {
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
-  const { assets } = useAssetRegistry()
-  const {
-    rpcUrl,
-    connectedRpcUrl,
-    rpcUrlList,
-    setRpcUrl,
-    setConnectedRpcUrl,
-    setIsRpcConnecting,
-  } = useProviderRpcUrlStore()
+
+  const hasAssets = useAssetRegistryStore((state) => state.assets.length > 0)
+  const registryGenesisHash = useAssetRegistryStore(
+    (state) => state.genesisHash,
+  )
+
+  const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const connectedRpcUrl = useProviderRpcUrlStore(
+    (state) => state.connectedRpcUrl,
+  )
+  const rpcUrlList = useProviderRpcUrlStore((state) => state.rpcUrlList)
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
@@ -95,10 +100,15 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       wsProviderOpts: {
         onStatusChanged: (status) => {
           logWsStatusChange(status)
+          const {
+            rpcUrl,
+            connectedRpcUrl,
+            setRpcUrl,
+            setConnectedRpcUrl,
+            setIsRpcConnecting,
+          } = useProviderRpcUrlStore.getState()
           if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
-            const { rpcUrl, connectedRpcUrl } =
-              useProviderRpcUrlStore.getState()
             if (status.uri !== connectedRpcUrl) {
               setConnectedRpcUrl(status.uri)
             }
@@ -111,37 +121,32 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   )
 
   useEffect(() => {
-    const client = data.papiClient
-    if (!isFunction(client?.switch)) return
-
     // switch to best rpc when auto mode is enabled
     return useProviderRpcUrlStore.subscribe((state, prevState) => {
       if (!state.autoMode || state.rpcUrl === prevState.rpcUrl) return
-      client.switch(state.rpcUrl)
+      switchRpc(state.rpcUrl, data)
     })
-  }, [data.papiClient])
+  }, [data])
 
-  useEffect(() => {
-    if (!Object.keys(data.sdk).length) return
-    return () => {
-      data.sdk.destroy()
-    }
-  }, [data?.sdk])
+  const isEndpointSettled = rpcUrl === connectedRpcUrl
+  const isRegistryReady = hasAssets && registryGenesisHash === data.genesisHash
+  const isReady = isEndpointSettled && isRegistryReady
 
-  const isLoaded = assets.length > 0
-  const isApiLoaded =
-    Object.keys(data.papi).length > 0 && rpcUrl === connectedRpcUrl
+  const dataEnv = getProviderDataEnv(rpcUrl)
+
+  const value = useMemo<TProviderContext>(
+    () => ({
+      ...data,
+      isEndpointSettled,
+      isReady,
+      endpoint: rpcUrl,
+      dataEnv,
+    }),
+    [data, dataEnv, isEndpointSettled, isReady, rpcUrl],
+  )
 
   return (
-    <ProviderContext.Provider
-      value={{
-        ...data,
-        isApiLoaded,
-        isLoaded,
-        endpoint: rpcUrl,
-        dataEnv: getProviderDataEnv(rpcUrl),
-      }}
-    >
+    <ProviderContext.Provider value={value}>
       {children}
     </ProviderContext.Provider>
   )

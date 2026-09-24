@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useLatest } from "react-use"
 import { isFunction, omit } from "remeda"
 
 import { useRouteBlock } from "@/hooks/useRouteBlock"
@@ -15,6 +16,7 @@ import { ReviewTransactionFeePaymentAssetModal } from "@/modules/transactions/re
 import { ReviewTransactionFooter } from "@/modules/transactions/review/ReviewTransactionFooter"
 import { TransactionProvider } from "@/modules/transactions/TransactionProvider"
 import { AnyTransaction } from "@/modules/transactions/types"
+import { useToasts } from "@/states/toasts"
 import {
   MultiTransaction,
   SingleTransaction,
@@ -22,6 +24,7 @@ import {
   TSuccessResult,
   useTransactionsStore,
 } from "@/states/transactions"
+import { getErrorMessage } from "@/utils/errors"
 
 type ReviewMultiTransactionProps = {
   transaction: MultiTransaction
@@ -32,6 +35,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
 }) => {
   const { t } = useTranslation()
   const { cancelTransaction } = useTransactionsStore()
+  const toasts = useToasts()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [transactionResults, setTransactionResults] = useState<
     TSuccessResult[]
@@ -48,13 +52,25 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   const [isLastError, setIsLastError] = useState(false)
   const [hasUserClosedModal, setHasUserClosedModal] = useState(false)
 
+  // Held in a ref so the resolver effect doesn't re-run — and restart a
+  // pending wait — every time one of these identities changes.
+  const onResolutionErrorRef = useLatest((message: string) => {
+    toasts.error({ title: message })
+    transaction.onError?.(message)
+    cancelTransaction(transaction.id)
+  })
+
   const txArray = transaction.tx
   const currentBaseConfig = txArray[currentIndex]
 
   const isFirstTransaction = currentIndex === 0
   const isLastTransaction = currentIndex === txArray.length - 1
 
-  useRouteBlock({ when: (currentIndex > 0 || isLoading) && !isLastSubmitted })
+  useRouteBlock({
+    when:
+      (currentIndex > 0 || isLoading || isPendingResolution) &&
+      !isLastSubmitted,
+  })
 
   useEffect(() => {
     if (!currentBaseConfig) {
@@ -68,17 +84,27 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     if (isFunction(tx)) {
       setIsPendingResolution(true)
       const previousResults = transactionResults.slice(0, currentIndex)
-      Promise.resolve(tx(previousResults)).then((resolved) => {
-        setIsPendingResolution(false)
-        setResolvedTx(resolved.tx)
-        setResolvedConfig(omit(resolved, ["tx"]))
-      })
+      Promise.resolve(tx(previousResults))
+        .then((resolved) => {
+          setIsPendingResolution(false)
+          setResolvedTx(resolved.tx)
+          setResolvedConfig(omit(resolved, ["tx"]))
+        })
+        .catch((error) => {
+          setIsPendingResolution(false)
+          onResolutionErrorRef.current(getErrorMessage(error))
+        })
     } else {
       setIsPendingResolution(false)
       setResolvedTx(tx)
       setResolvedConfig(null)
     }
-  }, [currentBaseConfig, currentIndex, transactionResults])
+  }, [
+    currentBaseConfig,
+    currentIndex,
+    onResolutionErrorRef,
+    transactionResults,
+  ])
 
   useEffect(() => {
     if (!currentBaseConfig || !resolvedTx) {
@@ -99,17 +125,33 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
           setIsLastSubmitted(true)
         }
       },
-      onSuccess: (event) => {
+      onSuccess: async (event) => {
         setIsLoading(false)
         setTransactionResults((prev) => [...prev, event])
+
         if (isLastTransaction) {
           transaction.onSuccess?.(event)
           cancelTransaction(transaction.id)
-        } else {
-          setResolvedTx(null)
-          setResolvedConfig(null)
-          setCurrentIndex((prev) => prev + 1)
+          return
         }
+
+        // Held here rather than after the switch, so the stepper stays on the
+        // step whose settlement we're actually waiting for.
+        if (currentBaseConfig.beforeNext) {
+          setIsPendingResolution(true)
+          try {
+            await currentBaseConfig.beforeNext()
+          } catch (error) {
+            onResolutionErrorRef.current(getErrorMessage(error))
+            return
+          } finally {
+            setIsPendingResolution(false)
+          }
+        }
+
+        setResolvedTx(null)
+        setResolvedConfig(null)
+        setCurrentIndex((prev) => prev + 1)
       },
       onError: (message) => {
         setIsLoading(false)
@@ -129,6 +171,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     cancelTransaction,
     currentIndex,
     currentBaseConfig,
+    onResolutionErrorRef,
     resolvedTx,
     transaction,
     txArray.length,

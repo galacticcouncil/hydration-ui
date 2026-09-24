@@ -5,7 +5,9 @@ import { dataTableSortSchema } from "@/form/dataTableSortSchema"
 import { PoolsPage } from "@/modules/liquidity/PoolsPage"
 
 const searchSchema = z.object({
-  type: z.enum(["all", "omnipoolStablepool", "isolated"]).default("all"),
+  type: z
+    .enum(["all", "omnipoolStablepool", "isolated", "vaults"])
+    .default("all"),
   myLiquidity: z.boolean().default(false),
   omniSort: dataTableSortSchema.default([{ id: "id", desc: true }]),
   isolatedPage: z.number().optional(),

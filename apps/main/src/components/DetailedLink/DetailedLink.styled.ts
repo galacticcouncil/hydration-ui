@@ -15,6 +15,8 @@ export const SDetailedLink = styled(Box)(
 
     text-decoration: none;
 
+    transition: ${theme.transitions.colors};
+
     &:hover {
       background: ${theme.surfaces.containers.high.hover};
       svg {

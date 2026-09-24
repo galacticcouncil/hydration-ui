@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { useXYKPools } from "@/states/liquidity"
 import { useNeckworkEnabled } from "@/states/neckwork"
 

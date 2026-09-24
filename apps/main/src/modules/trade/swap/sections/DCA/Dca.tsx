@@ -1,4 +1,8 @@
-import { SliderTabs } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
@@ -44,7 +48,6 @@ export const Dca: FC = () => {
 
   const {
     order,
-    orderTx,
     dryRunError,
     healthFactor: initialHealthFactor,
     isLoading,
@@ -111,46 +114,44 @@ export const Dca: FC = () => {
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit(
-          (values) =>
-            order && orderTx && submitDcaOrder.mutate([values, order, orderTx]),
-        )}
+        onSubmit={form.handleSubmit((values) => submitDcaOrder.mutate(values))}
       >
         <Controller
           control={form.control}
           name="orders"
           render={({ field }) => (
-            <SliderTabs
-              sx={{ mt: "m" }}
-              options={[
-                {
-                  id: DcaOrdersMode.Auto,
-                  label: t("trade:trade.orders.limitedBudget"),
-                },
-                {
-                  id: DcaOrdersMode.OpenBudget,
-                  label: t("trade:trade.orders.openBudget"),
-                },
-              ]}
-              selected={
-                field.value.type === DcaOrdersMode.OpenBudget
-                  ? DcaOrdersMode.OpenBudget
-                  : DcaOrdersMode.Auto
-              }
-              onSelect={({ id: type }) => {
-                form.reset({
-                  ...form.getValues(),
-                  orders: {
-                    ...(type === DcaOrdersMode.OpenBudget
-                      ? { type, useSplitTrade: true }
-                      : { type }),
-                  },
-                  duration: DEFAULT_DCA_DURATION,
-                })
+            <Box mt="m">
+              <ToggleGroup
+                type="single"
+                value={
+                  field.value.type === DcaOrdersMode.OpenBudget
+                    ? DcaOrdersMode.OpenBudget
+                    : DcaOrdersMode.Auto
+                }
+                onValueChange={(type) => {
+                  if (!type) return
 
-                form.trigger()
-              }}
-            />
+                  form.reset({
+                    ...form.getValues(),
+                    orders: {
+                      ...(type === DcaOrdersMode.OpenBudget
+                        ? { type, useSplitTrade: true }
+                        : { type }),
+                    },
+                    duration: DEFAULT_DCA_DURATION,
+                  })
+
+                  form.trigger()
+                }}
+              >
+                <ToggleGroupItem value={DcaOrdersMode.Auto}>
+                  {t("trade:trade.orders.limitedBudget")}
+                </ToggleGroupItem>
+                <ToggleGroupItem value={DcaOrdersMode.OpenBudget}>
+                  {t("trade:trade.orders.openBudget")}
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </Box>
           )}
         />
         <DcaForm

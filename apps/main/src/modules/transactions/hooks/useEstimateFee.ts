@@ -36,7 +36,7 @@ export const useEstimateFee = (
   feePaymentAssetIdOverride?: string,
 ) => {
   const rpc = useRpcProvider()
-  const { papi, sdk, isLoaded } = rpc
+  const { papi, sdk, isReady } = rpc
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
   const wallet = useWallet()
@@ -75,7 +75,7 @@ export const useEstimateFee = (
       }
     },
     enabled:
-      isLoaded &&
+      isReady &&
       !!anyTx &&
       !!feeAsset &&
       !isLoadingFeePaymentAssetId &&

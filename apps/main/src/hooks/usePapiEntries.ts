@@ -9,7 +9,8 @@ import { useEffect, useRef } from "react"
 import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
 import { UnsafeDcaQuery } from "@/api/dcaStorage"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type QuerySources = {
   readonly typed: Papi["query"]
@@ -82,7 +83,7 @@ export function usePapiEntries<
   options?: PapiEntriesQueryOptions<K, TMap, TSelect>,
 ): UseQueryResult<TSelect, Error> {
   const queryClient = useQueryClient()
-  const { papi, papiClient, isApiLoaded } = useRpcProvider()
+  const { papi, papiClient, isReady } = useRpcProvider()
   const isWatcherInitializedRef = useRef(false)
 
   const querySources = (): QuerySources => ({
@@ -100,7 +101,7 @@ export function usePapiEntries<
 
   const query = useQuery({
     queryKey: [key],
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: async () => {

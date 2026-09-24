@@ -8,7 +8,7 @@ import { useMemo } from "react"
 import { HDXStakingBalanceQuery } from "@/api/balances"
 import { bestNumberQuery, useBlockTime } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import { potBalanceQuery } from "@/api/staking"
 import {
   accumulatedRpsUpdatedEventsQuery,

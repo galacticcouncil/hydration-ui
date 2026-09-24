@@ -14,30 +14,37 @@ export const PoolTypeTabs = () => {
     from: "/liquidity/",
   })
 
+  const poolTypes = [
+    {
+      key: "all" as const,
+      label: t("tab.allPools"),
+    },
+    { key: "vaults" as const, label: t("tab.vaults") },
+    {
+      key: "omnipoolStablepool" as const,
+      label: t("tab.omnipoolStablepool"),
+    },
+    {
+      key: "isolated" as const,
+      label: t("tab.isolatedPools"),
+    },
+  ]
+
   if (isMobile) {
     return (
       <Select
         value={search?.type}
-        items={[
-          {
-            key: "all",
-            label: t("tab.allPools"),
-          },
-          {
-            key: "omnipoolStablepool",
-            label: t("tab.omnipoolStablepool"),
-          },
-          {
-            key: "isolated",
-            label: t("tab.isolatedPools"),
-          },
-        ]}
+        items={poolTypes}
         onValueChange={(value) =>
           navigate({
             to: LINKS.liquidity,
             search: {
               myLiquidity: search?.myLiquidity,
-              type: value as "all" | "omnipoolStablepool" | "isolated",
+              type: value as
+                | "all"
+                | "omnipoolStablepool"
+                | "isolated"
+                | "vaults",
             },
           })
         }
@@ -54,6 +61,14 @@ export const PoolTypeTabs = () => {
           to: LINKS.liquidity,
           search: { type: "all", myLiquidity: search?.myLiquidity },
           title: t("tab.allPools"),
+        },
+        {
+          to: LINKS.liquidity,
+          search: {
+            type: "vaults" as const,
+            myLiquidity: search?.myLiquidity,
+          },
+          title: t("tab.vaults"),
         },
         {
           to: LINKS.liquidity,

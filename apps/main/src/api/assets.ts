@@ -3,15 +3,22 @@ import {
   AssetMetadataFactory,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
+import { PublicClient, zeroAddress } from "viem"
 
+import { FACTORY_ABI, HYPERVISOR_ABI } from "@/api/gamma/abi"
+import { getGammaContracts } from "@/api/gamma/config"
+import { assetMetadataQuery } from "@/api/metadata"
+import { allPools, V3PoolBase } from "@/api/pools"
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
   TATokenPairStored,
   TShareTokenStored,
   useAssetRegistryStore,
 } from "@/states/assetRegistry"
+import { ASSET_ICON_OVERRIDES, ASSET_NAME_OVERRIDES } from "@/utils/assets"
 import {
   getAccountKey20,
   getEthereumNetworkEntry,
@@ -29,48 +36,12 @@ export enum AssetType {
   XYK = "XYK",
 }
 
-import { ChainEcosystem } from "@galacticcouncil/xc-core"
-
-import { allPools } from "./pools"
-
 /**
  * Assets that predate the direct NTT route still carry moonbeam branding the
  * app no longer routes through — a "(Moonbeam Wormhole)" suffix on the name
  * from the on-chain registry, and a moonbeam chain badge from the metadata cdn.
- *
- * Overridden here for display until both sources are updated. Names are the
- * registry's own with "Moonbeam " dropped — nothing else reworded. The
- * "(Wormhole)" suffix stays: each of these coexists with a native asset of the
- * same symbol (weth 1000189 / weth_mwh 20, usdc 22 / usdc_mwh 21, …) and the
- * suffix is what keeps the two apart in selectors.
  */
 const MOONBEAM_PARACHAIN_ID = "2004"
-
-/**
- * Icons are committed per hydration asset id in the metadata cdn, so the legacy
- * assets carry their own moonbeam-branded art. Borrow the native twin's icon
- * where one exists — dai (18) and eurc (44) have no twin on hydration and can
- * only be fixed in the metadata repo.
- */
-const ASSET_ICON_OVERRIDES: Record<string, string> = {
-  "19": "1000190",
-  "20": "1000189",
-  "21": "22",
-  "23": "10",
-  "1000745": "1000626",
-}
-
-const ASSET_NAME_OVERRIDES: Record<string, string> = {
-  "18": "DAI (Wormhole)",
-  "19": "Wrapped BTC (Wormhole)",
-  "20": "Wrapped ETH (Wormhole)",
-  "21": "USDC (Wormhole)",
-  "23": "Tether (Wormhole)",
-  "44": "EURC (Wormhole)",
-  "1000745": "sUSDS (Wormhole)",
-  "1000752": "Solana (Wormhole)",
-  "1000753": "SUI (Wormhole)",
-}
 
 type TCommonAssetData = {
   id: string
@@ -128,11 +99,56 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
+const fetchGammaVaultShareSymbols = async (
+  evm: PublicClient,
+  endpoint: string,
+  pools: V3PoolBase[],
+): Promise<Set<string>> => {
+  const contracts = getGammaContracts(endpoint)
+  const discoveredHypervisors = await Promise.all(
+    pools.map(async ({ addr0, addr1, fee }) => {
+      if (!addr0 || !addr1) return null
+
+      return evm
+        .readContract({
+          abi: FACTORY_ABI,
+          address: contracts.hypervisorFactory,
+          functionName: "getHypervisor",
+          args: [addr0, addr1, fee],
+        })
+        .catch(() => null)
+    }),
+  )
+  const hypervisors = new Set([
+    contracts.hypervisor,
+    ...discoveredHypervisors.filter(isNonNullish),
+  ])
+
+  hypervisors.delete(zeroAddress)
+
+  const symbols = await Promise.all(
+    [...hypervisors].map((address) =>
+      evm
+        .readContract({
+          abi: HYPERVISOR_ABI,
+          address,
+          functionName: "symbol",
+        })
+        .catch(() => null),
+    ),
+  )
+
+  return new Set(
+    symbols.filter(isNonNullish).map((symbol) => symbol.toLowerCase()),
+  )
+}
+
 export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
 ) => {
-  const { sdk, papi, isApiLoaded, dataEnv, metadata } = context
+  const { sdk, papi, evm, endpoint, isEndpointSettled, dataEnv, genesisHash } =
+    context
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
@@ -140,12 +156,21 @@ export const assetsQuery = (
       const { syncAssets, syncATokenPairs, syncShareTokens } =
         useAssetRegistryStore.getState()
 
-      const [tradeAssets, pools, assets] = await Promise.all([
+      // Icons are baked into the stored registry, so the metadata singleton has
+      // to be warm before the assets are mapped - it is no longer warmed by the
+      // provider query.
+      const [tradeAssets, pools, assets, metadata] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
-        sdk.client.asset.getSupported(true),
+        sdk.client.asset.getSupported(false),
+        queryClient.ensureQueryData(assetMetadataQuery()),
       ])
       const tradeAssetsMap = new Set(tradeAssets)
+      const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
+        evm,
+        endpoint,
+        pools.v3Pools,
+      )
 
       const xykPoolsAddress = pools.xykPools.map<[string]>((p) => [p.address])
       const xykPoolsShareTokens =
@@ -181,44 +206,50 @@ export const assetsQuery = (
 
       syncATokenPairs(aTokenPairs)
 
-      const assetsData = assets.map((asset): TAssetData => {
-        const isTradable = tradeAssetsMap.has(asset.id)
-        const id = asset.id.toString()
+      const assetsData = assets
+        .filter(
+          (asset) =>
+            asset.type !== AssetType.ERC20 ||
+            !gammaVaultShareSymbols.has((asset.symbol ?? "").toLowerCase()),
+        )
+        .map((asset): TAssetData => {
+          const isTradable = tradeAssetsMap.has(asset.id)
+          const id = asset.id.toString()
 
-        const commonAssetData: TCommonAssetData = {
-          id,
-          existentialDeposit: asset.existentialDeposit.toString(),
-          symbol: asset.symbol ?? "",
-          decimals: asset.decimals ?? 0,
-          name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
-          isTradable,
-          isSufficient: asset.isSufficient,
-        }
-
-        if (asset.type === AssetType.TOKEN) {
-          return assetToTokenType(asset, commonAssetData, metadata)
-        } else if (asset.type === AssetType.ERC20) {
-          return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
-        } else if (asset.type === AssetType.BOND) {
-          return assetToBondType(asset, commonAssetData, metadata)
-        } else if (asset.type === AssetType.STABLESWAP) {
-          return assetToStableSwapType(asset, commonAssetData)
-        } else if (asset.type === AssetType.External) {
-          return assetToExternalType(asset, commonAssetData)
-        } else {
-          return {
-            ...commonAssetData,
-            type: AssetType.Unknown,
+          const commonAssetData: TCommonAssetData = {
+            id,
+            existentialDeposit: asset.existentialDeposit.toString(),
+            symbol: asset.symbol ?? "",
+            decimals: asset.decimals ?? 0,
+            name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
+            isTradable,
+            isSufficient: asset.isSufficient,
           }
-        }
-      })
 
-      syncAssets(assetsData)
+          if (asset.type === AssetType.TOKEN) {
+            return assetToTokenType(asset, commonAssetData, metadata)
+          } else if (asset.type === AssetType.ERC20) {
+            return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
+          } else if (asset.type === AssetType.BOND) {
+            return assetToBondType(asset, commonAssetData, metadata)
+          } else if (asset.type === AssetType.STABLESWAP) {
+            return assetToStableSwapType(asset, commonAssetData)
+          } else if (asset.type === AssetType.External) {
+            return assetToExternalType(asset, commonAssetData)
+          } else {
+            return {
+              ...commonAssetData,
+              type: AssetType.Unknown,
+            }
+          }
+        })
+
+      syncAssets(assetsData, genesisHash)
       syncShareTokens(shareTokens)
 
       return []
     },
-    enabled: isApiLoaded,
+    enabled: isEndpointSettled,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,

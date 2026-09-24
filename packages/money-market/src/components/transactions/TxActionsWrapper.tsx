@@ -43,8 +43,7 @@ export const TxActionsWrapper = ({
 }: TxActionsWrapperProps) => {
   const { txError } = useModalContext()
 
-  const isAmountMissing =
-    requiresAmount && requiresAmount && Number(amount) === 0
+  const isAmountMissing = requiresAmount && Number(amount) === 0
 
   function getMainParams() {
     if (blocked) return { loading: false, disabled: true, content: actionText }
@@ -69,7 +68,8 @@ export const TxActionsWrapper = ({
         disabled: true,
         content: <span>Enter an amount</span>,
       }
-    if (preparingTransactions) return { loading: true, disabled: true }
+    if (preparingTransactions)
+      return { loading: true, disabled: true, content: actionText }
     if (mainTxState?.loading)
       return { loading: true, disabled: true, content: actionInProgressText }
     if (requiresApproval && !approvalTxState?.success)
@@ -91,7 +91,7 @@ export const TxActionsWrapper = ({
         size="large"
         isLoading={!!loading}
       >
-        {content || <>&nbsp;</>}
+        {content}
       </LoadingButton>
     </Box>
   )

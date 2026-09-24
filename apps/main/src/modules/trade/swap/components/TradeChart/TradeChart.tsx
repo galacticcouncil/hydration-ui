@@ -1,169 +1,277 @@
-import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
-import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
+import { pairReferencePriceQuery } from "@galacticcouncil/indexer/neckwork"
 import {
-  AnimatedValue,
   Box,
   ChartValues,
   Flex,
-  Icon,
   Paper,
-  Separator,
+  ResponsiveScope,
   Text,
-  TradingViewChart,
-  TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
-import React, { useRef, useState } from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { neckworkClient } from "@/api/neckwork"
 import { ChartState } from "@/components/ChartState"
+import { CandleChart } from "@/modules/trade/swap/components/TradeChart/CandleChart"
+import { usePairCandleSeries } from "@/modules/trade/swap/components/TradeChart/hooks/usePairCandleSeries"
 import {
-  ChartTimeRange,
-  ChartTimeRangeOptionType,
-} from "@/components/ChartTimeRange/ChartTimeRange"
-import i18n from "@/i18n"
-import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
-import { SChartInvertButton } from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+  SChartHeader,
+  SChartValues,
+} from "@/modules/trade/swap/components/TradeChart/TradeChart.styled"
+import { TradeChartControls } from "@/modules/trade/swap/components/TradeChart/TradeChartControls"
+import { TradeChartPrice } from "@/modules/trade/swap/components/TradeChart/TradeChartPrice"
 import { useTradeChartValues } from "@/modules/trade/swap/SwapPage.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { useTradeChartSettings } from "@/states/tradeSettings"
 
-const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
-
-export type TradeChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
-
-const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
-  ChartTimeRangeOptionType<TradeChartTimeFrameType | "all">
->((option) => ({
-  key: option,
-  label: i18n.t(`chart.timeFrame.${option}`),
-}))
-
-type TradeChartProps = {
+type PairChartProps = {
   readonly height: number
+  readonly assetIn: string
+  readonly assetOut: string
+  readonly variant?: "trade" | "pool"
 }
 
-export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
-  const { t } = useTranslation()
+export const TradeChart: React.FC<{ readonly height: number }> = ({
+  height,
+}) => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
-  const chartRef = useRef<TradingViewChartRef>(null)
-  const [isInverted, setIsInverted] = useState(false)
-  const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
-    "week",
+  return (
+    <Paper p="xl">
+      <PairChart height={height} assetIn={assetIn} assetOut={assetOut} />
+    </Paper>
   )
+}
 
-  const assetA = isInverted ? assetOut : assetIn
-  const assetB = isInverted ? assetIn : assetOut
+export const PairChart: React.FC<PairChartProps> = ({
+  height,
+  assetIn,
+  assetOut,
+  variant = "trade",
+}) => {
+  const { t } = useTranslation()
+  const isPool = variant === "pool"
+  const {
+    interval,
+    chartType: selectedChartType,
+    changePeriod,
+    setChangePeriod,
+  } = useTradeChartSettings()
+  const chartType = isPool ? "line" : selectedChartType
+  const { getAssetWithFallback } = useAssets()
+
+  const [isInverted, setIsInverted] = useState(false)
+
+  const baseAssetId = isInverted ? assetIn : assetOut
+  const quoteAssetId = isInverted ? assetOut : assetIn
 
   const {
-    prices,
-    isLoading: isChartLoading,
-    isSuccess,
+    series,
+    spotPrice,
+    quoteAssetId: priceAssetId,
+    pair,
+    isPegged,
+    isLoading,
     isError,
-  } = useTradeChartData({
-    assetInId: assetA,
-    assetOutId: assetB,
-    timeFrame: interval === "all" ? null : interval,
+    isEmpty,
+    isRefetching,
+    isPlaceholderData,
+    onReachStart,
+  } = usePairCandleSeries(baseAssetId, quoteAssetId, interval)
+
+  const { data: referencePrice } = useQuery({
+    ...pairReferencePriceQuery(neckworkClient, {
+      assetIn: pair.assetIn,
+      assetOut: pair.assetOut,
+      period: changePeriod,
+    }),
+    enabled: !isPegged,
   })
 
-  const isEmpty = isSuccess && !prices.length
+  const resetKey = `${baseAssetId}-${quoteAssetId}-${interval}`
 
   const {
     onCrosshairMove,
     value,
+    open,
+    high,
+    low,
     volume,
     formattedAssetPrice,
     formattedVolumePrice,
+    isAssetPriceValid,
+    isVolumePriceValid,
     shouldShowValues,
     isLoadingValues,
+    isLiveValue,
   } = useTradeChartValues({
-    prices,
-    priceAssetId: assetA,
+    prices: series,
+    priceAssetId,
     isEmpty,
     isError,
-    isLoading: isChartLoading,
+    isLoading,
   })
 
-  const { getAssetWithFallback } = useAssets()
+  const baseMeta = getAssetWithFallback(baseAssetId)
+  const quoteMeta = getAssetWithFallback(quoteAssetId)
 
-  const assetAMeta = getAssetWithFallback(assetA)
-  const assetBMeta = getAssetWithFallback(assetB)
+  const hasSpot = isFinite(spotPrice) && spotPrice > 0
+  const reference =
+    !referencePrice || !hasSpot
+      ? null
+      : pair.invert
+        ? 1 / referencePrice
+        : referencePrice
+  const priceChange =
+    reference && hasSpot ? ((spotPrice - reference) / reference) * 100 : null
 
   const chartValue = shouldShowValues ? (
-    <Text fs={["p3", "p1"]} fw={600}>
-      <AnimatedValue
-        value={value}
-        format={(value) => t("currency", { value, symbol: assetAMeta.symbol })}
-      />
-    </Text>
+    <TradeChartPrice
+      value={isLiveValue && hasSpot ? spotPrice : value}
+      symbol={quoteMeta.symbol}
+      animationKey={`${baseAssetId}-${quoteAssetId}`}
+      isLiveValue={isLiveValue}
+      priceChange={priceChange}
+      changePeriod={changePeriod}
+      onChangePeriodToggle={() =>
+        setChangePeriod(changePeriod === "24h" ? "7d" : "24h")
+      }
+      asCurrency={isPool}
+    />
   ) : undefined
 
   const chartDisplayValue = shouldShowValues ? (
-    <Box>
-      <Text fs="p5">
-        {t("price")}: {formattedAssetPrice}
-      </Text>
-      <Text fs="p5" visibility={volume > 0 ? "visible" : "hidden"}>
-        {t("vol")}: {formattedVolumePrice}
-      </Text>
-    </Box>
+    chartType === "line" ? (
+      <SChartValues>
+        {/* the pool variant already shows the price in the headline */}
+        {!isPool && (
+          <Text
+            fs="p6"
+            lh={1.3}
+            fontVariantNumeric="tabular-nums"
+            visibility={isAssetPriceValid ? "visible" : "hidden"}
+          >
+            {t("price")}: {formattedAssetPrice}
+          </Text>
+        )}
+        <Text
+          fs="p6"
+          lh={1.3}
+          visibility={!isLiveValue && volume > 0 ? "visible" : "hidden"}
+          whiteSpace="nowrap"
+        >
+          {t("vol")}: {formattedVolumePrice}
+        </Text>
+      </SChartValues>
+    ) : (
+      <SChartValues>
+        <Flex gap="s">
+          {(
+            [
+              ["O", open],
+              ["H", high],
+              ["L", low],
+              ["C", value],
+            ] as const
+          ).map(([label, price]) => (
+            <Text
+              key={label}
+              fs="p6"
+              lh={1.3}
+              fontVariantNumeric="tabular-nums"
+              whiteSpace="nowrap"
+            >
+              <Text as="span" color={getToken("text.low")}>
+                {label}
+              </Text>{" "}
+              {t("number", { value: price })}
+            </Text>
+          ))}
+        </Flex>
+        <Text
+          fs="p6"
+          lh={1.3}
+          visibility={
+            !isLiveValue && isVolumePriceValid && volume > 0
+              ? "visible"
+              : "hidden"
+          }
+          whiteSpace="nowrap"
+        >
+          <Text as="span" color={getToken("text.low")} transform="uppercase">
+            {t("vol")}
+          </Text>{" "}
+          {formattedVolumePrice}
+        </Text>
+      </SChartValues>
+    )
   ) : undefined
 
-  return (
-    <Paper p="xl">
-      <Flex align="flex-start" gap="base" justify="space-between">
+  const chartHeader = (
+    <ResponsiveScope>
+      <SChartHeader>
         <ChartValues
+          sx={{ position: "relative" }}
           value={chartValue}
           displayValue={chartDisplayValue}
           isLoading={shouldShowValues && isLoadingValues}
         />
-        <Flex align="center" gap="s" direction={["column", null, "row"]} wrap>
-          <SChartInvertButton
-            size="small"
-            variant="tertiary"
-            outline
-            onClick={() => setIsInverted((prev) => !prev)}
-            sx={{ width: "auto", px: "m", gap: "s" }}
-          >
-            <Icon component={ArrowLeftRight} size="m" />
-            {assetBMeta.symbol}/{assetAMeta.symbol}
-          </SChartInvertButton>
-          <Separator
-            orientation="vertical"
-            mx="base"
-            sx={{
-              height: "l",
-              mt: "xs",
-              display: ["none", null, null, null, "block"],
-            }}
-          />
-          <ChartTimeRange
-            sx={{ ml: "auto" }}
-            options={intervalOptions}
-            selectedOption={interval}
-            onSelect={(option) => {
-              setInterval(option.key)
-              chartRef.current?.resetZoom()
-            }}
-          />
+        <TradeChartControls
+          pair={`${baseMeta.symbol}/${quoteMeta.symbol}`}
+          isInverted={isInverted}
+          onInvert={() => setIsInverted((prev) => !prev)}
+          showPairControls={!isPool}
+        />
+      </SChartHeader>
+    </ResponsiveScope>
+  )
+
+  const chartBody = (
+    <Box sx={{ height }}>
+      <ChartState
+        sx={{ height }}
+        isError={isError}
+        isLoading={isLoading}
+        isEmpty={isEmpty}
+      >
+        <CandleChart
+          height={height}
+          bucket={interval}
+          candles={series}
+          type={chartType}
+          resetKey={resetKey}
+          isRefetching={isRefetching}
+          isPlaceholderData={isPlaceholderData}
+          onCrosshairMove={onCrosshairMove}
+          onReachStart={onReachStart}
+        />
+      </ChartState>
+    </Box>
+  )
+
+  if (isPool) {
+    return (
+      <Flex direction="column" flex={1} sx={{ minHeight: 0 }}>
+        <Box sx={{ flexShrink: 0 }}>{chartHeader}</Box>
+        <Flex
+          flex={1}
+          direction="column"
+          justify="flex-end"
+          sx={{ minHeight: 0 }}
+        >
+          {chartBody}
         </Flex>
       </Flex>
-      <Box sx={{ height }}>
-        <ChartState
-          sx={{ height }}
-          isError={isError}
-          isLoading={isChartLoading}
-          isEmpty={isEmpty}
-        >
-          <TradingViewChart
-            ref={chartRef}
-            height={height}
-            data={prices}
-            hidePriceIndicator
-            onCrosshairMove={onCrosshairMove}
-          />
-        </ChartState>
-      </Box>
-    </Paper>
+    )
+  }
+
+  return (
+    <>
+      {chartHeader}
+      {chartBody}
+    </>
   )
 }

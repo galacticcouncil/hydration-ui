@@ -12,7 +12,7 @@ import {
 } from "@/providers/assetsProvider"
 
 import {
-  LiquidityPositionByAsset,
+  NonVaultLiquidityByAsset,
   OmnipoolLiquidityByAsset,
 } from "./MyLiquidityTable.data"
 
@@ -39,7 +39,7 @@ export type IsolatedPoolsLiquidityByPool = Omit<
 }
 
 export const isIsolatedPoolLiquidity = (
-  pool: LiquidityPositionByAsset | IsolatedPoolsLiquidityByPool,
+  pool: NonVaultLiquidityByAsset,
 ): pool is IsolatedPoolsLiquidityByPool => isShareToken(pool.meta)
 
 export const isXYKPositionDeposit = (

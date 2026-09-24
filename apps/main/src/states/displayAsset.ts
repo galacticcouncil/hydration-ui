@@ -8,6 +8,7 @@ import { useShallow } from "zustand/shallow"
 
 import { useSubscribedPriceKeys } from "@/api/spotPrice"
 import { ENV } from "@/config/env"
+import { AssetId } from "@/providers/assetsProvider"
 
 const SPOT_PRICE_MAX_AGE = minutesToMilliseconds(5)
 
@@ -146,16 +147,17 @@ export const useAssetsPrice = (assetIds: string[]) => {
   return { prices, isLoading, getAssetPrice }
 }
 
-export const useAssetPrice = (assetId?: string): AssetPrice => {
-  const stableAssetIds = useStableArray(assetId ? [assetId] : [])
-  const price = useDisplaySpotPriceStore((state) => state.assets[assetId ?? ""])
+export const useAssetPrice = (assetId?: AssetId): AssetPrice => {
+  const id = isNonNullish(assetId) ? String(assetId) : undefined
+  const stableAssetIds = useStableArray(id ? [id] : [])
+  const price = useDisplaySpotPriceStore((state) => state.assets[id ?? ""])
 
   // subscribe to price changes by asset id
   useSubscribedPriceKeys(stableAssetIds)
 
   return {
     price: price ?? "",
-    isLoading: !!assetId && price === undefined,
+    isLoading: !!id && price === undefined,
     isValid: isNonNullish(price),
   }
 }

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { useState } from "react"
 
 import { Flex } from "@/components"
 
@@ -124,10 +125,36 @@ export const Transparent: Story = {
   },
 }
 
-export const WithSpinner: StoryObj<typeof LoadingButton> = {
-  render: (args) => <LoadingButton {...args}>Loading</LoadingButton>,
-  args: {
-    isLoading: true,
-    size: "large",
-  },
+const LoadingTemplate = () => {
+  const [isLoading, setIsLoading] = useState(false)
+
+  return (
+    <Flex direction="column" gap="xl" align="start">
+      <Button
+        variant="tertiary"
+        onClick={() => setIsLoading((value) => !value)}
+      >
+        Toggle loading
+      </Button>
+      <LoadingButton isLoading={isLoading} size="large" width={300}>
+        Sign Transaction
+      </LoadingButton>
+      <LoadingButton
+        isLoading={isLoading}
+        loadingMode="replace"
+        size="large"
+        width={300}
+      >
+        Sign Transaction
+      </LoadingButton>
+      <LoadingButton isLoading={isLoading}>Load all (42)</LoadingButton>
+      <LoadingButton isLoading={isLoading} loadingMode="replace">
+        Load all (42)
+      </LoadingButton>
+    </Flex>
+  )
+}
+
+export const Loading: StoryObj<typeof LoadingButton> = {
+  render: LoadingTemplate,
 }

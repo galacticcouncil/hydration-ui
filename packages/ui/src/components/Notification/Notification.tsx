@@ -3,17 +3,16 @@ import { isString } from "remeda"
 import {
   CircleAlert,
   CircleCheck,
-  CircleClose,
-  Info,
+  CircleInfo,
   MoveUpRight,
   QuestionCircleRegular,
   Send,
   SquareQuestion,
   TriangleAlert,
+  XIcon,
 } from "@/assets/icons"
 import {
   ButtonIcon,
-  ButtonTransparent,
   ExternalLink,
   Flex,
   Icon,
@@ -25,7 +24,7 @@ import {
 import { getToken } from "@/utils"
 
 import {
-  SCloseIcon,
+  SCloseButton,
   SIconVariant,
   SNotification,
   SProgress,
@@ -69,7 +68,7 @@ const notificationIcons: Record<ToastVariant, React.ComponentType> = {
   pending: SpinnerIcon,
   success: CircleCheck,
   error: CircleAlert,
-  info: Info,
+  info: CircleInfo,
   submitted: Send,
   warning: TriangleAlert,
   unknown: SquareQuestion,
@@ -136,15 +135,10 @@ export const Notification = ({
           />
         </SProgressContainer>
       )}
-      {/*Add hover effects for button, missing in design */}
       {onClose && (
-        <ButtonTransparent
-          onClick={onClose}
-          role="button"
-          aria-label="Close Notification"
-        >
-          <SCloseIcon component={CircleClose} size="m" />
-        </ButtonTransparent>
+        <SCloseButton onClick={onClose} aria-label="Close Notification">
+          <Icon component={XIcon} size="xs" />
+        </SCloseButton>
       )}
     </SNotification>
   )

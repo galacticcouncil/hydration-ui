@@ -1,5 +1,4 @@
 import { NeckworkStatus } from "@galacticcouncil/indexer/neckwork"
-import { getSquidSdk } from "@galacticcouncil/indexer/squid"
 import {
   DataProviderStatus,
   DataProviderStatusThreshold,
@@ -10,16 +9,7 @@ import {
 import { first } from "remeda"
 
 import { ENV } from "@/config/env"
-import { IndexerProps } from "@/config/rpc"
-
-type IndexerInfo = {
-  config: IndexerProps
-  isMaster: boolean
-  blockHeight: number | null
-  blockDiff: number | null
-  latency: number | null
-  status: DataProviderStatus
-}
+import { NeckworkProbe } from "@/states/neckwork"
 
 const RPC_PING_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
   { max: 250, status: DataProviderStatus.HEALTHY },
@@ -35,70 +25,27 @@ const INDEXER_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
 
 const INDEXER_TIMEOUT_MS = 2000
 
-export async function fetchNeckworkStatus(): Promise<NeckworkStatus | null> {
+export async function fetchNeckworkStatus(): Promise<NeckworkProbe> {
   try {
     const response = await fetch(`${ENV.VITE_NECKWORK_URL}/v1/status`, {
       signal: AbortSignal.timeout(INDEXER_TIMEOUT_MS),
     })
 
-    if (!response.ok) return null
+    if (!response.ok) return { kind: "http", statusCode: response.status }
 
-    return (await response.json()) as NeckworkStatus
-  } catch {
-    return null
-  }
-}
+    return { kind: "ok", status: (await response.json()) as NeckworkStatus }
+  } catch (error) {
+    const isTimeout =
+      error instanceof DOMException && error.name === "TimeoutError"
 
-export async function fetchIndexerInfo(
-  indexer: IndexerProps,
-): Promise<IndexerInfo> {
-  const start = performance.now()
-  const signal = AbortSignal.timeout(INDEXER_TIMEOUT_MS)
-
-  const [metadataResult, blockHeightResult] = await Promise.allSettled([
-    fetch(indexer.metadataUrl, { signal }).then((r) => {
-      if (!r.ok) throw new Error("Metadata fetch failed")
-      return r.json()
-    }),
-    Promise.race([
-      getSquidSdk(indexer.graphqlUrl)
-        .LatestBlockHeightQuery()
-        .then((r) => r.blocks?.edges?.[0]?.node?.height ?? null),
-      new Promise<never>((_, reject) => {
-        signal.addEventListener("abort", () =>
-          reject(new Error("Indexer timeout")),
-        )
-      }),
-    ]),
-  ])
-
-  const isValidResponse =
-    metadataResult.status === "fulfilled" &&
-    blockHeightResult.status === "fulfilled"
-
-  const end = performance.now()
-  const latency = isValidResponse ? end - start : null
-
-  const isMaster = isValidResponse
-    ? (metadataResult.value?.indexer?.master ?? false)
-    : false
-
-  const blockHeight = isValidResponse ? blockHeightResult.value : null
-
-  return {
-    config: indexer,
-    isMaster,
-    blockHeight,
-    blockDiff: null,
-    latency,
-    status: DataProviderStatus.OFFLINE,
+    return isTimeout ? { kind: "timeout" } : { kind: "network" }
   }
 }
 
 export function getIndexerStatus(
   blockHeight: number | null,
   referenceBlock: number | null,
-): Pick<IndexerInfo, "status" | "blockDiff"> {
+): { status: DataProviderStatus; blockDiff: number | null } {
   if (blockHeight === null)
     return { status: DataProviderStatus.OFFLINE, blockDiff: null }
 
@@ -108,36 +55,6 @@ export function getIndexerStatus(
   const blockDiff = referenceBlock - blockHeight
   const status = getDataProviderStatus(blockDiff, INDEXER_STATUS_THRESHOLDS)
   return { status, blockDiff }
-}
-
-function classifyIndexers(
-  infos: IndexerInfo[],
-  referenceBlock: number | null,
-): IndexerInfo[] {
-  return infos.map((info) => {
-    const { status, blockDiff } = getIndexerStatus(
-      info.blockHeight,
-      referenceBlock,
-    )
-    return { ...info, status, blockDiff }
-  })
-}
-
-function pickBestCandidate(candidates: IndexerInfo[]): IndexerInfo | null {
-  if (candidates.length === 0) return null
-
-  return candidates.reduce((best, current) => {
-    const bestBlock = best.blockHeight ?? -Infinity
-    const currentBlock = current.blockHeight ?? -Infinity
-
-    if (currentBlock > bestBlock) return current
-    if (currentBlock < bestBlock) return best
-
-    const bestLatency = best.latency ?? Infinity
-    const currentLatency = current.latency ?? Infinity
-
-    return currentLatency < bestLatency ? current : best
-  })
 }
 
 const getStatusIcon = (status: DataProviderStatus) => {
@@ -152,13 +69,6 @@ const getStatusIcon = (status: DataProviderStatus) => {
       return "❌"
   }
 }
-
-const indexerInfoToDebugFormat = ({ config, ...indexer }: IndexerInfo) => ({
-  name: config.name,
-  ...indexer,
-  latency: indexer.latency ? indexer.latency.toFixed(2) : null,
-  status: `${getStatusIcon(indexer.status)} ${indexer.status.toUpperCase()}`,
-})
 
 const getRpcStatus = (rpc: PingResponse): DataProviderStatus => {
   if (rpc.ping === Infinity || rpc.blockNumber === null) {
@@ -182,35 +92,4 @@ const rpcInfoToDebugFormat = (rpc: PingResponse) => {
 export function getBestRpc(rpcs: PingResponse[]): PingResponse | null {
   logger.table(rpcs.map(rpcInfoToDebugFormat))
   return first(rpcs) ?? null
-}
-
-export function getBestIndexer(
-  infos: IndexerInfo[],
-  referenceBlock: number | null,
-): IndexerInfo | null {
-  const classified = classifyIndexers(infos, referenceBlock)
-
-  logger.table(classified.map(indexerInfoToDebugFormat))
-
-  // Pick the best healthy master
-  const healthyMasterPool = classified.filter(
-    (info) => info.isMaster && info.status === DataProviderStatus.HEALTHY,
-  )
-
-  if (healthyMasterPool.length > 0) {
-    return pickBestCandidate(healthyMasterPool)
-  }
-
-  // Fallback 1: non-masters
-  const nonMasterPool = classified.filter((info) => !info.isMaster)
-  if (nonMasterPool.length > 0) {
-    return pickBestCandidate(nonMasterPool)
-  }
-
-  // Fallback 2: any non-offline
-  const anyAvailable = classified.filter(
-    (info) => info.status !== DataProviderStatus.OFFLINE,
-  )
-
-  return pickBestCandidate(anyAvailable)
 }

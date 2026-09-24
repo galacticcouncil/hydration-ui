@@ -4,11 +4,13 @@ import { BoxProps } from "@/components/Box"
 import { SpinnerIcon } from "@/components/Spinner"
 
 import {
+  LoadingMode,
   MicroButtonVariant,
   SButton,
   SButtonIcon,
   SButtonProps,
   SButtonTransparent,
+  SLoadingLabel,
   SMicroButton,
 } from "./Button.styled"
 
@@ -51,18 +53,34 @@ export const ButtonIcon: FC<ButtonProps> = (props) => {
   return <SButtonIcon as="button" type="button" {...props} />
 }
 
-export const LoadingButton: FC<
-  ButtonProps & { isLoading: boolean; loadingVariant?: ButtonProps["variant"] }
-> = ({ variant, loadingVariant = "tertiary", isLoading, ...props }) => {
+export type LoadingButtonProps = ButtonProps & {
+  isLoading: boolean
+  loadingVariant?: ButtonProps["variant"]
+  loadingMode?: LoadingMode
+}
+
+export const LoadingButton: FC<LoadingButtonProps> = ({
+  variant,
+  loadingVariant = "tertiary",
+  loadingMode = "inline",
+  isLoading,
+  children,
+  ...props
+}) => {
   return (
     <SButton
       as="button"
       type="button"
+      aria-busy={isLoading}
       variant={isLoading && loadingVariant ? loadingVariant : variant}
       {...props}
     >
-      {isLoading && <SpinnerIcon />}
-      {props.children}
+      <SLoadingLabel loadingMode={loadingMode}>
+        <span data-loading-spinner>
+          <SpinnerIcon size="1em" aria-hidden />
+        </span>
+        <span data-loading-content>{children}</span>
+      </SLoadingLabel>
     </SButton>
   )
 }

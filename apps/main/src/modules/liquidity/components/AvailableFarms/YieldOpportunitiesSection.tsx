@@ -24,7 +24,8 @@ export const YieldOpportunitiesSection = ({
   return (
     <>
       <SectionHeader
-        sx={{ mt: ["0", "xl"] }}
+        sx={{ mt: ["0", "l"] }}
+        noTopPadding
         title={t("details.section.yieldOpportunities")}
       />
       <Flex

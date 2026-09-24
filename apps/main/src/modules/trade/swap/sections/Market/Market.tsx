@@ -107,11 +107,10 @@ export const Market: FC = () => {
   return (
     <FormProvider {...form}>
       <form
-        sx={{ pb: isExpanded ? "xxl" : 0 }}
         onSubmit={form.handleSubmit((values) =>
           isSingleTrade
-            ? swap && submitSwap.mutate([values, swap])
-            : twap && submitTwap.mutate([values, twap]),
+            ? swap && submitSwap.mutate(values)
+            : twap && submitTwap.mutate(values),
         )}
       >
         <MarketFields

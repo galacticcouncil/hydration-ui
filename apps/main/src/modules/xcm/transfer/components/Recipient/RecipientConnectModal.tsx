@@ -5,10 +5,9 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { AnyChain } from "@galacticcouncil/xc-core"
 
-import { neckworkClient, useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useNeckworkEnabled } from "@/states/neckwork"
 
 export type RecipientConnectModalProps = {
   open: boolean
@@ -23,15 +22,12 @@ export const RecipientConnectModal: React.FC<RecipientConnectModalProps> = ({
   onOpenChange,
   onAccountSelect,
 }) => {
-  const squidSdk = useSquidClient()
   const { papi } = useRpcProvider()
-  const neckworkEnabled = useNeckworkEnabled()
   const walletMode = destChain ? getWalletModeByChain(destChain) : null
 
   return (
     <Web3ConnectModal
-      squidSdk={squidSdk}
-      neckwork={neckworkEnabled ? neckworkClient : null}
+      neckwork={neckworkClient}
       papi={papi}
       open={open}
       mode={walletMode ?? WalletMode.Default}

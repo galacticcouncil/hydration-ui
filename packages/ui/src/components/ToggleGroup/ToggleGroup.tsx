@@ -37,12 +37,13 @@ export type ToggleGroupRootProps<T extends string> =
 
 function ToggleGroup<T extends string>({
   size = "medium",
+  fullWidth = false,
   children,
   ...props
 }: ToggleGroupRootProps<T>) {
   return (
     <ToggleGroupContext.Provider value={{ size }}>
-      <SToggleGroup {...props} size={size}>
+      <SToggleGroup {...props} size={size} fullWidth={fullWidth}>
         {children}
       </SToggleGroup>
     </ToggleGroupContext.Provider>

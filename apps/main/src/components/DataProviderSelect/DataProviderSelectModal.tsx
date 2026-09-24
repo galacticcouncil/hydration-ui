@@ -15,14 +15,14 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AutoModeToggle } from "@/components/DataProviderSelect/components/AutoModeToggle"
+import { IndexerListModalContent } from "@/components/DataProviderSelect/components/indexer/IndexerListModalContent"
 import { RpcForm } from "@/components/DataProviderSelect/components/rpc/RpcForm"
 import { RpcListModalContent } from "@/components/DataProviderSelect/components/rpc/RpcListModalContent"
-import { SquidIndexerListModalContent } from "@/components/DataProviderSelect/components/squid/SquidIndexerListModalContent"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 enum TabView {
   RPC = "RpcSelect",
-  SQUID = "squid",
+  INDEXER = "indexer",
 }
 
 export type DataProviderSelectModalProps = ModalProps
@@ -50,7 +50,7 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
               <ToggleGroupItem value={TabView.RPC}>
                 {t("rpc.change.modal.view.rpc")}
               </ToggleGroupItem>
-              <ToggleGroupItem value={TabView.SQUID}>
+              <ToggleGroupItem value={TabView.INDEXER}>
                 {t("rpc.change.modal.view.indexer")}
               </ToggleGroupItem>
             </ToggleGroup>
@@ -73,8 +73,8 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
         <TabsContent value={TabView.RPC}>
           <RpcListModalContent poll={!!props.open} />
         </TabsContent>
-        <TabsContent value={TabView.SQUID}>
-          <SquidIndexerListModalContent />
+        <TabsContent value={TabView.INDEXER}>
+          <IndexerListModalContent />
         </TabsContent>
       </TabsRoot>
       <ModalFooter>
