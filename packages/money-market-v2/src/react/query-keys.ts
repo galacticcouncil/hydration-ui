@@ -38,4 +38,7 @@ export const moneyMarketKeys = {
 
   balances: (market: CustomMarket, user: Address | undefined) =>
     [...moneyMarketKeys.market(market), "balances", user] as const,
+
+  rewards: (market: CustomMarket, user: Address | undefined) =>
+    [...moneyMarketKeys.market(market), "rewards", user] as const,
 } as const

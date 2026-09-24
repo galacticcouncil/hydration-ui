@@ -7,19 +7,25 @@ import {
   readHollarFacilitator,
   readPositions,
   readReserves,
+  readUserIncentives,
   readWalletBalances,
   summarizeAccount,
+  SummarizeAccountRequest,
   summarizeReserves,
+  summarizeRewards,
+  SummarizeRewardsRequest,
 } from "@/core"
 import { useMoneyMarket } from "@/react/provider"
 import { moneyMarketKeys } from "@/react/query-keys"
 import { useTick } from "@/react/use-tick"
 import {
+  ClaimableReward,
   HollarFacilitator,
   MarketPositions,
   MarketReserves,
   MarketWalletBalances,
   ReserveSummary,
+  UserReserveIncentives,
 } from "@/types"
 
 /**
@@ -106,8 +112,30 @@ export const useReserveSummaries = (): DerivedResult<ReserveSummary[]> => {
   }
 }
 
+/** What {@link joinSources} needs from each read or derivation it joins. */
+type Source = Pick<
+  DerivedResult<unknown>,
+  "isPending" | "isError" | "error" | "refetch"
+>
+
 /**
- * The user's account standing and their per-position summaries.
+ * One {@link DerivedResult} over several sources: pending or failed if any of
+ * them is, the first error found, and a refetch that asks every one again.
+ */
+export const joinSources = <T>(
+  data: T | undefined,
+  sources: Source[],
+): DerivedResult<T> => ({
+  data,
+  isPending: sources.some((source) => source.isPending),
+  isError: sources.some((source) => source.isError),
+  error: sources.find((source) => source.error)?.error ?? null,
+  refetch: () => sources.forEach((source) => void source.refetch()),
+})
+
+/**
+ * Everything `summarizeAccount` — and so every assessment — takes, evaluated
+ * on one tick.
  *
  * Reserves and positions stay separate queries underneath — that is what lets
  * the reserve list still render when a user's positions cannot be fetched — so
@@ -118,11 +146,12 @@ export const useReserveSummaries = (): DerivedResult<ReserveSummary[]> => {
  * {@link useReserveSummaries}, so that the account and its collateral are
  * evaluated at exactly one timestamp. Two calls to {@link useTick} are two
  * independent timers, and an account valued a second apart from the reserves
- * backing it is a health factor nobody can reproduce.
+ * backing it is a health factor nobody can reproduce. A hook built on this one
+ * must therefore not call {@link useTick} again.
  */
-export const useAccountSummary = (
+export const useAccountRequest = (
   user: Address | undefined,
-): DerivedResult<AccountSummary> => {
+): DerivedResult<SummarizeAccountRequest> => {
   const reserves = useMarketReserves()
   const positions = useMarketPositions(user)
   const currentTimestamp = useTick()
@@ -133,26 +162,27 @@ export const useAccountSummary = (
   const data = useMemo(() => {
     if (!reservesData || !positionsData) return undefined
 
-    return summarizeAccount({
+    return {
       reserves: reservesData,
       summaries: summarizeReserves({ ...reservesData, currentTimestamp }),
       positions: positionsData,
       currentTimestamp,
-    })
+    }
   }, [reservesData, positionsData, currentTimestamp])
 
-  const refetch = useCallback(() => {
-    void reserves.refetch()
-    void positions.refetch()
-  }, [reserves, positions])
+  return joinSources(data, [reserves, positions])
+}
 
-  return {
-    data,
-    isPending: reserves.isPending || positions.isPending,
-    isError: reserves.isError || positions.isError,
-    error: reserves.error ?? positions.error,
-    refetch,
-  }
+/** The user's account standing and their per-position summaries. */
+export const useAccountSummary = (
+  user: Address | undefined,
+): DerivedResult<AccountSummary> => {
+  const request = useAccountRequest(user)
+  const { data } = request
+
+  const summary = useMemo(() => data && summarizeAccount(data), [data])
+
+  return { ...request, data: summary }
 }
 
 /**
@@ -196,4 +226,57 @@ export const useHollarFacilitator = (): UseQueryResult<
     queryFn: () => readHollarFacilitator(config, market),
     staleTime: POSITIONS_STALE_TIME,
   })
+}
+
+/**
+ * One user's reward state for every incentivised reserve, as read. The claim
+ * builders take this payload directly; what it is worth comes from
+ * {@link useClaimableRewards}.
+ */
+export const useUserIncentives = (
+  user: Address | undefined,
+): UseQueryResult<UserReserveIncentives[], Error> => {
+  const { config, market } = useMoneyMarket()
+
+  return useQuery({
+    queryKey: moneyMarketKeys.rewards(market.market, user),
+    queryFn: user ? () => readUserIncentives(config, market, user) : skipToken,
+    staleTime: POSITIONS_STALE_TIME,
+  })
+}
+
+/**
+ * What `summarizeRewards` takes, on the same single tick as the account it
+ * accrues against.
+ */
+export const useRewardsRequest = (
+  user: Address | undefined,
+): DerivedResult<SummarizeRewardsRequest> => {
+  const account = useAccountRequest(user)
+  const incentives = useUserIncentives(user)
+
+  const accountData = account.data
+  const userIncentives = incentives.data
+
+  const data = useMemo(() => {
+    if (!accountData || !userIncentives) return undefined
+
+    const { reserves, positions, currentTimestamp } = accountData
+
+    return { reserves, positions, userIncentives, currentTimestamp }
+  }, [accountData, userIncentives])
+
+  return joinSources(data, [account, incentives])
+}
+
+/** What the user can claim, per reward token, accrued to the current tick. */
+export const useClaimableRewards = (
+  user: Address | undefined,
+): DerivedResult<ClaimableReward[]> => {
+  const request = useRewardsRequest(user)
+  const { data } = request
+
+  const claimable = useMemo(() => data && summarizeRewards(data), [data])
+
+  return { ...request, data: claimable }
 }

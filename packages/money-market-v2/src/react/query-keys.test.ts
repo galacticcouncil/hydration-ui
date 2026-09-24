@@ -21,6 +21,7 @@ describe("moneyMarketKeys", () => {
       moneyMarketKeys.reserves("bil_v3"),
       moneyMarketKeys.positions("bil_v3", user),
       moneyMarketKeys.balances("bil_v3", user),
+      moneyMarketKeys.rewards("bil_v3", user),
     ]) {
       expect(key.slice(0, moneyMarketKeys.all.length)).toEqual([
         ...moneyMarketKeys.all,
@@ -47,6 +48,12 @@ describe("moneyMarketKeys", () => {
       "balances",
       user,
     ])
+    expect(moneyMarketKeys.rewards("gigahdx_v3", user)).toEqual([
+      "mm",
+      "gigahdx_v3",
+      "rewards",
+      user,
+    ])
   })
 
   it("keeps markets and users apart", () => {
@@ -70,6 +77,7 @@ describe("moneyMarketKeys", () => {
       moneyMarketKeys.reserves("hydration_v3"),
       moneyMarketKeys.positions("hydration_v3", user),
       moneyMarketKeys.balances("hydration_v3", user),
+      moneyMarketKeys.rewards("hydration_v3", user),
     ]
 
     for (const key of keys) {
