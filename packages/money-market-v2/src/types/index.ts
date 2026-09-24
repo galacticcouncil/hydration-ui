@@ -326,6 +326,18 @@ export type ReserveSummary = {
   borrowIncentives: IncentiveApr[]
 }
 
+/**
+ * One e-mode category the market offers, as its member reserves report it.
+ * `ltv` and `liquidationThreshold` are fractions, like `ReserveSummary.ltv`.
+ */
+export type EModeCategory = {
+  id: number
+  label: string
+  ltv: string
+  liquidationThreshold: string
+  assets: { underlyingAsset: Address; symbol: string }[]
+}
+
 /** One user's standing in one reserve, in human units. */
 export type PositionSummary = {
   underlyingAsset: Address

@@ -40,6 +40,7 @@ export type {
   SummarizeAccountRequest,
 } from "@/core/derive-account"
 export { summarizeAccount } from "@/core/derive-account"
+export { eModeCategories } from "@/core/derive-emode"
 export type { SummarizeRewardsRequest } from "@/core/derive-incentives"
 export { summarizeRewards } from "@/core/derive-incentives"
 export type { SummarizeReservesRequest } from "@/core/derive-reserves"
