@@ -487,6 +487,10 @@ export type FindingCode =
   | "hollarCapacityExhausted"
   /** Rates, prices and risk parameters can move the health factor later. */
   | "parameterChangesMayAffectHealthFactor"
+  /** The account owes nothing of this asset; there is nothing to repay. */
+  | "noDebt"
+  /** The wallet cannot cover the whole debt; some of it remains. */
+  | "repayLeavesDebt"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats
