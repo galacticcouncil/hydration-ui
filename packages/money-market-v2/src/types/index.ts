@@ -471,6 +471,8 @@ export type FindingCode =
   | "isolationJoinDisablesCollateral"
   /** The asset becomes the account's only, isolated collateral. */
   | "enteringIsolationMode"
+  /** The amount exceeds what the reserve holds uncommitted to borrowers. */
+  | "insufficientLiquidity"
 
 /**
  * What a finding's text is filled with. Plain values only — the app formats

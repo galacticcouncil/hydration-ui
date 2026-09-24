@@ -1,5 +1,6 @@
 import type { Address } from "viem"
 
+import { findByAsset, isAsset } from "@/core/assets"
 import type {
   AccountSummary,
   SummarizeAccountRequest,
@@ -96,7 +97,10 @@ export function projectPositions({
 
       const burned = rayDiv(
         change.amountRaw,
-        normalizedIncome(findReserve(reserves, change.asset), currentTimestamp),
+        normalizedIncome(
+          findByAsset(reserves.reserves, change.asset),
+          currentTimestamp,
+        ),
       )
 
       return updatePosition(positions, change.asset, (position) => {
@@ -123,7 +127,7 @@ export function projectPositions({
       const scaled = rayDiv(
         change.amountRaw,
         normalizedVariableDebt(
-          findReserve(reserves, change.asset),
+          findByAsset(reserves.reserves, change.asset),
           currentTimestamp,
         ),
       )
@@ -149,7 +153,7 @@ function supply(
 ): MarketPositions {
   if (amountRaw === 0n) return positions
 
-  const reserve = findReserve(reserves, asset)
+  const reserve = findByAsset(reserves.reserves, asset)
   const minted = rayDiv(amountRaw, normalizedIncome(reserve, currentTimestamp))
 
   return updatePosition(positions, asset, (position) => ({
@@ -185,7 +189,7 @@ function enablesAsCollateralOnFirstSupply(
 
   const isolationModeActive =
     collateral.length === 1 &&
-    findReserve(reserves, only.underlyingAsset).debtCeiling !== "0"
+    findByAsset(reserves.reserves, only.underlyingAsset).debtCeiling !== "0"
 
   return !isolationModeActive && reserve.debtCeiling === "0"
 }
@@ -217,20 +221,6 @@ function updatePosition(
       isAsset(position.underlyingAsset, asset) ? update(position) : position,
     ),
   }
-}
-
-function findReserve(reserves: MarketReserves, asset: Address): Reserve {
-  const reserve = reserves.reserves.find((candidate) =>
-    isAsset(candidate.underlyingAsset, asset),
-  )
-  if (!reserve) throw new Error(`No reserve for ${asset} in this market`)
-
-  return reserve
-}
-
-/** Chain addresses are lowercased at decode; a caller's may be checksummed. */
-function isAsset(a: Address, b: Address): boolean {
-  return a.toLowerCase() === b.toLowerCase()
 }
 
 function subtract(balance: string, amount: bigint): string {

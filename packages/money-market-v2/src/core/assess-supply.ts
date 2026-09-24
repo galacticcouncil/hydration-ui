@@ -1,5 +1,6 @@
 import type { Address } from "viem"
 
+import { findByAsset, isAsset } from "@/core/assets"
 import { Decimal, toBaseUnits, truncate } from "@/core/big"
 import type {
   AccountSummary,
@@ -12,7 +13,6 @@ import type {
   Finding,
   IsolationJoin,
   MarketWalletBalances,
-  Reserve,
   ReserveSummary,
 } from "@/types"
 
@@ -198,21 +198,4 @@ function supplyMax({
       : capRoom
 
   return truncate(max, decimals)
-}
-
-function findByAsset<Entry extends Reserve | ReserveSummary>(
-  entries: Entry[],
-  asset: Address,
-): Entry {
-  const entry = entries.find((candidate) =>
-    isAsset(candidate.underlyingAsset, asset),
-  )
-  if (!entry) throw new Error(`No reserve for ${asset} in this market`)
-
-  return entry
-}
-
-/** Chain addresses are lowercased at decode; a caller's may be checksummed. */
-function isAsset(a: Address, b: Address): boolean {
-  return a.toLowerCase() === b.toLowerCase()
 }
