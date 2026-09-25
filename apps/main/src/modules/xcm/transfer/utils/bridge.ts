@@ -1,8 +1,9 @@
-import { Basejumper, WormholeLogo } from "@galacticcouncil/ui/assets/icons"
+import { WormholeLogo, ZapIcon } from "@galacticcouncil/ui/assets/icons"
 import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
 import { isNonNullish, sortBy } from "remeda"
 
+import i18n from "@/i18n"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
@@ -16,19 +17,22 @@ export const isWormholeFamilyTag = (tag: string | null | undefined): boolean =>
   !!tag && WORMHOLE_FAMILY_TAGS.includes(tag as XcmTags[number])
 
 export const BRIDGE_TIME: Record<string, string> = {
-  [XcmTag.Basejump]: "≈ 22 sec",
-  [XcmTag.Wormhole]: "≈ 30 min",
-  [XcmTag.NttExecutor]: "≈ 30 min",
+  [XcmTag.Basejump]: "≈ 10 sec",
+  [XcmTag.Wormhole]: "≈ 20 min",
+  [XcmTag.NttExecutor]: "≈ 20 min",
 }
 
 export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
-  [XcmTag.Basejump]: Basejumper,
+  [XcmTag.Basejump]: ZapIcon,
   [XcmTag.Wormhole]: WormholeLogo,
   [XcmTag.NttExecutor]: WormholeLogo,
 }
 
 export const BRIDGE_LABEL: Record<string, string> = {
-  [XcmTag.NttExecutor]: "Wormhole",
+  [XcmTag.Basejump]: i18n.t("xcm:bridge.basejump"),
+  [XcmTag.Wormhole]: i18n.t("xcm:bridge.wormhole"),
+  [XcmTag.NttExecutor]: i18n.t("xcm:bridge.wormhole"),
+  [XcmTag.Snowbridge]: i18n.t("xcm:bridge.snowbridge"),
 }
 
 export const BRIDGE_PRIORITY: Record<string, number> = {

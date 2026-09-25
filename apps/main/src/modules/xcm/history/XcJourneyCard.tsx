@@ -1,8 +1,8 @@
 import {
   ArrowRight,
-  Basejumper,
   ExternalLinkIcon,
   QuestionCircleRegular,
+  ZapIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
@@ -103,7 +103,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
             {originProtocol === "basejump" && (
               <Flex gap="s" align="center">
                 <Icon
-                  component={Basejumper}
+                  component={ZapIcon}
                   size="m"
                   color={getToken("colors.skyBlue.600")}
                 />
