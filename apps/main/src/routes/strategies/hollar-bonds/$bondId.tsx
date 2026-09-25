@@ -1,8 +1,8 @@
 import { createFileRoute, useParams } from "@tanstack/react-router"
 
 import { getPageMeta } from "@/config/navigation"
+import { StrategyPageSkeleton } from "@/modules/strategies/components/StrategyPageSkeleton"
 import { StableBondsPage } from "@/modules/strategies/stable-bonds/StableBondsPage"
-import { StableBondsPageSkeleton } from "@/modules/strategies/stable-bonds/StableBondsPageSkeleton"
 
 const RouteComponent = () => {
   const { bondId } = useParams({ from: "/strategies/hollar-bonds/$bondId" })
@@ -12,7 +12,7 @@ const RouteComponent = () => {
 
 export const Route = createFileRoute("/strategies/hollar-bonds/$bondId")({
   component: RouteComponent,
-  pendingComponent: StableBondsPageSkeleton,
+  pendingComponent: StrategyPageSkeleton,
   staticData: {
     crumb: {
       type: "asset",

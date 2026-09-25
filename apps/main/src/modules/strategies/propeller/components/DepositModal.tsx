@@ -24,6 +24,7 @@ export const DepositModal = ({ vault, onClose }: Props) => {
           <DepositForm
             key={vault.vaultAddress}
             initialVault={vault}
+            lockAsset
             onSuccess={onClose}
           />
         )}

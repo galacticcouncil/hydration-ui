@@ -1,9 +1,15 @@
-import { Text } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  ProgressBar,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { AssetProgressStat } from "@/components/AssetProgressStat"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useInitialOtcOfferAmount } from "@/modules/trade/otc/table/columns/OfferStatusColumn.utils"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { scaleHuman } from "@/utils/formatting"
@@ -38,13 +44,35 @@ export const StableBondsCurrency: React.FC<StableBondsCurrencyProps> = ({
       ? Big(amount).div(initialAmount).mul(100).toNumber()
       : 0
 
+  const renderProgress = () => {
+    if (!isFillable) return null
+    if (isLoading) return <Skeleton sx={{ height: "2xs" }} />
+    if (remainingPct <= 0) return null
+
+    return (
+      <Box asChild minWidth="8rem">
+        <ProgressBar
+          value={remainingPct}
+          size="small"
+          customLabel={
+            <Text
+              fs="p4"
+              as="span"
+              fw={600}
+              color={getToken("text.tint.quart")}
+            >
+              {t("percent", { value: remainingPct })}
+            </Text>
+          }
+        />
+      </Box>
+    )
+  }
+
   return (
-    <AssetProgressStat
-      assetId={asset.id}
-      layout="grid"
-      progressPct={isFillable ? remainingPct : 0}
-      isProgressLoading={isFillable && isLoading}
-      value={
+    <Flex direction="column">
+      <Flex align="center" gap="base">
+        <AssetLogo id={asset.id} size="medium" hideChain />
         <Text
           font="primary"
           fs="h6"
@@ -56,7 +84,8 @@ export const StableBondsCurrency: React.FC<StableBondsCurrencyProps> = ({
             ? t("number", { value: amount })
             : t("strategies:bonds.soldOut")}
         </Text>
-      }
-    />
+      </Flex>
+      {renderProgress()}
+    </Flex>
   )
 }

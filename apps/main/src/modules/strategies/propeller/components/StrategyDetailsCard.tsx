@@ -5,10 +5,10 @@ import {
   CardHeader,
   CardTitle,
   DataTable,
-  Grid,
   Separator,
   TableContainer,
   ValueStats,
+  ValueStatsGroup,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useState } from "react"
@@ -41,11 +41,7 @@ export const StrategyDetailsCard = () => {
         <CardTitle>{t("strategy.title")}</CardTitle>
       </CardHeader>
       <CardBody>
-        <Grid
-          columnTemplate={["repeat(2, 1fr)", null, "repeat(4, auto)"]}
-          gap="xl"
-          justify="space-between"
-        >
+        <ValueStatsGroup>
           <ValueStats
             wrap
             size="medium"
@@ -70,7 +66,7 @@ export const StrategyDetailsCard = () => {
             label={t("strategy.riskProfile")}
             value={t(`strategy.risk.${PROPELLER_RISK_PROFILE}`)}
           />
-        </Grid>
+        </ValueStatsGroup>
       </CardBody>
       <Separator />
       {isMobile || isTablet ? (

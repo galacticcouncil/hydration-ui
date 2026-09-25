@@ -1,11 +1,13 @@
 import {
   Box,
   Button,
-  Flex,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   MicroButton,
-  Paper,
   PositionCard,
-  Separator,
+  Stack,
   Text,
   Tooltip,
   ValueStats,
@@ -91,111 +93,110 @@ export const MyPositionsCard = () => {
   if (!rows.length) return null
 
   return (
-    <Paper>
-      <Box p="l">
-        <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("common:myPositions")}
-        </Text>
-      </Box>
-      <Separator />
-      <Flex direction="column" gap="m" p="m">
-        {rows.map((row) => {
-          const canWithdraw = Big(row.amount).gte(stats.minRedeem)
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("common:myPositions")}</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Stack gap="m">
+          {rows.map((row) => {
+            const canWithdraw = Big(row.amount).gte(stats.minRedeem)
 
-          return (
-            <PositionCard
-              key={row.id}
-              logo={<AssetLogo id={bil.id} size="medium" hideChain />}
-              symbol={row.label}
-              stats={
-                <>
-                  <ValueStats
-                    wrap
-                    size="small"
-                    font="secondary"
-                    label={t("common:amount")}
-                    customValue={
-                      <Text fs="p3" fw={500} lh={1}>
-                        {t("common:currency", {
-                          value: row.amount,
-                          symbol: bil.symbol,
-                        })}
-                      </Text>
-                    }
-                    bottomLabel={t("common:currency", {
-                      value: row.usdValue,
-                    })}
-                  />
-                  <ValueStats
-                    wrap
-                    size="small"
-                    font="secondary"
-                    label={t("borrow:netWorth")}
-                    customValue={
-                      <Text fs="p3" fw={500} lh={1}>
-                        {t("common:currency", {
-                          value: row.netWorthUsd,
-                        })}
-                      </Text>
-                    }
-                    bottomLabel={t("bil.positions.afterBorrow")}
-                  />
-                  <ValueStats
-                    wrap
-                    size="small"
-                    font="secondary"
-                    label={t("common:apy")}
-                    customValue={
-                      <Text fs="p3" fw={500} lh={1}>
-                        {t("common:percent", {
-                          value: row.netApyPercent,
-                        })}
-                      </Text>
-                    }
-                  />
-                </>
-              }
-              cta={
-                <>
-                  {row.isRaw && (
-                    <MicroButton
-                      onClick={() => supplyRawMutation.mutate(bilRaw)}
-                      disabled={supplyRawMutation.isPending}
-                    >
-                      {supplyRawMutation.isPending
-                        ? t("bil.positions.action.depositing")
-                        : t("common:deposit")}
-                    </MicroButton>
-                  )}
-                  <Tooltip
-                    text={
-                      !canWithdraw
-                        ? t("bil.withdraw.cta.belowMin", {
-                            min: stats.minRedeem,
+            return (
+              <PositionCard
+                key={row.id}
+                logo={<AssetLogo id={bil.id} size="medium" hideChain />}
+                symbol={row.label}
+                stats={
+                  <>
+                    <ValueStats
+                      wrap
+                      size="small"
+                      font="secondary"
+                      label={t("common:amount")}
+                      customValue={
+                        <Text fs="p3" fw={500} lh={1}>
+                          {t("common:currency", {
+                            value: row.amount,
                             symbol: bil.symbol,
-                          })
-                        : undefined
-                    }
-                    asChild
-                    side="top"
-                  >
-                    <Box as="span" sx={{ display: "inline-flex" }}>
-                      <Button
-                        variant="tertiary"
-                        size="small"
-                        disabled={!canWithdraw}
-                        onClick={() => setWithdrawSource(row.id)}
+                          })}
+                        </Text>
+                      }
+                      bottomLabel={t("common:currency", {
+                        value: row.usdValue,
+                      })}
+                    />
+                    <ValueStats
+                      wrap
+                      size="small"
+                      font="secondary"
+                      label={t("borrow:netWorth")}
+                      customValue={
+                        <Text fs="p3" fw={500} lh={1}>
+                          {t("common:currency", {
+                            value: row.netWorthUsd,
+                          })}
+                        </Text>
+                      }
+                      bottomLabel={t("bil.positions.afterBorrow")}
+                    />
+                    <ValueStats
+                      wrap
+                      size="small"
+                      font="secondary"
+                      label={t("common:apy")}
+                      customValue={
+                        <Text fs="p3" fw={500} lh={1}>
+                          {t("common:percent", {
+                            value: row.netApyPercent,
+                          })}
+                        </Text>
+                      }
+                    />
+                  </>
+                }
+                cta={
+                  <>
+                    {row.isRaw && (
+                      <MicroButton
+                        onClick={() => supplyRawMutation.mutate(bilRaw)}
+                        disabled={supplyRawMutation.isPending}
                       >
-                        {t("common:withdraw")}
-                      </Button>
-                    </Box>
-                  </Tooltip>
-                </>
-              }
-            />
-          )
-        })}
-      </Flex>
+                        {supplyRawMutation.isPending
+                          ? t("bil.positions.action.depositing")
+                          : t("common:deposit")}
+                      </MicroButton>
+                    )}
+                    <Tooltip
+                      text={
+                        !canWithdraw
+                          ? t("bil.withdraw.cta.belowMin", {
+                              min: stats.minRedeem,
+                              symbol: bil.symbol,
+                            })
+                          : undefined
+                      }
+                      asChild
+                      side="top"
+                    >
+                      <Box as="span" sx={{ display: "inline-flex" }}>
+                        <Button
+                          variant="tertiary"
+                          size="small"
+                          disabled={!canWithdraw}
+                          onClick={() => setWithdrawSource(row.id)}
+                        >
+                          {t("common:withdraw")}
+                        </Button>
+                      </Box>
+                    </Tooltip>
+                  </>
+                }
+              />
+            )
+          })}
+        </Stack>
+      </CardBody>
 
       {withdrawSource && (
         <WithdrawModal
@@ -204,6 +205,6 @@ export const MyPositionsCard = () => {
           withdrawSource={withdrawSource}
         />
       )}
-    </Paper>
+    </Card>
   )
 }
