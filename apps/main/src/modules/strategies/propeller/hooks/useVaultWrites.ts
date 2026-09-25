@@ -253,11 +253,11 @@ export function useRequestRedeem(
   const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
-    mutationFn: (shareAmount: number) => {
+    mutationFn: (shareAmount: string) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseUnits(shareAmount.toString(), decimals), evmAddress],
+        args: [parseUnits(shareAmount, decimals), evmAddress],
       })
 
       const fmt = t("currency", {
