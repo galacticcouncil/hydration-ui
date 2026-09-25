@@ -851,14 +851,26 @@ export const bandSegments = (
 
   if (!covered.length) return fallback
 
+  const ownLiquidity = max * band.height
+
   return covered.reduce<BandSegment[]>((segments, bar) => {
+    // too thin to show on top of another band: the min height would paint
+    // over the band underneath instead
+    if (
+      ownLiquidity < minBarHeight &&
+      bar.liquidity - ownLiquidity >= minBarHeight
+    ) {
+      return segments
+    }
+
     const barTop = Math.max(bar.liquidity, minBarHeight)
     const lower = Math.max(bar.from, band.lower)
     const upper = Math.min(bar.to, band.upper)
     const last = segments.at(-1)
 
-    if (last && last.barTop === barTop) last.upper = upper
-    else segments.push({ lower, upper, barTop })
+    if (last && last.barTop === barTop && last.upper === lower) {
+      last.upper = upper
+    } else segments.push({ lower, upper, barTop })
 
     return segments
   }, [])
