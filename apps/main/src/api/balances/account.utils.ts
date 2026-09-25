@@ -130,13 +130,11 @@ export const syncErc20BalanceSnapshot = (
 
 export const withMaxWithdraw = (
   balance: Balance,
-  underlyingAssetId: string | undefined,
+  aTokenId: string | undefined,
   maxWithdrawAll: Record<number, Amount>,
   isMaxWithdrawFetching = false,
 ): Balance => {
-  const maxWithdraw = underlyingAssetId
-    ? maxWithdrawAll[Number(underlyingAssetId)]
-    : undefined
+  const maxWithdraw = aTokenId ? maxWithdrawAll[Number(aTokenId)] : undefined
 
   if (!maxWithdraw) return balance
 

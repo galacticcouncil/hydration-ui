@@ -63,7 +63,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(useRpcProvider(), {
       address: account?.address ?? "",
-      fromAssetId: asset && isErc20AToken(asset) ? asset.underlyingAssetId : "",
+      fromAssetId: asset && isErc20AToken(asset) ? asset.id : "",
       fromAmount: amount,
     }),
   )

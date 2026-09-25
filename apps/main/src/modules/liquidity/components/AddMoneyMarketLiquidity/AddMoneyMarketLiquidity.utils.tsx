@@ -303,7 +303,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
-      fromAssetId: aTokenToWithdraw?.asset.underlyingAssetId ?? "",
+      fromAssetId: aTokenToWithdraw?.asset.id ?? "",
       fromAmount: aTokenToWithdraw?.amount ?? "0",
     }),
   )

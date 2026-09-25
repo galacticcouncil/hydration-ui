@@ -1,6 +1,5 @@
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
@@ -74,23 +73,19 @@ export const useOpenBudgetDcaHfValidation = (
   const { account } = useAccount()
   const address = account?.address ?? ""
 
+  const assetIn = order ? getAsset(order.assetIn) : undefined
+  const aTokenIn = assetIn && isErc20AToken(assetIn) ? assetIn : undefined
+
   const { data: aaveSummary } = useQuery(
-    aaveSummaryQuery(rpc, address, isOpenBudget),
+    aaveSummaryQuery(rpc, address, aTokenIn?.id ?? "", isOpenBudget),
   )
 
-  if (!order || !healthFactor || !isOpenBudget) {
-    return
-  }
-
-  const assetIn = getAsset(order.assetIn)
-
-  if (!assetIn || !isErc20AToken(assetIn)) {
+  if (!order || !healthFactor || !isOpenBudget || !aTokenIn) {
     return
   }
 
   const reserve = aaveSummary?.reserves.find(
-    (reserve) =>
-      getAssetIdFromAddress(reserve.reserveAsset) === assetIn.underlyingAssetId,
+    (reserve) => reserve.aTokenId === Number(aTokenIn.id),
   )
 
   return { ...healthFactor, isUserConsentRequired: !!reserve?.isCollateral }
