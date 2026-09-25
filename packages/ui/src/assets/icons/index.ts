@@ -1,6 +1,5 @@
 export { default as ArrowMigration } from "./ArrowMigration.svg?react"
 export { default as ArrowRightLong } from "./ArrowRightLong.svg?react"
-export { default as Basejumper } from "./Basejumper.svg?react"
 export { default as BinanceLogo } from "./BinanceLogo.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
 export { default as ChartLegendItemIcon } from "./ChartLegendItemIcon.svg?react"

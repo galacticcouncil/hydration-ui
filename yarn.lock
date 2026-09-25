@@ -1665,18 +1665,18 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.6.0.tgz#736352036931b9e2bad5f38f651c1506ae70daf1"
-  integrity sha512-DXAzIiNfWEXr558pslZeOuLksfM5m122V3VCu+Wq2l5NiHqCiwFsr1i2U0zxcW4yyyih2Etf9sOwEoTst6zLkQ==
+"@galacticcouncil/xc-cfg@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.7.0.tgz#80c2b0b649e7c3c299a564b284ceefbcdafb680a"
+  integrity sha512-1UtNSqRnPm2K4EDDkW0GcYaU3gNTcxwT/3pQs0GxIpmR3Bmm/NXoL5Wj/dR3oz9FMXrUM7iVG5oaxwf9va9hhw==
   dependencies:
-    "@galacticcouncil/xc-core" "^2.5.0"
+    "@galacticcouncil/xc-core" "^2.6.0"
     "@thi.ng/memoize" "^4.0.2"
 
-"@galacticcouncil/xc-core@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-2.5.0.tgz#bfbbc1584c53c8d819b2f43b72aa15712883ddf8"
-  integrity sha512-Bxddxq/1tzVBX9kZPSRHRK3P0H7Nqsw2fjVVpdCJ5Gn/XkbYhZYCVgL1nQ/imtcscNrpbnPMVTvG82sEzp7AZw==
+"@galacticcouncil/xc-core@^2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-2.6.0.tgz#1e95b1bc0cbed0a32c0b4e108064a0c8005a5134"
+  integrity sha512-ymoxujG+i1BlL+Qz3uYVoKwaIQDoei+wvBhCkS0ejEUU4qnLtY+XwsVvXiwoJ+ScSbdI5Qfpx2oqIxppEBGP1A==
   dependencies:
     "@mysten/sui" "^1.21.2"
     "@noble/hashes" "^1.6.1"
@@ -1698,12 +1698,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
   integrity sha512-OS/TfBaToyHSN6VqlfDxjXnBeI4Nx03OBGNrlS7a6qlutGF28lqGFiQgzqEGRYo5iQcTV2/WmKcBsWaMOl31fg==
 
-"@galacticcouncil/xc-sdk@^2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-2.4.1.tgz#38d3bb9cf576e1be00450b11dbfa55dbc21ede13"
-  integrity sha512-KLAWY/mdKGyBY2qzKUV6hoGCWvtPGAot46JMEmVHWCL1KTGVufjI37/KsQGVDzDrkGDH2SVAf0ZolGK1I/oJew==
+"@galacticcouncil/xc-sdk@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-2.5.0.tgz#3042afdf7119cef3bbf63fe8de54257dd658dcb6"
+  integrity sha512-BYdFYtCE4sL3ZOoIuy95VGJR0M0jWwJyY1BqePmfNxDyzfQ5VilwWgrDA8BZF/li8ulULwox0XEdbgtmLv+n7Q==
   dependencies:
-    "@galacticcouncil/xc-core" "^2.5.0"
+    "@galacticcouncil/xc-core" "^2.6.0"
 
 "@galacticcouncil/xc-swap@^0.9.0":
   version "0.9.0"
@@ -11674,10 +11674,10 @@ own-keys@^1.0.1:
     object-keys "^1.1.1"
     safe-push-apply "^1.0.0"
 
-ox@0.14.17:
-  version "0.14.17"
-  resolved "https://registry.yarnpkg.com/ox/-/ox-0.14.17.tgz#3e35260162c1cd89e41bd6ea187e205b24416c46"
-  integrity sha512-jOzNb2Wlfzsr8z/GoCtd1bf6OSRuWuysvbhnHGD+7fV1WRbcBR6B0RYoe3xWnUedF7zp4l5APmS7CzAhUok/lA==
+ox@0.14.45:
+  version "0.14.45"
+  resolved "https://registry.yarnpkg.com/ox/-/ox-0.14.45.tgz#30c656f485d5fb07cb6d570292f9d1dc9cc3234a"
+  integrity sha512-jpsQ+p0JZh9mKCxxzxz0d5qFHZZg2/O9xW18IpEC/dNXXPVqmDJ0c//9RMz0CILkbSGPA42+cbU0fC/ghwJ03w==
   dependencies:
     "@adraffy/ens-normalize" "^1.11.0"
     "@noble/ciphers" "^1.3.0"
@@ -14254,10 +14254,10 @@ vfile@^6.0.0:
     "@types/unist" "^3.0.0"
     vfile-message "^4.0.0"
 
-viem@>=2.45.0, viem@^2.1.1, viem@^2.30.0, viem@^2.31.7, viem@^2.38.3, viem@^2.47.0:
-  version "2.48.1"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.48.1.tgz#70131c1e8b1780710e38a66933726473e0865191"
-  integrity sha512-GJC3gKV1Hngeo1IB9YanJKHH2pcmoqDymyPxddmzDtG8boXA7eFw8qdnn1PSaToJ93f3LpOZPlLLJ9beAF/Lzg==
+viem@>=2.45.0, viem@^2.1.1, viem@^2.31.7, viem@^2.47.0, viem@^2.55.4:
+  version "2.56.8"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.56.8.tgz#7fe17f76e11730c8f72ab7ecaf671d02054ea6f3"
+  integrity sha512-vD1DsnYxySMml5/02m/+boWQYfZtWug2VYzm6+hdVT+VDmULBZfpoh9gPDAENdMMBmQKW/2QJ/1DuZaslBJDAg==
   dependencies:
     "@noble/curves" "1.9.1"
     "@noble/hashes" "1.8.0"
@@ -14265,8 +14265,8 @@ viem@>=2.45.0, viem@^2.1.1, viem@^2.30.0, viem@^2.31.7, viem@^2.38.3, viem@^2.47
     "@scure/bip39" "1.6.0"
     abitype "1.2.3"
     isows "1.0.7"
-    ox "0.14.17"
-    ws "8.18.3"
+    ox "0.14.45"
+    ws "8.21.0"
 
 vite-plugin-html@^3.2.2:
   version "3.2.2"
@@ -14510,10 +14510,10 @@ ws@8.18.0:
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.0.tgz#0d7505a6eafe2b0e712d232b42279f53bc289bbc"
   integrity sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==
 
-ws@8.18.3:
-  version "8.18.3"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.3.tgz#b56b88abffde62791c639170400c93dcb0c95472"
-  integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
+ws@8.21.0:
+  version "8.21.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.21.0.tgz#012e413fc07429945121b0c153158c4343086951"
+  integrity sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==
 
 ws@^7.5.1, ws@^7.5.10:
   version "7.5.10"

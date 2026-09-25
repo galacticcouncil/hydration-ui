@@ -205,13 +205,14 @@ export const LiquidityDistribution = ({
                     x2: "upper",
                     // the band caps the bars it covers instead of stacking
                     // above them; a stacked band is trimmed at the bottom so
-                    // it doesn't touch the band underneath
-                    y1: () =>
-                      Math.max(
-                        0,
+                    // it doesn't touch the band underneath; with nothing
+                    // underneath it sits flush on the axis
+                    y1: () => {
+                      const bottom =
                         segment.barTop -
-                          Math.max(top * band.height, minVisibleLiquidity),
-                      ) + (band.offset ? bandGap : 0),
+                        Math.max(top * band.height, minVisibleLiquidity)
+                      return bottom > bandGap ? bottom + bandGap : 0
+                    },
                     y2: () => segment.barTop,
                     fill: rangeStyle(band.id).color,
                     fillOpacity: rangeStyle(band.id).fillOpacity,

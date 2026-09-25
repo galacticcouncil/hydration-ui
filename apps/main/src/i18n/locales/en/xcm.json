@@ -11,7 +11,7 @@
   "wrap.toast.success": "Wrapped {{ symbol }} on {{ srcChain }}",
   "bridge.wormhole": "Wormhole",
   "bridge.snowbridge": "Snowbridge",
-  "bridge.basejump": "Basejump",
+  "bridge.basejump": "Instant Bridge",
   "chainAssetSelect.button.selectAssetChain": "Select asset & chain",
   "chainAssetSelect.emptyState.noAssets": "No assets found",
   "chainAssetSelect.modal.title": "Chain & asset",
