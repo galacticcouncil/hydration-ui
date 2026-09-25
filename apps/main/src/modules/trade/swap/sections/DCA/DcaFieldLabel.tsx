@@ -4,6 +4,6 @@ import { FC } from "react"
 
 export const DcaFieldLabel: FC<TextProps> = (props) => {
   return (
-    <Text fw={500} fs="p5" lh={1.2} color={getToken("text.low")} {...props} />
+    <Text fw={500} fs="p5" lh={1.4} color={getToken("text.low")} {...props} />
   )
 }

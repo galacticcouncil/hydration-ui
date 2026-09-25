@@ -1,4 +1,4 @@
-import { keyframes } from "@emotion/react"
+import { css, keyframes, Theme } from "@emotion/react"
 
 export const animations = {
   rotate: keyframes`
@@ -318,3 +318,44 @@ export const animations = {
     }
   `,
 }
+
+export const floatingScaleAnimation = (theme: Theme) => css`
+  animation-duration: 150ms;
+  animation-timing-function: ${theme.easings.outExpo};
+
+  &[data-state$="open"] {
+    &[data-side="top"] {
+      animation-name: ${theme.animations.scaleInTop};
+    }
+
+    &[data-side="bottom"] {
+      animation-name: ${theme.animations.scaleInBottom};
+    }
+
+    &[data-side="left"] {
+      animation-name: ${theme.animations.scaleInLeft};
+    }
+
+    &[data-side="right"] {
+      animation-name: ${theme.animations.scaleInRight};
+    }
+  }
+
+  &[data-state="closed"] {
+    &[data-side="top"] {
+      animation-name: ${theme.animations.scaleOutTop};
+    }
+
+    &[data-side="bottom"] {
+      animation-name: ${theme.animations.scaleOutBottom};
+    }
+
+    &[data-side="left"] {
+      animation-name: ${theme.animations.scaleOutLeft};
+    }
+
+    &[data-side="right"] {
+      animation-name: ${theme.animations.scaleOutRight};
+    }
+  }
+`

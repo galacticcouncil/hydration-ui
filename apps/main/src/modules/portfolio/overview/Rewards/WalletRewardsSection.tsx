@@ -98,7 +98,7 @@ export const WalletRewardsSection: FC = () => {
         <LoadingButton
           isLoading={claimAll.isPending}
           width="max-content"
-          disabled={claimAll.isPending || isEmpty}
+          disabled={isEmpty}
           onClick={() => claimAll.mutate()}
         >
           {isEmpty && !isLoading

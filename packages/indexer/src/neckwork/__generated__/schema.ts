@@ -13,23 +13,23 @@ export interface paths {
         };
         /**
          * Bucketed protocol revenue by product and stream
-         * @description Bucketed protocol revenue, mirroring `hydration-metrics-aggregator`'s `/api/v1/fees/charts` so the Hydration UI's fees page works against this API by base-URL swap alone. Values are JSON **numbers** here — the one documented exception to this surface's decimal-string convention.
+         * @description Bucketed protocol revenue, mirroring `hydration-metrics-aggregator`'s `/api/v1/fees/charts` so the Hydration UI's fees page works against this API by base-URL swap alone. Values are JSON **numbers** here — one of the inherited-contract exceptions to this surface's decimal-string convention, alongside `/defillama/v1`, `/hydration-web/v1` and `/lending/v1`.
          *
          *     **Buckets.** A bucket exists when its source had at least one row in it; empty buckets are omitted rather than zero-filled. Bucket starts sit on a grid anchored at 2000-01-03T00:00:00Z (inert for 1hour/6hour/24hour, which are plain UTC hours and days; it is what puts 7day buckets on Mondays and reproduces the incumbent's 30day grid). Only buckets whose START falls inside [startTime, endTime] are returned.
          *
          *     **periodAggregate** is the sum of the returned buckets.
          *
-         *     **Streams.** `asset`/`protocol` are the Omnipool's per-asset and hub (LRNA) trade fees. `liquidation_penalty` is the protocol's share of a money-market liquidation bonus, derived from the liquidator's net bonus because Aave reports collateral already net of that share. `pepl_liquidation_profit` is the protocol liquidator's own profit, straight from the `Liquidation.Liquidated` event. `asset_reserve` is the reserve-factor share of borrow interest (`MintedToTreasury`); no reserve has minted since 2026-06-25, so recent windows are legitimately empty. `borrow_apr` is interest accruing on HOLLAR debt.
+         *     **Streams.** `asset`/`protocol` are the Omnipool's per-asset and hub (H2O) trade fees. `liquidation_penalty` is the protocol's share of a money-market liquidation bonus, read from the aToken transfer that moves it into the Aave collector inside the liquidation's block (4,124 of 4,124 liquidation blocks carry it) — the amount that physically moved, per event. **The incumbent's series is much larger and wrong**: on the 2026-02-05 cascade it booked 28,898.59 against 1,342.67 of actually-transferred fees (verified per event — e.g. the block 11,246,567 GDOT liquidation's transfer is 137.83 GDOT, exactly 10% of its gross bonus), and over the trailing year it reports ~7.6x the transferred total. Expect this stream to read far BELOW the incumbent on cascade days; that is the correction, not a gap. `pepl_liquidation_profit` is the protocol liquidator's own profit, straight from the `Liquidation.Liquidated` event. `asset_reserve` is the reserve-factor share of borrow interest, recognised when Aave MINTS it (`MintedToTreasury`); no mint has fired since 2026-06-25, so recent windows are empty. That is a recognition boundary, not an absence of revenue: the protocol's cut keeps accruing in each reserve's on-chain `accruedToTreasury` and is booked only when `mintToTreasury` is next called, at which point the whole accrued span lands in the bucket holding that mint. `borrow_apr` is interest accruing on HOLLAR debt.
          *
-         *     **`hsm_revenue` is NOT served and answers 400.** The HSM earns most of its revenue arbitraging HOLLAR back to peg in the stablepools, and that spread is not recoverable from indexed data: `HSM.ArbitrageExecuted` reports a profit of `"0"` on all 343,522 rows and the arbitrage's collateral leg never reaches `pool_swap_legs`. Serving the swaps-filled channel alone was measured and is dominated by the gap between its two legs' price candles rather than by the HSM fee (20 of 45 weekly buckets negative over a year), so a wrong number is refused rather than published. Every other stream is unaffected.
+         *     **`hsm_revenue`** is the HSM's stablepool arbitrage profit plus its buyback fee, per fill. An arbitrage's profit is its own pool trade's two legs held against each other — HOLLAR retired at face, the aUSDT/aUSDC leg at PARITY (no price feed can perturb a peg leg); a fill counts only when an `HSM.ArbitrageExecuted` in its block names its exact HOLLAR amount, which keeps the protocol liquidator's sales through the same pools out. The closed sUSDe/sUSDS collateral era (2025-10-02 … 2026-07-28, ~11% of arb volume) values the collateral leg at its 1h close and drops unpriceable or negative fills. Buyback fees follow the module's own configuration history (10% for its first six hours, 1bp since block 9,336,534; purchases have always been free). The incumbent's series is NOT comparable: it books balance inflows as revenue — the one governance top-up of the HSM ever made ($201,908.69 from the treasury at block 13,558,633) appears there as 202,976.99 of "revenue" — while a transfer is not a fill and contributes nothing here. Per its rule this stream's `periodAggregate` is the MEAN of the returned buckets, not the sum.
          *
-         *     **Valuation** is event-time: each amount is priced at the 1h candle that had already closed when it happened. The incumbent prices off the money-market oracle, so values agree in magnitude rather than to the cent. Measured against it: Omnipool `asset` 1.04x over a year and 1.05x over the full range; `pepl_liquidation_profit` 1.03x over a year; the hub `protocol` fee 0.72x on a recent week and 1.47x-1.72x over long ones, for two separate reasons. Coverage: between 2025-02-16 and 2026-02-16 the runtime emitted TWO hub fee legs per fill (one burned, one to the treasury) and this series counts both while the incumbent counts only the burned one — measured over 2026-01-10 to 2026-01-16, ours 5,009.48 against its 2,482.25, while our `burned` alone is 2,504.74, or 1.009x its figure. Pricing: with coverage held equal that 1.009x shows the two LRNA prices agreed then, so the recent 0.72x is a present-day divergence in LRNA/USD, which is anchored on a thin position.
+         *     **`uniswap_v3_fee`** (product `uniswap-v3`, not in the incumbent's matrix) is the protocol's take from the concentrated-liquidity (Uniswap v3) pools on Hydration's EVM, per log: a Gamma vault's fee share — the ERC-20 `Transfer` of `fees / feeDivisor` of the LP fees its positions earned, from a vault the chain announced, to the Treasury's EVM address — and a pool's `CollectProtocol`, the pool-level protocol fee (`setFeeProtocol`, referendum 403) as the factory owner collects it. Both are REALIZATIONS: the pool-level share accrues inside the pool on every swap and is booked here only when someone collects it, so a protocol fee that has accrued but never been collected is real and is not in this stream — read it from the pool's own `protocolFees()`, or as part of the gross fee on /v1/pools/uniswapv3/volumes. The rest of a swap fee stays with the pool's liquidity providers and is not revenue.
+         *
+         *     **Valuation** is event-time: each amount is priced at the 1h candle that had already closed when it happened. The incumbent prices off the money-market oracle, so values agree in magnitude rather than to the cent. Measured against it: Omnipool `asset` 1.04x over a year and 1.05x over the full range; `pepl_liquidation_profit` 1.03x over a year; the hub `protocol` fee 0.72x on a recent week and 1.47x-1.72x over long ones, for two separate reasons. Coverage: between 2025-02-16 and 2026-02-16 the runtime emitted TWO hub fee legs per fill (one burned, one to the treasury) and this series counts both while the incumbent counts only the burned one — measured over 2026-01-10 to 2026-01-16, ours 5,009.48 against its 2,482.25, while our `burned` alone is 2,504.74, or 1.009x its figure. Pricing: with coverage held equal that 1.009x shows the two H2O prices agreed then, so the recent 0.72x is a present-day divergence in H2O/USD, which is anchored on a thin position.
          *
          *     **Recognition differs on `borrow_apr`.** This series recognises interest as it ACCRUES; the incumbent recognises it when a borrower REPAYS. Measured, ours runs ~4.4x the incumbent over one week and converges to ~1.8x over a year. The accrual is the figure verified against a closed form (HOLLAR debt x borrow rate).
          *
-         *     **`liquidation_penalty` understates history.** The protocol's share of the bonus is applied as a single 10% constant, pinned against the incumbent on 2026-08 data where the two agree to 0.98x. Aave's per-reserve `liquidationProtocolFee` is not indexed, and earlier eras used a different share: over the trailing year this series reads 0.26x the incumbent. Recent windows are right; long ones understate.
-         *
-         *     **`asset_reserve` diverges in one era.** Bucket instants match the incumbent exactly and most buckets agree within a few percent (the six most recent within 2.5%), but five 30-day buckets between 2025-08-19 and 2025-12-17 run 1.36x-2.36x, which carries the full-range total to 1.37x and the 1-year total to 1.68x. Those buckets' treasury mints are dominated by one high-value reserve (11,852.94 DOT in the 2025-08-19 bucket alone, about the whole difference), so this is a per-asset valuation difference in that era, not a coverage or bucketing one.
+         *     **`asset_reserve` diverges in one era.** Bucket instants match the incumbent exactly and most buckets agree within a few percent (the six most recent within 2.5%), but five 30-day buckets between 2025-08-19 and 2025-12-17 run 1.36x-2.36x, which carries the full-range total to 1.37x and the 1-year total to 1.68x. Those buckets' treasury mints are dominated by one high-value reserve (11,852.94 DOT in the 2025-08-19 bucket alone, about the whole difference), and the difference is the INCUMBENT's: the mint amounts are witnessed independently by the collector's own aDOT Mint logs (within 0.6%), and our candles at the two mint instants ($3.87, $4.22) match DOT's market price, while the incumbent's $25,836.77 bucket implies it valued that DOT near $2.18 — about half market.
          *
          *     **Coverage.** `borrow_apr` starts where the money market's aToken anchor does, and returns an empty series (never zeros) while that anchor is unavailable. `asset`+`feeDestination=protocol` excludes pre-2025-01-25 legs, whose destination the runtime did not record; `total` includes them.
          */
@@ -39,9 +39,9 @@ export interface paths {
                     bucketSize: "1hour" | "6hour" | "24hour" | "7day" | "30day";
                     endTime: string;
                     feeDestination?: "protocol" | "total" | "lp" | "burned";
-                    productType: "omnipool" | "money-market" | "hollar";
+                    productType: "omnipool" | "money-market" | "hollar" | "uniswap-v3";
                     startTime: string;
-                    streamType: ("asset" | "protocol" | "liquidation_penalty" | "pepl_liquidation_profit" | "asset_reserve" | "borrow_apr" | "hsm_revenue") | "total";
+                    streamType: ("asset" | "protocol" | "liquidation_penalty" | "pepl_liquidation_profit" | "asset_reserve" | "borrow_apr" | "hsm_revenue" | "uniswap_v3_fee") | "total";
                 };
                 header?: never;
                 path?: never;
@@ -93,7 +93,9 @@ export interface paths {
          *
          *     Money-market wrap flows are not DEX trades and are excluded: supplying USDT mints aUSDT one for one, which emits the same swap event as a trade but has no price, no reserves and no counterparty. The old feed counted them, folded invisibly inside merged tickers.
          *
-         *     Deviations from the incumbent feed, both deliberate: numeric fields are strings (CoinGecko's own spec form; the old feed emitted JSON numbers), and `pool_id` names the real pool instead of repeating `ticker_id`, so a pair traded in several pools reports each pool's own depth. `liquidity_in_usd` is real — the old feed hardcoded it to 0. The window is anchored to the newest indexed block, not to wall clock, and a cold cache computes on demand instead of answering 503.
+         *     Field names, field order and field TYPES are the incumbent feed's: `last_price`, `base_volume`, `target_volume`, `liquidity_in_usd`, `high` and `low` are JSON numbers (CoinGecko documents the string form too and accepts either, but a consumer's parser must survive a base-URL swap unchanged). Everything behind them is exact integer arithmetic at 18 decimal places; the single float conversion happens at the wire, so a value needing more than a double's ~15–17 significant digits is rounded there. `/v1` is the surface that keeps full precision as decimal strings.
+         *
+         *     Deviations from the incumbent feed, both deliberate: `pool_id` names the real pool instead of repeating `ticker_id`, so a pair traded in several pools reports each pool's own depth, and `liquidity_in_usd` is real — the old feed hardcoded it to 0. The window is anchored to the newest indexed swap fill, not to wall clock or an independently advancing blocks head, and a cold cache computes on demand instead of answering 503.
          */
         get: {
             parameters: {
@@ -113,18 +115,18 @@ export interface paths {
                         "application/json": {
                             base_currency: string;
                             /** @description Base-asset volume over the window, counting both trade directions. */
-                            base_volume: string;
-                            high: string;
+                            base_volume: number;
+                            high: number;
                             /** @description Base units per one target unit, from the most recent fill in the window. */
-                            last_price: string;
+                            last_price: number;
                             /** @description Current USD depth behind the pair. 0 where the venue holds no reserves (money-market wraps, OTC) or the pool is unpriced. */
-                            liquidity_in_usd: string;
-                            low: string;
-                            /** @description `omnipool`, or `<venue>:<pool key>` — a stableswap pool id, an XYK pool account, an aToken contract account, an OTC order id. */
+                            liquidity_in_usd: number;
+                            low: number;
+                            /** @description `omnipool`, or `<venue>:<pool key>` — a stableswap pool id, an XYK pool account, an aToken contract account, an OTC order id, a Uniswap v3 pool contract (`uniswapv3:0x…`). */
                             pool_id: string;
                             target_currency: string;
                             /** @description Target-asset volume over the window, counting both trade directions. */
-                            target_volume: string;
+                            target_volume: number;
                             /** @description `<base>_<target>`. Not unique on its own: a pair traded in several pools has one row per pool, told apart by `pool_id`. */
                             ticker_id: string;
                         }[];
@@ -228,15 +230,15 @@ export interface paths {
          * Per-day historical volume and fees
          * @description Historical volume and fees per UTC calendar day, for a DefiLlama reindex. `startDate` and `endDate` are `YYYY-MM-DD` and BOTH inclusive, at most 62 days per request.
          *
-         *     Coverage is the full history of the chain: the first indexed swap is 2023-01-06 (Omnipool block 1,708,104), well before the unified `Broadcast.Swapped` event the rest of this API's trade surfaces start at. Fees, however, start on 2023-08-04 (block 3,112,604): the Omnipool swap event carried no fee amount before that runtime, so every fee field reads 0 for the earlier days rather than reporting a fee the chain never published.
+         *     Coverage is the full history of the chain: the first indexed swap is 2023-01-06 (Omnipool block 1,708,104), well before the unified `Broadcast.Swapped` event at block 6,837,788. The same legacy projections feed the other trade surfaces. Fees, however, start on 2023-08-04 (block 3,112,604): the Omnipool swap event carried no fee amount before that runtime, so every fee field reads 0 for the earlier days rather than reporting a fee the chain never published.
          *
-         *     Only CLOSED days are served. The range is cut at the start of the day the newest indexed block sits in, so the day in progress is never published as a complete one, and a day is omitted rather than published as `0` when it has no indexed fill at all, or when none of its fills could be valued — a gap means "nothing to report for that day", not "zero volume traded". Measured, the second case is every day from the first Omnipool fill (2023-01-06) to 2023-04-11, whose assets are older than the price feed; the series is dense from 2023-04-12 on.
+         *     Only CLOSED days are served. The range is cut at the start of the day the newest indexed swap fill sits in, so the day in progress is never published as a complete one, and a day is omitted rather than published as `0` when it has no indexed fill at all, or when none of its fills could be valued — a gap means "nothing to report for that day", not "zero volume traded". Measured, the second case is every day from the first Omnipool fill (2023-01-06) to 2023-04-11, whose assets are older than the price feed; the series is dense from 2023-04-12 on.
          *
          *     Volume is netted exactly as `/defillama/v1/volume` nets it — same rule, same money-market wrap exclusion — so the two agree. `dailyFees` is every fee leg valued at event time and is a breakdown of the trade, not extra flow: a stableswap fee is already inside the trade's own amounts, so adding fees to volume would count the same value twice. The destination fields split `dailyFees` by where the fee went, including a class the chain did not record for pre-Broadcast Omnipool asset fees — a consumer computing protocol revenue must exclude both the burned and the unknown class rather than assume everything accrued.
          *
          *     The DefiLlama volume adapter today applies a hardcoded 80/20 asset-vs-protocol-fee split and a 50/50 LP-vs-referral split client-side. `dailyProtocolFees` is the real measured protocol (hub-asset) share and replaces the first assumption; the second cannot be replaced from this data, because a fee credited to an account names the recipient but not its role.
          *
-         *     Cost: the fold runs one calendar month at a time over the swap-leg projection, and each month is cached for an hour (stale-served for a day). A busy month reads ~2.7 M legs in ~5 s cold, the slowest month of the whole era took 11.8 s, and a warm range answers in milliseconds — so a reindex that walks the era in 62-day requests pays each month exactly once.
+         *     Cost: the fold runs calendar months, each subdivided into day-atomic chunks of at most ~1.5 M swap legs (sized from the hourly aggregate, so a busy month splits into a few chunks and a quiet one stays whole). Each chunk is cached for an hour (stale-served for a day). The busiest month of the era (2025-05, ~4.6 M legs) costs ~3.8 s per chunk cold — ~12 s wall for the whole month — and a warm range answers in milliseconds, so a reindex that walks the era in 62-day requests pays each chunk exactly once.
          */
         get: {
             parameters: {
@@ -313,7 +315,7 @@ export interface paths {
          *
          *     Single-counted: a trade contributes the larger of its two boundary sides ONCE, so a multi-hop route, an Omnipool hub hop and a batch of independent swaps are each counted for what they are. The Hydration Data Lake series this replaces counts one side of every FILL instead — a routed swap once per hop, an Omnipool swap twice because the router reports `A→LRNA` and `LRNA→B` separately — so its figure runs 2–3.4× this one (measured over the week of 2026-08-03: 6.33 M here against 16.97 M there). Money-market wrap round-trips are excluded from DEX volume: a trade whose every fill is an aToken mint or redeem is a 1:1 deposit into the money market, not a swap. An aToken hop INSIDE a routed swap still counts, as part of that swap. Fees are never part of volume.
          *
-         *     The window ends at the newest indexed block, not at wall clock, so an indexing lag shortens the window instead of reporting a partial period as a full one. Values are event-time priced, from the 1-hour candle that had already closed when each fill happened.
+         *     The window ends at the newest indexed swap fill, not at wall clock or at an independently advancing blocks head, so model catch-up cannot shorten it. Values are event-time priced, from the 1-hour candle that had already closed when each fill happened.
          */
         get: {
             parameters: {
@@ -357,7 +359,9 @@ export interface paths {
          * Asset metadata by registry id
          * @description DexScreener adapter endpoint. Amounts are token-unit decimal strings and timestamps are unix seconds — DexScreener's conventions, not the /v1 ones.
          *
-         *     `id` is the on-chain asset registry id. The optional spec fields `totalSupply`, `circulatingSupply`, `coinGeckoId`, `coinMarketCapId` and `metadata.assetType` are omitted rather than guessed: no per-asset issuance model, external catalogue id or asset-type column exists in this index.
+         *     An asset id is the on-chain registry id as a decimal string, EXCEPT for an ERC-20-registered asset, which is named by its 20-byte contract address (HOLLAR is `0x531a654d1696ed52e7275a8cede955e82620f99a`, not `222`) — again the previous adapter's convention. The mapping is derived from the asset registry's own `Registered`/`Updated` and `LocationSet` events, so a new listing needs no code change. `/asset` and `/pair` accept BOTH forms on input; every response names the contract form.
+         *
+         *     This is a SUBSET of what the previous adapter serves: the optional spec fields `totalSupply`, `circulatingSupply`, `coinGeckoId`, `coinMarketCapId` and `metadata.assetType` are omitted rather than guessed, because no per-asset issuance model, external catalogue id or asset-type column exists in this index. `/coingecko/v1/totalsupply` reconstructs a supply for four product tokens only; publishing it for those four and not the other ~119 registry assets would be less useful than omitting it everywhere.
          *
          *     An id the registry does not know is a 404, never a synthesised placeholder token.
          */
@@ -413,19 +417,23 @@ export interface paths {
          *
          *     Every AMM swap fill with `fromBlock <= block <= toBlock`, ordered by block then event index. The range is inclusive and spans at most 10000 blocks (~50,000 events is the hard ceiling); a wider or denser range is a 400 asking for a narrower one, never a silently truncated page.
          *
-         *     `txnIndex` is always 0. Two thirds of Hydration's fills are dispatched by block hooks with no extrinsic at all, and those events sort after the block's extrinsic events, so no per-block transaction index orders the stream — `eventIndex`, which is unique and increasing within a block across every phase, carries the ordering. The extrinsic, or the router operation for a hook-dispatched route, is named in `txnId`.
+         *     Pair ids are the PREVIOUS adapter's (`adapters.kril.hydration.cloud/dexscreener`) byte for byte, so an aggregator's existing per-pair history carries over a base-URL swap instead of every pair being seen as new. Four venue shapes: an XYK pair is the pool ACCOUNT alone (an XYK pool has exactly one registered pair, so the assets add nothing); a Uniswap v3 pair is the pool CONTRACT alone (0x + 40 hex, one pool is one pair at one fee tier — a venue the previous adapter never had); an Omnipool pair is `<omnipool pallet account>-<asset0>-<asset1>`; a stableswap pair is `<pool account>-<asset0>-<asset1>`, the pool's on-chain account rather than its pool id. The two sides are ordered class-first — every plain registry id sorts before every contract-addressed asset, as an explicit flag rather than a comparison of the ids' numeric values — then numerically within each class. That ordering decides which side is asset0 and therefore whether `priceNative` is a price or its reciprocal.
          *
-         *     `reserves` is the pool's state at the nearest sample AT OR BEFORE the fill's block. The state histories are sampled on a 600-block grid, so that sample is normally under an hour old; past 1200 blocks the field is omitted rather than publishing a stale reserve (a delisted Omnipool asset keeps its final sample forever). For an Omnipool pair the two sides are the asset's hub reserve and its own reserve; for a stableswap pair against the pool share token, the share side is the pool's total issuance.
+         *     An asset id is the on-chain registry id as a decimal string, EXCEPT for an ERC-20-registered asset, which is named by its 20-byte contract address (HOLLAR is `0x531a654d1696ed52e7275a8cede955e82620f99a`, not `222`) — again the previous adapter's convention. The mapping is derived from the asset registry's own `Registered`/`Updated` and `LocationSet` events, so a new listing needs no code change. `/asset` and `/pair` accept BOTH forms on input; every response names the contract form.
+         *
+         *     TWO fields on this surface deliberately differ from the previous adapter's, and both are ordering-neutral for a consumer that reads the stream as emitted. (1) `txnId` VALUES. Ours is `<block>-<extrinsicIndex>`, or `<block>-r<routerOperationId>` for a hook-dispatched route, or `<block>-e<eventIndex>`; all three are resolvable on this chain. The previous adapter publishes the fill's own chain operation id (the outermost non-DCA entry of the `Broadcast.Swapped*` `operationStack`) — reproducing it would mean projecting that id into `pool_swap_legs`, which today carries only the Router entry, and the legacy pre-`Broadcast` era has no operation stack at all. `txnId` is opaque to DexScreener, so only its grouping matters, and it groups the same fills. (2) `txnIndex` SEMANTICS. Ours is always 0, with `eventIndex` — unique and strictly increasing within a block across every dispatch phase — carrying the whole order, which is the true on-chain order. The previous adapter's `txnIndex` is a per-ROUTE hop counter that restarts at 0 inside each `txnId` group (measured: 0..n-1 in 229 of 229 groups), so it does not order a block across routes: sorting its own stream by `(txnIndex, eventIndex)` reorders what it emitted in 60 of 100 blocks. Consequently a consumer that sorts by `(txnIndex, eventIndex)` gets DIFFERENT sequences from the two feeds — measured, 60 of 100 blocks — e.g. block 13,596,009 becomes eventIndex 17, 38, 18, 39 there against the chain's 17, 18, 38, 39 here. This is a deliberate correction, not a match: two thirds of Hydration's fills are dispatched by block hooks with no extrinsic at all and sort after the block's extrinsic events, so no per-block transaction index can order the stream.
+         *
+         *     `reserves` is the pool's state at the nearest sample AT OR BEFORE the fill's block. The state histories are sampled on a 600-block grid — ≈1 h at the chain's present ~6 s block time, ≈20 min if it moves to 2 s — so that sample is normally one grid step old; past 1200 blocks (two grid steps, whatever the block time) the field is omitted rather than publishing a stale reserve (a delisted Omnipool asset keeps its final sample forever). The bound is deliberately counted in blocks rather than in wall clock: the grid is block-counted too, so two grid steps means the same thing at any cadence. For an Omnipool pair the two sides are the asset's hub reserve and its own reserve; for a stableswap pair against the pool share token, the share side is the pool's total issuance.
          *
          *     `reserves` is also omitted when either side would read 0. A fill proves the pool held both assets, so a zero is an indexing artefact rather than the pool's state, and publishing it would report the pool as empty. This currently suppresses reserves for every HDX-quoted XYK pool: native HDX balances live in `System.Account` rather than `Tokens`, so the XYK reserve history reads 0 on the HDX side.
          *
          *     Fills touching an asset the on-chain registry does not yet carry are skipped rather than priced on an assumed scale — registration is permissionless, so an AssetHub external can trade here before its decimals are indexed, and without them every amount and `priceNative` on that fill would be a guess. Such an asset also 404s on `/dexscreener/asset` and its pairs 404 on `/dexscreener/pair`, so the three endpoints stay consistent.
          *
-         *     Pairs cover the three AMM venues: Omnipool (every asset against the LRNA hub), stableswap (each pool's assets against each other and against the pool share token) and XYK. The `aave` (aToken mint/redeem, always 1:1), `otc` (per-order, not a pool) and `hsm` legs of the same trade model are deliberately not pairs.
+         *     Pairs cover the four AMM venues: Omnipool (every asset against the LRNA hub), stableswap (each pool's assets against each other and against the pool share token), XYK, and the concentrated-liquidity Uniswap v3 pools on Hydration's EVM (one pair per pool contract; fills arrive as a Router-routed hop's Broadcast leg or, for a direct EVM swap, from the pool's own Swap log a few minutes behind — and no `reserves`, since a concentrated pool's holdings are not its price). The `aave` (aToken mint/redeem, always 1:1), `otc` (per-order, not a pool) and `hsm` legs of the same trade model are deliberately not pairs.
          *
          *     `join` and `exit` events are not served: the indexed liquidity events carry at most one side's amount, and a pair event needs both. See the service module for the per-event-name measurement.
          *
-         *     Swap coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event.
+         *     Swap coverage extends BELOW block 6,837,788 — the first block emitting the unified `Broadcast.Swapped` event — through the legacy per-pallet projections, back to block 1,708,104. Stableswap and XYK fills are served there, subject to the registry-gap skip above: measured in blocks 6,836,788..6,837,787, 45 of the window's 147 XYK fills are published and the 102 missing ones all sit in pools holding an asset the registry does not yet carry (the 9 of 34 pools with no such asset are complete). The Omnipool is the exception: a legacy Omnipool fill records the user's own two assets rather than the pair of hub hops behind them, so it carries no LRNA leg and cannot be published as an event on an asset/LRNA pair. Only a legacy fill whose own asset WAS LRNA has one — measured, 11,628 of 2,528,860 pre-boundary Omnipool fills (0.46%) — so treat Omnipool pair events as starting at the boundary.
          */
         get: {
             parameters: {
@@ -538,9 +546,13 @@ export interface paths {
          * Pair metadata by pair id
          * @description DexScreener adapter endpoint. Amounts are token-unit decimal strings and timestamps are unix seconds — DexScreener's conventions, not the /v1 ones.
          *
-         *     A pair id is `<pool>-<asset0>-<asset1>`, with the two registry ids sorted numerically ascending so one pair has one id. `<pool>` is the Omnipool pallet account, a stableswap pool id, or an XYK pool account — which is also what names the venue.
+         *     Pair ids are the PREVIOUS adapter's (`adapters.kril.hydration.cloud/dexscreener`) byte for byte, so an aggregator's existing per-pair history carries over a base-URL swap instead of every pair being seen as new. Four venue shapes: an XYK pair is the pool ACCOUNT alone (an XYK pool has exactly one registered pair, so the assets add nothing); a Uniswap v3 pair is the pool CONTRACT alone (0x + 40 hex, one pool is one pair at one fee tier — a venue the previous adapter never had); an Omnipool pair is `<omnipool pallet account>-<asset0>-<asset1>`; a stableswap pair is `<pool account>-<asset0>-<asset1>`, the pool's on-chain account rather than its pool id. The two sides are ordered class-first — every plain registry id sorts before every contract-addressed asset, as an explicit flag rather than a comparison of the ids' numeric values — then numerically within each class. That ordering decides which side is asset0 and therefore whether `priceNative` is a price or its reciprocal.
          *
-         *     Pairs cover the three AMM venues: Omnipool (every asset against the LRNA hub), stableswap (each pool's assets against each other and against the pool share token) and XYK. The `aave` (aToken mint/redeem, always 1:1), `otc` (per-order, not a pool) and `hsm` legs of the same trade model are deliberately not pairs.
+         *     An asset id is the on-chain registry id as a decimal string, EXCEPT for an ERC-20-registered asset, which is named by its 20-byte contract address (HOLLAR is `0x531a654d1696ed52e7275a8cede955e82620f99a`, not `222`) — again the previous adapter's convention. The mapping is derived from the asset registry's own `Registered`/`Updated` and `LocationSet` events, so a new listing needs no code change. `/asset` and `/pair` accept BOTH forms on input; every response names the contract form.
+         *
+         *     Pairs cover the four AMM venues: Omnipool (every asset against the LRNA hub), stableswap (each pool's assets against each other and against the pool share token), XYK, and the concentrated-liquidity Uniswap v3 pools on Hydration's EVM (one pair per pool contract; fills arrive as a Router-routed hop's Broadcast leg or, for a direct EVM swap, from the pool's own Swap log a few minutes behind — and no `reserves`, since a concentrated pool's holdings are not its price). The `aave` (aToken mint/redeem, always 1:1), `otc` (per-order, not a pool) and `hsm` legs of the same trade model are deliberately not pairs.
+         *
+         *     Both legacy shapes are also ACCEPTED: a stableswap pool named by its decimal pool id, and an XYK pool named with `-<asset0>-<asset1>` appended. Either order of the two assets resolves. The response always reports the CANONICAL id, so a consumer that follows the id it reads back converges on the form `/events` publishes.
          *
          *     The id is resolved against the pools that exist: a well-formed id whose pool does not hold both assets, or either of whose assets the registry cannot resolve, is a 404. The optional spec fields `createdAtBlockNumber`, `createdAtTxnId`, `creator`, `feeBps` and `pool` are omitted — pool creation is not projected per pair, and the Omnipool's fee is a dynamic per-asset value rather than a pair constant.
          */
@@ -570,6 +582,140 @@ export interface paths {
                                 id: string;
                             };
                         };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hydration-web/v1/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Homepage TVL, volume, XCM volume and counts
+         * @description The five figures hydration.net's homepage renders. A drop-in replacement for `api.hydradx.io/hydration-web/v1/stats` — identical path, field names and JSON types — served from this indexer's own models. The definitions below differ from the incumbent's in three places, deliberately.
+         *
+         *     **`tvl`** is current pooled value at current prices (Omnipool excluding the LRNA hub leg, plus Stableswap and XYK) PLUS the money market's supplied side, de-duplicated in BOTH directions. The pooled total and the money-market total overlap two ways, and counting either twice would publish the same liquidity twice. Measured 2026-08-13, against $52.1M supplied and $29.5M pooled: $13.9M of the money market is pool-SHARE tokens deposited as collateral, each a claim on a pool already in the pooled figure; and $8.58M of the POOLS is money-market aTokens, because Hydration's pools are themselves suppliers — pool 690 holds aDOT, 4200 holds aETH, the stablepools hold aUSDT/aUSDC/aEURC/aSOL, and the Omnipool holds asset 1001 (aDOT) directly. Both are subtracted. Staked HDX supplied to the GIGAHDX market ($10.9M) is NOT an overlap and stays in: that HDX is locked in its holder's own wallet and no pool holds it. `/v1/stats/platform` publishes the components, and `totalUsd + moneyMarketSupplyUsd - moneyMarketFoldedUsd - pooledATokenUsd` equals this field to the cent — but only WITHIN ONE COMPUTATION, and two HTTP requests cannot be made to share one. This response is memoised 600s (stale-while-revalidate to 1800s) while `/v1/stats/platform` recomputes about every 60s, so a back-to-back pair matches exactly only while platform is still serving the generation this fold was built from. **Measured 2026-08-13, 21 back-to-back pairs over 7 minutes: 4 exact, 17 not** — the four fell in the first minute, and every pair after platform's next recompute disagreed until this endpoint recomputed. Two recipes that look like they should work and do NOT: a query-string cache-buster (it bypasses the HTTP micro-cache only — both services memoise under fixed keys), and polling until this endpoint's ETag changes and then reading platform at once (tried: still $179.07 out, because stale-while-revalidate means the new value is computed before the request that first serves it). **So do not chase an exact match — check the magnitude.** The gap is whatever the components moved in between, and it is small and bounded: over the same run, $179.07 to $8,254.19 on a ~$59.4M base, i.e. **≤0.014%**. Treat agreement inside ~0.02% as correct, an exact match as a bonus that says the two happened to align, and anything larger as worth investigating.
+         *
+         *     **`vol_30d`** is NETTED routed volume: each trade counts once, at the larger of its two boundary sides, so a multi-hop route is one trade and an Omnipool swap is not counted twice for its two hub hops. Trades whose every fill is an aToken mint or redeem are excluded — those are 1:1 money-market wraps, not swaps. The incumbent feed sums one side of every FILL instead, which runs about 2.9× higher (measured 2026-08-13: $18.90M here against $53.97M there, a ratio of 0.350). The window ends at the newest indexed swap fill rather than at wall clock or an independently advancing blocks head, so model catch-up cannot shorten it.
+         *
+         *     **`xcm_vol_30d`** is the USD value of XCM journeys with Hydration on either end over the last 30 days, from the same Ocelloids XCM analytics query the incumbent used (verified against it to 0.11%). Transfers the upstream could not price are summed as zero there, so the figure is a floor. When the query is unavailable — no token configured, upstream down — the field is `null`. It is never estimated from indexed data: this indexer sees Hydration's side of a journey, not the value of the leg on the other chain.
+         *
+         *     **`assets_count`** counts the on-chain asset registry, the same set `/v1/assets` publishes. The incumbent reports a much larger number (measured 2026-08-13: 443 against 123) because its indexer also carries assets that are not in Hydration's registry. **`accounts_count`** counts distinct accounts that have ever held a balance here, so it only ever grows.
+         *
+         *     Fresh for 10 minutes, matching the incumbent's Redis TTL, then stale-while-revalidate for up to 30: past the 10-minute mark a request is served the last computed figures immediately and triggers a recomputation behind it, so a caller never waits on the 1.8s TVL query and never sees a gap. Only past 30 minutes does a request block on a fresh computation.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description Distinct accounts that have ever held a balance of any asset. */
+                            accounts_count: number;
+                            /** @description Assets in the on-chain registry, the same set /v1/assets publishes. */
+                            assets_count: number;
+                            /** @description Total value locked in USD: everything pooled plus the money market's supplied side, de-duplicated in BOTH directions — less the money-market collateral that is pool-share tokens, and less the pool reserves that are money-market aTokens. Null — never 0 — if the price feed cannot value a whole venue or the money-market model has no rows. */
+                            tvl: number | null;
+                            /** @description Netted routed trading volume over the rolling 30 days, in USD. Null while no swap leg is indexed at all — an empty projection is not a zero window. */
+                            vol_30d: number | null;
+                            /** @description USD value of XCM transfers with Hydration as origin or destination over 30 days, rounded to cents like the other two USD fields. Null when the upstream XCM analytics query is unavailable; never estimated. */
+                            xcm_vol_30d: number | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lending/v1/caps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Money-market caps, borrow levels and utilization
+         * @description Supply and borrow caps, current supply and borrow, and utilization for every reserve of every isolated money market. A drop-in replacement for `api.hydradx.io/lending/v1/caps`: the incumbent's four fields — `asset`, `borrowCap`, `currentBorrow`, `available` — keep their names, types and meaning, and the core market's HOLLAR row stays FIRST in the array so a consumer reading `body[0]` reads the same number it always did. The remaining reserves follow in a stable (market, symbol) order.
+         *
+         *     Everything here is derived from indexed chain data — no per-request RPC. Aave caps are decoded from the pool configurator's `SupplyCapChanged`/`BorrowCapChanged` logs and are denominated in WHOLE TOKENS, as Aave stores them. HOLLAR carries no Aave cap because it is minted by a facilitator rather than deposited by lenders; its `borrowCap` is the market's facilitator bucket capacity, which is the limit the chain actually enforces, and `borrowCapSource` says which of the two a row used.
+         *
+         *     `currentBorrow` is the reserve's scaled debt times its current variable borrow index — the same quantity the variable-debt token's `totalSupply` returns, which is what the incumbent read over RPC. The two agreed to within the interest accrued between the reads when this was verified.
+         *
+         *     A reserve the pool has DELISTED is absent, not frozen at its last balance: the reserve map is rewritten in full each refresh cycle, so a reserve missing from the newest generation is dropped. An empty array means the money-market reserve model has no state at all (its aToken anchor has not been snapshotted) — it never means "no caps configured".
+         *
+         *     Cached for 60 seconds, matching the incumbent's Redis TTL.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description The indexed block whose reserve state this row reports. */
+                            asOf: string;
+                            /** @description The reserve asset's registry name, e.g. "Hydrated Dollar". */
+                            asset: string;
+                            /** @description The reserve asset's registry id. */
+                            assetId: string | null;
+                            /** @description `borrowCap - currentBorrow`. Null when there is no cap to be available against; can be negative if a cap was lowered below current borrowing. */
+                            available: number | null;
+                            /** @description Maximum borrowable, in whole tokens. Null when no cap has ever been set for this reserve. For a `poolConfigurator` cap, `0` is Aave's own "no cap" sentinel, not a freeze; a `facilitator` bucket capacity of `0` is the opposite — a frozen facilitator nothing more can be minted against. */
+                            borrowCap: number | null;
+                            /**
+                             * @description Which on-chain control set `borrowCap`: the market's HOLLAR facilitator bucket capacity, or the pool configurator's Aave borrow cap.
+                             * @enum {string|null}
+                             */
+                            borrowCapSource: "facilitator" | "poolConfigurator" | null;
+                            /** @description Currently borrowed, in whole tokens, including accrued interest. */
+                            currentBorrow: number;
+                            /** @description Currently supplied, in whole tokens, including accrued interest. */
+                            currentSupply: number;
+                            /** @description The isolated market this reserve belongs to: `core`, `gigahdx` or `bil`. The markets are never blended. */
+                            market: string | null;
+                            /** @description Maximum suppliable, in whole tokens. Null when no cap has ever been set. As with `borrowCap`, `0` is Aave's own "no cap" sentinel rather than a freeze — stHDX ships `supplyCap: 0` against 1.23B supplied. */
+                            supplyCap: number | null;
+                            symbol: string | null;
+                            /** @description `currentBorrow / currentSupply`, between 0 and 1. Null when nothing is supplied — a facilitator-minted reserve such as HOLLAR has debt without deposits, and neither 0 nor infinity would describe it. */
+                            utilization: number | null;
+                        }[];
                     };
                 };
             };
@@ -883,6 +1029,8 @@ export interface paths {
          *     `categoryId` is always null: the activity model carries no eMode category column, and the value survives only in the raw event's decoded arguments, which cannot be read per account within bounded cost.
          *
          *     `search` matches asset symbols and names, then widens each match to the ids the market files rows under (aDOT resolves to the DOT reserve, GDOT to the 2-Pool-GDOT reserve). A term matching no asset returns no rows.
+         *
+         *     The account may be given as either half of its identity. Money-market rows are filed under the EVM-side form of an account — the runtime's truncation of its AccountId32 — so both forms are read whichever one is asked about.
          */
         get: {
             parameters: {
@@ -954,7 +1102,7 @@ export interface paths {
          *
          *     An asset whose price feed has gone stale (no close within ~12 h of the price head) contributes nothing rather than being valued at an old price. Accounts with no indexed balances are absent from `items` — the response is never a 404.
          *
-         *     An EVM account and the AccountId32 bound to it are ONE account. Requesting both in one batch returns a row for each address, both carrying the same figures — index the response by `account`, and do not sum a batch's rows.
+         *     An EVM account and the AccountId32 it belongs to are ONE account, and both halves are always folded in. Two mappings are followed: the runtime's own AccountId32 → H160 truncation (its first 20 bytes), which is where every account's money-market state is filed whether or not it ever called `bind_evm_address`, and the explicit binding directory for an H160 whose trailing bytes the owner chose. Requesting both halves in one batch returns a row for each address, both carrying the same figures — index the response by `account`, and do not sum a batch's rows.
          */
         get: {
             parameters: {
@@ -1062,7 +1210,17 @@ export interface paths {
          *
          *     `status` is computed server-side from the schedule's events, never stored: `completed` when the pallet reported DCA.Completed, `cancelled` when a DCA.Terminated event came from a SIGNED extrinsic (the owner's own dca.terminate call), `terminated` when it came from a block hook (the pallet ending the schedule on an error), and `created` while it is still live. The signed-extrinsic signal is what the explorer's DCA page uses, so both surfaces label the same schedule the same way; the older data-lake heuristic (terminated with the last execution still only planned ⇒ cancelled) is the fallback when that signal is unavailable, and it mislabels an error termination that left a pending plan.
          *
-         *     `isRollingBudget` means the schedule has no total budget: it keeps spending whatever the owner holds. `executedAmountIn`/`executedAmountOut` sum the schedule's DCA.TradeExecuted events. Sorted by most recent event first; a schedule with no events yet sorts last.
+         *     `isRollingBudget: true` means the schedule has no total budget: it keeps spending whatever the owner holds. It is `null`, together with `singleTradeAmount`, `budget` and `periodBlocks`, when the schedule's terms were never recorded on chain — see PRE-ROUTER SCHEDULES below, the only case where that happens. `executedAmountIn`/`executedAmountOut` sum the schedule's DCA.TradeExecuted events and are always known, whatever the terms are. Sorted by most recent event first; a schedule with no events yet sorts last.
+         *
+         *     PRE-ROUTER SCHEDULES (ids below 2354, created before block ~4,220,000). The runtime emitted DCA.Scheduled with only `{id, who}` in that era, so the indexed row carries no order at all — no pair, no amounts, no period. Rather than publish that as a schedule trading asset 0 for asset 0 (asset 0 is HDX, so it would read as a nonsensical HDX -> HDX order) with a zero budget, the order is RECOVERED per request, by the same two rules the explorer's DCA page uses:
+         *
+         *     1. from the `DCA.schedule` extrinsic's own call arguments, which carry the whole order — pair, per-trade amount, budget and period. This covers 2,335 of the 2,354 pre-router schedules.
+         *
+         *     2. for the remaining 19 (created inside a batch, a proxy call or a block hook, so no schedule call is addressable), the traded PAIR ALONE, taken from the first execution's own swap leg. Its TERMS are genuinely unknown, and `singleTradeAmount`, `budget`, `isRollingBudget` and `periodBlocks` are therefore `null` on exactly those rows — `null` meaning "not recorded on chain", never "zero". A schedule that really set no budget reports `budget: "0"` with `isRollingBudget: true` instead, so the two cases stay distinguishable.
+         *
+         *     Between the two rules every pre-router schedule's pair is currently known (2,335 + 19 = 2,354, verified live against the explorer's DCA page). A schedule with neither an addressable call nor an executed trade would fall back to the stored `"0"`/`"0"` and report null terms; no such row exists today.
+         *
+         *     The `assets` filter is applied to the RECOVERED pair, so filtering on a pre-router schedule's real asset finds it. `assetIn`/`assetOut` on GET /v1/dca/schedules/{id}/executions come from the same recovery, because they are what labels every amount in that response. Router-era schedules (ids 2354 and above) are unaffected by all of this.
          */
         get: {
             parameters: {
@@ -1092,17 +1250,17 @@ export interface paths {
                             items: {
                                 assetIn: string;
                                 assetOut: string;
-                                budget: string;
+                                budget: string | null;
                                 createdAt: string;
                                 createdAtBlock: number;
                                 executedAmountIn: string;
                                 executedAmountOut: string;
-                                isRollingBudget: boolean;
+                                isRollingBudget: boolean | null;
                                 lastEventAt: string | null;
                                 owner: string;
-                                periodBlocks: number;
+                                periodBlocks: number | null;
                                 scheduleId: number;
-                                singleTradeAmount: string;
+                                singleTradeAmount: string | null;
                                 /** @enum {string} */
                                 status: "created" | "completed" | "terminated" | "cancelled";
                             }[];
@@ -1133,7 +1291,7 @@ export interface paths {
          *
          *     `errorState` decodes a failed attempt's DispatchError. A Module error carries the pallet index and error bytes (`{"kind":"Module","error":"0x0c000000","index":66}`); every other kind is self-describing, so its sub-kind travels in `error` and `index` is 0 — the pallet index is never invented.
          *
-         *     `assetIn`/`assetOut` are the schedule's registered pair. An unknown schedule id is a 404.
+         *     `assetIn`/`assetOut` are the schedule's registered pair, and they label every amount above. A PRE-ROUTER schedule (id below 2354) registered none — that era's DCA.Scheduled event carried no order — so the pair is recovered from the schedule's own DCA.schedule call, or from its first execution's swap leg when no call is addressable; see GET /v1/dca/schedules for the full rule. An unknown schedule id is a 404.
          */
         get: {
             parameters: {
@@ -1195,7 +1353,7 @@ export interface paths {
         };
         /**
          * How many schedules match a filter
-         * @description The totalCount GET /v1/dca/schedules reports for the same filter, without the page. Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of schedules before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.
+         * @description The totalCount GET /v1/dca/schedules reports for the same filter, without the page. The `assets` filter matches a pre-router schedule on its RECOVERED pair, exactly as the listing does. Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of schedules before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.
          */
         get: {
             parameters: {
@@ -1345,7 +1503,7 @@ export interface paths {
          *
          *     **Which of the two extrinsic routes to call.** They are told apart by path SHAPE, not by sniffing the value: a hash is ONE segment after `/v1/extrinsics` and a position is TWO, so `:hash` must be a 0x-prefixed 32-byte hex hash and nothing else. A bare block height is one segment and therefore arrives here, where it is a 400 naming the route that does work — an extrinsic is not addressable by height alone, it needs its index: GET /v1/extrinsics/{blockHeight}/{index}.
          *
-         *     **Bounded by time.** `raw_extrinsics` is ordered by (blockHeight, extrinsicIndex) and has no index over the hash, so this lookup is a partition-pruned scan and its cost is proportional to the window: measured on the live table, 7 days reads ~5 MiB and 90 days ~189 MiB, against ~2.11 GiB for the whole table. The default window is 7 days and the cap is 90; an extrinsic older than the window it was asked for is a 404, and is addressable through GET /v1/extrinsics/{blockHeight}/{index} instead.
+         *     **Bounded by time.** `raw_extrinsics` is ordered by (blockHeight, extrinsicIndex) and has no index over the hash, so this lookup is a partition-pruned scan and its cost is proportional to the window: measured on the live table at the chain's present ~6 s block time, 7 days reads ~5 MiB and 90 days ~189 MiB, against ~2.11 GiB for the whole table. Those figures are per unit of WALL CLOCK, so a move to 2 s blocks puts ~3x the rows in the same window and scales them accordingly. The default window is 7 days and the cap is 90; an extrinsic older than the window it was asked for is a 404, and is addressable through GET /v1/extrinsics/{blockHeight}/{index} instead.
          *
          *     The window covers the transaction-toast use case by a wide margin — a toast is polled for at most an hour after submission.
          *
@@ -1417,6 +1575,292 @@ export interface paths {
                                 code: string;
                                 message: string;
                             };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ICE intents of one owner, with computed status
+         * @description An ICE intent is a resting order: the owner's `assetIn` goes under a named reserve at submission and a solver's ICE.submit_solution fills it. A **swap** intent is the product's **limit order** (`amountOut` is the minimum it accepts); a **dca** intent is runtime 443's DCA, where `amountIn` is ONE PERIOD's trade and `budget` the whole commitment. The Intent pallet went live at block 14,362,830.
+         *
+         *     `intentId` is a u128 and travels as a DECIMAL STRING — it is the identity everywhere. `seq` is its low 64 bits, the short "#n" handle the explorer shows; it is a display value and exact only below 2^53, so never key on it.
+         *
+         *     Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of intents before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.
+         *
+         *     `status` is computed server-side from the intent's events, never stored. A PARTIAL resolution does NOT end an order: pallet_ice leaves the remainder resting and keeps filling it, so `partially_filled` is a live state and an order pulled after two partials reports `cancelled` with its progress in `filledAmountIn`/`filledAmountOut`. A dca intent never resolves — it trades once per period and reports `completed` once the trade that spent the last of its budget emitted Intent.DcaCompleted. The same rule labels the explorer's intent page, so both surfaces label the same order the same way.
+         *
+         *     `remainingAmountIn` is what the order still commits: a swap intent's placed `amountIn` less the partial fills, a dca intent's `budget` less what its trades have spent. It is exact integer arithmetic and never goes negative. `remainingBudget` is the separate figure the pallet itself reported on the newest dca trade, and is null on a swap intent.
+         *
+         *     `isRollingBudget: true` means a dca intent set no budget: it keeps spending whatever the owner holds, exactly as a DCA schedule with `totalAmount: "0"` does. `budget`, `isRollingBudget` and `periodBlocks` are null TOGETHER on a swap intent, where they do not apply — null here is "not this kind of order", never zero.
+         *
+         *     Sorted by most recent event first; an intent with no events yet sorts by its submission.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Comma-separated registry ids; matches either side of the pair. */
+                    assets?: string;
+                    /** @description Comma-separated: swap, dca. Defaults to both. */
+                    kind?: string;
+                    limit?: number;
+                    offset?: number;
+                    /** @description REQUIRED. The intent owner, as a lowercase hex account id. */
+                    owner: string;
+                    /** @description Comma-separated: open, partially_filled, filled, cancelled, expired, completed. Defaults to all. */
+                    status?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                amountIn: string;
+                                amountOut: string;
+                                assetIn: string;
+                                assetOut: string;
+                                budget: string | null;
+                                createdAt: string;
+                                createdAtBlock: number;
+                                deadline: string | null;
+                                fillCount: number;
+                                filledAmountIn: string;
+                                filledAmountOut: string;
+                                intentId: string;
+                                isRollingBudget: boolean | null;
+                                /** @enum {string} */
+                                kind: "swap" | "dca";
+                                lastEventAt: string | null;
+                                owner: string;
+                                partiallyFillable: boolean;
+                                periodBlocks: number | null;
+                                remainingAmountIn: string;
+                                remainingBudget: string | null;
+                                seq: number;
+                                slippagePpm: number;
+                                /** @enum {string} */
+                                status: "open" | "partially_filled" | "filled" | "cancelled" | "expired" | "completed";
+                            }[];
+                            totalCount: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/intents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One intent with its computed status and fill totals
+         * @description An ICE intent is a resting order: the owner's `assetIn` goes under a named reserve at submission and a solver's ICE.submit_solution fills it. A **swap** intent is the product's **limit order** (`amountOut` is the minimum it accepts); a **dca** intent is runtime 443's DCA, where `amountIn` is ONE PERIOD's trade and `budget` the whole commitment. The Intent pallet went live at block 14,362,830.
+         *
+         *     `intentId` is a u128 and travels as a DECIMAL STRING — it is the identity everywhere. `seq` is its low 64 bits, the short "#n" handle the explorer shows; it is a display value and exact only below 2^53, so never key on it.
+         *
+         *     The same row GET /v1/intents publishes for this order, built by the same fold, so a progress page cannot contradict the list it was reached from. No owner is needed: the id alone bounds both reads — the placement is a point read of the id-keyed table, and its block is the lower bound of the event fold.
+         *
+         *     `status` is computed server-side from the intent's events, never stored. A PARTIAL resolution does NOT end an order: pallet_ice leaves the remainder resting and keeps filling it, so `partially_filled` is a live state and an order pulled after two partials reports `cancelled` with its progress in `filledAmountIn`/`filledAmountOut`. A dca intent never resolves — it trades once per period and reports `completed` once the trade that spent the last of its budget emitted Intent.DcaCompleted. The same rule labels the explorer's intent page, so both surfaces label the same order the same way.
+         *
+         *     `remainingAmountIn` is what the order still commits: a swap intent's placed `amountIn` less the partial fills, a dca intent's `budget` less what its trades have spent. It is exact integer arithmetic and never goes negative. `remainingBudget` is the separate figure the pallet itself reported on the newest dca trade, and is null on a swap intent.
+         *
+         *     `isRollingBudget: true` means a dca intent set no budget: it keeps spending whatever the owner holds, exactly as a DCA schedule with `totalAmount: "0"` does. `budget`, `isRollingBudget` and `periodBlocks` are null TOGETHER on a swap intent, where they do not apply — null here is "not this kind of order", never zero.
+         *
+         *     A DCA intent's progress is `filledAmountIn` against `budget`: `amountIn` is ONE PERIOD's trade, never the total. Amounts are raw integers at each asset's own decimals, so compute the percentage in integer arithmetic rather than through a float. An unknown id is a 404.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            amountIn: string;
+                            amountOut: string;
+                            assetIn: string;
+                            assetOut: string;
+                            budget: string | null;
+                            createdAt: string;
+                            createdAtBlock: number;
+                            deadline: string | null;
+                            fillCount: number;
+                            filledAmountIn: string;
+                            filledAmountOut: string;
+                            intentId: string;
+                            isRollingBudget: boolean | null;
+                            /** @enum {string} */
+                            kind: "swap" | "dca";
+                            lastEventAt: string | null;
+                            owner: string;
+                            partiallyFillable: boolean;
+                            periodBlocks: number | null;
+                            remainingAmountIn: string;
+                            remainingBudget: string | null;
+                            seq: number;
+                            slippagePpm: number;
+                            /** @enum {string} */
+                            status: "open" | "partially_filled" | "filled" | "cancelled" | "expired" | "completed";
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/intents/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lifecycle events of one intent, newest first
+         * @description Every event of the order's life, newest first: its submission, each dca trade, each full or partial resolution, its completion, cancellation or expiry, and a failed forward callback. A DCA fill table is the `dca_trade` rows; a swap intent's fills are `resolved` and `partially_resolved`.
+         *
+         *     Amounts are the EVENT's, not the order's, and an event that traded nothing reports them as null rather than 0 — a submission, a cancellation, an expiry, and `Intent.DcaCompleted`, whose final trade states its amounts only in the solution's settlement transfers. `remainingBudget` is the pallet's own figure after a dca trade, and "0" on the completion, which by definition spent the rest.
+         *
+         *     Only the submission names the pair, so `assetIn`/`assetOut` sit on the envelope: they label every amount in the page. An unknown id is a 404.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    offset?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            assetIn: string;
+                            assetOut: string;
+                            items: {
+                                amountIn: string | null;
+                                amountOut: string | null;
+                                blockHeight: number;
+                                eventIndex: number;
+                                /** @description The runtime event. `Intent.IntentResovedPartially` is spelled that way on chain (sic). */
+                                eventName: string;
+                                /** @description Fills happen inside the UNSIGNED ICE.submit_solution, so a fill names an extrinsic but never a signer. */
+                                extrinsicIndex: number | null;
+                                /** @enum {string} */
+                                kind: "submitted" | "resolved" | "partially_resolved" | "dca_trade" | "dca_completed" | "cancelled" | "expired" | "callback_failed";
+                                remainingBudget: string | null;
+                                timestamp: string;
+                            }[];
+                            totalCount: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/intents/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * How many intents match a filter
+         * @description The totalCount GET /v1/intents reports for the same filter, without the page. Owner is REQUIRED: the status filter and the ordering are computed over the owner's WHOLE set of intents before the page is cut (filtering after a LIMIT would make page 2 depend on how many rows page 1 dropped), and only an owner-scoped set is small enough for that to stay bounded. A request without one is a 400, never an unbounded scan.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Comma-separated registry ids; matches either side of the pair. */
+                    assets?: string;
+                    /** @description Comma-separated: swap, dca. Defaults to both. */
+                    kind?: string;
+                    /** @description REQUIRED. The intent owner, as a lowercase hex account id. */
+                    owner: string;
+                    /** @description Comma-separated: open, partially_filled, filled, cancelled, expired, completed. Defaults to all. */
+                    status?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            totalCount: number;
                         };
                     };
                 };
@@ -1542,11 +1986,11 @@ export interface paths {
          *
          *     The LRNA hub legs are not per-asset volume. `feeUsd` is the asset fee that accrues to liquidity providers; `protocolFeeUsd` is the LRNA-denominated protocol fee of the same fills, attributed to the non-hub asset that was sold into the hub.
          *
-         *     The window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.
+         *     The window is rolling and anchored to the newest indexed swap fill (`asOf`), not to wall clock or to an independently advancing blocks head, so model catch-up cannot shorten it. `asOf` is null while the swap-leg model holds no data at all.
          *
          *     Legs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.
          *
-         *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
+         *     Coverage is the full indexed swap history, back to the first Omnipool fill at block 1,708,104. Before block 6,837,788 an Omnipool event records the user's direct asset pair rather than the router's internal LRNA hops, so an LRNA per-asset row exists there only when the user actually traded LRNA.
          */
         get: {
             parameters: {
@@ -1597,11 +2041,15 @@ export interface paths {
         };
         /**
          * Omnipool fee APR/APY per asset
-         * @description `feeAprPerc = 100 × (fee_amount_in_asset / mean_reserve) × 365/W`, a RAW-UNIT ratio: numerator and denominator are the same token, so no price enters and no feed can distort it. Only fee legs that were not burned count — those are the ones that accrue to liquidity providers. `feeApyPerc` compounds that period return over a year. There is no ÷2 (the data lake halves both, so its numbers are about half of these).
+         * @description `feeAprPerc = 100 × (fee_amount_in_asset / mean_reserve) × 365/W`, a RAW-UNIT ratio: numerator and denominator are the same token, so no price enters and no feed can distort it. `feeApyPerc` compounds that period return over a year.
+         *
+         *     **The numerator is the LP's share, not the whole fee.** Since the unified `Broadcast.Swapped` era (2025-01-25) the runtime splits each asset fee across recipients and emits one fee leg per recipient, so the fee is filtered by RECIPIENT: only legs that stayed in the Omnipool pallet account count. The rest — staking and referrals until 2026-06-22, the protocol's fee processor since — is real revenue but it does not accrue to liquidity providers. Measured over the rolling 30 days at 2026-08-12, the pool's own share is 50.1–55.0 % of the non-burned asset fee depending on the asset, so counting every non-burned leg would publish roughly 1.9× the rate an LP earns.
+         *
+         *     There is still no ÷2: the data lake halves the WHOLE fee, which is a different correction that happens to land near this one. Against the recipient-filtered rate the lake's figure is 0–10 % low (its ÷2 against the pool's measured 50.1–55.0 % share), so a consumer switching from the lake to this endpoint sees a small change here, not the ~2× it would have seen against an unfiltered numerator.
          *
          *     `protocolFeeAprPerc` is the LRNA-denominated protocol fee measured against the asset's own hub reserve, reported separately and never blended into the LP APR. `farmAprPerc` is reported separately too — a consumer that wants the total APR adds it to `feeAprPerc`.
          *
-         *     The denominator is the mean of the asset's `omnipool_pool_state_history` samples INSIDE the window. That grid is uniform (every 600 blocks), so the simple mean is the time-weighted average up to grid jitter. An asset with no in-window sample reports null rather than a rate computed against a stale reserve.
+         *     The denominator is the mean of the asset's `omnipool_pool_state_history` samples INSIDE the window. That grid is uniform (every 600 blocks — ≈1 h at the chain's present ~6 s block time, ≈20 min if it moves to 2 s), so the simple mean is the time-weighted average up to grid jitter whatever the cadence; a shorter block time only makes the mean finer. An asset with no in-window sample reports null rather than a rate computed against a stale reserve.
          *
          *     `farmAprPerc` is the liquidity-mining rate, summed over every farm running on the asset and paid in `farmRewardAssets`: `min(multiplier · yieldPerPeriod · periodsPerYear, maxRewardPerPeriod · periodsPerYear · rewardPrice / stakedValue)` with `periodsPerYear = 365.2425 d / (6 s · blocksPerPeriod)`, the pallet's own reward rule (a farm splits a fixed per-period budget across its stake, and pays its full yield rate until that budget binds). The capped term carries no `multiplier` on purpose: the pallet's `total_shares_z` is multiplier-weighted stake, so the factor cancels. The loyalty curve is NOT applied: this is the rate a matured deposit earns, the top of the range the Hydration UI shows. The reward asset is valued at its newest 1-hour close, and one more than 30 days older than the anchor counts as unpriced.
          *
@@ -1609,9 +2057,9 @@ export interface paths {
          *
          *     A null `farmAprPerc` with a NON-EMPTY `farmRewardAssets` means a farm is running but its rate is not knowable here — it is past its planned schedule (what it still pays then depends on whether its pot was topped up, which is not indexed for these reward assets), its asset has no pool-state sample within 24 hours, its reward asset is unpriced, or its global farm runs more than one yield farm (their shared budget cannot be split per asset). An asset with no farm at all reports an EMPTY `farmRewardAssets`. Note that every farm now running was created in one block and is scheduled to end on 2026-10-26T21:10:36Z, so unless the schedules are extended (a pot top-up alone does not) every `farmAprPerc` becomes null on that date.
          *
-         *     The window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.
+         *     The window is rolling and anchored to the newest indexed swap fill (`asOf`), not to wall clock or to an independently advancing blocks head, so model catch-up cannot shorten it. `asOf` is null while the swap-leg model holds no data at all.
          *
-         *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
+         *     Coverage is the full indexed swap history, back to the first Omnipool fill at block 1,708,104. Before block 6,837,788 an Omnipool event records the user's direct asset pair rather than the router's internal LRNA hops, so an LRNA per-asset row exists there only when the user actually traded LRNA.
          */
         get: {
             parameters: {
@@ -1666,11 +2114,11 @@ export interface paths {
          * Stableswap volume and fees per pool
          * @description Per-pool traded volume over a rolling window, single-counted per fill (the USD value of the fill's out legs, falling back to its in legs). `poolId` is the pool's share-token id. `feeUsd` is the pool's fee legs valued at event time.
          *
-         *     The window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.
+         *     The window is rolling and anchored to the newest indexed swap fill (`asOf`), not to wall clock or to an independently advancing blocks head, so model catch-up cannot shorten it. `asOf` is null while the swap-leg model holds no data at all.
          *
          *     Legs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.
          *
-         *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
+         *     Coverage is the full indexed swap history, back to the first Omnipool fill at block 1,708,104. Before block 6,837,788 an Omnipool event records the user's direct asset pair rather than the router's internal LRNA hops, so an LRNA per-asset row exists there only when the user actually traded LRNA.
          */
         get: {
             parameters: {
@@ -1724,11 +2172,11 @@ export interface paths {
          *
          *     `farmAprPerc` is always null here: liquidity mining incentivises Omnipool positions and XYK shares, never a stableswap pool's own LPs. When a pool's share token is itself an Omnipool asset, the farm running on it is reported on `/v1/pools/omnipool/yield` under that asset id. A pool with no fully priced in-window sample reports null too.
          *
-         *     The window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.
+         *     The window is rolling and anchored to the newest indexed swap fill (`asOf`), not to wall clock or to an independently advancing blocks head, so model catch-up cannot shorten it. `asOf` is null while the swap-leg model holds no data at all.
          *
          *     Legs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.
          *
-         *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
+         *     Coverage is the full indexed swap history, back to the first Omnipool fill at block 1,708,104. Before block 6,837,788 an Omnipool event records the user's direct asset pair rather than the router's internal LRNA hops, so an LRNA per-asset row exists there only when the user actually traded LRNA.
          */
         get: {
             parameters: {
@@ -1770,6 +2218,191 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/pools/uniswapv3/{pool}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Concentrated-liquidity (Uniswap v3) pool history per bucket
+         * @description One row per closed bucket for a pool on Hydration's EVM, keyed by the pool CONTRACT address: the price the swaps left the pool at (open/high/low/close, token1 per token0 in whole tokens), the swaps' volume and gross fees, the active liquidity after the last swap, and the holdings the pool's own logs imply. The same builder serves the explorer's pool page, so the two cannot disagree on a bucket.
+         *
+         *     A bucket without a swap carries the previous close forward (its `swaps` is 0) rather than leaving a hole — a concentrated pool's price only moves when it trades. Holdings are a running sum from the pool's creation, so the first bucket of a window carries the balance already standing in. An aToken side (aDOT) is valued through its reserve's candles, like every other USD figure here.
+         *
+         *     `timestamp` is the bucket's OPEN on a UTC-aligned grid; `from`/`to` are floored onto it, the bucket still in progress is never returned, and the window defaults to the most recent 180 buckets. The window never opens before the pool's first event: a year asked of a week-old pool returns the week, not a year of nulls. At most 2000 buckets per request — a wider window is a 400, never a silently truncated series.
+         *
+         *     `period` is the chart switch (24h / 7d / 30d / 1y) as one parameter: the window is the period ending at the last closed bucket, on the bucket a ~180-point chart wants — 24h and 7d hourly, 30d in 4-hour buckets, 1y daily — unless `bucket` names another. `period` and `from` together are a 400. Active liquidity is the pool's open ranges (mints net of burns) straddling the tick at the bucket's end, i.e. what the pool's `liquidity()` returns at that moment — a range minted or burnt between two swaps moves it at once; the Swap logs' own liquidity field only reports it at swaps. GET /v1/pools/uniswapv3/{pool}/liquidity serves the same ranges as a distribution over ticks.
+         *
+         *     Legs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Bucket width; defaults to the period's (1d when no period). */
+                    bucket?: "1h" | "4h" | "1d";
+                    from?: string;
+                    /** @description Window ending at the last closed bucket: 24h, 7d, 30d or 1y. Replaces `from`. */
+                    period?: "24h" | "7d" | "30d" | "1y";
+                    to?: string;
+                };
+                header?: never;
+                path: {
+                    pool: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            bucket: "1h" | "4h" | "1d";
+                            /** @description Fee tier in hundredths of a bip: 3000 = 0.3%. */
+                            fee: number;
+                            items: {
+                                /** @description Token0 the pool's own logs imply it held at the bucket's end (mints + swap inflows − collects − protocol collects + flash fees). */
+                                balance0: string;
+                                balance1: string;
+                                /** @description The bucket's last pool event. */
+                                blockHeight: number | null;
+                                close: string | null;
+                                /** @description Gross swap fee the swaps paid in token0 (input side × fee tier), raw units — before any protocol share. */
+                                fees0: string;
+                                fees1: string;
+                                feesUsd: string | null;
+                                high: string | null;
+                                /** @description Active liquidity L at the bucket's end: the open ranges straddling the current tick (what the pool's `liquidity()` returned then). Null before the pool is initialised. */
+                                liquidity: string | null;
+                                low: string | null;
+                                /** @description token1 per token0 in whole tokens, from the sqrtPriceX96 the swaps reported. A bucket without a swap inherits the previous close (see `swaps`); null before the pool was initialised. */
+                                open: string | null;
+                                swaps: number;
+                                /** @description The bucket's OPEN, UTC-aligned. */
+                                timestamp: string;
+                                tvlUsd: string | null;
+                                /** @description Raw integer sum of the swaps' token0 legs, both directions. */
+                                volume0: string;
+                                volume1: string;
+                                /** @description One side of the swaps in USD (the mean of the two priced sides), at the bucket's candle closes; null when neither token has a close. */
+                                volumeUsd: string | null;
+                            }[];
+                            pool: string;
+                            /** @description token0's registry asset id */
+                            token0: string;
+                            token1: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pools/uniswapv3/{pool}/liquidity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Concentrated-liquidity (Uniswap v3) pool liquidity distribution
+         * @description Where the pool's liquidity sits right now, keyed by the pool CONTRACT address: the open positions (every Mint net of the Burns against the same owner and tick range) as the initialised-tick table a Uniswap v3 chart reads (`ticks`: liquidityNet / liquidityGross per tick, ascending), as the liquidity standing between consecutive initialised ticks (`segments`, with the token0/token1 each segment holds at the current price — all token0 above the price, all token1 below, both in the straddling one) and as the ranges themselves (`ranges`, deepest first, each owner named and classed as a Gamma vault, the position manager or a contract minting for itself). `liquidity` is the sum of the ranges straddling `tick`: the figure the pool's `liquidity()` returns.
+         *
+         *     The state is the pool's own logs replayed — Initialize and Swap for the tick and sqrt price, Mint and Burn for the ranges — so it is as fresh as the last indexed block (`blockHeight`), not an RPC read; a burn(0) poke changes nothing and is not an event. Prices are token1 per token0 in whole tokens (`price` at the current sqrt price, the per-tick `price` values at 1.0001^tick). Amounts are raw integer units of each token, floored from Float64 arithmetic.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    pool: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description The pool's last event this state includes. */
+                            blockHeight: number | null;
+                            /** @description Fee tier in hundredths of a bip: 3000 = 0.3%. */
+                            fee: number;
+                            /** @description Active liquidity: the open ranges straddling `tick`. */
+                            liquidity: string | null;
+                            pool: string;
+                            /** @description token1 per token0 in whole tokens at the current sqrt price. */
+                            price: string | null;
+                            ranges: {
+                                amount0: string;
+                                amount1: string;
+                                inRange: boolean;
+                                liquidity: string;
+                                /** @description The H160 that minted the position into the pool: a Gamma vault, the NonfungiblePositionManager, or a contract of its own. */
+                                owner: string;
+                                /** @enum {string} */
+                                ownerKind: "vault" | "manager" | "direct";
+                                /** @description Mints into this range by this owner (a vault re-mints on every rebalance). */
+                                positions: number;
+                                priceLower: string;
+                                priceUpper: string;
+                                tickLower: number;
+                                tickUpper: number;
+                            }[];
+                            segments: {
+                                /** @description token0 this segment holds at the current price, raw units. */
+                                amount0: string;
+                                amount1: string;
+                                liquidity: string;
+                                priceLower: string;
+                                priceUpper: string;
+                                tickLower: number;
+                                tickUpper: number;
+                            }[];
+                            sqrtPriceX96: string | null;
+                            /** @description The current tick (after the last Swap or Initialize); null before the pool is initialised. */
+                            tick: number | null;
+                            ticks: {
+                                liquidityGross: string;
+                                /** @description Liquidity added when the price crosses this tick upwards (negative: removed). */
+                                liquidityNet: string;
+                                price: string;
+                                tick: number;
+                            }[];
+                            tickSpacing: number;
+                            /** @description token0's registry asset id */
+                            token0: string;
+                            token1: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/pools/uniswapv3/volumes": {
         parameters: {
             query?: never;
@@ -1779,7 +2412,9 @@ export interface paths {
         };
         /**
          * Concentrated-liquidity (Uniswap v3) volume and fees per pool
-         * @description Per-pool traded volume over a rolling window for the Uniswap v3 pools on Hydration's EVM, keyed by the pool CONTRACT address. `?pools=` filters to a subset; omitted, every pool that traded in the window is returned. `feeUsd` is the pool fee (amount in × fee tier) the swaps paid to the pool's liquidity providers, valued at event time.
+         * @description Per-pool traded volume over a rolling window for the Uniswap v3 pools on Hydration's EVM, keyed by the pool CONTRACT address. `?pools=` filters to a subset; omitted, every pool that traded in the window is returned.
+         *
+         *     `feeUsd` is the GROSS swap fee the trades paid (amount in × fee tier), valued at event time — it is what the pool charged, not what its liquidity providers keep. Where `setFeeProtocol` is on (referendum 403 enabled it on 2026-09-09; the aDOT/HOLLAR pool keeps 1/4 per token), the pool retains that share for the protocol and the LPs earn the rest. The protocol's share becomes protocol revenue only when it is collected — see the `uniswap_v3_fee` stream on /v1/fees/charts — so between accrual and a `CollectProtocol` it is counted here and nowhere else.
          *
          *     Fills reach this feed two ways: a Router-routed hop through the venue as its Broadcast fill, and a direct EVM swap (SwapRouter02 or any contract) from the pool's own Swap log — the latter with a few minutes' lag. A swap counts once either way.
          *
@@ -1847,11 +2482,11 @@ export interface paths {
          *
          *     A pool account can be reused after a destroy/recreate, so `shareTokenId`/`assetA`/`assetB` describe its newest registry entry; they are null for an account the registry does not know.
          *
-         *     The window is rolling and anchored to the newest indexed block (`asOf`), not to wall clock, so an indexing lag never shortens it. `asOf` is null while the swap-leg model holds no data at all.
+         *     The window is rolling and anchored to the newest indexed swap fill (`asOf`), not to wall clock or to an independently advancing blocks head, so model catch-up cannot shorten it. `asOf` is null while the swap-leg model holds no data at all.
          *
          *     Legs are valued at the 1-hour candle that had already CLOSED when the fill happened; an asset whose last close is more than 30 days older than the window is treated as unpriced and contributes 0.
          *
-         *     Coverage starts at block 6,837,788, the first block emitting the unified `Broadcast.Swapped` event; pre-Broadcast trades are not in this model yet.
+         *     Coverage is the full indexed swap history, back to the first Omnipool fill at block 1,708,104. Before block 6,837,788 an Omnipool event records the user's direct asset pair rather than the router's internal LRNA hops, so an LRNA per-asset row exists there only when the user actually traded LRNA.
          */
         get: {
             parameters: {
@@ -1896,6 +2531,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/prices/cross-chain-pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reference candles for a cross-chain swap pair
+         * @description Candles for a pair whose destination does NOT trade on Hydration — the assets a cross-chain swap delivers on their own chains (NEAR, Zcash). There is no native pair data for these and never will be, so this composes two independent USD series: the Hydration asset's own candles, and the destination's from a venue that does list it.
+         *
+         *     ORIENTATION matches GET /v1/prices/pair: the price is `assetIn` quoted in the destination — how much of the destination asset one `assetIn` buys. The Hydration UI's cross-chain chart uses the INVERSE convention (how much assetIn one destination unit costs), so a client reproducing that chart inverts these candles.
+         *
+         *     REFERENCE PRICE, NOT AN EXECUTED ONE. `referenceSource` names the venue the destination leg is priced from (`kraken`, pair `NEARUSD`/`ZECUSD`). A cross-chain swap's realised rate is a property of the order itself — the solver network's fill, plus both bridge rails' fees — and is typically several percent away from this. Do not present these candles as what a swap would get.
+         *
+         *     `destinationAsset` is a 1Click asset id and must be one this deployment can price: `nep141:wrap.near`, `nep141:zec.omft.near`. Anything else is a 400 rather than being priced off an adjacent market.
+         *
+         *     WINDOW: the destination venue serves a fixed recent tail per interval (roughly 720 candles) and takes no start bound, so the series begins where that tail begins — `from` narrows it but cannot extend it. Buckets older than the Hydration asset's first candle are dropped rather than scaled by a price that did not exist yet.
+         *
+         *     `open`/`close` are rates taken from each leg at the ends of the bucket; `high`/`low` are the conservative envelope the two independent series admit — the Hydration leg's high over the destination's low, and its low over the destination's high, exactly as the on-chain cross pair publishes them. Both legs' ranges enter, so the envelope is an upper bound on realised range, never an underestimate. `volumeUsd` is always `"0"`: the two legs' volumes are on different venues and summing them would describe no market.
+         *
+         *     Each Hydration bucket is priced by the close that had already happened at or before it — never a future price (AGENTS.md).
+         *
+         *     A money-market aToken `assetIn` is priced through its reserve, which is 1:1 with it and is what carries the candles (aUSDC is USDC). `pricedAsset` reports which asset the base leg was read from, so the substitution is visible rather than silent.
+         */
+        get: {
+            parameters: {
+                query: {
+                    assetIn: string;
+                    bucket?: "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+                    /** @description 1Click asset id of the destination, e.g. nep141:wrap.near. */
+                    destinationAsset: string;
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                close: string;
+                                high: string;
+                                low: string;
+                                open: string;
+                                timestamp: string;
+                                volumeUsd: string;
+                            }[];
+                            /** @description The Hydration asset the base leg was actually priced from. Differs from `assetIn` when it is a money-market aToken, which is 1:1 with its reserve and has no candles of its own. */
+                            pricedAsset: string;
+                            /** @description The 1Click asset id the candles are quoted in. */
+                            referenceAsset: string;
+                            /** @description The venue the destination leg is priced from. */
+                            referenceSource: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/prices/pair": {
         parameters: {
             query?: never;
@@ -1905,11 +2615,17 @@ export interface paths {
         };
         /**
          * OHLCV candles for one pair
-         * @description ORIENTATION: the price is `assetIn` quoted in `assetOut` — how much assetOut one assetIn buys — matching the UI's pair orientation.
+         * @description ORIENTATION: the price is `assetIn` quoted in `assetOut` — how much assetOut one assetIn buys — matching the UI's pair orientation. `assetIn` and `assetOut` must differ: an asset's price in itself is 1, not a series, and the endpoint answers markets.
          *
-         *     `referenceAsset` is `usd` when assetOut is a USD-pegged token (USDT, USDC, HOLLAR, DAI, HUSDT, HUSDC), because the candle model is USD-denominated and that IS the pair. Otherwise it is assetOut's registry id and the candles are the cross rate: assetIn's USD OHLC divided by assetOut's USD CLOSE for the same bucket. That is an approximation of a true cross candle (an exact high/low would need the per-block ratio, since the base's high and the quote's low never occur at the same instant); the close is exact. A bucket the quote asset has no candle for is omitted rather than priced at an older rate.
+         *     `referenceAsset` is `usd` when assetOut is a USD-pegged token (USDT, USDC, HOLLAR, DAI), because the candle model is USD-denominated and that IS the pair. **USD-quoted pairs are the asset's own candles, unmodified — everything in the next paragraph is about cross pairs only.** Otherwise `referenceAsset` is assetOut's registry id and the candles are the cross rate, composed from the two assets' USD candles. The interest-bearing `Hydrated *` wrappers (HUSDT, HUSDC, HUSDS, HUSDe) are NOT dollars — they accrue about 2 %/yr away from par — so they quote through the cross path like any other asset. A bucket the quote asset has no candle for is omitted rather than priced at an older rate.
          *
-         *     `timestamp` is the bucket's OPEN. Only buckets that have fully closed are returned, so the series never ends on a partial candle (AGENTS.md). At most 5000 candles per request — a wider window is a 400, never a silently truncated series — and the window defaults to the most recent 500 buckets.
+         *     CROSS-PAIR ACCURACY, and the ONE thing to know before computing volatility from it: `open` and `close` are exact rates, `high` and `low` are a conservative ENVELOPE. `open` is assetIn's open over assetOut's open and `close` is close over close — each series' first and last observation in the bucket, which is the same instant for both legs, so these are the real rate (measured against an exact per-block ratio: agreement to 2.7e-16, the published scale). `high` is assetIn's high over assetOut's LOW and `low` is assetIn's low over assetOut's HIGH: the widest rates the two independent series admit. That band is GUARANTEED to contain every rate the pair traded at in the bucket (verified on 1,800 live buckets against an exact per-block reference: 100 %, the only apparent misses being that reference's own float64 rounding at 3e-17 relative) but it OVERSTATES the width — measured 1.0x-2.3x at 5m-4h and about 7.6x at 1d, and by an unbounded factor on a pair whose ratio is near-constant (a peg-tracking pair such as GDOT/DOT has a true intra-hour range of ~0 while the envelope inherits both legs' independent USD noise, median 0.56 % at 1h). So `high - low` is an UPPER BOUND on realised range, never an underestimate: the bias has one direction. Use `close` for a return series. An exact per-block high/low is not served because that query is O(blocks in the window) rather than O(candles), measured at 6.8x-20x the wall time and 8x-192x the memory of the two pre-aggregate reads this composes.
+         *
+         *     `timestamp` is the bucket's OPEN, on the candle model's own grid: sub-daily buckets and `1d` are UTC-aligned, and `1w` is the ISO week, starting MONDAY 00:00 UTC. `from` and `to` are floored onto that grid, so the bucket containing each is the one you get (the sole exception is a `1w` bound inside 1970-01-01…04, which moves up to the epoch's first Monday). Only buckets that have fully closed are returned, so the series never ends on a partial candle (AGENTS.md). The window defaults to the most recent 500 buckets.
+         *
+         *     At most 5000 candles per request — a wider window is a 400, never a silently truncated series. The count is measured on the window actually READ, i.e. after `to` is clamped to the last closed bucket: passing a `to` far in the future is not a 400, it just reads up to now, and a window lying entirely beyond the last closed bucket reads nothing at all and returns empty `items` without reaching the cap.
+         *
+         *     A window that lies entirely after the last closed bucket (a future `from`, or a `from`/`to` pinned to the bucket still in progress) is answered with empty `items`, the same as a window before the asset was listed. Only a caller-inverted window is a 400 — and that test is on the timestamps you sent, not on the buckets they fall in, so swapping two same-day bounds is refused rather than silently read as one bucket.
          *
          *     There is no minute-level candle model, so `bucket=1m` is rejected rather than rounded up to 5 minutes.
          *
@@ -2038,6 +2754,82 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/staking/gigahdx/apr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * GIGAHDX staking APR (base + voting, realized)
+         * @description **The number the staking dashboard shows**: `totalAprPerc = baseAprPerc + votingAprPerc`, each stream reported at `max(measured, programme floor)`.
+         *
+         *     **Voting (realized, not projected)**: `100 × 8 × paidOutPerYear / medianWeightedVotes` — annualized HDX actually paid into referendum reward pools over the trailing window, at the maximum conviction multiplier (Locked6x ⇒ ×8; the ladder is 1x ⇒ ×0.25, 2x ⇒ ×0.5, 3x ⇒ ×1, 4x ⇒ ×2, 5x ⇒ ×4, 6x ⇒ ×8; Split/Abstain/no-conviction earn nothing). The reward pallet deletes its per-referendum storage as voters claim and its accumulator pot is a backlog, so neither carries an honest rate; allocation events cannot be deleted, which is what makes this number stable — it cannot cliff when chain storage is cleaned, and it decays gradually while governance is quiet.
+         *
+         *     Personalized, for stake `s` (planck) at conviction multiplier `m`: `apr(s, m) = 100 × paidOutPerYear × s×m / (medianWeightedVotes + s×m) / s` — both terms are in this response. It assumes voting on every eligible referendum; skipping referenda earns proportionally less. The headline is the zero-stake limit.
+         *
+         *     **Base (exchange-rate appreciation)**: the median of the 7/14/28-day slopes of the gigaHDX exchange rate `max(1, (TotalLocked + gigahdx! pot) / stHDX supply)`, each annualized by timestamps — a median of three windows so one anomalous boundary cannot move the result. Null in the first 7 days after launch (the floor stands alone there).
+         *
+         *     The floors are the total-participation bounds of the treasury programme (4,109.59 HDX per 600 blocks to the base pot, 6,164.38 to the voting accumulator; HDX referendum #101): `100 × programmePerYear / totalStake`. The programme is a fixed schedule running to ~mid-2027, so the floors are guaranteed only while it runs; the measured terms follow a programme change with their windows' lag.
+         *
+         *     Windowing per Semantics 6: anchored to the newest indexed block, clamped to the GIGAHDX launch (2026-07-01), annualized by block timestamps (voting window 60d).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description The newest indexed block — every window here is anchored to it, not to wall clock. */
+                            asOf: string;
+                            /** @description The exchange-rate stream: max(median of the 7/14/28d gigaHDX rate slopes, programme floor). */
+                            baseAprPerc: string | null;
+                            /** @description Upper median of the window's per-referendum totalWeightedVotes (Σ min(voteBalance, stakedHDX) × convictionMultiplier), raw units. Null while no allocation is in the window. */
+                            medianWeightedVotes: string | null;
+                            /** @description HDX actually paid into referendum reward pools over the trailing 60d, annualized by block timestamps — raw planck per year. With medianWeightedVotes, the personalization term. */
+                            paidOutPerYear: string;
+                            /** @description base + voting, 4-decimal percent ("19.2000" = 19.2 %) — the headline. Null while either stream is unknown. */
+                            totalAprPerc: string | null;
+                            /** @description The voting stream at max conviction: max(realized paid-out rate, programme floor). */
+                            votingAprPerc: string | null;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/stats/platform": {
         parameters: {
             query?: never;
@@ -2047,11 +2839,15 @@ export interface paths {
         };
         /**
          * Chain-wide TVL and 24h volume
-         * @description TVL is CURRENT pooled value at current prices; the Omnipool figure excludes the LRNA hub leg, which is the pool's internal accounting unit rather than deposited value. A pool whose legs cannot all be priced contributes nothing to its venue instead of making the venue unknown.
+         * @description TVL is CURRENT pooled value at current prices; the Omnipool figure excludes the LRNA hub leg, which is the pool's internal accounting unit rather than deposited value. A pool whose legs cannot all be priced contributes nothing to its venue instead of making the venue unknown. `uniswapV3Usd` is the concentrated-liquidity (Uniswap v3) pools on Hydration's EVM, valued from the holdings their own Mint/Burn/Collect/Swap logs imply; it is part of `totalUsd` like the three pallet venues.
          *
-         *     `moneyMarketSupplyUsd` is null: there is no money-market TVL model on this surface yet, and null says so rather than reporting the platform as smaller than it is.
+         *     `moneyMarketSupplyUsd` is every money-market reserve's supplied side at current prices, across all three isolated markets (core, GIGAHDX, BIL), reconstructed from the aToken anchor plus indexed scaled deltas. It is null, never 0, when the reserve-state model has no rows (the aToken anchor has not been snapshotted) or when nothing in it could be priced, and a reserve the pool has delisted is excluded rather than frozen at its last balance.
          *
-         *     `volume24h` is the rolling 24 hours of swap legs, each fill counted ONCE (its out side, falling back to its in side). `totalRoutedUsd` nets each routed trade end to end — a multi-hop route counts once, at the larger of its two boundary sides — so the per-venue sums legitimately exceed it. It also drops trades whose every fill is an aToken mint or redeem: those are 1:1 money-market wraps, not swaps. An aToken hop inside a routed swap still counts, as part of that swap; the three per-venue fields are unaffected either way, since `aave` is not among them.
+         *     It is deliberately NOT part of `totalUsd`, which stays the pooled total, because the two OVERLAP IN BOTH DIRECTIONS. `moneyMarketFoldedUsd` is the part of the money market that is Stableswap share tokens deposited as collateral — a claim on a pool already inside `stableswapUsd`. `pooledATokenUsd` is the inverse: the pools are themselves money-market suppliers and hold the receipts (pool 690 holds aDOT, the stablepools hold aUSDT/aUSDC, the Omnipool holds asset 1001), so that value is inside `moneyMarketSupplyUsd` too. Measured 2026-08-13: $13.9M and $8.58M respectively, against $52.1M supplied and $29.5M pooled. Staking-backed stHDX ($10.9M) is NOT an overlap — that HDX is locked in its holder's own wallet and no pool holds it.
+         *
+         *     The two fold components are published so the surfaces reconcile: `totalUsd + moneyMarketSupplyUsd - moneyMarketFoldedUsd - pooledATokenUsd` equals `/hydration-web/v1/stats`'s `tvl` to the cent WITHIN ONE COMPUTATION — that endpoint folds these very strings — but two HTTP requests cannot be made to share one computation. This response recomputes about every 60s while that one is memoised 600s (stale-while-revalidate to 1800s), so a back-to-back pair agrees exactly only while it is still serving the generation its fold was built from: measured 2026-08-13, 21 back-to-back pairs over 7 minutes were **4 exact, 17 not**. Neither obvious workaround helps — a query-string cache-buster bypasses the HTTP micro-cache only (both services memoise under fixed keys), and polling until that endpoint's ETag changes and then reading this one at once was still $179.07 out, because stale-while-revalidate computes the new value before the request that first serves it. **So check the MAGNITUDE, not equality:** the gap is whatever the components moved in between, measured over that run at $179.07 to $8,254.19 on a ~$59.4M base, i.e. ≤0.014%. Agreement inside ~0.02% is correct — checkable in two requests — an exact match is a bonus, and anything larger is worth investigating. Both folds are restricted to pools that HAVE a TVL: poolService gives a pool none unless every leg is priced, so an unpriced pool added nothing and nothing of it may be subtracted.
+         *
+         *     `volume24h` is the rolling 24 hours of swap legs, each fill counted ONCE (its out side, falling back to its in side). `totalRoutedUsd` nets each routed trade end to end — a multi-hop route counts once, at the larger of its two boundary sides — so the per-venue sums legitimately exceed it. It also drops trades whose every fill is an aToken mint or redeem: those are 1:1 money-market wraps, not swaps. An aToken hop inside a routed swap still counts, as part of that swap; the four per-venue fields are unaffected either way, since `aave` is not among them. `uniswapV3Usd` counts a Uniswap v3 pool's fills whether they arrived as a Router-routed hop or as a direct EVM swap (the latter reach the leg model a few minutes behind, through the uniswap_v3_legs derivation).
          *
          *     `asOf`/`blockHeight` describe the indexed-block volume anchor. The TVL snapshot is another current-state model and can sit a few blocks apart. Both are null only while no swap legs are indexed at all.
          */
@@ -2074,17 +2870,20 @@ export interface paths {
                             asOf: string | null;
                             blockHeight: number | null;
                             tvl: {
-                                /** @enum {string|null} */
-                                moneyMarketSupplyUsd: null;
+                                moneyMarketFoldedUsd: string | null;
+                                moneyMarketSupplyUsd: string | null;
                                 omnipoolUsd: string | null;
+                                pooledATokenUsd: string | null;
                                 stableswapUsd: string | null;
                                 totalUsd: string | null;
+                                uniswapV3Usd: string | null;
                                 xykUsd: string | null;
                             };
                             volume24h: {
                                 omnipoolUsd: string;
                                 stableswapUsd: string;
                                 totalRoutedUsd: string;
+                                uniswapV3Usd: string;
                                 xykUsd: string;
                             };
                         };
@@ -2164,6 +2963,8 @@ export interface paths {
          *
          *     `dca` names the schedule a hook-dispatched execution belongs to, matched to its DCA.TradeExecuted event by block and per-trade amount.
          *
+         *     COVERAGE: this feed is the substrate swap-event model, so a Router-routed trade through a concentrated-liquidity (Uniswap v3) pool is here like any other route, but a DIRECT EVM swap against such a pool (SwapRouter02 or any contract, no Broadcast event) is not. Those fills are served per pool by `/v1/pools/uniswapv3/volumes`, by the DexScreener `uniswapv3` pairs, and by the Data API's fill feeds.
+         *
          *     With an address the query is scoped to the account-first model, which files a trade under the extrinsic's signatory (and its EVM effective signer); either half of a bound EVM identity finds the same trades. DCA executions are NOT in that model — they are the DCA path's rows — so a schedule owner sees them on the global feed and under /v1/dca, not here.
          *
          *     Without an address the global feed is served. `totalCount` counts the same filter the page uses and is cached for 30 s per filter.
@@ -2174,6 +2975,7 @@ export interface paths {
                     /** @description Comma-separated registry ids; matches either side of the pair. */
                     assets?: string;
                     limit?: number;
+                    /** @description Row offset. On the GLOBAL feed (no account parameter) at most 10000, the bound on the de-duplication window; a scoped feed pages the whole account. */
                     offset?: number;
                     /** @description Scope to one account. Omit for the global feed. */
                     swapper?: string;
@@ -2242,6 +3044,8 @@ export interface paths {
          *
          *     `dca` names the schedule a hook-dispatched execution belongs to, matched to its DCA.TradeExecuted event by block and per-trade amount.
          *
+         *     COVERAGE: this feed is the substrate swap-event model, so a Router-routed trade through a concentrated-liquidity (Uniswap v3) pool is here like any other route, but a DIRECT EVM swap against such a pool (SwapRouter02 or any contract, no Broadcast event) is not. Those fills are served per pool by `/v1/pools/uniswapv3/volumes`, by the DexScreener `uniswapv3` pairs, and by the Data API's fill feeds.
+         *
          *     With an address the query is scoped to the account-first model, which files a trade under the extrinsic's signatory (and its EVM effective signer); either half of a bound EVM identity finds the same trades. DCA executions are NOT in that model — they are the DCA path's rows — so a schedule owner sees them on the global feed and under /v1/dca, not here.
          *
          *     Without an address the global feed is served. `totalCount` counts the same filter the page uses and is cached for 30 s per filter.
@@ -2252,6 +3056,7 @@ export interface paths {
                     /** @description Comma-separated registry ids; matches either side of the pair. */
                     assets?: string;
                     limit?: number;
+                    /** @description Row offset. On the GLOBAL feed (no account parameter) at most 10000, the bound on the de-duplication window; a scoped feed pages the whole account. */
                     offset?: number;
                     /** @description Scope to one account. Omit for the global feed. */
                     participant?: string;

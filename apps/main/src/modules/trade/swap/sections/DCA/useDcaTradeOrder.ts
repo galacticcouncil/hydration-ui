@@ -1,16 +1,17 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
-import { dcaTradeOrderQuery } from "@/api/trade"
+import { dcaOrderQuery } from "@/api/trade"
 import {
   DcaFormValues,
+  DcaOrders,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { toDecimal } from "@/utils/formatting"
 
 export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
@@ -20,62 +21,61 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const {
-    dca: { slippage, maxRetries },
-  } = useTradeSettings()
-
   const formValues = form.watch()
 
-  const { data: orderData, isLoading: isOrderLoading } = useQuery(
-    dcaTradeOrderQuery(rpc, {
-      form: formValues,
-      slippage,
-      maxRetries,
-      address,
-      dryRun: form.formState.isValid,
-    }),
-  )
+  const { data: order, isLoading: isOrderLoading } = useQuery({
+    ...dcaOrderQuery(rpc, formValues),
+    placeholderData: (previousData, previousQuery) => {
+      if (!previousData || !previousQuery) return undefined
+      if (!Big(formValues.sellAmount || "0").gt(0)) return undefined
 
-  const assetInId = orderData?.order?.assetIn
-  const assetOutId = orderData?.order?.assetOut
+      const [, , , prevIn, prevOut, , , prevOrders] = previousQuery.queryKey
+
+      return prevIn === formValues.sellAsset?.id &&
+        prevOut === formValues.buyAsset?.id &&
+        (prevOrders as DcaOrders).type === formValues.orders.type
+        ? previousData
+        : undefined
+    },
+  })
+
+  const assetInId = order?.assetIn
+  const assetOutId = order?.assetOut
   const assetInMeta = assetInId ? getAsset(assetInId) : undefined
   const assetOutMeta = assetOutId ? getAsset(assetOutId) : undefined
 
   const isOpenBudget = formValues.orders.type === DcaOrdersMode.OpenBudget
 
-  const { data: healthFactorData, isLoading: isHealthFactorLoading } = useQuery(
+  const { data: healthFactorData } = useQuery(
     healthFactorQuery(rpc, {
       fromAsset: formValues.sellAsset,
       fromAmount:
-        orderData && assetInMeta && orderData.order
+        order && assetInMeta
           ? isOpenBudget
             ? toDecimal(
-                orderData.order.tradeAmountIn *
-                  OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
+                order.tradeAmountIn * OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
                 assetInMeta.decimals,
               )
             : formValues.sellAmount
           : "0",
       toAsset: formValues.buyAsset,
       toAmount:
-        orderData && assetOutMeta && orderData.order
+        order && assetOutMeta
           ? isOpenBudget
             ? toDecimal(
-                orderData.order.tradeAmountOut *
-                  OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
+                order.tradeAmountOut * OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
                 assetOutMeta.decimals,
               )
-            : toDecimal(orderData.order.amountOut, assetOutMeta.decimals)
+            : toDecimal(order.amountOut, assetOutMeta.decimals)
           : "0",
       address,
     }),
   )
 
   return {
-    order: orderData?.order,
-    dryRunError: orderData?.dryRunError ?? null,
+    order,
     healthFactor: healthFactorData,
-    isLoading: isOrderLoading || isHealthFactorLoading,
+    isLoading: isOrderLoading,
   }
 }
 

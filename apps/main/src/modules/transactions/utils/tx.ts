@@ -19,7 +19,11 @@ import {
   isDecodedCallEnum,
   isPapiTransaction,
 } from "@/modules/transactions/utils/polkadot"
-import { isEvmCall } from "@/modules/transactions/utils/xcm"
+import {
+  isEvmCall,
+  isSolanaCall,
+  isSuiCall,
+} from "@/modules/transactions/utils/xcm"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { TransactionMeta } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
@@ -183,6 +187,18 @@ export const getPapiTransactionCallData = async (
   } catch {
     return ""
   }
+}
+
+export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
+  if (isPapiTransaction(tx)) {
+    return getPapiTransactionCallData(tx)
+  }
+
+  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {
+    return tx.data
+  }
+
+  return ""
 }
 
 export const getExtraTxFeeByWeight = async (

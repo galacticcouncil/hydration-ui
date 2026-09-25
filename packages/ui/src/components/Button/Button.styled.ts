@@ -2,7 +2,10 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
 import { Box } from "@/components/Box"
+import { pressScale, pressScaleTransition } from "@/styles/press"
 import { createStyles, createVariants } from "@/utils"
+
+import { LOADING_ENTER_MS, LOADING_EXIT_MS } from "./useLoadingState"
 
 export type ButtonVariant =
   | "primary"
@@ -30,6 +33,10 @@ export type SButtonProps = {
   glow?: boolean
 }
 
+export type LoadingMode = "inline" | "replace"
+
+const DISABLED_OPACITY = 0.2
+
 const defaulStyles = createStyles(
   (theme) => css`
     position: relative;
@@ -48,7 +55,10 @@ const defaulStyles = createStyles(
 
     cursor: pointer;
 
-    transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
+    transition: ${theme.transitions.colors}, ${theme.transitions.opacity},
+      ${pressScaleTransition};
+
+    ${pressScale};
 
     &:is(:link) {
       text-decoration: none;
@@ -126,7 +136,7 @@ const disabledStyles = css`
   &[aria-disabled="true"] {
     cursor: not-allowed;
 
-    opacity: 0.2;
+    opacity: ${DISABLED_OPACITY};
   }
 `
 
@@ -417,7 +427,10 @@ export const SMicroButton = styled(Box)<{ variant?: MicroButtonVariant }>(
       line-height: 1;
       text-transform: uppercase;
 
-      transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
+      transition: ${theme.transitions.colors}, ${theme.transitions.opacity},
+        ${pressScaleTransition};
+
+      ${pressScale};
 
       border: 1px solid;
       border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
@@ -463,11 +476,6 @@ export const SButtonIcon = styled(Box)(
   `,
 )
 
-export type LoadingMode = "inline" | "replace"
-
-const LOADING_TRANSITION_MS = 250
-const LOADING_ICON_EASING = "cubic-bezier(0.2, 0, 0, 1)"
-
 const loadingLabelStyles = createStyles(
   (theme) => css`
     & > [data-loading-spinner],
@@ -481,22 +489,20 @@ const loadingLabelStyles = createStyles(
     & > [data-loading-spinner] svg {
       width: 1em;
       height: 1em;
-
-      animation-play-state: paused;
-    }
-
-    [aria-busy="true"] > & > [data-loading-spinner] svg {
-      animation-play-state: running;
     }
   `,
 )
 
 const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
   inline: css`
+    --loading-spinner-space: calc(1em + ${theme.space.s});
+
     position: relative;
     display: inline-grid;
 
-    transition: transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+    transition:
+      transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad},
+      margin ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
 
     & > [data-loading-spinner] {
       position: absolute;
@@ -507,27 +513,32 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
       height: 1em;
 
       opacity: 0;
-      filter: blur(4px);
       transform: translate(
-          calc(-100% - ${theme.space.base} + ${theme.space.s}),
-          -50%
-        )
-        scale(0.25);
+        calc(-100% - ${theme.space.base} + ${theme.space.s}),
+        -50%
+      );
 
       transition:
-        opacity ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING},
-        transform ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING},
-        filter ${LOADING_TRANSITION_MS}ms ${LOADING_ICON_EASING};
+        opacity ${LOADING_EXIT_MS}ms ${theme.easings.inQuad},
+        transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
     }
 
     [aria-busy="true"] > & {
-      transform: translateX(calc((1em + ${theme.space.base}) / 2));
+      margin-inline: calc(var(--loading-spinner-space) / 2);
+      transform: translateX(calc(var(--loading-spinner-space) / 2));
+
+      transition:
+        transform ${LOADING_ENTER_MS}ms ${theme.easings.outExpo},
+        margin ${LOADING_ENTER_MS}ms ${theme.easings.outExpo};
     }
 
     [aria-busy="true"] > & > [data-loading-spinner] {
       opacity: 1;
-      filter: blur(0);
-      transform: translate(calc(-100% - 0.35em), -50%) scale(1);
+      transform: translate(calc(-100% - 0.5em), -50%);
+
+      transition:
+        opacity ${LOADING_ENTER_MS}ms ${theme.easings.outExpo},
+        transform ${LOADING_ENTER_MS}ms ${theme.easings.outExpo};
     }
   `,
   replace: css`
@@ -542,8 +553,14 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
       justify-self: center;
 
       transition:
-        transform ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo},
-        opacity ${LOADING_TRANSITION_MS}ms ${theme.easings.outExpo};
+        transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad},
+        opacity ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
+    }
+
+    [aria-busy="true"] > & > * {
+      transition:
+        transform ${LOADING_ENTER_MS}ms ${theme.easings.outExpo},
+        opacity ${LOADING_ENTER_MS}ms ${theme.easings.outExpo};
     }
 
     & > [data-loading-content] {
@@ -580,3 +597,26 @@ export const SLoadingLabel = styled.span<{ loadingMode: LoadingMode }>(
   loadingLabelStyles,
   ({ loadingMode }) => loadingLabelVariants(loadingMode),
 )
+
+export const SLoadingButton = styled(SButton, {
+  shouldForwardProp: (prop) => prop !== "loadingFade",
+})<{ loadingFade?: boolean }>(({ loadingFade = false }) => [
+  css`
+    &[aria-busy="true"] {
+      pointer-events: none;
+    }
+  `,
+  loadingFade
+    ? css`
+        &:disabled,
+        &[aria-busy="true"] {
+          opacity: ${DISABLED_OPACITY};
+        }
+      `
+    : css`
+        &:disabled,
+        &[aria-disabled="true"] {
+          opacity: 1;
+        }
+      `,
+])

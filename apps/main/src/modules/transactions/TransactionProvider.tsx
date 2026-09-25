@@ -1,4 +1,7 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  useAfterFirstRender,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
@@ -28,6 +31,7 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import {
@@ -83,6 +87,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const { isFork } = useRpcProvider()
   const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
@@ -104,15 +109,21 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const ecosystem = useTransactionEcosystem(transaction)
   const toasts = useTransactionToasts(transaction, ecosystem)
 
+  const hasRendered = useAfterFirstRender()
+
   const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
-    !hasInitialError && transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+    hasRendered &&
+      !hasInitialError &&
+      transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
       ? transaction.tx
       : null,
     transaction?.fee?.feePaymentAssetId,
   )
 
   const { data: paymentInfo, isLoading: isLoadingPaymentInfo } =
-    useTransactionPaymentInfo(hasInitialError ? undefined : transaction.tx)
+    useTransactionPaymentInfo(
+      !hasRendered || hasInitialError ? undefined : transaction.tx,
+    )
 
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
@@ -217,7 +228,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         )
 
         const blockHeight = getTxResultBlockHeight(event)
-        if (blockHeight !== null) armNeckworkSync(blockHeight)
+        if (blockHeight !== null && !isFork) armNeckworkSync(blockHeight)
         queryClient.invalidateQueries({
           queryKey: MAX_WITHDRAW_ALL_QUERY_KEY,
         })
@@ -241,7 +252,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   }
 
   const isLoading =
-    isLoadingNonce || isLoadingFeeEstimate || isLoadingPaymentInfo
+    !hasRendered ||
+    isLoadingNonce ||
+    isLoadingFeeEstimate ||
+    isLoadingPaymentInfo
 
   return (
     <TransactionContext.Provider

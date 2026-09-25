@@ -8,6 +8,11 @@ export type ActivityType =
   | "borrow"
   | "repay"
   | "withdraw"
+  | "intent-place"
+  | "intent-fill"
+  | "intent-cancel"
+  | "intent-expire"
+  | "intent-dca-trade"
 
 export const neckwork = {
   base: NECKWORK_URL,
@@ -42,5 +47,12 @@ export const neckwork = {
   },
   activityDca: (scheduleId: number) => {
     return `${NECKWORK_URL}/dca/${scheduleId}`
+  },
+  /**
+   * An intent id is a u128 and travels as a decimal string. Deliberately NOT
+   * `number` — a u128 through a double is a silent corruption.
+   */
+  intent: (intentId: string | bigint) => {
+    return `${NECKWORK_URL}/intent/${intentId}`
   },
 }

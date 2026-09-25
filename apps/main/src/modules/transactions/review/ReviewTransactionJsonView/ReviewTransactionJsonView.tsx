@@ -1,21 +1,28 @@
 import {
   JsonView,
+  JsonViewSkeleton,
   ScrollArea,
   Separator,
+  Skeleton,
   TabsContent,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HYDRATION_CHAIN_KEY, safeStringify } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
+import {
+  HYDRATION_CHAIN_KEY,
+  useAfterFirstRender,
+} from "@galacticcouncil/utils"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
+import { useTxCallData } from "@/modules/transactions/hooks/useTxCallData"
 import { CallHashText } from "@/modules/transactions/review/ReviewTransactionJsonView/components/CallHashText"
 import { CopyMenu } from "@/modules/transactions/review/ReviewTransactionJsonView/components/CopyMenu"
 import { ExpandableSection } from "@/modules/transactions/review/ReviewTransactionJsonView/components/ExpandableSection"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { AnyTransaction } from "@/modules/transactions/types"
+import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -26,7 +33,7 @@ import {
   JsonViewTabsList,
   JsonViewTabsTrigger,
 } from "./ReviewTransactionJsonView.styled"
-import { decodeTx, getTxCallHash } from "./ReviewTransactionJsonView.utils"
+import { decodeTx, hasTxCallData } from "./ReviewTransactionJsonView.utils"
 
 type TransactionMode = "default" | "evm" | "substrate"
 
@@ -44,15 +51,18 @@ export const ReviewTransactionJsonContent: React.FC<
 > = ({ tx, srcChainKey, jsonPath }) => {
   const { t } = useTranslation("common")
 
-  const txJson = decodeTx(tx, jsonPath)
-  const { data: txCallHash = "" } = useQuery({
-    queryKey: ["txCallHash", safeStringify(tx)],
-    queryFn: () => getTxCallHash(tx),
-    staleTime: Infinity,
-  })
-  const txUrl = usePolkadotJSExtrinsicUrl(tx, srcChainKey)
+  const hasRendered = useAfterFirstRender()
+  const txJson = hasRendered ? decodeTx(tx, jsonPath) : undefined
 
-  const isValidTxCallHash = !!txCallHash
+  const [isCallDataRequested, setIsCallDataRequested] = useState(false)
+  const isCallDataEager = !isPapiTransaction(tx)
+  const isCallDataEnabled = isCallDataRequested || isCallDataEager
+
+  const { data: txCallHash = "", isFetching: isCallDataLoading } =
+    useTxCallData(tx, isCallDataEnabled)
+  const txUrl = usePolkadotJSExtrinsicUrl(tx, srcChainKey, isCallDataEnabled)
+
+  const hasCallData = hasTxCallData(tx)
 
   const [ref, rect] = useMeasure<HTMLDivElement>()
 
@@ -60,24 +70,41 @@ export const ReviewTransactionJsonContent: React.FC<
 
   return (
     <>
-      <CopyMenu txUrl={txUrl} txCallHash={txCallHash} txJson={txJson} />
+      <CopyMenu
+        txUrl={txUrl}
+        txCallHash={txCallHash}
+        txJson={txJson}
+        onOpenChange={(open) => open && setIsCallDataRequested(true)}
+      />
       <ScrollArea>
         <ExpandableSection
           title={t("transaction.jsonview.decoded")}
           maxContentHeight={
-            isJsonOverflowing && isValidTxCallHash ? JSON_MAX_HEIGHT : "100%"
+            isJsonOverflowing && hasCallData ? JSON_MAX_HEIGHT : "100%"
           }
         >
-          <JsonView ref={ref} fs="p6" src={txJson} />
+          {txJson ? (
+            <JsonView ref={ref} fs="p6" src={txJson} />
+          ) : (
+            <JsonViewSkeleton fs="p6" />
+          )}
         </ExpandableSection>
-        {isValidTxCallHash && (
+        {hasCallData && (
           <>
             <Separator sx={{ background: getToken("details.borders") }} />
             <ExpandableSection
               title={t("transaction.jsonview.calldata")}
               maxContentHeight="100%"
+              defaultExpanded={isCallDataEager}
+              onExpandedChange={(expanded) =>
+                expanded && setIsCallDataRequested(true)
+              }
             >
-              <CallHashText hash={txCallHash} />
+              {isCallDataLoading ? (
+                <Skeleton count={2} sx={{ fontSize: "p6" }} />
+              ) : (
+                txCallHash && <CallHashText hash={txCallHash} />
+              )}
             </ExpandableSection>
           </>
         )}

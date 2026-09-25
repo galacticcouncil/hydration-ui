@@ -11,11 +11,17 @@ type Props = {
   readonly from: TAsset
   readonly to: TAsset
   readonly price: string | null
+  readonly defaultInverted?: boolean
 }
 
-export const SwapPrice: FC<Props> = ({ from, to, price }) => {
+export const SwapPrice: FC<Props> = ({
+  from,
+  to,
+  price,
+  defaultInverted = false,
+}) => {
   const { t } = useTranslation("common")
-  const [inverted, setInverted] = useState(false)
+  const [inverted, setInverted] = useState(defaultInverted)
 
   if (!price)
     return (
