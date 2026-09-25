@@ -33,12 +33,14 @@ import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   initialVault: PropellerVaultConfig
+  lockAsset?: boolean
   onSuccess?: () => void
   onVaultChange?: (vault: PropellerVaultConfig) => void
 }
 
 export const DepositForm = ({
   initialVault,
+  lockAsset,
   onSuccess,
   onVaultChange,
 }: Props) => {
@@ -112,7 +114,7 @@ export const DepositForm = ({
                 label={t("common:asset")}
                 assets={assets}
                 selectedAsset={asset}
-                setSelectedAsset={onSelectAsset}
+                setSelectedAsset={lockAsset ? undefined : onSelectAsset}
                 value={field.value}
                 onChange={field.onChange}
                 maxBalance={balance}

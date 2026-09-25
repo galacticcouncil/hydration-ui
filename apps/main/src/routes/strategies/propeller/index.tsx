@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
 import { getPageMeta } from "@/config/navigation"
+import { StrategyPageSkeleton } from "@/modules/strategies/components/StrategyPageSkeleton"
 import { PropellerVaultPage } from "@/modules/strategies/propeller/PropellerVaultPage"
 
 const searchSchema = z.object({
@@ -10,6 +11,7 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/strategies/propeller/")({
   component: PropellerVaultPage,
+  pendingComponent: StrategyPageSkeleton,
   validateSearch: searchSchema,
   staticData: { crumb: true },
   head: ({

@@ -1,10 +1,14 @@
 import styled from "@emotion/styled"
-import { mq, ThemeFont } from "@galacticcouncil/ui/theme"
+import { mq, ThemeBaseProps, ThemeFont } from "@galacticcouncil/ui/theme"
 import { createVariants, css } from "@galacticcouncil/ui/utils"
 
 export type ValueStatsSize = "small" | "medium" | "large"
 export type ValueStatsFont = Exclude<ThemeFont, "mono">
 export type ValueStatsAlign = "left" | "right"
+export type ValueStatsGroupGap = Exclude<
+  keyof ThemeBaseProps["sizes"],
+  `-${string}`
+>
 
 const containerSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   small: css`
@@ -131,3 +135,63 @@ export const SValueStatsBottomValue = styled.div<{
       ${align === "right" ? "right: 0;" : "left: 0;"}
     `,
 ])
+
+export const SValueStatsGroup = styled.div<{
+  readonly fullWidth?: boolean
+  readonly columnGap?: ValueStatsGroupGap
+  readonly rowGap?: ValueStatsGroupGap
+}>(
+  ({ theme, fullWidth = false, columnGap = "3xl", rowGap = "xl" }) => css`
+    display: grid;
+    grid-template-columns: repeat(var(--columns, 1), auto);
+    justify-content: start;
+    column-gap: ${theme.sizes[columnGap]};
+    row-gap: ${theme.sizes[rowGap]};
+    overflow: hidden;
+
+    & > * {
+      position: relative;
+      display: flex;
+    }
+
+    ${fullWidth &&
+    css`
+      &:not([data-wrapped]) {
+        justify-content: normal;
+
+        & > * {
+          justify-content: center;
+        }
+
+        & > :first-child {
+          justify-content: flex-start;
+        }
+
+        & > :last-child:not(:first-child) {
+          justify-content: flex-end;
+        }
+      }
+    `}
+
+    & > *::before,
+    & > *::after {
+      content: "";
+      position: absolute;
+      background: ${theme.details.separators};
+    }
+
+    & > *::before {
+      top: 0;
+      bottom: 0;
+      left: calc(${theme.sizes[columnGap]} / -2);
+      width: 1px;
+    }
+
+    & > *::after {
+      top: calc(${theme.sizes[rowGap]} / -2);
+      left: -100vw;
+      right: -100vw;
+      height: 1px;
+    }
+  `,
+)

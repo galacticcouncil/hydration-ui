@@ -11,13 +11,12 @@ import {
   subLoopQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
-import { useAssets } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 const VAULT_ASSET_IDS = PROPELLER_VAULTS.map((vault) => vault.assetId)
 
-/** Room left under the TVL cap; 0% when the vault has no cap. */
 export const remainingCapacity = (tvl: number, cap: number) => {
   const remaining = Math.max(cap - tvl, 0)
   return { remaining, remainingPct: cap > 0 ? (remaining / cap) * 100 : 0 }
@@ -25,7 +24,6 @@ export const remainingCapacity = (tvl: number, cap: number) => {
 
 export type VaultDepositState = "open" | "paused" | "full"
 
-/** Whether a vault takes deposits; a vault without a cap is never full. */
 export const vaultDepositState = (
   stats: PropellerVaultStats | undefined,
 ): VaultDepositState => {
@@ -48,13 +46,13 @@ export type PropellerVaultStats = {
 
 export type PropellerVaultMarket = {
   vault: PropellerVaultConfig
+  asset: TAsset
   stats: PropellerVaultStats | undefined
   apy: number | null
   price: number
   tvlUsd: number
 }
 
-/** Market data for every configured vault, in config order. No user data. */
 export const usePropellerVaults = () => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
@@ -91,6 +89,7 @@ export const usePropellerVaults = () => {
 
     return {
       vault,
+      asset: getAssetWithFallback(vault.assetId),
       stats,
       apy: computeVaultApy({
         maxLtv: stats?.maxLtv,

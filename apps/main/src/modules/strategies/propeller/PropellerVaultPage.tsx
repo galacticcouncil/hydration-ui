@@ -5,6 +5,7 @@ import { Navigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { type Hex } from "viem"
 
+import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { AboutCard } from "@/modules/strategies/propeller/components/AboutCard"
 import { DepositForm } from "@/modules/strategies/propeller/components/DepositForm"
@@ -60,7 +61,7 @@ const PropellerVaultContent = () => {
           <AboutCard />
         </Stack>
 
-        {defaultDeposit.vault && (
+        {defaultDeposit.vault ? (
           <Paper px="xl">
             <DepositForm
               key={defaultDeposit.vault.vaultAddress}
@@ -68,6 +69,8 @@ const PropellerVaultContent = () => {
               onVaultChange={defaultDeposit.markUserPick}
             />
           </Paper>
+        ) : (
+          defaultDeposit.isLoading && <AppSkeleton />
         )}
       </TwoColumnGrid>
 

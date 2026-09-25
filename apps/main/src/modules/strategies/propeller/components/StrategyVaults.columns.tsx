@@ -17,7 +17,6 @@ import {
   type PropellerVaultMarket,
   vaultDepositState,
 } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
-import { useAssets } from "@/providers/assetsProvider"
 
 const columnHelper = createColumnHelper<PropellerVaultMarket>()
 
@@ -25,20 +24,13 @@ export const useStrategyVaultColumns = (
   onDeposit: (vault: PropellerVaultConfig) => void,
 ) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { getAssetWithFallback } = useAssets()
 
   return useMemo(() => {
     const assetColumn = columnHelper.display({
       id: "asset",
       header: t("strategy.col.asset"),
       cell: ({ row }) => {
-        const { vault } = row.original
-        return (
-          <AssetLabelFull
-            asset={getAssetWithFallback(vault.assetId)}
-            withName={false}
-          />
-        )
+        return <AssetLabelFull asset={row.original.asset} />
       },
     })
 
@@ -46,12 +38,12 @@ export const useStrategyVaultColumns = (
       id: "tvl",
       header: t("strategy.col.tvl"),
       cell: ({ row }) => {
-        const { vault, stats, tvlUsd } = row.original
+        const { asset, stats, tvlUsd } = row.original
         return (
           <Amount
             value={t("common:currency.compact", {
               value: stats?.tvl ?? 0,
-              symbol: getAssetWithFallback(vault.assetId).symbol,
+              symbol: asset.symbol,
             })}
             displayValue={t("common:currency.compact", { value: tvlUsd })}
           />
@@ -82,27 +74,36 @@ export const useStrategyVaultColumns = (
       id: "remainingCapacity",
       header: t("strategy.remainingCapacity"),
       cell: ({ row }) => {
-        const { vault, stats } = row.original
+        const { asset, stats } = row.original
         if (!stats || stats.cap <= 0) return null
         return (
-          <Stack
-            gap="xs"
-            width="100%"
-            minWidth="3xl"
-            maxWidth={["75%", null, "100%"]}
-          >
-            <Flex justify="space-between" gap="s">
-              <Text fs="p6" color={getToken("text.high")}>
+          <Stack gap="xs" width="100%" minWidth="3xl">
+            <Flex justify={["flex-end", null, "space-between"]} gap="s">
+              <Text
+                fs={["p5", null, "p6"]}
+                fw={500}
+                color={getToken("text.high")}
+              >
                 {t("common:currency.compact", {
                   value: stats.remaining,
-                  symbol: getAssetWithFallback(vault.assetId).symbol,
+                  symbol: asset.symbol,
                 })}
               </Text>
-              <Text fs="p6" fw={600} color={getToken("text.tint.quart")}>
+              <Text
+                fs="p6"
+                fw={600}
+                color={getToken("text.tint.quart")}
+                display={["none", null, "block"]}
+              >
                 {t("common:percent", { value: stats.remainingPct })}
               </Text>
             </Flex>
-            <ProgressBar value={stats.remainingPct} size="small" hideLabel />
+            <ProgressBar
+              value={stats.remainingPct}
+              size="small"
+              hideLabel
+              sx={{ display: ["none", null, "block"] }}
+            />
           </Stack>
         )
       },
@@ -134,5 +135,5 @@ export const useStrategyVaultColumns = (
     })
 
     return [assetColumn, tvlColumn, apyColumn, capacityColumn, actionsColumn]
-  }, [t, onDeposit, getAssetWithFallback])
+  }, [t, onDeposit])
 }
