@@ -1,8 +1,4 @@
-import {
-  Basejumper,
-  WormholeLogo,
-  ZapIcon,
-} from "@galacticcouncil/ui/assets/icons"
+import { WormholeLogo, ZapIcon } from "@galacticcouncil/ui/assets/icons"
 import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
 import { isNonNullish, sortBy } from "remeda"
