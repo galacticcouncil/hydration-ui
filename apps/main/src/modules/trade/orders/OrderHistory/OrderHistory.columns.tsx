@@ -30,6 +30,7 @@ import {
   isIntentOrder,
   OrderData,
 } from "@/modules/trade/orders/lib/orderData"
+import { OrderKind } from "@/modules/trade/orders/lib/types"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -68,14 +69,25 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const { kind, from, to, fromAmountExecuted, toAmountExecuted } =
+          row.original
 
         const price =
           toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
             ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
-        return <SwapPrice from={from} to={to} price={price} />
+        return (
+          <SwapPrice
+            from={from}
+            to={to}
+            price={price}
+            defaultInverted={
+              kind === OrderKind.Limit ||
+              ("limitPrice" in row.original && !!row.original.limitPrice)
+            }
+          />
+        )
       },
     })
 
