@@ -1,30 +1,27 @@
 import { MoveUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  Box,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   ExternalLink,
   Flex,
   Grid,
   Icon,
-  Paper,
-  ResponsiveScope,
   Separator,
   Summary,
   SummaryRow,
   Text,
   Tooltip,
   ValueStats,
+  ValueStatsGroup,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { neckwork, shortenAccountAddress } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { BilBorrowCapCurrency } from "@/modules/strategies/bil/components/BilBorrowCapCurrency"
-import {
-  SDetailsStatItem,
-  SDetailsStatsContainer,
-  SDetailsStatsSeparator,
-} from "@/modules/strategies/bil/components/StrategyDetailsCard.styled"
+import { AssetProgressStat } from "@/components/AssetProgressStat"
 import { VAULT_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilReserveConfig } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
@@ -42,85 +39,90 @@ export const StrategyDetailsCard = () => {
 
   const hasGlobalBorrowCap = (reserveConfig?.borrowCapHollar ?? 0) > 0
   const showBorrowCap = isReserveConfigLoading || hasGlobalBorrowCap
+  const borrowCapHollar = reserveConfig?.borrowCapHollar ?? 0
+  const totalBorrowedHollar = reserveConfig?.totalDebtHollar ?? 0
+  const totalBorrowed = Math.max(
+    0,
+    borrowCapHollar > 0
+      ? Math.min(totalBorrowedHollar, borrowCapHollar)
+      : totalBorrowedHollar,
+  )
+  const borrowedPct =
+    borrowCapHollar > 0 ? (totalBorrowed / borrowCapHollar) * 100 : 0
 
   return (
-    <Paper>
-      <Box p="l">
-        <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("details.title")}
-        </Text>
-      </Box>
-      <Separator />
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("details.title")}</CardTitle>
+      </CardHeader>
 
-      <ResponsiveScope>
-        <SDetailsStatsContainer>
-          <SDetailsStatItem>
-            <ValueStats
-              wrap
-              isLoading={isVaultStatsPending}
-              label={t("bil.strategy.tvl")}
-              customValue={
-                <Flex align="center" gap="s">
-                  <AssetLogo id={bil.id} size="medium" />
-                  <Text
-                    font="primary"
-                    fs="h6"
-                    fw={600}
-                    color={getToken("text.high")}
-                  >
-                    {t("common:currency.compact", { value: metrics.tvl })}
-                  </Text>
-                </Flex>
-              }
-            />
-          </SDetailsStatItem>
-
-          <SDetailsStatsSeparator />
-
-          <SDetailsStatItem>
-            <ValueStats
-              wrap
-              isLoading={isVaultStatsPending || isReserveConfigLoading}
-              label={t("bil.strategy.maxNetApy")}
-              customValue={
+      <CardBody>
+        <ValueStatsGroup>
+          <ValueStats
+            wrap
+            isLoading={isVaultStatsPending}
+            label={t("bil.strategy.tvl")}
+            customValue={
+              <Flex align="center" gap="s">
+                <AssetLogo id={bil.id} size="medium" hideChain />
                 <Text
                   font="primary"
                   fs="h6"
                   fw={600}
-                  color={getToken("accents.success.emphasis")}
+                  color={getToken("text.high")}
                 >
-                  {t("common:percent", {
-                    value: metrics.maxNetApyPct,
-                  })}
+                  {t("common:currency.compact", { value: metrics.tvl })}
                 </Text>
-              }
-            />
-          </SDetailsStatItem>
+              </Flex>
+            }
+          />
+
+          <ValueStats
+            wrap
+            isLoading={isVaultStatsPending || isReserveConfigLoading}
+            label={t("bil.strategy.maxNetApy")}
+            customValue={
+              <Text
+                font="primary"
+                fs="h6"
+                fw={600}
+                color={getToken("accents.success.emphasis")}
+              >
+                {t("common:percent", {
+                  value: metrics.maxNetApyPct,
+                })}
+              </Text>
+            }
+          />
 
           {showBorrowCap && (
-            <>
-              <SDetailsStatsSeparator />
-              <SDetailsStatItem>
-                <ValueStats
-                  sx={{ alignSelf: "center" }}
-                  wrap
-                  isLoading={isReserveConfigLoading}
-                  label={t("common:totalBorrowed")}
-                  customValue={
-                    reserveConfig ? (
-                      <BilBorrowCapCurrency
-                        assetId={hollar.id}
-                        totalBorrowedHollar={reserveConfig.totalDebtHollar}
-                        borrowCapHollar={reserveConfig.borrowCapHollar}
-                      />
-                    ) : null
-                  }
-                />
-              </SDetailsStatItem>
-            </>
+            <ValueStats
+              wrap
+              isLoading={isReserveConfigLoading}
+              label={t("common:totalBorrowed")}
+              customValue={
+                reserveConfig ? (
+                  <AssetProgressStat
+                    assetId={hollar.id}
+                    progressPct={borrowedPct}
+                    value={
+                      <Text
+                        font="primary"
+                        fs="h6"
+                        fw={600}
+                        color={getToken("text.high")}
+                        minWidth="10rem"
+                      >
+                        {t("common:number", { value: totalBorrowed })}
+                      </Text>
+                    }
+                  />
+                ) : null
+              }
+            />
           )}
-        </SDetailsStatsContainer>
-      </ResponsiveScope>
+        </ValueStatsGroup>
+      </CardBody>
 
       <Separator />
 
@@ -130,7 +132,7 @@ export const StrategyDetailsCard = () => {
             label={t("bil.strategy.collateralAssetLabel")}
             content={
               <Flex align="center" gap="s">
-                <AssetLogo id={bilReserve.id} size="small" />
+                <AssetLogo id={bilReserve.id} size="small" hideChain />
                 <Text fs="p4" lh={1.5}>
                   {t("bil.strategy.collateralAsset")}
                 </Text>
@@ -141,7 +143,7 @@ export const StrategyDetailsCard = () => {
             label={t("bil.strategy.debtAssetLabel")}
             content={
               <Flex align="center" gap="s">
-                <AssetLogo id={hollar.id} size="small" />
+                <AssetLogo id={hollar.id} size="small" hideChain />
                 <Text fs="p4" lh={1.5}>
                   {hollar.symbol}
                 </Text>
@@ -185,6 +187,6 @@ export const StrategyDetailsCard = () => {
           />
         </Summary>
       </Grid>
-    </Paper>
+    </Card>
   )
 }

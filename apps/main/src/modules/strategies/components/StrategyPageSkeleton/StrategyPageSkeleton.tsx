@@ -13,7 +13,7 @@ import {
 import { AssetHeaderSkeleton } from "@/modules/layout/components/LayoutSkeleton/AssetHeaderSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 
-const StableBondsDetailsSkeleton = () => (
+const StrategyDetailsSkeleton = () => (
   <Paper p="l">
     <Box py="l">
       <Skeleton sx={{ maxWidth: "3xl" }} />
@@ -35,7 +35,7 @@ const StableBondsDetailsSkeleton = () => (
   </Paper>
 )
 
-const StableBondsAboutSkeleton = () => (
+const StrategyAboutSkeleton = () => (
   <Paper p="xl">
     <Skeleton sx={{ width: "4xl" }} />
     <Separator mx="-xl" my="xl" />
@@ -43,13 +43,13 @@ const StableBondsAboutSkeleton = () => (
   </Paper>
 )
 
-export const StableBondsPageSkeleton = () => (
+export const StrategyPageSkeleton = () => (
   <Stack gap="xxl">
     <AssetHeaderSkeleton />
     <TwoColumnGrid template="sidebar">
       <Stack gap="xl" sx={{ order: [2, null, 0] }}>
-        <StableBondsDetailsSkeleton />
-        <StableBondsAboutSkeleton />
+        <StrategyDetailsSkeleton />
+        <StrategyAboutSkeleton />
       </Stack>
       <AppSkeleton />
     </TwoColumnGrid>

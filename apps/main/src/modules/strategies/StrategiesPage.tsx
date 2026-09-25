@@ -7,6 +7,7 @@ import { LINKS } from "@/config/navigation"
 import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { PropellerStrategyCard } from "@/modules/strategies/propeller/components/PropellerStrategyCard"
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
 import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import {
@@ -46,6 +47,7 @@ export const StrategiesPage = () => {
         columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
         gap="xl"
       >
+        {featureFlags.propellerEnabled && <PropellerStrategyCard />}
         {featureFlags.bilEnabled && (
           <StrategyCard
             logoId={BIL_ERC20_ID}
@@ -62,6 +64,7 @@ export const StrategiesPage = () => {
             link={LINKS.strategiesBil}
           />
         )}
+
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard
             logoId={bondId}

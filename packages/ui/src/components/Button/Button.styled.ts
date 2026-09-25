@@ -507,7 +507,6 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
       height: 1em;
 
       opacity: 0;
-      filter: blur(4px);
       transform: translate(
           calc(-100% - ${theme.space.base} + ${theme.space.s}),
           -50%
@@ -526,7 +525,6 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
 
     [aria-busy="true"] > & > [data-loading-spinner] {
       opacity: 1;
-      filter: blur(0);
       transform: translate(calc(-100% - 0.35em), -50%) scale(1);
     }
   `,

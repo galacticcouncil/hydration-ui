@@ -10,7 +10,10 @@ import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyCont
 import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { useTransactionsStore } from "@/states/transactions"
+import {
+  type TransactionOptions,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export function useInstantQuote(
@@ -52,7 +55,11 @@ export function useInstantQuote(
   }
 }
 
-export function useInstantRedeem() {
+type InstantRedeemOptions = {
+  onSuccess?: () => void
+}
+
+export function useInstantRedeem(options: InstantRedeemOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { bil, hollar } = useBilStrategy()
   const { sdk } = useRpcProvider()
@@ -81,20 +88,27 @@ export function useInstantRedeem() {
         .withBeneficiary(address)
         .build()
 
-      return createTransaction({
-        tx: tx.get(),
-        toasts: {
-          submitted: t("bil.instantRedeem.toast.submitted", {
-            amount: bilAmount,
-            symbol: bil.symbol,
-          }),
-          success: t("bil.instantRedeem.toast.success", {
-            amount: bilAmount,
-            symbol: bil.symbol,
-          }),
+      const txOptions: TransactionOptions | undefined = options.onSuccess
+        ? { onSuccess: options.onSuccess, resolveOn: "success" }
+        : undefined
+
+      return createTransaction(
+        {
+          tx: tx.get(),
+          toasts: {
+            submitted: t("bil.instantRedeem.toast.submitted", {
+              amount: bilAmount,
+              symbol: bil.symbol,
+            }),
+            success: t("bil.instantRedeem.toast.success", {
+              amount: bilAmount,
+              symbol: bil.symbol,
+            }),
+          },
+          invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
         },
-        invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
-      })
+        txOptions,
+      )
     },
   })
 }
