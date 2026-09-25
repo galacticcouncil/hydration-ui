@@ -1,8 +1,13 @@
-import { Basejumper, WormholeLogo } from "@galacticcouncil/ui/assets/icons"
+import {
+  Basejumper,
+  WormholeLogo,
+  ZapIcon,
+} from "@galacticcouncil/ui/assets/icons"
 import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
 import { isNonNullish, sortBy } from "remeda"
 
+import i18n from "@/i18n"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
@@ -22,13 +27,16 @@ export const BRIDGE_TIME: Record<string, string> = {
 }
 
 export const BRIDGE_ICON: Partial<Record<string, ComponentType>> = {
-  [XcmTag.Basejump]: Basejumper,
+  [XcmTag.Basejump]: ZapIcon,
   [XcmTag.Wormhole]: WormholeLogo,
   [XcmTag.NttExecutor]: WormholeLogo,
 }
 
 export const BRIDGE_LABEL: Record<string, string> = {
-  [XcmTag.NttExecutor]: "Wormhole",
+  [XcmTag.Basejump]: i18n.t("xcm:bridge.basejump"),
+  [XcmTag.Wormhole]: i18n.t("xcm:bridge.wormhole"),
+  [XcmTag.NttExecutor]: i18n.t("xcm:bridge.wormhole"),
+  [XcmTag.Snowbridge]: i18n.t("xcm:bridge.snowbridge"),
 }
 
 export const BRIDGE_PRIORITY: Record<string, number> = {
