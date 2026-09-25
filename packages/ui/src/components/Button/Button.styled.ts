@@ -523,7 +523,7 @@ const loadingLabelVariants = createVariants<LoadingMode>((theme) => ({
         transform ${LOADING_EXIT_MS}ms ${theme.easings.inQuad};
     }
 
-    [aria-busy="true"] > &[data-loading-tight] {
+    [aria-busy="true"] > & {
       margin-inline: calc(var(--loading-spinner-space) / 2);
       transform: translateX(calc(var(--loading-spinner-space) / 2));
 

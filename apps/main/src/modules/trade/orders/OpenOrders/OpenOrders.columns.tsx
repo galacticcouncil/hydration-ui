@@ -110,7 +110,15 @@ export const useOpenOrdersColumns = () => {
               : null
 
         return (
-          <SwapPrice from={from} to={to} price={averagePrice ?? limitPrice} />
+          <SwapPrice
+            from={from}
+            to={to}
+            price={averagePrice ?? limitPrice}
+            defaultInverted={
+              order.kind === OrderKind.Limit ||
+              ("limitPrice" in order && !!order.limitPrice)
+            }
+          />
         )
       },
     })

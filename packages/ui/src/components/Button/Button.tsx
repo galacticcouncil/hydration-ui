@@ -1,4 +1,4 @@
-import React, { FC, useLayoutEffect, useRef, useState } from "react"
+import React, { FC } from "react"
 
 import { BoxProps } from "@/components/Box"
 import { SpinnerIcon } from "@/components/Spinner"
@@ -75,19 +75,6 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
   ...props
 }) => {
   const isBusy = useLoadingState(isLoading, loadingDelay)
-  const labelRef = useRef<HTMLSpanElement>(null)
-  const [isTight, setIsTight] = useState(false)
-
-  // The spinner sits out of flow, 1.5em to the left of the label. Only when
-  // the button has less than that to spare on each side does the label have
-  // to shift over to make room.
-  useLayoutEffect(() => {
-    const label = labelRef.current
-    const button = label?.parentElement
-    if (!isBusy || !label || !button || loadingMode !== "inline") return
-    const em = parseFloat(getComputedStyle(label).fontSize)
-    setIsTight(button.clientWidth - label.offsetWidth < 3 * em)
-  }, [isBusy, loadingMode])
 
   return (
     <SLoadingButton
@@ -102,11 +89,7 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
       }}
       {...props}
     >
-      <SLoadingLabel
-        ref={labelRef}
-        loadingMode={loadingMode}
-        data-loading-tight={isTight || undefined}
-      >
+      <SLoadingLabel loadingMode={loadingMode}>
         <span data-loading-spinner>
           <SpinnerIcon size="1em" aria-hidden />
         </span>
