@@ -8,7 +8,6 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { Pencil, X } from "lucide-react"
 import { FC, MouseEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -82,8 +81,6 @@ export const QuotedPriceField: FC<Props> = ({
     maximumFractionDigits: 2,
   })
   const showResetAction = view.canReset && !isEditingPill
-  const presetBase =
-    view.deviationPct === null ? null : Big(view.deviationPct).round(2)
   const presetSign = view.inverted ? -1 : 1
 
   return (
@@ -106,16 +103,14 @@ export const QuotedPriceField: FC<Props> = ({
               </Text>
               {PRESET_STEPS.map((step) => {
                 const signedStep = step * presetSign
-                const next = presetBase?.plus(signedStep)
 
                 return (
                   <MicroButton
                     key={step}
-                    disabled={!next || next.lte(-100)}
+                    disabled={view.deviationPct === null}
                     onClick={() => {
-                      if (!next) return
-                      dispatch({ type: "pct", value: next.toString() })
-                      setLastPillValue(next.toString())
+                      dispatch({ type: "pct", value: String(signedStep) })
+                      setLastPillValue(String(signedStep))
                     }}
                   >
                     {t("common:percent", {
