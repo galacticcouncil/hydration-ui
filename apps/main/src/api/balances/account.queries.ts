@@ -83,7 +83,8 @@ export const maxWithdrawAllQuery = (
 ) =>
   queryOptions({
     queryKey: [...MAX_WITHDRAW_ALL_QUERY_KEY, address],
-    queryFn: () => sdk.api.aave.getMaxWithdrawAll(address),
+    queryFn: async () =>
+      Object.fromEntries(await sdk.api.aave.getMaxWithdrawAll(address)),
     enabled: isReady && !!address,
     staleTime: Infinity,
     refetchOnWindowFocus: true,

@@ -289,7 +289,7 @@ export const useAddLiquidity = ({
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
-      fromAssetId: isErc20SelectedAsset ? selectedAsset.underlyingAssetId : "",
+      fromAssetId: isErc20SelectedAsset ? selectedAsset.id : "",
       fromAmount: amount.toString(),
     }),
   )

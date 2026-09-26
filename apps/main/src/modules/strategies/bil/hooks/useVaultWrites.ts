@@ -476,14 +476,16 @@ export function useInstantRedeemFromQueue() {
         evmAddress,
       )
 
-      const [evmInner, swap, hasDebt] = await Promise.all([
+      // The batch resupplies BIL before selling it, which can enable
+      // collateral the extra gas read cannot see yet
+      const [evmInner, swap, extraGas] = await Promise.all([
         buildBatchCalls(cancelCalls),
         sdk.api.router.getBestSell(
           Number(bil.id),
           Number(hollar.id),
           returnAmount,
         ),
-        sdk.api.aave.hasBorrowPositions(address),
+        sdk.api.aave.requiresExtraGas(address, Number(bil.id), true),
       ])
       const route = TradeRouteBuilder.build(swap.swaps) as Parameters<
         typeof papi.tx.Router.sell
@@ -497,7 +499,7 @@ export function useInstantRedeemFromQueue() {
         route,
       })
 
-      const swapTx = hasDebt
+      const swapTx = extraGas
         ? papi.tx.Dispatcher.dispatch_with_extra_gas({
             call: exactSellTx.decodedCall,
             extra_gas: AAVE_GAS_LIMIT,

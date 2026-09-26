@@ -48,7 +48,7 @@ export const useAccountBalances = () => {
         assetId,
         withMaxWithdraw(
           balance,
-          getErc20AToken(assetId)?.underlyingAssetId,
+          getErc20AToken(assetId)?.id,
           maxWithdrawAll ?? {},
           isMaxWithdrawAllFetching,
         ),
@@ -112,7 +112,7 @@ export const useAccountBalance = (assetId: AssetId): Balance | undefined => {
 
   return withMaxWithdraw(
     data,
-    getErc20AToken(id)?.underlyingAssetId,
+    getErc20AToken(id)?.id,
     maxWithdrawAll ?? {},
     isMaxWithdrawAllFetching,
   )

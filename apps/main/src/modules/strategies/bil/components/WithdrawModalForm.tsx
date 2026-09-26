@@ -15,11 +15,13 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useEvmAddress } from "@galacticcouncil/web3-connect"
+import { useAccount, useEvmAddress } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { healthFactorAfterWithdrawQuery, maxWithdrawQuery } from "@/api/aave"
 import { AssetLogo } from "@/components/AssetLogo"
 import {
   projectRate,
@@ -27,19 +29,13 @@ import {
 } from "@/modules/strategies/bil/components/WithdrawMethodPicker"
 import { useWithdrawForm } from "@/modules/strategies/bil/components/WithdrawModalForm.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
-import {
-  useBilPoolPosition,
-  useBilReserveConfig,
-} from "@/modules/strategies/bil/hooks/useBilPoolPosition"
+import { useBilReserveConfig } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useInstantQuote } from "@/modules/strategies/bil/hooks/useStableswap"
 import {
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
-import {
-  getBilMaxWithdrawable,
-  getBilWithdrawHealthFactor,
-} from "@/modules/strategies/bil/utils/hf"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 interface Props {
   withdrawSource: "supplied" | "raw"
@@ -55,32 +51,32 @@ export const WithdrawModalForm = ({
   isPending,
 }: Props) => {
   const { t } = useTranslation(["strategies", "common"])
+  const rpc = useRpcProvider()
   const { bil } = useBilStrategy()
+  const { account } = useAccount()
   const evmAddress = useEvmAddress()
+  const address = account?.address ?? ""
 
   const { data: vaultStats } = useVaultStats()
   const { data: balances } = useUserBalances(evmAddress)
-  const { data: poolPosition } = useBilPoolPosition(evmAddress)
   const { data: reserveConfig } = useBilReserveConfig()
 
   const isSuppliedWithdraw = withdrawSource === "supplied"
   const bilBalance = isSuppliedWithdraw
     ? (balances?.bilSupplied ?? "0")
     : (balances?.bilRaw ?? "0")
-  const hfContextEnabled =
-    isSuppliedWithdraw && !!poolPosition && !!reserveConfig
 
-  const hfContext = hfContextEnabled
-    ? {
-        poolPosition,
-        reserveConfig,
-        suppliedBalance: bilBalance,
-        exchangeRate: vaultStats.exchangeRate,
-      }
-    : null
+  const { data: maxSuppliedWithdraw } = useQuery(
+    maxWithdrawQuery(
+      rpc,
+      address,
+      isSuppliedWithdraw ? bil.id : "",
+      bilBalance,
+    ),
+  )
 
-  const maxWithdrawable = hfContext
-    ? Big.min(bilBalance, getBilMaxWithdrawable(hfContext))
+  const maxWithdrawable = maxSuppliedWithdraw
+    ? Big.min(bilBalance, maxSuppliedWithdraw)
     : Big(bilBalance)
 
   const form = useWithdrawForm({
@@ -98,13 +94,14 @@ export const WithdrawModalForm = ({
     .times(vaultStats.exchangeRate)
     .toString()
 
-  const healthFactor =
-    !!reserveConfig?.borrowingEnabled && hfContext
-      ? getBilWithdrawHealthFactor({
-          ...hfContext,
-          withdrawAmount,
-        })
-      : null
+  const { data: healthFactor } = useQuery(
+    healthFactorAfterWithdrawQuery(rpc, {
+      address,
+      fromAssetId:
+        isSuppliedWithdraw && reserveConfig?.borrowingEnabled ? bil.id : "",
+      fromAmount: withdrawAmount,
+    }),
+  )
 
   const projectedQueueRate = projectRate(
     vaultStats.exchangeRate,
