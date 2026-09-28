@@ -18,7 +18,7 @@ export type IntentsStore = IntentsState & IntentsActions
 export const useIntentsStore = create<IntentsStore>()(
   persist(
     (set) => ({
-      enabled: false,
+      enabled: true,
       hasSeenModal: false,
       setEnabled: (enabled) => set({ enabled }),
       dismissModal: () => set({ hasSeenModal: true }),

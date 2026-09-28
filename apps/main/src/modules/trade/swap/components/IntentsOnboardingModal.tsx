@@ -20,10 +20,9 @@ import { useBannersStore } from "@/states/banners"
 import { useIntentsStore } from "@/states/intents"
 
 export const IntentsOnboardingModal: FC = () => {
-  const { t } = useTranslation("trade")
+  const { t } = useTranslation(["trade", "common"])
   const { featureFlags } = useRpcProvider()
   const hasSeenModal = useIntentsStore((state) => state.hasSeenModal)
-  const setEnabled = useIntentsStore((state) => state.setEnabled)
   const dismissModal = useIntentsStore((state) => state.dismissModal)
   const deferGigaNews = useBannersStore((state) => state.deferGigaNews)
 
@@ -91,15 +90,10 @@ export const IntentsOnboardingModal: FC = () => {
         }
       />
 
-      <ModalFooter justify="space-between">
+      <ModalFooter>
         <ModalCloseTrigger asChild>
-          <Button size="large" variant="tertiary">
-            {t("intents.onboarding.cta.dismiss")}
-          </Button>
-        </ModalCloseTrigger>
-        <ModalCloseTrigger asChild>
-          <Button size="large" onClick={() => setEnabled(true)} width="100%">
-            {t("intents.onboarding.cta.confirm")}
+          <Button size="large" width="100%">
+            {t("common:gotIt")}
           </Button>
         </ModalCloseTrigger>
       </ModalFooter>
