@@ -224,6 +224,10 @@ export const useXcSwapQuote = ({
   const quoteError = isCrossChain ? xcQuoteError : omnipoolQuoteError
 
   useEffect(() => {
+    // Wait for the quote that matches the current input: writing a stale one
+    // (e.g. right after switching sides) flickers the derived field
+    if (isQuoteRefreshing) return
+
     const { field, value } = getQuoteFormUpdate({
       quote,
       type,
@@ -235,7 +239,7 @@ export const useXcSwapQuote = ({
     if (form.getValues(field) !== value) {
       form.setValue(field, value, { shouldValidate: true })
     }
-  }, [quote, buyAsset, sellAsset, form, isSingleTrade, type])
+  }, [quote, buyAsset, sellAsset, form, isSingleTrade, type, isQuoteRefreshing])
 
   return { quote, isQuoteLoading, isTwapLoading, isQuoteRefreshing, quoteError }
 }

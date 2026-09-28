@@ -113,36 +113,39 @@ export const DcaForm: FC<{ maxBalance: string }> = ({ maxBalance }) => {
 
   return (
     <Box>
-      <AssetSelectFormField<DcaFormValues>
-        assetFieldName="sellAsset"
-        amountFieldName="sellAmount"
-        assets={tradable}
-        label={
-          isOpenBudget
-            ? t("trade:dca.assetIn.title.open")
-            : t("trade:dca.assetIn.title")
-        }
-        maxBalanceFallback="0"
-        maxBalance={maxBalance}
-        onAssetChange={handleSellAssetChange}
-      />
+      <Box py="l" width="100%">
+        <AssetSelectFormField<DcaFormValues>
+          assetFieldName="sellAsset"
+          amountFieldName="sellAmount"
+          assets={tradable}
+          label={
+            isOpenBudget
+              ? t("trade:dca.assetIn.title.open")
+              : t("trade:dca.assetIn.title")
+          }
+          balance={{ value: maxBalance }}
+          onAssetChange={handleSellAssetChange}
+        />
+      </Box>
       <DcaAssetSwitcher />
       <Controller
         control={control}
         name="buyAsset"
         render={({ field, fieldState }) => (
-          <AssetSelect
-            selectedAsset={field.value}
-            setSelectedAsset={(buyAsset) => {
-              field.onChange(buyAsset)
-              handleBuyAssetChange(buyAsset, field.value)
-            }}
-            assets={buyableAssets}
-            label={t("trade:dca.assetOut.title")}
-            hideInput
-            ignoreBalance
-            assetError={fieldState.error?.message}
-          />
+          <Box py="l" width="100%">
+            <AssetSelect
+              selectedAsset={field.value}
+              setSelectedAsset={(buyAsset) => {
+                field.onChange(buyAsset)
+                handleBuyAssetChange(buyAsset, field.value)
+              }}
+              assets={buyableAssets}
+              label={t("trade:dca.assetOut.title")}
+              isAmountHidden
+              balance={false}
+              assetError={fieldState.error?.message}
+            />
+          </Box>
         )}
       />
       <SwapSectionSeparator />

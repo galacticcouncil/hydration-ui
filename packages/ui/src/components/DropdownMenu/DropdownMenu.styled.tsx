@@ -111,6 +111,10 @@ export const DropdownMenuContent: FC<
 }
 
 export const DropdownMenuItem = styled(DropdownMenuPrimitive.Item)`
+  text-decoration: none;
+  &:hover {
+    text-decoration: none;
+  }
   &:focus {
     outline: none;
   }

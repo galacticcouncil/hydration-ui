@@ -3,6 +3,7 @@ import {
   ExternalLink,
   LoadingButton,
 } from "@galacticcouncil/ui/components"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { useTranslation } from "react-i18next"
@@ -37,14 +38,18 @@ export const ReviewTransactionSubmitButton = ({
 
   const { flags, hasAlerts } = useTransactionAlerts()
 
-  const pjsUrl = usePolkadotJSExtrinsicUrl(tx)
-
   const isExternalWallet =
     account?.provider === WalletProviderType.ExternalWallet
   const isIncompatibleOnChain =
     meta.type === TransactionType.Onchain && !!account?.isIncompatible
 
   const isSigningBlocked = isExternalWallet || isIncompatibleOnChain
+
+  const pjsUrl = usePolkadotJSExtrinsicUrl(
+    tx,
+    HYDRATION_CHAIN_KEY,
+    isSigningBlocked,
+  )
 
   if (isSigningBlocked && pjsUrl) {
     return (
@@ -66,7 +71,7 @@ export const ReviewTransactionSubmitButton = ({
         size="large"
         onClick={() => setFeePaymentModalOpen(true)}
         isLoading={isChangingFeePaymentAsset}
-        disabled={isChangingFeePaymentAsset}
+        loadingDelay={0}
       >
         {t("transaction.sign.changeFeePaymentAsset")}
       </LoadingButton>
@@ -83,6 +88,9 @@ export const ReviewTransactionSubmitButton = ({
       onClick={signAndSubmit}
       disabled={isDisabled}
       isLoading={isLoading}
+      loadingVariant="tertiary"
+      loadingDelay={0}
+      loadingFade
     >
       {t("transaction.sign")}
     </LoadingButton>

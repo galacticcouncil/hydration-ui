@@ -5,6 +5,7 @@ import {
   FormError,
   FormLabel,
   MicroButton,
+  PercentageButton,
   Skeleton,
   Stack,
   Text,
@@ -20,7 +21,7 @@ import {
   XcmFormFieldName,
   XcmFormValues,
 } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { toDecimal } from "@/utils/formatting"
+import { percentageOf, toDecimal } from "@/utils/formatting"
 
 import { SNumberInput, SNumberInputAddon } from "./AmountFormField.styled"
 
@@ -33,6 +34,7 @@ type AmountFormFieldProps = FlexProps & {
   isLoading?: boolean
   isBalanceLoading?: boolean
   withMaxButton?: boolean
+  withPercentageButton?: boolean
   assetPrice?: string
 }
 
@@ -45,6 +47,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   isLoading = false,
   isBalanceLoading = false,
   withMaxButton = false,
+  withPercentageButton = false,
   assetPrice,
   ...props
 }) => {
@@ -99,6 +102,23 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
                 {t("max")}
               </MicroButton>
             )}
+            {withMaxButton &&
+              withPercentageButton &&
+              !disabled &&
+              balanceMax &&
+              balanceMax.toBig().gt(0) && (
+                <PercentageButton
+                  onSelect={(percent) =>
+                    field.onChange(
+                      percentageOf(
+                        toDecimal(balanceMax.amount, balanceMax.decimals),
+                        percent,
+                        balanceMax.decimals,
+                      ),
+                    )
+                  }
+                />
+              )}
           </>
         )}
       </Flex>
