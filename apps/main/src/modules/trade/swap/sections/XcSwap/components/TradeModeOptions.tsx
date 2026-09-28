@@ -96,9 +96,7 @@ export const TradeModeOptions: FC<Props> = ({
     : isDurationPending || !twapDurationMs
       ? t("market.form.type.split.pending")
       : t("market.form.type.split.timeframe", {
-          timeframe: formatDistanceToNowStrict(
-            Date.now() + twapDurationMs,
-          ),
+          timeframe: formatDistanceToNowStrict(Date.now() + twapDurationMs),
         })
 
   return (
