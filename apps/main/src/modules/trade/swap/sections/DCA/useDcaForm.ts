@@ -302,7 +302,14 @@ export const useDcaForm = ({
     if (!isBalanceLoading) {
       trigger("sellAmount")
     }
-  }, [account, isBalanceLoading, trigger, getValues])
+  }, [
+    account,
+    isBalanceLoading,
+    limitOrderMaxBalance,
+    openBudgetOrderMaxBalance,
+    trigger,
+    getValues,
+  ])
 
   return form
 }

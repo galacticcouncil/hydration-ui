@@ -13,7 +13,7 @@ const SWAP_TABS = {
 
 type SwapTab = keyof typeof SWAP_TABS
 
-const isSwapTab = (tab: string): tab is SwapTab => tab in SWAP_TABS
+const isSwapTab = (tab: string): tab is SwapTab => Object.hasOwn(SWAP_TABS, tab)
 
 export const SwapTabPage = () => {
   const { tab } = useParams({ from: "/trade/_history/swap/$tab" })

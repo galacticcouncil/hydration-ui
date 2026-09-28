@@ -9,6 +9,7 @@ import {
   DcaFormValues,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { validateDcaOrder } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { useNeckworkSyncStore } from "@/states/neckwork"
@@ -51,12 +52,20 @@ export const useSubmitDcaOrder = () => {
       if (!account) throw new Error("Account not connected")
       if (!sellAsset) throw new Error("Invalid sell asset")
       if (!buyAsset) throw new Error("Invalid buy asset")
+      if (limitEnabled && !isIceEnabled) {
+        throw new Error("Limit price requires intents")
+      }
 
       const order = await rpc.queryClient.ensureQueryData(
         dcaOrderQuery(rpc, values),
       )
 
       if (!order) throw new Error("Failed to build DCA order")
+      if (
+        validateDcaOrder(order, values.duration, twapSlippage).errors.length
+      ) {
+        throw new Error("DCA order failed validation")
+      }
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol

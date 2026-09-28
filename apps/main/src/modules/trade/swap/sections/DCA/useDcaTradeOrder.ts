@@ -23,7 +23,11 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
 
   const formValues = form.watch()
 
-  const { data: order, isLoading: isOrderLoading } = useQuery({
+  const {
+    data: order,
+    isLoading: isOrderLoading,
+    isPlaceholderData: isOrderPlaceholder,
+  } = useQuery({
     ...dcaOrderQuery(rpc, formValues),
     placeholderData: (previousData, previousQuery) => {
       if (!previousData || !previousQuery) return undefined
@@ -76,6 +80,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     order,
     healthFactor: healthFactorData,
     isLoading: isOrderLoading,
+    isRefreshing: isOrderPlaceholder,
   }
 }
 

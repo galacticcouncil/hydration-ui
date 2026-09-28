@@ -164,16 +164,8 @@ export const TwapSummary: FC<Props> = ({
             settingsSection="split"
           />
           <CalculatedAmountSummaryRow
-            label={
-              isIce
-                ? t("trade:market.summary.estReceived")
-                : t("trade:market.summary.minReceived")
-            }
-            tooltip={
-              isIce
-                ? t("trade:market.summary.estReceived.tooltip")
-                : t("trade:market.summary.minReceived.tooltip")
-            }
+            label={t("trade:market.summary.minReceived")}
+            tooltip={t("trade:market.summary.minReceived.tooltip")}
             amount={
               isIce ? (
                 t("currency", {

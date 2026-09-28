@@ -102,8 +102,11 @@ const XcSwapForm: React.FC = () => {
     !hasBlockingAlerts &&
     isXcSwapTradeEnabled(quote, isSingleTrade)
 
-  // A refresh must not un-enable the form: every submit path re-quotes via
-  // ensureQueryData before building the tx, so staleness is guarded there.
+  // A refresh must not un-enable the form. Submit reads the quote with
+  // ensureQueryData, which returns the cached (displayed) quote rather than
+  // re-quoting. Freshness comes from the per-block invalidation, the submit
+  // button staying busy while isQuoteRefreshing, and quote errors raising a
+  // blocking alert. Keep those in place.
   const isFormValid = isTradeReady && !isQuoteLoading
 
   const isHealthFactorCheckSatisfied = isHealthFactorConsentRequired

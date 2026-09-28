@@ -91,14 +91,19 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
             }
 
       if (isIceEnabled) {
-        const tx = await sdk.tx
-          .intentMarket(swap)
-          .withBeneficiary(account.address)
-          .withSlippage(swapSlippage)
-          .build()
-
         const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
         const guaranteedOutRaw = iceAmounts.amountOut
+
+        // Swap intents are exact-in: amount_in is always spent, amount_out is
+        // the floor. intentMarket builds every trade as a sell, so a buy would
+        // only guarantee buyAmount minus slippage. Build from the amounts the
+        // summary shows instead (the builder reads amountIn/amountOut/swaps).
+        const tx = await sdk.tx
+          .intentLimit({ ...swap, amountIn: iceAmounts.amountIn })
+          .withBeneficiary(account.address)
+          .withMinAmountOut(iceAmounts.amountOut)
+          .withPartial(false)
+          .build()
 
         const iceParams =
           type === TradeType.Sell

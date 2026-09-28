@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 
 import { swapTabLink } from "@/config/navigation"
 import { getMaxSlippageThreshold } from "@/modules/trade/swap/sections/XcSwap/lib/slippageThreshold"
+import { useIsIceEnabled } from "@/states/intents"
 import { useToasts } from "@/states/toasts"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { TransactionType } from "@/states/transactions"
@@ -38,6 +39,7 @@ export const TradeWarnings: FC<Props> = ({
   const { t } = useTranslation(["common", "trade"])
   const search = useSearch({ from: "/trade/_history/swap" })
 
+  const isIceEnabled = useIsIceEnabled()
   const { update, ...tradeSettings } = useTradeSettings()
   const { info } = useToasts()
 
@@ -96,7 +98,7 @@ export const TradeWarnings: FC<Props> = ({
   }
 
   const shouldRenderSlippageWarning =
-    false && // disabled until ICE gets a price-impact limit again
+    !isIceEnabled &&
     isFormValid &&
     Number(isSingleTrade ? swapSlippage : twapSlippage) < validSlippage
 

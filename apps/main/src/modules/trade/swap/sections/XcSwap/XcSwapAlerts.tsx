@@ -28,12 +28,13 @@ export const XcSwapAlerts = ({
   const isSingleTrade = watch("isSingleTrade")
   const onChainQuote = quote?.kind === "oc" ? quote : null
 
-  if (!alerts.length && !healthFactor) {
-    return null
-  }
-
   return (
-    <Flex direction="column" gap="s" py="l">
+    <Flex
+      direction="column"
+      gap="s"
+      py="l"
+      sx={{ "&:empty": { display: "none" } }}
+    >
       {alerts.map((alert) => (
         <Alert
           key={alert.key}

@@ -25,19 +25,29 @@ export enum DcaValidationWarning {
   PriceImpact = "PriceImpact",
 }
 
+type DcaValidationResult = {
+  readonly warnings: ReadonlyArray<DcaValidationWarning>
+  readonly errors: ReadonlyArray<DcaValidationError>
+}
+
 export const useDcaValidation = (
   order: TradeDcaOrder | undefined | null,
   duration: TimeFrame,
-): {
-  readonly warnings: ReadonlyArray<DcaValidationWarning>
-  readonly errors: ReadonlyArray<DcaValidationError>
-} => {
+): DcaValidationResult => {
   const {
     swap: {
       split: { twapSlippage },
     },
   } = useTradeSettings()
 
+  return validateDcaOrder(order, duration, twapSlippage)
+}
+
+export const validateDcaOrder = (
+  order: TradeDcaOrder | undefined | null,
+  duration: TimeFrame,
+  twapSlippage: number,
+): DcaValidationResult => {
   if (!order) {
     return { warnings: [], errors: [] }
   }

@@ -61,6 +61,7 @@ export const Dca: FC = () => {
     order,
     healthFactor: initialHealthFactor,
     isLoading,
+    isRefreshing,
   } = useDcaTradeOrder(form)
 
   const [duration, ordersType, sellAsset, buyAsset, sellAmount] = form.watch([
@@ -82,6 +83,13 @@ export const Dca: FC = () => {
   )
 
   const { setValue } = form
+
+  useEffect(() => {
+    if (!isIceEnabled) {
+      setValue("limitEnabled", false, { shouldValidate: true })
+    }
+  }, [isIceEnabled, setValue])
+
   const quotedPrice = useQuotedPrice({
     marketPrice: marketPriceFromQuote(
       marketSwap,
@@ -189,6 +197,7 @@ export const Dca: FC = () => {
               isLoading={
                 submitDcaOrder.isPending ||
                 isLoading ||
+                isRefreshing ||
                 form.formState.isValidating
               }
               disabledLabel={disabledLabel}

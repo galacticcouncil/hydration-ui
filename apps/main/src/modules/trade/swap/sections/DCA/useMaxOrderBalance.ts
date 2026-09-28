@@ -92,12 +92,12 @@ export const useMaxOrderBalance = ({
     tx?.openBudgetDcaOrderTx ?? null,
   )
 
-  if (!enabled) {
-    const balance = scaleHuman(
-      getTransferableBalance(assetIn).toString(),
-      meta.decimals,
-    )
+  const balance = scaleHuman(
+    getTransferableBalance(assetIn).toString(),
+    meta.decimals,
+  )
 
+  if (!enabled) {
     return {
       limitOrderMaxBalance: balance,
       openBudgetOrderMaxBalance: balance,
@@ -105,8 +105,8 @@ export const useMaxOrderBalance = ({
   }
 
   return {
-    limitOrderMaxBalance: limitOrderBalanceWithFee?.maxBalanceHuman ?? "0",
+    limitOrderMaxBalance: limitOrderBalanceWithFee?.maxBalanceHuman ?? balance,
     openBudgetOrderMaxBalance:
-      openBudgetOrderBalanceWithFee?.maxBalanceHuman ?? "0",
+      openBudgetOrderBalanceWithFee?.maxBalanceHuman ?? balance,
   }
 }
