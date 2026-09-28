@@ -19,7 +19,7 @@ import {
   getDerived,
   getMarketQuoteDirection,
   lockSellIntoLastTwo,
-  repairLastTwo,
+  touchField,
   updateLastTwoOnTouch,
 } from "@/modules/trade/swap/sections/Limit/cascadeLogic"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
@@ -225,15 +225,10 @@ export const useLimitCascade = (): LimitCascade => {
   const onFieldTouch = useCallback(
     (field: FieldName) => {
       const values = getValues()
-      const afterTouch = updateLastTwoOnTouch(
+      const next = touchField(
         values.lastTwo,
         field,
-        values.isLocked,
-      )
-      const next = repairLastTwo(
-        afterTouch,
         readFieldValues(values),
-        field,
         values.isLocked,
       )
       const derivedAfterTouch = getDerived(next)

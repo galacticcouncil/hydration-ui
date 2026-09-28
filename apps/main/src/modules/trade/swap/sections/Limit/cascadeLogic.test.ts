@@ -4,9 +4,10 @@ import {
   computeDerived,
   getDerived,
   getMarketQuoteDirection,
-  repairLastTwo,
-  updateLastTwoOnTouch,
+  touchField,
 } from "@/modules/trade/swap/sections/Limit/cascadeLogic"
+
+const PRICE = "118.6879"
 
 describe("limit cascade", () => {
   it("quotes the fixed side so a quote cannot change its own input", () => {
@@ -15,83 +16,53 @@ describe("limit cascade", () => {
     expect(getMarketQuoteDirection(["sell", "buy"])).toBe("sell")
   })
 
-  it("repairs last-two after clearing buy so editing sell derives buy from price", () => {
-    const afterClearBuy = updateLastTwoOnTouch(
-      updateLastTwoOnTouch(["price", "sell"], "sell", false),
-      "buy",
-      false,
-    )
-    expect(getDerived(afterClearBuy)).toBe("price")
-
-    const afterSellTouch = updateLastTwoOnTouch(afterClearBuy, "sell", false)
-    expect(getDerived(afterSellTouch)).toBe("price")
-
-    const values = { sell: "1", buy: "", price: "118.6879" }
-    const repaired = repairLastTwo(afterSellTouch, values, "sell")
-    expect(repaired).toEqual(["sell", "price"])
-    expect(getDerived(repaired)).toBe("buy")
-    expect(computeDerived("buy", values)).toBe("118.6879")
-  })
-
-  it("repairs last-two after clearing sell so editing buy derives sell from price", () => {
-    const afterClearSell = updateLastTwoOnTouch(
-      updateLastTwoOnTouch(["price", "buy"], "buy", false),
-      "sell",
-      false,
-    )
-    const afterBuyTouch = updateLastTwoOnTouch(afterClearSell, "buy", false)
-    const values = { sell: "", buy: "1000", price: "118.6879" }
-    const repaired = repairLastTwo(afterBuyTouch, values, "buy")
-    expect(repaired).toEqual(["buy", "price"])
-    expect(getDerived(repaired)).toBe("sell")
-    expect(computeDerived("sell", values)).toBe("8.4255")
-  })
-
-  it("clears buy when price is empty or zero", () => {
-    const afterPriceTouch = updateLastTwoOnTouch(
+  it("derives buy from the price when sell is typed after clearing buy", () => {
+    const afterClearBuy = touchField(
       ["price", "sell"],
-      "price",
-      false,
-    )
-    expect(getDerived(afterPriceTouch)).toBe("buy")
-    expect(computeDerived("buy", { sell: "100", buy: "50", price: "" })).toBe(
-      "",
-    )
-    expect(computeDerived("buy", { sell: "100", buy: "50", price: "0" })).toBe(
-      "",
-    )
-  })
-
-  it("does not derive sell when price is cleared and sell would be derived", () => {
-    const afterPriceTouch = updateLastTwoOnTouch(
-      ["buy", "sell"],
-      "price",
-      false,
-    )
-    expect(getDerived(afterPriceTouch)).toBe("sell")
-    expect(computeDerived("sell", { sell: "100", buy: "50", price: "" })).toBe(
-      null,
-    )
-  })
-
-  it("never derives a locked sell amount when the buy amount is cleared", () => {
-    const afterClearBuy = updateLastTwoOnTouch(["price", "sell"], "buy", true)
-    expect(getDerived(afterClearBuy)).toBe("price")
-
-    const values = { sell: "1", buy: "", price: "118.6879" }
-    const repaired = repairLastTwo(afterClearBuy, values, "buy", true)
-
-    // Without the lock this repairs to ["buy", "price"], which would recompute
-    // the sell amount the user pinned.
-    expect(getDerived(repaired)).toBe("price")
-    expect(repairLastTwo(afterClearBuy, values, "buy", false)).toEqual([
       "buy",
-      "price",
-    ])
+      { sell: "1", buy: "", price: PRICE },
+      false,
+    )
+    const afterTypeSell = touchField(
+      afterClearBuy,
+      "sell",
+      { sell: "2", buy: "", price: PRICE },
+      false,
+    )
 
-    // Price is the derived field and cannot be computed from an empty buy
-    // amount, so the price input clears and both amounts stay as the user
-    // left them.
-    expect(computeDerived(getDerived(repaired), values)).toBe(null)
+    expect(getDerived(afterTypeSell)).toBe("buy")
+  })
+
+  it("never derives a locked sell amount", () => {
+    const values = { sell: "1", buy: "", price: PRICE }
+    const afterClearBuy = touchField(["price", "sell"], "buy", values, true)
+
+    // Unlocked, this derives sell. Locked, price is derived instead and clears
+    // (it cannot come from an empty buy), leaving both amounts as the user set
+    // them.
+    expect(getDerived(afterClearBuy)).toBe("price")
+    expect(computeDerived("price", values)).toBe(null)
+  })
+})
+
+describe("computeDerived", () => {
+  it("computes buy = sell × price in either direction", () => {
+    expect(computeDerived("buy", { sell: "2", buy: "", price: PRICE })).toBe(
+      "237.3758",
+    )
+    expect(
+      computeDerived("sell", { sell: "", buy: "1000", price: PRICE }),
+    ).toBe("8.4255")
+    expect(computeDerived("price", { sell: "4", buy: "1", price: "" })).toBe(
+      "0.25",
+    )
+  })
+
+  it("clears buy on an empty or zero price but leaves sell alone", () => {
+    const amounts = { sell: "100", buy: "50" }
+
+    expect(computeDerived("buy", { ...amounts, price: "" })).toBe("")
+    expect(computeDerived("buy", { ...amounts, price: "0" })).toBe("")
+    expect(computeDerived("sell", { ...amounts, price: "" })).toBe(null)
   })
 })

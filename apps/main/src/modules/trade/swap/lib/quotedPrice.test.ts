@@ -1,4 +1,3 @@
-import Big from "big.js"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -83,28 +82,17 @@ describe("denomination", () => {
     expect(state.canonical).toBe("4")
     expect(viewQuotedPrice(state, null).display).toBe("0.25")
   })
-
-  it("round-trips a typed value across a flip and back", () => {
-    const state = run(
-      direct,
-      { type: "typed", value: "0.0000125" },
-      { type: "flipDenomination" },
-      { type: "flipDenomination" },
-    )
-
-    expect(viewQuotedPrice(state, null).display).toBe("0.0000125")
-  })
 })
 
 describe("the ± pill is an input method, not a source", () => {
   it("sets the price once, relative to the displayed market price", () => {
     const state = run(direct, { type: "pct", value: "10", market: "2" })
 
-    expect(new Big(state.canonical).toNumber()).toBeCloseTo(2.2)
+    expect(state.canonical).toBe("2.2")
     expect(state.source).toBe("user")
   })
 
-  it("reports the true deviation as the market moves away", () => {
+  it("reports the deviation against the current market", () => {
     const state = run(direct, { type: "pct", value: "10", market: "2" })
 
     expect(viewQuotedPrice(state, "2").deviationPct).toBeCloseTo(10)

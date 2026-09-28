@@ -89,7 +89,7 @@ const repairCandidate = (
   return lastTwo
 }
 
-export const repairLastTwo = (
+const repairLastTwo = (
   lastTwo: LastTwo,
   values: FieldValues,
   touched?: FieldName,
@@ -99,3 +99,17 @@ export const repairLastTwo = (
   if (isLocked && getDerived(repaired) === "sell") return lastTwo
   return repaired
 }
+
+/** What an edit to `field` does to the last-two pair. */
+export const touchField = (
+  lastTwo: LastTwo,
+  field: FieldName,
+  values: FieldValues,
+  isLocked: boolean,
+): LastTwo =>
+  repairLastTwo(
+    updateLastTwoOnTouch(lastTwo, field, isLocked),
+    values,
+    field,
+    isLocked,
+  )
