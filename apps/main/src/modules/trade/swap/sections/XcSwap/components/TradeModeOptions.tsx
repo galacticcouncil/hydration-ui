@@ -18,6 +18,7 @@ import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOp
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isTwapEnabled"
+import { getTradeOrderErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/tradeOrderErrorMessages"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
@@ -89,6 +90,17 @@ export const TradeModeOptions: FC<Props> = ({
   const outputDiff = Big(twapPrice).minus(price).toString()
   const diff = isIce ? feeSaving : outputDiff
 
+  const twapError = twap?.errors[0]
+  const twapSubtitle = twapError
+    ? getTradeOrderErrorMessage(twapError, t)
+    : isDurationPending || !twapDurationMs
+      ? t("market.form.type.split.pending")
+      : t("market.form.type.split.timeframe", {
+          timeframe: formatDistanceToNowStrict(
+            Date.now() + twapDurationMs,
+          ),
+        })
+
   return (
     <Controller
       control={control}
@@ -127,15 +139,7 @@ export const TradeModeOptions: FC<Props> = ({
                 field.onChange(false)
               }}
               label={t("market.form.type.split")}
-              time={
-                isDurationPending || !twapDurationMs
-                  ? t("market.form.type.split.pending")
-                  : t("market.form.type.split.timeframe", {
-                      timeframe: formatDistanceToNowStrict(
-                        Date.now() + twapDurationMs,
-                      ),
-                    })
-              }
+              time={twapSubtitle}
               disabled={!!twap.errors.length}
             />
           )}
