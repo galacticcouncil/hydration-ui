@@ -1,10 +1,10 @@
-import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { dcaOrderQuery } from "@/api/trade"
+import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import {
   DcaFormValues,
   DcaOrdersMode,
@@ -73,6 +73,7 @@ export const useSubmitDcaOrder = () => {
       const duration = getTimeFrameMillis(values.duration)
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
       const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+      const budget = isOpenBudget ? "openBudget" : "limitedBudget"
 
       const minAmountOut =
         limitEnabled && limitPrice && Big(limitPrice).gt(0)
@@ -122,20 +123,17 @@ export const useSubmitDcaOrder = () => {
       return createTransaction(
         {
           tx: tx.get(),
-          toasts: {
-            submitted: t(
-              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
-              params,
-            ),
-            success: t(
-              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
-              params,
-            ),
-            error: t(
-              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
-              params,
-            ),
-          },
+          toasts: isIceEnabled
+            ? {
+                submitted: t(`trade:intent.dca.${budget}.loading`, params),
+                success: t(`trade:intent.dca.${budget}.placed`, params),
+                error: t(`trade:intent.dca.${budget}.error`, params),
+              }
+            : {
+                submitted: t(`trade:dca.${budget}.tx.loading`, params),
+                success: t(`trade:dca.${budget}.tx.success`, params),
+                error: t(`trade:dca.${budget}.tx.error`, params),
+              },
         },
         {
           onSuccess: (event) => {

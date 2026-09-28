@@ -58,30 +58,17 @@ export const useSubmitLimitOrder = () => {
 
       const tx = await txBuilder.build()
 
-      const formattedSell = t("currency", {
-        value: sellAmount,
-        symbol: sellAsset.symbol,
-      })
-      const formattedBuy = t("currency", {
-        value: buyAmount,
-        symbol: buyAsset.symbol,
-      })
+      const params = {
+        in: t("currency", { value: sellAmount, symbol: sellAsset.symbol }),
+        out: t("currency", { value: buyAmount, symbol: buyAsset.symbol }),
+      }
 
       return createTransaction({
         tx: tx.get(),
         toasts: {
-          submitted: t("trade:limit.tx.submitted", {
-            amountIn: formattedSell,
-            amountOut: formattedBuy,
-          }),
-          success: t("trade:limit.tx.success", {
-            amountIn: formattedSell,
-            amountOut: formattedBuy,
-          }),
-          error: t("trade:limit.tx.error", {
-            amountIn: formattedSell,
-            amountOut: formattedBuy,
-          }),
+          submitted: t("trade:intent.limit.loading", params),
+          success: t("trade:intent.limit.placed", params),
+          error: t("trade:intent.limit.error", params),
         },
       })
     },

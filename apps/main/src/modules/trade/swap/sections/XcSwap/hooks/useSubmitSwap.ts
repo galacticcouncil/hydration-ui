@@ -1,5 +1,5 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
 import { minutesToMilliseconds } from "date-fns"
 import React from "react"
@@ -13,10 +13,8 @@ import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceA
 import { SwapSubmitValues } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
-import { useToasts } from "@/states/toasts"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
-  isSubstrateTxResult,
   TransactionActions,
   TransactionType,
   useTransactionsStore,
@@ -29,7 +27,7 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
   const rpc = useRpcProvider()
-  const { sdk, papi } = rpc
+  const { sdk } = rpc
   const isIceEnabled = useIsIceEnabled()
 
   const {
@@ -39,7 +37,6 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
-  const { success: successToast } = useToasts()
 
   return useMutation({
     mutationFn: async (values: SwapSubmitValues) => {
@@ -69,9 +66,10 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
       const buyDecimals = buyAsset.decimals
       const buySymbol = buyAsset.symbol
 
-      const params =
-        type === TradeType.Sell
-          ? {
+      const params = (() => {
+        switch (type) {
+          case TradeType.Sell:
+            return {
               in: t("currency", {
                 value: scaleHuman(amountIn, sellDecimals),
                 symbol: sellSymbol,
@@ -81,7 +79,8 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
                 symbol: buySymbol,
               }),
             }
-          : {
+          case TradeType.Buy:
+            return {
               in: t("currency", {
                 value: scaleHuman(amountOut, buyDecimals),
                 symbol: buySymbol,
@@ -91,10 +90,11 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
                 symbol: sellSymbol,
               }),
             }
+        }
+      })()
 
       if (isIceEnabled) {
         const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
-        const guaranteedOutRaw = iceAmounts.amountOut
 
         // Swap intents are exact-in: amount_in is always spent, amount_out is
         // the floor. intentMarket builds every trade as a sell, so a buy would
@@ -108,108 +108,41 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
           .withDeadline(await getIntentDeadline(rpc, MARKET_INTENT_DURATION_MS))
           .build()
 
-        const iceParams =
-          type === TradeType.Sell
-            ? {
-                in: t("currency", {
-                  value: scaleHuman(iceAmounts.amountIn, sellDecimals),
-                  symbol: sellSymbol,
-                }),
-                out: t("currency", {
-                  value: scaleHuman(iceAmounts.amountOut, buyDecimals),
-                  symbol: buySymbol,
-                }),
-              }
-            : {
-                in: t("currency", {
-                  value: scaleHuman(iceAmounts.amountOut, buyDecimals),
-                  symbol: buySymbol,
-                }),
-                out: t("currency", {
-                  value: scaleHuman(iceAmounts.amountIn, sellDecimals),
-                  symbol: sellSymbol,
-                }),
-              }
-
-        const watchIntentFill = (intentId: bigint, txHash: string) => {
-          const timer = setTimeout(
-            () => subscription.unsubscribe(),
-            MARKET_INTENT_DURATION_MS,
-          )
-          // `watch()` emits one batch per finalized block — pick ours out.
-          const subscription =
-            papi.event.Intent.IntentResolved.watch().subscribe({
-              next: ({ events }) => {
-                const resolved = events.find(
-                  ({ payload }) => payload.id === intentId,
-                )
-                if (!resolved) return
-
-                clearTimeout(timer)
-                subscription.unsubscribe()
-                const received = resolved.payload.amount_out
-                const bonus = received - guaranteedOutRaw
-                successToast({
-                  title:
-                    bonus > 0n
-                      ? t("trade:market.intent.filled.bonus", {
-                          out: t("currency", {
-                            value: scaleHuman(received, buyDecimals),
-                            symbol: buySymbol,
-                          }),
-                          bonus: t("currency", {
-                            value: scaleHuman(bonus, buyDecimals),
-                            symbol: buySymbol,
-                          }),
-                        })
-                      : t("trade:market.intent.filled", {
-                          out: t("currency", {
-                            value: scaleHuman(received, buyDecimals),
-                            symbol: buySymbol,
-                          }),
-                        }),
-                  meta: {
-                    type: TransactionType.Onchain,
-                    srcChainKey: "hydration",
-                    txHash,
-                    ecosystem: CallType.Substrate,
-                  },
-                })
-              },
-              error: () => clearTimeout(timer),
-            })
+        // Exact-in for both trade types: sell `in`, receive at least `out`
+        const iceParams = {
+          in: t("currency", {
+            value: scaleHuman(iceAmounts.amountIn, sellDecimals),
+            symbol: sellSymbol,
+          }),
+          out: t("currency", {
+            value: scaleHuman(iceAmounts.amountOut, buyDecimals),
+            symbol: buySymbol,
+          }),
         }
 
         return createTransaction(
           {
             tx: tx.get(),
             alerts: [],
+            // The toast stays `submitted` until the intent resolves;
+            // useIntentToasts then fills in what was received.
+            meta: {
+              type: TransactionType.Onchain,
+              srcChainKey: HYDRATION_CHAIN_KEY,
+              intent: {
+                assetIn: sellAsset.id,
+                assetOut: buyAsset.id,
+                amountIn: iceAmounts.amountIn.toString(),
+                minAmountOut: iceAmounts.amountOut.toString(),
+              },
+            },
             toasts: {
-              submitted: t(
-                `trade:market.swap.${toLowerCase(type)}.loading`,
-                iceParams,
-              ),
-              success: t("trade:market.intent.placed", iceParams),
-              error: t(
-                `trade:market.swap.${toLowerCase(type)}.error`,
-                iceParams,
-              ),
+              submitted: t("trade:intent.market.loading", iceParams),
+              success: t("trade:intent.market.placed", iceParams),
+              error: t("trade:intent.market.error", iceParams),
             },
           },
-          {
-            ...actions,
-            onSuccess: (result) => {
-              actions?.onSuccess?.(result)
-              if (!isSubstrateTxResult(result)) return
-              const intentEvent = result.events.find(
-                (e) =>
-                  e.type === "Intent" && e.value.type === "IntentSubmitted",
-              )
-              const intentId = intentEvent?.value.value?.id
-              if (typeof intentId !== "bigint") return
-              watchIntentFill(intentId, result.txHash)
-            },
-          },
+          actions,
         )
       }
 

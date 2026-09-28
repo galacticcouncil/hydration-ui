@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
+import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -13,7 +14,6 @@ import { scaleHuman } from "@/utils/formatting"
 export const useMaxSellAmount = ({
   assetIn,
   assetOut,
-  // Off for a cross-chain destination, where assetOut is not a Hydration id
   enabled: isEnabled = true,
 }: {
   assetIn: string
@@ -49,6 +49,7 @@ export const useMaxSellAmount = ({
       twapSlippage,
       twapMaxRetries,
       isIceEnabled,
+      account?.address,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestSell(
@@ -62,9 +63,14 @@ export const useMaxSellAmount = ({
         "1",
       )
 
-      const swapTx = await sdk.tx
-        .trade(swap)
-        .withSlippage(swapSlippage)
+      const swapBuilder = isIceEnabled
+        ? sdk.tx
+            .intentLimit(swap)
+            .withMinAmountOut(getIceSwapAmounts(swap, swapSlippage).amountOut)
+            .withPartial(false)
+        : sdk.tx.trade(swap).withSlippage(swapSlippage)
+
+      const swapTx = await swapBuilder
         .withBeneficiary(account?.address ?? "")
         .build()
         .then((tx) => tx.get())

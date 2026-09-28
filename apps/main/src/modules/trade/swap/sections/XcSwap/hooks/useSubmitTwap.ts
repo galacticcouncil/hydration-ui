@@ -98,6 +98,12 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
         }),
       }
 
+      const iceParams = {
+        ...params,
+        in: params.inTotal,
+        assetOut: buyAsset.symbol,
+      }
+
       const tx = isIceEnabled
         ? await sdk.tx
             .intentOrder(twap)
@@ -114,11 +120,17 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
       return createTransaction(
         {
           tx: tx.get(),
-          toasts: {
-            submitted: t("trade:market.twap.loading", params),
-            success: t("trade:market.twap.success", params),
-            error: t("trade:market.twap.error", params),
-          },
+          toasts: isIceEnabled
+            ? {
+                submitted: t("trade:intent.twap.loading", iceParams),
+                success: t("trade:intent.twap.placed", iceParams),
+                error: t("trade:intent.twap.error", iceParams),
+              }
+            : {
+                submitted: t("trade:market.twap.loading", params),
+                success: t("trade:market.twap.success", params),
+                error: t("trade:market.twap.error", params),
+              },
         },
         actions,
       )
