@@ -10,6 +10,7 @@ import {
   SummaryRowDisplayValue,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { produce } from "immer"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,6 +28,7 @@ import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/XcSwap/compo
 import { useSwapFee } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwapFee"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 import { getTradeFeeIntervals } from "@/utils/trade"
@@ -45,7 +47,9 @@ export const SwapSummary: FC<Props> = ({
   buyAsset,
 }) => {
   const { t } = useTranslation(["common", "trade"])
+  const { isConnected } = useAccount()
   const { getAssetWithFallback } = useAssets()
+  const isIceEnabled = useIsIceEnabled()
 
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 
@@ -64,7 +68,7 @@ export const SwapSummary: FC<Props> = ({
     )
 
   const { data: transactionFee, isLoading: isTransactionFeeLoading } =
-    useSwapFee(swap, isSummaryExpanded)
+    useSwapFee(swap, isConnected && isSummaryExpanded)
   const transactionCosts = transactionFee?.feeEstimate || "0"
 
   const isBuy = swap.type === TradeType.Buy
@@ -146,7 +150,9 @@ export const SwapSummary: FC<Props> = ({
             }
             tooltip={
               isBuy
-                ? t("trade:market.summary.maxSent.tooltip")
+                ? isIceEnabled
+                  ? t("trade:market.summary.maxSent.intent.tooltip")
+                  : t("trade:market.summary.maxSent.tooltip")
                 : t("trade:market.summary.minReceived.tooltip")
             }
             amount={t("currency", {
@@ -176,26 +182,27 @@ export const SwapSummary: FC<Props> = ({
               }
               tooltip={t("trade:market.summary.estTradeFees.tooltip")}
             />
-            <SwapSummaryRow
-              label={t("trade:market.summary.transactionCosts")}
-              loading={isTransactionFeeLoading}
-              content={
-                <Flex gap="s" align="center" justify="flex-end">
-                  <SummaryRowValue>
-                    {t("currency", {
-                      value: transactionCosts,
-                      symbol: transactionFeeAsset.symbol,
-                    })}
-                  </SummaryRowValue>
-                  <SummaryRowDisplayValue>
-                    {t("parenthesized", {
-                      value: transactionCostsDisplay,
-                    })}
-                  </SummaryRowDisplayValue>
-                </Flex>
-              }
-              tooltip={t("trade:market.summary.transactionCosts.tooltip")}
-            />
+            {isConnected && (
+              <SwapSummaryRow
+                label={t("trade:market.summary.transactionCosts")}
+                loading={isTransactionFeeLoading}
+                content={
+                  <Flex gap="s" align="center" justify="flex-end">
+                    <SummaryRowValue>
+                      {t("currency", {
+                        value: transactionCosts,
+                        symbol: transactionFeeAsset.symbol,
+                      })}
+                    </SummaryRowValue>
+                    <SummaryRowDisplayValue>
+                      {t("parenthesized", {
+                        value: transactionCostsDisplay,
+                      })}
+                    </SummaryRowDisplayValue>
+                  </Flex>
+                }
+              />
+            )}
             <SwapSummaryRow
               label={t("trade:market.summary.routes.label")}
               content={

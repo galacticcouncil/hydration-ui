@@ -239,7 +239,6 @@ export const TwapSummary: FC<Props> = ({
                   </SummaryRowDisplayValue>
                 </Flex>
               }
-              tooltip={t("trade:market.summary.transactionCosts.tooltip")}
             />
             <SwapSummaryRow
               label={t("trade:market.summary.routes.label")}

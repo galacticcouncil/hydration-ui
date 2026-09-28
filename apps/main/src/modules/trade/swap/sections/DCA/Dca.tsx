@@ -60,6 +60,7 @@ export const Dca: FC = () => {
   const {
     order,
     healthFactor: initialHealthFactor,
+    isHealthFactorLoading,
     isLoading,
     isRefreshing,
   } = useDcaTradeOrder(form)
@@ -110,11 +111,10 @@ export const Dca: FC = () => {
       : undefined
 
   const isOpenBudget = ordersType === DcaOrdersMode.OpenBudget
-  const openBudgetHealthFactor = useOpenBudgetDcaHfValidation(
-    order,
-    initialHealthFactor,
-    isOpenBudget,
-  )
+  const {
+    healthFactor: openBudgetHealthFactor,
+    isLoading: isOpenBudgetHealthFactorLoading,
+  } = useOpenBudgetDcaHfValidation(order, initialHealthFactor, isOpenBudget)
 
   const healthFactor = isOpenBudget
     ? openBudgetHealthFactor
@@ -198,6 +198,9 @@ export const Dca: FC = () => {
                 submitDcaOrder.isPending ||
                 isLoading ||
                 isRefreshing ||
+                // No result reads as "no consent needed", so wait for it
+                isHealthFactorLoading ||
+                isOpenBudgetHealthFactorLoading ||
                 form.formState.isValidating
               }
               disabledLabel={disabledLabel}

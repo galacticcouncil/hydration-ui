@@ -79,25 +79,28 @@ export const useOpenBudgetDcaHfValidation = (
   order: TradeDcaOrder | null | undefined,
   healthFactor: HealthFactorResult | undefined,
   isOpenBudget: boolean,
-): HealthFactorResult | undefined => {
+): {
+  readonly healthFactor: HealthFactorResult | undefined
+  readonly isLoading: boolean
+} => {
   const rpc = useRpcProvider()
   const { getAsset, isErc20AToken } = useAssets()
 
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const { data: aaveSummary } = useQuery(
+  const { data: aaveSummary, isLoading } = useQuery(
     aaveSummaryQuery(rpc, address, isOpenBudget),
   )
 
   if (!order || !healthFactor || !isOpenBudget) {
-    return
+    return { healthFactor: undefined, isLoading: false }
   }
 
   const assetIn = getAsset(order.assetIn)
 
   if (!assetIn || !isErc20AToken(assetIn)) {
-    return
+    return { healthFactor: undefined, isLoading: false }
   }
 
   const reserve = aaveSummary?.reserves.find(
@@ -105,5 +108,11 @@ export const useOpenBudgetDcaHfValidation = (
       getAssetIdFromAddress(reserve.reserveAsset) === assetIn.underlyingAssetId,
   )
 
-  return { ...healthFactor, isUserConsentRequired: !!reserve?.isCollateral }
+  return {
+    healthFactor: {
+      ...healthFactor,
+      isUserConsentRequired: !!reserve?.isCollateral,
+    },
+    isLoading,
+  }
 }

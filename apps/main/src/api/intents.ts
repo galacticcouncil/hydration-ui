@@ -1,6 +1,8 @@
 import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
+import { clamp } from "remeda"
 
+import { bestNumberQuery } from "@/api/chain"
 import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useHasIntentPallet } from "@/states/intents"
@@ -89,4 +91,20 @@ export const maxIntentDurationQuery = (
       return Number(maxIntentDuration - 60_000n) // safety margin of 60 seconds
     },
   })
+}
+
+/**
+ * Intent deadline `durationMs` from the latest block's timestamp (chain time,
+ * not the local clock), capped at the pallet's max allowed duration.
+ */
+export const getIntentDeadline = async (
+  rpc: TProviderContext,
+  durationMs: number,
+): Promise<bigint> => {
+  const [maxDurationMs, { timestamp }] = await Promise.all([
+    rpc.queryClient.ensureQueryData(maxIntentDurationQuery(rpc, true)),
+    rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
+  ])
+
+  return BigInt(timestamp + clamp(durationMs, { min: 1, max: maxDurationMs }))
 }

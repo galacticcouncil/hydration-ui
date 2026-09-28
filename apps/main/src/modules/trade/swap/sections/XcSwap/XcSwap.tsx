@@ -43,6 +43,7 @@ const XcSwapForm: React.FC = () => {
     isLoading,
     isCrossChain,
     healthFactor,
+    isHealthFactorLoading,
     requiredWalletMode,
     isWalletCompatible,
   } = useXcSwap()
@@ -121,6 +122,7 @@ const XcSwapForm: React.FC = () => {
   const isSubmitLoading =
     isLoading ||
     isQuoteRefreshing ||
+    (!isCrossChain && isHealthFactorLoading) ||
     (isSingleTrade ? isQuoteLoading : isTwapLoading)
 
   const disabledLabel = (() => {

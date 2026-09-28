@@ -26,6 +26,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
 
+const XC_QUOTE_REFETCH_MS = 15_000
+
 export type XcSwapQuote =
   | { kind: "xc"; swap: XcSwapTrade }
   | { kind: "oc"; swap: Trade; twap: TradeOrder | undefined }
@@ -94,7 +96,6 @@ export const useXcSwapQuote = ({
     data: xcTrade,
     isLoading: isXcQuoteLoading,
     isFetching: isXcQuoteFetching,
-    isPlaceholderData: isXcPlaceholderData,
     error: xcQuoteError,
   } = useQuery({
     ...xcSwapQuoteQuery(xcSwap, {
@@ -107,6 +108,7 @@ export const useXcSwapQuote = ({
       originAssetMap,
     }),
     enabled: xcQuoteEnabled,
+    refetchInterval: XC_QUOTE_REFETCH_MS,
     placeholderData: amountIn ? keepPreviousData : undefined,
   })
 
@@ -215,7 +217,7 @@ export const useXcSwapQuote = ({
   const isQuoteRefreshing =
     !isInputSynced ||
     (isCrossChain
-      ? isXcQuoteFetching && isXcPlaceholderData
+      ? isXcQuoteFetching
       : isSingleTrade
         ? isOmnipoolQuoteFetching && isOmnipoolPlaceholderData
         : (isOmnipoolQuoteFetching && isOmnipoolPlaceholderData) ||
@@ -227,8 +229,6 @@ export const useXcSwapQuote = ({
   const quoteError = isCrossChain ? xcQuoteError : omnipoolQuoteError
 
   useEffect(() => {
-    // Wait for the quote that matches the current input: writing a stale one
-    // (e.g. right after switching sides) flickers the derived field
     if (isQuoteRefreshing) return
 
     const { field, value } = getQuoteFormUpdate({

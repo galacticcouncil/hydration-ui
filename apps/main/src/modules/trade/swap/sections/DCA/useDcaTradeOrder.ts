@@ -50,7 +50,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
 
   const isOpenBudget = formValues.orders.type === DcaOrdersMode.OpenBudget
 
-  const { data: healthFactorData } = useQuery(
+  const { data: healthFactorData, isLoading: isHealthFactorLoading } = useQuery(
     healthFactorQuery(rpc, {
       fromAsset: formValues.sellAsset,
       fromAmount:
@@ -79,6 +79,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
   return {
     order,
     healthFactor: healthFactorData,
+    isHealthFactorLoading,
     isLoading: isOrderLoading,
     isRefreshing: isOrderPlaceholder,
   }

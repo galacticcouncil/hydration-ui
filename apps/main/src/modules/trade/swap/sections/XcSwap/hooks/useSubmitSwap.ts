@@ -1,10 +1,12 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
+import { minutesToMilliseconds } from "date-fns"
 import React from "react"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
+import { getIntentDeadline } from "@/api/intents"
 import { bestBuyQuery, bestSellQuery, TradeType } from "@/api/trade"
 import { SellAllAlert } from "@/modules/trade/swap/sections/XcSwap/components/SellAllAlert"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
@@ -21,7 +23,7 @@ import {
 } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
-const FILL_WATCH_TIMEOUT_MS = 3 * 60 * 1000
+const MARKET_INTENT_DURATION_MS = minutesToMilliseconds(10)
 
 export const useSubmitSwap = (actions?: TransactionActions) => {
   const { t } = useTranslation(["common", "trade"])
@@ -103,6 +105,7 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
           .withBeneficiary(account.address)
           .withMinAmountOut(iceAmounts.amountOut)
           .withPartial(false)
+          .withDeadline(await getIntentDeadline(rpc, MARKET_INTENT_DURATION_MS))
           .build()
 
         const iceParams =
@@ -131,7 +134,7 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
         const watchIntentFill = (intentId: bigint, txHash: string) => {
           const timer = setTimeout(
             () => subscription.unsubscribe(),
-            FILL_WATCH_TIMEOUT_MS,
+            MARKET_INTENT_DURATION_MS,
           )
           // `watch()` emits one batch per finalized block — pick ours out.
           const subscription =
