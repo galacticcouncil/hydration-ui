@@ -2,17 +2,19 @@ import { NECKWORK_ACCOUNT_KEY } from "@galacticcouncil/indexer/neckwork"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef } from "react"
-import { filter, merge, Observable } from "rxjs"
+import { filter, map, merge, Observable } from "rxjs"
 
 import { useAccountIntents } from "@/api/intents"
 import { useObservable } from "@/hooks/useObservable"
 import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useHasIntentPallet } from "@/states/intents"
+import { useNeckworkSyncStore } from "@/states/neckwork"
 
 const INVALIDATE_DELAY = 5_000
 
 type EventBatch<T> = {
+  readonly block: { readonly number: number }
   readonly events: ReadonlyArray<{ readonly payload: T }>
 }
 
@@ -23,14 +25,13 @@ type EventWatcher<T> = {
 const ownedEvents = <T extends { readonly id: number | bigint }>(
   watcher: EventWatcher<T>,
   ids: () => ReadonlySet<string>,
-): Observable<unknown> =>
-  watcher
-    .watch()
-    .pipe(
-      filter(({ events }) =>
-        events.some(({ payload }) => ids().has(String(payload.id))),
-      ),
-    )
+): Observable<number> =>
+  watcher.watch().pipe(
+    filter(({ events }) =>
+      events.some(({ payload }) => ids().has(String(payload.id))),
+    ),
+    map(({ block }) => block.number),
+  )
 
 /** Invalidate order queries when ids change or an open order executes. Presence subscriptions miss executions. */
 export const useInvalidateOrdersOnExecution = () => {
@@ -38,6 +39,7 @@ export const useInvalidateOrdersOnExecution = () => {
   const { account } = useAccount()
   const { papi, isReady } = useRpcProvider()
   const hasIntentPallet = useHasIntentPallet()
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
   const { scheduleIds, isLoading: isSchedulesLoading } = useChainScheduleIds()
   const { data: intents, isLoading: isIntentsLoading } = useAccountIntents(
@@ -53,9 +55,6 @@ export const useInvalidateOrdersOnExecution = () => {
       timeout.current = null
       void queryClient.invalidateQueries({ queryKey: ["trade", "orders"] })
       void queryClient.invalidateQueries({ queryKey: ["intents", "values"] })
-      // A fill is a SOLVER's unsigned ICE.submit_solution, not the trader's own
-      // tx, so `useNeckworkSync` is never armed for it — the neckwork rows
-      // would stay stale without this.
       void queryClient.invalidateQueries({ queryKey: NECKWORK_ACCOUNT_KEY })
     }, INVALIDATE_DELAY)
   }, [queryClient])
@@ -115,5 +114,13 @@ export const useInvalidateOrdersOnExecution = () => {
     )
   }, [isReady, papi, hasIntentPallet])
 
-  useObservable(events$, { enabled: isReady, onUpdate: invalidate })
+  const onExecution = useCallback(
+    (blockNumber: number) => {
+      invalidate()
+      armNeckworkSync(blockNumber)
+    },
+    [invalidate, armNeckworkSync],
+  )
+
+  useObservable(events$, { enabled: isReady, onUpdate: onExecution })
 }
