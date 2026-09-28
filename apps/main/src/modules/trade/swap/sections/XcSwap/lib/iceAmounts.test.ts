@@ -1,7 +1,10 @@
 import { Trade, TradeType } from "@galacticcouncil/sdk-next/sor"
 import { describe, expect, it } from "vitest"
 
-import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
+import {
+  getIceBuySellAmount,
+  getIceSwapAmounts,
+} from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 
 const trade = (type: TradeType) =>
   ({ type, amountIn: 1000n, amountOut: 2000n }) as Trade
@@ -19,5 +22,11 @@ describe("getIceSwapAmounts", () => {
       amountIn: 1000n,
       amountOut: 1980n,
     })
+  })
+})
+
+describe("getIceBuySellAmount", () => {
+  it("pads the quoted sell amount by slippage", () => {
+    expect(getIceBuySellAmount("99.8", 1)).toBe("100.798")
   })
 })
