@@ -1,3 +1,5 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Flex,
   Summary,
@@ -22,7 +24,11 @@ import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 
-export const LimitSummary: FC = () => {
+type Props = {
+  readonly healthFactor: HealthFactorResult | undefined
+}
+
+export const LimitSummary: FC<Props> = ({ healthFactor }) => {
   const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
   const isIceEnabled = useIsIceEnabled()
@@ -54,6 +60,12 @@ export const LimitSummary: FC = () => {
 
   return (
     <Summary separator={<SwapSectionSeparator />}>
+      {healthFactor?.isSignificantChange && (
+        <SwapSummaryRow
+          label={t("healthFactor")}
+          content={<HealthFactorChange {...healthFactor} />}
+        />
+      )}
       <SwapSummaryRow
         label={t("trade:limit.summary.minReceived")}
         loading={isMinReceivedDisplayLoading}

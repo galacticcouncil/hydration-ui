@@ -176,7 +176,9 @@ export const Dca: FC = () => {
       ? t("trade:dca.cta.minTrades", { count: MIN_DCA_ORDERS })
       : sellAmountError
         ? t("trade:dca.cta.minBudget")
-        : undefined
+        : isFormValid && !isHealthFactorCheckSatisfied
+          ? t("trade:xc.swap.cta.acceptHealthFactor")
+          : undefined
 
   return (
     <FormProvider {...form}>

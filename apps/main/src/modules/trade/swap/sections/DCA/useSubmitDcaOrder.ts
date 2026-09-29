@@ -88,7 +88,13 @@ export const useSubmitDcaOrder = () => {
 
       const iceOrder =
         minAmountOut !== undefined
-          ? { ...order, assetOutEd: minAmountOut }
+          ? {
+              ...order,
+              assetOutEd:
+                minAmountOut > order.assetOutEd
+                  ? minAmountOut
+                  : order.assetOutEd,
+            }
           : order
 
       let tx
