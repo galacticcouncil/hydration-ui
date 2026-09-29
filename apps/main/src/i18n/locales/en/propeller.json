@@ -27,6 +27,7 @@
   "withdrawals.state.claimed": "Claimed",
   "withdrawals.settledProgress": "{{settled}} / {{owed}} settled",
   "withdrawals.action.claim": "Claim",
+  "withdrawals.date": "Date",
   "deposit.benefit.noLiquidations": "No liquidations",
   "deposit.benefit.noLiquidationsDescription": "Protected from market-driven liquidations.",
   "deposit.benefit.noImpermanentLoss": "No impermanent loss",

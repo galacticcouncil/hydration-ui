@@ -1,11 +1,4 @@
-import {
-  Button,
-  Flex,
-  Text,
-  Tooltip,
-  ValueStats,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Button } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import { millisecondsInDay, millisecondsInMinute } from "date-fns/constants"
 import { FC, useMemo, useState } from "react"
@@ -19,7 +12,6 @@ import {
 } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { PendingPosition } from "@/components/PendingPosition"
-import { SCountdownValueStats } from "@/components/PendingPosition/PendingPosition.styled"
 import { CancelConfirmationModal } from "@/modules/staking/gigaStaking/pendingPositions/CancelConfirmationModal"
 import {
   useCancelPendingPosition,
@@ -101,50 +93,6 @@ export const GigaPendingPosition: FC<GigaPendingPositionProps> = ({
     twoSecBlocksSince,
   ])
 
-  const unlockContent =
-    unlockStats === null ? (
-      <ValueStats
-        label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-        value="—"
-        wrap
-        size="small"
-        sx={{
-          alignItems: "flex-end",
-        }}
-      />
-    ) : unlockStats.claimableNow ? (
-      <Button
-        variant="secondary"
-        size="small"
-        onClick={() => claimPendingPosition.mutate({ voteAtBlock, amount })}
-        width="fit-content"
-        disabled={claimPendingPosition.isPending}
-      >
-        {t("staking:gigaStaking.unstakingPositions.claimCta")}
-      </Button>
-    ) : (
-      <SCountdownValueStats>
-        <ValueStats
-          label={t("staking:gigaStaking.unstakingPositions.claimableIn")}
-          customValue={
-            <Flex align="center" gap="s">
-              <Text fs="p5" lh={1} fw={500} color={getToken("text.high")}>
-                {unlockStats.label}
-              </Text>
-              {unlockStats.tooltip && (
-                <Tooltip asChild text={unlockStats.tooltip} />
-              )}
-            </Flex>
-          }
-          wrap={false}
-          size="small"
-          sx={{
-            alignItems: "flex-end",
-          }}
-        />
-      </SCountdownValueStats>
-    )
-
   return (
     <>
       <PendingPosition
@@ -155,7 +103,34 @@ export const GigaPendingPosition: FC<GigaPendingPositionProps> = ({
         })}
         displayValue={displayValue}
         isLoading={isDisplayValueLoading}
-        status={unlockContent}
+        stats={
+          unlockStats?.claimableNow
+            ? undefined
+            : [
+                {
+                  label: t(
+                    "staking:gigaStaking.unstakingPositions.claimableIn",
+                  ),
+                  value: unlockStats?.label ?? "—",
+                  tooltip: unlockStats?.tooltip,
+                },
+              ]
+        }
+        status={
+          unlockStats?.claimableNow && (
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={() =>
+                claimPendingPosition.mutate({ voteAtBlock, amount })
+              }
+              width="fit-content"
+              disabled={claimPendingPosition.isPending}
+            >
+              {t("staking:gigaStaking.unstakingPositions.claimCta")}
+            </Button>
+          )
+        }
         action={
           <Button
             variant="tertiary"

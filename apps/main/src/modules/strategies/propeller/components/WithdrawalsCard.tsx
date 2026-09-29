@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
+import { DateText } from "@/components/RelativeDateText"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import {
   useClaim,
@@ -105,9 +106,19 @@ export const WithdrawalsCard = ({ rows }: Props) => {
                 value={t("common:currency", { value: row.estEth, symbol })}
                 displayValue={t("common:currency", { value: row.estUsd })}
                 isLoading={row.isSettlementLoading}
+                stats={
+                  row.settledDate
+                    ? [
+                        {
+                          label: t("withdrawals.date"),
+                          value: <DateText date={row.settledDate} />,
+                        },
+                      ]
+                    : undefined
+                }
                 status={
-                  label === "claimable" ? (
-                    <Flex justify="flex-end">
+                  <Flex direction="column" gap="s" align="flex-end">
+                    {label === "claimable" ? (
                       <LoadingButton
                         variant="secondary"
                         size="small"
@@ -122,27 +133,27 @@ export const WithdrawalsCard = ({ rows }: Props) => {
                       >
                         {t("withdrawals.action.claim")}
                       </LoadingButton>
-                    </Flex>
-                  ) : (
-                    <Flex direction="column" gap="s" align="flex-end">
-                      <Chip variant={stateChipVariant[label]} size="small">
-                        {t(`withdrawals.state.${label}`)}
-                      </Chip>
-                      {row.state === "partial" && owed > 0 && (
-                        <Text fs="p6" color={getToken("text.low")}>
-                          {t("withdrawals.settledProgress", {
-                            settled: t("common:currency", {
-                              value: row.settledSoFar ?? 0,
-                            }),
-                            owed: t("common:currency", {
-                              value: owed,
-                              symbol,
-                            }),
-                          })}
-                        </Text>
-                      )}
-                    </Flex>
-                  )
+                    ) : (
+                      <>
+                        <Chip variant={stateChipVariant[label]} size="small">
+                          {t(`withdrawals.state.${label}`)}
+                        </Chip>
+                        {row.state === "partial" && owed > 0 && (
+                          <Text fs="p6" color={getToken("text.low")}>
+                            {t("withdrawals.settledProgress", {
+                              settled: t("common:currency", {
+                                value: row.settledSoFar ?? 0,
+                              }),
+                              owed: t("common:currency", {
+                                value: owed,
+                                symbol,
+                              }),
+                            })}
+                          </Text>
+                        )}
+                      </>
+                    )}
+                  </Flex>
                 }
               />
             )

@@ -30,7 +30,7 @@ export const SAmountSection = styled(Flex)(
     flex: 1 1 auto;
     min-width: 0;
     align-items: center;
-    gap: ${theme.space.s};
+    gap: ${theme.space.base};
 
     ${containerSize(
       BREAKPOINT,
@@ -58,22 +58,26 @@ export const SActionsGroup = styled(Flex)(
   `,
 )
 
-export const SUnlockSection = styled(Box)`
-  order: 3;
-  flex-basis: 100%;
-  width: 100%;
+export const SStatusSection = styled(Flex)(
+  ({ theme }) => css`
+    order: 3;
+    flex-basis: 100%;
+    width: 100%;
+    align-items: center;
+    gap: ${theme.space.m};
 
-  ${containerSize(
-    BREAKPOINT,
-    css`
-      order: unset;
-      flex-basis: auto;
-      width: auto;
-    `,
-  )}
-`
+    ${containerSize(
+      BREAKPOINT,
+      css`
+        order: unset;
+        flex-basis: auto;
+        width: auto;
+      `,
+    )}
+  `,
+)
 
-export const SCancelSection = styled(Box)`
+export const SActionSection = styled(Box)`
   order: 1;
   flex-shrink: 0;
 
@@ -98,8 +102,10 @@ export const SMobileSeparator = styled(Separator)`
   )}
 `
 
-export const SCountdownValueStats = styled(Box)(
+export const SStat = styled(Box)(
   ({ theme }) => css`
+    flex: 1 1 auto;
+
     & > div {
       align-items: flex-end;
       margin-bottom: -${theme.space.s};

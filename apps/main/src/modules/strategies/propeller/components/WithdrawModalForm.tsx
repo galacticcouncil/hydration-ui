@@ -32,6 +32,7 @@ import {
 import { useRequestRedeem } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { percentageOf } from "@/utils/formatting"
 
 // Below 0.5% carry, the haircut is noise next to slippage; show the gross estimate.
 const CARRY_DISPLAY_FLOOR = 0.005
@@ -94,20 +95,30 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
             control={control}
             name="amount"
             render={({ field, fieldState }) => (
-              <AssetInput
-                sx={{ pt: 0 }}
-                label={t("common:amount")}
-                symbol={shareSymbol}
-                selectedAssetIcon={<AssetLogo id={assetId} />}
-                modalDisabled
-                value={field.value}
-                onChange={field.onChange}
-                balanceLabel={t("common:withdrawableBalance")}
-                displayValue={t("common:currency", { value: assetOut })}
-                maxBalance={shareBalance}
-                maxButtonBalance={shareBalance}
-                amountError={fieldState.error?.message}
-              />
+              <Box pb="xl" width="100%">
+                <AssetInput
+                  label={t("common:amount")}
+                  asset={{
+                    symbol: shareSymbol,
+                    icon: <AssetLogo id={assetId} />,
+                  }}
+                  isReadOnly
+                  value={field.value}
+                  onChange={field.onChange}
+                  displayValue={t("common:currency", { value: assetOut })}
+                  balance={{
+                    label: t("common:withdrawableBalance"),
+                    value: t("common:number", { value: shareBalance }),
+                    onMax: () => field.onChange(shareBalance),
+                    onPercentage: (percent) =>
+                      field.onChange(
+                        percentageOf(shareBalance, percent, decimals),
+                      ),
+                    isMaxDisabled: Big(shareBalance).lte(0),
+                  }}
+                  amountError={fieldState.error?.message}
+                />
+              </Box>
             )}
           />
 

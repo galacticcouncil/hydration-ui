@@ -29,7 +29,7 @@ import { vaultStatsQuery } from "@/modules/strategies/propeller/hooks/useVaultRe
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scaleHuman } from "@/utils/formatting"
+import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 type Props = {
   initialVault: PropellerVaultConfig
@@ -105,11 +105,11 @@ export const DepositForm = ({
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
-        <Box>
-          <Controller
-            control={control}
-            name="amount"
-            render={({ field, fieldState }) => (
+        <Controller
+          control={control}
+          name="amount"
+          render={({ field, fieldState }) => (
+            <Box py="l" width="100%">
               <AssetSelect
                 label={t("common:asset")}
                 assets={assets}
@@ -117,13 +117,21 @@ export const DepositForm = ({
                 setSelectedAsset={lockAsset ? undefined : onSelectAsset}
                 value={field.value}
                 onChange={field.onChange}
-                maxBalance={balance}
-                maxButtonBalance={maxButtonBalance}
+                balance={{
+                  value: balance,
+                  max: maxButtonBalance,
+                  onMax: () => field.onChange(maxButtonBalance),
+                  onPercentage: (percent) =>
+                    field.onChange(
+                      percentageOf(maxButtonBalance, percent, asset.decimals),
+                    ),
+                  isMaxDisabled: !(Number(maxButtonBalance) > 0),
+                }}
                 amountError={fieldState.error?.message}
               />
-            )}
-          />
-        </Box>
+            </Box>
+          )}
+        />
 
         <Separator mx="-xl" />
 

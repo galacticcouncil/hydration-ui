@@ -1,4 +1,9 @@
-import { Modal, ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Modal,
+  ModalBody,
+  ModalHeader,
+} from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { DepositForm } from "@/modules/strategies/propeller/components/DepositForm"
@@ -19,14 +24,16 @@ export const DepositModal = ({ vault, onClose }: Props) => {
       <ModalHeader
         title={`${t("deposit.modal.title")} ${vault ? getAssetWithFallback(vault.assetId).symbol : ""}`}
       />
-      <ModalBody scrollable={false} sx={{ py: 0 }}>
+      <ModalBody scrollable={false} noPadding>
         {vault && (
-          <DepositForm
-            key={vault.vaultAddress}
-            initialVault={vault}
-            lockAsset
-            onSuccess={onClose}
-          />
+          <Box px="xl" position="relative">
+            <DepositForm
+              key={vault.vaultAddress}
+              initialVault={vault}
+              lockAsset
+              onSuccess={onClose}
+            />
+          </Box>
         )}
       </ModalBody>
     </Modal>

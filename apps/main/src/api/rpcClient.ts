@@ -120,12 +120,8 @@ const getProviderData = async (
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,
-<<<<<<< HEAD
       isIceEnabled: true,
-      propellerEnabled: true,
-=======
       propellerEnabled,
->>>>>>> 36b9a7387 (propeller: update configs)
     },
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }

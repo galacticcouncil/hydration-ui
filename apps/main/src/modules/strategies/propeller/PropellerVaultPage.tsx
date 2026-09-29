@@ -61,7 +61,7 @@ const PropellerVaultContent = () => {
 
         <Stack gap="xl">
           {defaultDeposit.vault ? (
-            <Paper px="xl">
+            <Paper px="xl" position="relative">
               <DepositForm
                 key={defaultDeposit.vault.vaultAddress}
                 initialVault={defaultDeposit.vault}
