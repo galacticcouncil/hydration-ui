@@ -1,6 +1,7 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
+  Box,
   LoadingButton,
   Modal,
   ModalBody,
@@ -22,6 +23,7 @@ import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPos
 import { useRepayHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { useUserBalances } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { getBilRepayHealthFactor } from "@/modules/strategies/bil/utils/hf"
+import { percentageOf } from "@/utils/formatting"
 
 interface Props {
   open: boolean
@@ -87,21 +89,31 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
             control={control}
             name="amount"
             render={({ field, fieldState }) => (
-              <AssetInput
-                sx={{ pt: 0 }}
-                label={t("common:amount")}
-                symbol={hollar.symbol}
-                selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-                modalDisabled
-                value={field.value}
-                onChange={field.onChange}
-                displayValue={t("common:currency", {
-                  value: inputAmount,
-                })}
-                maxBalance={maxRepay}
-                maxButtonBalance={maxRepay}
-                amountError={fieldState.error?.message}
-              />
+              <Box pb="l">
+                <AssetInput
+                  label={t("common:amount")}
+                  asset={{
+                    symbol: hollar.symbol,
+                    icon: <AssetLogo id={hollar.id} size="medium" />,
+                  }}
+                  value={field.value}
+                  onChange={field.onChange}
+                  displayValue={t("common:currency", {
+                    value: inputAmount,
+                  })}
+                  balance={{
+                    label: t("common:balance"),
+                    value: t("common:number", { value: maxRepay }),
+                    onMax: () => field.onChange(maxRepay),
+                    onPercentage: (percent) =>
+                      field.onChange(
+                        percentageOf(maxRepay, percent, hollar.decimals),
+                      ),
+                    isMaxDisabled: !(Number(maxRepay) > 0),
+                  }}
+                  amountError={fieldState.error?.message}
+                />
+              </Box>
             )}
           />
 

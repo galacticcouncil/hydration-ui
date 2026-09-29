@@ -1,4 +1,7 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  useAfterFirstRender,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
@@ -104,15 +107,21 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const ecosystem = useTransactionEcosystem(transaction)
   const toasts = useTransactionToasts(transaction, ecosystem)
 
+  const hasRendered = useAfterFirstRender()
+
   const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
-    !hasInitialError && transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+    hasRendered &&
+      !hasInitialError &&
+      transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
       ? transaction.tx
       : null,
     transaction?.fee?.feePaymentAssetId,
   )
 
   const { data: paymentInfo, isLoading: isLoadingPaymentInfo } =
-    useTransactionPaymentInfo(hasInitialError ? undefined : transaction.tx)
+    useTransactionPaymentInfo(
+      !hasRendered || hasInitialError ? undefined : transaction.tx,
+    )
 
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
@@ -241,7 +250,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   }
 
   const isLoading =
-    isLoadingNonce || isLoadingFeeEstimate || isLoadingPaymentInfo
+    !hasRendered ||
+    isLoadingNonce ||
+    isLoadingFeeEstimate ||
+    isLoadingPaymentInfo
 
   return (
     <TransactionContext.Provider

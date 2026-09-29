@@ -1,6 +1,7 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
+  Box,
   LoadingButton,
   Modal,
   ModalBody,
@@ -23,6 +24,7 @@ import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyCont
 import { useBilMaxBorrowable } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import { useBorrowHollar } from "@/modules/strategies/bil/hooks/useBilPoolWrites"
 import { getBilBorrowHealthFactor } from "@/modules/strategies/bil/utils/hf"
+import { percentageOf } from "@/utils/formatting"
 
 interface Props {
   open: boolean
@@ -89,22 +91,35 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
             control={control}
             name="amount"
             render={({ field, fieldState }) => (
-              <AssetInput
-                sx={{ pt: 0 }}
-                label={t("bil.borrow.selectAsset")}
-                balanceLabel={t("common:available")}
-                symbol={hollar.symbol}
-                selectedAssetIcon={<AssetLogo id={hollar.id} size="medium" />}
-                modalDisabled
-                value={field.value}
-                onChange={field.onChange}
-                displayValue={t("common:currency", {
-                  value: inputAmount,
-                })}
-                maxBalance={maxBorrowableUsed}
-                maxButtonBalance={maxBorrowableUsed}
-                amountError={fieldState.error?.message}
-              />
+              <Box pb="l">
+                <AssetInput
+                  label={t("bil.borrow.selectAsset")}
+                  asset={{
+                    symbol: hollar.symbol,
+                    icon: <AssetLogo id={hollar.id} size="medium" />,
+                  }}
+                  value={field.value}
+                  onChange={field.onChange}
+                  displayValue={t("common:currency", {
+                    value: inputAmount,
+                  })}
+                  balance={{
+                    label: t("common:available"),
+                    value: t("common:number", { value: maxBorrowableUsed }),
+                    onMax: () => field.onChange(maxBorrowableUsed),
+                    onPercentage: (percent) =>
+                      field.onChange(
+                        percentageOf(
+                          maxBorrowableUsed,
+                          percent,
+                          hollar.decimals,
+                        ),
+                      ),
+                    isMaxDisabled: !(Number(maxBorrowableUsed) > 0),
+                  }}
+                  amountError={fieldState.error?.message}
+                />
+              </Box>
             )}
           />
 

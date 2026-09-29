@@ -277,7 +277,10 @@ const useErc20MaxWithdrawSync = (
     )
 
     if (shouldSync) {
-      void queryClient.fetchQuery(maxWithdrawAllQuery(rpc, address))
+      void queryClient.invalidateQueries(
+        { queryKey: maxWithdrawAllQuery(rpc, address).queryKey },
+        { cancelRefetch: false },
+      )
     }
   }, [address, balances, getErc20AToken, queryClient, rpc])
 }

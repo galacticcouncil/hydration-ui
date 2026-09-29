@@ -56,3 +56,15 @@ export const SRoot = styled.div(
     }
   `,
 )
+
+export const SSkeletonRoot = styled.div`
+  line-height: 1.5;
+`
+
+export const SSkeletonIndent = styled.div(
+  ({ theme }) => css`
+    margin-left: 0.2rem;
+    padding-left: 1.2rem;
+    border-left: 1px solid ${theme.details.separatorsOnDim};
+  `,
+)

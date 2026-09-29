@@ -19,7 +19,8 @@ export const SDrawerOverlay = styled(Overlay)`
 
   z-index: ${({ theme }) => theme.zIndices.modal};
 
-  background: ${({ theme }) => theme.details.overlays};
+  background: ${({ theme }) =>
+    `color-mix(in srgb, ${theme.details.overlayHigh} 20%, black 20%)`};
 `
 
 export const SDrawerContent = styled(Content)`

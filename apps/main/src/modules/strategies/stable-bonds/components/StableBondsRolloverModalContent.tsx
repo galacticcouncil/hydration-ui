@@ -94,17 +94,17 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
                 control={form.control}
                 name="depositAmount"
                 render={({ field, fieldState }) => (
-                  <AssetSelect
-                    label={t("strategies:bonds.rollover.modal.asset")}
-                    value={field.value}
-                    onChange={field.onChange}
-                    assets={[]}
-                    selectedAsset={order.assetIn}
-                    maxButtonBalance={assetInMax}
-                    maxBalance={depositAssetBalance}
-                    maxBalanceFallback="0"
-                    amountError={fieldState.error?.message}
-                  />
+                  <Box py="l" width="100%">
+                    <AssetSelect
+                      label={t("strategies:bonds.rollover.modal.asset")}
+                      value={field.value}
+                      onChange={field.onChange}
+                      assets={[]}
+                      selectedAsset={order.assetIn}
+                      balance={{ value: depositAssetBalance, max: assetInMax }}
+                      amountError={fieldState.error?.message}
+                    />
+                  </Box>
                 )}
               />
             </Box>
@@ -171,9 +171,7 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
                 type="submit"
                 size="large"
                 width="100%"
-                disabled={
-                  !form.formState.isValid || isFeePending || submit.isPending
-                }
+                disabled={!form.formState.isValid || isFeePending}
               >
                 {t("strategies:bonds.rollover.modal.cta")}
               </LoadingButton>

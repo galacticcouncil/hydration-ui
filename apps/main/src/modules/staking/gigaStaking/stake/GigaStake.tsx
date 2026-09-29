@@ -86,14 +86,16 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
         <Box px="l" asChild>
-          <AssetSelectFormField
-            assetFieldName="asset"
-            amountFieldName="amount"
-            label={t("gigaStaking.gigaStake.input.label")}
-            assets={[]}
-            disabledAssetSelector
-            maxBalance={maxStakeHuman}
-          />
+          <Box py="l" width="100%">
+            <AssetSelectFormField
+              assetFieldName="asset"
+              amountFieldName="amount"
+              label={t("gigaStaking.gigaStake.input.label")}
+              assets={[]}
+              disabledAssetSelector
+              balance={{ value: maxStakeHuman }}
+            />
+          </Box>
         </Box>
 
         <Separator />
@@ -124,7 +126,7 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
             type="submit"
             size="large"
             width="100%"
-            disabled={!form.formState.isValid || isSubmitting}
+            disabled={!form.formState.isValid}
           >
             {t("gigaStaking.gigaStake.cta")}
           </LoadingButton>

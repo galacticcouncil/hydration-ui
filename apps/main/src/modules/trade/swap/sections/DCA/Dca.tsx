@@ -123,6 +123,7 @@ export const Dca: FC = () => {
             <Box mt="m">
               <ToggleGroup
                 type="single"
+                fullWidth
                 value={
                   field.value.type === DcaOrdersMode.OpenBudget
                     ? DcaOrdersMode.OpenBudget

@@ -1,3 +1,4 @@
+import { Box } from "@galacticcouncil/ui/components"
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { FC, useEffect, useMemo } from "react"
@@ -94,72 +95,73 @@ export const MarketFields: FC<Props> = ({
 
   return (
     <div>
-      <AssetSelectFormField<MarketFormValues>
-        assetFieldName="sellAsset"
-        amountFieldName="sellAmount"
-        label={t("sell")}
-        assets={tradable}
-        maxBalanceFallback="0"
-        maxBalance={maxSellBalance}
-        maxBalanceLoading={maxSellBalanceLoading}
-        onAssetChange={(sellAsset, previousSellAsset) => {
-          const { buyAsset } = getValues()
-          const isSwitch = sellAsset.id === buyAsset?.id
+      <Box py="l" width="100%">
+        <AssetSelectFormField<MarketFormValues>
+          assetFieldName="sellAsset"
+          amountFieldName="sellAmount"
+          label={t("sell")}
+          assets={tradable}
+          balance={{ value: maxSellBalance, isLoading: maxSellBalanceLoading }}
+          onAssetChange={(sellAsset, previousSellAsset) => {
+            const { buyAsset } = getValues()
+            const isSwitch = sellAsset.id === buyAsset?.id
 
-          if (isSwitch) {
-            setValue("sellAsset", previousSellAsset)
-            switchAssets()
-          } else {
-            navigate({
-              to: ".",
-              search: (search) => ({
-                ...search,
-                assetIn: sellAsset.id,
-                assetOut: buyAsset?.id,
-              }),
-              resetScroll: false,
-            })
-          }
-        }}
-        onAmountChange={() => {
-          if (!isSell) {
-            setValue("type", TradeType.Sell)
-          }
-        }}
-      />
+            if (isSwitch) {
+              setValue("sellAsset", previousSellAsset)
+              switchAssets()
+            } else {
+              navigate({
+                to: ".",
+                search: (search) => ({
+                  ...search,
+                  assetIn: sellAsset.id,
+                  assetOut: buyAsset?.id,
+                }),
+                resetScroll: false,
+              })
+            }
+          }}
+          onAmountChange={() => {
+            if (!isSell) {
+              setValue("type", TradeType.Sell)
+            }
+          }}
+        />
+      </Box>
       <MarketSwitcher swap={swap} />
-      <AssetSelectFormField<MarketFormValues>
-        assetFieldName="buyAsset"
-        amountFieldName="buyAmount"
-        label={t("buy")}
-        assets={buyableAssets}
-        hideMaxBalanceAction
-        maxBalanceFallback="0"
-        onAssetChange={(buyAsset, previousBuyAsset) => {
-          const { sellAsset } = getValues()
-          const isSwitch = buyAsset.id === sellAsset?.id
+      <Box py="l" width="100%">
+        <AssetSelectFormField<MarketFormValues>
+          assetFieldName="buyAsset"
+          amountFieldName="buyAmount"
+          label={t("buy")}
+          assets={buyableAssets}
+          balance={{ onMax: null }}
+          onAssetChange={(buyAsset, previousBuyAsset) => {
+            const { sellAsset } = getValues()
+            const isSwitch = buyAsset.id === sellAsset?.id
 
-          if (isSwitch) {
-            setValue("buyAsset", previousBuyAsset)
-            switchAssets()
-          } else {
-            navigate({
-              to: ".",
-              search: (search) => ({
-                ...search,
-                assetIn: sellAsset?.id,
-                assetOut: buyAsset.id,
-              }),
-              resetScroll: false,
-            })
-          }
-        }}
-        onAmountChange={() => {
-          if (isSell) {
-            setValue("type", TradeType.Buy)
-          }
-        }}
-      />
+            if (isSwitch) {
+              setValue("buyAsset", previousBuyAsset)
+              switchAssets()
+            } else {
+              navigate({
+                to: ".",
+                search: (search) => ({
+                  ...search,
+                  assetIn: sellAsset?.id,
+                  assetOut: buyAsset.id,
+                }),
+                resetScroll: false,
+              })
+            }
+          }}
+          onAmountChange={() => {
+            if (isSell) {
+              setValue("type", TradeType.Buy)
+            }
+          }}
+        />
+      </Box>
     </div>
   )
 }

@@ -10,9 +10,11 @@ import {
   SButtonIcon,
   SButtonProps,
   SButtonTransparent,
+  SLoadingButton,
   SLoadingLabel,
   SMicroButton,
 } from "./Button.styled"
+import { useLoadingState } from "./useLoadingState"
 
 export type ButtonProps = BoxProps &
   SButtonProps &
@@ -57,22 +59,34 @@ export type LoadingButtonProps = ButtonProps & {
   isLoading: boolean
   loadingVariant?: ButtonProps["variant"]
   loadingMode?: LoadingMode
+  loadingDelay?: number
+  loadingFade?: boolean
 }
 
 export const LoadingButton: FC<LoadingButtonProps> = ({
-  variant,
-  loadingVariant = "tertiary",
+  variant = "primary",
+  loadingVariant = "muted",
   loadingMode = "inline",
+  loadingDelay,
+  loadingFade = false,
   isLoading,
+  onClick,
   children,
   ...props
 }) => {
+  const isBusy = useLoadingState(isLoading, loadingDelay)
+
   return (
-    <SButton
+    <SLoadingButton
       as="button"
       type="button"
-      aria-busy={isLoading}
-      variant={isLoading && loadingVariant ? loadingVariant : variant}
+      aria-busy={isBusy}
+      loadingFade={loadingFade}
+      variant={isBusy && loadingVariant ? loadingVariant : variant}
+      onClick={(e) => {
+        if (isLoading || isBusy) return e.preventDefault()
+        onClick?.(e)
+      }}
       {...props}
     >
       <SLoadingLabel loadingMode={loadingMode}>
@@ -81,6 +95,6 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
         </span>
         <span data-loading-content>{children}</span>
       </SLoadingLabel>
-    </SButton>
+    </SLoadingButton>
   )
 }

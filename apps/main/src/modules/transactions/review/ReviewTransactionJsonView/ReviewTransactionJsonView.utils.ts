@@ -10,7 +10,6 @@ import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
-import { getPapiTransactionCallData } from "@/modules/transactions/utils/tx"
 import {
   isEvmCall,
   isSolanaCall,
@@ -83,14 +82,5 @@ export const decodeTx = (
   return {}
 }
 
-export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
-  if (isPapiTransaction(tx)) {
-    return getPapiTransactionCallData(tx)
-  }
-
-  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {
-    return tx.data
-  }
-
-  return ""
-}
+export const hasTxCallData = (tx: AnyTransaction): boolean =>
+  isPapiTransaction(tx) || isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)

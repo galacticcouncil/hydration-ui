@@ -34,7 +34,7 @@ export const SOptionCardContainer = styled.button<{ active: boolean }>(
         `}
 
     &:disabled {
-      cursor: unset;
+      cursor: not-allowed;
       opacity: 0.6;
     }
   `,

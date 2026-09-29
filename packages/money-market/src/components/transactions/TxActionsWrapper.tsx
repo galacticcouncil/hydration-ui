@@ -84,7 +84,7 @@ export const TxActionsWrapper = ({
   return (
     <Box mt="var(--modal-content-padding)" className={className}>
       <LoadingButton
-        variant={isSubmitDisabled ? "tertiary" : "primary"}
+        variant={isSubmitDisabled ? "muted" : "primary"}
         width="100%"
         disabled={isSubmitDisabled}
         onClick={() => handleClick?.()}
