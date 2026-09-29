@@ -53,7 +53,8 @@ const ChainBadge: React.FC<{ chain: XcChain | null }> = ({ chain }) =>
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common", "trade"])
   const navigate = useNavigate()
-  const { watch, setValue, getValues } = useFormContext<XcSwapFormValues>()
+  const { watch, setValue, getValues, trigger } =
+    useFormContext<XcSwapFormValues>()
   const {
     isCrossChain,
     isSelectionLoading,
@@ -220,6 +221,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           onAmountChange={() => {
             if (!isSell) {
               setValue("type", TradeType.Sell)
+              void trigger("sellAmount")
             }
           }}
         />
