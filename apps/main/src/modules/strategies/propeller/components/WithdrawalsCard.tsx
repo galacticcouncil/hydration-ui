@@ -1,139 +1,162 @@
 import {
-  Box,
   Card,
   CardBody,
   CardHeader,
   CardTitle,
-  DataTable,
+  Chip,
+  ChipProps,
   Flex,
+  LoadingButton,
   Pagination,
   Stack,
-  TableContainer,
   Text,
-  Toggle,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
-import { ClaimModal } from "@/modules/strategies/propeller/components/ClaimModal"
-import { useWithdrawalColumns } from "@/modules/strategies/propeller/components/Withdrawals.columns"
+import { PendingPosition } from "@/components/PendingPosition"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
-import { usePendingClaimIds } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import {
+  useClaim,
+  usePendingClaimIds,
+} from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { useAssets } from "@/providers/assetsProvider"
 
 const WITHDRAWALS_PAGE_SIZE = 5
+
+type WithdrawalStateLabel =
+  | "pending"
+  | "claimable"
+  | "settling"
+  | "settlingShort"
+  | "claimed"
+
+const stateChipVariant: Record<WithdrawalStateLabel, ChipProps["variant"]> = {
+  pending: "orange",
+  settling: "amber",
+  settlingShort: "orange",
+  claimable: "green",
+  claimed: "blue",
+}
+
+const getWithdrawalStateLabel = (
+  row: PropellerWithdrawalRow,
+): WithdrawalStateLabel => {
+  if (row.state === "claimed") return "claimed"
+
+  const claimable = row.collateralSettled ?? 0
+  if (claimable > 0) return "claimable"
+  if (row.willSettleShort) return "settlingShort"
+  if (row.state === "partial") return "settling"
+  return "pending"
+}
+
+/** Unclaimed first, newest (highest request id) first within each group. */
+const sortWithdrawals = (rows: PropellerWithdrawalRow[]) =>
+  [...rows].sort(
+    (a, b) =>
+      Number(a.state === "claimed") - Number(b.state === "claimed") ||
+      b.requestId - a.requestId,
+  )
 
 interface Props {
   rows: PropellerWithdrawalRow[]
 }
 
-const defaultShowRedeemed = (rows: PropellerWithdrawalRow[]) => {
-  const hasClaimable = rows.some(
-    (row) => row.state !== "claimed" && (row.collateralSettled ?? 0) > 0,
-  )
-  const hasClaimed = rows.some((row) => row.state === "claimed")
-  return !hasClaimable && hasClaimed
-}
-
 export const WithdrawalsCard = ({ rows }: Props) => {
-  const { t } = useTranslation("propeller")
-  const { isMobile, isTablet } = useBreakpoints()
-  const [showRedeemedOverride, setShowRedeemedOverride] = useState<
-    boolean | null
-  >(null)
-  const showRedeemed = showRedeemedOverride ?? defaultShowRedeemed(rows)
-
-  const [claimRow, setClaimRow] = useState<PropellerWithdrawalRow | null>(null)
+  const { t } = useTranslation(["propeller", "common"])
+  const { getAssetWithFallback } = useAssets()
+  const claim = useClaim()
   const claimingIds = usePendingClaimIds()
-
-  const visibleRows = showRedeemed
-    ? rows
-    : rows.filter((row) => row.state !== "claimed")
-
   const [page, setPage] = useState(1)
+
+  const sortedRows = useMemo(() => sortWithdrawals(rows), [rows])
 
   useEffect(() => {
     setPage(1)
-  }, [visibleRows.length, showRedeemed])
-
-  const totalPages = Math.ceil(visibleRows.length / WITHDRAWALS_PAGE_SIZE)
-
-  const pagination = useMemo(
-    () => ({
-      pageIndex: page - 1,
-      pageSize: WITHDRAWALS_PAGE_SIZE,
-    }),
-    [page],
-  )
-
-  const pagedRows = useMemo(() => {
-    const start = (page - 1) * WITHDRAWALS_PAGE_SIZE
-    return visibleRows.slice(start, start + WITHDRAWALS_PAGE_SIZE)
-  }, [visibleRows, page])
-
-  const onClaim = useCallback((row: PropellerWithdrawalRow) => {
-    setClaimRow(row)
-  }, [])
-  const columns = useWithdrawalColumns({ onClaim, claimingIds })
+  }, [sortedRows.length])
 
   if (rows.length === 0) return null
 
+  const totalPages = Math.ceil(sortedRows.length / WITHDRAWALS_PAGE_SIZE)
+  const pagedRows = sortedRows.slice(
+    (page - 1) * WITHDRAWALS_PAGE_SIZE,
+    page * WITHDRAWALS_PAGE_SIZE,
+  )
+
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <Flex justify="space-between" align="center" wrap gap="m">
-            <CardTitle>{t("withdrawals.title")}</CardTitle>
-            <Flex align="center" gap="base">
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("withdrawals.showRedeemed")}
-              </Text>
-              <Toggle
-                size="medium"
-                checked={showRedeemed}
-                onCheckedChange={setShowRedeemedOverride}
-                name="show-redeemed"
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("withdrawals.title")}</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Stack gap="m">
+          {pagedRows.map((row) => {
+            const label = getWithdrawalStateLabel(row)
+            const { symbol } = getAssetWithFallback(row.vault.assetId)
+            const owed = row.collateralOwed ?? 0
+            const isClaiming = claimingIds.includes(row.id)
+
+            return (
+              <PendingPosition
+                key={row.id}
+                assetId={row.vault.assetId}
+                value={t("common:currency", { value: row.estEth, symbol })}
+                displayValue={t("common:currency", { value: row.estUsd })}
+                isLoading={row.isSettlementLoading}
+                status={
+                  label === "claimable" ? (
+                    <Flex justify="flex-end">
+                      <LoadingButton
+                        variant="secondary"
+                        size="small"
+                        onClick={() =>
+                          claim.mutate({
+                            vault: row.vault,
+                            requestId: row.requestId,
+                          })
+                        }
+                        isLoading={isClaiming}
+                        disabled={isClaiming}
+                      >
+                        {t("withdrawals.action.claim")}
+                      </LoadingButton>
+                    </Flex>
+                  ) : (
+                    <Flex direction="column" gap="s" align="flex-end">
+                      <Chip variant={stateChipVariant[label]} size="small">
+                        {t(`withdrawals.state.${label}`)}
+                      </Chip>
+                      {row.state === "partial" && owed > 0 && (
+                        <Text fs="p6" color={getToken("text.low")}>
+                          {t("withdrawals.settledProgress", {
+                            settled: t("common:currency", {
+                              value: row.settledSoFar ?? 0,
+                            }),
+                            owed: t("common:currency", {
+                              value: owed,
+                              symbol,
+                            }),
+                          })}
+                        </Text>
+                      )}
+                    </Flex>
+                  )
+                }
               />
-            </Flex>
-          </Flex>
-        </CardHeader>
-        {visibleRows.length === 0 ? (
-          <CardBody>
-            <Text fs="p4" color={getToken("text.low")}>
-              {showRedeemed
-                ? t("withdrawals.empty.all")
-                : t("withdrawals.empty.pending")}
-            </Text>
-          </CardBody>
-        ) : isMobile || isTablet ? (
-          <Box px="m" pb="m">
-            <Stack gap="m">
-              <StackedTable data={pagedRows} columns={columns} />
-              {totalPages > 1 && (
-                <Pagination
-                  totalPages={totalPages}
-                  currentPage={page}
-                  onPageChange={setPage}
-                />
-              )}
-            </Stack>
-          </Box>
-        ) : (
-          <TableContainer borderRadius="xl">
-            <DataTable
-              data={visibleRows}
-              columns={columns}
-              size="small"
-              paginated
-              pagination={pagination}
-              onPageClick={setPage}
+            )
+          })}
+
+          {totalPages > 1 && (
+            <Pagination
+              totalPages={totalPages}
+              currentPage={page}
+              onPageChange={setPage}
             />
-          </TableContainer>
-        )}
-      </Card>
-      <ClaimModal row={claimRow} onClose={() => setClaimRow(null)} />
-    </>
+          )}
+        </Stack>
+      </CardBody>
+    </Card>
   )
 }

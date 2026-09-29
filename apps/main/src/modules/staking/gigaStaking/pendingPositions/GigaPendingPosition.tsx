@@ -1,8 +1,6 @@
 import {
-  Amount,
   Button,
   Flex,
-  ResponsiveScope,
   Text,
   Tooltip,
   ValueStats,
@@ -19,18 +17,10 @@ import {
   gigaStakeConstantsQuery,
   gigaTwoSecBlocksSinceQuery,
 } from "@/api/gigaStake"
-import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { PendingPosition } from "@/components/PendingPosition"
+import { SCountdownValueStats } from "@/components/PendingPosition/PendingPosition.styled"
 import { CancelConfirmationModal } from "@/modules/staking/gigaStaking/pendingPositions/CancelConfirmationModal"
-import {
-  SActionsGroup,
-  SAmountSection,
-  SCancelSection,
-  SCountdownValueStats,
-  SMobileSeparator,
-  SPendingPosition,
-  SUnlockSection,
-} from "@/modules/staking/gigaStaking/pendingPositions/PendingPosition.styled"
 import {
   useCancelPendingPosition,
   useClaimPendingPosition,
@@ -39,12 +29,12 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-type PendingPositionProps = {
+type GigaPendingPositionProps = {
   amount: bigint
   voteAtBlock: number
 }
 
-export const PendingPosition: FC<PendingPositionProps> = ({
+export const GigaPendingPosition: FC<GigaPendingPositionProps> = ({
   amount,
   voteAtBlock,
 }) => {
@@ -156,41 +146,32 @@ export const PendingPosition: FC<PendingPositionProps> = ({
     )
 
   return (
-    <ResponsiveScope>
-      <SPendingPosition>
-        <SAmountSection>
-          <AssetLogo id={native.id} />
-          <Amount
-            value={t("currency", {
-              value: amountShifted,
-              symbol: native.symbol,
-            })}
-            displayValue={displayValue}
-            isLoading={isDisplayValueLoading}
-          />
-        </SAmountSection>
-        <SMobileSeparator />
-        <SActionsGroup>
-          <SUnlockSection>{unlockContent}</SUnlockSection>
-          <SCancelSection>
-            <Button
-              variant="tertiary"
-              size="small"
-              onClick={() => setIsCancelConfirmationModalOpen(true)}
-              disabled={cancelPendingPosition.isPending}
-            >
-              {t("cancel")}
-            </Button>
-          </SCancelSection>
-        </SActionsGroup>
-        <CancelConfirmationModal
-          open={isCancelConfirmationModalOpen}
-          onClose={() => setIsCancelConfirmationModalOpen(false)}
-          onConfirm={() =>
-            cancelPendingPosition.mutate({ voteAtBlock, amount })
-          }
-        />
-      </SPendingPosition>
-    </ResponsiveScope>
+    <>
+      <PendingPosition
+        assetId={native.id}
+        value={t("currency", {
+          value: amountShifted,
+          symbol: native.symbol,
+        })}
+        displayValue={displayValue}
+        isLoading={isDisplayValueLoading}
+        status={unlockContent}
+        action={
+          <Button
+            variant="tertiary"
+            size="small"
+            onClick={() => setIsCancelConfirmationModalOpen(true)}
+            disabled={cancelPendingPosition.isPending}
+          >
+            {t("cancel")}
+          </Button>
+        }
+      />
+      <CancelConfirmationModal
+        open={isCancelConfirmationModalOpen}
+        onClose={() => setIsCancelConfirmationModalOpen(false)}
+        onConfirm={() => cancelPendingPosition.mutate({ voteAtBlock, amount })}
+      />
+    </>
   )
 }

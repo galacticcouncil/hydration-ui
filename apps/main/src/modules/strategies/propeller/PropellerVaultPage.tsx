@@ -54,24 +54,26 @@ const PropellerVaultContent = () => {
             onWithdraw={setWithdrawVault}
           />
 
-          <WithdrawalsCard rows={withdrawals} />
-
           <StrategyDetailsCard />
 
           <AboutCard />
         </Stack>
 
-        {defaultDeposit.vault ? (
-          <Paper px="xl">
-            <DepositForm
-              key={defaultDeposit.vault.vaultAddress}
-              initialVault={defaultDeposit.vault}
-              onVaultChange={defaultDeposit.markUserPick}
-            />
-          </Paper>
-        ) : (
-          defaultDeposit.isLoading && <AppSkeleton />
-        )}
+        <Stack gap="xl">
+          {defaultDeposit.vault ? (
+            <Paper px="xl">
+              <DepositForm
+                key={defaultDeposit.vault.vaultAddress}
+                initialVault={defaultDeposit.vault}
+                onVaultChange={defaultDeposit.markUserPick}
+              />
+            </Paper>
+          ) : (
+            defaultDeposit.isLoading && <AppSkeleton />
+          )}
+
+          <WithdrawalsCard rows={withdrawals} />
+        </Stack>
       </TwoColumnGrid>
 
       {withdrawVault && (

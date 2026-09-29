@@ -1,12 +1,14 @@
 import { Box, Flex, Separator } from "@galacticcouncil/ui/components"
 import { containerSize, css, styled } from "@galacticcouncil/ui/utils"
 
-import { SUnstakingPosition } from "@/modules/staking/gigaStaking/UnstakingPosition.styled"
-
 const BREAKPOINT = "20rem"
 
-export const SPendingPosition = styled(SUnstakingPosition)(
+export const SPendingPosition = styled(Flex)(
   ({ theme }) => css`
+    padding: ${theme.containers.paddings.secondary};
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
+    background: ${theme.controls.dim.base};
+    border: 1px solid ${theme.details.borders};
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
