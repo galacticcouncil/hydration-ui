@@ -1,11 +1,12 @@
 import {
+  Box,
   Card,
   CardHeader,
+  CardTable,
   CardTitle,
   DataTable,
   Flex,
   Label,
-  Stack,
   TableContainer,
   Toggle,
   Tooltip,
@@ -17,7 +18,6 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { WithdrawalRowMobile } from "@/modules/strategies/bil/components/WithdrawalRowMobile"
 import {
   useWithdrawalColumns,
   type WithdrawalRow,
@@ -94,11 +94,9 @@ export const WithdrawalsCard = () => {
           <DataTable data={visibleRows} columns={columns} />
         </TableContainer>
       ) : (
-        <Stack gap="m" p="m">
-          {visibleRows.map((row) => (
-            <WithdrawalRowMobile key={row.id} row={row} />
-          ))}
-        </Stack>
+        <Box p="m">
+          <CardTable data={visibleRows} columns={columns} />
+        </Box>
       )}
     </Card>
   )

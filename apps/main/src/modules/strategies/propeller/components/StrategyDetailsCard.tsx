@@ -3,6 +3,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  CardTable,
   CardTitle,
   DataTable,
   Separator,
@@ -15,7 +16,6 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { isNullish } from "remeda"
 
-import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { DepositModal } from "@/modules/strategies/propeller/components/DepositModal"
 import { useStrategyVaultColumns } from "@/modules/strategies/propeller/components/StrategyVaults.columns"
 import {
@@ -70,8 +70,8 @@ export const StrategyDetailsCard = () => {
       </CardBody>
       <Separator />
       {isMobile || isTablet ? (
-        <Box px="m" pb="m">
-          <StackedTable data={vaults} columns={columns} />
+        <Box p="m" asChild>
+          <CardTable data={vaults} columns={columns} isLoading={isLoading} />
         </Box>
       ) : (
         <TableContainer borderRadius="xl">

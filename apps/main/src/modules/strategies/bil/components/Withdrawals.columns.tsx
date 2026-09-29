@@ -1,5 +1,4 @@
 import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
@@ -24,7 +23,6 @@ const columnHelper = createColumnHelper<WithdrawalRow>()
 
 export const useWithdrawalColumns = () => {
   const { t } = useTranslation(["strategies", "common"])
-  const { isMobile } = useBreakpoints()
 
   const { bil, hollar } = useBilStrategy()
 
@@ -46,7 +44,6 @@ export const useWithdrawalColumns = () => {
 
     const estValueColumn = columnHelper.accessor("estHollar", {
       header: t("bil.withdrawals.col.estValue"),
-      meta: { sx: { textAlign: isMobile ? "right" : "left" } },
       cell: ({ row }) => (
         <Amount
           value={t("common:currency", {
@@ -91,5 +88,5 @@ export const useWithdrawalColumns = () => {
     })
 
     return [amountColumn, estValueColumn, timeRemainingColumn, actionsColumn]
-  }, [t, isMobile, bil.id, bil.symbol, hollar.symbol])
+  }, [t, bil.id, bil.symbol, hollar.symbol])
 }
