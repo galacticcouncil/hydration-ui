@@ -6,7 +6,6 @@ import {
 import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import {
-  basejumpscan,
   getChainId,
   isH160Address,
   stringEquals,
@@ -116,11 +115,9 @@ export function getVisibleJourneys(journeys: XcJourney[]): XcJourney[] {
 }
 
 export function getJourneyExplorerLink(journey: XcJourney): string {
-  const { originProtocol, correlationId } = journey
+  const { correlationId } = journey
 
-  return originProtocol === "basejump"
-    ? basejumpscan.tx(correlationId)
-    : xcscan.tx(correlationId)
+  return xcscan.tx(correlationId)
 }
 
 export function mergeJourneys(
