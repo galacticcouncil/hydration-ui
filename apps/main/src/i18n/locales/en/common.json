@@ -72,6 +72,8 @@
   "more": "More",
   "readMore": "Read more",
   "back": "Back",
+  "next": "Next",
+  "finish": "Finish",
   "submit": "Submit",
   "confirm": "Confirm",
   "confirmation": "Confirmation",
@@ -428,5 +430,7 @@
   "banners.bil.cta": "Get BIL",
   "gigaNews": "GIGA News",
   "closeAll": "Close all",
-  "externalApy.alert": "The external APY is not available"
+  "externalApy.alert": "The external APY is not available",
+  "appUpdate.title": "New version available, reload the page to update.",
+  "appUpdate.action": "Reload"
 }
