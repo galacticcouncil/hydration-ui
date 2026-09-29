@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
+import { MAX_WITHDRAW_ALL_QUERY_KEY } from "@/api/balances"
 import { useObservable } from "@/hooks/useObservable"
 import {
   IntentOutcome,
@@ -52,6 +53,7 @@ export const useIntentToasts = (
   const { papi, papiClient, isReady } = useRpcProvider()
   const hasIntentPallet = useHasIntentPallet()
   const { edit } = useToasts()
+  const queryClient = useQueryClient()
   const { getAssetWithFallback } = useAssets()
 
   const tracked = getTrackedIntents(toasts)
@@ -119,7 +121,13 @@ export const useIntentToasts = (
       const match = tracked.find(
         ({ intentId }) => intentId === String(outcome.id),
       )
-      if (match) edit(match.toastId, getToastUpdate(match.intent, outcome))
+      if (!match) return
+      edit(match.toastId, getToastUpdate(match.intent, outcome))
+      if (outcome.kind === "resolved") {
+        void queryClient.invalidateQueries({
+          queryKey: MAX_WITHDRAW_ALL_QUERY_KEY,
+        })
+      }
     },
   })
 

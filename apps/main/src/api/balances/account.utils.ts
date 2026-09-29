@@ -93,10 +93,15 @@ export const watchFilteredAccountBalances = (
 
 const ERC20_MAX_WITHDRAW_SYNC_THRESHOLD = 0.01
 
-export type Erc20BalanceSnapshot = Map<
-  string,
-  { total: bigint; transferable: bigint }
->
+export type Erc20BalanceSnapshot = {
+  isPrimed: boolean
+  entries: Map<string, { total: bigint; transferable: bigint }>
+}
+
+export const createErc20BalanceSnapshot = (): Erc20BalanceSnapshot => ({
+  isPrimed: false,
+  entries: new Map(),
+})
 
 const hasSignificantChange = (previous: bigint, next: bigint): boolean =>
   previous !== next &&
@@ -112,19 +117,22 @@ export const syncErc20BalanceSnapshot = (
   for (const [assetId, { total, transferable }] of Object.entries(balances)) {
     if (!isErc20AToken(assetId)) continue
 
-    const snap = snapshot.get(assetId)
+    const snap = snapshot.entries.get(assetId)
 
+    // A newly held aToken (e.g. an ICE fill) has nothing to diff against
     if (
-      snap &&
-      (hasSignificantChange(snap.transferable, transferable) ||
-        hasSignificantChange(snap.total, total))
+      snap
+        ? hasSignificantChange(snap.transferable, transferable) ||
+          hasSignificantChange(snap.total, total)
+        : snapshot.isPrimed
     ) {
       shouldSync = true
     }
 
-    snapshot.set(assetId, { total, transferable })
+    snapshot.entries.set(assetId, { total, transferable })
   }
 
+  snapshot.isPrimed = true
   return shouldSync
 }
 
