@@ -8,21 +8,25 @@ import {
   Flex,
   LoadingButton,
   Pagination,
+  Skeleton,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useQuery } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
 import { DateText } from "@/components/RelativeDateText"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { blockTimestampQuery } from "@/modules/strategies/propeller/hooks/useRedemptionHistory"
 import {
   useClaim,
   usePendingClaimIds,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 const WITHDRAWALS_PAGE_SIZE = 5
 
@@ -60,6 +64,13 @@ const sortWithdrawals = (rows: PropellerWithdrawalRow[]) =>
       Number(a.state === "claimed") - Number(b.state === "claimed") ||
       b.requestId - a.requestId,
   )
+
+const SettledDate = ({ blockNumber }: { blockNumber: bigint }) => {
+  const rpc = useRpcProvider()
+  const { data } = useQuery(blockTimestampQuery(rpc, blockNumber))
+
+  return data ? <DateText date={data} /> : <Skeleton height="1em" width={60} />
+}
 
 interface Props {
   rows: PropellerWithdrawalRow[]
@@ -107,11 +118,11 @@ export const WithdrawalsCard = ({ rows }: Props) => {
                 displayValue={t("common:currency", { value: row.estUsd })}
                 isLoading={row.isSettlementLoading}
                 stats={
-                  row.settledDate
+                  row.settledBlock !== undefined
                     ? [
                         {
                           label: t("withdrawals.date"),
-                          value: <DateText date={row.settledDate} />,
+                          value: <SettledDate blockNumber={row.settledBlock} />,
                         },
                       ]
                     : undefined
@@ -122,6 +133,7 @@ export const WithdrawalsCard = ({ rows }: Props) => {
                       <LoadingButton
                         variant="secondary"
                         size="small"
+                        loadingMode="replace"
                         onClick={() =>
                           claim.mutate({
                             vault: row.vault,

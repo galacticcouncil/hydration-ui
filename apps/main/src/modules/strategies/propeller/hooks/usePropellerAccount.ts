@@ -44,7 +44,7 @@ export type PropellerWithdrawalRow = {
   /** Payout and date are still being read from settlement logs. */
   isSettlementLoading?: boolean
   state: WithdrawalRowState
-  settledDate?: Date
+  settledBlock?: bigint
   collateralOwed?: number
   collateralSettled?: number
   settledSoFar?: number
@@ -108,7 +108,7 @@ export const buildWithdrawalRow = ({
     isEstimate: !hasSettled,
     isSettlementLoading,
     state,
-    settledDate: settlement?.firstSettledAt,
+    settledBlock: settlement?.firstSettledBlock,
     collateralOwed: entry.collateralOwed,
     collateralSettled: entry.collateralSettled,
     settledSoFar,

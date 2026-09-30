@@ -3,8 +3,8 @@ import {
   AssetInput,
   Box,
   Checkbox,
+  CheckboxLabel,
   Flex,
-  Label,
   LoadingButton,
   ModalBody,
   ModalContentDivider,
@@ -149,24 +149,14 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                   control={control}
                   name="acknowledged"
                   render={({ field }) => (
-                    <Label
-                      fs="p4"
-                      lh={1.2}
-                      fw={500}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "base",
-                        cursor: "pointer",
-                      }}
-                    >
+                    <CheckboxLabel>
                       <Checkbox
                         name="withdraw-ack"
                         checked={field.value}
                         onCheckedChange={(checked) => field.onChange(!!checked)}
                       />
                       {t("withdraw.ack", { symbol, shareSymbol })}
-                    </Label>
+                    </CheckboxLabel>
                   )}
                 />
               </Flex>

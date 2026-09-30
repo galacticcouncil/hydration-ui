@@ -16,11 +16,13 @@ const SETTLED_EVENT = parseAbiItem(
 // Frontier eth_getLogs walks every block in range (~27 ms per 1k blocks), so
 // cost scales with range, not with matches.
 const LOG_CHUNK = 10_000n
+// ponytail: fixed fan-out; lower it if the RPC starts rate-limiting getLogs
+const SCAN_CONCURRENCY = 8
 
 type SettlementLog = {
   requestId: number
   collateral: bigint
-  blockHash: Hex
+  blockNumber: bigint
 }
 
 type VaultScan = {
@@ -29,7 +31,6 @@ type VaultScan = {
   to: bigint
   /** Keyed by `${blockHash}:${logIndex}` so overlapping scans can't double count. */
   logs: Map<string, SettlementLog>
-  timestamps: Map<Hex, Date>
 }
 
 // ponytail: in-memory per session; persist to IndexedDB if cold loads get slow
@@ -39,11 +40,12 @@ export interface RedemptionSettlement {
   requestId: number
   /** Collateral released across all settlement tranches; only recorded here. */
   collateralSettled: number
-  firstSettledAt?: Date
+  /** Resolve to a date lazily via `blockTimestampQuery`. */
+  firstSettledBlock: bigint
 }
 
 /**
- * Measured payout totals and first settlement dates by requestId. Scans new
+ * Measured payout totals and first settlement blocks by requestId. Scans new
  * blocks forward, and old blocks backward only until every tranche of
  * `minRequestId` is covered.
  */
@@ -65,7 +67,6 @@ export const vaultSettlementsQuery = (
         from: head + 1n,
         to: head,
         logs: new Map(),
-        timestamps: new Map(),
       }
       scans.set(vault.vaultAddress, scan)
 
@@ -77,11 +78,11 @@ export const vaultSettlementsQuery = (
           toBlock,
         })
         for (const l of logs) {
-          if (!l.blockHash) continue
+          if (!l.blockHash || l.blockNumber === null) continue
           scan.logs.set(`${l.blockHash}:${l.logIndex}`, {
             requestId: Number(l.args.requestId!),
             collateral: l.args.collateral!,
-            blockHash: l.blockHash,
+            blockNumber: l.blockNumber,
           })
         }
       }
@@ -95,49 +96,63 @@ export const vaultSettlementsQuery = (
       // tranche of minRequestId (and later) is too.
       const coversMin = () =>
         [...scan.logs.values()].some((l) => l.requestId < minRequestId!)
+      // Chunks are independent, so walk back SCAN_CONCURRENCY at a time.
       while (scan.from > VAULT_DEPLOY_BLOCK && !coversMin()) {
-        const start =
-          scan.from - LOG_CHUNK > VAULT_DEPLOY_BLOCK
-            ? scan.from - LOG_CHUNK
-            : VAULT_DEPLOY_BLOCK
-        await scanRange(start, scan.from - 1n)
-        if (start < scan.from) scan.from = start
-      }
-
-      const missingHashes = [
-        ...new Set([...scan.logs.values()].map((l) => l.blockHash)),
-      ].filter((hash) => !scan.timestamps.has(hash))
-      const blocks = await Promise.all(
-        missingHashes.map((blockHash) => evm.getBlock({ blockHash })),
-      )
-      for (const b of blocks) {
-        if (b.hash) {
-          scan.timestamps.set(b.hash, new Date(Number(b.timestamp) * 1000))
+        const ranges: [bigint, bigint][] = []
+        let end = scan.from - 1n
+        while (ranges.length < SCAN_CONCURRENCY && end >= VAULT_DEPLOY_BLOCK) {
+          const start =
+            end - LOG_CHUNK + 1n > VAULT_DEPLOY_BLOCK
+              ? end - LOG_CHUNK + 1n
+              : VAULT_DEPLOY_BLOCK
+          ranges.push([start, end])
+          end = start - 1n
         }
+        await Promise.all(ranges.map(([from, to]) => scanRange(from, to)))
+        scan.from = end + 1n
       }
 
       const byId = new Map<
         number,
-        { collateral: bigint; firstSettledAt?: Date }
+        { collateral: bigint; firstSettledBlock: bigint }
       >()
       for (const l of scan.logs.values()) {
-        const ts = scan.timestamps.get(l.blockHash)
-        const entry = byId.get(l.requestId) ?? { collateral: 0n }
+        const entry = byId.get(l.requestId) ?? {
+          collateral: 0n,
+          firstSettledBlock: l.blockNumber,
+        }
         // _retireExhaustedHead can emit RedeemSettled(id, 0) with no collateral.
         entry.collateral += l.collateral
-        if (ts && (!entry.firstSettledAt || ts < entry.firstSettledAt)) {
-          entry.firstSettledAt = ts
+        if (l.blockNumber < entry.firstSettledBlock) {
+          entry.firstSettledBlock = l.blockNumber
         }
         byId.set(l.requestId, entry)
       }
 
-      return [...byId].map(([requestId, { collateral, firstSettledAt }]) => ({
-        requestId,
-        collateralSettled: Number(formatUnits(collateral, decimals)),
-        firstSettledAt,
-      }))
+      return [...byId].map(
+        ([requestId, { collateral, firstSettledBlock }]) => ({
+          requestId,
+          collateralSettled: Number(formatUnits(collateral, decimals)),
+          firstSettledBlock,
+        }),
+      )
     },
     placeholderData: keepPreviousData,
     refetchInterval: 30_000,
     staleTime: 30_000,
+  })
+
+/** Block timestamps never change, so fetch once and keep forever. */
+export const blockTimestampQuery = (
+  { isReady, evm }: TProviderContext,
+  blockNumber: bigint | undefined,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.blockTimestamp(blockNumber?.toString()),
+    enabled: isReady && blockNumber !== undefined,
+    queryFn: async () => {
+      const block = await evm.getBlock({ blockNumber })
+      return new Date(Number(block.timestamp) * 1000)
+    },
+    staleTime: Infinity,
   })

@@ -1,12 +1,19 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import { CheckboxProps, Root } from "@radix-ui/react-checkbox"
+import {
+  CheckboxProps as RadixCheckboxProps,
+  Root,
+} from "@radix-ui/react-checkbox"
+import { Ref } from "react"
+
+import { Label } from "@/components/Label"
+import { createVariants } from "@/utils"
 
 export type CheckboxSize = "small" | "medium" | "large"
 
-export type TCheckbox = CheckboxProps & {
+export type CheckboxProps = RadixCheckboxProps & {
   size?: CheckboxSize
-  ref?: React.Ref<HTMLButtonElement>
+  ref?: Ref<HTMLButtonElement>
 }
 
 const disabledStyles = css`
@@ -16,35 +23,45 @@ const disabledStyles = css`
   }
 `
 
-const getRootSize = (size: CheckboxSize) => {
-  switch (size) {
-    case "small":
-      return css`
-        width: 12px;
-        height: 12px;
-      `
-    case "medium":
-      return css`
-        width: 16px;
-        height: 16px;
-      `
-    case "large":
-      return css`
-        width: 20px;
-        height: 20px;
-      `
-  }
-}
+const rootSizes = createVariants<CheckboxSize>((theme) => ({
+  small: css`
+    width: ${theme.sizes.s};
+    height: ${theme.sizes.s};
+  `,
+  medium: css`
+    width: ${theme.sizes.m};
+    height: ${theme.sizes.m};
+  `,
+  large: css`
+    width: ${theme.sizes.l};
+    height: ${theme.sizes.l};
+  `,
+}))
+
+const indicatorSizes = createVariants<CheckboxSize>(() => ({
+  small: css`
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+  `,
+  medium: css`
+    width: calc(100% - 6px);
+    height: calc(100% - 6px);
+  `,
+  large: css`
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+  `,
+}))
 
 export const SRoot = styled(Root)<{ size: CheckboxSize }>(
-  ({ theme, size, disabled }) => [
+  ({ theme, size = "medium", disabled }) => [
     css`
       display: block;
-
+      position: relative;
       flex-shrink: 0;
 
       border: 1px solid ${theme.controls.outline.base};
-      border-radius: 4px;
+      border-radius: ${theme.radii.base};
 
       background: ${theme.controls.dim.base};
 
@@ -52,23 +69,37 @@ export const SRoot = styled(Root)<{ size: CheckboxSize }>(
 
       transition: ${theme.transitions.colors};
 
-      :not(:disabled):hover {
-        border-color: ${theme.controls.outline.hover};
+      :not(:disabled):hover,
+      &[data-state="checked"] {
+        border-color: ${theme.controls.solid.active};
         background: ${theme.controls.dim.hover};
       }
     `,
-    getRootSize(size),
+    rootSizes(size),
     disabled && disabledStyles,
   ],
 )
 
-export const SIndicator = styled.div(
-  ({ theme }) => css`
-    margin: auto;
-    background: ${theme.controls.solid.active};
-    width: 50%;
-    height: 50%;
+export const SIndicator = styled.div<{ size: CheckboxSize }>(
+  ({ theme, size = "medium" }) => [
+    css`
+      margin: auto;
+      background: ${theme.controls.solid.active};
+      width: 50%;
+      height: 50%;
 
-    border-radius: 2px;
+      border-radius: ${theme.sizes["4xs"]};
+    `,
+    indicatorSizes(size),
+  ],
+)
+
+export const SLabel = styled(Label)(
+  ({ theme }) => css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.space.base};
+
+    cursor: pointer;
   `,
 )
