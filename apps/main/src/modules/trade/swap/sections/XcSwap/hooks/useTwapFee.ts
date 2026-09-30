@@ -13,9 +13,7 @@ export const useTwapFee = (twap: TradeOrder | null, enabled = true) => {
   const isIceEnabled = useIsIceEnabled()
   const { account } = useAccount()
   const {
-    swap: {
-      split: { twapSlippage, twapMaxRetries },
-    },
+    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
   } = useTradeSettings()
 
   const { data: tx, isLoading: isTxLoading } = useQuery({

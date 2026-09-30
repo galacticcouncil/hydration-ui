@@ -61,8 +61,8 @@ export const TwapSummary: FC<Props> = ({
     general: { isSummaryExpanded },
     swap: {
       single: { swapSlippage },
-      split: { twapSlippage },
     },
+    dca: { slippage: twapSlippage },
   } = tradeSettings
 
   const changeSummaryExpanded = (isSummaryExpanded: boolean) =>

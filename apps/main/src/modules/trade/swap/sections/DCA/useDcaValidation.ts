@@ -35,9 +35,7 @@ export const useDcaValidation = (
   duration: TimeFrame,
 ): DcaValidationResult => {
   const {
-    swap: {
-      split: { twapSlippage },
-    },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   return validateDcaOrder(order, duration, twapSlippage)

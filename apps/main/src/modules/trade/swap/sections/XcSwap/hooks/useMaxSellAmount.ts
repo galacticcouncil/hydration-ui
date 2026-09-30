@@ -27,8 +27,8 @@ export const useMaxSellAmount = ({
   const {
     swap: {
       single: { swapSlippage },
-      split: { twapSlippage, twapMaxRetries },
     },
+    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
   } = useTradeSettings()
 
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()

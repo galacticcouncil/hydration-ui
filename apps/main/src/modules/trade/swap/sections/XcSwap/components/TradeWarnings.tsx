@@ -46,8 +46,8 @@ export const TradeWarnings: FC<Props> = ({
   const {
     swap: {
       single: { swapSlippage },
-      split: { twapSlippage },
     },
+    dca: { slippage: twapSlippage },
   } = tradeSettings
 
   const priceImpact = Math.abs(
@@ -69,13 +69,7 @@ export const TradeWarnings: FC<Props> = ({
     } else {
       update({
         ...tradeSettings,
-        swap: {
-          ...tradeSettings.swap,
-          split: {
-            ...tradeSettings.swap.split,
-            twapSlippage: validSlippage,
-          },
-        },
+        dca: { ...tradeSettings.dca, slippage: validSlippage },
       })
     }
 

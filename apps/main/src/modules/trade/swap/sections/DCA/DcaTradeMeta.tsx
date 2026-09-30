@@ -33,9 +33,7 @@ export const DcaTradeMeta: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const {
-    swap: {
-      split: { twapSlippage },
-    },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   return (

@@ -24,9 +24,7 @@ export const useMaxOrderBalance = ({
   const rpc = useRpcProvider()
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const {
-    swap: {
-      split: { twapSlippage, twapMaxRetries },
-    },
+    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
   } = useTradeSettings()
   const { getTransferableBalance } = useAccountBalances()
   const enabled =

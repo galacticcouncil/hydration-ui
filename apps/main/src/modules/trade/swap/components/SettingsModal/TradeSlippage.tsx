@@ -85,4 +85,4 @@ export const TradeSlippage: FC<Props> = ({
   )
 }
 
-const defaultSlippageOptions: ReadonlyArray<number> = [0.5, 1, 3]
+const defaultSlippageOptions: ReadonlyArray<number> = [1, 2, 3]

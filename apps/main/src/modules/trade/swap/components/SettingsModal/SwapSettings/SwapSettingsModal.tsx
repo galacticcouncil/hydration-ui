@@ -26,8 +26,9 @@ export const SwapSettingsModal: FC<Props> = ({ section }) => {
   const { featureFlags } = useRpcProvider()
 
   const { update, ...tradeSettings } = useTradeSettings()
-  const form = useSwapSettingsForm(tradeSettings.swap, (swap) =>
-    update({ ...tradeSettings, swap }),
+  const form = useSwapSettingsForm(
+    { swap: tradeSettings.swap, dca: tradeSettings.dca },
+    (values) => update({ ...tradeSettings, ...values }),
   )
 
   const showSingle = !section || section === "single"

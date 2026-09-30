@@ -37,8 +37,8 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
   const {
     swap: {
       single: { swapSlippage },
-      split: { twapSlippage },
     },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   return (

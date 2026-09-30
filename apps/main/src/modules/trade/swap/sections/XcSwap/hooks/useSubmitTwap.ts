@@ -24,9 +24,7 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
   const isIceEnabled = useIsIceEnabled()
 
   const {
-    swap: {
-      split: { twapSlippage, twapMaxRetries },
-    },
+    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
