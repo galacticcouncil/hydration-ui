@@ -3,9 +3,8 @@ import { pick } from "remeda"
 import { WalletProviderType } from "@/config/providers"
 import { Wallet, WalletData } from "@/types/wallet"
 import { AlephZero } from "@/wallets/AlephZeroSigner"
-import { Backpack, BackpackSol, BackpackSui } from "@/wallets/Backpack"
+import { BackpackSol, BackpackSui } from "@/wallets/Backpack"
 import { BraveWallet, BraveWalletSol } from "@/wallets/BraveWallet"
-import { CoinbaseWallet } from "@/wallets/CoinbaseWallet"
 import { Enkrypt } from "@/wallets/Enkrypt"
 import { EthereumWalletsNear } from "@/wallets/EthereumWallets"
 import { ExternalWallet } from "@/wallets/ExternalWallet"
@@ -16,11 +15,11 @@ import { LedgerNear } from "@/wallets/Ledger"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask, MetaMaskSol } from "@/wallets/MetaMask"
 import { MeteorWallet } from "@/wallets/MeteorWallet"
-import { Nightly, NightlySol, NightlySui } from "@/wallets/Nightly"
+import { NightlySol, NightlySui } from "@/wallets/Nightly"
 import { NoirWallet } from "@/wallets/NoirWallet"
 import { NovaWallet, NovaWalletEvm, NovaWalletH160 } from "@/wallets/NovaWallet"
 import { OKXWallet, OKXWalletSol, OKXWalletSui } from "@/wallets/OKXWallet"
-import { Phantom, PhantomEvm, PhantomSui } from "@/wallets/Phantom"
+import { Phantom, PhantomSui } from "@/wallets/Phantom"
 import { PolkadotJS } from "@/wallets/PolkadotJS"
 import { PolkaGate } from "@/wallets/PolkaGate"
 import { RabbyWallet } from "@/wallets/RabbyWallet"
@@ -35,16 +34,14 @@ import {
   TalismanH160,
   TalismanSol,
 } from "@/wallets/Talisman"
-import { TrustWallet, TrustWalletSol } from "@/wallets/TrustWallet"
+import { TrustWalletSol } from "@/wallets/TrustWallet"
 
 export {
   AlephZero,
-  Backpack,
   BackpackSol,
   BackpackSui,
   BraveWallet,
   BraveWalletSol,
-  CoinbaseWallet,
   Enkrypt,
   EthereumWalletsNear,
   ExternalWallet,
@@ -56,7 +53,6 @@ export {
   MetaMask,
   MetaMaskSol,
   MeteorWallet,
-  Nightly,
   NightlySol,
   NightlySui,
   NoirWallet,
@@ -67,7 +63,6 @@ export {
   OKXWalletSol,
   OKXWalletSui,
   Phantom,
-  PhantomEvm,
   PhantomSui,
   PolkadotJS,
   PolkaGate,
@@ -83,7 +78,6 @@ export {
   TalismanEvm,
   TalismanH160,
   TalismanSol,
-  TrustWallet,
   TrustWalletSol,
 }
 
@@ -111,12 +105,7 @@ const wallets = [
   new TalismanEvm(),
   new SubWalletEvm(),
   new RabbyWallet(),
-  new TrustWallet(),
-  new CoinbaseWallet(),
   new OKXWallet(),
-  new Backpack(),
-  new Nightly(),
-  new PhantomEvm(),
 
   // Solana
   new Phantom(),

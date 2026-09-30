@@ -40,10 +40,6 @@ export const WALLET_DEEPLINKS: Partial<
     android: `solflare://v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
     universal: `https://solflare.com/ul/v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
   },
-  [WalletProviderType.TrustWallet]: {
-    android: `trust://open_url?coin_id=60&url=${ENCODED_TARGET_URL}`,
-    universal: `https://link.trustwallet.com/open_url?coin_id=60&url=${ENCODED_TARGET_URL}`,
-  },
   [WalletProviderType.TrustWalletSol]: {
     android: `trust://open_url?coin_id=501&url=${ENCODED_SOLANA_TARGET_URL}`,
     universal: `https://link.trustwallet.com/open_url?coin_id=501&url=${ENCODED_SOLANA_TARGET_URL}`,
