@@ -233,7 +233,9 @@ export const WalletManagementContent = () => {
     () => filterAccounts(mode)(accounts.map(toAccount)).length,
     [accounts, mode],
   )
-  const showErrorState = !!error
+
+  const showErrorState =
+    !!error && (selectedSource === "all" || selectedSource === recentProvider)
 
   const {
     recentGroups: recentWalletGroups,
