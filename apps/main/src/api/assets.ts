@@ -143,6 +143,13 @@ const fetchGammaVaultShareSymbols = async (
   )
 }
 
+// Pairs from the last sync, when it was for the same chain
+const getStoredATokenPairs = (genesisHash: string) => {
+  const { aTokenPairs, genesisHash: storedGenesisHash } =
+    useAssetRegistryStore.getState()
+  return storedGenesisHash === genesisHash ? aTokenPairs : []
+}
+
 export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
@@ -159,12 +166,15 @@ export const assetsQuery = (
       // Icons are baked into the stored registry, so the metadata singleton has
       // to be warm before the assets are mapped - it is no longer warmed by the
       // provider query.
-      const [tradeAssets, pools, assets, metadata] = await Promise.all([
-        sdk.api.router.getTradeableAssets(),
-        queryClient.ensureQueryData(allPools(sdk)),
-        sdk.client.asset.getSupported(false),
-        queryClient.ensureQueryData(assetMetadataQuery()),
-      ])
+      const [tradeAssets, pools, assets, metadata, marketATokens] =
+        await Promise.all([
+          sdk.api.router.getTradeableAssets(),
+          queryClient.ensureQueryData(allPools(sdk)),
+          sdk.client.asset.getSupported(false),
+          queryClient.ensureQueryData(assetMetadataQuery()),
+          // Rejects on any failed market read
+          sdk.api.aave.getATokens().catch(() => null),
+        ])
       const tradeAssetsMap = new Set(tradeAssets)
       const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
         evm,
@@ -192,7 +202,7 @@ export const assetsQuery = (
         }
       }
 
-      const aTokenPairs: TATokenPairStored[] = pools.aavePools
+      const routerATokenPairs: TATokenPairStored[] = pools.aavePools
         .map((p) => {
           const [reserve, atoken] = p.tokens
 
@@ -202,7 +212,25 @@ export const assetsQuery = (
         })
         .filter(isNonNullish)
 
-      const aTokenMap = new Map(aTokenPairs)
+      // The router only lists main market pairs; aTokens of other tradeable
+      // markets (BIL) come from the SDK. Non-tradeable ones (GIGAHDX) keep
+      // their own flows and are left out. If the SDK read fails, the pairs
+      // last synced for this chain stand in, so one failed read neither drops
+      // BIL for the session nor overwrites the stored list.
+      const marketATokenPairs: TATokenPairStored[] = marketATokens
+        ? marketATokens.flatMap(({ aTokenId, underlyingId, market }) =>
+            market.tradeable && underlyingId !== null
+              ? [[aTokenId.toString(), underlyingId.toString()] as const]
+              : [],
+          )
+        : getStoredATokenPairs(genesisHash)
+
+      const aTokenMap = new Map(routerATokenPairs)
+      for (const [aTokenId, underlyingId] of marketATokenPairs) {
+        if (!aTokenMap.has(aTokenId)) aTokenMap.set(aTokenId, underlyingId)
+      }
+
+      const aTokenPairs: TATokenPairStored[] = [...aTokenMap]
 
       syncATokenPairs(aTokenPairs)
 
