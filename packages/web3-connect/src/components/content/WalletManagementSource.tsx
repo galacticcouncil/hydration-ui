@@ -31,10 +31,6 @@ import {
 } from "@/utils/walletSource"
 import { getWallet } from "@/wallets"
 
-/**
- * The rows of the wallet-source column: one generic button plus the two
- * shapes it is used in - a single provider, and a brand that ships several.
- */
 export type WalletSourceButtonVariant =
   | "management"
   | "firstConnection"
