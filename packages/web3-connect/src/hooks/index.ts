@@ -1,5 +1,4 @@
 export * from "./useAccount"
-export * from "./useAccountBalancesMap"
 export * from "./useAccountMultisigs"
 export * from "./useEvmAddress"
 export * from "./useMultisigConfigs"

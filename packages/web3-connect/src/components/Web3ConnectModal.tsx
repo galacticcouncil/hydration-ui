@@ -16,8 +16,6 @@ import { MultisigSignerSelectContent } from "@/components/content/MultisigSigner
 import { WalletManagementContent } from "@/components/content/WalletManagementContent"
 import { Web3ConnectModalPage } from "@/config/modal"
 import {
-  useEmptyExtraAccountBalances,
-  UseExtraAccountBalances,
   Web3ConnectContextType,
   Web3ConnectProvider,
 } from "@/context/Web3ConnectContext"
@@ -48,7 +46,6 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
 type ControlledProps = {
   readonly neckwork: NeckworkClient
   readonly papi: TypedApi<typeof hydration>
-  readonly useExtraAccountBalances?: UseExtraAccountBalances
   readonly open: boolean
   readonly mode: WalletMode
   readonly meta?: Web3ConnectModalMeta
@@ -59,7 +56,6 @@ type ControlledProps = {
 type UncontrolledProps = {
   readonly neckwork: NeckworkClient
   readonly papi: TypedApi<typeof hydration>
-  readonly useExtraAccountBalances?: UseExtraAccountBalances
 }
 
 type Props = ControlledProps | UncontrolledProps
@@ -69,12 +65,7 @@ type Web3ConnectModalContentProps = Props & {
 }
 
 const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
-  const { setModalContentWidth } = props
-  const {
-    neckwork,
-    papi,
-    useExtraAccountBalances = useEmptyExtraAccountBalances,
-  } = props
+  const { neckwork, papi, setModalContentWidth } = props
 
   const isControlled =
     "open" in props &&
@@ -111,7 +102,6 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
       setPage,
       neckwork,
       papi,
-      useExtraAccountBalances,
       onAccountSelect,
       mode,
       meta,
@@ -121,7 +111,6 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
       page,
       setPage,
       neckwork,
-      useExtraAccountBalances,
       onAccountSelect,
       isControlled,
       mode,
@@ -137,7 +126,7 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
   )
 }
 
-export const Web3ConnectModalV2: FC<Props> = (props) => {
+export const Web3ConnectModal: FC<Props> = (props) => {
   const isControlled =
     "open" in props && "onOpenChange" in props && "onAccountSelect" in props
 

@@ -26,7 +26,7 @@ import {
   useAddresses,
   useAddressStore,
   WalletMode,
-  Web3ConnectModalV2,
+  Web3ConnectModal,
 } from "@galacticcouncil/web3-connect"
 import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useEffect, useId, useRef, useState } from "react"
@@ -281,7 +281,7 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
       {walletMode && (
         // Controlled: the account fills the destination and never
         // becomes the app's active account
-        <Web3ConnectModalV2
+        <Web3ConnectModal
           neckwork={neckworkClient}
           papi={papi}
           open={isConnectModalOpen}
