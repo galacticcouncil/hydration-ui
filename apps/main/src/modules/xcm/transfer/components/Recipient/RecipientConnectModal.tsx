@@ -1,7 +1,7 @@
 import {
   Account,
   WalletMode,
-  Web3ConnectModalV2,
+  Web3ConnectModal,
 } from "@galacticcouncil/web3-connect"
 import { AnyChain } from "@galacticcouncil/xc-core"
 
@@ -26,7 +26,7 @@ export const RecipientConnectModal: React.FC<RecipientConnectModalProps> = ({
   const walletMode = destChain ? getWalletModeByChain(destChain) : null
 
   return (
-    <Web3ConnectModalV2
+    <Web3ConnectModal
       neckwork={neckworkClient}
       papi={papi}
       open={open}

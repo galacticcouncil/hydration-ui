@@ -13,7 +13,7 @@ import {
   useAccount,
   useWeb3Connect,
   WalletMode,
-  Web3ConnectModalV2,
+  Web3ConnectModal,
 } from "@galacticcouncil/web3-connect"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useState } from "react"
@@ -87,7 +87,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
       >
         {isPending ? t("claiming") : t("claim")}
       </Button>
-      <Web3ConnectModalV2
+      <Web3ConnectModal
         neckwork={neckworkClient}
         papi={papi}
         open={modalOpen}
