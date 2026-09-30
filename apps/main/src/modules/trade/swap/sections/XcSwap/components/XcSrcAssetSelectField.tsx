@@ -9,7 +9,8 @@ import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/use
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
-  readonly label: React.ReactNode
+  readonly label: string
+  readonly labelAdornment?: React.ReactNode
   readonly isLoading?: boolean
   readonly maxBalance?: string
   readonly isMaxBalanceLoading?: boolean
@@ -22,6 +23,7 @@ type Props = {
 
 export const XcSrcAssetSelectField: React.FC<Props> = ({
   label,
+  labelAdornment,
   isLoading,
   maxBalance,
   isMaxBalanceLoading,
@@ -53,6 +55,7 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({
   return (
     <AssetSelect
       label={label}
+      labelAdornment={labelAdornment}
       assets={tradable}
       selectedAsset={selectedAsset}
       setSelectedAsset={(asset) => {

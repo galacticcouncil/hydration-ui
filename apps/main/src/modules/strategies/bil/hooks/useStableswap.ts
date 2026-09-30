@@ -21,6 +21,9 @@ export function useInstantQuote(
   const { bil, hollar } = useBilStrategy()
   const [debouncedAmountIn, isAmountInSynced] = useDebouncedValue(bilAmount)
 
+  // The SDK's getBestSell takes amountIn as a HUMAN-readable string (the
+  // form value the user typed, e.g. "100"), NOT wei. The returned swap's
+  // amountOut, however, IS in wei — so we apply scaleHuman after.
   const { data: swap, isFetching } = useQuery(
     bestSellQuery(rpc, {
       assetIn: bil.id,

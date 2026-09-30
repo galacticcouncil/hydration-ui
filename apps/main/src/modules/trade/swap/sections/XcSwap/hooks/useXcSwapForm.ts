@@ -1,18 +1,17 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect } from "react"
-import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import i18n from "@/i18n"
-import {
-  getSharedSellAmount,
-  useSharedSellAmountSync,
-} from "@/modules/trade/swap/lib/useSharedSellAmount"
+import { useTradeForm } from "@/modules/trade/swap/lib/useTradeForm"
+import { getIceBuySellAmount } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 import { XcAsset, XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
+import { useIsIceEnabled } from "@/states/intents"
+import { useTradeSettings } from "@/states/tradeSettings"
 import {
   maxBalanceError,
   positiveOptional,
@@ -56,7 +55,12 @@ const schema = z
     }
   })
 
-const useSchema = (maxSwapSellBalance: string, maxTwapSellBalance: string) => {
+const useSchema = (
+  maxSwapSellBalance: string,
+  maxTwapSellBalance: string,
+  isIceEnabled: boolean,
+  swapSlippage: number,
+) => {
   const { account } = useAccount()
 
   if (!account) {
@@ -64,11 +68,23 @@ const useSchema = (maxSwapSellBalance: string, maxTwapSellBalance: string) => {
   }
 
   return schema.refine(
-    (form) =>
-      validateMaxBalance(
+    (form) => {
+      const isOnChain =
+        form.destChain === null || form.destChain.platform === "hydration"
+      // An ICE buy spends the slippage-padded amount in full (useSubmitSwap)
+      const isIceBuy =
+        isIceEnabled &&
+        isOnChain &&
+        form.isSingleTrade &&
+        form.type === TradeType.Buy
+
+      return validateMaxBalance(
         form.isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance,
-        form.sellAmount,
-      ),
+        isIceBuy
+          ? getIceBuySellAmount(form.sellAmount, swapSlippage)
+          : form.sellAmount,
+      )
+    },
     {
       error: maxBalanceError,
       path: ["sellAmount"],
@@ -93,11 +109,17 @@ export const useXcSwapForm = ({
 }: Args) => {
   const { account } = useAccount()
   const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
+  const isIceEnabled = useIsIceEnabled()
+  const {
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
 
   const defaultValues: XcSwapFormValues = {
     srcChain: null,
     sellAsset: null,
-    sellAmount: getSharedSellAmount(),
+    sellAmount: "",
     destChain: null,
     buyAsset: null,
     buyAmount: "",
@@ -106,15 +128,18 @@ export const useXcSwapForm = ({
     isSingleTrade: true,
   }
 
-  const form = useForm<XcSwapFormValues>({
+  const form = useTradeForm<XcSwapFormValues>({
     defaultValues,
     mode: "onChange",
     resolver: standardSchemaResolver(
-      useSchema(maxSwapSellBalance, maxTwapSellBalance),
+      useSchema(
+        maxSwapSellBalance,
+        maxTwapSellBalance,
+        isIceEnabled,
+        swapSlippage,
+      ),
     ),
   })
-
-  useSharedSellAmountSync(form)
 
   const { trigger, getValues, getFieldState, watch } = form
   const isSingleTrade = watch("isSingleTrade")
@@ -135,6 +160,8 @@ export const useXcSwapForm = ({
     maxTwapSellBalance,
     isMaxSwapSellBalanceLoading,
     isMaxTwapSellBalanceLoading,
+    isIceEnabled,
+    swapSlippage,
     trigger,
   ])
 

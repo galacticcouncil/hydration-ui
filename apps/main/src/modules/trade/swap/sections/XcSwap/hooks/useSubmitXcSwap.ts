@@ -53,7 +53,7 @@ export const useSubmitXcSwap = (
 
       const recipient = requireXcSwapRecipient(destChain, destAddress)
 
-      const trade = await queryClient.ensureQueryData(
+      const trade = await queryClient.fetchQuery(
         xcSwapQuoteQuery(xcSwap, {
           sellAsset,
           buyAsset: isXcDestAsset(buyAsset) ? buyAsset : null,

@@ -8,19 +8,13 @@ import { useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
-import {
-  getDcaScheduleIdFromEvents,
-  getExplorerTxLink,
-  parseTxMethodName,
-} from "@/modules/transactions/utils/tx"
-import { getXcSwapSequence } from "@/modules/transactions/utils/xcSwap"
+import { getSuccessToastUpdate } from "@/modules/transactions/utils/toasts/successToastUpdate"
+import { parseTxMethodName } from "@/modules/transactions/utils/tx"
 import { useToasts } from "@/states/toasts"
 import {
-  isSubstrateTxResult,
   SingleTransaction,
   TransactionMeta,
   TransactionType,
-  TSuccessResult,
 } from "@/states/transactions"
 
 export const useTransactionToasts = (
@@ -35,7 +29,6 @@ export const useTransactionToasts = (
   const { id, toasts, meta } = transaction
 
   const isMultisig = !!multisigConfig && !!account?.isMultisig
-  const isXcm = meta.type === TransactionType.Xcm
 
   const method = parseTxMethodName(transaction.tx, "value.value.call")
 
@@ -79,51 +72,26 @@ export const useTransactionToasts = (
           return remove(id)
         }
 
-        const sequence =
-          meta.type === TransactionType.XcSwap
-            ? getXcSwapSequence(result)
-            : null
-
-        const link = sequence
-          ? intentscan.order(sequence)
-          : getFinalizedTransactionLink(meta, result)
+        const update = getSuccessToastUpdate(
+          meta,
+          result,
+          toasts?.success ?? t("transaction.status.success.title"),
+        )
 
         if (hasShownToastRef.current) {
-          if (link) edit(id, { link })
+          if (update.link) edit(id, { link: update.link })
           return
         }
         hasShownToastRef.current = true
 
-        if (meta.type === TransactionType.XcSwap) {
-          const txHash = txHashRef.current
-          return edit(id, {
-            variant: "submitted",
-            dateCreated: new Date().toISOString(),
-            ...(link && { link }),
-            ...(txHash && {
-              meta: {
-                ...meta,
-                txHash,
-                ecosystem,
-                ...(sequence && { sequence }),
-              },
-            }),
-          })
-        }
-
-        if (isXcm) {
-          return edit(id, {
-            variant: "submitted",
-            dateCreated: new Date().toISOString(),
-            ...(link && { link }),
-          })
-        }
-
+        const txHash = txHashRef.current
         edit(id, {
-          variant: "success",
-          title: toasts?.success ?? t("transaction.status.success.title"),
+          variant: update.variant,
+          ...(update.title && { title: update.title }),
           dateCreated: new Date().toISOString(),
-          ...(link && { link }),
+          ...(update.link && { link: update.link }),
+          ...(update.meta &&
+            txHash && { meta: { ...update.meta, txHash, ecosystem } }),
         })
       },
       onError: (message) => {
@@ -145,7 +113,6 @@ export const useTransactionToasts = (
     edit,
     id,
     isMultisig,
-    isXcm,
     meta,
     method,
     pending,
@@ -174,19 +141,4 @@ function getTransactionLink(
   }
 
   return neckwork.extrinsicHash(txHash)
-}
-
-function getFinalizedTransactionLink(
-  meta: TransactionMeta,
-  result: TSuccessResult,
-) {
-  if (!isSubstrateTxResult(result)) return null
-
-  const scheduleId = getDcaScheduleIdFromEvents(result.events)
-  if (scheduleId !== null) {
-    return neckwork.activityDca(scheduleId)
-  }
-
-  const { number, index } = result.block
-  return getExplorerTxLink(meta, number, index)
 }
