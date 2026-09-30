@@ -20,24 +20,20 @@ import {
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
 import {
-  COMPATIBLE_WALLET_PROVIDERS,
+  AccountWalletAvatar,
   useAccount,
-  useAccountBalancesMap,
   useWeb3Connect,
   useWeb3ConnectModal,
   WalletProviderStatus,
 } from "@galacticcouncil/web3-connect"
-import { ProviderLogo } from "@galacticcouncil/web3-connect/src/components/provider/ProviderLogo"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { Link } from "@tanstack/react-router"
 import { LogOut, Plus, WalletIcon } from "lucide-react"
-import { FC, ReactNode, useEffect, useMemo } from "react"
+import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { pick } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
-import { neckworkClient } from "@/api/neckwork"
 import {
   getRecentProviderAccount,
   useRecentProviderAccountsStore,
@@ -45,61 +41,6 @@ import {
 
 import { SHoverActions } from "./UserMenu.styled"
 import { UserMenuChangeAccountButton } from "./UserMenuChangeAccountButton"
-
-const useHoverWalletBalances = (
-  accounts: ReturnType<typeof useAccount>["accounts"],
-  enabled: boolean,
-) => {
-  const { setBalances } = useWeb3Connect(useShallow(pick(["setBalances"])))
-
-  const hydrationAccounts = useMemo(
-    () =>
-      accounts.filter((account) =>
-        COMPATIBLE_WALLET_PROVIDERS.includes(account.provider),
-      ),
-    [accounts],
-  )
-
-  const accountsToFetch = useMemo(() => {
-    const byPublicKey = new Map<string, (typeof accounts)[number]>()
-
-    for (const account of hydrationAccounts) {
-      if (account.balance !== undefined || byPublicKey.has(account.publicKey)) {
-        continue
-      }
-      byPublicKey.set(account.publicKey, account)
-    }
-
-    return [...byPublicKey.values()]
-  }, [hydrationAccounts])
-
-  const { balancesMap, isLoading } = useAccountBalancesMap({
-    accounts: accountsToFetch,
-    neckwork: neckworkClient,
-    enabled,
-  })
-
-  useEffect(() => {
-    if (!isLoading && balancesMap.size > 0) {
-      setBalances(balancesMap)
-    }
-  }, [balancesMap, isLoading, setBalances])
-
-  return useMemo(() => {
-    const balances = new Map(balancesMap)
-
-    for (const account of hydrationAccounts) {
-      if (account.balance !== undefined) {
-        balances.set(account.publicKey, account.balance)
-      }
-    }
-
-    return {
-      balances,
-      isLoading,
-    }
-  }, [balancesMap, hydrationAccounts, isLoading])
-}
 
 const UserMenuSeparator = () => (
   <Separator
@@ -139,8 +80,6 @@ export const UserMenu: FC<Props> = ({
   const recentByProvider = useRecentProviderAccountsStore(
     (s) => s.recentByProvider,
   )
-
-  const { balances: balancesByAccount } = useHoverWalletBalances(accounts, open)
 
   if (!account) return null
 
@@ -218,30 +157,10 @@ export const UserMenu: FC<Props> = ({
           const disconnectLabel = t("userMenu.disconnect", {
             provider: wallet.title,
           })
-          const hydrationAccounts = providerAccounts.filter((account) =>
-            COMPATIBLE_WALLET_PROVIDERS.includes(account.provider),
-          )
-          const providerBalance = hydrationAccounts.reduce<number | null>(
-            (total, providerAccount) => {
-              const balance = balancesByAccount.get(providerAccount.publicKey)
-              if (balance === undefined) return null
-              return (total ?? 0) + balance
-            },
-            hydrationAccounts.length > 0 ? 0 : null,
-          )
-          const hasPositiveBalance =
-            providerBalance !== null && providerBalance > 0
-          const accountSummary = hasPositiveBalance
-            ? t("userMenu.accountsBalance", {
-                count: providerAccounts.length,
-                balance: providerBalance,
-              })
-            : t("userMenu.accountsCount", {
-                count: providerAccounts.length,
-              })
-          const shouldShowAccountSummary =
-            !isExternalWallet &&
-            (providerAccounts.length > 1 || hasPositiveBalance)
+          const walletSummary = t("userMenu.walletAccounts", {
+            wallet: wallet.title,
+            count: providerAccounts.length,
+          })
 
           return (
             <MenuSelectionItem
@@ -255,7 +174,12 @@ export const UserMenu: FC<Props> = ({
               }
             >
               <Box sx={{ gridRow: "1 / -1", flexShrink: 0 }}>
-                <ProviderLogo size="xl" wallet={wallet} />
+                <AccountWalletAvatar
+                  address={address}
+                  provider={type}
+                  size={36}
+                  badgeSize={16}
+                />
               </Box>
               <MenuItemLabel>
                 <Flex align="center" gap="s" minWidth={0}>
@@ -271,11 +195,9 @@ export const UserMenu: FC<Props> = ({
                   )}
                 </Flex>
               </MenuItemLabel>
-              {(isExternalWallet || shouldShowAccountSummary) && (
-                <MenuItemDescription>
-                  {isExternalWallet ? shortAddress : accountSummary}
-                </MenuItemDescription>
-              )}
+              <MenuItemDescription>
+                {isExternalWallet ? shortAddress : walletSummary}
+              </MenuItemDescription>
               <MenuItemAction>
                 <Flex align="center" gap="s">
                   <SHoverActions align="center">

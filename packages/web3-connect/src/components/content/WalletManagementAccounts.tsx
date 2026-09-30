@@ -10,7 +10,6 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { formatCurrency, formatNumber } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
-import { SChangeAccountButton } from "@/components/account/AccountOption.styled"
 import { ShortAddress } from "@/components/account/ShortAddress"
 import {
   SAccountModeIcon,
@@ -19,6 +18,7 @@ import {
   SAccountTileBody,
   SAccountTileCopyButton,
   SAccountTileRow,
+  SChangeAccountButton,
   SSectionLabel,
   SSectionLogo,
   STruncatingRow,

@@ -1,4 +1,4 @@
-import { Box, Flex, Image, Text } from "@galacticcouncil/ui/components"
+import { Box, Button, Flex, Image, Text } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 const roundMark = (size: number) => css`
@@ -39,6 +39,7 @@ export const SAccountTile = styled(Box)(
 
     &:hover {
       background: ${theme.details.borders};
+      border-color: ${theme.buttons.secondary.outline.outline};
     }
 
     &:focus-visible {
@@ -51,7 +52,6 @@ export const SAccountTile = styled(Box)(
       border-color: ${theme.buttons.secondary.outline.outline};
     }
 
-    /* the change-account button sits flush underneath */
     &[data-has-change-account="true"] {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
@@ -116,5 +116,24 @@ export const SSectionLabel = styled(STruncatingRow)(
 
     background: ${theme.surfaces.themeBasePalette.surfaceHigh};
     padding-bottom: ${theme.space.s};
+  `,
+)
+
+export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>(
+  ({ theme, isActive }) => css`
+    width: 100%;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    border-top-color: ${theme.details.borders};
+    border-radius: ${theme.radii.m};
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+
+    ${isActive &&
+    css`
+      background-color: ${theme.buttons.secondary.outline.fill};
+      border-color: ${theme.buttons.secondary.outline.outline};
+      border-top-color: transparent;
+    `}
   `,
 )

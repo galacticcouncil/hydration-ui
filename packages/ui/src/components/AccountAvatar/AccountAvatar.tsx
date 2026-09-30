@@ -22,8 +22,6 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
   const scaledSize = size * uiScale
 
   const avatarStyle = useAvatarStyleStore((state) => state.avatarStyle)
-  // AccountInput passes the live input value, so the address is a partial
-  // string on every keystroke — unresolvable means empty, not a fallback glyph.
   const icon = useMemo(() => accountIcon(props.address), [props.address])
 
   return (

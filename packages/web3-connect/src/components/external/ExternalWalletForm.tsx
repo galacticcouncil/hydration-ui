@@ -1,218 +1,232 @@
-import { Close } from "@galacticcouncil/ui/assets/icons"
 import {
-  AccountAvatar,
+  AccountInput,
   Box,
   Button,
-  CopyButton,
-  Flex,
   FormError,
-  Icon,
-  Separator,
+  ScrollArea,
   Stack,
   Text,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   isEvmParachainAccount,
-  isH160Address,
   safeConvertAddressH160,
   safeConvertAddressSS58,
   safeConvertSS58toH160,
-  safeConvertSS58toPublicKey,
   stringEquals,
 } from "@galacticcouncil/utils"
-import { ArrowDownToLine } from "lucide-react"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { first, pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
-import { ShortAddress } from "@/components/account/ShortAddress"
 import {
   Address,
-  useAddressStore,
+  useAddresses,
 } from "@/components/address-book/AddressBook.store"
-import { AddressBookButton } from "@/components/address-book/AddressBookButton"
+import { AddressBookEntry } from "@/components/address-book/AddressBookEntry"
+import { SScrollAreaContent } from "@/components/content/WalletManagementContent.styled"
 import { ExternalWalletFormValues } from "@/components/external/ExternalWalletForm.form"
-import {
-  SExternalAddressActionButton,
-  SExternalAddressInput,
-  SSavedExternalWalletCopyButton,
-  SSavedExternalWalletTile,
-} from "@/components/external/ExternalWalletForm.styled"
+import { useRecentExternalWallets } from "@/components/external/RecentExternalWallets.store"
 import { WalletProviderType } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import { useWeb3Connect, useWeb3Enable } from "@/hooks"
 import { toStoredAccount } from "@/utils"
-import { getWalletModeByAddress, getWalletModeIcon } from "@/utils/wallet"
+import { addressToPublicKey } from "@/utils/publicKey"
+import { getWalletModeByAddress } from "@/utils/wallet"
 import { ExternalWallet, getWallet } from "@/wallets"
 
-type ExternalWalletFormProps = {
-  readonly onAddressBookOpen: () => void
-  readonly hideSubmitAction?: boolean
+type ExternalWalletTab = "recent" | "contacts"
+
+type WatchableMode = WalletMode.Substrate | WalletMode.EVM
+
+const isWatchableMode = (mode: WalletMode | null): mode is WatchableMode =>
+  mode === WalletMode.Substrate || mode === WalletMode.EVM
+
+// Recent rows reuse the address book's name and provider when the address is
+// a known contact or wallet account.
+const toRecentEntry = (address: string, known: Address[]): Address | null => {
+  const publicKey = addressToPublicKey(address)
+  const mode = getWalletModeByAddress(address)
+  if (!publicKey || !isWatchableMode(mode)) return null
+
+  const entry = known.find((a) => stringEquals(a.publicKey, publicKey))
+
+  return {
+    publicKey,
+    address,
+    mode,
+    name: entry?.name ?? "",
+    provider: entry?.provider,
+    isCustom: entry?.isCustom,
+    savedBy: [],
+  }
 }
 
-const externalWalletPublicKey = (address: string) =>
-  isH160Address(address) ? address : safeConvertSS58toPublicKey(address)
-
-export const useExternalWalletConnection = () => {
+const useExternalWalletConnection = () => {
   const { enable } = useWeb3Enable()
   const { setAccount, toggle } = useWeb3Connect(
     useShallow(pick(["setAccount", "toggle"])),
   )
-  const { add: addAddress } = useAddressStore()
+  const addRecent = useRecentExternalWallets((state) => state.add)
   const wallet = getWallet(WalletProviderType.ExternalWallet)
-
-  const addExternalWalletAddress = useCallback(
-    (address: string) => {
-      const normalizedAddress = normalizeExternalWalletAddress(address)
-      if (!normalizedAddress) return ""
-
-      const publicKey = externalWalletPublicKey(normalizedAddress)
-      if (!publicKey) return ""
-
-      addAddress({
-        address: normalizedAddress,
-        name: "",
-        provider: WalletProviderType.ExternalWallet,
-        isCustom: true,
-      })
-
-      return normalizedAddress
-    },
-    [addAddress],
-  )
 
   const connectExternalWallet = useCallback(
     async (address: string) => {
-      const isExternalWallet = wallet instanceof ExternalWallet
+      if (!(wallet instanceof ExternalWallet)) return false
 
-      if (!isExternalWallet) return false
-
-      const normalizedAddress = addExternalWalletAddress(address)
-      if (!normalizedAddress) return false
-
-      const isAccountSet = wallet.setAccount(normalizedAddress, true)
-      if (!isAccountSet) return false
+      const normalizedAddress = normalizeExternalWalletAddress(address)
+      if (!wallet.setAccount(normalizedAddress, true)) return false
 
       await enable(WalletProviderType.ExternalWallet)
 
-      const accounts = await wallet.getAccounts()
-      const account = first(accounts)
+      const account = first(await wallet.getAccounts())
+      if (!account) return false
 
-      if (account) {
-        setAccount(toStoredAccount(account))
-        toggle()
-        return true
-      }
-
-      return false
+      addRecent(normalizedAddress)
+      setAccount(toStoredAccount(account))
+      toggle()
+      return true
     },
-    [addExternalWalletAddress, enable, setAccount, toggle, wallet],
+    [addRecent, enable, setAccount, toggle, wallet],
   )
 
-  return {
-    addExternalWalletAddress,
-    connectExternalWallet,
-  }
+  return { connectExternalWallet }
 }
 
-export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
-  onAddressBookOpen,
-  hideSubmitAction = false,
-}) => {
+export const ExternalWalletForm = () => {
   const { t } = useTranslation()
   const form = useFormContext<ExternalWalletFormValues>()
-  const addresses = useAddressStore((state) => state.addresses)
-  const removeAddress = useAddressStore((state) => state.remove)
-  const { addExternalWalletAddress, connectExternalWallet } =
-    useExternalWalletConnection()
+  const { connectExternalWallet } = useExternalWalletConnection()
+  const recentAddresses = useRecentExternalWallets((state) => state.addresses)
+  const removeRecent = useRecentExternalWallets((state) => state.remove)
+  const addresses = useAddresses()
 
-  const savedWallets = useMemo(
-    () =>
-      addresses.filter((address) => {
-        if (
-          !address.isCustom ||
-          address.provider !== WalletProviderType.ExternalWallet
-        )
-          return false
-
-        const mode = getWalletModeByAddress(address.address)
-        return mode === WalletMode.Substrate || mode === WalletMode.EVM
-      }),
+  const contacts = useMemo(
+    () => addresses.filter((address) => isWatchableMode(address.mode)),
     [addresses],
   )
-  const currentAddress = form.watch("address")
-  const normalizedCurrentAddress =
-    normalizeExternalWalletAddress(currentAddress)
-  const isCurrentAddressSaved = savedWallets.some((address) =>
-    stringEquals(address.address, normalizedCurrentAddress),
+  const recents = useMemo(
+    () =>
+      recentAddresses
+        .map((address) => toRecentEntry(address, addresses))
+        .filter((address) => address !== null),
+    [recentAddresses, addresses],
   )
-  const canSaveCurrentAddress =
-    !!currentAddress.trim() &&
-    !!normalizedCurrentAddress &&
-    form.formState.errors.address === undefined &&
-    !isCurrentAddressSaved
 
-  const saveCurrentExternalWalletAddress = async () => {
-    const isValid = await form.trigger("address")
-    if (!isValid) return
+  // Unset until the user picks a tab, so the default follows the recent list
+  // once the persisted store has hydrated.
+  const [selectedTab, setSelectedTab] = useState<ExternalWalletTab | null>(null)
+  const tab = selectedTab ?? (recents.length ? "recent" : "contacts")
 
-    const normalizedAddress = addExternalWalletAddress(currentAddress)
-    if (normalizedAddress) {
-      form.setValue("address", normalizedAddress, { shouldValidate: true })
-    }
-  }
+  const value = form.watch("address")
+  const isValid = !!value.trim() && !form.formState.errors.address
+  const { isSubmitting } = form.formState
 
-  const onSubmit = async (values: ExternalWalletFormValues) => {
-    await connectExternalWallet(values.address)
-  }
+  // Typing a partial address or name filters the list; a full valid address
+  // doesn't, so the list doesn't collapse right before submitting.
+  const query = isValid ? "" : value.trim().toLowerCase()
+  const entries = (tab === "recent" ? recents : contacts).filter(
+    (address) =>
+      !query ||
+      address.address.toLowerCase().includes(query) ||
+      address.name.toLowerCase().includes(query),
+  )
 
-  const onSavedWalletSelect = async (address: Address) => {
+  const submit = form.handleSubmit(({ address }) =>
+    connectExternalWallet(address),
+  )
+
+  const onSelect = (address: Address) => {
+    if (isSubmitting) return
     form.setValue("address", address.address, { shouldValidate: true })
-    await connectExternalWallet(address.address)
+    submit()
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <Stack gap="var(--modal-content-padding)">
+    <form onSubmit={submit} sx={{ height: "100%" }}>
+      <Stack gap="var(--modal-content-padding)" height="100%">
         <Controller
           name="address"
           control={form.control}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <Stack gap="m">
-              <ExternalWalletAddressInput
+            <Stack gap="s">
+              <AccountInput
+                variant="standalone"
                 value={value}
                 onChange={onChange}
-                onAddressBookOpen={onAddressBookOpen}
-                label={t("external.addressLabel")}
                 placeholder={t("external.addressPlaceholder")}
+                aria-label={t("external.addressLabel")}
                 isError={!!error}
-                canSave={canSaveCurrentAddress}
-                isSaved={isCurrentAddressSaved}
-                onSave={saveCurrentExternalWalletAddress}
+                trailingElement={
+                  isValid && (
+                    <Button
+                      type="submit"
+                      variant="accent"
+                      size="small"
+                      outline
+                      disabled={isSubmitting}
+                      aria-label={t("external.confirm")}
+                      sx={{ px: "base" }}
+                    >
+                      {t("external.confirm")}
+                    </Button>
+                  )
+                }
               />
               {error && <FormError>{error.message}</FormError>}
             </Stack>
           )}
         />
-        {savedWallets.length > 0 && (
-          <SavedExternalWallets
-            wallets={savedWallets}
-            onSelect={onSavedWalletSelect}
-            onRemove={(address) => removeAddress(address.publicKey)}
-          />
-        )}
-        {!hideSubmitAction && (
-          <>
-            <Separator mx="var(--modal-content-inset)" />
-            <Button type="submit" size="large" width="100%">
-              {t("external.confirm")}
-            </Button>
-          </>
-        )}
+        <Stack gap="base" flex={1} sx={{ minHeight: 0 }}>
+          <ToggleGroup
+            type="single"
+            value={tab}
+            fullWidth
+            onValueChange={(tab) => tab && setSelectedTab(tab)}
+          >
+            <ToggleGroupItem value="recent">
+              {t("external.tab.recent", { count: recents.length })}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="contacts">
+              {t("external.tab.contacts", { count: contacts.length })}
+            </ToggleGroupItem>
+          </ToggleGroup>
+          <Box flex={1} height="100%" overflow="hidden" sx={{ minHeight: 0 }}>
+            <ScrollArea>
+              <SScrollAreaContent>
+                {entries.length ? (
+                  <Stack separated>
+                    {entries.map((address) => (
+                      <AddressBookEntry
+                        key={address.publicKey}
+                        {...address}
+                        onSelect={() => onSelect(address)}
+                        onDelete={
+                          tab === "recent"
+                            ? () => removeRecent(address.address)
+                            : undefined
+                        }
+                      />
+                    ))}
+                  </Stack>
+                ) : (
+                  <Text
+                    fs="p5"
+                    color={getToken("text.low")}
+                    py="l"
+                    align="center"
+                  >
+                    {t(`external.empty.${tab}`)}
+                  </Text>
+                )}
+              </SScrollAreaContent>
+            </ScrollArea>
+          </Box>
+        </Stack>
       </Stack>
     </form>
   )
@@ -223,182 +237,3 @@ const normalizeExternalWalletAddress = (address: string) =>
   (isEvmParachainAccount(address) ? safeConvertSS58toH160(address) : "") ||
   safeConvertAddressSS58(address) ||
   address
-
-const ExternalWalletAddressInput: React.FC<{
-  readonly value: string
-  readonly onChange: (value: string) => void
-  readonly onAddressBookOpen: () => void
-  readonly label: string
-  readonly placeholder: string
-  readonly isError: boolean
-  readonly canSave: boolean
-  readonly isSaved: boolean
-  readonly onSave: () => void
-}> = ({
-  value,
-  onChange,
-  onAddressBookOpen,
-  label,
-  placeholder,
-  isError,
-  canSave,
-  isSaved,
-  onSave,
-}) => {
-  const { t } = useTranslation()
-  const hasValue = value.trim().length > 0
-
-  const handlePaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText()
-      onChange(text)
-    } catch (error) {
-      console.warn("Failed to read clipboard:", error)
-    }
-  }
-
-  return (
-    <SExternalAddressInput
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      placeholder={placeholder}
-      aria-label={label}
-      customSize="large"
-      isError={isError}
-      spellCheck={false}
-      trailingElement={
-        <Flex align="center" gap="xs" sx={{ flexShrink: 0 }}>
-          {hasValue ? (
-            <>
-              <Button
-                size="small"
-                variant="secondary"
-                disabled={!canSave && !isSaved}
-                py="s"
-                px="m"
-                height="auto"
-                sx={{ flexShrink: 0 }}
-                onClick={canSave ? onSave : undefined}
-              >
-                {isSaved
-                  ? t("external.addressSaved")
-                  : t("external.saveAddress")}
-              </Button>
-              <SExternalAddressActionButton
-                aria-label={t("external.clearAddress")}
-                onClick={() => onChange("")}
-              >
-                <Icon size="s" component={Close} />
-              </SExternalAddressActionButton>
-            </>
-          ) : (
-            <>
-              <SExternalAddressActionButton
-                aria-label={t("external.pasteAddress")}
-                onClick={handlePaste}
-              >
-                <Icon size="s" component={ArrowDownToLine} />
-              </SExternalAddressActionButton>
-              <AddressBookButton
-                sx={{ flexShrink: 0 }}
-                onClick={onAddressBookOpen}
-              />
-            </>
-          )}
-        </Flex>
-      }
-    />
-  )
-}
-
-const SavedExternalWallets: React.FC<{
-  readonly wallets: Address[]
-  readonly onSelect: (address: Address) => void
-  readonly onRemove: (address: Address) => void
-}> = ({ wallets, onSelect, onRemove }) => {
-  const { t } = useTranslation()
-
-  return (
-    <Flex direction="column" gap="base">
-      <Flex align="center">
-        <Text fs="p5" fw={500} color={getToken("text.high")}>
-          {t("external.savedWallets")}
-        </Text>
-      </Flex>
-      <Flex direction="column" gap="base">
-        {wallets.map((wallet) => (
-          <SavedExternalWalletTile
-            key={wallet.publicKey}
-            wallet={wallet}
-            onSelect={() => onSelect(wallet)}
-            onRemove={() => onRemove(wallet)}
-          />
-        ))}
-      </Flex>
-    </Flex>
-  )
-}
-
-// ponytail: inline rename dropped — blueprint used EditableText (packages/ui,
-// out of scope per Non-Goals). Names stay editable via the address book modal.
-const SavedExternalWalletTile: React.FC<{
-  readonly wallet: Address
-  readonly onSelect: () => void
-  readonly onRemove: () => void
-}> = ({ wallet, onSelect, onRemove }) => {
-  const { t } = useTranslation()
-  const mode = getWalletModeByAddress(wallet.address)
-  const modeIcon = mode ? getWalletModeIcon(mode) : null
-
-  return (
-    <SSavedExternalWalletTile
-      align="center"
-      gap="base"
-      role="button"
-      tabIndex={0}
-      onClick={onSelect}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return
-
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault()
-          onSelect()
-        }
-      }}
-    >
-      <Box sx={{ flexShrink: 0 }}>
-        <AccountAvatar address={wallet.address} size={32} />
-      </Box>
-      <Flex direction="column" gap="xs" sx={{ minWidth: 0, flex: 1 }}>
-        <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
-          {modeIcon && (
-            <img sx={{ size: "xs", flexShrink: 0 }} src={modeIcon} />
-          )}
-          <Text
-            fs="p5"
-            color={getToken("text.medium")}
-            font="mono"
-            truncate={320}
-          >
-            <ShortAddress address={wallet.address} length={10} />
-          </Text>
-        </Flex>
-      </Flex>
-      <Flex align="center" gap="base">
-        <SSavedExternalWalletCopyButton
-          asChild
-          onClick={(event) => event.stopPropagation()}
-        >
-          <CopyButton
-            aria-label={t("addressBook.copyAddress")}
-            text={wallet.address}
-          />
-        </SSavedExternalWalletCopyButton>
-        <AccountDeleteButton
-          aria-label={t("external.removeAddress")}
-          onClick={onRemove}
-        />
-      </Flex>
-    </SSavedExternalWalletTile>
-  )
-}
