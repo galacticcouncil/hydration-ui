@@ -102,7 +102,6 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                     symbol: shareSymbol,
                     icon: <AssetLogo id={assetId} />,
                   }}
-                  isReadOnly
                   value={field.value}
                   onChange={field.onChange}
                   displayValue={t("common:currency", { value: assetOut })}
