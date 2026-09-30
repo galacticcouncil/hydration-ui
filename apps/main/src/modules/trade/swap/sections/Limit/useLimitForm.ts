@@ -9,11 +9,13 @@ import { useAccountBalances } from "@/api/balances"
 import { useTradeForm } from "@/modules/trade/swap/lib/useTradeForm"
 import { useAssets } from "@/providers/assetsProvider"
 import {
+  maxBalanceError,
   positive,
   positiveOptional,
   requiredObject,
   useValidateFormMaxBalance,
   validateAssetSellOnly,
+  validateMaxBalance,
 } from "@/utils/validators"
 
 export const EXPIRY_OPTIONS = ["15min", "30min", "1h", "1d", "open"] as const
@@ -44,7 +46,10 @@ const schemaBase = z.object({
 
 export type LimitFormValues = z.infer<typeof schemaBase>
 
-const useSchema = () => {
+const useSchema = (
+  maxSellBalance: string,
+  isMaxSellBalanceLoading: boolean,
+) => {
   const { account } = useAccount()
   const refineMaxBalance = useValidateFormMaxBalance()
 
@@ -52,17 +57,38 @@ const useSchema = () => {
     return schemaBase
   }
 
-  return schemaBase.check(
-    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
-  )
+  return schemaBase
+    .check(
+      refineMaxBalance("sellAmount", (form) => [
+        form.sellAsset,
+        form.sellAmount,
+      ]),
+    )
+    .refine(
+      // The fee is taken before the order reserves the sell amount
+      (form) =>
+        isMaxSellBalanceLoading ||
+        validateMaxBalance(maxSellBalance, form.sellAmount),
+      {
+        error: maxBalanceError,
+        path: ["sellAmount"],
+      },
+    )
 }
 
 type Args = {
   readonly assetIn: string
   readonly assetOut: string
+  readonly maxSellBalance: string
+  readonly isMaxSellBalanceLoading: boolean
 }
 
-export const useLimitForm = ({ assetIn, assetOut }: Args) => {
+export const useLimitForm = ({
+  assetIn,
+  assetOut,
+  maxSellBalance,
+  isMaxSellBalanceLoading,
+}: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
   const { isBalanceLoading } = useAccountBalances()
@@ -82,10 +108,20 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
   const form = useTradeForm<LimitFormValues>({
     defaultValues,
     mode: "onChange",
-    resolver: standardSchemaResolver(useSchema()),
+    resolver: standardSchemaResolver(
+      useSchema(maxSellBalance, isMaxSellBalanceLoading),
+    ),
   })
 
   const { trigger, getValues } = form
+
+  useEffect(() => {
+    if (isMaxSellBalanceLoading || !getValues("sellAmount")) {
+      return
+    }
+
+    void trigger("sellAmount")
+  }, [maxSellBalance, isMaxSellBalanceLoading, trigger, getValues])
 
   useEffect(() => {
     const { sellAsset, sellAmount } = getValues()

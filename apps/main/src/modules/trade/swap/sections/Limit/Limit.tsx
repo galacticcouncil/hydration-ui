@@ -19,20 +19,36 @@ import {
 } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { useLimitHealthFactor } from "@/modules/trade/swap/sections/Limit/useLimitHealthFactor"
 import { useSubmitLimitOrder } from "@/modules/trade/swap/sections/Limit/useSubmitLimitOrder"
+import { useMaxSellAmount } from "@/modules/trade/swap/sections/XcSwap/hooks/useMaxSellAmount"
 
 export const Limit: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
-  const form = useLimitForm({ assetIn, assetOut })
+  // Leaves room for the fee when the sell asset is the fee payment asset
+  const {
+    maxSwapSellBalance: maxSellBalance,
+    isMaxSwapSellBalanceLoading: isMaxSellBalanceLoading,
+  } = useMaxSellAmount({ assetIn, assetOut })
+
+  const form = useLimitForm({
+    assetIn,
+    assetOut,
+    maxSellBalance,
+    isMaxSellBalanceLoading,
+  })
 
   return (
     <FormProvider {...form}>
-      <LimitForm />
+      <LimitForm maxSellBalance={maxSellBalance} />
     </FormProvider>
   )
 }
 
-const LimitForm: FC = () => {
+type LimitFormProps = {
+  readonly maxSellBalance: string
+}
+
+const LimitForm: FC<LimitFormProps> = ({ maxSellBalance }) => {
   const { t } = useTranslation(["trade", "common"])
   const form = useFormContext<LimitFormValues>()
   const submitLimitOrder = useSubmitLimitOrder()
@@ -83,7 +99,7 @@ const LimitForm: FC = () => {
       onSubmit={form.handleSubmit((values) => submitLimitOrder.mutate(values))}
     >
       <TradeFormShell
-        fields={<LimitFields {...cascade} />}
+        fields={<LimitFields {...cascade} maxSellBalance={maxSellBalance} />}
         submit={
           <TradeFormSubmit
             isLoading={

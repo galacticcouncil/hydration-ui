@@ -15,6 +15,7 @@ type Props = {
   readonly onBuyAmountChange: () => void
   readonly onLockToggle: () => void
   readonly onAssetChange: (next: Partial<LimitFormValues>) => void
+  readonly maxSellBalance: string
 }
 
 export const LimitFields: FC<Props> = ({
@@ -22,6 +23,7 @@ export const LimitFields: FC<Props> = ({
   onBuyAmountChange,
   onLockToggle,
   onAssetChange,
+  maxSellBalance,
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
@@ -43,6 +45,7 @@ export const LimitFields: FC<Props> = ({
           amountFieldName="sellAmount"
           label={t("sell")}
           assets={tradable}
+          balance={{ max: maxSellBalance }}
           onLockToggle={sellAmount ? onLockToggle : undefined}
           isLocked={isLocked}
           lockLabel={t("trade:limit.lockSell.aria")}
