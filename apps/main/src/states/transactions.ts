@@ -118,8 +118,17 @@ type TransactionMetaCommon = {
   activity?: ActivityType
 }
 
+export type TransactionIntentMeta = {
+  id?: string
+  assetIn: string
+  assetOut: string
+  amountIn: string
+  minAmountOut: string
+}
+
 export type TransactionOnchainMeta = TransactionMetaCommon & {
   type: TransactionType.Onchain
+  intent?: TransactionIntentMeta
 }
 
 export type TransactionXcmMeta = TransactionMetaCommon & {

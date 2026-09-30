@@ -1,3 +1,4 @@
+import { useIntentToasts } from "@/modules/transactions/hooks/useIntentToasts"
 import { useProcessTransactionToasts } from "@/modules/transactions/hooks/useProcessTransactionToasts"
 import { ReviewMultiTransaction } from "@/modules/transactions/review/ReviewMultiTransaction"
 import { ReviewTransaction } from "@/modules/transactions/review/ReviewTransaction"
@@ -12,6 +13,7 @@ export const TransactionManager = () => {
   const transactionToasts = toasts.filter(isTransactionToast)
 
   useProcessTransactionToasts(transactionToasts)
+  useIntentToasts(transactionToasts)
 
   return (
     <>

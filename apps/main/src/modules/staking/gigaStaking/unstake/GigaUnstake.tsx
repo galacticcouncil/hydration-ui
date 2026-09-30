@@ -1,7 +1,7 @@
 import {
   Alert,
   Box,
-  Button,
+  LoadingButton,
   Separator,
   Summary,
   SummaryRow,
@@ -40,6 +40,7 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   const {
     form,
     onSubmit,
+    isSubmitting,
     maxUnstake,
     displayAmount,
     amountInHdx,
@@ -56,18 +57,17 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
-        <Box px="l" asChild>
+        <Box p="l">
           <AssetSelectFormField
             assetFieldName="asset"
             amountFieldName="amount"
             label={t("gigaStaking.gigaUnstake.input.label")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={maxUnstake}
+            balance={{ value: maxUnstake, label: t("common:available") }}
             displayValue={t("common:currency", {
               value: displayAmount,
             })}
-            balanceLabel={t("common:available")}
           />
         </Box>
 
@@ -107,14 +107,15 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
         )}
 
         <Box p="l">
-          <Button
+          <LoadingButton
+            isLoading={isSubmitting}
             type="submit"
             size="large"
             width="100%"
             disabled={!form.formState.isValid}
           >
             {t("gigaStaking.gigaUnstake.cta")}
-          </Button>
+          </LoadingButton>
         </Box>
       </form>
     </FormProvider>

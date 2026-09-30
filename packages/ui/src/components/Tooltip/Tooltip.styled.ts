@@ -2,6 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Trigger } from "@radix-ui/react-tooltip"
 
+import { floatingScaleAnimation } from "@/styles/animations"
 import { createVariants } from "@/utils"
 
 export type TooltipSize = "small" | "medium" | "large"
@@ -46,44 +47,7 @@ export const SContent = styled(Content, {
 
     background: ${theme.details.tooltips};
 
-    animation-duration: 150ms;
-    animation-timing-function: ${theme.easings.outExpo};
-
-    &[data-state$="open"] {
-      &[data-side="top"] {
-        animation-name: ${theme.animations.scaleInTop};
-      }
-
-      &[data-side="bottom"] {
-        animation-name: ${theme.animations.scaleInBottom};
-      }
-
-      &[data-side="left"] {
-        animation-name: ${theme.animations.scaleInLeft};
-      }
-
-      &[data-side="right"] {
-        animation-name: ${theme.animations.scaleInRight};
-      }
-    }
-
-    &[data-state="closed"] {
-      &[data-side="top"] {
-        animation-name: ${theme.animations.scaleOutTop};
-      }
-
-      &[data-side="bottom"] {
-        animation-name: ${theme.animations.scaleOutBottom};
-      }
-
-      &[data-side="left"] {
-        animation-name: ${theme.animations.scaleOutLeft};
-      }
-
-      &[data-side="right"] {
-        animation-name: ${theme.animations.scaleOutRight};
-      }
-    }
+    ${floatingScaleAnimation(theme)};
   `,
   sizeVariants(size),
 ])

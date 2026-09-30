@@ -1,5 +1,6 @@
 import {
   Alert,
+  Box,
   Button,
   Stack,
   Summary,
@@ -119,16 +120,17 @@ export const AddVaultLiquidity = ({
       <FormProvider {...form}>
         <form autoComplete="off" onSubmit={form.handleSubmit(submit)}>
           <ModalBody>
-            <AssetSelectFormField<TAddVaultLiquidityFormValues>
-              label={t("liquidity:liquidity.createPool.modal.assetA")}
-              assetFieldName="assetA"
-              amountFieldName="amountA"
-              assets={[]}
-              maxBalance={getMaxBalance(assetA)}
-              disabledAssetSelector
-              onAmountChange={() => form.setValue("lastUpdated", "assetA")}
-              sx={{ pt: 0 }}
-            />
+            <Box pb="l">
+              <AssetSelectFormField<TAddVaultLiquidityFormValues>
+                label={t("liquidity:liquidity.createPool.modal.assetA")}
+                assetFieldName="assetA"
+                amountFieldName="amountA"
+                assets={[]}
+                balance={{ value: getMaxBalance(assetA) }}
+                disabledAssetSelector
+                onAmountChange={() => form.setValue("lastUpdated", "assetA")}
+              />
+            </Box>
 
             <AssetSwitcher
               assetInId={assetA.id}
@@ -137,15 +139,17 @@ export const AddVaultLiquidity = ({
               isFallbackPriceLoading={isPairLoading}
             />
 
-            <AssetSelectFormField<TAddVaultLiquidityFormValues>
-              label={t("liquidity:liquidity.createPool.modal.assetB")}
-              assetFieldName="assetB"
-              amountFieldName="amountB"
-              assets={[]}
-              maxBalance={getMaxBalance(assetB)}
-              disabledAssetSelector
-              onAmountChange={() => form.setValue("lastUpdated", "assetB")}
-            />
+            <Box py="l" width="100%">
+              <AssetSelectFormField<TAddVaultLiquidityFormValues>
+                label={t("liquidity:liquidity.createPool.modal.assetB")}
+                assetFieldName="assetB"
+                amountFieldName="amountB"
+                assets={[]}
+                balance={{ value: getMaxBalance(assetB) }}
+                disabledAssetSelector
+                onAmountChange={() => form.setValue("lastUpdated", "assetB")}
+              />
+            </Box>
 
             <ModalContentDivider />
 

@@ -139,7 +139,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
             address: poolReserve.underlyingAsset,
           },
         ]}
-        disabled={withdrawTxState.loading}
+        isDisabled={withdrawTxState.loading}
         maxButtonBalance={maxAmountToWithdrawWithFee}
         balanceLabel="Withdrawable balance"
         amountError={

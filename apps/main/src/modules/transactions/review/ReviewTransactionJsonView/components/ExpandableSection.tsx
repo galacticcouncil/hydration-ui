@@ -16,16 +16,20 @@ export type ExpandableSectionProps = {
   title: string
   children: React.ReactNode
   maxContentHeight?: ThemeUICSSProperties["maxHeight"]
+  defaultExpanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
 }
 
 export const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   title,
   children,
   maxContentHeight = 120,
+  defaultExpanded = true,
+  onExpandedChange,
 }) => {
   const { t } = useTranslation("common")
 
-  const [isSectionExpanded, setIsSectionExpanded] = useState(true)
+  const [isSectionExpanded, setIsSectionExpanded] = useState(defaultExpanded)
   const [isContentExpanded, setIsContentExpanded] = useState(
     maxContentHeight === "100%",
   )
@@ -38,7 +42,13 @@ export const ExpandableSection: React.FC<ExpandableSectionProps> = ({
 
   return (
     <Box position="relative" px="l" py="s">
-      <ButtonTransparent onClick={() => setIsSectionExpanded((prev) => !prev)}>
+      <ButtonTransparent
+        onClick={() => {
+          const nextExpanded = !isSectionExpanded
+          setIsSectionExpanded(nextExpanded)
+          onExpandedChange?.(nextExpanded)
+        }}
+      >
         <Text
           as="span"
           color={getToken("buttons.primary.medium.rest")}

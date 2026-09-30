@@ -14,11 +14,11 @@ export const GigaStakeSkeleton = () => {
 
   return (
     <>
-      <Box px="l">
+      <Box p="l">
         <AssetSelect
           label={t("gigaStaking.gigaStake.input.label")}
-          disabled
-          loading
+          isDisabled
+          isLoading
           assets={[]}
           selectedAsset={undefined}
         />

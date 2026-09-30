@@ -12,9 +12,9 @@ import {
   TradeType,
 } from "@/api/trade"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
-import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { getQuoteFormUpdate } from "@/modules/trade/swap/sections/XcSwap/lib/getQuoteFormUpdate"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isTwapEnabled"
 import { isXcDestAsset } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import {
   getXcSwapAmountIn,
@@ -23,7 +23,10 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapQuoteQuery"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
+
+const XC_QUOTE_REFETCH_MS = 15_000
 
 export type XcSwapQuote =
   | { kind: "xc"; swap: XcSwapTrade }
@@ -50,6 +53,7 @@ export const useXcSwapQuote = ({
   swapSlippage,
 }: UseXcSwapQuoteParams) => {
   const { isReady } = rpc
+  const isIceEnabled = useIsIceEnabled()
 
   const [
     sellAsset,
@@ -92,7 +96,6 @@ export const useXcSwapQuote = ({
     data: xcTrade,
     isLoading: isXcQuoteLoading,
     isFetching: isXcQuoteFetching,
-    isPlaceholderData: isXcPlaceholderData,
     error: xcQuoteError,
   } = useQuery({
     ...xcSwapQuoteQuery(xcSwap, {
@@ -105,6 +108,7 @@ export const useXcSwapQuote = ({
       originAssetMap,
     }),
     enabled: xcQuoteEnabled,
+    refetchInterval: XC_QUOTE_REFETCH_MS,
     placeholderData: amountIn ? keepPreviousData : undefined,
   })
 
@@ -159,6 +163,7 @@ export const useXcSwapQuote = ({
         assetOut: omnipoolAssetOut,
         amountIn: twapBudget,
       },
+      isIceEnabled,
       twapEnabled,
     ),
     placeholderData: twapBudget ? keepPreviousData : undefined,
@@ -212,7 +217,7 @@ export const useXcSwapQuote = ({
   const isQuoteRefreshing =
     !isInputSynced ||
     (isCrossChain
-      ? isXcQuoteFetching && isXcPlaceholderData
+      ? isXcQuoteFetching
       : isSingleTrade
         ? isOmnipoolQuoteFetching && isOmnipoolPlaceholderData
         : (isOmnipoolQuoteFetching && isOmnipoolPlaceholderData) ||
@@ -224,6 +229,8 @@ export const useXcSwapQuote = ({
   const quoteError = isCrossChain ? xcQuoteError : omnipoolQuoteError
 
   useEffect(() => {
+    if (isQuoteRefreshing) return
+
     const { field, value } = getQuoteFormUpdate({
       quote,
       type,
@@ -235,7 +242,7 @@ export const useXcSwapQuote = ({
     if (form.getValues(field) !== value) {
       form.setValue(field, value, { shouldValidate: true })
     }
-  }, [quote, buyAsset, sellAsset, form, isSingleTrade, type])
+  }, [quote, buyAsset, sellAsset, form, isSingleTrade, type, isQuoteRefreshing])
 
   return { quote, isQuoteLoading, isTwapLoading, isQuoteRefreshing, quoteError }
 }

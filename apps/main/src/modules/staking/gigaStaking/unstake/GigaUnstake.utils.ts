@@ -272,6 +272,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   return {
     form,
     meta,
+    isSubmitting: mutation.isPending || claimMutation.isPending,
     maxUnstake,
     amountInHdx,
     displayAmount,

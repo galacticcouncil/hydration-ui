@@ -11,10 +11,12 @@ import {
   toDcaScheduleStatus,
 } from "@/modules/trade/orders/lib/apiVocabulary"
 import {
-  DcaScheduleStatus,
-  OrderData,
+  DcaOrderData,
   OrderKind,
-} from "@/modules/trade/orders/lib/types"
+  toOrderStatusFromSchedule,
+} from "@/modules/trade/orders/lib/orderData"
+import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
+import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -23,10 +25,12 @@ export const useHistoryData = (
   assetIds: Array<string>,
   page: number,
   pageSize: number,
+  enabled = true,
 ) => {
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
   const owner = safeConvertSS58toPublicKey(accountAddress)
+  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
 
   const { data, isLoading } = useQuery({
     ...dcaSchedulesQuery(neckworkClient, {
@@ -36,19 +40,27 @@ export const useHistoryData = (
       page,
       pageSize,
     }),
+    enabled: enabled && neckworkEnabled && !!owner,
     placeholderData: keepPreviousData,
   })
 
   const { getAssetWithFallback } = useAssets()
 
   const totalCount = data?.totalCount ?? 0
-  const orders = useMemo<Array<OrderData>>(
+  const orders = useMemo<Array<DcaOrderData>>(
     () =>
-      data?.items.map<OrderData>((schedule) => {
+      data?.items.map<DcaOrderData>((schedule) => {
         const from = getAssetWithFallback(schedule.assetIn)
         const to = getAssetWithFallback(schedule.assetOut)
 
-        const fromAmountBudget = scaleHuman(schedule.budget, from.decimals)
+        // A pre-router schedule (id < 2354) never recorded its terms on chain,
+        // so the API reports budget, singleTradeAmount, isRollingBudget and
+        // periodBlocks as null. That is "not recorded", never zero — a schedule
+        // that really set no budget reports "0" with isRollingBudget: true.
+        const fromAmountBudget =
+          schedule.budget === null
+            ? null
+            : scaleHuman(schedule.budget, from.decimals)
         const fromAmountExecuted = scaleHuman(
           schedule.executedAmountIn,
           from.decimals,
@@ -60,19 +72,26 @@ export const useHistoryData = (
           from,
           fromAmountBudget,
           fromAmountExecuted,
-          fromAmountRemaining: Big(fromAmountBudget)
-            .minus(fromAmountExecuted)
-            .toString(),
-          singleTradeSize: scaleHuman(
-            schedule.singleTradeAmount,
-            from.decimals,
-          ),
+          fromAmountRemaining:
+            fromAmountBudget === null
+              ? null
+              : Big(fromAmountBudget).minus(fromAmountExecuted).toString(),
+          singleTradeSize:
+            schedule.singleTradeAmount === null
+              ? null
+              : scaleHuman(schedule.singleTradeAmount, from.decimals),
           to,
           toAmountExecuted: scaleHuman(schedule.executedAmountOut, to.decimals),
-          status: toDcaScheduleStatus(schedule.status),
-          date: new Date(schedule.lastEventAt ?? schedule.createdAt),
-          blocksPeriod: String(schedule.periodBlocks),
-          isOpenBudget: schedule.isRollingBudget,
+          status: toOrderStatusFromSchedule(
+            toDcaScheduleStatus(schedule.status),
+          ),
+          timestamp: schedule.lastEventAt ?? schedule.createdAt,
+          blocksPeriod:
+            schedule.periodBlocks === null
+              ? null
+              : String(schedule.periodBlocks),
+          isOpenBudget: schedule.isRollingBudget ?? false,
+          limitPrice: null,
         }
       }) ?? [],
     [data, getAssetWithFallback],

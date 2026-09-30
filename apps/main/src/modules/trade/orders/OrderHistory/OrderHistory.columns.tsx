@@ -25,7 +25,12 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData } from "@/modules/trade/orders/lib/types"
+import {
+  isDcaScheduleOrder,
+  isIntentOrder,
+  OrderData,
+} from "@/modules/trade/orders/lib/orderData"
+import { OrderKind } from "@/modules/trade/orders/lib/types"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -41,9 +46,9 @@ export const useOrderHistoryColumns = () => {
 
         return (
           <SwapAmount
-            fromAmount={fromAmountExecuted ?? "0"}
+            fromAmount={fromAmountExecuted}
             from={from}
-            toAmount={toAmountExecuted ?? "0"}
+            toAmount={toAmountExecuted}
             to={to}
             showLogo
           />
@@ -64,14 +69,25 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const { kind, from, to, fromAmountExecuted, toAmountExecuted } =
+          row.original
 
         const price =
           toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
             ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
             : null
 
-        return <SwapPrice from={from} to={to} price={price} />
+        return (
+          <SwapPrice
+            from={from}
+            to={to}
+            price={price}
+            defaultInverted={
+              kind === OrderKind.Limit ||
+              ("limitPrice" in row.original && !!row.original.limitPrice)
+            }
+          />
+        )
       },
     })
 
@@ -83,7 +99,13 @@ export const useOrderHistoryColumns = () => {
       cell: ({ row }) => {
         return (
           <Flex justify="center">
-            <SwapType type={row.original.kind} />
+            <SwapType
+              type={row.original.kind}
+              isLimit={
+                "limitPrice" in row.original && !!row.original.limitPrice
+              }
+              isLegacyDca={isDcaScheduleOrder(row.original)}
+            />
           </Flex>
         )
       },
@@ -98,9 +120,9 @@ export const useOrderHistoryColumns = () => {
         row.original.status && (
           <Flex direction="column" gap="xs">
             <DcaOrderStatus status={row.original.status} />
-            {row.original.date && (
+            {row.original.timestamp && (
               <DateText
-                date={row.original.date}
+                date={new Date(row.original.timestamp)}
                 fw={500}
                 fs="p6"
                 color={getToken("text.medium")}
@@ -113,27 +135,43 @@ export const useOrderHistoryColumns = () => {
     const actionColumn = columnHelper.display({
       id: "actions",
       size: 50,
-      cell: ({ row }) => (
-        <Flex align="center" justify="end" gap="base">
-          <Tooltip text={t("openInExplorer")} size="small" asChild side="top">
-            <Button
-              sx={{ p: "base" }}
-              variant="muted"
-              outline
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-              asChild
-            >
-              <ExternalLink
-                href={neckwork.activityDca(row.original.scheduleId)}
+      cell: ({ row }) => {
+        const order = row.original
+
+        // isDcaScheduleOrder first: a merged row answers yes to both guards.
+        const href = isDcaScheduleOrder(order)
+          ? neckwork.activityDca(order.scheduleId)
+          : isIntentOrder(order)
+            ? neckwork.intent(order.intentId)
+            : null
+
+        return (
+          href && (
+            <Flex align="center" justify="end" gap="base">
+              <Tooltip
+                text={t("openInExplorer")}
+                size="small"
+                asChild
+                side="top"
               >
-                <Icon component={SquareArrowOutUpRight} size="s" />
-              </ExternalLink>
-            </Button>
-          </Tooltip>
-        </Flex>
-      ),
+                <Button
+                  sx={{ p: "base" }}
+                  variant="muted"
+                  outline
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  asChild
+                >
+                  <ExternalLink href={href}>
+                    <Icon component={SquareArrowOutUpRight} size="s" />
+                  </ExternalLink>
+                </Button>
+              </Tooltip>
+            </Flex>
+          )
+        )
+      },
     })
 
     const fromToColumnMobile = columnHelper.display({

@@ -1,14 +1,17 @@
-import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { dcaOrderQuery, dcaTxQuery } from "@/api/trade"
+import { dcaOrderQuery } from "@/api/trade"
+import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import {
   DcaFormValues,
   DcaOrdersMode,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { validateDcaOrder } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useIsIceEnabled } from "@/states/intents"
 import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
@@ -21,12 +24,13 @@ import { scaleHuman } from "@/utils/formatting"
 export const useSubmitDcaOrder = () => {
   const { t } = useTranslation(["common", "trade"])
 
-  const rpc = useRpcProvider()
   const { account } = useAccount()
-  const address = account?.address
+  const rpc = useRpcProvider()
+  const { sdk } = rpc
+  const isIceEnabled = useIsIceEnabled()
 
   const {
-    dca: { slippage, maxRetries },
+    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
@@ -34,27 +38,32 @@ export const useSubmitDcaOrder = () => {
 
   return useMutation({
     mutationFn: async (values: DcaFormValues) => {
-      const { sellAsset, buyAsset, sellAmount, orders } = values
+      const {
+        sellAsset,
+        buyAsset,
+        sellAmount,
+        orders,
+        limitEnabled,
+        limitPrice,
+      } = values
 
+      if (!account) throw new Error("Account not connected")
       if (!sellAsset) throw new Error("Invalid sell asset")
       if (!buyAsset) throw new Error("Invalid buy asset")
-      if (!address) throw new Error("No account address")
+      if (limitEnabled && !isIceEnabled) {
+        throw new Error("Limit price requires intents")
+      }
 
-      const orderQuery = dcaOrderQuery(rpc, values)
-      const order = await rpc.queryClient.fetchQuery(orderQuery)
+      const order = await rpc.queryClient.ensureQueryData(
+        dcaOrderQuery(rpc, values),
+      )
 
       if (!order) throw new Error("Failed to build DCA order")
-
-      const orderTx = await rpc.queryClient.fetchQuery(
-        dcaTxQuery(
-          rpc,
-          order,
-          orderQuery.queryKey,
-          address,
-          slippage,
-          maxRetries,
-        ),
-      )
+      if (
+        validateDcaOrder(order, values.duration, twapSlippage).errors.length
+      ) {
+        throw new Error("DCA order failed validation")
+      }
 
       const sellDecimals = sellAsset.decimals
       const sellSymbol = sellAsset.symbol
@@ -62,6 +71,45 @@ export const useSubmitDcaOrder = () => {
       const duration = getTimeFrameMillis(values.duration)
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
       const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+      const budget = isOpenBudget ? "openBudget" : "limitedBudget"
+
+      const minAmountOut =
+        limitEnabled && limitPrice && Big(limitPrice).gt(0)
+          ? BigInt(
+              Big(order.tradeAmountIn.toString())
+                .div(Big(10).pow(sellDecimals))
+                .times(limitPrice)
+                .times(Big(10).pow(buyAsset.decimals))
+                .toFixed(0),
+            )
+          : undefined
+
+      const iceOrder =
+        minAmountOut !== undefined
+          ? {
+              ...order,
+              assetOutEd:
+                minAmountOut > order.assetOutEd
+                  ? minAmountOut
+                  : order.assetOutEd,
+            }
+          : order
+
+      let tx
+      if (isIceEnabled) {
+        tx = await sdk.tx
+          .intentOrder(iceOrder)
+          .withBeneficiary(account.address)
+          .withSlippage(twapSlippage)
+          .build()
+      } else {
+        tx = await sdk.tx
+          .order(order)
+          .withBeneficiary(account.address)
+          .withSlippage(twapSlippage)
+          .withMaxRetries(twapMaxRetries)
+          .build()
+      }
 
       const params = {
         amountIn: t("currency", {
@@ -78,26 +126,23 @@ export const useSubmitDcaOrder = () => {
 
       return createTransaction(
         {
-          tx: orderTx,
-          toasts: {
-            submitted: t(
-              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
-              params,
-            ),
-            success: t(
-              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
-              params,
-            ),
-            error: t(
-              `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
-              params,
-            ),
-          },
+          tx: tx.get(),
+          toasts: isIceEnabled
+            ? {
+                submitted: t(`trade:intent.dca.${budget}.loading`, params),
+                success: t(`trade:intent.dca.${budget}.placed`, params),
+                error: t(`trade:intent.dca.${budget}.error`, params),
+              }
+            : {
+                submitted: t(`trade:dca.${budget}.tx.loading`, params),
+                success: t(`trade:dca.${budget}.tx.success`, params),
+                error: t(`trade:dca.${budget}.tx.error`, params),
+              },
         },
         {
-          // arm the indexer sync for the first execution rather than the block
-          // the schedule landed in, so the enrichment has an amount to report
           onSuccess: (event) => {
+            if (isIceEnabled || rpc.isFork) return
+
             const blockHeight = getTxResultBlockHeight(event)
             if (blockHeight === null) return
 

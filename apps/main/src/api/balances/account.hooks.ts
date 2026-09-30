@@ -11,7 +11,7 @@ import {
   useAccountBalanceFilter,
 } from "@/api/balances/account.queries"
 import {
-  Erc20BalanceSnapshot,
+  createErc20BalanceSnapshot,
   syncErc20BalanceSnapshot,
   withMaxWithdraw,
 } from "@/api/balances/account.utils"
@@ -261,10 +261,10 @@ const useErc20MaxWithdrawSync = (
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
   const { getErc20AToken } = useAssets()
-  const snapshotRef = useRef<Erc20BalanceSnapshot>(new Map())
+  const snapshotRef = useRef(createErc20BalanceSnapshot())
 
   useEffect(() => {
-    snapshotRef.current.clear()
+    snapshotRef.current = createErc20BalanceSnapshot()
   }, [address])
 
   useEffect(() => {
@@ -277,7 +277,10 @@ const useErc20MaxWithdrawSync = (
     )
 
     if (shouldSync) {
-      void queryClient.fetchQuery(maxWithdrawAllQuery(rpc, address))
+      void queryClient.invalidateQueries(
+        { queryKey: maxWithdrawAllQuery(rpc, address).queryKey },
+        { cancelRefetch: false },
+      )
     }
   }, [address, balances, getErc20AToken, queryClient, rpc])
 }

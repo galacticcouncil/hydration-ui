@@ -5,6 +5,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 
 import { useFormattedHealthFactor } from "@/hooks"
+import { MAX_DISPLAY_HF } from "@/ui-config/misc"
 
 export type HealthFactorNumberProps = {
   value: string
@@ -12,7 +13,7 @@ export type HealthFactorNumberProps = {
   decimals?: number
 }
 
-export const MAX_DISPLAY_HF = 1000
+export { MAX_DISPLAY_HF }
 
 export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   value,

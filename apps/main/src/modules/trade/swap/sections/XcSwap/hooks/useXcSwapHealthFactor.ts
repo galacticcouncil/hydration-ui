@@ -28,10 +28,9 @@ export const useXcSwapHealthFactor = ({
   const sellAmount = form.watch("sellAmount")
   const buyAmount = form.watch("buyAmount")
 
-  const [debouncedAmountIn] = useDebouncedValue(sellAmount)
-  const [debouncedAmountOut] = useDebouncedValue(buyAmount)
+  const [debouncedAmountIn, isAmountInSynced] = useDebouncedValue(sellAmount)
+  const [debouncedAmountOut, isAmountOutSynced] = useDebouncedValue(buyAmount)
 
-  // OnChain only: resolve the Hydration buy asset (CrossChain has no Aave dest)
   const healthFactorToAsset =
     !isCrossChain && buyAsset?.id !== undefined
       ? (getAsset(String(buyAsset.id)) ?? null)
@@ -47,5 +46,9 @@ export const useXcSwapHealthFactor = ({
     }),
   )
 
-  return { healthFactor, isHealthFactorLoading }
+  return {
+    healthFactor,
+    isHealthFactorLoading:
+      isHealthFactorLoading || !isAmountInSynced || !isAmountOutSynced,
+  }
 }
