@@ -1,5 +1,6 @@
 import React, { FC, ReactNode, Ref, useId } from "react"
 
+import { Box } from "@/components/Box"
 import { Label } from "@/components/Label"
 import { getToken } from "@/utils"
 
@@ -65,7 +66,7 @@ export const Input: FC<InputProps> = ({
       className={className}
       sx={{ width }}
     >
-      {leadingElement}
+      {leadingElement && <Box ml="-m">{leadingElement}</Box>}
       {IconStart && <IconStart />}
       <SInput
         ref={ref}
@@ -86,7 +87,7 @@ export const Input: FC<InputProps> = ({
         </Label>
       )}
       {IconEnd && <IconEnd />}
-      {trailingElement}
+      {trailingElement && <Box mr="-m">{trailingElement}</Box>}
     </SInputContainer>
   )
 }

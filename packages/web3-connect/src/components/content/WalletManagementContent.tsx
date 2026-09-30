@@ -32,7 +32,6 @@ import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
-import { AddressBookModal } from "@/components/address-book"
 import {
   WalletAccount,
   WalletAccountSection,
@@ -66,10 +65,7 @@ import {
   WalletChainSelectState,
   WalletConnectionState,
 } from "@/components/content/WalletManagementStates"
-import {
-  ExternalWalletForm,
-  useExternalWalletConnection,
-} from "@/components/external/ExternalWalletForm"
+import { ExternalWalletForm } from "@/components/external/ExternalWalletForm"
 import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.form"
 import { MultisigConfigList } from "@/components/multisig/MultisigConfigList"
 import { MultisigSetupPanel } from "@/components/multisig/MultisigSetupPanel"
@@ -164,9 +160,7 @@ export const WalletManagementContent = () => {
   const [walletSearch, setWalletSearch] = useState("")
   const [accountSearch, setAccountSearch] = useState("")
   const [isMoreOpen, setIsMoreOpen] = useState(false)
-  const [isAddressBookOpen, setIsAddressBookOpen] = useState(false)
   const externalWalletForm = useExternalWalletForm()
-  const { connectExternalWallet } = useExternalWalletConnection()
   const showExternalWallet = !meta?.hideExternalWallet
   const showMultisig =
     mode === WalletMode.Default ||
@@ -491,25 +485,6 @@ export const WalletManagementContent = () => {
     )
   }
 
-  if (isAddressBookOpen) {
-    return (
-      <AddressBookModal
-        whitelist={[WalletMode.Substrate, WalletMode.EVM]}
-        onBack={() => setIsAddressBookOpen(false)}
-        onSelect={async (address) => {
-          externalWalletForm.setValue("address", address.address, {
-            shouldValidate: true,
-          })
-          const isConnected = await connectExternalWallet(address.address)
-
-          if (!isConnected) {
-            setIsAddressBookOpen(false)
-          }
-        }}
-      />
-    )
-  }
-
   const otherWalletsPreviewCount = 2
   const hasMoreOtherWallets =
     visibleOtherWalletGroups.length > otherWalletsPreviewCount
@@ -764,12 +739,9 @@ export const WalletManagementContent = () => {
             ) : selectedSource === WalletProviderType.ExternalWallet &&
               showExternalWallet ? (
               <SRightColumn>
-                <Box flex={1} sx={{ minHeight: 0, overflowY: "auto" }}>
+                <Box flex={1} sx={{ minHeight: 0 }}>
                   <FormProvider {...externalWalletForm}>
-                    <ExternalWalletForm
-                      onAddressBookOpen={() => setIsAddressBookOpen(true)}
-                      hideSubmitAction
-                    />
+                    <ExternalWalletForm />
                   </FormProvider>
                 </Box>
               </SRightColumn>
@@ -905,7 +877,7 @@ export const WalletManagementContent = () => {
                       sx={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: "base",
+                        gap: "l",
                       }}
                     >
                       {accountsWithBalances.length > 0 ? (

@@ -448,10 +448,8 @@
   "userMenu.goToWallet": "Go to portfolio",
   "userMenu.disconnect": "Disconnect {{provider}}",
   "userMenu.logOutAll": "Log out all",
-  "userMenu.accountsCount_one": "{{count}} Account",
-  "userMenu.accountsCount_other": "{{count}} Accounts",
-  "userMenu.accountsBalance_one": "{{balance, currency}}",
-  "userMenu.accountsBalance_other": "{{count}} Accounts • {{balance, currency}}",
+  "userMenu.walletAccounts_one": "{{wallet}}",
+  "userMenu.walletAccounts_other": "{{wallet}} • {{count}} accounts",
   "userMenu.active": "ACTIVE",
   "userMenu.manageWallets": "Manage wallets"
 }

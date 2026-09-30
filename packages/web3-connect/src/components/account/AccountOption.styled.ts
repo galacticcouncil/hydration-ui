@@ -1,4 +1,3 @@
-import { Button } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SAccountOption = styled.div<{
@@ -36,25 +35,8 @@ export const SAccountOption = styled.div<{
       &:hover,
       &:active {
         background-color: ${theme.details.borders};
+        border-color: ${theme.buttons.secondary.outline.outline};
       }
-    `}
-  `,
-)
-
-export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>(
-  ({ theme, isActive }) => css`
-    width: 100%;
-    text-transform: uppercase;
-    border: 1px solid ${theme.details.borders};
-    border-top: none;
-    border-radius: ${theme.radii.m};
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-
-    ${isActive &&
-    css`
-      background-color: ${theme.buttons.secondary.outline.fill};
-      border-color: ${theme.buttons.secondary.outline.outline};
     `}
   `,
 )

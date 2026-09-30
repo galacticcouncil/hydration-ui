@@ -20,6 +20,8 @@ export type AccountInputProps = Omit<
   className?: string
   pasteDisabled?: boolean
   clearDisabled?: boolean
+  trailingElement?: React.ReactNode
+  variant?: "embedded" | "standalone"
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -30,6 +32,8 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   ref,
   pasteDisabled = false,
   clearDisabled = false,
+  trailingElement,
+  variant = "embedded",
   ...props
 }) => {
   const handlePaste = async () => {
@@ -43,6 +47,43 @@ export const AccountInput: React.FC<AccountInputProps> = ({
 
   const handleClear = () => {
     onChange("")
+  }
+
+  const actions = trailingElement ? (
+    trailingElement
+  ) : (
+    <>
+      {!value && !pasteDisabled && (
+        <ButtonIcon onClick={handlePaste}>
+          <Icon component={ArrowDownToLine} size="m" />
+        </ButtonIcon>
+      )}
+      {value && !clearDisabled && (
+        <ButtonIcon onClick={handleClear}>
+          <Icon component={Close} size="m" />
+        </ButtonIcon>
+      )}
+    </>
+  )
+
+  if (variant === "standalone") {
+    return (
+      <Input
+        ref={ref}
+        className={className}
+        customSize="large"
+        spellCheck={false}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        leadingElement={<AccountAvatar address={value} size={32} />}
+        trailingElement={
+          <Flex align="center" gap="s">
+            {actions}
+          </Flex>
+        }
+        {...props}
+      />
+    )
   }
 
   return (
@@ -64,16 +105,9 @@ export const AccountInput: React.FC<AccountInputProps> = ({
           {...props}
         />
       </Flex>
-      {!value && !pasteDisabled && (
-        <ButtonIcon onClick={handlePaste}>
-          <Icon component={ArrowDownToLine} size="m" />
-        </ButtonIcon>
-      )}
-      {value && !clearDisabled && (
-        <ButtonIcon onClick={handleClear}>
-          <Icon component={Close} size="m" />
-        </ButtonIcon>
-      )}
+      <Flex align="center" gap="s">
+        {actions}
+      </Flex>
     </Grid>
   )
 }

@@ -56,8 +56,8 @@ export const SSourceButton = styled.button(
       background: ${theme.surfaces.containers.dim.dimOnBg};
 
       &:hover {
-        background: ${theme.buttons.secondary.accent.restSubtle};
-        border-color: ${theme.buttons.secondary.accent.outline};
+        background-color: ${theme.buttons.secondary.outline.fill};
+        border-color: ${theme.buttons.secondary.outline.outline};
       }
     }
 

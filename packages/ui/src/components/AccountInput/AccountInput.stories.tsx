@@ -1,7 +1,8 @@
 import { Meta, StoryObj } from "@storybook/react-vite"
+import { ArrowRight } from "lucide-react"
 import { useState } from "react"
 
-import { Paper } from "@/components"
+import { Button, Icon, Paper } from "@/components"
 
 import { AccountInput } from "./AccountInput"
 
@@ -44,5 +45,26 @@ export const WithError: Story = {
     value: "0x19912230039c10861946dF36CDe0eFeF09C3894A",
     placeholder: "Paste address here...",
     isError: true,
+  },
+}
+
+export const WithTrailingElement: Story = {
+  render: Template,
+  args: {
+    value: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    placeholder: "Paste address here...",
+    trailingElement: (
+      <Button type="submit" variant="accent" size="small">
+        <Icon component={ArrowRight} size="s" />
+      </Button>
+    ),
+  },
+}
+
+export const Standalone: Story = {
+  render: Template,
+  args: {
+    variant: "standalone",
+    placeholder: "Paste address here...",
   },
 }
