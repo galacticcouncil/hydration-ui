@@ -145,16 +145,32 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const userQueues = queueQueries.map((q) =>
     (q.data?.queue ?? []).filter((entry) => entry.isUser),
   )
-  const settlementQueries = useQueries({
+  const minSettlementId = (entries: QueueEntry[] | undefined) => {
+    const ids = (entries ?? [])
+      .filter(needsSettlement)
+      .map((entry) => entry.requestId)
+    return ids.length ? Math.min(...ids) : undefined
+  }
+  const activeSettlementQueries = useQueries({
+    queries: PROPELLER_VAULTS.map((vault, i) =>
+      vaultSettlementsQuery(
+        rpc,
+        vault,
+        decimalsOf(vault),
+        minSettlementId(userQueues[i]?.filter((entry) => entry.active)),
+      ),
+    ),
+  })
+  const historySettlementQueries = useQueries({
     queries: PROPELLER_VAULTS.map((vault, i) => {
-      const ids = (userQueues[i] ?? [])
-        .filter(needsSettlement)
-        .map((entry) => entry.requestId)
+      const active = activeSettlementQueries[i]
+      const activeDone =
+        !active?.isFetching || (!!active.data && !active.isPlaceholderData)
       return vaultSettlementsQuery(
         rpc,
         vault,
         decimalsOf(vault),
-        ids.length ? Math.min(...ids) : undefined,
+        activeDone ? minSettlementId(userQueues[i]) : undefined,
       )
     }),
   })
@@ -189,14 +205,20 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const withdrawals = sortWithdrawalRows(
     PROPELLER_VAULTS.flatMap((vault, i) => {
       const market = markets[i]
-      const settlementQuery = settlementQueries[i]
+      const activeQuery = activeSettlementQueries[i]
+      const historyQuery = historySettlementQueries[i]
+      // Either scan returns every log seen so far; the active one refreshes
+      // unclaimed rows, so it wins on overlap.
       const settlementByReqId = new Map(
-        (settlementQuery?.data ?? []).map((s) => [s.requestId, s]),
+        [...(historyQuery?.data ?? []), ...(activeQuery?.data ?? [])].map(
+          (s) => [s.requestId, s],
+        ),
       )
-      const settlementFetching =
-        !!settlementQuery?.isPending || !!settlementQuery?.isPlaceholderData
       return (userQueues[i] ?? []).map((entry) => {
         const settlement = settlementByReqId.get(entry.requestId)
+        const query = entry.active ? activeQuery : historyQuery
+        const settlementFetching =
+          !!query?.isPending || !!query?.isPlaceholderData
         return buildWithdrawalRow({
           vault,
           entry,
