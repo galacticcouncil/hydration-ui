@@ -303,7 +303,7 @@ export const WalletManagementContent = () => {
    * unanimated jump on every forward/back press.
    */
   useLayoutEffect(() => {
-    setModalContentWidth?.(
+    setModalContentWidth(
       !isDesktop || showAccountPanel ? pxToRem(650) : pxToRem(452),
     )
   }, [isDesktop, setModalContentWidth, showAccountPanel])
