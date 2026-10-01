@@ -80,10 +80,13 @@ const getProviderData = async (
   const papiNext = papiClient.getTypedApi(hydrationNext)
 
   const evm = createPublicClient({
-    transport: custom({
-      request: ({ method, params }) =>
-        papiClient._request(method, params || []),
-    }),
+    transport: custom(
+      {
+        request: ({ method, params }) =>
+          papiClient._request(method, params || []),
+      },
+      { retryCount: 0 },
+    ),
   })
 
   // Read the connected chain's identity before anything is built on top of the

@@ -1,4 +1,5 @@
 import { uniswapV3VolumeQuery } from "@galacticcouncil/indexer/neckwork"
+import { uniswapv3 } from "@galacticcouncil/sdk-next/pool"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -13,7 +14,10 @@ import { scaleHuman } from "@/utils/formatting"
 export type VaultTable = {
   id: string
   pool: V3PoolBase
+  /** Pool order (token0, token1), what every amount and tick is quoted in. */
   tokens: [TAsset, TAsset]
+  /** Display order, (assetA, assetB) as the SDK's V3_POOLS lists the pair. */
+  pair: [TAsset, TAsset]
   feeTier: number
   /** Deposited value of the pool, at what its contract actually holds. */
   tvlDisplay: string | undefined
@@ -24,6 +28,10 @@ export type VaultTable = {
    */
   apr: string | undefined
   isVolumeLoading: boolean
+  isVaultLoading: boolean
+  isMetricsLoading: boolean
+  /** TVL and APR are understated until both token prices are known. */
+  isPriceLoading: boolean
   price: string | undefined
   vault: VaultState | null
   status: VaultStatus
@@ -44,9 +52,11 @@ export type VaultStatus =
 export const useVaults = () => {
   const { data: pools, isLoading } = useV3Pools()
   const { getAssetWithFallback } = useAssets()
-  const { data: vaults, isLoading: isVaultLoading } = useVaultStates(
-    pools ?? [],
-  )
+  const {
+    data: vaults,
+    loading: vaultsLoading,
+    isLoading: isVaultLoading,
+  } = useVaultStates(pools ?? [])
   const sharesQuery = useVaultShares(vaults)
   const shares = sharesQuery.data
 
@@ -55,9 +65,11 @@ export const useVaults = () => {
   )
 
   // What each pool actually holds, and the part of its fees LPs keep.
-  const { data: metrics, isLoading: isMetricsLoading } = useV3PoolMetrics(
-    pools ?? [],
-  )
+  const {
+    data: metrics,
+    loading: metricsLoading,
+    isLoading: isMetricsLoading,
+  } = useV3PoolMetrics(pools ?? [])
 
   const assetIds = useMemo(
     () =>
@@ -128,10 +140,12 @@ export const useVaults = () => {
               .toString()
           : undefined
 
+      const flipped = isPairFlipped(pool)
       const raw = Big(pool.sqrtPriceX96.toString()).pow(2).div(Big(2).pow(192))
-      const price = raw
-        .times(Big(10).pow(token0.decimals - token1.decimals))
-        .toString()
+      const price0 = raw.times(Big(10).pow(token0.decimals - token1.decimals))
+      const price = (
+        flipped && price0.gt(0) ? Big(1).div(price0) : price0
+      ).toString()
 
       const vaultTvlDisplay = vault
         ? [
@@ -165,11 +179,17 @@ export const useVaults = () => {
         id: pool.address,
         pool,
         tokens: [token0, token1],
+        pair: flipped ? [token1, token0] : [token0, token1],
         feeTier: pool.fee,
         tvlDisplay,
         volumeDisplay,
         apr,
         isVolumeLoading,
+        isVaultLoading: vaultsLoading[index] ?? false,
+        isMetricsLoading: metricsLoading[index] ?? false,
+        isPriceLoading:
+          getAssetPrice(pool.token0.toString()).isLoading ||
+          getAssetPrice(pool.token1.toString()).isLoading,
         price,
         vault,
         status,
@@ -182,6 +202,8 @@ export const useVaults = () => {
   }, [
     pools,
     vaults,
+    vaultsLoading,
+    metricsLoading,
     shares,
     volumes,
     metrics,
@@ -192,11 +214,20 @@ export const useVaults = () => {
 
   return {
     data,
+    /** Rows can render: per-row vault and metrics state load behind them. */
+    isPoolsLoading: isLoading,
     isLoading: isLoading || isVaultLoading || isMetricsLoading,
     isPositionError: sharesQuery.isError,
     isDisconnected: sharesQuery.isDisconnected,
   }
 }
+
+/** V3_POOLS lists the pair as (token1, token0), e.g. 222 sorting first. */
+const isPairFlipped = (pool: V3PoolBase) =>
+  uniswapv3.V3_POOLS.some(
+    ({ assetA, assetB, fee }) =>
+      fee === pool.fee && assetA === pool.token1 && assetB === pool.token0,
+  )
 
 const getVaultStatus = (
   pool: V3PoolBase,

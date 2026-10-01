@@ -143,6 +143,9 @@ const v3PoolsQuery = (
     queryFn: async () => {
       const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
 
+      // The bootstrap only stands in for a runtime without a UniswapV3Factory.
+      if (v3Pools.length) return v3Pools
+
       const known = new Set(v3Pools.map((pool) => pool.address.toLowerCase()))
       const bootstrap = await loadBootstrapV3Pools(evm, sdk)
       const extra = bootstrap.filter(
@@ -217,6 +220,7 @@ export const useV3PoolMetrics = (pools: V3PoolBase[]) => {
     queries: pools.map((pool) => v3PoolMetricsQuery(evm, pool)),
     combine: (results) => ({
       data: results.map((result) => result.data),
+      loading: results.map((result) => result.isLoading),
       isLoading: results.some((result) => result.isLoading),
     }),
   })

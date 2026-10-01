@@ -8,8 +8,9 @@ import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
 import { PublicClient, zeroAddress } from "viem"
 
-import { FACTORY_ABI, HYPERVISOR_ABI } from "@/api/gamma/abi"
-import { GAMMA_BOOTSTRAP_HYPERVISOR, GAMMA_STACKS } from "@/api/gamma/config"
+import { HYPERVISOR_ABI } from "@/api/gamma/abi"
+import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
+import { vaultAddressQuery } from "@/api/gamma/vaults"
 import { assetMetadataQuery } from "@/api/metadata"
 import { allPools, V3PoolBase } from "@/api/pools"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -101,27 +102,17 @@ export type TAssetData =
 
 const fetchGammaVaultShareSymbols = async (
   evm: PublicClient,
+  queryClient: QueryClient,
   pools: V3PoolBase[],
 ): Promise<Set<string>> => {
-  const discoveredHypervisors = await Promise.all(
-    pools.flatMap(({ addr0, addr1, fee }) => {
-      if (!addr0 || !addr1) return []
-
-      return GAMMA_STACKS.map((stack) =>
-        evm
-          .readContract({
-            abi: FACTORY_ABI,
-            address: stack.hypervisorFactory,
-            functionName: "getHypervisor",
-            args: [addr0, addr1, fee],
-          })
-          .catch(() => null),
-      )
-    }),
+  const vaults = await Promise.all(
+    pools.map((pool) =>
+      queryClient.fetchQuery(vaultAddressQuery(evm, pool)).catch(() => null),
+    ),
   )
   const hypervisors = new Set([
     GAMMA_BOOTSTRAP_HYPERVISOR,
-    ...discoveredHypervisors.filter(isNonNullish),
+    ...vaults.map((vault) => vault?.hypervisor).filter(isNonNullish),
   ])
 
   hypervisors.delete(zeroAddress)
@@ -167,6 +158,7 @@ export const assetsQuery = (
       const tradeAssetsMap = new Set(tradeAssets)
       const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
         evm,
+        queryClient,
         pools.v3Pools,
       )
 

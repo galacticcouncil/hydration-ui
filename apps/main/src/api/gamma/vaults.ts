@@ -1,6 +1,11 @@
 import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { queryOptions, useQueries } from "@tanstack/react-query"
+import {
+  QueryClient,
+  queryOptions,
+  useQueries,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { erc20Abi, Hex, PublicClient, zeroAddress } from "viem"
 
 import {
@@ -68,27 +73,49 @@ const findVault = async (
   token1: `0x${string}`,
   fee: number,
 ): Promise<{ hypervisor: `0x${string}`; stack: GammaStack } | null> => {
-  for (const stack of GAMMA_STACKS) {
-    const hypervisor = await evm.readContract({
-      abi: FACTORY_ABI,
-      address: stack.hypervisorFactory,
-      functionName: "getHypervisor",
-      args: [token0, token1, fee],
-    })
-    if (hypervisor.toLowerCase() !== zeroAddress) return { hypervisor, stack }
-  }
+  const hypervisors = await Promise.all(
+    GAMMA_STACKS.map((stack) =>
+      evm.readContract({
+        abi: FACTORY_ABI,
+        address: stack.hypervisorFactory,
+        functionName: "getHypervisor",
+        args: [token0, token1, fee],
+      }),
+    ),
+  )
+  const index = hypervisors.findIndex(
+    (hypervisor) => hypervisor.toLowerCase() !== zeroAddress,
+  )
+  const hypervisor = hypervisors[index]
+  const stack = GAMMA_STACKS[index]
 
-  return null
+  return hypervisor && stack ? { hypervisor, stack } : null
 }
 
-const vaultQuery = (evm: PublicClient, pool: V3PoolBase) =>
+export const vaultAddressQuery = (evm: PublicClient, pool: V3PoolBase) =>
+  queryOptions({
+    queryKey: ["vault", "address", pool.address],
+    queryFn: () =>
+      pool.addr0 && pool.addr1
+        ? findVault(evm, pool.addr0, pool.addr1, pool.fee)
+        : null,
+    staleTime: Infinity,
+  })
+
+const vaultQuery = (
+  evm: PublicClient,
+  queryClient: QueryClient,
+  pool: V3PoolBase,
+) =>
   queryOptions<VaultState | null>({
     queryKey: ["vault", pool.address],
     queryFn: async () => {
       const { addr0: token0, addr1: token1 } = pool
       if (!token0 || !token1) return null
 
-      const found = await findVault(evm, token0, token1, pool.fee)
+      const found = await queryClient.ensureQueryData(
+        vaultAddressQuery(evm, pool),
+      )
       if (!found) return null
       const { hypervisor, stack } = found
 
@@ -257,11 +284,13 @@ const vaultQuery = (evm: PublicClient, pool: V3PoolBase) =>
 
 export const useVaultStates = (pools: V3PoolBase[]) => {
   const { evm } = useRpcProvider()
+  const queryClient = useQueryClient()
 
   return useQueries({
-    queries: pools.map((pool) => vaultQuery(evm, pool)),
+    queries: pools.map((pool) => vaultQuery(evm, queryClient, pool)),
     combine: (results) => ({
       data: results.map((result) => result.data ?? null),
+      loading: results.map((result) => result.isLoading),
       isLoading: results.some((result) => result.isLoading),
     }),
   })

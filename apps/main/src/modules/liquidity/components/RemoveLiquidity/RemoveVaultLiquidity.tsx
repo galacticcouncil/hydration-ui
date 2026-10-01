@@ -38,7 +38,7 @@ const useRemoveVaultLiquidity = ({
     id: state?.address ?? vault.id,
     symbol: state?.shareSymbol ?? t("common:shares"),
     decimals: SHARE_DECIMALS,
-    iconId: [token0.id, token1.id],
+    iconId: vault.pair.map((token) => token.id),
   } as unknown as TShareToken
 
   const heldShifted = scaleHuman(

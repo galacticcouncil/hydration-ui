@@ -134,6 +134,7 @@ export const LiquidityDistribution = ({
   const [token0, token1] = vault.tokens
   const { decimals: decimals0 } = token0
   const { decimals: decimals1 } = token1
+  const flipped = !scenario && vault.pair[0].id !== token0.id
 
   const tickFontSize = themeProps.paragraphSize.p5
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
@@ -193,6 +194,11 @@ export const LiquidityDistribution = ({
   const bandGap = ceiling * (BAND_GAP / chartHeight)
 
   const definition = useMemo(() => {
+    const displayPrice = (tick: number) => {
+      const price = priceAtTick(tick, chartDecimals0, chartDecimals1)
+      return flipped ? 1 / price : price
+    }
+
     const bandMarks =
       managedRangesVisible && !scenario
         ? bands.flatMap((band) =>
@@ -284,9 +290,7 @@ export const LiquidityDistribution = ({
                 x: (tick) => tick,
                 y: () => 0,
                 text: (tick) =>
-                  t("common:number", {
-                    value: priceAtTick(tick, chartDecimals0, chartDecimals1),
-                  }),
+                  t("common:number", { value: displayPrice(tick) }),
                 fill: colors.spot,
                 fontSize: tickFontSize,
                 dy: tickBaseline,
@@ -294,7 +298,8 @@ export const LiquidityDistribution = ({
             ]),
       ],
       x: {
-        scale: scaleLinear().domain([lo, hi]),
+        // flipped prices fall as ticks rise, so run the axis backwards
+        scale: scaleLinear().domain(flipped ? [hi, lo] : [lo, hi]),
         axis: scenario
           ? false
           : {
@@ -304,13 +309,12 @@ export const LiquidityDistribution = ({
                 size: 0,
                 padding: TICK_PADDING,
                 format: (tick) =>
-                  t("common:number", {
-                    value: priceAtTick(tick, chartDecimals0, chartDecimals1),
-                  }),
+                  t("common:number", { value: displayPrice(tick) }),
               },
               tickLabels: {
                 fontSize: tickFontSize,
-                anchor: ({ value }) => (value === lo ? "start" : "end"),
+                anchor: ({ value }) =>
+                  value === (flipped ? hi : lo) ? "start" : "end",
               },
             },
       },
@@ -348,12 +352,15 @@ export const LiquidityDistribution = ({
     top,
     scenario,
     managedRangesVisible,
+    flipped,
   ])
 
   if (!bars.length)
     return <ChartState sx={{ height: resolvedHeight }} isEmpty />
 
-  const price = priceAtTick(spotTick, token0.decimals, token1.decimals)
+  const [base, quote] = vault.pair
+  const price0 = priceAtTick(spotTick, token0.decimals, token1.decimals)
+  const price = flipped ? 1 / price0 : price0
 
   return (
     <Flex direction="column" flex={1} sx={{ minHeight: resolvedHeight }}>
@@ -373,15 +380,15 @@ export const LiquidityDistribution = ({
             <Text fs="p2" fw={500} font="primary">
               {t("vaults.price.pair", {
                 value: price,
-                symbolA: token0.symbol,
-                symbolB: token1.symbol,
+                symbolA: base.symbol,
+                symbolB: quote.symbol,
               })}
             </Text>
             <Text fs="p6" color={getToken("text.low")}>
               {t("vaults.price.pair", {
                 value: 1 / price,
-                symbolA: token1.symbol,
-                symbolB: token0.symbol,
+                symbolA: quote.symbol,
+                symbolB: base.symbol,
               })}
             </Text>
           </Flex>
@@ -474,22 +481,27 @@ export const LiquidityDistribution = ({
         </Flex>
 
         <SLiquidityLegend mt="s" wrap>
-          <Legend
-            color={colors.token1}
-            label={
-              scenario
-                ? t("vaults.explainer.legend.tokenB")
-                : t("vaults.chart.legend.token1", { symbol: token1.symbol })
-            }
-          />
-          <Legend
-            color={colors.token0}
-            label={
-              scenario
-                ? t("vaults.explainer.legend.tokenA")
-                : t("vaults.chart.legend.token0", { symbol: token0.symbol })
-            }
-          />
+          {/* left side of the chart first */}
+          {(flipped ? [0, 1] : [1, 0]).map((side) => (
+            <Legend
+              key={side}
+              color={side ? colors.token1 : colors.token0}
+              label={
+                scenario
+                  ? t(
+                      side
+                        ? "vaults.explainer.legend.tokenB"
+                        : "vaults.explainer.legend.tokenA",
+                    )
+                  : t(
+                      side
+                        ? "vaults.chart.legend.token1"
+                        : "vaults.chart.legend.token0",
+                      { symbol: (side ? token1 : token0).symbol },
+                    )
+              }
+            />
+          ))}
           <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
           {scenario
             ? bands.length > 0 && (
@@ -533,8 +545,10 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
   const { getAssetPrice } = useAssetsPrice([token0.id, token1.id])
   const { themeProps } = useTheme()
 
-  const low = priceAtTick(bar.rangeFrom, decimals0, decimals1)
-  const high = priceAtTick(bar.rangeTo, decimals0, decimals1)
+  const flipped = vault.pair[0].id !== token0.id
+  const from = priceAtTick(bar.rangeFrom, decimals0, decimals1)
+  const to = priceAtTick(bar.rangeTo, decimals0, decimals1)
+  const [low, high] = flipped ? [1 / to, 1 / from] : [from, to]
   const held = bar.side === "token0" ? token0 : token1
   const state = vault.vault
   const mid = (bar.rangeFrom + bar.rangeTo) / 2
@@ -645,26 +659,28 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
                     : position.label}
                 </Text>
               </Flex>
-              <TickStatsRow
-                label={token0.symbol}
-                isSymbolLabel={true}
-                icon={<AssetLogo id={token0.id} size="extra-small" />}
-                value={human(position.amount0, decimals0)}
-                displayValue={usd(
-                  token0.id,
-                  scaleHuman(position.amount0.toString(), decimals0),
-                )}
-              />
-              <TickStatsRow
-                label={token1.symbol}
-                isSymbolLabel={true}
-                icon={<AssetLogo id={token1.id} size="extra-small" />}
-                value={human(position.amount1, decimals1)}
-                displayValue={usd(
-                  token1.id,
-                  scaleHuman(position.amount1.toString(), decimals1),
-                )}
-              />
+              {(flipped
+                ? [
+                    { token: token1, amount: position.amount1 },
+                    { token: token0, amount: position.amount0 },
+                  ]
+                : [
+                    { token: token0, amount: position.amount0 },
+                    { token: token1, amount: position.amount1 },
+                  ]
+              ).map(({ token, amount }) => (
+                <TickStatsRow
+                  key={token.id}
+                  label={token.symbol}
+                  isSymbolLabel={true}
+                  icon={<AssetLogo id={token.id} size="extra-small" />}
+                  value={human(amount, token.decimals)}
+                  displayValue={usd(
+                    token.id,
+                    scaleHuman(amount.toString(), token.decimals),
+                  )}
+                />
+              ))}
             </Fragment>
           ))}
         </Stack>
