@@ -1,11 +1,14 @@
 import { Decorator, Meta, StoryObj } from "@storybook/react-vite"
 
+import {
+  AvatarStyle,
+  useAvatarStyleStore,
+} from "@/components/AccountAvatar/store"
+
 import { AccountAvatar } from "./AccountAvatar"
-import { AvatarStyle, useAvatarStyleStore } from "./store"
 
 type Story = StoryObj<typeof AccountAvatar>
 
-// AccountAvatar has no style override prop — the store drives every avatar.
 const withAvatarStyle = (avatarStyle: AvatarStyle): Decorator =>
   function AvatarStyleDecorator(Story) {
     if (useAvatarStyleStore.getState().avatarStyle !== avatarStyle) {
@@ -36,6 +39,14 @@ export const Emoji: Story = {
   },
 }
 
+export const EmojiSmall: Story = {
+  ...Emoji,
+  args: {
+    address: "7MsLP8yfa4dzCAyBX5jxDk2UR7DEATQYNcfpMxgnRDWx6Xin",
+    size: 12,
+  },
+}
+
 export const EmojiDegenGlyph: Story = {
   ...Emoji,
   args: {
@@ -49,14 +60,5 @@ export const EmojiDegenImage: Story = {
   args: {
     address: "7MsLP8yfa4dzCAyBX5jxDk2UR7DEATQYNcfpMxgnRDWx6Xin",
     size: 42,
-  },
-}
-
-// The ConnectButton size — checks the glyph is still legible when tiny.
-export const EmojiSmall: Story = {
-  ...Emoji,
-  args: {
-    address: "7MsLP8yfa4dzCAyBX5jxDk2UR7DEATQYNcfpMxgnRDWx6Xin",
-    size: 12,
   },
 }

@@ -56,9 +56,7 @@ export const WALLET_DEEPLINKS: Partial<
     universal: `https://nightly.app/v1?network=sui&cluster=mainnet&url=${ENCODED_SUI_TARGET_URL}`,
   },
   // OKX nests its own `okx://` deeplink inside the `?deeplink=` param, per
-  // their docs — the one entry here where the nesting cannot be type-checked.
-  // Their doc page is bot-gated and could not be fetched live, so a device
-  // open is the only evidence these three work.
+  // their docs. The nesting can't be type-checked; verify on a device.
   [WalletProviderType.OKXWallet]: {
     android: OKX_ANDROID_DEEPLINK(ENCODED_TARGET_URL),
     universal: OKX_UNIVERSAL_DEEPLINK(ENCODED_TARGET_URL),

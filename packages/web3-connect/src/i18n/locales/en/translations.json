@@ -14,6 +14,7 @@
   "provider.hide": "Hide",
   "provider.continue": "Continue",
   "provider.disconnect": "Disconnect",
+  "provider.wallet": "Wallet",
   "provider.connect": "Connect",
   "provider.connected": "Connected",
   "provider.notInstalled": "Not installed",
@@ -37,6 +38,8 @@
   "account.noResults": "No accounts found",
   "account.active": "ACTIVE",
   "account.changeAccount": "Change Account",
+  "account.balance": "{{ value, number }} {{ symbol }}",
+  "account.balanceValue": "{{ value, currency }}",
 
   "accountFilter.all": "All",
 

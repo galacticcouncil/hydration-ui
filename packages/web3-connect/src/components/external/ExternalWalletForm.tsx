@@ -170,7 +170,6 @@ export const ExternalWalletForm = () => {
                       outline
                       disabled={isSubmitting}
                       aria-label={t("external.confirm")}
-                      sx={{ px: "base" }}
                     >
                       {t("external.confirm")}
                     </Button>
@@ -197,7 +196,7 @@ export const ExternalWalletForm = () => {
           </ToggleGroup>
           <Box flex={1} height="100%" overflow="hidden" sx={{ minHeight: 0 }}>
             <ScrollArea>
-              <SScrollAreaContent>
+              <SScrollAreaContent direction="column">
                 {entries.length ? (
                   <Stack separated>
                     {entries.map((address) => (

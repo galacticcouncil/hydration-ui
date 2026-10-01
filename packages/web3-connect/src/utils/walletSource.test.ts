@@ -243,9 +243,9 @@ describe("getWalletSourceModeLabel", () => {
     expect(getWalletSourceModeLabel(WalletMode.Solana)).toBe("Solana")
   })
 
-  it("falls back for composite and absent modes", () => {
-    expect(getWalletSourceModeLabel(WalletMode.SubstrateEVM)).toBe("Wallet")
-    expect(getWalletSourceModeLabel(undefined)).toBe("Wallet")
+  it("has no label for composite and absent modes", () => {
+    expect(getWalletSourceModeLabel(WalletMode.SubstrateEVM)).toBeUndefined()
+    expect(getWalletSourceModeLabel(undefined)).toBeUndefined()
   })
 })
 

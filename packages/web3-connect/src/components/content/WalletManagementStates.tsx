@@ -1,5 +1,5 @@
-import { Box, Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Box, Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { ChevronRight, Download, LogOut } from "lucide-react"
 import type { ComponentType } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,13 +11,10 @@ import {
 } from "@/components/content/WalletManagementSource"
 import { SSourceAction } from "@/components/content/WalletManagementSource.styled"
 import {
-  SCenteredTextGroup,
   SChainSelectHeader,
   SWalletConnectionAction,
-  SWalletConnectionBody,
   SWalletConnectionErrorRing,
   SWalletConnectionLogo,
-  SWalletConnectionSpinner,
   SWalletConnectionState,
   SWalletConnectionStatusIcon,
   SWalletConnectionVisual,
@@ -79,7 +76,13 @@ export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
       role={visual.type === "icon" || isError ? "alert" : "status"}
       aria-live="polite"
     >
-      <SWalletConnectionBody>
+      <Flex
+        direction="column"
+        align="center"
+        gap="base"
+        maxWidth={pxToRem(340)}
+        width="100%"
+      >
         <SWalletConnectionVisual>
           {visual.type === "icon" ? (
             <SWalletConnectionStatusIcon>
@@ -87,7 +90,7 @@ export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
             </SWalletConnectionStatusIcon>
           ) : (
             <>
-              {isLoading && <SWalletConnectionSpinner />}
+              {isLoading && <Spinner size="100%" />}
               {isError && <SWalletConnectionErrorRing />}
               <SWalletConnectionLogo
                 src={visual.wallet.logo}
@@ -99,7 +102,7 @@ export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
           )}
         </SWalletConnectionVisual>
 
-        <SCenteredTextGroup>
+        <Flex direction="column" align="center" gap="base">
           <Text
             fs="h7"
             fw={500}
@@ -120,7 +123,7 @@ export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
           >
             {description}
           </Text>
-        </SCenteredTextGroup>
+        </Flex>
 
         {action && (
           <SWalletConnectionAction
@@ -134,7 +137,7 @@ export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
             {action.label}
           </SWalletConnectionAction>
         )}
-      </SWalletConnectionBody>
+      </Flex>
     </SWalletConnectionState>
   )
 }
@@ -182,7 +185,7 @@ export const WalletChainSelectState: React.FC<{
             return (
               <WalletSourceButton
                 key={wallet.provider}
-                title={getWalletSourceModeLabel(mode)}
+                title={getWalletSourceModeLabel(mode) ?? t("provider.wallet")}
                 subtitle={
                   isConnected
                     ? t("provider.connected")

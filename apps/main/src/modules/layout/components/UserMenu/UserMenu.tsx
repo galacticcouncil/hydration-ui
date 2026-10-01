@@ -34,22 +34,14 @@ import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useShallow } from "zustand/react/shallow"
 
+import { SHoverActions } from "@/modules/layout/components/UserMenu/UserMenu.styled"
+import { UserMenuChangeAccountButton } from "@/modules/layout/components/UserMenu/UserMenuChangeAccountButton"
 import {
   getRecentProviderAccount,
   useRecentProviderAccountsStore,
 } from "@/states/recentProviderAccounts"
 
-import { SHoverActions } from "./UserMenu.styled"
-import { UserMenuChangeAccountButton } from "./UserMenuChangeAccountButton"
-
-const UserMenuSeparator = () => (
-  <Separator
-    sx={{
-      my: "base",
-      mx: "-base",
-    }}
-  />
-)
+const UserMenuSeparator = () => <Separator my="base" mx="-base" />
 
 type Props = {
   readonly open: boolean
@@ -173,7 +165,7 @@ export const UserMenu: FC<Props> = ({
                     : undefined
               }
             >
-              <Box sx={{ gridRow: "1 / -1", flexShrink: 0 }}>
+              <Box gridRow="1 / -1" sx={{ flexShrink: 0 }}>
                 <AccountWalletAvatar
                   address={address}
                   provider={type}

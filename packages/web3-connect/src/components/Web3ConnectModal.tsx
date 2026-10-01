@@ -72,9 +72,8 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
   })
 
   /**
-   * Every page but Wallets is a fixed width. Wallets sizes itself from
-   * `showAccountPanel` inside `WalletManagementContent`, so this must not fire
-   * for it - two writers on one value is what made the error screen jump.
+   * Every page but Wallets is a fixed width. Wallets sizes itself inside
+   * `WalletManagementContent`; setting it here too makes the width jump.
    */
   useEffect(() => {
     if (page === Web3ConnectModalPage.Wallets) return

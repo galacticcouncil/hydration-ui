@@ -50,13 +50,12 @@ export type WalletAccountFilterOption =
   | WalletMode.Default
 
 /**
- * Every fact about a wallet mode lives here. Adding a mode is one edit.
+ * Every fact about a wallet mode lives here.
  *
  * Chain modes map to a single chain and so carry a display name and icon.
  * Composite modes (Default, SubstrateEVM) span several chains and have
  * neither - the union is discriminated on `chain` so reading `.icon` off a
  * composite entry is a type error.
- *
  */
 
 type ChainModeEntry = {
@@ -71,10 +70,7 @@ type CompositeModeEntry = {
   providers: WalletProviderType[]
 }
 
-/**
- * The union of substrate and EVM providers, de-duplicated: WalletConnect is a
- * member of both lists, and the pre-registry tables carried it twice.
- */
+/** De-duplicated, since WalletConnect is in both lists. */
 const SUBSTRATE_EVM_PROVIDERS: WalletProviderType[] = [
   ...new Set([...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS]),
 ]
@@ -138,9 +134,6 @@ export const WALLET_MODES: Record<
 /**
  * Which wallet providers may be offered for each mode. Derived from the
  * registry - do not restate the lists here.
- *
- * Re-exported from `@/hooks/useWeb3Connect`, which is where every call site
- * still imports it from.
  */
 export const PROVIDERS_BY_WALLET_MODE: Record<
   WalletMode,
@@ -221,23 +214,12 @@ export function getWalletChainModes(
 }
 
 /**
- * The account-filter chips to render for a given list of accounts.
+ * The account-filter chips for a list of accounts: one per mode with at least
+ * one account, plus All. Fewer than two modes means no chips at all.
  *
- * The chip set is derived from the accounts on screen rather than stored,
- * which is why the registry carries no `filterable` field: a mode earns a chip
- * by having at least one account behind it, and loses it when that account
- * disconnects.
- *
- * Below two modes there are no chips at all - a filter that cannot change what
- * is displayed is noise - and the caller leaves its filter on
- * `WalletMode.Default`. At two or more, the All chip is prepended.
- *
- * ExternalWallet accounts are deliberately EXCLUDED from the computation. They
- * carry no provider-to-mode relationship, and the alternative - classifying
- * them by address shape, as `filterAccounts` does - would mean importing the
- * address validators into this module, whose near-zero import surface is what
- * lets leaf modules read the registry without pulling in heavy SDK/wasm deps.
- * Consequence: a watched-address-only account list renders no chips.
+ * ExternalWallet accounts are excluded: classifying them by address shape
+ * would pull the address validators (and their SDK/wasm deps) into this
+ * module, which leaf modules import. A watched-only list renders no chips.
  */
 export const chipModesForAccounts = (
   accounts: Array<{ provider: WalletProviderType }>,

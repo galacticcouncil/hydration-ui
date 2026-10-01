@@ -7,22 +7,16 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { formatCurrency, formatNumber } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { ShortAddress } from "@/components/account/ShortAddress"
 import {
   SAccountModeIcon,
   SAccountTile,
-  SAccountTileBalance,
-  SAccountTileBody,
   SAccountTileCopyButton,
-  SAccountTileRow,
   SChangeAccountButton,
   SSectionLabel,
   SSectionLogo,
-  STruncatingRow,
-  STruncatingText,
 } from "@/components/content/WalletManagementAccounts.styled"
 import { getWalletChainModes, getWalletModeIcon } from "@/config/wallet"
 import { isEip1193Provider, requestAccounts, toAccount } from "@/utils"
@@ -90,8 +84,11 @@ export const WalletAccountTile: React.FC<{
     account.balance === undefined
       ? ""
       : account.balanceSymbol
-        ? `${formatNumber(account.balance)} ${account.balanceSymbol}`
-        : formatCurrency(account.balance)
+        ? t("account.balance", {
+            value: account.balance,
+            symbol: account.balanceSymbol,
+          })
+        : t("account.balanceValue", { value: account.balance })
 
   return (
     <Box>
@@ -109,9 +106,9 @@ export const WalletAccountTile: React.FC<{
         }}
       >
         <AccountAvatar address={account.displayAddress} size={38} />
-        <SAccountTileBody>
-          <SAccountTileRow>
-            <STruncatingRow gap="xs">
+        <Flex direction="column" minWidth={0} flex={1}>
+          <Flex align="center" justify="space-between" gap="base" minWidth={0}>
+            <Flex align="center" width="100%" minWidth={0} gap="xs">
               {modeIcon && (
                 <SAccountModeIcon src={modeIcon} alt="" lazy={false} />
               )}
@@ -123,15 +120,27 @@ export const WalletAccountTile: React.FC<{
                   {t("account.active")}
                 </Chip>
               )}
-            </STruncatingRow>
-            <SAccountTileBalance fs="p4" fw={500} color={getToken("text.high")}>
+            </Flex>
+            <Text
+              fs="p4"
+              fw={500}
+              color={getToken("text.high")}
+              sx={{ flexShrink: 0 }}
+            >
               {isBalanceLoading && account.balance === undefined
                 ? ""
                 : balanceLabel}
-            </SAccountTileBalance>
-          </SAccountTileRow>
-          <STruncatingRow gap="base" justify="space-between">
-            <STruncatingText
+            </Text>
+          </Flex>
+          <Flex
+            align="center"
+            width="100%"
+            minWidth={0}
+            gap="base"
+            justify="space-between"
+          >
+            <Text
+              minWidth={0}
               fs="p5"
               color={getToken("text.medium")}
               font="mono"
@@ -139,7 +148,7 @@ export const WalletAccountTile: React.FC<{
               truncate
             >
               <ShortAddress address={account.displayAddress} length={12} />
-            </STruncatingText>
+            </Text>
             <SAccountTileCopyButton
               asChild
               onClick={(event) => event.stopPropagation()}
@@ -151,8 +160,8 @@ export const WalletAccountTile: React.FC<{
                 iconSize="xs"
               />
             </SAccountTileCopyButton>
-          </STruncatingRow>
-        </SAccountTileBody>
+          </Flex>
+        </Flex>
       </SAccountTile>
       {metaMaskExtension && (
         <SChangeAccountButton

@@ -441,7 +441,6 @@
   "externalApy.alert": "The external APY is not available",
   "appUpdate.title": "New version available, reload the page to update.",
   "appUpdate.action": "Reload",
-  "userMenu.openMenu": "Open account menu",
   "userMenu.changeAccount": "Change Account",
   "userMenu.copyAddress": "Copy address",
   "userMenu.connectedWallets": "Connected wallets",

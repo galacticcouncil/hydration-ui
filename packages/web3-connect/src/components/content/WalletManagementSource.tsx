@@ -1,4 +1,4 @@
-import { Icon, Spinner, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ChevronRight, LogOut } from "lucide-react"
 import { ComponentType } from "react"
@@ -9,16 +9,10 @@ import {
   SConnectedDot,
   SSourceAction,
   SSourceButton,
-  SSourceButtonContent,
-  SSourceButtonEnd,
   SSourceChainBadge,
-  SSourceChainBadges,
   SSourceIcon,
   SSourceLogo,
-  SSourceMarkWrap,
   SStackedSourceLogo,
-  SStackedSourceLogos,
-  STruncatingColumn,
 } from "@/components/content/WalletManagementSource.styled"
 import { WalletProviderType } from "@/config/providers"
 import { getWalletModeIcon, WalletMode } from "@/config/wallet"
@@ -94,9 +88,9 @@ export const WalletSourceButton: React.FC<{
     data-variant={variant}
     onClick={onClick}
   >
-    <SSourceButtonContent>
+    <Flex align="center" gap="base" minWidth={0} flex={1}>
       {(logo || icon || logos?.length) && (
-        <SSourceMarkWrap>
+        <Box position="relative" sx={{ flexShrink: 0 }}>
           {logo ? (
             <SSourceLogo src={logo} alt="" lazy={false} />
           ) : icon ? (
@@ -104,7 +98,7 @@ export const WalletSourceButton: React.FC<{
               <Icon size="xs" component={icon} />
             </SSourceIcon>
           ) : (
-            <SStackedSourceLogos>
+            <Flex sx={{ flexShrink: 0 }}>
               {logos?.slice(0, 3).map((provider) => {
                 const wallet = getWallet(provider)
                 if (!wallet) return null
@@ -117,12 +111,12 @@ export const WalletSourceButton: React.FC<{
                   />
                 )
               })}
-            </SStackedSourceLogos>
+            </Flex>
           )}
           {connected && <SConnectedDot />}
-        </SSourceMarkWrap>
+        </Box>
       )}
-      <STruncatingColumn>
+      <Flex direction="column" minWidth={0}>
         <Text fs="p5" fw={500} color={getToken("text.high")} truncate>
           {title}
         </Text>
@@ -137,12 +131,12 @@ export const WalletSourceButton: React.FC<{
             {subtitle}
           </Text>
         )}
-      </STruncatingColumn>
-    </SSourceButtonContent>
+      </Flex>
+    </Flex>
     {pending ? (
       <Spinner size="xs" />
     ) : variant === "firstConnectionPlain" ? null : (
-      <SSourceButtonEnd>
+      <Flex align="center" gap="xs" sx={{ flexShrink: 0 }}>
         {chainModes && chainModes.length > 0 && (
           <WalletSourceChainBadges modes={chainModes} />
         )}
@@ -151,7 +145,7 @@ export const WalletSourceButton: React.FC<{
             <Icon size="xs" component={ChevronRight} />
           </SSourceAction>
         )}
-      </SSourceButtonEnd>
+      </Flex>
     )}
   </SSourceButton>
 )
@@ -162,7 +156,7 @@ export const WalletSourceChainBadges: React.FC<{
   const badges = getWalletSourceChainBadges(modes)
 
   return (
-    <SSourceChainBadges>
+    <Flex align="center" sx={{ flexShrink: 0 }}>
       {badges.slice(0, 4).map((badge) => (
         <SSourceChainBadge key={badge.id}>
           {badge.icon ? (
@@ -172,7 +166,7 @@ export const WalletSourceChainBadges: React.FC<{
           ) : null}
         </SSourceChainBadge>
       ))}
-    </SSourceChainBadges>
+    </Flex>
   )
 }
 

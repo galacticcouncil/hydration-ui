@@ -1,13 +1,7 @@
-import { Box, Button, Text } from "@galacticcouncil/ui/components"
+import { Button, Text } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 import { ProviderLogo } from "@/components/provider/ProviderLogo"
-
-export const SAvatar = styled(Box)`
-  position: relative;
-  display: flex;
-  flex-shrink: 0;
-`
 
 export const SProviderBadge = styled(ProviderLogo)(
   ({ theme }) => css`
