@@ -1,6 +1,5 @@
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 
 import { QuotedPriceField } from "@/modules/trade/swap/components/QuotedPriceField/QuotedPriceField"
 import { QuotedPriceBinding } from "@/modules/trade/swap/lib/quotedPrice.hook"
@@ -8,14 +7,9 @@ import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitFor
 
 type Props = {
   readonly quotedPrice: QuotedPriceBinding
-  readonly isMarketLoading?: boolean
 }
 
-export const LimitPriceField: FC<Props> = ({
-  quotedPrice,
-  isMarketLoading = false,
-}) => {
-  const { t } = useTranslation(["common", "trade"])
+export const LimitPriceField: FC<Props> = ({ quotedPrice }) => {
   const { watch } = useFormContext<LimitFormValues>()
 
   const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
@@ -27,8 +21,6 @@ export const LimitPriceField: FC<Props> = ({
       baseAssetId={inverted ? buyAsset?.id : sellAsset?.id}
       baseSymbol={(inverted ? buyAsset?.symbol : sellAsset?.symbol) ?? ""}
       quoteSymbol={(inverted ? sellAsset?.symbol : buyAsset?.symbol) ?? ""}
-      marketLabel={t("trade:limit.market")}
-      isMarketLoading={isMarketLoading}
     />
   )
 }
