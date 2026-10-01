@@ -88,3 +88,5 @@ python3 -m http.server 4174 --directory resilience-audit
 ```
 
 Open `http://127.0.0.1:4174/dependencies.html`. The chart's original record/source links remain pinned to the audited commit and exact npm versions. `evidence/sha256-manifest.json` describes the immutable original evidence; rerun tools and generated reference files are outside that manifest. Recheck source/lockfile, rerun relevant tests, and collect new provenance before labeling a later release. The garden presentation generator rebuilds the dated reference; it does not perform a fresh audit.
+
+With the same Playwright environment, `node resilience-audit/verify-chart.cjs` verifies all records, desktop/mobile layout, filters, evidence paths, offline operation and malicious markup escaping. It needs no production preview or live RPC.

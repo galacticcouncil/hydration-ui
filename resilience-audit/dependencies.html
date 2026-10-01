@@ -41,9 +41,9 @@ const D=JSON.parse(document.getElementById('audit-data').textContent);
 const $=id=>document.getElementById(id);
 const colors={broad:'#ffa0ad',feature:'#f9ce82',isolated:'#88dbbc',core:'#85caff',dormant:'#aeb8cc'};
 const labels={broad:'Broader coupling',feature:'Feature scope',isolated:'Contained',core:'Hydration core',dormant:'Dormant / build'};
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const list=xs=>'<ul>'+xs.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
-const badge=(impact,text)=>'<span class="badge '+impact+'">'+esc(text||labels[impact])+'</span>';
+const badge=(impact,text)=>'<span class="badge '+esc(impact)+'">'+esc(text||labels[impact])+'</span>';
 let selected=D.dependencies.find(d=>d.id===location.hash.slice(1))||D.dependencies.find(d=>d.id==='asset-metadata-cdn')||D.dependencies[0];
 const categories=[...new Set(D.dependencies.map(d=>d.category))].sort();
 for(const category of categories){const option=document.createElement('option');option.value=category;option.textContent=category;$('category').append(option)}

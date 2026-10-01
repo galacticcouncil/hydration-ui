@@ -161,5 +161,24 @@
       "nativeQuote": null,
       "liquidityPoolLinks": null
     }
-  ]
+  ],
+  "chartValidation": {
+    "dependencies": 86,
+    "active": 74,
+    "packages": 97,
+    "browserEvidence": 7,
+    "everyDependencySelectable": true,
+    "filters": [
+      "search",
+      "empty",
+      "impact",
+      "category"
+    ],
+    "mobileViewport": "390x844",
+    "desktopViewport": "1440x1100",
+    "remoteRequests": [],
+    "pageErrors": [],
+    "sourceAndEvidenceLinksExist": true,
+    "maliciousMarkupRemainsText": true
+  }
 }
