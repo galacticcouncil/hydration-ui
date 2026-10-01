@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { AssetLogo } from "@/components/AssetLogo"
 import { Flex } from "@/components/Flex"
 import { Text } from "@/components/Text"
-import assetColors from "@/theme/assetColors.json"
+import { useTheme } from "@/theme"
+import assetColors from "@/theme/assets/assetColors.json"
 import { getToken, pxToRem } from "@/utils"
 
 const METADATA_URL =
@@ -18,7 +19,7 @@ type AssetMetadata = {
   items: string[]
 }
 
-const colors: Record<string, string> = assetColors
+const rawColors: Record<string, string> = assetColors
 
 const useAssetIconSrcs = () => {
   const [srcs, setSrcs] = useState<Record<string, string>>({})
@@ -58,10 +59,12 @@ const useAssetIconSrcs = () => {
 const AssetColorTile = ({
   id,
   color,
+  raw,
   src,
 }: {
   id: string
   color: string
+  raw: string
   src?: string
 }) => (
   <Flex
@@ -87,23 +90,38 @@ const AssetColorTile = ({
           {id}
         </Text>
         <Text fs="p6" color={getToken("text.medium")}>
-          {color}
+          {raw === color ? color : `${raw} → ${color}`}
         </Text>
       </Flex>
-      <Flex ml="auto" size={pxToRem(24)} borderRadius="full" bg={color} />
+      {raw !== color && (
+        <Flex ml="auto" size={pxToRem(24)} borderRadius="full" bg={raw} />
+      )}
+      <Flex
+        ml={raw === color ? "auto" : undefined}
+        size={pxToRem(24)}
+        borderRadius="full"
+        bg={color}
+      />
     </Flex>
   </Flex>
 )
 
 const AssetColors = () => {
   const srcs = useAssetIconSrcs()
+  const { themeProps } = useTheme()
+  const colors = themeProps.assets
   const ids = Object.keys(colors).sort((a, b) => Number(a) - Number(b))
 
   return (
     <Flex gap="m" wrap>
       {ids.map((id) => (
         <Flex key={id} width={pxToRem(240)}>
-          <AssetColorTile id={id} color={colors[id] ?? ""} src={srcs[id]} />
+          <AssetColorTile
+            id={id}
+            color={colors[id] ?? ""}
+            raw={rawColors[id] ?? ""}
+            src={srcs[id]}
+          />
         </Flex>
       ))}
     </Flex>
