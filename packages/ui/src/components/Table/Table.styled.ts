@@ -148,16 +148,12 @@ export const TableRow = styled.tr<{
     css`
       ${TableBody} &:hover {
         background-color: ${theme.surfaces.containers.high.hover};
-        transition: ${theme.transitions.colors};
-
-        ${TableCell} {
-          background-color: ${theme.surfaces.containers.high.hover};
-          transition: ${theme.transitions.colors};
-        }
       }
     `}
     color: ${theme.text.high};
     background-color: ${theme.surfaces.containers.high.primary};
+    /* ponytail: only the row animates; pinned cells inherit its animated bg */
+    transition: ${theme.transitions.colors};
 
     ${isClickable &&
     css`
@@ -177,8 +173,7 @@ export const TableRow = styled.tr<{
 )
 export const TableCell = styled.td<{
   isPinned?: ColumnPinningPosition
-  isClickable?: boolean
-}>(({ theme, isPinned, isClickable }) => {
+}>(({ isPinned }) => {
   if (isPinned) {
     return [
       pinnedColumnStyles(isPinned),
@@ -186,13 +181,6 @@ export const TableCell = styled.td<{
         background-color: inherit;
         position: sticky;
         z-index: 1;
-
-        ${isClickable &&
-        css`
-          tr:hover & {
-            background: ${theme.surfaces.containers.high.hover};
-          }
-        `}
       `,
     ]
   }

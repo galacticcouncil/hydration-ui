@@ -396,7 +396,10 @@ export const LiquidityDistribution = ({
       >
         <Flex position="relative" minWidth={0}>
           <Chart
-            css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
+            css={{
+              ".ts-chart__grid": { strokeDasharray: "2 4" },
+              ".ts-chart-tooltip": { "--ts-chart-tooltip-max-width": "none" },
+            }}
             definition={definition}
             ariaLabel={t(
               scenario

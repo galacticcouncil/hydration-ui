@@ -112,7 +112,7 @@ export const VaultsTable = ({
         <DataTable
           size={isMobile ? "small" : "large"}
           isLoading={isLoading}
-          skeletonRowCount={1}
+          skeletonRowCount={5}
           data={filteredData}
           columns={columns}
           globalFilter={search}
