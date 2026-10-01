@@ -9,11 +9,13 @@ import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitFor
 type Props = {
   readonly quotedPrice: QuotedPriceBinding
   readonly isMarketLoading?: boolean
+  readonly executableDisplay?: string | null
 }
 
 export const LimitPriceField: FC<Props> = ({
   quotedPrice,
   isMarketLoading = false,
+  executableDisplay = null,
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const { watch } = useFormContext<LimitFormValues>()
@@ -29,6 +31,7 @@ export const LimitPriceField: FC<Props> = ({
       quoteSymbol={(inverted ? sellAsset?.symbol : buyAsset?.symbol) ?? ""}
       marketLabel={t("trade:limit.market")}
       isMarketLoading={isMarketLoading}
+      executableDisplay={executableDisplay}
     />
   )
 }
