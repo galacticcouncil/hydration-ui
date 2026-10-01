@@ -179,6 +179,7 @@
     "remoteRequests": [],
     "pageErrors": [],
     "sourceAndEvidenceLinksExist": true,
-    "maliciousMarkupRemainsText": true
+    "maliciousMarkupRemainsText": true,
+    "sourceLinkUsesFixedHttpsOrigin": true
   }
 }

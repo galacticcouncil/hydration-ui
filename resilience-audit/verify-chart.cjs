@@ -158,6 +158,13 @@ async function main() {
     )
     assert((await page.locator("#detail-title").textContent()).includes("<img"))
     assert.equal(await page.evaluate(() => window.__chartInjection), 0)
+    const source = await page.evaluate(() => sourceUrl("javascript:alert(1)"))
+    assert(
+      source.startsWith(
+        "https://github.com/galacticcouncil/hydration-ui/tree/",
+      ),
+    )
+    assert(source.includes("javascript%3Aalert"))
     assert.equal(errors.length, 0, errors.join("\n"))
     assert.equal(
       remoteRequests.length,
@@ -177,6 +184,7 @@ async function main() {
       pageErrors: errors,
       sourceAndEvidenceLinksExist: true,
       maliciousMarkupRemainsText: true,
+      sourceLinkUsesFixedHttpsOrigin: true,
     }
     fs.writeFileSync(
       path.join(output, "validation.json"),

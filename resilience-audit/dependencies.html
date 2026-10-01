@@ -47,7 +47,8 @@ const badge=(impact,text)=>'<span class="badge '+esc(impact)+'">'+esc(text||labe
 let selected=D.dependencies.find(d=>d.id===location.hash.slice(1))||D.dependencies.find(d=>d.id==='asset-metadata-cdn')||D.dependencies[0];
 const categories=[...new Set(D.dependencies.map(d=>d.category))].sort();
 for(const category of categories){const option=document.createElement('option');option.value=category;option.textContent=category;$('category').append(option)}
-$('commit-link').textContent=D.snapshot.commit.slice(0,12);$('commit-link').href=D.snapshot.repository+'/tree/'+D.snapshot.commit;
+const sourceUrl=commit=>'https://github.com/galacticcouncil/hydration-ui/tree/'+encodeURIComponent(String(commit));
+$('commit-link').textContent=D.snapshot.commit.slice(0,12);$('commit-link').href=sourceUrl(D.snapshot.commit);
 $('version-meta').textContent='SDK '+D.snapshot.packages['@galacticcouncil/sdk-next']+' · XC swap '+D.snapshot.packages['@galacticcouncil/xc-swap']+' · 1Click '+D.snapshot.packages['@defuse-protocol/one-click-sdk-typescript'];
 const counts=[[''+D.dependencies.filter(d=>d.activity!=='dormant'&&d.activity!=='build').length,'active dependency groups'],[''+D.rpcInventory.chains.length,'configured XC chain entries'],[''+D.packageInventory.packages.length,'declared production packages'],[''+D.browserResults.length,'browser scenarios recorded']];
 $('counts').innerHTML=counts.map(([n,t])=>'<div class="count"><b>'+esc(n)+'</b><span>'+esc(t)+'</span></div>').join('');
