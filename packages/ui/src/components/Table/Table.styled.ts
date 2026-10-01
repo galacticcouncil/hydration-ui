@@ -152,7 +152,6 @@ export const TableRow = styled.tr<{
     `}
     color: ${theme.text.high};
     background-color: ${theme.surfaces.containers.high.primary};
-    /* ponytail: only the row animates; pinned cells inherit its animated bg */
     transition: ${theme.transitions.colors};
 
     ${isClickable &&

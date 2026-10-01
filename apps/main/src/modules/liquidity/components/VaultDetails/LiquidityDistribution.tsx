@@ -13,6 +13,7 @@ import { defineChart, dot, rect, ruleX, text } from "@tanstack/charts"
 import { decorative } from "@tanstack/charts/mark/decorative"
 import { scaleLinear } from "@tanstack/charts/scales/linear"
 import { tooltip } from "@tanstack/charts/tooltip"
+import { portal } from "@tanstack/charts/tooltip/portal"
 import Big from "big.js"
 import { Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -45,6 +46,7 @@ import {
   plotCssPos,
   plotCssWidth,
   SCENARIO_TRANSITION,
+  SHORT_BAR_RATIO,
   TICK_PADDING,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.theme"
 import {
@@ -81,6 +83,19 @@ const Legend = ({ color, label }: { color: string; label: string }) => (
   </Flex>
 )
 
+const RangeSwatch = ({ range }: { range: ManagedRangeStyle }) => (
+  <Box
+    as="span"
+    size="xs"
+    borderRadius="base"
+    display="inline-block"
+    sx={{
+      background: managedRangeMixedColor(range.color, range.fillOpacity),
+      border: `1px solid ${managedRangeMixedColor(range.color, range.borderOpacity)}`,
+    }}
+  />
+)
+
 const RangeLegend = ({
   range,
   label,
@@ -101,16 +116,7 @@ const RangeLegend = ({
     onClick={onToggle}
     sx={{ opacity: visible ? 1 : FADED_OPACITY }}
   >
-    <Box
-      as="span"
-      size="xs"
-      borderRadius="base"
-      display="inline-block"
-      sx={{
-        background: managedRangeMixedColor(range.color, range.fillOpacity),
-        border: `1px solid ${managedRangeMixedColor(range.color, range.borderOpacity)}`,
-      }}
-    />
+    <RangeSwatch range={range} />
     <Text fs="p6" color={getToken("text.low")}>
       {label}
     </Text>
@@ -194,6 +200,8 @@ export const LiquidityDistribution = ({
   const bandGap = ceiling * (BAND_GAP / chartHeight)
 
   const definition = useMemo(() => {
+    let tooltipSide: "left" | "right" | "top" = "right"
+
     const displayPrice = (tick: number) => {
       const price = priceAtTick(tick, chartDecimals0, chartDecimals1)
       return flipped ? 1 / price : price
@@ -329,8 +337,44 @@ export const LiquidityDistribution = ({
       },
       tooltip: {
         use: tooltip,
+        // the tooltip is taller than the chart; portal it so it can overflow
+        // the chart vertically instead of being clamped over the bars
+        portal,
         sticky: false,
-        placement: "top",
+        // placement is static in the library; the anchor resolver runs right
+        // before positioning, so it picks the side and the getter reports it
+        get placement() {
+          return tooltipSide
+        },
+        anchor: (points, { plot, scales }) => {
+          const [bar] = points.filter(isBarPoint)
+          const mapX = scales.x?.map
+          const mapY = scales.y?.map
+          if (!bar || !mapX || !mapY) return null
+
+          // the axis runs backwards when flipped, so sort the edges
+          const [left, right] = [mapX(bar.datum.from), mapX(bar.datum.to)].sort(
+            (a, b) => a - b,
+          ) as [number, number]
+          const barTop = mapY(
+            Math.max(bar.datum.liquidity, minVisibleLiquidity),
+          )
+          const plotBottom = plot.y + plot.height
+
+          // short bars leave room above them, so the tooltip sits on top
+          if (plotBottom - barTop < plot.height * SHORT_BAR_RATIO) {
+            tooltipSide = "top"
+            return { x: (left + right) / 2, y: barTop }
+          }
+
+          tooltipSide =
+            left + right < plot.x * 2 + plot.width ? "right" : "left"
+
+          return {
+            x: tooltipSide === "right" ? right : left,
+            y: plot.y + plot.height / 2,
+          }
+        },
       },
     })
   }, [
@@ -638,17 +682,9 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
         <Stack gap="base" mt="base" separated withLeadingSeparator>
           {vaultPositions.map((position) => (
             <Fragment key={position.band}>
-              <Flex align="center" gap="xs">
-                <Box
-                  as="span"
-                  size="2xs"
-                  borderRadius="full"
-                  display="inline-block"
-                  borderStyle="solid"
-                  borderColor={
-                    managedRangeStyle(themeProps, position.band).color
-                  }
-                  borderWidth="1px"
+              <Flex align="center" gap="s">
+                <RangeSwatch
+                  range={managedRangeStyle(themeProps, position.band)}
                 />
                 <Text fs="p6" color={getToken("text.medium")}>
                   {position.share !== null

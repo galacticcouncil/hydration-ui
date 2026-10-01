@@ -162,8 +162,6 @@ export const vaultIdentityQuery = (evm: PublicClient, pool: V3PoolBase) =>
           : null
       if (!found) return null
 
-      // ponytail: owner is transferable, but lastRebalance falls back to the
-      // stack's rebalance proxy, so a stale owner costs one extra read at most.
       const [shareSymbol, owner] = await Promise.all([
         readHypervisor<string>(evm, found.hypervisor, "symbol"),
         readHypervisor<`0x${string}`>(evm, found.hypervisor, "owner"),
