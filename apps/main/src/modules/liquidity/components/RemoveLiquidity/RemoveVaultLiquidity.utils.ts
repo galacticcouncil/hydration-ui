@@ -7,7 +7,12 @@ import { useTranslation } from "react-i18next"
 import { encodeFunctionData, Hex, parseAbi } from "viem"
 
 import { estimateGasLimit } from "@/api/borrow"
-import { estimateVaultCallGas, VaultState } from "@/api/gamma/vaults"
+import {
+  estimateVaultCallGas,
+  VaultState,
+  vaultTxInvalidation,
+} from "@/api/gamma/vaults"
+import { V3PoolBase } from "@/api/pools"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -27,10 +32,12 @@ export const useVaultWithdraw = () => {
 
   return useCallback(
     async ({
+      pool,
       vault,
       shares,
       minAmounts,
     }: {
+      pool: V3PoolBase
       vault: VaultState
       shares: bigint
       minAmounts: [bigint, bigint, bigint, bigint]
@@ -68,7 +75,7 @@ export const useVaultWithdraw = () => {
           submitted: t("vaults.remove.toast.submitted"),
           success: t("vaults.remove.toast.success"),
         },
-        invalidateQueries: [["vault"], ["vaultShares"], ["pools", "v3"]],
+        invalidateQueries: vaultTxInvalidation(pool),
       })
     },
     [evmAddress, rpc, createTransaction, t],

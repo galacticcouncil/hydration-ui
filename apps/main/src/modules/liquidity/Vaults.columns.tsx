@@ -182,7 +182,7 @@ export const useVaultsColumns = () => {
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
         cell: ({ row: { original } }) =>
           original.isVolumeLoading ||
-          original.isMetricsLoading ||
+          original.isVaultLoading ||
           original.isPriceLoading ? (
             <Skeleton width={50} height="1em" />
           ) : original.apr !== undefined ? (

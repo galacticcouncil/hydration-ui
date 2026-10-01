@@ -6,11 +6,11 @@ import {
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
-import { PublicClient, zeroAddress } from "viem"
+import { PublicClient } from "viem"
 
 import { HYPERVISOR_ABI } from "@/api/gamma/abi"
 import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
-import { vaultAddressQuery } from "@/api/gamma/vaults"
+import { vaultIdentityQuery } from "@/api/gamma/vaults"
 import { assetMetadataQuery } from "@/api/metadata"
 import { allPools, V3PoolBase } from "@/api/pools"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -105,32 +105,25 @@ const fetchGammaVaultShareSymbols = async (
   queryClient: QueryClient,
   pools: V3PoolBase[],
 ): Promise<Set<string>> => {
-  const vaults = await Promise.all(
-    pools.map((pool) =>
-      queryClient.fetchQuery(vaultAddressQuery(evm, pool)).catch(() => null),
+  const [identities, bootstrapSymbol] = await Promise.all([
+    Promise.all(
+      pools.map((pool) =>
+        queryClient.fetchQuery(vaultIdentityQuery(evm, pool)).catch(() => null),
+      ),
     ),
-  )
-  const hypervisors = new Set([
-    GAMMA_BOOTSTRAP_HYPERVISOR,
-    ...vaults.map((vault) => vault?.hypervisor).filter(isNonNullish),
+    evm
+      .readContract({
+        abi: HYPERVISOR_ABI,
+        address: GAMMA_BOOTSTRAP_HYPERVISOR,
+        functionName: "symbol",
+      })
+      .catch(() => null),
   ])
 
-  hypervisors.delete(zeroAddress)
-
-  const symbols = await Promise.all(
-    [...hypervisors].map((address) =>
-      evm
-        .readContract({
-          abi: HYPERVISOR_ABI,
-          address,
-          functionName: "symbol",
-        })
-        .catch(() => null),
-    ),
-  )
-
   return new Set(
-    symbols.filter(isNonNullish).map((symbol) => symbol.toLowerCase()),
+    [bootstrapSymbol, ...identities.map((identity) => identity?.shareSymbol)]
+      .filter(isNonNullish)
+      .map((symbol) => symbol.toLowerCase()),
   )
 }
 

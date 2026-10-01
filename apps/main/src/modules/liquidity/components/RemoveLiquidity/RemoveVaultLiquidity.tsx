@@ -105,6 +105,7 @@ const useRemoveVaultLiquidity = ({
       if (!state) throw new Error("Vault not found")
 
       await withdraw({
+        pool: vault.pool,
         vault: state,
         shares: BigInt(Big(removeShares).toFixed(0)),
         minAmounts,
