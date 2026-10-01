@@ -1,0 +1,102 @@
+{
+  "createdAt": "2026-10-01T10:40:04.686Z",
+  "kind": "dependency-level fault injection; no browser assertions",
+  "observationMs": 100,
+  "versions": {
+    "@galacticcouncil/xc": "2.1.0",
+    "@galacticcouncil/xc-core": "2.6.0",
+    "@galacticcouncil/xc-cfg": "2.7.0",
+    "@galacticcouncil/xc-sdk": "2.5.0",
+    "@galacticcouncil/xc-swap": "0.9.0",
+    "@reown/appkit": "1.8.19",
+    "@reown/appkit-controllers": "1.8.19",
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.25"
+  },
+  "checks": [
+    {
+      "name": "appkit-config-and-usage-immediate-rejection",
+      "confirmed": true,
+      "observations": {
+        "configResolvedWithFallback": true,
+        "usageResolvedThroughCatch": true,
+        "requests": [
+          {
+            "url": "https://api.web3modal.org/appkit/v1/config?st=appkit&sv=html-wagmi-undefined",
+            "hasAbortSignal": false
+          },
+          {
+            "url": "https://api.web3modal.org/appkit/v1/project-limits?st=appkit&sv=html-wagmi-undefined",
+            "hasAbortSignal": false
+          }
+        ]
+      },
+      "implication": "Immediate Reown API failures are caught; fallback completes initialization steps."
+    },
+    {
+      "name": "appkit-config-and-usage-silent-hang",
+      "confirmed": true,
+      "observations": {
+        "config": "pending",
+        "usage": "pending",
+        "requests": [
+          {
+            "url": "https://api.web3modal.org/appkit/v1/config?st=appkit&sv=html-wagmi-undefined",
+            "hasAbortSignal": false
+          },
+          {
+            "url": "https://api.web3modal.org/appkit/v1/project-limits?st=appkit&sv=html-wagmi-undefined",
+            "hasAbortSignal": false
+          }
+        ]
+      },
+      "implication": "These readiness dependencies have no supplied AbortSignal or application deadline. They can keep WalletConnect pending and thereby hide healthy accounts in the shared account selector."
+    },
+    {
+      "name": "near-all-balances-immediate-rejection",
+      "confirmed": true,
+      "observations": {
+        "promise": "resolved",
+        "balances": [],
+        "requests": [
+          {
+            "url": "https://free.rpc.fastnear.com",
+            "method": "POST",
+            "hasAbortSignal": false
+          }
+        ]
+      },
+      "implication": "The chain swallows all asset RPC failures and resolves an empty successful result. Portfolio therefore cannot distinguish unavailable from verified zero and can hide the affected chain."
+    },
+    {
+      "name": "near-all-balances-silent-hang",
+      "confirmed": true,
+      "observations": {
+        "promise": "pending",
+        "requests": [
+          {
+            "url": "https://free.rpc.fastnear.com",
+            "method": "POST",
+            "hasAbortSignal": false
+          }
+        ]
+      },
+      "implication": "NEAR's balance fetch has no supplied AbortSignal or deadline. The affected chain query stays pending; other independently queried chains are not awaited here."
+    },
+    {
+      "name": "xc-swap-rejected-registry-promise-remains-cached",
+      "confirmed": true,
+      "observations": {
+        "firstCall": "rejected",
+        "afterServiceRecovery": "rejected with same error",
+        "serviceCalls": 1
+      },
+      "implication": "The client caches its failed token-registry promise. Retrying destination assets on the same client never reaches the recovered service."
+    }
+  ],
+  "warnings": [
+    "[Reown Config] Failed to fetch remote project configuration. Using local/default values. Error: simulated Reown service outage",
+    "Failed to fetch usage Error: simulated Reown service outage",
+    "bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)"
+  ],
+  "completed": true
+}

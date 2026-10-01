@@ -1,0 +1,585 @@
+{
+  "scope": "Value imports/dynamic imports in workspace src absent from declared production inventory; some are dev-only guarded, generated code, workspace self-reference, or transitive packages. This is a source inventory, not proof all imports execute in production.",
+  "packages": {
+    "rxjs": [
+      {
+        "path": "apps/main/src/api/account.ts",
+        "line": 4,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/api/balances/account.utils.ts",
+        "line": 7,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/api/balances/utils.ts",
+        "line": 7,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/hooks/useObservable.ts",
+        "line": 3,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/hooks/useObservableQuery.ts",
+        "line": 7,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/hooks/usePapiEntries.ts",
+        "line": 9,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/hooks/usePapiValue.ts",
+        "line": 3,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/onramp/deposit/hooks/useDepositConfirmation.ts",
+        "line": 8,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/trade/orders/lib/useInvalidateOrdersOnExecution.ts",
+        "line": 5,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/hooks/useSignAndSubmit.ts",
+        "line": 12,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/types/index.ts",
+        "line": 8,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/utils/polkadot.ts",
+        "line": 6,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/utils/subscriptions.ts",
+        "line": 1,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/utils/toasts/intentOutcomes.ts",
+        "line": 1,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/modules/xcm/history/hooks/useProcessBasejumpScanJourneys.ts",
+        "line": 9,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/providers/MultisigProvider.tsx",
+        "line": 10,
+        "specifier": "rxjs"
+      },
+      {
+        "path": "apps/main/src/providers/MultisigProvider.tsx",
+        "line": 11,
+        "specifier": "rxjs/operators"
+      },
+      {
+        "path": "apps/main/src/utils/rxjs.ts",
+        "line": 1,
+        "specifier": "rxjs"
+      }
+    ],
+    "@polkadot-api/substrate-bindings": [
+      {
+        "path": "apps/main/src/api/errors.ts",
+        "line": 2,
+        "specifier": "@polkadot-api/substrate-bindings"
+      },
+      {
+        "path": "apps/main/src/api/payments.ts",
+        "line": 9,
+        "specifier": "@polkadot-api/substrate-bindings"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/hooks/useWrapTransaction.ts",
+        "line": 9,
+        "specifier": "@polkadot-api/substrate-bindings"
+      },
+      {
+        "path": "apps/main/src/modules/transactions/utils/polkadot.ts",
+        "line": 2,
+        "specifier": "@polkadot-api/substrate-bindings"
+      },
+      {
+        "path": "packages/utils/src/helpers/meta.ts",
+        "line": 2,
+        "specifier": "@polkadot-api/substrate-bindings"
+      },
+      {
+        "path": "packages/web3-connect/src/utils/multisig.ts",
+        "line": 2,
+        "specifier": "@polkadot-api/substrate-bindings"
+      }
+    ],
+    "bignumber.js": [
+      {
+        "path": "apps/main/src/api/external/kamino.ts",
+        "line": 4,
+        "specifier": "bignumber.js"
+      },
+      {
+        "path": "packages/money-market/src/components/transactions/repay/RepayModalContent.tsx",
+        "line": 18,
+        "specifier": "bignumber.js"
+      },
+      {
+        "path": "packages/money-market/src/utils/transactions.ts",
+        "line": 1,
+        "specifier": "bignumber.js"
+      }
+    ],
+    "@galacticcouncil/math-liquidity-mining": [
+      {
+        "path": "apps/main/src/api/omnipool.ts",
+        "line": 2,
+        "specifier": "@galacticcouncil/math-liquidity-mining"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/JoinFarms/JoinFarms.utils.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-liquidity-mining"
+      }
+    ],
+    "@emotion/is-prop-valid": [
+      {
+        "path": "apps/main/src/components/DataProviderSelect/components/rpc/RpcListItem.styled.ts",
+        "line": 1,
+        "specifier": "@emotion/is-prop-valid"
+      },
+      {
+        "path": "packages/ui/src/components/Collapsible/Collapsible.styled.ts",
+        "line": 1,
+        "specifier": "@emotion/is-prop-valid"
+      },
+      {
+        "path": "packages/ui/src/components/Modal/Modal.styled.ts",
+        "line": 1,
+        "specifier": "@emotion/is-prop-valid"
+      },
+      {
+        "path": "packages/ui/src/components/Select/Select.styled.ts",
+        "line": 1,
+        "specifier": "@emotion/is-prop-valid"
+      },
+      {
+        "path": "packages/ui/src/components/Toggle/Toggle.styled.ts",
+        "line": 1,
+        "specifier": "@emotion/is-prop-valid"
+      },
+      {
+        "path": "packages/ui/src/components/ToggleGroup/ToggleGroup.styled.ts",
+        "line": 1,
+        "specifier": "@emotion/is-prop-valid"
+      }
+    ],
+    "@tanstack/react-devtools": [
+      {
+        "path": "apps/main/src/components/Devtools/Devtools.tsx",
+        "line": 3,
+        "specifier": "@tanstack/react-devtools"
+      }
+    ],
+    "@tanstack/react-query-devtools": [
+      {
+        "path": "apps/main/src/components/Devtools/Devtools.tsx",
+        "line": 4,
+        "specifier": "@tanstack/react-query-devtools"
+      }
+    ],
+    "@tanstack/react-router-devtools": [
+      {
+        "path": "apps/main/src/components/Devtools/Devtools.tsx",
+        "line": 5,
+        "specifier": "@tanstack/react-router-devtools"
+      }
+    ],
+    "@mdx-js/react": [
+      {
+        "path": "apps/main/src/components/Markdown/Markdown.tsx",
+        "line": 8,
+        "specifier": "@mdx-js/react"
+      }
+    ],
+    "@galacticcouncil/main": [
+      {
+        "path": "apps/main/src/components/TimeFrame/TimeFrame.tsx",
+        "line": 1,
+        "specifier": "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+      },
+      {
+        "path": "apps/main/src/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.tsx",
+        "line": 1,
+        "specifier": "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+      },
+      {
+        "path": "apps/main/src/modules/trade/swap/sections/DCA/DcaSummary.tsx",
+        "line": 1,
+        "specifier": "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+      },
+      {
+        "path": "apps/main/src/modules/trade/swap/sections/DCA/useDcaForm.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+      },
+      {
+        "path": "apps/main/src/modules/trade/swap/sections/XcSwap/lib/xcSwapQuoteQuery.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/main/src/api/assets"
+      }
+    ],
+    "vite": [
+      {
+        "path": "apps/main/src/config/seo.ts",
+        "line": 2,
+        "specifier": "vite"
+      }
+    ],
+    "@wormhole-foundation/sdk-definitions-ntt": [
+      {
+        "path": "apps/main/src/index.tsx",
+        "line": 2,
+        "specifier": "@wormhole-foundation/sdk-definitions-ntt"
+      }
+    ],
+    "@tanstack/table-core": [
+      {
+        "path": "apps/main/src/modules/liquidity/IsolatedPools.columns.tsx",
+        "line": 14,
+        "specifier": "@tanstack/table-core"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/Liquidity.columns.tsx",
+        "line": 13,
+        "specifier": "@tanstack/table-core"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/Vaults.columns.tsx",
+        "line": 16,
+        "specifier": "@tanstack/table-core"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/PositionsTable/PositionsTable.columns.tsx",
+        "line": 27,
+        "specifier": "@tanstack/table-core"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/VaultDetails/VaultPositions.tsx",
+        "line": 13,
+        "specifier": "@tanstack/table-core"
+      },
+      {
+        "path": "packages/ui/src/components/DataTable/DataTable.utils.tsx",
+        "line": 11,
+        "specifier": "@tanstack/table-core"
+      }
+    ],
+    "@galacticcouncil/math-omnipool": [
+      {
+        "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+        "line": 8,
+        "specifier": "@galacticcouncil/math-omnipool"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/AddLiquidity/AddLiqudity.utils.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-omnipool"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/RemoveLiquidity/RemoveOmnipoolLiquidity.utils.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-omnipool"
+      },
+      {
+        "path": "apps/main/src/states/liquidity.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-omnipool"
+      },
+      {
+        "path": "apps/main/src/states/liquidity.ts",
+        "line": 7,
+        "specifier": "@galacticcouncil/math-omnipool"
+      }
+    ],
+    "@galacticcouncil/math-xyk": [
+      {
+        "path": "apps/main/src/modules/liquidity/components/AddIsolatedLiquidity/AddIsolatedLiquidity.tsx",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-xyk"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/AddIsolatedLiquidity/AddIsolatedLiquidity.utils.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-xyk"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/JoinFarms/JoinFarms.utils.ts",
+        "line": 2,
+        "specifier": "@galacticcouncil/math-xyk"
+      }
+    ],
+    "@galacticcouncil/math-stableswap": [
+      {
+        "path": "apps/main/src/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-stableswap"
+      },
+      {
+        "path": "apps/main/src/modules/liquidity/components/RemoveLiquidity/RemoveStablepoolLiquidity.utils.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-stableswap"
+      }
+    ],
+    "@galacticcouncil/math-staking": [
+      {
+        "path": "apps/main/src/modules/staking/DashboardStats.data.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-staking"
+      },
+      {
+        "path": "apps/main/src/modules/staking/RewardsCurve.data.ts",
+        "line": 1,
+        "specifier": "@galacticcouncil/math-staking"
+      }
+    ],
+    "@ethersproject/bytes": [
+      {
+        "path": "packages/money-market/src/helpers/types.ts",
+        "line": 2,
+        "specifier": "@ethersproject/bytes"
+      },
+      {
+        "path": "packages/money-market/src/helpers/useTransactionHandler.tsx",
+        "line": 5,
+        "specifier": "@ethersproject/bytes"
+      }
+    ],
+    "tiny-invariant": [
+      {
+        "path": "packages/money-market/src/services/UIIncentivesService.ts",
+        "line": 3,
+        "specifier": "tiny-invariant"
+      },
+      {
+        "path": "packages/money-market/src/ui-config/SharedDependenciesProvider.tsx",
+        "line": 3,
+        "specifier": "tiny-invariant"
+      }
+    ],
+    "graphql-tag": [
+      {
+        "path": "packages/indexer/src/indexer/__generated__/sdk.ts",
+        "line": 4,
+        "specifier": "graphql-tag"
+      }
+    ],
+    "@storybook/react-vite": [
+      {
+        "path": "packages/ui/src/components/AccountAvatar/AccountAvatar.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/AccountInput/AccountInput.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/AccountTile/AccountTile.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/AnimatedValue/AnimatedValue.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/AssetInput/AssetInput.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Box/Box.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Chain/Chain.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Checkbox/Checkbox.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Collapsible/Collapsible.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Combobox/Combobox.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/DropdownMenu/DropdownMenu.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Flex/Flex.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Grid/Grid.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Input/Input.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Notification/Notification.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Points/Points.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/ProgressBar/ProgressBar.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/ProgressCircle/ProgressCircle.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/ScrollArea/ScrollArea.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Stack/Stack.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/TextButton/TextButton.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      },
+      {
+        "path": "packages/ui/src/components/Toggle/Toggle.stories.tsx",
+        "line": 1,
+        "specifier": "@storybook/react-vite"
+      }
+    ],
+    "storybook": [
+      {
+        "path": "packages/ui/src/components/DataTable/DataTable.stories.tsx",
+        "line": 4,
+        "specifier": "storybook/preview-api"
+      },
+      {
+        "path": "packages/ui/src/components/Drawer/Drawer.stories.tsx",
+        "line": 4,
+        "specifier": "storybook/preview-api"
+      },
+      {
+        "path": "packages/ui/src/components/Drawer/Drawer.styled.ts",
+        "line": 1,
+        "specifier": "storybook/theming"
+      },
+      {
+        "path": "packages/ui/src/components/Modal/Modal.stories.tsx",
+        "line": 3,
+        "specifier": "storybook/preview-api"
+      },
+      {
+        "path": "packages/ui/src/components/Notification/Notification.styled.ts",
+        "line": 3,
+        "specifier": "storybook/theming"
+      },
+      {
+        "path": "packages/ui/src/components/ScrollArea/ScrollArea.styled.ts",
+        "line": 4,
+        "specifier": "storybook/theming"
+      },
+      {
+        "path": "packages/ui/src/components/Sheet/Sheet.stories.tsx",
+        "line": 3,
+        "specifier": "storybook/preview-api"
+      }
+    ],
+    "@radix-ui/react-visually-hidden": [
+      {
+        "path": "packages/ui/src/components/Drawer/Drawer.tsx",
+        "line": 1,
+        "specifier": "@radix-ui/react-visually-hidden"
+      },
+      {
+        "path": "packages/ui/src/components/Modal/Modal.tsx",
+        "line": 2,
+        "specifier": "@radix-ui/react-visually-hidden"
+      }
+    ],
+    "@polkadot-api/utils": [
+      {
+        "path": "packages/utils/src/helpers/evm.ts",
+        "line": 3,
+        "specifier": "@polkadot-api/utils"
+      },
+      {
+        "path": "packages/utils/src/helpers/polkadot.ts",
+        "line": 2,
+        "specifier": "@polkadot-api/utils"
+      },
+      {
+        "path": "packages/utils/src/helpers/solana.ts",
+        "line": 2,
+        "specifier": "@polkadot-api/utils"
+      },
+      {
+        "path": "packages/web3-connect/src/utils/multisig.ts",
+        "line": 6,
+        "specifier": "@polkadot-api/utils"
+      }
+    ],
+    "@mysten/sui": [
+      {
+        "path": "packages/web3-connect/src/signers/SuiSigner.ts",
+        "line": 3,
+        "specifier": "@mysten/sui/client"
+      },
+      {
+        "path": "packages/web3-connect/src/signers/SuiSigner.ts",
+        "line": 4,
+        "specifier": "@mysten/sui/transactions"
+      }
+    ]
+  }
+}

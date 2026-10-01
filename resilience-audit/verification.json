@@ -1,0 +1,165 @@
+{
+  "checkedAt": "2026-10-01T11:21:02.268892+00:00",
+  "sourceCommit": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+  "branchPurpose": "Audit tooling and documentation; no product fixes",
+  "node": "v25.7.0",
+  "frozenLockSha256": "4ba7f57c0fa6e56ad3832f958f2cfc3923acbfd90dea7d0d158ae352507e5e91",
+  "installedPackageVersionsRecorded": 114,
+  "sourceFilesHashed": 152,
+  "functionHarnesses": [
+    {
+      "script": "metadata-faults.cjs",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "script": "dependency-faults.cjs",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "script": "oneclick-faults.mjs",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "script": "deep-startup-faults.cjs",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "script": "deep-crosschain-faults.cjs",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "script": "deep-data-faults.cjs",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "script": "wait-faults.cjs",
+      "exitCode": 0,
+      "signal": null
+    }
+  ],
+  "browserCollection": {
+    "acceptance": false,
+    "cases": [
+      {
+        "name": "baseline",
+        "healthyRpc": true,
+        "nativeQuote": true
+      },
+      {
+        "name": "all-external-reject",
+        "healthyRpc": true,
+        "nativeQuote": true
+      },
+      {
+        "name": "all-external-hang",
+        "healthyRpc": true,
+        "nativeQuote": false
+      },
+      {
+        "name": "metadata-malformed",
+        "healthyRpc": true,
+        "nativeQuote": false
+      },
+      {
+        "name": "metadata-hang",
+        "healthyRpc": true,
+        "nativeQuote": false
+      },
+      {
+        "name": "warm-all-external-hang",
+        "healthyRpc": true,
+        "nativeQuote": true
+      },
+      {
+        "name": "neckwork-malformed-stats",
+        "healthyRpc": true,
+        "nativeQuote": false
+      }
+    ],
+    "errors": []
+  },
+  "repositoryChecks": {
+    "buildTasks": 6,
+    "lintTasks": 11,
+    "testFiles": 5,
+    "tests": 34,
+    "status": "passed"
+  },
+  "historicalEvidenceHashesVerified": 55,
+  "acceptanceKnownFailures": [
+    "all-external-hang",
+    "metadata-malformed",
+    "metadata-hang",
+    "neckwork-malformed-stats"
+  ],
+  "limits": [
+    "Function assertions characterize current behavior, including known failures.",
+    "Browser acceptance is an anonymous native-flow subset; no transaction signed or submitted."
+  ],
+  "browserRpcEvidence": [
+    {
+      "scenario": "warm-all-external-hang",
+      "successfulLegacyRuntimeCalls": 709,
+      "successfulChainHeadRuntimeCalls": 0,
+      "nativeQuote": [
+        "1",
+        "138.219522401373"
+      ],
+      "liquidityPoolLinks": null
+    },
+    {
+      "scenario": "neckwork-malformed-stats",
+      "successfulLegacyRuntimeCalls": 0,
+      "successfulChainHeadRuntimeCalls": 682,
+      "nativeQuote": null,
+      "liquidityPoolLinks": 0
+    },
+    {
+      "scenario": "baseline",
+      "successfulLegacyRuntimeCalls": 672,
+      "successfulChainHeadRuntimeCalls": 0,
+      "nativeQuote": [
+        "1",
+        "138.250651876654"
+      ],
+      "liquidityPoolLinks": null
+    },
+    {
+      "scenario": "all-external-reject",
+      "successfulLegacyRuntimeCalls": 672,
+      "successfulChainHeadRuntimeCalls": 0,
+      "nativeQuote": [
+        "1",
+        "138.250651876654"
+      ],
+      "liquidityPoolLinks": null
+    },
+    {
+      "scenario": "all-external-hang",
+      "successfulLegacyRuntimeCalls": 672,
+      "successfulChainHeadRuntimeCalls": 0,
+      "nativeQuote": null,
+      "liquidityPoolLinks": null
+    },
+    {
+      "scenario": "metadata-malformed",
+      "successfulLegacyRuntimeCalls": 672,
+      "successfulChainHeadRuntimeCalls": 0,
+      "nativeQuote": null,
+      "liquidityPoolLinks": null
+    },
+    {
+      "scenario": "metadata-hang",
+      "successfulLegacyRuntimeCalls": 672,
+      "successfulChainHeadRuntimeCalls": 0,
+      "nativeQuote": null,
+      "liquidityPoolLinks": null
+    }
+  ]
+}
