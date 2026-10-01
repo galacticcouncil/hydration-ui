@@ -26,16 +26,12 @@ import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config
 import {
   subLoopQuery,
   vaultBalancesQuery,
-  vaultLoopPositionQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useRequestRedeem } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { percentageOf } from "@/utils/formatting"
-
-// Below 0.5% carry, the haircut is noise next to slippage; show the gross estimate.
-const CARRY_DISPLAY_FLOOR = 0.005
 
 type Props = {
   vault: PropellerVaultConfig
@@ -54,20 +50,15 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const { data: balances } = useQuery(
     vaultBalancesQuery(rpc, vault, decimals, evmAddress),
   )
-  const { data: loopPosition } = useQuery(vaultLoopPositionQuery(rpc, vault))
   const { data: subLoop } = useQuery(subLoopQuery(rpc))
   const redeem = useRequestRedeem(vault, { onSuccess })
 
   const exchangeRate = stats?.exchangeRate ?? 1
   const shareBalance = (balances?.shares ?? 0).toString()
   const negativeCarry = subLoop?.negativeCarry ?? 0
-  const carry = negativeCarry >= CARRY_DISPLAY_FLOOR ? negativeCarry : 0
+  const carry = negativeCarry
 
-  const blockedReason = stats?.paused
-    ? "paused"
-    : loopPosition?.equity === 0n
-      ? "noEquity"
-      : null
+  const blockedReason = !stats ? "loading" : stats.paused ? "paused" : null
 
   const form = useWithdrawForm({
     maxBalance: shareBalance,
@@ -79,7 +70,6 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const amount = watch("amount")
   const assetOut = Big(amount || "0")
     .times(exchangeRate)
-    .times(1 - carry)
     .toString()
 
   const canSubmit = formState.isValid && !redeem.isPending && !blockedReason
@@ -154,7 +144,11 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                         checked={field.value}
                         onCheckedChange={(checked) => field.onChange(!!checked)}
                       />
-                      {t("withdraw.ack", { symbol, shareSymbol })}
+                      {t("withdraw.ack", {
+                        symbol,
+                        shareSymbol,
+                        hours: (stats?.withdrawalDelay ?? 0) / 3600,
+                      })}
                     </CheckboxLabel>
                   )}
                 />

@@ -8,6 +8,7 @@ import {
   DataTable,
   Separator,
   TableContainer,
+  Text,
   ValueStats,
   ValueStatsGroup,
 } from "@galacticcouncil/ui/components"
@@ -68,6 +69,9 @@ export const StrategyDetailsCard = () => {
           />
         </ValueStatsGroup>
       </CardBody>
+      <Box px="m" pb="m">
+        <Text fs="p6">{t("strategy.apyEstimate")}</Text>
+      </Box>
       <Separator />
       {isMobile || isTablet ? (
         <Box p="m" asChild>

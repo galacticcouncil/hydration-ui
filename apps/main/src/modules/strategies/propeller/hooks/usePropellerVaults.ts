@@ -7,10 +7,10 @@ import {
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
 import {
-  computeVaultApy,
   subLoopQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { computeVaultApy } from "@/modules/strategies/propeller/utils/accounting"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -28,7 +28,7 @@ export const vaultDepositState = (
   stats: PropellerVaultStats | undefined,
 ): VaultDepositState => {
   if (!stats) return "open"
-  if (stats.paused || stats.depositsPaused) return "paused"
+  if (stats.paused || stats.depositsPaused || stats.underfunded) return "paused"
   if (stats.cap > 0 && stats.remaining <= 0) return "full"
   return "open"
 }
@@ -40,6 +40,7 @@ export type PropellerVaultStats = {
   remainingPct: number
   paused: boolean
   depositsPaused: boolean
+  underfunded: boolean
   exchangeRate: number
   maxLtv: number | null
 }
@@ -83,6 +84,7 @@ export const usePropellerVaults = () => {
       ...remainingCapacity(data.totalAssets, data.tvlCap),
       paused: data.paused,
       depositsPaused: data.depositsPaused,
+      underfunded: data.underfunded,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
     }
@@ -96,6 +98,8 @@ export const usePropellerVaults = () => {
         leverage: subLoop?.leverage,
         borrowRate: subLoop?.borrowRate,
         primeSupplyApy,
+        protocolFeeBps: data?.protocolFeeBps,
+        mainDiscountBps: data?.mainDiscountBps,
       }),
       price,
       tvlUsd: (stats?.tvl ?? 0) * price,

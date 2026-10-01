@@ -14,10 +14,11 @@ import {
   type QueueEntry,
   vaultQueueQuery,
 } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
+import { vaultBalancesQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
-  vaultBalancesQuery,
-  vaultLoopPositionQuery,
-} from "@/modules/strategies/propeller/hooks/useVaultReads"
+  type WithdrawalState,
+  withdrawalState,
+} from "@/modules/strategies/propeller/utils/accounting"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -29,7 +30,7 @@ export type PropellerPosition = {
   apy: number | null
 }
 
-export type WithdrawalRowState = "pending" | "partial" | "settled" | "claimed"
+export type WithdrawalRowState = WithdrawalState
 
 export type PropellerWithdrawalRow = {
   /** `${vaultAddress}:${requestId}` — requestId is only unique per vault. */
@@ -37,7 +38,7 @@ export type PropellerWithdrawalRow = {
   requestId: number
   vault: PropellerVaultConfig
   amountShares: number
-  /** Measured payout once settled; otherwise a carry-discounted estimate. */
+  /** Full collateral entitlement, estimated until the unwind starts. */
   estEth: number
   estUsd: number
   isEstimate?: boolean
@@ -48,8 +49,10 @@ export type PropellerWithdrawalRow = {
   collateralOwed?: number
   collateralSettled?: number
   settledSoFar?: number
-  /** Unwind stalled; remainder will be written off. */
-  willSettleShort?: boolean
+  eligibleAt: number
+  mainDebt: Hex
+  surplusHollar: number
+  sourcePending: boolean
 }
 
 export const withdrawalRowId = (vaultAddress: string, requestId: number) =>
@@ -61,7 +64,7 @@ const needsSettlement = (entry: QueueEntry) =>
 
 /**
  * One withdrawal row from a queue entry. Pays out the measured settlement when
- * there is one, otherwise owed (or shares × exchange rate) minus SubLoop carry.
+ * there is one. Funding deficits delay payment without reducing the claim.
  */
 export const buildWithdrawalRow = ({
   vault,
@@ -69,8 +72,6 @@ export const buildWithdrawalRow = ({
   settlement,
   isSettlementLoading,
   exchangeRate,
-  carry,
-  pendingUnwind,
   price,
 }: {
   vault: PropellerVaultConfig
@@ -78,25 +79,20 @@ export const buildWithdrawalRow = ({
   settlement: RedemptionSettlement | undefined
   isSettlementLoading: boolean
   exchangeRate: number
-  carry: number
-  pendingUnwind: bigint | null | undefined
   price: number
 }): PropellerWithdrawalRow => {
-  const state: WithdrawalRowState = !entry.active
-    ? "claimed"
-    : entry.settledProgress >= 1
-      ? "settled"
-      : entry.settledProgress > 0
-        ? "partial"
-        : "pending"
-
-  const settledSoFar = settlement?.collateralSettled ?? 0
-  const hasSettled = settledSoFar > 0
-  const estEth = hasSettled
-    ? settledSoFar
-    : entry.collateralOwed > 0
-      ? entry.collateralOwed * (1 - carry)
-      : entry.shares * exchangeRate * (1 - carry)
+  const settledSoFar = entry.claimedCollateral + entry.collateralSettled
+  const state = withdrawalState({
+    active: entry.active,
+    started: entry.started,
+    eligibleAt: entry.eligibleAt,
+    now: entry.observedAt,
+    complete: entry.settledProgress >= 1,
+    settledAmount: settledSoFar,
+  })
+  const estEth = entry.started
+    ? entry.collateralOwed
+    : entry.shares * exchangeRate
 
   return {
     id: withdrawalRowId(vault.vaultAddress, entry.requestId),
@@ -105,15 +101,17 @@ export const buildWithdrawalRow = ({
     amountShares: entry.shares,
     estEth,
     estUsd: estEth * price,
-    isEstimate: !hasSettled,
+    isEstimate: !entry.started,
     isSettlementLoading,
     state,
     settledBlock: settlement?.firstSettledBlock,
     collateralOwed: entry.collateralOwed,
     collateralSettled: entry.collateralSettled,
     settledSoFar,
-    willSettleShort:
-      entry.active && entry.settledProgress < 1 && pendingUnwind === 0n,
+    eligibleAt: entry.eligibleAt,
+    mainDebt: entry.mainDebt,
+    surplusHollar: entry.surplusHollar,
+    sourcePending: entry.sourcePending,
   }
 }
 
@@ -127,7 +125,7 @@ export const sortWithdrawalRows = <
 export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { vaults: markets, subLoop } = usePropellerVaults()
+  const { vaults: markets } = usePropellerVaults()
 
   const decimalsOf = (vault: PropellerVaultConfig) =>
     getAssetWithFallback(vault.assetId).decimals
@@ -174,17 +172,10 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
       )
     }),
   })
-  const loopPositionQueries = useQueries({
-    queries: PROPELLER_VAULTS.map((vault) =>
-      vaultLoopPositionQuery(rpc, vault),
-    ),
-  })
 
   if (!evmAddress) {
     return { positions: [], withdrawals: [], isLoading: false }
   }
-
-  const carry = subLoop?.negativeCarry ?? 0
 
   const positions = PROPELLER_VAULTS.flatMap<PropellerPosition>((vault, i) => {
     const shares = balanceQueries[i]?.data?.shares ?? 0
@@ -226,8 +217,6 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
           isSettlementLoading:
             !settlement && settlementFetching && needsSettlement(entry),
           exchangeRate: market?.stats?.exchangeRate ?? 1,
-          carry,
-          pendingUnwind: loopPositionQueries[i]?.data?.pendingUnwind,
           price: market?.price ?? 0,
         })
       })

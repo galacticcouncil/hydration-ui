@@ -1,7 +1,10 @@
 import { queryOptions } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex, zeroAddress } from "viem"
 
-import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
+import {
+  MAIN_DEBT_ABI,
+  VAULT_ABI,
+} from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -12,14 +15,16 @@ export interface QueueEntry {
   shares: number
   collateralOwed: number
   collateralSettled: number
-  /**
-   * Unwind progress from repaid/debtShare. Not collateralSettled: a claim
-   * resets that to 0 mid-settlement.
-   */
+  claimedCollateral: number
   settledProgress: number
-  /** True until the owner claims. */
   active: boolean
   isUser: boolean
+  started: boolean
+  eligibleAt: number
+  observedAt: number
+  mainDebt: Hex
+  surplusHollar: number
+  sourcePending: boolean
 }
 
 export const vaultQueueQuery = (
@@ -37,62 +42,86 @@ export const vaultQueueQuery = (
         abi: VAULT_ABI,
         client: rpc.evm,
       })
-
-      const [tail, totalQueued] = await Promise.all([
-        contract.read.queueTail(),
-        contract.read.totalQueuedShares(),
+      // Use one block so cooldown, debt and claimability cannot disagree across reads.
+      const block = await rpc.evm.getBlock()
+      const options = { blockNumber: block.number }
+      const [tail, totalQueued, unwind, mainDebt] = await Promise.all([
+        contract.read.queueTail(options),
+        contract.read.totalQueuedShares(options),
+        contract.read.queueUnwind(options),
+        contract.read.mainDebt(options),
       ])
-
-      const queueTail = Number(tail)
-      const totalQueuedShares = Number(formatUnits(totalQueued, decimals))
-
-      const addr = evmAddress?.toLowerCase()
-
-      // ponytail: queue length × vaults reads every 30 s; no multicall on lark, index when queues grow
-      // Scan from 0, not queueHead: settled-but-unclaimed requests sit below the head.
-      const redemptions = await Promise.all(
-        Array.from({ length: queueTail }, (_, i) =>
-          contract.read.redemptions([BigInt(i)]),
-        ),
-      )
-
-      const entries = redemptions.flatMap<QueueEntry>(
-        (
-          [
-            owner,
-            shares,
-            collateralOwed,
-            debtShare,
-            ,
-            repaid,
-            collateralSettled,
-            ,
-            active,
-          ],
-          i,
-        ) =>
-          owner === zeroAddress
-            ? []
-            : [
-                {
-                  requestId: i,
-                  owner,
-                  shares: Number(formatUnits(shares, decimals)),
-                  collateralOwed: Number(formatUnits(collateralOwed, decimals)),
-                  collateralSettled: Number(
-                    formatUnits(collateralSettled, decimals),
-                  ),
-                  settledProgress:
-                    debtShare > 0n ? Number(repaid) / Number(debtShare) : 0,
-                  active,
-                  isUser: addr ? owner.toLowerCase() === addr : false,
-                },
-              ],
-      )
-
+      const ledger = getContract({
+        address: mainDebt,
+        abi: MAIN_DEBT_ABI,
+        client: rpc.evm,
+      })
+      const queue: QueueEntry[] = []
+      // Historical requests may still own recoveries after collateral has been claimed.
+      // Bound RPC fan-out while scanning; a user-request index can replace this scan.
+      for (let start = 0n; start < tail; start += 32n) {
+        const ids = Array.from(
+          { length: Number(tail - start > 32n ? 32n : tail - start) },
+          (_, i) => start + BigInt(i),
+        )
+        const rows = await Promise.all(
+          ids.map(async (id) => {
+            const [
+              owner,
+              shares,
+              collateralOwed,
+              debtShare,
+              ,
+              repaid,
+              collateralSettled,
+              ,
+              active,
+            ] = await contract.read.redemptions([id], options)
+            if (
+              owner === zeroAddress ||
+              owner.toLowerCase() !== evmAddress?.toLowerCase()
+            )
+              return null
+            const started = id < unwind
+            const [eligibleAt, claimed, position] = await Promise.all([
+              contract.read.unwindEligibleAt([id], options),
+              contract.read.claimedCollateral([id], options),
+              started && mainDebt !== zeroAddress
+                ? ledger.read.positions([id + 1n], options)
+                : null,
+            ])
+            const units = position?.[0]
+            const cash = position?.[2] ?? 0n
+            return {
+              requestId: Number(id),
+              owner,
+              active,
+              isUser: true,
+              started,
+              mainDebt,
+              shares: Number(formatUnits(shares, decimals)),
+              collateralOwed: Number(formatUnits(collateralOwed, decimals)),
+              collateralSettled: Number(
+                formatUnits(collateralSettled, decimals),
+              ),
+              claimedCollateral: Number(formatUnits(claimed, decimals)),
+              settledProgress: started
+                ? debtShare > 0n
+                  ? Number(repaid) / Number(debtShare)
+                  : 1
+                : 0,
+              eligibleAt: Number(eligibleAt) * 1000,
+              observedAt: Number(block.timestamp) * 1000,
+              surplusHollar: units === 0n ? Number(formatUnits(cash, 18)) : 0,
+              sourcePending: (position?.[3] ?? 0n) > 0n,
+            }
+          }),
+        )
+        queue.push(...rows.filter((row) => row !== null))
+      }
       return {
-        queue: entries,
-        totalQueuedShares,
+        queue,
+        totalQueuedShares: Number(formatUnits(totalQueued, decimals)),
       }
     },
     refetchInterval: 30_000,

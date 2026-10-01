@@ -8,6 +8,7 @@ const vault = (vaultAddress: string) => [
 
 export const propellerQueryKeys = {
   subLoop: () => [PROPELLER_QUERY_KEY_PREFIX, "subloop"],
+  claimSurplus: () => [PROPELLER_QUERY_KEY_PREFIX, "claim-surplus"],
   claim: () => [PROPELLER_QUERY_KEY_PREFIX, "claim"],
   blockTimestamp: (blockNumber: string | undefined) => [
     PROPELLER_QUERY_KEY_PREFIX,

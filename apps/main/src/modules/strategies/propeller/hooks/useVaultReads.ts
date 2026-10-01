@@ -1,9 +1,10 @@
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
-import { isNullish } from "remeda"
 import { erc20Abi, formatUnits, getContract, type Hex } from "viem"
 
 import {
+  DEBT_TOKEN_ABI,
+  FEE_CONTROLLER_ABI,
   POOL_ABI,
   SUBLOOP_ABI,
   VAULT_ABI,
@@ -67,6 +68,10 @@ export const vaultStatsQuery = (
         queueHead,
         queueTail,
         collateralConfig,
+        feeController,
+        debtToken,
+        withdrawalDelay,
+        underfunded,
       ] = await Promise.all([
         contract.read.totalAssets(),
         contract.read.totalSupply(),
@@ -80,6 +85,28 @@ export const vaultStatsQuery = (
           pool.read.getConfiguration([
             getAddressFromAssetId(vault.assetId) as Hex,
           ]),
+        ),
+        contract.read.feeController(),
+        contract.read.hollarDebtToken(),
+        contract.read.withdrawalDelay(),
+        contract.read.isUnderfunded(),
+      ])
+      const [protocolFeeBps, mainDiscountBps] = await Promise.all([
+        safeRead("FeeController.protocolFeeBps", () =>
+          evm.readContract({
+            address: feeController,
+            abi: FEE_CONTROLLER_ABI,
+            functionName: "protocolFeeBps",
+            args: [vault.vaultAddress],
+          }),
+        ),
+        safeRead("DebtToken.getDiscountPercent", () =>
+          evm.readContract({
+            address: debtToken,
+            abi: DEBT_TOKEN_ABI,
+            functionName: "getDiscountPercent",
+            args: [vault.vaultAddress],
+          }),
         ),
       ])
 
@@ -101,6 +128,11 @@ export const vaultStatsQuery = (
         paused,
         depositsPaused,
         maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
+        withdrawalDelay,
+        underfunded,
+        protocolFeeBps: protocolFeeBps === null ? null : Number(protocolFeeBps),
+        mainDiscountBps:
+          mainDiscountBps === null ? null : Number(mainDiscountBps),
         minRedeem: FALLBACK_MIN_REDEEM,
         apr: FALLBACK_APR,
       }
@@ -167,37 +199,8 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
   })
 
 /**
- * Net deposit APY = maxLtv * loopLeverage * (primeYield - borrowRate), in
- * percent for common:percent (it divides by 100). Returns null when inputs are
- * missing or carry is not positive.
- */
-export const computeVaultApy = ({
-  maxLtv,
-  leverage,
-  borrowRate,
-  primeSupplyApy,
-}: {
-  maxLtv: number | null | undefined
-  leverage: number | null | undefined
-  borrowRate: number | null | undefined
-  primeSupplyApy: number | null | undefined
-}): number | null => {
-  if (
-    isNullish(maxLtv) ||
-    isNullish(leverage) ||
-    isNullish(borrowRate) ||
-    isNullish(primeSupplyApy)
-  ) {
-    return null
-  }
-  const primeYield = primeSupplyApy / 100
-  const apr = maxLtv * leverage * (primeYield - borrowRate)
-  return apr > 0 ? apr * 100 : null
-}
-
-/**
  * SubLoop equity for this vault. equity gates withdraw; pendingUnwind signals
- * a stalled unwind that may pay out short.
+ * settlement that is awaiting source funds.
  */
 export const vaultLoopPositionQuery = (
   { isReady, evm }: TProviderContext,

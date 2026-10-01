@@ -23,6 +23,7 @@ import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hook
 import { blockTimestampQuery } from "@/modules/strategies/propeller/hooks/useRedemptionHistory"
 import {
   useClaim,
+  useClaimSurplus,
   usePendingClaimIds,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
@@ -34,13 +35,13 @@ type WithdrawalStateLabel =
   | "pending"
   | "claimable"
   | "settling"
-  | "settlingShort"
+  | "cooldown"
   | "claimed"
 
 const stateChipVariant: Record<WithdrawalStateLabel, ChipProps["variant"]> = {
   pending: "orange",
   settling: "amber",
-  settlingShort: "orange",
+  cooldown: "orange",
   claimable: "green",
   claimed: "blue",
 }
@@ -52,7 +53,7 @@ const getWithdrawalStateLabel = (
 
   const claimable = row.collateralSettled ?? 0
   if (claimable > 0) return "claimable"
-  if (row.willSettleShort) return "settlingShort"
+  if (row.state === "cooldown") return "cooldown"
   if (row.state === "partial") return "settling"
   return "pending"
 }
@@ -80,6 +81,7 @@ export const WithdrawalsCard = ({ rows }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const { getAssetWithFallback } = useAssets()
   const claim = useClaim()
+  const recovery = useClaimSurplus()
   const claimingIds = usePendingClaimIds()
   const [page, setPage] = useState(1)
 
@@ -164,6 +166,41 @@ export const WithdrawalsCard = ({ rows }: Props) => {
                           </Text>
                         )}
                       </>
+                    )}
+                    {row.state === "cooldown" && (
+                      <Text fs="p6" color={getToken("text.low")}>
+                        {t("withdrawals.eligibleAt")}{" "}
+                        <DateText date={new Date(row.eligibleAt)} />
+                      </Text>
+                    )}
+                    {row.surplusHollar > 0 && (
+                      <LoadingButton
+                        variant="secondary"
+                        size="small"
+                        isLoading={
+                          recovery.isPending &&
+                          recovery.variables?.requestId === row.requestId &&
+                          recovery.variables?.vault.vaultAddress ===
+                            row.vault.vaultAddress
+                        }
+                        disabled={recovery.isPending}
+                        onClick={() =>
+                          recovery.mutate({
+                            vault: row.vault,
+                            requestId: row.requestId,
+                            mainDebt: row.mainDebt,
+                          })
+                        }
+                      >
+                        {t("withdrawals.action.claimRecovery", {
+                          amount: row.surplusHollar,
+                        })}
+                      </LoadingButton>
+                    )}
+                    {row.sourcePending && row.state === "claimed" && (
+                      <Text fs="p6" color={getToken("text.low")}>
+                        {t("withdrawals.recoveryPending")}
+                      </Text>
                     )}
                   </Flex>
                 }

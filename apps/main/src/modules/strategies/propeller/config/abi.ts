@@ -1,5 +1,17 @@
+import { parseAbi } from "viem"
+
 // Hand-trimmed from CollateralVault.sol/CollateralVault.json
 export const VAULT_ABI = [
+  ...parseAbi([
+    "function mainDebt() view returns (address)",
+    "function feeController() view returns (address)",
+    "function hollarDebtToken() view returns (address)",
+    "function isUnderfunded() view returns (bool)",
+    "function withdrawalDelay() view returns (uint32)",
+    "function queueUnwind() view returns (uint256)",
+    "function unwindEligibleAt(uint256) view returns (uint256)",
+    "function claimedCollateral(uint256) view returns (uint256)",
+  ]),
   {
     type: "function",
     name: "totalSupply",
@@ -223,7 +235,7 @@ export const SUBLOOP_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
-  // Loop-wide negative carry in bps. Not in exchangeRate; redeemer absorbs it.
+  // Loop-wide funding deficit. It can delay settlement; it is not a claim haircut.
   {
     type: "function",
     name: "negativeCarryBps",
@@ -238,7 +250,7 @@ export const SUBLOOP_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
-  // requestRedeem reverts NoLoopEquity when this is 0.
+  // Source equity can affect settlement availability after the cooldown.
   {
     type: "function",
     name: "equityOf",
@@ -313,3 +325,16 @@ export const POOL_ABI = [
     stateMutability: "view",
   },
 ] as const
+
+export const MAIN_DEBT_ABI = parseAbi([
+  "function positions(uint256) view returns (uint256 units, uint256 principal, uint256 cash, uint256 sourceRemaining, address owner)",
+  "function claimSurplus(uint256 id) returns (uint256 amount)",
+])
+
+export const FEE_CONTROLLER_ABI = parseAbi([
+  "function protocolFeeBps(address vault) view returns (uint16)",
+])
+
+export const DEBT_TOKEN_ABI = parseAbi([
+  "function getDiscountPercent(address borrower) view returns (uint256)",
+])

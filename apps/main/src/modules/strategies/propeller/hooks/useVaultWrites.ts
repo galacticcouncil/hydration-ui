@@ -23,7 +23,10 @@ import {
 } from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
-import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
+import {
+  MAIN_DEBT_ABI,
+  VAULT_ABI,
+} from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
@@ -307,5 +310,36 @@ export function usePendingClaimIds() {
       const { vault, requestId } = mutation.state.variables as ClaimVariables
       return withdrawalRowId(vault.vaultAddress, requestId)
     },
+  })
+}
+
+/** Later source recoveries remain claimable after the collateral withdrawal. */
+export function useClaimSurplus(options: VaultWriteOptions = {}) {
+  const { submitBatch } = useVaultEvmCall(options)
+  return useMutation({
+    mutationKey: propellerQueryKeys.claimSurplus(),
+    mutationFn: ({
+      vault,
+      requestId,
+      mainDebt,
+    }: ClaimVariables & { mainDebt: Hex }) =>
+      submitBatch(
+        vault.vaultAddress,
+        [
+          {
+            to: mainDebt,
+            data: encodeFunctionData({
+              abi: MAIN_DEBT_ABI,
+              functionName: "claimSurplus",
+              args: [BigInt(requestId)],
+            }),
+            abi: MAIN_DEBT_ABI,
+          },
+        ],
+        {
+          submitted: "Claiming HOLLAR recovery...",
+          success: "HOLLAR recovery claimed",
+        },
+      ),
   })
 }
