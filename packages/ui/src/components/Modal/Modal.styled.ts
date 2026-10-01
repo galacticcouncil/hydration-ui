@@ -123,8 +123,14 @@ export const SModalContent = styled(Content, {
       position: relative;
       inset: auto;
 
-      width: min(var(--modal-content-width), calc(100vw - 32px));
-      max-width: min(var(--modal-content-width), calc(100vw - 32px));
+      width: min(
+        var(--modal-content-width),
+        calc(100vw - 2 * ${theme.space.l})
+      );
+      max-width: min(
+        var(--modal-content-width),
+        calc(100vw - 2 * ${theme.space.l})
+      );
       height: auto;
 
       &[data-state="open"] {

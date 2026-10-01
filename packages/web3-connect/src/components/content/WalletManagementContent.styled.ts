@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Flex,
   Grid,
   ModalBody,
@@ -18,10 +17,10 @@ const shouldForwardProp = (prop: string) => prop !== "showAccountPanel"
 const shouldForwardColumnProp = (prop: string) =>
   prop !== "showAccountPanel" && prop !== "mobileHidden"
 
-export const SScrollAreaContent = styled(Box)(
+export const SScrollAreaContent = styled(Flex)(
   ({ theme }) => css`
     min-width: 0;
-    padding-right: calc(${theme.space.xs} + ${pxToRem(6)});
+    padding-right: ${theme.space.base};
     padding-bottom: var(--source-footer-height, 0px);
   `,
 )
@@ -212,12 +211,5 @@ export const SRightColumn = styled(Flex)(
     ${mq("md")} {
       max-height: 100%;
     }
-  `,
-)
-
-export const SAccountFilterButton = styled(Button)(
-  ({ theme }) => css`
-    min-width: ${pxToRem(80)};
-    padding-block: ${theme.space.s};
   `,
 )

@@ -23,7 +23,6 @@ import {
  *
  * Branching mirrors getWalletModeByAddress so the key is consistent with the
  * chainKey classification used elsewhere.
- *
  */
 export const addressToPublicKey = (address: string): string => {
   switch (true) {

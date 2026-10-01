@@ -38,7 +38,6 @@ import {
   WalletAccountTile,
 } from "@/components/content/WalletManagementAccounts"
 import {
-  SAccountFilterButton,
   SLayoutGrid,
   SModalBody,
   SModalHeader,
@@ -148,9 +147,8 @@ export const WalletManagementContent = () => {
     WalletMode.Default,
   )
   /**
-   * Which of the two columns is on screen below `md`. Desktop shows both, so
-   * the flag is dead weight there and is set unconditionally - a flag that is
-   * always correct beats one maintained only on some viewports.
+   * Which column is on screen below `md`. Desktop shows both, but the flag is
+   * still set there so it is correct on every viewport.
    */
   const [showAccounts, setShowAccounts] = useState(false)
   const [walletSearchValue, setWalletSearchValue] = useState("")
@@ -289,9 +287,8 @@ export const WalletManagementContent = () => {
     showErrorState
 
   /**
-   * `showAccountPanel` stays the authority on whether the right column has
-   * anything to render, so an emptied panel falls back to the wallet list on
-   * its own - no effect chasing the six async states that feed it.
+   * Derived from `showAccountPanel` rather than synced by an effect, so an
+   * emptied panel falls back to the wallet list on its own.
    */
   const isAccountsView = showAccounts && showAccountPanel
 
@@ -537,13 +534,7 @@ export const WalletManagementContent = () => {
 
             <SSourceScrollFrame hasFooter={hasConnectedWalletState}>
               <ScrollArea>
-                <SScrollAreaContent
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "base",
-                  }}
-                >
+                <SScrollAreaContent direction="column" gap="base">
                   {showAccountPanel && connectedAccountsCount > 0 && (
                     <Flex direction="column" gap="s">
                       <WalletSourceButton
@@ -849,19 +840,21 @@ export const WalletManagementContent = () => {
                 {chipModes.length > 0 && (
                   <Flex gap="base" wrap sx={{ flexShrink: 0 }}>
                     {chipModes.map((filter) => (
-                      <SAccountFilterButton
+                      <Button
                         key={filter}
                         variant={
                           accountFilter === filter ? "secondary" : "muted"
                         }
                         outline={accountFilter !== filter}
                         size="small"
+                        minWidth={pxToRem(80)}
+                        py="s"
                         onClick={() => setAccountFilter(filter)}
                       >
                         {filter === WalletMode.Default
                           ? t("accountFilter.all")
                           : getWalletModeName(filter)}
-                      </SAccountFilterButton>
+                      </Button>
                     ))}
                   </Flex>
                 )}
@@ -873,13 +866,7 @@ export const WalletManagementContent = () => {
                   sx={{ minHeight: 0 }}
                 >
                   <ScrollArea>
-                    <SScrollAreaContent
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "l",
-                      }}
-                    >
+                    <SScrollAreaContent direction="column" gap="xl">
                       {accountsWithBalances.length > 0 ? (
                         selectedSource === "all" ? (
                           groupedAccounts.map((group) => (
@@ -894,18 +881,20 @@ export const WalletManagementContent = () => {
                             />
                           ))
                         ) : (
-                          accountsWithBalances.map((account) => (
-                            <WalletAccountTile
-                              key={`${account.publicKey}-${account.provider}`}
-                              account={account}
-                              isActive={isAccountSelected(
-                                currentAccount,
-                                account,
-                              )}
-                              isBalanceLoading={areBalancesLoading}
-                              onClick={() => handleAccountSelect(account)}
-                            />
-                          ))
+                          <Flex direction="column" gap="base">
+                            {accountsWithBalances.map((account) => (
+                              <WalletAccountTile
+                                key={`${account.publicKey}-${account.provider}`}
+                                account={account}
+                                isActive={isAccountSelected(
+                                  currentAccount,
+                                  account,
+                                )}
+                                isBalanceLoading={areBalancesLoading}
+                                onClick={() => handleAccountSelect(account)}
+                              />
+                            ))}
+                          </Flex>
                         )
                       ) : (
                         <Flex

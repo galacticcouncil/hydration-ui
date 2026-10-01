@@ -85,12 +85,7 @@ export const Identican: React.FC<IdenticanProps> = ({
   )
 
   return (
-    <Flex
-      size={size}
-      borderRadius="full"
-      sx={{ overflow: "hidden" }}
-      {...props}
-    >
+    <Flex size={size} borderRadius="full" overflow="hidden" {...props}>
       <Image src={src} alt="" width={size} height={size} />
     </Flex>
   )

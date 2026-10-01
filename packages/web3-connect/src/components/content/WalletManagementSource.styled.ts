@@ -1,5 +1,5 @@
 import { Theme } from "@emotion/react"
-import { Box, Flex, Image, Text } from "@galacticcouncil/ui/components"
+import { Box, Image, Text } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 const roundMark = (theme: Theme, size: string) => css`
@@ -8,11 +8,6 @@ const roundMark = (theme: Theme, size: string) => css`
   border-radius: ${theme.radii.full};
   flex-shrink: 0;
   object-fit: contain;
-`
-
-export const SSourceMarkWrap = styled(Box)`
-  position: relative;
-  flex-shrink: 0;
 `
 
 export const SConnectedDot = styled(Box)(
@@ -61,17 +56,11 @@ export const SSourceButton = styled.button(
       }
     }
 
-    &[data-variant="firstConnection"] {
-      min-height: ${pxToRem(40)};
-      padding: ${theme.space.base};
-    }
-
     &[data-variant="firstConnectionPlain"] {
       width: auto;
       min-height: ${pxToRem(36)};
       align-self: flex-start;
       justify-content: flex-start;
-      gap: ${pxToRem(6)};
       padding: ${theme.space.s} ${theme.space.base};
       background: transparent;
 
@@ -88,23 +77,6 @@ export const SSourceButton = styled.button(
         background: ${theme.buttons.secondary.accent.hover};
       }
     }
-  `,
-)
-
-export const SSourceButtonContent = styled(Flex)(
-  ({ theme }) => css`
-    align-items: center;
-    gap: ${theme.space.base};
-    min-width: 0;
-    flex: 1;
-  `,
-)
-
-export const SSourceButtonEnd = styled(Flex)(
-  ({ theme }) => css`
-    align-items: center;
-    gap: ${theme.space.xs};
-    flex-shrink: 0;
   `,
 )
 
@@ -133,10 +105,6 @@ export const SSourceLogo = styled(Image)(
   `,
 )
 
-export const SStackedSourceLogos = styled(Flex)`
-  flex-shrink: 0;
-`
-
 export const SStackedSourceLogo = styled(Image)(
   ({ theme }) => css`
     ${roundMark(theme, theme.sizes.s)}
@@ -146,11 +114,6 @@ export const SStackedSourceLogo = styled(Image)(
     }
   `,
 )
-
-export const SSourceChainBadges = styled(Flex)`
-  align-items: center;
-  flex-shrink: 0;
-`
 
 export const SSourceChainBadge = styled(Box)(
   ({ theme }) => css`
@@ -197,11 +160,6 @@ export const SSourceAction = styled(Box)(
     }
   `,
 )
-
-export const STruncatingColumn = styled(Flex)`
-  flex-direction: column;
-  min-width: 0;
-`
 
 export const SSourceCategoryLabel = styled(Text)(
   ({ theme }) => css`

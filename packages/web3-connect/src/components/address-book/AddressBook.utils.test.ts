@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import type { Address } from "./AddressBook.store"
 import { buildAddresses } from "./AddressBook.utils"
 
-vi.mock("@/utils/wallet", () => ({}))
+vi.mock("@/utils/wallet", () => ({ getWalletModeName: () => "" }))
 
 const account: Address = {
   address: "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5",
@@ -52,5 +52,35 @@ describe("address-book recipient names", () => {
     )
 
     expect(result[0]?.name).toBe("Alice")
+  })
+})
+
+const entry: Address = {
+  publicKey: "0xabc",
+  address: "addr",
+  name: "Alice",
+  mode: "substrate" as Address["mode"],
+  savedBy: ["walletA"],
+  isCustom: true,
+}
+
+describe("buildAddresses", () => {
+  it("global add clears savedBy of a wallet-scoped entry", () => {
+    const [result] = buildAddresses(
+      [entry],
+      [{ ...entry, name: "", savedBy: [], isGlobal: true }],
+      "walletB",
+    )
+    expect(result?.savedBy).toEqual([])
+    expect(result).not.toHaveProperty("isGlobal")
+  })
+
+  it("wallet sync keeps savedBy scoping", () => {
+    const [result] = buildAddresses(
+      [entry],
+      [{ ...entry, savedBy: [], isCustom: false }],
+      "walletB",
+    )
+    expect(result?.savedBy).toEqual(["walletA"])
   })
 })

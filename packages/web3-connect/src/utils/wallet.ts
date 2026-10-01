@@ -25,10 +25,7 @@ import {
 } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 
-/**
- * The mode lookups live in the registry now. Re-exported here because every
- * call site still imports them from `@/utils`.
- */
+/** Re-exported from the registry so `@/utils` importers keep working. */
 export {
   getWalletModeIcon,
   getWalletModeName,
