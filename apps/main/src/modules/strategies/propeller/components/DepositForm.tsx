@@ -138,8 +138,8 @@ export const DepositForm = ({
         <Stack gap="l" py="xl">
           <BenefitCard
             icon={ShieldCheck}
-            label={t("deposit.benefit.noLiquidations")}
-            description={t("deposit.benefit.noLiquidationsDescription")}
+            label={t("deposit.benefit.managedBorrowing")}
+            description={t("deposit.benefit.managedBorrowingDescription")}
           />
           <BenefitCard
             icon={Scale}

@@ -1,17 +1,17 @@
-Propeller is a **leveraged staking** strategy. You deposit **your collateral asset** and the vault runs a recursive loop — supplying your collateral, minting a synthetic against it, and re-staking — to amplify the underlying staking yield without you having to manage any positions manually.
+Propeller supplies **your collateral asset** to the money market, borrows HOLLAR against it, and invests that HOLLAR in a shared **leveraged PRIME position**. The vault manages borrowing and rebalancing for you.
 
-There is **no user-facing borrow** and **no liquidation risk** for depositors. The vault keeps its loan-to-value inside a target band and **self-deleverages** automatically when the market moves, so **your vault shares** simply accrue value as the loop harvests and compounds rewards.
+Harvested yield is converted into your collateral asset. Protocol fees and interest are paid before the remainder is compounded; some earned yield stays invested to cover execution costs. Returns vary with yield, borrowing rates and trading costs.
 
 ### Key features
 
-- Rewards are automatically compounded into the vault
-- No separate claiming required
-- No impermanent loss
-- No liquidation of your deposited position
-- Withdraw all or part of your position at any time
+- The vault manages the leveraged position
+- Available rewards compound into your deposited asset
+- You can request a full or partial withdrawal when withdrawals are enabled
 
-### Risk management
+### Withdrawals and risk
 
-Exits go through an **async withdrawal queue**. When you request a redemption, the amount of your collateral asset you will receive is **fixed at the share price at the moment of the request** — later deposits, withdrawals or price moves do not change it.
+Exits go through an **async withdrawal queue**. Your shares remain invested during the configured cooldown. When unwinding starts after that delay, the vault fixes your collateral claim. The cooldown is the earliest unwind start, **not a payout deadline**.
 
-The vault then unwinds the corresponding slice of the loop over subsequent blocks. Your collateral asset becomes claimable as it settles, **possibly in parts**, so you may claim more than once for a single request.
+Your collateral becomes claimable as the withdrawal settles, **possibly in parts**. Later source recoveries may also become claimable in HOLLAR, even after you have claimed the collateral.
+
+Propeller aims to preserve principal in the deposited asset. The leveraged PRIME position can lose value or be liquidated, and protection depends on functioning oracles, keepers and governance. A shortfall preserves your unpaid collateral claim but may require recovery funding before payment. This is not a guarantee of immediate withdrawal or full recovery.
