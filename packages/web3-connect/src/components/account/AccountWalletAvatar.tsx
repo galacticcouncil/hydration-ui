@@ -1,7 +1,7 @@
-import { AccountAvatar } from "@galacticcouncil/ui/components"
+import { AccountAvatar, Flex } from "@galacticcouncil/ui/components"
 import { pxToRem } from "@galacticcouncil/ui/utils"
 
-import { SAvatar, SProviderBadge } from "@/components/Web3ConnectButton.styled"
+import { SProviderBadge } from "@/components/Web3ConnectButton.styled"
 import { WalletProviderType } from "@/config/providers"
 import { getWallet } from "@/wallets"
 
@@ -21,11 +21,11 @@ export const AccountWalletAvatar = ({
   const wallet = getWallet(provider)
 
   return (
-    <SAvatar>
+    <Flex position="relative" sx={{ flexShrink: 0 }}>
       <AccountAvatar address={address} size={size} />
       {wallet?.logo && (
         <SProviderBadge wallet={wallet} size={pxToRem(badgeSize)} />
       )}
-    </SAvatar>
+    </Flex>
   )
 }

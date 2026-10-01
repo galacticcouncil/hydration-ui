@@ -1,21 +1,20 @@
-import { Box, Button, Flex, Image, Text } from "@galacticcouncil/ui/components"
+import { Box, Button, Flex, Image } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
-const roundMark = (size: number) => css`
-  width: ${pxToRem(size)};
-  height: ${pxToRem(size)};
-  border-radius: 9999px;
-  flex-shrink: 0;
-  object-fit: contain;
-`
+const roundMark = (size: number) =>
+  styled(Image)(
+    ({ theme }) => css`
+      width: ${pxToRem(size)};
+      height: ${pxToRem(size)};
+      border-radius: ${theme.radii.full};
+      flex-shrink: 0;
+      object-fit: contain;
+    `,
+  )
 
-export const SSectionLogo = styled(Image)`
-  ${roundMark(16)}
-`
+export const SSectionLogo = roundMark(16)
 
-export const SAccountModeIcon = styled(Image)`
-  ${roundMark(12)}
-`
+export const SAccountModeIcon = roundMark(12)
 
 export const SAccountTile = styled(Box)(
   ({ theme }) => css`
@@ -59,27 +58,6 @@ export const SAccountTile = styled(Box)(
   `,
 )
 
-export const SAccountTileBody = styled(Flex)(
-  () => css`
-    flex-direction: column;
-    min-width: 0;
-    flex: 1;
-  `,
-)
-
-export const SAccountTileRow = styled(Flex)(
-  ({ theme }) => css`
-    align-items: center;
-    justify-content: space-between;
-    gap: ${theme.space.base};
-    min-width: 0;
-  `,
-)
-
-export const SAccountTileBalance = styled(Text)`
-  flex-shrink: 0;
-`
-
 export const SAccountTileCopyButton = styled(Box)(
   ({ theme }) => css`
     color: ${theme.text.medium};
@@ -98,21 +76,15 @@ export const SAccountTileCopyButton = styled(Box)(
   `,
 )
 
-export const STruncatingRow = styled(Flex)`
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-`
-
-export const STruncatingText = styled(Text)`
-  min-width: 0;
-`
-
-export const SSectionLabel = styled(STruncatingRow)(
+export const SSectionLabel = styled(Flex)(
   ({ theme }) => css`
     position: sticky;
     top: 0;
     z-index: 1;
+
+    align-items: center;
+    width: 100%;
+    min-width: 0;
 
     background: ${theme.surfaces.themeBasePalette.surfaceHigh};
     padding-bottom: ${theme.space.s};

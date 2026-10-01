@@ -1,12 +1,6 @@
-import {
-  Box,
-  Flex,
-  Image,
-  LoadingButton,
-  Spinner,
-} from "@galacticcouncil/ui/components"
+import { Box, Flex, Image, LoadingButton } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
-import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
+import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SChainSelectHeader = styled(Flex)(
   ({ theme }) => css`
@@ -50,16 +44,6 @@ export const SWalletConnectionState = styled(Flex)(
   `,
 )
 
-export const SWalletConnectionBody = styled(Flex)(
-  ({ theme }) => css`
-    flex-direction: column;
-    align-items: center;
-    gap: ${theme.space.base};
-    max-width: ${pxToRem(340)};
-    width: 100%;
-  `,
-)
-
 export const SWalletConnectionVisual = styled(Box)(
   ({ theme }) => css`
     width: calc(${theme.sizes["2xl"]} + ${theme.space.l});
@@ -74,11 +58,6 @@ export const SWalletConnectionVisual = styled(Box)(
     }
   `,
 )
-
-export const SWalletConnectionSpinner = styled(Spinner)`
-  width: 100%;
-  height: 100%;
-`
 
 export const SWalletConnectionStatusIcon = styled(Box)(
   ({ theme }) => css`
@@ -119,17 +98,10 @@ export const SWalletConnectionLogo = styled(Image)(
   `,
 )
 
-export const SCenteredTextGroup = styled(Flex)(
-  ({ theme }) => css`
-    flex-direction: column;
-    align-items: center;
-    gap: ${theme.space.base};
-  `,
-)
-
 export const SWalletConnectionAction = styled(LoadingButton)(
   ({ theme }) => css`
     margin-top: ${theme.space.s};
     gap: ${theme.space.xs};
+    min-width: ${theme.sizes["3xl"]};
   `,
 )

@@ -84,8 +84,8 @@ export const getWalletPrimaryMode = (provider: WalletProviderType) =>
 
 export const getWalletSourceModeLabel = (mode?: WalletMode) => {
   const entry = mode ? WALLET_MODES[mode] : undefined
-  // composite and absent modes have no chain name - they fall back to "Wallet"
-  return entry?.chain ? entry.name : "Wallet"
+  // composite and absent modes have no chain name; callers supply a fallback
+  return entry?.chain ? entry.name : undefined
 }
 
 /**
