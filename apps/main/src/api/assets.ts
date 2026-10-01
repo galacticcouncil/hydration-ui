@@ -9,7 +9,7 @@ import { isNonNullish, zip } from "remeda"
 import { PublicClient, zeroAddress } from "viem"
 
 import { FACTORY_ABI, HYPERVISOR_ABI } from "@/api/gamma/abi"
-import { getGammaContracts } from "@/api/gamma/config"
+import { GAMMA_BOOTSTRAP_HYPERVISOR, GAMMA_STACKS } from "@/api/gamma/config"
 import { assetMetadataQuery } from "@/api/metadata"
 import { allPools, V3PoolBase } from "@/api/pools"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -101,26 +101,26 @@ export type TAssetData =
 
 const fetchGammaVaultShareSymbols = async (
   evm: PublicClient,
-  endpoint: string,
   pools: V3PoolBase[],
 ): Promise<Set<string>> => {
-  const contracts = getGammaContracts(endpoint)
   const discoveredHypervisors = await Promise.all(
-    pools.map(async ({ addr0, addr1, fee }) => {
-      if (!addr0 || !addr1) return null
+    pools.flatMap(({ addr0, addr1, fee }) => {
+      if (!addr0 || !addr1) return []
 
-      return evm
-        .readContract({
-          abi: FACTORY_ABI,
-          address: contracts.hypervisorFactory,
-          functionName: "getHypervisor",
-          args: [addr0, addr1, fee],
-        })
-        .catch(() => null)
+      return GAMMA_STACKS.map((stack) =>
+        evm
+          .readContract({
+            abi: FACTORY_ABI,
+            address: stack.hypervisorFactory,
+            functionName: "getHypervisor",
+            args: [addr0, addr1, fee],
+          })
+          .catch(() => null),
+      )
     }),
   )
   const hypervisors = new Set([
-    contracts.hypervisor,
+    GAMMA_BOOTSTRAP_HYPERVISOR,
     ...discoveredHypervisors.filter(isNonNullish),
   ])
 
@@ -147,8 +147,7 @@ export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
 ) => {
-  const { sdk, papi, evm, endpoint, isEndpointSettled, dataEnv, genesisHash } =
-    context
+  const { sdk, papi, evm, isEndpointSettled, dataEnv, genesisHash } = context
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
@@ -168,7 +167,6 @@ export const assetsQuery = (
       const tradeAssetsMap = new Set(tradeAssets)
       const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
         evm,
-        endpoint,
         pools.v3Pools,
       )
 

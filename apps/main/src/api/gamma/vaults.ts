@@ -10,9 +10,21 @@ import {
   REBALANCE_PROXY_ABI,
   UNIPROXY_CLEARANCE_ABI,
 } from "@/api/gamma/abi"
-import { GammaContracts, getGammaContracts } from "@/api/gamma/config"
+import { GAMMA_STACKS, GammaStack } from "@/api/gamma/config"
 import { V3PoolBase } from "@/api/pools"
 import { useRpcProvider } from "@/providers/rpcProvider"
+
+const VAULT_GAS_FALLBACK = 1_000_000n
+
+export const estimateVaultCallGas = (
+  evm: PublicClient,
+  from: Hex,
+  { to, data }: { to: Hex; data: Hex },
+) =>
+  evm
+    .estimateGas({ account: from, to, data })
+    .then((gas) => (gas * 120n) / 100n)
+    .catch(() => VAULT_GAS_FALLBACK)
 
 type HypervisorFn = Extract<
   (typeof HYPERVISOR_ABI)[number],
@@ -45,27 +57,40 @@ export type VaultState = {
   lastRebalance: number | null
 }
 
-const vaultQuery = (
+/**
+ * The pool's vault and the stack that created it: the first stack whose
+ * factory knows the pair. Stacks are disjoint by construction — a factory
+ * holds at most one vault per (token0, token1, fee).
+ */
+const findVault = async (
   evm: PublicClient,
-  contracts: GammaContracts,
-  pool: V3PoolBase,
-) =>
-  queryOptions<VaultState | null>({
-    queryKey: ["vault", pool.address, contracts.hypervisorFactory],
-    queryFn: async () => {
-      const factory = contracts.hypervisorFactory
+  token0: `0x${string}`,
+  token1: `0x${string}`,
+  fee: number,
+): Promise<{ hypervisor: `0x${string}`; stack: GammaStack } | null> => {
+  for (const stack of GAMMA_STACKS) {
+    const hypervisor = await evm.readContract({
+      abi: FACTORY_ABI,
+      address: stack.hypervisorFactory,
+      functionName: "getHypervisor",
+      args: [token0, token1, fee],
+    })
+    if (hypervisor.toLowerCase() !== zeroAddress) return { hypervisor, stack }
+  }
 
+  return null
+}
+
+const vaultQuery = (evm: PublicClient, pool: V3PoolBase) =>
+  queryOptions<VaultState | null>({
+    queryKey: ["vault", pool.address],
+    queryFn: async () => {
       const { addr0: token0, addr1: token1 } = pool
       if (!token0 || !token1) return null
 
-      const hypervisor = await evm.readContract({
-        abi: FACTORY_ABI,
-        address: factory,
-        functionName: "getHypervisor",
-        args: [token0, token1, pool.fee],
-      })
-
-      if (hypervisor.toLowerCase() === zeroAddress) return null
+      const found = await findVault(evm, token0, token1, pool.fee)
+      if (!found) return null
+      const { hypervisor, stack } = found
 
       const read = <T>(functionName: HypervisorFn) =>
         evm.readContract({
@@ -121,7 +146,7 @@ const vaultQuery = (
         }),
         evm.readContract({
           abi: UNIPROXY_CLEARANCE_ABI,
-          address: contracts.uniProxy,
+          address: stack.uniProxy,
           functionName: "clearance",
         }),
       ])
@@ -160,7 +185,7 @@ const vaultQuery = (
               evm
                 .readContract({
                   abi: REBALANCE_PROXY_ABI,
-                  address: contracts.rebalanceProxy,
+                  address: stack.rebalanceProxy,
                   functionName: "lastRebalance",
                   args: [hypervisor],
                 })
@@ -202,7 +227,7 @@ const vaultQuery = (
       return {
         address: hypervisor,
         shareSymbol,
-        uniProxy: contracts.uniProxy,
+        uniProxy: stack.uniProxy,
         token0,
         token1,
         totalSupply,
@@ -231,11 +256,10 @@ const vaultQuery = (
   })
 
 export const useVaultStates = (pools: V3PoolBase[]) => {
-  const { evm, endpoint } = useRpcProvider()
-  const contracts = getGammaContracts(endpoint)
+  const { evm } = useRpcProvider()
 
   return useQueries({
-    queries: pools.map((pool) => vaultQuery(evm, contracts, pool)),
+    queries: pools.map((pool) => vaultQuery(evm, pool)),
     combine: (results) => ({
       data: results.map((result) => result.data ?? null),
       isLoading: results.some((result) => result.isLoading),

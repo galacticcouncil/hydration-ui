@@ -21,7 +21,7 @@ import z from "zod/v4"
 import { useAccountBalances } from "@/api/balances/account.hooks"
 import { estimateGasLimit } from "@/api/borrow"
 import { UNIPROXY_ABI } from "@/api/gamma/abi"
-import { VaultState } from "@/api/gamma/vaults"
+import { estimateVaultCallGas, VaultState } from "@/api/gamma/vaults"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
@@ -29,8 +29,6 @@ import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required } from "@/utils/validators"
-
-const EVM_CALL_GAS = 700_000
 
 export const useVaultDepositAmount = (
   vault: VaultState | null,
@@ -137,23 +135,31 @@ export const useVaultDeposit = () => {
         abi: [...UNIPROXY_ABI],
       })
 
-      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-        await estimateGasLimit({
-          evm: rpc.evm,
-          gasLimit: EVM_CALL_GAS.toString(),
-        })
+      const [{ maxFeePerGas, maxPriorityFeePerGas }, estimated] =
+        await Promise.all([
+          estimateGasLimit({ evm: rpc.evm }),
+          Promise.all(
+            calls.map(async (call) => ({
+              ...call,
+              gasLimit: await estimateVaultCallGas(rpc.evm, evmAddress, call),
+            })),
+          ),
+        ])
 
-      const evmCalls: ExtendedEvmCall[] = calls.map(({ to, data, abi }) => ({
-        from: evmAddress,
-        to,
-        data,
-        type: CallType.Evm,
-        dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit,
-        maxFeePerGas: maxFeePerGas[0],
-        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
-        abi: safeStringify(abi),
-      }))
+      const evmCalls: ExtendedEvmCall[] = estimated.map(
+        ({ to, data, abi, gasLimit }) => ({
+          from: evmAddress,
+          to,
+          data,
+          type: CallType.Evm,
+          dryRun: (() =>
+            Promise.resolve(undefined)) as () => Promise<undefined>,
+          gasLimit,
+          maxFeePerGas: maxFeePerGas[0],
+          maxPriorityFeePerGas: maxPriorityFeePerGas[0],
+          abi: safeStringify(abi),
+        }),
+      )
 
       return createBatchTx({
         txs: evmCalls.map((call) => transformEvmCallToPapiTx(rpc.papi, call)),

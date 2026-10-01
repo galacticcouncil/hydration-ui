@@ -10,7 +10,6 @@ import {
 import { erc20Abi, PublicClient } from "viem"
 
 import { POOL_ABI } from "@/api/gamma/abi"
-import { getGammaContracts } from "@/api/gamma/config"
 import { loadBootstrapV3Pools } from "@/api/gamma/v3Bootstrap"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID } from "@/utils/consts"
@@ -138,19 +137,14 @@ const v3PoolsQuery = (
   sdk: SdkCtx,
   queryClient: QueryClient,
   evm: PublicClient,
-  endpoint: string,
 ) =>
   queryOptions<V3PoolBase[]>({
-    queryKey: ["pools", "v3", endpoint],
+    queryKey: ["pools", "v3"],
     queryFn: async () => {
       const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
 
       const known = new Set(v3Pools.map((pool) => pool.address.toLowerCase()))
-      const bootstrap = await loadBootstrapV3Pools(
-        evm,
-        sdk,
-        getGammaContracts(endpoint),
-      )
+      const bootstrap = await loadBootstrapV3Pools(evm, sdk)
       const extra = bootstrap.filter(
         (pool) => !known.has(pool.address.toLowerCase()),
       )
@@ -230,9 +224,9 @@ export const useV3PoolMetrics = (pools: V3PoolBase[]) => {
 
 export const useV3Pools = () => {
   const queryClient = useQueryClient()
-  const { sdk, evm, endpoint } = useRpcProvider()
+  const { sdk, evm } = useRpcProvider()
 
-  return useQuery(v3PoolsQuery(sdk, queryClient, evm, endpoint))
+  return useQuery(v3PoolsQuery(sdk, queryClient, evm))
 }
 
 export const xykPoolQuery = (
