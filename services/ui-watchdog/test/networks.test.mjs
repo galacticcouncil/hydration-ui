@@ -176,7 +176,7 @@ test("HTTP bodies and remote DNS traverse SOCKS; dead proxies never fall back", 
     timeoutMs: 1000,
   })
   assert.equal(
-    (await send("http://remote.invalid/app.js")).bytes.toString(),
+    (await send("http://remote.invalid/payload")).bytes.toString(),
     "proxy bytes",
   )
   assert.equal(proxy.destinations[0].host, "remote.invalid")

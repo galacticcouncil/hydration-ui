@@ -346,6 +346,7 @@ test("dashboard escapes untrusted changelog text and errors redact token URLs", 
 
 test("configuration rejects invalid secrets and URL credentials", () => {
   assert.equal(config({}).pollSeconds, 30)
+  assert.throws(() => config({ TARGET_URL: "http://app.hydration.net" }))
   assert.throws(() => config({ TARGET_URL: "https://user:secret@app.test" }))
   assert.throws(() =>
     config({ DISCORD_WEBHOOK_URL: "https://evil.test/secret" }),
