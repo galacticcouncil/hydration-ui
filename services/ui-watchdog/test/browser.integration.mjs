@@ -6,7 +6,7 @@ import { sha256 } from "../src/util.mjs"
 import { chromeTransport } from "../src/chrome.mjs"
 import { observe, assess } from "../src/scan.mjs"
 
-async function browserFixture(t, handler) {
+async function browserFixture(t, handler, configure = () => {}) {
   const script =
     'document.querySelector("#root").textContent="Hydration application rendered with enough content for the full browser verification fixture to pass."; fetch("/slow.bin")'
   const html =
@@ -16,6 +16,7 @@ async function browserFixture(t, handler) {
     "/app.js": script,
     "/slow.bin": "trusted slow body",
   }
+  configure(files)
   const server = createServer((req, res) => {
     const p =
       req.url === "/app.js" || req.url === "/slow.bin" ? req.url : "/index.html"
@@ -80,6 +81,39 @@ test(
           r.sha256 === f.reference.files["/slow.bin"].sha256,
       ),
     )
+  },
+)
+
+test(
+  "app modals cannot block link probes or introduce a second live navigation",
+  { timeout: 15000 },
+  async (t) => {
+    const documents = []
+    const f = await browserFixture(
+      t,
+      (req) => {
+        if (req.headers["sec-fetch-dest"] === "document")
+          documents.push(req.headers)
+      },
+      (files) => {
+        files["/app.js"] +=
+          ';const modal=document.createElement("dialog");modal.textContent="Accept terms";document.body.append(modal);modal.showModal()'
+      },
+    )
+    const result = await probeBrowser(
+      { ...f.c, routes: ["/modal-test"], sampleRoutes: true },
+      f.reference,
+      f.root,
+      f.options,
+    )
+    assert.deepEqual(result.issues, [])
+    assert(result.routes.every((r) => r.rendered))
+    assert.equal(documents.length, result.routes.length)
+    for (const h of documents) {
+      assert.equal(h["sec-fetch-site"], "same-origin")
+      assert.equal(h["sec-fetch-user"], "?1")
+      assert(h.referer?.startsWith(f.c.target))
+    }
   },
 )
 

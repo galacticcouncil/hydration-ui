@@ -39,7 +39,8 @@ export async function probeBrowser(
     documents: [],
   }
   const issueKeys = new Set(),
-    origins = new Set()
+    origins = new Set(),
+    bootstrapPages = new WeakSet()
   const add = (issue) => {
     const key = `${issue.kind}:${issue.path}:${issue.message || ""}`
     if (!issueKeys.has(key) && out.issues.length < 100) {
@@ -60,6 +61,13 @@ export async function probeBrowser(
       const r = route.request(),
         u = new URL(r.url()),
         kind = r.resourceType()
+      if (bootstrapPages.has(r.frame().page())) {
+        if (kind === "document" && u.origin === c.target)
+          return route.fulfill({
+            body: "<!doctype html><html><body></body></html>",
+          })
+        return route.abort()
+      }
       if (egressPage && r.frame().page() === egressPage) {
         if (EGRESS_CHECK_URLS.includes(r.url()) && kind === "document")
           await continueChrome(route)
@@ -129,6 +137,21 @@ export async function probeBrowser(
     if (c.sampleRoutes) routes.push(...sampledRoutes(reference, c.routes))
     for (const route of [...new Set(routes)]) {
       const page = await chromePage(context, c)
+      if (c.sampleRoutes) {
+        // A locally fulfilled same-origin page supplies a real click/referrer
+        // without letting app modals, redirects, or event handlers block it.
+        // Finish this setup before attaching evidence listeners: this blank
+        // document is ours, not a response from the monitored site.
+        bootstrapPages.add(page)
+        try {
+          await page.goto(c.target, {
+            waitUntil: "domcontentloaded",
+            timeout: 30000,
+          })
+        } finally {
+          bootstrapPages.delete(page)
+        }
+      }
       const jobs = []
       const pending = new Set()
       const tracked = (r) => {
@@ -318,15 +341,9 @@ export async function probeBrowser(
       })
       try {
         const destination = new URL(route, c.target).href
-        // Exercise a real link navigation in addition to direct visits. The
-        // source is same-origin so Chrome supplies navigation/referrer headers.
+        // Each monitored page is visited once, through a real link when enabled.
+        // Keep it alive until its response bodies have been hashed.
         if (c.sampleRoutes) {
-          await page.goto(c.target, {
-            waitUntil: "domcontentloaded",
-            timeout: 30000,
-          })
-          await page.waitForTimeout(c.settleMs ?? 1500)
-          await drain()
           await page.evaluate((href) => {
             const a = document.createElement("a")
             a.href = href

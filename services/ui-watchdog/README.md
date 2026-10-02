@@ -410,3 +410,9 @@ both inside and outside the release window. A recent branch push alone cannot
 grant pending grace, and pipeline errors cannot excuse unknown bytes when the
 expected reference already exists. These fixtures do not establish protection
 against arbitrary targeted cloaking or malicious locked dependencies.
+
+Link probes start on a locally fulfilled blank page at the target origin, then
+click a real link into the app. This preserves browser navigation/referrer headers
+without allowing app dialogs or click handlers to block the probe. Only the real
+destination is recorded as evidence, and its page stays open until body hashing
+finishes. A modal-app regression verifies one real navigation per sampled route.

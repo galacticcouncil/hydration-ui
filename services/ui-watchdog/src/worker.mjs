@@ -26,7 +26,7 @@ export function serveObserver(
     if (
       network &&
       Date.now() - Date.parse(network.checkedAt) <
-        (network.error ? 30000 : 300000)
+        (network.error || network.membershipUnverified ? 30000 : 300000)
     )
       return network
     if (!networkJob)
