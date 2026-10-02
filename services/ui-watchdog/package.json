@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node src/main.mjs",
     "test": "node --test test/*.test.mjs",
-    "test:browser": "node --test test/browser.integration.mjs"
+    "test:browser": "node --test test/*.integration.mjs"
   },
   "dependencies": {
     "fflate": "0.8.3",
