@@ -10,7 +10,7 @@ import { evidence, headerIssues } from "./policy.mjs"
 import { sha256, safeError, timestamp } from "./util.mjs"
 import {
   EGRESS_CHECK_URLS,
-  checkEgress,
+  checkEgress as verifyEgress,
   publicNetworkPolicy,
 } from "./network.mjs"
 export { publicAddress, publicNetworkPolicy } from "./network.mjs"
@@ -23,6 +23,7 @@ export async function probeBrowser(
     allowNetwork = publicNetworkPolicy({ remoteDns: Boolean(c.proxyUrl) }),
     executablePath,
     checkEgress = true,
+    egressChecker = verifyEgress,
     references = reference ? [reference] : [],
     trustedRoots = {},
   } = {},
@@ -108,7 +109,7 @@ export async function probeBrowser(
     if (checkEgress) {
       egressPage = await chromePage(context, c)
       try {
-        out.egress = await checkEgress(c, async (url, { timeoutMs }) => {
+        out.egress = await egressChecker(c, async (url, { timeoutMs }) => {
           const r = await egressPage.goto(url, {
             waitUntil: "domcontentloaded",
             timeout: timeoutMs,

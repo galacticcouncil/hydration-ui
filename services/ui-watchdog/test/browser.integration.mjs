@@ -379,3 +379,27 @@ test(
     )
   },
 )
+
+test(
+  "enabled browser egress validation calls the checker and records its result",
+  { timeout: 15000 },
+  async (t) => {
+    const f = await browserFixture(t, () => false)
+    let called = false
+    const result = await probeBrowser(f.c, f.reference, f.root, {
+      ...f.options,
+      checkEgress: true,
+      egressChecker: async () => {
+        called = true
+        return {
+          ip: "1.1.1.1",
+          tor: false,
+          checkedAt: new Date().toISOString(),
+        }
+      },
+    })
+    assert(called)
+    assert.equal(result.egress.ip, "1.1.1.1")
+    assert.deepEqual(result.issues, [])
+  },
+)

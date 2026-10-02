@@ -255,6 +255,23 @@ export class ObserverGroup {
         s.flapping = false
       }
     }
+    if (kind === "browser") {
+      const key = `observer:${s.id}:origin-warnings`
+      const warned = this.store.get(key, [])
+      const freshOrigins = (result.issues || [])
+        .filter((i) => i.kind === "external-origin" && !warned.includes(i.path))
+        .map((i) => i.path)
+        .slice(0, 20)
+      if (freshOrigins.length) {
+        this.event("external_origin", "warning", {
+          observer: s.id,
+          paths: freshOrigins,
+          summary:
+            "New external data/WebSocket origins outside the reviewed baseline",
+        })
+        this.store.set(key, [...warned, ...freshOrigins].slice(-100))
+      }
+    }
     const keys = result.error
       ? ["observer"]
       : (result.issues || [])

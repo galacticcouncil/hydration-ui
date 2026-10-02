@@ -405,3 +405,25 @@ test("jobs finishing after reference ingestion still validate every captured ass
   assert.equal(result.issues.length, 1)
   assert.equal(assess({ probe: result }).state, "integrity_alert")
 })
+
+test("new external origins produce one warning without failing rendering checks", async (t) => {
+  const store = await database(t),
+    events = []
+  const group = new ObserverGroup(
+    { observers: [{ id: "direct" }] },
+    store,
+    (...args) => events.push(args),
+    () => {},
+    new Map(),
+  )
+  const result = {
+    ...clean,
+    issues: [{ kind: "external-origin", path: "https://new.example.org" }],
+  }
+  group.record(group.states[0], result, "browser")
+  group.record(group.states[0], result, "browser")
+  assert.equal(events.length, 1)
+  assert.equal(events[0][0], "external_origin")
+  assert.equal(events[0][1], "warning")
+  assert.equal(group.states[0].failures.browser, 0)
+})

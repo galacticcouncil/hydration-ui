@@ -46,9 +46,12 @@ if (["browser", "observer"].includes(c.role)) {
     const notify =
       severity === "critical" ||
       severity === "error" ||
-      ["production_changed", "deployment_verified", "daily_heartbeat"].includes(
-        kind,
-      ) ||
+      [
+        "production_changed",
+        "deployment_verified",
+        "daily_heartbeat",
+        "external_origin",
+      ].includes(kind) ||
       data.recovery
     store.event(kind, severity, data, Boolean(c.webhook && notify))
     console.log(
