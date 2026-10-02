@@ -2,7 +2,9 @@ import { request, safeError } from "./util.mjs"
 
 export function payload(event, c) {
   const mention =
-    event.severity === "critical" || event.severity === "error" ? c.mention : ""
+    event.severity === "critical" || event.severity === "error"
+      ? c.mention || ""
+      : ""
   const users = [...mention.matchAll(/<@!?(\d+)>/g)].map((x) => x[1])
   const roles = [...mention.matchAll(/<@&(\d+)>/g)].map((x) => x[1])
   return {
@@ -26,6 +28,24 @@ export function payload(event, c) {
           event.data.summary || event.data.state || event.kind,
         ).slice(0, 1500),
         fields: [
+          ...(event.data.observer
+            ? [{ name: "Observer", value: event.data.observer }]
+            : []),
+          ...(event.data.observers
+            ? [
+                {
+                  name: "Network observers",
+                  value:
+                    event.data.observers
+                      .map(
+                        (o) =>
+                          `${o.id}: ${o.state} (${o.exitIp || "exit pending"})`,
+                      )
+                      .join("\n")
+                      .slice(0, 1024) || "pending",
+                },
+              ]
+            : []),
           ...(event.data.sha
             ? [
                 {

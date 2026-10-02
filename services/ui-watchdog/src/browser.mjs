@@ -1,65 +1,22 @@
-import { lookup } from "node:dns/promises"
-import { isIP } from "node:net"
 import { chromium } from "playwright"
 import { sha256, safeError, timestamp } from "./util.mjs"
-
-export function publicAddress(ip) {
-  if (isIP(ip) === 4) {
-    const [a, b] = ip.split(".").map(Number)
-    return !(
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      a >= 224 ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      (a === 100 && b >= 64 && b <= 127) ||
-      (a === 198 && (b === 18 || b === 19))
-    )
-  }
-  if (isIP(ip) === 6) {
-    const s = ip.toLowerCase()
-    return /^[23]/.test(s) && !s.startsWith("2001:db8:")
-  }
-  return false
-}
-
-export function publicNetworkPolicy() {
-  const cache = new Map()
-  return async (raw) => {
-    try {
-      const u = new URL(raw)
-      if (
-        !["https:", "wss:"].includes(u.protocol) ||
-        u.username ||
-        u.password ||
-        (u.port && u.port !== "443")
-      )
-        return false
-      const host = u.hostname.replace(/^\[|\]$/g, "")
-      if (isIP(host)) return publicAddress(host)
-      if (!cache.has(host))
-        cache.set(
-          host,
-          lookup(host, { all: true })
-            .then(
-              (a) => a.length > 0 && a.every((x) => publicAddress(x.address)),
-            )
-            .catch(() => false),
-        )
-      return await cache.get(host)
-    } catch {
-      return false
-    }
-  }
-}
+import { browserProxy } from "./transport.mjs"
+import {
+  EGRESS_CHECK_URL,
+  publicNetworkPolicy,
+  validateEgress,
+} from "./network.mjs"
+export { publicAddress, publicNetworkPolicy } from "./network.mjs"
 
 export async function probeBrowser(
   c,
   reference,
   rootHash,
-  { allowNetwork = publicNetworkPolicy(), executablePath } = {},
+  {
+    allowNetwork = publicNetworkPolicy({ remoteDns: Boolean(c.proxyUrl) }),
+    executablePath,
+    checkEgress = true,
+  } = {},
 ) {
   const out = {
     matchedSha: reference?.sha || null,
@@ -83,17 +40,35 @@ export async function probeBrowser(
   const browser = await chromium.launch({
     headless: true,
     executablePath,
-    args: ["--disable-dev-shm-usage"],
+    proxy: browserProxy(c),
+    args: [
+      "--disable-dev-shm-usage",
+      "--disable-quic",
+      "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
+      ...(c.proxyUrl
+        ? [
+            `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE ${new URL(c.proxyUrl).hostname}`,
+          ]
+        : []),
+    ],
   })
   try {
     const context = await browser.newContext({
       serviceWorkers: "block",
       ignoreHTTPSErrors: false,
+      ...(c.userAgent ? { userAgent: c.userAgent } : {}),
     })
+    let egressPage = null
     await context.route("**/*", async (route) => {
       const r = route.request(),
         u = new URL(r.url()),
         kind = r.resourceType()
+      if (egressPage && r.frame().page() === egressPage) {
+        if (r.url() === EGRESS_CHECK_URL && kind === "document")
+          await route.continue()
+        else await route.abort()
+        return
+      }
       if (!(await allowNetwork(r.url()))) {
         add({
           kind: "unexpected-resource",
@@ -133,11 +108,31 @@ export async function probeBrowser(
         socket.close()
       }
     })
+    if (checkEgress) {
+      egressPage = await context.newPage()
+      try {
+        const r = await egressPage.goto(EGRESS_CHECK_URL, {
+          waitUntil: "domcontentloaded",
+          timeout: c.timeoutMs || 20000,
+        })
+        if (!r || r.status() !== 200)
+          throw new Error("Browser egress check failed")
+        out.egress = validateEgress(c, JSON.parse(await r.text()))
+      } catch (e) {
+        out.egress = { error: safeError(e), checkedAt: timestamp() }
+      }
+      await egressPage.close()
+      egressPage = null
+    }
     for (const route of c.routes) {
       const page = await context.newPage()
       const jobs = []
       page.on("pageerror", (error) =>
-        add({ kind: "browser-error", path: route, message: safeError(error) }),
+        add({
+          kind: "browser-error",
+          path: route,
+          message: safeError(error),
+        }),
       )
       page.on("response", (response) => {
         if (jobs.length >= 1200) {
@@ -154,7 +149,9 @@ export async function probeBrowser(
               : u.pathname + u.search
           const expected = sameOrigin
             ? reference?.files[key]
-            : c.externalScripts[u.href] && { sha256: c.externalScripts[u.href] }
+            : c.externalScripts[u.href] && {
+                sha256: c.externalScripts[u.href],
+              }
           const executable =
             ["script", "stylesheet", "document"].includes(type) ||
             /\.(?:wasm|m?js)(?:\?|$)/.test(u.pathname) ||
@@ -199,10 +196,18 @@ export async function probeBrowser(
                 actual: hash,
               })
           } catch (e) {
-            add({ kind: "browser-error", path: key, message: safeError(e) })
+            add({
+              kind: "browser-error",
+              path: key,
+              message: safeError(e),
+            })
           }
         })().catch((e) =>
-          add({ kind: "browser-error", path: route, message: safeError(e) }),
+          add({
+            kind: "browser-error",
+            path: route,
+            message: safeError(e),
+          }),
         )
         jobs.push(job)
       })

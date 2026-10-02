@@ -50,6 +50,7 @@ test(
     }
     const options = {
       allowNetwork: async () => true,
+      checkEgress: false,
       executablePath: process.env.CHROMIUM_EXECUTABLE,
     }
     const good = await probeBrowser(
@@ -80,6 +81,69 @@ test(
         (x) => x.kind === "unexpected-resource" && x.path === "/injected.js",
       ),
       JSON.stringify(bad.issues),
+    )
+  },
+)
+
+// A public-looking hostname that exists only inside the SOCKS fixture proves
+// Chromium uses remote DNS. The loopback-origin check proves no direct fallback.
+test(
+  "real Chromium uses SOCKS for documents and scripts and fails closed",
+  { timeout: 90000 },
+  async (t) => {
+    const { socksFixture } = await import("./proxy-fixture.mjs")
+    let hits = 0
+    const html = '<div id="root"></div><script src="/app.js"></script>'
+    const script =
+      'document.querySelector("#root").textContent="Hydration network observer browser proxy verification with enough application text for a successful render."'
+    const server = createServer((req, res) => {
+      hits++
+      res.setHeader(
+        "content-type",
+        req.url === "/app.js" ? "application/javascript" : "text/html",
+      )
+      res.end(req.url === "/app.js" ? script : html)
+    })
+    await new Promise((r) => server.listen(0, "127.0.0.1", r))
+    t.after(() => {
+      server.closeAllConnections()
+      server.close()
+    })
+    const proxy = await socksFixture(t, server.address().port)
+    const c = {
+      target: "http://remote.invalid",
+      proxyUrl: proxy.url,
+      requireProxy: true,
+      routes: ["/"],
+      externalScripts: {},
+      frameOrigins: [],
+    }
+    const options = {
+      allowNetwork: async () => true,
+      checkEgress: false,
+      executablePath: process.env.CHROMIUM_EXECUTABLE,
+    }
+    const good = await probeBrowser(c, null, sha256(html), options)
+    assert.equal(good.routes[0].rendered, true, JSON.stringify(good))
+    assert.deepEqual(good.issues, [])
+    assert(
+      proxy.destinations.some(
+        (d) => d.type === 3 && d.host === "remote.invalid",
+      ),
+    )
+    proxy.close()
+    const before = hits
+    const bad = await probeBrowser(
+      { ...c, target: `http://127.0.0.1:${server.address().port}` },
+      null,
+      sha256(html),
+      options,
+    )
+    assert.equal(bad.routes[0].rendered, false)
+    assert.equal(
+      hits,
+      before,
+      "Chromium must never bypass a failed proxy for loopback",
     )
   },
 )

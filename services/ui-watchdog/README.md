@@ -28,7 +28,8 @@ and branch rules: repository/source compromise is outside this check's trust
 boundary. An attestation establishes provenance, not freedom from malicious
 source or dependencies.
 
-Every expected public file is hashed from its decoded HTTP response body.
+Every expected public file is hashed from its HTTP response body. Proxied
+requests require identity encoding and reject unexpected compressed responses.
 HTML includes inline code. JS (including lazy chunks and workers), WASM, CSS,
 fonts, images, and static configuration are inventoried. `_redirects` and
 `_headers` are recorded separately as hosting configuration, because hosts may
@@ -42,32 +43,56 @@ the probe; their published files remain covered by the full artifact audit.
 Existing visitors' caches/service workers are not covered. External API data
 is not static build output and cannot be authenticated by these hashes.
 
-The browser runs as a separate non-root service, with no GitHub/Discord secrets,
-history volume, host mounts, or Docker socket. It can reach the controller only
-over the private probe network; the controller exposes read-only APIs. The
-browser blocks non-HTTPS/WSS, private/metadata addresses, unapproved external
-scripts, and unapproved frames. DNS checks are a best-effort extra defense, not
-a network firewall or guarantee against DNS rebinding/browser exploits.
+Observers use one shared image and implementation. Each runs as a separate
+non-root service with no GitHub/Discord/VPN credentials, history volume, host
+mounts, or Docker socket. Separate runtime services isolate network paths and
+failures. One controller owns history, reference verification and Discord.
 
-This is **detection**, not automatic rollback or traffic blocking. One observer
-cannot rule out content served only to particular victims. Transient changes
+Both HTTP file scans and Chromium use the observer's assigned path. Proxied
+observers join only internal networks, with no public egress; DNS travels through
+SOCKS5. Tor rejects private destinations. NordVPN and custom WireGuard gateways
+use [wireproxy](https://github.com/windtf/wireproxy), a userspace WireGuard stack;
+they need no TUN device, NET_ADMIN, privileged mode or host routing changes.
+A failed gateway has no direct fallback. Browser traffic blocks QUIC and
+non-proxied WebRTC, private IP literals/local hostnames, unapproved executable
+resources and frames. Direct DNS checks reject private results; proxied DNS
+stays remote. These checks are not a guarantee against DNS rebinding or browser
+exploits; use a trusted WireGuard peer with public Internet egress.
+
+Every configured observer is required. A disagreeing path raises an integrity
+alert even if the majority agrees or references are not yet available. Only
+intact attested releases receive the bounded rollout grace. Failed or stale
+paths cannot be voted away. HTTP and Chromium separately sample their egress
+using the [Tor Project IP check](https://check.torproject.org/api/ip). The default
+policy requires as many distinct sampled IPs as configured observers and checks
+Tor membership. Failure of the egress check prevents verification. An IP sample
+is not proof of the exact exit used for every target request: Tor may choose
+different circuits per destination. Countries with disjoint Tor exit constraints
+and independent VPN gateways improve coverage, but are not an anonymity promise.
+
+This is **detection**, not automatic rollback or traffic blocking. Multiple exits
+improve sampling but cannot rule out content served only to particular victims.
+All services on play share its host and operator trust; protection against a
+compromised play host requires observers on independently operated hosts.
+A common browser user agent reduces one obvious identifier, but headless browser
+and polling patterns can still be fingerprinted. Transient changes
 between checks and identical redeployments are invisible. “Verified” means the
 observed bytes match the approved independent source build and the configured
 browser checks passed; it does not certify the source is harmless.
 
 ## States and scheduling
 
-| State                | Meaning                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------ |
-| `verified`           | Current production reference, fresh complete file audit and browser checks all pass  |
-| `deployment_pending` | Intact known previous release, within the rollout grace period                       |
-| `stale_deployment`   | Known previous release after the grace period, including an unapproved rollback      |
-| `integrity_alert`    | Unexpected/mismatched executable content or resource policy violation                |
-| `unverified`         | No trusted matching reference, stale source information, or incomplete/racing checks |
-| `degraded` / `down`  | Asset/browser/dependency failures or the app cannot be fetched                       |
-| `watchdog_error`     | Internal monitoring failure; never a passing check                                   |
+| State                | Meaning                                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| `verified`           | Every required observer passes the production reference, fresh complete audit, browser and egress checks |
+| `deployment_pending` | Intact known previous release, within the rollout grace period                                           |
+| `stale_deployment`   | Known previous release after the grace period, including an unapproved rollback                          |
+| `integrity_alert`    | Unexpected/mismatched executable content or resource policy violation                                    |
+| `unverified`         | No trusted matching reference, stale source information, or incomplete/racing checks                     |
+| `degraded` / `down`  | Asset/browser/dependency failures or the app cannot be fetched                                           |
+| `watchdog_error`     | Internal monitoring failure; never a passing check                                                       |
 
-The controller probes HTML and entry JS/CSS every 30 seconds, and schedules full
+Each observer probes HTML and entry JS/CSS at 30-second intervals after completion, and schedules full
 asset and browser scans independently every five minutes and after changes.
 Browser worker connection failures retry at the 30-second polling interval.
 An asset scan has a two-minute scheduling budget plus bounded in-flight request
@@ -122,8 +147,21 @@ operator to configure. Missing credentials never produce a false passing state.
 ## Deployment on play
 
 Image build context is this directory, independent of the Yarn monorepo.
-The image is Linux amd64 (play). The stack has two services, `watchdog` and
-`browser`, plus a persistent `state` volume and isolated probe/egress networks.
+Images are Linux amd64 (play). One stack contains:
+
+- `watchdog`: one coordinator, SQLite history, dashboard and Discord outbox.
+- `browser`: the existing service name, now the direct HTTP + Chromium observer.
+- `observer-tor-de` / `observer-tor-us` and their Tor gateways: active by default,
+  constrained to German and US exits, with independent circuit state.
+- `observer-nord-1..3` and `nord-1..3`: three simultaneous NordVPN paths, disabled
+  until enabled and configured; all use the same account token.
+- `observer-wireguard` and `wireguard`: a configurable additional VPN path,
+  disabled until enabled and configured.
+
+All observers, VPN gateways and the coordinator use the same watchdog image.
+Only Tor has a second image, pinned to the official Tor package and signing key.
+No observer owns a separate dashboard, reference cache or alert pipeline. The
+`state` volume preserves the existing history across this stack update.
 Only the controller joins the existing `gateway` network. It uses play's
 `myresolver` Traefik certificate resolver, with no published host ports.
 Temporary directories use explicit `type: tmpfs` mounts; Swarm ignores the
@@ -138,10 +176,16 @@ docker build --platform linux/amd64 \
   --label org.opencontainers.image.revision="$REVISION" \
   -t "galacticcouncil/hydration-ui-watchdog:$REVISION" services/ui-watchdog
 docker push "galacticcouncil/hydration-ui-watchdog:$REVISION"
+docker build --platform linux/amd64 \
+  --label org.opencontainers.image.source=https://github.com/galacticcouncil/hydration-ui \
+  --label org.opencontainers.image.revision="$REVISION" \
+  -t "galacticcouncil/hydration-ui-watchdog-tor:$REVISION" services/ui-watchdog/tor
+docker push "galacticcouncil/hydration-ui-watchdog-tor:$REVISION"
 ```
 
-Resolve the pushed image digest. Set `WATCHDOG_IMAGE` to
-`galacticcouncil/hydration-ui-watchdog@sha256:…`, then render
+Resolve both pushed image digests. Set `WATCHDOG_IMAGE` to
+`galacticcouncil/hydration-ui-watchdog@sha256:…` and `TOR_IMAGE` to
+`galacticcouncil/hydration-ui-watchdog-tor@sha256:…`, then render
 `deploy/stack.yml` with `docker stack config` and create/update stack
 `ui-watchdog` through play's Swarmpit. Keep the rendered file's current secrets
 when making future edits. Never overwrite configured ENV values with the blank
@@ -160,8 +204,64 @@ Endpoints:
 - `/api/events?limit=100` — persisted change/incident history (maximum 500)
 - `/healthz` — controller liveness, independent of application health
 
-Do not proxy the browser service. Its internal `POST /probe` endpoint accepts
-bounded reference data and always probes its configured target.
+Do not expose the observer or proxy ports publicly. Internal `POST /observe`
+and `POST /probe` endpoints accept bounded reference data and always check their
+configured target. No worker can select a different target through an API call.
+
+### Enable NordVPN
+
+Create a [NordVPN access token](https://support.nordvpn.com/hc/en-us/articles/20286980309265-How-to-log-in-to-NordVPN-without-a-GUI-using-a-token).
+Set `NORDVPN_TOKEN` once in the rendering environment and `NORDVPN_REPLICAS=1`,
+then update the whole stack. The value is used only by the three gateways. It
+must not be added to observer or coordinator ENV. Each gateway obtains its
+NordLynx key from the provider's service-credentials API, chooses a recommended
+WireGuard server, and rotates to another candidate hourly with up to 10% jitter.
+After three failed 30-second health checks it selects a new candidate. Selection
+failures keep the current tunnel while retries continue; no direct route exists
+in the observer. Token/account validity and provider connection limits still
+apply. The provider API is an integration dependency and may change.
+
+`NORDVPN_COUNTRY_1`, `_2`, `_3` default to `DE`, `US`, `SG` (two-letter uppercase
+codes). `NORDVPN_ROTATE_SECONDS` defaults to `3600` (minimum `300`). This provides
+three concurrent exits plus changes over time, using one account token. Different
+countries avoid choosing the same server for concurrent sessions. Distinct IP
+checks still guard against accidental overlap.
+
+For Swarm secrets, mount the same secret into all three gateways and replace
+`NORDVPN_TOKEN` with `NORDVPN_TOKEN_FILE=/run/secrets/nordvpn_token`. The user may
+configure credentials later; the initial deployment keeps all Nord services at
+zero replicas. To enable via Swarmpit's rendered YAML, set all six Nord services
+to one replica **and** set the coordinator's `NORDVPN_REPLICAS` to `"1"` in the same
+stack update. A partial enable cannot provide the intended required coverage.
+
+### Enable custom WireGuard
+
+Set `WIREGUARD_REPLICAS=1`, `WIREGUARD_PRIVATE_KEY`, `WIREGUARD_PUBLIC_KEY` (peer),
+`WIREGUARD_ENDPOINT=host:port`, `WIREGUARD_ADDRESS` (tunnel CIDR), and optionally
+`WIREGUARD_PRESHARED_KEY`, `WIREGUARD_DNS` (comma-separated IPs, default `1.1.1.1`).
+Choose a public endpoint with Internet forwarding; all observer traffic and DNS
+go through its encrypted tunnel. `WIREGUARD_EXPECTED_EXIT_IP` can pin its public
+exit. Private and preshared keys support `_FILE` secrets in the gateway. The
+controller needs no VPN key. When editing rendered YAML, enable both WireGuard
+services and the coordinator's `WIREGUARD_REPLICAS="1"` together.
+
+### Tor and observer policy
+
+`TOR_EXIT_NODES_DE` / `TOR_EXIT_NODES_US` default to `{de}` / `{us}`. Tor's strict
+exit constraints have no cross-country fallback; bootstrap, exit shortages and
+origin blocking are monitoring failures. Tor circuit dirtiness is ten minutes;
+this does not guarantee a new exit every ten minutes. Tor state has separate
+volumes so the two gateways retain independent guards and circuits across restarts.
+
+`MULTI_NETWORK=true` configures direct plus both Tor observers. `OBSERVERS_JSON`
+can override the required list, for example to include remote independently
+operated workers. Entries are `{id,url,kind}`; `kind` is `direct`, `tor` or `proxy`.
+Use authenticated private networking/TLS for remote workers; do not expose the
+unauthenticated worker API on the public Internet. `MIN_DISTINCT_EGRESS` defaults
+to the number of required observers; lowering it weakens the diversity check.
+`PROXY_URL` is a credential-free `socks5h://gateway:9050` address on the private
+network, and is mandatory for a proxied worker. No local DNS or HTTP proxy fallback
+is offered. Keep the observer network isolation in custom deployments.
 
 ## Activate verification
 
@@ -197,7 +297,7 @@ to `packages/ui/style-dictionary/source.json`; its initial upstream revision is
 | `EXTERNAL_SCRIPT_HASHES`                                  | `{}` — exact external script URLs to approved SHA-256 digests |
 | `ALLOWED_FRAME_ORIGINS`                                   | `[]` — explicit external frame trust exceptions               |
 
-Keep target, route and external-resource policies consistent in both services.
+Keep target, route and external-resource policies consistent across all observers.
 Approving an external frame origin trusts its dynamic contents; those contents
 are outside source-build integrity coverage. Prefer no exceptions.
 
@@ -215,7 +315,12 @@ The container-based CI uses the pinned Playwright image. Tests cover injected
 HTML, changed lazy chunks, unexpected scripts in a real browser, missing files,
 rollout races and grace, stale checks, manifest/archive validation, provenance
 policy, persistent notification retries, Discord rate limits and mentions,
-private-address filtering, escaping, and request deadlines/size bounds.
+private-address filtering, escaping, and request deadlines/size bounds. Network
+tests cover a single disagreeing path, missing/stale paths, duplicate exits,
+remote DNS through SOCKS, real Chromium proxy routing and failed-proxy behavior,
+Nord token reuse/rotation/country selection, and WireGuard configuration injection.
+Live NordVPN/WireGuard connectivity must be checked after credentials are supplied;
+fixture/configuration tests do not prove a provider connection works.
 
 See `verification.json` for the initial independent-build experiment. It is
 diagnostic evidence, not an accepted runtime attestation.

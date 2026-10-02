@@ -7,13 +7,17 @@ export const escapeHtml = (s) =>
   String(s).replace(
     /[&<>"']/g,
     (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ],
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
   )
 export const safeError = (error) =>
   String(error?.message || error)
-    .replace(/https?:\/\/[^\s"')]+/g, "[URL]")
+    .replace(/(?:https?|socks5h?):\/\/[^\s"')]+/g, "[URL]")
     .replace(/(?:gh[pousr]_|github_pat_)[\w]+/g, "[redacted]")
     .slice(0, 400)
 

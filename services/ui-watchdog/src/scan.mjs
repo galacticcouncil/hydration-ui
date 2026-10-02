@@ -33,10 +33,12 @@ export function htmlResources(html, origin) {
 }
 
 async function siteFile(c, file) {
-  const r = await request(new URL(file, c.target), {
+  const r = await (c.siteRequest || request)(new URL(file, c.target), {
     timeoutMs: c.timeoutMs,
     headers: {
-      "user-agent": "Hydration-UI-Watchdog/1.0",
+      "user-agent":
+        c.userAgent ||
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
       "cache-control": "no-cache",
       pragma: "no-cache",
     },
@@ -217,9 +219,9 @@ export function assess({
     return out("integrity_alert", [
       "Live content differs from the trusted build or executable-resource policy",
     ])
+  if (issues.length) return out("degraded", ["Asset or browser checks failed"])
   if (!probe.matchedSha)
     return out("unverified", ["No trusted reference matches the live HTML"])
-  if (issues.length) return out("degraded", ["Asset or browser checks failed"])
   if (!source || !sourceFresh)
     return out("unverified", ["Cannot confirm the current production branch"])
   if (probe.matchedSha !== source.sha) {
