@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   CardBody,
+  CardDescription,
   CardHeader,
   CardTitle,
   LoadingButton,
@@ -37,7 +38,6 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
       </CardHeader>
       <CardBody>
         <Stack gap="m">
-          <Text fs="p3">{t("positions.earningsDescription")}</Text>
           {positions.map(
             ({ vault, shares, assetValue, usdValue, apy, rewards }) => {
               const { symbol } = getAssetWithFallback(vault.assetId)
@@ -149,6 +149,9 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               )
             },
           )}
+          <CardDescription>
+            {t("positions.earningsDescription")}
+          </CardDescription>
         </Stack>
       </CardBody>
     </Card>

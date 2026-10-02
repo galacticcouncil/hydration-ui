@@ -1,5 +1,6 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { type ReactNode } from "react"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import {
@@ -7,9 +8,11 @@ import {
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
 
-export type StrategyHeaderProps = {
+export type StrategyHeaderProps = (
+  | { logoId: string | string[]; logo?: never }
+  | { logo: ReactNode; logoId?: never }
+) & {
   badges?: StrategyBadgeType[]
-  logoId: string | string[]
   subtitle?: string
   title: string
 }
@@ -17,12 +20,17 @@ export type StrategyHeaderProps = {
 export const StrategyHeader: React.FC<StrategyHeaderProps> = ({
   badges = [],
   logoId,
+  logo,
   subtitle,
   title,
 }) => (
   <Flex justify="space-between" align="center" gap="base" wrap>
     <Flex align="center" gap="base">
-      <AssetLogo id={logoId} size="large" hideChain />
+      {logoId !== undefined ? (
+        <AssetLogo id={logoId} size="large" hideChain />
+      ) : (
+        logo
+      )}
       <Flex direction="column">
         <Text
           font="primary"

@@ -1,26 +1,20 @@
 import { useTranslation } from "react-i18next"
 import { isNullish } from "remeda"
 
-import { AssetLogo } from "@/components/AssetLogo"
 import { LINKS } from "@/config/navigation"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 
 export const PropellerStrategyCard = () => {
   const { t } = useTranslation(["common", "strategies", "propeller"])
-  const { vaults, upToApy, subLoop, isLoading } = usePropellerVaults()
+  const { upToApy, subLoop, isLoading } = usePropellerVaults()
   const leverage = subLoop?.leverage
 
   return (
     <StrategyCard
-      logo={
-        <AssetLogo
-          id={vaults.map(({ vault }) => vault.assetId)}
-          size="extra-large"
-          hideChain
-        />
-      }
+      logo={<JuicerStrategyLogo size="extra-large" />}
       title={t("strategies:cards.propeller.title")}
       description={t("strategies:cards.propeller.description")}
       stats={[

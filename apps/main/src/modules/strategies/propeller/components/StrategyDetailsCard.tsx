@@ -2,13 +2,13 @@ import {
   Box,
   Card,
   CardBody,
+  CardDescription,
   CardHeader,
   CardTable,
   CardTitle,
   DataTable,
   Separator,
   TableContainer,
-  Text,
   ValueStats,
   ValueStatsGroup,
 } from "@galacticcouncil/ui/components"
@@ -70,7 +70,7 @@ export const StrategyDetailsCard = () => {
         </ValueStatsGroup>
       </CardBody>
       <Box px="m" pb="m">
-        <Text fs="p6">{t("strategy.apyEstimate")}</Text>
+        <CardDescription>{t("strategy.apyEstimate")}</CardDescription>
       </Box>
       <Separator />
       {isMobile || isTablet ? (

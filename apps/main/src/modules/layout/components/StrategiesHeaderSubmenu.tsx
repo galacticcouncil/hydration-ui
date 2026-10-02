@@ -8,7 +8,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -17,7 +17,6 @@ const STRATEGY_ASSET_ICON_BY_KEY: Partial<
 > = {
   strategiesBil: BIL_ERC20_ID,
   strategiesHollarBonds: HOLLAR_ASSET_ID,
-  strategiesPropeller: PROPELLER_VAULTS.map((vault) => vault.assetId),
 }
 
 type Props = {
@@ -39,7 +38,9 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
     return (
       <SDetailedLink key={key} asChild>
         <Link to={to} search={search}>
-          {showAssetIcon ? (
+          {key === "strategiesPropeller" ? (
+            <JuicerStrategyLogo size="medium" />
+          ) : showAssetIcon ? (
             <AssetLogo id={assetIconId} size="medium" hideChain />
           ) : null}
           <Box>
