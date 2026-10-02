@@ -1,0 +1,2421 @@
+{
+  "snapshot": {
+    "repository": "galacticcouncil/hydration-ui",
+    "commit": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+    "date": "2026-10-01",
+    "dependencyInstall": "yarn --frozen-lockfile --ignore-scripts",
+    "scope": "Crosschain, external RPC, wallets and scans; other application service slices merged by root"
+  },
+  "dependencies": [
+    {
+      "id": "xc-local-context",
+      "label": "Cross-chain context construction (local)",
+      "endpoints": [],
+      "consumerPackages": [
+        "@galacticcouncil/xc",
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg",
+        "@galacticcouncil/xc-sdk"
+      ],
+      "versions": {
+        "@galacticcouncil/xc": "2.1.0",
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0",
+        "@galacticcouncil/xc-sdk": "2.5.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/api/xcm.ts",
+          "line": 37,
+          "note": "Suspense context uses the existing Hydration SDK pool."
+        },
+        {
+          "path": "audit/crosschain-sources/xc.mjs",
+          "line": 15,
+          "note": "Passing poolCtx avoids creating another Hydration SDK."
+        },
+        {
+          "path": "audit/crosschain-sources/xc.mjs",
+          "line": 37,
+          "note": "Config, wallet and scan clients are created locally; dex registration is not awaited."
+        }
+      ],
+      "requiredness": {
+        "activation": "active",
+        "scope": "Cross-chain and multichain portfolio context. No external network await was found during construction."
+      },
+      "failures": {
+        "DNS_HTTP_hang": "No external startup request was found in context creation. Its use of Suspense does not establish a root outage."
+      },
+      "existingProtections": [
+        "The existing Hydration pool is passed explicitly; external clients connect lazily."
+      ],
+      "remediation": [
+        "Keep construction local and keep future optional registrations out of root readiness."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "rpc-evm-external",
+      "label": "External EVM RPC providers",
+      "endpoints": [
+        "https://stylish-quick-firefly.base-mainnet.quiknode.pro/",
+        "https://ethereum-rpc.publicnode.com",
+        "https://cosmopolitan-dimensional-diagram.quiknode.pro",
+        "https://rpc.mainnet.chain.robinhood.com"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg",
+        "@galacticcouncil/xc-sdk",
+        "viem"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0",
+        "@galacticcouncil/xc-sdk": "2.5.0",
+        "viem": "2.56.8"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2176,
+          "note": "Explicit EVM RPCs use viem fallback with rank:false; otherwise the default HTTP transport is used."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2224,
+          "note": "Native/ERC20 balance reads and block subscriptions."
+        },
+        {
+          "path": "apps/main/src/api/portfolio/multichain.ts",
+          "line": 95,
+          "note": "Each chain/address has an independent query; queryFn does not use the query signal."
+        },
+        {
+          "path": "node_modules/viem/_esm/utils/rpc/http.js",
+          "line": 19,
+          "note": "withTimeout bounds fetching headers; body consumption occurs after that deadline."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-on-demand",
+        "scope": "Ethereum and Base default portfolio queries; Robinhood routes; selected source/destination balances, fees, allowances and transfer builds."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Chain.getBalances uses allSettled and drops failed assets. If every read fails, it can resolve [] and conceal the outage. Individual fee/call queries reject.",
+        "hang": "The viem HTTP fetch timeout defaults to 10 seconds, with retries and fallback. A response body that never finishes is outside that timeout. The UI does not forward a cancellation signal, so selected XCM loading or submission can remain pending.",
+        "malformed": "Invalid JSON, RPC responses or BigInt values reject. The balance aggregator can erase these failures as missing or empty data.",
+        "stale": "Portfolio balances become stale after 60 seconds; picker snapshots after 30 seconds. Late subscription errors preserve the previous balance. There is no explicit stale marker.",
+        "cold_warm_recovery": "A cold unavailable chain appears empty or loading. Warm cached portfolio data remains available during pending reads, but a successful empty result can overwrite it. Reopening or refetching retries settled failures; a hung request remains in flight."
+      },
+      "existingProtections": [
+        "Independent portfolio queries preserve Hydration and other chains.",
+        "Ethereum uses PublicNode plus QuickNode fallback; Base and Robinhood each have one explicit RPC.",
+        "Read and transaction build errors remain within their queries or mutations."
+      ],
+      "remediation": [
+        "Bound the complete response body and decoding.",
+        "Propagate cancellation.",
+        "Report unavailable assets or chains instead of successful empty balances, and expose stale timestamps."
+      ],
+      "confidence": "high; body test owned by startup agent",
+      "testRefs": [
+        "audit/dependency-faults.json",
+        "audit/deep-crosschain-faults.json",
+        "audit/deep-startup-faults.results.json"
+      ]
+    },
+    {
+      "id": "rpc-substrate-external",
+      "label": "Other Substrate parachain/relay RPCs",
+      "endpoints": [
+        "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "wss://polkadot-asset-hub-rpc.polkadot.io",
+        "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "wss://polkadot-asset-hub-rpc.polkadot.io",
+        "wss://rpc.astar.network",
+        "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
+        "wss://hk.p.bifrost-rpc.liebi.com/ws",
+        "wss://bifrost-polkadot.dotters.network",
+        "wss://parachain-rpc.origin-trail.network",
+        "wss://mythos-rpc.dmarket.com",
+        "wss://rpc-pendulum.prd.pendulumchain.tech",
+        "wss://polkadot-rpc.n.dwellir.com",
+        "wss://ws.unique.network",
+        "wss://wnp-rpc.mainnet.energywebx.com",
+        "wss://asset-hub-kusama-rpc.n.dwellir.com",
+        "wss://basilisk-rpc.n.dwellir.com"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg",
+        "@galacticcouncil/common",
+        "@galacticcouncil/descriptors",
+        "polkadot-api"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0",
+        "@galacticcouncil/common": "1.2.0",
+        "@galacticcouncil/descriptors": "2.9.0",
+        "polkadot-api": "2.2.2"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2740,
+          "note": "The chain obtains a pooled PAPI client for its WebSocket endpoints."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2815,
+          "note": "Batch balance reads use allSettled and log/remove failed batches."
+        },
+        {
+          "path": "audit/crosschain-sources/common.mjs",
+          "line": 382,
+          "note": "Header probes run every five seconds with a five-second timeout and three-observation stale threshold."
+        },
+        {
+          "path": "audit/crosschain-sources/common.mjs",
+          "line": 484,
+          "note": "A stale probe rotates only if the chain has more than one endpoint."
+        },
+        {
+          "path": "apps/main/src/api/xcm.ts",
+          "line": 218,
+          "note": "Selected balances are callback-driven subscriptions; no cancellation signal is passed."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-on-demand",
+        "scope": "AssetHub and Bifrost default portfolio queries; other configured Substrate routes when selected. Listing the configuration does not initiate a connection."
+      },
+      "failures": {
+        "DNS_connection_failure": "PAPI reconnects or rotates endpoints. Final asset/batch errors are dropped and can produce a successful empty balance result.",
+        "hang": "Availability and subscriptions can wait for reconnection. The probe rotates a chain with multiple endpoints but imposes no caller deadline. A stream that never emits its first value prevents combineLatest from completing the selected batch.",
+        "malformed": "Decoder failures remain local to a request or subscription. Asset streams retry three times with a one-second delay, then emit [].",
+        "stale": "The probe checks chain_getHeader progression and rotates after three stale/error observations. A chain with one endpoint has no alternate. Balances have no freshness marker.",
+        "cold_warm_recovery": "Warm cache remains available while a request is pending. A rejected chain-spec promise is cached by getSpec and is not reset; recovery may require recreating the client/context."
+      },
+      "existingProtections": [
+        "AssetHub has two providers; Bifrost has three endpoints.",
+        "Network retries and health probes rotate endpoints.",
+        "Independent portfolio queries contain outages.",
+        "Subscription isolation retries three times, then emits [], so settled errors do not indefinitely hold combineLatest."
+      ],
+      "remediation": [
+        "Set caller deadlines and first-emission timeouts.",
+        "Expose unavailable balances rather than treating all failed reads as zero.",
+        "Reset rejected chain-spec promises and validate probe header numbers."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "rpc-solana",
+      "label": "Solana HTTP and WebSocket RPC",
+      "endpoints": [
+        "https://wispy-palpable-market.solana-mainnet.quiknode.pro",
+        "wss://wispy-palpable-market.solana-mainnet.quiknode.pro"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg",
+        "@galacticcouncil/xc-sdk",
+        "@solana/web3.js"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0",
+        "@galacticcouncil/xc-sdk": "2.5.0",
+        "@solana/web3.js": "1.98.4"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 2087,
+          "note": "A single QuickNode provider supplies HTTP and WebSocket endpoints."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2385,
+          "note": "Native/SPL balance reads; subscription setup waits for the initial balance before onAccountChange."
+        },
+        {
+          "path": "node_modules/@solana/web3.js/lib/index.cjs.js",
+          "line": 5045,
+          "note": "RPC fetch has no deadline/signal. HTTP 429 retries wait 500/1000/2000/4000 ms, followed by a body text read."
+        },
+        {
+          "path": "packages/web3-connect/src/hooks/useSolanaNativeBalance.ts",
+          "line": 22,
+          "note": "The wallet modal balance query supplies no cancellation signal."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-on-demand",
+        "scope": "Solana portfolio and account balances; selected bridge fee, call and claim reads."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "The balance aggregate can return [] after all reads fail. Individual native balance, claim and build queries reject locally. HTTP 429 is retried up to five attempts.",
+        "hang": "Fetch and response body reads lack deadlines. A pending initial balance read prevents the subscription from being installed. No cancellation signal is supplied; this was verified using a Connection fetch mock.",
+        "malformed": "Invalid RPC responses, decoded data or BigInt values reject, then can be swallowed by the balance aggregate.",
+        "stale": "A late balance refresh failure is logged and retains the last amount. WebSocket reconnection follows the library policy; the UI imposes no maximum age.",
+        "cold_warm_recovery": "Other chain queries continue. The initial balance stream retries settled errors three times, then emits an empty result. HTTP and WebSocket use the same QuickNode origin and have no configured alternate."
+      },
+      "existingProtections": [
+        "Independent portfolio queries contain the outage.",
+        "SDK subscription disposal handles setup that completes late.",
+        "The client retries HTTP 429 and reconnects WebSockets."
+      ],
+      "remediation": [
+        "Add complete-request deadlines and cancellation.",
+        "Add fallback from a different provider.",
+        "Expose unavailable and stale balances."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/deep-crosschain-faults.json"
+      ]
+    },
+    {
+      "id": "rpc-sui",
+      "label": "Sui JSON RPC",
+      "endpoints": [
+        "https://rpc-mainnet.suiscan.xyz"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg",
+        "@galacticcouncil/xc-sdk",
+        "@mysten/sui"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0",
+        "@galacticcouncil/xc-sdk": "2.5.0",
+        "@mysten/sui": "1.45.2"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 2145,
+          "note": "One Sui endpoint is configured."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2617,
+          "note": "An initial balance read precedes polling every three seconds; later read errors are logged."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 3047,
+          "note": "SuiClient is configured with a URL, without a timeout or custom fetch."
+        },
+        {
+          "path": "node_modules/@mysten/sui/dist/esm/jsonRpc/http-transport.js",
+          "line": 30,
+          "note": "The transport supports input.signal, but this caller does not supply it; no deadline exists."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-on-demand",
+        "scope": "Sui portfolio and account native balances; selected XCM limit, fee, build and claim reads."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "HTTP status and JSON-RPC errors reject internally. If all balance reads fail, the chain aggregate resolves [] successfully; this was tested.",
+        "hang": "Fetch and JSON body reads have no deadline. The tested balance call stayed pending without a cancellation signal.",
+        "malformed": "Malformed results or BigInt conversion failures reject, then can be swallowed by the aggregate.",
+        "stale": "Three-second polls can overlap when requests hang. Later errors retain the previous amount without an age marker.",
+        "cold_warm_recovery": "Independent chain queries contain the outage. The initial stream retries settled errors three times. Ongoing polls can recover when a later response arrives, but there is no cancellation or alternate provider."
+      },
+      "existingProtections": [
+        "HTTP status and JSON-RPC errors are checked.",
+        "SDK disposal handles setup that completes late.",
+        "Portfolio queries are independent."
+      ],
+      "remediation": [
+        "Add response body deadlines and cancellation.",
+        "Prevent overlapping polls.",
+        "Add fallback and explicit unavailable states."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/deep-crosschain-faults.json"
+      ]
+    },
+    {
+      "id": "rpc-near",
+      "label": "NEAR RPC",
+      "endpoints": [
+        "https://free.rpc.fastnear.com"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 2268,
+          "note": "One NEAR endpoint is configured."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2341,
+          "note": "Raw POST query for view_account with finality final; no signal/deadline."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2292,
+          "note": "An initial read precedes three-second polling; later failures are logged."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 295,
+          "note": "allSettled discards failed asset reads."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-on-demand",
+        "scope": "NEAR portfolio balances. NEAR can be a 1Click destination and is not a Hydration readiness dependency."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "HTTP and RPC errors other than UNKNOWN_ACCOUNT reject internally. If every asset fails, the chain returns [] successfully; this was tested. UNKNOWN_ACCOUNT correctly becomes zero.",
+        "hang": "Fetch and response body reads are unbounded. The tested call stayed pending; only the affected chain query waits.",
+        "malformed": "JSON result data is unvalidated. Missing or invalid amount data can throw; an undefined account becomes zero. The aggregate swallows thrown errors.",
+        "stale": "The request asks for finality final, but has no age marker. Three-second polling retains previous balances on late errors and can overlap hung reads.",
+        "cold_warm_recovery": "The outage is contained to the chain data. A successful empty result can overwrite warm balances. Query retries do not run because the aggregate resolves successfully."
+      },
+      "existingProtections": [
+        "HTTP errors and known account errors are handled.",
+        "Portfolio queries are independent.",
+        "Subscription setup checks whether it was disposed."
+      ],
+      "remediation": [
+        "Preserve outage errors or return explicit partial-result status.",
+        "Bound and cancel the entire request.",
+        "Prevent overlapping polls and add an independent provider."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/dependency-faults.json"
+      ]
+    },
+    {
+      "id": "rpc-zcash",
+      "label": "Zcash balance reader (not configured)",
+      "endpoints": [],
+      "consumerPackages": [
+        "@galacticcouncil/xc-core",
+        "@galacticcouncil/xc-cfg"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-core": "2.6.0",
+        "@galacticcouncil/xc-cfg": "2.7.0"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-core.mjs",
+          "line": 2675,
+          "note": "A Zcash balanceReader is required; a missing reader throws."
+        },
+        {
+          "path": "audit/crosschain-rpc-inventory.json",
+          "line": 1,
+          "note": "The zec entry has no reader endpoint and is outside the default portfolio."
+        }
+      ],
+      "requiredness": {
+        "activation": "no-configured-transport",
+        "scope": "Zcash can be a 1Click output destination. No external balance reader/indexer is configured."
+      },
+      "failures": {
+        "DNS_HTTP_hang": "No reachable balance endpoint was identified. A balance call throws because the reader is missing; the aggregate can convert that failure into []."
+      },
+      "existingProtections": [
+        "No lightwallet/indexer dependency is assumed without evidence."
+      ],
+      "remediation": [
+        "If adding balances, configure an explicit endpoint, deadline and unavailable state."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "oneclick-registry",
+      "label": "1Click asset/token registry",
+      "endpoints": [
+        "https://1click.chaindefuser.com/v0/tokens"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-swap",
+        "@defuse-protocol/one-click-sdk-typescript",
+        "axios"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-swap": "0.9.0",
+        "@defuse-protocol/one-click-sdk-typescript": "0.1.25",
+        "axios": "1.13.6"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@defuse-protocol/one-click-sdk-typescript/dist/index.js",
+          "line": 223,
+          "note": "Default OpenAPI.BASE."
+        },
+        {
+          "path": "node_modules/@defuse-protocol/one-click-sdk-typescript/dist/index.js",
+          "line": 1197,
+          "note": "GET /v0/tokens."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-swap.mjs",
+          "line": 506,
+          "note": "The token promise is memoized, including rejection or a hang."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useXcSwapDestinationAssetsQuery.ts",
+          "line": 14,
+          "note": "Ordinary query, enabled when Hydration is ready; staleTime Infinity and retry:false."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSelection.ts",
+          "line": 39,
+          "note": "External registry data is required only for a non-Hydration destination."
+        }
+      ],
+      "requiredness": {
+        "activation": "active",
+        "scope": "Cross-chain swap output destinations. A Hydration destination can operate without this registry."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Registry query errors remain local. The same xc-swap client caches its rejected promise indefinitely, so refetching after service recovery cannot recover; this was tested.",
+        "hang": "The Axios SDK timeout is zero and the caller discards its cancelable request. On a cold cross-chain destination, selection and both pickers can remain loading/disabled.",
+        "malformed": "The SDK has no runtime response schema. An unexpected shape can throw during registry mapping in the local query. The raw successful promise remains cached.",
+        "stale": "Both the successful query and the client cache have no refresh deadline. Changed token support requires refreshing the client/session.",
+        "cold_warm_recovery": "A cold external destination can become stuck on a hang. Warm cached registry data can survive an outage. A rejected or hung client needs recreation or reload; surrounding navigation remains usable."
+      },
+      "existingProtections": [
+        "Onchain destination pairs are built independently.",
+        "The registry is an ordinary query, not root Suspense.",
+        "The SDK exposes cancellation, although the UI does not use it."
+      ],
+      "remediation": [
+        "Cache successful values and clear failed/in-flight entries.",
+        "Add a TTL, complete-request deadline and signal forwarding.",
+        "Keep the Hydration picker available while cross-chain data loads."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/dependency-faults.json",
+        "audit/oneclick-faults.json"
+      ]
+    },
+    {
+      "id": "oneclick-quote-build",
+      "label": "1Click indicative and firm quotes",
+      "endpoints": [
+        "https://1click.chaindefuser.com/v0/quote"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-swap",
+        "@defuse-protocol/one-click-sdk-typescript",
+        "axios"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-swap": "0.9.0",
+        "@defuse-protocol/one-click-sdk-typescript": "0.1.25",
+        "axios": "1.13.6"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-swap.mjs",
+          "line": 261,
+          "note": "Cross-chain quote Promise.all includes a dry API quote, relay fee and RPC-derived rail/asset data."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-swap.mjs",
+          "line": 343,
+          "note": "buildCall requests a firm quote with dry:false and requires depositAddress."
+        },
+        {
+          "path": "node_modules/@defuse-protocol/one-click-sdk-typescript/dist/index.js",
+          "line": 1031,
+          "note": "Axios request config supplies CancelToken but no timeout."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts",
+          "line": 85,
+          "note": "Firm preparation is awaited before a signable transaction is created; settled errors are caught."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSubmit.ts",
+          "line": 118,
+          "note": "The shared submitting flag ORs cross-chain, Hydration and TWAP mutations."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-for-crosschain",
+        "scope": "Cross-chain quote and preparation. Ordinary Hydration quotes use a separate path. A pending cross-chain submission can leave the shared swap button busy after switching to Hydration until it settles or the provider unmounts."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "The quote path converts business/transport errors into a failed quote. A firm build rejection creates an initial-error transaction review and prevents signing.",
+        "hang": "API and response body reads are unbounded and ignore the query cancellation signal. A firm build can leave the mutation pending before a transaction modal exists. The shared pending flag can disable a subsequent Hydration swap within the same mounted provider.",
+        "malformed": "Missing depositAddress is explicitly rejected. Other amounts and API errors are mapped. Unexpected shapes can reject the local quote/build; there is no proof of a global crash.",
+        "stale": "Quotes refetch every 15 seconds. The default 30-minute business deadline is order expiry, not a network timeout. Late results have no selection-generation cancellation guard.",
+        "cold_warm_recovery": "Local quotes remain independent until the shared pending-submission case. Delayed API recovery can resume the old preparation after the user changes the form. Navigation/unmount resets the mutation UI but does not abort the network work."
+      },
+      "existingProtections": [
+        "Quote failures safely block the cross-chain trade.",
+        "A firm quote must include a deposit address.",
+        "Signing starts after the firm quote arrives.",
+        "Onchain quotes use a separate path."
+      ],
+      "remediation": [
+        "Add complete-request deadlines and cancellation.",
+        "Cancel/reset pending cross-chain preparation when switching modes, and ignore outdated results.",
+        "Expose service-specific quote errors."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/oneclick-faults.json"
+      ]
+    },
+    {
+      "id": "oneclick-status-unused",
+      "label": "1Click status API (unused by this UI)",
+      "endpoints": [
+        "https://1click.chaindefuser.com/v0/status"
+      ],
+      "consumerPackages": [
+        "@defuse-protocol/one-click-sdk-typescript"
+      ],
+      "versions": {
+        "@defuse-protocol/one-click-sdk-typescript": "0.1.25"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@defuse-protocol/one-click-sdk-typescript/dist/index.js",
+          "line": 1238,
+          "note": "getExecutionStatus exists in the locked SDK."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/utils/toasts/intents.ts",
+          "line": 26,
+          "note": "The UI monitors IntentScan orders instead."
+        }
+      ],
+      "requiredness": {
+        "activation": "dormant",
+        "scope": "No UI or xc-swap caller was found. The current monitor has no direct 1Click status fallback."
+      },
+      "failures": {
+        "failure": "This unused endpoint has no direct current UI effect. If wired, it would use the same unbounded Axios transport."
+      },
+      "existingProtections": [
+        "The current monitor uses the separate IntentScan service."
+      ],
+      "remediation": [
+        "If adding a fallback, track the actual deposit address and use an independent deadline/provider policy."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "intent-relay-fee",
+      "label": "Hydration intent relay fee quoter",
+      "endpoints": [
+        "https://quoter-intent.play.hydration.cloud/relay-fee?chain=ethereum&marginBps={margin}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-swap"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-swap": "0.9.0"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-swap.mjs",
+          "line": 229,
+          "note": "Raw fetch checks HTTP status, reads error text or JSON, and converts feeRequested to BigInt."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-swap.mjs",
+          "line": 261,
+          "note": "The cross-chain quote Promise.all requires the relay fee."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-for-crosschain",
+        "scope": "A prerequisite for cross-chain swap quotes and builds. Ordinary Hydration swaps use a separate path."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "A settled transport/HTTP error becomes a quote failure and prevents cross-chain preparation.",
+        "hang": "Fetch, HTTP error text and success JSON reads have no deadline. The whole quote remains pending if any of them hangs.",
+        "malformed": "Invalid JSON or feeRequested BigInt conversion becomes a quote error. There is no response schema or freshness validation.",
+        "stale": "The quoter has no independent TTL or fallback. The outer quote refetches every 15 seconds.",
+        "cold_warm_recovery": "A cached quote may remain during a pending refetch. There is no alternative provider; recovery requires the original request to settle or a new query instance."
+      },
+      "existingProtections": [
+        "HTTP status is checked.",
+        "Failure is mapped to a local quote error."
+      ],
+      "remediation": [
+        "Bound and cancel the complete request.",
+        "Validate schema and fee freshness.",
+        "Show quoter unavailability separately from an invalid trade."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "intentscan",
+      "label": "IntentScan settlement/order monitor",
+      "endpoints": [
+        "https://explorer-intent.play.hydration.cloud/api/orders/{sequence}",
+        "https://explorer-intent.play.hydration.cloud/orders/{sequence}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/utils",
+        "@galacticcouncil/xc-swap"
+      ],
+      "versions": {
+        "@galacticcouncil/utils": "workspace",
+        "@galacticcouncil/xc-swap": "0.9.0"
+      },
+      "evidence": [
+        {
+          "path": "packages/utils/src/helpers/intentscan.ts",
+          "line": 1,
+          "note": "API and explorer origin."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/utils/toasts/intents.ts",
+          "line": 26,
+          "note": "Network/HTTP failure returns null; body data is parsed with Zod."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/utils/toasts/processors.ts",
+          "line": 299,
+          "note": "Null/unknown remains unprocessed; settled/refunded/failed map to success/warning/error."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/hooks/useProcessTransactionToasts.ts",
+          "line": 66,
+          "note": "Polls every 10 seconds before five minutes, then every 60 seconds; retries are disabled."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-after-XC-onchain-submit",
+        "scope": "Final intent-outcome toasts. The sequence comes from the successful Hydration transaction. This monitor cannot by itself disable a new ordinary swap."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Network errors or non-success HTTP status return null and retain the submitted/unknown toast. JSON/schema failures become ordinary query errors.",
+        "hang": "Fetch and body reads have no deadline or signal. A hung in-flight query prevents subsequent polls. The six-hour expiry check runs only when processing starts again and cannot cancel the hung call.",
+        "malformed": "Zod rejects an invalid shape. An unknown state is not falsely treated as success.",
+        "stale": "updated_at supplies the toast date. No maximum age or requested-sequence equality is checked; the terminal backend state is trusted.",
+        "cold_warm_recovery": "Existing submitted toasts remain visible. A later poll can recover from a settled error. A silent hang has no restart/fallback, and direct 1Click status is not used."
+      },
+      "existingProtections": [
+        "Toast queries are independent.",
+        "Unavailable or unknown outcomes are not marked successful.",
+        "Zod validates the response shape and terminal states are explicitly mapped."
+      ],
+      "remediation": [
+        "Add complete monitoring-request deadlines and stale/sequence checks.",
+        "Show monitoring unavailability with retry.",
+        "Consider an independent onchain/direct 1Click fallback where its outcome can be trusted."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "wormhole-executor",
+      "label": "Wormhole executor quote service",
+      "endpoints": [
+        "https://executor.labsapis.com/v0/quote"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-cfg",
+        "@galacticcouncil/xc-sdk"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-cfg": "2.7.0",
+        "@galacticcouncil/xc-sdk": "2.5.0"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 2866,
+          "note": "Default executor service origin."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 3487,
+          "note": "Successful quotes are cached only when decoded expiry is over five minutes away; loading uses raw POST."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 3608,
+          "note": "NTT executor transfer call construction awaits the quote."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 4795,
+          "note": "Executor fee preparation awaits both the service and the source contract RPC."
+        },
+        {
+          "path": "apps/main/src/modules/xcm/transfer/hooks/useSubmitXcmTransfer.ts",
+          "line": 96,
+          "note": "Calls are built before transaction creation."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-for-selected-NTT-executor-routes",
+        "scope": "Selected Wormhole/Basejump NTT executor transfer fees and call preparation. It is separate from scan/history and root readiness."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "An HTTP failure rejects the selected fee/build path, so the transfer cannot be prepared.",
+        "hang": "Fetch and body reads have no deadline or signal. The tested body hang leaves the route/build pending.",
+        "malformed": "The client requires truthy signedQuote and estimatedCost, then converts cost to BigInt. It accepts a nonempty invalid signedQuote in the tested fetch path; later contract/build validation was outside the test. A failed expiry decode prevents cache reuse.",
+        "stale": "A cached quote is reused only when its signed expiry is more than five minutes away. There is no fallback after it expires and the service is unavailable.",
+        "cold_warm_recovery": "A warm, valid cached quote can allow progress. A new or expiring quote needs the service. The selected route is affected; no app-wide crash was demonstrated."
+      },
+      "existingProtections": [
+        "HTTP status and missing fields are checked.",
+        "Successful quotes have an expiry-aware cache."
+      ],
+      "remediation": [
+        "Add complete-request deadlines and cancellation.",
+        "Validate quote shape, chain, gas and expiry.",
+        "Show the selected route as unavailable and offer an independent bridge where valid."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/deep-crosschain-faults.json"
+      ]
+    },
+    {
+      "id": "ocelloids",
+      "label": "Ocelloids cross-chain history HTTP + SSE",
+      "endpoints": [
+        "https://api.ocelloids.net/query/crosschain",
+        "https://api.ocelloids.net/sse/crosschain/default?address={address}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-scan"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-scan": "0.5.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/modules/xcm/history/xcScanStore.ts",
+          "line": 7,
+          "note": "Active service origin; HTTP uses a configured public credential and SSE does not."
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 114,
+          "note": "Connected-account root starts the subscription."
+        },
+        {
+          "path": "apps/main/src/modules/xcm/history/useXcScan.ts",
+          "line": 61,
+          "note": "The async subscribe promise is ignored; onError handles only SSE errors."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-scan.mjs",
+          "line": 205,
+          "note": "HTTP items are loaded before SSE creation, without a generation/disposed guard."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-scan.mjs",
+          "line": 38,
+          "note": "Named SSE handlers use JSON.parse without a try/catch or schema validation."
+        }
+      ],
+      "requiredness": {
+        "activation": "active-when-account-connected",
+        "scope": "Cross-chain history, claimability and transaction follow-up. The root starts the subscription for a connected account, but its async failure does not establish a root React crash."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "An initial rejection becomes an unhandled promise rejection and prevents SSE setup. The onError callback is only used by SSE. There is no automatic initial-load retry.",
+        "hang": "Initial fetch and body reads have no deadline. A hang prevents SSE setup and leaves history unloaded. Cleanup does not abort the HTTP load; a late response can start an old-address SSE subscription after unsubscribe, as tested.",
+        "malformed": "Malformed items rejects initial loading. Invalid SSE JSON throws directly in the event listener, as tested. Valid JSON with the wrong shape can enter the cache and affect downstream transforms.",
+        "stale": "EventSource reconnects natively; a closed stream has a five-second explicit retry. There is no heartbeat/maximum-age check or HTTP resync to fill a reconnect gap. Cached history can remain stale.",
+        "cold_warm_recovery": "Warm query cache remains until updates arrive; a cold load has no history. Reconnection starts SSE without a proven HTTP backfill. Initial HTTP failure needs remount/account change. A late old-address response can mutate the global store and start another SSE stream."
+      },
+      "existingProtections": [
+        "SSE errors are held in local state and closed streams retry after five seconds.",
+        "Unsubscribe closes the current stream.",
+        "Optimistic/query cache is retained.",
+        "Root readiness does not await the subscription."
+      ],
+      "remediation": [
+        "Catch subscribe errors and retry initial loading.",
+        "Bound/cancel HTTP loading and guard results by subscription generation.",
+        "Validate journeys and SSE payloads, backfill on reconnect, and expose unavailable/stale history."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/deep-crosschain-faults.json"
+      ]
+    },
+    {
+      "id": "wormhole-scan",
+      "label": "Wormhole Scan transport (SDK-defined; UI dormant)",
+      "endpoints": [
+        "https://api.wormholescan.io/v1/signed_vaa/{id}",
+        "https://api.wormholescan.io/api/v1/vaas/{id}",
+        "https://api.wormholescan.io/api/v1/vaas/?txHash={hash}",
+        "https://api.wormholescan.io/api/v1/operations/"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/xc-sdk",
+        "@galacticcouncil/xc"
+      ],
+      "versions": {
+        "@galacticcouncil/xc-sdk": "2.5.0",
+        "@galacticcouncil/xc": "2.1.0"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-sdk.mjs",
+          "line": 1859,
+          "note": "Default Scan origin and raw fetch methods."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-sdk.mjs",
+          "line": 1962,
+          "note": "WormholeTransfer history awaits source and target operations with Promise.all."
+        },
+        {
+          "path": "apps/main/src/modules/xcm/history/utils/claim.ts",
+          "line": 162,
+          "note": "UI claims use VAAs from Ocelloids journeys rather than a Scan lookup."
+        }
+      ],
+      "requiredness": {
+        "activation": "dormant-in-current-UI",
+        "scope": "The context constructs a Scan client, but no UI calls were found. Direct SDK WormholeTransfer history methods would require it."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Network failures reject. HTTP status is not checked: the tested 503 response with operations [] was accepted.",
+        "hang": "If called, methods remain pending on a hung fetch or body because they have no deadline/signal.",
+        "malformed": "Unvalidated data or operations can throw or cause downstream failures. History uses an all-or-nothing Promise.all.",
+        "stale_cold_warm_recovery": "The Scan class has no cache, freshness policy or fallback. It is outside the current active UI path."
+      },
+      "existingProtections": [
+        "No live UI dependency was established, so this service is not classified as currently blocking the UI."
+      ],
+      "remediation": [
+        "Before wiring Scan, add HTTP status/schema checks, deadlines, cancellation and an independent history fallback."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/deep-crosschain-faults.json"
+      ]
+    },
+    {
+      "id": "basejumpscan",
+      "label": "BasejumpScan transport (defined; uncalled)",
+      "endpoints": [
+        "https://bjscan-api.play.hydration.cloud/api/transfers?address={h160}",
+        "https://bjscan-api.play.hydration.cloud/api/events?address={h160}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/utils",
+        "@galacticcouncil/xc-scan"
+      ],
+      "versions": {
+        "@galacticcouncil/utils": "workspace",
+        "@galacticcouncil/xc-scan": "0.5.0"
+      },
+      "evidence": [
+        {
+          "path": "packages/utils/src/helpers/basejumpscan.ts",
+          "line": 1,
+          "note": "Basejump API origin."
+        },
+        {
+          "path": "apps/main/src/modules/xcm/history/useBasejumpScan.ts",
+          "line": 25,
+          "note": "HTTP query is defined with staleTime Infinity and retry:false."
+        },
+        {
+          "path": "apps/main/src/modules/xcm/history/useBasejumpScan.ts",
+          "line": 67,
+          "note": "Subscription is defined/exported, but no caller was found."
+        },
+        {
+          "path": "apps/main/src/modules/xcm/history/lib/BasejumpScanSseClient.ts",
+          "line": 31,
+          "note": "EventSource payloads use safeParse and Zod safeParse; invalid events are ignored."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/utils/toasts/processors.ts",
+          "line": 250,
+          "note": "Toasts read the cache and construct explorer links without starting an API load."
+        }
+      ],
+      "requiredness": {
+        "activation": "Dormant transport; active explorer links",
+        "scope": "Only hook definitions and exports were found. The root uses Ocelloids. No application caller was found for the Basejump query, subscription or processing hook."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "If wired, the ordinary query throws on an HTTP failure and disables retries.",
+        "hang": "If wired, fetch/body reads have no deadline. EventSource has native reconnect but no custom heartbeat or error state.",
+        "malformed": "HTTP data is validated with Zod. Invalid SSE JSON/schema is safely ignored.",
+        "stale_cold_warm_recovery": "If wired, the staleTime Infinity HTTP query does not refetch without invalidation; SSE updates the cache. There is no initial-load retry. The current snapshot has no direct transport dependency on this API."
+      },
+      "existingProtections": [
+        "SSE payloads are guarded.",
+        "Unsubscribe closes the stream.",
+        "No active transport caller was found."
+      ],
+      "remediation": [
+        "Either give the transport clear, scoped history ownership/recovery or remove it while unused.",
+        "Add deadlines and freshness checks before activation."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "reown-control-plane",
+      "label": "Reown AppKit config/limits/origin control APIs",
+      "endpoints": [
+        "https://api.web3modal.org/appkit/v1/config",
+        "https://api.web3modal.org/appkit/v1/project-limits",
+        "https://api.web3modal.org/projects/v1/origins"
+      ],
+      "consumerPackages": [
+        "@reown/appkit",
+        "@reown/appkit-controllers"
+      ],
+      "versions": {
+        "@reown/appkit": "1.8.19",
+        "@reown/appkit-controllers": "1.8.19"
+      },
+      "evidence": [
+        {
+          "path": "packages/web3-connect/src/wallets/index.ts",
+          "line": 89,
+          "note": "WalletConnect is constructed eagerly."
+        },
+        {
+          "path": "packages/web3-connect/src/wallets/ReownWalletConnect/AppKit.ts",
+          "line": 12,
+          "note": "AppKit omits basic/manualWCControl, so remote configuration is enabled."
+        },
+        {
+          "path": "node_modules/@reown/appkit/dist/esm/src/client/appkit-base-client.js",
+          "line": 224,
+          "note": "readyPromise awaits configuration and usage; origins are checked if remote email/social features are enabled."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/ApiController.js",
+          "line": 108,
+          "note": "Config, usage and origin request paths and failure catches."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/utils/FetchUtil.js",
+          "line": 18,
+          "note": "Fetch and body reads have no deadline; a signal is used only when supplied."
+        },
+        {
+          "path": "packages/web3-connect/src/hooks/useWeb3EagerEnable.ts",
+          "line": 45,
+          "note": "Saved wallets are restored by awaiting enable sequentially."
+        },
+        {
+          "path": "packages/web3-connect/src/components/content/AccountSelectContent.tsx",
+          "line": 153,
+          "note": "Any pending provider replaces the entire account list with a loader."
+        }
+      ],
+      "requiredness": {
+        "activation": "Active; origin checks are conditional",
+        "scope": "WalletConnect readiness and restoration. A pending provider can hide healthy connected accounts and block later saved-wallet restoration. Main browsing and Hydration read UI remain available."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Immediate configuration/usage failures are caught, as tested. Origin checks catch failures or display rate/server alerts. No fatal root failure was established.",
+        "hang": "Unbounded fetch/body reads hold AppKit ready. WalletConnect enable awaits it. The shared account selector hides all accounts while a provider is pending, and sequential restoration can stop at that provider.",
+        "malformed": "Configuration processing falls back to defaults; invalid usage data is caught. Malformed origins can cause an alert or a caught error. No immediate global crash was established.",
+        "stale": "Cloud configuration controls feature enablement. There is no local deadline/fallback for a request that never settles. A warm initialized instance has already passed this gate.",
+        "cold_warm_recovery": "Cold WalletConnect enable can hang. A warm, ready instance is not affected by later outages of these startup APIs. A pending request must settle or restart; the UI has no deadline."
+      },
+      "existingProtections": [
+        "Immediate failures have fallbacks.",
+        "Native/injected wallets are independent.",
+        "ConnectAll excludes WalletConnect."
+      ],
+      "remediation": [
+        "Bound every readiness step and construct WalletConnect lazily.",
+        "Keep healthy accounts visible while another provider is pending.",
+        "Restore independent wallets in parallel and allow cancellation/retry of failed initialization."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/dependency-faults.json"
+      ]
+    },
+    {
+      "id": "reown-wallet-assets",
+      "label": "Reown wallet registry/assets and optional account UX APIs",
+      "endpoints": [
+        "https://api.web3modal.org/getWallets",
+        "https://api.web3modal.org/getWalletImage/{id}",
+        "https://api.web3modal.org/public/getAssetImage/{id}",
+        "https://api.web3modal.org/public/getCurrencyImage/{code}",
+        "https://api.web3modal.org/public/getTokenImage/{symbol}",
+        "https://rpc.walletconnect.org/v1/identity/{address}",
+        "https://rpc.walletconnect.org/v1/account/{account}/history",
+        "https://rpc.walletconnect.org/v1/account/{address}/balance",
+        "https://rpc.walletconnect.org/v1/profile/{operation}"
+      ],
+      "consumerPackages": [
+        "@reown/appkit",
+        "@reown/appkit-controllers"
+      ],
+      "versions": {
+        "@reown/appkit": "1.8.19",
+        "@reown/appkit-controllers": "1.8.19"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/ApiController.js",
+          "line": 69,
+          "note": "Image requests; image batches use allSettled; wallet registry loading is separate."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/BlockchainApiController.js",
+          "line": 147,
+          "note": "Conditional identity, history, balance and profile views."
+        },
+        {
+          "path": "packages/web3-connect/src/wallets/ReownWalletConnect/AppKit.ts",
+          "line": 20,
+          "note": "showWallets:false/allWallets:HIDE reduces wallet discovery features."
+        }
+      ],
+      "requiredness": {
+        "activation": "modal/feature-conditional",
+        "scope": "Reown modal icons, network images, ranking and optional account views. Main wallet account identities use Hydration PAPI independently."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Image batches use allSettled. Recommended-wallet failures are caught; handling differs among individual feature controllers.",
+        "hang": "FetchUtil has no deadline. A pending blob/JSON/network request can stall an optional modal feature. No root-readiness await for image prefetch was established.",
+        "malformed": "A wrong wallet data shape can reject registry loading. Prefetch catches vary by caller; no root-level fatal crash was established.",
+        "stale": "SDK caches exist for identity, history and images. Images have no shared age/error indicator.",
+        "cold_warm_recovery": "Cached assets can survive an outage. An uncached optional view degrades. These services are not required for native/injected wallet signing."
+      },
+      "existingProtections": [
+        "Image batches use allSettled.",
+        "The wallet catalog is hidden.",
+        "Hydration account identities use an independent placeholder/query path."
+      ],
+      "remediation": [
+        "Bound complete requests and use cosmetic placeholders.",
+        "Make prefetch best effort and add error boundaries for optional views."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "reown-hosted-rpc",
+      "label": "Reown hosted blockchain RPC/bundler",
+      "endpoints": [
+        "https://rpc.walletconnect.org/v1/?chainId={caip}&projectId={id}",
+        "https://rpc.walletconnect.org/v1/bundler"
+      ],
+      "consumerPackages": [
+        "@reown/appkit-utils",
+        "@walletconnect/universal-provider",
+        "@walletconnect/jsonrpc-http-connection"
+      ],
+      "versions": {
+        "@reown/appkit-utils": "1.8.19",
+        "@walletconnect/universal-provider": "2.23.7",
+        "@walletconnect/jsonrpc-http-connection": "1.0.8"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit-utils/dist/esm/src/CaipNetworkUtil.js",
+          "line": 128,
+          "note": "Supported networks use Reown as default RPC; the original URL is retained in chainDefault."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-universal-provider.js",
+          "line": 382,
+          "note": "A session RPC map is used if supplied; otherwise it falls back to Reown."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-jsonrpc-http-connection.js",
+          "line": 72,
+          "note": "cross-fetch and JSON body reads have no deadline, signal or HTTP status guard."
+        },
+        {
+          "path": "packages/web3-connect/src/wallets/ReownWalletConnect/utils.ts",
+          "line": 17,
+          "note": "Polkadot network metadata contains WebSocket endpoints; signing uses the WalletConnect session relay."
+        }
+      ],
+      "requiredness": {
+        "activation": "WalletConnect network reads and optional smart-account features",
+        "scope": "WalletConnect read providers and optional bundler flows. They are separate from XCM explicit EVM RPCs and the core Hydration transport."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "The HTTP transport catches failures and emits JSON-RPC errors. No main UI root failure was established.",
+        "hang": "HTTP registration ping, requests and body reads have no deadline/signal. A selected WalletConnect RPC operation can hang.",
+        "malformed": "The transport uses safe JSON handling but has no HTTP status guard. RPC result handling varies.",
+        "stale": "There is no block-progress/freshness guard. Supported EVM networks share the Reown provider.",
+        "cold_warm_recovery": "A stored session still needs RPC reads. AppKit preserves the original chainDefault URL, but that does not provide automatic fallback for default.http."
+      },
+      "existingProtections": [
+        "UniversalProvider supports an explicit RPC map override.",
+        "AppKit preserves chainDefault metadata."
+      ],
+      "remediation": [
+        "Provide an independent explicit RPC map and complete-request deadlines.",
+        "Do not await optional WalletConnect RPC reads in the native account selector.",
+        "Verify that configured fallback is actually used."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "walletconnect-relay",
+      "label": "WalletConnect session relay",
+      "endpoints": [
+        "wss://relay.walletconnect.org"
+      ],
+      "consumerPackages": [
+        "@walletconnect/core",
+        "@walletconnect/sign-client",
+        "@walletconnect/universal-provider"
+      ],
+      "versions": {
+        "@walletconnect/core": "2.23.7",
+        "@walletconnect/sign-client": "2.23.7",
+        "@walletconnect/universal-provider": "2.23.7"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 133,
+          "note": "Default relay origin."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 2076,
+          "note": "Socket connection deadline is 15 seconds."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 2377,
+          "note": "Reconnect loop allows up to five connection attempts."
+        },
+        {
+          "path": "packages/web3-connect/src/wallets/ReownWalletConnect/index.ts",
+          "line": 70,
+          "note": "Enable awaits readiness, provider, modal and session without an overall UI deadline."
+        },
+        {
+          "path": "packages/web3-connect/src/wallets/ReownWalletConnect/utils.ts",
+          "line": 50,
+          "note": "The Polkadot signer sends a WalletConnect session request."
+        }
+      ],
+      "requiredness": {
+        "activation": "Active when WalletConnect is used or restored",
+        "scope": "WalletConnect pairing, sessions and signing. Native injected wallets do not require the relay."
+      },
+      "failures": {
+        "DNS_connection_failure": "Core has finite connection timeouts, reconnect logic and error handling. WalletConnect enable may fail or wait for a session/modal/user action.",
+        "hang": "Each relay connection attempt has a 15-second bound. The UI enable/session promise has no overall deadline and ends on session change or modal close. A pending provider can hide all accounts.",
+        "malformed": "Protocol messages are validated and invalid data is rejected. No root crash was established.",
+        "stale": "Session/request TTLs and heartbeat checks exist. A cached account does not make signing work while the relay is unavailable.",
+        "cold_warm_recovery": "Core reconnect supports restoration. A native wallet can remain viable, but the shared pending-account selector needs correction. No alternative relay is configured."
+      },
+      "existingProtections": [
+        "Core has a 15-second connect timeout, heartbeat and retries.",
+        "Modal closure rejects the enable promise."
+      ],
+      "remediation": [
+        "Add an overall connection deadline, cancellation and retry.",
+        "Keep healthy accounts selectable and show relay-specific unavailability."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "walletconnect-verification",
+      "label": "WalletConnect verification/attestation",
+      "endpoints": [
+        "https://verify.walletconnect.org/attestation/{hash}?v2Supported=true",
+        "https://verify.walletconnect.org/v3/attestation",
+        "https://verify.walletconnect.org/v3/public-key",
+        "https://verify.walletconnect.com"
+      ],
+      "consumerPackages": [
+        "@walletconnect/core",
+        "@walletconnect/sign-client"
+      ],
+      "versions": {
+        "@walletconnect/core": "2.23.7",
+        "@walletconnect/sign-client": "2.23.7"
+      },
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 214,
+          "note": "Trusted verification domains."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 3820,
+          "note": "Verification attestation iframe URL."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 3891,
+          "note": "Attestation fetch has a five-second abort timer, cleared before JSON body consumption."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 3912,
+          "note": "Public-key fetch has a ten-second abort timer and catches warnings; the timer is cleared before JSON consumption."
+        }
+      ],
+      "requiredness": {
+        "activation": "Conditional WalletConnect protocol verification",
+        "scope": "Conditional WalletConnect request/pairing origin verification. It is not a global UI readiness dependency."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Registration/public-key failures are caught or logged. An unverifiable attestation is not represented as verified.",
+        "hang": "Header fetches have five/ten-second abort timers, but those timers are cleared before JSON body reads. A body can therefore hang. Higher protocol handlers contain many errors; no global outage was established.",
+        "malformed": "Attestation JWT parsing/validation can fail, then warn or remain unverified. There is no shared Zod schema for all response bodies.",
+        "stale": "Cached public keys have expiry handling. Verification origin metadata is separate from trust in Hydration RPC.",
+        "cold_warm_recovery": "A cached key reduces the cold-start dependency. An outage can affect WalletConnect flows. The current UI has no explicit overall enable deadline."
+      },
+      "existingProtections": [
+        "Header abort timers exist.",
+        "Verify URLs are restricted to trusted origins.",
+        "Public keys are cached, and failures have catches/warnings."
+      ],
+      "remediation": [
+        "Bound body consumption as well as headers.",
+        "Keep an explicit unverified state and avoid blocking native-wallet account selection."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "reown-auth",
+      "label": "Reown embedded auth and authentication APIs",
+      "endpoints": [
+        "https://secure.walletconnect.org/sdk",
+        "https://api.web3modal.org/auth/v1/nonce",
+        "https://api.web3modal.org/auth/v1/authenticate",
+        "https://api.web3modal.org/auth/v1/me",
+        "https://api.web3modal.org/auth/v1/otp",
+        "https://api.web3modal.org/auth/v1/account-metadata"
+      ],
+      "consumerPackages": [
+        "@reown/appkit",
+        "@reown/appkit-wallet",
+        "@reown/appkit-controllers"
+      ],
+      "versions": {
+        "@reown/appkit": "1.8.19",
+        "@reown/appkit-wallet": "1.8.19",
+        "@reown/appkit-controllers": "1.8.19"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit/dist/esm/src/client/appkit.js",
+          "line": 265,
+          "note": "Authentication applies only to supported namespaces with remote email/social enabled."
+        },
+        {
+          "path": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrameConstants.js",
+          "line": 1,
+          "note": "Remote iframe SDK URL."
+        },
+        {
+          "path": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrame.js",
+          "line": 134,
+          "note": "iframe.onerror rejects loading; READY resolves frameLoadPromise."
+        },
+        {
+          "path": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrameProvider.js",
+          "line": 525,
+          "note": "The 20-second alert/abort timer does not reject the awaited frameLoadPromise."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/features/siwx/reown-authentication/ReownAuthentication.js",
+          "line": 164,
+          "note": "Authentication fetch has no deadline/signal; errors read text and successful JSON is parsed. The feature defaults to required:true."
+        }
+      ],
+      "requiredness": {
+        "activation": "Conditional cloud feature; current remote configuration was not queried",
+        "scope": "AppKit email/social login and optional ReownAuthentication SIWX. Activation depends on remote features; it does not automatically apply to native wallets or main browsing."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Iframe onerror rejects loading. Authentication HTTP failures throw; getSessions catches and returns [].",
+        "hang": "The tested 20-second iframe load timer alerts and aborts its controller, but the await on frameLoadPromise remains pending. Selected auth requests also have 120-second alerts; complete promise cancellation needs separate verification. Authentication HTTP/body reads are unbounded.",
+        "malformed": "Frame events are checked with safeParse and ignored if invalid. Invalid JWT payloads can reject an authentication session.",
+        "stale": "Persisted sessions/tokens require a me check on restoration. Cloud feature settings control activation.",
+        "cold_warm_recovery": "A frame that never emits READY remains pending after the 20-second alert. A real iframe error or READY event settles it. No global crash was established; shared account hiding applies if a WalletConnect flow waits for an affected operation."
+      },
+      "existingProtections": [
+        "Iframe onerror rejects loading.",
+        "Frame events have schema checks.",
+        "Timeout alerts and authentication-session fallback exist."
+      ],
+      "remediation": [
+        "Race/reject frameLoadPromise on the load deadline.",
+        "Connect timeout cancellation to rejection of the actual pending promises.",
+        "Bound complete HTTP requests and locally disable unused embedded authentication."
+      ],
+      "confidence": "high",
+      "testRefs": [
+        "audit/deep-crosschain-faults.json"
+      ]
+    },
+    {
+      "id": "reown-extra-financial-features",
+      "label": "Reown optional swap/onramp/pay/exchange APIs",
+      "endpoints": [
+        "https://rpc.walletconnect.org/v1/convert/{quotes,tokens,allowance,gas-price,build-transaction,build-approve}",
+        "https://rpc.walletconnect.org/v1/onramp/{options,quote}",
+        "https://rpc.walletconnect.org/v1/generators/onrampurl",
+        "https://rpc.walletconnect.org/v1/json-rpc",
+        "https://api.web3modal.org/appkit/v1/transfers/{quote,status,assets/exchanges/{id}}",
+        "https://meldcrypto.com"
+      ],
+      "consumerPackages": [
+        "@reown/appkit",
+        "@reown/appkit-controllers",
+        "@reown/appkit-pay"
+      ],
+      "versions": {
+        "@reown/appkit": "1.8.19",
+        "@reown/appkit-controllers": "1.8.19",
+        "@reown/appkit-pay": "1.8.19"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit/dist/esm/src/client/appkit.js",
+          "line": 507,
+          "note": "Remote feature gates control dynamic imports for auth, swaps, onramp, pay and activity."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/BlockchainApiController.js",
+          "line": 196,
+          "note": "Optional conversion and onramp REST paths."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/utils/ExchangeUtil.js",
+          "line": 23,
+          "note": "Exchange JSON-RPC methods load exchanges, payment URL and buy status without a deadline or HTTP status check."
+        },
+        {
+          "path": "node_modules/@reown/appkit-pay/dist/esm/src/utils/ApiUtil.js",
+          "line": 35,
+          "note": "Pay JSON-RPC and transfer quote/status requests have no fetch deadline."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/utils/ConstantsUtil.js",
+          "line": 10,
+          "note": "Meld provider metadata and link."
+        }
+      ],
+      "requiredness": {
+        "activation": "Conditional cloud feature and user-selected modal view; live feature configuration was not queried",
+        "scope": "Optional commercial flows in the Reown modal. Hydration swap products use SDK/1Click paths independently."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Feature controllers use local errors, snacks or defaults with varying policies. No fatal root failure was established.",
+        "hang": "Raw fetch and FetchUtil body reads have no deadline. Optional views can remain loading. Their payment quote/status APIs are separate from Hydration cross-chain 1Click.",
+        "malformed": "JSON-RPC errors are checked, but HTTP status/schema checks are incomplete. Wrong data can reject a local view.",
+        "stale": "Caching and polling vary by feature; there is no central freshness/deadline policy.",
+        "cold_warm_recovery": "Remote configuration may enable these surfaces in the future. Conditional features should not be counted as unconditional current startup dependencies."
+      },
+      "existingProtections": [
+        "UI imports are gated by features.",
+        "Controllers use try/catch/finally.",
+        "These flows require user choice."
+      ],
+      "remediation": [
+        "Explicitly disable unused optional features locally.",
+        "Add view error boundaries, request deadlines and cancellation.",
+        "Do not share optional loading state with healthy wallet accounts."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "reown-telemetry",
+      "label": "Reown/WalletConnect telemetry and notification registration",
+      "endpoints": [
+        "https://pulse.walletconnect.org/batch",
+        "https://echo.walletconnect.com/{projectId}/clients"
+      ],
+      "consumerPackages": [
+        "@reown/appkit-controllers",
+        "@walletconnect/core"
+      ],
+      "versions": {
+        "@reown/appkit-controllers": "1.8.19",
+        "@walletconnect/core": "2.23.7"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/EventsController.js",
+          "line": 85,
+          "note": "Mandatory INITIALIZE/CONNECT_SUCCESS events are recorded even when analytics is disabled."
+        },
+        {
+          "path": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/EventsController.js",
+          "line": 133,
+          "note": "Best-effort sendBeacon batch, guarded by catch; flush interval is 10 seconds."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 4179,
+          "note": "Telemetry batch fetch is caught and logged."
+        },
+        {
+          "path": "audit/crosschain-sources/walletconnect-core.js",
+          "line": 4009,
+          "note": "Echo device token registration is available when explicitly requested; no UI caller was found."
+        }
+      ],
+      "requiredness": {
+        "activation": "Pulse is active and best effort; Echo registration is defined but has no UI caller",
+        "scope": "Telemetry delivery and optional device notification registration."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "Pulse errors are caught; events are discarded or retained for retry. No critical readiness await was established.",
+        "hang": "Telemetry fetch is unbounded but is outside the critical UI path. It can retain network resources; no root block was established.",
+        "malformed": "Pulse checks response status rather than consuming application domain entities.",
+        "stale_cold_warm_recovery": "Telemetry loss or retry does not affect balances, quotes or signing."
+      },
+      "existingProtections": [
+        "sendBeacon does not await delivery.",
+        "Telemetry errors are caught.",
+        "Notification registration has no current UI caller."
+      ],
+      "remediation": [
+        "Keep telemetry best effort and bounded.",
+        "Avoid awaiting it during readiness."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "reown-fonts",
+      "label": "Reown hosted fonts",
+      "endpoints": [
+        "https://fonts.reown.com/KHTeka-Medium.woff2",
+        "https://fonts.reown.com/KHTeka-Regular.woff2",
+        "https://fonts.reown.com/KHTeka-Light.woff2",
+        "https://fonts.reown.com/KHTekaMono-Regular.woff2",
+        "https://fonts.reown.com/KHTeka-Light.woff",
+        "https://fonts.reown.com/KHTeka-Regular.woff",
+        "https://fonts.reown.com/KHTekaMono-Regular.woff"
+      ],
+      "consumerPackages": [
+        "@reown/appkit-ui"
+      ],
+      "versions": {
+        "@reown/appkit-ui": "1.8.19"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit-ui/dist/esm/src/utils/ThemeUtil.js",
+          "line": 9,
+          "note": "Hosted font URLs."
+        },
+        {
+          "path": "node_modules/@reown/appkit-ui/dist/esm/src/utils/ThemeUtil.js",
+          "line": 40,
+          "note": "Preloads are added when there is no custom font."
+        },
+        {
+          "path": "node_modules/@reown/appkit-ui/dist/esm/src/utils/ThemeUtil.js",
+          "line": 99,
+          "note": "font-display: swap."
+        }
+      ],
+      "requiredness": {
+        "activation": "AppKit modal theming when no custom font is supplied",
+        "scope": "Cosmetic typography in the AppKit modal."
+      },
+      "failures": {
+        "DNS_HTTP_hang_malformed": "Browser font loads can fail or remain pending safely. font-display: swap permits fallback, and no JavaScript await ties fonts to readiness. No functional outage was established.",
+        "stale_warm_recovery": "Browser cache can provide the font; fallback fonts keep content readable."
+      },
+      "existingProtections": [
+        "font-display: swap and a custom-font option are available."
+      ],
+      "remediation": [
+        "Use the application/system font or self-host fonts to remove this optional origin."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "wallet-injected",
+      "label": "Injected/Wallet Standard extensions and mobile deeplinks",
+      "endpoints": [
+        "https://link.metamask.io/dapp/{host}",
+        "https://app.novawallet.io/open/dapp",
+        "https://phantom.app/ul/browse/{url}",
+        "https://solflare.com/ul/v1/browse/{url}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/web3-connect",
+        "@mysten/wallet-standard",
+        "@solana/web3.js",
+        "viem"
+      ],
+      "versions": {
+        "@galacticcouncil/web3-connect": "workspace",
+        "@mysten/wallet-standard": "0.19.9",
+        "@solana/web3.js": "1.98.4",
+        "viem": "2.56.8"
+      },
+      "evidence": [
+        {
+          "path": "packages/web3-connect/src/wallets/index.ts",
+          "line": 53,
+          "note": "Native extension wallet objects are constructed; installation URLs are metadata."
+        },
+        {
+          "path": "packages/web3-connect/src/config/deeplinks.ts",
+          "line": 18,
+          "note": "External URLs are opened through user navigation only."
+        },
+        {
+          "path": "packages/web3-connect/src/hooks/useWeb3EagerEnable.ts",
+          "line": 64,
+          "note": "Sequential enable has no generic provider deadline."
+        },
+        {
+          "path": "packages/web3-connect/src/components/content/AccountSelectContent.tsx",
+          "line": 80,
+          "note": "The account-list pending gate applies to any provider."
+        }
+      ],
+      "requiredness": {
+        "activation": "User-selected wallets; deeplinks are user navigation",
+        "scope": "Local injected wallet permission, account and signing APIs. The UI cannot enumerate private RPCs/backends inside a wallet extension."
+      },
+      "failures": {
+        "provider_reject": "Enable mutations do not retry. Error handling disconnects the failed provider; that wallet becomes unavailable.",
+        "provider_hang": "Any provider whose enable call never settles can hide healthy accounts in the shared selector. There is no call deadline. Extension backend dependencies cannot be inferred from this UI source.",
+        "deeplink_DNS_HTTP_failure": "External URLs are opened only for chosen navigation or installation. DNS/HTTP failures affect that action; the UI does not fetch them during startup.",
+        "stale_cold_warm_recovery": "Previously connected account restoration depends on the chosen wallet. External watch-only accounts and local navigation remain available."
+      },
+      "existingProtections": [
+        "Connectors are independent and have error handling.",
+        "Injected wallet discovery is local.",
+        "External watch-only accounts are supported."
+      ],
+      "remediation": [
+        "Add per-provider deadlines and cancellation.",
+        "Restore providers independently and show healthy accounts while others remain pending."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "subscan-proxy-helper",
+      "label": "Subscan proxy helper (uncalled API builder)",
+      "endpoints": [
+        "https://unified-main-aggr-indx.indexer.hydration.cloud/proxy/subscan/{path}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/utils",
+        "@galacticcouncil/xc-cfg"
+      ],
+      "versions": {
+        "@galacticcouncil/utils": "workspace",
+        "@galacticcouncil/xc-cfg": "2.7.0"
+      },
+      "evidence": [
+        {
+          "path": "packages/utils/src/helpers/subscan.ts",
+          "line": 12,
+          "note": "Proxy URL and API builder; the helper does not fetch."
+        },
+        {
+          "path": "packages/utils/src/helpers/subscan.ts",
+          "line": 19,
+          "note": "Chain explorer URLs are built from configuration without fetching."
+        }
+      ],
+      "requiredness": {
+        "activation": "Dormant API helper; active external explorer links",
+        "scope": "No caller of subscan.api was found. Direct HDX supply and referenda APIs are covered by another audit slice."
+      },
+      "failures": {
+        "DNS_HTTP_hang": "No UI request to this helper URL was found. Failure of an external explorer only affects a link the user opens."
+      },
+      "existingProtections": [
+        "URL builders are not root network dependencies."
+      ],
+      "remediation": [
+        "Before activating the API helper, give the feature explicit ownership, deadlines, schema validation and fallback."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "reown-dev-version-check",
+      "label": "Reown npm latest check (development only)",
+      "endpoints": [
+        "https://registry.npmjs.org/@reown/appkit/latest"
+      ],
+      "consumerPackages": [
+        "@reown/appkit-utils"
+      ],
+      "versions": {
+        "@reown/appkit-utils": "1.8.19"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit-utils/dist/esm/src/SemVerUtils.js",
+          "line": 17,
+          "note": "IS_DEVELOPMENT gate."
+        },
+        {
+          "path": "node_modules/@reown/appkit-utils/dist/esm/src/SemVerUtils.js",
+          "line": 31,
+          "note": "The fetch chain only warns about a version; a synchronous try/catch cannot catch its asynchronous rejection."
+        }
+      ],
+      "requiredness": {
+        "activation": "development-only",
+        "scope": "A development-only package-version console warning; it does not gate production readiness."
+      },
+      "failures": {
+        "DNS_HTTP_failure": "A rejected fetch chain can be unhandled because its surrounding try/catch is synchronous. Root rendering does not await it.",
+        "hang": "A request that never settles leaves only the diagnostic pending.",
+        "malformed_stale": "Response data is used for version comparison/warnings and version caching, not a functionality gate."
+      },
+      "existingProtections": [
+        "It has a development gate and cached version data.",
+        "Readiness does not await it."
+      ],
+      "remediation": [
+        "Catch the asynchronous promise chain and give diagnostic requests a deadline."
+      ],
+      "confidence": "high",
+      "testRefs": []
+    }
+  ],
+  "activeRpcInventory": [
+    {
+      "key": "base",
+      "name": "Base",
+      "type": "evm-chain",
+      "ecosystem": "Ethereum",
+      "evmRpcUrls": {
+        "default": {
+          "http": [
+            "https://mainnet.base.org"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://stylish-quick-firefly.base-mainnet.quiknode.pro/"
+      ],
+      "explorer": "https://basescan.org/"
+    },
+    {
+      "key": "ethereum",
+      "name": "Ethereum",
+      "type": "evm-chain",
+      "ecosystem": "Ethereum",
+      "evmRpcUrls": {
+        "default": {
+          "http": [
+            "https://ethereum.reth.rs/rpc"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://ethereum-rpc.publicnode.com",
+        "https://cosmopolitan-dimensional-diagram.quiknode.pro"
+      ],
+      "explorer": "https://etherscan.io/"
+    },
+    {
+      "key": "robinhood",
+      "name": "Robinhood",
+      "type": "evm-chain",
+      "ecosystem": "Ethereum",
+      "evmRpcUrls": {
+        "default": {
+          "http": [
+            "https://rpc.mainnet.chain.robinhood.com",
+            "https://rpc.ordofi.network"
+          ],
+          "webSocket": [
+            "wss://rpc.ordofi.network"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://rpc.mainnet.chain.robinhood.com"
+      ],
+      "explorer": "https://robinhoodchain.blockscout.com/"
+    },
+    {
+      "key": "assethub",
+      "name": "AssetHub Polkadot",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "wss://polkadot-asset-hub-rpc.polkadot.io"
+      ],
+      "explorer": "https://assethub-polkadot.subscan.io"
+    },
+    {
+      "key": "assethub_cex",
+      "name": "AssetHub (CEX)",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "wss://polkadot-asset-hub-rpc.polkadot.io"
+      ],
+      "explorer": "https://assethub-polkadot.subscan.io"
+    },
+    {
+      "key": "astar",
+      "name": "Astar",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://rpc.astar.network",
+      "explorer": "https://astar.subscan.io"
+    },
+    {
+      "key": "bifrost",
+      "name": "Bifrost",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
+        "wss://hk.p.bifrost-rpc.liebi.com/ws",
+        "wss://bifrost-polkadot.dotters.network"
+      ],
+      "explorer": "https://bifrost.subscan.io"
+    },
+    {
+      "key": "hydration",
+      "name": "Hydration",
+      "type": "evm-parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://hydration-rpc.n.dwellir.com",
+        "wss://rpc.kril.hydration.cloud",
+        "wss://hydration.rotko.net",
+        "wss://rpc.sin.hydration.cloud",
+        "wss://rpc.coke.hydration.cloud"
+      ],
+      "evmRpcUrls": {
+        "public": {
+          "http": [
+            "https://hydration-rpc.n.dwellir.com",
+            "https://rpc.kril.hydration.cloud",
+            "https://hydration.rotko.net",
+            "https://rpc.sin.hydration.cloud",
+            "https://rpc.coke.hydration.cloud"
+          ],
+          "webSocket": [
+            "wss://hydration-rpc.n.dwellir.com",
+            "wss://rpc.kril.hydration.cloud",
+            "wss://hydration.rotko.net",
+            "wss://rpc.sin.hydration.cloud",
+            "wss://rpc.coke.hydration.cloud"
+          ]
+        },
+        "default": {
+          "http": [
+            "https://hydration-rpc.n.dwellir.com",
+            "https://rpc.kril.hydration.cloud",
+            "https://hydration.rotko.net",
+            "https://rpc.sin.hydration.cloud",
+            "https://rpc.coke.hydration.cloud"
+          ],
+          "webSocket": [
+            "wss://hydration-rpc.n.dwellir.com",
+            "wss://rpc.kril.hydration.cloud",
+            "wss://hydration.rotko.net",
+            "wss://rpc.sin.hydration.cloud",
+            "wss://rpc.coke.hydration.cloud"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://hydration-rpc.n.dwellir.com",
+        "https://rpc.kril.hydration.cloud",
+        "https://hydration.rotko.net",
+        "https://rpc.sin.hydration.cloud",
+        "https://rpc.coke.hydration.cloud"
+      ],
+      "explorer": "https://hydration.subscan.io"
+    },
+    {
+      "key": "neuroweb",
+      "name": "Neuroweb",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://parachain-rpc.origin-trail.network",
+      "explorer": "https://neuroweb.subscan.io"
+    },
+    {
+      "key": "mythos",
+      "name": "Mythos",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://mythos-rpc.dmarket.com",
+      "explorer": "https://mythos.subscan.io"
+    },
+    {
+      "key": "pendulum",
+      "name": "Pendulum",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://rpc-pendulum.prd.pendulumchain.tech",
+      "explorer": "https://pendulum.subscan.io"
+    },
+    {
+      "key": "polkadot",
+      "name": "Polkadot",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://polkadot-rpc.n.dwellir.com",
+      "explorer": "https://polkadot.subscan.io"
+    },
+    {
+      "key": "unique",
+      "name": "Unique network",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://ws.unique.network",
+      "explorer": "https://unique.subscan.io"
+    },
+    {
+      "key": "energywebx",
+      "name": "Energy Web X",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://wnp-rpc.mainnet.energywebx.com",
+      "explorer": "https://energywebx.subscan.io"
+    },
+    {
+      "key": "solana",
+      "name": "Solana",
+      "type": "solana-chain",
+      "ecosystem": "Solana",
+      "rpcUrls": {
+        "http": [
+          "https://wispy-palpable-market.solana-mainnet.quiknode.pro"
+        ],
+        "webSocket": [
+          "wss://wispy-palpable-market.solana-mainnet.quiknode.pro"
+        ]
+      },
+      "explorer": "https://explorer.solana.com/"
+    },
+    {
+      "key": "sui",
+      "name": "Sui",
+      "type": "sui-chain",
+      "ecosystem": "Sui",
+      "rpc": "https://rpc-mainnet.suiscan.xyz",
+      "explorer": "https://suiscan.xyz/"
+    },
+    {
+      "key": "assethub_kusama",
+      "name": "AssetHub Kusama",
+      "type": "parachain",
+      "ecosystem": "Kusama",
+      "ws": "wss://asset-hub-kusama-rpc.n.dwellir.com",
+      "explorer": "https://assethub-kusama.subscan.io"
+    },
+    {
+      "key": "basilisk",
+      "name": "Basilisk",
+      "type": "parachain",
+      "ecosystem": "Kusama",
+      "ws": "wss://basilisk-rpc.n.dwellir.com",
+      "explorer": "https://basilisk.subscan.io"
+    },
+    {
+      "key": "near",
+      "name": "NEAR",
+      "type": "near-chain",
+      "ecosystem": "Near",
+      "rpc": "https://free.rpc.fastnear.com",
+      "explorer": "https://nearblocks.io/"
+    },
+    {
+      "key": "zec",
+      "name": "Zcash",
+      "type": "zec-chain",
+      "ecosystem": "Zcash",
+      "explorer": "https://mainnet.zcashexplorer.app/",
+      "balanceReaderConfigured": false
+    }
+  ],
+  "rpcInventoryNotes": [
+    "There are 20 configured chain entries. Only seven external default portfolio chains are queried automatically for compatible addresses. Other chains depend on route/selection. Hydration is retained in the inventory but excluded from external-service violations.",
+    "evmClientRpcs lists actual XCM HTTP provider endpoints. evmRpcUrls.default can differ and feeds wallet network metadata.",
+    "AppKit can replace a supported network default HTTP URL with Reown RPC. Retaining chainDefault does not mean an automatic fallback is used.",
+    "QuickNode is shared by Base, Ethereum secondary RPC and Solana. Solana HTTP and WebSocket use the same host. Dwellir is shared across multiple Substrate chains; AssetHub has alternatives. Multiple Bifrost Liebi endpoints are not independent vendors."
+  ],
+  "newFindings": [
+    {
+      "id": "OCELLOIDS-INITIAL-UNHANDLED",
+      "severity": "feature-specific",
+      "summary": "An initial HTTP rejection or malformed items rejects an ignored async subscription and prevents SSE setup. It has no automatic retry; a React root crash was not established.",
+      "evidence": [
+        {
+          "path": "apps/main/src/modules/xcm/history/useXcScan.ts",
+          "line": 61,
+          "note": "The async subscribe promise is ignored."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-scan.mjs",
+          "line": 205,
+          "note": "HTTP loading precedes SSE setup."
+        }
+      ],
+      "testRef": "audit/deep-crosschain-faults.json"
+    },
+    {
+      "id": "OCELLOIDS-LATE-RECOVERY",
+      "severity": "resource/stale-data",
+      "summary": "A pending initial query can recover after unsubscribe and start an old-address SSE stream. Account changes can leave competing subscriptions using the global store.",
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-scan.mjs",
+          "line": 202,
+          "note": "Unsubscribe closes only the current SSE stream."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-scan.mjs",
+          "line": 205,
+          "note": "There is no request cancellation or generation guard."
+        }
+      ],
+      "testRef": "audit/deep-crosschain-faults.json"
+    },
+    {
+      "id": "REOWN-FRAME-DEADLINE-INCOMPLETE",
+      "severity": "conditional-wallet-feature",
+      "summary": "The exact 20-second iframe load timeout emits an alert and aborts a controller, but its await on frameLoadPromise remains pending. Activation depends on remote email/social features; no global UI failure was established.",
+      "evidence": [
+        {
+          "path": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrameProvider.js",
+          "line": 525,
+          "note": "The timer does not settle frameLoadPromise."
+        }
+      ],
+      "testRef": "audit/deep-crosschain-faults.json"
+    },
+    {
+      "id": "WORMHOLE-EXECUTOR-UNBOUNDED",
+      "severity": "selected-bridge-feature",
+      "summary": "executor.labsapis.com is awaited by NTT executor fee/call builders. Raw fetch/body reads have no signal/deadline and can leave selected-route preparation pending.",
+      "evidence": [
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 3508,
+          "note": "Raw POST request."
+        },
+        {
+          "path": "audit/crosschain-sources/xc-cfg.mjs",
+          "line": 4795,
+          "note": "Fee preparation awaits the service."
+        }
+      ],
+      "testRef": "audit/deep-crosschain-faults.json"
+    }
+  ],
+  "testing": {
+    "artifacts": [
+      "audit/dependency-faults.cjs",
+      "audit/dependency-faults.json",
+      "audit/deep-crosschain-faults.cjs",
+      "audit/deep-crosschain-faults.json",
+      "audit/oneclick-faults.mjs",
+      "audit/oneclick-faults.json",
+      "audit/crosschain-rpc-inventory.json",
+      "audit/crosschain-package-versions.json",
+      "audit/crosschain-source-provenance.json",
+      "audit/crosschain-source-provenance.cjs"
+    ],
+    "commands": [
+      "node audit/dependency-faults.cjs",
+      "node audit/deep-crosschain-faults.cjs"
+    ],
+    "deepAssertions": 13,
+    "limits": "These are dependency-level mocked fault tests, not browser assertions. There were no live API calls, signing or transactions. Hang observations lasted 100 ms and are supported by source evidence showing no deadline. The 20-second iframe timer was triggered with a fake timer. Exact formatted dependency sources are in audit/crosschain-sources. HTTP/status/shape behaviors are source-derived unless identified by a test reference; stale/cold/warm/recovery conclusions follow the documented lifecycle paths."
+  },
+  "externalExplorers": [
+    {
+      "chain": "base",
+      "url": "https://basescan.org/",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "ethereum",
+      "url": "https://etherscan.io/",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "robinhood",
+      "url": "https://robinhoodchain.blockscout.com/",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "assethub",
+      "url": "https://assethub-polkadot.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "assethub_cex",
+      "url": "https://assethub-polkadot.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "astar",
+      "url": "https://astar.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "bifrost",
+      "url": "https://bifrost.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "hydration",
+      "url": "https://hydration.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "neuroweb",
+      "url": "https://neuroweb.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "mythos",
+      "url": "https://mythos.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "pendulum",
+      "url": "https://pendulum.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "polkadot",
+      "url": "https://polkadot.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "unique",
+      "url": "https://unique.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "energywebx",
+      "url": "https://energywebx.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "solana",
+      "url": "https://explorer.solana.com/",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "sui",
+      "url": "https://suiscan.xyz/",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "assethub_kusama",
+      "url": "https://assethub-kusama.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "basilisk",
+      "url": "https://basilisk.subscan.io",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "near",
+      "url": "https://nearblocks.io/",
+      "activation": "User-opened link; no root fetch"
+    },
+    {
+      "chain": "zec",
+      "url": "https://mainnet.zcashexplorer.app/",
+      "activation": "User-opened link; no root fetch"
+    }
+  ],
+  "packageVersions": {
+    "@galacticcouncil/xc": "2.1.0",
+    "@galacticcouncil/xc-core": "2.6.0",
+    "@galacticcouncil/xc-cfg": "2.7.0",
+    "@galacticcouncil/xc-sdk": "2.5.0",
+    "@galacticcouncil/xc-swap": "0.9.0",
+    "@galacticcouncil/xc-scan": "0.5.0",
+    "@galacticcouncil/common": "1.2.0",
+    "@galacticcouncil/sdk-next": "2.3.2",
+    "@galacticcouncil/descriptors": "2.9.0",
+    "@reown/appkit": "1.8.19",
+    "@reown/appkit-controllers": "1.8.19",
+    "@reown/appkit-utils": "1.8.19",
+    "@reown/appkit-common": "1.8.19",
+    "@reown/appkit-wallet": "1.8.19",
+    "@reown/appkit-ui": "1.8.19",
+    "@reown/appkit-pay": "1.8.19",
+    "@walletconnect/core": "2.23.7",
+    "@walletconnect/sign-client": "2.23.7",
+    "@walletconnect/universal-provider": "2.23.7",
+    "@walletconnect/jsonrpc-http-connection": "1.0.8",
+    "@walletconnect/jsonrpc-ws-connection": "1.0.16",
+    "@solana/web3.js": "1.98.4",
+    "@mysten/sui": "1.45.2",
+    "@mysten/wallet-standard": "0.19.9",
+    "viem": "2.56.8",
+    "polkadot-api": "2.2.2",
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.25",
+    "axios": "1.13.6"
+  },
+  "sourceProvenance": [
+    {
+      "formattedPath": "audit/crosschain-sources/common.mjs",
+      "formattedSha256": "ff161494045c34148d2248ee18e85a51c7773c3d3b8af142dbe1bd3a14f29f03",
+      "originalPath": "node_modules/@galacticcouncil/common/build/index.mjs",
+      "originalSha256": "833f519aa624661a918ea32093f8ced0e4f9970bdb8d18117953c650626b9090",
+      "packageName": "@galacticcouncil/common",
+      "packageVersion": "1.2.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/walletconnect-core.js",
+      "formattedSha256": "6ff5e4d3a741da935d51de482efec0a5dcecaecc635f1d462c4ef7e69401e5f1",
+      "originalPath": "node_modules/@walletconnect/core/dist/index.js",
+      "originalSha256": "26888ede8af3e7f223373142c443e8ce7b197f4c62ece94d2ecbf5d2d5e0ee54",
+      "packageName": "@walletconnect/core",
+      "packageVersion": "2.23.7",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/walletconnect-jsonrpc-http-connection.js",
+      "formattedSha256": "b2be50c82b7eff189e74207e826cc9876eaa96b140ab07ba2a8a8ea7482951aa",
+      "originalPath": "node_modules/@walletconnect/jsonrpc-http-connection/dist/index.es.js",
+      "originalSha256": "3cf70b37052ba8a2484bba1b371857e3b14b53ae49a5531f2922378f02e49118",
+      "packageName": "@walletconnect/jsonrpc-http-connection",
+      "packageVersion": "1.0.8",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/walletconnect-jsonrpc-ws-connection.js",
+      "formattedSha256": "06561b6a8f1afda2c6a1f46b6f6c7cc1b2e7a11ebe2ac7acb86065091d70413b",
+      "originalPath": "node_modules/@walletconnect/jsonrpc-ws-connection/dist/index.es.js",
+      "originalSha256": "204edda2f56781538866d63fab007310995f1967b5413cdd7030856286fb1705",
+      "packageName": "@walletconnect/jsonrpc-ws-connection",
+      "packageVersion": "1.0.16",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/walletconnect-sign-client.js",
+      "formattedSha256": "1958b48517df61cdd6568a1a83ed06676e8d614e04531d379771024652f5be8a",
+      "originalPath": "node_modules/@walletconnect/sign-client/dist/index.js",
+      "originalSha256": "6f3e49b04061ae0f05ded38732119632c6688e4d2ea1085fed797e9b4d793327",
+      "packageName": "@walletconnect/sign-client",
+      "packageVersion": "2.23.7",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/walletconnect-universal-provider.js",
+      "formattedSha256": "1695eab04da46cad22af5e0d0162432af7a0a9f1dacf7386b48a0aaa4058dafe",
+      "originalPath": "node_modules/@walletconnect/universal-provider/dist/index.js",
+      "originalSha256": "f9d3e9c0865abfa110d4a791250885f62d57cb593021da7f47891b0b16f2eee3",
+      "packageName": "@walletconnect/universal-provider",
+      "packageVersion": "2.23.7",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/xc-cfg.mjs",
+      "formattedSha256": "a2ab0e6ca2ba2830a32fed8934f2ac19a1a93cbbd63baa14bf8b218d6f13e184",
+      "originalPath": "node_modules/@galacticcouncil/xc-cfg/build/index.mjs",
+      "originalSha256": "b816b8b2cc2bbed2efb089fb22b78fe289e5074338dea623ba074e507808dcba",
+      "packageName": "@galacticcouncil/xc-cfg",
+      "packageVersion": "2.7.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/xc-core.mjs",
+      "formattedSha256": "dcc64706ebf6c6b3b0afe9a3a043f3d9df839f2d2aad12ec4a72afd4af6f016a",
+      "originalPath": "node_modules/@galacticcouncil/xc-core/build/index.mjs",
+      "originalSha256": "73fd3118cff20dcf5ac97dc426e1d9c3cb051bc5506a711ba71405c37503cd18",
+      "packageName": "@galacticcouncil/xc-core",
+      "packageVersion": "2.6.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/xc-scan.mjs",
+      "formattedSha256": "acc92e796a4090396c9b3b1807481265660704d54a599a254487539b586925ae",
+      "originalPath": "node_modules/@galacticcouncil/xc-scan/build/index.mjs",
+      "originalSha256": "aea6892c1c98a9c02050fe007b4eca1d3e50388b23a6b9608316f9d2ae8fab8a",
+      "packageName": "@galacticcouncil/xc-scan",
+      "packageVersion": "0.5.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/xc-sdk.mjs",
+      "formattedSha256": "3f3f2b6cbcf5963da698cdd6f571352b300bcdf343772cdb49d00e0d5a61822f",
+      "originalPath": "node_modules/@galacticcouncil/xc-sdk/build/index.mjs",
+      "originalSha256": "c770c37a952d38ad7c48496c8660dba51e6eab61d81d04dd038fba6d3381c76f",
+      "packageName": "@galacticcouncil/xc-sdk",
+      "packageVersion": "2.5.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/xc-swap.mjs",
+      "formattedSha256": "408c627c1c04e3fbf34cf9f6b05073aea76bbdfcf2e94d6dc1ac3f997272c6ea",
+      "originalPath": "node_modules/@galacticcouncil/xc-swap/build/index.mjs",
+      "originalSha256": "a84cb108befe7ec7c5e50a620117a2360fd5e4f98572127ed5d9dd5f8a5b59b7",
+      "packageName": "@galacticcouncil/xc-swap",
+      "packageVersion": "0.9.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    },
+    {
+      "formattedPath": "audit/crosschain-sources/xc.mjs",
+      "formattedSha256": "355f111728480287c8ddd2cad2e2547f10de05346b8b5cb0566c582d75c5bbd1",
+      "originalPath": "node_modules/@galacticcouncil/xc/build/index.mjs",
+      "originalSha256": "8cb8134da3160e17a04a3f1340c46373a54f35d4192ce97d4aa74e5bf132e365",
+      "packageName": "@galacticcouncil/xc",
+      "packageVersion": "2.1.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      },
+      "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+      "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+    }
+  ]
+}

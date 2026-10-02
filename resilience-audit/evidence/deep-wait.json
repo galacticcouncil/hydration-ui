@@ -1,0 +1,132 @@
+{
+  "scope": "Supplement to deep-startup; exact polling library review, not an exhaustive transitive audit.",
+  "dependencies": [
+    {
+      "id": "polling-wait-deadlines",
+      "label": "p-wait-for polling deadlines",
+      "endpoints": [
+        "RPC endpoints supplied to Solana Connection / external-chain allowance and transfer call builders"
+      ],
+      "consumerPackages": [
+        "p-wait-for",
+        "@galacticcouncil/main",
+        "@galacticcouncil/web3-connect"
+      ],
+      "version": {
+        "p-wait-for": "6.0.0",
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/web3-connect": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/p-wait-for/index.js",
+          "line": 77,
+          "note": "const timeoutSignal ="
+        },
+        {
+          "path": "node_modules/p-wait-for/index.js",
+          "line": 95,
+          "note": "No promise race or signal supplied to condition; timeout checks only around intervals/abort-aware sleeps"
+        },
+        {
+          "path": "packages/web3-connect/src/signers/SolanaSigner.ts",
+          "line": 34,
+          "note": "async getTransactionStatus(hash: string)"
+        },
+        {
+          "path": "packages/web3-connect/src/signers/SolanaSigner.ts",
+          "line": 52,
+          "note": "Nominal 60s polls getSignatureStatus; pending condition does not obey bound"
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts",
+          "line": 151,
+          "note": "const allowance = await getErc20Allowance("
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts",
+          "line": 161,
+          "note": "Nominal 3min allowance polling timeout; pending underlying RPC evades it"
+        },
+        {
+          "path": "apps/main/src/modules/xcm/transfer/utils/transfer.ts",
+          "line": 227,
+          "note": "Awaiting new external-chain call build inside same nominal 3min polling condition"
+        }
+      ],
+      "requiredness": "Optional external-chain transaction execution/tracking; library itself is bundled and has no independent cloud endpoint.",
+      "failures": {
+        "dns_http": "Condition rejection propagates immediately. Retry is implemented by condition return false, not general exception handling.",
+        "hang": "An unresolved condition promise remains pending beyond configured timeout, observed at120ms with20ms bound. Source has no race around await condition.",
+        "malformed_stale": "A condition resolving success after deadline is accepted; tested70ms success with20ms timeout. Wrong condition return type throws.",
+        "recovery": "False settled conditions correctly timeout; hanging awaited RPC needs its own deadline/cancellation. No root UI crash established by this harness."
+      },
+      "existingProtections": [
+        "Consumers supply60s or3min polling timeout and intervals; timeout works when conditions settle false.",
+        "Consumers use RPC providers selected by chain config; endpoint handling belongs to those transports."
+      ],
+      "remediation": [
+        "Put a deadline around the complete underlying RPC/build call or race each condition against timeout and propagate AbortSignal to underlying transport.",
+        "Keep timed out external transaction steps feature-local and reset pending state safely."
+      ],
+      "confidence": "High: exact installed package fault-tested; actual application blast radius is inferred from transaction consumers, not full browser injection.",
+      "testReferences": [
+        "audit/wait-faults.cjs",
+        "audit/wait-faults.results.json"
+      ]
+    }
+  ],
+  "newFindings": [
+    {
+      "id": "polling-timeout-unbounded-condition",
+      "priority": "P2",
+      "title": "Nominal external transaction polling timeouts do not bound a hung RPC condition",
+      "dependencyIds": [
+        "polling-wait-deadlines"
+      ],
+      "scope": "External Solana status, XcSwap approvals, and XCM call building; partial main UI unaffected unless local pending UX wrongly blocks it.",
+      "proof": "Exact installed p-wait-for6.0.0: hanging condition pending120ms beyond20ms configured timeout;70ms successful condition accepted after20ms timeout; false settled condition correctly throws TimeoutError.",
+      "testReferences": [
+        "audit/wait-faults.results.json"
+      ],
+      "evidence": [
+        {
+          "path": "node_modules/p-wait-for/index.js",
+          "line": 77,
+          "note": "const timeoutSignal ="
+        },
+        {
+          "path": "node_modules/p-wait-for/index.js",
+          "line": 95,
+          "note": "No promise race or signal supplied to condition; timeout checks only around intervals/abort-aware sleeps"
+        },
+        {
+          "path": "packages/web3-connect/src/signers/SolanaSigner.ts",
+          "line": 34,
+          "note": "async getTransactionStatus(hash: string)"
+        },
+        {
+          "path": "packages/web3-connect/src/signers/SolanaSigner.ts",
+          "line": 52,
+          "note": "Nominal 60s polls getSignatureStatus; pending condition does not obey bound"
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts",
+          "line": 151,
+          "note": "const allowance = await getErc20Allowance("
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts",
+          "line": 161,
+          "note": "Nominal 3min allowance polling timeout; pending underlying RPC evades it"
+        },
+        {
+          "path": "apps/main/src/modules/xcm/transfer/utils/transfer.ts",
+          "line": 227,
+          "note": "Awaiting new external-chain call build inside same nominal 3min polling condition"
+        }
+      ],
+      "remediation": "Bound/cancel condition RPC independently or race condition against remaining polling deadline."
+    }
+  ]
+}

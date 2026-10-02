@@ -1,0 +1,63 @@
+{
+  "name": "metadata-malformed",
+  "waitMs": 35000,
+  "externalRequests": [
+    "https://hydration-api.neckwork.net/v1/status",
+    "https://api.web3modal.org/appkit/v1/config?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19",
+    "https://api.web3modal.org/appkit/v1/project-limits?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19",
+    "https://api.web3modal.org/projects/v1/origins?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19",
+    "https://fonts.reown.com/KHTeka-Medium.woff2",
+    "https://fonts.reown.com/KHTeka-Regular.woff2",
+    "https://fonts.reown.com/KHTeka-Light.woff2",
+    "https://fonts.reown.com/KHTekaMono-Regular.woff2",
+    "https://fonts.reown.com/KHTeka-Light.woff",
+    "https://fonts.reown.com/KHTeka-Regular.woff",
+    "https://fonts.reown.com/KHTekaMono-Regular.woff",
+    "https://api.web3modal.org/getAnalyticsConfig?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+    "https://pulse.walletconnect.org/batch?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19"
+  ],
+  "websocketTraffic": {
+    "wss://hydration-rpc.n.dwellir.com/": {
+      "sent": 1116,
+      "received": 6604,
+      "methods": {
+        "rpc_methods": 1,
+        "chainHead_v1_follow": 1,
+        "chain_getBlockHash": 1,
+        "chainHead_v1_header": 1,
+        "chainHead_v1_storage": 96,
+        "chainHead_v1_call": 966,
+        "chainHead_v1_unpin": 30,
+        "system_health": 7,
+        "eth_call": 13
+      },
+      "closed": false
+    }
+  },
+  "allowedWebsockets": [],
+  "blockedWebsockets": [],
+  "pageErrors": [],
+  "errors": [
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "[RQ] TypeError: Cannot read properties of undefined (reading 'map')\n    at e.fetchAssets (http://127.0.0.1:4173/chunk-DmtyAOcZ.js:11:574995)\n    at async Promise.all (index 0)\n    at async queryFn (http://127.0.0.1:4173/chunk-bmlk54ru.js:1:7099) ue",
+    "[RQ] TypeError: Cannot read properties of undefined (reading 'map')\n    at e.fetchAssets (http://127.0.0.1:4173/chunk-DmtyAOcZ.js:11:574995)\n    at async Promise.all (index 0)\n    at async queryFn (http://127.0.0.1:4173/chunk-bmlk54ru.js:1:7099) ue",
+    "TypeError: Cannot read properties of undefined (reading 'map')\n    at e.fetchAssets (http://127.0.0.1:4173/chunk-DmtyAOcZ.js:11:574995)\n    at async Promise.all (index 0)\n    at async queryFn (http://127.0.0.1:4173/chunk-bmlk54ru.js:1:7099)"
+  ],
+  "elapsedMs": 36653,
+  "url": "http://127.0.0.1:4173/trade/swap/market?tab=myActivity&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+  "bodyText": "Something went wrong\n\nTo report the issue, visit our Discord server and open a ticket in the #support-ticket channel. Please copy the error message and include a brief description of what you were trying to do.\n\nCopy error\nReport on Discord\nReload page",
+  "buttons": [
+    "Copy error",
+    "Reload page"
+  ],
+  "links": [
+    "Report on Discord"
+  ],
+  "inputs": 0,
+  "skeletons": 0,
+  "inputEditable": false
+}
