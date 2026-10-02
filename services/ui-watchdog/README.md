@@ -69,6 +69,7 @@ browser checks passed; it does not certify the source is harmless.
 
 The controller probes HTML and entry JS/CSS every 30 seconds, and schedules full
 asset and browser scans independently every five minutes and after changes.
+Browser worker connection failures retry at the 30-second polling interval.
 An asset scan has a two-minute scheduling budget plus bounded in-flight request
 timeouts. Slow probes never overlap copies of the same job. Timestamps and
 coverage are explicit; the 30-second interval is not a five-minute asset-check
@@ -90,12 +91,12 @@ In GitHub **Settings → Developer settings → Personal access tokens → Fine-
 tokens**, select resource owner `galacticcouncil`, only `hydration-ui`, an expiry,
 and these repository permissions:
 
-| Permission    | Access                                                                            |
-| ------------- | --------------------------------------------------------------------------------- |
-| Actions       | Read — retrieve reference artifacts                                               |
-| Contents      | Read — production ref and commit comparisons                                      |
-| Pull requests | Read — reserve for richer PR metadata; current summaries use commit/compare links |
-| Metadata      | Read — automatically included                                                     |
+| Permission    | Access                                                                             |
+| ------------- | ---------------------------------------------------------------------------------- |
+| Actions       | Read — retrieve reference artifacts                                                |
+| Contents      | Read — production ref and commit comparisons                                       |
+| Pull requests | Optional read — current summaries use commit/compare links without this permission |
+| Metadata      | Read — automatically included                                                      |
 
 The runtime token needs **no write permission**. The attestation job uses its own
 short-lived Actions credentials, never the runtime token. Organization approval

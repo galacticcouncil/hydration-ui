@@ -40,10 +40,11 @@ const manifest = () => ({
 
 async function fixture(t, files = { ...assets }) {
   let requests = 0
+  const routes = new Map(Object.entries(files))
   const server = createServer((req, res) => {
     requests++
     const p = req.url === "/" ? "/index.html" : req.url
-    const value = files[p]
+    const value = routes.get(p)
     if (value === undefined) {
       res.writeHead(404).end("missing")
       return
@@ -60,7 +61,7 @@ async function fixture(t, files = { ...assets }) {
     server.close()
   })
   return {
-    files,
+    files: routes,
     c: {
       target: `http://127.0.0.1:${server.address().port}`,
       timeoutMs: 1000,
@@ -81,7 +82,10 @@ test("complete audit matches every file, not merely the HTML/commit label", asyn
 
 test("injected HTML never becomes an accepted baseline", async (t) => {
   const { c, files } = await fixture(t)
-  files["/index.html"] += '<script>fetch("/steal")</script>'
+  files.set(
+    "/index.html",
+    files.get("/index.html") + '<script>fetch("/steal")</script>',
+  )
   const r = await observe(c, [manifest()], { full: true })
   assert.equal(r.matchedSha, null)
   assert.equal(assess({ probe: r }).state, "integrity_alert")
@@ -89,7 +93,7 @@ test("injected HTML never becomes an accepted baseline", async (t) => {
 
 test("same-name lazy chunk modification is caught by full verification", async (t) => {
   const { c, files } = await fixture(t)
-  files["/lazy.js"] = "globalThis.malicious = true"
+  files.set("/lazy.js", "globalThis.malicious = true")
   const light = await observe(c, [manifest()])
   assert.deepEqual(light.issues, [])
   const full = await observe(c, [manifest()], { full: true })
@@ -99,10 +103,11 @@ test("same-name lazy chunk modification is caught by full verification", async (
 
 test("missing assets and deployment races cannot receive a verified result", async (t) => {
   const { c, files } = await fixture(t)
-  delete files["/lazy.js"]
+  files.delete("/lazy.js")
   let reads = 0
-  files["/index.html"] = () =>
-    ++reads === 1 ? html : html + "<!-- newer release -->"
+  files.set("/index.html", () =>
+    ++reads === 1 ? html : html + "<!-- newer release -->",
+  )
   const r = await observe(c, [manifest()], { full: true })
   assert(r.issues.some((x) => x.kind === "fetch-failed"))
   assert(r.racing)

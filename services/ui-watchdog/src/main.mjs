@@ -47,8 +47,15 @@ if (c.role === "browser") {
       res.setHeader("content-type", "application/json")
       res.end(JSON.stringify(result))
     } catch (error) {
+      console.error(
+        JSON.stringify({
+          at: timestamp(),
+          component: "browser",
+          error: safeError(error),
+        }),
+      )
       res.writeHead(500, { "content-type": "application/json" })
-      res.end(JSON.stringify({ error: safeError(error) }))
+      res.end(JSON.stringify({ error: "Browser probe failed" }))
     } finally {
       busy = false
     }
@@ -92,10 +99,12 @@ if (c.role === "browser") {
       }),
     )
   }
-  function background(name, intervalMs, fn) {
+  function background(name, intervalMs, fn, retryMs = intervalMs) {
     if (tasks.has(name) || Date.now() < (due.get(name) || 0)) return
+    let nextInterval = intervalMs
     const task = fn()
       .catch((error) => {
+        nextInterval = retryMs
         const message = safeError(error)
         if (name === "references")
           referenceStatus = { state: "error", message, checkedAt: timestamp() }
@@ -106,7 +115,7 @@ if (c.role === "browser") {
       })
       .finally(() => {
         tasks.delete(name)
-        due.set(name, Date.now() + intervalMs)
+        due.set(name, Date.now() + nextInterval)
       })
     tasks.set(name, task)
   }
@@ -204,40 +213,52 @@ if (c.role === "browser") {
             })
           store.set("observed", { ...old, ...result.observed })
         })
-        background("browser", c.browserSeconds * 1000, async () => {
-          try {
-            const r = await request(new URL("/probe", c.browserUrl), {
-              method: "POST",
-              timeoutMs: 290000,
-              maxBytes: 4 * 1024 * 1024,
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({
-                reference: references.find((r) => r.sha === currentSha) || null,
+        background(
+          "browser",
+          c.browserSeconds * 1000,
+          async () => {
+            try {
+              const r = await request(new URL("/probe", c.browserUrl), {
+                method: "POST",
+                timeoutMs: 290000,
+                maxBytes: 4 * 1024 * 1024,
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                  reference:
+                    references.find((r) => r.sha === currentSha) || null,
+                  rootHash: currentRoot,
+                }),
+              })
+              if (r.status !== 200)
+                throw new Error(`Browser worker returned HTTP ${r.status}`)
+              browser = JSON.parse(r.bytes)
+              if (
+                browser.rootHash !== currentRoot ||
+                browser.matchedSha !== currentSha ||
+                !Array.isArray(browser.issues) ||
+                !browser.completedAt
+              )
+                throw new Error("Invalid browser worker result")
+            } catch (error) {
+              browser = {
+                matchedSha: currentSha,
                 rootHash: currentRoot,
-              }),
-            })
-            if (r.status !== 200)
-              throw new Error(`Browser worker returned HTTP ${r.status}`)
-            browser = JSON.parse(r.bytes)
-            if (
-              browser.rootHash !== currentRoot ||
-              browser.matchedSha !== currentSha ||
-              !Array.isArray(browser.issues) ||
-              !browser.completedAt
-            )
-              throw new Error("Invalid browser worker result")
-          } catch (error) {
-            browser = {
-              matchedSha: currentSha,
-              rootHash: currentRoot,
-              completedAt: timestamp(),
-              issues: [
-                { kind: "browser-error", path: "/", message: safeError(error) },
-              ],
+                completedAt: timestamp(),
+                issues: [
+                  {
+                    kind: "browser-error",
+                    path: "/",
+                    message: safeError(error),
+                  },
+                ],
+              }
+              throw error
+            } finally {
+              store.set("browser", browser)
             }
-          }
-          store.set("browser", browser)
-        })
+          },
+          c.pollSeconds * 1000,
+        )
       }
       const assessment = assess({
         probe,
