@@ -359,8 +359,8 @@ are outside source-build integrity coverage. Prefer no exceptions.
 ```sh
 cd services/ui-watchdog
 npm ci
-npm test
 npx playwright install --with-deps chromium
+npm test
 npm run test:browser
 ```
 
@@ -398,9 +398,15 @@ sampled requests and retained as evidence; changing hosting configuration and
 publishing order is outside this service. Review/align the hosting recipe before
 arming and require production workflow review. This service has no hosting token.
 
-The colleague-provided review archive was not available while these fixes were
-implemented. `test/review.test.mjs` and expanded real-Chromium tests reproduce the
-reported race directions, moved-root evidence, pending releases, header policy,
-private endpoints, dead deliveries, slow bodies and request/header cloaks. Run the
-independent review tests too when they are pushed; passing local fixtures is not a
-claim that arbitrary targeted cloaking or malicious locked dependencies is solved.
+The independent review tests from [PR #4111](https://github.com/galacticcouncil/hydration-ui/pull/4111)
+are included, alongside `test/review.test.mjs` and real-Chromium tests. Their
+release fixtures now supply the actual build status and use SQLite to exercise
+retrospective verification. Trusted fixtures serve the pinned response headers;
+cloak assertions require changed-body evidence so unrelated header errors cannot
+produce a false pass. The worker outage fixture explicitly allows its local test
+origin and confirms the app was reached before asserting failed egress validation.
+The tests preserve the benign trusted-rollout guard and check chunk tampering
+both inside and outside the release window. A recent branch push alone cannot
+grant pending grace, and pipeline errors cannot excuse unknown bytes when the
+expected reference already exists. These fixtures do not establish protection
+against arbitrary targeted cloaking or malicious locked dependencies.

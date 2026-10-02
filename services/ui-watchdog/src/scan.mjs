@@ -3,6 +3,7 @@ import {
   headerIssues,
   integrityKinds,
   releaseWindow,
+  sampledRoutes,
 } from "./policy.mjs"
 import { parse } from "parse5"
 import { mapLimit, request, safeError, sha256, timestamp } from "./util.mjs"
@@ -91,13 +92,14 @@ export async function observe(
   } catch (e) {
     return { ...result, error: safeError(e) }
   }
-  function document(actual) {
+  function document(actual, path = "/") {
     const trusted =
       references.find((r) => r.files["/index.html"].sha256 === actual.sha256) ||
       (trustedRoots[actual.sha256]
         ? { sha: trustedRoots[actual.sha256] }
         : null)
     result.documents.push({
+      path,
       sha256: actual.sha256,
       matchedSha: trusted?.sha || null,
     })
@@ -113,7 +115,7 @@ export async function observe(
       if (references.length)
         result.issues.push({
           kind: "hash-mismatch",
-          path: "/",
+          path,
           actual: actual.sha256,
           untrustedHtml: true,
         })
@@ -176,7 +178,11 @@ export async function observe(
     }
     try {
       const actual = await siteFile(c, file)
-      result.observed[file] = { sha256: actual.sha256, size: actual.size }
+      result.observed[file] = {
+        sha256: actual.sha256,
+        size: actual.size,
+        type: actual.type,
+      }
       const expected = ref?.files[file]
       result.issues.push(
         ...headerIssues(file, actual.headers, ref?.headers || c.headerPolicy),
@@ -196,6 +202,11 @@ export async function observe(
           expected: expected.sha256,
           actual: actual.sha256,
           referenceSha: ref.sha,
+          trustedDocument:
+            actual.type.includes("text/html") &&
+            references.some(
+              (r) => r.files["/index.html"].sha256 === actual.sha256,
+            ),
         })
       }
       if (
@@ -219,6 +230,19 @@ export async function observe(
     for (const file of resources.all)
       if (!ref.files[file])
         result.issues.push({ kind: "unexpected-resource", path: file })
+  }
+  if (c.sampleRoutes) {
+    for (const path of sampledRoutes(ref, c.routes)) {
+      try {
+        document(await siteFile(c, path), path)
+      } catch (e) {
+        result.issues.push({
+          kind: "fetch-failed",
+          path,
+          message: safeError(e),
+        })
+      }
+    }
   }
   try {
     const after = await siteFile(c, "/")
@@ -258,27 +282,40 @@ export function assess({
   maxBrowserAge = 900000,
   referenceStatus,
   referenceCount,
+  referenceAvailable = false,
   pendingSeconds = 1200,
   raceCount = 0,
   flapping = false,
   extraIssues = [],
 }) {
   const out = (state, reasons) => ({ state, reasons })
-  const pending = releaseWindow(source, referenceStatus, now, pendingSeconds)
+  const pending =
+    !referenceAvailable &&
+    releaseWindow(source, referenceStatus, now, pendingSeconds)
   // Each check carries evidence against its own reference. Later HTML or a
   // racing audit must never discard an earlier mismatch.
   const issues = [
-    ...(probe?.issues || []),
-    ...(audit?.issues || []),
-    ...(browser?.issues || []),
+    ...[probe, audit, browser].flatMap((result) => {
+      // A vanished old asset may return the next trusted SPA document. This
+      // permits only those exact, non-executable bytes during a known rollout;
+      // arbitrary changed chunks must still alert, even if both roots are trusted.
+      const trustedSwitch =
+        source &&
+        now - source.firstSeen < graceSeconds * 1000 &&
+        result?.racing &&
+        result.documents?.length >= 2 &&
+        result.documents.every((d) => d.matchedSha)
+      return (result?.issues || []).filter(
+        (i) => !(trustedSwitch && i.trustedDocument),
+      )
+    }),
     ...extraIssues,
   ]
-  const unavailableReference = [
-    "failed",
-    "missing",
-    "error",
-    "unconfigured",
-  ].includes(referenceStatus?.state)
+  const unavailableReference =
+    !referenceAvailable &&
+    ["failed", "missing", "error", "unconfigured"].includes(
+      referenceStatus?.state,
+    )
   const actionable = issues.filter(
     (i) => !(i.untrustedHtml && (pending || unavailableReference)),
   )

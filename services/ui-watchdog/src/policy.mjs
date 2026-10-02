@@ -1,4 +1,28 @@
 import { sha256 } from "./util.mjs"
+import { randomBytes, randomInt } from "node:crypto"
+
+export function sampledRoutes(reference, configured = []) {
+  const candidates = [
+    ...new Set([
+      ...(reference?.routes || []),
+      ...configured,
+      "/submit-transaction",
+      "/stats",
+      "/referrals",
+      "/trade/dca",
+      "/trade/otc",
+      "/wallet",
+      "/xcm",
+    ]),
+  ].filter((p) => !p.includes("$") && p !== "/")
+  return [
+    candidates[randomInt(candidates.length)],
+    `/${randomBytes(6).toString("hex")}`,
+    Math.random() < 0.5
+      ? "/?utm_source=androidappinstallbanner"
+      : `/unknown/${randomBytes(8).toString("hex")}`,
+  ].sort(() => Math.random() - 0.5)
+}
 
 export const integrityKinds = new Set([
   "hash-mismatch",
@@ -122,6 +146,9 @@ export function reconcileEvidence(result, references) {
       actual: sample.sha256,
       expected: expected?.sha256,
       referenceSha: ref.sha,
+      trustedDocument: Boolean(
+        sample.type?.includes("text/html") && roots.has(sample.sha256),
+      ),
     }
     if (
       !result.issues.some(

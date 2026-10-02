@@ -30,11 +30,26 @@ test("Bypass #2: HTML served only on routes the watchdog never requests is detec
         : undefined,
   })
   const c = observerConfig(s.target)
+  const control = await site(t, { deploy: { files: A } })
+  const clean = await observe(observerConfig(control.target), [refA])
+  assert.deepEqual(
+    clean.issues,
+    [],
+    "trusted control must not alert because of fixture headers",
+  )
   const states = []
   for (let run = 0; run < 8; run++) {
     const probe = await observe(c, [refA])
+    if (probe.issues.length)
+      assert(probe.issues.some((i) => i.untrustedHtml && i.path !== "/"))
     states.push(assess({ probe }).state)
   }
+  assert(
+    s.log.some(
+      (r) => !r.path.startsWith("/assets/") && !known.includes(r.path),
+    ),
+    "sample an unchecked route",
+  )
   assert(states.includes("integrity_alert"), `8 quick probes: ${states}`)
 })
 
@@ -49,14 +64,21 @@ test("Bypass #2: HTTP checks carry no cache-busting or wildcard header tells", a
   })
   await observe({ ...proxied, siteRequest: siteTransport(proxied) }, [refA])
   const documents = s.log.filter((r) => r.path === "/")
-  assert.equal(documents.length, 4)
+  assert(
+    documents.length >= 4,
+    "both transports must take both root samples; PWA query samples may add more",
+  )
   for (const { headers: h } of documents) {
     // A desktop Chrome navigation sends neither header (only a hard reload does).
     assert.equal(h.pragma, undefined, JSON.stringify(h))
     assert.notEqual(h["cache-control"], "no-cache", JSON.stringify(h))
     // Node fetch defaults: accept "*/*", accept-language "*".
     assert.match(h.accept || "", /^text\/html/, JSON.stringify(h))
-    assert.match(h["accept-language"] || "", /^[a-z]{2}(-[A-Z]{2})?,/, JSON.stringify(h))
+    assert.match(
+      h["accept-language"] || "",
+      /^[a-z]{2}(-[A-Z]{2})?,/,
+      JSON.stringify(h),
+    )
     assert.doesNotMatch(h["user-agent"] || "", /node|undici|watchdog/i)
   }
 })

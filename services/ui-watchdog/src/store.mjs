@@ -81,7 +81,7 @@ export class Store {
       ).map(([path, f]) => ({ path, ...f })),
       ...(result.documents || [])
         .filter((d) => !d.matchedSha)
-        .map((d) => ({ path: "/index.html", size: 0, ...d })),
+        .map((d) => ({ ...d, path: "/index.html", size: 0 })),
       ...(result.responses || []).filter(
         (f) => !f.referenceSha || f.referenceSha === sha,
       ),

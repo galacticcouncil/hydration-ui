@@ -453,6 +453,7 @@ export class ObserverGroup {
         pendingSeconds: this.c.pendingSeconds,
         referenceStatus: this.referenceStatus,
         referenceCount: this.references?.length,
+        referenceAvailable: this.references?.some((r) => r.sha === source?.sha),
         raceCount: s.raceCount,
         flapping: s.flapping,
         extraIssues: [
@@ -466,7 +467,7 @@ export class ObserverGroup {
       })
       if (
         ["down", "degraded"].includes(a.state) &&
-        !Object.values(s.failures).some(
+        !Object.values(s.failures || {}).some(
           (n) => n >= (this.c.failureThreshold || 3),
         )
       )

@@ -45,26 +45,46 @@ async function rollout(t, references, sees) {
   return states
 }
 const justMerged = () => ({ sha: shaB, firstSeen: Date.now() - 60000 })
+const building = (source) => ({
+  source,
+  referenceStatus: { state: "building", sha: source.sha },
+})
+
+test("a recent branch push alone never permits unknown content", async (t) => {
+  const source = justMerged()
+  const states = await rollout(t, [refA], [FAKE, FAKE, FAKE])
+  const snap = group(states, [refA], { source }).snapshot(source, true)
+  assert.equal(snap.assessment.state, "integrity_alert")
+})
 
 test("P1: a release whose attested reference is still building does not page", async (t) => {
   const states = await rollout(t, [refA], [B, B, B])
   const source = justMerged()
-  const snap = group(states, [refA]).snapshot(source, true, Date.now())
+  const snap = group(states, [refA], building(source)).snapshot(
+    source,
+    true,
+    Date.now(),
+  )
   assert.deepEqual(
     snap.observers.map((o) => o.state),
-    ["deployment_pending", "deployment_pending", "deployment_pending"],
+    ["reference_pending", "reference_pending", "reference_pending"],
   )
-  assert.equal(snap.assessment.state, "deployment_pending")
+  assert.equal(snap.assessment.state, "reference_pending")
   assert.equal(severityOf(snap.assessment.state), "warning")
 })
 
 test("P1: staggered probes during a rollout of attested builds do not page", async (t) => {
   for (const references of [[refA, refB], [refA]]) {
     const states = await rollout(t, references, [A, B, B])
-    const snap = group(states, references).snapshot(justMerged(), true, Date.now())
+    const source = justMerged()
+    const snap = group(states, references, building(source)).snapshot(
+      source,
+      true,
+      Date.now(),
+    )
     assert.equal(
       snap.assessment.state,
-      "deployment_pending",
+      references.length === 2 ? "deployment_pending" : "reference_pending",
       `${references.length} reference(s): ${JSON.stringify(snap.assessment.reasons)}`,
     )
   }
@@ -72,7 +92,11 @@ test("P1: staggered probes during a rollout of attested builds do not page", asy
 
 test("P1 guard: unknown HTML is critical once the new reference exists or grace expires", async (t) => {
   let states = await rollout(t, [refA, refB], [FAKE, FAKE, FAKE])
-  let snap = group(states, [refA, refB]).snapshot(justMerged(), true, Date.now())
+  let snap = group(states, [refA, refB]).snapshot(
+    justMerged(),
+    true,
+    Date.now(),
+  )
   assert.equal(snap.assessment.state, "integrity_alert")
   states = await rollout(t, [refA], [B, B, B])
   const expired = { sha: shaB, firstSeen: Date.now() - 1000000 }
@@ -83,15 +107,38 @@ test("P1 guard: unknown HTML is critical once the new reference exists or grace 
 test("P1: HTML tolerated while the reference was pending is re-checked when it lands", async (t) => {
   // Release-timed injection: fake while B's reference builds, real afterwards.
   const source = justMerged()
-  const g = group(await rollout(t, [refA], [FAKE, FAKE, FAKE]), [refA])
-  assert.equal(g.snapshot(source, true, Date.now()).assessment.state, "deployment_pending")
+  const g = group(
+    await rollout(t, [refA], [FAKE, FAKE, FAKE]),
+    [refA],
+    building(source),
+  )
+  assert.equal(
+    g.snapshot(source, true, Date.now()).assessment.state,
+    "reference_pending",
+  )
   g.states = await rollout(t, [refA, refB], [B, B, B])
-  g.schedule([refA, refB])
-  assert.equal(g.snapshot(source, true, Date.now()).assessment.state, "integrity_alert")
+  g.store.resolvePending([refA, refB])
+  g.schedule([refA, refB], source, { state: "ready", sha: source.sha })
+  assert.equal(
+    g.snapshot(source, true, Date.now()).assessment.state,
+    "integrity_alert",
+  )
   // The legitimate sequence (B seen early, then attested) stays quiet.
-  const ok = group(await rollout(t, [refA], [B, B, B]), [refA])
-  assert.equal(ok.snapshot(source, true, Date.now()).assessment.state, "deployment_pending")
+  const ok = group(
+    await rollout(t, [refA], [B, B, B]),
+    [refA],
+    building(source),
+  )
+  assert.equal(
+    ok.snapshot(source, true, Date.now()).assessment.state,
+    "reference_pending",
+  )
   ok.states = await rollout(t, [refA, refB], [B, B, B])
-  ok.schedule([refA, refB])
-  assert.notEqual(ok.snapshot(source, true, Date.now()).assessment.state, "integrity_alert")
+  ok.store.resolvePending([refA, refB])
+  ok.schedule([refA, refB], source, { state: "ready", sha: source.sha })
+  assert.notEqual(
+    ok.snapshot(source, true, Date.now()).assessment.state,
+    "integrity_alert",
+    JSON.stringify(ok.snapshot(source, true, Date.now()).findings),
+  )
 })

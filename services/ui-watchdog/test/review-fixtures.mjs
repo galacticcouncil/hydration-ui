@@ -1,10 +1,15 @@
 // Shared fixtures for the PR #4109 review regression tests. Drop this file and
 // the review test files next to it into services/ui-watchdog/test/.
 import { createServer } from "node:http"
+import { after } from "node:test"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { config } from "../src/config.mjs"
 import { ObserverGroup } from "../src/observers.mjs"
 import { observe } from "../src/scan.mjs"
 import { sha256 } from "../src/util.mjs"
+import { Store } from "../src/store.mjs"
 
 export { sha256 }
 
@@ -74,13 +79,17 @@ export async function site(t, { deploy, attack, onRequest } = {}) {
     if (forced) {
       res.writeHead(forced.status || 200, {
         "content-type": forced.type || "text/html; charset=UTF-8",
+        "cache-control": "public, max-age=0, must-revalidate",
       })
       res.end(forced.body)
       return
     }
     const p = url.pathname === "/" ? "/index.html" : url.pathname
     const files = deploy.files
-    res.writeHead(200, { "content-type": files[p] ? type(p) : type(".html") })
+    res.writeHead(200, {
+      "content-type": files[p] ? type(p) : type(".html"),
+      "cache-control": "public, max-age=0, must-revalidate",
+    })
     res.end(files[p] ?? files["/index.html"])
   })
   await new Promise((r) => server.listen(0, "127.0.0.1", r))
@@ -119,11 +128,20 @@ const ids = [
 export function observerState(i, { probe, audit, browser }) {
   const [id, kind] = ids[i]
   const at = new Date().toISOString()
-  const egress = { ip: `1.1.1.${i + 1}`, tor: kind === "tor", kind, checkedAt: at }
+  const egress = {
+    ip: `1.1.1.${i + 1}`,
+    tor: kind === "tor",
+    kind,
+    checkedAt: at,
+  }
   return {
     id,
     kind,
     url: "http://observer.invalid/",
+    failures: {},
+    failurePaths: {},
+    sequence: [],
+    raceCount: 0,
     probe: { ...probe, egress },
     audit,
     browser: {
@@ -144,15 +162,30 @@ export async function sample(i, c, references) {
 }
 
 // The aggregation path main.mjs uses: schedule(references) then snapshot().
-export function group(states, references) {
+export function group(states, references, { source, referenceStatus } = {}) {
+  // Exercise the same persistent evidence path as the coordinator. A get-only
+  // stub cannot detect a payload that disappears before its reference arrives.
+  const dir = mkdtempSync(join(tmpdir(), "watchdog-review-"))
+  const store = new Store(dir)
+  after(() => {
+    store.close()
+    rmSync(dir, { recursive: true, force: true })
+  })
   const g = new ObserverGroup(
     config({ MULTI_NETWORK: "true" }),
-    { get: () => null },
+    store,
     () => {},
     () => {},
     new Map(),
   )
   g.states = states
-  g.schedule(references) // background is a no-op here
+  g.schedule(references, source, referenceStatus) // background is a no-op here
+  for (const state of states)
+    for (const [kind, result] of [
+      ["quick", state.probe],
+      ["audit", state.audit],
+      ["browser", state.browser],
+    ])
+      if (result) g.record(state, result, kind)
   return g
 }

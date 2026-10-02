@@ -1,4 +1,4 @@
-import { randomInt, randomBytes } from "node:crypto"
+import { randomInt } from "node:crypto"
 import {
   launchChrome,
   chromePage,
@@ -6,7 +6,7 @@ import {
   continueChrome,
   chromeRoutes,
 } from "./chrome.mjs"
-import { evidence, headerIssues } from "./policy.mjs"
+import { evidence, headerIssues, sampledRoutes } from "./policy.mjs"
 import { sha256, safeError, timestamp } from "./util.mjs"
 import {
   EGRESS_CHECK_URLS,
@@ -126,24 +126,7 @@ export async function probeBrowser(
       egressPage = null
     }
     const routes = [...c.routes].sort(() => Math.random() - 0.5)
-    if (c.sampleRoutes) {
-      const candidates = [
-        ...(reference?.routes || []),
-        "/",
-        "/submit-transaction",
-        "/stats",
-        "/referrals",
-        "/trade/dca",
-        "/trade/otc",
-        "/wallet",
-        "/xcm",
-        "/trade/swap?utm_source=androidappinstallbanner",
-        "/?utm_source=androidappinstallbanner",
-        `/${randomBytes(6).toString("hex")}`,
-        `/unknown/${randomBytes(8).toString("hex")}`,
-      ]
-      routes.push(...candidates.sort(() => Math.random() - 0.5).slice(0, 3))
-    }
+    if (c.sampleRoutes) routes.push(...sampledRoutes(reference, c.routes))
     for (const route of [...new Set(routes)]) {
       const page = await chromePage(context, c)
       const jobs = []

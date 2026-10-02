@@ -167,6 +167,22 @@ test("unknown HTML waits only for an actual active build, then becomes critical"
     assess({ ...args, referenceStatus: { state: "failed", sha } }).state,
     "reference_failed",
   )
+  for (const state of [
+    "building",
+    "failed",
+    "missing",
+    "error",
+    "unconfigured",
+  ])
+    assert.equal(
+      assess({
+        ...args,
+        referenceAvailable: true,
+        referenceStatus: { state, sha },
+      }).state,
+      "integrity_alert",
+      "a pipeline error or stale build status cannot excuse bytes once the expected reference exists",
+    )
 })
 test("every pending HTML hash and asset is compared retrospectively", async (t) => {
   const s = await database(t)

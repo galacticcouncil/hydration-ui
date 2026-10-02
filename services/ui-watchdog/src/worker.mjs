@@ -9,7 +9,13 @@ import { observe } from "./scan.mjs"
 import { siteTransport } from "./transport.mjs"
 import { safeError, timestamp } from "./util.mjs"
 
-export function serveObserver(c) {
+export function serveObserver(
+  c,
+  {
+    allowNetwork = publicNetworkPolicy({ remoteDns: Boolean(c.proxyUrl) }),
+    executablePath,
+  } = {},
+) {
   c = { ...c, siteRequest: siteTransport(c) }
   const busy = new Set()
   let lastSuccess = Date.now(),
@@ -93,7 +99,8 @@ export function serveObserver(c) {
         )
           throw new Error("Invalid root index")
         const transport = await chromeTransport(c, {
-          allowNetwork: publicNetworkPolicy({ remoteDns: Boolean(c.proxyUrl) }),
+          allowNetwork,
+          executablePath,
         })
         try {
           const [observed, path] = await Promise.all([
@@ -114,6 +121,8 @@ export function serveObserver(c) {
           ? validateManifest(body.reference, c)
           : null
         result = await probeBrowser(c, reference, body.rootHash, {
+          allowNetwork,
+          executablePath,
           references: (body.references || (reference ? [reference] : [])).map(
             (r) => validateManifest(r, c),
           ),

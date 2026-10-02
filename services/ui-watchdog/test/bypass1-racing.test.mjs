@@ -110,21 +110,27 @@ test("a release race between two attested builds stays non-critical", async (t) 
 // ATTESTED documents so every probe races, and tamper with B's entry chunk.
 // Fails at 54527f90e and with the minimal fix; passes when a race outside the
 // rollout window no longer masks asset mismatches.
-test("outside a release window, alternating attested documents cannot mask a tampered asset", async (t) => {
-  const states = []
-  for (let i = 0; i < 3; i++) {
-    const s = await site(t, {
-      deploy: { files: B },
-      attack: (req, url, st) => {
-        if (url.pathname === "/") return html((++st.roots % 2 ? B : A)["/index.html"])
-        if (url.pathname === "/assets/index-bbbb2222.js")
-          return { type: "application/javascript", body: "/* drainer */" }
-      },
-    })
-    states.push(await sample(i, cfg(s.target), [refA, refB]))
-  }
-  const now = Date.now()
-  const source = { sha: shaB, firstSeen: now - 3600000 }
-  const { assessment } = group(states, [refA, refB]).snapshot(source, true, now)
-  assert.equal(assessment.state, "integrity_alert")
-})
+for (const age of [60000, 3600000])
+  test(`${age < 900000 ? "inside" : "outside"} a release window, alternating attested documents cannot mask a tampered asset`, async (t) => {
+    const states = []
+    for (let i = 0; i < 3; i++) {
+      const s = await site(t, {
+        deploy: { files: B },
+        attack: (req, url, st) => {
+          if (url.pathname === "/")
+            return html((++st.roots % 2 ? B : A)["/index.html"])
+          if (url.pathname === "/assets/index-bbbb2222.js")
+            return { type: "application/javascript", body: "/* drainer */" }
+        },
+      })
+      states.push(await sample(i, cfg(s.target), [refA, refB]))
+    }
+    const now = Date.now()
+    const source = { sha: shaB, firstSeen: now - age }
+    const { assessment } = group(states, [refA, refB]).snapshot(
+      source,
+      true,
+      now,
+    )
+    assert.equal(assessment.state, "integrity_alert")
+  })
