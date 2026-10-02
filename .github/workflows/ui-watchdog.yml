@@ -31,7 +31,7 @@ jobs:
       - name: Lint workflows
         run: |
           GOBIN="$RUNNER_TEMP/bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
-          "$RUNNER_TEMP/bin/actionlint" -color
+          "$RUNNER_TEMP/bin/actionlint" -color .github/workflows/ui-watchdog.yml .github/workflows/ui-watchdog-reference.yml
       - name: Resolve every action pin to a commit
         env:
           GH_TOKEN: ${{ github.token }}
