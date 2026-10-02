@@ -37,6 +37,7 @@ type Props = {
   readonly quoteSymbol: string
   readonly marketLabel: string
   readonly isMarketLoading?: boolean
+  readonly executableDisplay?: string | null
 }
 
 export const QuotedPriceField: FC<Props> = ({
@@ -46,6 +47,7 @@ export const QuotedPriceField: FC<Props> = ({
   quoteSymbol,
   marketLabel,
   isMarketLoading = false,
+  executableDisplay = null,
 }) => {
   const { t } = useTranslation(["trade", "common"])
   const { view, dispatch } = binding
@@ -82,6 +84,26 @@ export const QuotedPriceField: FC<Props> = ({
   })
   const showResetAction = view.canReset && !isEditingPill
   const presetSign = view.inverted ? -1 : 1
+
+  // The spot-price tooltip also carries the size-aware executable rate (what an
+  // order of the entered size would trade at now), on its own line once a size
+  // exists.
+  const marketInfoText = (
+    <Flex direction="column" gap="s">
+      <Text fw={500} fs="p5">
+        {t("trade:limit.marketInfo")}
+      </Text>
+      {executableDisplay && (
+        <Text fw={500} fs="p5">
+          {t("trade:limit.marketInfoExecutable", {
+            base: baseSymbol,
+            price: executableDisplay,
+            quote: quoteSymbol,
+          })}
+        </Text>
+      )}
+    </Flex>
+  )
 
   return (
     <Flex direction="column" gap="xs" py="l" sx={{ minWidth: 0 }}>
@@ -271,19 +293,22 @@ export const QuotedPriceField: FC<Props> = ({
         <Text fs="p6" color={getToken("text.low")} whiteSpace="nowrap">
           {t("trade:limit.fillsAtRateOrBetter")}
         </Text>
-        {(view.marketDisplay || isMarketLoading) &&
-          (view.marketDisplay ? (
-            <SMarketButton
-              type="button"
-              onClick={() => dispatch({ type: "resetToMarket" })}
-            >
-              {marketLabel} <SMarketPrice>{view.marketDisplay}</SMarketPrice>
-            </SMarketButton>
-          ) : (
-            <SMarketButton type="button">
-              <Skeleton sx={{ width: "2xl" }} height="1em" />
-            </SMarketButton>
-          ))}
+        <Flex align="center" gap="xs">
+          {(view.marketDisplay || isMarketLoading) &&
+            (view.marketDisplay ? (
+              <SMarketButton
+                type="button"
+                onClick={() => dispatch({ type: "resetToMarket" })}
+              >
+                {marketLabel} <SMarketPrice>{view.marketDisplay}</SMarketPrice>
+              </SMarketButton>
+            ) : (
+              <SMarketButton type="button">
+                <Skeleton sx={{ width: "2xl" }} height="1em" />
+              </SMarketButton>
+            ))}
+          <Tooltip text={marketInfoText} />
+        </Flex>
       </Flex>
     </Flex>
   )

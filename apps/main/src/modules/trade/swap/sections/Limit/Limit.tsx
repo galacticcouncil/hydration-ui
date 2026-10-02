@@ -53,8 +53,13 @@ const LimitForm: FC<LimitFormProps> = ({ maxSellBalance }) => {
   const form = useFormContext<LimitFormValues>()
   const submitLimitOrder = useSubmitLimitOrder()
 
-  const { quotedPrice, isMarketLoading, isRecalculating, ...cascade } =
-    useLimitCascade()
+  const {
+    quotedPrice,
+    isMarketLoading,
+    executableDisplay,
+    isRecalculating,
+    ...cascade
+  } = useLimitCascade()
 
   const buyAmount = form.watch("buyAmount")
   const hasBuyAmount = !!buyAmount && Big(buyAmount).gt(0)
@@ -123,6 +128,7 @@ const LimitForm: FC<LimitFormProps> = ({ maxSellBalance }) => {
         <LimitPriceField
           quotedPrice={quotedPrice}
           isMarketLoading={isMarketLoading}
+          executableDisplay={executableDisplay}
         />
         <LimitOrderSettings />
         {shouldRenderHealthFactorWarning && (
