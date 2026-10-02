@@ -6,10 +6,11 @@ import {
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
-import { PublicClient, zeroAddress } from "viem"
+import { PublicClient } from "viem"
 
-import { FACTORY_ABI, HYPERVISOR_ABI } from "@/api/gamma/abi"
-import { getGammaContracts } from "@/api/gamma/config"
+import { HYPERVISOR_ABI } from "@/api/gamma/abi"
+import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
+import { vaultIdentityQuery } from "@/api/gamma/vaults"
 import { assetMetadataQuery } from "@/api/metadata"
 import { allPools, V3PoolBase } from "@/api/pools"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -101,45 +102,28 @@ export type TAssetData =
 
 const fetchGammaVaultShareSymbols = async (
   evm: PublicClient,
-  endpoint: string,
+  queryClient: QueryClient,
   pools: V3PoolBase[],
 ): Promise<Set<string>> => {
-  const contracts = getGammaContracts(endpoint)
-  const discoveredHypervisors = await Promise.all(
-    pools.map(async ({ addr0, addr1, fee }) => {
-      if (!addr0 || !addr1) return null
-
-      return evm
-        .readContract({
-          abi: FACTORY_ABI,
-          address: contracts.hypervisorFactory,
-          functionName: "getHypervisor",
-          args: [addr0, addr1, fee],
-        })
-        .catch(() => null)
-    }),
-  )
-  const hypervisors = new Set([
-    contracts.hypervisor,
-    ...discoveredHypervisors.filter(isNonNullish),
+  const [identities, bootstrapSymbol] = await Promise.all([
+    Promise.all(
+      pools.map((pool) =>
+        queryClient.fetchQuery(vaultIdentityQuery(evm, pool)).catch(() => null),
+      ),
+    ),
+    evm
+      .readContract({
+        abi: HYPERVISOR_ABI,
+        address: GAMMA_BOOTSTRAP_HYPERVISOR,
+        functionName: "symbol",
+      })
+      .catch(() => null),
   ])
 
-  hypervisors.delete(zeroAddress)
-
-  const symbols = await Promise.all(
-    [...hypervisors].map((address) =>
-      evm
-        .readContract({
-          abi: HYPERVISOR_ABI,
-          address,
-          functionName: "symbol",
-        })
-        .catch(() => null),
-    ),
-  )
-
   return new Set(
-    symbols.filter(isNonNullish).map((symbol) => symbol.toLowerCase()),
+    [bootstrapSymbol, ...identities.map((identity) => identity?.shareSymbol)]
+      .filter(isNonNullish)
+      .map((symbol) => symbol.toLowerCase()),
   )
 }
 
@@ -147,8 +131,7 @@ export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
 ) => {
-  const { sdk, papi, evm, endpoint, isEndpointSettled, dataEnv, genesisHash } =
-    context
+  const { sdk, papi, evm, isEndpointSettled, dataEnv, genesisHash } = context
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
@@ -168,7 +151,7 @@ export const assetsQuery = (
       const tradeAssetsMap = new Set(tradeAssets)
       const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
         evm,
-        endpoint,
+        queryClient,
         pools.v3Pools,
       )
 
