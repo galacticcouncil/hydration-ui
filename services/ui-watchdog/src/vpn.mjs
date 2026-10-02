@@ -10,7 +10,23 @@ import {
   validateEgress,
 } from "./network.mjs"
 import { siteTransport } from "./transport.mjs"
-import { request, timestamp } from "./util.mjs"
+import { responseBytes, timestamp } from "./util.mjs"
+
+// Keep credential retrieval separate from the generic observer HTTP transport.
+// Only this fixed HTTPS origin may supply a key, and redirects are rejected.
+async function nordRequest(url, { headers, timeoutMs, maxBytes }) {
+  if (!url.startsWith("https://api.nordvpn.com/v1/"))
+    throw new Error("Invalid NordVPN API origin")
+  const response = await fetch(url, {
+    headers,
+    redirect: "error",
+    signal: AbortSignal.timeout(timeoutMs),
+  })
+  return {
+    status: response.status,
+    bytes: await responseBytes(response, maxBytes),
+  }
+}
 
 const key = (value) =>
   typeof value === "string" &&
@@ -75,7 +91,7 @@ export function wireguardConfig(connection) {
 
 export async function nordConnection(
   c,
-  { api = request, previousHostname = "", privateKey = "" } = {},
+  { api = nordRequest, previousHostname = "", privateKey = "" } = {},
 ) {
   if (!/^[A-Z]{2}$/.test(c.nordCountry))
     throw new Error("NORDVPN_COUNTRY must be a two-letter country code")
