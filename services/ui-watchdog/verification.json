@@ -52,6 +52,8 @@
     "fullRepositoryBuild": "passed (6 workspace builds)",
     "readOnlyContainerAttestationVerification": "passed against official GitHub CLI release attestation with no runtime credential",
     "fullRepositoryLint": "passed",
-    "fullRepositoryTests": "passed"
+    "fullRepositoryTests": "passed",
+    "lateBrowserWorkerRecovery": "passed, including controller history persistence",
+    "browserErrorResponse": "passed: generic error without exception details"
   }
 }

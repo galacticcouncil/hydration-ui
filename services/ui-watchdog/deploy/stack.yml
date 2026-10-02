@@ -19,9 +19,11 @@ services:
       RETENTION_DAYS: "90"
     volumes:
       - state:/data
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 268435456
     read_only: true
-    tmpfs:
-      - /tmp:size=256m,mode=1777
     networks:
       - gateway
       - probe
@@ -65,8 +67,11 @@ services:
       ROLE: browser
       TARGET_URL: https://app.hydration.net
     read_only: true
-    tmpfs:
-      - /tmp:size=1g,mode=1777
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 1073741824
     networks:
       - probe
       - egress

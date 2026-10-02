@@ -126,6 +126,8 @@ The image is Linux amd64 (play). The stack has two services, `watchdog` and
 `browser`, plus a persistent `state` volume and isolated probe/egress networks.
 Only the controller joins the existing `gateway` network. It uses play's
 `myresolver` Traefik certificate resolver, with no published host ports.
+Temporary directories use explicit `type: tmpfs` mounts; Swarm ignores the
+Compose `tmpfs` shorthand. Keep these mounts with the read-only root filesystem.
 
 From the repository root:
 
