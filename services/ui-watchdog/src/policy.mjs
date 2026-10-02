@@ -103,7 +103,9 @@ export function dailyHeartbeatDue(state, last, now = Date.now()) {
 export function reconcileEvidence(result, references) {
   if (!result) return
   const roots = new Map(
-    references.map((r) => [r.files["/index.html"].sha256, r]),
+    // References are ordered with current production first. Equal HTML can
+    // occur on docs-only commits; an older entry must not overwrite that choice.
+    [...references].reverse().map((r) => [r.files["/index.html"].sha256, r]),
   )
   result.issues = (result.issues || []).filter(
     (i) => !(i.untrustedHtml && roots.has(i.actual)),

@@ -318,6 +318,9 @@ export class ObserverGroup {
     this.store.set(key, bounded)
   }
   schedule(references, source, referenceStatus) {
+    const current = references.find((r) => r.sha === source?.sha)
+    if (current)
+      references = [current, ...references.filter((r) => r !== current)]
     this.references = references
     this.source = source
     this.referenceStatus = referenceStatus
@@ -325,11 +328,16 @@ export class ObserverGroup {
       for (const result of [s.probe, s.audit, s.browser])
         reconcileEvidence(result, references)
     for (const s of this.states) {
-      const selected = references.filter(
-        (r, i) => i < 8 || r.files["/index.html"].sha256 === s.probe?.rootHash,
+      const live = references.find(
+        (r) => r.files["/index.html"].sha256 === s.probe?.rootHash,
       )
+      const selected = [
+        ...new Set([live, ...references.slice(0, 8)].filter(Boolean)),
+      ]
       const trustedRoots = Object.fromEntries(
-        references.map((r) => [r.files["/index.html"].sha256, r.sha]),
+        [...references]
+          .reverse()
+          .map((r) => [r.files["/index.html"].sha256, r.sha]),
       )
       this.background(`${s.id}:quick`, this.c.pollSeconds * 1000, async () => {
         try {

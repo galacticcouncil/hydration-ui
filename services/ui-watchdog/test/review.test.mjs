@@ -230,6 +230,39 @@ test("older references remain available for rollbacks after 30 releases", async 
     s.addReference(reference(i.toString(16).padStart(40, "0")), {})
   assert.equal(s.references().length, 35)
 })
+
+test("identical HTML across releases selects production and keeps worker payloads bounded", async (t) => {
+  const refs = Array.from({ length: 40 }, (_, i) =>
+    reference((i + 1).toString(16).padStart(40, "0")),
+  )
+  const source = { sha: refs.at(-1).sha, firstSeen: now }
+  const store = await database(t),
+    jobs = new Map()
+  const g = new ObserverGroup(
+    {
+      observers: [{ id: "direct", kind: "direct" }],
+      pollSeconds: 30,
+      fullSeconds: 900,
+      browserSeconds: 300,
+    },
+    store,
+    () => {},
+    (key, interval, fn) => jobs.set(key, fn),
+    new Map(),
+  )
+  g.states[0].probe = { ...clean, matchedSha: refs[0].sha }
+  let payload
+  g.call = async (state, path, body) => {
+    payload = body
+    return { ...clean, matchedSha: source.sha }
+  }
+  g.schedule(refs, source, { state: "ready", sha: source.sha })
+  assert.equal(g.states[0].probe.matchedSha, source.sha)
+  await jobs.get("direct:quick")()
+  assert(payload.references.length <= 9)
+  assert.equal(payload.references[0].sha, source.sha)
+  assert.equal(payload.trustedRoots[clean.rootHash], source.sha)
+})
 test("header policy detects cache or CSP changes with identical content", () => {
   const policy = {
     default: {
