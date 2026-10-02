@@ -1,0 +1,81 @@
+name: Independent production reference
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # A dispatch on another ref must never mint a production reference.
+    if: github.ref == 'refs/heads/production'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        copy: [a, b]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install locked dependencies in an isolated container
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges \
+            --memory 12g --cpus 4 -e YARN_CACHE_FOLDER=/work/.yarn-cache \
+            -v "$GITHUB_WORKSPACE:/work" -w /work \
+            node:25.9.0-bookworm@sha256:78839ac448c23517f8eab2e8f7943d9b4f73979eb7f8bed2c73dbf72ff869e7b \
+            yarn install --frozen-lockfile --non-interactive
+      - name: Build without network access or deployment credentials
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges \
+            --network none --memory 12g --cpus 4 \
+            -e SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" \
+            -v "$GITHUB_WORKSPACE:/work" -w /work \
+            node:25.9.0-bookworm@sha256:78839ac448c23517f8eab2e8f7943d9b4f73979eb7f8bed2c73dbf72ff869e7b \
+            sh services/ui-watchdog/scripts/build-reference.sh
+      - name: Inventory build output
+        run: |
+          git diff --exit-code
+          node services/ui-watchdog/scripts/manifest.mjs . "$GITHUB_SHA" manifest-${{ matrix.copy }}.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: independent-copy-${{ matrix.copy }}
+          path: manifest-${{ matrix.copy }}.json
+          retention-days: 7
+          if-no-files-found: error
+  attest:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: independent-copy-*
+          merge-multiple: true
+      - name: Require identical independent builds
+        run: |
+          cmp manifest-a.json manifest-b.json
+          cp manifest-a.json reference.json
+      - uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        id: attest
+        with:
+          subject-path: reference.json
+      - name: Package signature
+        env:
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+        run: cp "$BUNDLE_PATH" reference.sigstore.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ui-reference-${{ github.sha }}
+          path: |
+            reference.json
+            reference.sigstore.json
+          retention-days: 90
+          if-no-files-found: error
