@@ -28,87 +28,124 @@ and branch rules: repository/source compromise is outside this check's trust
 boundary. An attestation establishes provenance, not freedom from malicious
 source or dependencies.
 
-Every expected public file is hashed from its HTTP response body. Proxied
-requests require identity encoding and reject unexpected compressed responses.
-HTML includes inline code. JS (including lazy chunks and workers), WASM, CSS,
-fonts, images, and static configuration are inventoried. `_redirects` and
-`_headers` are recorded separately as hosting configuration, because hosts may
-consume them without serving them. Route probes check SPA delivery behavior;
-the watchdog cannot attest the hosting control plane.
+Every expected public file is hashed from **Chromium's decoded response body**.
+A blank same-origin page preloads JS with `sec-fetch-dest: script` without executing
+it; documents use separate pages. Chromium supplies TLS, HTTP/2, compression and
+request headers. Both probes and rendered checks use full Chromium with complete
+client-hint metadata, without the HeadlessChrome brand. This removes tested
+fingerprints, not every possible fingerprint.
 
-Fresh Chromium contexts exercise `/trade/swap`, `/liquidity`, `/borrow`, and
-`/portfolio`, check that the app renders, compare resource bodies, and report
-errors and unexpected executable resources. Service workers are blocked in
-the probe; their published files remain covered by the full artifact audit.
-Existing visitors' caches/service workers are not covered. External API data
-is not static build output and cannot be authenticated by these hashes.
+HTML includes inline code. Lazy chunks, workers, WASM, CSS, fonts, images and static
+configuration are inventoried. Both HTML samples are checked; mismatches from any
+probe, audit or browser check take precedence over races, even after the latest
+HTML changes. A→B→A flapping and three consecutive racing probes alert. A single
+one-way transition between trusted documents remains non-critical. All stored
+references remain eligible for rollback matching; an old release still needs the
+production branch to authorize it.
 
-Observers use one shared image and implementation. Each runs as a separate
-non-root service with no GitHub/Discord/VPN credentials, history volume, host
-mounts, or Docker socket. Separate runtime services isolate network paths and
-failures. One controller owns history, reference verification and Discord.
+`response-policy.json` pins cache-control and CSP presence/value, with per-path
+overrides. Its current baseline records the deployed absence of CSP; this is **not**
+a recommendation to omit CSP. The policy is included in signed references. New
+external API/WebSocket origins are warnings against `data-origins.json`, not
+proof that returned data is safe. `_redirects` and `_headers` are recorded as
+hosting inputs, not compared as public files. Configured routes, random real
+routes from the build's route tree, referral/deep paths and query variants sample
+routing behavior; they cannot attest every hosting rule or country/cookie split.
 
-Both HTTP file scans and Chromium use the observer's assigned path. Proxied
-observers join only internal networks, with no public egress; DNS travels through
-SOCKS5. Tor rejects private destinations. NordVPN and custom WireGuard gateways
-use [wireproxy](https://github.com/windtf/wireproxy), a userspace WireGuard stack;
-they need no TUN device, NET_ADMIN, privileged mode or host routing changes.
-A failed gateway has no direct fallback. Browser traffic blocks QUIC and
-non-proxied WebRTC, private IP literals/local hostnames, unapproved executable
-resources and frames. Direct DNS checks reject private results; proxied DNS
-stays remote. These checks are not a guarantee against DNS rebinding or browser
-exploits; use a trusted WireGuard peer with public Internet egress.
+Rendered checks visit the configured routes in random order and exercise link
+navigation. Body jobs finish before navigation or page closure. Service workers
+are disabled in these contexts. Built service-worker files are covered only if
+present in the reference inventory: an unreferenced rogue `/sw.js`, an existing
+visitor's cache, wallet-only interactions and runtime data are not comprehensively
+covered. In particular, mutable jsDelivr metadata, RPC/indexer responses and Reown
+configuration are outside static build verification.
 
-Every configured observer is required. A disagreeing path raises an integrity
-alert even if the majority agrees or references are not yet available. Only
-intact attested releases receive the bounded rollout grace. Failed or stale
-paths cannot be voted away. HTTP and Chromium separately sample their egress
-using the [Tor Project IP check](https://check.torproject.org/api/ip). The default
-policy requires as many distinct sampled IPs as configured observers and checks
-Tor membership. Failure of the egress check prevents verification. An IP sample
-is not proof of the exact exit used for every target request: Tor may choose
-different circuits per destination. Countries with disjoint Tor exit constraints
-and independent VPN gateways improve coverage, but are not an anonymity promise.
+A malicious dependency already recorded in `yarn.lock` is reproduced by the
+reference build and can report **verified**. This is not a dependency malware
+scanner. Lockfile review, package release-age policy, pinned runtime metadata,
+registry/registrar protections, CT/DNS monitoring and hosting account/deploy alerts
+are complementary controls, not capabilities of this watchdog.
 
-This is **detection**, not automatic rollback or traffic blocking. Multiple exits
-improve sampling but cannot rule out content served only to particular victims.
-All services on play share its host and operator trust; protection against a
-compromised play host requires observers on independently operated hosts.
-A common browser user agent reduces one obvious identifier, but headless browser
-and polling patterns can still be fingerprinted. Transient changes
-between checks and identical redeployments are invisible. “Verified” means the
-observed bytes match the approved independent source build and the configured
-browser checks passed; it does not certify the source is harmless.
+Observers share one implementation/image but run as separate non-root services,
+with individual API tokens and separate control networks. Each proxy has a private
+observer network and its own egress network; sibling observers cannot call each
+other or borrow another gateway. Only the controller has GitHub/Discord secrets
+and the state volume. Every service and local Tor volume is pinned to play.
+NordVPN/custom WireGuard use [wireproxy](https://github.com/windtf/wireproxy), without
+TUN, NET_ADMIN, privileged containers or host routing changes. Proxy observers have
+no direct egress. Remote observer endpoints require HTTPS; configure their tokens.
 
-## States and scheduling
+Browser network policy rejects private destinations and unapproved executable
+origins on monitored pages. This is not a browser exploit containment guarantee:
+Chromium currently runs without its own sandbox on play's container profile.
+`CHROMIUM_SANDBOX=true` requires a host/container profile supporting Chromium's
+sandbox; it fails closed rather than falling back. Keep runtime images updated.
+A compromised observer can forge its own reports; distinct isolated observers
+reduce, but do not eliminate, that risk. All play services still share one host.
 
-| State                | Meaning                                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------------------- |
-| `verified`           | Every required observer passes the production reference, fresh complete audit, browser and egress checks |
-| `deployment_pending` | Intact known previous release, within the rollout grace period                                           |
-| `stale_deployment`   | Known previous release after the grace period, including an unapproved rollback                          |
-| `integrity_alert`    | Unexpected/mismatched executable content or resource policy violation                                    |
-| `unverified`         | No trusted matching reference, stale source information, or incomplete/racing checks                     |
-| `degraded` / `down`  | Asset/browser/dependency failures or the app cannot be fetched                                           |
-| `watchdog_error`     | Internal monitoring failure; never a passing check                                                       |
+Tor Project's IP check is supplemented by ipify. The fallback establishes an IP
+but not Tor membership, so its result stays **unverified**, without a mention.
+Oracle outages do not restart running VPN gateways. Nord selection failures retain
+the current tunnel and retry. Sampled exit IPs cannot prove the exact exit used by
+every request. All default vantages are datacenter/Tor/VPN addresses: residential
+or independently operated browser observers are needed to test IP-class cloaking.
+Nothing here proves that every visitor receives the same bytes. Sub-interval swaps
+and identical redeployments can remain invisible. No automatic rollback occurs.
 
-Each observer probes HTML and entry JS/CSS at 30-second intervals after completion, and schedules full
-asset and browser scans independently every five minutes and after changes.
-Browser worker connection failures retry at the 30-second polling interval.
-An asset scan has a two-minute scheduling budget plus bounded in-flight request
-timeouts. Slow probes never overlap copies of the same job. Timestamps and
-coverage are explicit; the 30-second interval is not a five-minute asset-check
-guarantee. Deployment grace defaults to 15 minutes and applies only to intact
-known releases. HTML matching none of the available trusted references and
-asset mismatches alert immediately. With no reference at all, status remains
-`unverified` while change tracking and browser checks still operate.
+## States, releases and alerts
 
-Branch polling uses conditional requests (30 seconds with a token, five minutes
-without one to respect public API limits). Reference reconciliation runs every
-five minutes and examines up to 90 recent successful production workflow runs,
-including dispatches on production. Expired GitHub artifacts cannot be restored
-automatically. Verified references and the last observed source/time survive
-restarts in SQLite. The most recent 30 references are candidates for live matching.
+| State | Meaning |
+| --- | --- |
+| `verified` | Every required path has a matching production reference and fresh asset, browser and egress checks |
+| `reference_pending` | A production build/verification is active, within the bounded pending window |
+| `protection_inactive` | Zero attested references: integrity protection is inactive |
+| `reference_failed` | Missing/failed/unavailable production reference pipeline |
+| `deployment_pending` | Trusted releases are rolling out within the grace window |
+| `stale_deployment` | A trusted old release remains after the rollout window |
+| `integrity_alert` | Byte/header/resource mismatch, persistent racing, flapping or evidence overflow |
+| `unverified` | Freshness, egress or transient check failure prevents verification |
+| `degraded` / `down` | Three consecutive check failures |
+| `alerting_inactive` | Content checks pass but initial Discord delivery is not configured |
+| `credentials_missing` | A previously armed credential disappeared on redeploy |
+| `watchdog_error` | Internal/storage failure; never a passing check |
+
+The hosting pipeline is unchanged. During an actual reference run, unknown samples
+are retained for retrospective checking, for at most `REFERENCE_PENDING_SECONDS`
+(default 1200) from first seeing that production commit. All recorded unknown hashes
+and asset hashes are checked when its attested reference arrives; discrepancies
+become a critical incident even if the live app has since recovered. Expiry is
+critical. Missing/failed runs have their own error state. A known asset mismatch
+or executable/header-policy violation never receives this grace. Pending metadata
+is capped at 20,000 samples; overflow alerts instead of silently discarding evidence.
+
+HTML/entry probes run about every 30 seconds after completion, rendered checks every
+five minutes and full audits every **15 minutes**, with 20% scheduling jitter.
+New references/changes invalidate checks immediately. Full audits have a two-minute
+scheduling budget plus request deadlines. Jobs of one kind do not overlap. These
+are sampling intervals, not promises of maximum detection latency. Compression and
+the longer full-audit interval reduce synthetic traffic. `FULL_AUDIT_SECONDS=300`
+restores five-minute full audits at higher traffic cost.
+
+Integrity incidents have stable keys independent of attacker-controlled hashes.
+One critical notification opens an incident; changing bytes/observers do not page
+again while it remains open. Only **critical** events can mention Discord users.
+Transient failures, egress outages and ordinary releases do not mention anyone.
+Content events are throttled per observer; routine freshness changes remain in
+history rather than generating a Discord stream. Releases include a compare link
+and escaped commit titles. Verified operation emits a daily heartbeat.
+
+The outbox prioritizes critical events, stops permanently on Discord 400/401/403/404
+or after 12 failed attempts, and has a 1,000-pending-event cap. Failed deliveries
+stop the external heartbeat; one warning cannot block later critical delivery.
+Delivery is at least once: a lost successful response can still cause a duplicate.
+Captured unknown HTML/JS evidence includes headers and up to 64 KiB of each body
+(base64, never executed by the controller), capped at 512 bodies. Inventory state
+is bounded and old release paths are removed. SQLite retains events for 90 days.
+
+Reference reconciliation checks current run state every 30 seconds while pending,
+five minutes when ready, and backfills 90 successful runs. One bad artifact does
+not abort other runs. All verified references are kept; expired artifacts cannot
+be recovered from GitHub automatically. Stored source timing survives restart.
 
 ## Configure credentials
 
@@ -133,16 +170,27 @@ The `_FILE` variants take precedence and file-read failures stop startup. ENV
 values appear to Swarm administrators; mounted secrets avoid storing values in
 the stack file. Neither is exposed by the dashboard or logs.
 
-`DISCORD_MENTION` optionally accepts one `@here`, `@everyone`, `<@USER_ID>`, or
-`<@&ROLE_ID>`. Only critical/error alerts mention it; commit text cannot trigger
-mentions. Incident transitions and reminders are deduplicated. Deliveries use
-a persistent outbox, bounded exponential backoff and Discord rate-limit delays.
-Delivery is at least once: a lost successful response can yield a duplicate
-with the same event ID. Events created while the webhook is unset remain in
-history but are not queued for later replay. Pending failures appear in status.
+`DISCORD_MENTION` optionally accepts one `@here`, `@everyone`, `<@USER_ID>` or
+`<@&ROLE_ID>`. Attacker-controlled paths and titles are escaped as Discord markdown.
+Events created before a webhook is configured stay in history without being queued.
+Initial blank GitHub/Discord credentials are allowed and clearly show protection
+inactive. Once configured, the store remembers that state: losing a credential
+causes `credentials_missing`, an unhealthy controller and no external heartbeat.
 
-The initial deployment intentionally leaves both credentials blank for the
-operator to configure. Missing credentials never produce a false passing state.
+Set `HEARTBEAT_URL` (or `HEARTBEAT_URL_FILE`) to an **independent external** dead-man
+monitor. The watchdog sends an HTTPS GET approximately every minute only after a
+successful persistence cycle, with credentials/references present and no terminal
+Discord delivery failure. Configure that provider to alert after missed heartbeats
+(e.g. five minutes). No external monitor is enabled until an operator supplies the
+URL. Daily Discord heartbeats alone cannot detect a dead process or broken webhook.
+
+Set `DASHBOARD_TOKEN` (or `_FILE`): dashboard, status, history and evidence endpoints
+require HTTP Basic auth (any username, token as password) or `Authorization: Bearer`.
+There is no public diagnostic projection. A missing dashboard token denies access.
+Generate separate random `OBSERVER_TOKEN_DIRECT`, `_TOR_DE`, `_TOR_US`, `_NORD_1`,
+`_NORD_2`, `_NORD_3`, `_WIREGUARD` values when rendering the stack. Each worker receives
+only its own `OBSERVER_TOKEN`; the controller gets all seven. `_FILE` variants can
+be used with Swarm secrets. The template requires explicit dashboard/worker tokens.
 
 ## Deployment on play
 
@@ -159,7 +207,7 @@ Images are Linux amd64 (play). One stack contains:
   disabled until enabled and configured.
 
 All observers, VPN gateways and the coordinator use the same watchdog image.
-Only Tor has a second image, pinned to the official Tor package and signing key.
+Only Tor has a second image. Packages come from the authenticated official Tor repository; the deployed image is pinned by digest, without an apt version that disappears from the live mirror.
 No observer owns a separate dashboard, reference cache or alert pipeline. The
 `state` volume preserves the existing history across this stack update.
 Only the controller joins the existing `gateway` network. It uses play's
@@ -167,7 +215,12 @@ Only the controller joins the existing `gateway` network. It uses play's
 Temporary directories use explicit `type: tmpfs` mounts; Swarm ignores the
 Compose `tmpfs` shorthand. Keep these mounts with the read-only root filesystem.
 
-From the repository root:
+CI builds both images for pushes to this repository, publishes commit tags to
+GHCR, records BuildKit provenance/SBOM and signs their digests with GitHub artifact
+attestations. Publication permissions exist only in that image job, not PR tests
+or runtime credentials. A manual Docker Hub fallback is available from the
+repository root (manual builds do not acquire GitHub-hosted provenance):
+
 
 ```sh
 REVISION=$(git rev-parse HEAD)
@@ -191,8 +244,7 @@ Resolve both pushed image digests. Set `WATCHDOG_IMAGE` to
 when making future edits. Never overwrite configured ENV values with the blank
 defaults during a later redeploy. Autoredeploy is disabled; use explicit digests.
 
-The single SQLite writer is pinned to node `play`, where the local state volume
-lives. Updates stop the old writer before starting a replacement. Back up the
+All services are pinned to node `play`, including the single SQLite writer and local Tor state. Updates stop the old writer before starting a replacement. Back up the
 volume using SQLite's backup mechanism or a stopped-service volume copy.
 Rolling back the **watchdog** means redeploying its previous digest with the same
 volume and ENV. This service never rolls back the monitored application.
@@ -202,9 +254,10 @@ Endpoints:
 - `https://ui-watchdog.play.hydration.cloud/` — read-only status/history dashboard
 - `/api/status` — current checks, freshness, configuration and delivery backlog
 - `/api/events?limit=100` — persisted change/incident history (maximum 500)
-- `/healthz` — controller liveness, independent of application health
+- `/api/evidence?hash=<sha256>` — authenticated capped forensic sample
+- `/healthz` — public process/storage/credential liveness, independent of app integrity
 
-Do not expose the observer or proxy ports publicly. Internal `POST /observe`
+Do not expose the observer or proxy ports publicly. Authenticated internal `POST /observe`
 and `POST /probe` endpoints accept bounded reference data and always check their
 configured target. No worker can select a different target through an API call.
 
@@ -324,3 +377,30 @@ fixture/configuration tests do not prove a provider connection works.
 
 See `verification.json` for the initial independent-build experiment. It is
 diagnostic evidence, not an accepted runtime attestation.
+
+## Reference workflow activation and remaining operations
+
+PR/master dry runs exercise both independent builds, manifest generation and `cmp`,
+without signing. CI also runs actionlint and resolves every pinned action SHA through
+the commits API, catching annotated-tag object pins. The signer uses attestation
+v3.2.0 at `96278af6caaf10aea03fd8d33a09a777ca52d62f`, with an exact certificate identity
+and explicit SLSA v1 predicate policy. Install/build containers use writable HOME;
+tracked, untracked and ignored additions under `apps/main/public` are checked.
+
+The fixed workflow must reach `production`, then receive a **new production push**
+(or fresh dispatch of the fixed production workflow). Re-running the old failed
+run uses the old workflow. Until then, and until the read-only runtime token is
+configured, play cannot authenticate references and reports protection inactive.
+
+Hosting UI environment variables, build-command changes, plugins/snippets and
+conditional routing can still drift. Their byte/header effects are detected on
+sampled requests and retained as evidence; changing hosting configuration and
+publishing order is outside this service. Review/align the hosting recipe before
+arming and require production workflow review. This service has no hosting token.
+
+The colleague-provided review archive was not available while these fixes were
+implemented. `test/review.test.mjs` and expanded real-Chromium tests reproduce the
+reported race directions, moved-root evidence, pending releases, header policy,
+private endpoints, dead deliveries, slow bodies and request/header cloaks. Run the
+independent review tests too when they are pushed; passing local fixtures is not a
+claim that arbitrary targeted cloaking or malicious locked dependencies is solved.

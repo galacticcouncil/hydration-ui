@@ -1,10 +1,17 @@
-import { chromium } from "playwright"
-import { sha256, safeError, timestamp } from "./util.mjs"
-import { browserProxy } from "./transport.mjs"
+import { randomInt, randomBytes } from "node:crypto"
 import {
-  EGRESS_CHECK_URL,
+  launchChrome,
+  chromePage,
+  deadline,
+  continueChrome,
+  chromeRoutes,
+} from "./chrome.mjs"
+import { evidence, headerIssues } from "./policy.mjs"
+import { sha256, safeError, timestamp } from "./util.mjs"
+import {
+  EGRESS_CHECK_URLS,
+  checkEgress,
   publicNetworkPolicy,
-  validateEgress,
 } from "./network.mjs"
 export { publicAddress, publicNetworkPolicy } from "./network.mjs"
 
@@ -16,6 +23,8 @@ export async function probeBrowser(
     allowNetwork = publicNetworkPolicy({ remoteDns: Boolean(c.proxyUrl) }),
     executablePath,
     checkEgress = true,
+    references = reference ? [reference] : [],
+    trustedRoots = {},
   } = {},
 ) {
   const out = {
@@ -25,6 +34,8 @@ export async function probeBrowser(
     routes: [],
     externalOrigins: [],
     responses: [],
+    evidence: [],
+    documents: [],
   }
   const issueKeys = new Set(),
     origins = new Set()
@@ -37,35 +48,20 @@ export async function probeBrowser(
   }
   // This worker is a separate unprivileged container: no token, webhook, state
   // volume, Docker socket, or host mounts. Never execute probes in the controller.
-  const browser = await chromium.launch({
-    headless: true,
-    executablePath,
-    proxy: browserProxy(c),
-    args: [
-      "--disable-dev-shm-usage",
-      "--disable-quic",
-      "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
-      ...(c.proxyUrl
-        ? [
-            `--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE ${new URL(c.proxyUrl).hostname}`,
-          ]
-        : []),
-    ],
-  })
+  const browser = await launchChrome(c, executablePath)
   try {
     const context = await browser.newContext({
       serviceWorkers: "block",
       ignoreHTTPSErrors: false,
-      ...(c.userAgent ? { userAgent: c.userAgent } : {}),
     })
     let egressPage = null
-    await context.route("**/*", async (route) => {
+    await chromeRoutes(context, async (route) => {
       const r = route.request(),
         u = new URL(r.url()),
         kind = r.resourceType()
       if (egressPage && r.frame().page() === egressPage) {
-        if (r.url() === EGRESS_CHECK_URL && kind === "document")
-          await route.continue()
+        if (EGRESS_CHECK_URLS.includes(r.url()) && kind === "document")
+          await continueChrome(route)
         else await route.abort()
         return
       }
@@ -95,9 +91,10 @@ export async function probeBrowser(
           return
         }
       }
-      await route.continue()
+      await continueChrome(route)
     })
     await context.routeWebSocket("**/*", async (socket) => {
+      origins.add(new URL(socket.url()).origin)
       if (await allowNetwork(socket.url())) socket.connectToServer()
       else {
         add({
@@ -109,24 +106,78 @@ export async function probeBrowser(
       }
     })
     if (checkEgress) {
-      egressPage = await context.newPage()
+      egressPage = await chromePage(context, c)
       try {
-        const r = await egressPage.goto(EGRESS_CHECK_URL, {
-          waitUntil: "domcontentloaded",
-          timeout: c.timeoutMs || 20000,
+        out.egress = await checkEgress(c, async (url, { timeoutMs }) => {
+          const r = await egressPage.goto(url, {
+            waitUntil: "domcontentloaded",
+            timeout: timeoutMs,
+          })
+          return {
+            status: r?.status(),
+            bytes: r ? await deadline(r.body(), timeoutMs) : Buffer.alloc(0),
+          }
         })
-        if (!r || r.status() !== 200)
-          throw new Error("Browser egress check failed")
-        out.egress = validateEgress(c, JSON.parse(await r.text()))
       } catch (e) {
         out.egress = { error: safeError(e), checkedAt: timestamp() }
       }
       await egressPage.close()
       egressPage = null
     }
-    for (const route of c.routes) {
-      const page = await context.newPage()
+    const routes = [...c.routes].sort(() => Math.random() - 0.5)
+    if (c.sampleRoutes) {
+      const candidates = [
+        ...(reference?.routes || []),
+        "/",
+        "/submit-transaction",
+        "/stats",
+        "/referrals",
+        "/trade/dca",
+        "/trade/otc",
+        "/wallet",
+        "/xcm",
+        "/trade/swap?utm_source=androidappinstallbanner",
+        "/?utm_source=androidappinstallbanner",
+        `/${randomBytes(6).toString("hex")}`,
+        `/unknown/${randomBytes(8).toString("hex")}`,
+      ]
+      routes.push(...candidates.sort(() => Math.random() - 0.5).slice(0, 3))
+    }
+    for (const route of [...new Set(routes)]) {
+      const page = await chromePage(context, c)
       const jobs = []
+      const pending = new Set()
+      const tracked = (r) => {
+        const u = new URL(r.url())
+        return (
+          ["script", "stylesheet", "document", "font"].includes(
+            r.resourceType(),
+          ) ||
+          (u.origin === c.target &&
+            /\.(?:m?js|wasm|css|json|bin)(?:$|\?)/.test(u.pathname))
+        )
+      }
+      page.on("request", (r) => {
+        if (tracked(r)) pending.add(r)
+      })
+      page.on("requestfinished", (r) => pending.delete(r))
+      page.on("requestfailed", (r) => pending.delete(r))
+      const drain = async () =>
+        deadline(
+          (async () => {
+            let count
+            do {
+              count = jobs.length
+              await Promise.allSettled(jobs)
+              await page.waitForTimeout(100)
+            } while (count !== jobs.length || pending.size)
+          })(),
+          c.timeoutMs || 30000,
+        )
+
+      let documentJob = Promise.resolve(),
+        pageReference = reference,
+        pageRoot = rootHash
       page.on("pageerror", (error) =>
         add({
           kind: "browser-error",
@@ -134,7 +185,7 @@ export async function probeBrowser(
           message: safeError(error),
         }),
       )
-      page.on("response", (response) => {
+      const onResponse = (response) => {
         if (jobs.length >= 1200) {
           add({ kind: "resource-limit", path: route })
           return
@@ -147,8 +198,13 @@ export async function probeBrowser(
             type === "document" && response.frame() === page.mainFrame()
               ? "/index.html"
               : u.pathname + u.search
+          const mainDocument =
+            type === "document" && response.frame() === page.mainFrame()
+          if (!mainDocument) await documentJob
+          const boundReference = pageReference,
+            boundRoot = pageRoot
           const expected = sameOrigin
-            ? reference?.files[key]
+            ? pageReference?.files[key]
             : c.externalScripts[u.href] && {
                 sha256: c.externalScripts[u.href],
               }
@@ -161,10 +217,16 @@ export async function probeBrowser(
           if (response.status() >= 400)
             add({
               kind: sameOrigin ? "fetch-failed" : "dependency-failed",
-              path: sameOrigin ? key : u.origin,
+              path: sameOrigin ? (mainDocument ? u.pathname : key) : u.origin,
               message: `HTTP ${response.status()}`,
             })
-          if (sameOrigin && reference && executable && !expected)
+          if (
+            sameOrigin &&
+            pageReference &&
+            executable &&
+            !expected &&
+            !mainDocument
+          )
             add({ kind: "unexpected-resource", path: key })
           if (
             !sameOrigin &&
@@ -177,23 +239,64 @@ export async function probeBrowser(
               path: u.origin + u.pathname,
               message: "External executable content has no approved hash",
             })
-          if (!expected || response.status() !== 200) return
+          if ((!expected && !executable) || response.status() !== 200) return
           try {
             const body = await response.body(),
               hash = sha256(body)
             if (body.length > 32 * 1024 * 1024)
               throw new Error("Browser response exceeds size limit")
+            const actual = {
+              sha256: hash,
+              size: body.length,
+              bytes: body,
+              headers: await response.allHeaders(),
+              type: response.headers()["content-type"] || "",
+            }
+            if (mainDocument) {
+              pageRoot = hash
+              pageReference =
+                references.find(
+                  (r) => r.files["/index.html"].sha256 === hash,
+                ) || null
+              const trusted = pageReference?.sha || trustedRoots[hash] || null
+              out.documents.push({ sha256: hash, matchedSha: trusted })
+              if (!trusted && references.length)
+                add({
+                  kind: "hash-mismatch",
+                  path: route,
+                  actual: hash,
+                  untrustedHtml: true,
+                })
+            }
+            if (sameOrigin)
+              for (const issue of headerIssues(
+                key,
+                actual.headers,
+                pageReference?.headers || c.headerPolicy,
+              ))
+                add(issue)
+            if (
+              (!expected || hash !== expected.sha256) &&
+              out.evidence.length < 32
+            )
+              out.evidence.push(evidence(key, actual, pageReference?.sha))
             if (out.responses.length < 1500)
               out.responses.push({
                 path: sameOrigin ? key : u.origin + u.pathname,
                 sha256: hash,
+                size: body.length,
+                rootHash: mainDocument ? hash : boundRoot,
+                referenceSha: mainDocument
+                  ? pageReference?.sha || null
+                  : boundReference?.sha || null,
               })
-            if (hash !== expected.sha256)
+            if (!mainDocument && expected && hash !== expected.sha256)
               add({
                 kind: "hash-mismatch",
                 path: sameOrigin ? key : u.origin + u.pathname,
                 expected: expected.sha256,
                 actual: hash,
+                referenceSha: pageReference?.sha,
               })
           } catch (e) {
             add({
@@ -209,8 +312,14 @@ export async function probeBrowser(
             message: safeError(e),
           }),
         )
+        if (
+          response.request().resourceType() === "document" &&
+          response.frame() === page.mainFrame()
+        )
+          documentJob = job
         jobs.push(job)
-      })
+      }
+      page.on("response", onResponse)
       page.on("requestfailed", (r) => {
         const u = new URL(r.url())
         if (
@@ -224,18 +333,48 @@ export async function probeBrowser(
           })
       })
       try {
-        await page.goto(new URL(route, c.target).href, {
-          waitUntil: "domcontentloaded",
-          timeout: 30000,
-        })
-        await page.waitForFunction(
-          () => document.querySelector("#root")?.innerText?.trim().length > 80,
-          null,
-          { timeout: 30000 },
-        )
-        await page.waitForTimeout(2500)
-        const text = await page.locator("#root").innerText({ timeout: 3000 })
+        const destination = new URL(route, c.target).href
+        // Exercise a real link navigation in addition to direct visits. The
+        // source is same-origin so Chrome supplies navigation/referrer headers.
+        if (c.sampleRoutes) {
+          await page.goto(c.target, {
+            waitUntil: "domcontentloaded",
+            timeout: 30000,
+          })
+          await page.waitForTimeout(c.settleMs ?? 1500)
+          await drain()
+          await page.evaluate((href) => {
+            const a = document.createElement("a")
+            a.href = href
+            a.id = "probe-navigation"
+            a.textContent = "Continue"
+            document.body.append(a)
+          }, destination)
+          await Promise.all([
+            page.waitForNavigation({
+              waitUntil: "domcontentloaded",
+              timeout: 30000,
+            }),
+            page.locator("#probe-navigation").click(),
+          ])
+        } else
+          await page.goto(destination, {
+            waitUntil: "domcontentloaded",
+            timeout: 30000,
+          })
+        if (c.routes.includes(route))
+          await page.waitForFunction(
+            () =>
+              document.querySelector("#root")?.innerText?.trim().length > 80,
+            null,
+            { timeout: 30000 },
+          )
+        await page.waitForTimeout(c.settleMs ?? randomInt(1500, 3000))
+        const text = c.routes.includes(route)
+          ? await page.locator("#root").innerText({ timeout: 3000 })
+          : ""
         if (
+          c.routes.includes(route) &&
           /unexpected application error|something went wrong|page not found/i.test(
             text,
           )
@@ -250,10 +389,22 @@ export async function probeBrowser(
         add({ kind: "browser-error", path: route, message: safeError(e) })
         out.routes.push({ path: route, rendered: false })
       }
+      try {
+        await drain()
+      } catch (e) {
+        add({ kind: "browser-error", path: route, message: safeError(e) })
+      }
+      page.off("response", onResponse)
       await page.close()
-      await Promise.allSettled(jobs)
     }
     out.externalOrigins = [...origins].sort()
+    for (const origin of out.externalOrigins)
+      if (c.allowedOrigins?.length && !c.allowedOrigins.includes(origin))
+        add({
+          kind: "external-origin",
+          path: origin,
+          message: "New data or WebSocket origin outside the reviewed baseline",
+        })
     out.completedAt = timestamp()
     return out
   } finally {

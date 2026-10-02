@@ -111,7 +111,7 @@ test("missing assets and deployment races cannot receive a verified result", asy
   const r = await observe(c, [manifest()], { full: true })
   assert(r.issues.some((x) => x.kind === "fetch-failed"))
   assert(r.racing)
-  assert.notEqual(assess({ probe: r }).state, "verified")
+  assert.equal(assess({ probe: r }).state, "integrity_alert")
 })
 
 test("rollout grace applies only to an intact known release, survives restart timestamps", () => {
@@ -211,11 +211,12 @@ test("attestation policy binds repository, workflow, production ref, SHA, hosted
   )
   for (const [flag, value] of [
     ["--source-ref", "refs/heads/production"],
-    ["--source-digest", sha],
     [
-      "--signer-workflow",
-      `${manifest().repo}/.github/workflows/ui-watchdog-reference.yml`,
+      "--cert-identity",
+      `https://github.com/${manifest().repo}/.github/workflows/ui-watchdog-reference.yml@refs/heads/production`,
     ],
+    ["--predicate-type", "https://slsa.dev/provenance/v1"],
+    ["--source-digest", sha],
   ])
     assert.equal(args[args.indexOf(flag) + 1], value)
   assert(args.includes("--deny-self-hosted-runners"))

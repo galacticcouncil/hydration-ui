@@ -1,3 +1,4 @@
+import { integrityKinds, reconcileEvidence } from "./policy.mjs"
 import { assess } from "./scan.mjs"
 import { publicAddress } from "./network.mjs"
 import { request, safeError, timestamp } from "./util.mjs"
@@ -7,7 +8,7 @@ const fresh = (at, now, age) =>
   now - Date.parse(at) <= age &&
   Date.parse(at) <= now + 30000
 const withoutBodies = (r) =>
-  r && { ...r, observed: undefined, responses: undefined }
+  r && { ...r, observed: undefined, responses: undefined, evidence: undefined }
 
 export function combineObservers(
   observers,
@@ -24,7 +25,6 @@ export function combineObservers(
     (o) =>
       o.probe?.rootHash &&
       !o.probe.error &&
-      !o.probe.racing &&
       fresh(o.probe.completedAt, now, maxQuickAge),
   )
   const byPath = new Map()
@@ -32,7 +32,6 @@ export function combineObservers(
     const observed = { ...o.probe.observed }
     if (
       o.audit?.rootHash === o.probe.rootHash &&
-      !o.audit.racing &&
       fresh(o.audit.completedAt, now, 780000)
     )
       Object.assign(observed, o.audit.observed)
@@ -77,14 +76,25 @@ export function combineObservers(
         .filter((o) => o.state === "integrity_alert")
         .map((o) => `${o.id}: integrity verification failed`),
     )
+  if (observers.some((o) => o.state === "reference_pending"))
+    return out("reference_pending", [
+      "Awaiting the current reference; all unknown observations are retained",
+    ])
+  for (const state of ["protection_inactive", "reference_failed"])
+    if (observers.some((o) => o.state === state))
+      return out(state, [
+        state === "protection_inactive"
+          ? "Integrity protection inactive: no attested reference is available"
+          : "Production reference pipeline is unavailable",
+      ])
   if (findings.length) {
     const knownRollout =
       source &&
       now - source.firstSeen < graceSeconds * 1000 &&
       usable.length === observers.length &&
       usable.every((o) => o.probe.matchedSha) &&
-      observers.every((o) =>
-        ["verified", "deployment_pending"].includes(o.state),
+      observers.every(
+        (o) => !["integrity_alert", "down", "degraded"].includes(o.state),
       )
     if (knownRollout)
       return out("deployment_pending", [
@@ -133,6 +143,10 @@ export class ObserverGroup {
     this.states = c.observers.map((o) => ({
       ...o,
       probe: null,
+      raceCount: 0,
+      failures: {},
+      failurePaths: {},
+      sequence: [],
       audit: store.get(`observer:${o.id}:audit`),
       browser: store.get(`observer:${o.id}:browser`),
     }))
@@ -147,11 +161,17 @@ export class ObserverGroup {
       method: "POST",
       timeoutMs,
       maxBytes: 8 * 1024 * 1024,
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...(s.token ? { authorization: `Bearer ${s.token}` } : {}),
+      },
       body: JSON.stringify(body),
     })
-    if (r.status !== 200)
-      throw new Error(`Observer worker returned HTTP ${r.status}`)
+    if (r.status !== 200) {
+      const error = new Error(`Observer worker returned HTTP ${r.status}`)
+      error.busy = r.status === 429
+      throw error
+    }
     const data = JSON.parse(r.bytes)
     if (
       data.observerId !== s.id ||
@@ -194,6 +214,7 @@ export class ObserverGroup {
     if (
       path === "/observe" &&
       result.matchedSha &&
+      body.trustedRoots?.[result.rootHash] !== result.matchedSha &&
       !body.references.some(
         (r) =>
           r.sha === result.matchedSha &&
@@ -204,6 +225,49 @@ export class ObserverGroup {
     return result
   }
   record(s, result, kind) {
+    reconcileEvidence(result, this.references || [])
+    this.store.saveEvidence(result.evidence)
+    if (
+      this.referenceStatus?.state !== "ready" &&
+      this.source?.sha &&
+      (!result.matchedSha ||
+        result.matchedSha === this.source.sha ||
+        result.documents?.some((d) => !d.matchedSha))
+    )
+      this.store.retainPending(this.source.sha, s.id, result)
+    if (kind === "quick" && !result.error) {
+      s.raceCount = result.racing ? s.raceCount + 1 : 0
+      for (const d of result.documents || []) {
+        if (s.sequence.at(-1) !== d.sha256) s.sequence.push(d.sha256)
+      }
+      s.sequence = s.sequence.slice(-8)
+      s.flapping =
+        s.sequence.length >= 3 && new Set(s.sequence).size < s.sequence.length
+      // A stable check resolves the sequence, but never erases its hash evidence.
+      if (Date.now() - (s.sequenceAt || 0) > 1200000) {
+        s.sequence = s.sequence.slice(-2)
+        s.sequenceAt = Date.now()
+      }
+      if (s.flapping && !result.racing) s.stable = (s.stable || 0) + 1
+      else s.stable = 0
+      if (s.stable >= 3) {
+        s.sequence = s.sequence.slice(-1)
+        s.flapping = false
+      }
+    }
+    const keys = result.error
+      ? ["observer"]
+      : (result.issues || [])
+          .filter(
+            (i) => !integrityKinds.has(i.kind) && i.kind !== "external-origin",
+          )
+          .map((i) => `${i.kind}:${i.path}`)
+    const previousFailures = s.failurePaths[kind] || {}
+    s.failurePaths[kind] = Object.fromEntries(
+      keys.map((key) => [key, (previousFailures[key] || 0) + 1]),
+    )
+    s.failures[kind] = Math.max(0, ...Object.values(s.failurePaths[kind]))
+
     const key = `observer:${s.id}:observed`
     const previous = this.store.get(
       key,
@@ -212,7 +276,8 @@ export class ObserverGroup {
     const paths = Object.keys(result.observed || {}).filter(
       (p) => previous[p] && previous[p].sha256 !== result.observed[p].sha256,
     )
-    if (paths.length) {
+    if (paths.length && Date.now() - (s.lastChange || 0) > 300000) {
+      s.lastChange = Date.now()
       this.event(
         kind === "quick" ? "content_changed" : "assets_changed",
         "warning",
@@ -226,21 +291,45 @@ export class ObserverGroup {
       this.due.set(`${s.id}:browser`, 0)
       if (kind === "quick") this.due.set(`${s.id}:audit`, 0)
     }
-    this.store.set(key, { ...previous, ...result.observed })
+    const merged = { ...previous, ...result.observed }
+    const live = this.references?.find((r) => r.sha === result.matchedSha)
+    const bounded = Object.fromEntries(
+      Object.entries(merged)
+        .filter(([p]) => !live || live.files[p])
+        .slice(-20000),
+    )
+    this.store.set(key, bounded)
   }
-  schedule(references) {
+  schedule(references, source, referenceStatus) {
+    this.references = references
+    this.source = source
+    this.referenceStatus = referenceStatus
+    for (const s of this.states)
+      for (const result of [s.probe, s.audit, s.browser])
+        reconcileEvidence(result, references)
     for (const s of this.states) {
+      const selected = references.filter(
+        (r, i) => i < 8 || r.files["/index.html"].sha256 === s.probe?.rootHash,
+      )
+      const trustedRoots = Object.fromEntries(
+        references.map((r) => [r.files["/index.html"].sha256, r.sha]),
+      )
       this.background(`${s.id}:quick`, this.c.pollSeconds * 1000, async () => {
         try {
           const result = await this.call(
             s,
             "/observe",
-            { references, full: false },
+            { references: selected, trustedRoots, full: false },
             240000,
           )
           this.record(s, result, "quick")
           s.probe = result
         } catch (e) {
+          if (e.busy) {
+            this.due.set(`${s.id}:quick`, Date.now() + 10000)
+            return
+          }
+          s.failures.quick = (s.failures.quick || 0) + 1
           s.probe = {
             error: safeError(e),
             at: timestamp(),
@@ -257,11 +346,15 @@ export class ObserverGroup {
           s.audit = await this.call(
             s,
             "/observe",
-            { references, full: true },
+            { references: selected, trustedRoots, full: true },
             240000,
           )
           this.record(s, s.audit, "audit")
         } catch (e) {
+          if (e.busy) {
+            this.due.set(`${s.id}:audit`, Date.now() + 10000)
+            return
+          }
           s.audit = {
             error: safeError(e),
             rootHash,
@@ -277,6 +370,7 @@ export class ObserverGroup {
             ],
           }
         }
+        if (s.audit.error) s.failures.audit = (s.failures.audit || 0) + 1
         this.store.set(`observer:${s.id}:audit`, s.audit)
       })
       this.background(
@@ -284,7 +378,9 @@ export class ObserverGroup {
         this.c.browserSeconds * 1000,
         async () => {
           const rootHash = s.probe.rootHash,
-            sha = s.probe.matchedSha
+            sha =
+              references.find((r) => r.files["/index.html"].sha256 === rootHash)
+                ?.sha || s.probe.matchedSha
           try {
             s.browser = await this.call(
               s,
@@ -292,10 +388,18 @@ export class ObserverGroup {
               {
                 reference: references.find((r) => r.sha === sha) || null,
                 rootHash,
+                references: selected,
+                trustedRoots,
               },
               290000,
             )
+            this.record(s, s.browser, "browser")
           } catch (e) {
+            if (e.busy) {
+              this.due.set(`${s.id}:browser`, Date.now() + 10000)
+              return
+            }
+            s.failures.browser = (s.failures.browser || 0) + 1
             s.browser = {
               rootHash,
               matchedSha: sha,
@@ -318,6 +422,8 @@ export class ObserverGroup {
     }
   }
   snapshot(source, sourceFresh, now = Date.now()) {
+    const retrospective = this.store.get("retrospectiveIssues", []) || []
+
     const observers = this.states.map((s) => {
       let a = assess({
         probe: s.probe,
@@ -327,10 +433,35 @@ export class ObserverGroup {
         sourceFresh,
         now,
         graceSeconds: this.c.graceSeconds,
+        pendingSeconds: this.c.pendingSeconds,
+        referenceStatus: this.referenceStatus,
+        referenceCount: this.references?.length,
+        raceCount: s.raceCount,
+        flapping: s.flapping,
+        extraIssues: [
+          ...retrospective.filter((f) => f.observer === s.id),
+          ...(this.store.get("evidenceOverflow")
+            ? [{ kind: "evidence-overflow" }]
+            : []),
+        ],
         maxAuditAge: this.c.fullSeconds * 2000 + 180000,
         maxBrowserAge: this.c.browserSeconds * 2000 + 300000,
       })
-      if (!["down", "degraded", "integrity_alert"].includes(a.state)) {
+      if (
+        ["down", "degraded"].includes(a.state) &&
+        !Object.values(s.failures).some(
+          (n) => n >= (this.c.failureThreshold || 3),
+        )
+      )
+        a = {
+          state: "unverified",
+          reasons: ["A transient check failure is being retried"],
+        }
+      if (
+        ["verified", "unverified", "starting", "deployment_pending"].includes(
+          a.state,
+        )
+      ) {
         if (!s.probe || !fresh(s.probe.completedAt, now, 240000))
           a = {
             state: "unverified",
@@ -353,10 +484,8 @@ export class ObserverGroup {
           }
         if (networks.some((n) => n?.error))
           a = {
-            state: "degraded",
-            reasons: [
-              "Network egress validation failed; this path cannot be trusted",
-            ],
+            state: "unverified",
+            reasons: ["Network egress validation is unavailable; retrying"],
           }
       }
       return {
@@ -374,10 +503,10 @@ export class ObserverGroup {
       minDistinct: this.c.minDistinctEgress,
       graceSeconds: this.c.graceSeconds,
     })
-    const findings = [...combined.findings]
+    const findings = [...combined.findings, ...retrospective]
     for (const o of observers)
       for (const r of [o.probe, o.audit, o.browser]) {
-        if (r?.rootHash === o.probe?.rootHash)
+        if (r)
           findings.push(
             ...(r?.issues || []).map((f) => ({ ...f, observer: o.id })),
           )

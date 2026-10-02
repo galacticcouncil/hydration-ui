@@ -9,9 +9,10 @@ x-private-labels: &private-labels
   traefik.enable: "false"
   swarmpit.service.deployment.autoredeploy: "false"
 x-observer-deploy: &observer-deploy
+  placement: { constraints: [node.hostname == play] }
   replicas: 1
   resources:
-    limits: { cpus: "2.0", memory: 2G }
+    limits: { cpus: "2.0", memory: 4G }
     reservations: { memory: 256M }
   restart_policy: { condition: any, delay: 10s }
   labels: *private-labels
@@ -30,6 +31,7 @@ x-observer-env: &observer-env
   REQUEST_TIMEOUT_MS: "60000"
   FETCH_CONCURRENCY: "4"
 x-vpn-deploy: &vpn-deploy
+  placement: { constraints: [node.hostname == play] }
   replicas: ${NORDVPN_REPLICAS:-0}
   resources:
     limits: { cpus: "1.0", memory: 384M }
@@ -58,6 +60,7 @@ x-tor: &tor
   image: ${TOR_IMAGE:?set an immutable Tor image digest}
   read_only: true
   deploy:
+    placement: { constraints: [node.hostname == play] }
     replicas: 1
     resources:
       limits: { cpus: "1.0", memory: 384M }
@@ -76,12 +79,21 @@ services:
       PRODUCTION_BRANCH: production
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      DASHBOARD_TOKEN: ${DASHBOARD_TOKEN:?set a private dashboard token}
+      HEARTBEAT_URL: ${HEARTBEAT_URL:-}
+      OBSERVER_TOKEN_DIRECT: ${OBSERVER_TOKEN_DIRECT:?set an observer token}
+      OBSERVER_TOKEN_TOR_DE: ${OBSERVER_TOKEN_TOR_DE:?set an observer token}
+      OBSERVER_TOKEN_TOR_US: ${OBSERVER_TOKEN_TOR_US:?set an observer token}
+      OBSERVER_TOKEN_NORD_1: ${OBSERVER_TOKEN_NORD_1:?set an observer token}
+      OBSERVER_TOKEN_NORD_2: ${OBSERVER_TOKEN_NORD_2:?set an observer token}
+      OBSERVER_TOKEN_NORD_3: ${OBSERVER_TOKEN_NORD_3:?set an observer token}
+      OBSERVER_TOKEN_WIREGUARD: ${OBSERVER_TOKEN_WIREGUARD:?set an observer token}
       DISCORD_MENTION: ${DISCORD_MENTION:-}
       MULTI_NETWORK: "true"
       NORDVPN_REPLICAS: ${NORDVPN_REPLICAS:-0}
       WIREGUARD_REPLICAS: ${WIREGUARD_REPLICAS:-0}
       POLL_SECONDS: "30"
-      FULL_AUDIT_SECONDS: "300"
+      FULL_AUDIT_SECONDS: "900"
       BROWSER_SECONDS: "300"
       ROLLOUT_GRACE_SECONDS: "900"
       RETENTION_DAYS: "90"
@@ -91,7 +103,17 @@ services:
         target: /tmp
         tmpfs: { size: 268435456 }
     read_only: true
-    networks: [gateway, probe]
+    networks:
+      [
+        gateway,
+        direct-control,
+        tor-de-control,
+        tor-us-control,
+        nord-1-control,
+        nord-2-control,
+        nord-3-control,
+        wireguard-control,
+      ]
     stop_grace_period: 5m
     deploy:
       replicas: 1
@@ -120,19 +142,21 @@ services:
     environment:
       <<: *observer-env
       OBSERVER_ID: direct
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_DIRECT:?set an observer token}
       EGRESS_KIND: direct
       REQUEST_TIMEOUT_MS: "20000"
       FETCH_CONCURRENCY: "6"
-    networks: [probe, egress]
+    networks: [direct-control, direct-egress]
 
   observer-tor-de:
     <<: *observer
     environment:
       <<: *observer-env
       OBSERVER_ID: tor-de
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_TOR_DE:?set an observer token}
       EGRESS_KIND: tor
       PROXY_URL: socks5h://tor-de:9050
-    networks: [probe, tor-de-private]
+    networks: [tor-de-control, tor-de-private]
   tor-de:
     <<: *tor
     environment: { TOR_EXIT_NODES: "${TOR_EXIT_NODES_DE:-{de}}" }
@@ -141,16 +165,17 @@ services:
       - type: tmpfs
         target: /tmp
         tmpfs: { size: 67108864 }
-    networks: [tor-de-private, egress]
+    networks: [tor-de-private, tor-de-egress]
 
   observer-tor-us:
     <<: *observer
     environment:
       <<: *observer-env
       OBSERVER_ID: tor-us
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_TOR_US:?set an observer token}
       EGRESS_KIND: tor
       PROXY_URL: socks5h://tor-us:9050
-    networks: [probe, tor-us-private]
+    networks: [tor-us-control, tor-us-private]
   tor-us:
     <<: *tor
     environment: { TOR_EXIT_NODES: "${TOR_EXIT_NODES_US:-{us}}" }
@@ -159,7 +184,7 @@ services:
       - type: tmpfs
         target: /tmp
         tmpfs: { size: 67108864 }
-    networks: [tor-us-private, egress]
+    networks: [tor-us-private, tor-us-egress]
 
   # All three gateways use ONE Nord account token; only their country differs.
   nord-1:
@@ -167,52 +192,55 @@ services:
     environment:
       <<: *nord-env
       NORDVPN_COUNTRY: ${NORDVPN_COUNTRY_1:-DE}
-    networks: [nord-1-private, egress]
+    networks: [nord-1-private, nord-1-egress]
   nord-2:
     <<: *vpn
     environment:
       <<: *nord-env
       NORDVPN_COUNTRY: ${NORDVPN_COUNTRY_2:-US}
-    networks: [nord-2-private, egress]
+    networks: [nord-2-private, nord-2-egress]
   nord-3:
     <<: *vpn
     environment:
       <<: *nord-env
       NORDVPN_COUNTRY: ${NORDVPN_COUNTRY_3:-SG}
-    networks: [nord-3-private, egress]
+    networks: [nord-3-private, nord-3-egress]
   observer-nord-1:
     <<: *observer
     environment:
       <<: *observer-env
       OBSERVER_ID: nord-1
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_NORD_1:?set an observer token}
       EGRESS_KIND: proxy
       PROXY_URL: socks5h://nord-1:9050
     deploy:
       <<: *observer-deploy
       replicas: ${NORDVPN_REPLICAS:-0}
-    networks: [probe, nord-1-private]
+    networks: [nord-1-control, nord-1-private]
   observer-nord-2:
     <<: *observer
     environment:
       <<: *observer-env
       OBSERVER_ID: nord-2
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_NORD_2:?set an observer token}
       EGRESS_KIND: proxy
       PROXY_URL: socks5h://nord-2:9050
     deploy:
       <<: *observer-deploy
       replicas: ${NORDVPN_REPLICAS:-0}
-    networks: [probe, nord-2-private]
+    networks: [nord-2-control, nord-2-private]
   observer-nord-3:
     <<: *observer
     environment:
       <<: *observer-env
       OBSERVER_ID: nord-3
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_NORD_3:?set an observer token}
       EGRESS_KIND: proxy
       PROXY_URL: socks5h://nord-3:9050
     deploy:
       <<: *observer-deploy
       replicas: ${NORDVPN_REPLICAS:-0}
-    networks: [probe, nord-3-private]
+    networks: [nord-3-control, nord-3-private]
 
   wireguard:
     <<: *vpn
@@ -227,25 +255,38 @@ services:
     deploy:
       <<: *vpn-deploy
       replicas: ${WIREGUARD_REPLICAS:-0}
-    networks: [wireguard-private, egress]
+    networks: [wireguard-private, wireguard-egress]
   observer-wireguard:
     <<: *observer
     environment:
       <<: *observer-env
       OBSERVER_ID: wireguard
+      OBSERVER_TOKEN: ${OBSERVER_TOKEN_WIREGUARD:?set an observer token}
       EGRESS_KIND: proxy
       PROXY_URL: socks5h://wireguard:9050
       EXPECTED_EXIT_IP: ${WIREGUARD_EXPECTED_EXIT_IP:-}
     deploy:
       <<: *observer-deploy
       replicas: ${WIREGUARD_REPLICAS:-0}
-    networks: [probe, wireguard-private]
+    networks: [wireguard-control, wireguard-private]
 
 networks:
   gateway:
     external: true
-  probe: { driver: overlay, internal: true }
-  egress: { driver: overlay }
+  direct-control: { driver: overlay, internal: true }
+  direct-egress: { driver: overlay }
+  tor-de-control: { driver: overlay, internal: true }
+  tor-de-egress: { driver: overlay }
+  tor-us-control: { driver: overlay, internal: true }
+  tor-us-egress: { driver: overlay }
+  nord-1-control: { driver: overlay, internal: true }
+  nord-1-egress: { driver: overlay }
+  nord-2-control: { driver: overlay, internal: true }
+  nord-2-egress: { driver: overlay }
+  nord-3-control: { driver: overlay, internal: true }
+  nord-3-egress: { driver: overlay }
+  wireguard-control: { driver: overlay, internal: true }
+  wireguard-egress: { driver: overlay }
   tor-de-private: { driver: overlay, internal: true }
   tor-us-private: { driver: overlay, internal: true }
   nord-1-private: { driver: overlay, internal: true }

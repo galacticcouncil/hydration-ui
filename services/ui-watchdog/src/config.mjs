@@ -54,13 +54,16 @@ export function config(env = process.env) {
   const mention = env.DISCORD_MENTION || ""
   if (mention && !/^(?:@here|@everyone|<@!?\d+>|<@&\d+>)$/.test(mention))
     throw new Error("Invalid DISCORD_MENTION")
+  const heartbeatUrl = secret("HEARTBEAT_URL")
+  if (heartbeatUrl && new URL(heartbeatUrl).protocol !== "https:")
+    throw new Error("HEARTBEAT_URL must use HTTPS")
   const routes = JSON.parse(
     env.SMOKE_ROUTES || '["/trade/swap","/liquidity","/borrow","/portfolio"]',
   )
   if (
     !Array.isArray(routes) ||
     !routes.length ||
-    routes.length > 10 ||
+    routes.length > 100 ||
     routes.some((p) => typeof p !== "string" || !/^\/(?!\/)/.test(p))
   )
     throw new Error("Invalid SMOKE_ROUTES")
@@ -135,6 +138,12 @@ export function config(env = process.env) {
       throw new Error("Invalid observer identity")
     const endpoint = url(o.url, "observer URL")
     if (
+      endpoint.protocol === "http:" &&
+      endpoint.hostname.includes(".") &&
+      endpoint.hostname !== "127.0.0.1"
+    )
+      throw new Error("Remote observer endpoints require HTTPS")
+    if (
       !["http:", "https:"].includes(endpoint.protocol) ||
       endpoint.username ||
       endpoint.password ||
@@ -143,6 +152,10 @@ export function config(env = process.env) {
       endpoint.pathname !== "/"
     )
       throw new Error("Observer endpoints must be HTTP(S) origins")
+    o.token = o.tokenFile
+      ? readFileSync(o.tokenFile, "utf8").trim()
+      : o.token ||
+        secret(`OBSERVER_TOKEN_${o.id.toUpperCase().replaceAll("-", "_")}`)
   }
   if (env.OBSERVER_ID && !/^[a-z][a-z0-9-]{0,39}$/.test(env.OBSERVER_ID))
     throw new Error("Invalid OBSERVER_ID")
@@ -162,10 +175,28 @@ export function config(env = process.env) {
     token: secret("GITHUB_TOKEN"),
     webhook,
     mention,
+    heartbeatUrl,
+    adminToken: secret("DASHBOARD_TOKEN"),
+    workerToken: secret("OBSERVER_TOKEN"),
+    failureThreshold: int("FAILURE_THRESHOLD", 3, 2, 10),
+    pendingSeconds: int("REFERENCE_PENDING_SECONDS", 1200, 60, 3600),
+    headerPolicy: JSON.parse(
+      env.RESPONSE_HEADER_POLICY ||
+        readFileSync(
+          new URL("../response-policy.json", import.meta.url),
+          "utf8",
+        ),
+    ),
+    sampleRoutes: env.SAMPLE_ROUTES !== "false",
+    chromiumSandbox: env.CHROMIUM_SANDBOX === "true",
+    allowedOrigins: JSON.parse(
+      env.ALLOWED_DATA_ORIGINS ||
+        readFileSync(new URL("../data-origins.json", import.meta.url), "utf8"),
+    ),
     dataDir: env.DATA_DIR || "./data",
     port: int("PORT", 8080, 1, 65535),
     pollSeconds: int("POLL_SECONDS", 30, 10),
-    fullSeconds: int("FULL_AUDIT_SECONDS", 300, 30),
+    fullSeconds: int("FULL_AUDIT_SECONDS", 900, 30),
     browserSeconds: int("BROWSER_SECONDS", 300, 30),
     graceSeconds: int("ROLLOUT_GRACE_SECONDS", 900, 0),
     reminderSeconds: int("REMINDER_SECONDS", 3600, 60),

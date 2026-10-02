@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && test "$(gpg --show-keys --with-colons /tmp/tor-key.asc | awk -F: '$1 == "fpr" {print $10; exit}')" = A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 \
     && gpg --dearmor < /tmp/tor-key.asc > /usr/share/keyrings/tor.gpg \
     && echo 'deb [signed-by=/usr/share/keyrings/tor.gpg] https://deb.torproject.org/torproject.org trixie main' > /etc/apt/sources.list.d/tor.list \
-    && apt-get update && apt-get install -y --no-install-recommends tor=0.4.9.13-1~d13.trixie+1 tor-geoipdb=0.4.9.13-1~d13.trixie+1 \
+    && apt-get update && apt-get install -y --no-install-recommends tor tor-geoipdb \
     && rm -rf /var/lib/apt/lists/* /tmp/tor-key.asc \
     && mkdir -p /data && chown 10001:10001 /data
 COPY torrc /etc/tor/torrc

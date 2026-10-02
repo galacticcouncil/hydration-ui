@@ -1,4 +1,9 @@
 import { setTimeout as sleep } from "node:timers/promises"
+import {
+  incidentFingerprint,
+  shouldNotify,
+  dailyHeartbeatDue,
+} from "./policy.mjs"
 import { config } from "./config.mjs"
 import { deliver } from "./discord.mjs"
 import { GitHub } from "./github.mjs"
@@ -6,7 +11,7 @@ import { validateManifest } from "./manifest.mjs"
 import { ObserverGroup } from "./observers.mjs"
 import { serve } from "./server.mjs"
 import { Store } from "./store.mjs"
-import { safeError, sha256, timestamp } from "./util.mjs"
+import { request, safeError, timestamp } from "./util.mjs"
 
 const c = config()
 
@@ -38,7 +43,14 @@ if (["browser", "observer"].includes(c.role)) {
   const tasks = new Map(),
     due = new Map()
   const logEvent = (kind, severity, data) => {
-    store.event(kind, severity, data, Boolean(c.webhook))
+    const notify =
+      severity === "critical" ||
+      severity === "error" ||
+      ["production_changed", "deployment_verified", "daily_heartbeat"].includes(
+        kind,
+      ) ||
+      data.recovery
+    store.event(kind, severity, data, Boolean(c.webhook && notify))
     console.log(
       JSON.stringify({
         at: timestamp(),
@@ -51,6 +63,7 @@ if (["browser", "observer"].includes(c.role)) {
   function background(name, intervalMs, fn, retryMs = intervalMs) {
     if (tasks.has(name) || Date.now() < (due.get(name) || 0)) return
     let nextInterval = intervalMs
+    due.set(name, Infinity)
     const task = fn()
       .catch((error) => {
         nextInterval = retryMs
@@ -72,12 +85,24 @@ if (["browser", "observer"].includes(c.role)) {
       })
       .finally(() => {
         tasks.delete(name)
-        due.set(name, Date.now() + nextInterval)
+        if (due.get(name) === Infinity)
+          due.set(name, Date.now() + nextInterval * (0.8 + Math.random() * 0.4))
       })
     tasks.set(name, task)
   }
   const group = new ObserverGroup(c, store, logEvent, background, due)
-  let lastPersisted = 0
+  let lastPersisted = 0,
+    lastPruned = 0,
+    verifiedSince = 0
+  const armed = store.get("armed", {})
+  const lostCredentials = Boolean(
+    (armed.github && !c.token) || (armed.discord && !c.webhook),
+  )
+  store.set("armed", {
+    github: armed.github || Boolean(c.token),
+    discord: armed.discord || Boolean(c.webhook),
+  })
+
   const publicStatus = () => ({
     ...status,
     target: c.target,
@@ -89,13 +114,17 @@ if (["browser", "observer"].includes(c.role)) {
     notifications: {
       configured: Boolean(c.webhook),
       ...store.notifications(),
+      failure: store.get("deliveryFailure"),
     },
   })
   const server = serve(
     c,
     store,
     publicStatus,
-    () => Date.now() - heartbeat < Math.max(180000, c.pollSeconds * 5000),
+    () =>
+      !lostCredentials &&
+      status.state !== "watchdog_error" &&
+      Date.now() - heartbeat < Math.max(180000, c.pollSeconds * 5000),
   )
   const signal = () => {
     stopped = true
@@ -111,6 +140,7 @@ if (["browser", "observer"].includes(c.role)) {
       if (sha !== source?.sha) {
         const previous = source?.sha
         source = { sha, firstSeen: Date.now() }
+        referenceStatus = { state: c.token ? "pending" : "unconfigured", sha }
         store.set("source", source)
         const changelog = previous
           ? await github.compare(previous, sha).catch(() => null)
@@ -125,12 +155,22 @@ if (["browser", "observer"].includes(c.role)) {
       }
     })
     if (c.token)
-      background("references", 300000, async () => {
-        referenceStatus = await github.references(store, source?.sha)
-        if (referenceStatus.added) {
-          group.invalidate()
-        }
-      })
+      background(
+        "references",
+        referenceStatus.state === "ready" ? 300000 : 30000,
+        async () => {
+          const expected = source?.sha
+          const result = await github.references(store, expected, (next) => {
+            if (source?.sha === expected) referenceStatus = next
+          })
+          if (source?.sha === expected) referenceStatus = result
+          else due.set("references", 0)
+          if (result.added) {
+            store.resolvePending(store.references())
+            group.invalidate()
+          }
+        },
+      )
     background("discord", 5000, () => deliver(store, c))
     try {
       const references = store
@@ -140,7 +180,7 @@ if (["browser", "observer"].includes(c.role)) {
           (a, b) =>
             Number(b.sha === source?.sha) - Number(a.sha === source?.sha),
         )
-      group.schedule(references)
+      group.schedule(references, source, referenceStatus)
       const {
         assessment,
         observers,
@@ -153,49 +193,52 @@ if (["browser", "observer"].includes(c.role)) {
         source,
         Date.now() - sourceChecked < (c.token ? 180000 : 900000),
       )
-      const currentSha = probe?.matchedSha,
-        currentRoot = probe?.rootHash
-      const fingerprint = sha256(
-        JSON.stringify([
-          assessment,
-          currentSha,
-          currentRoot,
-          observers.map((o) => [
-            o.id,
-            o.state,
-            o.probe?.rootHash,
-            o.probe?.matchedSha,
-          ]),
-          [
-            ...new Set(
-              findings.map((f) =>
-                JSON.stringify([
-                  f.observer || f.observers,
-                  f.kind,
-                  f.path,
-                  f.actual || f.message || "",
-                ]),
-              ),
-            ),
-          ].sort(),
-        ]),
-      )
+      const currentSha = probe?.matchedSha
+      if (!c.webhook && assessment.state === "verified")
+        Object.assign(assessment, {
+          state: "alerting_inactive",
+          reasons: [
+            "Content checks passed, but Discord alert delivery is not configured",
+          ],
+        })
+      if (lostCredentials)
+        Object.assign(assessment, {
+          state: "credentials_missing",
+          reasons: ["Previously configured monitoring credentials are missing"],
+        })
+      const fingerprint = incidentFingerprint(assessment, observers)
       const lastNotice = store.get("notice", {
         fingerprint: "",
         at: 0,
         state: "starting",
       })
+      const recovered = assessment.state === "verified"
+      if (!recovered) verifiedSince = 0
+      else if (!verifiedSince) verifiedSince = Date.now()
+      const openIncident =
+        lastNotice.state === "integrity_alert" &&
+        (!recovered || Date.now() - verifiedSince < 60000)
       if (
-        lastNotice.fingerprint !== fingerprint ||
-        (assessment.state !== "verified" &&
-          Date.now() - lastNotice.at >= c.reminderSeconds * 1000)
+        shouldNotify(
+          assessment,
+          observers,
+          lastNotice,
+          Date.now(),
+          verifiedSince,
+        )
       ) {
         const severity =
           assessment.state === "integrity_alert"
             ? "critical"
-            : ["down", "degraded", "stale_deployment"].includes(
-                  assessment.state,
-                )
+            : [
+                  "down",
+                  "degraded",
+                  "stale_deployment",
+                  "protection_inactive",
+                  "reference_failed",
+                  "credentials_missing",
+                  "alerting_inactive",
+                ].includes(assessment.state)
               ? "error"
               : assessment.state === "verified"
                 ? "info"
@@ -207,32 +250,33 @@ if (["browser", "observer"].includes(c.role)) {
           severity,
           {
             ...assessment,
+            recovery:
+              recovered &&
+              [
+                "integrity_alert",
+                "degraded",
+                "down",
+                "watchdog_error",
+              ].includes(lastNotice.state),
             sha: currentSha,
             expectedSha: source?.sha,
             findings,
             observers: observers.map((o) => ({
               id: o.id,
               state: o.state,
-              exitIp: o.probe?.egress?.ip,
             })),
             paths: [...new Set(findings.map((f) => f.path))],
             summary: assessment.reasons.join("; "),
           },
         )
-        if (
-          assessment.state === "verified" &&
-          !["starting", "verified"].includes(lastNotice.state)
-        )
-          logEvent("recovered", "info", {
-            sha: currentSha,
-            summary: "The app now matches production and passes verification",
-          })
         store.set("notice", {
           fingerprint,
           at: Date.now(),
           state: assessment.state,
         })
       }
+      if (assessment.state === "integrity_alert")
+        store.set("retrospectiveIssues", [])
       const lastRelease = store.get("release")
       if (assessment.state === "verified" && lastRelease !== currentSha) {
         const changelog = lastRelease
@@ -261,7 +305,37 @@ if (["browser", "observer"].includes(c.role)) {
         lastPersisted = Date.now()
       }
       heartbeat = Date.now()
-      store.prune(c.retentionDays)
+      if (
+        !openIncident &&
+        dailyHeartbeatDue(assessment.state, store.get("dailyHeartbeat", 0))
+      ) {
+        logEvent("daily_heartbeat", "info", {
+          sha: currentSha,
+          summary:
+            "Watchdog is running; all required observers verify production",
+        })
+        store.set("dailyHeartbeat", Date.now())
+      }
+      if (
+        c.heartbeatUrl &&
+        !lostCredentials &&
+        c.webhook &&
+        c.token &&
+        references.length &&
+        !store.get("deliveryFailure")
+      )
+        background("external-heartbeat", 60000, async () => {
+          const r = await request(c.heartbeatUrl, {
+            timeoutMs: 10000,
+            maxBytes: 16384,
+          })
+          if (r.status < 200 || r.status >= 300)
+            throw new Error("External heartbeat delivery failed")
+        })
+      if (Date.now() - lastPruned > 60000) {
+        store.prune(c.retentionDays)
+        lastPruned = Date.now()
+      }
     } catch (error) {
       console.error(
         JSON.stringify({

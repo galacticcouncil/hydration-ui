@@ -1,10 +1,10 @@
 import { request, safeError } from "./util.mjs"
 
+export const escapeMarkdown = (value) =>
+  String(value).replace(/([\\[\]()_*~`<>@])/g, "\\$1")
+
 export function payload(event, c) {
-  const mention =
-    event.severity === "critical" || event.severity === "error"
-      ? c.mention || ""
-      : ""
+  const mention = event.severity === "critical" ? c.mention || "" : ""
   const users = [...mention.matchAll(/<@!?(\d+)>/g)].map((x) => x[1])
   const roles = [...mention.matchAll(/<@&(\d+)>/g)].map((x) => x[1])
   return {
@@ -24,7 +24,7 @@ export function payload(event, c) {
             : event.severity === "error"
               ? 0xe67e22
               : 0x3498db,
-        description: String(
+        description: escapeMarkdown(
           event.data.summary || event.data.state || event.kind,
         ).slice(0, 1500),
         fields: [
@@ -37,10 +37,7 @@ export function payload(event, c) {
                   name: "Network observers",
                   value:
                     event.data.observers
-                      .map(
-                        (o) =>
-                          `${o.id}: ${o.state} (${o.exitIp || "exit pending"})`,
-                      )
+                      .map((o) => escapeMarkdown(`${o.id}: ${o.state}`))
                       .join("\n")
                       .slice(0, 1024) || "pending",
                 },
@@ -63,7 +60,7 @@ export function payload(event, c) {
                       .slice(0, 6)
                       .map(
                         (x) =>
-                          `${x.sha.slice(0, 8)} ${x.message.replace(/[@`<>]/g, "")}`,
+                          `${x.sha.slice(0, 8)} ${escapeMarkdown(x.message)}`,
                       )
                       .join("\n")}`.slice(0, 1024),
                 },
@@ -74,8 +71,11 @@ export function payload(event, c) {
                 {
                   name: "Changed paths",
                   value:
-                    event.data.paths.slice(0, 12).join("\n").slice(0, 1024) ||
-                    "—",
+                    event.data.paths
+                      .slice(0, 12)
+                      .map(escapeMarkdown)
+                      .join("\n")
+                      .slice(0, 1024) || "—",
                 },
               ]
             : []),
@@ -87,13 +87,13 @@ export function payload(event, c) {
   }
 }
 
-export async function deliver(store, c) {
+export async function deliver(store, c, send = request) {
   if (!c.webhook) return
   for (const event of store.pending()) {
     try {
       const url = new URL(c.webhook)
       url.searchParams.set("wait", "true")
-      const r = await request(url, {
+      const r = await send(url, {
         method: "POST",
         timeoutMs: c.timeoutMs,
         maxBytes: 65536,
@@ -102,6 +102,10 @@ export async function deliver(store, c) {
       })
       if (r.status >= 200 && r.status < 300) {
         store.delivered(event.id)
+        continue
+      }
+      if ([400, 401, 403, 404].includes(r.status) || event.attempts >= 11) {
+        store.failed(event.id, `Discord HTTP ${r.status}; delivery stopped`)
         continue
       }
       let delay = 0
@@ -121,15 +125,18 @@ export async function deliver(store, c) {
         Date.now() + Math.max(backoff, Math.min(delay || 0, 3600000)),
         `Discord HTTP ${r.status}`,
       )
-      break
+      if (r.status === 429) break
     } catch (error) {
+      if (event.attempts >= 11) {
+        store.failed(event.id, safeError(error))
+        continue
+      }
       store.retry(
         event.id,
         Date.now() +
           Math.min(3600000, 10000 * 2 ** Math.min(event.attempts, 8)),
         safeError(error),
       )
-      break
     }
   }
 }

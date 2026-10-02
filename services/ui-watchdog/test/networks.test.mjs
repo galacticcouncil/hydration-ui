@@ -103,7 +103,7 @@ test("stale and incorrectly routed samples invalidate previously green observers
   }
   assert.equal(snapshot(), "unverified")
   g.states[2].browser.egress.error = "wrong path"
-  assert.equal(snapshot(), "degraded")
+  assert.equal(snapshot(), "unverified")
 })
 
 test("network configuration requires proxies and explicitly enables optional providers", () => {

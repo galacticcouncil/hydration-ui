@@ -1,3 +1,9 @@
+import {
+  evidence,
+  headerIssues,
+  integrityKinds,
+  releaseWindow,
+} from "./policy.mjs"
 import { parse } from "parse5"
 import { mapLimit, request, safeError, sha256, timestamp } from "./util.mjs"
 
@@ -14,7 +20,13 @@ export function htmlResources(html, origin) {
       node.tagName === "link" &&
       /^(?:stylesheet|modulepreload|preload)$/.test(attrs.rel)
     if (isScript || isLink) {
-      const u = new URL(attrs.src || attrs.href || "", origin)
+      let u
+      try {
+        u = new URL(attrs.src || attrs.href || "", origin)
+      } catch {
+        external.add("invalid-resource-url")
+        return
+      }
       if (u.origin !== origin) external.add(u.href)
       else {
         const name = u.pathname + u.search
@@ -39,8 +51,13 @@ async function siteFile(c, file) {
       "user-agent":
         c.userAgent ||
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
-      "cache-control": "no-cache",
-      pragma: "no-cache",
+      accept: /\.m?js(?:\?|$)/.test(file)
+        ? "*/*"
+        : "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "accept-language": "en-US,en;q=0.9",
+      "sec-fetch-dest": /\.m?js(?:\?|$)/.test(file) ? "script" : "document",
+      "sec-fetch-mode": /\.m?js(?:\?|$)/.test(file) ? "cors" : "navigate",
+      "sec-fetch-site": file === "/" ? "none" : "same-origin",
     },
   })
   if (r.status !== 200) throw new Error(`HTTP ${r.status}`)
@@ -49,15 +66,22 @@ async function siteFile(c, file) {
     size: r.bytes.length,
     bytes: r.bytes,
     type: r.headers.get("content-type") || "",
+    headers: Object.fromEntries(r.headers),
   }
 }
 
-export async function observe(c, references, { full = false } = {}) {
+export async function observe(
+  c,
+  references,
+  { full = false, sample = null, trustedRoots = {} } = {},
+) {
   const result = {
     at: timestamp(),
     full,
     issues: [],
     observed: {},
+    documents: [],
+    evidence: [],
     rootHash: null,
     matchedSha: null,
   }
@@ -67,6 +91,35 @@ export async function observe(c, references, { full = false } = {}) {
   } catch (e) {
     return { ...result, error: safeError(e) }
   }
+  function document(actual) {
+    const trusted =
+      references.find((r) => r.files["/index.html"].sha256 === actual.sha256) ||
+      (trustedRoots[actual.sha256]
+        ? { sha: trustedRoots[actual.sha256] }
+        : null)
+    result.documents.push({
+      sha256: actual.sha256,
+      matchedSha: trusted?.sha || null,
+    })
+    result.issues.push(
+      ...headerIssues(
+        "/index.html",
+        actual.headers,
+        trusted?.headers || c.headerPolicy,
+      ),
+    )
+    if (!trusted) {
+      result.evidence.push(evidence("/index.html", actual))
+      if (references.length)
+        result.issues.push({
+          kind: "hash-mismatch",
+          path: "/",
+          actual: actual.sha256,
+          untrustedHtml: true,
+        })
+    }
+  }
+  document(root)
   result.rootHash = root.sha256
   result.observed["/index.html"] = { sha256: root.sha256, size: root.size }
   if (!root.type.includes("text/html"))
@@ -78,21 +131,18 @@ export async function observe(c, references, { full = false } = {}) {
   const ref = references.find(
     (r) => r.files["/index.html"].sha256 === root.sha256,
   )
-  result.matchedSha = ref?.sha || null
-  result.full = Boolean(full && ref)
+  result.matchedSha = ref?.sha || trustedRoots[root.sha256] || null
+  result.full = Boolean(full && ref && !sample)
   result.scope = ref
     ? full
       ? "all-reference-files"
       : "html-and-entry-resources"
     : "observed-resources-without-trusted-reference"
-  if (!ref && references.length)
-    result.issues.push({
-      kind: "hash-mismatch",
-      path: "/",
-      actual: root.sha256,
-      message: "HTML matches none of the trusted reference builds",
-    })
   const resources = htmlResources(root.bytes.toString("utf8"), c.target)
+  if (resources.all.length > 1000 || resources.external.length > 100)
+    result.issues.push({ kind: "resource-limit", path: "/" })
+  resources.all = resources.all.slice(0, 1000)
+  resources.external = resources.external.slice(0, 100)
   result.resources = resources
   for (const url of resources.external) {
     if (!c.externalScripts[url])
@@ -104,7 +154,7 @@ export async function observe(c, references, { full = false } = {}) {
   }
   const paths = full
     ? ref
-      ? Object.keys(ref.files)
+      ? (sample || Object.keys(ref.files)).filter((p) => p !== "/index.html")
       : resources.all.slice(0, 1000)
     : resources.quick.slice(0, 32)
   const deadline = Date.now() + 120000
@@ -128,6 +178,12 @@ export async function observe(c, references, { full = false } = {}) {
       const actual = await siteFile(c, file)
       result.observed[file] = { sha256: actual.sha256, size: actual.size }
       const expected = ref?.files[file]
+      result.issues.push(
+        ...headerIssues(file, actual.headers, ref?.headers || c.headerPolicy),
+      )
+      if (!expected || expected.sha256 !== actual.sha256)
+        if (result.evidence.length < 32)
+          result.evidence.push(evidence(file, actual, ref?.sha))
       if (ref && !expected)
         result.issues.push({ kind: "unexpected-resource", path: file })
       else if (
@@ -139,6 +195,7 @@ export async function observe(c, references, { full = false } = {}) {
           path: file,
           expected: expected.sha256,
           actual: actual.sha256,
+          referenceSha: ref.sha,
         })
       }
       if (
@@ -165,6 +222,7 @@ export async function observe(c, references, { full = false } = {}) {
   }
   try {
     const after = await siteFile(c, "/")
+    document(after)
     result.racing = after.sha256 !== result.rootHash
   } catch (e) {
     result.issues.push({
@@ -173,7 +231,12 @@ export async function observe(c, references, { full = false } = {}) {
       message: safeError(e),
     })
   }
-  result.issues.sort((a, b) => a.path.localeCompare(b.path))
+  result.issues.sort(
+    (a, b) =>
+      Number(integrityKinds.has(b.kind)) - Number(integrityKinds.has(a.kind)) ||
+      a.path.localeCompare(b.path),
+  )
+  result.issues = result.issues.slice(0, 1000)
   result.filesChecked = Object.keys(result.observed).length
   result.bytesChecked = Object.values(result.observed).reduce(
     (n, f) => n + f.size,
@@ -193,33 +256,73 @@ export function assess({
   graceSeconds = 900,
   maxAuditAge = 900000,
   maxBrowserAge = 900000,
+  referenceStatus,
+  referenceCount,
+  pendingSeconds = 1200,
+  raceCount = 0,
+  flapping = false,
+  extraIssues = [],
 }) {
   const out = (state, reasons) => ({ state, reasons })
+  const pending = releaseWindow(source, referenceStatus, now, pendingSeconds)
+  // Each check carries evidence against its own reference. Later HTML or a
+  // racing audit must never discard an earlier mismatch.
+  const issues = [
+    ...(probe?.issues || []),
+    ...(audit?.issues || []),
+    ...(browser?.issues || []),
+    ...extraIssues,
+  ]
+  const unavailableReference = [
+    "failed",
+    "missing",
+    "error",
+    "unconfigured",
+  ].includes(referenceStatus?.state)
+  const actionable = issues.filter(
+    (i) => !(i.untrustedHtml && (pending || unavailableReference)),
+  )
+  if (actionable.some((i) => integrityKinds.has(i.kind)))
+    return out("integrity_alert", [
+      "Live content differs from its trusted build or reviewed resource/header policy",
+    ])
+  if (flapping || raceCount >= 3)
+    return out("integrity_alert", [
+      flapping
+        ? "Observed release sequence returned to an earlier document"
+        : "Content keeps changing within individual checks",
+    ])
+  if (referenceCount === 0)
+    return out("protection_inactive", [
+      "Integrity protection inactive: no attested reference is available",
+    ])
+  if (unavailableReference)
+    return out("reference_failed", [
+      "Production reference is unavailable; integrity protection is incomplete",
+    ])
+  if (pending)
+    return out("reference_pending", [
+      "Production reference is building; observations are retained for retrospective verification",
+    ])
   if (probe?.error) return out("down", [probe.error])
   if (!probe) return out("starting", ["First observation is pending"])
-  if (probe.racing || audit?.racing)
-    return out("unverified", ["Release changed during verification; retrying"])
   const validAudit =
     audit?.matchedSha === probe.matchedSha && audit?.rootHash === probe.rootHash
   const validBrowser =
     browser?.matchedSha === probe.matchedSha &&
     browser?.rootHash === probe.rootHash
-  const issues = [
-    ...(probe.issues || []),
-    ...(validAudit ? audit.issues : []),
-    ...(validBrowser ? browser.issues : []),
-  ]
-  if (
-    issues.some((i) =>
-      ["hash-mismatch", "unexpected-resource", "resource-limit"].includes(
-        i.kind,
-      ),
-    )
-  )
-    return out("integrity_alert", [
-      "Live content differs from the trusted build or executable-resource policy",
+  if (probe.racing || (validAudit && audit?.racing))
+    return out("unverified", [
+      "Trusted document changed during verification; retrying",
     ])
-  if (issues.length) return out("degraded", ["Asset or browser checks failed"])
+  if (
+    [
+      ...(probe.issues || []),
+      ...(validAudit ? audit.issues || [] : []),
+      ...(validBrowser ? browser.issues || [] : []),
+    ].some((i) => i.kind !== "external-origin")
+  )
+    return out("degraded", ["Asset or browser checks failed"])
   if (!probe.matchedSha)
     return out("unverified", ["No trusted reference matches the live HTML"])
   if (!source || !sourceFresh)

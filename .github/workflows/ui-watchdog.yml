@@ -21,3 +21,59 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run test:browser
+  workflow-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Lint workflows
+        run: |
+          GOBIN="$RUNNER_TEMP/bin" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          "$RUNNER_TEMP/bin/actionlint" -color
+      - name: Resolve every action pin to a commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 services/ui-watchdog/scripts/check-action-pins.py
+  image:
+    if: github.event_name == 'push' && github.repository == 'galacticcouncil/hydration-ui'
+    needs: [test, workflow-policy]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    strategy:
+      matrix:
+        include:
+          - name: hydration-ui-watchdog
+            context: services/ui-watchdog
+          - name: hydration-ui-watchdog-tor
+            context: services/ui-watchdog/tor
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build and publish immutable image with SBOM and provenance
+        id: image
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+          REGISTRY_USER: ${{ github.actor }}
+          IMAGE: ghcr.io/galacticcouncil/${{ matrix.name }}
+          BUILD_CONTEXT: ${{ matrix.context }}
+        run: |
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$REGISTRY_USER" --password-stdin
+          docker buildx create --use
+          docker buildx build --platform linux/amd64 --provenance=mode=max --sbom=true \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --tag "$IMAGE:$GITHUB_SHA" --metadata-file "$RUNNER_TEMP/image.json" --push "$BUILD_CONTEXT"
+          printf 'digest=%s\n' "$(jq -r '.["containerimage.digest"]' "$RUNNER_TEMP/image.json")" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-name: ghcr.io/galacticcouncil/${{ matrix.name }}
+          subject-digest: ${{ steps.image.outputs.digest }}
+          push-to-registry: true

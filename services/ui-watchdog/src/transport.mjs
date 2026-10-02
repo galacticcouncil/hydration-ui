@@ -1,3 +1,4 @@
+import { createGunzip, createInflate, createBrotliDecompress } from "node:zlib"
 import { request as httpRequest } from "node:http"
 import { request as httpsRequest } from "node:https"
 import { SocksProxyAgent } from "socks-proxy-agent"
@@ -26,28 +27,36 @@ export function siteTransport(c) {
         url,
         {
           agent,
-          headers: { ...headers, "accept-encoding": "identity" },
+          headers: { ...headers, "accept-encoding": "gzip, deflate, br" },
           signal: AbortSignal.timeout(timeoutMs),
         },
         (res) => {
           const chunks = []
           let size = 0
-          // Request identity encoding and fail if an origin ignores it. This
-          // avoids comparing compressed wire bytes or accepting decompression bombs.
-          if (
-            res.headers["content-encoding"] &&
-            res.headers["content-encoding"] !== "identity"
-          ) {
-            res.destroy(new Error("Unexpected compressed proxy response"))
+          const encoding = res.headers["content-encoding"]
+          const decoder =
+            encoding === "gzip"
+              ? createGunzip()
+              : encoding === "br"
+                ? createBrotliDecompress()
+                : encoding === "deflate"
+                  ? createInflate()
+                  : null
+          if (encoding && encoding !== "identity" && !decoder) {
+            res.destroy(new Error("Unsupported encoding"))
+            return
           }
-          res.on("data", (chunk) => {
-            size += chunk.length
-            if (size > maxBytes)
-              res.destroy(new Error("Response exceeds size limit"))
-            else chunks.push(chunk)
-          })
+          const stream = decoder ? res.pipe(decoder) : res
           res.on("error", reject)
-          res.on("end", () =>
+          stream.on("data", (chunk) => {
+            size += chunk.length
+            if (size > maxBytes) {
+              stream.destroy(new Error("Response exceeds size limit"))
+              res.destroy()
+            } else chunks.push(chunk)
+          })
+          stream.on("error", reject)
+          stream.on("end", () =>
             resolve({
               status: res.statusCode,
               headers: new Headers(

@@ -25,6 +25,23 @@ for (const file of [
 ]) {
   inputs[file] = sha256(await readFile(path.join(root, file)))
 }
+const routeTree = await readFile(
+  path.join(root, "apps/main/src/routeTree.gen.ts"),
+  "utf8",
+)
+const routeSection =
+  routeTree
+    .split("export interface FileRoutesByFullPath {")[1]
+    ?.split("}")[0] || ""
+const routes = [
+  ...new Set([...routeSection.matchAll(/'([^']+)':/g)].map((m) => m[1])),
+].sort()
+const headers = JSON.parse(
+  await readFile(
+    path.join(root, "services/ui-watchdog/response-policy.json"),
+    "utf8",
+  ),
+)
 const manifest = validateManifest({
   version: 1,
   repo: "galacticcouncil/hydration-ui",
@@ -42,6 +59,8 @@ const manifest = validateManifest({
   recipe: "ui-reference-v1",
   inputs,
   deploymentFiles,
+  routes,
+  headers,
   files,
 })
 await writeFile(output, JSON.stringify(manifest, null, 2) + "\n")

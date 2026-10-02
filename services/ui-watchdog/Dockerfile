@@ -14,6 +14,7 @@ COPY --from=cli /wireproxy/wireproxy /usr/local/bin/wireproxy
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force \
     && mkdir -p /data && chown 1000:1000 /data
+COPY response-policy.json data-origins.json ./
 COPY src ./src
 USER 1000:1000
 EXPOSE 8080

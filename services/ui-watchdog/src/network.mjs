@@ -3,6 +3,41 @@ import { isIP } from "node:net"
 import { timestamp } from "./util.mjs"
 
 export const EGRESS_CHECK_URL = "https://check.torproject.org/api/ip"
+export const EGRESS_CHECK_URLS = [
+  EGRESS_CHECK_URL,
+  "https://api.ipify.org?format=json",
+]
+
+export async function checkEgress(c, transport) {
+  let lastError
+  for (const url of EGRESS_CHECK_URLS) {
+    try {
+      const r = await transport(url, {
+        timeoutMs: Math.min(c.timeoutMs || 20000, 20000),
+        maxBytes: 16384,
+      })
+      if (r.status !== 200) throw new Error("Egress oracle unavailable")
+      const value = JSON.parse(r.bytes)
+      if (url === EGRESS_CHECK_URL) return validateEgress(c, value)
+      if (
+        !publicAddress(value.ip) ||
+        (c.expectedExitIp && value.ip !== c.expectedExitIp)
+      )
+        throw new Error("Invalid fallback egress address")
+      // ipify confirms reachability/IP, not Tor membership. Never invent IsTor.
+      return {
+        ip: value.ip,
+        tor: null,
+        kind: c.egressKind,
+        checkedAt: timestamp(),
+        membershipUnverified: true,
+      }
+    } catch (e) {
+      lastError = e
+    }
+  }
+  throw lastError
+}
 
 export function publicAddress(ip) {
   if (isIP(ip) === 4) {

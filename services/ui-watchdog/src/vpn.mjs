@@ -3,12 +3,7 @@ import { spawn } from "node:child_process"
 import { randomInt } from "node:crypto"
 import { mkdir, writeFile } from "node:fs/promises"
 import { isIP } from "node:net"
-import {
-  EGRESS_CHECK_URL,
-  publicAddress,
-  publicHost,
-  validateEgress,
-} from "./network.mjs"
+import { checkEgress, publicAddress, publicHost } from "./network.mjs"
 import { siteTransport } from "./transport.mjs"
 import { responseBytes, timestamp } from "./util.mjs"
 
@@ -244,22 +239,28 @@ export async function serveVpn(c) {
         child.signalCode !== null ||
         (c.role === "nordvpn" && (Date.now() >= rotateAt || failures >= 3))
       ) {
-        await start()
+        let selected = true
+        try {
+          await start()
+        } catch {
+          // A provider selection outage must not tear down a working tunnel.
+          if (
+            !child?.pid ||
+            child.exitCode !== null ||
+            child.signalCode !== null
+          )
+            throw new Error("VPN process unavailable")
+          selected = false
+          rotateAt = Date.now() + 300000
+        }
         failures = 0
-        rotateAt =
-          Date.now() +
-          c.nordRotateSeconds * 1000 +
-          randomInt(1, Math.max(2, c.nordRotateSeconds * 100))
+        if (selected)
+          rotateAt =
+            Date.now() +
+            c.nordRotateSeconds * 1000 +
+            randomInt(1, Math.max(2, c.nordRotateSeconds * 100))
       }
-      const r = await tunnelRequest(EGRESS_CHECK_URL, {
-        timeoutMs: 20000,
-        maxBytes: 16384,
-      })
-      if (r.status !== 200) throw new Error("VPN egress check failed")
-      const egress = validateEgress(
-        { egressKind: "proxy" },
-        JSON.parse(r.bytes),
-      )
+      const egress = await checkEgress({ egressKind: "proxy" }, tunnelRequest)
       health = {
         ready: true,
         egress,
@@ -270,8 +271,12 @@ export async function serveVpn(c) {
     } catch {
       failures++
       health = {
-        ready: false,
-        error: "VPN unavailable; no direct fallback",
+        // /healthz reports process liveness; observer checks report tunnel
+        // verification. An oracle outage must not restart a healthy gateway.
+        ready: Boolean(
+          child?.pid && child.exitCode === null && child.signalCode === null,
+        ),
+        error: "VPN egress unverified; no direct fallback",
         checkedAt: timestamp(),
       }
     } finally {

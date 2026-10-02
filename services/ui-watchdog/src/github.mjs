@@ -5,7 +5,7 @@ import { tmpdir } from "node:os"
 import path from "node:path"
 import { unzipSync } from "fflate"
 import { validateManifest } from "./manifest.mjs"
-import { request, sha256, timestamp } from "./util.mjs"
+import { request, safeError, sha256, timestamp } from "./util.mjs"
 
 const exec = promisify(execFile)
 
@@ -18,8 +18,10 @@ export function verificationArgs(c, file, bundle, sha) {
     bundle,
     "--repo",
     c.repo,
-    "--signer-workflow",
-    `${c.repo}/.github/workflows/${c.workflow}`,
+    "--cert-identity",
+    `https://github.com/${c.repo}/.github/workflows/${c.workflow}@refs/heads/${c.branch}`,
+    "--predicate-type",
+    "https://slsa.dev/provenance/v1",
     "--source-ref",
     `refs/heads/${c.branch}`,
     "--source-digest",
@@ -156,7 +158,7 @@ export class GitHub {
       throw new Error(`Artifact storage returned HTTP ${zip.status}`)
     return zip.bytes
   }
-  async references(store, expectedSha) {
+  async references(store, expectedSha, onStatus = () => {}) {
     if (!this.c.token)
       return {
         state: "unconfigured",
@@ -164,6 +166,34 @@ export class GitHub {
       }
     const known = new Set(store.referenceShas())
     let added = 0
+    const errors = []
+    const current = expectedSha
+      ? await this.api(
+          `/actions/workflows/${this.c.workflow}/runs?branch=${encodeURIComponent(this.c.branch)}&head_sha=${expectedSha}&per_page=20`,
+        )
+      : { workflow_runs: [] }
+    const currentRun = (current.workflow_runs || []).find(
+      (r) =>
+        r.head_sha === expectedSha &&
+        r.head_branch === this.c.branch &&
+        ["push", "workflow_dispatch"].includes(r.event) &&
+        r.head_repository?.full_name === this.c.repo &&
+        r.path === `.github/workflows/${this.c.workflow}`,
+    )
+
+    onStatus({
+      state: known.has(expectedSha)
+        ? "ready"
+        : !currentRun
+          ? "missing"
+          : currentRun.status === "completed" &&
+              currentRun.conclusion !== "success"
+            ? "failed"
+            : "building",
+      sha: expectedSha,
+      runId: currentRun?.id,
+      checkedAt: timestamp(),
+    })
     // Reconcile recent successful runs, including intermediate releases missed while offline.
     // Bound backfill; expose the limit rather than claiming unlimited history coverage.
     for (let page = 1; page <= 3; page++) {
@@ -181,64 +211,81 @@ export class GitHub {
         )
           continue
         if (known.has(run.head_sha)) continue
-        const { artifacts = [] } = await this.api(
-          `/actions/runs/${run.id}/artifacts?per_page=100`,
-        )
-        const artifact = artifacts.find(
-          (a) => a.name === `ui-reference-${run.head_sha}` && !a.expired,
-        )
-        if (!artifact) continue
-        const files = unpackReference(await this.download(artifact.id))
-        const raw = Buffer.from(files["reference.json"])
-        const manifest = validateManifest(JSON.parse(raw), {
-          ...this.c,
-          sha: run.head_sha,
-        })
-        const temp = await mkdtemp(path.join(tmpdir(), "ui-reference-"))
         try {
-          const file = path.join(temp, "reference.json"),
-            bundle = path.join(temp, "reference.sigstore.json")
-          await writeFile(file, raw)
-          await writeFile(bundle, files["reference.sigstore.json"])
-          try {
-            await exec(
-              "gh",
-              verificationArgs(this.c, file, bundle, run.head_sha),
-              {
-                timeout: 90000,
-                maxBuffer: 8 * 1024 * 1024,
-                env: {
-                  PATH: process.env.PATH,
-                  GH_TOKEN: this.c.token,
-                  GH_PROMPT_DISABLED: "1",
-                  GH_NO_UPDATE_NOTIFIER: "1",
-                  XDG_CACHE_HOME: "/tmp/ui-watchdog-cache",
-                  GH_CONFIG_DIR: "/tmp/ui-watchdog-gh",
-                },
-              },
-            )
-          } catch {
-            throw new Error(
-              "Reference attestation failed signature or identity verification",
-            )
-          }
-          store.addReference(manifest, {
-            runId: run.id,
-            artifactId: artifact.id,
-            manifestHash: sha256(raw),
-            verifiedAt: timestamp(),
-            createdAt: run.created_at,
+          const { artifacts = [] } = await this.api(
+            `/actions/runs/${run.id}/artifacts?per_page=100`,
+          )
+          const artifact = artifacts.find(
+            (a) => a.name === `ui-reference-${run.head_sha}` && !a.expired,
+          )
+          if (!artifact) continue
+          const files = unpackReference(await this.download(artifact.id))
+          const raw = Buffer.from(files["reference.json"])
+          const manifest = validateManifest(JSON.parse(raw), {
+            ...this.c,
+            sha: run.head_sha,
           })
-          known.add(manifest.sha)
-          added++
-        } finally {
-          await rm(temp, { recursive: true, force: true })
+          const temp = await mkdtemp(path.join(tmpdir(), "ui-reference-"))
+          try {
+            const file = path.join(temp, "reference.json"),
+              bundle = path.join(temp, "reference.sigstore.json")
+            await writeFile(file, raw)
+            await writeFile(bundle, files["reference.sigstore.json"])
+            try {
+              await exec(
+                "gh",
+                verificationArgs(this.c, file, bundle, run.head_sha),
+                {
+                  timeout: 90000,
+                  maxBuffer: 8 * 1024 * 1024,
+                  env: {
+                    PATH: process.env.PATH,
+                    GH_TOKEN: this.c.token,
+                    GH_PROMPT_DISABLED: "1",
+                    GH_NO_UPDATE_NOTIFIER: "1",
+                    XDG_CACHE_HOME: "/tmp/ui-watchdog-cache",
+                    GH_CONFIG_DIR: "/tmp/ui-watchdog-gh",
+                  },
+                },
+              )
+            } catch {
+              throw new Error(
+                "Reference attestation failed signature or identity verification",
+              )
+            }
+            store.addReference(manifest, {
+              runId: run.id,
+              artifactId: artifact.id,
+              manifestHash: sha256(raw),
+              verifiedAt: timestamp(),
+              createdAt: run.created_at,
+            })
+            known.add(manifest.sha)
+            added++
+          } finally {
+            await rm(temp, { recursive: true, force: true })
+          }
+        } catch (error) {
+          errors.push({
+            runId: run.id,
+            sha: run.head_sha,
+            message: safeError(error),
+          })
         }
       }
       if (runs.length < 30) break
     }
     return {
-      state: known.has(expectedSha) ? "ready" : "waiting",
+      state: known.has(expectedSha)
+        ? "ready"
+        : !currentRun
+          ? "missing"
+          : currentRun.status !== "completed"
+            ? "building"
+            : "failed",
+      sha: expectedSha,
+      runId: currentRun?.id,
+      errors,
       message: known.has(expectedSha)
         ? ""
         : "Waiting for an attested reference for the production commit",

@@ -1,17 +1,40 @@
+import { timingSafeEqual } from "node:crypto"
 import { createServer } from "node:http"
 import { escapeHtml as h } from "./util.mjs"
 
+// Explicit projection also protects old persisted events that contain exit IPs.
+export function publicStatus(s) {
+  return { target: s.target, repository: s.repository, state: "private" }
+}
+export function publicEvents() {
+  return []
+}
 export function dashboard(status, events) {
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="30"><title>Hydration UI watchdog</title><style>
-  :root{color-scheme:dark}body{font:16px system-ui;background:#0a1420;color:#e0e8f0;margin:0 auto;padding:40px 24px;max-width:1100px}h1{font-size:28px}a{color:#84d9fa}code{font-size:13px;overflow-wrap:anywhere}.state{font-size:22px;padding:18px;border:1px solid #687786;border-radius:8px}.verified{border-color:#53c3a0}.integrity_alert,.down{border-color:#ff657d}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid #24384b;vertical-align:top}small{color:#9eafc0}pre{white-space:pre-wrap;overflow-wrap:anywhere}details{margin:16px 0}dt{color:#9eafc0}dd{margin:4px 0 18px}
-  </style><h1>Hydration UI watchdog</h1><p><a href="${h(status.target)}">${h(status.target)}</a> · <a href="/api/status">Status JSON</a> · <a href="/api/events">History JSON</a></p>
-  <div class="state ${h(status.state)}">${h(status.state)}<p><small>${h((status.reasons || []).join(" · "))}</small></p></div>
-  <dl><dt>Expected production commit</dt><dd><code>${h(status.source?.sha || "unknown")}</code></dd><dt>Matching independent build</dt><dd><code>${h(status.probe?.matchedSha || "unverified")}</code></dd><dt>Last observation</dt><dd>${h(status.probe?.at || "pending")}</dd><dt>Last asset scan</dt><dd>${h(status.audit?.completedAt || "pending")} · ${h(status.audit?.filesChecked || 0)} files · ${h(status.audit?.scope || "pending")}</dd><dt>GitHub references</dt><dd>${h(status.references?.state || "pending")} · ${h(status.references?.message || "")}</dd><dt>Discord</dt><dd>${status.notifications?.configured ? "configured" : "disabled — set DISCORD_WEBHOOK_URL"} · ${h(status.notifications?.pending || 0)} queued</dd></dl>
-  <h2>Network observers</h2><p>${h(status.agreement?.distinctEgress || 0)} HTTP exits · ${h(status.agreement?.distinctBrowserEgress || 0)} browser exits · ${h(status.agreement?.requiredDistinctEgress || 0)} required distinct exits</p>
-  <table><thead><tr><th>Observer / state</th><th>Sampled exits</th><th>Latest checks</th><th>Content</th></tr></thead><tbody>${(status.observers || []).map((o) => `<tr><td><strong>${h(o.id)}</strong><br>${h(o.state)}<p><small>${h(o.reasons.join("; "))}</small></p></td><td>HTTP: <code>${h(o.probe?.egress?.ip || "pending")}</code><br>Browser: <code>${h(o.browser?.egress?.ip || "pending")}</code><br><small>${h(o.kind)}</small></td><td><small>HTML: ${h(o.probe?.completedAt || "pending")}<br>Assets: ${h(o.audit?.completedAt || "pending")}<br>Browser: ${h(o.browser?.completedAt || "pending")}</small></td><td><code>${h(o.probe?.rootHash?.slice(0, 16) || "pending")}</code><br>${h(o.audit?.filesChecked || 0)} files<br><small>${h(o.probe?.matchedSha?.slice(0, 12) || "No trusted reference")}</small></td></tr>`).join("")}</tbody></table>
-  <details><summary>Verification details</summary><pre>${h(JSON.stringify({ sourceError: status.sourceError, agreement: status.agreement, observers: status.observers }, null, 2))}</pre></details>
-  <h2>Change and incident history</h2><table><thead><tr><th>Observed at</th><th>Event</th><th>Details</th></tr></thead><tbody>${events.map((e) => `<tr><td>${h(e.at)}</td><td>${h(e.kind)}<br><small>${h(e.severity)}</small></td><td>${h(e.data.summary || e.data.state || "")}${e.data.changelog ? `<p><a href="${h(e.data.changelog.url)}">Commit comparison</a></p>` : ""}${e.data.paths ? `<details><summary>Changed files (${e.data.paths.length})</summary><pre>${h(e.data.paths.join("\n"))}</pre></details>` : ""}</td></tr>`).join("")}</tbody></table>
-  <p><small>Checks compare observed bytes with independent source builds. They do not certify source-code safety or cover every visitor. HTML checks are scheduled every ${h(status.pollSeconds)} seconds after completion; full files and browser checks have separate timestamps.</small></p></html>`
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hydration UI watchdog</title>
+  <style>body{font:16px system-ui;max-width:900px;margin:40px auto;padding:20px;background:#0a1420;color:#e0e8f0}a{color:#84d9fa}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+  <h1>Hydration UI watchdog</h1><p>${h(status.state)}</p><p>${h((status.reasons || []).join("; "))}</p>
+  <p>Production: <code>${h(status.source?.sha || "pending")}</code></p>
+  <p><a href="/api/status">Authenticated status</a> · <a href="/api/events">Authenticated history</a></p>
+  <p>Detailed network diagnostics and captured evidence are available only to authenticated operators.</p>
+  <h2>Change log</h2>${events.map((e) => `<p>${h(e.kind)} · ${h(e.severity)}</p>`).join("")}
+  <p>Observed bytes are compared with independent builds. Verification does not certify source safety or every visitor's response.</p></html>`
+}
+
+function authorized(req, token) {
+  if (!token) return false
+  const header = req.headers.authorization || ""
+  const supplied = header.startsWith("Bearer ")
+    ? header.slice(7)
+    : header.startsWith("Basic ")
+      ? Buffer.from(header.slice(6), "base64")
+          .toString()
+          .split(":")
+          .slice(1)
+          .join(":")
+      : ""
+  const a = Buffer.from(supplied),
+    b = Buffer.from(token)
+  return a.length === b.length && timingSafeEqual(a, b)
 }
 
 export function serve(c, store, getStatus, isHealthy) {
@@ -30,6 +53,21 @@ export function serve(c, store, getStatus, isHealthy) {
     if (url.pathname === "/healthz") {
       res.writeHead(isHealthy() ? 200 : 503).end(isHealthy() ? "ok" : "stalled")
       return
+    }
+    if (!authorized(req, c.adminToken)) {
+      res
+        .writeHead(401, {
+          "content-type": "application/json",
+          "www-authenticate": 'Basic realm="UI watchdog"',
+        })
+        .end(JSON.stringify({ error: "Authentication required" }))
+      return
+    }
+    if (url.pathname === "/api/evidence") {
+      const hash = url.searchParams.get("hash") || ""
+      if (!/^[a-f0-9]{64}$/.test(hash)) return res.writeHead(400).end()
+      res.setHeader("content-type", "application/json")
+      return res.end(JSON.stringify(store.evidence(hash)))
     }
     if (url.pathname === "/api/status") {
       res.setHeader("content-type", "application/json")
