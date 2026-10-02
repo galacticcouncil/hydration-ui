@@ -83,15 +83,16 @@ export const vaultQueueQuery = (
             )
               return null
             const started = id < unwind
-            const [eligibleAt, claimed, position] = await Promise.all([
+            const [eligibleAt, claimed, position, surplus] = await Promise.all([
               contract.read.unwindEligibleAt([id], options),
               contract.read.claimedCollateral([id], options),
               started && mainDebt !== zeroAddress
                 ? ledger.read.positions([id + 1n], options)
                 : null,
+              started && mainDebt !== zeroAddress
+                ? ledger.read.surplusOf([id], options)
+                : 0n,
             ])
-            const units = position?.[0]
-            const cash = position?.[2] ?? 0n
             return {
               requestId: Number(id),
               owner,
@@ -112,7 +113,7 @@ export const vaultQueueQuery = (
                 : 0,
               eligibleAt: Number(eligibleAt) * 1000,
               observedAt: Number(block.timestamp) * 1000,
-              surplusHollar: units === 0n ? Number(formatUnits(cash, 18)) : 0,
+              surplusHollar: Number(formatUnits(surplus, 18)),
               sourcePending: (position?.[3] ?? 0n) > 0n,
             }
           }),

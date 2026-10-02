@@ -343,3 +343,24 @@ export function useClaimSurplus(options: VaultWriteOptions = {}) {
       ),
   })
 }
+
+/** Materialize earnings already held as invested collateral shares. */
+export function useClaimYield(options: VaultWriteOptions = {}) {
+  const { evmAddress, submitTx } = useVaultEvmCall(options)
+  return useMutation({
+    mutationFn: (vault: PropellerVaultConfig) =>
+      submitTx(
+        vault.vaultAddress,
+        encodeFunctionData({
+          abi: VAULT_ABI,
+          functionName: "claimYield",
+          args: [evmAddress],
+        }),
+        [...VAULT_ABI],
+        {
+          submitted: "Claiming earned shares...",
+          success: "Earned shares claimed",
+        },
+      ),
+  })
+}

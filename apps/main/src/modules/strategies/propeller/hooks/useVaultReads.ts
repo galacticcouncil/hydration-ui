@@ -8,6 +8,7 @@ import {
   POOL_ABI,
   SUBLOOP_ABI,
   VAULT_ABI,
+  YIELD_ACCOUNTING_ABI,
 } from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import {
@@ -238,7 +239,8 @@ export const vaultBalancesQuery = (
     queryKey: propellerQueryKeys.vaultBalances(vault.vaultAddress, evmAddress),
     enabled: isReady && !!evmAddress,
     queryFn: async () => {
-      if (!evmAddress) return { eth: 0, shares: 0 }
+      if (!evmAddress) return { eth: 0, shares: 0, rewards: null }
+      const options = { blockNumber: await evm.getBlockNumber() }
 
       const collateralToken = getContract({
         address: getAddressFromAssetId(vault.assetId) as Hex,
@@ -254,17 +256,40 @@ export const vaultBalancesQuery = (
       const [collateralBal, shareBal] = await Promise.all([
         safeRead(
           "collateral.balanceOf",
-          () => collateralToken.read.balanceOf([evmAddress]),
+          () => collateralToken.read.balanceOf([evmAddress], options),
           0n,
         ),
         safeRead(
           "vault shares.balanceOf",
-          () => contract.read.balanceOf([evmAddress]),
+          () => contract.read.balanceOf([evmAddress], options),
           0n,
         ),
       ])
 
+      const rewards = await safeRead("vault earned collateral", async () => {
+        const accounting = await contract.read.yieldAccounting(options)
+        const fund = getContract({
+          address: accounting,
+          abi: YIELD_ACCOUNTING_ABI,
+          client: evm,
+        })
+        const [ownedAssets, claimableShares] = await Promise.all([
+          fund.read.earnedAssets([evmAddress], options),
+          fund.read.claimableShares([evmAddress], options),
+        ])
+        const claimableAssets = await contract.read.convertToAssets(
+          [claimableShares],
+          options,
+        )
+        return {
+          estimatedAssets: Number(formatUnits(ownedAssets, decimals)),
+          claimableAssets: Number(formatUnits(claimableAssets, decimals)),
+          claimableShares,
+        }
+      })
+
       return {
+        rewards,
         eth: Number(formatUnits(collateralBal, decimals)),
         shares: Number(formatUnits(shareBal, decimals)),
       }

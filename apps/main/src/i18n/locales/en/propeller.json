@@ -37,7 +37,7 @@
   "deposit.modal.title": "Deposit",
   "withdraw.title": "Withdraw {{shareSymbol}}",
   "withdraw.carryEstimate": "The strategy currently has a funding deficit. Your collateral claim is not reduced, but settlement may take longer while funding is recovered.",
-  "withdraw.ack": "I understand my {{shareSymbol}} stays invested during the {{hours, number}}-hour cooldown. The withdrawal then settles to {{symbol}} as funds become available; the cooldown is not a settlement deadline.",
+  "withdraw.ack": "I understand my {{shareSymbol}} stays invested during the {{hours, number}}-hour cooldown. The withdrawal then settles to {{symbol}} as funds become available. My portion of unconverted yield may settle separately in HOLLAR, after costs and fees; the cooldown is not a settlement deadline.",
   "withdraw.cta.withdraw": "Request withdrawal",
   "withdraw.validation.belowMin": "Min. {{ min, currency }} {{shareSymbol}}",
   "withdraw.cta.unavailable": "Withdrawals unavailable",
@@ -47,5 +47,9 @@
   "withdrawals.action.claimRecovery": "Claim {{amount, number}} HOLLAR",
   "withdrawals.recoveryPending": "Further HOLLAR recovery pending",
   "strategy.apyEstimate": "Estimated APY includes current borrowing costs and harvest fees. Trading costs and time spent ramping can lower returns. Some earned yield stays invested to cover execution costs.",
-  "withdraw.blocked.loading": "Loading vault status…"
+  "withdraw.blocked.loading": "Loading vault status…",
+  "positions.col.earnings": "Earnings ready to claim",
+  "positions.earningsPending": "Estimated {{amount, number}} {{symbol}} awaiting conversion",
+  "positions.action.claimEarnings": "Claim earnings",
+  "positions.earningsDescription": "Converted earnings stay invested and keep compounding before you claim them. Claiming adds their vault shares to your position. Earnings awaiting conversion are an estimate, not a funded collateral balance."
 }

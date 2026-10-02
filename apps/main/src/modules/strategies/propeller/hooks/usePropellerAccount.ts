@@ -28,6 +28,11 @@ export type PropellerPosition = {
   assetValue: number
   usdValue: number
   apy: number | null
+  rewards: {
+    estimatedAssets: number
+    claimableAssets: number
+    claimableShares: bigint
+  } | null
 }
 
 export type WithdrawalRowState = WithdrawalState
@@ -179,13 +184,15 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
 
   const positions = PROPELLER_VAULTS.flatMap<PropellerPosition>((vault, i) => {
     const shares = balanceQueries[i]?.data?.shares ?? 0
-    if (shares <= 0) return []
+    const rewards = balanceQueries[i]?.data?.rewards ?? null
+    if (shares <= 0 && !(rewards && rewards.estimatedAssets > 0)) return []
     const market = markets[i]
     const assetValue = shares * (market?.stats?.exchangeRate ?? 1)
     return [
       {
         vault,
         shares,
+        rewards,
         assetValue,
         usdValue: assetValue * (market?.price ?? 0),
         apy: market?.apy ?? null,

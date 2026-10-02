@@ -4,6 +4,8 @@ import { parseAbi } from "viem"
 export const VAULT_ABI = [
   ...parseAbi([
     "function mainDebt() view returns (address)",
+    "function yieldAccounting() view returns (address)",
+    "function claimYield(address receiver) returns (uint256 shares)",
     "function feeController() view returns (address)",
     "function hollarDebtToken() view returns (address)",
     "function isUnderfunded() view returns (bool)",
@@ -328,6 +330,7 @@ export const POOL_ABI = [
 
 export const MAIN_DEBT_ABI = parseAbi([
   "function positions(uint256) view returns (uint256 units, uint256 principal, uint256 cash, uint256 sourceRemaining, address owner)",
+  "function surplusOf(uint256 id) view returns (uint256 amount)",
   "function claimSurplus(uint256 id) returns (uint256 amount)",
 ])
 
@@ -337,4 +340,9 @@ export const FEE_CONTROLLER_ABI = parseAbi([
 
 export const DEBT_TOKEN_ABI = parseAbi([
   "function getDiscountPercent(address borrower) view returns (uint256)",
+])
+
+export const YIELD_ACCOUNTING_ABI = parseAbi([
+  "function earnedAssets(address owner) view returns (uint256)",
+  "function claimableShares(address owner) view returns (uint256)",
 ])
