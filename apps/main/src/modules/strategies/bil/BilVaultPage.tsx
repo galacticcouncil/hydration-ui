@@ -30,14 +30,16 @@ export const BilVaultPage = () => {
 
             <MyBorrowsCard />
 
-            <WithdrawalsCard />
-
             <StrategyDetailsCard />
 
             <AboutCard />
           </Stack>
 
-          <BilDeposit />
+          <Stack gap="xl">
+            <BilDeposit />
+
+            <WithdrawalsCard />
+          </Stack>
         </TwoColumnGrid>
       </Stack>
     </BilStrategyProvider>
