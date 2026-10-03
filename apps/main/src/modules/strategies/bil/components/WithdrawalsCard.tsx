@@ -1,12 +1,13 @@
 import {
+  Box,
+  Card,
+  CardHeader,
+  CardTable,
+  CardTitle,
   DataTable,
   Flex,
   Label,
-  Paper,
-  Separator,
-  Stack,
   TableContainer,
-  Text,
   Toggle,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -17,7 +18,6 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { WithdrawalRowMobile } from "@/modules/strategies/bil/components/WithdrawalRowMobile"
 import {
   useWithdrawalColumns,
   type WithdrawalRow,
@@ -63,44 +63,41 @@ export const WithdrawalsCard = () => {
   if (!isConnected || visibleRows.length === 0) return null
 
   return (
-    <Paper>
-      <Flex justify="space-between" align="center" p="l" wrap gap="m">
-        <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("bil.withdrawals.title")}
-        </Text>
-        <Flex align="center" gap="l" wrap>
-          <Flex align="center" gap="base">
-            <Tooltip text={t("bil.withdrawals.autoClaim.tooltip")} asChild>
-              <Label
-                fs="p5"
-                color={getToken("text.medium")}
-                htmlFor="auto-claim"
-              >
-                {t("bil.withdrawals.autoClaim")}
-              </Label>
-            </Tooltip>
-            <Toggle
-              size="medium"
-              checked={autoClaimOn ?? false}
-              onCheckedChange={(next) => setAutoClaimMutation.mutate(next)}
-              name="auto-claim"
-              disabled={setAutoClaimMutation.isPending}
-            />
+    <Card>
+      <CardHeader>
+        <Flex justify="space-between" align="center" wrap gap="m">
+          <CardTitle>{t("bil.withdrawals.title")}</CardTitle>
+          <Flex align="center" gap="l" wrap>
+            <Flex align="center" gap="base">
+              <Tooltip text={t("bil.withdrawals.autoClaim.tooltip")} asChild>
+                <Label
+                  fs="p5"
+                  color={getToken("text.medium")}
+                  htmlFor="auto-claim"
+                >
+                  {t("bil.withdrawals.autoClaim")}
+                </Label>
+              </Tooltip>
+              <Toggle
+                size="medium"
+                checked={autoClaimOn ?? false}
+                onCheckedChange={(next) => setAutoClaimMutation.mutate(next)}
+                name="auto-claim"
+                disabled={setAutoClaimMutation.isPending}
+              />
+            </Flex>
           </Flex>
         </Flex>
-      </Flex>
-      <Separator />
+      </CardHeader>
       {gte("xl") ? (
         <TableContainer borderRadius="xl">
           <DataTable data={visibleRows} columns={columns} />
         </TableContainer>
       ) : (
-        <Stack gap="m" p="m">
-          {visibleRows.map((row) => (
-            <WithdrawalRowMobile key={row.id} row={row} />
-          ))}
-        </Stack>
+        <Box p="m">
+          <CardTable data={visibleRows} columns={columns} />
+        </Box>
       )}
-    </Paper>
+    </Card>
   )
 }

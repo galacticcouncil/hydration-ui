@@ -15,6 +15,7 @@ import { createPublicClient, custom, PublicClient } from "viem"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import { ENV } from "@/config/env"
+import { SUBLOOP_ADDRESS } from "@/modules/strategies/propeller/constants"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { clearIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
 
@@ -25,6 +26,7 @@ export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   bilEnabled: boolean
   isIceEnabled: boolean
+  propellerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -89,6 +91,11 @@ const getProviderData = async (
     ),
   })
 
+  const propellerEnabled = await evm
+    .getCode({ address: SUBLOOP_ADDRESS })
+    .then((code) => !!code && code !== "0x")
+    .catch(() => false)
+
   // Read the connected chain's identity before anything is built on top of the
   // client. papiClient.getChainSpecData() is memoized per client and never
   // follows switch(), so it cannot be used here.
@@ -117,6 +124,7 @@ const getProviderData = async (
       hollarBondsEnabled: true,
       bilEnabled: true,
       isIceEnabled: true,
+      propellerEnabled,
     },
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }

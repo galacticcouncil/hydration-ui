@@ -1,0 +1,377 @@
+import { parseAbi } from "viem"
+
+// Hand-trimmed from CollateralVault.sol/CollateralVault.json
+export const VAULT_ABI = [
+  ...parseAbi([
+    "function mainDebt() view returns (address)",
+    "function executionController() view returns (address)",
+    "function yieldSource() view returns (address)",
+    "function pool() view returns (address)",
+    "function yieldAccounting() view returns (address)",
+    "function claimYield(address receiver) returns (uint256 shares)",
+    "function feeController() view returns (address)",
+    "function hollarDebtToken() view returns (address)",
+    "function isUnderfunded() view returns (bool)",
+    "function withdrawalDelay() view returns (uint32)",
+    "function queueUnwind() view returns (uint256)",
+    "function unwindEligibleAt(uint256) view returns (uint256)",
+    "function claimedCollateral(uint256) view returns (uint256)",
+  ]),
+  {
+    type: "function",
+    name: "totalSupply",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalAssets",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "allowance",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "approve",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "decimals",
+    inputs: [],
+    outputs: [{ name: "", type: "uint8" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "asset",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "exchangeRate",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Synthetic collateral inflates getUserAccountData(vault); read LTV from reserve config.
+  {
+    type: "function",
+    name: "syntheticSupplied",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "convertToAssets",
+    inputs: [{ name: "shares", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "convertToShares",
+    inputs: [{ name: "assets", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "paused",
+    inputs: [],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "depositsPaused",
+    inputs: [],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "tvlCap",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "queueHead",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "queueTail",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "totalQueuedShares",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // active stays true until claim(); claimable = active && collateralSettled > 0.
+  {
+    type: "function",
+    name: "redemptions",
+    inputs: [{ name: "requestId", type: "uint256" }],
+    outputs: [
+      { name: "owner", type: "address" },
+      { name: "shares", type: "uint256" },
+      { name: "collateralOwed", type: "uint256" },
+      { name: "debtShare", type: "uint256" },
+      { name: "synthShare", type: "uint256" },
+      { name: "repaid", type: "uint256" },
+      { name: "collateralSettled", type: "uint256" },
+      { name: "sharesBurned", type: "uint256" },
+      { name: "active", type: "bool" },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "deposit",
+    inputs: [
+      { name: "assets", type: "uint256" },
+      { name: "receiver", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "requestRedeem",
+    inputs: [
+      { name: "shares", type: "uint256" },
+      { name: "owner", type: "address" },
+    ],
+    outputs: [{ name: "requestId", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "claim",
+    inputs: [
+      { name: "requestId", type: "uint256" },
+      { name: "receiver", type: "address" },
+    ],
+    outputs: [{ name: "amountOut", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "Deposited",
+    anonymous: false,
+    inputs: [
+      { name: "user", type: "address", indexed: true },
+      { name: "assets", type: "uint256", indexed: false },
+      { name: "shares", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "RedeemRequested",
+    anonymous: false,
+    inputs: [
+      { name: "requestId", type: "uint256", indexed: true },
+      { name: "owner", type: "address", indexed: true },
+      { name: "shares", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "RedeemSettled",
+    anonymous: false,
+    inputs: [
+      { name: "requestId", type: "uint256", indexed: true },
+      { name: "collateral", type: "uint256", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "Claimed",
+    anonymous: false,
+    inputs: [
+      { name: "requestId", type: "uint256", indexed: true },
+      { name: "receiver", type: "address", indexed: true },
+      { name: "collateral", type: "uint256", indexed: false },
+    ],
+  },
+] as const
+
+export const SUBLOOP_ABI = [
+  ...parseAbi([
+    "function executionController() view returns (address)",
+    "function hollar() view returns (address)",
+    "function primeAToken() view returns (address)",
+    "function admissionCapacity() view returns (uint256)",
+  ]),
+  {
+    type: "function",
+    name: "healthFactor",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Loop-wide funding deficit. It can delay settlement; it is not a claim haircut.
+  {
+    type: "function",
+    name: "negativeCarryBps",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "targetHf",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Source equity can affect settlement availability after the cooldown.
+  {
+    type: "function",
+    name: "equityOf",
+    inputs: [{ name: "vault", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  // Zero while a request is still short means the unwind stalled.
+  {
+    type: "function",
+    name: "pendingUnwindOf",
+    inputs: [{ name: "vault", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+] as const
+
+export const POOL_ABI = [
+  ...parseAbi(["function ADDRESSES_PROVIDER() view returns (address)"]),
+  {
+    type: "function",
+    name: "getUserAccountData",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [
+      { name: "totalCollateralBase", type: "uint256" },
+      { name: "totalDebtBase", type: "uint256" },
+      { name: "availableBorrowsBase", type: "uint256" },
+      { name: "currentLiquidationThreshold", type: "uint256" },
+      { name: "ltv", type: "uint256" },
+      { name: "healthFactor", type: "uint256" },
+    ],
+    stateMutability: "view",
+  },
+  // Reserve config bitmap; bits 0-15 are max LTV in bps.
+  {
+    type: "function",
+    name: "getConfiguration",
+    inputs: [{ name: "asset", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getReserveData",
+    inputs: [{ name: "asset", type: "address" }],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        components: [
+          {
+            name: "configuration",
+            type: "tuple",
+            components: [{ name: "data", type: "uint256" }],
+          },
+          { name: "liquidityIndex", type: "uint128" },
+          { name: "currentLiquidityRate", type: "uint128" },
+          { name: "variableBorrowIndex", type: "uint128" },
+          { name: "currentVariableBorrowRate", type: "uint128" },
+          { name: "currentStableBorrowRate", type: "uint128" },
+          { name: "lastUpdateTimestamp", type: "uint40" },
+          { name: "id", type: "uint16" },
+          { name: "aTokenAddress", type: "address" },
+          { name: "stableDebtTokenAddress", type: "address" },
+          { name: "variableDebtTokenAddress", type: "address" },
+          { name: "interestRateStrategyAddress", type: "address" },
+          { name: "accruedToTreasury", type: "uint128" },
+          { name: "unbacked", type: "uint128" },
+          { name: "isolationModeTotalDebt", type: "uint128" },
+        ],
+      },
+    ],
+    stateMutability: "view",
+  },
+] as const
+
+export const MAIN_DEBT_ABI = parseAbi([
+  "function positions(uint256) view returns (uint256 units, uint256 principal, uint256 cash, uint256 sourceRemaining, address owner)",
+  "function surplusOf(uint256 id) view returns (uint256 amount)",
+  "function claimSurplus(uint256 id) returns (uint256 amount)",
+])
+
+export const FEE_CONTROLLER_ABI = parseAbi([
+  "function protocolFeeBps(address vault) view returns (uint16)",
+])
+
+export const DEBT_TOKEN_ABI = parseAbi([
+  "function getDiscountPercent(address borrower) view returns (uint256)",
+])
+
+export const YIELD_ACCOUNTING_ABI = parseAbi([
+  "function earnedAssets(address owner) view returns (uint256)",
+  "function claimableShares(address owner) view returns (uint256)",
+])
+
+export const EXECUTION_ABI = parseAbi([
+  "function maxQuoteAge() view returns (uint64)",
+  "function maxQuoteBlocks() view returns (uint64)",
+  "function lane(address consumer, address tokenIn, address tokenOut) pure returns (bytes32)",
+  "function limits(bytes32) view returns (bytes32 group, uint128 minimum, uint128 maximum)",
+  "function actions(address target, bytes4 selector) view returns (bool)",
+  "function budgets(bytes32) view returns (address token, uint128 capacity, uint128 refillPerSecond, uint128 credit, uint64 updatedAt, uint64 expiresAt)",
+  "function available(address consumer, address tokenIn, address tokenOut) view returns (uint256)",
+  "function preview(address target, bytes data) returns (bytes result, (bytes32 lane, uint256 amountIn, uint256 amountOut)[] fills)",
+  "function execute(address target, bytes data, uint256 quotedBlock, bytes32 quotedHash, uint256 deadline, (bytes32 lane, uint256 amountIn, uint256 minOut)[] quotes) returns (bytes result)",
+])
+
+export const PRICE_PROVIDER_ABI = parseAbi([
+  "function getPriceOracle() view returns (address)",
+])
+export const PRICE_ORACLE_ABI = parseAbi([
+  "function getAssetPrice(address asset) view returns (uint256)",
+])
