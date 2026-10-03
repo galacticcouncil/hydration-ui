@@ -141,14 +141,17 @@ export function buildAddresses(
 ): Address[] {
   return mergeAddresses(
     existing,
-    normalized.map(({ isGlobal, ...entry }) => ({
+    normalized.map((entry) => ({
       ...entry,
-      savedBy: deriveSavedBy({ ...entry, isGlobal }, connectedPublicKey),
+      savedBy: deriveSavedBy(entry, connectedPublicKey),
     })),
   )
 }
 
-function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
+function mergeAddresses(
+  existing: Address[],
+  incoming: NormalizedAddress[],
+): Address[] {
   const incomingByKey = new Map(
     incoming.map((a) => [a.publicKey.toLowerCase(), a]),
   )
@@ -158,9 +161,10 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
     const match = incomingByKey.get(entry.publicKey.toLowerCase())
     if (!match) return entry
 
+    // explicit global add drops wallet scoping; wallet sync (savedBy: []) must not
     const savedBy =
-      entry.savedBy.length === 0
-        ? entry.savedBy
+      entry.savedBy.length === 0 || match.isGlobal
+        ? []
         : [...new Set([...entry.savedBy, ...match.savedBy])]
     const name =
       !entry.isCustom && entry.name !== match.name ? match.name : entry.name
@@ -170,9 +174,9 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
     return changed ? { ...entry, name, savedBy } : entry
   })
 
-  const added = [...incomingByKey.values()].filter(
-    (a) => !existingKeys.has(a.publicKey.toLowerCase()),
-  )
+  const added = [...incomingByKey.values()]
+    .filter((a) => !existingKeys.has(a.publicKey.toLowerCase()))
+    .map(({ isGlobal: _, ...a }) => a)
 
   const hasChanges =
     added.length > 0 || updated.some((a, i) => a !== existing[i])
