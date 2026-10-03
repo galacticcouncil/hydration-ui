@@ -41,8 +41,6 @@ export function useRedemptionQueue(evmAddress: string | undefined) {
       const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
 
-      // Scan from 0, not the queue head: the head moves past a request once
-      // it is fully settled, but it stays active until its HOLLAR is claimed.
       for (let i = 0; i < queueLength; i++) {
         const [reqResult, waitResult] = await Promise.all([
           vault.read.getRedemptionRequest([BigInt(i)]),
