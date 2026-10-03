@@ -17,6 +17,10 @@ export const propellerQueryKeys = {
   ],
   vault,
   vaultStats: (vaultAddress: string) => [...vault(vaultAddress), "stats"],
+  depositAdmission: (vaultAddress: string) => [
+    ...vault(vaultAddress),
+    "admission",
+  ],
   vaultLoopPosition: (vaultAddress: string) => [
     ...vault(vaultAddress),
     "loop-position",

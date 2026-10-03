@@ -46,24 +46,32 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const { assetId, shareSymbol } = vault
   const { symbol, decimals } = getAssetWithFallback(assetId)
 
-  const { data: stats } = useQuery(vaultStatsQuery(rpc, vault, decimals))
-  const { data: balances } = useQuery(
+  const { data: stats, isError: statsError } = useQuery(
+    vaultStatsQuery(rpc, vault, decimals),
+  )
+  const { data: balances, isError: balancesError } = useQuery(
     vaultBalancesQuery(rpc, vault, decimals, evmAddress),
   )
   const { data: subLoop } = useQuery(subLoopQuery(rpc))
   const redeem = useRequestRedeem(vault, { onSuccess })
 
   const exchangeRate = stats?.exchangeRate ?? 1
-  const shareBalance = (balances?.shares ?? 0).toString()
+  const shareBalance = balances?.sharesExact ?? "0"
   const negativeCarry = subLoop?.negativeCarry ?? 0
   const carry = negativeCarry
 
-  const blockedReason = !stats ? "loading" : stats.paused ? "paused" : null
+  const blockedReason =
+    !rpc.isReady || !stats || !balances || statsError || balancesError
+      ? "loading"
+      : stats.paused
+        ? "paused"
+        : null
 
   const form = useWithdrawForm({
     maxBalance: shareBalance,
     minRedeem: stats?.minRedeem ?? 0,
     shareSymbol,
+    decimals,
   })
   const { control, handleSubmit, watch, formState } = form
 
@@ -75,7 +83,9 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const canSubmit = formState.isValid && !redeem.isPending && !blockedReason
   const showCarryNotice = carry > 0 && !blockedReason
 
-  const onSubmit = handleSubmit(({ amount }) => redeem.mutate(amount))
+  const onSubmit = handleSubmit(({ amount }) => {
+    if (canSubmit) redeem.mutate(amount)
+  })
 
   return (
     <FormProvider {...form}>

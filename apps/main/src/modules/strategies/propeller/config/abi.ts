@@ -4,6 +4,9 @@ import { parseAbi } from "viem"
 export const VAULT_ABI = [
   ...parseAbi([
     "function mainDebt() view returns (address)",
+    "function executionController() view returns (address)",
+    "function yieldSource() view returns (address)",
+    "function pool() view returns (address)",
     "function yieldAccounting() view returns (address)",
     "function claimYield(address receiver) returns (uint256 shares)",
     "function feeController() view returns (address)",
@@ -230,6 +233,12 @@ export const VAULT_ABI = [
 ] as const
 
 export const SUBLOOP_ABI = [
+  ...parseAbi([
+    "function executionController() view returns (address)",
+    "function hollar() view returns (address)",
+    "function primeAToken() view returns (address)",
+    "function admissionCapacity() view returns (uint256)",
+  ]),
   {
     type: "function",
     name: "healthFactor",
@@ -271,6 +280,7 @@ export const SUBLOOP_ABI = [
 ] as const
 
 export const POOL_ABI = [
+  ...parseAbi(["function ADDRESSES_PROVIDER() view returns (address)"]),
   {
     type: "function",
     name: "getUserAccountData",
@@ -345,4 +355,23 @@ export const DEBT_TOKEN_ABI = parseAbi([
 export const YIELD_ACCOUNTING_ABI = parseAbi([
   "function earnedAssets(address owner) view returns (uint256)",
   "function claimableShares(address owner) view returns (uint256)",
+])
+
+export const EXECUTION_ABI = parseAbi([
+  "function maxQuoteAge() view returns (uint64)",
+  "function maxQuoteBlocks() view returns (uint64)",
+  "function lane(address consumer, address tokenIn, address tokenOut) pure returns (bytes32)",
+  "function limits(bytes32) view returns (bytes32 group, uint128 minimum, uint128 maximum)",
+  "function actions(address target, bytes4 selector) view returns (bool)",
+  "function budgets(bytes32) view returns (address token, uint128 capacity, uint128 refillPerSecond, uint128 credit, uint64 updatedAt, uint64 expiresAt)",
+  "function available(address consumer, address tokenIn, address tokenOut) view returns (uint256)",
+  "function preview(address target, bytes data) returns (bytes result, (bytes32 lane, uint256 amountIn, uint256 amountOut)[] fills)",
+  "function execute(address target, bytes data, uint256 quotedBlock, bytes32 quotedHash, uint256 deadline, (bytes32 lane, uint256 amountIn, uint256 minOut)[] quotes) returns (bytes result)",
+])
+
+export const PRICE_PROVIDER_ABI = parseAbi([
+  "function getPriceOracle() view returns (address)",
+])
+export const PRICE_ORACLE_ABI = parseAbi([
+  "function getAssetPrice(address asset) view returns (uint256)",
 ])

@@ -9,18 +9,11 @@ import { CallType } from "@galacticcouncil/xc-core"
 import {
   useMutation,
   useMutationState,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  type Abi,
-  encodeFunctionData,
-  erc20Abi,
-  type Hex,
-  parseUnits,
-} from "viem"
+import { type Abi, encodeFunctionData, erc20Abi, type Hex } from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
 import {
@@ -30,6 +23,9 @@ import {
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { readDepositAdmission } from "@/modules/strategies/propeller/utils/admission"
+import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
+import { prepareControlledDeposit } from "@/modules/strategies/propeller/utils/execution"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
@@ -47,6 +43,7 @@ interface BatchEvmCall {
   to: Hex
   data: Hex
   abi: Abi
+  gas?: bigint
 }
 
 function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
@@ -60,8 +57,6 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   const address = account?.address ?? ""
   const evmAddress = safeConvertSS58toH160(address) as Hex
 
-  const { data: isBound } = useQuery(evmAccountBindingQuery(rpc, address))
-
   // accountBalances is a live subscription and updates itself; invalidating it
   // would reset every balance in the app to pending.
   const invalidateVault = useCallback(
@@ -73,17 +68,15 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   const txOptionsForVault = useCallback(
-    (vaultAddress: Hex): TransactionOptions => ({
+    (vaultAddress: Hex, complete = true): TransactionOptions => ({
       onSuccess: () => {
         invalidateVault(vaultAddress)
-        if (isBound === false) {
-          queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
-        }
-        onWriteSuccess?.()
+        queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+        if (complete) onWriteSuccess?.()
       },
       resolveOn: "success",
     }),
-    [address, invalidateVault, isBound, onWriteSuccess, queryClient, rpc],
+    [address, invalidateVault, onWriteSuccess, queryClient, rpc],
   )
 
   const submitTx = useCallback(
@@ -93,6 +86,11 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       abi: Abi,
       toasts: { submitted: string; success: string },
     ) => {
+      if (!address) throw new Error("Connect an account before continuing")
+      const isBound = await queryClient.fetchQuery({
+        ...evmAccountBindingQuery(rpc, address),
+        staleTime: 0,
+      })
       const gasPriceBase = await rpc.evm.getGasPrice()
       const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
       const gasPrice = gasPriceBase + gasPriceSurplus
@@ -128,7 +126,14 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
         txOptionsForVault(vaultAddress),
       )
     },
-    [evmAddress, isBound, rpc, createTransaction, txOptionsForVault],
+    [
+      address,
+      evmAddress,
+      queryClient,
+      rpc,
+      createTransaction,
+      txOptionsForVault,
+    ],
   )
 
   /**
@@ -140,22 +145,28 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       vaultAddress: Hex,
       calls: BatchEvmCall[],
       toasts: { submitted: string; success: string },
+      complete = true,
     ) => {
       if (calls.length === 0) {
         throw new Error("submitBatch called with no calls")
       }
+      if (!address) throw new Error("Connect an account before continuing")
+      const isBound = await queryClient.fetchQuery({
+        ...evmAccountBindingQuery(rpc, address),
+        staleTime: 0,
+      })
 
       const gasPriceBase = await rpc.evm.getGasPrice()
       const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
       const gasPrice = gasPriceBase + gasPriceSurplus
 
-      const evmCalls = calls.map(({ to, data, abi }) => ({
+      const evmCalls = calls.map(({ to, data, abi, gas }) => ({
         from: evmAddress,
         to,
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit: EVM_CALL_GAS,
+        gasLimit: gas ?? EVM_CALL_GAS,
         maxFeePerGas: gasPrice,
         maxPriorityFeePerGas: gasPrice,
         abi: safeStringify(abi),
@@ -177,10 +188,17 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
 
       return createTransaction(
         { tx: batchTx, toasts },
-        txOptionsForVault(vaultAddress),
+        txOptionsForVault(vaultAddress, complete),
       )
     },
-    [evmAddress, isBound, rpc, createTransaction, txOptionsForVault],
+    [
+      address,
+      evmAddress,
+      queryClient,
+      rpc,
+      createTransaction,
+      txOptionsForVault,
+    ],
   )
 
   return { evmAddress, submitTx, submitBatch }
@@ -200,7 +218,21 @@ export function useDeposit(
 
   return useMutation({
     mutationFn: async (assetAmount: string) => {
-      const assetBig = parseUnits(assetAmount, decimals)
+      const assetBig = parseExactAmount(assetAmount, decimals)
+      const admission = await readDepositAdmission(
+        evm,
+        vaultAddress,
+        assetAddress,
+        decimals,
+      )
+      if (
+        admission.expired ||
+        assetBig < admission.minimum ||
+        assetBig > admission.maximum
+      )
+        throw new Error(
+          "Deposit capacity changed. Choose an amount within the available range.",
+        )
       const calls: BatchEvmCall[] = []
 
       const assetAllowance = await evm.readContract({
@@ -220,16 +252,23 @@ export function useDeposit(
           }),
           abi: [...erc20Abi],
         })
+        // The quote runs transferFrom, so obtain it only after approval is
+        // confirmed. Approval itself must not close the deposit form.
+        await submitBatch(
+          vaultAddress,
+          calls,
+          {
+            submitted: `Approving ${symbol} for this vault...`,
+            success: `${symbol} approved`,
+          },
+          false,
+        )
       }
-
-      calls.push({
-        to: vaultAddress,
-        data: encodeFunctionData({
-          abi: VAULT_ABI,
-          functionName: "deposit",
-          args: [assetBig, evmAddress],
-        }),
-        abi: [...VAULT_ABI],
+      const execution = await prepareControlledDeposit(evm, {
+        vault: vaultAddress,
+        asset: assetAddress,
+        owner: evmAddress,
+        amount: assetBig,
       })
 
       const fmt = t("currency", {
@@ -237,7 +276,7 @@ export function useDeposit(
         symbol,
         maximumFractionDigits: 4,
       })
-      return submitBatch(vaultAddress, calls, {
+      return submitBatch(vaultAddress, [execution], {
         submitted: `Depositing ${fmt}...`,
         success: `${fmt} deposited`,
       })
@@ -260,7 +299,7 @@ export function useRequestRedeem(
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseUnits(shareAmount, decimals), evmAddress],
+        args: [parseExactAmount(shareAmount, decimals), evmAddress],
       })
 
       const fmt = t("currency", {

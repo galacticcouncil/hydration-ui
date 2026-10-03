@@ -1,8 +1,9 @@
-import { Paper, Stack } from "@galacticcouncil/ui/components"
+import { Alert, Paper, Stack } from "@galacticcouncil/ui/components"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { Navigate } from "@tanstack/react-router"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { type Hex } from "viem"
 
 import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
@@ -30,6 +31,7 @@ export const PropellerVaultPage = () => {
 }
 
 const PropellerVaultContent = () => {
+  const { t } = useTranslation("propeller")
   const { account } = useAccount()
   const [withdrawVault, setWithdrawVault] =
     useState<PropellerVaultConfig | null>(null)
@@ -39,13 +41,16 @@ const PropellerVaultContent = () => {
     ? (safeConvertSS58toH160(address) as Hex)
     : undefined
 
-  const { positions, withdrawals } = usePropellerAccount(evmAddress)
+  const { positions, withdrawals, isError } = usePropellerAccount(evmAddress)
 
   const defaultDeposit = useDefaultDepositVault()
 
   return (
     <Stack gap="xxl">
       <StrategyHeader />
+      {isError && (
+        <Alert variant="warning" description={t("positions.readFailed")} />
+      )}
 
       <TwoColumnGrid template="sidebar">
         <Stack gap="xl" sx={{ order: [1, null, 0] }}>

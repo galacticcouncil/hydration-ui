@@ -6,6 +6,7 @@ import {
   VAULT_ABI,
 } from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { withdrawalComplete } from "@/modules/strategies/propeller/utils/accounting"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
 
@@ -17,6 +18,7 @@ export interface QueueEntry {
   collateralSettled: number
   claimedCollateral: number
   settledProgress: number
+  complete: boolean
   active: boolean
   isUser: boolean
   started: boolean
@@ -106,6 +108,7 @@ export const vaultQueueQuery = (
                 formatUnits(collateralSettled, decimals),
               ),
               claimedCollateral: Number(formatUnits(claimed, decimals)),
+              complete: withdrawalComplete(started, repaid, debtShare),
               settledProgress: started
                 ? debtShare > 0n
                   ? Number(repaid) / Number(debtShare)

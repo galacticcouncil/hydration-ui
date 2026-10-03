@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { computeVaultApy, withdrawalState } from "./accounting"
+import {
+  computeVaultApr,
+  withdrawalComplete,
+  withdrawalState,
+} from "./accounting"
 
 const rates = {
   maxLtv: 0.75,
@@ -13,40 +17,55 @@ const rates = {
 
 describe("Propeller return estimate", () => {
   it("charges the harvest fee before paying Main interest", () => {
-    expect(computeVaultApy(rates)).toBeCloseTo(7.31625, 8)
+    expect(computeVaultApr(rates)).toBeCloseTo(6.594852842149837, 8)
   })
 
   it("discounts only the Main borrowing leg", () => {
-    expect(computeVaultApy({ ...rates, mainDiscountBps: 10_000 })).toBeCloseTo(
-      10.61625,
+    expect(computeVaultApr({ ...rates, mainDiscountBps: 10_000 })).toBeCloseTo(
+      9.8948528421,
       8,
     )
-    expect(computeVaultApy({ ...rates, mainDiscountBps: 5_000 })).toBeCloseTo(
-      8.96625,
+    expect(computeVaultApr({ ...rates, mainDiscountBps: 5_000 })).toBeCloseTo(
+      8.2448528421,
       8,
     )
   })
 
   it("retains the previous two-leg result at zero fee and zero discount", () => {
-    expect(computeVaultApy({ ...rates, protocolFeeBps: 0 })).toBeCloseTo(
-      7.875,
+    expect(computeVaultApr({ ...rates, protocolFeeBps: 0 })).toBeCloseTo(
+      7.115634570684039,
       8,
     )
   })
 
   it("does not invent fee or discount data when the read is missing", () => {
-    expect(computeVaultApy({ ...rates, protocolFeeBps: null })).toBeNull()
-    expect(computeVaultApy({ ...rates, mainDiscountBps: undefined })).toBeNull()
+    expect(computeVaultApr({ ...rates, protocolFeeBps: null })).toBeNull()
+    expect(computeVaultApr({ ...rates, mainDiscountBps: undefined })).toBeNull()
   })
 
   it("rejects invalid inputs and does not display positive return at a full fee", () => {
-    expect(computeVaultApy({ ...rates, protocolFeeBps: 10_000 })).toBeNull()
-    expect(computeVaultApy({ ...rates, leverage: Number.NaN })).toBeNull()
-    expect(computeVaultApy({ ...rates, mainDiscountBps: 10_001 })).toBeNull()
+    expect(computeVaultApr({ ...rates, protocolFeeBps: 10_000 })).toBeCloseTo(
+      -3.3,
+    )
+    expect(computeVaultApr({ ...rates, leverage: Number.NaN })).toBeNull()
+    expect(computeVaultApr({ ...rates, mainDiscountBps: 10_001 })).toBeNull()
+  })
+
+  it("reports negative carry rather than hiding it and rejects impossible APY", () => {
+    expect(computeVaultApr({ ...rates, primeSupplyApy: 0 })).toBeCloseTo(-16.5)
+    expect(computeVaultApr({ ...rates, primeSupplyApy: -100 })).toBeNull()
   })
 })
 
 describe("Propeller withdrawal lifecycle", () => {
+  it("does not round an unpaid wei to a fully settled withdrawal", () => {
+    const debt = 10n ** 24n
+    expect(Number(debt - 1n) / Number(debt)).toBe(1)
+    expect(withdrawalComplete(true, debt - 1n, debt)).toBe(false)
+    expect(withdrawalComplete(true, debt, debt)).toBe(true)
+    expect(withdrawalComplete(false, 0n, 0n)).toBe(false)
+    expect(withdrawalComplete(true, 0n, 0n)).toBe(true)
+  })
   const request = {
     active: true,
     started: false,

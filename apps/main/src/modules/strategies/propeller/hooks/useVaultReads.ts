@@ -16,12 +16,31 @@ import {
   POOL_ADDRESS,
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
+import { readDepositAdmission } from "@/modules/strategies/propeller/utils/admission"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 // No on-chain APR view; these are first-paint placeholders until chain reads load.
 const FALLBACK_APR = 0
 const FALLBACK_MIN_REDEEM = 0
+
+export const depositAdmissionQuery = (
+  { isReady, evm }: TProviderContext,
+  vault: PropellerVaultConfig,
+  decimals: number,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.depositAdmission(vault.vaultAddress),
+    enabled: isReady,
+    queryFn: () =>
+      readDepositAdmission(
+        evm,
+        vault.vaultAddress,
+        getAddressFromAssetId(vault.assetId) as Hex,
+        decimals,
+      ),
+    refetchInterval: 10_000,
+  })
 
 /** Runs a read and returns fallback when it reverts, so one failed read does not blank the page. */
 const safeRead = async <T, F = null>(
@@ -49,6 +68,7 @@ export const vaultStatsQuery = (
     queryKey: propellerQueryKeys.vaultStats(vault.vaultAddress),
     enabled: isReady,
     queryFn: async () => {
+      const at = { blockNumber: await evm.getBlockNumber() }
       const contract = getContract({
         address: vault.vaultAddress,
         abi: VAULT_ABI,
@@ -74,23 +94,24 @@ export const vaultStatsQuery = (
         withdrawalDelay,
         underfunded,
       ] = await Promise.all([
-        contract.read.totalAssets(),
-        contract.read.totalSupply(),
-        contract.read.exchangeRate(),
-        contract.read.tvlCap(),
-        contract.read.paused(),
-        contract.read.depositsPaused(),
-        contract.read.queueHead(),
-        contract.read.queueTail(),
+        contract.read.totalAssets(at),
+        contract.read.totalSupply(at),
+        contract.read.exchangeRate(at),
+        contract.read.tvlCap(at),
+        contract.read.paused(at),
+        contract.read.depositsPaused(at),
+        contract.read.queueHead(at),
+        contract.read.queueTail(at),
         safeRead("Pool.getConfiguration(collateral)", () =>
-          pool.read.getConfiguration([
-            getAddressFromAssetId(vault.assetId) as Hex,
-          ]),
+          pool.read.getConfiguration(
+            [getAddressFromAssetId(vault.assetId) as Hex],
+            at,
+          ),
         ),
-        contract.read.feeController(),
-        contract.read.hollarDebtToken(),
-        contract.read.withdrawalDelay(),
-        contract.read.isUnderfunded(),
+        contract.read.feeController(at),
+        contract.read.hollarDebtToken(at),
+        contract.read.withdrawalDelay(at),
+        contract.read.isUnderfunded(at),
       ])
       const [protocolFeeBps, mainDiscountBps] = await Promise.all([
         safeRead("FeeController.protocolFeeBps", () =>
@@ -99,6 +120,7 @@ export const vaultStatsQuery = (
             abi: FEE_CONTROLLER_ABI,
             functionName: "protocolFeeBps",
             args: [vault.vaultAddress],
+            ...at,
           }),
         ),
         safeRead("DebtToken.getDiscountPercent", () =>
@@ -107,6 +129,7 @@ export const vaultStatsQuery = (
             abi: DEBT_TOKEN_ABI,
             functionName: "getDiscountPercent",
             args: [vault.vaultAddress],
+            ...at,
           }),
         ),
       ])
@@ -239,7 +262,14 @@ export const vaultBalancesQuery = (
     queryKey: propellerQueryKeys.vaultBalances(vault.vaultAddress, evmAddress),
     enabled: isReady && !!evmAddress,
     queryFn: async () => {
-      if (!evmAddress) return { eth: 0, shares: 0, rewards: null }
+      if (!evmAddress)
+        return {
+          eth: 0,
+          shares: 0,
+          sharesExact: "0",
+          assetValue: 0,
+          rewards: null,
+        }
       const options = { blockNumber: await evm.getBlockNumber() }
 
       const collateralToken = getContract({
@@ -254,18 +284,14 @@ export const vaultBalancesQuery = (
       })
 
       const [collateralBal, shareBal] = await Promise.all([
-        safeRead(
-          "collateral.balanceOf",
-          () => collateralToken.read.balanceOf([evmAddress], options),
-          0n,
-        ),
-        safeRead(
-          "vault shares.balanceOf",
-          () => contract.read.balanceOf([evmAddress], options),
-          0n,
-        ),
+        collateralToken.read.balanceOf([evmAddress], options),
+        contract.read.balanceOf([evmAddress], options),
       ])
 
+      const assetValue = await contract.read.convertToAssets(
+        [shareBal],
+        options,
+      )
       const rewards = await safeRead("vault earned collateral", async () => {
         const accounting = await contract.read.yieldAccounting(options)
         const fund = getContract({
@@ -290,6 +316,8 @@ export const vaultBalancesQuery = (
 
       return {
         rewards,
+        sharesExact: formatUnits(shareBal, decimals),
+        assetValue: Number(formatUnits(assetValue, decimals)),
         eth: Number(formatUnits(collateralBal, decimals)),
         shares: Number(formatUnits(shareBal, decimals)),
       }

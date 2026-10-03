@@ -80,29 +80,32 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                           </Text>
                         }
                       />
-                      {rewards && rewards.estimatedAssets > 0 && (
-                        <ValueStats
-                          wrap
-                          size="small"
-                          font="secondary"
-                          label={t("positions.col.earnings")}
-                          customValue={
-                            <Text fs="p3" fw={500} lh={1}>
-                              {t("common:currency", {
-                                value: rewards.claimableAssets,
-                                symbol,
-                              })}
-                            </Text>
-                          }
-                          bottomLabel={t("positions.earningsPending", {
-                            amount: Math.max(
-                              0,
-                              rewards.estimatedAssets - rewards.claimableAssets,
-                            ),
-                            symbol,
-                          })}
-                        />
-                      )}
+                      {rewards &&
+                        (rewards.estimatedAssets > 0 ||
+                          rewards.claimableShares > 0n) && (
+                          <ValueStats
+                            wrap
+                            size="small"
+                            font="secondary"
+                            label={t("positions.col.earnings")}
+                            customValue={
+                              <Text fs="p3" fw={500} lh={1}>
+                                {t("common:currency", {
+                                  value: rewards.claimableAssets,
+                                  symbol,
+                                })}
+                              </Text>
+                            }
+                            bottomLabel={t("positions.earningsPending", {
+                              amount: Math.max(
+                                0,
+                                rewards.estimatedAssets -
+                                  rewards.claimableAssets,
+                              ),
+                              symbol,
+                            })}
+                          />
+                        )}
                       <ValueStats
                         wrap
                         size="small"

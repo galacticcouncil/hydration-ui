@@ -10,7 +10,7 @@ import {
   subLoopQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
-import { computeVaultApy } from "@/modules/strategies/propeller/utils/accounting"
+import { computeVaultApr } from "@/modules/strategies/propeller/utils/accounting"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -22,14 +22,14 @@ export const remainingCapacity = (tvl: number, cap: number) => {
   return { remaining, remainingPct: cap > 0 ? (remaining / cap) * 100 : 0 }
 }
 
-export type VaultDepositState = "open" | "paused" | "full"
+export type VaultDepositState = "open" | "paused" | "full" | "unavailable"
 
 export const vaultDepositState = (
   stats: PropellerVaultStats | undefined,
 ): VaultDepositState => {
-  if (!stats) return "open"
+  if (!stats) return "unavailable"
   if (stats.paused || stats.depositsPaused || stats.underfunded) return "paused"
-  if (stats.cap > 0 && stats.remaining <= 0) return "full"
+  if (stats.remaining <= 0) return "full"
   return "open"
 }
 
@@ -93,7 +93,7 @@ export const usePropellerVaults = () => {
       vault,
       asset: getAssetWithFallback(vault.assetId),
       stats,
-      apy: computeVaultApy({
+      apy: computeVaultApr({
         maxLtv: stats?.maxLtv,
         leverage: subLoop?.leverage,
         borrowRate: subLoop?.borrowRate,

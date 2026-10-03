@@ -1,7 +1,7 @@
 /** Estimated annual return after harvest fees and both HOLLAR debt legs.
  * Execution costs, ramp time and retained yield are not forecast here.
  */
-export const computeVaultApy = ({
+export const computeVaultApr = ({
   maxLtv,
   leverage,
   borrowRate,
@@ -44,6 +44,7 @@ export const computeVaultApy = ({
     maxLtv > 1 ||
     leverage < 1 ||
     borrowRate < 0 ||
+    primeSupplyApy <= -100 ||
     protocolFeeBps < 0 ||
     protocolFeeBps > 10_000 ||
     mainDiscountBps < 0 ||
@@ -51,13 +52,20 @@ export const computeVaultApy = ({
   )
     return null
 
-  const loopCarry =
-    (leverage * primeSupplyApy) / 100 - (leverage - 1) * borrowRate
+  const sourceApr = Math.expm1(Math.log1p(primeSupplyApy / 100) / 8760) * 8760
+  const loopCarry = leverage * sourceApr - (leverage - 1) * borrowRate
   const fee = (Math.max(loopCarry, 0) * protocolFeeBps) / 10_000
   const mainBorrow = borrowRate * (1 - mainDiscountBps / 10_000)
   const apr = maxLtv * (loopCarry - fee - mainBorrow)
-  return apr > 0 ? apr * 100 : null
+  return apr * 100
 }
+
+/** Exact completion is independent of a rounded display percentage. */
+export const withdrawalComplete = (
+  started: boolean,
+  repaid: bigint,
+  debtShare: bigint,
+) => started && repaid >= debtShare
 
 export type WithdrawalState =
   | "cooldown"

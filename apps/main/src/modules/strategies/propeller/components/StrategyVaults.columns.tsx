@@ -61,7 +61,9 @@ export const useStrategyVaultColumns = (
             fs="p4"
             fw={600}
             color={getToken(
-              apy === null ? "text.high" : "accents.success.emphasis",
+              apy === null || apy <= 0
+                ? "text.high"
+                : "accents.success.emphasis",
             )}
           >
             {apy === null ? "—" : t("common:percent", { value: apy })}
@@ -123,11 +125,13 @@ export const useStrategyVaultColumns = (
               onClick={() => onDeposit(vault)}
               variant="secondary"
             >
-              {state === "paused"
-                ? t("strategy.action.paused")
-                : state === "full"
-                  ? t("strategy.action.full")
-                  : t("strategy.action.deposit")}
+              {state === "unavailable"
+                ? t("deposit.cta.unavailable")
+                : state === "paused"
+                  ? t("strategy.action.paused")
+                  : state === "full"
+                    ? t("strategy.action.full")
+                    : t("strategy.action.deposit")}
             </Button>
           </Flex>
         )

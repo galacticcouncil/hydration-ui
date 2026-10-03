@@ -92,7 +92,7 @@ export const buildWithdrawalRow = ({
     started: entry.started,
     eligibleAt: entry.eligibleAt,
     now: entry.observedAt,
-    complete: entry.settledProgress >= 1,
+    complete: entry.complete,
     settledAmount: settledSoFar,
   })
   const estEth = entry.started
@@ -179,15 +179,22 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   })
 
   if (!evmAddress) {
-    return { positions: [], withdrawals: [], isLoading: false }
+    return { positions: [], withdrawals: [], isLoading: false, isError: false }
   }
 
   const positions = PROPELLER_VAULTS.flatMap<PropellerPosition>((vault, i) => {
     const shares = balanceQueries[i]?.data?.shares ?? 0
     const rewards = balanceQueries[i]?.data?.rewards ?? null
-    if (shares <= 0 && !(rewards && rewards.estimatedAssets > 0)) return []
+    if (
+      shares <= 0 &&
+      !(
+        rewards &&
+        (rewards.estimatedAssets > 0 || rewards.claimableShares > 0n)
+      )
+    )
+      return []
     const market = markets[i]
-    const assetValue = shares * (market?.stats?.exchangeRate ?? 1)
+    const assetValue = balanceQueries[i]?.data?.assetValue ?? 0
     return [
       {
         vault,
@@ -233,6 +240,9 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   return {
     positions,
     withdrawals,
+    isError:
+      balanceQueries.some((q) => q.isError) ||
+      queueQueries.some((q) => q.isError),
     isLoading:
       balanceQueries.some((q) => q.isLoading) ||
       queueQueries.some((q) => q.isLoading),

@@ -10,10 +10,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { type ComponentType, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isTruthy } from "remeda"
+import { formatUnits } from "viem"
 
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
@@ -25,7 +27,10 @@ import {
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
 import { remainingCapacity } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
-import { vaultStatsQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import {
+  depositAdmissionQuery,
+  vaultStatsQuery,
+} from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -55,38 +60,55 @@ export const DepositForm = ({
     isTruthy,
   )
 
-  const { data: stats } = useQuery(vaultStatsQuery(rpc, vault, asset.decimals))
+  const { data: stats, isError: statsError } = useQuery(
+    vaultStatsQuery(rpc, vault, asset.decimals),
+  )
+  const { data: admission, isError: admissionError } = useQuery(
+    depositAdmissionQuery(rpc, vault, asset.decimals),
+  )
   const deposit = useDeposit(vault, { onSuccess })
 
-  const capacityKnown = !!stats && stats.tvlCap > 0
+  const capacityKnown = !!stats
   const { remaining } = remainingCapacity(
     stats?.totalAssets ?? 0,
     stats?.tvlCap ?? 0,
   )
   const atCapacity = capacityKnown && remaining <= 0
-  const isPaused = !!stats && (stats.depositsPaused || stats.paused)
+  const isPaused =
+    !!stats && (stats.depositsPaused || stats.paused || stats.underfunded)
+  const unavailable =
+    !rpc.isReady || !stats || !admission || statsError || admissionError
+  const maximum = formatUnits(admission?.maximum ?? 0n, asset.decimals)
+  const minimum = formatUnits(admission?.minimum ?? 0n, asset.decimals)
+  const limited = !!admission && (admission.expired || admission.maximum === 0n)
 
   const balance = scaleHuman(
     getTransferableBalance(vault.assetId),
     asset.decimals,
   )
-  const maxButtonBalance =
-    capacityKnown && Number(balance) > remaining
-      ? remaining.toString()
-      : balance
+  const maxButtonBalance = Big(balance).gt(maximum) ? maximum : balance
 
   const form = useDepositForm({
     maxBalance: balance,
-    maxCapacity: capacityKnown ? remaining : Number.POSITIVE_INFINITY,
+    maxCapacity: maximum,
+    minAmount: minimum,
+    decimals: asset.decimals,
   })
   const { control, handleSubmit, formState, reset } = form
 
   const canSubmit =
-    formState.isValid && !deposit.isPending && !isPaused && !atCapacity
+    formState.isValid &&
+    !deposit.isPending &&
+    !isPaused &&
+    !atCapacity &&
+    !unavailable &&
+    !limited
 
   const ctaLabel = (() => {
+    if (unavailable) return t("deposit.cta.unavailable")
     if (isPaused) return t("deposit.cta.paused")
     if (atCapacity) return t("deposit.cta.exceedsCapacity")
+    if (limited) return t("deposit.cta.limited")
     return t("deposit.cta.deposit")
   })()
 
@@ -94,11 +116,13 @@ export const DepositForm = ({
     const next = PROPELLER_VAULTS.find((v) => v.assetId === selected.id)
     if (!next || next.vaultAddress === vault.vaultAddress) return
     setVault(next)
+    deposit.reset()
     reset()
     onVaultChange?.(next)
   }
 
   const onSubmit = handleSubmit(({ amount }) => {
+    if (!canSubmit) return
     deposit.mutate(amount)
   })
 
@@ -151,6 +175,23 @@ export const DepositForm = ({
         <Separator mx="-xl" />
 
         <Box py="xl">
+          <Stack gap="s" pb="l">
+            <Text fs="p5">{t("deposit.executionDescription")}</Text>
+            {admission && !unavailable && !limited && (
+              <Text fs="p5">
+                {t("deposit.availableRange", {
+                  minimum,
+                  maximum,
+                  symbol: asset.symbol,
+                })}
+              </Text>
+            )}
+            {deposit.isError && (
+              <Text fs="p5" role="alert">
+                {t("deposit.failed")}
+              </Text>
+            )}
+          </Stack>
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
               type="submit"
