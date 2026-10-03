@@ -47,14 +47,20 @@ export const WithdrawalsCard = () => {
   const visibleRows = useMemo(() => {
     const rows: WithdrawalRow[] = (queue ?? [])
       .filter((e) => e.isUser)
-      .map((e) => ({
-        id: e.requestId,
-        amountBil: e.bilRemaining,
-        estHollar: Big(e.bilRemaining).times(exchangeRate).toString(),
-        timeRemainingDays: e.estTimeRemainingDays,
-        claimableBil: e.bilSettled,
-        claimableHollar: e.hollarOwed,
-      }))
+      .map((e) => {
+        const isSettled = Big(e.bilRemaining).eq(0)
+        return {
+          id: e.requestId,
+          amountBil: isSettled ? e.bilSettled : e.bilRemaining,
+          estHollar: isSettled
+            ? e.hollarOwed
+            : Big(e.bilRemaining).times(exchangeRate).toString(),
+          timeRemainingDays: e.estTimeRemainingDays,
+          claimableBil: e.bilSettled,
+          claimableHollar: e.hollarOwed,
+          isSettled,
+        }
+      })
     return rows.sort((a, b) => a.id - b.id)
   }, [queue, exchangeRate])
 

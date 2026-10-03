@@ -30,20 +30,20 @@ export function useRedemptionQueue(evmAddress: string | undefined) {
         bilVaultContractQuery(rpc),
       )
 
-      const [length, head, totalQueued] = await Promise.all([
+      const [length, totalQueued] = await Promise.all([
         vault.read.getRedemptionQueueLength(),
-        vault.read.getQueueHead(),
         vault.read.getTotalQueuedBil(),
       ])
 
       const queueLength = Number(length)
-      const queueHead = Number(head)
       const totalQueuedBil = formatUnits(totalQueued, bil.decimals)
 
       const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
 
-      for (let i = queueHead; i < queueLength; i++) {
+      // Scan from 0, not the queue head: the head moves past a request once
+      // it is fully settled, but it stays active until its HOLLAR is claimed.
+      for (let i = 0; i < queueLength; i++) {
         const [reqResult, waitResult] = await Promise.all([
           vault.read.getRedemptionRequest([BigInt(i)]),
           vault.read.getEstimatedWaitTime([BigInt(i)]),
