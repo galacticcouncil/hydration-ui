@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { type Abi, encodeFunctionData, erc20Abi, type Hex } from "viem"
+import { type Abi, encodeFunctionData, type Hex } from "viem"
 
 import { evmAccountBindingQuery } from "@/api/evm"
 import {
@@ -23,9 +23,8 @@ import {
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
-import { readDepositAdmission } from "@/modules/strategies/propeller/utils/admission"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
-import { prepareControlledDeposit } from "@/modules/strategies/propeller/utils/execution"
+import { depositWithApproval } from "@/modules/strategies/propeller/utils/deposit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
@@ -219,67 +218,35 @@ export function useDeposit(
   return useMutation({
     mutationFn: async (assetAmount: string) => {
       const assetBig = parseExactAmount(assetAmount, decimals)
-      const admission = await readDepositAdmission(
-        evm,
-        vaultAddress,
-        assetAddress,
-        decimals,
-      )
-      if (
-        admission.expired ||
-        assetBig < admission.minimum ||
-        assetBig > admission.maximum
-      )
-        throw new Error(
-          "Deposit capacity changed. Choose an amount within the available range.",
-        )
-      const calls: BatchEvmCall[] = []
-
-      const assetAllowance = await evm.readContract({
-        address: assetAddress,
-        abi: erc20Abi,
-        functionName: "allowance",
-        args: [evmAddress, vaultAddress],
-      })
-
-      if (assetAllowance < assetBig) {
-        calls.push({
-          to: assetAddress,
-          data: encodeFunctionData({
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [vaultAddress, assetBig],
-          }),
-          abi: [...erc20Abi],
-        })
-        // The quote runs transferFrom, so obtain it only after approval is
-        // confirmed. Approval itself must not close the deposit form.
-        await submitBatch(
-          vaultAddress,
-          calls,
-          {
-            submitted: `Approving ${symbol} for this vault...`,
-            success: `${symbol} approved`,
-          },
-          false,
-        )
-      }
-      const execution = await prepareControlledDeposit(evm, {
-        vault: vaultAddress,
-        asset: assetAddress,
-        owner: evmAddress,
-        amount: assetBig,
-      })
-
       const fmt = t("currency", {
         value: assetAmount,
         symbol,
         maximumFractionDigits: 4,
       })
-      return submitBatch(vaultAddress, [execution], {
-        submitted: `Depositing ${fmt}...`,
-        success: `${fmt} deposited`,
-      })
+      return depositWithApproval(
+        evm,
+        {
+          vault: vaultAddress,
+          asset: assetAddress,
+          owner: evmAddress,
+          amount: assetBig,
+        },
+        (approval) =>
+          submitBatch(
+            vaultAddress,
+            [approval],
+            {
+              submitted: `Approving ${symbol} for this vault...`,
+              success: `${symbol} approved`,
+            },
+            false,
+          ),
+        (deposit) =>
+          submitBatch(vaultAddress, [deposit], {
+            submitted: `Depositing ${fmt}...`,
+            success: `${fmt} deposited; strategy deployment follows gradually`,
+          }),
+      )
     },
   })
 }

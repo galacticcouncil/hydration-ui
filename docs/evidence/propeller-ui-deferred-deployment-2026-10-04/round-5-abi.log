@@ -1,0 +1,7 @@
+PASS CollateralVault: 34 function signatures, outputs and mutability
+PASS SubLoop: 5 function signatures, outputs and mutability
+PASS PropellerMainDebt: 3 function signatures, outputs and mutability
+PASS PropellerYieldAccounting: 2 function signatures, outputs and mutability
+PASS PropellerFeeController: 1 function signatures, outputs and mutability
+PASS 45 UI contract functions match compiled artifacts
+PASS 4 UI event signatures and indexed fields match compiled artifacts

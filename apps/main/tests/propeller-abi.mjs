@@ -7,7 +7,6 @@ import {
   MAIN_DEBT_ABI,
   YIELD_ACCOUNTING_ABI,
   FEE_CONTROLLER_ABI,
-  EXECUTION_ABI,
 } from "../src/modules/strategies/propeller/config/abi.ts"
 const artifactRoot = process.argv[2]
 if (!artifactRoot)
@@ -18,7 +17,6 @@ const groups = {
   PropellerMainDebt: MAIN_DEBT_ABI,
   PropellerYieldAccounting: YIELD_ACCOUNTING_ABI,
   PropellerFeeController: FEE_CONTROLLER_ABI,
-  ExecutionController: EXECUTION_ABI,
 }
 const type = (p) =>
   p.type.startsWith("tuple")
@@ -26,6 +24,7 @@ const type = (p) =>
     : p.type
 const signature = (fn) => `${fn.name}(${fn.inputs.map(type).join(",")})`
 let checked = 0
+let checkedEvents = 0
 for (const [name, abi] of Object.entries(groups)) {
   const compiled = JSON.parse(
     await readFile(
@@ -54,5 +53,21 @@ for (const [name, abi] of Object.entries(groups)) {
   console.log(
     `PASS ${name}: ${functions.length} function signatures, outputs and mutability`,
   )
+  for (const event of abi.filter((item) => item.type === "event")) {
+    const actual = compiled.find(
+      (item) => item.type === "event" && signature(item) === signature(event),
+    )
+    assert.ok(actual, `${name}: missing event ${signature(event)}`)
+    assert.deepEqual(
+      event.inputs.map((input) => input.indexed),
+      actual.inputs.map((input) => input.indexed),
+      `${name}.${event.name}: indexed event fields`,
+    )
+    assert.equal(event.anonymous, actual.anonymous)
+    checkedEvents++
+  }
 }
 console.log(`PASS ${checked} UI contract functions match compiled artifacts`)
+console.log(
+  `PASS ${checkedEvents} UI event signatures and indexed fields match compiled artifacts`,
+)

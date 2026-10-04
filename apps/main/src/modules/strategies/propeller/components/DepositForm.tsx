@@ -26,11 +26,7 @@ import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
-import { remainingCapacity } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
-import {
-  depositAdmissionQuery,
-  vaultStatsQuery,
-} from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -60,27 +56,15 @@ export const DepositForm = ({
     isTruthy,
   )
 
-  const { data: stats, isError: statsError } = useQuery(
-    vaultStatsQuery(rpc, vault, asset.decimals),
-  )
-  const { data: admission, isError: admissionError } = useQuery(
-    depositAdmissionQuery(rpc, vault, asset.decimals),
+  const { data: capacity, isError: capacityError } = useQuery(
+    depositCapacityQuery(rpc, vault),
   )
   const deposit = useDeposit(vault, { onSuccess })
-
-  const capacityKnown = !!stats
-  const { remaining } = remainingCapacity(
-    stats?.totalAssets ?? 0,
-    stats?.tvlCap ?? 0,
-  )
-  const atCapacity = capacityKnown && remaining <= 0
-  const isPaused =
-    !!stats && (stats.depositsPaused || stats.paused || stats.underfunded)
   const unavailable =
-    !rpc.isReady || !stats || !admission || statsError || admissionError
-  const maximum = formatUnits(admission?.maximum ?? 0n, asset.decimals)
-  const minimum = formatUnits(admission?.minimum ?? 0n, asset.decimals)
-  const limited = !!admission && (admission.expired || admission.maximum === 0n)
+    !rpc.isReady || !capacity || capacityError || !capacity.ready
+  const maximum = formatUnits(capacity?.maximum ?? 0n, asset.decimals)
+  const atCapacity = capacity?.maximum === 0n
+  const isPaused = capacity?.paused ?? false
 
   const balance = scaleHuman(
     getTransferableBalance(vault.assetId),
@@ -91,7 +75,6 @@ export const DepositForm = ({
   const form = useDepositForm({
     maxBalance: balance,
     maxCapacity: maximum,
-    minAmount: minimum,
     decimals: asset.decimals,
   })
   const { control, handleSubmit, formState, reset } = form
@@ -101,14 +84,12 @@ export const DepositForm = ({
     !deposit.isPending &&
     !isPaused &&
     !atCapacity &&
-    !unavailable &&
-    !limited
+    !unavailable
 
   const ctaLabel = (() => {
     if (unavailable) return t("deposit.cta.unavailable")
     if (isPaused) return t("deposit.cta.paused")
     if (atCapacity) return t("deposit.cta.exceedsCapacity")
-    if (limited) return t("deposit.cta.limited")
     return t("deposit.cta.deposit")
   })()
 
@@ -177,10 +158,9 @@ export const DepositForm = ({
         <Box py="xl">
           <Stack gap="s" pb="l">
             <Text fs="p5">{t("deposit.executionDescription")}</Text>
-            {admission && !unavailable && !limited && (
+            {capacity && !unavailable && !atCapacity && (
               <Text fs="p5">
-                {t("deposit.availableRange", {
-                  minimum,
+                {t("deposit.availableCapacity", {
                   maximum,
                   symbol: asset.symbol,
                 })}

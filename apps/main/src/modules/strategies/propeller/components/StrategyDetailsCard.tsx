@@ -71,6 +71,7 @@ export const StrategyDetailsCard = () => {
       </CardBody>
       <Box px="m" pb="m">
         <CardDescription>{t("strategy.apyEstimate")}</CardDescription>
+        <CardDescription>{t("strategy.deploymentDescription")}</CardDescription>
       </Box>
       <Separator />
       {isMobile || isTablet ? (

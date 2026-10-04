@@ -1,6 +1,8 @@
-Propeller supplies **your collateral asset** to the money market, borrows HOLLAR against it, and invests that HOLLAR in a shared **leveraged PRIME position**. The vault manages borrowing and rebalancing for you.
+A confirmed deposit supplies **your collateral asset** to the money market and mints funded vault shares. It does not borrow or swap during your deposit transaction. Keepers then borrow HOLLAR and build the shared **leveraged PRIME position** gradually through trades that respect the vault’s price limits.
 
-Harvested yield is converted into your collateral asset. Protocol fees and interest are paid before the remainder is compounded; some earned yield stays invested to cover execution costs. Returns vary with yield, borrowing rates and trading costs.
+Collateral awaiting deployment is pooled across the vault, including deposits and harvested earnings. It is not a separate personal queue or a promise of when your position will be fully deployed. Trading limits and market conditions determine the pace; the vault manages borrowing and rebalancing for you.
+
+Harvested yield is converted into your collateral asset. Protocol fees and interest are paid before the remainder becomes funded collateral rewards. Keepers can then deploy that new collateral gradually; some earned yield stays invested in PRIME awaiting conversion. Returns vary with yield, borrowing rates and trading costs.
 
 ### Key features
 

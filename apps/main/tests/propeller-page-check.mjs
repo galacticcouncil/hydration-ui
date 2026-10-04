@@ -23,7 +23,15 @@ try {
     )
     const text = await page.locator("body").innerText()
     assert.ok(text.includes("Est. APR before swaps"))
-    assert.ok(text.includes("Deposits use a fresh swap quote"))
+    assert.ok(text.includes("your deposit transaction makes no swap"))
+    assert.ok(text.includes("Collateral awaiting deployment"))
+    assert.ok(text.includes("pooled within each vault"))
+    assert.ok(text.includes("not a personal queue or a completion estimate"))
+    assert.ok(text.includes("unconverted yield is not funded crypto"))
+    const horizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    )
+    assert.ok(horizontalOverflow <= 1, `Page overflows at ${width}px`)
     assert.deepEqual(errors, [])
     console.log(
       JSON.stringify({
@@ -31,8 +39,10 @@ try {
         title: await page.title(),
         errors,
         unavailable: text.includes("Deposits unavailable"),
-        quoteExplanation: true,
+        fundedDepositExplanation: true,
+        pooledDeploymentExplanation: true,
         rateDisclosure: true,
+        horizontalOverflow,
       }),
     )
     await page.close()

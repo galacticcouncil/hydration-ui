@@ -32,22 +32,36 @@ try {
   await input.fill("0.1000000000000000001")
   await isDisabled(true)
   console.log("PASS amounts beyond token precision are rejected")
-  await input.fill("0.001")
+  await input.fill("0")
   await isDisabled(true)
+  await input.fill("0.000000000000000001")
+  await isDisabled(false)
+  await submit.click({ force: true })
   await input.fill("3")
+  await isDisabled(false)
+  await submit.click({ force: true })
+  assert.deepEqual(await page.evaluate(() => window.fixture.submitted), [
+    "0.5",
+    "0.000000000000000001",
+    "3",
+  ])
+  console.log(
+    "PASS positive deposits have no keeper trade minimum or slice maximum",
+  )
+  await input.fill("7.000000000000000001")
   await isDisabled(true)
   await page
     .getByRole("button", { name: "MAX", exact: true })
     .click({ force: true })
-  assert.equal(await input.inputValue(), "2")
+  assert.equal(await input.inputValue(), "7")
   await isDisabled(false)
-  console.log("PASS minimum, maximum and MAX enforce shared trade bounds")
+  console.log("PASS maximum and MAX enforce collateral vault capacity")
   await page.evaluate(() =>
     window.updateFixture({
-      admission: {
-        minimum: 10n ** 16n,
+      capacity: {
         maximum: 1000000000000000001n,
-        expired: false,
+        ready: true,
+        paused: false,
       },
     }),
   )
@@ -59,34 +73,38 @@ try {
   console.log(
     "PASS shrinking capacity revalidates entered amount and preserves exact MAX",
   )
-  const stats = await page.evaluate(() => window.fixture.stats)
+  const capacity = await page.evaluate(() => window.fixture.capacity)
   for (const override of [
     { error: true },
-    { stats: null },
+    { capacity: null },
     { rpcReady: false },
-    { stats: { ...stats, underfunded: true } },
-    { stats: { ...stats, tvlCap: 0 } },
+    { capacity: { ...capacity, ready: false } },
+    { capacity: { ...capacity, paused: true } },
+    { capacity: { ...capacity, maximum: 0n } },
   ]) {
     await update(override)
     await isDisabled(true)
-    await update({ error: false, stats, rpcReady: true })
+    await update({ error: false, capacity, rpcReady: true })
+    await isDisabled(false)
   }
   console.log(
-    "PASS missing/failed reads, disconnected RPC, underfunding and zero TVL cap disable deposits",
+    "PASS missing/failed reads, disconnected RPC, unready or paused vaults and zero TVL capacity disable deposits",
   )
-  await page.evaluate(() =>
-    window.updateFixture({
-      admission: { minimum: 10n ** 16n, maximum: 0n, expired: false },
-    }),
-  )
+  await update({ balance: 10n ** 18n })
   await isDisabled(true)
-  await page.evaluate(() =>
-    window.updateFixture({
-      admission: { minimum: 10n ** 16n, maximum: 10n ** 18n, expired: true },
-    }),
+  await page
+    .getByRole("button", { name: "MAX", exact: true })
+    .click({ force: true })
+  assert.equal(await input.inputValue(), "1")
+  await isDisabled(false)
+  console.log("PASS wallet balance changes revalidate the amount and limit MAX")
+  const body = await page.locator("body").innerText()
+  assert.ok(body.includes("your deposit transaction makes no swap"))
+  assert.ok(body.includes("mints funded vault shares"))
+  assert.ok(!body.includes("fresh swap quote"))
+  console.log(
+    "PASS funded deposit and gradual deployment are explained without a swap quote",
   )
-  await isDisabled(true)
-  console.log("PASS exhausted and expired admission remain closed")
   assert.deepEqual(errors, [])
   console.log("PASS no browser runtime errors")
 } catch (error) {

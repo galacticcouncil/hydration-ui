@@ -19,14 +19,12 @@ const defaultValues: DepositFormValues = {
 type UseDepositFormParams = {
   maxBalance: string
   maxCapacity: string
-  minAmount: string
   decimals: number
 }
 
 export const useDepositForm = ({
   maxBalance,
   maxCapacity,
-  minAmount,
   decimals,
 }: UseDepositFormParams) => {
   const { t } = useTranslation("propeller")
@@ -44,11 +42,6 @@ export const useDepositForm = ({
         refine<string>((value) => Big(value || "0").lte(maxCapacity), {
           error: t("deposit.validation.maximum", { amount: maxCapacity }),
         }),
-      )
-      .check(
-        refine<string>((value) => Big(value || "0").gte(minAmount), {
-          error: t("deposit.validation.minimum", { amount: minAmount }),
-        }),
       ),
   })
 
@@ -60,6 +53,6 @@ export const useDepositForm = ({
   const { getValues, trigger } = form
   useEffect(() => {
     if (getValues("amount")) void trigger("amount")
-  }, [maxBalance, maxCapacity, minAmount, decimals, getValues, trigger])
+  }, [maxBalance, maxCapacity, decimals, getValues, trigger])
   return form
 }

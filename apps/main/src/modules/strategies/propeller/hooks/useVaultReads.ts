@@ -16,7 +16,7 @@ import {
   POOL_ADDRESS,
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
-import { readDepositAdmission } from "@/modules/strategies/propeller/utils/admission"
+import { readDepositCapacity } from "@/modules/strategies/propeller/utils/deposit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
 
@@ -24,20 +24,18 @@ import { TProviderContext } from "@/providers/rpcProvider"
 const FALLBACK_APR = 0
 const FALLBACK_MIN_REDEEM = 0
 
-export const depositAdmissionQuery = (
+export const depositCapacityQuery = (
   { isReady, evm }: TProviderContext,
   vault: PropellerVaultConfig,
-  decimals: number,
 ) =>
   queryOptions({
-    queryKey: propellerQueryKeys.depositAdmission(vault.vaultAddress),
+    queryKey: propellerQueryKeys.depositCapacity(vault.vaultAddress),
     enabled: isReady,
     queryFn: () =>
-      readDepositAdmission(
+      readDepositCapacity(
         evm,
         vault.vaultAddress,
         getAddressFromAssetId(vault.assetId) as Hex,
-        decimals,
       ),
     refetchInterval: 10_000,
   })
@@ -93,6 +91,8 @@ export const vaultStatsQuery = (
         debtToken,
         withdrawalDelay,
         underfunded,
+        deferredDeployment,
+        pendingDeployment,
       ] = await Promise.all([
         contract.read.totalAssets(at),
         contract.read.totalSupply(at),
@@ -112,6 +112,12 @@ export const vaultStatsQuery = (
         contract.read.hollarDebtToken(at),
         contract.read.withdrawalDelay(at),
         contract.read.isUnderfunded(at),
+        safeRead("Vault.deferredDeployment", () =>
+          contract.read.deferredDeployment(at),
+        ),
+        safeRead("Vault.reinvestAssets", () =>
+          contract.read.reinvestAssets(at),
+        ),
       ])
       const [protocolFeeBps, mainDiscountBps] = await Promise.all([
         safeRead("FeeController.protocolFeeBps", () =>
@@ -154,6 +160,10 @@ export const vaultStatsQuery = (
         maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
         withdrawalDelay,
         underfunded,
+        pendingDeployment:
+          deferredDeployment === true && pendingDeployment !== null
+            ? formatUnits(pendingDeployment, decimals)
+            : null,
         protocolFeeBps: protocolFeeBps === null ? null : Number(protocolFeeBps),
         mainDiscountBps:
           mainDiscountBps === null ? null : Number(mainDiscountBps),

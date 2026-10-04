@@ -111,6 +111,25 @@ export const useStrategyVaultColumns = (
       },
     })
 
+    const deploymentColumn = columnHelper.display({
+      id: "pendingDeployment",
+      header: t("strategy.pendingDeployment"),
+      cell: ({ row }) => {
+        const { asset, stats } = row.original
+        const pendingDeployment = stats?.pendingDeployment
+        return (
+          <Text fs="p4">
+            {typeof pendingDeployment === "string"
+              ? t("common:currency", {
+                  value: pendingDeployment,
+                  symbol: asset.symbol,
+                })
+              : "—"}
+          </Text>
+        )
+      },
+    })
+
     const actionsColumn = columnHelper.display({
       id: "actions",
       meta: { sx: { textAlign: "right" } },
@@ -138,6 +157,13 @@ export const useStrategyVaultColumns = (
       },
     })
 
-    return [assetColumn, tvlColumn, apyColumn, capacityColumn, actionsColumn]
+    return [
+      assetColumn,
+      tvlColumn,
+      apyColumn,
+      deploymentColumn,
+      capacityColumn,
+      actionsColumn,
+    ]
   }, [t, onDeposit])
 }

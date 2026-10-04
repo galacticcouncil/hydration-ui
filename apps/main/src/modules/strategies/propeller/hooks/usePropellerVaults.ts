@@ -43,6 +43,7 @@ export type PropellerVaultStats = {
   underfunded: boolean
   exchangeRate: number
   maxLtv: number | null
+  pendingDeployment: string | null
 }
 
 export type PropellerVaultMarket = {
@@ -87,6 +88,7 @@ export const usePropellerVaults = () => {
       underfunded: data.underfunded,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
+      pendingDeployment: data.pendingDeployment,
     }
 
     return {

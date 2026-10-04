@@ -3,15 +3,8 @@ import { createRoot } from "react-dom/client"
 import { DepositForm } from "../../src/modules/strategies/propeller/components/DepositForm"
 import { PROPELLER_VAULTS } from "../../src/modules/strategies/propeller/config/vaults"
 window.fixture = {
-  stats: {
-    totalAssets: 2,
-    tvlCap: 10,
-    paused: false,
-    depositsPaused: false,
-    underfunded: false,
-  },
-  admission: { minimum: 10n ** 16n, maximum: 2n * 10n ** 18n, expired: false },
-  balance: 3n * 10n ** 18n,
+  capacity: { maximum: 7n * 10n ** 18n, ready: true, paused: false },
+  balance: 8n * 10n ** 18n,
   error: false,
   rpcReady: true,
   submitted: [],
