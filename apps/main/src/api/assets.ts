@@ -13,10 +13,11 @@ import { PublicClient } from "viem"
 import { HYPERVISOR_ABI } from "@/api/gamma/abi"
 import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
 import { vaultIdentityQuery } from "@/api/gamma/vaults"
-import { assetMetadataQuery } from "@/api/metadata"
 import { allPools, V3PoolBase } from "@/api/pools"
+import { TDataEnv } from "@/config/rpc"
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
+  TAssetStored,
   TATokenPairStored,
   TShareTokenStored,
   useAssetRegistryStore,
@@ -128,6 +129,8 @@ const fetchGammaVaultShareSymbols = async (
   )
 }
 
+export const assetsQueryKey = (dataEnv: TDataEnv) => ["assets", dataEnv]
+
 export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
@@ -135,19 +138,15 @@ export const assetsQuery = (
   const { sdk, papi, evm, isEndpointSettled, dataEnv, genesisHash } = context
 
   return queryOptions({
-    queryKey: ["assets", dataEnv],
+    queryKey: assetsQueryKey(dataEnv),
     queryFn: async () => {
       const { syncAssets, syncATokenPairs, syncShareTokens } =
         useAssetRegistryStore.getState()
 
-      // Icons are baked into the stored registry, so the metadata singleton has
-      // to be warm before the assets are mapped - it is no longer warmed by the
-      // provider query.
-      const [tradeAssets, pools, assets, metadata] = await Promise.all([
+      const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
         sdk.client.asset.getSupported(false),
-        queryClient.ensureQueryData(assetMetadataQuery()),
       ])
       const tradeAssetsMap = new Set(tradeAssets)
       const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
@@ -198,6 +197,15 @@ export const assetsQuery = (
 
       syncATokenPairs(aTokenPairs)
 
+      const metadata = AssetMetadataFactory.getInstance()
+      const isMetadataLoaded = metadata.isLoaded
+      const stored = useAssetRegistryStore.getState()
+      const storedAssets = new Map(
+        !isMetadataLoaded && stored.genesisHash === genesisHash
+          ? stored.assets.map((asset) => [asset.id, asset])
+          : [],
+      )
+
       const assetsData = assets
         .filter(
           (asset) =>
@@ -235,17 +243,34 @@ export const assetsQuery = (
             }
           }
         })
+        .map((asset) => withStoredIcons(asset, storedAssets.get(asset.id)))
 
       syncAssets(assetsData, genesisHash)
       syncShareTokens(shareTokens)
 
-      return []
+      return { isMetadataLoaded }
     },
     enabled: isEndpointSettled,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   })
+}
+
+function withStoredIcons(
+  asset: TAssetData,
+  stored: TAssetStored | undefined,
+): TAssetData {
+  if (!stored) return asset
+
+  const iconSrc = asset.iconSrc || stored.iconSrc
+  const chainSrc = asset.chainSrc || stored.chainSrc
+
+  return {
+    ...asset,
+    ...(iconSrc && { iconSrc }),
+    ...(chainSrc && { chainSrc }),
+  }
 }
 
 function assetToTokenType(

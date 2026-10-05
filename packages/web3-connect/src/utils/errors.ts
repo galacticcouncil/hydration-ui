@@ -28,3 +28,8 @@ export class UserRejectedError extends BaseWalletError {
   readonly name = "UserRejectedError"
   readonly message = `${this.wallet.title} was rejected by the user.`
 }
+
+export class StaleAttemptError extends BaseWalletError {
+  readonly name = "StaleAttemptError"
+  readonly message = `${this.wallet.title} connection attempt was superseded.`
+}

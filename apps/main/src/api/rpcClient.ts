@@ -96,8 +96,6 @@ const getProviderData = async (
     0,
   ])
 
-  // The asset metadata CDN is warmed separately by assetMetadataQuery - it is
-  // a third party and must not sit on the path to first render.
   const sdk = await createSdkContext(papiClient)
 
   if (ENV.VITE_HSM_ENABLED) {
