@@ -1,0 +1,54 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/apps/main
+
+stderr | src/modules/transactions/utils/tx.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+ ❯ src/modules/transactions/utils/tx.test.ts (3 tests | 1 failed) 10ms
+   ✓ Native EVM binding composition > adds binding before a plain call 2ms
+   ✓ Native EVM binding composition > keeps an existing batch flat and puts binding first 0ms
+   × Native EVM binding composition > does not bind a fresh Propeller wallet twice when its approval already includes binding 6ms
+     → expected { decodedCall: { …(2) } } to be { decodedCall: { …(2) } } // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/modules/transactions/utils/tx.test.ts > Native EVM binding composition > does not bind a fresh Propeller wallet twice when its approval already includes binding
+AssertionError: expected { decodedCall: { …(2) } } to be { decodedCall: { …(2) } } // Object.is equality
+
+- Expected
++ Received
+
+@@ -11,10 +11,17 @@
+                "type": "bind_evm_address",
+                "value": undefined,
+              },
+            },
+            {
++             "type": "EVMAccounts",
++             "value": {
++               "type": "bind_evm_address",
++               "value": undefined,
++             },
++           },
++           {
+              "type": "EVM",
+              "value": {
+                "type": "call",
+                "value": {},
+              },
+
+ ❯ src/modules/transactions/utils/tx.test.ts:44:57
+     42|     const { papi, batchAll } = setup()
+     43|     const preparedApproval = batch([binding, call])
+     44|     expect(prependEvmBindingTx(papi, preparedApproval)).toBe(preparedA…
+       |                                                         ^
+     45|     expect(batchAll).not.toHaveBeenCalled()
+     46|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  12:25:13
+   Duration  2.41s (transform 225ms, setup 0ms, collect 2.03s, tests 10ms, environment 0ms, prepare 117ms)

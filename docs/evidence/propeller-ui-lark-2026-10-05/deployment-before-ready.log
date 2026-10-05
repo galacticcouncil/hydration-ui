@@ -1,0 +1,24 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Main ledger binding
++ actual - expected
+
++ '0x0000000000000000000000000000000000000000'
+- '0x59ba6340a85e311f8f43071372de1d0f5fb90dc4'
+
+    at equalAddress (file:///tmp/propeller-ui-dca-20261004/apps/main/tests/propeller-deployment.mjs:27:10)
+    at file:///tmp/propeller-ui-dca-20261004/apps/main/tests/propeller-deployment.mjs:125:5
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Promise.all (index 0)
+    at async file:///tmp/propeller-ui-dca-20261004/apps/main/tests/propeller-deployment.mjs:64:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: '0x0000000000000000000000000000000000000000',
+  expected: '0x59ba6340a85e311f8f43071372de1d0f5fb90dc4',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.7.0

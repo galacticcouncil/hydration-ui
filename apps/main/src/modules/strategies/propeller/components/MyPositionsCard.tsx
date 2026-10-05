@@ -139,6 +139,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                         </LoadingButton>
                       )}
                       <Button
+                        aria-label={`${t("positions.action.withdraw")} ${symbol}`}
                         disabled={shares <= 0}
                         variant="tertiary"
                         size="small"

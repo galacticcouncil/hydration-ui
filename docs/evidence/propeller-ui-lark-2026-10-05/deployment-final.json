@@ -1,0 +1,37 @@
+{
+  "rpc": "https://4.lark.hydration.cloud",
+  "genesis": "0xba82f5b6d812fd3e2a6c610969e395d3be1e558145a9f07148b8d1f269ab4fb2",
+  "blockNumber": "415848",
+  "evmChainId": 222222,
+  "historyStart": "415383",
+  "source": "0x7016805f0f1ab369a1e308038db22eefe3d4b49f",
+  "mode": "read-only; no wallet signatures or transactions",
+  "vaults": [
+    {
+      "assetId": "34",
+      "address": "0x40cca3da6cead6dada9e9ffc4c06e9039791876a",
+      "ready": true,
+      "bootstrapped": true,
+      "paused": false,
+      "depositsPaused": false,
+      "underfunded": false,
+      "remainingCapacity": "9980999999327356326",
+      "pendingDeployment": "9822043",
+      "totalAssets": "19000000672643674",
+      "totalSupply": "18999999769954880"
+    },
+    {
+      "assetId": "1000765",
+      "address": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+      "ready": true,
+      "bootstrapped": true,
+      "paused": false,
+      "depositsPaused": false,
+      "underfunded": false,
+      "remainingCapacity": "499809999999755021",
+      "pendingDeployment": "189999999995302",
+      "totalAssets": "190000000244979",
+      "totalSupply": "189999999906026"
+    }
+  ]
+}

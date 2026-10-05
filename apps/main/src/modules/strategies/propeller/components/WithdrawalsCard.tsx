@@ -133,6 +133,7 @@ export const WithdrawalsCard = ({ rows }: Props) => {
                   <Flex direction="column" gap="s" align="flex-end">
                     {label === "claimable" ? (
                       <LoadingButton
+                        aria-label={`${t("withdrawals.action.claim")} ${symbol}`}
                         variant="secondary"
                         size="small"
                         loadingMode="replace"

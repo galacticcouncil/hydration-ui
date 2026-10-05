@@ -48,6 +48,7 @@ const PropellerVaultContent = () => {
   return (
     <Stack gap="xxl">
       <StrategyHeader />
+      <Alert variant="info" description={t("strategy.testnet")} />
       {isError && (
         <Alert variant="warning" description={t("positions.readFailed")} />
       )}

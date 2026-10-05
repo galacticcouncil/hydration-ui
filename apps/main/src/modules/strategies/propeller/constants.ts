@@ -4,11 +4,11 @@ import { type Hex } from "viem"
 // VAULT_DEPLOY_BLOCK, and vaultAddress in vaults.ts.
 // POOL_ADDRESS, HOLLAR_ADDRESS, and PRIME_ADDRESS are mainnet-mirrored on lark.
 
-export const SUBLOOP_ADDRESS: Hex = "0x1e755ba323Dbfe80CAa1bDAe37255D6f18F38CE6"
+export const SUBLOOP_ADDRESS: Hex = "0x7016805f0f1ab369a1e308038db22eefe3d4b49f"
 
-// Log scan start block. lark-4 re-forked 2026-09-07; SubLoop code starts ~138983.
+// First vault proxy in the fresh Lark-4 deployment on 2026-10-05.
 // Too low wastes time; too high truncates history.
-export const VAULT_DEPLOY_BLOCK = 138900n
+export const VAULT_DEPLOY_BLOCK = 415383n
 
 export const EVM_CALL_GAS = 2_000_000n
 

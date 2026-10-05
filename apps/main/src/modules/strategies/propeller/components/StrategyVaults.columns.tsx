@@ -41,7 +41,7 @@ export const useStrategyVaultColumns = (
         const { asset, stats, tvlUsd } = row.original
         return (
           <Amount
-            value={t("common:currency.compact", {
+            value={t("common:currency", {
               value: stats?.tvl ?? 0,
               symbol: asset.symbol,
             })}
@@ -86,7 +86,7 @@ export const useStrategyVaultColumns = (
                 fw={500}
                 color={getToken("text.high")}
               >
-                {t("common:currency.compact", {
+                {t("common:currency", {
                   value: stats.remaining,
                   symbol: asset.symbol,
                 })}

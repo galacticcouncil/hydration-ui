@@ -1,5 +1,6 @@
 {
   "strategy.name": "Juicer",
+  "strategy.testnet": "Lark-4 test deployment. Deposits and withdrawals use test tokens.",
   "strategy.title": "Strategy overview",
   "strategy.totalTvl": "Total TVL",
   "strategy.remainingCapacity": "Remaining capacity",
