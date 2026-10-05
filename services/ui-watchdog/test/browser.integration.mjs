@@ -1,6 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createServer } from "node:http"
+import { chromium } from "playwright"
 import { probeBrowser } from "../src/browser.mjs"
 import { sha256 } from "../src/util.mjs"
 import { chromeTransport } from "../src/chrome.mjs"
@@ -266,6 +267,220 @@ test(
       bad.issues.some(
         (i) => i.path === "/lazy.js" && i.kind === "hash-mismatch",
       ),
+    )
+  },
+)
+
+// Chromium keeps the bytes of images it could decode; fixtures need a real one.
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "base64",
+)
+
+// Module chunks (entry script, modulepreload, import()) load with
+// sec-fetch-mode: cors and an Origin header; a scanner that preloads them
+// without CORS gets clean bytes while users get the tampered chunk.
+test(
+  "Chromium byte scanner requests each resource type like the app and detects a cors-only chunk cloak",
+  { timeout: 60000 },
+  async (t) => {
+    const hits = []
+    const files = {
+      "/index.html":
+        '<!doctype html><div id="root"></div><link rel="stylesheet" crossorigin href="/app.css"><script type="module" crossorigin src="/app.js"></script>',
+      "/app.js": 'import("/lazy.js")',
+      "/lazy.js": "export const trusted = true",
+      "/app.css": "body{color:red}",
+      "/font.woff2": "font bytes",
+      "/math.wasm": "wasm bytes",
+      "/logo.png": PNG,
+    }
+    const types = {
+      js: "application/javascript",
+      css: "text/css",
+      woff2: "font/woff2",
+      wasm: "application/wasm",
+      png: "image/png",
+    }
+    let cloak = false
+    const server = createServer((req, res) => {
+      const p = req.url === "/" ? "/index.html" : req.url
+      hits.push({ path: p, headers: req.headers })
+      const body =
+        cloak && p === "/lazy.js" && req.headers["sec-fetch-mode"] === "cors"
+          ? "export const trusted = false"
+          : files[p]
+      res
+        .writeHead(200, {
+          "content-type": types[p.split(".").pop()] || "text/html",
+        })
+        .end(body || "")
+    })
+    await new Promise((r) => server.listen(0, "127.0.0.1", r))
+    t.after(() => {
+      server.closeAllConnections()
+      server.close()
+    })
+    const c = {
+      target: `http://127.0.0.1:${server.address().port}`,
+      concurrency: 2,
+      externalScripts: {},
+      timeoutMs: 5000,
+    }
+    const reference = {
+      sha: "a".repeat(40),
+      files: Object.fromEntries(
+        Object.entries(files).map(([p, b]) => [
+          p,
+          { sha256: sha256(b), size: b.length },
+        ]),
+      ),
+    }
+    async function scan() {
+      const browser = await chromeTransport(c, {
+        allowNetwork: async () => true,
+      })
+      try {
+        return await observe(
+          { ...c, siteRequest: browser.request },
+          [reference],
+          { full: true },
+        )
+      } finally {
+        await browser.close()
+      }
+    }
+    const clean = await scan()
+    assert.deepEqual(clean.issues, [])
+    assert.equal(clean.filesChecked, 7)
+    // Measured from a real Chromium page loading the Vite production build:
+    // [sec-fetch-mode, sec-fetch-dest, Origin present, accept].
+    const expected = {
+      "/app.js": ["cors", "script", true, "*/*"],
+      "/lazy.js": ["cors", "script", true, "*/*"],
+      "/app.css": ["cors", "style", true, "text/css,*/*;q=0.1"],
+      "/font.woff2": ["cors", "font", true, "*/*"],
+      "/math.wasm": ["cors", "empty", false, "*/*"],
+      "/logo.png": ["no-cors", "image", false, /^image\//],
+    }
+    for (const [path, [mode, dest, origin, accept]] of Object.entries(
+      expected,
+    )) {
+      const h = hits.find((x) => x.path === path)?.headers
+      assert(h, path)
+      assert.equal(h["sec-fetch-mode"], mode, path)
+      assert.equal(h["sec-fetch-dest"], dest, path)
+      assert.equal(h["sec-fetch-site"], "same-origin", path)
+      assert.equal(h.origin, origin ? c.target : undefined, path)
+      // Files index.html names come from /, lazy ones from an app route.
+      if (["/app.js", "/app.css"].includes(path))
+        assert.equal(h.referer, `${c.target}/`, path)
+      else
+        assert(
+          h.referer?.startsWith(`${c.target}/`) && h.referer !== `${c.target}/`,
+          `${path} referer ${h.referer}`,
+        )
+      assert.equal(h["accept-language"], "en-US,en;q=0.9", path)
+      assert.match(h["accept-encoding"], /\bbr\b/, path)
+      if (accept instanceof RegExp) assert.match(h.accept, accept, path)
+      else assert.equal(h.accept, accept, path)
+    }
+    for (const { path, headers: h } of hits.filter((x) =>
+      x.path.endsWith(".js"),
+    )) {
+      assert.equal(h["sec-fetch-mode"], "cors", path)
+      assert.equal(h.origin, c.target, path)
+    }
+    cloak = true
+    const bad = await scan()
+    assert.equal(
+      assess({ probe: bad }).state,
+      "integrity_alert",
+      JSON.stringify(bad.issues),
+    )
+    assert(
+      bad.issues.some(
+        (i) => i.path === "/lazy.js" && i.kind === "hash-mismatch",
+      ),
+    )
+    // The same cloak reaches a real page's import().
+    const browser = await chromium.launch()
+    try {
+      const page = await browser.newPage()
+      await page.goto(c.target)
+      assert.equal(
+        await page.evaluate(() => import("/lazy.js").then((m) => m.trusted)),
+        false,
+      )
+    } finally {
+      await browser.close()
+    }
+  },
+)
+
+// Chromium's DevTools body is text-decoded; a module script is always UTF-8
+// and the blank page declares UTF-8, so bytes round-trip without a charset
+// parameter. Playwright hides /favicon.ico page events; the file still counts.
+test(
+  "Chromium byte scanner hashes non-ASCII text and favicon.ico files exactly",
+  { timeout: 30000 },
+  async (t) => {
+    const files = {
+      "/index.html":
+        '<div id="root"></div><link rel="icon" href="/favicon/favicon.ico"><script type="module" crossorigin src="/app.js"></script>',
+      "/app.js": 'export const symbols = "≈ ✦ é"',
+      "/app.css": 'body::before{content:"…"}',
+      "/favicon/favicon.ico": PNG,
+    }
+    const types = {
+      js: "application/javascript",
+      css: "text/css",
+      ico: "image/x-icon",
+    }
+    const server = createServer((req, res) => {
+      const p = req.url === "/" ? "/index.html" : req.url
+      res
+        .writeHead(200, {
+          "content-type": types[p.split(".").pop()] || "text/html",
+        })
+        .end(files[p] || "")
+    })
+    await new Promise((r) => server.listen(0, "127.0.0.1", r))
+    t.after(() => {
+      server.closeAllConnections()
+      server.close()
+    })
+    const c = {
+      target: `http://127.0.0.1:${server.address().port}`,
+      concurrency: 2,
+      externalScripts: {},
+      timeoutMs: 5000,
+    }
+    const reference = {
+      sha: "a".repeat(40),
+      files: Object.fromEntries(
+        Object.entries(files).map(([p, b]) => [
+          p,
+          { sha256: sha256(b), size: Buffer.byteLength(b) },
+        ]),
+      ),
+    }
+    const browser = await chromeTransport(c, { allowNetwork: async () => true })
+    let result
+    try {
+      result = await observe(
+        { ...c, siteRequest: browser.request },
+        [reference],
+        { full: true },
+      )
+    } finally {
+      await browser.close()
+    }
+    assert.deepEqual(result.issues, [])
+    assert.equal(result.filesChecked, 4)
+    assert.equal(
+      result.observed["/favicon/favicon.ico"].sha256,
+      reference.files["/favicon/favicon.ico"].sha256,
     )
   },
 )
