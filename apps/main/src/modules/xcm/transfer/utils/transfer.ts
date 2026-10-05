@@ -73,14 +73,22 @@ export const getTransferStatus = (
   }
 }
 
+/**
+ * Amount that lands on the destination.
+ *
+ * A destination fee sharing the transfer asset comes out of what lands -
+ * unless the route prepays it on source on top of the amount (ntt executor
+ * routes), in which case the whole amount is delivered.
+ */
 export const calculateTransferDestAmount = (
   asset: Asset,
   amount: string,
   transfer: Transfer,
+  isDestFeePrepaid = false,
 ): string => {
   const { destinationFee } = transfer.source
   if (!isValidBigSource(amount)) return ""
-  if (asset.isEqual(destinationFee)) {
+  if (asset.isEqual(destinationFee) && !isDestFeePrepaid) {
     const destFee = toDecimal(destinationFee.amount, destinationFee.decimals)
     const amountMinusFee = Big(amount || "0").minus(destFee)
     return amountMinusFee.gt(0) ? amountMinusFee.toString() : ""
