@@ -242,7 +242,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         destSpotPrice,
         isDestSpotPriceLoading,
         onSubmit,
-        isLoading: isOriginLoading || isDestLoading || isSubmitting,
+        isLoading: isOriginLoading || isSubmitting,
         quoteError,
         requiredWalletMode,
         isWalletCompatible,

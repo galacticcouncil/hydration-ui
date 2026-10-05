@@ -309,7 +309,7 @@
   "limit.summary.minReceived": "Receive at least",
   "limit.summary.expiry": "Expires",
   "limit.summary.expiry.open": "When filled or cancelled",
-  "limit.footer.message": "Your order might not execute precisely at your specified limit price when the market reaches it.",
+  "limit.footer.message": "Order may not execute right away. It fills once the market reaches your price, and always at that price or better.",
   "limit.invert": "Invert price denomination",
   "intents.onboarding.title": "Intents are here!",
   "intents.onboarding.description": "A new way to place trades that includes limit orders.",
