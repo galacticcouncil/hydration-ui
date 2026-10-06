@@ -161,7 +161,7 @@ export const DepositForm = ({
 
         <Separator mx="-xl" />
 
-        <Stack gap="xl" pb="xl">
+        <Stack gap="l" pb="xl">
           <Summary separator={<Separator mx="-xl" />} withTrailingSeparator>
             {capacity && !unavailable && !atCapacity && (
               <SummaryRow
@@ -200,9 +200,13 @@ export const DepositForm = ({
               }
             />
           </Summary>
-          {deposit.isError && (
-            <Alert variant="error" description={t("deposit.failed")} />
-          )}
+          <Stack gap="base">
+            <Alert variant="info" description={t("strategy.testnet")} />
+            {deposit.isError && (
+              <Alert variant="error" description={t("deposit.failed")} />
+            )}
+          </Stack>
+          <Separator mx="-xl" />
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
               type="submit"
