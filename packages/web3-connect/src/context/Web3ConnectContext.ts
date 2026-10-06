@@ -14,6 +14,7 @@ export type Web3ConnectContextType = {
   papi: TypedApi<typeof hydration>
   onAccountSelect: (account: Account) => void
   mode: WalletMode
+  setModalContentWidth: (width: string) => void
 }
 
 const Web3ConnectContext = createContext<Web3ConnectContextType | null>(null)

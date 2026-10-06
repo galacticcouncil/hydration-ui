@@ -104,7 +104,6 @@ export class EthereumSigner {
   }
 
   async estimateGas(tx: EstimateGasParameters, weight: bigint = 0n) {
-    console.log("IN ESTIMATE", { tx, weight })
     const [gas, gasPriceBase] = await Promise.all([
       this.getGas(tx, weight),
       this.publicClient.getGasPrice(),
@@ -143,8 +142,6 @@ export class EthereumSigner {
       this.publicClient = evmClient.getProvider() as PublicClient
     }
 
-    await this.walletClient.switchChain({ id: evmClient.chain.id })
-
     return chain
   }
 
@@ -180,8 +177,6 @@ export class EthereumSigner {
     if (this.provider && this.address) {
       try {
         await this.switchChain(options)
-
-        console.log("IN GET PERMIT", { call, options })
 
         const weight = options.weight ?? 0n
 
@@ -250,6 +245,7 @@ export class EthereumSigner {
         }
       } catch (err) {
         options.onError(this.formatError(err))
+        throw err
       }
     }
 

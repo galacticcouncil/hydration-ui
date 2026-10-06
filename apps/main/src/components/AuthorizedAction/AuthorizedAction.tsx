@@ -1,6 +1,5 @@
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { Web3ConnectButtonProps } from "@galacticcouncil/web3-connect/src/components/Web3ConnectButton"
-import { useMatch } from "@tanstack/react-router"
 import { FC } from "react"
 
 export const AuthorizedAction: FC<Web3ConnectButtonProps> = ({
@@ -9,17 +8,7 @@ export const AuthorizedAction: FC<Web3ConnectButtonProps> = ({
 }) => {
   const { account } = useAccount()
 
-  const isCrossChainPage = !!useMatch({
-    from: "/cross-chain/",
-    shouldThrow: false,
-  })
+  if (account?.canUseOnHydration) return children
 
-  // allow incompatible accounts on cross-chain page
-  const isIncompatible = !isCrossChainPage && !!account?.isIncompatible
-
-  if (!account || isIncompatible) {
-    return <Web3ConnectButton {...props} />
-  }
-
-  return children
+  return <Web3ConnectButton {...props} requiresHydrationAccount />
 }
