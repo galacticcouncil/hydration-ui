@@ -210,7 +210,7 @@ try {
     waitUntil: "domcontentloaded",
   })
   await page.waitForFunction(
-    () => document.body.textContent.includes("Indicative annual carry"),
+    () => document.body.textContent.includes("Est. APR"),
     undefined,
     { timeout: 45_000, polling: 100 },
   )

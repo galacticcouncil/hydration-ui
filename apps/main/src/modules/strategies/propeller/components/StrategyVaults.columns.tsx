@@ -5,6 +5,7 @@ import {
   ProgressBar,
   Stack,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -53,7 +54,24 @@ export const useStrategyVaultColumns = (
 
     const apyColumn = columnHelper.display({
       id: "netApy",
-      header: t("strategy.col.netApy"),
+      header: () => (
+        <Flex gap="xs" align="center">
+          {t("strategy.col.netApy")}
+          <Tooltip
+            text={
+              <Stack gap="base">
+                {(
+                  t("strategy.apyEstimate", { returnObjects: true }) as string[]
+                ).map((line) => (
+                  <Text key={line} fw={500} fs="p5">
+                    {line}
+                  </Text>
+                ))}
+              </Stack>
+            }
+          />
+        </Flex>
+      ),
       cell: ({ row }) => {
         const { apy } = row.original
         return (
@@ -113,7 +131,26 @@ export const useStrategyVaultColumns = (
 
     const deploymentColumn = columnHelper.display({
       id: "pendingDeployment",
-      header: t("strategy.pendingDeployment"),
+      header: () => (
+        <Flex gap="xs" align="center">
+          {t("strategy.pendingDeployment")}
+          <Tooltip
+            text={
+              <Stack gap="base">
+                {(
+                  t("strategy.deploymentDescription", {
+                    returnObjects: true,
+                  }) as string[]
+                ).map((line) => (
+                  <Text key={line} fw={500} fs="p5">
+                    {line}
+                  </Text>
+                ))}
+              </Stack>
+            }
+          />
+        </Flex>
+      ),
       cell: ({ row }) => {
         const { asset, stats } = row.original
         const pendingDeployment = stats?.pendingDeployment

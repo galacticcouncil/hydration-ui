@@ -39,19 +39,19 @@ try {
       waitUntil: "domcontentloaded",
     })
     await page.waitForFunction(
-      () => document.body.textContent.includes("Indicative annual carry"),
+      () => document.body.textContent.includes("Est. APR"),
       undefined,
       { timeout: 45_000, polling: 100 },
     )
     const text = await page.locator("body").innerText()
-    assert.ok(text.includes("Est. APR before swaps"))
+    assert.ok(text.includes("Est. APR"))
     assert.ok(text.includes("Lark-4 test deployment"))
     assert.ok(
       !/<0\s+tBTC\./.test(text),
       "Small tBTC amounts must retain token precision and symbol order",
     )
     assert.ok(text.includes("your deposit transaction makes no swap"))
-    assert.ok(text.includes("Collateral awaiting deployment"))
+    assert.ok(text.includes("Awaiting deployment"))
     assert.ok(text.includes("pooled within each vault"))
     assert.ok(text.includes("not a personal queue or a completion estimate"))
     assert.ok(text.includes("unconverted yield is not funded crypto"))

@@ -11,7 +11,7 @@
   "strategy.risk.low": "Low",
   "strategy.col.asset": "Asset",
   "strategy.col.tvl": "TVL",
-  "strategy.col.netApy": "Est. APR before swaps",
+  "strategy.col.netApy": "Est. APR",
   "strategy.action.deposit": "Deposit",
   "strategy.action.paused": "Paused",
   "strategy.action.full": "Full",
@@ -47,7 +47,11 @@
   "withdrawals.eligibleAt": "Eligible to start:",
   "withdrawals.action.claimRecovery": "Claim {{amount, number}} HOLLAR",
   "withdrawals.recoveryPending": "Further HOLLAR recovery pending",
-  "strategy.apyEstimate": "Indicative annual carry assuming all collateral is deployed at current rates and source leverage, after source and Main borrowing costs and harvest fees. Returns differ while collateral awaits deployment. Swap fees, slippage and conversion delays are excluded. This is not realized crypto APY; unconverted yield is not funded crypto.",
+  "strategy.apyEstimate": [
+    "Indicative annual carry assuming all collateral is deployed at current rates and source leverage, after source and Main borrowing costs and harvest fees.",
+    "Returns differ while collateral awaits deployment. Swap fees, slippage and conversion delays are excluded.",
+    "This is not realized crypto APY; unconverted yield is not funded crypto."
+  ],
   "withdraw.blocked.loading": "Loading vault status…",
   "positions.col.earnings": "Earnings ready to claim",
   "positions.earningsPending": "Estimated {{amount, number}} {{symbol}} awaiting conversion",
@@ -55,11 +59,20 @@
   "positions.earningsDescription": "Converted earnings remain invested as funded collateral shares. Claiming adds those shares to your position; further strategy deployment happens gradually. Earnings awaiting conversion are an estimate, not a funded collateral balance.",
   "deposit.cta.unavailable": "Deposits unavailable",
   "deposit.validation.maximum": "Current maximum is {{amount}}",
-  "deposit.executionDescription": "Once confirmed, your deposit supplies collateral and mints funded vault shares. Keepers then deploy the position gradually; your deposit transaction makes no swap. If approval is needed, confirm it first, then review the deposit.",
+  "deposit.executionDescription": [
+    "Once confirmed, your deposit supplies collateral and mints funded vault shares.",
+    "Keepers then deploy the position gradually; your deposit transaction makes no swap.",
+    "If approval is needed, confirm it first, then review the deposit."
+  ],
   "deposit.failed": "The deposit could not complete. Check your balance and the current vault status, then retry. A completed token approval remains available for your next attempt.",
   "positions.readFailed": "Some position or withdrawal data could not be refreshed. Amounts may be out of date. Try again after the connection recovers.",
   "amount.precision": "Use at most {{decimals}} decimal places",
-  "deposit.availableCapacity": "Available vault capacity: {{maximum}} {{symbol}}",
-  "strategy.pendingDeployment": "Collateral awaiting deployment",
-  "strategy.deploymentDescription": "Collateral awaiting deployment is pooled within each vault and includes deposits and harvested earnings. Keepers borrow and trade gradually when prices meet the vault’s limits. This is not a personal queue or a completion estimate. Withdrawals follow the usual withdrawal queue."
+  "deposit.deployment": "Deployment",
+  "deposit.deployment.gradual": "Gradual",
+  "strategy.pendingDeployment": "Awaiting deployment",
+  "strategy.deploymentDescription": [
+    "Collateral awaiting deployment is pooled within each vault and includes deposits and harvested earnings.",
+    "Keepers borrow and trade gradually when prices meet the vault’s limits. This is not a personal queue or a completion estimate.",
+    "Withdrawals follow the usual withdrawal queue."
+  ]
 }

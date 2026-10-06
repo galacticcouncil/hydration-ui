@@ -1,12 +1,18 @@
 import { Scale, ShieldCheck } from "@galacticcouncil/ui/assets/icons"
 import {
+  Alert,
   Box,
   Flex,
   Icon,
   LoadingButton,
   Separator,
   Stack,
+  Summary,
+  SummaryRow,
+  SummaryRowValue,
   Text,
+  Tooltip,
+  TooltipIcon,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -155,23 +161,48 @@ export const DepositForm = ({
 
         <Separator mx="-xl" />
 
-        <Box py="xl">
-          <Stack gap="s" pb="l">
-            <Text fs="p5">{t("deposit.executionDescription")}</Text>
+        <Stack gap="xl" pb="xl">
+          <Summary separator={<Separator mx="-xl" />} withTrailingSeparator>
             {capacity && !unavailable && !atCapacity && (
-              <Text fs="p5">
-                {t("deposit.availableCapacity", {
-                  maximum,
+              <SummaryRow
+                label={t("strategy.remainingCapacity")}
+                content={t("common:currency", {
+                  value: maximum,
                   symbol: asset.symbol,
                 })}
-              </Text>
+              />
             )}
-            {deposit.isError && (
-              <Text fs="p5" role="alert">
-                {t("deposit.failed")}
-              </Text>
-            )}
-          </Stack>
+            <SummaryRow
+              label={t("deposit.deployment")}
+              content={
+                <Flex align="center" gap="xs">
+                  <SummaryRowValue>
+                    {t("deposit.deployment.gradual")}
+                  </SummaryRowValue>
+                  <Tooltip
+                    text={
+                      <Stack gap="base">
+                        {(
+                          t("deposit.executionDescription", {
+                            returnObjects: true,
+                          }) as string[]
+                        ).map((line) => (
+                          <Text key={line} fw={500} fs="p5">
+                            {line}
+                          </Text>
+                        ))}
+                      </Stack>
+                    }
+                  >
+                    <TooltipIcon size="1em" />
+                  </Tooltip>
+                </Flex>
+              }
+            />
+          </Summary>
+          {deposit.isError && (
+            <Alert variant="error" description={t("deposit.failed")} />
+          )}
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
               type="submit"
@@ -183,7 +214,7 @@ export const DepositForm = ({
               {ctaLabel}
             </LoadingButton>
           </AuthorizedAction>
-        </Box>
+        </Stack>
       </form>
     </FormProvider>
   )

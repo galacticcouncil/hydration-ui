@@ -2,7 +2,6 @@ import {
   Box,
   Card,
   CardBody,
-  CardDescription,
   CardHeader,
   CardTable,
   CardTitle,
@@ -69,10 +68,6 @@ export const StrategyDetailsCard = () => {
           />
         </ValueStatsGroup>
       </CardBody>
-      <Box px="m" pb="m">
-        <CardDescription>{t("strategy.apyEstimate")}</CardDescription>
-        <CardDescription>{t("strategy.deploymentDescription")}</CardDescription>
-      </Box>
       <Separator />
       {isMobile || isTablet ? (
         <Box p="m" asChild>
