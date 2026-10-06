@@ -8,15 +8,15 @@ import { decodeFunctionData, parseAbi } from "viem"
 export const PUBLIC_TEST_SURI = "//Alice//propeller-ui-20261005"
 export const PUBLIC_TEST_NAME = "PUBLIC TEST — Propeller Lark"
 export const LARK_GENESIS =
-  "0xba82f5b6d812fd3e2a6c610969e395d3be1e558145a9f07148b8d1f269ab4fb2"
+  "0x0a1fba23f7897cb5cbb3289db93ab605774565149b0c87033b4f2af817c9f96c"
 export const LARK_RPC = "wss://node4.lark.hydration.cloud"
 export const TEST_ORIGIN = "http://127.0.0.1:4178"
 
 const allowedTargets = new Set([
-  "0x40cca3da6cead6dada9e9ffc4c06e9039791876a",
-  "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
-  "0x59ba6340a85e311f8f43071372de1d0f5fb90dc4",
-  "0xe0983cedd797b38090e6dcde54af88aa6eb22edc",
+  "0x3a1c0fa2f877c84d2930e59637c111a31878dcdf",
+  "0x7b200b8c8a5ffd7720a48b0cb5a7f9fc6a512578",
+  "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+  "0x2c66100c46d15d6b826ba2a89f2d31e3ca47a153",
   "0x0000000000000000000000000000000100000022",
   "0x00000000000000000000000000000001000f453d",
 ])
@@ -30,9 +30,9 @@ const testCalls = parseAbi([
 ])
 const tokenVaults = {
   "0x0000000000000000000000000000000100000022":
-    "0x40cca3da6cead6dada9e9ffc4c06e9039791876a",
+    "0x3a1c0fa2f877c84d2930e59637c111a31878dcdf",
   "0x00000000000000000000000000000001000f453d":
-    "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+    "0x7b200b8c8a5ffd7720a48b0cb5a7f9fc6a512578",
 }
 
 export async function injectPublicTestWallet(

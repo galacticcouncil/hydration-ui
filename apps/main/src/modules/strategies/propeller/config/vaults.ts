@@ -9,12 +9,12 @@ export interface PropellerVaultConfig {
 export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
   {
     assetId: "34",
-    vaultAddress: "0x40cca3da6cead6dada9e9ffc4c06e9039791876a",
+    vaultAddress: "0x3a1c0fa2f877c84d2930e59637c111a31878dcdf",
     shareSymbol: "pETH",
   },
   {
     assetId: "1000765",
-    vaultAddress: "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+    vaultAddress: "0x7b200b8c8a5ffd7720a48b0cb5a7f9fc6a512578",
     shareSymbol: "ptBTC",
   },
 ]
