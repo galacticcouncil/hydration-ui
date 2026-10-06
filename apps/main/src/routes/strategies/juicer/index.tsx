@@ -9,7 +9,7 @@ const searchSchema = z.object({
   asset: z.string().optional(),
 })
 
-export const Route = createFileRoute("/strategies/propeller/")({
+export const Route = createFileRoute("/strategies/juicer/")({
   component: PropellerVaultPage,
   pendingComponent: StrategyPageSkeleton,
   validateSearch: searchSchema,
@@ -19,6 +19,6 @@ export const Route = createFileRoute("/strategies/propeller/")({
       context: { i18n },
     },
   }) => ({
-    meta: getPageMeta("strategiesPropeller", i18n.t),
+    meta: getPageMeta("strategiesJuicer", i18n.t),
   }),
 })

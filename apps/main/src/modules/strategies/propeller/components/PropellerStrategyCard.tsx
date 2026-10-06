@@ -37,7 +37,7 @@ export const PropellerStrategyCard = () => {
             ]),
       ]}
       badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
-      link={LINKS.strategiesPropeller}
+      link={LINKS.strategiesJuicer}
     />
   )
 }

@@ -38,7 +38,7 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
     return (
       <SDetailedLink key={key} asChild>
         <Link to={to} search={search}>
-          {key === "strategiesPropeller" ? (
+          {key === "strategiesJuicer" ? (
             <JuicerStrategyLogo size="medium" />
           ) : showAssetIcon ? (
             <AssetLogo id={assetIconId} size="medium" hideChain />

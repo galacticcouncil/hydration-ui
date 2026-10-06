@@ -35,7 +35,7 @@ try {
       })
     })
     page.on("pageerror", (error) => errors.push(String(error)))
-    await page.goto("http://127.0.0.1:4178/strategies/propeller", {
+    await page.goto("http://127.0.0.1:4178/strategies/juicer", {
       waitUntil: "domcontentloaded",
     })
     await page.waitForFunction(

@@ -25,7 +25,7 @@ type ResolvedDefault = {
  * moved by later balance changes; after `markUserPick` it is fixed for good.
  */
 export const useDefaultDepositVault = () => {
-  const { asset: assetParam } = useSearch({ from: "/strategies/propeller/" })
+  const { asset: assetParam } = useSearch({ from: "/strategies/juicer/" })
   const { account } = useAccount()
   const address = account?.address
   const { getAssetWithFallback } = useAssets()

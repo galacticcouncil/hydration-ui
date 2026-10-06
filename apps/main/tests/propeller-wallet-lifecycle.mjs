@@ -206,7 +206,7 @@ try {
     )
   page = await context.newPage()
   page.on("pageerror", (error) => errors.push(String(error)))
-  await page.goto(`${TEST_ORIGIN}/strategies/propeller`, {
+  await page.goto(`${TEST_ORIGIN}/strategies/juicer`, {
     waitUntil: "domcontentloaded",
   })
   await page.waitForFunction(
