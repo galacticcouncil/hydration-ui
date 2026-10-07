@@ -1,3 +1,5 @@
+import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
+import { HOLLAR_ASSET_ID, isH160Address } from "@galacticcouncil/utils"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { XcAssetOperation, XcJourney } from "@galacticcouncil/xc-scan"
 import { isNumber, isString, sortBy } from "remeda"
@@ -8,6 +10,15 @@ const networkToEcosystem: Record<string, ChainEcosystem> = {
   ethereum: ChainEcosystem.Ethereum,
   solana: ChainEcosystem.Solana,
   sui: ChainEcosystem.Sui,
+}
+
+const H160_ASSET_IDS: Record<string, string> = {
+  [AaveV3HydrationMainnet.GHO_TOKEN_ADDRESS.toLowerCase()]: HOLLAR_ASSET_ID,
+}
+
+function resolveH160ToAssetId(assetId: string): string {
+  if (!isH160Address(assetId)) return assetId
+  return H160_ASSET_IDS[assetId.toLowerCase()] ?? assetId
 }
 
 export function resolveNetwork(networkUrn: string) {
@@ -53,8 +64,12 @@ export function resolveAssetIcon(key: string) {
   }
 
   const assetKey = assetUrn === "" ? "native" : assetUrn.split(":").join("/")
-  const assetId =
+  let assetId =
     assetKey === "native" ? getNativeAssetPath(networkUrn) : assetKey
+
+  if (isH160Address(assetId)) {
+    assetId = resolveH160ToAssetId(assetId)
+  }
 
   return {
     ...network,

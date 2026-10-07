@@ -21,7 +21,6 @@ import {
   TShareTokenStored,
   useAssetRegistryStore,
 } from "@/states/assetRegistry"
-import { ASSET_ICON_OVERRIDES, ASSET_NAME_OVERRIDES } from "@/utils/assets"
 import {
   getAccountKey20,
   getEthereumNetworkEntry,
@@ -40,9 +39,9 @@ export enum AssetType {
 }
 
 /**
- * Assets that predate the direct NTT route still carry moonbeam branding the
- * app no longer routes through — a "(Moonbeam Wormhole)" suffix on the name
- * from the on-chain registry, and a moonbeam chain badge from the metadata cdn.
+ * Assets that predate the direct NTT route still resolve to moonbeam by xcm
+ * location, so the metadata cdn would badge them with a chain the app no
+ * longer routes through. The badge is dropped for those.
  */
 const MOONBEAM_PARACHAIN_ID = "2004"
 
@@ -214,7 +213,7 @@ export const assetsQuery = (
             existentialDeposit: asset.existentialDeposit.toString(),
             symbol: asset.symbol ?? "",
             decimals: asset.decimals ?? 0,
-            name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
+            name: asset.name ?? "",
             isTradable,
             isSufficient: asset.isSufficient,
           }
@@ -273,14 +272,13 @@ function assetToTokenType(
   } else {
     const parachainId = getParachainId(asset)?.toString()
     const ecosystem = ChainEcosystem.Polkadot
-    const iconId = ASSET_ICON_OVERRIDES[commonAssetData.id] ?? asset.id
 
     return {
       ...commonAssetData,
       type: AssetType.TOKEN,
       parachainId,
       ecosystem,
-      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, iconId),
+      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, asset.id),
       chainSrc:
         parachainId && parachainId !== MOONBEAM_PARACHAIN_ID
           ? metadata.getChainLogoSrc(parachainId, ecosystem)
