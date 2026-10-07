@@ -39,6 +39,7 @@ const CHAINS_PRIORITY = [
   "robinhood",
   "base",
   "solana",
+  "hyperevm",
   "sui",
   "assethub",
   "moonbeam",
