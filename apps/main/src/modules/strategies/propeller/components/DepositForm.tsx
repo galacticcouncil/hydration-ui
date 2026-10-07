@@ -95,8 +95,17 @@ export const DepositForm = ({
   const ctaLabel = (() => {
     if (unavailable) return t("deposit.cta.unavailable")
     if (isPaused) return t("deposit.cta.paused")
-    if (atCapacity) return t("deposit.cta.exceedsCapacity")
+    if (atCapacity) return t("deposit.cta.full")
     return t("deposit.cta.deposit")
+  })()
+
+  // Loading also counts as unavailable; only explain it once the read settled.
+  const blockedDescription = (() => {
+    if (capacityError) return t("deposit.alert.unavailable")
+    if (capacity?.ready === false) return t("deposit.alert.notReady")
+    if (unavailable) return undefined
+    if (isPaused) return t("deposit.alert.paused")
+    if (atCapacity) return t("deposit.alert.full")
   })()
 
   const onSelectAsset = (selected: TAssetData) => {
@@ -202,6 +211,13 @@ export const DepositForm = ({
           </Summary>
           <Stack gap="base">
             <Alert variant="info" description={t("strategy.testnet")} />
+            {blockedDescription && (
+              <Alert
+                variant="warning"
+                title={ctaLabel}
+                description={blockedDescription}
+              />
+            )}
             {deposit.isError && (
               <Alert variant="error" description={t("deposit.failed")} />
             )}
@@ -214,6 +230,7 @@ export const DepositForm = ({
               width="100%"
               isLoading={deposit.isPending}
               disabled={!canSubmit}
+              disabledVariant="muted"
             >
               {ctaLabel}
             </LoadingButton>
