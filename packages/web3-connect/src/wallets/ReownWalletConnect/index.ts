@@ -1,3 +1,4 @@
+import { withTimeout } from "@galacticcouncil/utils"
 import { type AppKit } from "@reown/appkit"
 import type UniversalProvider from "@walletconnect/universal-provider"
 import { type PolkadotSigner } from "polkadot-api/pjs-signer"
@@ -10,6 +11,7 @@ import { SubscriptionFn, Wallet, WalletAccount } from "@/types/wallet"
 import {
   AuthError,
   NotInstalledError,
+  StaleAttemptError,
   UserRejectedError,
   WalletError,
 } from "@/utils/errors"
@@ -35,6 +37,7 @@ export class ReownWalletConnect implements Wallet {
   _extension: UniversalProvider | undefined
   _signer: PolkadotSigner | EthereumSigner | undefined
   _enabled: boolean = false
+  _attempt = 0
 
   constructor() {
     this._appKit = AppKitSingleton.getInstance()
@@ -67,20 +70,23 @@ export class ReownWalletConnect implements Wallet {
   }
 
   enable = async () => {
-    await this.appKit.ready()
+    const attempt = ++this._attempt
+    const isStale = () => attempt !== this._attempt
 
-    const provider = await this.appKit.getUniversalProvider()
+    // AppKit 1.8.19 can't abort ready()/prefetch, so the limit only
+    // stops waiting. A hung Reown backend stays hung; recovery needs a reload
+    // or an upstream change. An open() already in flight when the limit hits
+    // can't be recalled either.
+    const provider = await withTimeout(
+      this.prepareModal(isStale),
+      10_000,
+      "WalletConnect didn't respond",
+    ).catch((err) => {
+      if (!isStale()) this._attempt++
+      throw err
+    })
 
-    if (provider && hasSessionNamespace(provider)) {
-      this._enabled = true
-      this._extension = provider
-      this._signer = this.getSignerFromProvider(provider)
-      return
-    }
-
-    await this.appKit.open()
-
-    if (!provider) throw new NotInstalledError(this)
+    if (!provider) return
 
     await new Promise<void>((resolve, reject) => {
       let unsubscribeState: (() => void) | undefined = undefined
@@ -119,6 +125,33 @@ export class ReownWalletConnect implements Wallet {
     this._enabled = true
     this._extension = provider
     this._signer = this.getSignerFromProvider(provider)
+  }
+
+  /**
+   * Non-interactive prefix of `enable`: resolves once the modal is shown, or
+   * with `null` when an existing session was restored. Bails out before
+   * `open()` once the attempt is stale.
+   */
+  private prepareModal = async (isStale: () => boolean) => {
+    await this.appKit.ready()
+    if (isStale()) throw new StaleAttemptError(this)
+
+    const provider = await this.appKit.getUniversalProvider()
+    if (isStale()) throw new StaleAttemptError(this)
+
+    if (provider && hasSessionNamespace(provider)) {
+      this._enabled = true
+      this._extension = provider
+      this._signer = this.getSignerFromProvider(provider)
+      return null
+    }
+
+    if (!provider) throw new NotInstalledError(this)
+
+    await this.appKit.open()
+    if (isStale()) throw new StaleAttemptError(this)
+
+    return provider
   }
 
   private getSignerFromProvider(provider: UniversalProvider) {

@@ -599,16 +599,26 @@ export const SLoadingLabel = styled.span<{ loadingMode: LoadingMode }>(
 )
 
 export const SLoadingButton = styled(SButton, {
-  shouldForwardProp: (prop) => prop !== "loadingFade",
-})<{ loadingFade?: boolean }>(({ loadingFade = false }) => [
+  shouldForwardProp: (prop) => !["loadingFade", "disabledFade"].includes(prop),
+})<{
+  loadingFade?: boolean
+  disabledFade?: boolean
+}>(({ loadingFade = false, disabledFade = false }) => [
   css`
     &[aria-busy="true"] {
       pointer-events: none;
     }
   `,
+  disabledFade
+    ? undefined
+    : css`
+        &[aria-busy="true"]:disabled,
+        &[aria-busy="true"][aria-disabled="true"] {
+          opacity: 1;
+        }
+      `,
   loadingFade
     ? css`
-        &:disabled,
         &[aria-busy="true"] {
           opacity: ${DISABLED_OPACITY};
         }

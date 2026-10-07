@@ -31,7 +31,7 @@ export const useMyVaultLiquidity = () => {
       data
         .filter((vault) => vault.positionShares > 0n)
         .map((vault) => {
-          const [token0, token1] = vault.tokens
+          const [token0, token1] = vault.pair
 
           return {
             meta: {

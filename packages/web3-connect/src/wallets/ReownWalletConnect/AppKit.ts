@@ -19,6 +19,7 @@ export class AppKitSingleton {
         },
         showWallets: false,
         allWallets: "HIDE",
+        features: { email: false, socials: [] },
       })
     }
     return AppKitSingleton.instance

@@ -16,5 +16,6 @@ export const useXcSwapDestinationAssetsQuery = (xcSwap: XcSwapClient) => {
     queryFn: () => xcSwap.getDestinationAssets(),
     enabled: isReady,
     staleTime: Infinity,
+    retry: false,
   })
 }
