@@ -86,6 +86,7 @@ export const MyStrategiesDetails = ({
             value={t("common:currency", {
               value: position.pendingEarnings,
               symbol: position.symbol,
+              maximumFractionDigits: 6,
             })}
           />
         )}
@@ -106,15 +107,6 @@ export const MyStrategiesDetails = ({
             value={t("common:currency", {
               value: position.pendingWithdrawal,
               symbol: position.symbol,
-            })}
-          />
-        )}
-        {position.recoveryHollar !== null && (
-          <Amount
-            label={t("myStrategies.details.recovery")}
-            value={t("common:currency", {
-              value: position.recoveryHollar,
-              symbol: "HOLLAR",
             })}
           />
         )}

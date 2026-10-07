@@ -85,7 +85,7 @@
   "withdraw.blocked.loading": "Loading vault status…",
   "positions.col.earnings": "Earnings",
   "positions.col.earnings.note": "ready to claim",
-  "positions.earningsPending": "Estimated {{amount, number}} {{symbol}} awaiting conversion",
+  "positions.earningsPending": "Pending earnings: {{amount}}. This estimate is not yet available to claim.",
   "positions.action.claimEarnings": "Claim earnings",
   "positions.earningsDescription": "Converted earnings remain invested as funded collateral shares. Claiming adds those shares to your position; further strategy deployment happens gradually. Earnings awaiting conversion are an estimate, not a funded collateral balance.",
   "deposit.cta.unavailable": "Deposits unavailable",

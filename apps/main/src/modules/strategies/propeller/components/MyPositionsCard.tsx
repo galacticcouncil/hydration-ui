@@ -87,12 +87,15 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                                 </Text>
                                 <Tooltip
                                   text={t("positions.earningsPending", {
-                                    amount: Math.max(
-                                      0,
-                                      rewards.estimatedAssets -
-                                        rewards.claimableAssets,
-                                    ),
-                                    symbol,
+                                    amount: t("common:currency", {
+                                      value: Math.max(
+                                        0,
+                                        rewards.estimatedAssets -
+                                          rewards.claimableAssets,
+                                      ),
+                                      symbol,
+                                      maximumFractionDigits: 6,
+                                    }),
                                   })}
                                 >
                                   <TooltipIcon size="1em" />
