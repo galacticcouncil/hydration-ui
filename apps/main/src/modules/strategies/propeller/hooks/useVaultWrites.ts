@@ -15,14 +15,11 @@ import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { type Abi, encodeFunctionData, type Hex } from "viem"
+import { type Abi, encodeFunctionData, formatUnits, type Hex } from "viem"
 
 import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
 import { PendingApproval } from "@/components/PendingApproval"
-import {
-  MAIN_DEBT_ABI,
-  VAULT_ABI,
-} from "@/modules/strategies/propeller/config/abi"
+import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
@@ -32,6 +29,7 @@ import {
   prepareFundedDeposit,
 } from "@/modules/strategies/propeller/utils/deposit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
+import { prepareWithdrawalClaim } from "@/modules/strategies/propeller/utils/withdrawalClaim"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -196,9 +194,10 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       vaultAddress: Hex,
       calls: BatchEvmCall[],
       toasts: { submitted: string; success: string },
+      review?: Pick<TransactionCommon, "title" | "description">,
     ) =>
       createTransaction(
-        { tx: await buildBatch(calls), toasts },
+        { tx: await buildBatch(calls), toasts, ...review },
         txOptionsForVault(vaultAddress),
       ),
     [buildBatch, createTransaction, txOptionsForVault],
@@ -344,22 +343,54 @@ export type ClaimVariables = {
 }
 
 export function useClaim(options: VaultWriteOptions = {}) {
+  const { t } = useTranslation(["propeller", "common"])
+  const { evm } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { evmAddress, submitTx } = useVaultEvmCall(options)
+  const { evmAddress, submitBatch } = useVaultEvmCall(options)
 
   return useMutation({
     mutationKey: propellerQueryKeys.claim(),
-    mutationFn: ({ vault, requestId }: ClaimVariables) => {
-      const data = encodeFunctionData({
-        abi: VAULT_ABI,
-        functionName: "claim",
-        args: [BigInt(requestId), evmAddress],
-      })
-      const { symbol } = getAssetWithFallback(vault.assetId)
-      return submitTx(vault.vaultAddress, data, [...VAULT_ABI], {
-        submitted: `Claiming ${symbol}...`,
-        success: "Claim sent",
-      })
+    mutationFn: async ({ vault, requestId }: ClaimVariables) => {
+      const { calls, collateral, surplusHollar } = await prepareWithdrawalClaim(
+        evm,
+        vault.vaultAddress,
+        requestId,
+        evmAddress,
+      )
+      if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
+      const { symbol, decimals } = getAssetWithFallback(vault.assetId)
+      const payouts = [
+        ...(collateral > 0n
+          ? [
+              t("common:currency", {
+                value: formatUnits(collateral, decimals),
+                symbol,
+                maximumFractionDigits: decimals,
+              }),
+            ]
+          : []),
+        ...(surplusHollar > 0n
+          ? [
+              t("common:currency", {
+                value: formatUnits(surplusHollar, 18),
+                symbol: "HOLLAR",
+                maximumFractionDigits: 18,
+              }),
+            ]
+          : []),
+      ].join(" + ")
+      return submitBatch(
+        vault.vaultAddress,
+        calls,
+        {
+          submitted: t("withdrawals.claim.submitted"),
+          success: t("withdrawals.claim.success"),
+        },
+        {
+          title: t("withdrawals.claim.title"),
+          description: t("withdrawals.claim.description", { payouts }),
+        },
+      )
     },
   })
 }
@@ -372,37 +403,6 @@ export function usePendingClaimIds() {
       const { vault, requestId } = mutation.state.variables as ClaimVariables
       return withdrawalRowId(vault.vaultAddress, requestId)
     },
-  })
-}
-
-/** Later source recoveries remain claimable after the collateral withdrawal. */
-export function useClaimSurplus(options: VaultWriteOptions = {}) {
-  const { submitBatch } = useVaultEvmCall(options)
-  return useMutation({
-    mutationKey: propellerQueryKeys.claimSurplus(),
-    mutationFn: ({
-      vault,
-      requestId,
-      mainDebt,
-    }: ClaimVariables & { mainDebt: Hex }) =>
-      submitBatch(
-        vault.vaultAddress,
-        [
-          {
-            to: mainDebt,
-            data: encodeFunctionData({
-              abi: MAIN_DEBT_ABI,
-              functionName: "claimSurplus",
-              args: [BigInt(requestId)],
-            }),
-            abi: MAIN_DEBT_ABI,
-          },
-        ],
-        {
-          submitted: "Claiming HOLLAR recovery...",
-          success: "HOLLAR recovery claimed",
-        },
-      ),
   })
 }
 

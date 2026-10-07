@@ -1,26 +1,25 @@
 import {
-  Box,
   Card,
   CardHeader,
-  CardTable,
   CardTitle,
-  DataTable,
   Pagination,
-  TableContainer,
+  Stack,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useWithdrawalColumns } from "@/modules/strategies/propeller/components/Withdrawals.columns"
+import { WithdrawalPosition } from "@/modules/strategies/propeller/components/WithdrawalPosition"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
 
 const WITHDRAWALS_PAGE_SIZE = 5
 
-/** Unclaimed first, newest (highest request id) first within each group. */
+/** Claimable first, then unclaimed; newest first within each group. */
 const sortWithdrawals = (rows: PropellerWithdrawalRow[]) =>
   [...rows].sort(
     (a, b) =>
+      Number(getWithdrawalStateLabel(b) === "claimable") -
+        Number(getWithdrawalStateLabel(a) === "claimable") ||
       Number(a.state === "claimed") - Number(b.state === "claimed") ||
       b.requestId - a.requestId,
   )
@@ -31,21 +30,16 @@ interface Props {
 
 export const WithdrawalsCard = ({ rows }: Props) => {
   const { t } = useTranslation("propeller")
-  const { gte } = useBreakpoints()
   const [page, setPage] = useState(1)
-  const columns = useWithdrawalColumns()
   const sortedRows = useMemo(() => sortWithdrawals(rows), [rows])
-
-  useEffect(() => {
-    setPage(1)
-  }, [sortedRows.length])
 
   if (rows.length === 0) return null
 
   const totalPages = Math.ceil(sortedRows.length / WITHDRAWALS_PAGE_SIZE)
+  const currentPage = Math.min(page, totalPages)
   const pagedRows = sortedRows.slice(
-    (page - 1) * WITHDRAWALS_PAGE_SIZE,
-    page * WITHDRAWALS_PAGE_SIZE,
+    (currentPage - 1) * WITHDRAWALS_PAGE_SIZE,
+    currentPage * WITHDRAWALS_PAGE_SIZE,
   )
 
   return (
@@ -53,24 +47,18 @@ export const WithdrawalsCard = ({ rows }: Props) => {
       <CardHeader>
         <CardTitle>{t("withdrawals.title")}</CardTitle>
       </CardHeader>
-      {gte("xl") ? (
-        <TableContainer borderRadius="xl">
-          <DataTable data={pagedRows} columns={columns} />
-        </TableContainer>
-      ) : (
-        <Box p="m">
-          <CardTable data={pagedRows} columns={columns} />
-        </Box>
-      )}
-      {totalPages > 1 && (
-        <Box p="m">
+      <Stack gap="m" p="l">
+        {pagedRows.map((row) => (
+          <WithdrawalPosition key={row.id} row={row} />
+        ))}
+        {totalPages > 1 && (
           <Pagination
             totalPages={totalPages}
-            currentPage={page}
+            currentPage={currentPage}
             onPageChange={setPage}
           />
-        </Box>
-      )}
+        )}
+      </Stack>
     </Card>
   )
 }
