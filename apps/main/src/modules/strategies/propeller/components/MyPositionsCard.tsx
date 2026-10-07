@@ -123,7 +123,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                       {rewards && rewards.claimableShares > 0n && (
                         <LoadingButton
                           aria-label={`${t("positions.action.claimEarnings")} ${symbol}`}
-                          variant="tertiary"
+                          variant="primary"
                           size="small"
                           isLoading={
                             claimYield.isPending &&
