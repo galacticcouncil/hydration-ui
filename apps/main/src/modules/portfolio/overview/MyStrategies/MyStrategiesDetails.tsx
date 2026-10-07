@@ -1,13 +1,18 @@
 import {
-  Amount,
-  Flex,
-  Grid,
-  Text,
-  Tooltip,
-} from "@galacticcouncil/ui/components"
+  CircleDot,
+  Clock3,
+  Coins,
+  Hourglass,
+  Landmark,
+  Wallet,
+} from "@galacticcouncil/ui/assets/icons"
+import { Amount, Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
+import { SAssetDetailMobileSeparator } from "@/modules/portfolio/overview/MyAssets/AssetDetailNativeMobileModal.styled"
+import { ExpandedRowSeparator } from "@/modules/portfolio/overview/MyAssets/ExpandedRowSeparator"
 import {
   StrategyPositionEarnings,
   StrategyPositionRate,
@@ -22,20 +27,27 @@ export const MyStrategiesDetails = ({
   showMainMetrics?: boolean
 }) => {
   const { t } = useTranslation(["wallet", "common"])
-
-  return (
-    <Flex direction="column" gap="m">
-      <Grid columns={[1, null, position.status === "supplied" ? 4 : 3]} gap="l">
-        {position.strategy === "bil" && (
-          <Amount
-            label={t("common:status")}
-            value={t(
-              `myStrategies.status.${position.status === "supplied" ? "supplied" : "wallet"}`,
-            )}
-          />
-        )}
+  const rows = [
+    {
+      id: "status",
+      content: position.strategy === "bil" && (
         <Amount
+          variant="horizontalLabel"
+          label={t("common:status")}
+          labelIcon={CircleDot}
+          value={t(
+            `myStrategies.status.${position.status === "supplied" ? "supplied" : "wallet"}`,
+          )}
+        />
+      ),
+    },
+    {
+      id: "underlying",
+      content: (
+        <Amount
+          variant="horizontalLabel"
           label={t("myStrategies.details.underlying")}
+          labelIcon={Coins}
           value={
             position.underlyingAmount === null
               ? "—"
@@ -45,72 +57,116 @@ export const MyStrategiesDetails = ({
                 })
           }
         />
-        {showMainMetrics && (
-          <StrategyPositionRate position={position} withLabel />
-        )}
-        {position.status === "supplied" && (
-          <>
-            <Amount
-              label={t("myStrategies.details.borrowed")}
-              value={
-                position.borrowedValue === null
-                  ? "—"
-                  : t("common:currency", { value: position.borrowedValue })
-              }
-            />
-            <Amount
-              label={t("myStrategies.details.netValue")}
-              value={
-                position.netValue === null
-                  ? "—"
-                  : t("common:currency", { value: position.netValue })
-              }
-            />
-          </>
-        )}
-        {showMainMetrics && (
-          <StrategyPositionEarnings position={position} withLabel />
-        )}
-        {position.pendingEarnings !== null && (
-          <Amount
-            label={
-              <Flex align="center" gap="xs">
-                <Text fs="p5" lh="s" color={getToken("text.medium")}>
-                  {t("myStrategies.details.pendingEarnings")}
-                </Text>
-                <Tooltip
-                  text={t("myStrategies.details.pendingEarnings.note")}
-                />
-              </Flex>
-            }
-            value={t("common:currency", {
-              value: position.pendingEarnings,
-              symbol: position.symbol,
-              maximumFractionDigits: 6,
-            })}
-          />
-        )}
-        {position.hasPendingWithdrawal && (
-          <Amount
-            label={
-              <Flex align="center" gap="xs">
-                <Text fs="p5" lh="s" color={getToken("text.medium")}>
-                  {t(
-                    position.isPendingWithdrawalEstimate
-                      ? "myStrategies.details.withdrawalEstimate"
-                      : "myStrategies.details.withdrawal",
-                  )}
-                </Text>
-                <Tooltip text={t("myStrategies.details.withdrawal.note")} />
-              </Flex>
-            }
-            value={t("common:currency", {
-              value: position.pendingWithdrawal,
-              symbol: position.symbol,
-            })}
-          />
-        )}
-      </Grid>
+      ),
+    },
+    {
+      id: "rate",
+      content: showMainMetrics && (
+        <StrategyPositionRate position={position} withLabel horizontalLabel />
+      ),
+    },
+    {
+      id: "borrowed",
+      content: position.status === "supplied" && (
+        <Amount
+          variant="horizontalLabel"
+          label={t("myStrategies.details.borrowed")}
+          labelIcon={Landmark}
+          value={
+            position.borrowedValue === null
+              ? "—"
+              : t("common:currency", { value: position.borrowedValue })
+          }
+        />
+      ),
+    },
+    {
+      id: "netValue",
+      content: position.status === "supplied" && (
+        <Amount
+          variant="horizontalLabel"
+          label={t("myStrategies.details.netValue")}
+          labelIcon={Wallet}
+          value={
+            position.netValue === null
+              ? "—"
+              : t("common:currency", { value: position.netValue })
+          }
+        />
+      ),
+    },
+    {
+      id: "earnings",
+      content: showMainMetrics && (
+        <StrategyPositionEarnings
+          position={position}
+          withLabel
+          horizontalLabel
+        />
+      ),
+    },
+    {
+      id: "pendingEarnings",
+      content: position.pendingEarnings !== null && (
+        <Amount
+          variant="horizontalLabel"
+          labelIcon={Clock3}
+          label={
+            <Flex align="center" gap="xs">
+              <Text fs="p4" lh="s" color={getToken("text.low")}>
+                {t("myStrategies.details.pendingEarnings")}
+              </Text>
+              <Tooltip text={t("myStrategies.details.pendingEarnings.note")} />
+            </Flex>
+          }
+          value={t("common:currency", {
+            value: position.pendingEarnings,
+            symbol: position.symbol,
+            maximumFractionDigits: 6,
+          })}
+        />
+      ),
+    },
+    {
+      id: "withdrawal",
+      content: position.hasPendingWithdrawal && (
+        <Amount
+          variant="horizontalLabel"
+          labelIcon={Hourglass}
+          label={
+            <Flex align="center" gap="xs">
+              <Text fs="p4" lh="s" color={getToken("text.low")}>
+                {t(
+                  position.isPendingWithdrawalEstimate
+                    ? "myStrategies.details.withdrawalEstimate"
+                    : "myStrategies.details.withdrawal",
+                )}
+              </Text>
+              <Tooltip text={t("myStrategies.details.withdrawal.note")} />
+            </Flex>
+          }
+          value={t("common:currency", {
+            value: position.pendingWithdrawal,
+            symbol: position.symbol,
+          })}
+        />
+      ),
+    },
+  ].filter(({ content }) => content)
+
+  return (
+    <Flex direction="column" gap="xl">
+      {rows.map(({ id, content }, index) => (
+        <Fragment key={id}>
+          {index > 0 &&
+            (showMainMetrics ? (
+              <SAssetDetailMobileSeparator />
+            ) : (
+              <ExpandedRowSeparator />
+            ))}
+          {content}
+        </Fragment>
+      ))}
       {position.recoveryPending && (
         <Text fs="p6" color={getToken("text.medium")}>
           {t("myStrategies.details.recoveryPending")}
