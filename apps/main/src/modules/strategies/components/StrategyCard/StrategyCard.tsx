@@ -59,7 +59,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           )}
         </Flex>
 
-        <Flex gap="xxxl">
+        <Flex gap="xxxl" wrap>
           {stats.map(({ valueTone, ...stat }) => (
             <ValueStats
               key={stat.label}
