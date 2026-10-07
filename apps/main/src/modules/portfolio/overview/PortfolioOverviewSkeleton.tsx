@@ -11,8 +11,10 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 
 import { useMyAssetsColumns } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import { useMyBondsColumns } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
@@ -23,11 +25,48 @@ import { portfolioOverviewTabs } from "@/modules/portfolio/overview/PortfolioOve
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 
 export const PortfolioOverviewSkeleton = () => {
+  const { t } = useTranslation("wallet")
   const { category } = useSearch({ from: "/portfolio/" })
   const assetsColumns = useMyAssetsColumns(false)
   const liquidityColumns = useMyLiquidityColumns()
   const bondsColumns = useMyBondsColumns()
   const strategiesColumns = useMyStrategiesColumns()
+  const sections = [
+    {
+      category: "assets",
+      content: (
+        <DataTable isLoading data={[]} columns={assetsColumns} size="small" />
+      ),
+    },
+    {
+      category: "strategies",
+      content: (
+        <DataTable
+          isLoading
+          data={[]}
+          columns={strategiesColumns}
+          size="small"
+        />
+      ),
+    },
+    {
+      category: "liquidity",
+      content: (
+        <DataTable
+          isLoading
+          data={[]}
+          columns={liquidityColumns}
+          size="small"
+        />
+      ),
+    },
+    {
+      category: "bonds",
+      content: (
+        <DataTable isLoading data={[]} columns={bondsColumns} size="small" />
+      ),
+    },
+  ] as const
 
   return (
     <Flex direction="column" gap="l">
@@ -80,37 +119,26 @@ export const PortfolioOverviewSkeleton = () => {
         </Flex>
         <Separator />
         <SPortfolioTableWrapper>
-          <TableContainer>
-            {category === "liquidity" ? (
-              <DataTable
-                isLoading
-                data={[]}
-                columns={liquidityColumns}
-                size="small"
-              />
-            ) : category === "strategies" ? (
-              <DataTable
-                isLoading
-                data={[]}
-                columns={strategiesColumns}
-                size="small"
-              />
-            ) : category === "bonds" ? (
-              <DataTable
-                isLoading
-                data={[]}
-                columns={bondsColumns}
-                size="small"
-              />
-            ) : (
-              <DataTable
-                isLoading
-                data={[]}
-                columns={assetsColumns}
-                size="small"
-              />
-            )}
-          </TableContainer>
+          {sections
+            .filter(
+              (section) => category === "all" || category === section.category,
+            )
+            .map((section, index) => (
+              <Box key={section.category}>
+                {category === "all" && (
+                  <>
+                    {index > 0 && <Separator />}
+                    <Box px="m" py="s">
+                      <Text fs="p6" fw={600} color={getToken("text.high")}>
+                        {t(`myAssets.tabs.${section.category}`)}
+                      </Text>
+                    </Box>
+                    <Separator />
+                  </>
+                )}
+                <TableContainer>{section.content}</TableContainer>
+              </Box>
+            ))}
         </SPortfolioTableWrapper>
       </Paper>
     </Flex>

@@ -44,6 +44,20 @@ export const SPortfolioChainHeaderButton = styled.button<{
   `,
 )
 
+export const SPortfolioSubsectionHeaderButton = styled(
+  SPortfolioChainHeaderButton,
+)(
+  ({ theme }) => css`
+    position: sticky;
+    top: 3.375rem;
+    z-index: ${theme.zIndices.header - 1};
+    padding-inline: ${theme.space.m};
+    padding-block: ${theme.space.s};
+    background: ${theme.surfaces.themeBasePalette.surfaceHigh};
+    border-top: none;
+  `,
+)
+
 export const STrackedWalletHeader = styled.div<{
   readonly "data-state"?: "open" | "closed"
 }>(
@@ -174,6 +188,9 @@ const portfolioChainHeaderButtonCss = css`
 export const SPortfolioPaper = styled(Paper)(
   () => css`
     overflow: hidden;
+    &[data-all] {
+      overflow: clip;
+    }
     ${portfolioChainHeaderButtonCss}
   `,
 )
@@ -233,6 +250,9 @@ export const SPortfolioClaimButton = styled(Button)(
 export const SPortfolioTableWrapper = styled.div(
   ({ theme }) => css`
     overflow: hidden;
+    &[data-all] {
+      overflow: clip;
+    }
 
     & table {
       background-color: transparent;
