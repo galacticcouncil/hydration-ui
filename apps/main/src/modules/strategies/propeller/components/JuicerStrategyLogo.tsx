@@ -1,6 +1,6 @@
 import { JuicerLogo } from "@galacticcouncil/ui/assets/icons"
 import { Box, LogoSize } from "@galacticcouncil/ui/components"
-import { pxToRem } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 
 const JUICER_LOGO_PX: Record<LogoSize, number> = {
   "extra-small": 12,
@@ -28,6 +28,7 @@ export const JuicerStrategyLogo = ({
         height: pxToRem(px),
         flexShrink: 0,
         "& svg": { display: "block", width: "100%", height: "100%" },
+        "& svg path": { fill: getToken("accents.alertAlt.primary") },
       }}
     >
       <JuicerLogo />

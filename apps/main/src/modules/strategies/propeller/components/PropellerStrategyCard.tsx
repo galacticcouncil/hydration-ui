@@ -11,6 +11,11 @@ export const PropellerStrategyCard = () => {
   const { t } = useTranslation(["common", "strategies", "propeller"])
   const { upToApy, subLoop, isLoading } = usePropellerVaults()
   const leverage = subLoop?.leverage
+  const yieldValue =
+    upToApy !== null ? t("common:percent", { value: upToApy }) : "-"
+  const leverageValue = isNullish(leverage)
+    ? null
+    : t("propeller:strategy.loopLeverageValue", { value: leverage })
 
   return (
     <StrategyCard
@@ -20,18 +25,16 @@ export const PropellerStrategyCard = () => {
       stats={[
         {
           label: t("propeller:strategy.upToApy"),
-          value:
-            upToApy !== null ? t("common:percent", { value: upToApy }) : "-",
+          value: yieldValue,
+          valueTone: "yield",
           isLoading,
         },
-        ...(isNullish(leverage)
+        ...(leverageValue === null
           ? []
           : [
               {
                 label: t("propeller:strategy.loopLeverage"),
-                value: t("propeller:strategy.loopLeverageValue", {
-                  value: leverage,
-                }),
+                value: leverageValue,
                 isLoading,
               },
             ]),

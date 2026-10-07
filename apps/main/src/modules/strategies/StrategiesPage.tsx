@@ -23,6 +23,14 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 export const StrategiesPage = () => {
   const { t } = useTranslation(["common", "strategies"])
   const { featureFlags } = useRpcProvider()
+  const cardCount = Math.max(
+    1,
+    [
+      featureFlags.propellerEnabled,
+      featureFlags.bilEnabled,
+      featureFlags.hollarBondsEnabled,
+    ].filter(Boolean).length,
+  )
   const { active } = useStableBonds()
   const bondId = active?.id ?? ""
   const bondConfig = STABLE_BONDS[bondId]
@@ -44,7 +52,13 @@ export const StrategiesPage = () => {
     <>
       <SectionHeader title={t("strategies:page.title")} noTopPadding />
       <Grid
-        columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
+        columnTemplate={[
+          "1fr",
+          null,
+          `repeat(${Math.min(2, cardCount)}, minmax(0, 1fr))`,
+          null,
+          `repeat(${cardCount}, minmax(0, 1fr))`,
+        ]}
         gap="xl"
       >
         {featureFlags.propellerEnabled && <PropellerStrategyCard />}
@@ -55,6 +69,7 @@ export const StrategiesPage = () => {
             stats={[
               {
                 label: t("apy"),
+                valueTone: "yield",
                 value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
                 isLoading: isBilMetricsLoading,
               },
@@ -72,6 +87,7 @@ export const StrategiesPage = () => {
             stats={[
               {
                 label: t("apr"),
+                valueTone: "yield",
                 value:
                   bondApr !== null
                     ? t("common:percent", {

@@ -107,6 +107,10 @@ export const Loading: Story = {
   render: () => <CardTable data={DATA} columns={columns} isLoading />,
 }
 
+export const TwoColumnStats: Story = {
+  render: () => <CardTable data={DATA} columns={columns} statsColumns={2} />,
+}
+
 export const WithoutActions: Story = {
   render: () => (
     <CardTable data={DATA} columns={[assetColumn, ...statColumns]} />

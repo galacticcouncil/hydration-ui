@@ -37,7 +37,12 @@ import {
 } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 import { PortfolioSummary } from "@/modules/portfolio/overview/PortfolioSummary"
 
-export const portfolioOverviewTabs = ["assets", "liquidity", "bonds"] as const
+export const portfolioOverviewTabs = [
+  "assets",
+  "strategies",
+  "liquidity",
+  "bonds",
+] as const
 
 type Props = {
   readonly searchPhrase: string
@@ -45,6 +50,7 @@ type Props = {
   readonly sortingProps: SortingProps
   readonly liquidityContent: ReactNode
   readonly bondsContent: ReactNode
+  readonly strategiesContent: ReactNode
 }
 
 export const PortfolioOverview: FC<Props> = ({
@@ -53,6 +59,7 @@ export const PortfolioOverview: FC<Props> = ({
   sortingProps,
   liquidityContent,
   bondsContent,
+  strategiesContent,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
 
@@ -179,6 +186,7 @@ export const PortfolioOverview: FC<Props> = ({
                     />
                   )}
                   {activeTab === "liquidity" && liquidityContent}
+                  {activeTab === "strategies" && strategiesContent}
                   {activeTab === "bonds" && bondsContent}
                 </SPortfolioTableWrapper>
               </Box>
