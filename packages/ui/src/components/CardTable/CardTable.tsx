@@ -19,6 +19,7 @@ export type CardTableProps<TData extends RowData> = {
     | ColumnDef<TData>[]
   isLoading?: boolean
   skeletonRowCount?: number
+  statsColumns?: number
   className?: string
 }
 
@@ -33,6 +34,7 @@ const CardTable = <TData,>({
   columns,
   isLoading,
   skeletonRowCount = 3,
+  statsColumns,
   className,
 }: CardTableProps<TData>) => {
   const { isMobile } = useBreakpoints()
@@ -75,7 +77,20 @@ const CardTable = <TData,>({
             {statCells.length > 0 && (
               <>
                 <Separator my="m" mx="-l" />
-                <Flex justify="space-between" gap="l" align="start" wrap>
+                <Flex
+                  justify="space-between"
+                  gap="l"
+                  align="start"
+                  wrap
+                  sx={
+                    statsColumns
+                      ? {
+                          display: "grid",
+                          gridTemplateColumns: `repeat(${statsColumns}, minmax(0, 1fr))`,
+                        }
+                      : undefined
+                  }
+                >
                   {statCells.map((cell, index) => {
                     const header = headers.find(
                       (h) => h.column.id === cell.column.id,
@@ -89,10 +104,16 @@ const CardTable = <TData,>({
                         wrap
                         size="small"
                         font="secondary"
-                        align={isLast ? "right" : "left"}
+                        align={!statsColumns && isLast ? "right" : "left"}
                         customLabel={
                           header && (
-                            <ValueStatsLabel>
+                            <ValueStatsLabel
+                              style={
+                                statsColumns
+                                  ? { whiteSpace: "normal" }
+                                  : undefined
+                              }
+                            >
                               {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext(),

@@ -36,6 +36,7 @@ import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
+  type TransactionCommon,
   type TransactionOptions,
   useTransactionsStore,
 } from "@/states/transactions"
@@ -90,6 +91,7 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       data: Hex,
       abi: Abi,
       toasts: { submitted: string; success: string },
+      review?: Pick<TransactionCommon, "title" | "description">,
     ) => {
       if (!address) throw new Error("Connect an account before continuing")
       const isBound = await queryClient.fetchQuery({
@@ -121,13 +123,13 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
         })
 
         return createTransaction(
-          { tx: batchTx, toasts },
+          { tx: batchTx, toasts, ...review },
           txOptionsForVault(vaultAddress),
         )
       }
 
       return createTransaction(
-        { tx: evmCall, toasts },
+        { tx: evmCall, toasts, ...review },
         txOptionsForVault(vaultAddress),
       )
     },
@@ -406,6 +408,7 @@ export function useClaimSurplus(options: VaultWriteOptions = {}) {
 
 /** Materialize earnings already held as invested collateral shares. */
 export function useClaimYield(options: VaultWriteOptions = {}) {
+  const { t } = useTranslation("propeller")
   const { evmAddress, submitTx } = useVaultEvmCall(options)
   return useMutation({
     mutationFn: (vault: PropellerVaultConfig) =>
@@ -420,6 +423,10 @@ export function useClaimYield(options: VaultWriteOptions = {}) {
         {
           submitted: "Claiming earned shares...",
           success: "Earned shares claimed",
+        },
+        {
+          title: t("positions.action.claimEarnings"),
+          description: t("positions.earningsDescription"),
         },
       ),
   })

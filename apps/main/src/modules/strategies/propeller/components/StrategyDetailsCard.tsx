@@ -26,7 +26,7 @@ import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/useProp
 
 export const StrategyDetailsCard = () => {
   const { t } = useTranslation(["propeller", "common"])
-  const { isMobile, isTablet } = useBreakpoints()
+  const { gte } = useBreakpoints()
   const { vaults, subLoop, totalTvlUsd, isLoading } = usePropellerVaults()
   const [depositVault, setDepositVault] = useState<PropellerVaultConfig | null>(
     null,
@@ -69,9 +69,14 @@ export const StrategyDetailsCard = () => {
         </ValueStatsGroup>
       </CardBody>
       <Separator />
-      {isMobile || isTablet ? (
+      {!gte("xl") ? (
         <Box p="m" asChild>
-          <CardTable data={vaults} columns={columns} isLoading={isLoading} />
+          <CardTable
+            data={vaults}
+            columns={columns}
+            isLoading={isLoading}
+            statsColumns={2}
+          />
         </Box>
       ) : (
         <TableContainer borderRadius="xl">

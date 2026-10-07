@@ -184,14 +184,16 @@ export const SPortfolioChainsList = styled(Box)(
   `,
 )
 
-export const SPortfolioOverviewStats = styled(Stack)(
-  ({ theme }) => css`
+export const SPortfolioOverviewStats = styled(Stack)<{
+  readonly statCount: number
+}>(
+  ({ theme, statCount }) => css`
     width: max-content;
     justify-content: flex-start;
 
     ${mq("lg")} {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(${statCount}, minmax(0, 1fr));
       width: 100%;
       align-items: start;
       column-gap: ${theme.space.xxl};

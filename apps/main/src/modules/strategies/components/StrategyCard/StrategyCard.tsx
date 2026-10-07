@@ -21,7 +21,7 @@ export type StrategyCardProps = (
   | { logoId: string; logo?: never }
   | { logo: ReactNode; logoId?: never }
 ) & {
-  stats: ValueStatsProps[]
+  stats: (ValueStatsProps & { valueTone?: "yield" })[]
   badges?: StrategyBadgeType[]
   title: string
   description: string
@@ -60,11 +60,21 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         </Flex>
 
         <Flex gap="xxxl">
-          {stats.map((stat) => (
+          {stats.map(({ valueTone, ...stat }) => (
             <ValueStats
               key={stat.label}
               customValue={
-                <Text fs="h5" lh={1} font="primary" fw={600}>
+                <Text
+                  fs="h5"
+                  lh={1}
+                  font="primary"
+                  fw={600}
+                  color={getToken(
+                    valueTone === "yield"
+                      ? "accents.success.emphasis"
+                      : "text.high",
+                  )}
+                >
                   {stat.value}
                 </Text>
               }

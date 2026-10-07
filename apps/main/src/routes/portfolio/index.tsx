@@ -5,15 +5,20 @@ import { getPageMeta } from "@/config/navigation"
 import { dataTableSortSchema } from "@/form/dataTableSortSchema"
 import { MyBondsTableColumnId } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
 import { MyLiquidityTableColumnId } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.columns"
+import { MyStrategiesColumnId } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
 import { PortfolioOverviewPage } from "@/modules/portfolio/overview/PortfolioOverviewPage"
 import { PortfolioOverviewSkeleton } from "@/modules/portfolio/overview/PortfolioOverviewSkeleton"
 
 const searchSchema = z.object({
   category: z
-    .enum(["assets", "liquidity", "bonds"])
+    .enum(["assets", "strategies", "liquidity", "bonds"])
     .catch("assets")
     .default("assets"),
   assetsSort: dataTableSortSchema,
+  strategiesPage: z.number().optional(),
+  strategiesSort: dataTableSortSchema.default([
+    { id: MyStrategiesColumnId.Value, desc: true },
+  ]),
   bondsPage: z.number().optional(),
   bondsSort: dataTableSortSchema.default([
     { id: MyBondsTableColumnId.Total, desc: true },

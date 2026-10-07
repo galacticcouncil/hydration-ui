@@ -61,6 +61,8 @@ const PropellerVaultContent = () => {
 
           <StrategyDetailsCard />
 
+          <WithdrawalsCard rows={withdrawals} />
+
           <AboutCard />
         </Stack>
 
@@ -76,8 +78,6 @@ const PropellerVaultContent = () => {
           ) : (
             defaultDeposit.isLoading && <AppSkeleton />
           )}
-
-          <WithdrawalsCard rows={withdrawals} />
         </Stack>
       </TwoColumnGrid>
 
