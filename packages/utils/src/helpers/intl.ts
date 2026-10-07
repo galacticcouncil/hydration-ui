@@ -194,9 +194,11 @@ export const formatPercent = (
     return NA_VALUE
   }
 
+  const { threshold = true, ...intlOptions } = options
+
   const percentage = Big(value)
-  const isBelowThreshold =
-    percentage.gt(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+  const isBelowMin = percentage.gt(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+  const isBelowThreshold = threshold !== false && isBelowMin
 
   const percentageAdjusted = isBelowThreshold
     ? MIN_PERCENTAGE_THRESHOLD.div(100)
@@ -205,7 +207,8 @@ export const formatPercent = (
   const formattedValue = Intl.NumberFormat(lng, {
     style: "percent",
     maximumFractionDigits: 2,
-    ...options,
+    ...(isBelowMin && !isBelowThreshold && { maximumSignificantDigits: 1 }),
+    ...intlOptions,
   })
     .formatToParts(percentageAdjusted.toNumber())
     .map(formatNumberParts)
