@@ -176,6 +176,7 @@ export const nextQuotedPrice = (
 export type QuotedPriceView = {
   readonly display: string
   readonly marketDisplay: string | null
+  readonly executableDisplay: string | null
   readonly deviationPct: number | null
   readonly inverted: boolean
   readonly canReset: boolean
@@ -215,9 +216,11 @@ const deviationOf = (
 export const viewQuotedPrice = (
   state: QuotedPrice,
   market: string | null,
+  executable: string | null = null,
 ): QuotedPriceView => ({
   display: displayOf(state),
   marketDisplay: market ? toDisplay(market, state.inverted) : null,
+  executableDisplay: executable ? toDisplay(executable, state.inverted) : null,
   deviationPct: deviationOf(state, market),
   inverted: state.inverted,
   canReset: state.source !== "market" && market !== null,

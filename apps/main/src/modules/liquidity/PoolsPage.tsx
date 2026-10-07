@@ -92,8 +92,10 @@ export const VaultsTable = ({
   withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
-  const { data, isLoading } = useVaults()
+  const { data, isLoading: isFullyLoading, isPoolsLoading } = useVaults()
   const columns = useVaultsColumns()
+  // Positions are only known once the vaults are, so that view waits for them.
+  const isLoading = withPositions ? isFullyLoading : isPoolsLoading
   const { isMobile } = useBreakpoints()
   const router = useRouter()
 
@@ -112,7 +114,7 @@ export const VaultsTable = ({
         <DataTable
           size={isMobile ? "small" : "large"}
           isLoading={isLoading}
-          skeletonRowCount={1}
+          skeletonRowCount={5}
           data={filteredData}
           columns={columns}
           globalFilter={search}

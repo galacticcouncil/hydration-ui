@@ -19,6 +19,7 @@ import { scaleHuman } from "@/utils/formatting"
 export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const [token0, token1] = vault.tokens
+  const flipped = vault.pair[0].id !== token0.id
   const { getAssetPrice } = useAssetsPrice([token0.id, token1.id])
 
   const human = (raw: bigint, decimals: number) =>
@@ -83,18 +84,24 @@ export const VaultComposition = ({ vault }: { vault: VaultTable }) => {
                 </Text>
               </Flex>
               <Grid columns={2} gap="l" align="center">
-                <Amount
-                  assetId={token0.id}
-                  symbol={token0.symbol}
-                  value={human(row.amount0, token0.decimals)}
-                  displayValue={usd(token0.id, row.amount0, token0.decimals)}
-                />
-                <Amount
-                  assetId={token1.id}
-                  symbol={token1.symbol}
-                  value={human(row.amount1, token1.decimals)}
-                  displayValue={usd(token1.id, row.amount1, token1.decimals)}
-                />
+                {(flipped
+                  ? [
+                      { token: token1, amount: row.amount1 },
+                      { token: token0, amount: row.amount0 },
+                    ]
+                  : [
+                      { token: token0, amount: row.amount0 },
+                      { token: token1, amount: row.amount1 },
+                    ]
+                ).map(({ token, amount }) => (
+                  <Amount
+                    key={token.id}
+                    assetId={token.id}
+                    symbol={token.symbol}
+                    value={human(amount, token.decimals)}
+                    displayValue={usd(token.id, amount, token.decimals)}
+                  />
+                ))}
               </Grid>
             </Flex>
           ))}

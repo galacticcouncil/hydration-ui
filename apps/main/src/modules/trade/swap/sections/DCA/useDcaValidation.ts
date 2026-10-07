@@ -87,23 +87,26 @@ export const useOpenBudgetDcaHfValidation = (
   const { account } = useAccount()
   const address = account?.address ?? ""
 
+  const assetIn = order ? getAsset(order.assetIn) : undefined
+  const aTokenIn = assetIn && isErc20AToken(assetIn) ? assetIn : undefined
+
   const { data: aaveSummary, isLoading } = useQuery(
-    aaveSummaryQuery(rpc, address, isOpenBudget),
+    aaveSummaryQuery(
+      rpc,
+      address,
+      aTokenIn?.underlyingAssetId,
+      isOpenBudget && !!aTokenIn,
+    ),
   )
 
-  if (!order || !healthFactor || !isOpenBudget) {
-    return { healthFactor: undefined, isLoading: false }
-  }
-
-  const assetIn = getAsset(order.assetIn)
-
-  if (!assetIn || !isErc20AToken(assetIn)) {
+  if (!order || !healthFactor || !isOpenBudget || !aTokenIn) {
     return { healthFactor: undefined, isLoading: false }
   }
 
   const reserve = aaveSummary?.reserves.find(
     (reserve) =>
-      getAssetIdFromAddress(reserve.reserveAsset) === assetIn.underlyingAssetId,
+      getAssetIdFromAddress(reserve.reserveAsset) ===
+      aTokenIn.underlyingAssetId,
   )
 
   return {

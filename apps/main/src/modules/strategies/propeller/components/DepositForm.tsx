@@ -230,7 +230,7 @@ export const DepositForm = ({
               width="100%"
               isLoading={deposit.isPending}
               disabled={!canSubmit}
-              disabledVariant="muted"
+              disabledVariant={blockedDescription ? "muted" : undefined}
             >
               {ctaLabel}
             </LoadingButton>

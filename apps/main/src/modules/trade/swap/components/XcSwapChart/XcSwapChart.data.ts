@@ -85,7 +85,8 @@ export const useXcSwapCandles = ({
     const aToken = getErc20AToken(sellAssetId)
     if (!aToken) return sellAssetId
     const underlying = getAssetWithFallback(aToken.underlyingAssetId)
-    if (isStableSwap(underlying)) return sellAssetId
+    // A reserve outside the router (BIL) has no candles of its own
+    if (isStableSwap(underlying) || !underlying.isTradable) return sellAssetId
     return aToken.underlyingAssetId
   }, [sellAssetId, getErc20AToken, getAssetWithFallback, isStableSwap])
 

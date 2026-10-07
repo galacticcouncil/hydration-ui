@@ -1,5 +1,5 @@
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
-import { useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { UseFormReturn } from "react-hook-form"
 
 import { useSubmitSwap } from "@/modules/trade/swap/sections/XcSwap/hooks/useSubmitSwap"
@@ -23,7 +23,7 @@ type SubmitSnapshot = {
   readonly maxSellBalance: string
 }
 
-type UseXcSwapSubmitParams = {
+type UseSubmitByQuoteParams = {
   form: UseFormReturn<XcSwapFormValues>
   quote: XcSwapQuote
   maxSwapSellBalance: string
@@ -34,7 +34,7 @@ type UseXcSwapSubmitParams = {
   swapSlippage: number
 }
 
-export const useXcSwapSubmit = ({
+export const useSubmitByQuote = ({
   form,
   quote,
   maxSwapSellBalance,
@@ -43,7 +43,7 @@ export const useXcSwapSubmit = ({
   originAssetMap,
   refundTo,
   swapSlippage,
-}: UseXcSwapSubmitParams) => {
+}: UseSubmitByQuoteParams) => {
   const { getAsset } = useAssets()
   const onSubmitRef = useRef<(() => void) | undefined>(undefined)
   const submitSnapshotRef = useRef<SubmitSnapshot | null>(null)
@@ -61,6 +61,40 @@ export const useXcSwapSubmit = ({
   )
   const submitOmnipool = useSubmitSwap(transactionActions)
   const submitTwap = useSubmitTwap(transactionActions)
+
+  const xcOperationRef = useRef(0)
+  const { reset: resetXcSubmit } = submit
+
+  const abandonXcSwap = useCallback(() => {
+    xcOperationRef.current += 1
+    resetXcSubmit()
+  }, [resetXcSubmit])
+
+  const [sellAsset, buyAsset, destChain, destAddress, sellAmount] = form.watch([
+    "sellAsset",
+    "buyAsset",
+    "destChain",
+    "destAddress",
+    "sellAmount",
+  ])
+  const sellAssetId = sellAsset?.id
+  const buyAssetKey = buyAsset?.key
+  const destChainKey = destChain?.key
+
+  // A cross-chain preparation belongs to the swap it started for. Changing the
+  // swap (or leaving) abandons it so its late result is discarded and the
+  // submit button frees right away.
+  useEffect(
+    () => abandonXcSwap,
+    [
+      abandonXcSwap,
+      sellAssetId,
+      buyAssetKey,
+      destChainKey,
+      destAddress,
+      sellAmount,
+    ],
+  )
 
   onSubmitRef.current = () => {
     const snapshot = submitSnapshotRef.current
@@ -102,7 +136,12 @@ export const useXcSwapSubmit = ({
     }
 
     if (quote?.kind === "xc") {
-      submit.mutate(values)
+      const operation = ++xcOperationRef.current
+      submit.mutate({
+        values,
+        isCurrent: () => xcOperationRef.current === operation,
+        abandon: abandonXcSwap,
+      })
     } else if (quote?.kind === "oc" && values.isSingleTrade) {
       submitOmnipool.mutate(toSwapSubmitValues(values))
     } else if (quote?.kind === "oc" && quote.twap) {
