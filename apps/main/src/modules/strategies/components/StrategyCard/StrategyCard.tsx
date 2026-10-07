@@ -38,7 +38,21 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   badges = [],
 }) => {
   return (
-    <Paper p="xl" hoverable position="relative">
+    <Paper
+      p="xl"
+      position="relative"
+      sx={{
+        transition: getToken("transitions.colors"),
+        transitionDuration: "300ms",
+        transitionTimingFunction: "ease-in-out",
+        "&:hover, &:focus-within": {
+          backgroundColor: getToken("surfaces.containers.high.hover"),
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          transition: "none",
+        },
+      }}
+    >
       <Stack gap="l">
         <Flex
           justify="space-between"
