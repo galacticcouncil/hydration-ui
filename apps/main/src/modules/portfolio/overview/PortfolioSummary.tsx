@@ -62,8 +62,6 @@ export const PortfolioSummary: FC = memo(() => {
   )
 
   const isClaimableRewardsLoading = rewards.isLoading || referralPriceLoading
-  const showBorrow = isBorrowLoading || (!!borrow && !Big(borrow).eq(0))
-  const showSupply = isBorrowLoading || (!!supply && !Big(supply).eq(0))
 
   const stats = [
     {
@@ -76,24 +74,16 @@ export const PortfolioSummary: FC = memo(() => {
       value: t("common:currency", { value: assets }),
       isLoading: isAssetsLoading,
     },
-    ...(showBorrow
-      ? [
-          {
-            label: t("myAssets.totalBorrow"),
-            value: t("common:currency", { value: borrow }),
-            isLoading: isBorrowLoading,
-          },
-        ]
-      : []),
-    ...(showSupply
-      ? [
-          {
-            label: t("myAssets.totalSupply"),
-            value: t("common:currency", { value: supply }),
-            isLoading: isBorrowLoading,
-          },
-        ]
-      : []),
+    {
+      label: t("myAssets.totalBorrow"),
+      value: t("common:currency", { value: borrow }),
+      isLoading: isBorrowLoading,
+    },
+    {
+      label: t("myAssets.totalSupply"),
+      value: t("common:currency", { value: supply || 0 }),
+      isLoading: isBorrowLoading,
+    },
     {
       label: t("balances.header.liquidity"),
       value: t("common:currency", { value: liquidity }),
@@ -125,7 +115,6 @@ export const PortfolioSummary: FC = memo(() => {
 
   const statsContent = (
     <SPortfolioOverviewStats
-      statCount={stats.length}
       separated={!isLg}
       gap="xxl"
       direction="row"

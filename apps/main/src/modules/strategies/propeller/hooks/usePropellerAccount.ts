@@ -25,7 +25,6 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 export type PropellerPosition = {
   vault: PropellerVaultConfig
   shares: number
-  sharesExact: string
   assetValue: number
   usdValue: number
   apy: number | null
@@ -200,7 +199,6 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
       {
         vault,
         shares,
-        sharesExact: balanceQueries[i]?.data?.sharesExact ?? "0",
         rewards,
         assetValue,
         usdValue: assetValue * (market?.price ?? 0),

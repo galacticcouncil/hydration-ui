@@ -98,7 +98,7 @@ export const useStrategyVaultColumns = (
         if (!stats || stats.cap <= 0) return null
         return (
           <Stack gap="xs" width="100%" minWidth="3xl">
-            <Flex justify="space-between" gap="s">
+            <Flex justify={["flex-end", null, "space-between"]} gap="s">
               <Text
                 fs={["p5", null, "p6"]}
                 fw={500}

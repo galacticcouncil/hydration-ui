@@ -17,7 +17,6 @@ import { useSearch } from "@tanstack/react-router"
 import { useMyAssetsColumns } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import { useMyBondsColumns } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
 import { useMyLiquidityColumns } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.columns"
-import { useMyStrategiesColumns } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
 import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChainHeader"
 import { portfolioOverviewTabs } from "@/modules/portfolio/overview/PortfolioOverview"
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
@@ -27,7 +26,6 @@ export const PortfolioOverviewSkeleton = () => {
   const assetsColumns = useMyAssetsColumns(false)
   const liquidityColumns = useMyLiquidityColumns()
   const bondsColumns = useMyBondsColumns()
-  const strategiesColumns = useMyStrategiesColumns()
 
   return (
     <Flex direction="column" gap="l">
@@ -68,7 +66,7 @@ export const PortfolioOverviewSkeleton = () => {
           </ScrollArea>
         </Box>
         <Separator />
-        <Flex gap="base" p="m" sx={{ overflow: "hidden" }}>
+        <Flex gap="base" p="m">
           {portfolioOverviewTabs.map((tab) => (
             <Skeleton
               key={tab}
@@ -86,13 +84,6 @@ export const PortfolioOverviewSkeleton = () => {
                 isLoading
                 data={[]}
                 columns={liquidityColumns}
-                size="small"
-              />
-            ) : category === "strategies" ? (
-              <DataTable
-                isLoading
-                data={[]}
-                columns={strategiesColumns}
                 size="small"
               />
             ) : category === "bonds" ? (
