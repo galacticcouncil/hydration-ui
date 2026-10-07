@@ -151,6 +151,18 @@ const LoadingTemplate = () => {
       <LoadingButton isLoading={isLoading} loadingMode="replace">
         Load all (42)
       </LoadingButton>
+      <LoadingButton isLoading={isLoading} disabled size="large" width={300}>
+        Disabled (faded)
+      </LoadingButton>
+      <LoadingButton
+        isLoading={isLoading}
+        disabled
+        disabledVariant="muted"
+        size="large"
+        width={300}
+      >
+        Disabled (muted variant)
+      </LoadingButton>
     </Flex>
   )
 }
