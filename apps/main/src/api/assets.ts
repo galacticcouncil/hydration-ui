@@ -1,6 +1,8 @@
 import { Asset, Bond } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
+  BIL_ASSET_ID,
+  BIL_ERC20_ID,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
@@ -11,15 +13,15 @@ import { PublicClient } from "viem"
 import { HYPERVISOR_ABI } from "@/api/gamma/abi"
 import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
 import { vaultIdentityQuery } from "@/api/gamma/vaults"
-import { assetMetadataQuery } from "@/api/metadata"
 import { allPools, V3PoolBase } from "@/api/pools"
+import { TDataEnv } from "@/config/rpc"
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
+  TAssetStored,
   TATokenPairStored,
   TShareTokenStored,
   useAssetRegistryStore,
 } from "@/states/assetRegistry"
-import { ASSET_ICON_OVERRIDES, ASSET_NAME_OVERRIDES } from "@/utils/assets"
 import {
   getAccountKey20,
   getEthereumNetworkEntry,
@@ -38,9 +40,9 @@ export enum AssetType {
 }
 
 /**
- * Assets that predate the direct NTT route still carry moonbeam branding the
- * app no longer routes through — a "(Moonbeam Wormhole)" suffix on the name
- * from the on-chain registry, and a moonbeam chain badge from the metadata cdn.
+ * Assets that predate the direct NTT route still resolve to moonbeam by xcm
+ * location, so the metadata cdn would badge them with a chain the app no
+ * longer routes through. The badge is dropped for those.
  */
 const MOONBEAM_PARACHAIN_ID = "2004"
 
@@ -127,6 +129,8 @@ const fetchGammaVaultShareSymbols = async (
   )
 }
 
+export const assetsQueryKey = (dataEnv: TDataEnv) => ["assets", dataEnv]
+
 export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
@@ -134,19 +138,15 @@ export const assetsQuery = (
   const { sdk, papi, evm, isEndpointSettled, dataEnv, genesisHash } = context
 
   return queryOptions({
-    queryKey: ["assets", dataEnv],
+    queryKey: assetsQueryKey(dataEnv),
     queryFn: async () => {
       const { syncAssets, syncATokenPairs, syncShareTokens } =
         useAssetRegistryStore.getState()
 
-      // Icons are baked into the stored registry, so the metadata singleton has
-      // to be warm before the assets are mapped - it is no longer warmed by the
-      // provider query.
-      const [tradeAssets, pools, assets, metadata] = await Promise.all([
+      const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
         sdk.client.asset.getSupported(false),
-        queryClient.ensureQueryData(assetMetadataQuery()),
       ])
       const tradeAssetsMap = new Set(tradeAssets)
       const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
@@ -175,7 +175,7 @@ export const assetsQuery = (
         }
       }
 
-      const aTokenPairs: TATokenPairStored[] = pools.aavePools
+      const routerATokenPairs: TATokenPairStored[] = pools.aavePools
         .map((p) => {
           const [reserve, atoken] = p.tokens
 
@@ -185,9 +185,26 @@ export const assetsQuery = (
         })
         .filter(isNonNullish)
 
-      const aTokenMap = new Map(aTokenPairs)
+      // The router only lists main market pairs. aBIL lives in the BIL market
+      // and trades through stableswap, so it is paired by hand.
+      const aTokenMap = new Map(routerATokenPairs)
+      const assetIds = new Set(assets.map(({ id }) => id.toString()))
+      if (assetIds.has(BIL_ERC20_ID) && assetIds.has(BIL_ASSET_ID)) {
+        aTokenMap.set(BIL_ERC20_ID, BIL_ASSET_ID)
+      }
+
+      const aTokenPairs: TATokenPairStored[] = [...aTokenMap]
 
       syncATokenPairs(aTokenPairs)
+
+      const metadata = AssetMetadataFactory.getInstance()
+      const isMetadataLoaded = metadata.isLoaded
+      const stored = useAssetRegistryStore.getState()
+      const storedAssets = new Map(
+        !isMetadataLoaded && stored.genesisHash === genesisHash
+          ? stored.assets.map((asset) => [asset.id, asset])
+          : [],
+      )
 
       const assetsData = assets
         .filter(
@@ -204,7 +221,7 @@ export const assetsQuery = (
             existentialDeposit: asset.existentialDeposit.toString(),
             symbol: asset.symbol ?? "",
             decimals: asset.decimals ?? 0,
-            name: ASSET_NAME_OVERRIDES[id] ?? asset.name ?? "",
+            name: asset.name ?? "",
             isTradable,
             isSufficient: asset.isSufficient,
           }
@@ -226,17 +243,34 @@ export const assetsQuery = (
             }
           }
         })
+        .map((asset) => withStoredIcons(asset, storedAssets.get(asset.id)))
 
       syncAssets(assetsData, genesisHash)
       syncShareTokens(shareTokens)
 
-      return []
+      return { isMetadataLoaded }
     },
     enabled: isEndpointSettled,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   })
+}
+
+function withStoredIcons(
+  asset: TAssetData,
+  stored: TAssetStored | undefined,
+): TAssetData {
+  if (!stored) return asset
+
+  const iconSrc = asset.iconSrc || stored.iconSrc
+  const chainSrc = asset.chainSrc || stored.chainSrc
+
+  return {
+    ...asset,
+    ...(iconSrc && { iconSrc }),
+    ...(chainSrc && { chainSrc }),
+  }
 }
 
 function assetToTokenType(
@@ -263,14 +297,13 @@ function assetToTokenType(
   } else {
     const parachainId = getParachainId(asset)?.toString()
     const ecosystem = ChainEcosystem.Polkadot
-    const iconId = ASSET_ICON_OVERRIDES[commonAssetData.id] ?? asset.id
 
     return {
       ...commonAssetData,
       type: AssetType.TOKEN,
       parachainId,
       ecosystem,
-      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, iconId),
+      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, asset.id),
       chainSrc:
         parachainId && parachainId !== MOONBEAM_PARACHAIN_ID
           ? metadata.getChainLogoSrc(parachainId, ecosystem)

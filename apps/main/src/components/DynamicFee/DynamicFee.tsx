@@ -40,12 +40,12 @@ export const DynamicFee = ({
         <Text fs="p5" fw={500} lh={1.2}>
           <span sx={{ color: getToken("text.high") }}>{amount}</span>{" "}
           <span sx={{ color: getToken("text.tint.quart") }}>
-            ({t("percent", { value })})
+            ({t("percent", { value, threshold: false })})
           </span>
         </Text>
       ) : (
         <Text fs="p5" fw={500} lh={1.2} color={getToken("text.high")}>
-          {t("percent", { value })}
+          {t("percent", { value, threshold: false })}
         </Text>
       )}
       <Flex p="1px 2px" gap="xs" height="min-content">

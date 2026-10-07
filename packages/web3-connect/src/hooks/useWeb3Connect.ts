@@ -24,6 +24,11 @@ export enum WalletProviderStatus {
   Error = "error",
 }
 
+export enum WalletRestoreState {
+  Restoring = "restoring",
+  Unavailable = "unavailable",
+}
+
 export { WalletMode } from "@/config/wallet"
 
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
@@ -84,6 +89,7 @@ export type WalletProviderState = {
   mode: WalletMode
   error?: string
   meta?: Web3ConnectModalMeta | null
+  restoreStates: Partial<Record<WalletProviderType, WalletRestoreState>>
 }
 
 export type WalletProviderStore = WalletProviderState & {
@@ -99,6 +105,11 @@ export type WalletProviderStore = WalletProviderState & {
   getProviders: (mode: WalletMode) => WalletProviderEntry[]
   getConnectedProviders: (mode: WalletMode) => WalletProviderEntry[]
   setError: (error: string) => void
+  setRestoreState: (
+    provider: WalletProviderType,
+    restoreState: WalletRestoreState,
+  ) => void
+  clearRestoreState: (provider: WalletProviderType) => void
   disconnect: (provider?: WalletProviderType) => void
 }
 
@@ -111,6 +122,7 @@ const initialState: WalletProviderState = {
   mode: WalletMode.Default,
   error: "",
   meta: null,
+  restoreStates: {},
 }
 
 export const useWeb3Connect = create<WalletProviderStore>()(
@@ -205,7 +217,10 @@ export const useWeb3Connect = create<WalletProviderStore>()(
               ]
             : state.providers,
           recentProvider: provider,
-          account: isError ? null : state.account,
+          account:
+            isError && state.account?.provider === provider
+              ? null
+              : state.account,
           error: isError ? state.error : "",
         }))
       },
@@ -229,6 +244,16 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         )
       },
       setError: (error) => set((state) => ({ ...state, error })),
+      setRestoreState: (provider, restoreState) =>
+        set((state) => ({
+          ...state,
+          restoreStates: { ...state.restoreStates, [provider]: restoreState },
+        })),
+      clearRestoreState: (provider) =>
+        set((state) => ({
+          ...state,
+          restoreStates: omit(state.restoreStates, [provider]),
+        })),
       disconnect: (givenProvider) => {
         const provider = Object.values(WalletProviderType).find(
           (type) => type === givenProvider,
@@ -247,6 +272,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           providers: provider
             ? state.providers.filter((p) => p.type !== provider)
             : [],
+          restoreStates: provider ? omit(state.restoreStates, [provider]) : {},
           recentProvider: null,
           mode: state.mode,
           open: state.open,
@@ -255,7 +281,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
     }),
     {
       name: "web3-connect",
-      partialize: omit(["open", "error", "accounts"]),
+      partialize: omit(["open", "error", "accounts", "restoreStates"]),
       version: 10,
     },
   ),

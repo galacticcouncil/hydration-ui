@@ -187,6 +187,17 @@ export function hasRouteToHydration(
   )
 }
 
+export function resolveHydrationDisplayAssetId(
+  asset: Asset,
+  configService: ConfigService,
+): string | null {
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return null
+
+  const canonical = configService.assets.get(asset.key) ?? asset
+  return toHydrationRegistryId(hydrationChain, canonical)
+}
+
 export function resolveHydrationAssetId(
   asset: Asset,
   sourceChainKey: string,

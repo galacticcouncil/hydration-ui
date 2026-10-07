@@ -115,6 +115,8 @@
   "xc.swap.error.amountTooLow": "The swap amount is too low for this route.",
   "xc.swap.error.recipientInvalid": "The recipient address is invalid for the destination chain.",
   "xc.swap.error.quoteFailed": "Unable to get a quote for this swap.",
+  "xc.swap.error.routeTimeout": "Cross-chain route didn't respond",
+  "xc.swap.error.routeTimeoutRetry": "Cross-chain route didn't respond. Try again.",
   "xc.swap.error.destAddressInvalid": "Invalid destination address",
   "xc.swap.select.placeholder": "Select chain & asset",
   "xc.swap.field.destTitle": "Destination chain & asset",

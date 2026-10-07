@@ -24,6 +24,7 @@ import {
   useAccountsWithBalance,
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
+import { ProviderUnavailable } from "@/components/provider/ProviderUnavailable"
 import { Web3ConnectModalPage } from "@/config/modal"
 import {
   SOLANA_PROVIDERS,
@@ -35,7 +36,14 @@ import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { useActiveMultisigConfig } from "@/hooks/useMultisigConfigs"
 import { MultisigConfig, useMultisigStore } from "@/hooks/useMultisigStore"
-import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
+import {
+  Account,
+  useWeb3Connect,
+  WalletMode,
+  WalletProviderStatus,
+  WalletRestoreState,
+} from "@/hooks/useWeb3Connect"
+import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
 const getAccountOptionComponent = (account: Account) => {
@@ -56,9 +64,21 @@ export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
   const { onAccountSelect, isControlled, mode, setPage } =
     useWeb3ConnectContext()
-  const { accounts, toggle, getProviders } = useWeb3Connect(
-    useShallow(pick(["accounts", "toggle", "getProviders"])),
+  const { accounts, restoreStates, toggle, getProviders } = useWeb3Connect(
+    useShallow(
+      pick([
+        "accounts",
+        "providers",
+        "restoreStates",
+        "toggle",
+        "getProviders",
+      ]),
+    ),
   )
+  const { enable: retryRestore } = useWeb3Enable({ restore: true })
+  const [retriedProviders, setRetriedProviders] = useState<
+    WalletProviderType[]
+  >([])
   const { setActive } = useMultisigStore()
   const activeMultisig = useActiveMultisigConfig()
 
@@ -78,9 +98,24 @@ export const AccountSelectContent = () => {
   )
 
   const providers = getProviders(mode)
-  const isProvidersConnecting = providers.some(
-    ({ status }) => status === "pending",
+  const providerTypes = providers.map(prop("type"))
+  const pendingProviders = providers
+    .filter(
+      ({ type, status }) =>
+        status === WalletProviderStatus.Pending ||
+        restoreStates[type] === WalletRestoreState.Restoring,
+    )
+    .map(prop("type"))
+  const unavailableProviders = providerTypes.filter(
+    (type) =>
+      !pendingProviders.includes(type) &&
+      restoreStates[type] === WalletRestoreState.Unavailable,
   )
+  const hasProviderAccounts = accounts.some(({ provider }) =>
+    providerTypes.includes(provider),
+  )
+  const isProvidersConnecting =
+    pendingProviders.length > 0 && !hasProviderAccounts
 
   const accountList = useMemo(
     () =>
@@ -111,6 +146,14 @@ export const AccountSelectContent = () => {
       setPage(Web3ConnectModalPage.MultisigSignerSelect)
     },
     [setActive, setPage],
+  )
+
+  const handleRetry = useCallback(
+    (provider: WalletProviderType) => {
+      setRetriedProviders((prev) => [...prev, provider])
+      retryRestore(provider).catch(() => {})
+    },
+    [retryRestore],
   )
 
   const { accountsWithBalances, areBalancesLoading } =
@@ -150,10 +193,21 @@ export const AccountSelectContent = () => {
       />
       <ModalBody maxHeight="50vh">
         <Grid gap="base">
+          {unavailableProviders.map((provider) => (
+            <ProviderUnavailable
+              key={provider}
+              provider={provider}
+              hasRetried={retriedProviders.includes(provider)}
+              onRetry={handleRetry}
+            />
+          ))}
           {isProvidersConnecting ? (
-            <ProviderLoader providers={providers.map(prop("type"))} />
+            <ProviderLoader providers={pendingProviders} />
           ) : (
             <>
+              {pendingProviders.map((provider) => (
+                <ProviderLoader key={provider} providers={[provider]} compact />
+              ))}
               {hasNoResults && <Text>{t("account.noResults")}</Text>}
               {isDefaultMode && activeMultisig && (
                 <AccountMultisigOption

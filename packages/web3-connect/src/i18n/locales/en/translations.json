@@ -20,6 +20,9 @@
   "provider.connectWallet": "Connect wallet",
   "provider.waitingForAuth": "Waiting for authorization",
   "provider.authorizeDescription": "Please authorize your wallet extension to connect to Hydration.",
+  "provider.connecting": "Connecting to {{name}}",
+  "provider.notResponding": "{{name}} didn't respond",
+  "provider.walletConnectUnavailable": "WalletConnect is unavailable. Reload the page to try again.",
 
   "account.select": "Select account",
   "account.searchPlaceholder": "Search by name or paste address",
