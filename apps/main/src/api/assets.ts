@@ -1,6 +1,8 @@
 import { Asset, Bond } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
+  BIL_ASSET_ID,
+  BIL_ERC20_ID,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
@@ -175,7 +177,7 @@ export const assetsQuery = (
         }
       }
 
-      const aTokenPairs: TATokenPairStored[] = pools.aavePools
+      const routerATokenPairs: TATokenPairStored[] = pools.aavePools
         .map((p) => {
           const [reserve, atoken] = p.tokens
 
@@ -185,7 +187,15 @@ export const assetsQuery = (
         })
         .filter(isNonNullish)
 
-      const aTokenMap = new Map(aTokenPairs)
+      // The router only lists main market pairs. aBIL lives in the BIL market
+      // and trades through stableswap, so it is paired by hand.
+      const aTokenMap = new Map(routerATokenPairs)
+      const assetIds = new Set(assets.map(({ id }) => id.toString()))
+      if (assetIds.has(BIL_ERC20_ID) && assetIds.has(BIL_ASSET_ID)) {
+        aTokenMap.set(BIL_ERC20_ID, BIL_ASSET_ID)
+      }
+
+      const aTokenPairs: TATokenPairStored[] = [...aTokenMap]
 
       syncATokenPairs(aTokenPairs)
 

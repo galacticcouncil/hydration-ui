@@ -435,7 +435,7 @@ export function useCancelRedeem() {
 
 export function useInstantRedeemFromQueue() {
   const { t } = useTranslation(["strategies", "common"])
-  const { bil, hollar } = useBilStrategy()
+  const { bil, bilReserve, hollar } = useBilStrategy()
   const { evm, sdk, papi } = useRpcProvider()
   const { account } = useAccount()
   const {
@@ -483,7 +483,9 @@ export function useInstantRedeemFromQueue() {
           Number(hollar.id),
           returnAmount,
         ),
-        sdk.api.aave.hasBorrowPositions(address),
+        // Debt in the BIL market. Not requiresExtraGas: the batch resupplies
+        // aBIL first, which can enable collateral it cannot see yet
+        sdk.api.aave.hasBorrowPositions(address, Number(bilReserve.id)),
       ])
       const route = TradeRouteBuilder.build(swap.swaps) as Parameters<
         typeof papi.tx.Router.sell
