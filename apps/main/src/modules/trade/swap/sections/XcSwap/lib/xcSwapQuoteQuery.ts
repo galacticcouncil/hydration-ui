@@ -1,7 +1,9 @@
 import { TAssetData } from "@galacticcouncil/main/src/api/assets"
+import { withTimeout } from "@galacticcouncil/utils"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { queryOptions } from "@tanstack/react-query"
 
+import i18n from "@/i18n"
 import { XC_SWAP_RECIPIENT_PLACEHOLDERS } from "@/modules/trade/swap/sections/XcSwap/config/meta"
 import { assertXcSwapQuoteParams } from "@/modules/trade/swap/sections/XcSwap/lib/assertXcSwapQuoteParams"
 import {
@@ -10,6 +12,8 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { XcAsset, XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import { scale } from "@/utils/formatting"
+
+const XC_SWAP_QUOTE_TIMEOUT_MS = 30_000
 
 /**
  * A placeholder stands in until the recipient is a valid address
@@ -85,15 +89,19 @@ export const xcSwapQuoteQuery = (
         throw new Error("Source asset is required")
       }
 
-      return xcSwap.swap(
-        assertXcSwapQuoteParams({
-          srcAsset: sellAssetToXcAsset(sellAsset, originAssetMap),
-          amountIn,
-          destAsset: buyAsset,
-          recipient,
-          refundTo,
-          slippage,
-        }),
+      return withTimeout(
+        xcSwap.swap(
+          assertXcSwapQuoteParams({
+            srcAsset: sellAssetToXcAsset(sellAsset, originAssetMap),
+            amountIn,
+            destAsset: buyAsset,
+            recipient,
+            refundTo,
+            slippage,
+          }),
+        ),
+        XC_SWAP_QUOTE_TIMEOUT_MS,
+        i18n.t("trade:xc.swap.error.routeTimeout"),
       )
     },
   })

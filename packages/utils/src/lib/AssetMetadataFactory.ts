@@ -1,28 +1,26 @@
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
+import * as z from "zod/v4"
 
-export type TAssetResouce = {
-  baseUrl: string
-  branch: string
-  cdn: {
-    [key: string]: string
-  }
-  path: string
-  repository: string
-  items: string[]
-}
+const assetResourceSchema = z.object({
+  baseUrl: z.string(),
+  branch: z.string(),
+  cdn: z.record(z.string(), z.string()),
+  path: z.string(),
+  repository: z.string(),
+  items: z.array(z.string()),
+})
 
-export type TMetadataResource = {
-  assets: {
-    external: {
-      whitelist: {
-        [key: string]: string
-      }
-    }
-    xcscanAssetUrnMap: {
-      [key: string]: string
-    }
-  }
-}
+const metadataResourceSchema = z.object({
+  assets: z.object({
+    external: z.object({
+      whitelist: z.record(z.string(), z.string()),
+    }),
+    xcscanAssetUrnMap: z.record(z.string(), z.string()),
+  }),
+})
+
+export type TAssetResouce = z.infer<typeof assetResourceSchema>
+export type TMetadataResource = z.infer<typeof metadataResourceSchema>
 
 const DEFAULT_ASSETS_METADATA: TMetadataResource["assets"] = {
   external: {
@@ -51,13 +49,18 @@ export class AssetMetadataFactory {
     return AssetMetadataFactory._instance
   }
 
-  private async fetchData<T>(path: string): Promise<T | null> {
+  private async fetchData<T>(
+    path: string,
+    schema: z.ZodType<T>,
+  ): Promise<T | null> {
     try {
-      const response = await fetch(METADATA_CDN_URL + path)
+      const response = await fetch(METADATA_CDN_URL + path, {
+        signal: AbortSignal.timeout(10_000),
+      })
       if (!response.ok) {
         return null
       }
-      return (await response.json()) as T
+      return schema.safeParse(await response.json()).data ?? null
     } catch {
       return null
     }
@@ -65,7 +68,7 @@ export class AssetMetadataFactory {
 
   public async fetchAssets(): Promise<string[]> {
     if (!this.assets.length) {
-      const data = await this.fetchData<TAssetResouce>("/assets-v2.json")
+      const data = await this.fetchData("/assets-v2.json", assetResourceSchema)
       if (data) {
         this.assets = data.items.map(
           (item) => `${this.getBaseUrl(data)}/${item}`,
@@ -78,7 +81,7 @@ export class AssetMetadataFactory {
 
   public async fetchChains(): Promise<string[]> {
     if (!this.chains.length) {
-      const data = await this.fetchData<TAssetResouce>("/chains-v2.json")
+      const data = await this.fetchData("/chains-v2.json", assetResourceSchema)
       if (data) {
         this.chains = data.items.map(
           (item) => `${this.getBaseUrl(data)}/${item}`,
@@ -91,11 +94,18 @@ export class AssetMetadataFactory {
 
   public async fetchMetadata(): Promise<TMetadataResource> {
     if (!this.metadata) {
-      const data = await this.fetchData<TMetadataResource>("/metadata.json")
+      const data = await this.fetchData(
+        "/metadata.json",
+        metadataResourceSchema,
+      )
       if (data) this.metadata = data
     }
 
     return this.metadata ?? { assets: DEFAULT_ASSETS_METADATA }
+  }
+
+  public get isLoaded(): boolean {
+    return !!this.assets.length && !!this.chains.length && !!this.metadata
   }
 
   public getBaseUrl(data: TAssetResouce): string {

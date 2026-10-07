@@ -1,10 +1,11 @@
-import { Box, Spinner, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Spinner, Text } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isNonNullish } from "remeda"
+import { isNonNullish, prop } from "remeda"
 
 import { ProviderIcons } from "@/components/provider/ProviderIcons"
+import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import { WalletProviderType } from "@/config/providers"
 import { getWallet } from "@/wallets"
 
@@ -12,13 +13,33 @@ import { SContainer, SpinnerContainer } from "./ProviderLoader.styled"
 
 type ProviderLoaderProps = {
   providers: WalletProviderType[]
+  compact?: boolean
 }
 
-export const ProviderLoader: FC<ProviderLoaderProps> = ({ providers }) => {
+export const ProviderLoader: FC<ProviderLoaderProps> = ({
+  providers,
+  compact,
+}) => {
   const { t } = useTranslation()
   const wallets = useMemo(() => {
     return providers.map(getWallet).filter(isNonNullish)
   }, [providers])
+
+  if (compact) {
+    return (
+      <Flex align="center" gap="base" py="base">
+        <Spinner size="l" />
+        {wallets.map((wallet) => (
+          <ProviderLogo key={wallet.provider} wallet={wallet} size="l" />
+        ))}
+        <Text fs="p4" fw={500}>
+          {t("provider.connecting", {
+            name: wallets.map(prop("title")).join(", "),
+          })}
+        </Text>
+      </Flex>
+    )
+  }
 
   return (
     <SContainer>
