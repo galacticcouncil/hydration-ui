@@ -112,7 +112,7 @@ export const TradeChartControls: React.FC<TradeChartControlsProps> = ({
       </SChartIntervals>
       <SChartIntervalsCompact>
         <ChartTimeRangeDropdown
-          size="small"
+          size="micro"
           options={intervalOptions}
           selectedOption={interval}
           onSelect={setInterval}

@@ -2,8 +2,6 @@ import { CheckIcon, CopyIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   CopyButton,
-  Icon,
-  MicroButton,
   Modal,
   ModalBody,
   ModalHeader,
@@ -105,18 +103,19 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
               errorActions={
                 <CopyButton text={error.message}>
                   {({ copied }) => (
-                    <MicroButton
+                    <Button
+                      size="micro"
+                      uppercase
+                      variant="muted"
+                      outline
                       as="div"
+                      iconStart={copied ? CheckIcon : CopyIcon}
                       sx={{
                         color: copied && getToken("accents.success.emphasis"),
                       }}
                     >
-                      <Icon
-                        size="xs"
-                        component={copied ? CheckIcon : CopyIcon}
-                      />
                       {copied ? t("copied") : t("copyError")}
-                    </MicroButton>
+                    </Button>
                   )}
                 </CopyButton>
               }

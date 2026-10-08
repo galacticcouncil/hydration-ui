@@ -1,10 +1,10 @@
 import {
   Box,
+  Button,
   Flex,
   FlexProps,
   FormError,
   FormLabel,
-  MicroButton,
   PercentageButton,
   Skeleton,
   Stack,
@@ -90,7 +90,11 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
                 : "-"}
             </Text>{" "}
             {withMaxButton && (
-              <MicroButton
+              <Button
+                size="micro"
+                uppercase
+                variant="muted"
+                outline
                 onClick={() => {
                   const amount = balanceMax
                     ? toDecimal(balanceMax.amount, balanceMax.decimals)
@@ -100,7 +104,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
                 disabled={disabled || !balanceMax || balanceMax.toBig().lte(0)}
               >
                 {t("max")}
-              </MicroButton>
+              </Button>
             )}
             {withMaxButton &&
               withPercentageButton &&

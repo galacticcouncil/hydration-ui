@@ -1,5 +1,5 @@
 import { Check } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, MicroButton, Text } from "@galacticcouncil/ui/components"
+import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useCopy } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -39,12 +39,19 @@ const ErrorCopyButton = () => {
   })
 
   return (
-    <MicroButton onClick={() => copy(errorMessage)} title={errorMessage}>
+    <Button
+      size="micro"
+      uppercase
+      variant="muted"
+      outline
+      onClick={() => copy(errorMessage)}
+      title={errorMessage}
+    >
       <Flex gap="s" color={copied && getToken("accents.success.emphasis")}>
         {copied && <Icon size="xs" component={Check} />}
         <Text>{copied ? t("copied") : t("copyError")}</Text>
       </Flex>
-    </MicroButton>
+    </Button>
   )
 }
 
@@ -61,9 +68,15 @@ export const ReviewTransactionStatus = () => {
       status={status}
       errorActions={
         <>
-          <MicroButton onClick={reset}>
+          <Button
+            size="micro"
+            uppercase
+            variant="muted"
+            outline
+            onClick={reset}
+          >
             {t("transaction.status.error.tryAgain")}
-          </MicroButton>
+          </Button>
           {error && <ErrorCopyButton />}
         </>
       }

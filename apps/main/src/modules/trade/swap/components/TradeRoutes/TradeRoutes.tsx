@@ -1,6 +1,6 @@
 import { Swap } from "@galacticcouncil/sdk-next/sor"
 import { Routes } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, MicroButton, Modal } from "@galacticcouncil/ui/components"
+import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,9 +40,15 @@ export const TradeRoutes = ({
             color={getToken("buttons.primary.high.rest")}
           />
         </Flex>
-        <MicroButton onClick={() => setIsModalOpen(true)}>
+        <Button
+          size="micro"
+          uppercase
+          variant="muted"
+          outline
+          onClick={() => setIsModalOpen(true)}
+        >
           {t("common:preview")}
-        </MicroButton>
+        </Button>
       </Flex>
       <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>
         <TradeRoutesModalContent

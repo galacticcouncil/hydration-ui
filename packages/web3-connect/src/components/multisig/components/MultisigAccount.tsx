@@ -1,7 +1,7 @@
 import {
   AccountAvatar,
   BoxProps,
-  ButtonIcon,
+  Button,
   Chip,
   CopyButton,
   Flex,
@@ -43,9 +43,9 @@ export const MultisigAccount: React.FC<MultisigAccountProps> = ({
         </Text>
       </Stack>
       <Flex align="center" p="s" ml="auto">
-        <ButtonIcon asChild>
+        <Button variant="ghost" p="base" height="auto" asChild>
           <CopyButton text={address} />
-        </ButtonIcon>
+        </Button>
       </Flex>
     </SMultisigAccount>
   )

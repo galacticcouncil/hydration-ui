@@ -3,16 +3,7 @@ import {
   TimeFrameType,
   timeFrameTypes,
 } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
-import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
-import {
-  Flex,
-  Icon,
-  NumberInput,
-  Select,
-  SelectItem,
-  Text,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { NumberInput, Select, SelectItem } from "@galacticcouncil/ui/components"
 import { produce } from "immer"
 import { FC, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -69,24 +60,8 @@ export const TimeFrame: FC<TimeFrameProps> = ({
         <Select
           items={timeFrameOptions}
           value={timeFrame.type}
-          renderTrigger={() => (
-            <Flex gap="xs" align="center">
-              <Text
-                fw={500}
-                fs="p6"
-                lh="s"
-                transform="uppercase"
-                color={getToken("buttons.secondary.low.onRest")}
-              >
-                {formatTimeFrame(timeFrame.type)}
-              </Text>
-              <Icon
-                component={ChevronDown}
-                size="m"
-                color={getToken("icons.onContainer")}
-              />
-            </Flex>
-          )}
+          variant="transparent"
+          size="micro"
           onValueChange={(type) =>
             onChange(
               produce(timeFrame, (draft) => {
@@ -94,13 +69,9 @@ export const TimeFrame: FC<TimeFrameProps> = ({
               }),
             )
           }
-          onOpenChange={(open) => {
-            if (!open) {
-              // focus is removed when the popover is closed so we need to wait a tick after closing
-              setTimeout(() => {
-                inputRef.current?.focus()
-              }, 0)
-            }
+          onCloseAutoFocus={(e) => {
+            e.preventDefault()
+            inputRef.current?.focus()
           }}
         />
       }

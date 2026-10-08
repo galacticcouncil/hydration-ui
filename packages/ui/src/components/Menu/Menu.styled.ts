@@ -34,16 +34,21 @@ export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
       display: grid;
       grid-template-columns: auto 1fr auto;
       grid-template-rows: 1fr 1fr;
-      column-gap: ${theme.space.base};
+      column-gap: var(--menu-item-gap, ${theme.space.base});
       align-items: center;
       justify-items: start;
 
-      padding: ${theme.space.m} ${theme.containers.paddings.tertiary};
+      padding: var(
+        --menu-item-padding,
+        ${theme.space.m} ${theme.containers.paddings.tertiary}
+      );
 
       text-decoration: none;
 
+      /* a menu shows focus with the highlight fill; the ring stays transparent so forced-colors mode can paint it */
       &:focus {
-        outline: none;
+        outline: 2px solid transparent;
+        outline-offset: -2px;
       }
     `,
     menuItemVariants(variant),
@@ -53,8 +58,8 @@ export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
 export const MenuItemIcon = styled(Icon)(
   ({ theme }) => css`
     grid-row: 1 / -1;
-    width: ${theme.sizes.l};
-    height: ${theme.sizes.l};
+    width: var(--menu-item-icon-size, ${theme.sizes.l});
+    height: var(--menu-item-icon-size, ${theme.sizes.l});
     padding: ${theme.space.xs};
     flex-shrink: 0;
   `,
@@ -71,12 +76,12 @@ export const MenuItemLabel = styled.span(
 
     display: flex;
     align-items: center;
-    gap: ${theme.space.s};
+    gap: calc(${theme.space.s} + 0.125em);
 
     font-family: ${theme.fontFamilies1.secondary};
-    font-weight: 600;
-    font-size: ${theme.fontSizes.p3};
-    line-height: ${theme.lineHeights.m};
+    font-weight: var(--menu-item-font-weight, 600);
+    font-size: var(--menu-item-font-size, ${theme.fontSizes.p3});
+    line-height: var(--menu-item-line-height, ${theme.lineHeights.m});
     letter-spacing: 0%;
     text-align: center;
   `,
@@ -110,9 +115,29 @@ export const MenuSelectionItem = styled(MenuItem)<{
     border-radius: ${theme.containers.cornerRadius.internalPrimary};
     cursor: pointer;
 
-    &:hover:not([disabled]),
-    &:active:not([disabled]) {
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not([disabled]) {
+        background-color: ${theme.buttons.secondary.low.primaryHover};
+      }
+    }
+
+    &:active:not([disabled]),
+    &[data-highlighted] {
       background-color: ${theme.buttons.secondary.low.primaryHover};
+    }
+
+    /* outside a menu nothing sets data-highlighted, so keyboard focus gets a ring */
+    &:focus-visible:not([data-highlighted]) {
+      outline-color: ${theme.text.high};
+    }
+
+    /* a picked radio or checkbox item takes the text color of the outlined accent button */
+    &:is(
+        [role="menuitemradio"],
+        [role="menuitemcheckbox"]
+      )[data-state="checked"]
+      ${MenuItemLabel} {
+      color: ${theme.buttons.secondary.accent.onRest};
     }
 
     &[disabled] {
@@ -132,7 +157,13 @@ export const MenuSelectionItemIcon = styled(Icon)(
 
     color: ${theme.icons.onSurface};
 
-    ${MenuSelectionItem}:hover & {
+    @media (hover: hover) and (pointer: fine) {
+      ${MenuSelectionItem}:hover & {
+        color: ${theme.icons.primary};
+      }
+    }
+
+    ${MenuSelectionItem}:is(:active, [data-highlighted]) & {
       color: ${theme.icons.primary};
     }
   `,

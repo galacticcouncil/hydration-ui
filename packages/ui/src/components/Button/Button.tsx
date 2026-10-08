@@ -1,44 +1,59 @@
+import { Slottable } from "@radix-ui/react-slot"
 import React, { FC } from "react"
 
 import { BoxProps } from "@/components/Box"
+import { Icon } from "@/components/Icon"
 import { SpinnerIcon } from "@/components/Spinner"
 
 import {
   LoadingMode,
-  MicroButtonVariant,
   SButton,
-  SButtonIcon,
   SButtonProps,
   SButtonTransparent,
   SLoadingButton,
   SLoadingLabel,
-  SMicroButton,
 } from "./Button.styled"
 import { useLoadingState } from "./useLoadingState"
 
+type ButtonIconProps = {
+  /** Renders a square button holding only this icon. */
+  icon?: React.ComponentType
+  iconStart?: React.ComponentType
+  iconEnd?: React.ComponentType
+}
+
 export type ButtonProps = BoxProps &
   SButtonProps &
+  ButtonIconProps &
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     ref?: React.Ref<HTMLButtonElement>
   }
 
-export type MicroButtonProps = BoxProps & {
-  variant?: MicroButtonVariant
-  ref?: React.Ref<HTMLButtonElement>
-} & React.ButtonHTMLAttributes<HTMLButtonElement>
+// only an icon next to a label gets a side, which shifts it towards that edge
+const buttonIcon = (
+  component: React.ComponentType | undefined,
+  side?: "start" | "end",
+) => component && <Icon component={component} data-icon={side} />
 
-export const Button: FC<ButtonProps> = ({ children, ...props }) => {
+export const Button: FC<ButtonProps> = ({
+  icon,
+  iconStart,
+  iconEnd,
+  children,
+  ...props
+}) => {
+  const hasLabel = !icon && React.Children.count(children) > 0
+
   return (
     <SButton
       as="button"
       type="button"
+      data-icon-only={icon ? "" : undefined}
       {...props}
-      outline={
-        props.variant === "sliderTabInactive" ||
-        (props.variant !== "sliderTabActive" && !!props.outline)
-      }
     >
-      {children}
+      {buttonIcon(icon ?? iconStart, hasLabel ? "start" : undefined)}
+      <Slottable>{children}</Slottable>
+      {!icon && buttonIcon(iconEnd, hasLabel ? "end" : undefined)}
     </SButton>
   )
 }
@@ -47,15 +62,7 @@ export const ButtonTransparent: FC<ButtonProps> = (props) => {
   return <SButtonTransparent type="button" {...props} />
 }
 
-export const MicroButton: FC<MicroButtonProps> = (props) => (
-  <SMicroButton as="button" type="button" {...props} />
-)
-
-export const ButtonIcon: FC<ButtonProps> = (props) => {
-  return <SButtonIcon as="button" type="button" {...props} />
-}
-
-export type LoadingButtonProps = ButtonProps & {
+export type LoadingButtonProps = Omit<ButtonProps, "icon"> & {
   isLoading: boolean
   loadingVariant?: ButtonProps["variant"]
   disabledVariant?: ButtonProps["variant"]
@@ -73,6 +80,8 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
   loadingFade = false,
   isLoading,
   onClick,
+  iconStart,
+  iconEnd,
   children,
   ...props
 }) => {
@@ -98,7 +107,11 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
         <span data-loading-spinner>
           <SpinnerIcon size="1em" aria-hidden />
         </span>
-        <span data-loading-content>{children}</span>
+        <span data-loading-content>
+          {buttonIcon(iconStart, "start")}
+          {children}
+          {buttonIcon(iconEnd, "end")}
+        </span>
       </SLoadingLabel>
     </SLoadingButton>
   )

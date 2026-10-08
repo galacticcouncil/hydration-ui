@@ -46,8 +46,7 @@ export const ChartTimeRange = <
           <Button
             key={key}
             size="small"
-            variant={key === selectedOption ? "secondary" : "restSubtle"}
-            outline={key !== selectedOption}
+            variant={key === selectedOption ? "secondary" : "ghost"}
             onClick={() => onSelect(option)}
             disabled={disabled}
             sx={{ borderRadius: "pill", px: "quart", maxHeight: 30 }}

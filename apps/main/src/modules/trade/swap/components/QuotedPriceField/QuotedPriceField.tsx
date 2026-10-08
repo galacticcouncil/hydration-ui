@@ -1,8 +1,8 @@
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
+  Button,
   Flex,
   Icon,
-  MicroButton,
   Skeleton,
   Text,
   Tooltip,
@@ -128,7 +128,11 @@ export const QuotedPriceField: FC<Props> = ({
                 const signedStep = step * presetSign
 
                 return (
-                  <MicroButton
+                  <Button
+                    size="micro"
+                    uppercase
+                    variant="muted"
+                    outline
                     key={step}
                     disabled={view.deviationPct === null}
                     onClick={() => {
@@ -140,7 +144,7 @@ export const QuotedPriceField: FC<Props> = ({
                       value: signedStep,
                       signDisplay: "always",
                     })}
-                  </MicroButton>
+                  </Button>
                 )
               })}
             </>

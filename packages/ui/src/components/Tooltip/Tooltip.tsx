@@ -8,7 +8,7 @@ import { FC, ReactNode, useState } from "react"
 
 import { CircleInfo } from "@/assets/icons"
 import { BoxProps } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
+import { ButtonTransparent } from "@/components/Button"
 import { Drawer, DrawerBody } from "@/components/Drawer"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -97,20 +97,13 @@ export const Tooltip = ({
 
     return (
       <>
-        <ButtonIcon
+        <ButtonTransparent
           onClick={openDrawer}
           onPointerDown={openDrawer}
-          sx={{
-            p: 0,
-            height: "auto",
-            width: "auto",
-            justifyContent: "start",
-            color: iconColor,
-            "&:hover": { background: "transparent" },
-          }}
+          sx={{ justifyContent: "start", color: iconColor }}
         >
           {children || <TooltipIcon color={iconColor} />}
-        </ButtonIcon>
+        </ButtonTransparent>
         {drawer}
       </>
     )
