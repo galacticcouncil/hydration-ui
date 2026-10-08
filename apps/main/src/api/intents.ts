@@ -21,7 +21,7 @@ const useAccountIntentIds = (address: string) => {
   const hasIntentPallet = useHasIntentPallet()
 
   const queryEnabled = hasIntentPallet && isReady && !!address
-  const { data, isLoading } = usePapiEntries(
+  const { data, isLoading, isError } = usePapiEntries(
     "Intent.AccountIntents",
     [address],
     { enabled: queryEnabled },
@@ -32,15 +32,23 @@ const useAccountIntentIds = (address: string) => {
     [data, queryEnabled],
   )
 
-  return { ids, isLoading: queryEnabled && isLoading }
+  return { ids, isLoading: queryEnabled && isLoading, isError }
 }
 
 export const useAccountIntents = (address: string) => {
   const { papi } = useRpcProvider()
   const hasIntentPallet = useHasIntentPallet()
-  const { ids, isLoading: isIdsLoading } = useAccountIntentIds(address)
+  const {
+    ids,
+    isLoading: isIdsLoading,
+    isError: isIdsError,
+  } = useAccountIntentIds(address)
 
-  const { data: pairs, isLoading: isValuesLoading } = useQuery({
+  const {
+    data: pairs,
+    isLoading: isValuesLoading,
+    isError: isValuesError,
+  } = useQuery({
     queryKey: ["intents", "values", ids.map(String)],
     enabled: hasIntentPallet && ids.length > 0,
     staleTime: Infinity,
@@ -72,6 +80,7 @@ export const useAccountIntents = (address: string) => {
   return {
     data,
     isLoading: isIdsLoading || (ids.length > 0 && isValuesLoading),
+    isError: isIdsError || isValuesError,
   }
 }
 

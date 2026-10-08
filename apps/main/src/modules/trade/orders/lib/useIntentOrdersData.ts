@@ -11,7 +11,11 @@ export const useIntentOrdersData = () => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
 
-  const { data: intents, isLoading } = useAccountIntents(account?.address ?? "")
+  const {
+    data: intents,
+    isLoading,
+    isError,
+  } = useAccountIntents(account?.address ?? "")
 
   const orders = useMemo<OrderData[]>(() => {
     if (!intents) return []
@@ -21,5 +25,5 @@ export const useIntentOrdersData = () => {
     )
   }, [intents, getAssetWithFallback])
 
-  return { orders, isLoading }
+  return { orders, isLoading, isError }
 }

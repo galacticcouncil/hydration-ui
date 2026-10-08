@@ -51,7 +51,9 @@ export const OrderHistory: FC<Props> = ({
     showIntents,
   )
 
-  const { orders, totalCount, isLoading } = showIntents ? intents : schedules
+  const { orders, totalCount, isLoading, isError } = showIntents
+    ? intents
+    : schedules
 
   const columns = useOrderHistoryColumns()
 
@@ -68,7 +70,7 @@ export const OrderHistory: FC<Props> = ({
         {...paginationProps}
         rowCount={totalCount}
         onRowClick={(order) => setDetailKey(orderKey(order))}
-        emptyState={<OrdersEmptyState />}
+        emptyState={<OrdersEmptyState isError={isError} />}
       />
       <Modal open={!!detail} onOpenChange={close}>
         {detail &&

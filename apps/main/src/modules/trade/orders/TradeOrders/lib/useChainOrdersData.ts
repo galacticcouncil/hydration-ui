@@ -22,15 +22,15 @@ export const useChainScheduleIds = () => {
   const address = account?.address ?? ""
   const enabled = isReady && !!address
 
-  const { data: entries, isLoading } = usePapiEntries(
-    "DCA.ScheduleOwnership",
-    [address],
-    {
-      enabled,
-      staleTime: CHAIN_ORDERS_STALE_TIME,
-      refetchOnWindowFocus: true,
-    },
-  )
+  const {
+    data: entries,
+    isLoading,
+    isError,
+  } = usePapiEntries("DCA.ScheduleOwnership", [address], {
+    enabled,
+    staleTime: CHAIN_ORDERS_STALE_TIME,
+    refetchOnWindowFocus: true,
+  })
 
   const scheduleIds = useMemo(
     () =>
@@ -38,16 +38,24 @@ export const useChainScheduleIds = () => {
     [entries],
   )
 
-  return { scheduleIds, isLoading }
+  return { scheduleIds, isLoading, isError }
 }
 
 export const useChainOrdersData = () => {
   const { papi } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
 
-  const { scheduleIds, isLoading: isEntriesLoading } = useChainScheduleIds()
+  const {
+    scheduleIds,
+    isLoading: isEntriesLoading,
+    isError: isEntriesError,
+  } = useChainScheduleIds()
 
-  const { data, isLoading: isSchedulesLoading } = useQuery({
+  const {
+    data,
+    isLoading: isSchedulesLoading,
+    isError: isSchedulesError,
+  } = useQuery({
     queryKey: ["trade", "orders", "chain", scheduleIds],
     queryFn: async () => {
       const { DCA } = papi.query
@@ -122,5 +130,5 @@ export const useChainOrdersData = () => {
   const isLoading =
     (isEntriesLoading || isSchedulesLoading) && orders.length === 0
 
-  return { orders, isLoading }
+  return { orders, isLoading, isError: isEntriesError || isSchedulesError }
 }

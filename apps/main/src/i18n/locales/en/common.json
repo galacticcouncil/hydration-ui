@@ -189,7 +189,7 @@
   "error.timeFrameDurationMax": "Max duration is {{value}}",
   "error.timeFrameIntervalMax": "Max interval is {{value}}",
   "error.validAddressOnChain": "The address is incorrect. Please use a valid {{chain}} address.",
-  "chart.error": "Error displaying the chart, try loading it again.",
+  "chart.error": "Error displaying the chart.",
   "chart.empty": "Not enough data to display this chart.",
   "myPositions": "My positions",
   "healthFactor.title": "Health Factor",

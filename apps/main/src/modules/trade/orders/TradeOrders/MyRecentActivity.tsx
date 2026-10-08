@@ -23,7 +23,7 @@ export const MyRecentActivity: FC<Props> = ({ paginationProps, assetIds }) => {
   const address = safeConvertSS58toPublicKey(accountAddress)
 
   const columns = useMyRecentActivityColumns()
-  const { swaps, totalCount, isLoading } = useRoutedTradesData(
+  const { swaps, totalCount, isLoading, isError } = useRoutedTradesData(
     address,
     assetIds,
     paginationProps.pagination.pageIndex,
@@ -40,7 +40,7 @@ export const MyRecentActivity: FC<Props> = ({ paginationProps, assetIds }) => {
         {...paginationProps}
         rowCount={totalCount}
         onRowClick={setIsDetailOpen}
-        emptyState={<OrdersEmptyState />}
+        emptyState={<OrdersEmptyState isError={isError} />}
       />
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
         {isDetailOpen && <SwapDetailsModal details={isDetailOpen} />}
