@@ -25,8 +25,12 @@ const getConnectedTypes = (providers: WalletProviderEntry[]) =>
     .filter((p) => p.status === WalletProviderStatus.Connected)
     .map((p) => p.type)
 
-export const useWalletSubscriptions = () => {
+// The subscriptions are shared, and unmounting tears all of them down, so
+// only the app-wide modal should run this
+export const useWalletSubscriptions = (enabled = true) => {
   useEffect(() => {
+    if (!enabled) return
+
     const unsub = useWeb3Connect.subscribe((state, prevState) => {
       const { providers, setAccounts, setAccount, disconnect } = state
       const { providers: prevProviders } = prevState
@@ -74,5 +78,5 @@ export const useWalletSubscriptions = () => {
       subscriptions.forEach((unsubscribe) => unsubscribe())
       subscriptions.clear()
     }
-  }, [])
+  }, [enabled])
 }

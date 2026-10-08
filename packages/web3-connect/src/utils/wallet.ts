@@ -19,6 +19,7 @@ import {
 } from "@galacticcouncil/utils"
 
 import {
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
@@ -101,6 +102,20 @@ const toStoredSuiAccount = ({
   }
 }
 
+// A NEAR account id (named, implicit hex or NEP-518 0x…) has no SS58 form,
+// so it is kept as is; the account never signs on Hydration.
+const toStoredNearAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => ({
+  publicKey: address,
+  address,
+  rawAddress: address,
+  name: name ?? "",
+  provider,
+})
+
 const toStoredDefaultAccount = ({
   address,
   name,
@@ -133,6 +148,8 @@ export const toStoredAccount = ({
       return toStoredSolanaAccount({ address, name, provider })
     case SUI_PROVIDERS.includes(provider):
       return toStoredSuiAccount({ address, name, provider })
+    case NEAR_PROVIDERS.includes(provider):
+      return toStoredNearAccount({ address, name, provider })
     default:
       return toStoredDefaultAccount({ address, name, provider })
   }

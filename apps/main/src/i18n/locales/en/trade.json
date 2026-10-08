@@ -122,7 +122,7 @@
   "xc.swap.field.destTitle": "Destination chain & asset",
   "xc.swap.summary.estimatedTime": "Estimated time",
   "xc.swap.cta.enterAmount": "Enter an amount",
-  "xc.swap.cta.enterRecipient": "Enter destination address",
+  "xc.swap.cta.selectRecipient": "Select a recipient",
   "xc.swap.cta.insufficientBalance": "Insufficient balance",
   "swap.cta.unavailable": "Trade unavailable",
   "xc.swap.cta.acceptHealthFactor": "Accept health factor change",

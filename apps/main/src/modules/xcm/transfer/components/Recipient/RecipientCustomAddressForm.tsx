@@ -9,13 +9,8 @@ import {
   ModalContentDivider,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  arraySearch,
-  isAddressValidOnChain,
-  preventDefault,
-} from "@galacticcouncil/utils"
+import { arraySearch, preventDefault } from "@galacticcouncil/utils"
 import { useAddresses, useAddressStore } from "@galacticcouncil/web3-connect"
-import { AnyChain } from "@galacticcouncil/xc-core"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -25,30 +20,34 @@ import { z } from "zod/v4"
 
 import { EmptyState } from "@/components/EmptyState"
 import { RecipientAddressBook } from "@/modules/xcm/transfer/components/Recipient"
-import { validateAddressOnChain } from "@/utils/validators"
+import { validateChainAddress } from "@/utils/validators"
 
-export const createSchema = (destChain: AnyChain) => {
+export const createSchema = (
+  chainName: string,
+  isValidAddress: (address: string) => boolean,
+) => {
   return z.object({
-    customAddress: validateAddressOnChain(destChain),
+    customAddress: validateChainAddress(chainName, isValidAddress),
   })
 }
 
 export type CustomAddressFormValues = z.infer<ReturnType<typeof createSchema>>
 
 export type RecipientCustomAddressFormProps = {
-  destChain: AnyChain
+  chainName: string
+  isValidAddress: (address: string) => boolean
   onSubmit: (address: string) => void
   onChange: (address: string) => void
 }
 
 export const RecipientCustomAddressForm: React.FC<
   RecipientCustomAddressFormProps
-> = ({ destChain, onSubmit, onChange }) => {
+> = ({ chainName, isValidAddress, onSubmit, onChange }) => {
   const { t } = useTranslation("xcm")
 
   useUnmount(() => onChange(""))
   const form = useForm<CustomAddressFormValues>({
-    resolver: standardSchemaResolver(createSchema(destChain)),
+    resolver: standardSchemaResolver(createSchema(chainName, isValidAddress)),
     mode: "onChange",
     defaultValues: {
       customAddress: "",
@@ -63,11 +62,8 @@ export const RecipientCustomAddressForm: React.FC<
   const customAddress = form.watch("customAddress")
 
   const customAddressesOnChain = useMemo(
-    () =>
-      addresses.filter(
-        (a) => a.isCustom && isAddressValidOnChain(a.address, destChain),
-      ),
-    [addresses, destChain],
+    () => addresses.filter((a) => a.isCustom && isValidAddress(a.address)),
+    [addresses, isValidAddress],
   )
 
   const addressBookAddresses = arraySearch(

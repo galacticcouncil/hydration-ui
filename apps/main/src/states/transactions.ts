@@ -1,5 +1,6 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
 import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
@@ -173,12 +174,14 @@ export type TSuccessResult =
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
+  | NearTxStatus
 
 export type TFinalizedResult =
   | TxFinalizedResult
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
+  | NearTxStatus
 
 export interface TransactionActions {
   onSuccess?: (event: TSuccessResult) => void

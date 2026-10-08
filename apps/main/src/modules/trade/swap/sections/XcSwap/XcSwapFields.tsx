@@ -1,15 +1,8 @@
-import {
-  Box,
-  FormLabel,
-  Modal,
-  Separator,
-  Stack,
-} from "@galacticcouncil/ui/components"
+import { Box, FormLabel, Stack } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { AddressBookModal, WalletMode } from "@galacticcouncil/web3-connect"
 import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
@@ -17,10 +10,10 @@ import { isNumber } from "remeda"
 import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { XcChainAssetSelectFormField } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
 import { XcSrcAssetSelectField } from "@/modules/trade/swap/sections/XcSwap/components/XcSrcAssetSelectField"
+import { XcSwapRecipientButton } from "@/modules/trade/swap/sections/XcSwap/components/XcSwapRecipientButton"
 import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { useXcSwapFormReset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapFormReset"
@@ -71,7 +64,6 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const switchAssets = useSwitchXcAssets()
   const resetForm = useXcSwapFormReset()
   const { getTransferableBalance } = useAccountBalances()
-  const [isContactsOpen, setIsContactsOpen] = useState(false)
 
   const handleSellAssetChange = useCallback(
     (
@@ -168,12 +160,6 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
     "destAddress",
   ])
   const isSell = type === TradeType.Sell
-  const contactsWhitelist =
-    destChain?.platform === "near"
-      ? ([WalletMode.Near] as const)
-      : destChain?.platform === "zec"
-        ? ([WalletMode.Zcash] as const)
-        : undefined
   const onChainDestAssetId =
     !isCrossChain && isNumber(buyAsset?.id) ? String(buyAsset.id) : ""
   const [
@@ -236,7 +222,15 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           amountFieldName="buyAmount"
           label={isCrossChain ? t("to") : t("buy")}
           labelAdornment={
-            <ChainBadge chain={isCrossChain ? destChain : null} />
+            // The recipient stands in for the chain, as on the transfer page;
+            // keyed so a chain switch drops the last chain's picks
+            isCrossChain &&
+            destChain && (
+              <XcSwapRecipientButton
+                key={destChain.key}
+                destChain={destChain}
+              />
+            )
           }
           chainAssetPairs={destChainAssetPairs}
           modalTitle={t("trade:xc.swap.field.destTitle")}
@@ -272,34 +266,6 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           }}
         />
       </Box>
-
-      {isCrossChain && (
-        <>
-          <Separator mx="-xl" />
-
-          <AddressBookFormField<XcSwapFormValues>
-            fieldName="destAddress"
-            onOpenMyContacts={() => setIsContactsOpen(true)}
-          />
-
-          <Modal
-            variant="popup"
-            open={isContactsOpen}
-            onOpenChange={setIsContactsOpen}
-          >
-            <AddressBookModal
-              whitelist={contactsWhitelist}
-              onBack={() => setIsContactsOpen(false)}
-              onSelect={(address) => {
-                setValue("destAddress", address.address, {
-                  shouldValidate: true,
-                })
-                setIsContactsOpen(false)
-              }}
-            />
-          </Modal>
-        </>
-      )}
     </Stack>
   )
 }

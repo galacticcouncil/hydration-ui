@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware"
 
 import {
   EVM_PROVIDERS,
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
@@ -47,7 +48,7 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
   [WalletMode.Solana]: SOLANA_PROVIDERS,
   [WalletMode.Sui]: SUI_PROVIDERS,
-  [WalletMode.Near]: [],
+  [WalletMode.Near]: NEAR_PROVIDERS,
   [WalletMode.Zcash]: [],
   [WalletMode.Unknown]: [],
 }

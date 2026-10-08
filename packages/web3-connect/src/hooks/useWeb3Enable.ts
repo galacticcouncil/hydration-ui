@@ -7,15 +7,17 @@ import {
   AddressInput,
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
-import { WalletProviderType } from "@/config/providers"
+import { NEAR_PROVIDERS, WalletProviderType } from "@/config/providers"
 import {
   useWeb3Connect,
+  WalletMode,
   WalletProviderStatus,
   WalletRestoreState,
 } from "@/hooks/useWeb3Connect"
 import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
+import { BaseNearWallet } from "@/wallets/BaseNearWallet"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 type UseWeb3EnableOptions = {
@@ -90,7 +92,12 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
     mutationFn: async (type: WalletProviderType) => {
       const wallet = getWallet(type)
       if (!wallet) return []
-      await wallet.enable()
+      // A restore must bring back a NEAR session, never open the wallet
+      if (options.restore && wallet instanceof BaseNearWallet) {
+        await wallet.restore()
+      } else {
+        await wallet.enable()
+      }
       return wallet.getAccounts()
     },
     retry: false,
@@ -129,6 +136,10 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
             address: account.address,
             name: account.name,
             provider: account.provider,
+            // NEAR ids can be 0x… (NEP-518), which would be inferred as EVM
+            ...(NEAR_PROVIDERS.includes(account.provider) && {
+              mode: WalletMode.Near,
+            }),
           }),
         )
         .filter(

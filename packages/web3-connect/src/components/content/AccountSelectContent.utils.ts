@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import { chunk, pick, pipe, sortBy } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { WalletProviderType } from "@/config/providers"
+import { NEAR_PROVIDERS, WalletProviderType } from "@/config/providers"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks"
 import {
@@ -75,6 +75,11 @@ export const getFilteredAccounts = (
   )
 }
 
+// Neckwork prices Hydration accounts by hex public key and rejects the whole
+// batch on any other id, so NEAR accounts are left without a balance.
+const hasNeckworkBalance = (account: Account) =>
+  !NEAR_PROVIDERS.includes(account.provider)
+
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()
   const { neckwork } = useWeb3ConnectContext()
@@ -82,9 +87,14 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
     useShallow(pick(["accounts", "setBalances"])),
   )
 
+  const pricedAccounts = useMemo(
+    () => accounts.filter(hasNeckworkBalance),
+    [accounts],
+  )
+
   const { accountBalances: balancesMap, isLoading: areBalancesLoading } =
     useQueries({
-      queries: chunk(accounts, 50).map((batch) =>
+      queries: chunk(pricedAccounts, 50).map((batch) =>
         accountsBalancesQuery(
           neckwork,
           batch.map((account) => account.publicKey),
@@ -103,7 +113,7 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
           const accountBalances = isLoading
             ? new Map<string, number>()
             : new Map(
-                accounts.map((account) => [
+                pricedAccounts.map((account) => [
                   account.publicKey,
                   lookup.get(account.publicKey) ?? 0,
                 ]),
@@ -114,7 +124,7 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
             accountBalances,
           }
         },
-        [accounts],
+        [pricedAccounts],
       ),
     })
 

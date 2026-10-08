@@ -127,7 +127,7 @@ const XcSwapForm: React.FC = () => {
 
   const disabledLabel = (() => {
     if (isCrossChain && !destAddress.trim())
-      return t("trade:xc.swap.cta.enterRecipient")
+      return t("trade:xc.swap.cta.selectRecipient")
     if (!isFormValid) return undefined
     if (!isHealthFactorCheckSatisfied)
       return t("trade:xc.swap.cta.acceptHealthFactor")

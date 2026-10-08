@@ -4,7 +4,7 @@ import { useMount, usePrevious } from "react-use"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { WalletProviderType } from "@/config/providers"
+import { NEAR_PROVIDERS, WalletProviderType } from "@/config/providers"
 import {
   useWeb3Connect,
   WalletProviderStatus,
@@ -62,6 +62,13 @@ export const useWeb3EagerEnable = (enabled = true) => {
 
       // Skip external wallet, it is handled separately based on `acocunt` query param
       if (wallet instanceof ExternalWallet) return
+
+      // Restoring a NEAR wallet downloads and runs its code, so one that only
+      // filled destinations is dropped, its session reconnecting without a
+      // prompt; one holding the account is restored, as it signs
+      if (NEAR_PROVIDERS.includes(type) && state.account?.provider !== type) {
+        return disconnect(type)
+      }
 
       if (!wallet || status !== WalletProviderStatus.Connected) {
         return disconnect(type)

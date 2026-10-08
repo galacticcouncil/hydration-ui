@@ -2516,6 +2516,11 @@
   dependencies:
     "@standard-schema/utils" "^0.3.0"
 
+"@hot-labs/near-connect@^0.11.4":
+  version "0.11.4"
+  resolved "https://registry.yarnpkg.com/@hot-labs/near-connect/-/near-connect-0.11.4.tgz#1b6069de3b83cbd712e794e441e04418f467f4d5"
+  integrity sha512-exAL1gqysyCHewcMO334YJ3ddTPg3j9EyVM9novz5Jx4fLbG/YSYBlkYMjMNB8E9K/4I7BiemjOw9bQ+h80hEA==
+
 "@humanwhocodes/config-array@^0.11.14":
   version "0.11.14"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.14.tgz#d78e481a039f7566ecc9660b4ea7fe6b1fec442b"
