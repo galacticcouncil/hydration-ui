@@ -6,6 +6,7 @@
     { "path": "../../packages/utils" },
     { "path": "../../packages/web3-connect" },
     { "path": "../../packages/money-market" },
+    { "path": "../../packages/money-market-v2" },
     { "path": "../../packages/indexer" }
   ],
   "compilerOptions": {

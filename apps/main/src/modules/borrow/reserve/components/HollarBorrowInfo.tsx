@@ -30,6 +30,7 @@ export const HollarBorrowInfo = ({
       align={["start", "center"]}
     >
       <CapProgressCircle
+        type="borrow"
         radius={[16, 56]}
         thickness={3}
         labelPosition={["end", "center"]}

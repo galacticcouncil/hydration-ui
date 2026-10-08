@@ -3,7 +3,10 @@ import {
   useModalContext,
   useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
-import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
+import {
+  getUserClaimableRewards,
+  getUserLoanToValue,
+} from "@galacticcouncil/money-market/utils"
 import {
   Button,
   Flex,
@@ -142,7 +145,14 @@ export const DashboardHeader = () => {
       <Modal open={riskModalOpen} onOpenChange={setRiskModalOpen}>
         <ModalHeader align="center" title={t("borrow:risk.title")} />
         <ModalBody scrollable={false}>
-          <HealthFactorRisk />
+          <HealthFactorRisk
+            healthFactor={user.healthFactor}
+            loanToValue={getUserLoanToValue(user)}
+            currentLoanToValue={user.currentLoanToValue || "0"}
+            currentLiquidationThreshold={
+              user.currentLiquidationThreshold || "0"
+            }
+          />
         </ModalBody>
       </Modal>
     </>

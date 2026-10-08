@@ -1,7 +1,6 @@
 import { AssetAmount } from "@galacticcouncil/xc-core"
 import {
   PersistedClient,
-  Persister,
   persistQueryClientRestore,
   persistQueryClientSave,
   persistQueryClientSubscribe,
@@ -12,13 +11,8 @@ import {
   PORTFOLIO_CACHE_BUSTER,
   PORTFOLIO_CACHE_MAX_AGE,
 } from "@/config/portfolio"
-import {
-  getItemFromStore,
-  IndexedDBManager,
-  IndexedDBStores,
-  removeItemFromStore,
-  setItemInStore,
-} from "@/utils/indexedDB"
+import { IndexedDBStores } from "@/utils/indexedDB"
+import { createIndexedDbPersister } from "@/utils/indexedDbPersister"
 
 const PORTFOLIO_BALANCES_KEY = ["portfolio", "balances"] as const
 
@@ -90,48 +84,11 @@ export const reconstructPersistedClient = (
   }
 }
 
-const STORE = IndexedDBStores.PortfolioBalances
-const KEY = "balances"
-
-export const portfolioPersister: Persister = {
-  persistClient: async (client) => {
-    const db = await IndexedDBManager.getInstance()
-    if (!db) return
-
-    try {
-      await setItemInStore(db, STORE, KEY, client)
-    } catch (error) {
-      console.error("Failed to persist portfolio cache", error)
-    }
-  },
-
-  restoreClient: async () => {
-    const db = await IndexedDBManager.getInstance()
-    if (!db) return undefined
-
-    try {
-      const items = await getItemFromStore(db, STORE)
-      const item = items.find(({ key }) => key === KEY)
-      if (!item) return undefined
-
-      return reconstructPersistedClient(item.data as PersistedClient)
-    } catch (error) {
-      console.error("Failed to read persisted portfolio cache", error)
-      return undefined
-    }
-  },
-
-  removeClient: async () => {
-    const db = await IndexedDBManager.getInstance()
-    if (!db) return
-
-    try {
-      await removeItemFromStore(db, STORE, KEY)
-    } catch (error) {
-      console.error("Failed to remove persisted portfolio cache", error)
-    }
-  },
-}
+export const portfolioPersister = createIndexedDbPersister({
+  store: IndexedDBStores.PortfolioBalances,
+  key: "balances",
+  reconstruct: reconstructPersistedClient,
+})
 
 export const setupPortfolioPersistence = (queryClient: QueryClient) => {
   queryClient.setQueryDefaults([...PORTFOLIO_BALANCES_KEY], {

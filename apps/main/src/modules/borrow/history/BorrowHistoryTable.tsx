@@ -11,6 +11,7 @@ import { FC, useMemo } from "react"
 import { useMoneyMarketEvents } from "@/api/borrow"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { BorrowHistoryFilter } from "@/modules/borrow/history/BorrowHistoryFilter"
+import { useBorrowHistoryRoute } from "@/modules/borrow/history/BorrowHistoryFilter.utils"
 import { useBorrowHistoryColumns } from "@/modules/borrow/history/BorrowHistoryTable.columns"
 import {
   getOnUpdatePendingStyles,
@@ -26,9 +27,7 @@ export const BorrowHistoryTable: FC<Props> = ({
   searchPhrase,
   paginationProps,
 }) => {
-  const { type } = useSearch({
-    from: "/borrow/history",
-  })
+  const { type } = useSearch({ from: useBorrowHistoryRoute() })
 
   const { data, isLoading, isFetching } = useMoneyMarketEvents(
     type,
