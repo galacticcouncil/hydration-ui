@@ -95,8 +95,7 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
             !isSubmitReady
           }
           isLoading={isLoading || isLoadingCallOrTransfer || isSubmitting}
-          variant={isSubmitReady ? "primary" : "muted"}
-          loadingVariant="muted"
+          disabledVariant="muted"
           chain={srcChain}
         />
       </Flex>

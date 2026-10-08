@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
+import { useCallback } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -7,13 +8,19 @@ import {
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
 import { WalletProviderType } from "@/config/providers"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
+import {
+  useWeb3Connect,
+  WalletProviderStatus,
+  WalletRestoreState,
+} from "@/hooks/useWeb3Connect"
 import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
+import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 type UseWeb3EnableOptions = {
   disconnectOnError?: boolean
+  restore?: boolean
 }
 
 const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
@@ -21,12 +28,63 @@ const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
   WalletProviderType.WalletConnect,
 ]
 
+// Mutation callbacks fire even for abandoned attempts, so each provider's
+// latest attempt is tracked here and late results from older ones are ignored.
+const enableAttempts = new Map<WalletProviderType, number>()
+
+const isCurrentAttempt = (type: WalletProviderType, attempt?: number) =>
+  attempt !== undefined && enableAttempts.get(type) === attempt
+
+const nextAttempt = (type: WalletProviderType) => {
+  const attempt = (enableAttempts.get(type) ?? 0) + 1
+  enableAttempts.set(type, attempt)
+  return attempt
+}
+
+/** Makes any in-flight enable of `type` stale, so its late result is ignored. */
+export const abandonEnable = (type: WalletProviderType) => {
+  nextAttempt(type)
+}
+
+const isTimeoutError = (error: unknown) =>
+  error instanceof Error && error.name === "TimeoutError"
+
 export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
-  const { setStatus, setError, disconnect, setAccounts } = useWeb3Connect(
-    useShallow(pick(["setStatus", "setError", "disconnect", "setAccounts"])),
+  const {
+    setStatus,
+    getStatus,
+    setError,
+    disconnect: disconnectProvider,
+    setAccounts,
+    setRestoreState,
+    clearRestoreState,
+  } = useWeb3Connect(
+    useShallow(
+      pick([
+        "setStatus",
+        "getStatus",
+        "setError",
+        "disconnect",
+        "setAccounts",
+        "setRestoreState",
+        "clearRestoreState",
+      ]),
+    ),
   )
 
   const { add: addToAddressBook } = useAddressStore()
+
+  const disconnect = useCallback(
+    (provider?: WalletProviderType) => {
+      if (provider) {
+        abandonEnable(provider)
+      } else {
+        Object.values(WalletProviderType).forEach(abandonEnable)
+      }
+      disconnectProvider(provider)
+    },
+    [disconnectProvider],
+  )
 
   const { mutateAsync: enable, ...mutation } = useMutation({
     mutationFn: async (type: WalletProviderType) => {
@@ -36,10 +94,34 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
       return wallet.getAccounts()
     },
     retry: false,
-    onMutate: (type) => setStatus(type, WalletProviderStatus.Pending),
-    onSuccess: (data, type) => {
+    onMutate: (type) => {
+      const attempt = nextAttempt(type)
+      if (options.restore) {
+        setRestoreState(type, WalletRestoreState.Restoring)
+      } else {
+        clearRestoreState(type)
+        setStatus(type, WalletProviderStatus.Pending)
+      }
+      return attempt
+    },
+    onSuccess: (data, type, attempt) => {
+      if (!isCurrentAttempt(type, attempt)) return
+      if (getStatus(type) === WalletProviderStatus.Disconnected) return
+
       setAccounts(data.map(toStoredAccount), type)
       setStatus(type, WalletProviderStatus.Connected)
+
+      if (options.restore) {
+        clearRestoreState(type)
+        const wallet = getWallet(type)
+        const { account } = useWeb3Connect.getState()
+        if (wallet instanceof BaseSubstrateWallet && account) {
+          const signerAddress = account.isMultisig
+            ? (account.multisigSignerAddress ?? account.address)
+            : account.address
+          wallet.setSigner(signerAddress)
+        }
+      }
 
       const addresses = data
         .map(
@@ -57,9 +139,18 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
 
       addToAddressBook(addresses)
     },
-    onError: (error, type) => {
+    onError: (error, type, attempt) => {
+      if (!isCurrentAttempt(type, attempt)) return
+
+      if (options.restore) {
+        if (isTimeoutError(error)) {
+          return setRestoreState(type, WalletRestoreState.Unavailable)
+        }
+        return disconnectProvider(type)
+      }
+
       if (options.disconnectOnError || error instanceof UserRejectedError) {
-        return disconnect(type)
+        return disconnectProvider(type)
       }
 
       setStatus(type, WalletProviderStatus.Error)

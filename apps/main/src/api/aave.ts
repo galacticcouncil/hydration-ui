@@ -78,8 +78,9 @@ export const healthFactorAfterWithdrawQuery = (
       fromAmount,
     ],
     queryFn: async () => {
+      // The reserve picks the market, so both reads must share it
       const [currentHF, futureHF] = await Promise.all([
-        sdk.api.aave.getHealthFactor(address),
+        sdk.api.aave.getHealthFactor(address, Number(fromAssetId)),
         sdk.api.aave.getHealthFactorAfterWithdraw(
           address,
           Number(fromAssetId),
@@ -107,7 +108,7 @@ export const healthFactorAfterSupplyQuery = (
     ],
     queryFn: async () => {
       const [currentHF, futureHF] = await Promise.all([
-        sdk.api.aave.getHealthFactor(address),
+        sdk.api.aave.getHealthFactor(address, Number(toAssetId)),
         sdk.api.aave.getHealthFactorAfterSupply(
           address,
           Number(toAssetId),
@@ -137,7 +138,7 @@ export const healthFactorAfterSwapQuery = (
     ],
     queryFn: async () => {
       const [currentHF, futureHF] = await Promise.all([
-        sdk.api.aave.getHealthFactor(address),
+        sdk.api.aave.getHealthFactor(address, Number(fromAssetId)),
         sdk.api.aave.getHealthFactorAfterSwap(
           address,
           fromAmount,
@@ -197,15 +198,47 @@ export const healthFactorQuery = (
   })
 }
 
+// `reserve` (an underlying id) picks the market, main when omitted
 export const aaveSummaryQuery = (
   { isReady, sdk }: TProviderContext,
   address: string,
+  reserve?: string,
   enabled = true,
 ) =>
   queryOptions({
-    queryKey: [...AAVE_SUMMARY_QUERY_KEY, address],
-    queryFn: () => sdk.api.aave.getSummary(address),
+    queryKey: [...AAVE_SUMMARY_QUERY_KEY, address, reserve ?? ""],
+    queryFn: () =>
+      sdk.api.aave.getSummary(
+        address,
+        reserve === undefined ? undefined : Number(reserve),
+      ),
     enabled: isReady && enabled && !!address,
+  })
+
+// `reserve` is the underlying id; an aToken id would read the main market
+export const maxWithdrawQuery = (
+  { sdk, isReady }: TProviderContext,
+  address: string,
+  reserve: string,
+  balance: string,
+) =>
+  queryOptions({
+    // The balance only keys a refetch once the aToken balance moves
+    queryKey: [
+      ...TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY,
+      "max",
+      address,
+      reserve,
+      balance,
+    ],
+    queryFn: async () => {
+      const { amount, decimals } = await sdk.api.aave.getMaxWithdraw(
+        address,
+        Number(reserve),
+      )
+      return scaleHuman(amount, decimals)
+    },
+    enabled: isReady && !!address && !!reserve,
   })
 
 // Aave validates the health factor the moment the aToken leaves the account,

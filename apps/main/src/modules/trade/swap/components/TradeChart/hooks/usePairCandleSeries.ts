@@ -98,7 +98,8 @@ export const usePairCandleSeries = (
     const aToken = getErc20AToken(id)
     if (!aToken) return id
     const underlying = getAssetWithFallback(aToken.underlyingAssetId)
-    if (isStableSwap(underlying)) return id
+    // A reserve outside the router (BIL) has no candles of its own
+    if (isStableSwap(underlying) || !underlying.isTradable) return id
     return aToken.underlyingAssetId
   }
 

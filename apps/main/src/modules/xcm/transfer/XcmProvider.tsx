@@ -252,10 +252,15 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     form.setValue(
       "destAmount",
       srcAsset && srcAmount && xcmTransfer
-        ? calculateTransferDestAmount(srcAsset, srcAmount, xcmTransfer)
+        ? calculateTransferDestAmount(
+            srcAsset,
+            srcAmount,
+            xcmTransfer,
+            !!selectedRoute?.destination.fee.prepaid,
+          )
         : "",
     )
-  }, [form, srcAmount, srcAsset, xcmTransfer])
+  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer])
 
   // Only the assets actually in view are subscribed now - the asset picker
   // fetches the full set on its own.

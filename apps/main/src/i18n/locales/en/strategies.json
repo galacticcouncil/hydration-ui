@@ -16,7 +16,7 @@
   "cards.bil.title": "Brazilian Invoice Loans",
   "cards.bil.description": "Deposit HOLLAR into a liquid strategy that earns fixed yield from short-term Brazilian invoice receivables.",
   "cards.propeller.title": "Juicer",
-  "cards.propeller.description": "Deposit your assets and earn leveraged staking yield. Propeller loops your collateral automatically and self-deleverages to avoid liquidation. Exit any time via the async withdrawal queue.",
+  "cards.propeller.description": "Deposit your assets and earn leveraged staking yield. Juicer loops your collateral automatically and self-deleverages to avoid liquidation. Exit any time via the async withdrawal queue.",
   "cards.hollarBonds.title": "HOLLAR Bonds",
   "cards.hollarBonds.description": "Lock stablecoins and earn fixed APR. Fixed Yield HOLLAR Bonds have no liquidation risk for users, as the protocol covers the underlying yield and liquidation risk.",
 
@@ -69,9 +69,8 @@
   "bil.withdrawals.title": "Withdrawals",
   "bil.withdrawals.autoClaim": "Auto-claim",
   "bil.withdrawals.autoClaim.tooltip": "Automatically claims HOLLAR when your withdrawal is ready.",
-  "bil.withdrawals.col.estValue": "Est. Value",
   "bil.withdrawals.col.timeRemaining": "Time remaining",
-  "bil.withdrawals.state.claimable": "Claim ready",
+  "bil.withdrawals.processing": "Up to 48 hrs",
   "bil.withdrawals.action.instant": "Instant redeem",
 
   "bil.deposit.your": "Deposit",

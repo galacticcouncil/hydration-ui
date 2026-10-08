@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { isNullish } from "remeda"
 
 import { LINKS } from "@/config/navigation"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
@@ -9,13 +8,9 @@ import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/useProp
 
 export const PropellerStrategyCard = () => {
   const { t } = useTranslation(["common", "strategies", "propeller"])
-  const { upToApy, subLoop, isLoading } = usePropellerVaults()
-  const leverage = subLoop?.leverage
+  const { upToApy, totalTvlUsd, isLoading } = usePropellerVaults()
   const yieldValue =
     upToApy !== null ? t("common:percent", { value: upToApy }) : "-"
-  const leverageValue = isNullish(leverage)
-    ? null
-    : t("propeller:strategy.loopLeverageValue", { value: leverage })
 
   return (
     <StrategyCard
@@ -29,15 +24,11 @@ export const PropellerStrategyCard = () => {
           valueTone: "yield",
           isLoading,
         },
-        ...(leverageValue === null
-          ? []
-          : [
-              {
-                label: t("propeller:strategy.loopLeverage"),
-                value: leverageValue,
-                isLoading,
-              },
-            ]),
+        {
+          label: t("strategies:bil.strategy.tvl"),
+          value: t("common:currency.compact", { value: totalTvlUsd }),
+          isLoading,
+        },
       ]}
       badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
       link={LINKS.strategiesJuicer}

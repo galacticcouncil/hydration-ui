@@ -1,5 +1,6 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
 import { BIL_ERC20_ID } from "@galacticcouncil/utils"
+import { millisecondsInDay } from "date-fns/constants"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -73,6 +74,11 @@ export const StrategiesPage = () => {
                 value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
                 isLoading: isBilMetricsLoading,
               },
+              {
+                label: t("strategies:bil.strategy.tvl"),
+                value: t("common:currency.compact", { value: bilMetrics.tvl }),
+                isLoading: isBilMetricsLoading,
+              },
             ]}
             badges={[StrategyBadgeType.Partnership, StrategyBadgeType.RWA]}
             description={t("strategies:cards.bil.description")}
@@ -95,6 +101,17 @@ export const StrategiesPage = () => {
                         suffix: isSoldOut ? "+" : undefined,
                       })
                     : "-",
+              },
+              {
+                label: t("strategies:bonds.details.maturityPeriod"),
+                value:
+                  timeLeft > 0
+                    ? t("common:interval", {
+                        value: timeLeft,
+                        largest: 1,
+                        ...(timeLeft > millisecondsInDay && { unit: "d" }),
+                      })
+                    : "—",
               },
             ]}
             badges={[StrategyBadgeType.FixedYield]}

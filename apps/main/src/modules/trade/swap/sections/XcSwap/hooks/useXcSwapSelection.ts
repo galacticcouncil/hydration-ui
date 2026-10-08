@@ -1,3 +1,4 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
@@ -35,8 +36,11 @@ export const useXcSwapSelection = ({
 }: UseXcSwapSelectionParams) => {
   const { getAsset } = useAssets()
 
+  const isDestRequired = destPlatform !== HYDRATION_CHAIN_KEY
   const isSelectionDataReady =
-    !isOriginLoading && !isDestLoading && sourceChainAssetPairs.length > 0
+    !isOriginLoading &&
+    !(isDestRequired && isDestLoading) &&
+    sourceChainAssetPairs.length > 0
   const sellAsset = form.watch("sellAsset")
   const buyAsset = form.watch("buyAsset")
   const isSelectionLoading = !isSelectionDataReady || !sellAsset || !buyAsset

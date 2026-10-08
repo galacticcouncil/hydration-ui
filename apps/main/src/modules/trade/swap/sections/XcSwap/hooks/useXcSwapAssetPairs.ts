@@ -66,9 +66,7 @@ export const useXcSwapAssetPairs = (
   )
 
   const destChainAssetPairs = useMemo<XcChainAssetPair[]>(() => {
-    if (!destAssets) return []
-
-    const crossChain = destAssets.reduce<XcChainAssetPair[]>(
+    const crossChain = (destAssets ?? []).reduce<XcChainAssetPair[]>(
       (acc, asset: XcSwapAsset) => {
         const chain = chains[asset.chain]
         if (!chain) return acc

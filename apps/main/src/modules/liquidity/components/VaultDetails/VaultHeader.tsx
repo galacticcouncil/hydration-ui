@@ -11,7 +11,7 @@ import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 export const VaultHeader = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation("liquidity")
-  const [token0, token1] = vault.tokens
+  const [token0, token1] = vault.pair
   const [open, setOpen] = useState(false)
   const { isMobile } = useBreakpoints()
 

@@ -10,7 +10,7 @@ import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 
 import {
   assertDepositCapacity,
-  depositWithApproval,
+  prepareApproval,
   prepareFundedDeposit,
   readDepositCapacity,
 } from "./deposit"
@@ -141,67 +141,36 @@ describe("Collateral-only deposit capacity", () => {
   })
 })
 
-describe("Deposit approval lifecycle", () => {
-  it("waits for approval to the vault, then submits only the funded deposit", async () => {
+describe("Deposit approval", () => {
+  it("returns an approval to the vault for the exact amount without simulating the deposit", async () => {
     const mock = mockClient()
-    const order: string[] = []
-    const approve = vi.fn(async (call) => {
-      order.push("approval confirmed")
-      expect(call.to).toBe(asset)
-      expect(decodeFunctionData({ abi: erc20Abi, data: call.data })).toEqual({
-        functionName: "approve",
-        args: [vault, args.amount],
-      })
-      expect(mock.simulateContract).not.toHaveBeenCalled()
+    const call = await prepareApproval(mock.client, args)
+    expect(call?.to).toBe(asset)
+    expect(
+      call && decodeFunctionData({ abi: erc20Abi, data: call.data }),
+    ).toEqual({
+      functionName: "approve",
+      args: [vault, args.amount],
     })
-    const submit = vi.fn(async (call) => {
-      order.push("deposit submitted")
-      expect(call.to).toBe(vault)
-      return "funded"
-    })
-    expect(await depositWithApproval(mock.client, args, approve, submit)).toBe(
-      "funded",
-    )
-    expect(order).toEqual(["approval confirmed", "deposit submitted"])
-    expect(submit).toHaveBeenCalledOnce()
+    expect(mock.simulateContract).not.toHaveBeenCalled()
   })
 
   it("skips an already sufficient approval", async () => {
     const mock = mockClient({ allowance: args.amount })
-    const approve = vi.fn(async () => {})
-    const submit = vi.fn(async () => {})
-    await depositWithApproval(mock.client, args, approve, submit)
-    expect(approve).not.toHaveBeenCalled()
-    expect(submit).toHaveBeenCalledOnce()
+    expect(await prepareApproval(mock.client, args)).toBeNull()
   })
 
-  it("does not continue after approval rejection or emit a success callback", async () => {
-    const mock = mockClient()
-    const submit = vi.fn(async () => {})
+  it("rejects unavailable capacity and a missing owner before reading the allowance", async () => {
+    const mock = mockClient({ tvlCap: 4n * unit })
+    await expect(prepareApproval(mock.client, args)).rejects.toThrow(
+      "availability changed",
+    )
     await expect(
-      depositWithApproval(
-        mock.client,
-        args,
-        async () => {
-          throw new Error("Cancelled")
-        },
-        submit,
-      ),
-    ).rejects.toThrow("Cancelled")
-    expect(mock.simulateContract).not.toHaveBeenCalled()
-    expect(submit).not.toHaveBeenCalled()
-  })
-
-  it("rechecks the deposit state after approval before proposing a deposit", async () => {
-    const mock = mockClient()
-    const submit = vi.fn(async () => {})
-    const approve = async () => {
-      mock.readContract.mockRejectedValueOnce(new Error("Vault changed"))
-    }
-    await expect(
-      depositWithApproval(mock.client, args, approve, submit),
-    ).rejects.toThrow("Vault changed")
-    expect(submit).not.toHaveBeenCalled()
+      prepareApproval(mock.client, { ...args, owner: zeroAddress }),
+    ).rejects.toThrow("Connect")
+    expect(
+      mock.readContract.mock.calls.map(([request]) => request.functionName),
+    ).not.toContain("allowance")
   })
 })
 

@@ -247,9 +247,9 @@ export const BilDeposit = () => {
                 type="submit"
                 size="large"
                 width="100%"
-                variant={!canSubmit ? "muted" : "primary"}
                 isLoading={depositMutation.isPending}
                 disabled={!canSubmit}
+                disabledVariant="muted"
               >
                 {ctaLabel}
               </LoadingButton>

@@ -58,6 +58,7 @@ export const ButtonIcon: FC<ButtonProps> = (props) => {
 export type LoadingButtonProps = ButtonProps & {
   isLoading: boolean
   loadingVariant?: ButtonProps["variant"]
+  disabledVariant?: ButtonProps["variant"]
   loadingMode?: LoadingMode
   loadingDelay?: number
   loadingFade?: boolean
@@ -66,6 +67,7 @@ export type LoadingButtonProps = ButtonProps & {
 export const LoadingButton: FC<LoadingButtonProps> = ({
   variant = "primary",
   loadingVariant = "muted",
+  disabledVariant,
   loadingMode = "inline",
   loadingDelay,
   loadingFade = false,
@@ -75,6 +77,8 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
   ...props
 }) => {
   const isBusy = useLoadingState(isLoading, loadingDelay)
+  const restVariant =
+    props.disabled && disabledVariant ? disabledVariant : variant
 
   return (
     <SLoadingButton
@@ -82,7 +86,8 @@ export const LoadingButton: FC<LoadingButtonProps> = ({
       type="button"
       aria-busy={isBusy}
       loadingFade={loadingFade}
-      variant={isBusy && loadingVariant ? loadingVariant : variant}
+      disabledFade={!disabledVariant || disabledVariant === variant}
+      variant={isBusy && loadingVariant ? loadingVariant : restVariant}
       onClick={(e) => {
         if (isLoading || isBusy) return e.preventDefault()
         onClick?.(e)

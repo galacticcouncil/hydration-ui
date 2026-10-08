@@ -6,6 +6,7 @@ import {
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
 import {
+  BIL_ERC20_ID,
   GDOT_ERC20_ID,
   GETH_ERC20_ID,
   GSOL_ERC20_ID,
@@ -35,6 +36,7 @@ type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
 }
 
 const ATOKEN_DECOR_BLACKLIST = [
+  BIL_ERC20_ID,
   GDOT_ERC20_ID,
   GETH_ERC20_ID,
   GSOL_ERC20_ID,

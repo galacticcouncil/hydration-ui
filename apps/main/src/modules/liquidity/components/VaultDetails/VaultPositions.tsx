@@ -35,7 +35,7 @@ const usePositionColumns = (
   onRemove: () => void,
 ) => {
   const { t } = useTranslation(["common", "liquidity"])
-  const [token0, token1] = vault.tokens
+  const [token0, token1] = vault.pair
 
   return useMemo(
     () => [

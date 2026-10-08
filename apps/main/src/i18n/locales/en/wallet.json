@@ -72,7 +72,7 @@
   "myStrategies.header.claimable": "Claimable",
   "myStrategies.rate.note": "Estimated annualized return, shown as APR or APY. This is a rate, not an amount available to claim.",
   "myStrategies.earnings.note": "Funded earnings available to claim as additional shares. Estimates awaiting conversion are excluded. BIL yield accrues into its token value, so there is no separate claimable earnings balance.",
-  "myStrategies.details.pendingEarnings": "Earnings awaiting conversion",
+  "myStrategies.details.pendingEarnings": "Pending earnings",
   "myStrategies.details.withdrawal": "Pending withdrawal",
   "myStrategies.details.withdrawalEstimate": "Estimated pending withdrawal",
   "myStrategies.details.recovery": "Claimable HOLLAR recovery",

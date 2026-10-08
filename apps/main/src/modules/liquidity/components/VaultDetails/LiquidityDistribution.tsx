@@ -13,6 +13,7 @@ import { defineChart, dot, rect, ruleX, text } from "@tanstack/charts"
 import { decorative } from "@tanstack/charts/mark/decorative"
 import { scaleLinear } from "@tanstack/charts/scales/linear"
 import { tooltip } from "@tanstack/charts/tooltip"
+import { portal } from "@tanstack/charts/tooltip/portal"
 import Big from "big.js"
 import { Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -45,6 +46,7 @@ import {
   plotCssPos,
   plotCssWidth,
   SCENARIO_TRANSITION,
+  SHORT_BAR_RATIO,
   TICK_PADDING,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.theme"
 import {
@@ -81,6 +83,19 @@ const Legend = ({ color, label }: { color: string; label: string }) => (
   </Flex>
 )
 
+const RangeSwatch = ({ range }: { range: ManagedRangeStyle }) => (
+  <Box
+    as="span"
+    size="xs"
+    borderRadius="base"
+    display="inline-block"
+    sx={{
+      background: managedRangeMixedColor(range.color, range.fillOpacity),
+      border: `1px solid ${managedRangeMixedColor(range.color, range.borderOpacity)}`,
+    }}
+  />
+)
+
 const RangeLegend = ({
   range,
   label,
@@ -101,16 +116,7 @@ const RangeLegend = ({
     onClick={onToggle}
     sx={{ opacity: visible ? 1 : FADED_OPACITY }}
   >
-    <Box
-      as="span"
-      size="xs"
-      borderRadius="base"
-      display="inline-block"
-      sx={{
-        background: managedRangeMixedColor(range.color, range.fillOpacity),
-        border: `1px solid ${managedRangeMixedColor(range.color, range.borderOpacity)}`,
-      }}
-    />
+    <RangeSwatch range={range} />
     <Text fs="p6" color={getToken("text.low")}>
       {label}
     </Text>
@@ -134,6 +140,7 @@ export const LiquidityDistribution = ({
   const [token0, token1] = vault.tokens
   const { decimals: decimals0 } = token0
   const { decimals: decimals1 } = token1
+  const flipped = !scenario && vault.pair[0].id !== token0.id
 
   const tickFontSize = themeProps.paragraphSize.p5
   const tickBaseline = TICK_PADDING + tickFontSize * 0.8
@@ -193,6 +200,13 @@ export const LiquidityDistribution = ({
   const bandGap = ceiling * (BAND_GAP / chartHeight)
 
   const definition = useMemo(() => {
+    let tooltipSide: "left" | "right" | "top" = "right"
+
+    const displayPrice = (tick: number) => {
+      const price = priceAtTick(tick, chartDecimals0, chartDecimals1)
+      return flipped ? 1 / price : price
+    }
+
     const bandMarks =
       managedRangesVisible && !scenario
         ? bands.flatMap((band) =>
@@ -284,9 +298,7 @@ export const LiquidityDistribution = ({
                 x: (tick) => tick,
                 y: () => 0,
                 text: (tick) =>
-                  t("common:number", {
-                    value: priceAtTick(tick, chartDecimals0, chartDecimals1),
-                  }),
+                  t("common:number", { value: displayPrice(tick) }),
                 fill: colors.spot,
                 fontSize: tickFontSize,
                 dy: tickBaseline,
@@ -294,7 +306,8 @@ export const LiquidityDistribution = ({
             ]),
       ],
       x: {
-        scale: scaleLinear().domain([lo, hi]),
+        // flipped prices fall as ticks rise, so run the axis backwards
+        scale: scaleLinear().domain(flipped ? [hi, lo] : [lo, hi]),
         axis: scenario
           ? false
           : {
@@ -304,13 +317,12 @@ export const LiquidityDistribution = ({
                 size: 0,
                 padding: TICK_PADDING,
                 format: (tick) =>
-                  t("common:number", {
-                    value: priceAtTick(tick, chartDecimals0, chartDecimals1),
-                  }),
+                  t("common:number", { value: displayPrice(tick) }),
               },
               tickLabels: {
                 fontSize: tickFontSize,
-                anchor: ({ value }) => (value === lo ? "start" : "end"),
+                anchor: ({ value }) =>
+                  value === (flipped ? hi : lo) ? "start" : "end",
               },
             },
       },
@@ -325,8 +337,44 @@ export const LiquidityDistribution = ({
       },
       tooltip: {
         use: tooltip,
+        // the tooltip is taller than the chart; portal it so it can overflow
+        // the chart vertically instead of being clamped over the bars
+        portal,
         sticky: false,
-        placement: "top",
+        // placement is static in the library; the anchor resolver runs right
+        // before positioning, so it picks the side and the getter reports it
+        get placement() {
+          return tooltipSide
+        },
+        anchor: (points, { plot, scales }) => {
+          const [bar] = points.filter(isBarPoint)
+          const mapX = scales.x?.map
+          const mapY = scales.y?.map
+          if (!bar || !mapX || !mapY) return null
+
+          // the axis runs backwards when flipped, so sort the edges
+          const [left, right] = [mapX(bar.datum.from), mapX(bar.datum.to)].sort(
+            (a, b) => a - b,
+          ) as [number, number]
+          const barTop = mapY(
+            Math.max(bar.datum.liquidity, minVisibleLiquidity),
+          )
+          const plotBottom = plot.y + plot.height
+
+          // short bars leave room above them, so the tooltip sits on top
+          if (plotBottom - barTop < plot.height * SHORT_BAR_RATIO) {
+            tooltipSide = "top"
+            return { x: (left + right) / 2, y: barTop }
+          }
+
+          tooltipSide =
+            left + right < plot.x * 2 + plot.width ? "right" : "left"
+
+          return {
+            x: tooltipSide === "right" ? right : left,
+            y: plot.y + plot.height / 2,
+          }
+        },
       },
     })
   }, [
@@ -348,12 +396,15 @@ export const LiquidityDistribution = ({
     top,
     scenario,
     managedRangesVisible,
+    flipped,
   ])
 
   if (!bars.length)
     return <ChartState sx={{ height: resolvedHeight }} isEmpty />
 
-  const price = priceAtTick(spotTick, token0.decimals, token1.decimals)
+  const [base, quote] = vault.pair
+  const price0 = priceAtTick(spotTick, token0.decimals, token1.decimals)
+  const price = flipped ? 1 / price0 : price0
 
   return (
     <Flex direction="column" flex={1} sx={{ minHeight: resolvedHeight }}>
@@ -373,15 +424,15 @@ export const LiquidityDistribution = ({
             <Text fs="p2" fw={500} font="primary">
               {t("vaults.price.pair", {
                 value: price,
-                symbolA: token0.symbol,
-                symbolB: token1.symbol,
+                symbolA: base.symbol,
+                symbolB: quote.symbol,
               })}
             </Text>
             <Text fs="p6" color={getToken("text.low")}>
               {t("vaults.price.pair", {
                 value: 1 / price,
-                symbolA: token1.symbol,
-                symbolB: token0.symbol,
+                symbolA: quote.symbol,
+                symbolB: base.symbol,
               })}
             </Text>
           </Flex>
@@ -396,7 +447,10 @@ export const LiquidityDistribution = ({
       >
         <Flex position="relative" minWidth={0}>
           <Chart
-            css={{ ".ts-chart__grid": { strokeDasharray: "2 4" } }}
+            css={{
+              ".ts-chart__grid": { strokeDasharray: "2 4" },
+              ".ts-chart-tooltip": { "--ts-chart-tooltip-max-width": "none" },
+            }}
             definition={definition}
             ariaLabel={t(
               scenario
@@ -471,22 +525,27 @@ export const LiquidityDistribution = ({
         </Flex>
 
         <SLiquidityLegend mt="s" wrap>
-          <Legend
-            color={colors.token1}
-            label={
-              scenario
-                ? t("vaults.explainer.legend.tokenB")
-                : t("vaults.chart.legend.token1", { symbol: token1.symbol })
-            }
-          />
-          <Legend
-            color={colors.token0}
-            label={
-              scenario
-                ? t("vaults.explainer.legend.tokenA")
-                : t("vaults.chart.legend.token0", { symbol: token0.symbol })
-            }
-          />
+          {/* left side of the chart first */}
+          {(flipped ? [0, 1] : [1, 0]).map((side) => (
+            <Legend
+              key={side}
+              color={side ? colors.token1 : colors.token0}
+              label={
+                scenario
+                  ? t(
+                      side
+                        ? "vaults.explainer.legend.tokenB"
+                        : "vaults.explainer.legend.tokenA",
+                    )
+                  : t(
+                      side
+                        ? "vaults.chart.legend.token1"
+                        : "vaults.chart.legend.token0",
+                      { symbol: (side ? token1 : token0).symbol },
+                    )
+              }
+            />
+          ))}
           <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
           {scenario
             ? bands.length > 0 && (
@@ -530,8 +589,10 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
   const { getAssetPrice } = useAssetsPrice([token0.id, token1.id])
   const { themeProps } = useTheme()
 
-  const low = priceAtTick(bar.rangeFrom, decimals0, decimals1)
-  const high = priceAtTick(bar.rangeTo, decimals0, decimals1)
+  const flipped = vault.pair[0].id !== token0.id
+  const from = priceAtTick(bar.rangeFrom, decimals0, decimals1)
+  const to = priceAtTick(bar.rangeTo, decimals0, decimals1)
+  const [low, high] = flipped ? [1 / to, 1 / from] : [from, to]
   const held = bar.side === "token0" ? token0 : token1
   const state = vault.vault
   const mid = (bar.rangeFrom + bar.rangeTo) / 2
@@ -621,17 +682,9 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
         <Stack gap="base" mt="base" separated withLeadingSeparator>
           {vaultPositions.map((position) => (
             <Fragment key={position.band}>
-              <Flex align="center" gap="xs">
-                <Box
-                  as="span"
-                  size="2xs"
-                  borderRadius="full"
-                  display="inline-block"
-                  borderStyle="solid"
-                  borderColor={
-                    managedRangeStyle(themeProps, position.band).color
-                  }
-                  borderWidth="1px"
+              <Flex align="center" gap="s">
+                <RangeSwatch
+                  range={managedRangeStyle(themeProps, position.band)}
                 />
                 <Text fs="p6" color={getToken("text.medium")}>
                   {position.share !== null
@@ -642,26 +695,28 @@ const TickStats = ({ bar, vault }: { bar: Bar; vault: VaultTable }) => {
                     : position.label}
                 </Text>
               </Flex>
-              <TickStatsRow
-                label={token0.symbol}
-                isSymbolLabel={true}
-                icon={<AssetLogo id={token0.id} size="extra-small" />}
-                value={human(position.amount0, decimals0)}
-                displayValue={usd(
-                  token0.id,
-                  scaleHuman(position.amount0.toString(), decimals0),
-                )}
-              />
-              <TickStatsRow
-                label={token1.symbol}
-                isSymbolLabel={true}
-                icon={<AssetLogo id={token1.id} size="extra-small" />}
-                value={human(position.amount1, decimals1)}
-                displayValue={usd(
-                  token1.id,
-                  scaleHuman(position.amount1.toString(), decimals1),
-                )}
-              />
+              {(flipped
+                ? [
+                    { token: token1, amount: position.amount1 },
+                    { token: token0, amount: position.amount0 },
+                  ]
+                : [
+                    { token: token0, amount: position.amount0 },
+                    { token: token1, amount: position.amount1 },
+                  ]
+              ).map(({ token, amount }) => (
+                <TickStatsRow
+                  key={token.id}
+                  label={token.symbol}
+                  isSymbolLabel={true}
+                  icon={<AssetLogo id={token.id} size="extra-small" />}
+                  value={human(amount, token.decimals)}
+                  displayValue={usd(
+                    token.id,
+                    scaleHuman(amount.toString(), token.decimals),
+                  )}
+                />
+              ))}
             </Fragment>
           ))}
         </Stack>

@@ -11,7 +11,7 @@ import { PortfolioOverviewSkeleton } from "@/modules/portfolio/overview/Portfoli
 
 const searchSchema = z.object({
   category: z
-    .enum(["assets", "strategies", "liquidity", "bonds"])
+    .enum(["all", "assets", "strategies", "liquidity", "bonds"])
     .catch("assets")
     .default("assets"),
   assetsSort: dataTableSortSchema,

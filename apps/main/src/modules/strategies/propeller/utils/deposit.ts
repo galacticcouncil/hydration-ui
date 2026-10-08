@@ -110,20 +110,14 @@ export const prepareFundedDeposit = async (
   }
 }
 
-/** Approval is the only preparatory wallet transaction; keepers deploy later. */
-export const depositWithApproval = async <T>(
+/**
+ * Approval is the only preparatory wallet transaction; keepers deploy later.
+ * Returns the approve call, or null when the allowance already covers the amount.
+ */
+export const prepareApproval = async (
   client: PublicClient,
-  input: DepositInput,
-  approve: (call: {
-    to: Hex
-    data: Hex
-    abi: typeof erc20Abi
-  }) => Promise<unknown>,
-  submit: (
-    call: Awaited<ReturnType<typeof prepareFundedDeposit>>,
-  ) => Promise<T>,
+  { vault, asset, owner, amount }: DepositInput,
 ) => {
-  const { vault, asset, owner, amount } = input
   if (owner === zeroAddress)
     throw new Error("Connect an account before depositing")
   assertDepositCapacity(await readDepositCapacity(client, vault, asset), amount)
@@ -133,16 +127,14 @@ export const depositWithApproval = async <T>(
     functionName: "allowance",
     args: [owner, vault],
   })
-  if (allowance < amount) {
-    await approve({
-      to: asset,
+  if (allowance >= amount) return null
+  return {
+    to: asset,
+    abi: erc20Abi,
+    data: encodeFunctionData({
       abi: erc20Abi,
-      data: encodeFunctionData({
-        abi: erc20Abi,
-        functionName: "approve",
-        args: [vault, amount],
-      }),
-    })
+      functionName: "approve",
+      args: [vault, amount],
+    }),
   }
-  return submit(await prepareFundedDeposit(client, input))
 }

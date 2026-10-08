@@ -87,12 +87,15 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                                 </Text>
                                 <Tooltip
                                   text={t("positions.earningsPending", {
-                                    amount: Math.max(
-                                      0,
-                                      rewards.estimatedAssets -
-                                        rewards.claimableAssets,
-                                    ),
-                                    symbol,
+                                    amount: t("common:currency", {
+                                      value: Math.max(
+                                        0,
+                                        rewards.estimatedAssets -
+                                          rewards.claimableAssets,
+                                      ),
+                                      symbol,
+                                      maximumFractionDigits: 6,
+                                    }),
                                   })}
                                 >
                                   <TooltipIcon size="1em" />
@@ -123,7 +126,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                       {rewards && rewards.claimableShares > 0n && (
                         <LoadingButton
                           aria-label={`${t("positions.action.claimEarnings")} ${symbol}`}
-                          variant="tertiary"
+                          variant="primary"
                           size="small"
                           isLoading={
                             claimYield.isPending &&

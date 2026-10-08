@@ -2,7 +2,7 @@ import { PoolChart } from "@/modules/liquidity/components/PoolDetailsChart/PoolD
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 export const VaultPriceChart = ({ vault }: { vault: VaultTable }) => {
-  const [token0] = vault.tokens
+  const [token0] = vault.pair
 
   return <PoolChart assetId={token0.id} height={420} />
 }

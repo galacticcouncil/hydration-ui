@@ -11,21 +11,25 @@ import {
   useMutationState,
   useQueryClient,
 } from "@tanstack/react-query"
+import { minutesToMilliseconds } from "date-fns"
+import waitFor from "p-wait-for"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { type Abi, encodeFunctionData, type Hex } from "viem"
+import { type Abi, encodeFunctionData, formatUnits, type Hex } from "viem"
 
-import { evmAccountBindingQuery } from "@/api/evm"
-import {
-  MAIN_DEBT_ABI,
-  VAULT_ABI,
-} from "@/modules/strategies/propeller/config/abi"
+import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
+import { PendingApproval } from "@/components/PendingApproval"
+import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
-import { depositWithApproval } from "@/modules/strategies/propeller/utils/deposit"
+import {
+  prepareApproval,
+  prepareFundedDeposit,
+} from "@/modules/strategies/propeller/utils/deposit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
+import { prepareWithdrawalClaim } from "@/modules/strategies/propeller/utils/withdrawalClaim"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -68,11 +72,11 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   const txOptionsForVault = useCallback(
-    (vaultAddress: Hex, complete = true): TransactionOptions => ({
+    (vaultAddress: Hex): TransactionOptions => ({
       onSuccess: () => {
         invalidateVault(vaultAddress)
         queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
-        if (complete) onWriteSuccess?.()
+        onWriteSuccess?.()
       },
       resolveOn: "success",
     }),
@@ -138,18 +142,13 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   /**
-   * Submit EVM calls as one substrate Utility.batch_all.
+   * Build EVM calls as one substrate Utility.batch_all.
    * Prepends bind_evm_address when the account is not yet mapped.
    */
-  const submitBatch = useCallback(
-    async (
-      vaultAddress: Hex,
-      calls: BatchEvmCall[],
-      toasts: { submitted: string; success: string },
-      complete = true,
-    ) => {
+  const buildBatch = useCallback(
+    async (calls: BatchEvmCall[]) => {
       if (calls.length === 0) {
-        throw new Error("submitBatch called with no calls")
+        throw new Error("buildBatch called with no calls")
       }
       if (!address) throw new Error("Connect an account before continuing")
       const isBound = await queryClient.fetchQuery({
@@ -185,34 +184,45 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
             ]
           : papiCalls
 
-      const batchTx = rpc.papi.tx.Utility.batch_all({ calls: batchInner })
-
-      return createTransaction(
-        { tx: batchTx, toasts },
-        txOptionsForVault(vaultAddress, complete),
-      )
+      return rpc.papi.tx.Utility.batch_all({ calls: batchInner })
     },
-    [
-      address,
-      evmAddress,
-      queryClient,
-      rpc,
-      createTransaction,
-      txOptionsForVault,
-    ],
+    [address, evmAddress, queryClient, rpc],
   )
 
-  return { evmAddress, submitTx, submitBatch }
+  const submitBatch = useCallback(
+    async (
+      vaultAddress: Hex,
+      calls: BatchEvmCall[],
+      toasts: { submitted: string; success: string },
+      review?: Pick<TransactionCommon, "title" | "description">,
+    ) =>
+      createTransaction(
+        { tx: await buildBatch(calls), toasts, ...review },
+        txOptionsForVault(vaultAddress),
+      ),
+    [buildBatch, createTransaction, txOptionsForVault],
+  )
+
+  return {
+    evmAddress,
+    submitTx,
+    submitBatch,
+    buildBatch,
+    createTransaction,
+    txOptionsForVault,
+  }
 }
 
 export function useDeposit(
   vault: PropellerVaultConfig,
   options: VaultWriteOptions = {},
 ) {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["common", "propeller"])
   const { evm } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { evmAddress, submitBatch } = useVaultEvmCall(options)
+  const getErc20Allowance = useErc20Allowance()
+  const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
+    useVaultEvmCall(options)
   const { vaultAddress, assetId } = vault
   const assetAddress = getAddressFromAssetId(assetId) as Hex
   const { decimals, symbol } = getAssetWithFallback(assetId)
@@ -220,34 +230,77 @@ export function useDeposit(
   return useMutation({
     mutationFn: async (assetAmount: string) => {
       const assetBig = parseExactAmount(assetAmount, decimals)
-      const fmt = t("currency", {
+      const amount = t("currency", {
         value: assetAmount,
         symbol,
         maximumFractionDigits: 4,
       })
-      return depositWithApproval(
-        evm,
-        {
-          vault: vaultAddress,
-          asset: assetAddress,
-          owner: evmAddress,
-          amount: assetBig,
+      const input = {
+        vault: vaultAddress,
+        asset: assetAddress,
+        owner: evmAddress,
+        amount: assetBig,
+      }
+
+      // Built only once the approval is visible on chain, so the simulation
+      // and gas estimate run against the real allowance.
+      const buildDeposit = async () => ({
+        tx: await buildBatch([await prepareFundedDeposit(evm, input)]),
+        toasts: {
+          submitted: t("propeller:deposit.toast.submitted", { amount }),
+          success: t("propeller:deposit.toast.success", { amount }),
         },
-        (approval) =>
-          submitBatch(
-            vaultAddress,
-            [approval],
+      })
+
+      const approval = await prepareApproval(evm, input)
+      if (!approval) {
+        return createTransaction(
+          await buildDeposit(),
+          txOptionsForVault(vaultAddress),
+        )
+      }
+
+      return createTransaction(
+        {
+          tx: [
             {
-              submitted: `Approving ${symbol} for this vault...`,
-              success: `${symbol} approved`,
+              tx: await buildBatch([approval]),
+              stepTitle: t("propeller:deposit.step.approve"),
+              toasts: {
+                submitted: t("propeller:deposit.approve.toast.submitted", {
+                  symbol,
+                }),
+                success: t("propeller:deposit.approve.toast.success", {
+                  symbol,
+                }),
+              },
+              pendingComponent: PendingApproval,
+              beforeNext: async () => {
+                await waitFor(
+                  async () =>
+                    (await getErc20Allowance(
+                      assetAddress,
+                      evmAddress,
+                      vaultAddress,
+                    )) >= assetBig,
+                  {
+                    interval: 1000,
+                    timeout: {
+                      milliseconds: minutesToMilliseconds(3),
+                      message: t("propeller:deposit.approve.timeout"),
+                    },
+                  },
+                )
+              },
             },
-            false,
-          ),
-        (deposit) =>
-          submitBatch(vaultAddress, [deposit], {
-            submitted: `Depositing ${fmt}...`,
-            success: `${fmt} deposited; strategy deployment follows gradually`,
-          }),
+            {
+              tx: buildDeposit,
+              stepTitle: t("deposit"),
+              pendingComponent: PendingApproval,
+            },
+          ],
+        },
+        txOptionsForVault(vaultAddress),
       )
     },
   })
@@ -290,22 +343,54 @@ export type ClaimVariables = {
 }
 
 export function useClaim(options: VaultWriteOptions = {}) {
+  const { t } = useTranslation(["propeller", "common"])
+  const { evm } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { evmAddress, submitTx } = useVaultEvmCall(options)
+  const { evmAddress, submitBatch } = useVaultEvmCall(options)
 
   return useMutation({
     mutationKey: propellerQueryKeys.claim(),
-    mutationFn: ({ vault, requestId }: ClaimVariables) => {
-      const data = encodeFunctionData({
-        abi: VAULT_ABI,
-        functionName: "claim",
-        args: [BigInt(requestId), evmAddress],
-      })
-      const { symbol } = getAssetWithFallback(vault.assetId)
-      return submitTx(vault.vaultAddress, data, [...VAULT_ABI], {
-        submitted: `Claiming ${symbol}...`,
-        success: "Claim sent",
-      })
+    mutationFn: async ({ vault, requestId }: ClaimVariables) => {
+      const { calls, collateral, surplusHollar } = await prepareWithdrawalClaim(
+        evm,
+        vault.vaultAddress,
+        requestId,
+        evmAddress,
+      )
+      if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
+      const { symbol, decimals } = getAssetWithFallback(vault.assetId)
+      const payouts = [
+        ...(collateral > 0n
+          ? [
+              t("common:currency", {
+                value: formatUnits(collateral, decimals),
+                symbol,
+                maximumFractionDigits: decimals,
+              }),
+            ]
+          : []),
+        ...(surplusHollar > 0n
+          ? [
+              t("common:currency", {
+                value: formatUnits(surplusHollar, 18),
+                symbol: "HOLLAR",
+                maximumFractionDigits: 18,
+              }),
+            ]
+          : []),
+      ].join(" + ")
+      return submitBatch(
+        vault.vaultAddress,
+        calls,
+        {
+          submitted: t("withdrawals.claim.submitted"),
+          success: t("withdrawals.claim.success"),
+        },
+        {
+          title: t("withdrawals.claim.title"),
+          description: t("withdrawals.claim.description", { payouts }),
+        },
+      )
     },
   })
 }
@@ -318,37 +403,6 @@ export function usePendingClaimIds() {
       const { vault, requestId } = mutation.state.variables as ClaimVariables
       return withdrawalRowId(vault.vaultAddress, requestId)
     },
-  })
-}
-
-/** Later source recoveries remain claimable after the collateral withdrawal. */
-export function useClaimSurplus(options: VaultWriteOptions = {}) {
-  const { submitBatch } = useVaultEvmCall(options)
-  return useMutation({
-    mutationKey: propellerQueryKeys.claimSurplus(),
-    mutationFn: ({
-      vault,
-      requestId,
-      mainDebt,
-    }: ClaimVariables & { mainDebt: Hex }) =>
-      submitBatch(
-        vault.vaultAddress,
-        [
-          {
-            to: mainDebt,
-            data: encodeFunctionData({
-              abi: MAIN_DEBT_ABI,
-              functionName: "claimSurplus",
-              args: [BigInt(requestId)],
-            }),
-            abi: MAIN_DEBT_ABI,
-          },
-        ],
-        {
-          submitted: "Claiming HOLLAR recovery...",
-          success: "HOLLAR recovery claimed",
-        },
-      ),
   })
 }
 

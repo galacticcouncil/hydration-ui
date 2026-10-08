@@ -29,11 +29,11 @@ const RECALCULATE_DEBOUNCE_MS = 250
 
 const SILENT_SET = { shouldValidate: false, shouldTouch: false } as const
 
-const positiveAmountOrOne = (amount: string | undefined): string => {
+const isPositiveAmount = (amount: string | undefined): boolean => {
   try {
-    return amount && Big(amount).gt(0) ? amount : "1"
+    return !!amount && Big(amount).gt(0)
   } catch {
-    return "1"
+    return false
   }
 }
 
@@ -58,7 +58,6 @@ const readFieldValues = (values: LimitFormValues): FieldValues => ({
 
 type LimitCascade = {
   readonly quotedPrice: QuotedPriceBinding
-  readonly isMarketLoading: boolean
   readonly isRecalculating: boolean
   readonly onSellAmountChange: () => void
   readonly onBuyAmountChange: () => void
@@ -79,26 +78,27 @@ export const useLimitCascade = (): LimitCascade => {
     "lastTwo",
   ])
 
+  // The reachable executable rate for the entered size (fees + price impact
+  // included). Not shown as a headline number — it only feeds the spot-price
+  // tooltip so users can see what an order of their size would trade at right
+  // now. Raw amount in: the quote disables itself when empty, and the guard
+  // below ignores a disabled query's stale data.
   const marketQuoteDirection = getMarketQuoteDirection(lastTwo)
-  const marketQuery =
+  const executableQuery =
     marketQuoteDirection === "buy"
       ? bestBuyQuery(rpc, {
           assetIn: sellAsset?.id ?? "",
           assetOut: buyAsset?.id ?? "",
-          amountOut: positiveAmountOrOne(buyAmount),
+          amountOut: buyAmount ?? "",
         })
       : bestSellQuery(rpc, {
           assetIn: sellAsset?.id ?? "",
           assetOut: buyAsset?.id ?? "",
-          amountIn: positiveAmountOrOne(sellAmount),
+          amountIn: sellAmount ?? "",
         })
 
-  const {
-    data: swap,
-    isFetching: isSwapFetching,
-    isPending: isSwapPending,
-  } = useQuery({
-    ...marketQuery,
+  const { data: executableSwap } = useQuery({
+    ...executableQuery,
     placeholderData: (previousData, previousQuery) => {
       if (!previousData || !previousQuery) return undefined
       const [, , prevDirection, prevIn, prevOut] = previousQuery.queryKey
@@ -114,12 +114,14 @@ export const useLimitCascade = (): LimitCascade => {
     },
   })
 
-  const marketPrice = marketPriceFromQuote(
-    swap,
-    sellAsset?.decimals,
-    buyAsset?.decimals,
-  )
-  const isMarketLoading = isSwapPending || (isSwapFetching && !marketPrice)
+  const probeAmount = marketQuoteDirection === "buy" ? buyAmount : sellAmount
+  const executablePrice = isPositiveAmount(probeAmount)
+    ? marketPriceFromQuote(
+        executableSwap,
+        sellAsset?.decimals,
+        buyAsset?.decimals,
+      )
+    : null
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isRecalculating, setIsRecalculating] = useState(false)
@@ -198,7 +200,7 @@ export const useLimitCascade = (): LimitCascade => {
   )
 
   const quotedPrice = useQuotedPrice({
-    marketPrice,
+    executablePrice,
     pair: [sellAsset?.id ?? "", buyAsset?.id ?? ""],
     onCanonicalChange: (canonical: string, source: PriceSource) => {
       if (source === "derived") return
@@ -279,7 +281,6 @@ export const useLimitCascade = (): LimitCascade => {
 
   return {
     quotedPrice,
-    isMarketLoading,
     isRecalculating,
     onSellAmountChange,
     onBuyAmountChange,

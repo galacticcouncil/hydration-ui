@@ -8,18 +8,19 @@ import { VaultPositions } from "@/modules/liquidity/components/VaultDetails/Vaul
 import { VaultStats } from "@/modules/liquidity/components/VaultDetails/VaultStats"
 import { SVaultDetailsRow } from "@/modules/liquidity/VaultDetails.styled"
 import { VaultDetailsSkeleton } from "@/modules/liquidity/VaultDetailsSkeleton"
-import { useVaults } from "@/modules/liquidity/Vaults.utils"
+import { useVault } from "@/modules/liquidity/Vaults.utils"
 
 type Props = {
   readonly address: string
 }
 
 export const VaultDetails: FC<Props> = ({ address }) => {
-  const { data, isLoading, isDisconnected, isPositionError } = useVaults()
-
-  const vault = data.find(
-    (entry) => entry.id.toLowerCase() === address.toLowerCase(),
-  )
+  const {
+    data: vault,
+    isLoading,
+    isDisconnected,
+    isPositionError,
+  } = useVault(address)
 
   if (isLoading) return <VaultDetailsSkeleton />
 

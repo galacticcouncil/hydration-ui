@@ -15,7 +15,8 @@ const MULTISIG_PAGES: Web3ConnectModalPage[] = [
 ]
 
 const getInitialPage = (mode: WalletMode) => {
-  const { getConnectedProviders, accounts } = useWeb3Connect.getState()
+  const { getConnectedProviders, accounts, restoreStates } =
+    useWeb3Connect.getState()
 
   const connectedProviders = getConnectedProviders(mode)
   const connectedProviderTypes = connectedProviders.map(prop("type"))
@@ -24,7 +25,12 @@ const getInitialPage = (mode: WalletMode) => {
     connectedProviderTypes.includes(account.provider),
   )
 
-  if (connectedAccounts.length > 0) {
+  // Saved wallets still restoring or unavailable are listed on the account page.
+  const hasRestoringProviders = connectedProviderTypes.some(
+    (type) => !!restoreStates[type],
+  )
+
+  if (connectedAccounts.length > 0 || hasRestoringProviders) {
     return Web3ConnectModalPage.AccountSelect
   }
 

@@ -3,14 +3,11 @@ import { aave } from "@galacticcouncil/sdk-next/pool"
 import {
   type QueryClient,
   queryOptions,
-  useQueries,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { erc20Abi, PublicClient } from "viem"
+import { PublicClient } from "viem"
 
-import { POOL_ABI } from "@/api/gamma/abi"
-import { getGammaContracts } from "@/api/gamma/config"
 import { loadBootstrapV3Pools } from "@/api/gamma/v3Bootstrap"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID } from "@/utils/consts"
@@ -138,19 +135,17 @@ const v3PoolsQuery = (
   sdk: SdkCtx,
   queryClient: QueryClient,
   evm: PublicClient,
-  endpoint: string,
 ) =>
   queryOptions<V3PoolBase[]>({
-    queryKey: ["pools", "v3", endpoint],
+    queryKey: ["pools", "v3"],
     queryFn: async () => {
       const { v3Pools } = await queryClient.ensureQueryData(allPools(sdk))
 
+      // The bootstrap only stands in for a runtime without a UniswapV3Factory.
+      if (v3Pools.length) return v3Pools
+
       const known = new Set(v3Pools.map((pool) => pool.address.toLowerCase()))
-      const bootstrap = await loadBootstrapV3Pools(
-        evm,
-        sdk,
-        getGammaContracts(endpoint),
-      )
+      const bootstrap = await loadBootstrapV3Pools(evm, sdk)
       const extra = bootstrap.filter(
         (pool) => !known.has(pool.address.toLowerCase()),
       )
@@ -175,64 +170,11 @@ export const v3LpFeeShare = (feeProtocol: number) => {
   return 1 - (cut(feeProtocol % 16) + cut(Math.floor(feeProtocol / 16))) / 2
 }
 
-export type V3PoolMetrics = {
-  /** Tokens the pool contract actually holds, raw units. */
-  reserve0: bigint
-  reserve1: bigint
-  lpFeeShare: number
-}
-
-/**
- * What a v3 pool holds and how it splits its fees, read from the contracts.
- *
- * The pool's own `tokens[].balance` are VIRTUAL reserves — the constant-product
- * depth the active liquidity offers at the current price — so they overstate a
- * concentrated pool's deposits by its concentration factor and cannot stand in
- * for TVL. `balanceOf` is the deposited value.
- */
-const v3PoolMetricsQuery = (evm: PublicClient, pool: V3PoolBase) =>
-  queryOptions<V3PoolMetrics>({
-    queryKey: ["pools", "v3", "metrics", pool.address],
-    queryFn: async () => {
-      const address = pool.address as `0x${string}`
-
-      const balanceOf = (token: `0x${string}`) =>
-        evm.readContract({
-          abi: erc20Abi,
-          address: token,
-          functionName: "balanceOf",
-          args: [address],
-        })
-
-      const [slot0, reserve0, reserve1] = await Promise.all([
-        evm.readContract({ abi: POOL_ABI, address, functionName: "slot0" }),
-        balanceOf(pool.addr0),
-        balanceOf(pool.addr1),
-      ])
-
-      return { reserve0, reserve1, lpFeeShare: v3LpFeeShare(Number(slot0[5])) }
-    },
-    staleTime: 30_000,
-  })
-
-/** Per-pool live state, in the order the pools were given. */
-export const useV3PoolMetrics = (pools: V3PoolBase[]) => {
-  const { evm } = useRpcProvider()
-
-  return useQueries({
-    queries: pools.map((pool) => v3PoolMetricsQuery(evm, pool)),
-    combine: (results) => ({
-      data: results.map((result) => result.data),
-      isLoading: results.some((result) => result.isLoading),
-    }),
-  })
-}
-
 export const useV3Pools = () => {
   const queryClient = useQueryClient()
-  const { sdk, evm, endpoint } = useRpcProvider()
+  const { sdk, evm } = useRpcProvider()
 
-  return useQuery(v3PoolsQuery(sdk, queryClient, evm, endpoint))
+  return useQuery(v3PoolsQuery(sdk, queryClient, evm))
 }
 
 export const xykPoolQuery = (

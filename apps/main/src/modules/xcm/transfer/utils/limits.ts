@@ -17,6 +17,8 @@ export enum XcmLimitAlertKey {
   CBreakerInboundExceeded = "cBreakerInboundExceeded",
   WormholeOutboundExceeded = "wormholeOutboundExceeded",
   WormholeInboundExceeded = "wormholeInboundExceeded",
+  WormholeCustodyExceeded = "wormholeCustodyExceeded",
+  WormholeCustodyUnreachable = "wormholeCustodyUnreachable",
 }
 
 export const CBREAKER_INBOUND_LIMIT_ALERT_KEYS: XcmLimitAlertKey[] = [
@@ -34,9 +36,15 @@ export const WORMHOLE_LIMIT_ALERT_KEYS: XcmLimitAlertKey[] = [
   XcmLimitAlertKey.WormholeInboundExceeded,
 ]
 
+export const WORMHOLE_CUSTODY_ALERT_KEYS: XcmLimitAlertKey[] = [
+  XcmLimitAlertKey.WormholeCustodyExceeded,
+]
+
 export const XCM_LIMIT_ALERT_PRIORITY: XcmLimitAlertKey[] = [
   XcmLimitAlertKey.CBreakerOutboundLockdown,
   XcmLimitAlertKey.WormholeOutboundExceeded,
+  XcmLimitAlertKey.WormholeCustodyUnreachable,
+  XcmLimitAlertKey.WormholeCustodyExceeded,
   XcmLimitAlertKey.CBreakerOutboundExceeded,
   XcmLimitAlertKey.WormholeInboundExceeded,
   XcmLimitAlertKey.CBreakerInboundLockdown,

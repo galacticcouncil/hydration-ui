@@ -1,4 +1,4 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, withTimeout } from "@galacticcouncil/utils"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
 import { useMutation } from "@tanstack/react-query"
 import { minutesToMilliseconds } from "date-fns"
@@ -33,6 +33,14 @@ type UseSubmitXcSwapParams = {
   readonly swapSlippage: number
 }
 
+export type XcSwapSubmitVariables = {
+  readonly values: XcSwapFormValues
+  readonly isCurrent: () => boolean
+  readonly abandon: () => void
+}
+
+const BUILD_CALL_TIMEOUT_MS = 30_000
+
 export const useSubmitXcSwap = (
   { xcSwap, originAssetMap, refundTo, swapSlippage }: UseSubmitXcSwapParams,
   actions?: TransactionActions,
@@ -43,7 +51,11 @@ export const useSubmitXcSwap = (
   const getErc20Allowance = useErc20Allowance()
 
   return useMutation({
-    mutationFn: async (values: XcSwapFormValues) => {
+    mutationFn: async ({
+      values,
+      isCurrent,
+      abandon,
+    }: XcSwapSubmitVariables) => {
       const { sellAsset, sellAmount, destChain, buyAsset, destAddress } = values
 
       if (!sellAsset) throw new Error("Source asset is required")
@@ -64,6 +76,7 @@ export const useSubmitXcSwap = (
           originAssetMap,
         }),
       )
+      if (!isCurrent()) return
 
       const buildErrorMeta: TransactionXcSwapMeta = {
         type: TransactionType.XcSwap,
@@ -82,21 +95,39 @@ export const useSubmitXcSwap = (
       let depositAddress: string
       let correlationId: string | undefined
       try {
-        const result = await trade.buildCall()
+        // the timeout only stops the wait; the firm-quote request
+        // behind buildCall keeps running. Same upgrade path as the indicative
+        // quote (signal through xc-swap).
+        const result = await withTimeout(
+          trade.buildCall(),
+          BUILD_CALL_TIMEOUT_MS,
+        )
         calls = result.calls
         depositAddress = result.depositAddress
         correlationId = result.correlationId
       } catch (buildError) {
-        return createTransaction(
+        if (!isCurrent()) return
+        const isTimeout =
+          buildError instanceof Error && buildError.name === "TimeoutError"
+        const review = createTransaction(
           {
-            initialError: getErrorMessage(buildError),
+            initialError: isTimeout
+              ? t("trade:xc.swap.error.routeTimeoutRetry")
+              : getErrorMessage(buildError),
             meta: buildErrorMeta,
             // tx is unused when initialError is set; review modal skips signing.
             tx: {} as AnyTransaction,
           },
           actions,
         )
+        // The review only settles once it is closed, so abandon right away to
+        // free the submit button and discard a late buildCall result.
+        if (isTimeout) abandon()
+        return review
       }
+      // Nothing below awaits before createTransaction, so this covers both the
+      // approve + swap and the swap-only paths.
+      if (!isCurrent()) return
 
       const swapAndBridge = calls[calls.length - 1]
       if (!swapAndBridge) throw new Error("Failed to build the swap call")
@@ -141,10 +172,6 @@ export const useSubmitXcSwap = (
                   srcChainKey: HYDRATION_CHAIN_KEY,
                 },
                 pendingComponent: PendingApproval,
-                // The approve has to be visible to the node the swap is priced
-                // and executed against — a mined receipt on the wallet's rpc
-                // isn't that. The swap step stays out of reach until then, fee
-                // estimation included.
                 beforeNext: async () => {
                   await waitFor(
                     async () => {
