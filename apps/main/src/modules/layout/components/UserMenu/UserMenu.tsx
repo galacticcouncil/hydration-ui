@@ -1,6 +1,6 @@
 import {
   Box,
-  ButtonIcon,
+  Button,
   Chip,
   CopyButton,
   Flex,
@@ -14,7 +14,6 @@ import {
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
-  MicroButton,
   Separator,
   Skeleton,
   Text,
@@ -135,11 +134,11 @@ export const UserMenu: FC<Props> = ({
               {t("userMenu.connectedWallets")}
             </Text>
           </Flex>
-          <MicroButton py="s" asChild>
+          <Button size="micro" uppercase variant="muted" outline py="s" asChild>
             <Link to="/wallet" onClick={() => onOpenChange(false)}>
               {t("userMenu.goToPortfolio")}
             </Link>
-          </MicroButton>
+          </Button>
         </Flex>
 
         <UserMenuSeparator />
@@ -240,25 +239,25 @@ export const UserMenu: FC<Props> = ({
                         onCloseMenu={() => onOpenChange(false)}
                       />
                       <Tooltip text={copyLabel} size="small" asChild>
-                        <ButtonIcon asChild>
+                        <Button variant="ghost" data-icon-only="" asChild>
                           <CopyButton
                             text={address}
                             // suppress CopyButton's default native title
                             title=""
                             aria-label={copyLabel}
                           />
-                        </ButtonIcon>
+                        </Button>
                       </Tooltip>
                       <Tooltip text={disconnectLabel} size="small" asChild>
-                        <ButtonIcon
+                        <Button
+                          icon={LogOut}
+                          variant="ghost"
                           aria-label={disconnectLabel}
                           onClick={(e) => {
                             e.stopPropagation()
                             disconnect(type)
                           }}
-                        >
-                          <Icon size="s" component={LogOut} />
-                        </ButtonIcon>
+                        />
                       </Tooltip>
                     </SHoverActions>
                   </Flex>

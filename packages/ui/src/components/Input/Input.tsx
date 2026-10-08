@@ -53,6 +53,7 @@ export const Input: FC<InputProps> = ({
   ref,
   id,
   width,
+  isError,
   autoComplete = "off",
   ...props
 }) => {
@@ -67,11 +68,13 @@ export const Input: FC<InputProps> = ({
       sx={{ width }}
     >
       {leadingElement && <Box ml="-m">{leadingElement}</Box>}
-      {IconStart && <IconStart />}
+      {IconStart && <IconStart data-icon="start" />}
       <SInput
         ref={ref}
         id={usedInputId}
         autoComplete={autoComplete}
+        isError={isError}
+        aria-invalid={isError || undefined}
         {...props}
       />
       {unit && (
@@ -86,7 +89,7 @@ export const Input: FC<InputProps> = ({
           {unit}
         </Label>
       )}
-      {IconEnd && <IconEnd />}
+      {IconEnd && <IconEnd data-icon="end" />}
       {trailingElement && <Box mr="-m">{trailingElement}</Box>}
     </SInputContainer>
   )

@@ -3,7 +3,7 @@ import {
   AccountAvatar,
   AccountInput,
   Box,
-  ButtonIcon,
+  Button,
   Flex,
   Icon,
   InputSuggestions,
@@ -200,13 +200,12 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
                         alignOffset={0}
                         asChild
                       >
-                        <ButtonIcon
-                          type="button"
+                        <Button
+                          icon={BookOpen}
+                          variant="ghost"
                           aria-label={t("trade:xc.swap.field.myContacts")}
                           onClick={() => setIsContactsOpen(true)}
-                        >
-                          <Icon component={BookOpen} size="m" />
-                        </ButtonIcon>
+                        />
                       </Tooltip>
                     )}
                   </>
