@@ -1,7 +1,19 @@
-Propeller is a **leveraged staking** strategy. You deposit **ETH** and the vault runs a recursive loop — supplying your collateral, minting a synthetic against it, and re-staking — to amplify the underlying staking yield without you having to manage any positions manually.
+A confirmed deposit supplies **your collateral asset** to the money market and mints funded vault shares. It does not borrow or swap during your deposit transaction. Keepers then borrow HOLLAR and build the shared **leveraged PRIME position** gradually through trades that respect the vault’s price limits.
 
-There is **no user-facing borrow** and **no liquidation risk** for depositors. The vault keeps its loan-to-value inside a target band and **self-deleverages** automatically when the market moves, so your shares (**pETH**) simply accrue value as the loop harvests and compounds rewards.
+Collateral awaiting deployment is pooled across the vault, including deposits and harvested earnings. It is not a separate personal queue or a promise of when your position will be fully deployed. Trading limits and market conditions determine the pace; the vault manages borrowing and rebalancing for you.
 
-### Withdrawals
+Harvested yield is converted into your collateral asset. Protocol fees and interest are paid before the remainder becomes funded collateral rewards. Keepers can then deploy that new collateral gradually; some earned yield stays invested in PRIME awaiting conversion. Returns vary with yield, borrowing rates and trading costs.
 
-Exits go through an **async withdrawal queue**. When you request a redemption, your pETH is escrowed and the vault unwinds the corresponding slice of the loop. Once settled, you **claim** your ETH back. The settlement uses the exchange rate at the time of settlement, so your position keeps earning while it's in the queue.
+### Key features
+
+- The vault manages the leveraged position
+- Available rewards compound into your deposited asset
+- You can request a full or partial withdrawal when withdrawals are enabled
+
+### Withdrawals and risk
+
+Exits go through an **async withdrawal queue**. Your shares remain invested during the configured cooldown. When unwinding starts after that delay, the vault fixes your collateral claim. The cooldown is the earliest unwind start, **not a payout deadline**.
+
+Your collateral becomes claimable as the withdrawal settles, **possibly in parts**. Later source recoveries may also become claimable in HOLLAR, even after you have claimed the collateral.
+
+Juicer aims to preserve principal in the deposited asset. The leveraged PRIME position can lose value or be liquidated, and protection depends on functioning oracles, keepers and governance. A shortfall preserves your unpaid collateral claim but may require recovery funding before payment. This is not a guarantee of immediate withdrawal or full recovery.

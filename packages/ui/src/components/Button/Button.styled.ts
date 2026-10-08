@@ -612,8 +612,8 @@ export const SLoadingButton = styled(SButton, {
   disabledFade
     ? undefined
     : css`
-        &:disabled,
-        &[aria-disabled="true"] {
+        &[aria-busy="true"]:disabled,
+        &[aria-busy="true"][aria-disabled="true"] {
           opacity: 1;
         }
       `,
