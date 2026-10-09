@@ -75,6 +75,7 @@ try {
       await content.waitFor({ state: "visible" })
       const explanation = await content.innerText()
       for (const line of expected) assert.ok(explanation.includes(line), line)
+      await page.mouse.move(0, 0)
       await page.keyboard.press("Escape")
       await content.waitFor({ state: "hidden" })
     }

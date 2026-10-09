@@ -297,3 +297,10 @@ endpoint during capture. this pass used an injected public native signer, not
 real extension prompts or an EVM wallet. manual claiming and
 deficit/partial-settlement recovery were not completed live in this pass;
 keeper delivery remained enabled throughout.
+
+post-push check: the deployed edge preview at `cfb70fa5b` passed both viewport
+checks against `0.lark`, with both vaults readable and deposits enabled. CI also
+passed. the browser runner now moves the pointer off each tooltip trigger before
+Escape, preventing hover from keeping it open during the dismissal assertion.
+`deployed-page-checks.jsonl` records this follow-up; the original source hashes
+above identify the earlier local validation.

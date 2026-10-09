@@ -10,7 +10,8 @@
     "lint.log": "cc4c056a94f9c9a96444146d05decd88a43f2e795e4076f2091c162272c0e9c4",
     "page-checks.jsonl": "7f752131f0c3958446f96d6a576558ab520d7d0a9b7f4c7c96e080236d59df99",
     "tests.log": "bf09bd4c383d0adbecea260680c91df1d088bca5292522896930a8ac72dedbf9",
-    "validation.json": "9a3913ab1d0bd0671a5c32fa0af6307c12b8667800180b4b9b77a947192cf0e0"
+    "validation.json": "9a3913ab1d0bd0671a5c32fa0af6307c12b8667800180b4b9b77a947192cf0e0",
+    "deployed-page-checks.jsonl": "2100686a721373ecf6585ef76671174926c8b2b75ae1e595187613736acc7dd9"
   },
   "normalization": "trailing whitespace removed from captured logs"
 }
