@@ -155,8 +155,12 @@ export const AssetInput = ({
               const formattedValue = e.target.value
                 .replace(/\s+/g, "")
                 .replace(/,/g, ".")
+                .replace(/^\./, "0.")
 
-              if (!isNaN(Number(formattedValue))) {
+              if (
+                formattedValue === "" ||
+                /^-?(?:\d+\.?\d*|\.\d+)$/.test(formattedValue)
+              ) {
                 onChange?.(formattedValue)
               }
             }}

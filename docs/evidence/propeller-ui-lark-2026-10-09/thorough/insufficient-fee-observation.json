@@ -1,0 +1,60 @@
+{
+  "fixture": "Public Hardhat mnemonic via injected EIP-1193 provider; real Lark signatures; no extension prompt",
+  "owner": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+  "rpc": "https://0.lark.hydration.cloud",
+  "genesis": "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+  "requests": [
+    "eth_requestAccounts",
+    "eth_requestAccounts",
+    "wallet_addEthereumChain",
+    "wallet_switchEthereumChain",
+    "wallet_switchEthereumChain",
+    "eth_signTypedData_v4"
+  ],
+  "signatures": [
+    {
+      "method": "eth_signTypedData_v4",
+      "calls": [
+        "multiTransactionPayment.setCurrency"
+      ],
+      "message": {
+        "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "to": "0x0000000000000000000000000000000000000401",
+        "data": "0xcb0000000000",
+        "value": 0,
+        "gaslimit": 169000,
+        "nonce": 0,
+        "deadline": 1791568482
+      }
+    }
+  ],
+  "checks": [
+    "change fee payment asset to funded HDX"
+  ],
+  "before": {
+    "block": "6066",
+    "shares": "0",
+    "queueTail": "2",
+    "collateral": "2000000000000000"
+  },
+  "network": {
+    "chainId": "0x3640e",
+    "chainName": "Hydration",
+    "rpcUrls": [
+      "https://0.lark.hydration.cloud"
+    ],
+    "iconUrls": [],
+    "nativeCurrency": {
+      "decimals": 18,
+      "name": "WETH",
+      "symbol": "WETH"
+    },
+    "blockExplorerUrls": [
+      "https://hydration.subscan.io"
+    ]
+  },
+  "error": "Error: EVM lifecycle timed out",
+  "body": "New Farms for DOT, vDOT, 2-Pool, CFG, ASTR and more\n\n|\n\nMore Info\nTrade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\n0x7099…dc79C8\n\nSTRATEGIES\n\n/\n\nJUICER\n\nJuicer\n\nDeposit and earn leveraged staking yield\n\nLeverage\nNo Liquidation\nStrategy overview\nTotal TVL\n$101.99K\nLeverage\n6.1x\nRisk profile\nLow\nAsset\tTVL\t\nEst. APR\n\t\nAwaiting deployment\n\tRemaining capacity\t\n\n\nETH\n\nEthereum\n\n\t\n\n18.2766 ETH\n\n$45.67K\n\n\t\n\n5.88%\n\n\t\n\n0 ETH\n\n\t\n\n6.7234 ETH\n\n26.89%\n\n\t\nDeposit\n\n\n\ntBTC\n\nThreshold BTC\n\n\t\n\n0.6744 tBTC\n\n$56.32K\n\n\t\n\n6.28%\n\n\t\n\n0 tBTC\n\n\t\n\n0.3256 tBTC\n\n32.56%\n\n\t\nDeposit\nAbout Juicer\n\nDeposit a single asset. Juicer manages borrowing and converts strategy yield back into your deposited asset.\n\n1\n\nDeposit\n\nYour deposit supplies collateral and creates position shares. Juicer then builds the leveraged strategy gradually.\n\nDepositing does not make a swap. Keepers deploy pooled collateral as market conditions allow.\n\n2\n\nEarn\n\nHarvested yield is converted into your deposited asset after costs and fees. Funded earnings stay invested and are included in your balance.\n\nThere is nothing to claim. Yield that is not harvested yet shows separately as pending yield.\n\n3\n\nWithdraw\n\nRequest a full or partial withdrawal. Your shares stay invested during the cooldown, then settle into your deposited asset.\n\nThe cooldown is the earliest unwind start, not a payout deadline.\n\nReturns are variable. The leveraged strategy can lose value or be liquidated, and withdrawals may be delayed. Principal and immediate repayment are not guaranteed.\n\nHow it works and risks\n\nRead more\n\nAsset\nBalance: 0.002\nMAX\nETH\n$2.50\n\nManaged borrowing\n\nThe vault manages borrowing and rebalancing for you.\n\nNo impermanent loss\n\nSingle-asset exposure, without pool rebalancing.\n\nRemaining capacity:\n\n6.7234 ETH\n\nDeployment:\n\nGradual\n\nLark 0 test deployment. Deposits and withdrawals use test tokens.\n\nDeposit\n\n6 088\n\n1\n\nApprove\n\n2\n\nDeposit\n\nPlease review your transaction.\n\nReview transaction details\n\nCopy\nDecoded\n{\nUtility.batch_all: {\ncalls: [\n0: {\nEVM.call: {\nsource: \"0x70997970C51812dc3A010C7d01b50e0d17dc79C8\"\ntarget: \"0x0000000000000000000000000000000100000022\"\ninput: \"0x095ea7b300000000000000000000000079b41c78...\"\nvalue: \"0\"\ngas_limit: \"2000000\"\nmax_fee_per_gas: \"1575000\"\nmax_priority_fee_per_gas: \"1575000\"\naccess_list: [\n]\nauthorization_list: [\n]\n}\n}\n]\n}\n}\nShow More\nEncoded call data\n\nTransaction cost:\n\n≈ 2.9768 HDX\nEdit\n\nTransaction expiration:\n\n≈ In 1 hour 12 minutes\n\nNonce:\n\n1\n\nTip the block author:\n\nNot enough fee payment asset balance.\n\nClose\nChange fee payment asset",
+  "passed": false,
+  "errors": []
+}

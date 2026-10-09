@@ -1,0 +1,80 @@
+{
+  "fixture": "Public Hardhat mnemonic via injected EIP-1193 provider; real Lark signatures; no extension prompt",
+  "owner": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+  "rpc": "https://0.lark.hydration.cloud",
+  "genesis": "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+  "requests": [
+    "eth_requestAccounts",
+    "eth_requestAccounts",
+    "wallet_addEthereumChain",
+    "wallet_switchEthereumChain",
+    "wallet_switchEthereumChain",
+    "eth_signTypedData_v4",
+    "wallet_addEthereumChain",
+    "wallet_switchEthereumChain",
+    "wallet_switchEthereumChain",
+    "eth_chainId",
+    "eth_sendTransaction"
+  ],
+  "signatures": [
+    {
+      "method": "eth_signTypedData_v4",
+      "calls": [
+        "multiTransactionPayment.setCurrency"
+      ],
+      "message": {
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "to": "0x0000000000000000000000000000000000000401",
+        "data": "0xcb0000000000",
+        "value": 0,
+        "gaslimit": 169000,
+        "nonce": 0,
+        "deadline": 1791568242
+      }
+    },
+    {
+      "method": "eth_sendTransaction",
+      "calls": [
+        "approve"
+      ],
+      "tx": {
+        "data": "0x0d02045a01f39fd6e51aad88f6f4ce6ab8827279cfffb9226600000000000000000000000000000001000000221101095ea7b300000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c4600000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000000000080841e00000000005808180000000000000000000000000000000000000000000000000000000000015808180000000000000000000000000000000000000000000000000000000000000000",
+        "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "gas": "0x339b29",
+        "maxFeePerGas": "0x180858",
+        "maxPriorityFeePerGas": "0x180858",
+        "nonce": "0x0",
+        "to": "0x0000000000000000000000000000000000000401"
+      }
+    }
+  ],
+  "checks": [
+    "change fee payment asset to funded HDX"
+  ],
+  "before": {
+    "block": "6038",
+    "shares": "0",
+    "queueTail": "2",
+    "collateral": "5000000000000000"
+  },
+  "network": {
+    "chainId": "0x3640e",
+    "chainName": "Hydration",
+    "rpcUrls": [
+      "https://0.lark.hydration.cloud"
+    ],
+    "iconUrls": [],
+    "nativeCurrency": {
+      "decimals": 18,
+      "name": "WETH",
+      "symbol": "WETH"
+    },
+    "blockExplorerUrls": [
+      "https://hydration.subscan.io"
+    ]
+  },
+  "error": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog').last().getByText('HDX', { exact: true })\u001b[22m\n",
+  "body": "New Farms for DOT, vDOT, 2-Pool, CFG, ASTR and more\n\n|\n\nMore Info\nTrade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\n0xf39F…b92266\n\nSTRATEGIES\n\n/\n\nJUICER\n\nJuicer\n\nDeposit and earn leveraged staking yield\n\nLeverage\nNo Liquidation\nStrategy overview\nTotal TVL\n$101.72K\nLeverage\n6.1x\nRisk profile\nLow\nAsset\tTVL\t\nEst. APR\n\t\nAwaiting deployment\n\tRemaining capacity\t\n\n\nETH\n\nEthereum\n\n\t\n\n18.2766 ETH\n\n$45.55K\n\n\t\n\n5.88%\n\n\t\n\n0 ETH\n\n\t\n\n6.7234 ETH\n\n26.89%\n\n\t\nDeposit\n\n\n\ntBTC\n\nThreshold BTC\n\n\t\n\n0.6744 tBTC\n\n$56.17K\n\n\t\n\n6.28%\n\n\t\n\n0 tBTC\n\n\t\n\n0.3256 tBTC\n\n32.56%\n\n\t\nDeposit\nAbout Juicer\n\nDeposit a single asset. Juicer manages borrowing and converts strategy yield back into your deposited asset.\n\n1\n\nDeposit\n\nYour deposit supplies collateral and creates position shares. Juicer then builds the leveraged strategy gradually.\n\nDepositing does not make a swap. Keepers deploy pooled collateral as market conditions allow.\n\n2\n\nEarn\n\nHarvested yield is converted into your deposited asset after costs and fees. Funded earnings stay invested and are included in your balance.\n\nThere is nothing to claim. Yield that is not harvested yet shows separately as pending yield.\n\n3\n\nWithdraw\n\nRequest a full or partial withdrawal. Your shares stay invested during the cooldown, then settle into your deposited asset.\n\nThe cooldown is the earliest unwind start, not a payout deadline.\n\nReturns are variable. The leveraged strategy can lose value or be liquidated, and withdrawals may be delayed. Principal and immediate repayment are not guaranteed.\n\nHow it works and risks\n\nRead more\n\nAsset\nBalance: 0.005\nMAX\nETH\n$2.49\n\nManaged borrowing\n\nThe vault manages borrowing and rebalancing for you.\n\nNo impermanent loss\n\nSingle-asset exposure, without pool rebalancing.\n\nRemaining capacity:\n\n6.7234 ETH\n\nDeployment:\n\nGradual\n\nLark 0 test deployment. Deposits and withdrawals use test tokens.\n\nThe deposit could not complete. Check your balance and the current vault status, then retry. A completed token approval remains available for your next attempt.\n\nDeposit\n\n6 042\n\n1\n\nApprove\n\n2\n\nDeposit\n\nPlease review your transaction.\n\nReview transaction details\n\nFailed to submit transaction\n\nUnfortunately, there was an issue while submitting your transaction. Please try again later.\n\nTRY AGAIN\n\nCOPY ERROR\n\nClose",
+  "passed": false,
+  "errors": []
+}

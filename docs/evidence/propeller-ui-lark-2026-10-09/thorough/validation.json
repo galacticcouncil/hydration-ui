@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-09",
+  "baselineCommit": "b3d1873babc39412c3ba28a8402584d69b698315",
+  "network": "Lark 0",
+  "genesis": "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+  "unitTests": 124,
+  "workspaceLintAndTypes": "passed",
+  "productionBuild": "passed",
+  "componentFixtureChecks": "passed",
+  "browserActionWidths": [
+    320,
+    390,
+    768,
+    1280
+  ],
+  "connectedResizeWidths": [
+    320,
+    390,
+    768,
+    1024,
+    1100,
+    1280,
+    1440
+  ],
+  "realMetaMask": "13.50.0, Chromium 153.0.8010.12, public test account, permission/network/rejection/retry/deposit/Max finalized",
+  "fixes": [
+    "decimal input crash",
+    "withdrawal fiat preview",
+    "Max across funded balance changes",
+    "signing before preparation",
+    "stale fee quote after switching currencies",
+    "RPC disconnect readiness",
+    "stale error after successful deposit retry",
+    "connected header and resized strategy-column overflow"
+  ],
+  "limitations": [
+    "Send is a disabled preview",
+    "manual claim attempts were pre-empted by live keepers",
+    "partial settlement and late recovery use controlled fixtures",
+    "one proxy WebSocket failure delayed a reload before recovery; a subsequent reload restored the account"
+  ],
+  "realWalletProfile": "isolated public Hardhat fixture; no personal profile or mainnet transaction",
+  "finalEvmRetryRunner": "passed end to end; canonical finalized approval/deposit/Max at 6346/6347/6350"
+}

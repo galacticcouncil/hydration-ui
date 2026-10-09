@@ -1,0 +1,552 @@
+yarn run v1.22.22
+$ turbo lint
+• turbo 2.9.6
+
+   • Packages in scope: @galacticcouncil/eslint-config, @galacticcouncil/indexer, @galacticcouncil/main, @galacticcouncil/money-market, @galacticcouncil/typescript-config, @galacticcouncil/ui, @galacticcouncil/utils, @galacticcouncil/web3-connect
+   • Running lint in 8 packages
+   • Remote caching disabled, using shared worktree cache
+
+@galacticcouncil/indexer:lint: cache bypass, force executing 28155eca41e6f967
+@galacticcouncil/utils:lint: cache bypass, force executing 59b21a54eeefa52f
+@galacticcouncil/indexer:build: cache hit, replaying logs df04bce3c50a35e0
+@galacticcouncil/indexer:build: yarn run v1.22.22
+@galacticcouncil/indexer:build: $ tsc --build
+@galacticcouncil/indexer:build: Done in 4.77s.
+@galacticcouncil/utils:build: cache hit, replaying logs 74e8c2298788c850
+@galacticcouncil/utils:build: yarn run v1.22.22
+@galacticcouncil/utils:build: $ tsc --build
+@galacticcouncil/utils:build: Done in 3.64s.
+@galacticcouncil/ui:lint: cache bypass, force executing d0fd2abe5311ccd9
+@galacticcouncil/ui:build: cache hit, replaying logs 34fbd0dd1a56e586
+@galacticcouncil/ui:build: yarn run v1.22.22
+@galacticcouncil/ui:build: $ yarn theme && tsc --build && storybook build
+@galacticcouncil/ui:build: $ node ./style-dictionary/build.mjs
+@galacticcouncil/ui:build:
+@galacticcouncil/ui:build: js
+@galacticcouncil/ui:build: ✔︎ ./src/theme/tokens/light.json
+@galacticcouncil/ui:build:
+@galacticcouncil/ui:build: js
+@galacticcouncil/ui:build: ✔︎ ./src/theme/tokens/dark.json
+@galacticcouncil/ui:build:
+@galacticcouncil/ui:build: ┌  Building storybook v10.3.5
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Cleaning outputDir: storybook-static
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Loading presets
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Building manager..
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ●  Building preview..
+@galacticcouncil/ui:build: │  Vite vite v8.0.10 building client environment for production...
+@galacticcouncil/ui:build: [2K
+@galacticcouncil/ui:build: transforming...✓ 6024 modules transformed.
+@galacticcouncil/ui:build: rendering chunks...
+@galacticcouncil/ui:build: computing gzip size...
+@galacticcouncil/ui:build: │  Vite storybook-static/iframe.html
+@galacticcouncil/ui:build: │  20.37 kB │ gzip:     5.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoBlack-CKMlCGzV.woff2
+@galacticcouncil/ui:build: │  25.34 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMonoRegular-CTeN_hTv.woff2
+@galacticcouncil/ui:build: │  27.28 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMonoSemiBold-CUjAn44b.woff2
+@galacticcouncil/ui:build: │  27.46 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistBold-BGsvlvzV.woff2
+@galacticcouncil/ui:build: │  29.46 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMonoMedium-BMSM7UeV.woff2
+@galacticcouncil/ui:build: │  31.88 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-DwBpizSx.wasm
+@galacticcouncil/ui:build: │  35.67 kB │ gzip:    16.04 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-CLMJf4K_.wasm
+@galacticcouncil/ui:build: │  37.94 kB │ gzip:    16.77 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-CEGA-slC.wasm
+@galacticcouncil/ui:build: │  39.00 kB │ gzip:    18.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoBold-B7K1p9QZ.woff2
+@galacticcouncil/ui:build: │  39.50 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoMedium-CsvkVblF.woff2
+@galacticcouncil/ui:build: │  39.53 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoRegular-TtB8xQCa.woff2
+@galacticcouncil/ui:build: │  39.71 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistRegular-DCwoJUrm.woff2
+@galacticcouncil/ui:build: │  40.21 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistSemiBold-DD8-KCr1.woff2
+@galacticcouncil/ui:build: │  41.32 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMedium-Bd4KHlwS.woff2
+@galacticcouncil/ui:build: │  41.37 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-DSK1FPAH.wasm
+@galacticcouncil/ui:build: │  48.28 kB │ gzip:    29.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-rcMnucsg.wasm
+@galacticcouncil/ui:build: │  118.62 kB │ gzip:    66.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-C5VqofBO.wasm
+@galacticcouncil/ui:build: │  140.61 kB │ gzip:    61.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-CJ2NnTh-.wasm
+@galacticcouncil/ui:build: │  237.26 kB │ gzip:   113.51 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Skeleton-CGmq9_dR.css
+@galacticcouncil/ui:build: │  1.02 kB │ gzip:     0.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/iframe-DgRkbs-D.css
+@galacticcouncil/ui:build: │  1.52 kB │ gzip:     0.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/JsonView-DpXMRjWw.css
+@galacticcouncil/ui:build: │  2.66 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-Bu0fuIpC.js
+@galacticcouncil/ui:build: │  0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/theming-BRXESUkc.js
+@galacticcouncil/ui:build: │  0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/secp256k1-C3Q0S50Q.js
+@galacticcouncil/ui:build: │  0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-DYQO0iU4.js
+@galacticcouncil/ui:build: │  0.08 kB │ gzip:     0.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-18-DugDNOzi.js
+@galacticcouncil/ui:build: │  0.10 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Box-j--ns2Zm.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ccip-BmG_r9gf.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Flex-Cw3L3hqk.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Image-Bm7KObj1.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/smoldot-BCWUczJC.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CWmLAN282.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.13 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Grid-D7aM3rfL.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Icon-Ca8fddHo.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ResponsiveScope-CIjL9S_1.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Text-DhxsHdSA.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Paper-BWr5HNNp.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stack-CbvctuCK.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Separator-DHFc_ng1.js
+@galacticcouncil/ui:build: │  0.13 kB │ gzip:     0.12 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/components-DpYI1PX8.js
+@galacticcouncil/ui:build: │  0.14 kB │ gzip:     0.14 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-CYSK6WYR-BUuH04Ct.js
+@galacticcouncil/ui:build: │  0.15 kB │ gzip:     0.13 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-242VQQM5-BVN42TfY.js
+@galacticcouncil/ui:build: │  0.21 kB │ gzip:     0.18 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/formatter-EIJCOSYU-DwfBen7U.js
+@galacticcouncil/ui:build: │  0.23 kB │ gzip:     0.19 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-zs0bDS5c.js
+@galacticcouncil/ui:build: │  0.25 kB │ gzip:     0.20 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-DnKV4jX92.js
+@galacticcouncil/ui:build: │  0.27 kB │ gzip:     0.21 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-Cm3v24Ll2.js
+@galacticcouncil/ui:build: │  0.31 kB │ gzip:     0.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-DdyRmLzV.js
+@galacticcouncil/ui:build: │  0.32 kB │ gzip:     0.25 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/native-BWOb477g.js
+@galacticcouncil/ui:build: │  0.37 kB │ gzip:     0.23 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/jsx-runtime-WZfjI2gv.js
+@galacticcouncil/ui:build: │  0.42 kB │ gzip:     0.29 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-izBvHD3l.js
+@galacticcouncil/ui:build: │  0.47 kB │ gzip:     0.31 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-BIp8UJnV.js
+@galacticcouncil/ui:build: │  0.48 kB │ gzip:     0.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-DHZjfwXW.js
+@galacticcouncil/ui:build: │  0.54 kB │ gzip:     0.38 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Points.stories-CkKulXJ5.js
+@galacticcouncil/ui:build: │  0.61 kB │ gzip:     0.38 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-BUhHnFtj.js
+@galacticcouncil/ui:build: │  0.62 kB │ gzip:     0.39 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Image-BMaAl4LI.js
+@galacticcouncil/ui:build: │  0.63 kB │ gzip:     0.41 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Slider.stories-D85votCP.js
+@galacticcouncil/ui:build: │  0.63 kB │ gzip:     0.39 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-SL3VIQZ3-DX4vx9Jj.js
+@galacticcouncil/ui:build: │  0.68 kB │ gzip:     0.42 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ResponsiveScope-CbXX7AVB.js
+@galacticcouncil/ui:build: │  0.73 kB │ gzip:     0.43 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Spinner-CEWgyKug.js
+@galacticcouncil/ui:build: │  0.78 kB │ gzip:     0.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-BUhIWscH.js
+@galacticcouncil/ui:build: │  0.79 kB │ gzip:     0.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Combobox.stories-CVv-YINE.js
+@galacticcouncil/ui:build: │  0.82 kB │ gzip:     0.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/PolkadotIdenticon-D8obvHjg.js
+@galacticcouncil/ui:build: │  0.83 kB │ gzip:     0.51 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/HoverCard.stories-CZz1NIWh.js
+@galacticcouncil/ui:build: │  0.85 kB │ gzip:     0.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/sm-provider-Dx5BhplX.js
+@galacticcouncil/ui:build: │  0.86 kB │ gzip:     0.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Spinner.stories-ByQqOlsF.js
+@galacticcouncil/ui:build: │  0.86 kB │ gzip:     0.43 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Skeleton.stories-Cwy_McqM.js
+@galacticcouncil/ui:build: │  0.89 kB │ gzip:     0.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressBar.stories-CNOb4HPH.js
+@galacticcouncil/ui:build: │  0.93 kB │ gzip:     0.43 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Icon-BbwLIL6U.js
+@galacticcouncil/ui:build: │  0.94 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chain.stories-Cm_TUtSm.js
+@galacticcouncil/ui:build: │  0.94 kB │ gzip:     0.46 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-DzdNuWxc.js
+@galacticcouncil/ui:build: │  1.04 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Summary.stories-BCLG-vWd.js
+@galacticcouncil/ui:build: │  1.04 kB │ gzip:     0.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/JsonView.stories-CG35AfdH.js
+@galacticcouncil/ui:build: │  1.05 kB │ gzip:     0.58 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Logo.stories-sm9vx7ew.js
+@galacticcouncil/ui:build: │  1.11 kB │ gzip:     0.58 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/CopyButton.stories-BtzlOR1r.js
+@galacticcouncil/ui:build: │  1.12 kB │ gzip:     0.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountTile.stories-OS75M0TV.js
+@galacticcouncil/ui:build: │  1.13 kB │ gzip:     0.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Expander-DVUs17OW.js
+@galacticcouncil/ui:build: │  1.14 kB │ gzip:     0.60 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Paper.stories-CNW4BzzI.js
+@galacticcouncil/ui:build: │  1.15 kB │ gzip:     0.55 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Image.stories-c_q3Iama.js
+@galacticcouncil/ui:build: │  1.18 kB │ gzip:     0.61 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-jRWAZmH_.js
+@galacticcouncil/ui:build: │  1.21 kB │ gzip:     0.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Flex-BWdYC6RC.js
+@galacticcouncil/ui:build: │  1.24 kB │ gzip:     0.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Card-BNJv1ofK.js
+@galacticcouncil/ui:build: │  1.26 kB │ gzip:     0.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/preload-helper-Dowy-9fu.js
+@galacticcouncil/ui:build: │  1.27 kB │ gzip:     0.74 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/VirtualizedList.stories-ppMia5md.js
+@galacticcouncil/ui:build: │  1.29 kB │ gzip:     0.66 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tooltip.stories-BLaznBgu.js
+@galacticcouncil/ui:build: │  1.32 kB │ gzip:     0.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/easings-D7mc8sO1.js
+@galacticcouncil/ui:build: │  1.33 kB │ gzip:     0.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Pagination.stories-BSkUSlmI.js
+@galacticcouncil/ui:build: │  1.35 kB │ gzip:     0.56 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Sheet.stories-DE0eR92d.js
+@galacticcouncil/ui:build: │  1.36 kB │ gzip:     0.71 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TextButton.stories-B6s4yz5I.js
+@galacticcouncil/ui:build: │  1.36 kB │ gzip:     0.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Card.stories-D5DEzku7.js
+@galacticcouncil/ui:build: │  1.37 kB │ gzip:     0.58 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ScrollArea.stories-CxBGvYPS.js
+@galacticcouncil/ui:build: │  1.39 kB │ gzip:     0.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-Rm6BK8TN2.js
+@galacticcouncil/ui:build: │  1.39 kB │ gzip:     0.69 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Logo-KsQ1TKS0.js
+@galacticcouncil/ui:build: │  1.47 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ValueStatsGroup.stories-Z8bdmjvb.js
+@galacticcouncil/ui:build: │  1.49 kB │ gzip:     0.72 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ValueStats.stories-CjA_A-yy.js
+@galacticcouncil/ui:build: │  1.54 kB │ gzip:     0.55 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AnimatedValue.stories-D4hxNUCx.js
+@galacticcouncil/ui:build: │  1.57 kB │ gzip:     0.71 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Checkbox.stories-GHTRIqGl.js
+@galacticcouncil/ui:build: │  1.59 kB │ gzip:     0.56 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountInput.stories-B9vk81-Q.js
+@galacticcouncil/ui:build: │  1.61 kB │ gzip:     0.68 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tabs.stories-DnH-vG6Y.js
+@galacticcouncil/ui:build: │  1.65 kB │ gzip:     0.61 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ResponsiveScope.stories-MxPI9hqI.js
+@galacticcouncil/ui:build: │  1.67 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/NavigationMenu.stories-CV2QmGPw.js
+@galacticcouncil/ui:build: │  1.69 kB │ gzip:     0.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Toggle.stories-DPv1hS8p.js
+@galacticcouncil/ui:build: │  1.69 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Expander.stories-BMzQaT_j.js
+@galacticcouncil/ui:build: │  1.78 kB │ gzip:     0.82 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Alert.stories-DvGejQ9w.js
+@galacticcouncil/ui:build: │  1.79 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Paper-BFw-Ewnh.js
+@galacticcouncil/ui:build: │  1.80 kB │ gzip:     0.89 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stepper.stories-C-xXL2GF.js
+@galacticcouncil/ui:build: │  1.89 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountAvatar.stories-Cik0yyvz.js
+@galacticcouncil/ui:build: │  1.96 kB │ gzip:     0.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/PositionCard.stories-729eDjeX.js
+@galacticcouncil/ui:build: │  1.98 kB │ gzip:     0.83 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Select.stories-D--rf-4B.js
+@galacticcouncil/ui:build: │  2.05 kB │ gzip:     0.86 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Skeleton-BJ27l2bp.js
+@galacticcouncil/ui:build: │  2.09 kB │ gzip:     1.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AssetColors.stories-BoadfrzE.js
+@galacticcouncil/ui:build: │  2.10 kB │ gzip:     1.15 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Label.stories-BithMeqs.js
+@galacticcouncil/ui:build: │  2.12 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Notification.stories-9I3MFxpK.js
+@galacticcouncil/ui:build: │  2.12 kB │ gzip:     0.66 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Separator.stories-fH-oFPd9.js
+@galacticcouncil/ui:build: │  2.13 kB │ gzip:     0.70 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stack-BgVX4Fye.js
+@galacticcouncil/ui:build: │  2.14 kB │ gzip:     0.88 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-C1J5hUfm.js
+@galacticcouncil/ui:build: │  2.18 kB │ gzip:     0.97 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Grid.stories-828ZpINA.js
+@galacticcouncil/ui:build: │  2.34 kB │ gzip:     0.77 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/OptionCard.stories-BllX_D1F.js
+@galacticcouncil/ui:build: │  2.41 kB │ gzip:     0.89 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Box.stories-geB4gfzB.js
+@galacticcouncil/ui:build: │  2.54 kB │ gzip:     0.75 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Prose-cVK_ymvW.js
+@galacticcouncil/ui:build: │  2.58 kB │ gzip:     1.17 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chain-C3RayO5R.js
+@galacticcouncil/ui:build: │  2.59 kB │ gzip:     1.01 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/EditableText.stories-DUB5vh4T.js
+@galacticcouncil/ui:build: │  2.61 kB │ gzip:     0.78 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stack.stories-jVJo9VI7.js
+@galacticcouncil/ui:build: │  2.61 kB │ gzip:     0.70 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressCircle.stories-5Qh5xa1Q.js
+@galacticcouncil/ui:build: │  2.67 kB │ gzip:     0.79 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AnimatedValue-QkzC9wI1.js
+@galacticcouncil/ui:build: │  2.68 kB │ gzip:     1.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Flex.stories-CDo3eWuL.js
+@galacticcouncil/ui:build: │  2.69 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tabs-DmkZ3Zvq.js
+@galacticcouncil/ui:build: │  2.72 kB │ gzip:     1.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/CardTable.stories-DuziGr_L.js
+@galacticcouncil/ui:build: │  2.74 kB │ gzip:     1.12 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Alert-DKvqYzO8.js
+@galacticcouncil/ui:build: │  2.77 kB │ gzip:     1.17 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Table.stories-D7nQUb0Q.js
+@galacticcouncil/ui:build: │  2.84 kB │ gzip:     1.06 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TextButton-Dil7LMJW.js
+@galacticcouncil/ui:build: │  2.89 kB │ gzip:     1.01 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CeVLhLut.js
+@galacticcouncil/ui:build: │  2.95 kB │ gzip:     1.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Text-BFnYGrir.js
+@galacticcouncil/ui:build: │  2.95 kB │ gzip:     0.92 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Collapsible.stories-fW5XO1Tu.js
+@galacticcouncil/ui:build: │  3.04 kB │ gzip:     0.75 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Grid-B2ZrcUs-.js
+@galacticcouncil/ui:build: │  3.06 kB │ gzip:     0.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/sha3-BK22Itid.js
+@galacticcouncil/ui:build: │  3.17 kB │ gzip:     1.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Text.stories-B4pWLahB.js
+@galacticcouncil/ui:build: │  3.29 kB │ gzip:     0.85 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressCircle-Z-OKh5Ax.js
+@galacticcouncil/ui:build: │  3.32 kB │ gzip:     1.40 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressBar-BNgha2VQ.js
+@galacticcouncil/ui:build: │  3.32 kB │ gzip:     1.33 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ToggleGroup.stories-DrjmCN_R.js
+@galacticcouncil/ui:build: │  3.33 kB │ gzip:     0.95 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/JsonView-e8kknfEa.js
+@galacticcouncil/ui:build: │  3.45 kB │ gzip:     1.40 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Points-b03JtI00.js
+@galacticcouncil/ui:build: │  3.51 kB │ gzip:     1.07 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-dom-7CTR-Yr6.js
+@galacticcouncil/ui:build: │  3.56 kB │ gzip:     1.35 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Separator-C5D_8Tim.js
+@galacticcouncil/ui:build: │  3.60 kB │ gzip:     1.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Drawer.stories-D7Oj5INR.js
+@galacticcouncil/ui:build: │  3.69 kB │ gzip:     1.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Input.stories-DTAJ5Dlt.js
+@galacticcouncil/ui:build: │  3.71 kB │ gzip:     1.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Prose.stories-CD51qgvh.js
+@galacticcouncil/ui:build: │  3.81 kB │ gzip:     1.41 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CcbFGlgK.js
+@galacticcouncil/ui:build: │  3.86 kB │ gzip:     1.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CgVoCLaV.js
+@galacticcouncil/ui:build: │  3.89 kB │ gzip:     1.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CdOxD-_z2.js
+@galacticcouncil/ui:build: │  3.90 kB │ gzip:     1.73 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AssetLogo.stories-tHcfAcTG.js
+@galacticcouncil/ui:build: │  3.92 kB │ gzip:     1.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/es-B08-4gGC.js
+@galacticcouncil/ui:build: │  3.97 kB │ gzip:     1.97 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Box-Ds1BcVAq.js
+@galacticcouncil/ui:build: │  4.20 kB │ gzip:     1.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Modal.stories-DlxG74RJ.js
+@galacticcouncil/ui:build: │  4.54 kB │ gzip:     1.70 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountAvatar-a6NjBeup.js
+@galacticcouncil/ui:build: │  4.57 kB │ gzip:     1.65 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/_u64-CrSVW8IS.js
+@galacticcouncil/ui:build: │  4.58 kB │ gzip:     1.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Button.stories-DHq87Z8x.js
+@galacticcouncil/ui:build: │  4.59 kB │ gzip:     1.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AssetInput.stories-Bls8OJSr.js
+@galacticcouncil/ui:build: │  4.64 kB │ gzip:     1.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chip.stories-BtTIAROc.js
+@galacticcouncil/ui:build: │  4.72 kB │ gzip:     1.05 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-3LY4VQVK-D3bLKWIv.js
+@galacticcouncil/ui:build: │  4.83 kB │ gzip:     2.05 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Hint.stories-BHOkal8r.js
+@galacticcouncil/ui:build: │  5.04 kB │ gzip:     1.34 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Toggle-C6ndKENg.js
+@galacticcouncil/ui:build: │  5.54 kB │ gzip:     2.36 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/animations-Cb_FkikU.js
+@galacticcouncil/ui:build: │  5.77 kB │ gzip:     0.79 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ValueStats-B3AasY9D.js
+@galacticcouncil/ui:build: │  6.21 kB │ gzip:     2.13 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/HoverCard-CYOtVeE3.js
+@galacticcouncil/ui:build: │  6.29 kB │ gzip:     2.39 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/DataTable.stories-BmtuMRIR.js
+@galacticcouncil/ui:build: │  7.47 kB │ gzip:     2.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-mE7dFmCG.js
+@galacticcouncil/ui:build: │  7.52 kB │ gzip:     2.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TradingViewChart.stories-DmF2TAgG.js
+@galacticcouncil/ui:build: │  7.68 kB │ gzip:     3.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/EthereumIdenticon-P5NeTvXF.js
+@galacticcouncil/ui:build: │  7.69 kB │ gzip:     2.95 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/lucide-react-Baquv5I1.js
+@galacticcouncil/ui:build: │  7.76 kB │ gzip:     3.04 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/DropdownMenu.stories-Cx7fbo1f.js
+@galacticcouncil/ui:build: │  7.93 kB │ gzip:     1.90 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ToggleGroup-Dzz75ZOC.js
+@galacticcouncil/ui:build: │  8.08 kB │ gzip:     2.94 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/emotion-styled-base.browser.esm-DdifMamj.js
+@galacticcouncil/ui:build: │  8.48 kB │ gzip:     4.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TalismanIdenticon-D23_Nn1X.js
+@galacticcouncil/ui:build: │  9.07 kB │ gzip:     3.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hmac-adJqG00u.js
+@galacticcouncil/ui:build: │  9.35 kB │ gzip:     4.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chart.stories-CEWjlvOs.js
+@galacticcouncil/ui:build: │  9.47 kB │ gzip:     3.43 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Slider-BZFZ34qR.js
+@galacticcouncil/ui:build: │  10.79 kB │ gzip:     4.25 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/icons-DGorGfre.js
+@galacticcouncil/ui:build: │  13.01 kB │ gzip:     4.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ScrollArea-DX3i9Yyr.js
+@galacticcouncil/ui:build: │  15.47 kB │ gzip:     4.94 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/NavigationMenu-Cy5J5hbW.js
+@galacticcouncil/ui:build: │  16.11 kB │ gzip:     5.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Button-B2hZsvVe.js
+@galacticcouncil/ui:build: │  17.61 kB │ gzip:     3.69 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-RD3KTAHR-WT2PvnU1.js
+@galacticcouncil/ui:build: │  20.76 kB │ gzip:     6.93 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CK-kkOUK.js
+@galacticcouncil/ui:build: │  22.10 kB │ gzip:     8.27 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/styles-GpbGG_t9.js
+@galacticcouncil/ui:build: │  23.43 kB │ gzip:     6.53 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/color-BVsXbMki.js
+@galacticcouncil/ui:build: │  23.92 kB │ gzip:     8.56 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/jsx-runtime-Cp0YpWcr.js
+@galacticcouncil/ui:build: │  25.36 kB │ gzip:     9.60 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-DoVTxmtc.js
+@galacticcouncil/ui:build: │  27.11 kB │ gzip:    10.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/VirtualizedList-BqEXMAnC.js
+@galacticcouncil/ui:build: │  27.24 kB │ gzip:     8.56 kB
+@galacticcouncil/ui:build: │  storybook-static/vite-inject-mocker-entry.js
+@galacticcouncil/ui:build: │  27.85 kB │ gzip:     9.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/es-fKW0bKAw.js
+@galacticcouncil/ui:build: │  27.97 kB │ gzip:     7.59 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/descriptors-B7vB5DmX-Dj1BWc2v.js
+@galacticcouncil/ui:build: │  29.94 kB │ gzip:     8.65 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Color-FRDS63T2-De00CqzV.js
+@galacticcouncil/ui:build: │  30.85 kB │ gzip:    11.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/secp256k1-DtXWJ2AU.js
+@galacticcouncil/ui:build: │  30.89 kB │ gzip:    12.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/WithTooltip-65CFNBJE-B1n_Lbkd.js
+@galacticcouncil/ui:build: │  33.23 kB │ gzip:    11.66 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Combobox-CLUbGDb3.js
+@galacticcouncil/ui:build: │  42.55 kB │ gzip:    14.28 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/utils-S74L4ddV.js
+@galacticcouncil/ui:build: │  46.01 kB │ gzip:     9.19 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tooltip-C5eqw3ey.js
+@galacticcouncil/ui:build: │  52.34 kB │ gzip:    15.44 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/theming-Ch6WFvUk.js
+@galacticcouncil/ui:build: │  55.01 kB │ gzip:    21.21 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/syntaxhighlighter-OH4MV7E3-D_Wm0bsj.js
+@galacticcouncil/ui:build: │  76.10 kB │ gzip:    27.37 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ccip-BBUVWHJ2.js
+@galacticcouncil/ui:build: │  123.58 kB │ gzip:    34.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/csf-ARizGzFT.js
+@galacticcouncil/ui:build: │  151.06 kB │ gzip:    48.17 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-18-hkbPDK1j.js
+@galacticcouncil/ui:build: │  179.05 kB │ gzip:    56.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/DocsRenderer-LL677BLK-BNXtS9-R.js
+@galacticcouncil/ui:build: │  182.71 kB │ gzip:    58.00 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/metadataTypes-3qqTMbXm-a2pp3Bqm.js
+@galacticcouncil/ui:build: │  225.58 kB │ gzip:    79.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ts-E7shrFsO.js
+@galacticcouncil/ui:build: │  319.86 kB │ gzip:    75.76 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chains_polkadot-DDq4yL6c.js
+@galacticcouncil/ui:build: │  329.53 kB │ gzip:   134.32 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-BYoSMqMF.js
+@galacticcouncil/ui:build: │  337.23 kB │ gzip:    98.31 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-8KRo9pHw.js
+@galacticcouncil/ui:build: │  337.97 kB │ gzip:   106.75 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/components-CBpnYYR9.js
+@galacticcouncil/ui:build: │  451.40 kB │ gzip:   141.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/components-DfeGVl5H.js
+@galacticcouncil/ui:build: │  562.05 kB │ gzip:   172.56 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydrationNext_metadata-GcKJoSB4-C_Wc4PYv.js
+@galacticcouncil/ui:build: │  697.97 kB │ gzip:   225.91 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydrationIce_metadata-BIAV-HuW-BS_oi_n1.js
+@galacticcouncil/ui:build: │  731.18 kB │ gzip:   238.69 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydration_metadata-DY1VsklN-CD_NfxMg.js
+@galacticcouncil/ui:build: │  772.49 kB │ gzip:   255.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hub_metadata-CN_MTTeF-BREzYlmx.js
+@galacticcouncil/ui:build: │  835.98 kB │ gzip:   265.92 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/src-C_seIJ_e.js
+@galacticcouncil/ui:build: │  1,020.68 kB │ gzip:   293.47 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/iframe-BhBeAvM4.js
+@galacticcouncil/ui:build: │  1,039.88 kB │ gzip:   291.84 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-dHrZffgP.js
+@galacticcouncil/ui:build: │  3,109.61 kB │ gzip: 2,330.07 kB
+@galacticcouncil/ui:build:
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ▲  Vite [plugin builtin:vite-reporter]
+@galacticcouncil/ui:build: │  (!) Some chunks are larger than 500 kB after minification. Consider:
+@galacticcouncil/ui:build: │  - Using dynamic import() to code-split the application
+@galacticcouncil/ui:build: │  - Use build.rolldownOptions.output.codeSplitting to improve chunking:
+@galacticcouncil/ui:build: │  ]8;;https://rolldown.rs/reference/OutputOptions.codeSplittinghttps://rolldown.rs/reference/OutputOptions.codeSplitting]8;;
+@galacticcouncil/ui:build: │  - Adjust chunk size limit for this warning via
+@galacticcouncil/ui:build: │  build.chunkSizeWarningLimit.
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ▲  Vite [PLUGIN_TIMINGS] Warning: Your build spent significant time in
+@galacticcouncil/ui:build: │  plugins. Here is a breakdown:
+@galacticcouncil/ui:build: │  - storybook:mock-loader (29%)
+@galacticcouncil/ui:build: │  - storybook:project-annotations-plugin (26%)
+@galacticcouncil/ui:build: │  - plugin-csf (9%)
+@galacticcouncil/ui:build: │  - storybook:code-generator-plugin (6%)
+@galacticcouncil/ui:build: │  - storybook:mock-loader-preview (6%)
+@galacticcouncil/ui:build: │  See ]8;;https://rolldown.rs/options/checks#plugintimingshttps://rolldown.rs/options/checks#plugintimings]8;; for more details.
+@galacticcouncil/ui:build:
+@galacticcouncil/ui:build: │  Vite ✓ built in 14.29s
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Output directory:
+@galacticcouncil/ui:build: │  /workspace/hydration-ui-juicer-next/packages/ui/storybook-static
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: └  Storybook build completed successfully
+@galacticcouncil/ui:build:
+@galacticcouncil/ui:build: Done in 18.32s.
+@galacticcouncil/web3-connect:lint: cache bypass, force executing 867931ca31ed3233
+@galacticcouncil/web3-connect:build: cache hit, replaying logs 3b31c1f52a23b045
+@galacticcouncil/web3-connect:build: yarn run v1.22.22
+@galacticcouncil/web3-connect:build: $ tsc --build
+@galacticcouncil/web3-connect:build: Done in 0.35s.
+@galacticcouncil/money-market:lint: cache bypass, force executing ba897ad88b8649c1
+@galacticcouncil/money-market:build: cache hit, replaying logs 8f340d0017b1c55a
+@galacticcouncil/money-market:build: yarn run v1.22.22
+@galacticcouncil/money-market:build: $ tsc --build
+@galacticcouncil/money-market:build: Done in 0.34s.
+@galacticcouncil/main:lint: cache bypass, force executing 43948f0ea7a13d6b
+@galacticcouncil/indexer:lint: yarn run v1.22.22
+@galacticcouncil/indexer:lint: $ yarn lint:eslint && yarn lint:ts
+@galacticcouncil/main:lint: yarn run v1.22.22
+@galacticcouncil/ui:lint: yarn run v1.22.22
+@galacticcouncil/utils:lint: yarn run v1.22.22
+@galacticcouncil/web3-connect:lint: yarn run v1.22.22
+@galacticcouncil/money-market:lint: yarn run v1.22.22
+@galacticcouncil/main:lint: $ yarn lint:eslint && yarn lint:ts
+@galacticcouncil/web3-connect:lint: $ yarn lint:eslint && yarn lint:ts
+@galacticcouncil/money-market:lint: $ yarn lint:eslint && yarn lint:ts
+@galacticcouncil/ui:lint: $ yarn lint:eslint && yarn lint:ts
+@galacticcouncil/utils:lint: $ yarn lint:eslint && yarn lint:ts
+@galacticcouncil/indexer:lint: $ eslint src
+@galacticcouncil/money-market:lint: $ eslint src
+@galacticcouncil/main:lint: $ eslint src
+@galacticcouncil/utils:lint: $ eslint src
+@galacticcouncil/ui:lint: $ eslint src
+@galacticcouncil/web3-connect:lint: $ eslint src
+@galacticcouncil/indexer:lint: $ tsc --noEmit -p tsconfig.json
+@galacticcouncil/utils:lint: $ tsc --noEmit -p tsconfig.json
+@galacticcouncil/indexer:lint: Done in 8.22s.
+@galacticcouncil/utils:lint: Done in 9.09s.
+@galacticcouncil/money-market:lint: $ tsc --noEmit -p tsconfig.json
+@galacticcouncil/web3-connect:lint: $ tsc --noEmit -p tsconfig.json
+@galacticcouncil/ui:lint: $ tsc --noEmit -p tsconfig.json
+@galacticcouncil/money-market:lint: Done in 12.63s.
+@galacticcouncil/web3-connect:lint: Done in 14.98s.
+@galacticcouncil/ui:lint: Done in 15.78s.
+@galacticcouncil/main:lint: $ tsc --noEmit -p tsconfig.json
+@galacticcouncil/main:lint: Done in 70.19s.
+
+ Tasks:    11 successful, 11 total
+Cached:    5 cached, 11 total
+  Time:    1m10.501s
+
+Done in 70.61s.

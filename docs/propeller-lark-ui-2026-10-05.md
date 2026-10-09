@@ -304,3 +304,95 @@ passed. the browser runner now moves the pointer off each tooltip trigger before
 Escape, preventing hover from keeping it open during the dismissal assertion.
 `deployed-page-checks.jsonl` records this follow-up; the original source hashes
 above identify the earlier local validation.
+
+
+## User-action coverage — 9 October 2026
+
+expanded the Lark 0 rehearsal after the initial shipping check. this pass found
+and fixed eight user-visible problems:
+
+- pasting hexadecimal or `Infinity` into the shared amount input could crash the
+  page. the input now accepts plain decimal amounts; typed `.001`, comma decimals
+  and one-base-unit amounts remain supported without rounding.
+- withdrawal previews formatted token quantities as dollars. they now use the
+  selected display currency and the collateral price.
+- Max could become a partial withdrawal when the funded balance changed before
+  submission. Max now stays selected through balance changes and sends the full
+  withdrawal sentinel; editing the amount returns to a partial withdrawal.
+- Sign Transaction could be clicked before fee/nonce preparation completed.
+  signing now waits for transaction preparation and an available Hydration fee
+  quote.
+- switching EVM fees from WETH to HDX reused the previous quote and signing path.
+  fee estimates now load for the new currency without retaining the old quote.
+- retrying a rejected approval could successfully deposit while leaving the old
+  failure message visible. successful completion now resets that error.
+- connected layouts could overflow: the wallet pushed the desktop header beyond
+  the viewport, and shrinking an open desktop page left the strategy columns at
+  their previous minimum width. compact header spacing and shrinkable columns
+  keep the controls visible across viewport changes.
+- a closed WebSocket left the provider marked ready. deposits and open transaction
+  reviews now stop during an outage and recover after automatic reconnection.
+
+| coverage | result |
+| --- | --- |
+| real UI at 1280, 768, 390 and 320 px | native account connection, both positions, decimal/invalid input, Max, asset changes, both deposit/withdraw dialogs, portfolio search, Send preview/contacts, Manage navigation, reload and logout passed; no uncaught page errors |
+| account changes and cancellation | review blocks duplicate deposits; closing review signs nothing; switching to an empty account clears positions and disables unfunded deposits; empty-state navigation passed |
+| RPC outage in the browser only | deposit and open-review signing disable; both recover automatically; reload restores the account; no signature requested |
+| native Lark transactions | additional ETH/tBTC approvals and deposits, plus a partial ETH withdrawal, finalized successfully; keeper delivery was observed |
+| EVM Lark transactions | two public accounts completed exact ETH approval, deposit and Max withdrawal through EIP-1193/typed permits; canonical finalized events verified independently |
+| EVM fee changes | WETH→HDX selection succeeded; a 2-HDX fixture correctly stopped at insufficient balance for its approximately 2.98-HDX estimate and signed no approval; funding the fixture allowed the lifecycle to complete |
+| controlled component states | capacity/balance changes, unavailable/paused vaults, exact precision, acknowledgment, rebasing Max, partial settlement, late HOLLAR recovery, claim ordering/pagination and duplicate-claim protection passed |
+
+the two automated EVM fixtures use the well-known public Hardhat mnemonic and an injected
+EIP-1193 provider. their signatures and transactions are real Lark operations;
+extension permission screens were also tested separately with the real MetaMask
+13.50.0 extension in an isolated Chromium profile. permission, adding the verified
+Lark RPC, rejecting an approval, retrying, approving, depositing 0.0001 ETH and
+Max withdrawal all completed with finalized events. Brave initially stalled at
+the permission screen; Chromium with its notification page opened explicitly
+resolved the test-environment problem. no personal wallet profile was used.
+
+every automated signing runner checks
+Lark genesis, restricts origin/targets/amounts and requires an explicit public
+account signing flag. HDX funds must cover the fee **estimate**, which can exceed
+the actual fee. the default EVM gas asset is WETH (20), not ETH collateral (34).
+
+additional native operations finalized at blocks 5780–5781 (ETH), 5840–5841
+(tBTC) and 5953 (partial ETH withdrawal). the two EVM deposits/Max exits finalized
+at blocks 6123/6126 and 6144/6145. full native extrinsic hashes and decoded events
+are in the evidence directory.
+
+Send remains a disabled preview; no position transfer is claimed. live keepers
+pre-empted manual claim attempts, so manual claims, partial settlement and late
+recovery were checked with controlled component states rather than by changing
+shared keeper or contract settings. no mainnet transaction was submitted.
+
+reproducible runners: `propeller-actions.mjs`, `propeller-account-check.mjs`,
+`propeller-offline-check.mjs`, `propeller-evm-lifecycle.mjs`, the existing
+`propeller-wallet-lifecycle.mjs`, and `propeller-browser/check.mjs` under
+`apps/main/tests/`. browser scripts accept `PLAYWRIGHT_MODULE` and `CHROMIUM_PATH`;
+public-wallet scripts also accept `POLKADOT_MODULE_ROOT`. the new runners accept
+`OUTPUT_DIR`. run the production preview on `127.0.0.1:4178`; the component Vite
+fixture uses `4179`. the action runner requires funded ETH/tBTC positions in the
+public native fixture. EVM signing requires `--sign-lark-public-account` and
+`EVM_ACCOUNT_INDEX=0` or `1`; `--reject-approval-once` covers successful retry
+without a stale failure message. fund those public accounts only on verified Lark.
+
+the production build, workspace ESLint/TypeScript and all 124 unit tests passed.
+the running app and real extension prompts were inspected visually.
+
+one Chromium reload was delayed by a proxy WebSocket connection failure and
+recovered; a subsequent reload restored the real MetaMask account. network
+availability is still external to the UI.
+
+the retry rehearsal also exercised a near-empty collateral account. the chain
+reaped 418,375 wei below the token's existential deposit (`tokens.DustLost`),
+separate from the exact 0.001-ETH vault deposit. the runner reconciles that event
+with the wallet debit. its original strict wallet-delta assertion stopped the
+rehearsal after the successful deposit; the remaining Max withdrawal was resumed
+and finalized, with the intermediate result retained. the final reusable runner
+then passed rejection, retry, deposit and Max withdrawal in one run, with
+canonical finalized transactions at blocks 6346/6347/6350.
+
+validation is recorded in
+`docs/evidence/propeller-ui-lark-2026-10-09/thorough/`.

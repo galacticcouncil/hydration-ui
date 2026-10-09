@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "checks": [
+    "transaction review disables repeat submission; closing it does not sign",
+    "switching to an empty account removes previous positions and blocks unfunded deposits",
+    "empty portfolio recovery link works"
+  ],
+  "errors": []
+}

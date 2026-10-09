@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "source": "evm-insufficient-fees.json",
+  "scope": "insufficient-fee guard, not a completed lifecycle",
+  "feeSwitchSigned": true,
+  "approvalOrDepositSigned": false,
+  "observedError": "Not enough fee payment asset balance",
+  "funding": "2 HDX",
+  "estimate": "approximately 2.9768 HDX",
+  "originalRunnerResult": "Error: EVM lifecycle timed out"
+}

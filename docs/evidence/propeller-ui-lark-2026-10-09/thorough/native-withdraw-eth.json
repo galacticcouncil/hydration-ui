@@ -1,0 +1,269 @@
+{
+  "fixture": "Public sr25519 derivation injected as PJS; actual Lark signatures, no real extension approval",
+  "action": "withdraw",
+  "symbol": "ETH",
+  "amount": "0.001",
+  "withdrawMax": false,
+  "keeperIdle": false,
+  "vault": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+  "account": "7JhCD49j1XBtdh959n5vHHnXL1XzQzSEYnXwbH98bJR96gK4",
+  "evm": "0x3088c164994890ea0e444bf53623ccac3b307217",
+  "before": {
+    "blockNumber": "5950",
+    "shares": "1999999665329502",
+    "totalAssets": "18277613230330257089",
+    "totalSupply": "18277610081149774531",
+    "pendingDeployment": "0",
+    "queueTail": "1",
+    "debt": "34159725259727972811115",
+    "userCollateral": "93000000001227829",
+    "nativeCollateral": "93000000001227829",
+    "allowance": "0"
+  },
+  "steps": [
+    {
+      "step": "connected",
+      "at": "2026-10-09T16:38:55.666Z"
+    },
+    {
+      "step": "withdrawal-requested",
+      "at": "2026-10-09T16:38:57.877Z"
+    },
+    {
+      "step": "review-confirmed",
+      "at": "2026-10-09T16:38:59.298Z"
+    }
+  ],
+  "after": {
+    "blockNumber": "5953",
+    "shares": "999999665329502",
+    "totalAssets": "18277613232624310936",
+    "totalSupply": "18277610081149774531",
+    "pendingDeployment": "0",
+    "queueTail": "2",
+    "debt": "34159726976171887131922",
+    "userCollateral": "93000000001227829",
+    "nativeCollateral": "93000000001227829",
+    "allowance": "0"
+  },
+  "finalizedBlock": 5953,
+  "transactions": [
+    {
+      "block": 5953,
+      "blockHash": "0xa49739ffdf08f1f261346862a3ccf287b018ce8edbd7f084104598acf9a7f754",
+      "hash": "0xb4c1c0704ca05dd1cec00db723ea52699b62119afa8050a5f5e67556dbc10643",
+      "index": 3,
+      "method": {
+        "args": {
+          "source": "0x3088c164994890ea0e444bf53623ccac3b307217",
+          "target": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+          "input": "0x107703ab00000000000000000000000000000000000000000000000000038d7ea4c680000000000000000000000000003088c164994890ea0e444bf53623ccac3b307217",
+          "value": "0",
+          "gas_limit": "2,000,000",
+          "max_fee_per_gas": "1,575,000",
+          "max_priority_fee_per_gas": "1,575,000",
+          "nonce": null,
+          "access_list": [],
+          "authorization_list": []
+        },
+        "method": "call",
+        "section": "evm"
+      },
+      "events": [
+        {
+          "name": "balances.Withdraw",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "balances.Rescinded",
+          "data": {
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "currencies.Withdrawn",
+          "data": {
+            "currencyId": "0",
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "1,049,537,568,717"
+          }
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "795,627,142,867"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "253,910,425,850"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "253,910,425,850"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "253,910,425,850"
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0xe290dc3f58472e4aaf74df922e6cad264845423e",
+              "topics": [
+                "0xf12af13169002211f501381802d4de3be380ba59d0d7316a798d5d1585d87a5c"
+              ],
+              "data": ""
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x0000000000000000000000003088c164994890ea0e444bf53623ccac3b307217",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7ea4c68000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0x1d3135f7e52d949fd35b86ab673aeb906bdee851ec045f9539dc9a33fbfbe482",
+                "0x0000000000000000000000000000000000000000000000000000000000000001",
+                "0x0000000000000000000000003088c164994890ea0e444bf53623ccac3b307217"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7ea4c68000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0x6dc83b2b4249c95db32c0425ee1720f24b33553482a672c27cfae3f9cd26b5df",
+                "0x0000000000000000000000000000000000000000000000000000000000000001"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000000006ac918f2"
+            }
+          }
+        },
+        {
+          "name": "evm.Executed",
+          "data": {
+            "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "transactionPayment.TransactionFeePaid",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "actualFee": "0",
+            "tip": "0"
+          }
+        },
+        {
+          "name": "system.ExtrinsicSuccess",
+          "data": {
+            "dispatchInfo": {
+              "weight": {
+                "refTime": "13,767,266,000",
+                "proofSize": "132,285"
+              },
+              "class": "Normal",
+              "paysFee": "No"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "vaultEvents": [
+    {
+      "block": 5953,
+      "hash": "0xb4c1c0704ca05dd1cec00db723ea52699b62119afa8050a5f5e67556dbc10643",
+      "eventName": "RedeemRequested",
+      "args": {
+        "requestId": "1",
+        "owner": "0x3088c164994890EA0E444Bf53623cCAC3B307217",
+        "shares": "1000000000000000"
+      }
+    }
+  ],
+  "requestId": "1",
+  "body": "New Farms for DOT, vDOT, 2-Pool, CFG, ASTR and more\n\n|\n\nMore Info\nTrade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\nPUBLIC TEST — Juicer Lark 0\n\n126dvZ…xRNRUd\n\nSTRATEGIES\n\n/\n\nJUICER\n\nJuicer\n\nDeposit and earn leveraged staking yield\n\nLeverage\nNo Liquidation\nMy positions\n\nETH\n\nAmount\n\n≈ 0.001 ETH\n\n$2.49\nEst. APR\n\n5.87%\n\nbefore swaps\nWithdraw\n\ntBTC\n\nAmount\n\n≈ 0.00002 tBTC\n\n$1.67\nEst. APR\n\n6.26%\n\nbefore swaps\nWithdraw\nStrategy overview\nTotal TVL\n$101.66K\nLeverage\n6.08x\nRisk profile\nLow\nAsset\tTVL\t\nEst. APR\n\t\nAwaiting deployment\n\tRemaining capacity\t\n\n\nETH\n\nEthereum\n\n\t\n\n18.2776 ETH\n\n$45.5K\n\n\t\n\n5.87%\n\n\t\n\n0 ETH\n\n\t\n\n6.7224 ETH\n\n26.89%\n\n\t\nDeposit\n\n\n\ntBTC\n\nThreshold BTC\n\n\t\n\n0.6744 tBTC\n\n$56.16K\n\n\t\n\n6.26%\n\n\t\n\n0 tBTC\n\n\t\n\n0.3256 tBTC\n\n32.56%\n\n\t\nDeposit\nAbout Juicer\n\nDeposit a single asset. Juicer manages borrowing and converts strategy yield back into your deposited asset.\n\n1\n\nDeposit\n\nYour deposit supplies collateral and creates position shares. Juicer then builds the leveraged strategy gradually.\n\nDepositing does not make a swap. Keepers deploy pooled collateral as market conditions allow.\n\n2\n\nEarn\n\nHarvested yield is converted into your deposited asset after costs and fees. Funded earnings stay invested and are included in your balance.\n\nThere is nothing to claim. Yield that is not harvested yet shows separately as pending yield.\n\n3\n\nWithdraw\n\nRequest a full or partial withdrawal. Your shares stay invested during the cooldown, then settle into your deposited asset.\n\nThe cooldown is the earliest unwind start, not a payout deadline.\n\nReturns are variable. The leveraged strategy can lose value or be liquidated, and withdrawals may be delayed. Principal and immediate repayment are not guaranteed.\n\nHow it works and risks\n\nRead more\n\nAsset\nBalance: 0.093\nMAX\nETH\n$0.00\n\nManaged borrowing\n\nThe vault manages borrowing and rebalancing for you.\n\nNo impermanent loss\n\nSingle-asset exposure, without pool rebalancing.\n\nRemaining capacity:\n\n6.7224 ETH\n\nDeployment:\n\nGradual\n\nLark 0 test deployment. Deposits and withdrawals use test tokens.\n\nDeposit\nWithdrawals\n\n0.001 ETH\n\n$2.49\n\nEligible to start:\n\nIn 16s\n\nCooldown\n\n0.00009 tBTC\n\n$7.50\n\nClaimed\n\n0.001 ETH\n\n$2.49\n\nClaimed\n\n0.00001 tBTC\n\n$0.83\n\nClaimed\n\nEarn 16.37% APR with fixed-term HOLLAR bonds.\n\nGet HOLLARb\nCLOSE\n\n5 958",
+  "passed": true,
+  "errors": [],
+  "consoleErrors": [
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "State loaded from storage couldn't be migrated since no migrate function was provided"
+  ],
+  "signatures": [
+    {
+      "id": 1,
+      "nonce": "0x00000017",
+      "calls": [
+        {
+          "name": "evm.call",
+          "source": "0x3088c164994890ea0e444bf53623ccac3b307217",
+          "target": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+          "input": "0x107703ab00000000000000000000000000000000000000000000000000038d7ea4c680000000000000000000000000003088c164994890ea0e444bf53623ccac3b307217",
+          "function": "requestRedeem"
+        }
+      ],
+      "rejected": false
+    }
+  ]
+}

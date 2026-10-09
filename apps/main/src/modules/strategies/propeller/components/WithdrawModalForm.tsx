@@ -16,11 +16,13 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { type Hex } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useWithdrawForm } from "@/modules/strategies/propeller/components/WithdrawModalForm.form"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import {
@@ -59,6 +61,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const shareBalance = balances?.sharesExact ?? "0"
   const negativeCarry = subLoop?.negativeCarry ?? 0
   const carry = negativeCarry
+  const [isMax, setIsMax] = useState(false)
 
   const blockedReason =
     !rpc.isReady || !stats || !balances || statsError || balancesError
@@ -73,12 +76,18 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
     shareSymbol,
     decimals,
   })
-  const { control, handleSubmit, watch, formState } = form
+  const { control, handleSubmit, watch, formState, setValue } = form
+
+  useEffect(() => {
+    if (isMax) setValue("amount", shareBalance, { shouldValidate: true })
+  }, [isMax, shareBalance, setValue])
 
   const amount = watch("amount")
   const assetOut = Big(amount || "0")
     .times(exchangeRate)
     .toString()
+  const [displayValue, { isLoading: isDisplayValueLoading }] =
+    useDisplayAssetPrice(assetId, assetOut)
 
   const canSubmit = formState.isValid && !redeem.isPending && !blockedReason
   const showCarryNotice = carry > 0 && !blockedReason
@@ -88,7 +97,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
     if (canSubmit)
       redeem.mutate({
         shareAmount: amount,
-        isMax: Big(amount).eq(shareBalance),
+        isMax: isMax || Big(amount).eq(shareBalance),
       })
   })
 
@@ -108,16 +117,25 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                     icon: <AssetLogo id={assetId} />,
                   }}
                   value={field.value}
-                  onChange={field.onChange}
-                  displayValue={t("common:currency", { value: assetOut })}
+                  onChange={(value) => {
+                    setIsMax(false)
+                    field.onChange(value)
+                  }}
+                  displayValue={displayValue}
+                  isDisplayValueLoading={isDisplayValueLoading}
                   balance={{
                     label: t("common:withdrawableBalance"),
                     value: t("common:number", { value: shareBalance }),
-                    onMax: () => field.onChange(shareBalance),
-                    onPercentage: (percent) =>
+                    onMax: () => {
+                      setIsMax(true)
+                      field.onChange(shareBalance)
+                    },
+                    onPercentage: (percent) => {
+                      setIsMax(percent === 100)
                       field.onChange(
                         percentageOf(shareBalance, percent, decimals),
-                      ),
+                      )
+                    },
                     isMaxDisabled: Big(shareBalance).lte(0),
                   }}
                   amountError={fieldState.error?.message}

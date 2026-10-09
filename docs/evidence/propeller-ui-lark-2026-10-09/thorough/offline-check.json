@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "lost RPC disables deposit",
+    "automatic reconnect restores deposit readiness",
+    "lost RPC disables signing in an open review",
+    "automatic reconnect restores transaction review",
+    "reload preserves the connected account and restores readiness"
+  ],
+  "passed": true,
+  "errors": [],
+  "signatures": 0
+}

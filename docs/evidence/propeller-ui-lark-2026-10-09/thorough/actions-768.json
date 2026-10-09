@@ -1,0 +1,47 @@
+{
+  "checks": [
+    {
+      "name": "connect and read both live positions",
+      "passed": true
+    },
+    {
+      "name": "pasted and typed amount validation without crashes",
+      "passed": true
+    },
+    {
+      "name": "Max uses the spendable balance",
+      "passed": true
+    },
+    {
+      "name": "asset selection clears the previous amount",
+      "passed": true
+    },
+    {
+      "name": "both deposit dialogs lock the asset; both withdrawal forms require acknowledgement",
+      "passed": true
+    },
+    {
+      "name": "portfolio search by symbol and no-results recovery",
+      "passed": true
+    },
+    {
+      "name": "Send preview, Max, recipient and contacts remain non-submitting; new position resets input",
+      "passed": true
+    },
+    {
+      "name": "Manage opens the correct asset and reload restores the wallet",
+      "passed": true
+    },
+    {
+      "name": "logout clears private positions and withdraw actions",
+      "passed": true
+    },
+    {
+      "name": "no signing requests or runtime errors",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "width": 768,
+  "errors": []
+}

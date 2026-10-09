@@ -53,7 +53,7 @@ const PropellerVaultContent = () => {
       )}
 
       <TwoColumnGrid template="sidebar">
-        <Stack gap="xl" sx={{ order: [1, null, 0] }}>
+        <Stack gap="xl" minWidth={0} sx={{ order: [1, null, 0] }}>
           <MyPositionsCard
             positions={positions}
             onWithdraw={setWithdrawVault}
@@ -64,7 +64,7 @@ const PropellerVaultContent = () => {
           <AboutCard />
         </Stack>
 
-        <Stack gap="xl">
+        <Stack gap="xl" minWidth={0}>
           {defaultDeposit.vault ? (
             <Paper px="xl" position="relative">
               <DepositForm

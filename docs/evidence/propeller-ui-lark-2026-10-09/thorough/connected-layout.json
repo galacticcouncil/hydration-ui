@@ -1,0 +1,43 @@
+{
+  "before": {
+    "desktop": {
+      "width": 1280,
+      "scrollWidth": 1324
+    },
+    "mobile": {
+      "width": 320,
+      "scrollWidth": 410
+    }
+  },
+  "after": [
+    {
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024
+    },
+    {
+      "width": 1100,
+      "scrollWidth": 1100
+    },
+    {
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440
+    }
+  ],
+  "passed": true
+}

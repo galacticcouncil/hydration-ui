@@ -1,0 +1,15 @@
+PASS valid amount submits unchanged
+PASS amounts beyond token precision are rejected
+PASS positive deposits have no keeper trade minimum or slice maximum
+PASS maximum and MAX enforce collateral vault capacity
+PASS shrinking capacity revalidates entered amount and preserves exact MAX
+PASS missing/failed reads, disconnected RPC, unready or paused vaults and zero TVL capacity disable deposits
+PASS wallet balance changes revalidate the amount and limit MAX
+PASS funded deposit and gradual deployment are explained without a swap quote
+PASS a successful transaction retry clears the previous deposit error
+PASS withdrawals require acknowledgement and show the collateral fiat value
+PASS invalid amounts, minimum redemption, unavailable reads, paused vaults and pending transactions block withdrawals
+PASS Max follows funded balance changes and manual edits restore partial withdrawals
+PASS claimable-first ordering, cooldown, partial settlement, late recovery, per-request pending guards and pagination
+PASS signing waits for fee and nonce preparation, including renewed preparation
+PASS no browser runtime errors

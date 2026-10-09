@@ -1,0 +1,701 @@
+{
+  "fixture": "Public Hardhat mnemonic via injected EIP-1193 provider; real Lark signatures; no extension prompt",
+  "owner": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+  "rpc": "https://0.lark.hydration.cloud",
+  "genesis": "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+  "requests": [
+    "eth_requestAccounts",
+    "eth_requestAccounts",
+    "wallet_addEthereumChain",
+    "wallet_switchEthereumChain",
+    "wallet_switchEthereumChain",
+    "eth_signTypedData_v4"
+  ],
+  "signatures": [
+    {
+      "method": "eth_signTypedData_v4",
+      "calls": [
+        "requestRedeem"
+      ],
+      "message": {
+        "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "to": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+        "data": "0x107703abffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+        "value": 0,
+        "gaslimit": 2000000,
+        "nonce": 8,
+        "deadline": 1791570168
+      }
+    }
+  ],
+  "checks": [
+    "rejected approval, successful retry, and cleared error verified before resumed withdrawal",
+    "real EVM Max withdrawal",
+    "canonical finalized deposit and Max withdrawal events"
+  ],
+  "before": {
+    "block": "6239",
+    "shares": "999999819398117",
+    "queueTail": "5",
+    "collateral": "1000000000418375"
+  },
+  "deposited": {
+    "block": "6242",
+    "shares": "1999999638377860",
+    "queueTail": "5",
+    "collateral": "0"
+  },
+  "rejectedApproval": true,
+  "retriedApproval": true,
+  "previousCollateralAssertion": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 1000000000418375n\n- 1000000000000000n\n            ^\n",
+  "network": {
+    "chainId": "0x3640e",
+    "chainName": "Hydration",
+    "rpcUrls": [
+      "https://0.lark.hydration.cloud"
+    ],
+    "iconUrls": [],
+    "nativeCurrency": {
+      "decimals": 18,
+      "name": "WETH",
+      "symbol": "WETH"
+    },
+    "blockExplorerUrls": [
+      "https://hydration.subscan.io"
+    ]
+  },
+  "withdrawn": {
+    "block": "6264",
+    "shares": "0",
+    "queueTail": "6",
+    "collateral": "0"
+  },
+  "finalizedBlock": "6264",
+  "finalized": {
+    "block": "6264",
+    "shares": "0",
+    "queueTail": "6",
+    "collateral": "0"
+  },
+  "transactions": [
+    {
+      "block": 6241,
+      "blockHash": "0x127c1a6bcc62a2d983fce4651ea9b22cd6f1aa7c1dfcc9bc02e2cc145130b328",
+      "hash": "0x39e39f2565ce929ebc9a2513a842a6d9eb9e7f85d3500c5a98cade8ccf2af044",
+      "index": 3,
+      "method": {
+        "args": {
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0x0000000000000000000000000000000000000401",
+          "value": "0",
+          "data": "0x0d02045a0170997970c51812dc3a010c7d01b50e0d17dc79c800000000000000000000000000000001000000221101095ea7b300000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c4600000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000000000080841e00000000005808180000000000000000000000000000000000000000000000000000000000015808180000000000000000000000000000000000000000000000000000000000000000",
+          "gas_limit": "3,382,057",
+          "deadline": "1,791,569,988",
+          "v": "28",
+          "r": "0xf8a00cb86f721bb196634c091ad1e81ab114ee95bd32972056393b7c2cca09e7",
+          "s": "0x00023e46156bedc77fdd166853934013f30cdb91e10243ed5ead705c8dddd5d9"
+        },
+        "method": "dispatchPermit",
+        "section": "multiTransactionPayment"
+      },
+      "events": [
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "1,686,518,959,105"
+          }
+        },
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "1,047,199,918,310"
+          }
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "1,034,430,362,506"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "12,769,555,804"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "12,769,555,804"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "12,769,555,804"
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x0000000000000000000000000000000100000022",
+              "topics": [
+                "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7ea4c68000"
+            }
+          }
+        },
+        {
+          "name": "evm.Executed",
+          "data": {
+            "address": "0x0000000000000000000000000000000100000022"
+          }
+        },
+        {
+          "name": "utility.ItemCompleted",
+          "data": {}
+        },
+        {
+          "name": "utility.BatchCompleted",
+          "data": {}
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "1,662,420,395,651"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "24,098,563,454"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "24,098,563,454"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "24,098,563,454"
+          }
+        },
+        {
+          "name": "system.ExtrinsicSuccess",
+          "data": {
+            "dispatchInfo": {
+              "weight": {
+                "refTime": "2,879,116,000",
+                "proofSize": "23,403"
+              },
+              "class": "Normal",
+              "paysFee": "No"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "block": 6242,
+      "blockHash": "0xd10180fc19a7515e1a93afb5c5e7411030f6993d4a34d0d54dd7f9113ef97406",
+      "hash": "0x8ef01ddb7ce0d3e43a5887c87c4045040d9d86bf579d10344e273b5c3b9e4744",
+      "index": 2,
+      "method": {
+        "args": {
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0x0000000000000000000000000000000000000401",
+          "value": "0",
+          "data": "0x0d02045a0170997970c51812dc3a010c7d01b50e0d17dc79c879b41c78a2b5ac1ddc3c80877449b1cc8f850c4611016e553f6500000000000000000000000000000000000000000000000000038d7ea4c6800000000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000000000000000000000000000000000000000000078711700000000005808180000000000000000000000000000000000000000000000000000000000015808180000000000000000000000000000000000000000000000000000000000000000",
+          "gas_limit": "2,598,533",
+          "deadline": "1,791,569,988",
+          "v": "28",
+          "r": "0xcf1c83c9007c71276ccc5d33bf7de70e2ede9e3ca72466510965403ea77659fc",
+          "s": "0x11734e2b1da45478a236f58f756e36be4f6890c94da01f13f11b4ba2abfc7a56"
+        },
+        "method": "dispatchPermit",
+        "section": "multiTransactionPayment"
+      },
+      "events": [
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "1,295,797,635,773"
+          }
+        },
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "804,443,895,029"
+          }
+        },
+        {
+          "name": "tokens.Transfer",
+          "data": {
+            "currencyId": "34",
+            "from": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "to": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "418,375"
+          }
+        },
+        {
+          "name": "tokens.DustLost",
+          "data": {
+            "currencyId": "34",
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "418,375"
+          }
+        },
+        {
+          "name": "tokens.Transfer",
+          "data": {
+            "currencyId": "34",
+            "from": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "to": "12ZuLmUfK5gk5ukgcFHxQQT9mfxh9XAWdM8aenuGzDySArif",
+            "amount": "1,000,000,000,000,000"
+          }
+        },
+        {
+          "name": "currencies.Transferred",
+          "data": {
+            "currencyId": "34",
+            "from": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "to": "12ZuLmUfK5gk5ukgcFHxQQT9mfxh9XAWdM8aenuGzDySArif",
+            "amount": "1,000,000,000,000,000"
+          }
+        },
+        {
+          "name": "tokens.Transfer",
+          "data": {
+            "currencyId": "34",
+            "from": "12ZuLmUfK5gk5ukgcFHxQQT9mfxh9XAWdM8aenuGzDySArif",
+            "to": "12ZuLmUJTveFdSEkLdBSbF92uvTgwwBqbNadLnHpZCkLphmR",
+            "amount": "1,000,000,000,000,000"
+          }
+        },
+        {
+          "name": "currencies.Transferred",
+          "data": {
+            "currencyId": "34",
+            "from": "12ZuLmUfK5gk5ukgcFHxQQT9mfxh9XAWdM8aenuGzDySArif",
+            "to": "12ZuLmUJTveFdSEkLdBSbF92uvTgwwBqbNadLnHpZCkLphmR",
+            "amount": "1,000,000,000,000,000"
+          }
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "486,956,911,104"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "317,486,983,925"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "317,486,983,925"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "317,486,983,925"
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x7b200b8c8a5ffd7720a48b0cb5a7f9fc6a512578",
+              "topics": [
+                "0x40f0544b1c1f4fec29c2ffa81737598ecaa047e4e993011387699ed956bfa4eb",
+                "0x0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0xe290dc3f58472e4aaf74df922e6cad264845423e",
+              "topics": [
+                "0xf12af13169002211f501381802d4de3be380ba59d0d7316a798d5d1585d87a5c"
+              ],
+              "data": ""
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7e99fc599f"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x0000000000000000000000000000000100000022",
+              "topics": [
+                "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+                "0x0000000000000000000000001b02e051683b5cfac5929c25e84adb26ecf87b38"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7ea4c68000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x1b02e051683b5cfac5929c25e84adb26ecf87b38",
+              "topics": [
+                "0x804c9b842b2748a22bb64b345453a3de7ca54a6ca45ce00d415894979e22897a",
+                "0x0000000000000000000000000000000000000000000000000000000100000022"
+              ],
+              "data": "0x0000000000000000000000000000000000000000000017484f9788fd8aaf9bd90000000000000000000000000000000000000000004d68a883593ad7e1fad05400000000000000000000000000000000000000000002f66abca52f4d47fad0540000000000000000000000000000000000000000033e734c55c0bdd353dd045d0000000000000000000000000000000000000000034d239ceea406e89485a367"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x11a8f7ffbb7e0fbed88bc20179dd45b4bd6874ff",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7fe3d3da3f"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x11a8f7ffbb7e0fbed88bc20179dd45b4bd6874ff",
+              "topics": [
+                "0x458f5fa412d0f69b08dd84872b0215675cc67bc1d5b6fd93300a1c3878b86196",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7fe3d3da3f000000000000000000000000000000000000000000000000000000013f0d5a3f0000000000000000000000000000000000000000033e734c55c0bdd353dd045d"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x1b02e051683b5cfac5929c25e84adb26ecf87b38",
+              "topics": [
+                "0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61",
+                "0x0000000000000000000000000000000000000000000000000000000100000022",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+                "0x0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "data": "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c4600000000000000000000000000000000000000000000000000038d7ea4c68000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x342923782ccaebf9c38dd9cb40436e82c42c73b5",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000e3a8d51860813"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x342923782ccaebf9c38dd9cb40436e82c42c73b5",
+              "topics": [
+                "0x458f5fa412d0f69b08dd84872b0215675cc67bc1d5b6fd93300a1c3878b86196",
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000e3a8d51860813000000000000000000000000000000000000000000000000000e3a8d518608130000000000000000000000000000000000000000036405f73a7032144bd4db25"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0xcb6abe49263a635daae6e61fcdb006516882726a1b13a5d4b89db4bef3e3ec00"
+              ],
+              "data": "0x0000000000000000000000000000000000000000000000000000000000000001"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0x73a19dd210f1a7f902193214c0ee91dd35ee5b4d920cba8d519eca65a7b488ca",
+                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000038d7ea4c6800000000000000000000000000000000000000000000000000000038d7e99fc599f"
+            }
+          }
+        },
+        {
+          "name": "evm.Executed",
+          "data": {
+            "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+          }
+        },
+        {
+          "name": "utility.ItemCompleted",
+          "data": {}
+        },
+        {
+          "name": "utility.BatchCompleted",
+          "data": {}
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "981,384,323,596"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "314,413,312,177"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "314,413,312,177"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "314,413,312,177"
+          }
+        },
+        {
+          "name": "system.ExtrinsicSuccess",
+          "data": {
+            "dispatchInfo": {
+              "weight": {
+                "refTime": "17,433,716,000",
+                "proofSize": "168,949"
+              },
+              "class": "Normal",
+              "paysFee": "No"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "block": 6264,
+      "blockHash": "0x99c68d3d45b2adc39983bc64b2bff91ce605ae8b6c004f4acbc6eb140c9c5175",
+      "hash": "0x4df6f21697d3fe2b1a9d98db843f6ab1b02c0b66b281328d60cb3d603f17e010",
+      "index": 3,
+      "method": {
+        "args": {
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+          "value": "0",
+          "data": "0x107703abffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "gas_limit": "2,000,000",
+          "deadline": "1,791,570,168",
+          "v": "27",
+          "r": "0x464ab6237824d25fb4dfc3239b62dfb1d0696b8135dec60ae75d85facc8e91c8",
+          "s": "0x2660fbce6e23e95b6be6b27593dbcde69dd1049cb581add382ea5db2c03031af"
+        },
+        "method": "dispatchPermit",
+        "section": "multiTransactionPayment"
+      },
+      "events": [
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "997,266,170,498"
+          }
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "12ZuLmUdVH4FZLQrBe74CWma4nuYKZ7GKwkwGa9ePYvKhK4y",
+            "amount": "757,226,197,791"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "240,039,972,707"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "240,039,972,707"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "240,039,972,707"
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0xe290dc3f58472e4aaf74df922e6cad264845423e",
+              "topics": [
+                "0xf12af13169002211f501381802d4de3be380ba59d0d7316a798d5d1585d87a5c"
+              ],
+              "data": ""
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+                "0x00000000000000000000000079b41c78a2b5ac1ddc3c80877449b1cc8f850c46"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000071afd33ff1584"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0x1d3135f7e52d949fd35b86ab673aeb906bdee851ec045f9539dc9a33fbfbe482",
+                "0x0000000000000000000000000000000000000000000000000000000000000005",
+                "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8"
+              ],
+              "data": "0x00000000000000000000000000000000000000000000000000071afd33ff1584"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+              "topics": [
+                "0x6dc83b2b4249c95db32c0425ee1720f24b33553482a672c27cfae3f9cd26b5df",
+                "0x0000000000000000000000000000000000000000000000000000000000000005"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000000006ac9234e"
+            }
+          }
+        },
+        {
+          "name": "system.ExtrinsicSuccess",
+          "data": {
+            "dispatchInfo": {
+              "weight": {
+                "refTime": "13,705,866,000",
+                "proofSize": "131,671"
+              },
+              "class": "Normal",
+              "paysFee": "No"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "vaultEvents": [
+    {
+      "block": 6242,
+      "hash": "0x8ef01ddb7ce0d3e43a5887c87c4045040d9d86bf579d10344e273b5c3b9e4744",
+      "eventName": "Deposited",
+      "args": {
+        "user": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "assets": "1000000000000000",
+        "shares": "999999818979743"
+      }
+    },
+    {
+      "block": 6264,
+      "hash": "0x4df6f21697d3fe2b1a9d98db843f6ab1b02c0b66b281328d60cb3d603f17e010",
+      "eventName": "RedeemRequested",
+      "args": {
+        "requestId": "5",
+        "owner": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "shares": "1999999638377860"
+      }
+    }
+  ],
+  "passed": true,
+  "errors": [],
+  "collateralDust": "418375",
+  "walletDebitReconciled": true
+}

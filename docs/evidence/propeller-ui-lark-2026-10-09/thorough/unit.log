@@ -1,0 +1,60 @@
+yarn run v1.22.22
+$ turbo test
+• turbo 2.9.6
+
+   • Packages in scope: @galacticcouncil/eslint-config, @galacticcouncil/indexer, @galacticcouncil/main, @galacticcouncil/money-market, @galacticcouncil/typescript-config, @galacticcouncil/ui, @galacticcouncil/utils, @galacticcouncil/web3-connect
+   • Running test in 8 packages
+   • Remote caching disabled, using shared worktree cache
+
+@galacticcouncil/web3-connect:test: cache bypass, force executing 4d581012b355f342
+@galacticcouncil/main:test: cache bypass, force executing 3da5ad9d18fac97d
+@galacticcouncil/web3-connect:test: yarn run v1.22.22
+@galacticcouncil/main:test: yarn run v1.22.22
+@galacticcouncil/web3-connect:test: $ vitest run
+@galacticcouncil/main:test: $ vitest run
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/web3-connect:test:  RUN  v3.2.7 /workspace/hydration-ui-juicer-next/packages/web3-connect
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  RUN  v3.2.7 /workspace/hydration-ui-juicer-next/apps/main
+@galacticcouncil/main:test:
+@galacticcouncil/web3-connect:test:  ✓ src/utils/ethereum.test.ts (2 tests) 7ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/accounting.test.ts (11 tests) 6ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/requestFunded.test.ts (5 tests) 3ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/withdrawalState.test.ts (5 tests) 3ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/usePropellerVaults.test.ts (4 tests) 4ms
+@galacticcouncil/main:test:  ✓ src/modules/portfolio/overview/MyStrategies/MyStrategies.data.test.ts (16 tests) 11ms
+@galacticcouncil/main:test:  ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts (3 tests) 10ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/withdrawalClaim.test.ts (8 tests) 13ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/amount.test.ts (2 tests) 6ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/deposit.test.ts (15 tests) 26ms
+@galacticcouncil/web3-connect:test:  ✓ src/signers/EthereumSigner.test.ts (4 tests) 10ms
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/web3-connect:test:  Test Files  2 passed (2)
+@galacticcouncil/web3-connect:test:       Tests  6 passed (6)
+@galacticcouncil/web3-connect:test:    Start at  19:11:50
+@galacticcouncil/web3-connect:test:    Duration  830ms (transform 124ms, setup 0ms, collect 420ms, tests 17ms, environment 0ms, prepare 188ms)
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/useRedemptionQueue.test.ts (2 tests) 7ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/useVaultReads.test.ts (6 tests) 8ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/pendingYield.test.ts (4 tests) 6ms
+@galacticcouncil/web3-connect:test: Done in 1.35s.
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts (3 tests) 3ms
+@galacticcouncil/main:test:  ✓ src/api/balances/account.utils.test.ts (5 tests) 5ms
+@galacticcouncil/main:test:  ✓ src/modules/transactions/utils/tx.test.ts (3 tests) 4ms
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts (5 tests) 17ms
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/lib/quotedPrice.test.ts (18 tests) 36ms
+@galacticcouncil/main:test:  ✓ src/modules/liquidity/Vaults.utils.test.ts (3 tests) 4ms
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  Test Files  18 passed (18)
+@galacticcouncil/main:test:       Tests  118 passed (118)
+@galacticcouncil/main:test:    Start at  19:11:50
+@galacticcouncil/main:test:    Duration  3.30s (transform 1.45s, setup 0ms, collect 17.14s, tests 174ms, environment 6ms, prepare 1.73s)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test: Done in 3.79s.
+
+ Tasks:    2 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    4.043s
+
+Done in 4.13s.

@@ -48,7 +48,7 @@ export const HeaderMenu: React.FC<
 
           return (
             <NavigationMenuItem key={key} data-intersect={key}>
-              <NavigationMenuTrigger asChild>
+              <NavigationMenuTrigger asChild sx={{ px: "base" }}>
                 <NavigationItemLink item={item}>
                   <NavigationItemLabel
                     title={translations[key].title}

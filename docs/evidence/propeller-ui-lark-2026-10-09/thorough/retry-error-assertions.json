@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "source": "retry/evm-check.json",
+  "rejectedApproval": true,
+  "retriedApproval": true,
+  "staleErrorVisible": false,
+  "depositObserved": {
+    "block": "6242",
+    "shares": "1999999638377860",
+    "queueTail": "5",
+    "collateral": "0"
+  },
+  "originalRunnerError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 1000000000418375n\n- 1000000000000000n\n            ^\n"
+}
