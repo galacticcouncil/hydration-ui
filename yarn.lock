@@ -1778,10 +1778,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.3.0.tgz#96d3b3e63a93544c7e60d3fa9e1be9a576a20efe"
   integrity sha512-ZYVSyI5W2pQKCqpkaRM7t1AJqtPyxQ0P04T2+KpBEEABMRjSpQz2x44s1tk6r3DdFR8dICeZJEh5BI7eQYlT6w==
 
-"@galacticcouncil/sdk-next@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-2.4.0.tgz#b64a5262fbfd5ea130866bfc83d397937779fd60"
-  integrity sha512-pkJmtws7VDonYgjC2nWCwHIum5XTy1xDXrN+VEGo15O62kObdeNqZVLfOmT9vtfF0uW9Qd0Lbql29U/Aj1WlUA==
+"@galacticcouncil/sdk-next@2.5.0-pr378-7eba3d2":
+  version "2.5.0-pr378-7eba3d2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-2.5.0-pr378-7eba3d2.tgz#ebda197562e389bd68c1a6c9dbae43240855eaaf"
+  integrity sha512-KyKvmA+k0yhPgzr9Ujb9+juvZR9pRIUhZWzfpCI8Z3SzEQFB6m/aGQOVPQdsV2EynltVCWE0qqdMHeYha1O0Fw==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.2.0"
     "@galacticcouncil/math-lbp" "^1.3.0"
@@ -1795,10 +1795,10 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^2.8.1":
-  version "2.8.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.8.1.tgz#32154196fa1776fa9fc0d6672b34703592bd0e46"
-  integrity sha512-Zuze+gULysHNB6fltKX5w7hz4UdeZOUsRUG3tfdwpbVgiAs2VO6SWdVeYM/91EXGcctcBqjOxYYxC4n8X4hFBA==
+"@galacticcouncil/xc-cfg@2.8.2-pr378-7eba3d2":
+  version "2.8.2-pr378-7eba3d2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-2.8.2-pr378-7eba3d2.tgz#056579b5d1cba2c582a67216128561b970c5562d"
+  integrity sha512-PJOqkLpGP7gs5w50zE51HbTSKwSIIGppJBqw7lTlV+yYQOcKm6VNn/+iE8YchGHz5CHsABG4/ASuvULYLip1FQ==
   dependencies:
     "@galacticcouncil/xc-core" "^2.7.0"
     "@thi.ng/memoize" "^4.0.2"
