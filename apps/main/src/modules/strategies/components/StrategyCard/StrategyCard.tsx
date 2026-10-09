@@ -9,6 +9,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link } from "@tanstack/react-router"
+import { type ReactNode } from "react"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import {
@@ -16,9 +17,11 @@ import {
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
 
-export type StrategyCardProps = {
-  logoId: string
-  stats: ValueStatsProps[]
+export type StrategyCardProps = (
+  | { logoId: string; logo?: never }
+  | { logo: ReactNode; logoId?: never }
+) & {
+  stats: (ValueStatsProps & { valueTone?: "yield" })[]
   badges?: StrategyBadgeType[]
   title: string
   description: string
@@ -27,6 +30,7 @@ export type StrategyCardProps = {
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   logoId,
+  logo,
   stats,
   title,
   description,
@@ -34,14 +38,32 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   badges = [],
 }) => {
   return (
-    <Paper p="xl" hoverable position="relative">
+    <Paper
+      p="xl"
+      position="relative"
+      sx={{
+        transition: getToken("transitions.colors"),
+        transitionDuration: "300ms",
+        transitionTimingFunction: "ease-in-out",
+        "&:hover, &:focus-within": {
+          backgroundColor: getToken("surfaces.containers.high.hover"),
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          transition: "none",
+        },
+      }}
+    >
       <Stack gap="l">
         <Flex
           justify="space-between"
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          <AssetLogo id={logoId} size="extra-large" />
+          {logoId !== undefined ? (
+            <AssetLogo id={logoId} size="extra-large" hideChain />
+          ) : (
+            logo
+          )}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (
@@ -51,12 +73,22 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           )}
         </Flex>
 
-        <Flex gap="xl">
-          {stats.map((stat) => (
+        <Flex gap="xxxl" wrap>
+          {stats.map(({ valueTone, ...stat }) => (
             <ValueStats
               key={stat.label}
               customValue={
-                <Text fs="h5" lh={1} font="primary" fw={600}>
+                <Text
+                  fs="h5"
+                  lh={1}
+                  font="primary"
+                  fw={600}
+                  color={getToken(
+                    valueTone === "yield"
+                      ? "accents.success.emphasis"
+                      : "text.high",
+                  )}
+                >
                   {stat.value}
                 </Text>
               }

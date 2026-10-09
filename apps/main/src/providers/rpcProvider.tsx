@@ -60,6 +60,7 @@ const defaultData: TProviderContext = {
     hollarBondsEnabled: true,
     bilEnabled: false,
     isIceEnabled: false,
+    propellerEnabled: true,
   },
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
   isEndpointSettled: false,

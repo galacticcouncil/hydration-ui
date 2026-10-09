@@ -1,0 +1,30 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/apps/main
+
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts (11 tests) 4ms
+ ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts (3 tests) 10ms
+ ✓ src/modules/strategies/propeller/utils/amount.test.ts (2 tests) 6ms
+ ✓ src/modules/strategies/propeller/utils/deposit.test.ts (15 tests) 23ms
+ ✓ src/modules/strategies/propeller/hooks/useVaultReads.test.ts (4 tests) 6ms
+ ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts (3 tests) 3ms
+stderr | src/modules/trade/swap/lib/quotedPrice.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/modules/transactions/utils/tx.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/api/balances/account.utils.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+ ✓ src/api/balances/account.utils.test.ts (5 tests) 3ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts (18 tests) 23ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts (5 tests) 20ms
+ ✓ src/modules/transactions/utils/tx.test.ts (3 tests) 4ms
+
+ Test Files  10 passed (10)
+      Tests  69 passed (69)
+   Start at  12:26:03
+   Duration  2.76s (transform 691ms, setup 0ms, collect 10.64s, tests 103ms, environment 2ms, prepare 947ms)

@@ -1,0 +1,18 @@
+import { useTranslation } from "react-i18next"
+
+import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge"
+import { StrategyHeader as SharedStrategyHeader } from "@/modules/strategies/components/StrategyHeader"
+import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
+
+export const StrategyHeader = () => {
+  const { t } = useTranslation(["propeller", "common"])
+
+  return (
+    <SharedStrategyHeader
+      logo={<JuicerStrategyLogo size="large" />}
+      title={t("strategy.name")}
+      subtitle={t("common:navigation.strategiesJuicer.description")}
+      badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
+    />
+  )
+}

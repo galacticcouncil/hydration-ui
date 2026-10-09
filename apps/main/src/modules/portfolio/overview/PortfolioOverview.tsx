@@ -1,10 +1,11 @@
-import { Search } from "@galacticcouncil/ui/assets/icons"
+import { ChevronDown, Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   CollapsibleContent,
   CollapsibleRoot,
   CollapsibleTrigger,
   Flex,
+  Icon,
   Input,
   Separator,
   Text,
@@ -12,6 +13,7 @@ import {
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import {
   HYDRATION_PARACHAIN_ID,
   isAddressValidOnHydration,
@@ -19,7 +21,7 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { FC, ReactNode, useMemo, useState } from "react"
+import { FC, Fragment, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useMultichainPortfolio } from "@/api/portfolio"
@@ -33,11 +35,18 @@ import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChai
 import { PortfolioChainSection } from "@/modules/portfolio/overview/PortfolioChainSection"
 import {
   SPortfolioPaper,
+  SPortfolioSubsectionHeaderButton,
   SPortfolioTableWrapper,
 } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 import { PortfolioSummary } from "@/modules/portfolio/overview/PortfolioSummary"
 
-export const portfolioOverviewTabs = ["assets", "liquidity", "bonds"] as const
+export const portfolioOverviewTabs = [
+  "all",
+  "assets",
+  "strategies",
+  "liquidity",
+  "bonds",
+] as const
 
 type Props = {
   readonly searchPhrase: string
@@ -45,6 +54,7 @@ type Props = {
   readonly sortingProps: SortingProps
   readonly liquidityContent: ReactNode
   readonly bondsContent: ReactNode
+  readonly strategiesContent: ReactNode
 }
 
 export const PortfolioOverview: FC<Props> = ({
@@ -53,6 +63,7 @@ export const PortfolioOverview: FC<Props> = ({
   sortingProps,
   liquidityContent,
   bondsContent,
+  strategiesContent,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
 
@@ -84,10 +95,29 @@ export const PortfolioOverview: FC<Props> = ({
   const isHydrationValid = account
     ? isAddressValidOnHydration(account.rawAddress)
     : false
-  const showOtherChains = !isHydrationValid || activeTab === "assets"
+  const showOtherChains =
+    !isHydrationValid || activeTab === "assets" || activeTab === "all"
   const { byChain } = useMultichainPortfolio(
     account ? [account.rawAddress] : [],
   )
+
+  const sections = [
+    {
+      category: "assets",
+      content: (
+        <MyAssets
+          data={data}
+          isEmpty={isEmpty}
+          isLoading={isLoading}
+          searchPhrase={searchPhrase}
+          sortingProps={sortingProps}
+        />
+      ),
+    },
+    { category: "strategies", content: strategiesContent },
+    { category: "liquidity", content: liquidityContent },
+    { category: "bonds", content: bondsContent },
+  ] as const
 
   return (
     <Flex direction="column" gap="l">
@@ -130,7 +160,7 @@ export const PortfolioOverview: FC<Props> = ({
         </Flex>
       </Flex>
 
-      <SPortfolioPaper>
+      <SPortfolioPaper data-all={activeTab === "all" ? "" : undefined}>
         {isHydrationValid && (
           <CollapsibleRoot defaultOpen>
             <CollapsibleTrigger asChild>
@@ -148,7 +178,7 @@ export const PortfolioOverview: FC<Props> = ({
             <CollapsibleContent
               forceMount
               animationDurationMs={400}
-              sx={{ overflow: "hidden" }}
+              sx={{ overflow: activeTab === "all" ? "clip" : "hidden" }}
             >
               <Box sx={{ minHeight: 0 }}>
                 <PortfolioSummary />
@@ -159,7 +189,10 @@ export const PortfolioOverview: FC<Props> = ({
                   horizontalEdgeOffset="xl"
                   items={portfolioOverviewTabs.map<TabItem>((category) => ({
                     to: "/portfolio/",
-                    title: t(`myAssets.tabs.${category}`),
+                    title:
+                      category === "all"
+                        ? t("common:all")
+                        : t(`myAssets.tabs.${category}`),
                     search: { category },
                     resetScroll: false,
                   }))}
@@ -168,18 +201,53 @@ export const PortfolioOverview: FC<Props> = ({
                   )}
                 />
                 <Separator />
-                <SPortfolioTableWrapper>
-                  {activeTab === "assets" && (
-                    <MyAssets
-                      data={data}
-                      isEmpty={isEmpty}
-                      isLoading={isLoading}
-                      searchPhrase={searchPhrase}
-                      sortingProps={sortingProps}
-                    />
-                  )}
-                  {activeTab === "liquidity" && liquidityContent}
-                  {activeTab === "bonds" && bondsContent}
+                <SPortfolioTableWrapper
+                  data-all={activeTab === "all" ? "" : undefined}
+                >
+                  {sections
+                    .filter(
+                      ({ category }) =>
+                        activeTab === "all" || activeTab === category,
+                    )
+                    .map(({ category, content }, index) => (
+                      <Fragment key={category}>
+                        {activeTab === "all" ? (
+                          <Box as="section">
+                            {index > 0 && <Separator />}
+                            <CollapsibleRoot defaultOpen>
+                              <CollapsibleTrigger asChild>
+                                <SPortfolioSubsectionHeaderButton
+                                  type="button"
+                                  isExpandable
+                                >
+                                  <Text
+                                    fs="p6"
+                                    fw={600}
+                                    color={getToken("text.high")}
+                                  >
+                                    {t(`myAssets.tabs.${category}`)}
+                                  </Text>
+                                  <Icon
+                                    size="s"
+                                    component={ChevronDown}
+                                    data-chevron
+                                  />
+                                </SPortfolioSubsectionHeaderButton>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent
+                                forceMount
+                                animationDurationMs={400}
+                                sx={{ overflow: "hidden" }}
+                              >
+                                <Box sx={{ minHeight: 0 }}>{content}</Box>
+                              </CollapsibleContent>
+                            </CollapsibleRoot>
+                          </Box>
+                        ) : (
+                          content
+                        )}
+                      </Fragment>
+                    ))}
                 </SPortfolioTableWrapper>
               </Box>
             </CollapsibleContent>
