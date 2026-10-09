@@ -4,6 +4,7 @@ import {
   Web3ConnectModal,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
+import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -19,6 +20,13 @@ import {
   RecipientModal,
 } from "@/modules/xcm/transfer/components/Recipient"
 import { useRpcProvider } from "@/providers/rpcProvider"
+
+// Wallets that can receive on each destination; a destination not listed
+// takes only a pasted or saved address
+const DEST_WALLET_MODES: Partial<Record<XcSwapPlatform, WalletMode>> = {
+  near: WalletMode.Near,
+  zec: WalletMode.Zcash,
+}
 
 type XcSwapRecipientButtonProps = {
   destChain: XcChain
@@ -36,8 +44,7 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
 
   const destAddress = watch("destAddress").trim()
 
-  // Only NEAR has wallets to connect; a Zcash address is pasted or picked
-  const walletMode = destChain.platform === "near" ? WalletMode.Near : null
+  const walletMode = DEST_WALLET_MODES[destChain.platform] ?? null
 
   // The connected account, while the swap still pays out to it
   const destAccount =

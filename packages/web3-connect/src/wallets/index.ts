@@ -13,6 +13,7 @@ import { LedgerNear } from "@/wallets/Ledger"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask } from "@/wallets/MetaMask"
 import { MeteorWallet } from "@/wallets/MeteorWallet"
+import { NoirWallet } from "@/wallets/NoirWallet"
 import { NovaWallet, NovaWalletEvm, NovaWalletH160 } from "@/wallets/NovaWallet"
 import { Phantom, PhantomSui } from "@/wallets/Phantom"
 import { PolkadotJS } from "@/wallets/PolkadotJS"
@@ -38,6 +39,7 @@ export {
   MantaWallet,
   MetaMask,
   MeteorWallet,
+  NoirWallet,
   NovaWallet,
   NovaWalletEvm,
   NovaWalletH160,
@@ -98,6 +100,9 @@ const wallets = [
   new HotWalletNear(),
   new IntearWallet(),
   new LedgerNear(),
+
+  // Zcash
+  new NoirWallet(),
 
   // Other
   new ReownWalletConnect(),

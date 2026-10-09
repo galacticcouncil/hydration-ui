@@ -3081,7 +3081,7 @@
   dependencies:
     "@noble/hashes" "1.8.0"
 
-"@noble/curves@1.9.7", "@noble/curves@^1.4.0", "@noble/curves@^1.4.2", "@noble/curves@^1.6.0", "@noble/curves@~1.9.0":
+"@noble/curves@1.9.7", "@noble/curves@^1.4.0", "@noble/curves@^1.4.2", "@noble/curves@^1.6.0", "@noble/curves@^1.9.7", "@noble/curves@~1.9.0":
   version "1.9.7"
   resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.9.7.tgz#79d04b4758a43e4bca2cbdc62e7771352fa6b951"
   integrity sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==
@@ -3135,6 +3135,15 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@noir-wallet/sdk@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@noir-wallet/sdk/-/sdk-0.1.9.tgz#6178809986b51a574894d35e2027736a9624e217"
+  integrity sha512-VLoRYh3Omzz7GJphZootFzirhx4+RAtiur2iLj3sZVWOMHMifU/RR9Czc1oepqRJLPO940iypq1ma/5rbdJ08Q==
+  dependencies:
+    "@noble/curves" "^1.9.7"
+    "@noble/hashes" "^1.8.0"
+    bs58 "^6.0.0"
 
 "@oxc-parser/binding-android-arm-eabi@0.120.0":
   version "0.120.0"

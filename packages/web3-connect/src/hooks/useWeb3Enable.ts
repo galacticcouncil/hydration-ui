@@ -17,7 +17,6 @@ import {
 import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
-import { BaseNearWallet } from "@/wallets/BaseNearWallet"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 type UseWeb3EnableOptions = {
@@ -92,8 +91,8 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
     mutationFn: async (type: WalletProviderType) => {
       const wallet = getWallet(type)
       if (!wallet) return []
-      // A restore must bring back a NEAR session, never open the wallet
-      if (options.restore && wallet instanceof BaseNearWallet) {
+      // A restore must bring back a stored session, never open the wallet
+      if (options.restore && wallet.restore) {
         await wallet.restore()
       } else {
         await wallet.enable()

@@ -12,6 +12,7 @@ import {
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
+  ZCASH_PROVIDERS,
 } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import { getUniqueAccountKey } from "@/utils/wallet"
@@ -49,7 +50,7 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.Solana]: SOLANA_PROVIDERS,
   [WalletMode.Sui]: SUI_PROVIDERS,
   [WalletMode.Near]: NEAR_PROVIDERS,
-  [WalletMode.Zcash]: [],
+  [WalletMode.Zcash]: ZCASH_PROVIDERS,
   [WalletMode.Unknown]: [],
 }
 

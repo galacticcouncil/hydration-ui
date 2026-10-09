@@ -9,7 +9,11 @@ import { useCallback, useEffect, useMemo } from "react"
 import { chunk, pick, pipe, sortBy } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { NEAR_PROVIDERS, WalletProviderType } from "@/config/providers"
+import {
+  NEAR_PROVIDERS,
+  WalletProviderType,
+  ZCASH_PROVIDERS,
+} from "@/config/providers"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks"
 import {
@@ -76,9 +80,10 @@ export const getFilteredAccounts = (
 }
 
 // Neckwork prices Hydration accounts by hex public key and rejects the whole
-// batch on any other id, so NEAR accounts are left without a balance.
+// batch on any other id, so NEAR and Zcash accounts are left without a balance.
 const hasNeckworkBalance = (account: Account) =>
-  !NEAR_PROVIDERS.includes(account.provider)
+  !NEAR_PROVIDERS.includes(account.provider) &&
+  !ZCASH_PROVIDERS.includes(account.provider)
 
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()

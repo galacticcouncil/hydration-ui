@@ -23,6 +23,7 @@ import {
   SOLANA_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
+  ZCASH_PROVIDERS,
 } from "@/config/providers"
 import {
   WALLET_ACCOUNT_FILTER_OPTIONS,
@@ -116,6 +117,20 @@ const toStoredNearAccount = ({
   provider,
 })
 
+// A Zcash transparent address (t1/t3) has no SS58 form either, so it is kept
+// as is; the account only receives swap payouts.
+const toStoredZcashAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => ({
+  publicKey: address,
+  address,
+  rawAddress: address,
+  name: name ?? "",
+  provider,
+})
+
 const toStoredDefaultAccount = ({
   address,
   name,
@@ -150,6 +165,8 @@ export const toStoredAccount = ({
       return toStoredSuiAccount({ address, name, provider })
     case NEAR_PROVIDERS.includes(provider):
       return toStoredNearAccount({ address, name, provider })
+    case ZCASH_PROVIDERS.includes(provider):
+      return toStoredZcashAccount({ address, name, provider })
     default:
       return toStoredDefaultAccount({ address, name, provider })
   }
