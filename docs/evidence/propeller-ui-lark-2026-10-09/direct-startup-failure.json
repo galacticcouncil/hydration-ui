@@ -1,0 +1,532 @@
+{
+  "i": 7,
+  "failed": 1,
+  "requests": [
+    {
+      "at": 1232,
+      "call": {
+        "jsonrpc": "2.0",
+        "id": 19,
+        "method": "chainHead_v1_call",
+        "params": [
+          "XcbbJq3W0y13KQ48",
+          "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277",
+          "AaveTradeExecutor_pools",
+          "0x"
+        ]
+      }
+    },
+    {
+      "at": 1494,
+      "call": {
+        "jsonrpc": "2.0",
+        "id": 89,
+        "method": "chainHead_v1_call",
+        "params": [
+          "LPpYJMWAJ1JZiUVj",
+          "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277",
+          "AaveTradeExecutor_pools",
+          "0x"
+        ]
+      }
+    },
+    {
+      "at": 1652,
+      "call": {
+        "jsonrpc": "2.0",
+        "id": 139,
+        "method": "chainHead_v1_call",
+        "params": [
+          "ancyQdMGhn4Ij4cE",
+          "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277",
+          "AaveTradeExecutor_pools",
+          "0x"
+        ]
+      }
+    }
+  ],
+  "heads": [
+    {
+      "at": 821,
+      "head": "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277"
+    },
+    {
+      "at": 1467,
+      "head": "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277"
+    },
+    {
+      "at": 1587,
+      "head": "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277"
+    },
+    {
+      "at": 1724,
+      "head": "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277"
+    },
+    {
+      "at": 2363,
+      "head": "0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277"
+    },
+    {
+      "at": 4810,
+      "head": "0xe6ad5d5f43afc5c4746d4accdb814d0503d4fbdc226dfa468bae92ac055a9c5d"
+    },
+    {
+      "at": 4813,
+      "head": "0xe6ad5d5f43afc5c4746d4accdb814d0503d4fbdc226dfa468bae92ac055a9c5d"
+    },
+    {
+      "at": 29036,
+      "head": "0x9076eea72b1c0fe0159be3e58c3604dc141f21129101cecd059a7f41ad56db17"
+    },
+    {
+      "at": 29036,
+      "head": "0x9076eea72b1c0fe0159be3e58c3604dc141f21129101cecd059a7f41ad56db17"
+    },
+    {
+      "at": 34830,
+      "head": "0x28cc0493e8b374afefe0243b089035413a422b28e2ac10e58e219a8cbf417f8a"
+    },
+    {
+      "at": 34831,
+      "head": "0x28cc0493e8b374afefe0243b089035413a422b28e2ac10e58e219a8cbf417f8a"
+    },
+    {
+      "at": 40811,
+      "head": "0x109fd7a795948b9ab444a4f5eb8a6050de33525a1a145231b558ccd916770572"
+    },
+    {
+      "at": 40812,
+      "head": "0x109fd7a795948b9ab444a4f5eb8a6050de33525a1a145231b558ccd916770572"
+    },
+    {
+      "at": 46793,
+      "head": "0x997a555bd97937c42ced1161adbbe69408408e3015f780d42327ff147b42208a"
+    },
+    {
+      "at": 46794,
+      "head": "0x997a555bd97937c42ced1161adbbe69408408e3015f780d42327ff147b42208a"
+    }
+  ],
+  "events": [
+    {
+      "at": 820,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "XcbbJq3W0y13KQ48",
+          "result": {
+            "event": "initialized",
+            "finalizedBlockHashes": [
+              "0xbcf1295c150b636385844f0368e58172cbc95fc479ef7c0caff2963e66be1d4c",
+              "0x4a9c659ac831b76e418f8fd728230041026f12eeff2184cf7650fb00c35796b6",
+              "0x0ac6e08f0e9e6a4c6ad24700c84692c69cc846610bbb75cc2edc7e7367053132",
+              "0xbb79f817fcc8daab4c4a6d783ee8b0bd9a28be8159c8abafacfe2741acd01464",
+              "0x74c9b381b00ba5b43242ead6f27512df36766593c4b7d030457db68d4a10d29b",
+              "0x99a6297693b7863367c9e82e0f0b520f13dfd2168518ff202fabf11f6d4c1965",
+              "0x18cb14e4dbc333d2774ed873bb88ac38f4472fb6b507ca37a2863dac03fc4d9e",
+              "0x14b5472c9d49a0472822a218edda839fe908f1ac238529cd9437e395bb8721a5",
+              "0xa5cc811af745d9e88120b2b57c396b0ca390c35b41acfe9d0f9da320eccebc2e",
+              "0x30ba069ee80a7f74fc62c155f636553f90d6bbb9d456b93c588e211ff5cb822f",
+              "0x560aa1d64a65d6e1252fdd26ddaf4df1eac6cf0356d6fc72717de38cbb7524ca",
+              "0xc59f67a4f03b91cb3737ec1f81669546e151d6f97746856a0ba5e61b8e04e749",
+              "0x56c28cedd50b60d69e3c8250d7799f3dcdf04939dfaedeabee4e3bfc854a01b2",
+              "0xd497334aae4ab075cc99424f7e2320eeb85bdef6e26f9f18e04bd56c331737d0",
+              "0xf6a3120e2aa8e83260875f465c2ce4e7a69f1cde68b20df586fa51c1c01cfaf2",
+              "0x6b9a2f224c34e1e1d7fef20abe30b5b203319af2f693327f4831c51119377064"
+            ],
+            "finalizedBlockRuntime": {
+              "type": "valid",
+              "spec": {
+                "specName": "hydradx",
+                "implName": "hydradx",
+                "specVersion": 447,
+                "implVersion": 0,
+                "apis": {
+                  "0x04e70521a0d3d2f8": 1,
+                  "0x0bb67a52fcd040ff": 1,
+                  "0x2b5f5bcd2460e4f0": 1,
+                  "0x34a3d488166b5a55": 1,
+                  "0x37c8bb1350a9a2a8": 4,
+                  "0x37e397fc7c91f5e4": 2,
+                  "0x40fe3ad401f8959a": 6,
+                  "0x542334fe4fd7cada": 1,
+                  "0x582211f65bb14b89": 6,
+                  "0x695c80446b8b3d4e": 1,
+                  "0x6aa673a4e69ae9a5": 1,
+                  "0x6ff52ee858e6c5bd": 1,
+                  "0x75fc5fbf0e9c71bc": 1,
+                  "0x91b1c8b16328eb92": 2,
+                  "0x9af86751b70c112d": 1,
+                  "0x9ffb505aa738d69c": 1,
+                  "0xa2b2b484fcb86943": 1,
+                  "0xab3c0572291feb8b": 1,
+                  "0xbc9d89904f5b923f": 1,
+                  "0xd2bc9897eed08f15": 3,
+                  "0xd7bdd8a272ca0d65": 2,
+                  "0xdd718d5cc53262d4": 1,
+                  "0xdf6acb689907609b": 5,
+                  "0xe65b00e46cedd0aa": 2,
+                  "0xea93e3f16f3d6962": 3,
+                  "0xf78b278be53f454c": 2,
+                  "0xfbc577b9d747efd6": 1
+                },
+                "transactionVersion": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 1449,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "XcbbJq3W0y13KQ48",
+          "result": {
+            "event": "stop"
+          }
+        }
+      }
+    },
+    {
+      "at": 1467,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "LPpYJMWAJ1JZiUVj",
+          "result": {
+            "event": "initialized",
+            "finalizedBlockHashes": [
+              "0x4a9c659ac831b76e418f8fd728230041026f12eeff2184cf7650fb00c35796b6",
+              "0x0ac6e08f0e9e6a4c6ad24700c84692c69cc846610bbb75cc2edc7e7367053132",
+              "0xbb79f817fcc8daab4c4a6d783ee8b0bd9a28be8159c8abafacfe2741acd01464",
+              "0x74c9b381b00ba5b43242ead6f27512df36766593c4b7d030457db68d4a10d29b",
+              "0x99a6297693b7863367c9e82e0f0b520f13dfd2168518ff202fabf11f6d4c1965",
+              "0x18cb14e4dbc333d2774ed873bb88ac38f4472fb6b507ca37a2863dac03fc4d9e",
+              "0x14b5472c9d49a0472822a218edda839fe908f1ac238529cd9437e395bb8721a5",
+              "0xa5cc811af745d9e88120b2b57c396b0ca390c35b41acfe9d0f9da320eccebc2e",
+              "0x30ba069ee80a7f74fc62c155f636553f90d6bbb9d456b93c588e211ff5cb822f",
+              "0x560aa1d64a65d6e1252fdd26ddaf4df1eac6cf0356d6fc72717de38cbb7524ca",
+              "0xc59f67a4f03b91cb3737ec1f81669546e151d6f97746856a0ba5e61b8e04e749",
+              "0x56c28cedd50b60d69e3c8250d7799f3dcdf04939dfaedeabee4e3bfc854a01b2",
+              "0xd497334aae4ab075cc99424f7e2320eeb85bdef6e26f9f18e04bd56c331737d0",
+              "0xf6a3120e2aa8e83260875f465c2ce4e7a69f1cde68b20df586fa51c1c01cfaf2",
+              "0x6b9a2f224c34e1e1d7fef20abe30b5b203319af2f693327f4831c51119377064",
+              "0x3a73697a8f177eac0be90587ce7f57ddc29e877df7c93f924d08ea9aac9fc6c6"
+            ],
+            "finalizedBlockRuntime": {
+              "type": "valid",
+              "spec": {
+                "specName": "hydradx",
+                "implName": "hydradx",
+                "specVersion": 447,
+                "implVersion": 0,
+                "apis": {
+                  "0x04e70521a0d3d2f8": 1,
+                  "0x0bb67a52fcd040ff": 1,
+                  "0x2b5f5bcd2460e4f0": 1,
+                  "0x34a3d488166b5a55": 1,
+                  "0x37c8bb1350a9a2a8": 4,
+                  "0x37e397fc7c91f5e4": 2,
+                  "0x40fe3ad401f8959a": 6,
+                  "0x542334fe4fd7cada": 1,
+                  "0x582211f65bb14b89": 6,
+                  "0x695c80446b8b3d4e": 1,
+                  "0x6aa673a4e69ae9a5": 1,
+                  "0x6ff52ee858e6c5bd": 1,
+                  "0x75fc5fbf0e9c71bc": 1,
+                  "0x91b1c8b16328eb92": 2,
+                  "0x9af86751b70c112d": 1,
+                  "0x9ffb505aa738d69c": 1,
+                  "0xa2b2b484fcb86943": 1,
+                  "0xab3c0572291feb8b": 1,
+                  "0xbc9d89904f5b923f": 1,
+                  "0xd2bc9897eed08f15": 3,
+                  "0xd7bdd8a272ca0d65": 2,
+                  "0xdd718d5cc53262d4": 1,
+                  "0xdf6acb689907609b": 5,
+                  "0xe65b00e46cedd0aa": 2,
+                  "0xea93e3f16f3d6962": 3,
+                  "0xf78b278be53f454c": 2,
+                  "0xfbc577b9d747efd6": 1
+                },
+                "transactionVersion": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 1570,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "LPpYJMWAJ1JZiUVj",
+          "result": {
+            "event": "stop"
+          }
+        }
+      }
+    },
+    {
+      "at": 1587,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "ancyQdMGhn4Ij4cE",
+          "result": {
+            "event": "initialized",
+            "finalizedBlockHashes": [
+              "0x4a9c659ac831b76e418f8fd728230041026f12eeff2184cf7650fb00c35796b6",
+              "0x0ac6e08f0e9e6a4c6ad24700c84692c69cc846610bbb75cc2edc7e7367053132",
+              "0xbb79f817fcc8daab4c4a6d783ee8b0bd9a28be8159c8abafacfe2741acd01464",
+              "0x74c9b381b00ba5b43242ead6f27512df36766593c4b7d030457db68d4a10d29b",
+              "0x99a6297693b7863367c9e82e0f0b520f13dfd2168518ff202fabf11f6d4c1965",
+              "0x18cb14e4dbc333d2774ed873bb88ac38f4472fb6b507ca37a2863dac03fc4d9e",
+              "0x14b5472c9d49a0472822a218edda839fe908f1ac238529cd9437e395bb8721a5",
+              "0xa5cc811af745d9e88120b2b57c396b0ca390c35b41acfe9d0f9da320eccebc2e",
+              "0x30ba069ee80a7f74fc62c155f636553f90d6bbb9d456b93c588e211ff5cb822f",
+              "0x560aa1d64a65d6e1252fdd26ddaf4df1eac6cf0356d6fc72717de38cbb7524ca",
+              "0xc59f67a4f03b91cb3737ec1f81669546e151d6f97746856a0ba5e61b8e04e749",
+              "0x56c28cedd50b60d69e3c8250d7799f3dcdf04939dfaedeabee4e3bfc854a01b2",
+              "0xd497334aae4ab075cc99424f7e2320eeb85bdef6e26f9f18e04bd56c331737d0",
+              "0xf6a3120e2aa8e83260875f465c2ce4e7a69f1cde68b20df586fa51c1c01cfaf2",
+              "0x6b9a2f224c34e1e1d7fef20abe30b5b203319af2f693327f4831c51119377064",
+              "0x3a73697a8f177eac0be90587ce7f57ddc29e877df7c93f924d08ea9aac9fc6c6"
+            ],
+            "finalizedBlockRuntime": {
+              "type": "valid",
+              "spec": {
+                "specName": "hydradx",
+                "implName": "hydradx",
+                "specVersion": 447,
+                "implVersion": 0,
+                "apis": {
+                  "0x04e70521a0d3d2f8": 1,
+                  "0x0bb67a52fcd040ff": 1,
+                  "0x2b5f5bcd2460e4f0": 1,
+                  "0x34a3d488166b5a55": 1,
+                  "0x37c8bb1350a9a2a8": 4,
+                  "0x37e397fc7c91f5e4": 2,
+                  "0x40fe3ad401f8959a": 6,
+                  "0x542334fe4fd7cada": 1,
+                  "0x582211f65bb14b89": 6,
+                  "0x695c80446b8b3d4e": 1,
+                  "0x6aa673a4e69ae9a5": 1,
+                  "0x6ff52ee858e6c5bd": 1,
+                  "0x75fc5fbf0e9c71bc": 1,
+                  "0x91b1c8b16328eb92": 2,
+                  "0x9af86751b70c112d": 1,
+                  "0x9ffb505aa738d69c": 1,
+                  "0xa2b2b484fcb86943": 1,
+                  "0xab3c0572291feb8b": 1,
+                  "0xbc9d89904f5b923f": 1,
+                  "0xd2bc9897eed08f15": 3,
+                  "0xd7bdd8a272ca0d65": 2,
+                  "0xdd718d5cc53262d4": 1,
+                  "0xdf6acb689907609b": 5,
+                  "0xe65b00e46cedd0aa": 2,
+                  "0xea93e3f16f3d6962": 3,
+                  "0xf78b278be53f454c": 2,
+                  "0xfbc577b9d747efd6": 1
+                },
+                "transactionVersion": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 1707,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "ancyQdMGhn4Ij4cE",
+          "result": {
+            "event": "stop"
+          }
+        }
+      }
+    },
+    {
+      "at": 1724,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "YyJB1CLusJvcyPEu",
+          "result": {
+            "event": "initialized",
+            "finalizedBlockHashes": [
+              "0x4a9c659ac831b76e418f8fd728230041026f12eeff2184cf7650fb00c35796b6",
+              "0x0ac6e08f0e9e6a4c6ad24700c84692c69cc846610bbb75cc2edc7e7367053132",
+              "0xbb79f817fcc8daab4c4a6d783ee8b0bd9a28be8159c8abafacfe2741acd01464",
+              "0x74c9b381b00ba5b43242ead6f27512df36766593c4b7d030457db68d4a10d29b",
+              "0x99a6297693b7863367c9e82e0f0b520f13dfd2168518ff202fabf11f6d4c1965",
+              "0x18cb14e4dbc333d2774ed873bb88ac38f4472fb6b507ca37a2863dac03fc4d9e",
+              "0x14b5472c9d49a0472822a218edda839fe908f1ac238529cd9437e395bb8721a5",
+              "0xa5cc811af745d9e88120b2b57c396b0ca390c35b41acfe9d0f9da320eccebc2e",
+              "0x30ba069ee80a7f74fc62c155f636553f90d6bbb9d456b93c588e211ff5cb822f",
+              "0x560aa1d64a65d6e1252fdd26ddaf4df1eac6cf0356d6fc72717de38cbb7524ca",
+              "0xc59f67a4f03b91cb3737ec1f81669546e151d6f97746856a0ba5e61b8e04e749",
+              "0x56c28cedd50b60d69e3c8250d7799f3dcdf04939dfaedeabee4e3bfc854a01b2",
+              "0xd497334aae4ab075cc99424f7e2320eeb85bdef6e26f9f18e04bd56c331737d0",
+              "0xf6a3120e2aa8e83260875f465c2ce4e7a69f1cde68b20df586fa51c1c01cfaf2",
+              "0x6b9a2f224c34e1e1d7fef20abe30b5b203319af2f693327f4831c51119377064",
+              "0x3a73697a8f177eac0be90587ce7f57ddc29e877df7c93f924d08ea9aac9fc6c6"
+            ],
+            "finalizedBlockRuntime": {
+              "type": "valid",
+              "spec": {
+                "specName": "hydradx",
+                "implName": "hydradx",
+                "specVersion": 447,
+                "implVersion": 0,
+                "apis": {
+                  "0x04e70521a0d3d2f8": 1,
+                  "0x0bb67a52fcd040ff": 1,
+                  "0x2b5f5bcd2460e4f0": 1,
+                  "0x34a3d488166b5a55": 1,
+                  "0x37c8bb1350a9a2a8": 4,
+                  "0x37e397fc7c91f5e4": 2,
+                  "0x40fe3ad401f8959a": 6,
+                  "0x542334fe4fd7cada": 1,
+                  "0x582211f65bb14b89": 6,
+                  "0x695c80446b8b3d4e": 1,
+                  "0x6aa673a4e69ae9a5": 1,
+                  "0x6ff52ee858e6c5bd": 1,
+                  "0x75fc5fbf0e9c71bc": 1,
+                  "0x91b1c8b16328eb92": 2,
+                  "0x9af86751b70c112d": 1,
+                  "0x9ffb505aa738d69c": 1,
+                  "0xa2b2b484fcb86943": 1,
+                  "0xab3c0572291feb8b": 1,
+                  "0xbc9d89904f5b923f": 1,
+                  "0xd2bc9897eed08f15": 3,
+                  "0xd7bdd8a272ca0d65": 2,
+                  "0xdd718d5cc53262d4": 1,
+                  "0xdf6acb689907609b": 5,
+                  "0xe65b00e46cedd0aa": 2,
+                  "0xea93e3f16f3d6962": 3,
+                  "0xf78b278be53f454c": 2,
+                  "0xfbc577b9d747efd6": 1
+                },
+                "transactionVersion": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "at": 2321,
+      "event": {
+        "jsonrpc": "2.0",
+        "method": "chainHead_v1_followEvent",
+        "params": {
+          "subscription": "7I7wGU3q5Flfgn5U",
+          "result": {
+            "event": "initialized",
+            "finalizedBlockHashes": [
+              "0x4a9c659ac831b76e418f8fd728230041026f12eeff2184cf7650fb00c35796b6",
+              "0x0ac6e08f0e9e6a4c6ad24700c84692c69cc846610bbb75cc2edc7e7367053132",
+              "0xbb79f817fcc8daab4c4a6d783ee8b0bd9a28be8159c8abafacfe2741acd01464",
+              "0x74c9b381b00ba5b43242ead6f27512df36766593c4b7d030457db68d4a10d29b",
+              "0x99a6297693b7863367c9e82e0f0b520f13dfd2168518ff202fabf11f6d4c1965",
+              "0x18cb14e4dbc333d2774ed873bb88ac38f4472fb6b507ca37a2863dac03fc4d9e",
+              "0x14b5472c9d49a0472822a218edda839fe908f1ac238529cd9437e395bb8721a5",
+              "0xa5cc811af745d9e88120b2b57c396b0ca390c35b41acfe9d0f9da320eccebc2e",
+              "0x30ba069ee80a7f74fc62c155f636553f90d6bbb9d456b93c588e211ff5cb822f",
+              "0x560aa1d64a65d6e1252fdd26ddaf4df1eac6cf0356d6fc72717de38cbb7524ca",
+              "0xc59f67a4f03b91cb3737ec1f81669546e151d6f97746856a0ba5e61b8e04e749",
+              "0x56c28cedd50b60d69e3c8250d7799f3dcdf04939dfaedeabee4e3bfc854a01b2",
+              "0xd497334aae4ab075cc99424f7e2320eeb85bdef6e26f9f18e04bd56c331737d0",
+              "0xf6a3120e2aa8e83260875f465c2ce4e7a69f1cde68b20df586fa51c1c01cfaf2",
+              "0x6b9a2f224c34e1e1d7fef20abe30b5b203319af2f693327f4831c51119377064",
+              "0x3a73697a8f177eac0be90587ce7f57ddc29e877df7c93f924d08ea9aac9fc6c6"
+            ],
+            "finalizedBlockRuntime": {
+              "type": "valid",
+              "spec": {
+                "specName": "hydradx",
+                "implName": "hydradx",
+                "specVersion": 447,
+                "implVersion": 0,
+                "apis": {
+                  "0x04e70521a0d3d2f8": 1,
+                  "0x0bb67a52fcd040ff": 1,
+                  "0x2b5f5bcd2460e4f0": 1,
+                  "0x34a3d488166b5a55": 1,
+                  "0x37c8bb1350a9a2a8": 4,
+                  "0x37e397fc7c91f5e4": 2,
+                  "0x40fe3ad401f8959a": 6,
+                  "0x542334fe4fd7cada": 1,
+                  "0x582211f65bb14b89": 6,
+                  "0x695c80446b8b3d4e": 1,
+                  "0x6aa673a4e69ae9a5": 1,
+                  "0x6ff52ee858e6c5bd": 1,
+                  "0x75fc5fbf0e9c71bc": 1,
+                  "0x91b1c8b16328eb92": 2,
+                  "0x9af86751b70c112d": 1,
+                  "0x9ffb505aa738d69c": 1,
+                  "0xa2b2b484fcb86943": 1,
+                  "0xab3c0572291feb8b": 1,
+                  "0xbc9d89904f5b923f": 1,
+                  "0xd2bc9897eed08f15": 3,
+                  "0xd7bdd8a272ca0d65": 2,
+                  "0xdd718d5cc53262d4": 1,
+                  "0xdf6acb689907609b": 5,
+                  "0xe65b00e46cedd0aa": 2,
+                  "0xea93e3f16f3d6962": 3,
+                  "0xf78b278be53f454c": 2,
+                  "0xfbc577b9d747efd6": 1
+                },
+                "transactionVersion": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "errors": [
+    {
+      "at": 551,
+      "text": "State loaded from storage couldn't be migrated since no migrate function was provided"
+    },
+    {
+      "at": 551,
+      "text": "State loaded from storage couldn't be migrated since no migrate function was provided"
+    },
+    {
+      "at": 16225,
+      "text": "[RQ] Error: AaveTradeExecutor.pools[pools] stalled at 0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277\n    at http://127.0.0.1:4178/chunk-CjsJnK_i.js:11:257494 ue"
+    },
+    {
+      "at": 32227,
+      "text": "[RQ] Error: AaveTradeExecutor.pools[pools] stalled at 0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277\n    at http://127.0.0.1:4178/chunk-CjsJnK_i.js:11:257494 ue"
+    },
+    {
+      "at": 49229,
+      "text": "[RQ] Error: AaveTradeExecutor.pools[pools] stalled at 0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277\n    at http://127.0.0.1:4178/chunk-CjsJnK_i.js:11:257494 ue"
+    },
+    {
+      "at": 49229,
+      "text": "[RQ] Error: AaveTradeExecutor.pools[pools] stalled at 0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277\n    at http://127.0.0.1:4178/chunk-CjsJnK_i.js:11:257494 ue"
+    },
+    {
+      "at": 49250,
+      "text": "Error: AaveTradeExecutor.pools[pools] stalled at 0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277\n    at http://127.0.0.1:4178/chunk-CjsJnK_i.js:11:257494"
+    }
+  ],
+  "error": "message: AaveTradeExecutor.pools[pools] stalled at 0x82a7cd8280dc49c19280de835a24313d1c3e4801ef28b27d3a68c4965ee3c277\naddress: \nwallet: \nfeePaymentAsset: \nspecVersion: \nblockNumber: \npath: /strategies/juicer"
+}

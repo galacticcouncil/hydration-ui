@@ -1,0 +1,16 @@
+{
+  "files": {
+    "abi.log": "254e17a747723e156d3ec301a21bb373f09fa9be3bdce8eddbb48d273bad0a3e",
+    "build.log": "3f63d9dfbe1d747786345b7c9aba97c0f96548f8a767040b2bd6bac9d1b81072",
+    "connected-status.json": "8f611fd4f25f497fb4cca156be604972a6df55140e5fe523a28a8bfa8af7911d",
+    "default-startups.jsonl": "89e7d9868df5b9137b83952518aa83cfa85cadfdbd4c675312246f411866ac53",
+    "deployment.json": "5ba46baca5e864e66332845595e063213e3f9b0ce38f603900fec3d8556eda2a",
+    "direct-startup-failure.json": "6767789737856986e96489df348f4e7c7274a32bee7db5936de84c5c1a165ab8",
+    "finalized-readback.json": "a47ea823f3161f44fa678edfac9462d0ef01590dd743f76fb1546f93a898b12c",
+    "lint.log": "cc4c056a94f9c9a96444146d05decd88a43f2e795e4076f2091c162272c0e9c4",
+    "page-checks.jsonl": "7f752131f0c3958446f96d6a576558ab520d7d0a9b7f4c7c96e080236d59df99",
+    "tests.log": "bf09bd4c383d0adbecea260680c91df1d088bca5292522896930a8ac72dedbf9",
+    "validation.json": "9a3913ab1d0bd0671a5c32fa0af6307c12b8667800180b4b9b77a947192cf0e0"
+  },
+  "normalization": "trailing whitespace removed from captured logs"
+}

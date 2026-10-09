@@ -154,10 +154,19 @@ node apps/main/tests/propeller-wallet-lifecycle.mjs claim ETH --sign-lark-public
 
 `REPORT_PATH` saves a JSON report with browser content, signing requests, pinned
 before/after balances, signed extrinsics and their chain events. The deposit
-scenario deliberately requires the keeper to be held off, so unchanged debt and
-the exact increase in pooled pending collateral can be verified independently of
-later DCA. Claims require a settled withdrawal; a cooldown reaching zero alone
-does not make the claim available. The runner's default action is read-only.
+scenario checks the deposited assets, minted shares and exact wallet debit while
+keepers run. Add `--keeper-idle` only when keepers are held off; it also requires
+unchanged debt and an exact increase in pooled pending collateral. Claims require
+a settled withdrawal; a cooldown reaching zero alone does not make the claim
+available. `withdraw ETH --max` or `withdraw tBTC --max` checks the full-exit
+sentinel and zero remaining funded balance. The runner's default action is
+read-only.
+
+The current fixture targets Lark 0 and checks its genesis before signing. The
+October 5 addresses and results below describe the earlier Lark 4 rehearsal.
+For the current page check, `UI_URL` selects a local or deployed preview, and
+`--require-ready` verifies both vault reads, the Lark 0 RPC, enabled deposits and
+the desktop/mobile disclosure tooltips.
 
 ## Completed validation passes
 
@@ -226,3 +235,65 @@ The EVM extension must use the selected Lark RPC; matching its chain ID alone is
 insufficient. Keeper execution, arbitrage behavior and economic performance remain
 the contract/operations workstream's evidence. No mainnet address or parameter was
 activated by this UI update.
+
+## Lark 0 verification — 9 October 2026
+
+rechecked draft PR #4127 at `0f21548243e749851713b8211ac223235450d23d`
+(`feat/juicer-next` → `master`) against the new Lark 0 deployment. both RPCs
+reported genesis
+`0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878`.
+the manifest, deployment block 123, collateral assets, vault/source/debt bindings,
+51 ABI functions and four events matched. both vaults accepted deposits; neither
+was paused or under deficit stop at block 4680.
+
+the direct `node0.lark` endpoint intermittently stopped and reinitialized its
+`chainHead` subscriptions during startup. the asset registry then failed with
+`AaveTradeExecutor.pools[pools] stalled at …`; retries kept using the old block.
+the production provider list now selects `wss://0.lark.hydration.cloud`, whose
+legacy RPC adapter avoided this failure. ten successive starts passed with the
+final build: five clean sessions and five with the previous endpoint saved in
+automatic mode. scripts continue using the direct RPC for independent reads.
+manually pinned endpoints remain a user setting.
+
+the browser runner now opens the actual desktop/mobile disclosure controls,
+can require deposit readiness, checks Max calldata, and supports active keepers.
+it collects transaction evidence after finality: the ETH Max transaction moved
+from its initially observed block hash before finalization, but exists and
+succeeded in the canonical block. its finalized event and calldata were checked
+independently.
+
+the public native-wallet fixture exercised cancelled approval, cancelled deposit
+after exact approval, both collateral deposits, a partial tBTC withdrawal, and
+Max exits from both vaults. the last Max exit used the proxy in the final build.
+all seven submitted user extrinsics below finalized successfully.
+
+| action | block | native extrinsic hash |
+| --- | --- | --- |
+| bind and approve 0.001 ETH; cancel deposit | 4536 | `0x60c396cd1468032c6cc3453d7dd8a08c538c8a00716915d5b2f617d9d202ecbe` |
+| deposit 0.001 ETH using existing allowance | 4546 | `0xfff65a184fe526abc7212bf65c0d60e458e1fc859e2cb6ecfd807138b03a2d55` |
+| Max ETH withdrawal, request 0 | 4575 | `0x1f3677531dde3560c35e52dd10db436b77b9b551cd64f0e4f00346cb7481ebbd` |
+| approve 0.0001 tBTC | 4600 | `0x1542f9ea9dc2ccc3ef6b42168b919d13d50ec1dcd6aaa145ef8b9b02cae76870` |
+| deposit 0.0001 tBTC | 4602 | `0xa8fda8e809ba6a173150e144ec6d0bb6a5d299db00048a171a87c0da127ba2fd` |
+| partial tBTC withdrawal, request 0 | 4616 | `0xec0e321fe68e77eaf2099b1dc120bfd8755289f32a57f80f609b6e1cb083038e` |
+| Max tBTC withdrawal, request 1 | 4677 | `0x828684ec5d0713c013b6f79b9fbd4e12408e9b0ee23ce06ffda31e2924f9f7f8` |
+
+keepers settled and delivered the withdrawals. the first payouts were
+`1000000001227829` wei ETH and `10000000346762` tBTC base units. a connected
+browser also observed the last withdrawal change from Claim to Claimed during
+its normal refresh. a separate manual-claim attempt submitted nothing because
+keeper delivery had already removed the claim action. native/ERC20 collateral
+balances and proxy/direct funded balances matched at the same finalized block.
+
+final checks: 124 unit tests, workspace ESLint/TypeScript, production build,
+desktop (1280) and mobile (390) live reads, enabled deposits and disclosure
+checks passed. both viewports had zero uncaught page errors and no horizontal
+page overflow. the running app was inspected visually at both widths. existing
+bundle-size and persisted-store migration warnings remain.
+
+evidence is in `docs/evidence/propeller-ui-lark-2026-10-09/`. the RPC selection
+and runner fixes are included in this update. validation used the local
+production build; the published edge preview was still on the original direct
+endpoint during capture. this pass used an injected public native signer, not
+real extension prompts or an EVM wallet. manual claiming and
+deficit/partial-settlement recovery were not completed live in this pass;
+keeper delivery remained enabled throughout.

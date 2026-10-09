@@ -3,8 +3,10 @@ import { writeFile } from "node:fs/promises"
 import {
   createPublicClient,
   decodeEventLog,
+  decodeFunctionData,
   erc20Abi,
   http,
+  maxUint256,
   parseUnits,
 } from "viem"
 import { VAULT_ABI } from "../src/modules/strategies/propeller/config/abi.ts"
@@ -17,6 +19,9 @@ import {
 
 const positional = process.argv.slice(2).filter((arg) => !arg.startsWith("--"))
 const action = positional[0] || "connect"
+const withdrawMax = process.argv.includes("--max")
+const keeperIdle = process.argv.includes("--keeper-idle")
+assert.ok(!withdrawMax || action === "withdraw", "--max requires withdraw")
 assert.ok(
   [
     "connect",
@@ -56,6 +61,8 @@ const report = {
   action,
   symbol,
   amount,
+  withdrawMax,
+  keeperIdle,
   vault,
 }
 const { default: playwright } = await import(
@@ -73,6 +80,7 @@ const context = await browser.newContext({
 let wallet
 let page
 const errors = []
+const consoleErrors = []
 function progress(step) {
   ;(report.steps ??= []).push({ step, at: new Date().toISOString() })
   console.log(JSON.stringify({ progress: step, action, symbol }))
@@ -88,8 +96,8 @@ async function clickEnabled(locator) {
   }
   throw new Error(`Control did not become available: ${locator}`)
 }
-async function snapshot() {
-  const blockNumber = await client.getBlockNumber({ cacheTime: 0 })
+async function snapshot(at) {
+  const blockNumber = at ?? (await client.getBlockNumber({ cacheTime: 0 }))
   const read = (functionName, args = []) =>
     client.readContract({
       address: vault,
@@ -136,9 +144,10 @@ async function snapshot() {
     args: [vault],
     blockNumber,
   })
-  const substrateHash = await wallet.api.rpc.chain.getBlockHash(
-    Number(blockNumber),
-  )
+  const substrateHash = await client.request({
+    method: "chain_getBlockHash",
+    params: [Number(blockNumber)],
+  })
   const nativeBalance = await wallet.api.query.tokens.accounts.at(
     substrateHash,
     wallet.address,
@@ -161,7 +170,10 @@ async function snapshot() {
 async function collectTransactions(fromBlock, toBlock) {
   const transactions = []
   for (let number = Number(fromBlock); number <= Number(toBlock); number++) {
-    const hash = await wallet.api.rpc.chain.getBlockHash(number)
+    const hash = await client.request({
+      method: "chain_getBlockHash",
+      params: [number],
+    })
     const signedBlock = await wallet.api.rpc.chain.getBlock(hash)
     const own = signedBlock.block.extrinsics
       .map((tx, index) => ({ tx, index }))
@@ -176,7 +188,7 @@ async function collectTransactions(fromBlock, toBlock) {
     for (const { tx, index } of own)
       transactions.push({
         block: number,
-        blockHash: hash.toHex(),
+        blockHash: hash,
         hash: tx.hash.toHex(),
         index,
         method: tx.method.toHuman(),
@@ -206,6 +218,9 @@ try {
     )
   page = await context.newPage()
   page.on("pageerror", (error) => errors.push(String(error)))
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text())
+  })
   await page.goto(`${TEST_ORIGIN}/strategies/juicer`, {
     waitUntil: "domcontentloaded",
   })
@@ -252,14 +267,24 @@ try {
     )
     progress("deposit-requested")
   } else if (action === "withdraw") {
-    assert.ok(report.before.shares >= amountRaw)
+    assert.ok(
+      withdrawMax
+        ? report.before.shares > 0n
+        : report.before.shares >= amountRaw,
+    )
     await page
       .getByRole("button", { name: `Withdraw ${symbol}`, exact: true })
       .click({ force: true })
-    await page
-      .getByRole("dialog")
-      .locator('input[inputmode="decimal"]')
-      .fill(amount)
+    if (withdrawMax)
+      await page
+        .getByRole("dialog")
+        .getByRole("button", { name: /^max$/i })
+        .click()
+    else
+      await page
+        .getByRole("dialog")
+        .locator('input[inputmode="decimal"]')
+        .fill(amount)
     await page.getByRole("dialog").getByRole("checkbox").check({ force: true })
     await clickEnabled(
       page
@@ -307,6 +332,21 @@ try {
       await page.waitForTimeout(1000)
     }
     assert.ok(completed, "UI lifecycle action did not finish before timeout")
+    if (action !== "cancel-approval") {
+      const deadline = Date.now() + 60_000
+      while (Date.now() < deadline) {
+        const hash = await wallet.api.rpc.chain.getFinalizedHead()
+        const header = await wallet.api.rpc.chain.getHeader(hash)
+        report.finalizedBlock = header.number.toNumber()
+        if (report.finalizedBlock >= Number(report.after.blockNumber)) break
+        await page.waitForTimeout(500)
+      }
+      assert.ok(
+        report.finalizedBlock >= Number(report.after.blockNumber),
+        "Submitted Lark transactions must finalize",
+      )
+      report.after = await snapshot(BigInt(report.finalizedBlock))
+    }
     report.transactions = await collectTransactions(
       report.before.blockNumber,
       report.after.blockNumber,
@@ -325,23 +365,12 @@ try {
         }
       }),
     )
-    if (report.transactions.length) {
-      const deadline = Date.now() + 60_000
-      while (Date.now() < deadline) {
-        const hash = await wallet.api.rpc.chain.getFinalizedHead()
-        const header = await wallet.api.rpc.chain.getHeader(hash)
-        report.finalizedBlock = header.number.toNumber()
-        if (report.finalizedBlock >= Number(report.after.blockNumber)) break
-        await page.waitForTimeout(500)
-      }
-      assert.ok(
-        report.finalizedBlock >= Number(report.after.blockNumber),
-        "Submitted Lark transactions must finalize",
-      )
-      for (const tx of report.transactions) {
-        const canonical = await wallet.api.rpc.chain.getBlockHash(tx.block)
-        assert.equal(canonical.toHex(), tx.blockHash)
-      }
+    for (const tx of report.transactions) {
+      const canonical = await client.request({
+        method: "chain_getBlockHash",
+        params: [tx.block],
+      })
+      assert.equal(canonical, tx.blockHash)
     }
     if (action === "cancel-approval") {
       assert.equal(report.after.shares, report.before.shares)
@@ -383,7 +412,24 @@ try {
       )
       assert.ok(event, "Withdrawal must emit its request identity")
       assert.equal(event.args.owner.toLowerCase(), wallet.evm)
-      assert.equal(event.args.shares, amountRaw)
+      if (withdrawMax) {
+        const call = wallet.requests
+          .flatMap(({ calls }) => calls)
+          .find(({ function: name }) => name === "requestRedeem")
+        assert.ok(call)
+        const decoded = decodeFunctionData({ abi: VAULT_ABI, data: call.input })
+        assert.equal(
+          decoded.args[0],
+          maxUint256,
+          "Max must include earnings funded before execution",
+        )
+        assert.ok(event.args.shares > 0n)
+        assert.equal(
+          report.after.shares,
+          0n,
+          "Max must escrow the entire funded balance",
+        )
+      } else assert.equal(event.args.shares, amountRaw)
       report.requestId = event.args.requestId
     }
     if (action === "claim") {
@@ -399,6 +445,13 @@ try {
       report.requestId = event.args.requestId
     }
     if (action === "deposit") {
+      const event = report.vaultEvents.find(
+        ({ eventName }) => eventName === "Deposited",
+      )
+      assert.ok(event, "Deposit must emit the assets and minted shares")
+      assert.equal(event.args.user.toLowerCase(), wallet.evm)
+      assert.equal(event.args.assets, amountRaw)
+      assert.ok(event.args.shares > 0n)
       assert.equal(
         report.before.nativeCollateral - report.after.nativeCollateral,
         amountRaw,
@@ -427,16 +480,18 @@ try {
           "Bound account skips binding",
         )
       }
-      assert.equal(
-        report.after.debt,
-        report.before.debt,
-        "Keeper is held off for this rehearsal: a deposit must not borrow",
-      )
-      assert.equal(
-        report.after.pendingDeployment - report.before.pendingDeployment,
-        amountRaw,
-        "Deposited collateral must enter the pooled pending deployment amount",
-      )
+      if (keeperIdle) {
+        assert.equal(
+          report.after.debt,
+          report.before.debt,
+          "Keeper is held off for this rehearsal: a deposit must not borrow",
+        )
+        assert.equal(
+          report.after.pendingDeployment - report.before.pendingDeployment,
+          amountRaw,
+          "Deposited collateral must enter the pooled pending deployment amount",
+        )
+      }
     }
   }
   await page.waitForTimeout(1500)
@@ -445,6 +500,12 @@ try {
   report.passed = true
 } catch (error) {
   report.error = String(error)
+  report.routeError = page
+    ? await page
+        .getByRole("button", { name: "Copy error", exact: true })
+        .getAttribute("title", { timeout: 1000 })
+        .catch(() => null)
+    : null
   report.body = page
     ? await page
         .locator("body")
@@ -454,6 +515,7 @@ try {
   throw error
 } finally {
   report.errors = errors
+  report.consoleErrors = consoleErrors
   report.signatures = wallet?.requests ?? []
   if (process.env.REPORT_PATH)
     await writeFile(process.env.REPORT_PATH, serialize(report))

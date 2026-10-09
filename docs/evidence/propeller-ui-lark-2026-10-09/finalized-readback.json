@@ -1,0 +1,79 @@
+{
+  "passed": true,
+  "genesis": "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+  "blockNumber": "4701",
+  "finalized": "0x61fd14e51906e0c71f3078ad55a6c690301c68602832c202cf702cb20a200fb4",
+  "ethMax": {
+    "block": 4575,
+    "blockHash": "0x2a00196152b0abaf3f763732cd7c5ae45f88c8eacb60ad99455261eeb285dcf4",
+    "hash": "0x1f3677531dde3560c35e52dd10db436b77b9b551cd64f0e4f00346cb7481ebbd",
+    "events": [
+      {
+        "eventName": "RedeemRequested",
+        "args": {
+          "requestId": "0",
+          "owner": "0x3088c164994890EA0E444Bf53623cCAC3B307217",
+          "shares": "999999869621473"
+        }
+      }
+    ]
+  },
+  "vaults": [
+    {
+      "symbol": "ETH",
+      "vault": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+      "shares": "0",
+      "redemption": [
+        "0x3088c164994890EA0E444Bf53623cCAC3B307217",
+        "999999869621473",
+        "1000000001227829",
+        "1869929085307636479",
+        "1917591728038875428",
+        "1869929085307636479",
+        "0",
+        "999999869621473",
+        false
+      ],
+      "claimed": "1000000001227829",
+      "tail": "1",
+      "collateralBalance": "100000000001227829",
+      "additionalRedemptions": []
+    },
+    {
+      "symbol": "tBTC",
+      "vault": "0x2c66100c46d15d6b826ba2a89f2d31e3ca47a153",
+      "shares": "0",
+      "redemption": [
+        "0x3088c164994890EA0E444Bf53623cCAC3B307217",
+        "10000000000000",
+        "10000000346762",
+        "661395098342801817",
+        "678252590812327177",
+        "661395098342801817",
+        "0",
+        "10000000000000",
+        false
+      ],
+      "claimed": "10000000346762",
+      "tail": "2",
+      "collateralBalance": "1000000000061450",
+      "additionalRedemptions": [
+        {
+          "requestId": "1",
+          "redemption": [
+            "0x3088c164994890EA0E444Bf53623cCAC3B307217",
+            "89999996549539",
+            "89999999714688",
+            "5954063880845856457",
+            "6105825204602970114",
+            "5954063880845856457",
+            "0",
+            "89999996549539",
+            false
+          ],
+          "claimed": "89999999714688"
+        }
+      ]
+    }
+  ]
+}

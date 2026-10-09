@@ -1,7 +1,10 @@
 import assert from "node:assert/strict"
 import { PROPELLER_VAULTS } from "../src/modules/strategies/propeller/config/vaults.ts"
 
-const verifyDeployment = process.argv.includes("--verify-deployment")
+const requireReady = process.argv.includes("--require-ready")
+const verifyDeployment =
+  requireReady || process.argv.includes("--verify-deployment")
+const origin = process.env.UI_URL || "http://127.0.0.1:4178"
 const expectedVaults = PROPELLER_VAULTS.map(({ vaultAddress }) =>
   vaultAddress.toLowerCase(),
 )
@@ -35,7 +38,7 @@ try {
       })
     })
     page.on("pageerror", (error) => errors.push(String(error)))
-    await page.goto("http://127.0.0.1:4178/strategies/juicer", {
+    await page.goto(new URL("/strategies/juicer", origin).href, {
       waitUntil: "domcontentloaded",
     })
     await page.waitForFunction(
@@ -43,18 +46,64 @@ try {
       undefined,
       { timeout: 45_000, polling: 100 },
     )
-    const text = await page.locator("body").innerText()
+    let text = await page.locator("body").innerText()
     assert.ok(text.includes("Est. APR"))
     assert.ok(text.includes("Lark 0 test deployment"))
     assert.ok(
       !/<0\s+tBTC\./.test(text),
       "Small tBTC amounts must retain token precision and symbol order",
     )
-    assert.ok(text.includes("your deposit transaction makes no swap"))
+    assert.ok(text.includes("Depositing does not make a swap"))
+    assert.ok(
+      text.includes(
+        "Funded earnings stay invested and are included in your balance",
+      ),
+    )
+    assert.ok(text.includes("There is nothing to claim"))
     assert.ok(text.includes("Awaiting deployment"))
-    assert.ok(text.includes("pooled within each vault"))
-    assert.ok(text.includes("not a personal queue or a completion estimate"))
-    assert.ok(text.includes("unconverted yield is not funded crypto"))
+    const disclosure = async (label, expected) => {
+      await page
+        .getByText(label, { exact: true })
+        .first()
+        .locator("..")
+        .getByRole("button")
+        .click()
+      const content =
+        width < 768
+          ? page.getByRole("dialog", { name: "Tooltip", exact: true })
+          : page.getByRole("tooltip")
+      await content.waitFor({ state: "visible" })
+      const explanation = await content.innerText()
+      for (const line of expected) assert.ok(explanation.includes(line), line)
+      await page.keyboard.press("Escape")
+      await content.waitFor({ state: "hidden" })
+    }
+    await disclosure("Gradual", ["your deposit transaction makes no swap"])
+    await disclosure("Awaiting deployment", [
+      "pooled within each vault",
+      "not a personal queue or a completion estimate",
+    ])
+    await disclosure("Est. APR", ["unconverted yield is not funded crypto"])
+    if (requireReady) {
+      await page.waitForFunction(
+        () => {
+          const text = document.body.textContent || ""
+          const deposits = [...document.querySelectorAll("button")].filter(
+            (button) => button.textContent.trim() === "Deposit",
+          )
+          return (
+            !/Deposits unavailable|Deposits paused|Vault at capacity|Paused|Full/.test(
+              text,
+            ) &&
+            deposits.length >= 2 &&
+            deposits.every((button) => !button.disabled)
+          )
+        },
+        undefined,
+        { timeout: 45_000 },
+      )
+    }
+    text = await page.locator("body").innerText()
     const horizontalOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
     )
@@ -72,7 +121,7 @@ try {
       )
       assert.ok(
         [...rpcEndpoints].some(
-          (url) => new URL(url).hostname === "node0.lark.hydration.cloud",
+          (url) => new URL(url).hostname === "0.lark.hydration.cloud",
         ),
         "Browser must connect to selected Lark RPC",
       )
@@ -84,6 +133,7 @@ try {
         title: await page.title(),
         errors,
         unavailable: text.includes("Deposits unavailable"),
+        ...(requireReady ? { depositsReady: true } : {}),
         fundedDepositExplanation: true,
         pooledDeploymentExplanation: true,
         rateDisclosure: true,

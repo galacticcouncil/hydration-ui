@@ -1,0 +1,7 @@
+PASS CollateralVault: 34 function signatures, outputs and mutability
+PASS SubLoop: 5 function signatures, outputs and mutability
+PASS JuicerMainDebt: 3 function signatures, outputs and mutability
+PASS JuicerYieldAccounting: 8 function signatures, outputs and mutability
+PASS JuicerFeeController: 1 function signatures, outputs and mutability
+PASS 51 UI contract functions match compiled artifacts
+PASS 4 UI event signatures and indexed fields match compiled artifacts
