@@ -90,7 +90,7 @@ const vaults = await Promise.all(
       cap,
       paused,
       depositsPaused,
-      underfunded,
+      deficitStop,
       deleverTarget,
       pending,
     ] = await Promise.all([
@@ -116,7 +116,7 @@ const vaults = await Promise.all(
       read("tvlCap"),
       read("paused"),
       read("depositsPaused"),
-      read("isUnderfunded"),
+      read("deficitStop"),
       read("deleverTarget"),
       read("reinvestAssets"),
     ])
@@ -135,7 +135,7 @@ const vaults = await Promise.all(
       supply > 0n &&
       !paused &&
       !depositsPaused &&
-      !underfunded &&
+      !deficitStop &&
       deleverTarget === 0n &&
       cap > total
     return {
@@ -145,7 +145,7 @@ const vaults = await Promise.all(
       bootstrapped: supply > 0n,
       paused,
       depositsPaused,
-      underfunded,
+      deficitStop,
       remainingCapacity: (cap > total ? cap - total : 0n).toString(),
       pendingDeployment: pending.toString(),
       totalAssets: total.toString(),

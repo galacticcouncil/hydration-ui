@@ -36,7 +36,7 @@ export const readDepositCapacity = async (
     supply,
     paused,
     depositsPaused,
-    underfunded,
+    deficitStop,
     deleverTarget,
     mainDebt,
   ] = await Promise.all([
@@ -46,7 +46,7 @@ export const readDepositCapacity = async (
     client.readContract({ ...contract, functionName: "totalSupply" }),
     client.readContract({ ...contract, functionName: "paused" }),
     client.readContract({ ...contract, functionName: "depositsPaused" }),
-    client.readContract({ ...contract, functionName: "isUnderfunded" }),
+    client.readContract({ ...contract, functionName: "deficitStop" }),
     client.readContract({ ...contract, functionName: "deleverTarget" }),
     client.readContract({ ...contract, functionName: "mainDebt" }),
   ])
@@ -57,7 +57,8 @@ export const readDepositCapacity = async (
     maximum: cap > total ? cap - total : 0n,
     // Governance must bootstrap a fresh vault before opening public deposits.
     ready: supply > 0n && mainDebt !== zeroAddress,
-    paused: paused || depositsPaused || underfunded || deleverTarget > 0n,
+    // deposits revert on either pause flag and while a de-lever is due
+    paused: paused || depositsPaused || deficitStop || deleverTarget > 0n,
   }
 }
 

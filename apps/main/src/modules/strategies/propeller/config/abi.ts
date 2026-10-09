@@ -11,7 +11,8 @@ export const VAULT_ABI = [
     "function claimYield(address receiver) returns (uint256 shares)",
     "function feeController() view returns (address)",
     "function hollarDebtToken() view returns (address)",
-    "function isUnderfunded() view returns (bool)",
+    // keeper deposit stop; deposits revert while it or depositsPaused is set
+    "function deficitStop() view returns (bool)",
     "function withdrawalDelay() view returns (uint32)",
     "function queueUnwind() view returns (uint256)",
     "function unwindEligibleAt(uint256) view returns (uint256)",

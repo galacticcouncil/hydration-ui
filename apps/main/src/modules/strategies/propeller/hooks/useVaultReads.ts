@@ -90,7 +90,7 @@ export const vaultStatsQuery = (
         feeController,
         debtToken,
         withdrawalDelay,
-        underfunded,
+        deficitStop,
         deferredDeployment,
         pendingDeployment,
       ] = await Promise.all([
@@ -111,7 +111,8 @@ export const vaultStatsQuery = (
         contract.read.feeController(at),
         contract.read.hollarDebtToken(at),
         contract.read.withdrawalDelay(at),
-        contract.read.isUnderfunded(at),
+        // null on a vault without the keeper stop, which leaves deposits unavailable
+        safeRead("Vault.deficitStop", () => contract.read.deficitStop(at)),
         safeRead("Vault.deferredDeployment", () =>
           contract.read.deferredDeployment(at),
         ),
@@ -159,7 +160,7 @@ export const vaultStatsQuery = (
         depositsPaused,
         maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
         withdrawalDelay,
-        underfunded,
+        deficitStop,
         pendingDeployment:
           deferredDeployment === true && pendingDeployment !== null
             ? formatUnits(pendingDeployment, decimals)

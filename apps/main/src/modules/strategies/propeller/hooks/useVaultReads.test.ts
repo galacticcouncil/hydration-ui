@@ -32,7 +32,7 @@ const stats = async (
     feeController: vault.vaultAddress,
     hollarDebtToken: vault.vaultAddress,
     withdrawalDelay: 43200,
-    isUnderfunded: false,
+    deficitStop: false,
     deferredDeployment: true,
     reinvestAssets: 2n * 10n ** 18n,
     protocolFeeBps: 500,
@@ -92,6 +92,22 @@ describe("Pooled collateral awaiting deployment", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {})
     const { result } = await stats({ reinvestAssets: new Error("RPC timeout") })
     expect(result.pendingDeployment).toBeNull()
+    expect(result.totalAssets).toBe(10)
+  })
+})
+
+describe("Keeper deficit stop", () => {
+  it("reads the stop with the other vault stats", async () => {
+    expect((await stats({ deficitStop: true })).result.deficitStop).toBe(true)
+    expect((await stats()).result.deficitStop).toBe(false)
+  })
+
+  it("keeps vault stats when an older vault has no stop", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+    const { result } = await stats({
+      deficitStop: new Error("unknown selector"),
+    })
+    expect(result.deficitStop).toBeNull()
     expect(result.totalAssets).toBe(10)
   })
 })
