@@ -1,8 +1,9 @@
 import {
+  Extrinsic,
   extrinsicByBlockAndIndexQuery,
   extrinsicByHashQuery,
-  IndexerSdk,
-} from "@galacticcouncil/indexer/indexer"
+  NeckworkClient,
+} from "@galacticcouncil/indexer/neckwork"
 import {
   basejumpscan,
   HexString,
@@ -17,7 +18,6 @@ import {
   XcJourneyBuilder,
 } from "@galacticcouncil/xc-scan"
 import { QueryClient } from "@tanstack/react-query"
-import { first } from "remeda"
 import { PublicClient } from "viem"
 
 import {
@@ -30,6 +30,8 @@ import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
 import { ToastData } from "@/states/toasts"
 import { TransactionToastData } from "@/states/toasts"
 import { TransactionType } from "@/states/transactions"
+
+import { resolveExtrinsic } from "./extrinsics"
 
 const ASSETHUB_KUSAMA_CHAIN_KEY = "assethub_kusama"
 const ASSETHUB_POLKADOT_URN = getChainXcScanUrn(
@@ -45,6 +47,32 @@ type ToastStatus = {
   dateUpdated: string
   status: "success" | "error" | "warning" | "unknown"
   link?: string
+}
+
+const resolveExtrinsicToToastStatus = (
+  toast: TransactionToastData,
+  extrinsic: Extrinsic | null,
+): ToastStatus => {
+  const resolution = resolveExtrinsic(extrinsic)
+
+  if (!resolution.processed) {
+    return {
+      status: "unknown",
+      processed: false,
+      dateUpdated: new Date().toISOString(),
+    }
+  }
+
+  return {
+    status: resolution.status,
+    processed: true,
+    dateUpdated: resolution.dateUpdated,
+    link: getExplorerTxLink(
+      toast.meta,
+      resolution.blockHeight,
+      resolution.extrinsicIndex,
+    ),
+  }
 }
 
 export type ToastProcessorFn = (
@@ -152,7 +180,7 @@ const invalid = (): ToastProcessorFn => async (toast) =>
 const evm =
   (
     queryClient: QueryClient,
-    indexerSdk: IndexerSdk,
+    neckworkClient: NeckworkClient,
     evm: PublicClient,
   ): ToastProcessorFn =>
   async (toast) => {
@@ -161,76 +189,29 @@ const evm =
       hash: hash as HexString,
     })
 
-    const res = await queryClient.fetchQuery(
+    const extrinsic = await queryClient.fetchQuery(
       extrinsicByBlockAndIndexQuery(
-        indexerSdk,
+        neckworkClient,
         Number(receipt.blockNumber),
         Number(receipt.transactionIndex),
       ),
     )
 
-    const extrinsic = first(res?.extrinsics ?? [])
-
-    if (!extrinsic) {
-      return {
-        status: "unknown",
-        processed: false,
-        dateUpdated: new Date().toISOString(),
-      }
-    }
-
-    const status = (() => {
-      if (extrinsic.success) return "success"
-      if (extrinsic.error) return "error"
-      return "unknown"
-    })()
-
-    return {
-      status,
-      processed: true,
-      dateUpdated: extrinsic.block.timestamp,
-      link: getExplorerTxLink(
-        toast.meta,
-        extrinsic.block.height,
-        extrinsic.indexInBlock,
-      ),
-    }
+    return resolveExtrinsicToToastStatus(toast, extrinsic)
   }
 
 const substrate =
-  (queryClient: QueryClient, indexerSdk: IndexerSdk): ToastProcessorFn =>
+  (
+    queryClient: QueryClient,
+    neckworkClient: NeckworkClient,
+  ): ToastProcessorFn =>
   async (toast) => {
     const hash = toast.meta.txHash
-    const res = await queryClient.fetchQuery(
-      extrinsicByHashQuery(indexerSdk, hash),
+    const extrinsic = await queryClient.fetchQuery(
+      extrinsicByHashQuery(neckworkClient, hash),
     )
 
-    const extrinsic = first(res?.extrinsics ?? [])
-
-    if (!extrinsic) {
-      return {
-        status: "unknown",
-        processed: false,
-        dateUpdated: new Date().toISOString(),
-      }
-    }
-
-    const status = (() => {
-      if (extrinsic.success) return "success"
-      if (extrinsic.error) return "error"
-      return "unknown"
-    })()
-
-    return {
-      status,
-      processed: true,
-      dateUpdated: extrinsic.block.timestamp,
-      link: getExplorerTxLink(
-        toast.meta,
-        extrinsic.block.height,
-        extrinsic.indexInBlock,
-      ),
-    }
+    return resolveExtrinsicToToastStatus(toast, extrinsic)
   }
 
 const basejump =

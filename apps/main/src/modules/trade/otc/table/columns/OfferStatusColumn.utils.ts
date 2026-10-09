@@ -1,26 +1,24 @@
-import { otcOrderStatusQuery } from "@galacticcouncil/indexer/indexer"
+import { otcOrderQuery } from "@galacticcouncil/indexer/neckwork"
 import { useQuery } from "@tanstack/react-query"
 
-import { useIndexerClient } from "@/api/indexer"
+import { neckworkClient } from "@/api/neckwork"
 
 export const useInitialOtcOfferAmount = (
   offerId: string | undefined,
   isPartiallyFillable: boolean,
 ) => {
   const offerIdNumber = Number(offerId)
-  const indexerClient = useIndexerClient()
 
   const { data, isLoading } = useQuery(
-    otcOrderStatusQuery(indexerClient, offerIdNumber, isPartiallyFillable),
+    otcOrderQuery(neckworkClient, offerIdNumber, isPartiallyFillable),
   )
 
-  const eventArgs = data?.events[0]?.args
-  const amounts = eventArgs
+  const amounts = data
     ? {
-        amountInInitial: eventArgs.amountIn || "0",
-        amountOutInitial: eventArgs.amountOut || "0",
-        assetInId: String(eventArgs.assetIn),
-        assetOutId: String(eventArgs.assetOut),
+        amountInInitial: data.amountIn || "0",
+        amountOutInitial: data.amountOut || "0",
+        assetInId: data.assetIn,
+        assetOutId: data.assetOut,
       }
     : undefined
 

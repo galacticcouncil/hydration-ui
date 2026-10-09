@@ -20,7 +20,7 @@ export const MarketTransactions: FC<Props> = ({
   const [isDetailOpen, setIsDetailOpen] = useState<SwapData | null>(null)
 
   const columns = useMarketTransactionsColumns()
-  const { swaps, totalCount, isLoading } = useMarketTradesData(
+  const { swaps, totalCount, isLoading, isError } = useMarketTradesData(
     assetIds,
     paginationProps.pagination.pageIndex,
     paginationProps.pagination.pageSize,
@@ -36,7 +36,7 @@ export const MarketTransactions: FC<Props> = ({
         {...paginationProps}
         rowCount={totalCount}
         onRowClick={setIsDetailOpen}
-        emptyState={<OrdersEmptyState />}
+        emptyState={<OrdersEmptyState isError={isError} />}
       />
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
         {isDetailOpen && <SwapDetailsModal details={isDetailOpen} />}

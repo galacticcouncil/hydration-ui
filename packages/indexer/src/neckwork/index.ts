@@ -4,11 +4,14 @@ import type { paths } from "@/neckwork/__generated__/schema"
 
 export * from "./accounts"
 export * from "./dca"
+export * from "./extrinsics"
 export * from "./fees"
 export * from "./intents"
 export * from "./money-market"
+export * from "./otc"
 export * from "./pools"
 export * from "./prices"
+export * from "./staking"
 export * from "./stats"
 export * from "./trades"
 
@@ -48,6 +51,9 @@ export class NeckworkApiError extends Error {
     this.path = path
   }
 }
+
+export const isNeckworkNotFound = (error: unknown): boolean =>
+  error instanceof NeckworkApiError && error.status === 404
 
 const readErrorMessage = async (response: Response) => {
   try {
