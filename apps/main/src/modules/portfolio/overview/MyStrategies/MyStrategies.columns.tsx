@@ -1,4 +1,4 @@
-import { HandCoins, TrendingUp } from "@galacticcouncil/ui/assets/icons"
+import { Clock3, TrendingUp } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   AssetLabel,
@@ -163,17 +163,18 @@ export const StrategyPositionEarnings = ({
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const value =
-    position.rewards === null
+    position.pendingEarnings === null
       ? "—"
       : t("common:currency", {
-          value: position.rewards,
+          value: position.pendingEarnings,
           symbol: position.symbol,
+          maximumFractionDigits: 6,
         })
 
   if (compact) {
     return (
       <Text fs="p6" color={getToken("text.medium")}>
-        {t("myStrategies.header.claimable")}: {value}
+        {t("myStrategies.header.earnings")}: {value}
       </Text>
     )
   }
@@ -182,7 +183,7 @@ export const StrategyPositionEarnings = ({
     <Amount
       variant={horizontalLabel ? "horizontalLabel" : "default"}
       label={withLabel ? t("myStrategies.header.earnings") : undefined}
-      labelIcon={horizontalLabel ? HandCoins : undefined}
+      labelIcon={horizontalLabel ? Clock3 : undefined}
       value={value}
     />
   )

@@ -8,7 +8,6 @@ export const VAULT_ABI = [
     "function reinvestAssets() view returns (uint256)",
     "function deleverTarget() view returns (uint256)",
     "function yieldAccounting() view returns (address)",
-    "function claimYield(address receiver) returns (uint256 shares)",
     "function feeController() view returns (address)",
     "function hollarDebtToken() view returns (address)",
     // keeper deposit stop; deposits revert while it or depositsPaused is set
@@ -32,6 +31,7 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  // wallet shares plus funded earnings, so nothing is ever claimed
   {
     type: "function",
     name: "balanceOf",
@@ -347,6 +347,8 @@ export const DEBT_TOKEN_ABI = parseAbi([
 ])
 
 export const YIELD_ACCOUNTING_ABI = parseAbi([
+  // collateral units, funded and not yet harvested together
   "function earnedAssets(address owner) view returns (uint256)",
-  "function claimableShares(address owner) view returns (uint256)",
+  // vault shares already counted in the owner's balanceOf
+  "function fundedOf(address owner) view returns (uint256)",
 ])

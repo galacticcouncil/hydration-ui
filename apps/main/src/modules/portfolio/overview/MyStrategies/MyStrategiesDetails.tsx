@@ -1,6 +1,5 @@
 import {
   CircleDot,
-  Clock3,
   Coins,
   Hourglass,
   Landmark,
@@ -102,28 +101,6 @@ export const MyStrategiesDetails = ({
           position={position}
           withLabel
           horizontalLabel
-        />
-      ),
-    },
-    {
-      id: "pendingEarnings",
-      content: position.pendingEarnings !== null && (
-        <Amount
-          variant="horizontalLabel"
-          labelIcon={Clock3}
-          label={
-            <Flex align="center" gap="xs">
-              <Text fs="p4" lh="s" color={getToken("text.low")}>
-                {t("myStrategies.details.pendingEarnings")}
-              </Text>
-              <Tooltip text={t("myStrategies.details.pendingEarnings.note")} />
-            </Flex>
-          }
-          value={t("common:currency", {
-            value: position.pendingEarnings,
-            symbol: position.symbol,
-            maximumFractionDigits: 6,
-          })}
         />
       ),
     },

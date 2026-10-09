@@ -83,8 +83,13 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const canSubmit = formState.isValid && !redeem.isPending && !blockedReason
   const showCarryNotice = carry > 0 && !blockedReason
 
+  // the balance grows as earnings are funded; max redeems all of it
   const onSubmit = handleSubmit(({ amount }) => {
-    if (canSubmit) redeem.mutate(amount)
+    if (canSubmit)
+      redeem.mutate({
+        shareAmount: amount,
+        isMax: Big(amount).eq(shareBalance),
+      })
   })
 
   return (
