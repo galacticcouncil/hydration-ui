@@ -1,0 +1,5 @@
+yarn workspace v1.22.22
+yarn run v1.22.22
+$ eslint src --fix
+Done in 30.73s.
+Done in 30.91s.

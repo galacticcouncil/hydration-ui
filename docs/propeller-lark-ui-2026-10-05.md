@@ -396,3 +396,12 @@ canonical finalized transactions at blocks 6346/6347/6350.
 
 validation is recorded in
 `docs/evidence/propeller-ui-lark-2026-10-09/thorough/`.
+
+
+post-push at `9d2b22543`: CI and all three Netlify previews passed. the edge
+preview passed desktop/mobile vault-readiness and disclosure checks plus both
+connected action sequences. one initial resize attempt exposed an 11-pixel
+header overflow at 1024 px with a long native account name; a rerun passed.
+compact desktop navigation now has more room, and the action runner waits for
+fonts and responsive rendering before measuring. the failing screenshot and
+successful published checks are retained with the evidence.

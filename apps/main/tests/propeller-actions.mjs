@@ -76,6 +76,7 @@ try {
   await page
     .getByRole("button", { name: "Withdraw ETH", exact: true })
     .waitFor({ timeout: 45000 })
+  await page.evaluate(() => document.fonts.ready)
   await input().fill("0.001")
   await enabled(form().locator("button[type=submit]"), true)
   assert.ok(
@@ -88,6 +89,7 @@ try {
   if (width === 1280) {
     for (const resizedWidth of [320, 390, 768, 1024, 1100, 1440, width]) {
       await page.setViewportSize({ width: resizedWidth, height: 1000 })
+      await page.waitForTimeout(300)
       await page.waitForFunction(
         () => document.documentElement.scrollWidth - innerWidth <= 1,
       )

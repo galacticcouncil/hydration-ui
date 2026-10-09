@@ -1,0 +1,157 @@
+{
+  "headRefOid": "9d2b2254385a27d28f5d2e5bb76b99c40effdeb4",
+  "isDraft": true,
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:39:42Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/galacticcouncil/hydration-ui/actions/runs/37967757706/job/113946312572",
+      "name": "Analyze (actions)",
+      "startedAt": "2026-10-09T17:39:01Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:43:24Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/galacticcouncil/hydration-ui/actions/runs/37967756191/job/113946299746",
+      "name": "Lint",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": "Lint"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:08Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/galacticcouncil/hydration-ui/actions/runs/37967757706/job/113946312026",
+      "name": "Analyze (javascript-typescript)",
+      "startedAt": "2026-10-09T17:39:01Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:37Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/edge-hydra-app/deploys/6ac926b1aef43d00089b06e2",
+      "name": "Header rules - edge-hydra-app",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:30Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/hydration-storybook/deploys/6ac926b1592b720008bf99d1",
+      "name": "Header rules - hydration-storybook",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:39Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/testnet-hydra-app/deploys/6ac926b1e0c1ac000898edaf",
+      "name": "Header rules - testnet-hydra-app",
+      "startedAt": "2026-10-09T17:39:01Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:37Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/edge-hydra-app/deploys/6ac926b1aef43d00089b06e2",
+      "name": "Pages changed - edge-hydra-app",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:30Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/hydration-storybook/deploys/6ac926b1592b720008bf99d1",
+      "name": "Pages changed - hydration-storybook",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:39Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/testnet-hydra-app/deploys/6ac926b1e0c1ac000898edaf",
+      "name": "Pages changed - testnet-hydra-app",
+      "startedAt": "2026-10-09T17:39:01Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:30Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://app.netlify.com/projects/hydration-storybook/deploys/6ac926b1592b720008bf99d1",
+      "name": "Redirect rules - hydration-storybook",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:39:35Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/galacticcouncil/hydration-ui/runs/113946530914",
+      "name": "CodeQL",
+      "startedAt": "2026-10-09T17:39:32Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:37Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://app.netlify.com/projects/edge-hydra-app/deploys/6ac926b1aef43d00089b06e2",
+      "name": "Redirect rules - edge-hydra-app",
+      "startedAt": "2026-10-09T17:38:59Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-09T17:40:39Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://app.netlify.com/projects/testnet-hydra-app/deploys/6ac926b1e0c1ac000898edaf",
+      "name": "Redirect rules - testnet-hydra-app",
+      "startedAt": "2026-10-09T17:39:01Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "netlify/edge-hydra-app/deploy-preview",
+      "startedAt": "2026-10-09T17:40:40Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://deploy-preview-4127--edge-hydra-app.netlify.app"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "netlify/hydration-storybook/deploy-preview",
+      "startedAt": "2026-10-09T17:40:31Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://deploy-preview-4127--hydration-storybook.netlify.app"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "netlify/testnet-hydra-app/deploy-preview",
+      "startedAt": "2026-10-09T17:40:41Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://deploy-preview-4127--testnet-hydra-app.netlify.app"
+    }
+  ]
+}
