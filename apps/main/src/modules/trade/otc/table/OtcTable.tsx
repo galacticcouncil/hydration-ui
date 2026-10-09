@@ -5,6 +5,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,7 +22,10 @@ import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
 } from "@/modules/trade/otc/table/OtcTable.utils"
+import { useOtcFulfillmentPercentages } from "@/modules/trade/otc/table/useOtcFulfillmentPercentages"
+import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { TAsset } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
@@ -67,10 +71,26 @@ export const OtcTable: FC<Props> = ({
 
   const isTableLoading = isLoading || isPriceLoading
 
-  const offersWithPrices = useMemo(
+  // OTC fee + per-order AMM fulfillment quotes (remaining size, incl. impact + fee).
+  const rpc = useRpcProvider()
+  const { data: feePct = "0" } = useQuery(otcTradeFeeQuery(rpc))
+  const fulfillment = useOtcFulfillmentPercentages(filteredOffers, feePct)
+
+  const offersWithPrices = useMemo<OtcOfferTabular[]>(
     () =>
-      isTableLoading ? [] : filteredOffers.map(mapOtcOffersToTableData(prices)),
-    [filteredOffers, prices, isTableLoading],
+      isTableLoading
+        ? []
+        : filteredOffers.map((offer) => {
+            const priced = mapOtcOffersToTableData(prices)(offer)
+            const result = offer.id ? fulfillment.get(offer.id) : undefined
+
+            return {
+              ...priced,
+              marketPricePercentage: result?.pct ?? null,
+              isMarketLoading: result?.isLoading ?? false,
+            }
+          }),
+    [filteredOffers, prices, isTableLoading, fulfillment],
   )
 
   return (
