@@ -97,7 +97,8 @@
 
   "bil.method.queue.title": "Redemption queue",
   "bil.method.queue.subtitle": "Receive full HOLLAR value",
-  "bil.method.queue.upToDays": "up to {{days}} days",
+  "bil.method.queue.upToDays_one": "up to {{ count }} day",
+  "bil.method.queue.upToDays_other": "up to {{ count }} days",
   "bil.method.queue.youReceive": "You receive",
   "bil.method.queue.atRate": "At exchange rate",
   "bil.method.queue.atRateValue": "1 BIL = {{rate}} HOLLAR",
@@ -107,7 +108,8 @@
   "bil.method.instant.subtitleAvailable": "Sell on liquid market with discount",
   "bil.method.instant.chip": "Instant",
   "bil.method.instant.youReceiveNow": "You receive now",
-  "bil.method.instant.youReceiveQueue": "Via queue (~{{days}} days)",
+  "bil.method.instant.youReceiveQueue_one": "Via queue (~{{ count }} day)",
+  "bil.method.instant.youReceiveQueue_other": "Via queue (~{{ count }} days)",
   "bil.method.instant.difference": "Difference",
   "bil.method.instant.slippage": "Pool slippage",
 

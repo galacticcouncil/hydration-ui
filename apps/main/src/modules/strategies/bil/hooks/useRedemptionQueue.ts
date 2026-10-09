@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { times } from "remeda"
 import { formatUnits } from "viem"
 
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
@@ -41,12 +42,16 @@ export function useRedemptionQueue(evmAddress: string | undefined) {
       const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
 
-      for (let i = 0; i < queueLength; i++) {
-        const [reqResult, waitResult] = await Promise.all([
-          vault.read.getRedemptionRequest([BigInt(i)]),
-          vault.read.getEstimatedWaitTime([BigInt(i)]),
-        ])
+      const results = await Promise.all(
+        times(queueLength, (i) =>
+          Promise.all([
+            vault.read.getRedemptionRequest([BigInt(i)]),
+            vault.read.getEstimatedWaitTime([BigInt(i)]),
+          ]),
+        ),
+      )
 
+      for (const [i, [reqResult, waitResult]] of results.entries()) {
         const [user, bilAmount, bilSettled, hollarOwed, active] = reqResult
         if (!active) continue
 
