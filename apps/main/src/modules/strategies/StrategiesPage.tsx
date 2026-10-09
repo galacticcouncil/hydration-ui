@@ -1,5 +1,6 @@
 import { Grid, SectionHeader } from "@galacticcouncil/ui/components"
 import { BIL_ERC20_ID } from "@galacticcouncil/utils"
+import { millisecondsInDay } from "date-fns/constants"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
@@ -7,6 +8,7 @@ import { LINKS } from "@/config/navigation"
 import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStrategyMetrics"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
+import { PropellerStrategyCard } from "@/modules/strategies/propeller/components/PropellerStrategyCard"
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
 import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import {
@@ -22,6 +24,14 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 export const StrategiesPage = () => {
   const { t } = useTranslation(["common", "strategies"])
   const { featureFlags } = useRpcProvider()
+  const cardCount = Math.max(
+    1,
+    [
+      featureFlags.propellerEnabled,
+      featureFlags.bilEnabled,
+      featureFlags.hollarBondsEnabled,
+    ].filter(Boolean).length,
+  )
   const { active } = useStableBonds()
   const bondId = active?.id ?? ""
   const bondConfig = STABLE_BONDS[bondId]
@@ -43,9 +53,16 @@ export const StrategiesPage = () => {
     <>
       <SectionHeader title={t("strategies:page.title")} noTopPadding />
       <Grid
-        columnTemplate={["1fr", null, "repeat(2, 1fr)", null, "repeat(4, 1fr)"]}
+        columnTemplate={[
+          "1fr",
+          null,
+          `repeat(${Math.min(2, cardCount)}, minmax(0, 1fr))`,
+          null,
+          `repeat(${cardCount}, minmax(0, 1fr))`,
+        ]}
         gap="xl"
       >
+        {featureFlags.propellerEnabled && <PropellerStrategyCard />}
         {featureFlags.bilEnabled && (
           <StrategyCard
             logoId={BIL_ERC20_ID}
@@ -53,7 +70,13 @@ export const StrategiesPage = () => {
             stats={[
               {
                 label: t("apy"),
+                valueTone: "yield",
                 value: t("common:percent", { value: bilMetrics.maxNetApyPct }),
+                isLoading: isBilMetricsLoading,
+              },
+              {
+                label: t("strategies:bil.strategy.tvl"),
+                value: t("common:currency.compact", { value: bilMetrics.tvl }),
                 isLoading: isBilMetricsLoading,
               },
             ]}
@@ -62,6 +85,7 @@ export const StrategiesPage = () => {
             link={LINKS.strategiesBil}
           />
         )}
+
         {featureFlags.hollarBondsEnabled && (
           <StrategyCard
             logoId={bondId}
@@ -69,6 +93,7 @@ export const StrategiesPage = () => {
             stats={[
               {
                 label: t("apr"),
+                valueTone: "yield",
                 value:
                   bondApr !== null
                     ? t("common:percent", {
@@ -76,6 +101,17 @@ export const StrategiesPage = () => {
                         suffix: isSoldOut ? "+" : undefined,
                       })
                     : "-",
+              },
+              {
+                label: t("strategies:bonds.details.maturityPeriod"),
+                value:
+                  timeLeft > 0
+                    ? t("common:interval", {
+                        value: timeLeft,
+                        largest: 1,
+                        ...(timeLeft > millisecondsInDay && { unit: "d" }),
+                      })
+                    : "—",
               },
             ]}
             badges={[StrategyBadgeType.FixedYield]}

@@ -150,6 +150,16 @@ export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {
     decoded.type === "Utility" &&
     isBatchDecodedCallValue(decoded.value)
   ) {
+    const leadingCall = decoded.value.value.calls[0]
+    if (
+      isDecodedCallEnum(leadingCall) &&
+      leadingCall.type === "EVMAccounts" &&
+      isObjectType(leadingCall.value) &&
+      leadingCall.value.type === "bind_evm_address"
+    ) {
+      // Propeller can already prepare binding with the approval transaction.
+      return tx
+    }
     return papi.tx.Utility.batch_all({
       calls: [bindTx.decodedCall, ...decoded.value.value.calls],
     })

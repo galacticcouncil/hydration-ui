@@ -1,0 +1,84 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-controls-20261003/apps/main
+
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > charges the harvest fee before paying Main interest 1ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > discounts only the Main borrowing leg 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > retains the previous two-leg result at zero fee and zero discount 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > does not invent fee or discount data when the read is missing 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > rejects invalid inputs and does not display positive return at a full fee 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > reports negative carry rather than hiding it and rejects impossible APY 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > does not round an unpaid wei to a fully settled withdrawal 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > keeps a request in cooldown before it can start 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > does not promise settlement when the cooldown expires 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > keeps an unfunded started claim pending instead of writing it off 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > distinguishes settled collateral from a completed claim 0ms
+ ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts > watchIntentOutcomes > reads outcomes from each new block 5ms
+ ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts > watchIntentOutcomes > skips a block it can't read and keeps going 1ms
+ ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts > watchIntentOutcomes > resubscribes after the stream dies without replaying seen blocks 2ms
+ ✓ src/modules/strategies/propeller/utils/amount.test.ts > Exact deposit and withdrawal amounts > round-trips MAX including shares beyond Number precision 3ms
+ ✓ src/modules/strategies/propeller/utils/amount.test.ts > Exact deposit and withdrawal amounts > never rounds excess decimals or accepts a zero/negative amount 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > maps min/max HOLLAR trades to collateral-native amounts 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > never borrows beyond shared credit across collateral scales and prices 2ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > treats exhausted, below-minimum, zero-cap and overfilled vaults as unavailable 0ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > uses the remaining vault capacity when it is below the trade ceiling 0ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > fails closed on missing price or invalid LTV/size data 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Admission reads > discovers bindings and policy at one block 2ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Admission reads > rejects disabled actions, absent bindings and wrong collateral 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Admission reads > reports an expired policy and propagates RPC failure 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > bounds input and output without widening the oracle tolerance 2ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects empty, duplicate, zero-output and invalid-slippage quotes 2ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > quotes as the payer at one identified block and encodes controller execution 11ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > waits for confirmed approval before running a transfer-based preview 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > times out unconfirmed approval without previewing or sending a deposit 2ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > respects shorter quote lifetimes and the inclusive block-age limit 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects stale block references even while the timestamp deadline is valid 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > never falls back to a direct deposit when the controller is absent 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects an expired quote before proposing a transaction 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > propagates preview failures without weakening price or size guards 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects routes above the native transaction gas ceiling 1ms
+ ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts > getIceSwapAmounts > buy floors at the exact buy amount and pads what is paid 3ms
+ ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts > getIceSwapAmounts > sell pays the exact sell amount and floors the output 0ms
+ ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts > getIceBuySellAmount > pads the quoted sell amount by slippage 0ms
+stderr | src/modules/trade/swap/lib/quotedPrice.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/api/balances/account.utils.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+ ✓ src/api/balances/account.utils.test.ts > syncErc20BalanceSnapshot > does not sync on the first load, even with aTokens held 1ms
+ ✓ src/api/balances/account.utils.test.ts > syncErc20BalanceSnapshot > syncs when an aToken is first held after the initial load 0ms
+ ✓ src/api/balances/account.utils.test.ts > syncErc20BalanceSnapshot > syncs when a held aToken changes by 1% 1ms
+ ✓ src/api/balances/account.utils.test.ts > syncErc20BalanceSnapshot > ignores a held aToken changing by less than 0.01% 0ms
+ ✓ src/api/balances/account.utils.test.ts > syncErc20BalanceSnapshot > ignores balances that are not aTokens 0ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts > limit cascade > quotes the fixed side so a quote cannot change its own input 1ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts > limit cascade > derives buy from the price when sell is typed after clearing buy 0ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts > limit cascade > never derives a locked sell amount 0ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts > computeDerived > computes buy = sell × price in either direction 19ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts > computeDerived > clears buy on an empty or zero price but leaves sell alone 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > market anchoring > mirrors the quote while anchored 1ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > market anchoring > stops mirroring once the price has another source 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > market anchoring > re-anchors on an explicit reset 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > reset affordance > shows only when the price is off market and there is a market 18ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > denomination > inverts what the user types when shown the other way round 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > denomination > flips the display without touching the canonical value 1ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > the ± pill is an input method, not a source > sets the price once, relative to the displayed market price 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > the ± pill is an input method, not a source > reports the deviation against the current market 1ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > the ± pill is an input method, not a source > applies the percentage to the number on screen when flipped 3ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > the ± pill is an input method, not a source > re-anchors to market when cleared 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > the ± pill is an input method, not a source > keeps the price when the percentage is unusable 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > raw keystrokes > clears canonical when the input is emptied, even when inverted 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > raw keystrokes > treats a typed zero like an empty price 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > raw keystrokes > echoes what was typed, then formats again once the value moves 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > pair changes > inverts the canonical price while preserving a direct display 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > pair changes > clears the price for a different pair but keeps the denomination 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > marketPriceFromQuote > returns BUY per SELL, accounting for decimals 0ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts > marketPriceFromQuote > returns null without a usable quote 0ms
+
+ Test Files  9 passed (9)
+      Tests  66 passed (66)
+   Start at  02:42:48
+   Duration  3.08s (transform 876ms, setup 0ms, collect 9.69s, tests 109ms, environment 2ms, prepare 919ms)
+

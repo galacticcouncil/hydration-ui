@@ -6,12 +6,19 @@ import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { MyBonds } from "@/modules/portfolio/overview/MyBonds/MyBonds"
 import { MyLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidity"
+import { MyStrategies } from "@/modules/portfolio/overview/MyStrategies/MyStrategies"
 import { PortfolioOverview } from "@/modules/portfolio/overview/PortfolioOverview"
 import { PortfolioEmptyState } from "@/modules/portfolio/PortfolioEmptyState"
 import { TrackedWallets } from "@/modules/portfolio/tracked/TrackedWallets"
 
 export const PortfolioOverviewPage = () => {
   const { account } = useAccount()
+
+  const strategiesPagination = useDataTableUrlPagination(
+    "/portfolio/",
+    "strategiesPage",
+    10,
+  )
 
   const liquidityPagination = useDataTableUrlPagination(
     "/portfolio/",
@@ -32,11 +39,17 @@ export const PortfolioOverviewPage = () => {
       onChange: () => {
         bondsPagination.onPageClick(1)
         liquidityPagination.onPageClick(1)
+        strategiesPagination.onPageClick(1)
       },
     },
   )
 
   const assetsSorting = useDataTableUrlSorting("/portfolio/", "assetsSort")
+  const strategiesSorting = useDataTableUrlSorting(
+    "/portfolio/",
+    "strategiesSort",
+    { onChange: () => strategiesPagination.onPageClick(1) },
+  )
 
   const liquiditySorting = useDataTableUrlSorting(
     "/portfolio/",
@@ -52,6 +65,7 @@ export const PortfolioOverviewPage = () => {
     setSearchPhrase(phrase)
     bondsPagination.onPageClick(1)
     liquidityPagination.onPageClick(1)
+    strategiesPagination.onPageClick(1)
   }
 
   if (!account) {
@@ -65,6 +79,14 @@ export const PortfolioOverviewPage = () => {
         searchPhrase={searchPhrase}
         onSearchPhraseChange={changeSearch}
         sortingProps={assetsSorting}
+        strategiesContent={
+          <MyStrategies
+            key={account.address + "_strategies"}
+            searchPhrase={searchPhrase}
+            paginationProps={strategiesPagination}
+            sortingProps={strategiesSorting}
+          />
+        }
         liquidityContent={
           <MyLiquidity
             key={account.address + "_liquidity"}

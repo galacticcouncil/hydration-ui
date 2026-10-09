@@ -1,0 +1,60 @@
+yarn run v1.22.22
+$ turbo test
+• turbo 2.9.6
+
+   • Packages in scope: @galacticcouncil/eslint-config, @galacticcouncil/indexer, @galacticcouncil/main, @galacticcouncil/money-market, @galacticcouncil/typescript-config, @galacticcouncil/ui, @galacticcouncil/utils, @galacticcouncil/web3-connect
+   • Running test in 8 packages
+   • Remote caching disabled, using shared worktree cache
+
+@galacticcouncil/main:test: cache bypass, force executing eb1c11fad047edcd
+@galacticcouncil/web3-connect:test: cache bypass, force executing 4d581012b355f342
+@galacticcouncil/web3-connect:test: yarn run v1.22.22
+@galacticcouncil/main:test: yarn run v1.22.22
+@galacticcouncil/web3-connect:test: $ vitest run
+@galacticcouncil/main:test: $ vitest run
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/web3-connect:test:  RUN  v3.2.7 /home/mrq/git/hydration-ui-juicer-next/packages/web3-connect
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  RUN  v3.2.7 /home/mrq/git/hydration-ui-juicer-next/apps/main
+@galacticcouncil/main:test:
+@galacticcouncil/web3-connect:test:  ✓ src/utils/ethereum.test.ts (2 tests) 7ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/accounting.test.ts (11 tests) 4ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/withdrawalState.test.ts (5 tests) 4ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/requestFunded.test.ts (5 tests) 4ms
+@galacticcouncil/web3-connect:test:  ✓ src/signers/EthereumSigner.test.ts (4 tests) 12ms
+@galacticcouncil/main:test:  ✓ src/modules/portfolio/overview/MyStrategies/MyStrategies.data.test.ts (16 tests) 10ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/usePropellerVaults.test.ts (4 tests) 3ms
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/web3-connect:test:  Test Files  2 passed (2)
+@galacticcouncil/web3-connect:test:       Tests  6 passed (6)
+@galacticcouncil/web3-connect:test:    Start at  15:39:16
+@galacticcouncil/web3-connect:test:    Duration  697ms (transform 267ms, setup 0ms, collect 611ms, tests 19ms, environment 0ms, prepare 172ms)
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/main:test:  ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts (3 tests) 11ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/amount.test.ts (2 tests) 6ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/deposit.test.ts (15 tests) 22ms
+@galacticcouncil/web3-connect:test: Done in 1.19s.
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/withdrawalClaim.test.ts (8 tests) 14ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/pendingYield.test.ts (4 tests) 5ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/useRedemptionQueue.test.ts (2 tests) 8ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/useVaultReads.test.ts (6 tests) 8ms
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts (3 tests) 5ms
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts (5 tests) 20ms
+@galacticcouncil/main:test:  ✓ src/api/balances/account.utils.test.ts (5 tests) 3ms
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/lib/quotedPrice.test.ts (18 tests) 23ms
+@galacticcouncil/main:test:  ✓ src/modules/transactions/utils/tx.test.ts (3 tests) 4ms
+@galacticcouncil/main:test:  ✓ src/modules/liquidity/Vaults.utils.test.ts (3 tests) 4ms
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  Test Files  18 passed (18)
+@galacticcouncil/main:test:       Tests  118 passed (118)
+@galacticcouncil/main:test:    Start at  15:39:16
+@galacticcouncil/main:test:    Duration  3.16s (transform 2.00s, setup 0ms, collect 16.17s, tests 160ms, environment 4ms, prepare 1.68s)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test: Done in 3.65s.
+
+ Tasks:    2 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    3.92s
+
+Done in 3.99s.

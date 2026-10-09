@@ -124,9 +124,7 @@ const getAddEvmChainParams = (
   const chainProps = chain.evmClient.chain
 
   const rpcUrls = priorityRpcUrl
-    ? Array.from(
-        new Set([wsToHttp(priorityRpcUrl), ...chainProps.rpcUrls.default.http]),
-      )
+    ? [wsToHttp(priorityRpcUrl)]
     : [...chainProps.rpcUrls.default.http]
 
   return {

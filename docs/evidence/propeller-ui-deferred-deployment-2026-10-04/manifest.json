@@ -1,0 +1,105 @@
+{
+  "date": "2026-10-04",
+  "ui_pr": "https://github.com/galacticcouncil/hydration-ui/pull/3978",
+  "ui_base": "167b5dbe4cf4f0e4d713c868704e1a4a3e457974",
+  "contract_pr": "https://github.com/galacticcouncil/money-market/pull/62",
+  "contract_worktree_base": "71aff84595acffd26653be91f43010c2ff777f81",
+  "contract_changes_uncommitted_at_comparison": true,
+  "contract_artifacts": "London production build (out-production) supplied by the contract workstream",
+  "results": {
+    "round_1_tests_passed": 24,
+    "round_2_tests_passed": 28,
+    "round_3_tests_passed": 32,
+    "round_4_browser_checks_passed": 9,
+    "round_5_application_tests_passed": 66,
+    "round_5_propeller_tests_passed": 32,
+    "round_5_typecheck_exit_code": 0,
+    "round_5_lint_exit_code": 0,
+    "round_5_build_exit_code": 0,
+    "round_5_function_abi_checks_passed": 45,
+    "round_5_event_abi_checks_passed": 4,
+    "round_5_production_browser_widths": [
+      1280,
+      390
+    ],
+    "round_5_browser_runtime_errors": 0,
+    "round_5_horizontal_overflow_pixels": {
+      "1280": 1,
+      "390": 0
+    }
+  },
+  "limitations": [
+    "The round-4 TypeScript invocation preceded generated routeTree; the final typecheck passed after Vite generated it.",
+    "Browser form uses the actual component and form hooks with mocked RPC, wallet submission, shared validators and presentation.",
+    "Production-page browser checks connect no wallet and do not exercise native-chain execution.",
+    "Contract regression results are independent of this UI validation.",
+    "Approved deployment addresses/event start block and native-wallet rehearsal remain release gates.",
+    "Existing large-chunk build warning and optional native bigint-binding fallback remain."
+  ],
+  "ui_source_sha256": {
+    "apps/main/src/i18n/content/propeller-vault/en.mdx": "10c8de38c85bde590c0cc1024fbf29f200a2216a3a83fa86d47a9a3f380e241e",
+    "apps/main/src/i18n/locales/en/propeller.json": "7e2f65acf66310faf02469cc83da0fdd4291938c711eb34258b76dd409cd73fc",
+    "apps/main/src/modules/strategies/propeller/components/DepositForm.form.ts": "fc11f1bc1767ee57b06074a27464185c6e657e6ad12a042c202ced3fc479430d",
+    "apps/main/src/modules/strategies/propeller/components/DepositForm.tsx": "99ade1180f775dfe048cb44f399edd5278df7a34e41d7c90a3706bb6a8055d92",
+    "apps/main/src/modules/strategies/propeller/components/StrategyDetailsCard.tsx": "9a4ec3b479f7af6fbcaa322cbbd8ad80a7f206acbbc5d3f171531038678641e2",
+    "apps/main/src/modules/strategies/propeller/components/StrategyVaults.columns.tsx": "9570fcf2b9281bbd8faa1fbf02a5c07f9db238baa68fea5060fb53646e60b78c",
+    "apps/main/src/modules/strategies/propeller/config/abi.ts": "b8bff0b7249f018df26a58238ac7e43590f677997a7741f971fbd291e05398b6",
+    "apps/main/src/modules/strategies/propeller/hooks/usePropellerVaults.ts": "67b95640d1515a0567aea697c5baccdf288128b581ef91888d7cd970015abb0f",
+    "apps/main/src/modules/strategies/propeller/hooks/useVaultReads.test.ts": "1a48929bc9331f1899aa53b303cd0334a7266cbd00bd10e5a179956b87c42ece",
+    "apps/main/src/modules/strategies/propeller/hooks/useVaultReads.ts": "b4ea8a8eeac41b9e44de006628fb41384d8dd724afac969a6912fdce5c195ac7",
+    "apps/main/src/modules/strategies/propeller/hooks/useVaultWrites.ts": "91bedf3f6b8be3c1b86b74565476d8c07521bdace8a5f8e44ab219b3e15a533a",
+    "apps/main/src/modules/strategies/propeller/utils/deposit.test.ts": "72fef9f2b069cb2dbe582c3d7e9c2d228da115cc217082000edd63b89d59faec",
+    "apps/main/src/modules/strategies/propeller/utils/deposit.ts": "22b72e0e03dd0dfc988e7c05665be0234946b53b220c7f2a407e003320efd6a9",
+    "apps/main/src/modules/strategies/propeller/utils/queryKeys.ts": "52f952ab0c7d15214cf61bdc2d3e0d238e981ec714cc781c9e4c42451edeb5b0",
+    "apps/main/tests/propeller-abi.mjs": "eb1adf3abf9f64271ed98e1502ccb2e18885ad6b175a59cec16f4c1eb235a481",
+    "apps/main/tests/propeller-browser/check.mjs": "791ea7bb9225971e3234d266f9bc4b2eca4034c707a462744722bc8b6508e728",
+    "apps/main/tests/propeller-browser/hooks.ts": "b84ab210835010970eda7264d7d132efd8c81746544ace360a6ecf9c0561c580",
+    "apps/main/tests/propeller-browser/main.tsx": "36ae7e8dcf0fb1f14cfbdf18d0408b0e198d54653f75936dca9f14bdd1fae2de",
+    "apps/main/tests/propeller-page-check.mjs": "cbbcda61d80d76c971704ee76fe92a3e71a70f423aed7a268832ec5ab52e2591"
+  },
+  "contract_source_sha256": {
+    "src/CollateralVault.sol": "b6006b68d9deeed5fe6eb305d1948a98596bac0cd0978350e8cacbc2a482329c",
+    "src/SubLoop.sol": "27fe9c4f830e2c2abd1d02d6910f3277a4403ff6ae599f984c3c5a76d54c2696",
+    "src/PropellerMainDebt.sol": "9a02d7e4ab7f5f30f5e2f35b956d732c22623898b3a275f5a7e8d6171dfab14a",
+    "src/PropellerYieldAccounting.sol": "4cccc974de1fb8de8da5d7e916b64c58ad51caebe665644bea0a111d5919a32a",
+    "src/PropellerFeeController.sol": "984ffed716231212dd409d444d5fb4302792ba88f4b5bff7d43cbc900f386052"
+  },
+  "contract_artifact_sha256": {
+    "CollateralVault.sol/CollateralVault.json": "79014fb9cc3efb6b77896a9e8cc35401bd3877998041b01f96b1d3f520523e89",
+    "SubLoop.sol/SubLoop.json": "7f3cd7f9bdec240ce2b83db038706b878e454f971c33d70bbbe2350ddd164fb1",
+    "PropellerMainDebt.sol/PropellerMainDebt.json": "efcc4de03fb5cf8c4a650eae7db94c6e8e88b23702fdf76fb1d688d2e2e50613",
+    "PropellerYieldAccounting.sol/PropellerYieldAccounting.json": "feac04f72d624082aa71335d143564ae8ddeee098d9a337f5e94a6c65f594b63",
+    "PropellerFeeController.sol/PropellerFeeController.json": "459ff48ca9da5ecca9f9c4d28227d1ec99a5cfe832a07a562a16fd65a10472df"
+  },
+  "evidence_sha256": {
+    "round-1.log": "d8b188388e0011d74619c14934ca6a0a5d864410d24988dc01da51fb288be206",
+    "round-2.log": "db4d38f2b64cf77ad21a9f1df710ec62005e1558e38835d4f3b61817c1ca737c",
+    "round-3.log": "973d695b3c8b98dfb7933d15b006842dda6d8d8fc813b51a4fbf63a3c21d7fa5",
+    "round-4-browser.log": "d6faada5af58804e17d6dcf5d2183cbeef0027f6b107406a71bf0ec1b35eced4",
+    "round-4-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "round-4-types.log": "6e37f27c9640b77a43399071093effc9b2574d39bfa437b0741e911686eda2be",
+    "round-4-build.log": "ceadb9e2ad159cd382485c21c60f3ef083e7dafeba2ccff7869344d925cb2704",
+    "round-5-tests.log": "68c40b4e1467fb64abff2eacfc414da663147f3a8ad05ef1aea1ed55cdec6cc3",
+    "round-5-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "round-5-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "round-5-build.log": "fd1ec36b152c861d275381cfede899c300f1ea04fae629a9be21da447739b58e",
+    "round-5-page.log": "ee85f82f24cf14252a30eaaf407bf0287912f41660835a67da66667376c09134",
+    "round-5-abi.log": "78dc6fe0a15f7cad4fed1eed92af36f168f741abbc57ff52885b769f290344dc"
+  },
+  "evidence_raw_sha256": {
+    "round-1.log": "d68a0101f0439e17f3d46e3373e1486cd5589fc28f4de961a055bb08f920d2d7",
+    "round-2.log": "2386d64c4f01913cf51b2820d092d41c41f4c6d01c12d7ec75d96f2c1b2e6d81",
+    "round-3.log": "e2d420589d262e044ddd45c539670a8194d54611dc260098c9394a7b8ce5d639",
+    "round-4-browser.log": "d6faada5af58804e17d6dcf5d2183cbeef0027f6b107406a71bf0ec1b35eced4",
+    "round-4-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "round-4-types.log": "6e37f27c9640b77a43399071093effc9b2574d39bfa437b0741e911686eda2be",
+    "round-4-build.log": "ecb8c7400140f7c8e21687a986de7ff49f2b3f958bc74009facb080a6da44c1c",
+    "round-5-tests.log": "afe7bc8696fa051c0c0e229ff5c5ff019a8db0f8f4034e721e77992835c31fca",
+    "round-5-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "round-5-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "round-5-build.log": "ac59d217962d63e322c4d3a34e7c30dd192ed36eb6016ccab12ff43ec6bc7588",
+    "round-5-page.log": "ee85f82f24cf14252a30eaaf407bf0287912f41660835a67da66667376c09134",
+    "round-5-abi.log": "78dc6fe0a15f7cad4fed1eed92af36f168f741abbc57ff52885b769f290344dc"
+  },
+  "evidence_log_normalization": "Trailing spaces and final blank lines are removed in committed copies; raw capture hashes are retained separately."
+}

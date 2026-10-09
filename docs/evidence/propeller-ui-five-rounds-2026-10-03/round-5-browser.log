@@ -1,0 +1,7 @@
+PASS valid amount submits unchanged
+PASS amounts beyond token precision are rejected
+PASS minimum, maximum and MAX enforce shared trade bounds
+PASS shrinking capacity revalidates entered amount and preserves exact MAX
+PASS missing/failed reads, disconnected RPC, underfunding and zero TVL cap disable deposits
+PASS exhausted and expired admission remain closed
+PASS no browser runtime errors

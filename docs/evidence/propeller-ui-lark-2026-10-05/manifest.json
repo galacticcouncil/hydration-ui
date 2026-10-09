@@ -1,0 +1,266 @@
+{
+  "date": "2026-10-05",
+  "ui_pr": "https://github.com/galacticcouncil/hydration-ui/pull/3978",
+  "ui_base": "4d238aab93671e7e91e85177af4c55466cc3ee20",
+  "contract_pr": "https://github.com/galacticcouncil/money-market/pull/62",
+  "deployed_contract_commit": "9828ffd6257293fe40ef99da41e4a1b8d058e3c7",
+  "genesis": "0xba82f5b6d812fd3e2a6c610969e395d3be1e558145a9f07148b8d1f269ab4fb2",
+  "node": "v25.7.0",
+  "scope": "Lark-only companion UI; keeper held off during deposit and withdrawal rehearsal",
+  "results": {
+    "workspaceTests": 75,
+    "applicationTests": 69,
+    "walletTests": 6,
+    "abiFunctions": 45,
+    "abiEvents": 4,
+    "typecheckExit": 0,
+    "lintExit": 0,
+    "buildExit": 0,
+    "productionBrowserWidths": [
+      1280,
+      390
+    ],
+    "browserRuntimeErrors": 0,
+    "nativeExtrinsicsFinalized": 8,
+    "depositHollarDebtBeforeAndAfter": "0",
+    "ethDeposit": "0.01",
+    "tbtcDeposit": "0.0001",
+    "ethClaimBaseUnits": "1000000035601841",
+    "tbtcClaimBaseUnits": "10000000013655"
+  },
+  "scenarios": [
+    {
+      "file": "wallet-cancel-approval.json",
+      "action": "cancel-approval",
+      "asset": "ETH",
+      "passed": true,
+      "finalizedBlock": null,
+      "requestId": null,
+      "transactions": [],
+      "signedRequests": 0,
+      "rejectedRequests": 1,
+      "errors": []
+    },
+    {
+      "file": "wallet-cancel-deposit.json",
+      "action": "cancel-deposit",
+      "asset": "ETH",
+      "passed": true,
+      "finalizedBlock": 415744,
+      "requestId": null,
+      "transactions": [
+        {
+          "block": 415744,
+          "hash": "0x3a20251ca089ec62730ca7d76e2cf8464933e33727bc6da15f812f435f4c25d6"
+        }
+      ],
+      "signedRequests": 1,
+      "rejectedRequests": 1,
+      "errors": []
+    },
+    {
+      "file": "wallet-claim-eth.json",
+      "action": "claim",
+      "asset": "ETH",
+      "passed": true,
+      "finalizedBlock": 415810,
+      "requestId": "0",
+      "transactions": [
+        {
+          "block": 415810,
+          "hash": "0x6b0a15ae84f6d1964d9e49ac15265d60bcd2948bb0ef88415a49626766d4aff0"
+        }
+      ],
+      "signedRequests": 1,
+      "rejectedRequests": 0,
+      "errors": []
+    },
+    {
+      "file": "wallet-claim-tbtc.json",
+      "action": "claim",
+      "asset": "tBTC",
+      "passed": true,
+      "finalizedBlock": 415819,
+      "requestId": "0",
+      "transactions": [
+        {
+          "block": 415819,
+          "hash": "0xa48c78a713d79fe0a7a2f96059929306bbb6801b40f134a8342efecec33698b5"
+        }
+      ],
+      "signedRequests": 1,
+      "rejectedRequests": 0,
+      "errors": []
+    },
+    {
+      "file": "wallet-deposit-eth.json",
+      "action": "deposit",
+      "asset": "ETH",
+      "passed": true,
+      "finalizedBlock": 415756,
+      "requestId": null,
+      "transactions": [
+        {
+          "block": 415756,
+          "hash": "0xaf50eaa63affa2b76596563492ac1d0e4e9d073a26fd77f498eeef1fef324773"
+        }
+      ],
+      "signedRequests": 1,
+      "rejectedRequests": 0,
+      "errors": []
+    },
+    {
+      "file": "wallet-deposit-tbtc.json",
+      "action": "deposit",
+      "asset": "tBTC",
+      "passed": true,
+      "finalizedBlock": 415765,
+      "requestId": null,
+      "transactions": [
+        {
+          "block": 415764,
+          "hash": "0x37a86664c898264853ddb34294007ab2f7193fddc471ba326201498dc1824f6b"
+        },
+        {
+          "block": 415765,
+          "hash": "0x29c733e1b6a713e6a11605e3d473a3057a917262e018f785896fdcabd9f27592"
+        }
+      ],
+      "signedRequests": 2,
+      "rejectedRequests": 0,
+      "errors": []
+    },
+    {
+      "file": "wallet-withdraw-eth.json",
+      "action": "withdraw",
+      "asset": "ETH",
+      "passed": true,
+      "finalizedBlock": 415784,
+      "requestId": null,
+      "transactions": [
+        {
+          "block": 415784,
+          "hash": "0x9852d15ceda1dd01845271b325ed1dc1489ec1a5d16f18e8bdf0e1ac7d960b34"
+        }
+      ],
+      "signedRequests": 1,
+      "rejectedRequests": 0,
+      "errors": []
+    },
+    {
+      "file": "wallet-withdraw-tbtc.json",
+      "action": "withdraw",
+      "asset": "tBTC",
+      "passed": true,
+      "finalizedBlock": 415793,
+      "requestId": "0",
+      "transactions": [
+        {
+          "block": 415793,
+          "hash": "0x2b40f6b44c70daf796b8c66c12b6bea7385894735778698f66785afbf123fdf2"
+        }
+      ],
+      "signedRequests": 1,
+      "rejectedRequests": 0,
+      "errors": []
+    }
+  ],
+  "limitations": [
+    "Native signatures came from an explicitly injected public PJS test fixture, not real extension permission screens.",
+    "EVM provider tests use a mocked wallet; no actual EVM-wallet signature was exercised.",
+    "Funded yield claims, partial/underfunded settlement, and later HOLLAR recovery were not exercised live.",
+    "Keeper/arb operations and economics are separate from this UI rehearsal.",
+    "Initial locked test funding was released by Lark governance without changing total funds or normal safeguards.",
+    "Desktop horizontal overflow is 1px rounding; mobile 0px. Existing large-chunk warnings remain."
+  ],
+  "source_sha256": {
+    "apps/main/src/modules/transactions/utils/tx.test.ts": "bd0c2b361c37471aeba0e958c78ae63915be2de1149fac3744e012db41413c39",
+    "apps/main/tests/propeller-deployment.mjs": "0da70ba3e30c3537baa500f2df9817d191cc76c8d9bb71f82dee1ec95783a9c0",
+    "apps/main/tests/propeller-public-test-wallet.mjs": "f6366ba4ca09da69c50731f2f1082b37f139f6c24432bfd2a33e33119cbf5fad",
+    "apps/main/tests/propeller-wallet-lifecycle.mjs": "8904a91d4427300003d7f4a8a2da49819bd1bde5daec4452a533811b8bc8a94d",
+    "packages/web3-connect/src/signers/EthereumSigner.test.ts": "73164c89565ff88701c84c787cc393d78dee926004eb6018cf56c545b0e6916b",
+    "packages/web3-connect/src/utils/ethereum.test.ts": "35d06166eec3b28ddf8b30267f99a96338566ac5b697acf9fbc8057c29756828",
+    "packages/web3-connect/vitest.config.ts": "601e25b695844aaf5fc6249b1c4e2ee4b6238577a81057c3fd43a7e357ee5b07",
+    "apps/main/.env.production": "d6cc91ef52a3bfcae6bd7a11e00e2a3946578330293adda164401f7fef9a06c9",
+    "apps/main/src/i18n/locales/en/propeller.json": "1efd8f10c00abfb00ef65e3c959c6694f86d9b98e3f29f77e8568a13c4f21252",
+    "apps/main/src/modules/strategies/propeller/PropellerVaultPage.tsx": "fcbec42953547f805ce6b68984d55d5b896dd4179f5ac5be394ee452af495b6a",
+    "apps/main/src/modules/strategies/propeller/components/MyPositionsCard.tsx": "1fe74a96027bded0902de724b9a21cdbb9d28b2165490edf0417bb854c4f7b06",
+    "apps/main/src/modules/strategies/propeller/components/StrategyVaults.columns.tsx": "6ee237990d5a637ff983a0880d6b9e90aa69e9bdcfe14ec35437f3b60ec2bc07",
+    "apps/main/src/modules/strategies/propeller/components/WithdrawalsCard.tsx": "50fd9df8dea28252d7e5da6c8ea40a9a9cfe7cad0c2bb39f402fb6b5dd848543",
+    "apps/main/src/modules/strategies/propeller/config/vaults.ts": "325111a50287ddf17f577961727e5535b6db78aa0cde53e661a3f1ae7e6a395b",
+    "apps/main/src/modules/strategies/propeller/constants.ts": "6061f350e9a664d2082913d74b1e58f762cbb05269d93e71e6eaee2ebf1d9cbc",
+    "apps/main/src/modules/transactions/utils/tx.ts": "61996ab46166c5ac3857100335af5831ffaf4a02623cf4d6aa058f709405df4c",
+    "apps/main/tests/propeller-page-check.mjs": "35eba139683ff63ae134ae019d5729b6dec16a02d32d2b4c536b34b5c883157f",
+    "packages/web3-connect/package.json": "189ac030ba01277ad8baebea8f3d856ea974e09bf892546bc981c933b448025a",
+    "packages/web3-connect/src/signers/EthereumSigner.ts": "2519b0f0e5d9c64c8c3cf13c4ee2eaed2dc5cd04b8c927b147a189b65db6841c",
+    "packages/web3-connect/src/utils/ethereum.ts": "829e06aa6d3ce751ccf34aa35b0ce34b33d34ce44e07cf95d93523481c54944c"
+  },
+  "contract_artifact_sha256": {
+    "CollateralVault.sol/CollateralVault.json": "79014fb9cc3efb6b77896a9e8cc35401bd3877998041b01f96b1d3f520523e89",
+    "SubLoop.sol/SubLoop.json": "7f3cd7f9bdec240ce2b83db038706b878e454f971c33d70bbbe2350ddd164fb1",
+    "PropellerMainDebt.sol/PropellerMainDebt.json": "efcc4de03fb5cf8c4a650eae7db94c6e8e88b23702fdf76fb1d688d2e2e50613",
+    "PropellerYieldAccounting.sol/PropellerYieldAccounting.json": "feac04f72d624082aa71335d143564ae8ddeee098d9a337f5e94a6c65f594b63",
+    "PropellerFeeController.sol/PropellerFeeController.json": "459ff48ca9da5ecca9f9c4d28227d1ec99a5cfe832a07a562a16fd65a10472df"
+  },
+  "evidence_sha256": {
+    "abi.log": "78dc6fe0a15f7cad4fed1eed92af36f168f741abbc57ff52885b769f290344dc",
+    "browser.log": "5d4687bd452861bf66084a24f90a948e8b96f197aae62f92a0827c80854a7e31",
+    "build.log": "a2d03d32db04c3936face40a84b06994c38c04e5e4cb0663fc130dbe5c038d6c",
+    "deployment-before-ready.log": "fff411f856369e559ce94960fff8b930ca0efa8b5098cb89b436a07af7f16a1b",
+    "deployment-final.json": "694eeddad2faa1448adaf25a12054cfba60da36d63a4e4b51c857570ad31af64",
+    "deployment-ready.json": "16accbdc7385bc88248eda38a0b94d0a48b3093f8a94405e8a86e421e37d5d57",
+    "evm-after.log": "35882cfcb5800139d7d1b5389fa382ae7ce9722dc50aa8fc31f2c752d19e1a1b",
+    "evm-before.log": "407528b7206e86164591f4ea04627ea28b2b14d9aa0abb3115b8fd3320416e43",
+    "evm-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "install.log": "bb806e109245c4715f9b00c4d1442bc05432fe7020f7da5276a3b25235e692c1",
+    "main-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-after.log": "62b540c299ea95dc2d7ed9ce5c65583b0e79d01599a1832368241c4f3532c3db",
+    "native-before.log": "2fc24901027a42eaf7891c6d078e671c5354c4d965bcb9524245c509a3429658",
+    "native-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "page-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wallet-cancel-approval.json": "c67b8a1bfdd801cd2c47326c5ca14b61ffa7cd5313d4efbee00dfebeadaaee06",
+    "wallet-cancel-deposit.json": "fe1e8953f754a1d9c8035293718e1cc79cb86061e3e8a0830051c23b05065cdb",
+    "wallet-claim-eth.json": "d5588ff4920856c3ecd8c2a4ac166960d89bdde681c83aea22521faf8e9f70bb",
+    "wallet-claim-tbtc.json": "4fcf1e4c5ee021dcdf8f564c3619ca7410aab057da6e8452efda82bc893a07c7",
+    "wallet-connect.json": "27227765ebfe155c831647087e723ccd01187f8659cdf3f4ec48de4c8e6d2e34",
+    "wallet-deposit-eth.json": "a91018292a06f27c321997d68a81e5ddb13e4d4752d14aa16d96ec2df9e58523",
+    "wallet-deposit-tbtc.json": "aa87f92e22881f9e9b92e49f4fa489760e8aebab156abd819997a31402fd089a",
+    "wallet-funding-locked.json": "659d5f89bdc7df99834de8be04b6c4684cfdb446a7a0245e0f7ddaea28f727d8",
+    "wallet-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wallet-withdraw-eth.json": "3b4af5713825c7af8f807012a26c67ba6b0e4850edff7c158529b9b9f0374f30",
+    "wallet-withdraw-tbtc.json": "747eaafb4e78ec2e02a0f92e3dfde682b03160bf37663079334c26aee1aff958",
+    "workspace-tests.log": "47c38079aad7c2fe6522ac7d753f2c108659ae4bac80a58876fdcb4c604bcb03"
+  },
+  "evidence_raw_sha256": {
+    "abi.log": "78dc6fe0a15f7cad4fed1eed92af36f168f741abbc57ff52885b769f290344dc",
+    "browser.log": "5d4687bd452861bf66084a24f90a948e8b96f197aae62f92a0827c80854a7e31",
+    "build.log": "10bc632cd72ac98c19bb948d8a95a0b05047efab4d785af5954081aac42d9561",
+    "deployment-before-ready.log": "fff411f856369e559ce94960fff8b930ca0efa8b5098cb89b436a07af7f16a1b",
+    "deployment-final.json": "694eeddad2faa1448adaf25a12054cfba60da36d63a4e4b51c857570ad31af64",
+    "deployment-ready.json": "16accbdc7385bc88248eda38a0b94d0a48b3093f8a94405e8a86e421e37d5d57",
+    "evm-after.log": "09f359af2e916070cad1dd44dc5511035174484026f39667b921fb6fc040eae4",
+    "evm-before.log": "c911128f310596386af11be685d0081b0e1316fbf9cc22b2476e0d85695201cc",
+    "evm-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "install.log": "bb806e109245c4715f9b00c4d1442bc05432fe7020f7da5276a3b25235e692c1",
+    "main-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-after.log": "2c9d00da54c1c78a9d956015853e1206c003dc69d116699d39d04cee6132aed0",
+    "native-before.log": "2b4c763123d104969a85573e4244a21df13b347c89fc8b80f1e7405a91c92399",
+    "native-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "page-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wallet-cancel-approval.json": "d3208b068c65a1f1c34897bd0b6a4fa468598d454aee1d6641b45222e64a89f8",
+    "wallet-cancel-deposit.json": "9d7814dbeebb06180a440b4baebca560f8d35587a5ff0b42b458f8aba2a0d69a",
+    "wallet-claim-eth.json": "b51627e9796aaf948c19fb95e0259d5d6ab3821c6e6ebb006877f9092e05f70c",
+    "wallet-claim-tbtc.json": "ed7861837a588f7c6cded4440ca08fd962f62a088ed6be7345319e38f8aec2bb",
+    "wallet-connect.json": "1e802e2a58e0549c41842f923e4a4ac3974c8d35a2b7b93a92c091677947438c",
+    "wallet-deposit-eth.json": "3a288945179e32f5eea7f5172b042a43bbe2b7a185c9c34990f9204be3f94215",
+    "wallet-deposit-tbtc.json": "1222faf5ec0386d62d2e6902d8d9f767440f0b0a2ba60cf89999ff1c833df9d5",
+    "wallet-funding-locked.json": "9244cfa2c369c6c5ce8a523f32d44ebc1bbb0058a91ba64ff9f3ae6fd9570666",
+    "wallet-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wallet-withdraw-eth.json": "27e6ac8f2ed11f702c3a953d2d4ee13b75feac0849dccc1fdb18c4896ec1734f",
+    "wallet-withdraw-tbtc.json": "62539526dc39cbaf820bf786ad7645538a079a1b2361e42ec74e3b5edcb49f64",
+    "workspace-tests.log": "b733b0b08ffab1544843a57da2953e17bf83086f1976b6e325576f6efc9db7da"
+  },
+  "normalization": "Committed captures remove trailing whitespace and final blank lines, and add one final newline for nonempty files; raw hashes remain recorded."
+}

@@ -1,0 +1,41 @@
+{
+  "rpc": "https://node0.lark.hydration.cloud",
+  "genesis": "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+  "blockNumber": "4680",
+  "evmChainId": 222222,
+  "historyStart": "123",
+  "source": "0xe0983cedd797b38090e6dcde54af88aa6eb22edc",
+  "mode": "read-only; no wallet signatures or transactions",
+  "vaults": [
+    {
+      "assetId": "34",
+      "address": "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+      "ready": true,
+      "mainDebt": "0x7b200b8c8A5FFd7720A48B0cB5a7F9fC6a512578",
+      "yieldAccounting": "0xe290dc3F58472E4AaF74dF922E6cad264845423e",
+      "bootstrapped": true,
+      "paused": false,
+      "depositsPaused": false,
+      "deficitStop": false,
+      "remainingCapacity": "9384212200141637050",
+      "pendingDeployment": "0",
+      "totalAssets": "15615787799858362950",
+      "totalSupply": "15615785701105299944"
+    },
+    {
+      "assetId": "1000765",
+      "address": "0x2c66100c46d15d6b826ba2a89f2d31e3ca47a153",
+      "ready": true,
+      "mainDebt": "0x13aD8e687F7D9aab96025497bA5a96968175cC22",
+      "yieldAccounting": "0x5B703d9564dD9afe0A40AeD8E9bF6F9352788634",
+      "bootstrapped": true,
+      "paused": false,
+      "depositsPaused": false,
+      "deficitStop": false,
+      "remainingCapacity": "433867337785760309",
+      "pendingDeployment": "0",
+      "totalAssets": "566132662214239691",
+      "totalSupply": "566132642332432014"
+    }
+  ]
+}
