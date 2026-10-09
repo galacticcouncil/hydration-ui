@@ -34,7 +34,7 @@ export type StrategyPosition = {
   rateKind: "apr" | "apy"
   shareAmount: string
   shareSymbol: string
-  rewards: string | null
+  /** juicer yield not harvested yet; funded earnings are already in amount */
   pendingEarnings: string | null
   pendingWithdrawal: string | null
   isPendingWithdrawalEstimate: boolean
@@ -92,9 +92,8 @@ export const useMyJuicerPositions = () => {
     )
     const recoveryPending = withdrawals.some((row) => row.sourcePending)
     const hasPendingWithdrawal = pendingWithdrawal.gt(0)
-    const rewards = position?.rewards
-    const hasPosition =
-      (position?.shares ?? 0) > 0 || (rewards?.claimableShares ?? 0n) > 0n
+    const pendingYield = position?.pendingYield ?? null
+    const hasPosition = (position?.shares ?? 0) > 0
     const hasPrice =
       !markets.isLoading &&
       market !== undefined &&
@@ -121,14 +120,8 @@ export const useMyJuicerPositions = () => {
         rateKind: "apr",
         shareAmount: position?.sharesExact ?? "0",
         shareSymbol: vault.shareSymbol,
-        // Funded claimable shares and unconverted estimates are separate assets.
-        rewards: rewards ? Big(rewards.claimableAssets).toString() : null,
-        pendingEarnings: rewards
-          ? Big.max(
-              Big(rewards.estimatedAssets).minus(rewards.claimableAssets),
-              0,
-            ).toString()
-          : null,
+        pendingEarnings:
+          pendingYield === null ? null : Big(pendingYield).toString(),
         pendingWithdrawal: hasPendingWithdrawal
           ? pendingWithdrawal.toString()
           : null,
@@ -221,7 +214,6 @@ export const useMyBilPositions = () => {
         rateKind: "apy",
         shareAmount: shares,
         shareSymbol: bil.symbol,
-        rewards: null,
         pendingEarnings: null,
         pendingWithdrawal: null,
         isPendingWithdrawalEstimate: false,

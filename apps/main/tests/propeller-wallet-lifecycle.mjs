@@ -46,7 +46,7 @@ const asset =
     ? "0x0000000000000000000000000000000100000022"
     : "0x00000000000000000000000000000001000f453d"
 const client = createPublicClient({
-  transport: http("https://node4.lark.hydration.cloud"),
+  transport: http("https://node0.lark.hydration.cloud"),
 })
 const serialize = (value) =>
   JSON.stringify(value, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2)
@@ -269,7 +269,10 @@ try {
     progress("withdrawal-requested")
   } else if (action === "claim") {
     await page
-      .getByRole("button", { name: `Claim ${symbol}`, exact: true })
+      .getByRole("button", {
+        name: `Claim available payouts for ${symbol} withdrawal`,
+        exact: true,
+      })
       .first()
       .click({ force: true, timeout: 20_000 })
   }

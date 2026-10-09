@@ -1,6 +1,6 @@
 import { parseAbi } from "viem"
 
-// Hand-trimmed from CollateralVault.sol/CollateralVault.json
+// hand-trimmed from the contract artifacts; tests/propeller-abi.mjs checks them
 export const VAULT_ABI = [
   ...parseAbi([
     "function mainDebt() view returns (address)",
@@ -8,14 +8,16 @@ export const VAULT_ABI = [
     "function reinvestAssets() view returns (uint256)",
     "function deleverTarget() view returns (uint256)",
     "function yieldAccounting() view returns (address)",
-    "function claimYield(address receiver) returns (uint256 shares)",
     "function feeController() view returns (address)",
     "function hollarDebtToken() view returns (address)",
-    "function isUnderfunded() view returns (bool)",
+    // keeper deposit stop; deposits revert while it or depositsPaused is set
+    "function deficitStop() view returns (bool)",
     "function withdrawalDelay() view returns (uint32)",
     "function queueUnwind() view returns (uint256)",
     "function unwindEligibleAt(uint256) view returns (uint256)",
     "function claimedCollateral(uint256) view returns (uint256)",
+    // shares held outright; balanceOf adds the funded earnings
+    "function walletOf(address account) view returns (uint256)",
   ]),
   {
     type: "function",
@@ -31,6 +33,7 @@ export const VAULT_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  // wallet shares plus funded earnings, so nothing is ever claimed
   {
     type: "function",
     name: "balanceOf",
@@ -346,6 +349,16 @@ export const DEBT_TOKEN_ABI = parseAbi([
 ])
 
 export const YIELD_ACCOUNTING_ABI = parseAbi([
+  // collateral units, funded and not yet harvested together
   "function earnedAssets(address owner) view returns (uint256)",
-  "function claimableShares(address owner) view returns (uint256)",
+  // vault shares already counted in the owner's balanceOf
+  "function fundedOf(address owner) view returns (uint256)",
+  // units a withdrawal took beyond its wallet shares, stored at the request's
+  // epoch and scale; they are folded into the escrow when the unwind starts
+  "function requestUnits(uint256 id) view returns (uint256)",
+  "function requestEpoch(uint256 id) view returns (uint256)",
+  "function requestScale(uint256 id) view returns (uint256)",
+  "function epoch() view returns (uint256)",
+  "function unitScale() view returns (uint256)",
+  "function totalUnits() view returns (uint256)",
 ])

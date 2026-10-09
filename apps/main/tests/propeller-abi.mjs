@@ -14,9 +14,9 @@ if (!artifactRoot)
 const groups = {
   CollateralVault: VAULT_ABI,
   SubLoop: SUBLOOP_ABI,
-  PropellerMainDebt: MAIN_DEBT_ABI,
-  PropellerYieldAccounting: YIELD_ACCOUNTING_ABI,
-  PropellerFeeController: FEE_CONTROLLER_ABI,
+  JuicerMainDebt: MAIN_DEBT_ABI,
+  JuicerYieldAccounting: YIELD_ACCOUNTING_ABI,
+  JuicerFeeController: FEE_CONTROLLER_ABI,
 }
 const type = (p) =>
   p.type.startsWith("tuple")

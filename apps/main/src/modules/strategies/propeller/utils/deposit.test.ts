@@ -29,7 +29,7 @@ const mockClient = (overrides: Record<string, unknown> = {}) => {
     totalSupply: 3n * unit,
     paused: false,
     depositsPaused: false,
-    isUnderfunded: false,
+    deficitStop: false,
     deleverTarget: 0n,
     mainDebt: vault,
     allowance: 0n,
@@ -89,13 +89,13 @@ describe("Collateral-only deposit capacity", () => {
     expect(mock.simulateContract).not.toHaveBeenCalled()
   })
 
-  it("blocks bootstrap, missing ledger, funding and pause states", async () => {
+  it("blocks bootstrap, missing ledger, deficit stop and pause states", async () => {
     for (const overrides of [
       { totalSupply: 0n },
       { mainDebt: zeroAddress },
       { paused: true },
       { depositsPaused: true },
-      { isUnderfunded: true },
+      { deficitStop: true },
       { deleverTarget: 1n },
     ]) {
       const mock = mockClient(overrides)
@@ -104,6 +104,19 @@ describe("Collateral-only deposit capacity", () => {
       )
       expect(mock.simulateContract).not.toHaveBeenCalled()
     }
+  })
+
+  it("fails closed on a vault without the deficit stop view", async () => {
+    const mock = mockClient()
+    mock.readContract.mockImplementation(async (request) => {
+      if (request.functionName === "deficitStop")
+        throw new Error("Unknown selector deficitStop()")
+      return request.functionName === "deferredDeployment" ? true : 0n
+    })
+    await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
+      "deficitStop",
+    )
+    expect(mock.simulateContract).not.toHaveBeenCalled()
   })
 
   it("rejects mismatched collateral", async () => {

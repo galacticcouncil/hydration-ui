@@ -45,7 +45,7 @@ try {
     )
     const text = await page.locator("body").innerText()
     assert.ok(text.includes("Est. APR"))
-    assert.ok(text.includes("Lark-4 test deployment"))
+    assert.ok(text.includes("Lark 0 test deployment"))
     assert.ok(
       !/<0\s+tBTC\./.test(text),
       "Small tBTC amounts must retain token precision and symbol order",
@@ -72,7 +72,7 @@ try {
       )
       assert.ok(
         [...rpcEndpoints].some(
-          (url) => new URL(url).hostname === "node4.lark.hydration.cloud",
+          (url) => new URL(url).hostname === "node0.lark.hydration.cloud",
         ),
         "Browser must connect to selected Lark RPC",
       )

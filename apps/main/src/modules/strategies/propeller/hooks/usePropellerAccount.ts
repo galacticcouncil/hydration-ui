@@ -24,16 +24,14 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type PropellerPosition = {
   vault: PropellerVaultConfig
+  /** includes funded earnings */
   shares: number
   sharesExact: string
   assetValue: number
   usdValue: number
   apy: number | null
-  rewards: {
-    estimatedAssets: number
-    claimableAssets: number
-    claimableShares: bigint
-  } | null
+  /** collateral earned but not harvested, outside the balance; null if unread */
+  pendingYield: number | null
 }
 
 export type WithdrawalRowState = WithdrawalState
@@ -185,15 +183,8 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
 
   const positions = PROPELLER_VAULTS.flatMap<PropellerPosition>((vault, i) => {
     const shares = balanceQueries[i]?.data?.shares ?? 0
-    const rewards = balanceQueries[i]?.data?.rewards ?? null
-    if (
-      shares <= 0 &&
-      !(
-        rewards &&
-        (rewards.estimatedAssets > 0 || rewards.claimableShares > 0n)
-      )
-    )
-      return []
+    const pendingYield = balanceQueries[i]?.data?.pendingYield ?? null
+    if (shares <= 0 && !((pendingYield ?? 0) > 0)) return []
     const market = markets[i]
     const assetValue = balanceQueries[i]?.data?.assetValue ?? 0
     return [
@@ -201,7 +192,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
         vault,
         shares,
         sharesExact: balanceQueries[i]?.data?.sharesExact ?? "0",
-        rewards,
+        pendingYield,
         assetValue,
         usdValue: assetValue * (market?.price ?? 0),
         apy: market?.apy ?? null,

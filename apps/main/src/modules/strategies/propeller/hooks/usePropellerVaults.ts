@@ -28,7 +28,9 @@ export const vaultDepositState = (
   stats: PropellerVaultStats | undefined,
 ): VaultDepositState => {
   if (!stats) return "unavailable"
-  if (stats.paused || stats.depositsPaused || stats.underfunded) return "paused"
+  if (stats.paused || stats.depositsPaused || stats.deficitStop) return "paused"
+  // an unreadable stop fails closed like the deposit form
+  if (stats.deficitStop === null) return "unavailable"
   if (stats.remaining <= 0) return "full"
   return "open"
 }
@@ -40,7 +42,7 @@ export type PropellerVaultStats = {
   remainingPct: number
   paused: boolean
   depositsPaused: boolean
-  underfunded: boolean
+  deficitStop: boolean | null
   exchangeRate: number
   maxLtv: number | null
   pendingDeployment: string | null
@@ -85,7 +87,7 @@ export const usePropellerVaults = () => {
       ...remainingCapacity(data.totalAssets, data.tvlCap),
       paused: data.paused,
       depositsPaused: data.depositsPaused,
-      underfunded: data.underfunded,
+      deficitStop: data.deficitStop,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
       pendingDeployment: data.pendingDeployment,

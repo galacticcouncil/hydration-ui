@@ -4,15 +4,18 @@ import { formatUnits, getContract, type Hex, zeroAddress } from "viem"
 import {
   MAIN_DEBT_ABI,
   VAULT_ABI,
+  YIELD_ACCOUNTING_ABI,
 } from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { withdrawalComplete } from "@/modules/strategies/propeller/utils/accounting"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
+import { requestFundedShares } from "@/modules/strategies/propeller/utils/requestFunded"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export interface QueueEntry {
   requestId: number
   owner: string
+  /** includes the funded earnings a waiting request took beyond its wallet */
   shares: number
   collateralOwed: number
   collateralSettled: number
@@ -47,17 +50,55 @@ export const vaultQueueQuery = (
       // Use one block so cooldown, debt and claimability cannot disagree across reads.
       const block = await rpc.evm.getBlock()
       const options = { blockNumber: block.number }
-      const [tail, totalQueued, unwind, mainDebt] = await Promise.all([
-        contract.read.queueTail(options),
-        contract.read.totalQueuedShares(options),
-        contract.read.queueUnwind(options),
-        contract.read.mainDebt(options),
-      ])
+      const [tail, totalQueued, unwind, mainDebt, accounting] =
+        await Promise.all([
+          contract.read.queueTail(options),
+          contract.read.totalQueuedShares(options),
+          contract.read.queueUnwind(options),
+          contract.read.mainDebt(options),
+          contract.read.yieldAccounting(options),
+        ])
       const ledger = getContract({
         address: mainDebt,
         abi: MAIN_DEBT_ABI,
         client: rpc.evm,
       })
+      const fund = getContract({
+        address: accounting,
+        abi: YIELD_ACCOUNTING_ABI,
+        client: rpc.evm,
+      })
+      // shared by every waiting request that took funded earnings
+      let fundState: Promise<[bigint, bigint, bigint, bigint]> | undefined
+      const readFundState = () =>
+        (fundState ??= Promise.all([
+          fund.read.epoch(options),
+          fund.read.unitScale(options),
+          fund.read.totalUnits(options),
+          contract.read.walletOf([accounting], options),
+        ]))
+      const readRequestFunded = async (id: bigint) => {
+        const units = await fund.read.requestUnits([id], options)
+        if (units === 0n) return 0n
+        const [
+          requestEpoch,
+          requestScale,
+          [epoch, unitScale, totalUnits, wallet],
+        ] = await Promise.all([
+          fund.read.requestEpoch([id], options),
+          fund.read.requestScale([id], options),
+          readFundState(),
+        ])
+        return requestFundedShares({
+          units,
+          requestEpoch,
+          requestScale,
+          epoch,
+          unitScale,
+          totalUnits,
+          fund: wallet,
+        })
+      }
       const queue: QueueEntry[] = []
       // Historical requests may still own recoveries after collateral has been claimed.
       // Bound RPC fan-out while scanning; a user-request index can replace this scan.
@@ -85,16 +126,19 @@ export const vaultQueueQuery = (
             )
               return null
             const started = id < unwind
-            const [eligibleAt, claimed, position, surplus] = await Promise.all([
-              contract.read.unwindEligibleAt([id], options),
-              contract.read.claimedCollateral([id], options),
-              started && mainDebt !== zeroAddress
-                ? ledger.read.positions([id + 1n], options)
-                : null,
-              started && mainDebt !== zeroAddress
-                ? ledger.read.surplusOf([id], options)
-                : 0n,
-            ])
+            const [eligibleAt, claimed, position, surplus, funded] =
+              await Promise.all([
+                contract.read.unwindEligibleAt([id], options),
+                contract.read.claimedCollateral([id], options),
+                started && mainDebt !== zeroAddress
+                  ? ledger.read.positions([id + 1n], options)
+                  : null,
+                started && mainDebt !== zeroAddress
+                  ? ledger.read.surplusOf([id], options)
+                  : 0n,
+                // a started unwind already counts them in its shares
+                started ? 0n : readRequestFunded(id),
+              ])
             return {
               requestId: Number(id),
               owner,
@@ -102,7 +146,7 @@ export const vaultQueueQuery = (
               isUser: true,
               started,
               mainDebt,
-              shares: Number(formatUnits(shares, decimals)),
+              shares: Number(formatUnits(shares + funded, decimals)),
               collateralOwed: Number(formatUnits(collateralOwed, decimals)),
               collateralSettled: Number(
                 formatUnits(collateralSettled, decimals),
