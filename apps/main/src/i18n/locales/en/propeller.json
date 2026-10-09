@@ -15,7 +15,7 @@
   "explainer.show": "Read more",
   "explainer.hide": "Show less",
   "strategy.name": "Juicer",
-  "strategy.testnet": "Lark test deployment. Deposits and withdrawals use test tokens.",
+  "strategy.testnet": "Lark 0 test deployment. Deposits and withdrawals use test tokens.",
   "strategy.title": "Strategy overview",
   "strategy.totalTvl": "Total TVL",
   "strategy.remainingCapacity": "Remaining capacity",

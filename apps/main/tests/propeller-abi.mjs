@@ -18,22 +18,6 @@ const groups = {
   JuicerYieldAccounting: YIELD_ACCOUNTING_ABI,
   JuicerFeeController: FEE_CONTROLLER_ABI,
 }
-// contracts built before the juicer rename still emit Propeller* artifacts
-const readArtifact = async (name) => {
-  for (const candidate of [name, name.replace(/^Juicer/, "Propeller")]) {
-    try {
-      return JSON.parse(
-        await readFile(
-          path.join(artifactRoot, `${candidate}.sol`, `${candidate}.json`),
-          "utf8",
-        ),
-      ).abi
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error
-    }
-  }
-  throw new Error(`${name}: no artifact in ${artifactRoot}`)
-}
 const type = (p) =>
   p.type.startsWith("tuple")
     ? `(${p.components.map(type).join(",")})${p.type.slice(5)}`
@@ -42,7 +26,12 @@ const signature = (fn) => `${fn.name}(${fn.inputs.map(type).join(",")})`
 let checked = 0
 let checkedEvents = 0
 for (const [name, abi] of Object.entries(groups)) {
-  const compiled = await readArtifact(name)
+  const compiled = JSON.parse(
+    await readFile(
+      path.join(artifactRoot, `${name}.sol`, `${name}.json`),
+      "utf8",
+    ),
+  ).abi
   const functions = abi.filter((item) => item.type === "function")
   for (const fn of functions) {
     const actual = compiled.find(

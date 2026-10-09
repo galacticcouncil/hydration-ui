@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
-import { createPublicClient, http, parseAbi } from "viem"
+import { createPublicClient, http, parseAbi, zeroAddress } from "viem"
 
 import { VAULT_ABI } from "../src/modules/strategies/propeller/config/abi.ts"
 import { PROPELLER_VAULTS } from "../src/modules/strategies/propeller/config/vaults.ts"
@@ -18,29 +18,17 @@ if (!manifestPath)
     "Usage: node tests/propeller-deployment.mjs /path/to/lark-manifest.json [--require-ready]",
   )
 const deployment = JSON.parse(await readFile(manifestPath, "utf8"))
-assert.equal(
-  deployment.testnetOnly,
-  true,
-  "Expected a testnet-only deployment manifest",
+assert.match(
+  deployment.chainName ?? "",
+  /lark/i,
+  "Expected a Lark testnet deployment manifest",
 )
 const equalAddress = (actual, expected, label) =>
   assert.equal(actual.toLowerCase(), expected.toLowerCase(), label)
 equalAddress(SUBLOOP_ADDRESS, deployment.addresses.source, "Configured source")
-equalAddress(POOL_ADDRESS, deployment.market.pool, "Configured pool")
-equalAddress(HOLLAR_ADDRESS, deployment.market.hollar, "Configured HOLLAR")
-equalAddress(PRIME_ADDRESS, deployment.market.prime, "Configured PRIME")
-const firstVaultBlock = deployment.deployments
-  .filter(
-    ({ label }) =>
-      label.startsWith("CollateralVault.") && label.endsWith(".proxy"),
-  )
-  .map(({ block }) => BigInt(block))
-  .reduce((earliest, block) => (block < earliest ? block : earliest))
-assert.equal(
-  VAULT_DEPLOY_BLOCK,
-  firstVaultBlock,
-  "History starts at first vault deployment",
-)
+const prime = deployment.oracles?.find(({ name }) => name === "PRIME")
+assert.ok(prime, "Missing PRIME in deployment manifest")
+equalAddress(PRIME_ADDRESS, prime.asset, "Configured PRIME")
 
 const client = createPublicClient({ transport: http(deployment.rpc) })
 const genesis = await client.request({
@@ -57,9 +45,24 @@ assert.ok(blockNumber >= VAULT_DEPLOY_BLOCK, "Deployment block must exist")
 const at = { blockNumber }
 const sourceCode = await client.getCode({ address: SUBLOOP_ADDRESS, ...at })
 assert.ok(sourceCode && sourceCode !== "0x", "Source must have code")
+// history starts where the first vault proxy got its code
+const hasCode = async (address, blockNumber) =>
+  ((await client.getCode({ address, blockNumber })) ?? "0x") !== "0x"
+const deployedAt = await Promise.all(
+  PROPELLER_VAULTS.map(async ({ vaultAddress }) => [
+    await hasCode(vaultAddress, VAULT_DEPLOY_BLOCK - 1n),
+    await hasCode(vaultAddress, VAULT_DEPLOY_BLOCK),
+  ]),
+)
+assert.ok(
+  deployedAt.every(([before]) => !before) &&
+    deployedAt.some(([, atBlock]) => atBlock),
+  "History starts at first vault deployment",
+)
 const bindings = parseAbi([
   "function pool() view returns (address)",
   "function yieldSource() view returns (address)",
+  "function hollar() view returns (address)",
 ])
 const vaults = await Promise.all(
   PROPELLER_VAULTS.map(async (vault) => {
@@ -85,6 +88,7 @@ const vaults = await Promise.all(
       fees,
       pool,
       source,
+      hollar,
       supply,
       total,
       cap,
@@ -111,6 +115,12 @@ const vaults = await Promise.all(
         functionName: "yieldSource",
         ...at,
       }),
+      client.readContract({
+        address: vault.vaultAddress,
+        abi: bindings,
+        functionName: "hollar",
+        ...at,
+      }),
       read("totalSupply"),
       read("totalAssets"),
       read("tvlCap"),
@@ -122,15 +132,18 @@ const vaults = await Promise.all(
     ])
     assert.equal(supported, true, "Deferred-deployment capability")
     equalAddress(asset, expected.asset, "Collateral binding")
-    equalAddress(mainDebt, expected.mainDebt, "Main ledger binding")
-    equalAddress(
-      yieldAccounting,
-      expected.yieldAccounting,
-      "Yield ownership binding",
-    )
+    // the manifest lists ledgers only on some deployments; the vault is authoritative
+    for (const [actual, key, label] of [
+      [mainDebt, "mainDebt", "Main ledger binding"],
+      [yieldAccounting, "yieldAccounting", "Yield ownership binding"],
+    ]) {
+      assert.notEqual(actual, zeroAddress, label)
+      if (expected[key]) equalAddress(actual, expected[key], label)
+    }
     equalAddress(fees, deployment.addresses.fees, "Fee controller binding")
     equalAddress(pool, POOL_ADDRESS, "Pool binding")
     equalAddress(source, SUBLOOP_ADDRESS, "Source binding")
+    equalAddress(hollar, HOLLAR_ADDRESS, "HOLLAR binding")
     const ready =
       supply > 0n &&
       !paused &&
@@ -142,6 +155,8 @@ const vaults = await Promise.all(
       assetId: vault.assetId,
       address: vault.vaultAddress,
       ready,
+      mainDebt,
+      yieldAccounting,
       bootstrapped: supply > 0n,
       paused,
       depositsPaused,
