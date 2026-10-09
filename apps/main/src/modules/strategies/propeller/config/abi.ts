@@ -1,6 +1,6 @@
 import { parseAbi } from "viem"
 
-// Hand-trimmed from CollateralVault.sol/CollateralVault.json
+// hand-trimmed from the contract artifacts; tests/propeller-abi.mjs checks them
 export const VAULT_ABI = [
   ...parseAbi([
     "function mainDebt() view returns (address)",
