@@ -3,7 +3,7 @@
 import assert from "node:assert/strict"
 import { createRequire } from "node:module"
 import { resolve } from "node:path"
-import { decodeFunctionData, parseAbi } from "viem"
+import { decodeFunctionData, maxUint256, parseAbi } from "viem"
 
 export const PUBLIC_TEST_SURI = "//Alice//propeller-ui-20261005"
 export const PUBLIC_TEST_NAME = "PUBLIC TEST — Propeller Lark"
@@ -25,7 +25,6 @@ const testCalls = parseAbi([
   "function deposit(uint256 assets, address receiver) returns (uint256)",
   "function requestRedeem(uint256 shares, address owner) returns (uint256)",
   "function claim(uint256 requestId, address receiver) returns (uint256)",
-  "function claimYield(address receiver) returns (uint256)",
   "function claimSurplus(uint256 requestId) returns (uint256)",
 ])
 const tokenVaults = {
@@ -81,10 +80,12 @@ export async function injectPublicTestWallet(
       ["deposit", "requestRedeem", "claim"].includes(decoded.functionName)
     ) {
       assert.equal(decoded.args[1].toLowerCase(), evm)
-      if (decoded.functionName !== "claim")
+      // a max redeem only exits the fixture's own balance
+      const isMaxRedeem =
+        decoded.functionName === "requestRedeem" &&
+        decoded.args[0] === maxUint256
+      if (decoded.functionName !== "claim" && !isMaxRedeem)
         assert.ok(decoded.args[0] <= 100000000000000000n)
-    } else if (decoded.functionName === "claimYield") {
-      assert.equal(decoded.args[0].toLowerCase(), evm)
     } else assert.equal(decoded.functionName, "claimSurplus")
     return [
       {

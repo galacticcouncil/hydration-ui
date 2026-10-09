@@ -194,7 +194,7 @@ describe("Juicer portfolio withdrawal entitlement", () => {
 })
 
 describe("Portfolio strategy position projection", () => {
-  it("tags active Juicer collateral and keeps funded rewards outside its live value", () => {
+  it("tags active Juicer collateral and keeps pending yield outside its live value", () => {
     vi.mocked(usePropellerAccount).mockReturnValue({
       positions: [
         {
@@ -204,11 +204,7 @@ describe("Portfolio strategy position projection", () => {
           assetValue: 2,
           usdValue: 999,
           apy: 6.5,
-          rewards: {
-            claimableShares: 1n,
-            claimableAssets: 0.02,
-            estimatedAssets: 0.05,
-          },
+          pendingYield: 0.03,
         },
       ],
       withdrawals: [],
@@ -235,7 +231,6 @@ describe("Portfolio strategy position projection", () => {
       shareAmount: "1.800000000000000001",
       rate: 6.5,
       rateKind: "apr",
-      rewards: "0.02",
       pendingEarnings: "0.03",
       status: "active",
       hasPosition: true,
@@ -263,6 +258,33 @@ describe("Portfolio strategy position projection", () => {
       status: "withdrawing",
       hasPosition: false,
       hasPendingWithdrawal: true,
+    })
+  })
+
+  it("keeps pending yield visible once the whole balance is in a withdrawal", () => {
+    vi.mocked(usePropellerAccount).mockReturnValue({
+      positions: [
+        {
+          vault,
+          shares: 0,
+          sharesExact: "0",
+          assetValue: 0,
+          usdValue: 0,
+          apy: 6.5,
+          pendingYield: 0.004,
+        },
+      ],
+      withdrawals: [withdrawal({ state: "cooldown", estEth: 1 })],
+      isLoading: false,
+      isError: false,
+    })
+
+    expect(useMyJuicerPositions().data[0]).toMatchObject({
+      shareAmount: "0",
+      pendingEarnings: "0.004",
+      pendingWithdrawal: "1",
+      status: "withdrawing",
+      hasPosition: false,
     })
   })
 
@@ -314,7 +336,7 @@ describe("Portfolio strategy position projection", () => {
           assetValue: 1,
           usdValue: 0,
           apy: null,
-          rewards: null,
+          pendingYield: null,
         },
       ],
       withdrawals: [],

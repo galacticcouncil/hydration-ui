@@ -15,7 +15,13 @@ import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { type Abi, encodeFunctionData, formatUnits, type Hex } from "viem"
+import {
+  type Abi,
+  encodeFunctionData,
+  formatUnits,
+  type Hex,
+  maxUint256,
+} from "viem"
 
 import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
 import { PendingApproval } from "@/components/PendingApproval"
@@ -306,32 +312,41 @@ export function useDeposit(
   })
 }
 
+export type RedeemVariables = {
+  shareAmount: string
+  /** redeem the whole balance, including earnings funded after it was read */
+  isMax: boolean
+}
+
 export function useRequestRedeem(
   vault: PropellerVaultConfig,
   options: VaultWriteOptions = {},
 ) {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["common", "propeller"])
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitTx } = useVaultEvmCall(options)
   const { vaultAddress, assetId, shareSymbol } = vault
   const decimals = getAssetWithFallback(assetId).decimals
 
   return useMutation({
-    mutationFn: (shareAmount: string) => {
+    mutationFn: ({ shareAmount, isMax }: RedeemVariables) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseExactAmount(shareAmount, decimals), evmAddress],
+        args: [
+          isMax ? maxUint256 : parseExactAmount(shareAmount, decimals),
+          evmAddress,
+        ],
       })
 
-      const fmt = t("currency", {
+      const amount = t("currency", {
         value: shareAmount,
         symbol: shareSymbol,
         maximumFractionDigits: 4,
       })
       return submitTx(vaultAddress, data, [...VAULT_ABI], {
-        submitted: `Requesting ${fmt} withdrawal...`,
-        success: `${fmt} withdrawal requested`,
+        submitted: t("propeller:withdraw.toast.submitted", { amount }),
+        success: t("propeller:withdraw.toast.success", { amount }),
       })
     },
   })
@@ -403,31 +418,5 @@ export function usePendingClaimIds() {
       const { vault, requestId } = mutation.state.variables as ClaimVariables
       return withdrawalRowId(vault.vaultAddress, requestId)
     },
-  })
-}
-
-/** Materialize earnings already held as invested collateral shares. */
-export function useClaimYield(options: VaultWriteOptions = {}) {
-  const { t } = useTranslation("propeller")
-  const { evmAddress, submitTx } = useVaultEvmCall(options)
-  return useMutation({
-    mutationFn: (vault: PropellerVaultConfig) =>
-      submitTx(
-        vault.vaultAddress,
-        encodeFunctionData({
-          abi: VAULT_ABI,
-          functionName: "claimYield",
-          args: [evmAddress],
-        }),
-        [...VAULT_ABI],
-        {
-          submitted: "Claiming earned shares...",
-          success: "Earned shares claimed",
-        },
-        {
-          title: t("positions.action.claimEarnings"),
-          description: t("positions.earningsDescription"),
-        },
-      ),
   })
 }
