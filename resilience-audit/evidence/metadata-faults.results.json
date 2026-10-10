@@ -1,0 +1,399 @@
+{
+  "checkout": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+  "observationMs": 250,
+  "scope": "Actual TS factory, metadata query and assets query executed; exact installed TanStack Query client used. Healthy chain, pool, EVM and state interfaces mocked. Cold React gate linkage is source-traced, not browser-rendered by this harness.",
+  "limits": "Pending is observed only for the stated window. The source has no fetch deadline or abort signal; the hanging injected promise never settles. This harness does not prove browser behavior for real networking or other application integrations.",
+  "versions": {
+    "typescript": "5.7.3",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "@tanstack/react-query": "5.101.4",
+    "@tanstack/query-core": "5.101.4",
+    "@tanstack/react-router": "1.170.10",
+    "polkadot-api": "2.2.2",
+    "viem": "2.56.8",
+    "@galacticcouncil/common": "1.2.0",
+    "@galacticcouncil/descriptors": "2.9.0",
+    "@galacticcouncil/sdk-next": "2.3.2",
+    "@galacticcouncil/xc": "2.1.0",
+    "@galacticcouncil/xc-cfg": "2.7.0",
+    "@galacticcouncil/xc-core": "2.6.0",
+    "@galacticcouncil/xc-sdk": "2.5.0",
+    "@galacticcouncil/xc-swap": "0.9.0",
+    "@galacticcouncil/xc-scan": "0.5.0"
+  },
+  "sourceHashes": {
+    "packages/utils/src/lib/AssetMetadataFactory.ts": "53dc39968feb224704b15a348be2406a2d0e6eadbbfd322de3ad389ee4b0408e",
+    "apps/main/src/api/metadata.ts": "d4a9a112a6ba5ab6cf742550da3ee7593bcbe20bce36ec3dadda7548467891f6",
+    "apps/main/src/api/assets.ts": "66dc93e07e2eb82bb4d88bf309c72cea88f7a3e13f1f062024d8725d0dc20a5e",
+    "apps/main/src/providers/AssetRegistryGate.tsx": "5f26f964fd00018809c66c0193daa4570c365af8fefe3ec1ca0fe6e2fce35d71",
+    "apps/main/src/routes/__root.tsx": "2f6f3a0777d255cf34a81c5203802d34a55184dad0401aba5e56f95637014789"
+  },
+  "sourceEvidence": [
+    {
+      "file": "packages/utils/src/lib/AssetMetadataFactory.ts",
+      "line": 56,
+      "fragment": "const response = await fetch(METADATA_CDN_URL + path)"
+    },
+    {
+      "file": "packages/utils/src/lib/AssetMetadataFactory.ts",
+      "line": 60,
+      "fragment": "return (await response.json()) as T"
+    },
+    {
+      "file": "packages/utils/src/lib/AssetMetadataFactory.ts",
+      "line": 70,
+      "fragment": "this.assets = data.items.map("
+    },
+    {
+      "file": "packages/utils/src/lib/AssetMetadataFactory.ts",
+      "line": 83,
+      "fragment": "this.chains = data.items.map("
+    },
+    {
+      "file": "apps/main/src/api/metadata.ts",
+      "line": 18,
+      "fragment": "await Promise.all(["
+    },
+    {
+      "file": "apps/main/src/api/assets.ts",
+      "line": 166,
+      "fragment": "queryClient.ensureQueryData(assetMetadataQuery()),"
+    },
+    {
+      "file": "apps/main/src/providers/AssetRegistryGate.tsx",
+      "line": 25,
+      "fragment": "useSuspenseQuery(assetsQuery(rpcProvider, queryClient))"
+    },
+    {
+      "file": "apps/main/src/providers/AssetRegistryGate.tsx",
+      "line": 36,
+      "fragment": "const isCached = assets.length > 0 && storedGenesisHash === genesisHash"
+    },
+    {
+      "file": "apps/main/src/routes/__root.tsx",
+      "line": 81,
+      "fragment": "<AssetRegistryGate>"
+    }
+  ],
+  "cases": [
+    {
+      "fault": "fetch_rejection",
+      "workflow": "factory_fetch_methods",
+      "state": "fulfilled",
+      "elapsedMs": 0,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "fetch_rejection",
+      "workflow": "metadata_query_real_query_client",
+      "state": "fulfilled",
+      "elapsedMs": 2,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "fetch_rejection",
+      "workflow": "cold_assets_query_real_query_client",
+      "state": "fulfilled",
+      "elapsedMs": 1,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 1
+    },
+    {
+      "fault": "http_503",
+      "workflow": "factory_fetch_methods",
+      "state": "fulfilled",
+      "elapsedMs": 0,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "http_503",
+      "workflow": "metadata_query_real_query_client",
+      "state": "fulfilled",
+      "elapsedMs": 0,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "http_503",
+      "workflow": "cold_assets_query_real_query_client",
+      "state": "fulfilled",
+      "elapsedMs": 1,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 1
+    },
+    {
+      "fault": "silent_fetch_hang",
+      "workflow": "factory_fetch_methods",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 251,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "silent_fetch_hang",
+      "workflow": "metadata_query_real_query_client",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 251,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "silent_fetch_hang",
+      "workflow": "cold_assets_query_real_query_client",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 250,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "hanging_response_body",
+      "workflow": "factory_fetch_methods",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 251,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "hanging_response_body",
+      "workflow": "metadata_query_real_query_client",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 251,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "hanging_response_body",
+      "workflow": "cold_assets_query_real_query_client",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 250,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "malformed_successful_json",
+      "workflow": "factory_fetch_methods",
+      "state": "rejected",
+      "error": "Cannot read properties of undefined (reading 'map')",
+      "elapsedMs": 0,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "malformed_successful_json",
+      "workflow": "metadata_query_real_query_client",
+      "state": "rejected",
+      "error": "Cannot read properties of undefined (reading 'map')",
+      "elapsedMs": 0,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    },
+    {
+      "fault": "malformed_successful_json",
+      "workflow": "cold_assets_query_real_query_client",
+      "state": "rejected",
+      "error": "Cannot read properties of undefined (reading 'map')",
+      "elapsedMs": 1,
+      "requests": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+          "suppliedAbortSignal": false
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+          "suppliedAbortSignal": false
+        }
+      ],
+      "storedAssets": 0
+    }
+  ]
+}

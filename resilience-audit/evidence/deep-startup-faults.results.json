@@ -1,0 +1,107 @@
+{
+  "checkout": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+  "observationWindowMs": 120,
+  "scope": "Audit-only injected storage/network faults and direct exact installed SDK/viem methods. React boot/chunk blast radius is source traced where explicitly noted.",
+  "limits": "Pending state is measured only within observation window. Mocks never settle; source confirms missing deadlines. Network/persistence mocks do not prove production browser behavior.",
+  "cases": [
+    {
+      "name": "idb_synchronous_open_failure",
+      "state": "rejected",
+      "error": "SecurityError: IndexedDB blocked",
+      "elapsedMs": 0
+    },
+    {
+      "name": "idb_repeat_after_synchronous_open_failure",
+      "state": "rejected",
+      "error": "SecurityError: IndexedDB blocked",
+      "elapsedMs": 0,
+      "openCalls": 1
+    },
+    {
+      "name": "idb_open_never_fires_success_error",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 121
+    },
+    {
+      "name": "idb_open_error_event_is_soft_failure",
+      "state": "fulfilled",
+      "value": null,
+      "elapsedMs": 1
+    },
+    {
+      "name": "idb_malformed_registry_shape_reaches_consumer",
+      "state": "rejected",
+      "error": "store.getState(...).assets.reduce is not a function",
+      "elapsedMs": 0,
+      "consumerEvidence": "AssetsProvider calls assets.reduce at apps/main/src/providers/assetsProvider.tsx:146; raw persisted state has no schema check"
+    },
+    {
+      "name": "provider_resolution_persist_write_failure",
+      "state": "rejected",
+      "error": "QuotaExceededError: injected full storage",
+      "elapsedMs": 0,
+      "inMemoryUpdatedBeforeThrow": true,
+      "consumerEvidence": "DataProviderResolver.tsx:86 persists before setIsBestProviderFound(true):93; write failure skips readiness flag"
+    },
+    {
+      "name": "local_storage_schema_invalid_same_version_passes_through",
+      "state": "fulfilled",
+      "observed": {
+        "version": 7,
+        "state": {
+          "count": "invalid"
+        }
+      },
+      "expectedSafeDefault": {
+        "count": 0
+      }
+    },
+    {
+      "name": "preload_error_unconditionally_reloads",
+      "state": "fulfilled",
+      "injectedEvents": 3,
+      "reloadRequests": 3,
+      "limit": "Direct callback execution; not a deployed chunk outage browser test"
+    },
+    {
+      "name": "app_update_baseline_rejection",
+      "state": "fulfilled",
+      "elapsedMs": 1,
+      "updateAvailable": false,
+      "fetchCalls": 2
+    },
+    {
+      "name": "app_update_baseline_hang",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 119,
+      "updateAvailable": false,
+      "fetchCalls": 1
+    },
+    {
+      "name": "sdk_pool_aggregate_v3_reject",
+      "state": "rejected",
+      "error": "injected V3 failure",
+      "elapsedMs": 12,
+      "absorbedHealthyFamilies": 0,
+      "recoveredOnNextCall": true
+    },
+    {
+      "name": "sdk_pool_aggregate_v3_hang",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 119,
+      "absorbedHealthyFamilies": 0
+    },
+    {
+      "name": "viem_http_response_body_hang_outlives_configured_timeout",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 121,
+      "configuredTimeoutMs": 25,
+      "suppliedSignalAbortedAtObservation": false
+    },
+    {
+      "name": "viem_custom_shared_papi_hang_has_no_deadline",
+      "state": "pending_at_observation_deadline",
+      "elapsedMs": 121
+    }
+  ]
+}

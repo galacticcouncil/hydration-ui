@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-10-01T10:45:30.332Z",
+  "observationMs": 100,
+  "checks": [
+    {
+      "name": "kamino-nonnumeric-string-cached-as-NaN",
+      "passed": true,
+      "observation": {
+        "result": "NaN",
+        "cache": "NaN",
+        "Big": "throws Invalid number"
+      },
+      "implication": "Invalid apy strings pass schema, poison cached results, and fail later Big conversions in render."
+    },
+    {
+      "name": "kamino-stale-row-treated-as-current",
+      "passed": true,
+      "observation": {
+        "timestamp": "2000-01-01",
+        "result": 25
+      },
+      "implication": "No data freshness validation; cache TTL timestamps receipt rather than upstream sample."
+    },
+    {
+      "name": "external-apy-cold-warm-and-expired-outage",
+      "passed": true,
+      "observation": {
+        "cold": null,
+        "warm": 25,
+        "expired": null
+      },
+      "implication": "Thrown transport errors become null or <=7-day cache; helper resolves so outer React Query retries do not run."
+    },
+    {
+      "name": "warm-apy-cache-not-used-until-hanging-fetch-settles",
+      "passed": true,
+      "observation": {
+        "pending": "pending",
+        "hasSignal": false
+      },
+      "implication": "A warm persisted fallback does not bound loading; no abort signal is supplied."
+    },
+    {
+      "name": "defillama-empty-response-cached-as-zero",
+      "passed": true,
+      "observation": {
+        "empty": 0,
+        "cached": 0
+      },
+      "implication": "Valid empty response replaces unavailable data with numeric zero."
+    },
+    {
+      "name": "kraken-NaN-close-is-successful-data",
+      "passed": true,
+      "observation": {
+        "close": "NaN",
+        "open": "NaN"
+      },
+      "implication": "String shape validation does not enforce numeric finite OHLC; portfolio Big(NaN.toString()) can throw."
+    },
+    {
+      "name": "neckwork-body-hang-200",
+      "passed": true,
+      "observation": {
+        "status": 200,
+        "state": "pending"
+      },
+      "implication": "Successful body parsing has no deadline."
+    },
+    {
+      "name": "neckwork-body-hang-404",
+      "passed": true,
+      "observation": {
+        "status": 404,
+        "state": "pending"
+      },
+      "implication": "Error middleware awaits clone.json before throwing status, so even HTTP errors can hang before reaching query fallback."
+    },
+    {
+      "name": "neckwork-body-hang-429",
+      "passed": true,
+      "observation": {
+        "status": 429,
+        "state": "pending"
+      },
+      "implication": "Error middleware awaits clone.json before throwing status, so even HTTP errors can hang before reaching query fallback."
+    },
+    {
+      "name": "neckwork-body-hang-503",
+      "passed": true,
+      "observation": {
+        "status": 503,
+        "state": "pending"
+      },
+      "implication": "Error middleware awaits clone.json before throwing status, so even HTTP errors can hang before reaching query fallback."
+    },
+    {
+      "name": "neckwork-missing-stats-values-pass-query",
+      "passed": true,
+      "observation": {
+        "mappedField": "undefined",
+        "headerVolume": "throws plus is not a function"
+      },
+      "implication": "Incomplete nested objects pass queryFn; header checks only !==null and uses Big(undefined).plus(...) during render."
+    },
+    {
+      "name": "neckwork-http-error-with-complete-body-rejects",
+      "passed": true,
+      "observation": {
+        "status": 503,
+        "error": "NeckworkApiError"
+      },
+      "implication": "Middleware does catch ordinary complete HTTP failures at query boundary."
+    },
+    {
+      "name": "graphql-business-data-not-validated",
+      "passed": true,
+      "observation": {
+        "amountIn": "bad",
+        "status": "successful GraphQL result"
+      },
+      "implication": "graphql-request validates GraphQL envelope, not numeric/semantic values required by render transformations."
+    },
+    {
+      "name": "multix-provider-malformed-accounts-object",
+      "passed": true,
+      "observation": {
+        "graphqlResult": {
+          "accounts": {}
+        },
+        "globalProvider": "throws TypeError"
+      },
+      "implication": "Exact global MultisigProvider useMemo body throws outside React Query; connected account required, global tree impact follows root placement (browser boundary outcome not tested)."
+    },
+    {
+      "name": "multix-provider-malformed-accounts-null-item",
+      "passed": true,
+      "observation": {
+        "graphqlResult": {
+          "accounts": [
+            null
+          ]
+        },
+        "globalProvider": "throws TypeError"
+      },
+      "implication": "Exact global MultisigProvider useMemo body throws outside React Query; connected account required, global tree impact follows root placement (browser boundary outcome not tested)."
+    },
+    {
+      "name": "graphql-hang-with-no-client-signal",
+      "passed": true,
+      "observation": {
+        "state": "pending",
+        "hasSignal": false
+      },
+      "implication": "UI SDK clients instantiate with no deadline and query wrappers do not pass React Query signal."
+    }
+  ],
+  "scope": "Source function and installed transport fault injection; not a browser route test",
+  "completed": true
+}
