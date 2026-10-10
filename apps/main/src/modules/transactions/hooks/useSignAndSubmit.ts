@@ -1,5 +1,6 @@
 import {
   isEthereumSigner,
+  isNearSigner,
   isPolkadotSigner,
   isSolanaSigner,
   isSuiSigner,
@@ -16,6 +17,7 @@ import {
   signAndSubmitEvmDispatchTx,
   signAndSubmitEvmTx,
 } from "@/modules/transactions/utils/ethereum"
+import { signAndSubmitNearTx } from "@/modules/transactions/utils/near"
 import {
   isPapiTransaction,
   signAndSubmitPolkadotTx,
@@ -35,6 +37,7 @@ import {
 } from "@/modules/transactions/utils/tx"
 import {
   isEvmCall,
+  isNearCall,
   isSolanaCall,
   isSuiCall,
 } from "@/modules/transactions/utils/xcm"
@@ -110,6 +113,10 @@ export const useSignAndSubmit = (
 
       if (isSuiCall(tx) && isSuiSigner(signer)) {
         return signAndSubmitSuiTx(tx, signer, txOptions)
+      }
+
+      if (isNearCall(tx) && isNearSigner(signer)) {
+        return signAndSubmitNearTx(tx, signer, txOptions)
       }
 
       const err = new Error(t("transaction.error.unsupportedTransaction"))

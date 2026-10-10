@@ -21,6 +21,7 @@ import {
 } from "@/modules/transactions/utils/polkadot"
 import {
   isEvmCall,
+  isNearCall,
   isSolanaCall,
   isSuiCall,
 } from "@/modules/transactions/utils/xcm"
@@ -194,7 +195,7 @@ export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
     return getPapiTransactionCallData(tx)
   }
 
-  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {
+  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx) || isNearCall(tx)) {
     return tx.data
   }
 

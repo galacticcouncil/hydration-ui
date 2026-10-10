@@ -6,14 +6,43 @@ import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@/components/ChainLogo"
 
-type ConnectChainTileProps = FlexProps & {
+type ConnectTileBaseProps = FlexProps & {
   layout?: "horizontal" | "vertical"
-  chain: AnyChain | null
   onConnect: () => void
+}
+
+type ConnectChainTileProps = ConnectTileBaseProps & {
+  chain: AnyChain | null
 }
 
 export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
   chain,
+  ...props
+}) => (
+  <ConnectTile
+    chainName={chain?.name}
+    logo={
+      chain && (
+        <ChainLogo
+          ecosystem={chain.ecosystem}
+          chainId={getChainId(chain)}
+          size="large"
+        />
+      )
+    }
+    {...props}
+  />
+)
+
+type ConnectTileProps = ConnectTileBaseProps & {
+  chainName?: string
+  logo?: React.ReactNode
+}
+
+/** Connect prompt for a chain given by its name and logo, xcm or not. */
+export const ConnectTile: React.FC<ConnectTileProps> = ({
+  chainName,
+  logo,
   onConnect,
   layout = "horizontal",
   bg = getToken("controls.dim.base"),
@@ -32,7 +61,7 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
       p="xl"
       {...props}
     >
-      {chain ? (
+      {chainName ? (
         <Flex
           gap="base"
           align="center"
@@ -40,11 +69,7 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
           direction={layout === "vertical" ? "column" : "row"}
           mx="auto"
         >
-          <ChainLogo
-            ecosystem={chain.ecosystem}
-            chainId={getChainId(chain)}
-            size="large"
-          />
+          {logo}
           <Text
             fs="p3"
             fw={500}
@@ -52,7 +77,7 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
             align={layout === "vertical" ? "center" : "left"}
           >
             {t("xcm:chainNotConnected", {
-              chainName: chain.name,
+              chainName,
             })}
           </Text>
           <Button
