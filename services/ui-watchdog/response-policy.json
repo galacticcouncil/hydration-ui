@@ -1,0 +1,7 @@
+{
+  "default": {
+    "cache-control": "public,max-age=0,must-revalidate",
+    "content-security-policy": null
+  },
+  "paths": {}
+}

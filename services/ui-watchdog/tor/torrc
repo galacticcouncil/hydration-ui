@@ -1,0 +1,17 @@
+ClientOnly 1
+SocksPort 0.0.0.0:9050
+SocksPolicy accept 127.0.0.0/8
+SocksPolicy accept 10.0.0.0/8
+SocksPolicy accept 172.16.0.0/12
+SocksPolicy accept 192.168.0.0/16
+SocksPolicy reject *
+DataDirectory /data
+ControlPort 127.0.0.1:9051
+CookieAuthentication 1
+CookieAuthFile /tmp/tor-control.auth
+ClientRejectInternalAddresses 1
+ClientDNSRejectInternalAddresses 1
+StrictNodes 1
+MaxCircuitDirtiness 600
+MaxMemInQueues 64 MB
+Log notice stdout

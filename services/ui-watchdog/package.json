@@ -1,0 +1,20 @@
+{
+  "name": "@galacticcouncil/ui-watchdog",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node src/main.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:browser": "node --test test/*.integration.mjs"
+  },
+  "dependencies": {
+    "fflate": "0.8.3",
+    "parse5": "8.0.1",
+    "playwright": "1.63.0",
+    "socks-proxy-agent": "10.1.0"
+  }
+}
