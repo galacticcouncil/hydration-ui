@@ -31,6 +31,9 @@ const DEFAULT_LOCALE = "en-US"
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
 const NA_VALUE = "N/A"
 const MIN_PERCENTAGE_THRESHOLD = Big(0.01)
+const SUBSCRIPT_DIGITS = "₀₁₂₃₄₅₆₇₈₉"
+const SUBSCRIPT_MIN_ZEROS = 4
+const SUBSCRIPT_SIGNIFICANT_DIGITS = 4
 
 const formatDistanceLocale: Record<FormatDistanceToken, string> = {
   xSeconds: "{{count}}s",
@@ -121,6 +124,51 @@ const formatFractionDigits = (
   return parts.map(formatNumberParts).join("")
 }
 
+/**
+ * Collapses the leading fraction zeros of a tiny value into a subscript holding
+ * their total count: 0.000001234 → 0.0₅1234. Returns undefined when the value
+ * has fewer than SUBSCRIPT_MIN_ZEROS leading zeros, so callers fall back to
+ * the regular formatting.
+ */
+const formatSubscriptParts = (
+  value: number,
+  parts: Intl.NumberFormatPart[],
+  decimalSeparator: string,
+): Intl.NumberFormatPart[] | undefined => {
+  const abs = Math.abs(value)
+
+  if (abs === 0 || abs >= Math.pow(10, -SUBSCRIPT_MIN_ZEROS)) {
+    return undefined
+  }
+
+  const [digits = "", exponent] = abs
+    .toExponential(SUBSCRIPT_SIGNIFICANT_DIGITS - 1)
+    .split("e-")
+  const zeros = Number(exponent) - 1
+
+  // rounding can carry the value up to the cutoff (0.000099999 → 0.0001)
+  if (zeros < SUBSCRIPT_MIN_ZEROS) {
+    return undefined
+  }
+
+  const zerosSubscript = Array.from(
+    String(zeros),
+    (digit) => SUBSCRIPT_DIGITS[Number(digit)],
+  ).join("")
+  const significant = digits.replace(".", "").replace(/0+$/, "")
+
+  return parts
+    .filter(({ type }) => type !== "decimal" && type !== "fraction")
+    .map((part) =>
+      part.type === "integer"
+        ? {
+            ...part,
+            value: `0${decimalSeparator}0${zerosSubscript}${significant}`,
+          }
+        : part,
+    )
+}
+
 export const getMaxSignificantDigits = (
   value: number | bigint | string | Big,
   options: Intl.NumberFormatOptions,
@@ -157,7 +205,12 @@ export const formatNumber = (
   }
 
   const numericValue = bigSourceToNumber(value)
-  const { threshold, thresholdMaximumFractionDigits, ...intlOptions } = options
+  const {
+    threshold,
+    thresholdMaximumFractionDigits,
+    subscript,
+    ...intlOptions
+  } = options
   const maxFractionDigits = intlOptions.maximumFractionDigits
 
   const parts = new Intl.NumberFormat(lng, {
@@ -167,6 +220,18 @@ export const formatNumber = (
         : getMaxSignificantDigits(value, intlOptions),
     ...intlOptions,
   }).formatToParts(numericValue)
+
+  if (subscript === true) {
+    const subscriptParts = formatSubscriptParts(
+      numericValue,
+      parts,
+      getDecimalSeparator(lng),
+    )
+
+    if (subscriptParts) {
+      return subscriptParts.map(formatNumberParts).join("")
+    }
+  }
 
   if (
     threshold === true &&
@@ -251,6 +316,18 @@ export const formatCurrency = (
       { type: "literal", value: NB_SPACE },
       { type: "currency", value: options.symbol } as Intl.NumberFormatPart,
     ]
+  }
+
+  if (options.subscript === true) {
+    const subscriptParts = formatSubscriptParts(
+      numericValue,
+      parts,
+      getDecimalSeparator(lng),
+    )
+
+    if (subscriptParts) {
+      return subscriptParts.map(formatNumberParts).join("")
+    }
   }
 
   if (maxFractionDigits && numericValue > 0) {

@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Flex,
-  MicroButton,
   Paper,
   PositionCard,
   Separator,
@@ -158,14 +157,18 @@ export const MyPositionsCard = () => {
               cta={
                 <>
                   {row.isRaw && (
-                    <MicroButton
+                    <Button
+                      size="micro"
+                      uppercase
+                      variant="muted"
+                      outline
                       onClick={() => supplyRawMutation.mutate(bilRaw)}
                       disabled={supplyRawMutation.isPending}
                     >
                       {supplyRawMutation.isPending
                         ? t("bil.positions.action.depositing")
                         : t("common:deposit")}
-                    </MicroButton>
+                    </Button>
                   )}
                   <Tooltip
                     text={

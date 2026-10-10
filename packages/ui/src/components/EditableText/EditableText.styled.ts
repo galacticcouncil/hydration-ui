@@ -39,6 +39,7 @@ export const SEditButton = styled.button(
     cursor: pointer;
     align-items: center;
     flex-shrink: 0;
+    font-size: min(1em, ${theme.fontSizes.p1});
     line-height: 1;
     color: ${theme.text.medium};
 
@@ -60,7 +61,7 @@ export const SSaveHint = styled.span(
     white-space: nowrap;
     pointer-events: none;
     font-family: ${theme.fontFamilies1.secondary};
-    font-size: ${theme.fontSizes.p6};
+    font-size: min(1em, ${theme.fontSizes.p1});
     font-weight: 500;
     line-height: 1;
     color: ${theme.text.tint.quart};

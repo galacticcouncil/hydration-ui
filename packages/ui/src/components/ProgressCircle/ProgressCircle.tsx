@@ -62,9 +62,11 @@ export const ProgressCircle: FC<ProgressCircleProps> = ({
           cy={position}
         />
       </svg>
-      <SText position={labelPosition} sx={{ fontSize }}>
-        {label || `${percent}%`}
-      </SText>
+      {label && (
+        <SText position={labelPosition} sx={{ fontSize }}>
+          {label}
+        </SText>
+      )}
     </SContainer>
   )
 }

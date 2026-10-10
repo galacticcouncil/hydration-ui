@@ -53,6 +53,7 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
+import { readingStatus } from "@/api/external/reading"
 import { PROXY_URL } from "@/api/neckwork"
 import { TProviderData } from "@/api/rpcClient"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -973,9 +974,12 @@ export const useExternalApys = (assetIds: string[]) => {
     queries,
   })
 
+  const now = Date.now()
+  const readings = results.map((result) => readingStatus(result, now))
+
   return {
-    isLoading: results.some((result) => result.isLoading),
-    data: results.map((result, i) => {
+    isLoading: readings.some(({ status }) => status === "loading"),
+    data: readings.map((reading, i) => {
       const queryConfig = queryConfigs[i] as NonNullable<
         (typeof queryConfigs)[number]
       >
@@ -984,7 +988,12 @@ export const useExternalApys = (assetIds: string[]) => {
         queryConfig.assetId,
         {
           apyType: queryConfig.type,
-          apy: result.data,
+          apy:
+            reading.status === "known"
+              ? Big(reading.reading.apy).times(100).toNumber()
+              : reading.status === "unavailable"
+                ? null
+                : undefined,
         },
       ] as const
     }),

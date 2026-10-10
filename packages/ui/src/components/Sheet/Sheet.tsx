@@ -4,7 +4,6 @@ import { FC, Ref } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
 import { FlexProps } from "@/components/Flex"
-import { Icon } from "@/components/Icon"
 import { ScrollArea } from "@/components/ScrollArea"
 
 import {
@@ -31,10 +30,8 @@ const SheetClose: FC<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Close>
 > = (props) => {
   return (
-    <SSheetClose asChild align="right">
-      <DialogPrimitive.Close {...props}>
-        <Icon component={X} size="l" />
-      </DialogPrimitive.Close>
+    <SSheetClose icon={X} variant="ghost" size="medium" asChild align="right">
+      <DialogPrimitive.Close {...props} />
     </SSheetClose>
   )
 }

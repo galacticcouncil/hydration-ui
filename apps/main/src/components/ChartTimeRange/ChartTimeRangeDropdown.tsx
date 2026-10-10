@@ -1,4 +1,4 @@
-import { Select, SelectSize } from "@galacticcouncil/ui/components"
+import { ButtonSize, Select } from "@galacticcouncil/ui/components"
 
 export type ChartTimeRangeOptionType<TKey extends string> = {
   readonly key: TKey
@@ -13,7 +13,7 @@ type Props<
   readonly selectedOption: TKey
   readonly onSelect: (option: TKey) => void
   readonly disabled?: boolean
-  readonly size?: SelectSize
+  readonly size?: ButtonSize
 }
 
 export const ChartTimeRangeDropdown = <

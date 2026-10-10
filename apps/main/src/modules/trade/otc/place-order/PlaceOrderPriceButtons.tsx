@@ -1,5 +1,5 @@
 import { X } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, MicroButton } from "@galacticcouncil/ui/components"
+import { Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -48,9 +48,9 @@ export const PlaceOrderPriceButtons: FC<Props> = ({
 
   if (!isPriceLoaded) {
     return (
-      <MicroButton disabled>
+      <Button size="micro" uppercase variant="muted" outline disabled>
         {t("otc.placeOrder.lastOmniPoolPrice")}
-      </MicroButton>
+      </Button>
     )
   }
 
@@ -66,10 +66,12 @@ export const PlaceOrderPriceButtons: FC<Props> = ({
           : Big(usedOption).times(-1).toString()
 
         return (
-          <MicroButton
+          <Button
+            size="micro"
+            uppercase
+            outline
             key={option}
-            size="small"
-            variant={isCustom || isSelected ? "emphasis" : "low"}
+            variant={isCustom || isSelected ? "accent" : "muted"}
             onClick={() =>
               onChange({
                 type: "relative",
@@ -88,7 +90,7 @@ export const PlaceOrderPriceButtons: FC<Props> = ({
                 {isCustom && <Icon size="xs" component={X} />}
               </Flex>
             )}
-          </MicroButton>
+          </Button>
         )
       })}
     </Flex>

@@ -38,7 +38,7 @@ export const LiquidityPositionActions: FC<Props> = ({
     <Flex align="center" gap="s" justify="flex-end">
       {!!farmsToJoin.length && (
         <Button
-          variant="sliderTabActive"
+          variant="secondary"
           onClick={() => onAction(LiquidityPositionAction.Join)}
         >
           {t("wallet:myLiquidity.expanded.actions.joinFarms", {

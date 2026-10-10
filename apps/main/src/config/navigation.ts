@@ -59,6 +59,10 @@ export const LINKS = {
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
+  moneyMarket: "/money-market",
+  moneyMarketDashboard: "/money-market",
+  moneyMarketMarkets: "/money-market/markets",
+  moneyMarketHistory: "/money-market/history",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsTreasury: "/stats/treasury",
@@ -149,6 +153,29 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
+    ],
+  },
+  {
+    key: "moneyMarket",
+    to: LINKS.moneyMarket,
+    icon: BanknoteIcon,
+    children: [
+      {
+        key: "moneyMarketDashboard",
+        to: LINKS.moneyMarketDashboard,
+        exact: true,
+        icon: ChartPieIcon,
+      },
+      {
+        key: "moneyMarketMarkets",
+        to: LINKS.moneyMarketMarkets,
+        icon: Grid2X2Icon,
+      },
+      {
+        key: "moneyMarketHistory",
+        to: LINKS.moneyMarketHistory,
+        icon: HistoryIcon,
+      },
     ],
   },
   {
@@ -350,6 +377,22 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.borrowHistory.title"),
       description: t("navigation.borrowHistory.description"),
     },
+    moneyMarket: {
+      title: t("navigation.moneyMarket.title"),
+      description: "",
+    },
+    moneyMarketDashboard: {
+      title: t("navigation.moneyMarketDashboard.title"),
+      description: t("navigation.moneyMarketDashboard.description"),
+    },
+    moneyMarketMarkets: {
+      title: t("navigation.moneyMarketMarkets.title"),
+      description: t("navigation.moneyMarketMarkets.description"),
+    },
+    moneyMarketHistory: {
+      title: t("navigation.moneyMarketHistory.title"),
+      description: t("navigation.moneyMarketHistory.description"),
+    },
     stats: {
       title: t("navigation.stats.title"),
       description: "",
@@ -437,6 +480,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "moneyMarket",
   "strategies",
   "liquidity",
   "portfolio",
@@ -450,6 +494,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "liquidity",
   "borrow",
+  "moneyMarket",
   "strategies",
   "crossChain",
   "stats",

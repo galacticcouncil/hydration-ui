@@ -1,8 +1,8 @@
 import { TriangleAlert } from "@galacticcouncil/ui/assets/icons"
 import {
+  Button,
   Flex,
   Icon,
-  MicroButton,
   Modal,
   SummaryRowValue,
   Text,
@@ -68,12 +68,15 @@ export const TradeLimitSummaryRow: FC<Props> = ({
                   />
                 </Tooltip>
               )}
-              <MicroButton
-                variant="emphasis"
+              <Button
+                size="micro"
+                uppercase
+                outline
+                variant="accent"
                 onClick={() => setOpenSettings(true)}
               >
                 {t("edit")}
-              </MicroButton>
+              </Button>
             </Flex>
           </SummaryRowValue>
         }

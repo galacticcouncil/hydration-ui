@@ -4,10 +4,9 @@ import { Close } from "@/assets/icons"
 import {
   AccountAvatar,
   AccountAvatarTheme,
-  ButtonIcon,
+  Button,
   Flex,
   Grid,
-  Icon,
   Input,
 } from "@/components"
 
@@ -68,14 +67,10 @@ export const AccountInput: React.FC<AccountInputProps> = ({
         />
       </Flex>
       {!value && !pasteDisabled && (
-        <ButtonIcon onClick={handlePaste}>
-          <Icon component={ArrowDownToLine} size="m" />
-        </ButtonIcon>
+        <Button icon={ArrowDownToLine} variant="ghost" onClick={handlePaste} />
       )}
       {value && !clearDisabled && (
-        <ButtonIcon onClick={handleClear}>
-          <Icon component={Close} size="m" />
-        </ButtonIcon>
+        <Button icon={Close} variant="ghost" onClick={handleClear} />
       )}
     </Grid>
   )

@@ -166,7 +166,7 @@ const ConnectedAccountButton: React.FC<ConnectedMultisigAccountButtonProps> = ({
           )
         )}
       </Flex>
-      <Icon size={pxToRem(8)} component={CaretDown} />
+      <Icon component={CaretDown} />
     </SConnectedButton>
   )
 }
