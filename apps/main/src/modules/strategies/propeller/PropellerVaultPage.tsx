@@ -59,6 +59,8 @@ const PropellerVaultContent = () => {
             onWithdraw={setWithdrawVault}
           />
 
+          <WithdrawalsCard rows={withdrawals} />
+
           <StrategyDetailsCard />
 
           <AboutCard />
@@ -76,7 +78,6 @@ const PropellerVaultContent = () => {
           ) : (
             defaultDeposit.isLoading && <AppSkeleton />
           )}
-          <WithdrawalsCard rows={withdrawals} />
         </Stack>
       </TwoColumnGrid>
 
