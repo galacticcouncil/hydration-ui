@@ -126,6 +126,7 @@
   "xc.swap.field.destAddressPlaceholder": "Paste address here...",
   "xc.swap.field.checkingNearAccount": "Checking NEAR account...",
   "xc.swap.field.allContacts": "All contacts",
+  "xc.swap.field.modeContacts": "{{mode}} contacts",
   "xc.swap.field.myContacts": "My Contacts",
   "xc.swap.field.sourceChainTooltip": "Source chain",
   "xc.swap.field.destChainTooltip": "Destination chain",

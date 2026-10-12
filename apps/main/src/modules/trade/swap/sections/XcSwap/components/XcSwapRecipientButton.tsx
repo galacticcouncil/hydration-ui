@@ -14,12 +14,14 @@ import {
   Separator,
   SpinnerIcon,
   Text,
+  TextMiddleTruncate,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   Account,
   AddressBookModal,
+  getWalletModeName,
   sortByLastUsed,
   useAddresses,
   useAddressStore,
@@ -81,7 +83,11 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
 
   const walletMode = DEST_WALLET_MODES[destChain.platform] ?? null
   const suggestions = sortByLastUsed(
-    savedAddresses.filter(({ address }) => destChain.addressValidator(address)),
+    savedAddresses.filter(
+      ({ address, mode }) =>
+        (!walletMode || mode === walletMode) &&
+        destChain.addressValidator(address),
+    ),
   )
     .slice(0, MAX_SUGGESTIONS)
     .map(({ address }) => address)
@@ -149,6 +155,7 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
           )}
         </Flex>
         <InputSuggestions
+          open={suggestions.length > 0 ? undefined : false}
           anchor={(inputProps) => (
             <Flex direction="column" gap="m">
               <AccountInput
@@ -228,16 +235,16 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
                 onSelect={() => selectAddress(address)}
               >
                 <AccountAvatar address={address} size={24} />
-                <Flex direction="column" sx={{ minInlineSize: 0 }}>
+                <Flex direction="column" flex={1} minWidth={0}>
                   {contact?.name && <Text fs="p4">{contact.name}</Text>}
-                  <Text fs="p5" color={getToken("text.medium")} truncate={250}>
+                  <TextMiddleTruncate fs="p5" color={getToken("text.medium")}>
                     {address}
-                  </Text>
+                  </TextMiddleTruncate>
                 </Flex>
               </InputSuggestionsOption>
             )
           })}
-          {suggestions.length > 0 && <Separator />}
+          <Separator />
           <InputSuggestionsOption
             sx={{
               gap: "base",
@@ -260,7 +267,9 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
           <AddressBookModal
             header={
               <ModalHeader
-                title={t("trade:xc.swap.field.allContacts")}
+                title={t("trade:xc.swap.field.modeContacts", {
+                  mode: getWalletModeName(walletMode),
+                })}
                 align="center"
               />
             }

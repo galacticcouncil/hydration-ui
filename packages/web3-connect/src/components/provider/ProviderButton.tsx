@@ -77,7 +77,10 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
               bg={getToken("surfaces.themeBasePalette.background")}
               key={mode}
             >
-              <img sx={{ size: "xs" }} src={getWalletModeIcon(mode)} />
+              <img
+                sx={{ size: "xs", display: "block", borderRadius: "full" }}
+                src={getWalletModeIcon(mode)}
+              />
             </Box>
           ))}
       </Box>

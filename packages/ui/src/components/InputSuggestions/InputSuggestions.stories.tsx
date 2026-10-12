@@ -10,6 +10,7 @@ import {
   Paper,
   Separator,
   Text,
+  TextMiddleTruncate,
 } from "@/components"
 import { getToken } from "@/utils"
 
@@ -53,11 +54,11 @@ const Template = () => {
             onSelect={() => setValue(address)}
           >
             <AccountAvatar address={address} size={24} />
-            <Flex direction="column" sx={{ minInlineSize: 0 }}>
+            <Flex direction="column" flex={1} minWidth={0}>
               {name && <Text fs="p4">{name}</Text>}
-              <Text fs="p5" color={getToken("text.medium")} truncate={250}>
+              <TextMiddleTruncate fs="p5" color={getToken("text.medium")}>
                 {address}
-              </Text>
+              </TextMiddleTruncate>
             </Flex>
           </InputSuggestionsOption>
         ))}
