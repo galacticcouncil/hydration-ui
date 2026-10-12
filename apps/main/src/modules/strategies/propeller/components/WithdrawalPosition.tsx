@@ -3,7 +3,7 @@ import {
   type ChipProps,
   LoadingButton,
 } from "@galacticcouncil/ui/components"
-import { type FC } from "react"
+import { type FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
@@ -27,6 +27,23 @@ const statusVariants: Record<
   claimed: "blue",
 }
 
+/**
+ * The row's state is computed at fetch time from the block timestamp, but the
+ * cooldown boundary is shown live — tick it over so the chip cannot keep
+ * saying "Cooldown" after its own countdown has visibly expired.
+ */
+const useCooldownElapsed = (eligibleAt: number, inCooldown: boolean) => {
+  const [elapsed, setElapsed] = useState(() => Date.now() >= eligibleAt)
+  useEffect(() => {
+    if (!inCooldown || elapsed) return
+    const id = setInterval(() => {
+      if (Date.now() >= eligibleAt) setElapsed(true)
+    }, 3_000)
+    return () => clearInterval(id)
+  }, [eligibleAt, inCooldown, elapsed])
+  return elapsed
+}
+
 export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
   row,
 }) => {
@@ -35,34 +52,49 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
   const { symbol } = getAssetWithFallback(row.vault.assetId)
   const claim = useClaim()
   const isClaiming = usePendingClaimIds().includes(row.id)
-  const status = getWithdrawalStateLabel(row)
+  const cooldownElapsed = useCooldownElapsed(
+    row.eligibleAt,
+    row.state === "cooldown",
+  )
+  // after the cooldown nothing is claimable yet: the request waits for the
+  // keeper to start the unwind — say so instead of a dead countdown
+  const state =
+    row.state === "cooldown" && cooldownElapsed ? "pending" : row.state
+  const status = getWithdrawalStateLabel({ ...row, state })
   const stats =
-    row.state === "cooldown"
+    state === "cooldown"
       ? [
           {
             label: t("withdrawals.eligibleAt"),
             value: <DateText date={new Date(row.eligibleAt)} />,
           },
         ]
-      : status !== "claimable" &&
-          row.state === "partial" &&
-          (row.collateralOwed ?? 0) > 0
+      : state === "pending"
         ? [
             {
-              label: t("withdrawals.state.settling"),
-              value: t("withdrawals.settledProgress", {
-                settled: t("common:currency", {
-                  value: row.settledSoFar ?? 0,
-                  symbol,
-                }),
-                owed: t("common:currency", {
-                  value: row.collateralOwed,
-                  symbol,
-                }),
-              }),
+              label: t("withdrawals.state.pending"),
+              value: t("withdrawals.waitingUnwind"),
             },
           ]
-        : undefined
+        : status !== "claimable" &&
+            row.state === "partial" &&
+            (row.collateralOwed ?? 0) > 0
+          ? [
+              {
+                label: t("withdrawals.state.settling"),
+                value: t("withdrawals.settledProgress", {
+                  settled: t("common:currency", {
+                    value: row.settledSoFar ?? 0,
+                    symbol,
+                  }),
+                  owed: t("common:currency", {
+                    value: row.collateralOwed,
+                    symbol,
+                  }),
+                }),
+              },
+            ]
+          : undefined
 
   return (
     <PendingPosition
