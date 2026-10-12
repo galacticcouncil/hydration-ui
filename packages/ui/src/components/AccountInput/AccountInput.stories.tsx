@@ -1,7 +1,8 @@
 import { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
-import { Paper } from "@/components"
+import { BookOpen } from "@/assets/icons"
+import { ButtonIcon, Icon, Paper, Tooltip } from "@/components"
 
 import { AccountInput } from "./AccountInput"
 
@@ -44,5 +45,26 @@ export const WithError: Story = {
     value: "0x19912230039c10861946dF36CDe0eFeF09C3894A",
     placeholder: "Paste address here...",
     isError: true,
+  },
+}
+
+export const WithContacts: Story = {
+  render: Template,
+  args: {
+    placeholder: "Paste address here...",
+    endAdornment: (
+      <Tooltip
+        text="My Contacts"
+        size="small"
+        delayDuration={0}
+        side="bottom"
+        alignOffset={0}
+        asChild
+      >
+        <ButtonIcon aria-label="My Contacts">
+          <Icon component={BookOpen} size="m" />
+        </ButtonIcon>
+      </Tooltip>
+    ),
   },
 }

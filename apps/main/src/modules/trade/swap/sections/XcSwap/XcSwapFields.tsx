@@ -1,4 +1,11 @@
-import { Box, FormLabel, Stack } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  FormLabel,
+  Separator,
+  Stack,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
@@ -33,14 +40,19 @@ type Props = {
   readonly destChainAssetPairs: XcChainAssetPair[]
 }
 
-const ChainBadge: React.FC<{ chain: XcChain | null }> = ({ chain }) =>
+const ChainBadge: React.FC<{ chain: XcChain | null; tooltip: string }> = ({
+  chain,
+  tooltip,
+}) =>
   chain ? (
-    <>
-      <XcLogo src={chain.logo} size="extra-small" />
-      <FormLabel fw={600} color={getToken("text.high")}>
-        {chain.name}
-      </FormLabel>
-    </>
+    <Tooltip text={tooltip} asChild>
+      <Flex as="span" inline align="center" gap="s" tabIndex={0}>
+        <XcLogo src={chain.logo} size="extra-small" />
+        <FormLabel fw={600} color={getToken("text.high")}>
+          {chain.name}
+        </FormLabel>
+      </Flex>
+    </Tooltip>
   ) : null
 
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
@@ -195,7 +207,12 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
       <Box py="l" width="100%">
         <XcSrcAssetSelectField
           label={isCrossChain ? t("from") : t("sell")}
-          labelAdornment={<ChainBadge chain={isCrossChain ? srcChain : null} />}
+          labelAdornment={
+            <ChainBadge
+              chain={isCrossChain ? srcChain : null}
+              tooltip={t("trade:xc.swap.field.sourceChainTooltip")}
+            />
+          }
           isLoading={isSelectionLoading}
           maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
           isMaxBalanceLoading={
@@ -222,15 +239,10 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           amountFieldName="buyAmount"
           label={isCrossChain ? t("to") : t("buy")}
           labelAdornment={
-            // The recipient stands in for the chain, as on the transfer page;
-            // keyed so a chain switch drops the last chain's picks
-            isCrossChain &&
-            destChain && (
-              <XcSwapRecipientButton
-                key={destChain.key}
-                destChain={destChain}
-              />
-            )
+            <ChainBadge
+              chain={isCrossChain ? destChain : null}
+              tooltip={t("trade:xc.swap.field.destChainTooltip")}
+            />
           }
           chainAssetPairs={destChainAssetPairs}
           modalTitle={t("trade:xc.swap.field.destTitle")}
@@ -266,6 +278,13 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           }}
         />
       </Box>
+
+      {isCrossChain && destChain && (
+        <>
+          <Separator mx="-xl" />
+          <XcSwapRecipientButton key={destChain.key} destChain={destChain} />
+        </>
+      )}
     </Stack>
   )
 }

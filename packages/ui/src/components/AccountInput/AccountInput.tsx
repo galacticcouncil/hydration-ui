@@ -22,6 +22,7 @@ export type AccountInputProps = Omit<
   className?: string
   pasteDisabled?: boolean
   clearDisabled?: boolean
+  endAdornment?: React.ReactNode
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -33,6 +34,7 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   ref,
   pasteDisabled = false,
   clearDisabled = false,
+  endAdornment,
   ...props
 }) => {
   const handlePaste = async () => {
@@ -67,16 +69,19 @@ export const AccountInput: React.FC<AccountInputProps> = ({
           {...props}
         />
       </Flex>
-      {!value && !pasteDisabled && (
-        <ButtonIcon onClick={handlePaste}>
-          <Icon component={ArrowDownToLine} size="m" />
-        </ButtonIcon>
-      )}
-      {value && !clearDisabled && (
-        <ButtonIcon onClick={handleClear}>
-          <Icon component={Close} size="m" />
-        </ButtonIcon>
-      )}
+      <Flex align="center" gap="s">
+        {endAdornment}
+        {!value && !pasteDisabled && (
+          <ButtonIcon onClick={handlePaste}>
+            <Icon component={ArrowDownToLine} size="m" />
+          </ButtonIcon>
+        )}
+        {value && !clearDisabled && (
+          <ButtonIcon onClick={handleClear}>
+            <Icon component={Close} size="m" />
+          </ButtonIcon>
+        )}
+      </Flex>
     </Grid>
   )
 }
