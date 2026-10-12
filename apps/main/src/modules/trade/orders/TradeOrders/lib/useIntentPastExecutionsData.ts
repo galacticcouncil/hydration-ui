@@ -12,8 +12,8 @@ import { neckworkClient } from "@/api/neckwork"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
 import { toIntentActivitySlug } from "@/modules/trade/orders/lib/apiVocabulary"
 import { PastExecutionData } from "@/modules/trade/orders/lib/types"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 import { scaleHuman } from "@/utils/formatting"
 
 const MAX_EMPTY_PAGES = 5
@@ -42,7 +42,7 @@ const hasVisibleRows = (
 ) => !!page?.items.some(isFill)
 
 export const useIntentPastExecutionsData = (intentId: bigint) => {
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const neckworkEnabled = useNeckworkEnabled()
 
   const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useInfiniteQuery({

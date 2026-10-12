@@ -7,13 +7,11 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { useCallback, useMemo } from "react"
 
 import { parseChainErrorState } from "@/api/errors"
-// `neckworkClient` is the Hydration Public API (hydration-api.neckwork.net);
-// `neckwork` is the explorer url builder (hydration-explorer.neckwork.net).
 import { neckworkClient } from "@/api/neckwork"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
 import { PastExecutionData } from "@/modules/trade/orders/lib/types"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 import { scaleHuman } from "@/utils/formatting"
 
 const MAX_EMPTY_PAGES = 5
@@ -29,7 +27,7 @@ const STATUS_MAP: Record<DcaExecution["status"], TransactionStatusVariant> = {
 }
 
 export const usePastExecutionsData = (scheduleId: number) => {
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const neckworkEnabled = useNeckworkEnabled()
 
   const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useInfiniteQuery({

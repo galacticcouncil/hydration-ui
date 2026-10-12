@@ -1,25 +1,27 @@
+import { stakingEventsQuery } from "@galacticcouncil/indexer/neckwork"
 import { calculate_accumulated_rps } from "@galacticcouncil/math-staking"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { secondsToMilliseconds } from "date-fns"
-import { secondsInWeek, secondsInYear } from "date-fns/constants"
+import { secondsInYear } from "date-fns/constants"
 import { useMemo } from "react"
 
 import { HDXStakingBalanceQuery } from "@/api/balances"
 import { bestNumberQuery, useBlockTime } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
-import { useIndexerClient } from "@/api/indexer"
-import { potBalanceQuery } from "@/api/staking"
-import {
-  accumulatedRpsUpdatedEventsQuery,
-  StakeEventAccumulatedRps,
-  stakeQuery,
-  stakingInitializedEventsQuery,
-} from "@/api/staking"
+import { neckworkClient } from "@/api/neckwork"
+import { potBalanceQuery, stakeQuery } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
+
+import {
+  getAccumulatedRpsFromBlock,
+  getLengthOfStaking,
+  selectAccumulatedRpsEvents,
+  splitAccumulatedRpsEvents,
+} from "./DashboardStats.utils"
 
 const BIG_0 = Big(0)
 const BIG_10 = Big(10)
@@ -57,9 +59,6 @@ export const useStakingSupply = () => {
   }
 }
 
-// min. amount of block for how long we want to calculate APR from = one week
-const getLengthOfStaking = (blockTimeMs: number) =>
-  secondsToMilliseconds(secondsInWeek) / blockTimeMs
 const getBlocksPerYear = (blockTimeMs: number) =>
   secondsToMilliseconds(secondsInYear) / blockTimeMs
 
@@ -72,15 +71,29 @@ export const useStakingAPR = (positionId: bigint) => {
   )
   const { data: stake, isLoading: stakeLoading } = useQuery(stakeQuery(rpc))
 
-  const indexerSdk = useIndexerClient()
+  const fromBlock =
+    bestNumber && blockTimeMs
+      ? getAccumulatedRpsFromBlock(bestNumber.parachainBlockNumber, blockTimeMs)
+      : undefined
 
   const {
     data: accumulatedRpsUpdated,
     isLoading: accumulatedRpsUpdatedLoading,
-  } = useQuery(accumulatedRpsUpdatedEventsQuery(indexerSdk))
+  } = useQuery({
+    ...stakingEventsQuery(neckworkClient, {
+      types: ["AccumulatedRpsUpdated"],
+      fromBlock,
+      limit: 200,
+    }),
+    enabled: fromBlock !== undefined,
+    placeholderData: keepPreviousData,
+    select: selectAccumulatedRpsEvents,
+  })
 
   const { data: initializedEvents, isLoading: initializedEventsLoading } =
-    useQuery(stakingInitializedEventsQuery(indexerSdk))
+    useQuery(
+      stakingEventsQuery(neckworkClient, { types: ["StakingInitialized"] }),
+    )
 
   const { data: stakingConsts, isLoading: stakingConstsLoading } = useQuery(
     stakingConstsQuery(rpc),
@@ -132,25 +145,11 @@ export const useStakingAPR = (positionId: bigint) => {
     )
     const lengthOfStaking = getLengthOfStaking(blockTimeMs)
     const {
-      filteredAccumulatedRpsUpdatedBefore,
-      filteredAccumulatedRpsUpdatedAfter,
-    } = accumulatedRpsUpdated.reduce(
-      (acc, event) => {
-        const isBeforeStaking = currentBlockNumber
-          .minus(lengthOfStaking)
-          .gt(event.block.height)
-        acc[
-          isBeforeStaking
-            ? "filteredAccumulatedRpsUpdatedBefore"
-            : "filteredAccumulatedRpsUpdatedAfter"
-        ].push(event)
-
-        return acc
-      },
-      {
-        filteredAccumulatedRpsUpdatedBefore: [] as StakeEventAccumulatedRps[],
-        filteredAccumulatedRpsUpdatedAfter: [] as StakeEventAccumulatedRps[],
-      },
+      before: lastAccumulatedRpsUpdated,
+      after: filteredAccumulatedRpsUpdatedAfter,
+    } = splitAccumulatedRpsEvents(
+      accumulatedRpsUpdated,
+      currentBlockNumber.minus(lengthOfStaking).toNumber(),
     )
 
     if (hasPosition) {
@@ -170,18 +169,13 @@ export const useStakingAPR = (positionId: bigint) => {
         )
       }
 
-      const lastAccumulatedRpsUpdated =
-        filteredAccumulatedRpsUpdatedBefore[
-          filteredAccumulatedRpsUpdatedBefore.length - 1
-        ] // the newest event
-
       if (lastAccumulatedRpsUpdated) {
-        deltaRps = rpsNow.minus(lastAccumulatedRpsUpdated.args.accumulatedRps)
+        deltaRps = rpsNow.minus(lastAccumulatedRpsUpdated.accumulatedRps)
         deltaBlocks = currentBlockNumber.minus(
-          lastAccumulatedRpsUpdated.block.height,
+          lastAccumulatedRpsUpdated.blockHeight,
         )
       } else if (stakingInitialized) {
-        const blockNumber = stakingInitialized.block.height
+        const blockNumber = stakingInitialized.blockHeight
         deltaRps = rpsNow
         deltaBlocks = currentBlockNumber.minus(blockNumber)
       }
@@ -196,11 +190,6 @@ export const useStakingAPR = (positionId: bigint) => {
       let deltaBlocks = BIG_0
       let rpsAvg = BIG_0
 
-      const lastAccumulatedRpsUpdated =
-        filteredAccumulatedRpsUpdatedBefore?.[
-          filteredAccumulatedRpsUpdatedBefore.length - 1
-        ] // the newest event
-
       if (
         filteredAccumulatedRpsUpdatedAfter &&
         filteredAccumulatedRpsUpdatedAfter.length
@@ -211,21 +200,19 @@ export const useStakingAPR = (positionId: bigint) => {
           let re = BIG_0
           if (index === 0) {
             if (lastAccumulatedRpsUpdated) {
-              re = Big(event.args.accumulatedRps)
-                .minus(lastAccumulatedRpsUpdated.args.accumulatedRps)
-                .mul(event.args.totalStake)
+              re = Big(event.accumulatedRps)
+                .minus(lastAccumulatedRpsUpdated.accumulatedRps)
+                .mul(event.totalStake)
             } else {
-              re = Big(event.args.accumulatedRps).mul(event.args.totalStake)
+              re = Big(event.accumulatedRps).mul(event.totalStake)
             }
           } else {
-            re = Big(event.args.accumulatedRps)
-              .minus(events[index - 1]?.args.accumulatedRps ?? "0")
-              .mul(event.args.totalStake)
+            re = Big(event.accumulatedRps)
+              .minus(events[index - 1]?.accumulatedRps ?? "0")
+              .mul(event.totalStake)
           }
           deltaRpsAdjusted = deltaRpsAdjusted.plus(
-            re.div(
-              Big(event.args.totalStake).plus(stakeValue?.toString() ?? "0"),
-            ),
+            re.div(Big(event.totalStake).plus(stakeValue?.toString() ?? "0")),
           )
         })
 
@@ -233,19 +220,17 @@ export const useStakingAPR = (positionId: bigint) => {
 
         if (lastAccumulatedRpsUpdated) {
           deltaBlocks = currentBlockNumber.minus(
-            lastAccumulatedRpsUpdated.block.height,
+            lastAccumulatedRpsUpdated.blockHeight,
           )
         } else if (stakingInitialized) {
-          deltaBlocks = currentBlockNumber.minus(
-            stakingInitialized.block.height,
-          )
+          deltaBlocks = currentBlockNumber.minus(stakingInitialized.blockHeight)
         }
 
         const rpsAvg = deltaRpsAdjusted.div(deltaBlocks)
 
         return rpsAvg.div(BIG_QUINTILL).mul(blocksPerYear).mul(100)
       } else if (stakingInitialized) {
-        deltaBlocks = currentBlockNumber.minus(stakingInitialized.block.height)
+        deltaBlocks = currentBlockNumber.minus(stakingInitialized.blockHeight)
 
         rpsAvg = rpsNow.div(deltaBlocks)
 
