@@ -22,7 +22,12 @@ import {
   Web3ConnectProvider,
 } from "@/context/Web3ConnectContext"
 import { useWalletSubscriptions } from "@/hooks/useWalletSubscriptions"
-import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
+import {
+  Account,
+  useWeb3Connect,
+  WalletMode,
+  Web3ConnectModalMeta,
+} from "@/hooks/useWeb3Connect"
 import { useWeb3ConnectInit } from "@/hooks/useWeb3ConnectInit"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
@@ -49,6 +54,7 @@ type ControlledProps = {
   readonly papi: TypedApi<typeof hydration>
   readonly open: boolean
   readonly mode: WalletMode
+  readonly meta?: Web3ConnectModalMeta
   readonly onOpenChange: (open: boolean) => void
   readonly onAccountSelect: (account: Account) => void
 }
@@ -69,9 +75,10 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
     "onAccountSelect" in props &&
     "mode" in props
 
-  const store = useWeb3Connect(useShallow(pick(["setAccount", "mode"])))
+  const store = useWeb3Connect(useShallow(pick(["setAccount", "mode", "meta"])))
 
   const mode = isControlled ? props.mode : store.mode
+  const meta = isControlled ? props.meta : store.meta
   const onAccountSelect = isControlled
     ? props.onAccountSelect
     : store.setAccount
@@ -89,8 +96,9 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
       papi,
       onAccountSelect,
       mode,
+      meta,
     }),
-    [page, setPage, neckwork, onAccountSelect, isControlled, mode, papi],
+    [page, setPage, neckwork, onAccountSelect, isControlled, mode, meta, papi],
   )
   return (
     <Web3ConnectProvider value={context}>

@@ -72,7 +72,7 @@ export type Account = StoredAccount & {
   isIncompatible?: boolean
 }
 
-type Web3ConnectModalMeta = {
+export type Web3ConnectModalMeta = {
   title?: string
   description?: string
 }

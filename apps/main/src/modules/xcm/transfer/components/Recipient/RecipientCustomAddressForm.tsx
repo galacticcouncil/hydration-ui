@@ -10,7 +10,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { arraySearch, preventDefault } from "@galacticcouncil/utils"
-import { useAddresses, useAddressStore } from "@galacticcouncil/web3-connect"
+import {
+  sortByLastUsed,
+  useAddresses,
+  useAddressStore,
+} from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -54,7 +58,8 @@ export const RecipientCustomAddressForm: React.FC<
     },
   })
 
-  const { add: addAddressToAddressBook } = useAddressStore()
+  const { add: addAddressToAddressBook, touch: touchAddress } =
+    useAddressStore()
   const addresses = useAddresses({
     related: true,
   })
@@ -62,7 +67,10 @@ export const RecipientCustomAddressForm: React.FC<
   const customAddress = form.watch("customAddress")
 
   const customAddressesOnChain = useMemo(
-    () => addresses.filter((a) => a.isCustom && isValidAddress(a.address)),
+    () =>
+      sortByLastUsed(
+        addresses.filter((a) => a.isCustom && isValidAddress(a.address)),
+      ),
     [addresses, isValidAddress],
   )
 
@@ -74,6 +82,11 @@ export const RecipientCustomAddressForm: React.FC<
 
   const isSearchMode = !!customAddress.trim() && addressBookAddresses.length > 0
 
+  const selectAddress = (address: string) => {
+    touchAddress(address)
+    onSubmit(address)
+  }
+
   const onSubmitHandler = (values: CustomAddressFormValues) => {
     const address = values.customAddress.trim()
     addAddressToAddressBook({
@@ -81,7 +94,7 @@ export const RecipientCustomAddressForm: React.FC<
       name: "",
       isCustom: true,
     })
-    onSubmit(address)
+    selectAddress(address)
   }
 
   return (
@@ -121,7 +134,7 @@ export const RecipientCustomAddressForm: React.FC<
       {addressBookAddresses.length > 0 ? (
         <RecipientAddressBook
           addresses={addressBookAddresses}
-          onSelectAddress={onSubmit}
+          onSelectAddress={selectAddress}
         />
       ) : (
         <EmptyState

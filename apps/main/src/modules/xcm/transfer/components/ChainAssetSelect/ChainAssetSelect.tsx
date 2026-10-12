@@ -186,10 +186,10 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
               bg="transparent"
               onConnect={() =>
                 toggle(getWalletModeByChain(pendingChain), {
-                  title: t("xcm:connect.modal.title", {
+                  title: t("connectWallet.modal.title", {
                     chain: pendingChain.name,
                   }),
-                  description: t("xcm:connect.modal.description", {
+                  description: t("connectWallet.modal.description", {
                     chain: pendingChain.name,
                   }),
                 })

@@ -14,7 +14,7 @@ export const useNearRecipientValidation = (
     destChain?.platform === "near" && destChain.addressValidator(address)
 
   const { data, isPending, isError } = useQuery({
-    ...nearAccountQuery(debouncedAddress),
+    ...nearAccountQuery(destChain?.key ?? "", debouncedAddress),
     enabled: shouldCheck && isAddressSynced,
   })
 

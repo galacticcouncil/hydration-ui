@@ -6,6 +6,8 @@ import {
   ButtonIcon,
   Flex,
   Icon,
+  InputSuggestions,
+  InputSuggestionsOption,
   Label,
   Modal,
   ModalHeader,
@@ -18,6 +20,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import {
   Account,
   AddressBookModal,
+  sortByLastUsed,
   useAddresses,
   useAddressStore,
   WalletMode,
@@ -25,19 +28,12 @@ import {
 } from "@galacticcouncil/web3-connect"
 import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useEffect, useId, useRef, useState } from "react"
-import { createPortal } from "react-dom"
 import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
-import {
-  SRecipientContactsOption,
-  SRecipientDropdown,
-  SRecipientOption,
-} from "@/modules/trade/swap/sections/XcSwap/components/XcSwapRecipientButton.styled"
 import { useNearRecipientValidation } from "@/modules/trade/swap/sections/XcSwap/hooks/useNearRecipientValidation"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
-import { useRecentRecipientsStore } from "@/modules/trade/swap/sections/XcSwap/states/useRecentRecipientsStore"
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -50,6 +46,8 @@ const DEST_WALLET_MODES: Partial<
   near: WalletMode.Near,
   zec: WalletMode.Zcash,
 }
+
+const MAX_SUGGESTIONS = 3
 
 type XcSwapRecipientButtonProps = {
   destChain: XcChain
@@ -65,23 +63,12 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
   const { field, fieldState } = useController({ control, name: "destAddress" })
   const [isContactsOpen, setIsContactsOpen] = useState(false)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [committedAddress, setCommittedAddress] = useState<string | null>(null)
-  const [dropdownPosition, setDropdownPosition] = useState<{
-    top: number
-    left: number
-    width: number
-  } | null>(null)
-  const inputAnchorRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const savedCommitRef = useRef<string | null>(null)
   const [connectedAccount, setConnectedAccount] = useState<Account | null>(null)
   const savedAddresses = useAddresses()
   const addAddressToAddressBook = useAddressStore((state) => state.add)
-  const recentAddresses = useRecentRecipientsStore(
-    (state) => state.byChain[destChain.key],
-  )
-  const rememberRecipient = useRecentRecipientsStore((state) => state.remember)
+  const touchAddress = useAddressStore((state) => state.touch)
 
   const destAddress = field.value.trim()
   const nearAccountStatus = useNearRecipientValidation(destChain, field.value)
@@ -91,21 +78,13 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
       : nearAccountStatus === "unavailable"
         ? t("trade:xc.swap.error.nearAccountCheckFailed")
         : null
-  const hasRecipientError = !!fieldState.error || !!nearAccountMessage
 
   const walletMode = DEST_WALLET_MODES[destChain.platform] ?? null
-  const savedAddressSet = new Set(savedAddresses.map(({ address }) => address))
-  const suggestions = [
-    ...(recentAddresses ?? []).filter((address) =>
-      savedAddressSet.has(address),
-    ),
-    ...[...savedAddresses]
-      .reverse()
-      .filter((address) => destChain.addressValidator(address.address))
-      .map((address) => address.address),
-  ]
-    .filter((address, index, all) => all.indexOf(address) === index)
-    .slice(0, 3)
+  const suggestions = sortByLastUsed(
+    savedAddresses.filter(({ address }) => destChain.addressValidator(address)),
+  )
+    .slice(0, MAX_SUGGESTIONS)
+    .map(({ address }) => address)
 
   useEffect(() => {
     if (
@@ -116,13 +95,13 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
       (destChain.platform !== "near" || nearAccountStatus === "exists")
     ) {
       savedCommitRef.current = committedAddress
-      rememberRecipient(destChain.key, destAddress)
       addAddressToAddressBook({
         address: destAddress,
         name: "",
         isCustom: true,
         isGlobal: true,
       })
+      touchAddress(destAddress)
     }
   }, [
     addAddressToAddressBook,
@@ -130,62 +109,8 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
     destAddress,
     destChain,
     nearAccountStatus,
-    rememberRecipient,
+    touchAddress,
   ])
-
-  useEffect(() => {
-    if (!isDropdownOpen) return
-
-    const closeOnOutsideClick = (event: PointerEvent) => {
-      const target = event.target as Node
-      if (
-        !inputAnchorRef.current?.contains(target) &&
-        !dropdownRef.current?.contains(target)
-      ) {
-        setIsDropdownOpen(false)
-      }
-    }
-
-    const repositionDropdown = () => {
-      const rect = inputAnchorRef.current?.getBoundingClientRect()
-      if (!rect) return
-      const errorRect = hasRecipientError
-        ? inputAnchorRef.current?.nextElementSibling?.getBoundingClientRect()
-        : null
-      setDropdownPosition({
-        top: (errorRect?.bottom ?? rect.bottom) + 8,
-        left: rect.left,
-        width: rect.width,
-      })
-    }
-
-    repositionDropdown()
-
-    document.addEventListener("pointerdown", closeOnOutsideClick)
-    window.addEventListener("scroll", repositionDropdown, true)
-    window.addEventListener("resize", repositionDropdown)
-
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsideClick)
-      window.removeEventListener("scroll", repositionDropdown, true)
-      window.removeEventListener("resize", repositionDropdown)
-    }
-  }, [hasRecipientError, isDropdownOpen])
-
-  const openDropdown = () => {
-    const rect = inputAnchorRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const errorRect = hasRecipientError
-      ? inputAnchorRef.current?.nextElementSibling?.getBoundingClientRect()
-      : null
-
-    setDropdownPosition({
-      top: (errorRect?.bottom ?? rect.bottom) + 8,
-      left: rect.left,
-      width: rect.width,
-    })
-    setIsDropdownOpen(true)
-  }
 
   // The connected account, while the swap still pays out to it
   const destAccount =
@@ -198,7 +123,6 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
       shouldValidate: true,
       shouldTouch: true,
     })
-    setIsDropdownOpen(false)
     setIsContactsOpen(false)
   }
 
@@ -224,129 +148,108 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
             />
           )}
         </Flex>
-        <Box ref={inputAnchorRef}>
-          <AccountInput
-            id={id}
-            value={field.value}
-            onChange={(address) => {
-              setConnectedAccount(null)
-              savedCommitRef.current = null
-              setCommittedAddress(null)
-              setValue("destAddress", address, { shouldValidate: true })
-            }}
-            onFocus={openDropdown}
-            onClick={openDropdown}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") setIsDropdownOpen(false)
-              if (event.key === "ArrowDown") {
-                event.preventDefault()
-                dropdownRef.current?.querySelector("button")?.focus()
-              }
-            }}
-            onBlur={() => {
-              setCommittedAddress(field.value.trim())
-              field.onBlur()
-            }}
-            ref={field.ref}
-            placeholder={t("trade:xc.swap.field.destAddressPlaceholder")}
-            isError={!!fieldState.error || nearAccountStatus === "missing"}
-            autoComplete="off"
-            endAdornment={
-              <>
-                {nearAccountStatus === "checking" && (
-                  <Box
-                    as="span"
-                    role="status"
-                    aria-label={t("trade:xc.swap.field.checkingNearAccount")}
-                    color={getToken("text.medium")}
-                  >
-                    <SpinnerIcon size="xs" aria-hidden="true" />
-                  </Box>
-                )}
-                {walletMode && (
-                  <Tooltip
-                    text={t("trade:xc.swap.field.myContacts")}
-                    size="small"
-                    delayDuration={0}
-                    side="bottom"
-                    alignOffset={0}
-                    asChild
-                  >
-                    <ButtonIcon
-                      type="button"
-                      aria-label={t("trade:xc.swap.field.myContacts")}
-                      onClick={() => {
-                        setIsDropdownOpen(false)
-                        setIsContactsOpen(true)
-                      }}
-                    >
-                      <Icon component={BookOpen} size="m" />
-                    </ButtonIcon>
-                  </Tooltip>
-                )}
-              </>
-            }
-          />
-        </Box>
-        {isDropdownOpen &&
-          dropdownPosition &&
-          createPortal(
-            <SRecipientDropdown
-              ref={dropdownRef}
-              style={dropdownPosition}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setIsDropdownOpen(false)
-              }}
-            >
-              {suggestions.map((address) => {
-                const contact = savedAddresses.find(
-                  (entry) => entry.address === address,
-                )
-
-                return (
-                  <SRecipientOption
-                    key={address}
-                    type="button"
-                    onClick={() => selectAddress(address)}
-                  >
-                    <AccountAvatar address={address} size={24} />
-                    <Flex direction="column" sx={{ minWidth: 0 }}>
-                      {contact?.name && <Text fs="p4">{contact.name}</Text>}
-                      <Text
-                        fs="p5"
-                        color={getToken("text.medium")}
-                        truncate={250}
-                      >
-                        {address}
-                      </Text>
-                    </Flex>
-                  </SRecipientOption>
-                )
-              })}
-              {suggestions.length > 0 && <Separator />}
-              <SRecipientContactsOption
-                type="button"
-                onClick={() => {
-                  setIsDropdownOpen(false)
-                  setIsContactsOpen(true)
+        <InputSuggestions
+          anchor={(inputProps) => (
+            <Flex direction="column" gap="m">
+              <AccountInput
+                {...inputProps}
+                id={id}
+                value={field.value}
+                onChange={(address) => {
+                  setConnectedAccount(null)
+                  savedCommitRef.current = null
+                  setCommittedAddress(null)
+                  setValue("destAddress", address, { shouldValidate: true })
                 }}
-              >
-                <Icon component={BookOpen} size="m" aria-hidden="true" />
-                <Text fs="p4">{t("trade:xc.swap.field.allContacts")}</Text>
-              </SRecipientContactsOption>
-            </SRecipientDropdown>,
-            document.body,
+                onBlur={() => {
+                  setCommittedAddress(field.value.trim())
+                  field.onBlur()
+                }}
+                ref={field.ref}
+                placeholder={t("trade:xc.swap.field.destAddressPlaceholder")}
+                isError={!!fieldState.error || nearAccountStatus === "missing"}
+                autoComplete="off"
+                endAdornment={
+                  <>
+                    {nearAccountStatus === "checking" && (
+                      <Box
+                        as="span"
+                        role="status"
+                        aria-label={t(
+                          "trade:xc.swap.field.checkingNearAccount",
+                        )}
+                        color={getToken("text.medium")}
+                      >
+                        <SpinnerIcon size="xs" aria-hidden="true" />
+                      </Box>
+                    )}
+                    {walletMode && (
+                      <Tooltip
+                        text={t("trade:xc.swap.field.myContacts")}
+                        size="small"
+                        delayDuration={0}
+                        side="bottom"
+                        alignOffset={0}
+                        asChild
+                      >
+                        <ButtonIcon
+                          type="button"
+                          aria-label={t("trade:xc.swap.field.myContacts")}
+                          onClick={() => setIsContactsOpen(true)}
+                        >
+                          <Icon component={BookOpen} size="m" />
+                        </ButtonIcon>
+                      </Tooltip>
+                    )}
+                  </>
+                }
+              />
+              {fieldState.error && (
+                <Text fs="p5" color={getToken("accents.danger.secondary")}>
+                  {fieldState.error.message}
+                </Text>
+              )}
+              {!fieldState.error && nearAccountMessage && (
+                <Text fs="p5" color={getToken("accents.danger.secondary")}>
+                  {nearAccountMessage}
+                </Text>
+              )}
+            </Flex>
           )}
-        {fieldState.error && (
-          <Text fs="p5" color={getToken("accents.danger.secondary")}>
-            {fieldState.error.message}
-          </Text>
-        )}
-        {!fieldState.error && nearAccountMessage && (
-          <Text fs="p5" color={getToken("accents.danger.secondary")}>
-            {nearAccountMessage}
-          </Text>
-        )}
+        >
+          {suggestions.map((address) => {
+            const contact = savedAddresses.find(
+              (entry) => entry.address === address,
+            )
+
+            return (
+              <InputSuggestionsOption
+                key={address}
+                onSelect={() => selectAddress(address)}
+              >
+                <AccountAvatar address={address} size={24} />
+                <Flex direction="column" sx={{ minInlineSize: 0 }}>
+                  {contact?.name && <Text fs="p4">{contact.name}</Text>}
+                  <Text fs="p5" color={getToken("text.medium")} truncate={250}>
+                    {address}
+                  </Text>
+                </Flex>
+              </InputSuggestionsOption>
+            )
+          })}
+          {suggestions.length > 0 && <Separator />}
+          <InputSuggestionsOption
+            sx={{
+              gap: "base",
+              paddingBlock: "m",
+              color: getToken("text.medium"),
+            }}
+            onSelect={() => setIsContactsOpen(true)}
+          >
+            <Icon component={BookOpen} size="m" aria-hidden="true" />
+            <Text fs="p4">{t("trade:xc.swap.field.allContacts")}</Text>
+          </InputSuggestionsOption>
+        </InputSuggestions>
       </Flex>
       {walletMode && (
         <Modal
@@ -374,6 +277,12 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
           papi={papi}
           open={isConnectModalOpen}
           mode={walletMode}
+          meta={{
+            title: t("connectWallet.modal.title", { chain: destChain.name }),
+            description: t("connectWallet.modal.description", {
+              chain: destChain.name,
+            }),
+          }}
           onOpenChange={setIsConnectModalOpen}
           onAccountSelect={(account) => {
             setIsConnectModalOpen(false)
