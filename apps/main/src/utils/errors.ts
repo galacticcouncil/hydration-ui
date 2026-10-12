@@ -1,5 +1,7 @@
 import { isH160Address, safeConvertH160toSS58 } from "@galacticcouncil/utils"
 
+import { useProviderRpcUrlStore } from "@/states/provider"
+
 const hasStringMessage = (value: unknown): value is { message: string } =>
   typeof value === "object" &&
   value !== null &&
@@ -47,7 +49,13 @@ type ErrorContext = {
 }
 
 export function stringifyErrorContext(data: ErrorContext) {
-  return Object.entries(data)
+  const { connectedRpcUrl, autoMode } = useProviderRpcUrlStore.getState()
+
+  return Object.entries({
+    ...data,
+    rpc: connectedRpcUrl,
+    autoMode: autoMode ? "enabled" : "disabled",
+  })
     .map(([key, value]) => {
       if (key === "address" && isH160Address(value))
         return `${key}: ${value} (${safeConvertH160toSS58(value)})`

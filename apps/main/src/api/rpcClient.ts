@@ -117,7 +117,7 @@ const getProviderData = async (
     genesisHash,
     evm,
     sdk,
-    rpcUrlList,
+    rpcUrlList: urls,
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,
