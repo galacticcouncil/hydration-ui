@@ -16,8 +16,6 @@
   "chainAssetSelect.emptyState.noAssets": "No assets found",
   "chainAssetSelect.modal.title": "Chain & asset",
   "chainNotConnected": "{{ chainName }} account is not connected",
-  "connect.modal.description": "Use available crypto wallets to connect to {{ chain }}.",
-  "connect.modal.title": "Connect to {{ chain }}",
   "error.maxAmount": "Maximum transferable amount is {{ amount, number }} {{ symbol }}",
   "error.minAmount": "Minimum transferable amount is {{ amount, number }} {{ symbol }}",
   "form.amountMissing": "Enter an amount",

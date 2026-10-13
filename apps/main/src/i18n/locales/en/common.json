@@ -54,6 +54,8 @@
   "connect": "Connect",
   "connectWallet": "Connect Wallet",
   "connectWallet.evm": "Connect EVM Wallet",
+  "connectWallet.modal.description": "Use available crypto wallets to connect to {{ chain }}.",
+  "connectWallet.modal.title": "Connect to {{ chain }}",
   "notConnected": "Not connected",
   "description": "Description",
   "edit": "Edit",

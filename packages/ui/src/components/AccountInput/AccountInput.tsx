@@ -9,6 +9,7 @@ import {
   Grid,
   Icon,
   Input,
+  Tooltip,
 } from "@/components"
 
 export type AccountInputProps = Omit<
@@ -22,6 +23,9 @@ export type AccountInputProps = Omit<
   className?: string
   pasteDisabled?: boolean
   clearDisabled?: boolean
+  pasteLabel?: string
+  clearLabel?: string
+  endAdornment?: React.ReactNode
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -33,6 +37,9 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   ref,
   pasteDisabled = false,
   clearDisabled = false,
+  pasteLabel = "Paste",
+  clearLabel = "Clear",
+  endAdornment,
   ...props
 }) => {
   const handlePaste = async () => {
@@ -47,6 +54,22 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   const handleClear = () => {
     onChange("")
   }
+
+  const withTooltip = (label: string | undefined, button: React.ReactNode) =>
+    label ? (
+      <Tooltip
+        text={label}
+        size="small"
+        delayDuration={0}
+        side="bottom"
+        alignOffset={0}
+        asChild
+      >
+        {button}
+      </Tooltip>
+    ) : (
+      button
+    )
 
   return (
     <Grid
@@ -67,16 +90,25 @@ export const AccountInput: React.FC<AccountInputProps> = ({
           {...props}
         />
       </Flex>
-      {!value && !pasteDisabled && (
-        <ButtonIcon onClick={handlePaste}>
-          <Icon component={ArrowDownToLine} size="m" />
-        </ButtonIcon>
-      )}
-      {value && !clearDisabled && (
-        <ButtonIcon onClick={handleClear}>
-          <Icon component={Close} size="m" />
-        </ButtonIcon>
-      )}
+      <Flex align="center" gap="s">
+        {endAdornment}
+        {!value &&
+          !pasteDisabled &&
+          withTooltip(
+            pasteLabel,
+            <ButtonIcon aria-label={pasteLabel} onClick={handlePaste}>
+              <Icon component={ArrowDownToLine} size="m" />
+            </ButtonIcon>,
+          )}
+        {value &&
+          !clearDisabled &&
+          withTooltip(
+            clearLabel,
+            <ButtonIcon aria-label={clearLabel} onClick={handleClear}>
+              <Icon component={Close} size="m" />
+            </ButtonIcon>,
+          )}
+      </Flex>
     </Grid>
   )
 }
