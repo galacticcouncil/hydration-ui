@@ -11,7 +11,7 @@ import {
   ModalTrigger,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { arraySearch, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -120,15 +120,13 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     return a.name.localeCompare(b.name)
   })
 
-  const filteredAssets = chainAssetPairs
-    .filter(({ chain }) => chain.key === pendingChain.key)
-    .map(({ asset }) => asset)
-    .filter((asset) =>
-      asset.symbol.toLowerCase().includes(assetSearch.toLowerCase()),
-    )
-    .sort((a, b) =>
-      numericallyStrDesc(a.balanceUsd ?? "0", b.balanceUsd ?? "0"),
-    )
+  const filteredAssets = arraySearch(
+    chainAssetPairs
+      .filter(({ chain }) => chain.key === pendingChain.key)
+      .map(({ asset }) => asset),
+    assetSearch,
+    ["symbol", "name"],
+  ).sort((a, b) => numericallyStrDesc(a.balanceUsd ?? "0", b.balanceUsd ?? "0"))
 
   const isHydrationPending = pendingChain.key === HYDRATION_CHAIN_KEY
   const selectedAsset =
