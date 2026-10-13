@@ -41,7 +41,6 @@
   "withdrawals.title": "Withdrawals",
   "withdrawals.col.estValue": "Estimated value",
   "withdrawals.state.pending": "Waiting for unwind",
-  "withdrawals.waitingUnwind": "Cooldown over — starts with the next keeper run",
   "withdrawals.state.claimable": "Claim ready",
   "withdrawals.state.settling": "Settling",
   "withdrawals.state.claimed": "Claimed",

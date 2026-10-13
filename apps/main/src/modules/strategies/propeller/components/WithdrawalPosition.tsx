@@ -97,33 +97,26 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
             value: <DateText date={new Date(row.eligibleAt)} />,
           },
         ]
-      : state === "pending"
+      : row.state === "partial" && (row.collateralOwed ?? 0) > 0
         ? [
             {
-              label: t("withdrawals.state.pending"),
-              value: t("withdrawals.waitingUnwind"),
+              // the chip already says Settling and the row's amount is the
+              // total owed; a compact settled-so-far is all this line adds
+              label: t("withdrawals.settledLabel"),
+              value: t("withdrawals.settledProgress", {
+                settled: t("common:currency", {
+                  value: row.settledSoFar ?? 0,
+                  symbol,
+                  maximumFractionDigits: 4,
+                }),
+                pct: (
+                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
+                  100
+                ).toFixed(1),
+              }),
             },
           ]
-        : row.state === "partial" && (row.collateralOwed ?? 0) > 0
-          ? [
-              {
-                // the chip already says Settling and the row's amount is the
-                // total owed; a compact settled-so-far is all this line adds
-                label: t("withdrawals.settledLabel"),
-                value: t("withdrawals.settledProgress", {
-                  settled: t("common:currency", {
-                    value: row.settledSoFar ?? 0,
-                    symbol,
-                    maximumFractionDigits: 4,
-                  }),
-                  pct: (
-                    ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
-                    100
-                  ).toFixed(1),
-                }),
-              },
-            ]
-          : undefined
+        : undefined
 
   return (
     <PendingPosition
