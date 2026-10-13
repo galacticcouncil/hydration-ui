@@ -9,17 +9,20 @@ import {
 import { FC } from "react"
 
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
+import { TutorialAnchor } from "@/modules/tutorials/TutorialAnchor"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const Settings: FC = () => {
   const { isReady } = useRpcProvider()
   return (
     <ModalRoot>
-      <ModalTrigger asChild>
-        <ButtonIcon disabled={!isReady}>
-          <Icon component={SettingsIcon} size="l" />
-        </ButtonIcon>
-      </ModalTrigger>
+      <TutorialAnchor tutorial="settings-avatar" asChild>
+        <ModalTrigger asChild>
+          <ButtonIcon disabled={!isReady}>
+            <Icon component={SettingsIcon} size="l" />
+          </ButtonIcon>
+        </ModalTrigger>
+      </TutorialAnchor>
       <ModalContent>
         <SettingsModal />
       </ModalContent>

@@ -143,7 +143,6 @@ export const WalletAccountTile: React.FC<{
               minWidth={0}
               fs="p5"
               color={getToken("text.medium")}
-              font="mono"
               fw={500}
               truncate
             >
