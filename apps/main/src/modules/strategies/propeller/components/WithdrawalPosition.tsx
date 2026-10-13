@@ -44,6 +44,26 @@ const useCooldownElapsed = (eligibleAt: number, inCooldown: boolean) => {
   return elapsed
 }
 
+/**
+ * A partial claim is worth surfacing when a QUARTER of the request has freed
+ * (claiming in quarters is a sane rhythm), or when the freed amount is large
+ * in absolute terms (a whale's 5% should not wait for 25%). Below both, the
+ * button only invites gas-wasting dust claims; the final claim always shows.
+ */
+const PARTIAL_CLAIM_MIN_FRACTION = 0.25
+const PARTIAL_CLAIM_MIN_USD = 1_000
+
+const partialClaimWorthwhile = (row: PropellerWithdrawalRow) => {
+  const unclaimed = row.collateralSettled ?? 0
+  const owed = row.collateralOwed ?? 0
+  if (unclaimed <= 0) return false
+  const price = row.estEth > 0 ? row.estUsd / row.estEth : 0
+  return (
+    (owed > 0 && unclaimed / owed >= PARTIAL_CLAIM_MIN_FRACTION) ||
+    unclaimed * price >= PARTIAL_CLAIM_MIN_USD
+  )
+}
+
 export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
   row,
 }) => {
@@ -60,7 +80,15 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
   // keeper to start the unwind — say so instead of a dead countdown
   const state =
     row.state === "cooldown" && cooldownElapsed ? "pending" : row.state
-  const status = getWithdrawalStateLabel({ ...row, state })
+  const rawStatus = getWithdrawalStateLabel({ ...row, state })
+  // demote claimable back to settling while the freed amount is not worth a claim
+  const status =
+    rawStatus === "claimable" &&
+    row.state === "partial" &&
+    row.surplusHollar <= 0 &&
+    !partialClaimWorthwhile(row)
+      ? "settling"
+      : rawStatus
   const stats =
     state === "cooldown"
       ? [
