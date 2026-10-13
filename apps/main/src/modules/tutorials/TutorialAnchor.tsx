@@ -61,7 +61,9 @@ export const TutorialAnchor = ({
 
   const stepCount = entry.steps.length
   const title = t(`${config.i18nKey}.title` as ParseKeys, { defaultValue: "" })
-  const badge = t(`${config.i18nKey}.badge` as ParseKeys, { defaultValue: "" })
+  const badge = t((config.badgeKey ?? `${config.i18nKey}.badge`) as ParseKeys, {
+    defaultValue: "",
+  })
 
   const actionLabel = step === stepCount - 1 ? t("finish") : t("next")
 

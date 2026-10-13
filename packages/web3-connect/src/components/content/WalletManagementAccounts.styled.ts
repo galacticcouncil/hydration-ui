@@ -37,7 +37,7 @@ export const SAccountTile = styled(Box)(
     transition: ${theme.transitions.colors};
 
     &:hover {
-      background: ${theme.details.borders};
+      background: ${theme.buttons.secondary.outline.fill};
       border-color: ${theme.buttons.secondary.outline.outline};
     }
 
@@ -87,6 +87,7 @@ export const SSectionLabel = styled(Flex)(
     min-width: 0;
 
     background: ${theme.surfaces.themeBasePalette.surfaceHigh};
+    margin-bottom: ${theme.space.xs};
     padding-bottom: ${theme.space.s};
   `,
 )
