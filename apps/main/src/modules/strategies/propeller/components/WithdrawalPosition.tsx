@@ -81,16 +81,19 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
             (row.collateralOwed ?? 0) > 0
           ? [
               {
-                label: t("withdrawals.state.settling"),
+                // the chip already says Settling and the row's amount is the
+                // total owed; a compact settled-so-far is all this line adds
+                label: t("withdrawals.settledLabel"),
                 value: t("withdrawals.settledProgress", {
                   settled: t("common:currency", {
                     value: row.settledSoFar ?? 0,
                     symbol,
+                    maximumFractionDigits: 4,
                   }),
-                  owed: t("common:currency", {
-                    value: row.collateralOwed,
-                    symbol,
-                  }),
+                  pct: (
+                    ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
+                    100
+                  ).toFixed(1),
                 }),
               },
             ]
