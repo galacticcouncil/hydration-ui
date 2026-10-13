@@ -172,5 +172,9 @@ export const vaultQueueQuery = (
         totalQueuedShares: Number(formatUnits(totalQueued, decimals)),
       }
     },
-    refetchInterval: 30_000,
+    // a settling withdrawal is the one moment the user is actually watching
+    refetchInterval: (query) =>
+      query.state.data?.queue.some((entry) => entry.isUser && entry.active)
+        ? 10_000
+        : 30_000,
   })

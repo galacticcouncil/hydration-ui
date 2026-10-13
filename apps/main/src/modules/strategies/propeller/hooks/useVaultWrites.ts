@@ -82,6 +82,10 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       onSuccess: () => {
         invalidateVault(vaultAddress)
         queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+        // the immediate refetch can re-read a gateway node still serving the
+        // pre-transaction state, and settlement logs land a scan behind — tap
+        // again once the lag has passed so rows reflect the chain in seconds
+        setTimeout(() => invalidateVault(vaultAddress), 4_000)
         onWriteSuccess?.()
       },
       resolveOn: "success",

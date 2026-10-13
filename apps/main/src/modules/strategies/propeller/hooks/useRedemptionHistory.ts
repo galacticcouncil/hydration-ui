@@ -138,8 +138,8 @@ export const vaultSettlementsQuery = (
       )
     },
     placeholderData: keepPreviousData,
-    refetchInterval: 30_000,
-    staleTime: 30_000,
+    refetchInterval: 15_000,
+    staleTime: 10_000,
   })
 
 /** Block timestamps never change, so fetch once and keep forever. */
