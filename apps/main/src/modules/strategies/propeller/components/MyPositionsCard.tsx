@@ -12,7 +12,9 @@ import {
   TooltipIcon,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
+import { formatUnits } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
@@ -38,12 +40,31 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
       <CardBody>
         <Stack gap="m">
           {positions.map(
-            ({ vault, shares, assetValue, usdValue, apy, pendingYield }) => {
+            ({
+              vault,
+              shares,
+              assetValue,
+              usdValue,
+              apy,
+              pendingYield,
+              harvestStatus,
+            }) => {
               const { symbol } = getAssetWithFallback(vault.assetId)
+              const harvestState = harvestStatus?.state ?? "unavailable"
+              const harvestExplanation = t(
+                `positions.harvest.${harvestState}.description`,
+                {
+                  gap: Number(formatUnits(harvestStatus?.reserveGap ?? 0n, 18)),
+                  minimum: Number(
+                    formatUnits(harvestStatus?.minimumSurplus ?? 0n, 18),
+                  ),
+                },
+              )
 
               return (
                 <PositionCard
                   key={vault.vaultAddress}
+                  columns={`repeat(auto-fit, minmax(min(100%, ${pxToRem(176)}), 1fr))`}
                   logo={
                     <AssetLogo id={vault.assetId} size="medium" hideChain />
                   }
@@ -82,15 +103,17 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                                 })}
                               </Text>
                               <Tooltip
-                                text={t("positions.pendingYield.tooltip", {
+                                text={`${t("positions.pendingYield.tooltip", {
                                   symbol,
-                                })}
+                                })} ${harvestExplanation}`}
                               >
                                 <TooltipIcon size="1em" />
                               </Tooltip>
                             </Flex>
                           }
-                          bottomLabel={t("positions.col.pendingYield.note")}
+                          bottomLabel={t(
+                            `positions.harvest.${harvestState}.label`,
+                          )}
                         />
                       )}
                       <ValueStats
