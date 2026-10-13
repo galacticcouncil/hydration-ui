@@ -4,13 +4,12 @@ import { useTranslation } from "react-i18next"
 import { ProviderSelect } from "@/components/provider/ProviderSelect"
 import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
-import { useAccount, useWeb3ConnectModal } from "@/hooks"
+import { useAccount } from "@/hooks"
 
 export const ProviderSelectContent = () => {
   const { t } = useTranslation()
-  const { meta } = useWeb3ConnectModal()
   const { isConnected } = useAccount()
-  const { setPage } = useWeb3ConnectContext()
+  const { meta, setPage } = useWeb3ConnectContext()
   return (
     <>
       <ModalHeader

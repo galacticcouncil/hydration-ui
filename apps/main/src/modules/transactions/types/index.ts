@@ -1,5 +1,6 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { tx } from "@galacticcouncil/sdk-next"
+import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { Asset } from "@galacticcouncil/xc-core"
@@ -69,6 +70,7 @@ export type TxResult =
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
+  | NearTxStatus
   | void
 
 export type TxSignAndSubmitFn<T = unknown, S = unknown> = (
