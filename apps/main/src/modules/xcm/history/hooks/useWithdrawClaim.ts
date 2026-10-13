@@ -13,6 +13,8 @@ import { withdrawZec } from "@galacticcouncil/xc-swap"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { pick } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
@@ -21,6 +23,7 @@ import {
   buildClaimCall,
   resolveChainFromUrn,
 } from "@/modules/xcm/history/utils/claim"
+import { journeyDate } from "@/modules/xcm/history/utils/journey"
 import { toDecimal } from "@/utils/formatting"
 
 import { useClaimTxOptions } from "./useClaimTxOptions"
@@ -30,7 +33,9 @@ export function useWithdrawClaim(journey: XcJourney) {
   const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
   const { addPendingCorrelationId, removePendingCorrelationId } =
     usePendingClaimsStore()
-  const { findWithdrawal, removeWithdrawal } = useZecWithdrawalsStore()
+  const { findWithdrawal, removeWithdrawal } = useZecWithdrawalsStore(
+    useShallow(pick(["findWithdrawal", "removeWithdrawal"])),
+  )
 
   const chain = resolveChainFromUrn(journey.destination)
   const chainName = chain?.name ?? ""
@@ -131,8 +136,12 @@ export function useWithdrawClaim(journey: XcJourney) {
 
         // A zcash withdrawal goes on to 1Click once the ZEC is claimed
         const withdrawal =
-          isClaimed && asset?.symbol === "ZEC"
-            ? findWithdrawal(account.rawAddress, value)
+          isClaimed && asset
+            ? findWithdrawal(
+                account.rawAddress,
+                asset.amount,
+                journeyDate(journey),
+              )
             : undefined
         if (!asset || !withdrawal) return outcome
 
@@ -149,7 +158,7 @@ export function useWithdrawClaim(journey: XcJourney) {
           chain,
           getClaimTxOptions(chain, result.type, {
             createLink,
-            onSuccess: () => removeWithdrawal(withdrawal),
+            onSuccess: () => removeWithdrawal(withdrawal.txHash),
             titles: {
               submitted: t("zecWithdrawal.toast.submitted", toastParams),
               success: t("zecWithdrawal.toast.success", toastParams),

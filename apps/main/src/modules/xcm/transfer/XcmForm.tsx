@@ -9,10 +9,13 @@ import {
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
+import { ZEC_DECIMALS } from "@galacticcouncil/xc-sdk"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { pick } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
@@ -45,6 +48,7 @@ import {
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
+import { toBigInt } from "@/utils/formatting"
 
 export const XcmForm = () => {
   const { t } = useTranslation(["common", "xcm"])
@@ -64,7 +68,9 @@ export const XcmForm = () => {
 
   const { watch, handleSubmit, reset, setValue } =
     useFormContext<XcmFormValues>()
-  const addZecWithdrawal = useZecWithdrawalsStore((s) => s.addWithdrawal)
+  const { addWithdrawal, removeWithdrawal } = useZecWithdrawalsStore(
+    useShallow(pick(["addWithdrawal", "removeWithdrawal"])),
+  )
 
   const resetAmounts = useResetAmounts()
 
@@ -93,10 +99,12 @@ export const XcmForm = () => {
       // `values` are what was sent, to the NEAR account; the form's own
       // destination is the Zcash address it goes on to once claimed there
       if (isWithdrawal) {
-        addZecWithdrawal({
+        addWithdrawal({
+          txHash,
           nearAccount: values.destAddress,
-          amount: values.srcAmount,
+          amount: toBigInt(values.srcAmount, ZEC_DECIMALS).toString(),
           recipient: destAddress,
+          submittedAt: Date.now(),
         })
       }
 
@@ -113,6 +121,9 @@ export const XcmForm = () => {
       resetAmounts()
     },
     onTransferError: (txHash) => {
+      // A transfer that failed leaves nothing to claim on NEAR
+      if (isWithdrawal) removeWithdrawal(txHash)
+
       if (account) {
         removeOptimisticJourney(queryClient, account.address, txHash)
       }
