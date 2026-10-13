@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  borrowDeployedFraction,
-  targetLoopLeverage,
-  toApy,
-} from "./yieldRate"
+import { borrowDeployedFraction, targetLoopLeverage, toApy } from "./yieldRate"
 
 describe("targetLoopLeverage", () => {
   it("converges the loop series at 1/(1 - LT/targetHf)", () => {

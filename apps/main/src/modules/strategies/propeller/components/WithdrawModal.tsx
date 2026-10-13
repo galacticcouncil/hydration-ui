@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { WithdrawModalForm } from "@/modules/strategies/propeller/components/WithdrawModalForm"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   vault: PropellerVaultConfig
@@ -12,6 +13,7 @@ type Props = {
 
 export const WithdrawModal = ({ vault, open, onClose }: Props) => {
   const { t } = useTranslation("propeller")
+  const { getAssetWithFallback } = useAssets()
 
   return (
     <Modal
@@ -21,7 +23,9 @@ export const WithdrawModal = ({ vault, open, onClose }: Props) => {
       disableInteractOutside
     >
       <ModalHeader
-        title={t("withdraw.title", { shareSymbol: vault.shareSymbol })}
+        title={t("withdraw.title", {
+          symbol: getAssetWithFallback(vault.assetId).symbol,
+        })}
       />
       <WithdrawModalForm vault={vault} onSuccess={onClose} />
     </Modal>
