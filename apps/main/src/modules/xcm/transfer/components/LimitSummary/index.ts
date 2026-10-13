@@ -1,3 +1,4 @@
+export * from "./BasejumpPoolSummaryRow"
 export * from "./CBreakerInboundLimitInfo"
 export * from "./CBreakerInboundLimitSummaryRow"
 export * from "./CBreakerOutboundLimitInfo"

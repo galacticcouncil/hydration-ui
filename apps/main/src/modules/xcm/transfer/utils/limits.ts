@@ -4,11 +4,19 @@ import type {
   AssetDepositLimit,
   GlobalWithdrawLimit,
 } from "@galacticcouncil/xc-cfg/build/clients/chain/hydration/circuit-breaker"
+import Big from "big.js"
 import { clamp } from "remeda"
 
 import type { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { XcmTag } from "@/states/transactions"
+import { toDecimal } from "@/utils/formatting"
 
 export type { NttRateLimit }
+
+export type BasejumpPoolLiquidity = {
+  available: bigint
+  decimals: number
+}
 
 export enum XcmLimitAlertKey {
   CBreakerOutboundLockdown = "cBreakerOutboundLockdown",
@@ -19,6 +27,7 @@ export enum XcmLimitAlertKey {
   WormholeInboundExceeded = "wormholeInboundExceeded",
   WormholeCustodyExceeded = "wormholeCustodyExceeded",
   WormholeCustodyUnreachable = "wormholeCustodyUnreachable",
+  BasejumpPoolExceeded = "basejumpPoolExceeded",
 }
 
 export const CBREAKER_INBOUND_LIMIT_ALERT_KEYS: XcmLimitAlertKey[] = [
@@ -40,11 +49,16 @@ export const WORMHOLE_CUSTODY_ALERT_KEYS: XcmLimitAlertKey[] = [
   XcmLimitAlertKey.WormholeCustodyExceeded,
 ]
 
+export const BASEJUMP_POOL_ALERT_KEYS: XcmLimitAlertKey[] = [
+  XcmLimitAlertKey.BasejumpPoolExceeded,
+]
+
 export const XCM_LIMIT_ALERT_PRIORITY: XcmLimitAlertKey[] = [
   XcmLimitAlertKey.CBreakerOutboundLockdown,
   XcmLimitAlertKey.WormholeOutboundExceeded,
   XcmLimitAlertKey.WormholeCustodyUnreachable,
   XcmLimitAlertKey.WormholeCustodyExceeded,
+  XcmLimitAlertKey.BasejumpPoolExceeded,
   XcmLimitAlertKey.CBreakerOutboundExceeded,
   XcmLimitAlertKey.WormholeInboundExceeded,
   XcmLimitAlertKey.CBreakerInboundLockdown,
@@ -154,4 +168,14 @@ export const getGlobalWithdrawLimitUsagePercent = (
   if (!data.configured || data.limit === 0n) return null
   const pct = (Number(data.used) / Number(data.limit)) * 100
   return clamp(pct, { min: 0, max: 100 })
+}
+
+export const isBasejumpPoolExceeded = (
+  bridgeTag: string | null | undefined,
+  destAmount: string,
+  pool: BasejumpPoolLiquidity | null | undefined,
+): boolean => {
+  if (bridgeTag !== XcmTag.Basejump || !pool) return false
+  if (!(Number(destAmount) > 0)) return false
+  return Big(destAmount).gt(toDecimal(pool.available, pool.decimals))
 }
