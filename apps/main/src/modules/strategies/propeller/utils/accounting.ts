@@ -1,3 +1,6 @@
+import Big from "big.js"
+import { formatUnits } from "viem"
+
 /** Estimated annual return after harvest fees and both HOLLAR debt legs.
  * Execution costs, ramp time and retained yield are not forecast here.
  */
@@ -94,3 +97,15 @@ export const withdrawalState = ({
   if (complete) return "settled"
   return settledAmount > 0 ? "partial" : "pending"
 }
+
+/**
+ * Price of one vault share. Shares rebase with funded earnings, so the rate
+ * stays near 1; unharvested yield is outside both the balance and the rate.
+ */
+export const sharePrice = (
+  underlyingPrice: string | null,
+  exchangeRateWad: bigint,
+): string | null =>
+  underlyingPrice === null
+    ? null
+    : Big(underlyingPrice).times(formatUnits(exchangeRateWad, 18)).toString()

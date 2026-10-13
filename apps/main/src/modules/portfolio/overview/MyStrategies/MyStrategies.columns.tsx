@@ -13,6 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { BIL_ASSET_ID, BIL_ERC20_ID } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
@@ -21,8 +22,15 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { LINKS } from "@/config/navigation"
-import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
+import {
+  StrategyPosition,
+  useMyJuicerPositions,
+} from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
+import { SJuiceButton } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.styled"
 import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   naturally,
   nullLast,
@@ -41,10 +49,48 @@ export enum MyStrategiesColumnId {
 
 const columnHelper = createColumnHelper<StrategyPosition>()
 
+type StrategyLabelPosition = Pick<
+  StrategyPosition,
+  "assetId" | "symbol" | "strategy"
+>
+
+// Share token registry id → the asset and strategy its label shows.
+const STRATEGY_SHARE_ASSETS: Record<
+  string,
+  Omit<StrategyLabelPosition, "symbol">
+> = {
+  [BIL_ASSET_ID]: { assetId: BIL_ERC20_ID, strategy: "bil" },
+  ...Object.fromEntries(
+    PROPELLER_VAULTS.map((vault) => [
+      vault.shareAssetId,
+      { assetId: vault.assetId, strategy: "juicer" },
+    ]),
+  ),
+}
+
+export const isStrategyShareAsset = (assetId: string) =>
+  assetId in STRATEGY_SHARE_ASSETS
+
+/** Label of a strategy share token held in the wallet (jETH → ETH, uBIL → BIL). */
+export const StrategyShareAssetLabel = ({ assetId }: { assetId: string }) => {
+  const { getAssetWithFallback } = useAssets()
+  const share = STRATEGY_SHARE_ASSETS[assetId]
+  if (!share) return null
+
+  return (
+    <StrategyPositionLabel
+      position={{
+        ...share,
+        symbol: getAssetWithFallback(share.assetId).symbol,
+      }}
+    />
+  )
+}
+
 export const StrategyPositionLabel = ({
   position,
 }: {
-  position: StrategyPosition
+  position: StrategyLabelPosition
 }) => {
   const { t } = useTranslation("wallet")
 
@@ -215,42 +261,81 @@ export const StrategyManageAction = ({
   )
 }
 
-export const StrategyPositionActions = ({
+export const StrategyPositionCta = ({
   position,
   mobile = false,
-  onTransfer,
 }: {
   position: StrategyPosition
   mobile?: boolean
-  onTransfer?: (position: StrategyPosition) => void
 }) => {
-  const { t } = useTranslation("common")
-  const canSend = position.shareAmount !== "0"
+  const { t } = useTranslation(["wallet", "common"])
+  const size = mobile ? "large" : undefined
+  const link = {
+    to: LINKS.strategiesJuicer,
+    search: { asset: position.symbol },
+  }
 
-  return (
-    <Flex gap="base" justify="flex-end" direction={mobile ? "column" : "row"}>
-      {onTransfer &&
-        (mobile ? (
-          <Button
-            variant="secondary"
-            size="large"
-            disabled={!canSend}
-            onClick={() => onTransfer(position)}
-          >
-            {t("send")}
-          </Button>
-        ) : (
-          <TableRowAction
-            disabled={!canSend}
-            onClick={() => onTransfer(position)}
-          >
-            {t("send")}
-          </TableRowAction>
-        ))}
-      <StrategyManageAction position={position} mobile={mobile} />
-    </Flex>
-  )
+  if (position.action === "claim") {
+    return (
+      <Button variant="emphasis" outline size={size} asChild>
+        <Link {...link}>{t("common:claim")}</Link>
+      </Button>
+    )
+  }
+
+  if (position.action === "deposit") {
+    return (
+      <SJuiceButton variant="transparent" size={size} asChild>
+        <Link {...link}>
+          {t("myAssets.actions.juicerDeposit", { symbol: position.symbol })}
+        </Link>
+      </SJuiceButton>
+    )
+  }
+
+  return null
 }
+
+const JuicerShareAssetCta = ({ assetId }: { assetId: string }) => {
+  const vault = PROPELLER_VAULTS.find((v) => v.shareAssetId === assetId)
+  const position = useMyJuicerPositions().data.find(
+    (position) => position.id === `juicer:${vault?.vaultAddress}`,
+  )
+
+  // A ready claim is promoted on the strategy row, not on the share token.
+  return position?.action === "deposit" ? (
+    <StrategyPositionCta position={position} />
+  ) : null
+}
+
+/** Deposit CTA for a Juicer share token held in the wallet. */
+export const StrategyShareAssetCta = ({ assetId }: { assetId: string }) => {
+  const { featureFlags, isReady } = useRpcProvider()
+  const isJuicer = STRATEGY_SHARE_ASSETS[assetId]?.strategy === "juicer"
+
+  // Mount the vault reads only where Juicer is enabled.
+  return isJuicer && isReady && featureFlags.propellerEnabled ? (
+    <JuicerShareAssetCta assetId={assetId} />
+  ) : null
+}
+
+export const StrategyPositionActions = ({
+  position,
+  mobile = false,
+}: {
+  position: StrategyPosition
+  mobile?: boolean
+}) => (
+  <Flex
+    gap="base"
+    align={mobile ? undefined : "center"}
+    justify="flex-end"
+    direction={mobile ? "column" : "row"}
+  >
+    <StrategyPositionCta position={position} mobile={mobile} />
+    <StrategyManageAction position={position} mobile={mobile} />
+  </Flex>
+)
 
 const AssetSkeletonCell = () => (
   <Flex align="center" gap="base">
@@ -276,7 +361,6 @@ const ActionSkeletonCell = () => (
 )
 
 export const useMyStrategiesColumns = (
-  onTransfer?: (position: StrategyPosition) => void,
   onDetails?: (position: StrategyPosition) => void,
 ) => {
   const { t } = useTranslation(["wallet", "common"])
@@ -356,16 +440,11 @@ export const useMyStrategiesColumns = (
         sx: { textAlign: "right" },
         skeletonCell: ActionSkeletonCell,
       },
-      cell: ({ row }) => (
-        <StrategyPositionActions
-          position={row.original}
-          onTransfer={onTransfer}
-        />
-      ),
+      cell: ({ row }) => <StrategyPositionActions position={row.original} />,
     })
 
     return (
       isMobile ? [strategy, value] : [strategy, value, rate, earnings, actions]
     ) as ColumnDef<StrategyPosition>[]
-  }, [isMobile, onTransfer, onDetails, t])
+  }, [isMobile, onDetails, t])
 }

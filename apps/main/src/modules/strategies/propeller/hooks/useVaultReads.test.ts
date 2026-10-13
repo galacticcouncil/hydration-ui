@@ -11,6 +11,7 @@ afterEach(() => vi.restoreAllMocks())
 
 const vault = {
   assetId: "34",
+  shareAssetId: "5552",
   shareSymbol: "jETH",
   vaultAddress: "0x0000000000000000000000000000000000000001",
 } as const

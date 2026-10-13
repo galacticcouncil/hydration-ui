@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   computeVaultApr,
+  sharePrice,
   withdrawalComplete,
   withdrawalState,
 } from "./accounting"
@@ -102,5 +103,16 @@ describe("Propeller withdrawal lifecycle", () => {
         active: false,
       }),
     ).toBe("claimed")
+  })
+})
+
+describe("sharePrice", () => {
+  it("scales the underlying price by the WAD exchange rate", () => {
+    expect(sharePrice("2500", 1_000_000_000_000_000_000n)).toBe("2500")
+    expect(sharePrice("2500", 1_040_000_000_000_000_000n)).toBe("2600")
+  })
+
+  it("has no price when the underlying has none", () => {
+    expect(sharePrice(null, 1_000_000_000_000_000_000n)).toBeNull()
   })
 })

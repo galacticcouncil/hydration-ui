@@ -34,7 +34,6 @@ import {
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { MyStrategiesDetails } from "@/modules/portfolio/overview/MyStrategies/MyStrategiesDetails"
 import { BilStrategyProvider } from "@/modules/strategies/bil/context/BilStrategyContext"
-import { ShareTransferModal } from "@/modules/strategies/propeller/components/ShareTransferModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
@@ -109,11 +108,8 @@ const MyStrategiesTable = ({
 }: Props & PositionsResult) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
-  const [transferring, setTransferring] = useState<StrategyPosition | null>(
-    null,
-  )
   const [selected, setSelected] = useState<StrategyPosition | null>(null)
-  const columns = useMyStrategiesColumns(setTransferring, setSelected)
+  const columns = useMyStrategiesColumns(setSelected)
   const detail = selected
     ? (data.find((position) => position.id === selected.id) ?? selected)
     : null
@@ -170,7 +166,7 @@ const MyStrategiesTable = ({
       />
       <Modal
         variant="popup"
-        open={!!detail && isMobile && !transferring}
+        open={!!detail && isMobile}
         onOpenChange={() => setSelected(null)}
       >
         {detail && (
@@ -183,30 +179,11 @@ const MyStrategiesTable = ({
               <StrategyPositionValue position={detail} withLabel />
               <SAssetDetailMobileSeparator />
               <MyStrategiesDetails position={detail} showMainMetrics />
-              <StrategyPositionActions
-                position={detail}
-                mobile
-                onTransfer={setTransferring}
-              />
+              <StrategyPositionActions position={detail} mobile />
             </SAssetDetailModalBody>
           </>
         )}
       </Modal>
-      {transferring && (
-        <ShareTransferModal
-          positionId={transferring.id}
-          symbol={transferring.symbol}
-          balance={
-            transferring.strategy === "juicer"
-              ? transferring.underlyingAmount
-              : transferring.shareAmount
-          }
-          isJuicer={transferring.strategy === "juicer"}
-          assetId={transferring.assetId}
-          open
-          onClose={() => setTransferring(null)}
-        />
-      )}
     </TableContainer>
   )
 }

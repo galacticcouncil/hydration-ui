@@ -37,9 +37,19 @@ vi.mock("@/modules/strategies/bil/hooks/useVaultReads", () => ({
 vi.mock("@/modules/strategies/propeller/hooks/usePropellerAccount", () => ({
   usePropellerAccount: vi.fn(),
 }))
-vi.mock("@/modules/strategies/propeller/hooks/usePropellerVaults", () => ({
-  usePropellerVaults: vi.fn(),
-}))
+vi.mock(
+  "@/modules/strategies/propeller/hooks/usePropellerVaults",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("@/modules/strategies/propeller/hooks/usePropellerVaults")
+    >()),
+    usePropellerVaults: vi.fn(),
+  }),
+)
+// The real usePropellerVaults module is kept for vaultDepositState.
+vi.mock("@/api/borrow", () => ({}))
+vi.mock("@/modules/strategies/propeller/hooks/useVaultReads", () => ({}))
+vi.mock("@/states/displayAsset", () => ({}))
 vi.mock("@/providers/assetsProvider", () => ({ useAssets: vi.fn() }))
 vi.mock("@/providers/rpcProvider", () => ({ useRpcProvider: vi.fn() }))
 
@@ -205,6 +215,7 @@ describe("Portfolio strategy position projection", () => {
           usdValue: 999,
           apy: 6.5,
           pendingYield: 0.03,
+          collateralBalance: 0,
         },
       ],
       withdrawals: [],
@@ -236,6 +247,64 @@ describe("Portfolio strategy position projection", () => {
       hasPosition: true,
       hasPendingWithdrawal: false,
     })
+  })
+
+  it("promotes depositing more only when idle collateral can enter an open vault, and a ready claim first", () => {
+    const openStats = {
+      paused: false,
+      depositsPaused: false,
+      deficitStop: false,
+      remaining: 10,
+    }
+    const useAction = ({
+      collateralBalance = 1,
+      stats = openStats,
+      withdrawals = [] as PropellerWithdrawalRow[],
+    } = {}) => {
+      vi.mocked(usePropellerAccount).mockReturnValue({
+        positions: [
+          {
+            vault,
+            shares: 1,
+            sharesExact: "1",
+            assetValue: 1,
+            usdValue: 2500,
+            apy: 6.5,
+            pendingYield: null,
+            collateralBalance,
+          },
+        ],
+        withdrawals,
+        isLoading: false,
+        isError: false,
+      })
+      vi.mocked(usePropellerVaults).mockReturnValue({
+        vaults: PROPELLER_VAULTS.map((vault) => ({
+          vault,
+          apy: 6.5,
+          price: 2500,
+          stats,
+        })),
+        isLoading: false,
+      } as ReturnType<typeof usePropellerVaults>)
+      return useMyJuicerPositions().data[0]?.action
+    }
+
+    expect(useAction()).toBe("deposit")
+    expect(useAction({ collateralBalance: 0 })).toBeNull()
+    expect(useAction({ collateralBalance: 0.000001 })).toBeNull()
+    expect(useAction({ stats: { ...openStats, remaining: 0 } })).toBeNull()
+    expect(
+      useAction({ stats: { ...openStats, depositsPaused: true } }),
+    ).toBeNull()
+    expect(
+      useAction({ withdrawals: [withdrawal({ state: "cooldown" })] }),
+    ).toBeNull()
+    expect(
+      useAction({
+        withdrawals: [withdrawal({ state: "partial", collateralSettled: 0.5 })],
+      }),
+    ).toBe("claim")
   })
 
   it("includes a withdrawal-only vault without presenting the entitlement as active collateral", () => {
@@ -272,6 +341,7 @@ describe("Portfolio strategy position projection", () => {
           usdValue: 0,
           apy: 6.5,
           pendingYield: 0.004,
+          collateralBalance: 0,
         },
       ],
       withdrawals: [withdrawal({ state: "cooldown", estEth: 1 })],
@@ -337,6 +407,7 @@ describe("Portfolio strategy position projection", () => {
           usdValue: 0,
           apy: null,
           pendingYield: null,
+          collateralBalance: 0,
         },
       ],
       withdrawals: [],
