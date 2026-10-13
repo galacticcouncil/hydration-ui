@@ -31,6 +31,15 @@ describe("accountIcon", () => {
     expect((icon as { image: string }).image).toContain("989553819539103764")
   })
 
+  it.each([
+    ["near", "alice.near"],
+    ["zcash", "t1Hsc1LR8yKnbbe3twRp88p6vFfC5t7DLbs"],
+  ])("derives a stable glyph for a keyless %s address", (_, address) => {
+    const icon = accountIcon(address)
+    expect(icon).toHaveProperty("emoji")
+    expect(accountIcon(address)).toEqual(icon)
+  })
+
   it("returns null for an unresolvable address", () => {
     expect(accountIcon("7Hsq5RH9xUtPW")).toBeNull()
   })
