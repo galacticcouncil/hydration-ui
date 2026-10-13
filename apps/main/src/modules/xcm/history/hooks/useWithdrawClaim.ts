@@ -1,17 +1,21 @@
-import { etherscan, solexplorer } from "@galacticcouncil/utils"
+import { etherscan, nearblocks, solexplorer } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import {
   isEthereumSigner,
+  isNearSigner,
   isSolanaSigner,
   isSuiSigner,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { CallType } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
+import { withdrawZec } from "@galacticcouncil/xc-swap"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
+import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import {
   buildClaimCall,
@@ -22,9 +26,11 @@ import { toDecimal } from "@/utils/formatting"
 import { useClaimTxOptions } from "./useClaimTxOptions"
 
 export function useWithdrawClaim(journey: XcJourney) {
+  const { t } = useTranslation("xcm")
   const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
   const { addPendingCorrelationId, removePendingCorrelationId } =
     usePendingClaimsStore()
+  const { findWithdrawal, removeWithdrawal } = useZecWithdrawalsStore()
 
   const chain = resolveChainFromUrn(journey.destination)
   const chainName = chain?.name ?? ""
@@ -104,6 +110,54 @@ export function useWithdrawClaim(journey: XcJourney) {
 
         const options = getClaimTxOptions(chain, result.type, commonCallbacks)
         return signer.signAndSend(call.data, options)
+      }
+
+      if (result.type === CallType.Near && isNearSigner(signer)) {
+        const { call, chain } = result
+        const createLink = (txHash: string) => nearblocks.tx(chain.key, txHash)
+
+        let isClaimed = false
+        const outcome = await signer.signAndSend(
+          call,
+          chain,
+          getClaimTxOptions(chain, result.type, {
+            createLink,
+            ...commonCallbacks,
+            onSuccess: () => {
+              isClaimed = true
+            },
+          }),
+        )
+
+        // A zcash withdrawal goes on to 1Click once the ZEC is claimed
+        const withdrawal =
+          isClaimed && asset?.symbol === "ZEC"
+            ? findWithdrawal(account.rawAddress, value)
+            : undefined
+        if (!asset || !withdrawal) return outcome
+
+        const { buildCall } = await withdrawZec({
+          from: account.rawAddress,
+          amount: BigInt(asset.amount),
+          recipient: withdrawal.recipient,
+        })
+        const { call: withdrawCall } = await buildCall()
+
+        const toastParams = { value, symbol }
+        await signer.signAndSend(
+          withdrawCall,
+          chain,
+          getClaimTxOptions(chain, result.type, {
+            createLink,
+            onSuccess: () => removeWithdrawal(withdrawal),
+            titles: {
+              submitted: t("zecWithdrawal.toast.submitted", toastParams),
+              success: t("zecWithdrawal.toast.success", toastParams),
+              error: t("zecWithdrawal.toast.error", toastParams),
+            },
+          }),
+        )
+        return outcome
       }
 
       throw new Error("Unsupported claim transaction type")

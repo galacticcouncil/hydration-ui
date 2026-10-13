@@ -6,6 +6,7 @@ import {
   SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { isAnyEvmChain } from "@galacticcouncil/utils"
+import { ZEC_DECIMALS } from "@galacticcouncil/xc-sdk"
 import { useQuery } from "@tanstack/react-query"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,11 +18,13 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
 import { isSnowbridgeRoute } from "@/modules/xcm/transfer/utils/bridge"
+import { isZecWithdrawal } from "@/modules/xcm/transfer/utils/zecWithdrawal"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
   const { t } = useTranslation(["common", "xcm"])
-  const { transfer, call, alerts, isLoading, transferArgs } = useXcmProvider()
+  const { transfer, call, alerts, isLoading, transferArgs, zecWithdrawalFee } =
+    useXcmProvider()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
 
@@ -45,6 +48,8 @@ export const XcmSummary = () => {
     bridgeProvider,
   )
   const { origin } = config ?? {}
+
+  const isWithdrawal = isZecWithdrawal(srcChain, srcAsset, destChain)
 
   const isSnowbridge = !!origin?.route && isSnowbridgeRoute(origin.route)
   const { data: snowbridgeDestFee } = useQuery(
@@ -126,6 +131,20 @@ export const XcmSummary = () => {
             loading={isLoading}
             content={destFeeValue}
           />
+          {isWithdrawal && (
+            <SummaryRow
+              label={t("xcm:summary.zecWithdrawalFee")}
+              loading={isLoading}
+              content={
+                zecWithdrawalFee !== null
+                  ? t("currency", {
+                      value: toDecimal(zecWithdrawalFee, ZEC_DECIMALS),
+                      symbol: "ZEC",
+                    })
+                  : null
+              }
+            />
+          )}
         </Summary>
       </CollapsibleContent>
     </CollapsibleRoot>

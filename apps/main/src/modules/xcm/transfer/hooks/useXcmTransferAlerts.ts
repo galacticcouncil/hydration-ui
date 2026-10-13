@@ -1,4 +1,4 @@
-import { TransferValidationReport } from "@galacticcouncil/xc-core"
+import { Ntt, TransferValidationReport } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -11,19 +11,7 @@ import { useWormholeNttLimitAlerts } from "@/modules/xcm/transfer/hooks/useWormh
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { pickXcmLimitAlert } from "@/modules/xcm/transfer/utils/limits"
-
-const REPORT_ERROR_KEYS = [
-  "fee.insufficientBalance",
-  "destFee.insufficientBalance",
-  "asset.frozen",
-  "account.insufficientDeposit",
-] as const
-
-type ReportErrorKey = (typeof REPORT_ERROR_KEYS)[number]
-
-const isReportErrorKey = (error: string): error is ReportErrorKey => {
-  return REPORT_ERROR_KEYS.includes(error as ReportErrorKey)
-}
+import { getXcmReportAlerts } from "@/modules/xcm/transfer/utils/report"
 
 export const useXcmTransferAlerts = (
   form: UseFormReturn<XcmFormValues>,
@@ -31,6 +19,11 @@ export const useXcmTransferAlerts = (
   requiresEvmBinding: boolean,
 ): { alerts: XcmAlert[]; isLoading: boolean } => {
   const { t } = useTranslation(["xcm"])
+
+  const [srcChain, srcAsset] = form.watch(["srcChain", "srcAsset"])
+
+  const isHubMetered =
+    !!srcChain && !!srcAsset && !Ntt.isKnown(srcChain, srcAsset)
 
   const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
   const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
@@ -40,35 +33,25 @@ export const useXcmTransferAlerts = (
     useHydrationEvmBindingAlert(form, requiresEvmBinding)
 
   const alerts = useMemo<XcmAlert[]>(() => {
-    const transferReportAlerts: XcmAlert[] = []
-    if (transferReport) {
-      for (const e of transferReport) {
-        if (isReportErrorKey(e.error)) {
-          transferReportAlerts.push({
-            key: e.error,
-            message: t(`report.${e.error}`, {
-              amount: e.amount,
-              symbol: e.asset,
-              chain: e.chain,
-            }),
-            severity: "error",
-          })
-        }
-      }
-    }
-    if (transferReportAlerts.length) return transferReportAlerts
+    const reportAlerts = getXcmReportAlerts(transferReport, isHubMetered, t)
+    const reportErrors = reportAlerts.filter((a) => a.severity === "error")
+    if (reportErrors.length) return reportErrors
     if (evmBindingAlerts.length) return evmBindingAlerts
 
+    // A report warning (the hub's inbound limit) ranks with the limit alerts
+    // instead of hiding them.
     const limitAlert = pickXcmLimitAlert([
       ...cBreakerInboundLimitAlerts,
       ...cBreakerOutboundLimitAlerts,
       ...wormholeNttLimitAlerts,
+      ...reportAlerts,
       ...basejumpPoolAlerts,
     ])
     return limitAlert ? [limitAlert] : []
   }, [
     t,
     transferReport,
+    isHubMetered,
     cBreakerInboundLimitAlerts,
     cBreakerOutboundLimitAlerts,
     wormholeNttLimitAlerts,

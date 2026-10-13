@@ -15,6 +15,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
+import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -27,13 +28,20 @@ import {
   AmountFormField,
   ChainAssetFormField,
 } from "@/modules/xcm/transfer/components/FormField"
-import { RecipientSelectButton } from "@/modules/xcm/transfer/components/Recipient"
+import {
+  RecipientSelectButton,
+  ZecWithdrawalNearAccount,
+} from "@/modules/xcm/transfer/components/Recipient"
 import { useChainSwitch } from "@/modules/xcm/transfer/hooks/useChainSwitch"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
+import {
+  isZecWithdrawal,
+  toRouteValues,
+} from "@/modules/xcm/transfer/utils/zecWithdrawal"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -56,6 +64,7 @@ export const XcmForm = () => {
 
   const { watch, handleSubmit, reset, setValue } =
     useFormContext<XcmFormValues>()
+  const addZecWithdrawal = useZecWithdrawalsStore((s) => s.addWithdrawal)
 
   const resetAmounts = useResetAmounts()
 
@@ -77,8 +86,20 @@ export const XcmForm = () => {
 
   const queryClient = useQueryClient()
 
+  const isWithdrawal = isZecWithdrawal(srcChain, srcAsset, destChain)
+
   const submit = useSubmitXcmTransfer({
     onTransferSubmitted: (txHash, values, transfer) => {
+      // `values` are what was sent, to the NEAR account; the form's own
+      // destination is the Zcash address it goes on to once claimed there
+      if (isWithdrawal) {
+        addZecWithdrawal({
+          nearAccount: values.destAddress,
+          amount: values.srcAmount,
+          recipient: destAddress,
+        })
+      }
+
       if (account) {
         insertOptimisticJourney(
           queryClient,
@@ -166,7 +187,8 @@ export const XcmForm = () => {
   return (
     <form
       onSubmit={handleSubmit(
-        (values) => transfer && submit.mutate([values, transfer]),
+        (values) =>
+          transfer && submit.mutate([toRouteValues(values), transfer]),
       )}
     >
       <Stack gap="s" maxWidth="6xl" mx="auto">
@@ -296,6 +318,7 @@ export const XcmForm = () => {
                 assetPrice={price}
               />
             </Flex>
+            {isWithdrawal && <ZecWithdrawalNearAccount />}
           </Stack>
           {availableBridgeRoutes.length > 1 && (
             <>

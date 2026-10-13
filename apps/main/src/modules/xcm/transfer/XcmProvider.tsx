@@ -1,6 +1,7 @@
 import {
   HYDRATION_CHAIN_KEY,
   isAddressValidOnChain,
+  isZecChain,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
@@ -20,13 +21,16 @@ import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
 } from "@/api/xcm"
+import { NEAR_CHAIN_KEY } from "@/modules/xcm/history/utils/journey"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
+import { useZecWithdrawal } from "@/modules/xcm/transfer/hooks/useZecWithdrawal"
 import {
+  isOmniRoute,
   resolveValidBridgeProvider,
   shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
@@ -44,6 +48,11 @@ import {
   resolveBestDestRoute,
   resolveSelectedRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
+import {
+  isZecWithdrawal,
+  toRouteValues,
+  toZecWithdrawalPair,
+} from "@/modules/xcm/transfer/utils/zecWithdrawal"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
@@ -108,7 +117,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       )
       .map((a) => a.destination.chain)
 
-    return unique(destChains).map((chain) => {
+    const pairs = unique(destChains).map((chain) => {
       const { routes, destinationAssets, isTagSelect } = config
         .asset(srcAsset)
         .source(srcChain)
@@ -116,6 +125,15 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
       return { chain, routes, assets: destinationAssets, isTagSelect }
     })
+
+    // ZEC also goes on to Zcash: over NEAR, withdrawn there by 1Click
+    const nearPair = pairs.find((p) => p.chain.key === NEAR_CHAIN_KEY)
+    const zcash = XCM_CHAINS.find(isZecChain)
+    if (nearPair && zcash && isZecWithdrawal(srcChain, srcAsset, zcash)) {
+      return [...pairs, toZecWithdrawalPair(nearPair, zcash)]
+    }
+
+    return pairs
   }, [config, srcAsset, srcChain, configService])
 
   const destPair = destChainAssetPairs.find(
@@ -229,38 +247,49 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const transferArgs = useMemo(() => {
     if (!isDestSynced) return null
 
-    return getXcmTransferArgs(account, values)
+    return getXcmTransferArgs(account, toRouteValues(values))
   }, [account, isDestSynced, values])
 
   const {
     transfer: xcmTransfer,
     isLoadingTransfer,
     isLoadingCall,
+    isLoadingReport,
     call,
     dryRunError,
     report,
   } = useXcmTransfer(form, transferArgs)
 
-  const { alerts, isLoading: isLoadingAlerts } = useXcmTransferAlerts(
-    form,
-    report,
-    requiresBinding,
-  )
+  const { alerts: transferAlerts, isLoading: isLoadingAlerts } =
+    useXcmTransferAlerts(form, report, requiresBinding)
+
+  const zecWithdrawal = useZecWithdrawal(values)
+  const alerts = [...transferAlerts, ...zecWithdrawal.alerts]
 
   useEffect(() => {
     setTransfer(xcmTransfer)
     form.setValue(
       "destAmount",
-      srcAsset && srcAmount && xcmTransfer
-        ? calculateTransferDestAmount(
-            srcAsset,
-            srcAmount,
-            xcmTransfer,
-            !!selectedRoute?.destination.fee.prepaid,
-          )
-        : "",
+      zecWithdrawal.isWithdrawal
+        ? zecWithdrawal.destAmount
+        : srcAsset && srcAmount && xcmTransfer
+          ? calculateTransferDestAmount(
+              srcAsset,
+              srcAmount,
+              xcmTransfer,
+              !!selectedRoute?.destination.fee.prepaid,
+            )
+          : "",
     )
-  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer])
+  }, [
+    form,
+    selectedRoute,
+    srcAmount,
+    srcAsset,
+    xcmTransfer,
+    zecWithdrawal.isWithdrawal,
+    zecWithdrawal.destAmount,
+  ])
 
   // Only the assets actually in view are subscribed now - the asset picker
   // fetches the full set on its own.
@@ -298,7 +327,15 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   useTrackApprovals(srcChainKey)
 
   const isLoadingBalances = isLoadingSrcBalances || isLoadingDestBalances
-  const isLoading = isLoadingTransfer || isLoadingBalances || isLoadingAlerts
+  // Only the report checks an Omni deposit's minimum and NEAR limits, and a
+  // refused deposit is refunded by hand or not at all, so submit waits for it.
+  const isLoadingOmniReport = isOmniRoute(selectedRoute) && isLoadingReport
+  const isLoading =
+    isLoadingTransfer ||
+    isLoadingBalances ||
+    isLoadingAlerts ||
+    isLoadingOmniReport ||
+    zecWithdrawal.isLoading
 
   return (
     <XcmContext.Provider
@@ -316,6 +353,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         selectedRoute,
         transferArgs,
         alerts,
+        zecWithdrawalFee: zecWithdrawal.fee ?? null,
         transfer,
         call,
         dryRunError,

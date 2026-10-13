@@ -13,8 +13,11 @@ import {
 import { WalletProviderType } from "@/config/providers"
 import { NearSigner } from "@/signers/NearSigner"
 import { Wallet, WalletAccount } from "@/types/wallet"
-import { BaseWalletError, UserRejectedError } from "@/utils/errors"
-import { getNearErrorMessage } from "@/utils/near"
+import {
+  BaseWalletError,
+  getWalletErrorMessage,
+  UserRejectedError,
+} from "@/utils/errors"
 
 const NETWORK = "mainnet"
 const MANIFEST_TIMEOUT_MS = 10_000
@@ -82,7 +85,7 @@ export class BaseNearWallet implements Wallet {
     // rather than dropped
     if (isTimeoutError(err)) return err
 
-    const message = getNearErrorMessage(err)
+    const message = getWalletErrorMessage(err)
     if (isRejection(message)) return new UserRejectedError(this)
 
     return new BaseWalletError(

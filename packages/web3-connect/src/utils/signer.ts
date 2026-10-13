@@ -5,6 +5,7 @@ import { EthereumSigner } from "@/signers/EthereumSigner"
 import { NearSigner } from "@/signers/NearSigner"
 import { SolanaSigner } from "@/signers/SolanaSigner"
 import { SuiSigner } from "@/signers/SuiSigner"
+import { ZecSigner } from "@/signers/ZecSigner"
 
 export const isPolkadotSigner = (signer: unknown): signer is PolkadotSigner => {
   return (
@@ -26,3 +27,6 @@ export const isSuiSigner = (signer: unknown): signer is SuiSigner =>
 
 export const isNearSigner = (signer: unknown): signer is NearSigner =>
   signer instanceof NearSigner
+
+export const isZecSigner = (signer: unknown): signer is ZecSigner =>
+  signer instanceof ZecSigner

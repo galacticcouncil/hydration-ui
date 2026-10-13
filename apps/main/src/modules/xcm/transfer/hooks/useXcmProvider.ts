@@ -30,6 +30,8 @@ type XcmContextValue = {
   readonly call: Call | null
   readonly dryRunError: DryRunError | null
   readonly alerts: XcmAlert[]
+  /** 1Click's cut of a withdrawal to Zcash, in zatoshi. */
+  readonly zecWithdrawalFee: bigint | null
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
   readonly availableBridgeRoutes: AssetRoute[]
@@ -51,6 +53,7 @@ export const XcmContext = createContext<XcmContextValue>({
   call: null,
   dryRunError: null,
   alerts: [],
+  zecWithdrawalFee: null,
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],
   availableBridgeRoutes: [],

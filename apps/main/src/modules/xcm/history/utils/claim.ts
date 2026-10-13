@@ -5,6 +5,7 @@ import {
   isAnyParachain,
   isEvmChain,
   isEvmParachain,
+  isNearChain,
   isSolanaChain,
   isSuiChain,
   safeConvertSS58toH160,
@@ -24,6 +25,7 @@ import {
   EvmChain,
   EvmParachain,
   Gas,
+  NearChain,
   Ntt,
   NttTokenDef,
   SolanaChain,
@@ -34,6 +36,8 @@ import type { XcJourney } from "@galacticcouncil/xc-scan"
 import {
   EvmCall,
   EvmClaim,
+  NearCall,
+  NearClaim,
   SolanaCall,
   SolanaClaim,
   SuiCall,
@@ -49,8 +53,10 @@ import {
 } from "@/modules/xcm/history/utils/assets"
 import {
   isXcSwapReceiverJourney,
+  NEAR_CHAIN_KEY,
   XcJourneyStop,
   XcJourneyWhStop,
+  XCSCAN_NEAR_ID,
 } from "@/modules/xcm/history/utils/journey"
 
 const CLAIM_MIN_AGE_MS = 60_000 // 1 minute
@@ -307,6 +313,17 @@ export async function isJourneyRedeemed(journey: XcJourney): Promise<boolean> {
 
   const toChain = resolveChainFromUrn(journey.destination)
   if (!toChain) return false
+
+  // The near contract keys replay by the ntt message digest, so the sdk
+  // derives it from the vaa rather than asking for the vaa hash.
+  if (isNearChain(toChain)) {
+    const vaaRaw = getJourneyVaaRaw(journey)
+    const ntt = resolveNttDeployment(journey, toChain)
+    if (!vaaRaw || !ntt) return false
+
+    return new NearClaim(toChain).isRedeemed(vaaRaw, ntt)
+  }
+
   if (!isEvmChain(toChain) && !isEvmParachain(toChain)) return false
 
   const ntt = resolveNttDeployment(journey, toChain)
@@ -339,6 +356,14 @@ export function resolveChainFromUrn(
       case ChainEcosystem.Polkadot:
       case ChainEcosystem.Kusama:
         return isAnyParachain(c) && c.parachainId === Number(chainId)
+      // xc-scan files NEAR under XCSCAN_NEAR_ID and indexes mainnet only;
+      // near_testnet shares the wormhole id behind it, so pin mainnet by key.
+      case ChainEcosystem.Near:
+        return (
+          isNearChain(c) &&
+          chainId === XCSCAN_NEAR_ID &&
+          c.key === NEAR_CHAIN_KEY
+        )
       default:
         return false
     }
@@ -358,6 +383,11 @@ type ClaimCallResult =
       type: CallType.Sui
       call: SuiCall
       chain: SuiChain
+    }
+  | {
+      type: CallType.Near
+      call: NearCall
+      chain: NearChain
     }
   | {
       type: CallType.Substrate
@@ -390,6 +420,18 @@ export async function buildClaimCall(
     return {
       type: CallType.Sui,
       call: await suiClaim.redeem(claimerAddress, vaaRaw, ntt),
+      chain: toChain,
+    }
+  }
+
+  // No executor serves NEAR, so the recipient completes the transfer itself.
+  // Anyone may submit, but the vaa names the payee by hash only, so the sdk
+  // defaults the recipient to the claimer and rejects a mismatch up front.
+  if (isNearChain(toChain)) {
+    const nearClaim = new NearClaim(toChain)
+    return {
+      type: CallType.Near,
+      call: nearClaim.redeem(claimerAddress, vaaRaw, ntt),
       chain: toChain,
     }
   }

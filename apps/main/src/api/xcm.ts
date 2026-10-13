@@ -3,10 +3,12 @@ import {
   getAddressFromAssetId,
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
+  isZecChain,
   QUERY_KEY_BLOCK_PREFIX,
   resolveHydrationAssetId,
   resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
+import { readNoirBalance } from "@galacticcouncil/web3-connect/src/utils/zec"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
 import {
@@ -17,6 +19,7 @@ import {
   Ntt,
 } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
+import { configureOneClick, createOmniClient } from "@galacticcouncil/xc-swap"
 import {
   keepPreviousData,
   queryOptions,
@@ -53,6 +56,17 @@ export const useCrossChainConfig = () => {
       const hydration = ctx.config.chains.get(HYDRATION_CHAIN_KEY)
       if (hydration && isEvmParachain(hydration)) {
         withPermissiveEvmResolver(hydration)
+      }
+
+      // Zcash is utxo with no public balance api, so balances come from the
+      // connected Noir wallet
+      const zcash = ctx.config.chains.get("zec")
+      if (zcash && isZecChain(zcash)) {
+        zcash.registerBalanceReader(readNoirBalance)
+        // The Omni route asks this client for the deposit minimum and address
+        zcash.registerOmniClient(createOmniClient())
+        // A withdrawal to Zcash is quoted by 1Click
+        configureOneClick()
       }
 
       // Wormhole carries basejump with it — basejump routes hop through the
