@@ -1,3 +1,4 @@
+import { css, Global } from "@emotion/react"
 import { hydration } from "@galacticcouncil/descriptors"
 import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { Modal } from "@galacticcouncil/ui/components"
@@ -21,11 +22,22 @@ import {
   Web3ConnectProvider,
 } from "@/context/Web3ConnectContext"
 import { useWalletSubscriptions } from "@/hooks/useWalletSubscriptions"
-import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
+import {
+  Account,
+  useWeb3Connect,
+  WalletMode,
+  Web3ConnectModalMeta,
+} from "@/hooks/useWeb3Connect"
 import { useWeb3ConnectInit } from "@/hooks/useWeb3ConnectInit"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
 import i18n from "@/i18n"
+
+const NEAR_CONNECT_POPUP_STYLES = css`
+  .hot-connector-popup {
+    pointer-events: auto;
+  }
+`
 
 const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
   [Web3ConnectModalPage.ProviderSelect]: <ProviderSelectContent />,
@@ -42,6 +54,7 @@ type ControlledProps = {
   readonly papi: TypedApi<typeof hydration>
   readonly open: boolean
   readonly mode: WalletMode
+  readonly meta?: Web3ConnectModalMeta
   readonly onOpenChange: (open: boolean) => void
   readonly onAccountSelect: (account: Account) => void
 }
@@ -62,9 +75,10 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
     "onAccountSelect" in props &&
     "mode" in props
 
-  const store = useWeb3Connect(useShallow(pick(["setAccount", "mode"])))
+  const store = useWeb3Connect(useShallow(pick(["setAccount", "mode", "meta"])))
 
   const mode = isControlled ? props.mode : store.mode
+  const meta = isControlled ? props.meta : store.meta
   const onAccountSelect = isControlled
     ? props.onAccountSelect
     : store.setAccount
@@ -82,8 +96,9 @@ const Web3ConnectModalContent: FC<Props> = (props) => {
       papi,
       onAccountSelect,
       mode,
+      meta,
     }),
-    [page, setPage, neckwork, onAccountSelect, isControlled, mode, papi],
+    [page, setPage, neckwork, onAccountSelect, isControlled, mode, meta, papi],
   )
   return (
     <Web3ConnectProvider value={context}>
@@ -103,7 +118,7 @@ export const Web3ConnectModal: FC<Props> = (props) => {
     "open" in props && "onOpenChange" in props && "onAccountSelect" in props
 
   useWeb3EagerEnable(!isControlled)
-  useWalletSubscriptions()
+  useWalletSubscriptions(!isControlled)
 
   const modalState = useWeb3ConnectModal()
 
@@ -114,6 +129,9 @@ export const Web3ConnectModal: FC<Props> = (props) => {
 
   return (
     <I18nextProvider i18n={i18n}>
+      {/* near-connect mounts NEAR wallet popups on document.body, where the
+          modal turns pointer events off */}
+      <Global styles={NEAR_CONNECT_POPUP_STYLES} />
       <Modal
         variant="popup"
         open={open}

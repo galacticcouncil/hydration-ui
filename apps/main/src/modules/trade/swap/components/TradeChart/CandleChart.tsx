@@ -16,6 +16,7 @@ type CandleChartProps = {
   readonly height: number
   readonly bucket: CandleBucket
   readonly showCountdown?: boolean
+  readonly showVolume?: boolean
   readonly candles: ReadonlyArray<PairCandle>
   readonly type: TradeChartType
   readonly resetKey: string
@@ -29,6 +30,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({
   height,
   bucket,
   showCountdown = false,
+  showVolume = true,
   candles,
   type,
   resetKey,
@@ -46,7 +48,13 @@ export const CandleChart: React.FC<CandleChartProps> = ({
     seriesRef,
     latestRef,
     crosshairTime,
-  } = useCandleChart({ type, candles, onCrosshairMove, onReachStart })
+  } = useCandleChart({
+    type,
+    showVolume,
+    candles,
+    onCrosshairMove,
+    onReachStart,
+  })
 
   useCandleData({
     chartRef,

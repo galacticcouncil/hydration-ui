@@ -117,7 +117,7 @@ export const healthFactorAfterSupplyQuery = (
       ])
       return formatHealthFactorResult({ currentHF, futureHF })
     },
-    placeholderData: keepPreviousData,
+    placeholderData: toAssetId ? keepPreviousData : undefined,
     enabled: isReady && !!address && !!toAssetId,
   })
 

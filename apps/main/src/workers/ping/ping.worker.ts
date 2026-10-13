@@ -1,6 +1,8 @@
 import type { PingResponse } from "@galacticcouncil/utils"
 import { expose } from "comlink"
 
+import { type BestRpcs, keepFreshRpcs, STRAGGLER_GRACE_MS } from "./ping.utils"
+
 function wsToHttp(url: string) {
   return url.replace(/^(ws)(s)?:\/\//, (_, _insecure, secure) =>
     secure ? "https://" : "http://",
@@ -157,33 +159,45 @@ export const worker = {
   getBestRpcs: async (
     wsUrls: string[],
     timeoutMs = 5000,
-  ): Promise<PingResponse[]> => {
+  ): Promise<BestRpcs> => {
     const controller = new AbortController()
     const signal = controller.signal
 
-    const results: PingResponse[] = []
+    const responded: PingResponse[] = []
+    let results: PingResponse[] = []
+    let graceId: ReturnType<typeof setTimeout> | undefined
 
     const promises = wsUrls.map(async (url) => {
       if (signal.aborted) return
       const res = await getBlock(url, timeoutMs, signal)
       if (res.ping === Infinity || signal.aborted) return
 
-      results.push(res)
-      results.sort((a, b) => b.timestamp - a.timestamp)
+      responded.push(res)
+      results = keepFreshRpcs(responded)
 
-      // Wait for up to 3 results, then abort
+      if (responded.length === 1) {
+        graceId = setTimeout(() => controller.abort(), STRAGGLER_GRACE_MS)
+      }
+
+      // Wait for up to 3 fresh results, then abort
       if (results.length === 3 || results.length === wsUrls.length) {
         controller.abort()
       }
     })
 
     await Promise.all(promises)
+    clearTimeout(graceId)
 
     if (results.length === 0) {
       throw new Error("All RPC providers failed or timed out")
     }
 
-    return results
+    return {
+      best: results,
+      staleUrls: responded
+        .filter((res) => !results.includes(res))
+        .map((res) => res.url),
+    }
   },
 }
 

@@ -25,7 +25,8 @@ import {
   isVisibleToWallet,
   normalizeStoredAddress,
   selectAddresses,
-} from "./AddressBook.merge"
+  touchAddress,
+} from "./AddressBook.utils"
 
 export const modeSchema = z.enum([
   WalletMode.Substrate,
@@ -69,6 +70,7 @@ const addressSchema = z.object({
   mode: modeSchema,
   savedBy: z.array(z.string()).default([]),
   isCustom: z.boolean().optional(),
+  lastUsedAt: z.number().optional(),
 })
 
 export type Address = z.infer<typeof addressSchema>
@@ -120,6 +122,7 @@ export type AddressStore = State & {
   readonly add: (address: AddressInput | AddressInput[]) => void
   readonly edit: (address: Address) => void
   readonly remove: (publicKey: string) => void
+  readonly touch: (address: string) => void
   readonly selectAddresses: (filter?: AddressFilter) => Address[]
 }
 
@@ -165,6 +168,15 @@ export const useAddressStore = create<AddressStore>()(
         set((state) => ({
           addresses: state.addresses.filter(
             (a) => !stringEquals(a.publicKey, publicKey),
+          ),
+        })),
+
+      touch: (address) =>
+        set((state) => ({
+          addresses: touchAddress(
+            state.addresses,
+            addressToPublicKey(address),
+            Date.now(),
           ),
         })),
     }),

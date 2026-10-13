@@ -5,8 +5,13 @@ export enum WalletProviderType {
   Enkrypt = "enkrypt",
   ExternalWallet = "external",
   FearlessWallet = "fearless-wallet",
+  HotWalletNear = "hot-wallet-near",
+  IntearWallet = "intear-wallet",
+  LedgerNear = "ledger-near",
   MantaWallet = "manta-wallet-js",
   MetaMask = "metamask",
+  MeteorWallet = "meteor-wallet",
+  NoirWallet = "noir-wallet",
   NovaWallet = "nova-wallet",
   NovaWalletEvm = "nova-wallet-evm",
   NovaWalletH160 = "nova-wallet-h160",
@@ -82,6 +87,17 @@ export const SUI_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Suiet,
   WalletProviderType.Slush,
   WalletProviderType.PhantomSui,
+]
+
+export const NEAR_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.MeteorWallet,
+  WalletProviderType.HotWalletNear,
+  WalletProviderType.IntearWallet,
+  WalletProviderType.LedgerNear,
+]
+
+export const ZCASH_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.NoirWallet,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

@@ -13,13 +13,14 @@ import {
 } from "@galacticcouncil/web3-connect"
 import {
   EVM_PROVIDERS,
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@galacticcouncil/web3-connect/src/config/providers"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { chainsMap, routesMap } from "@galacticcouncil/xc-cfg"
 import {
   AnyChain,
   Asset,
@@ -41,6 +42,7 @@ const CHAINS_PRIORITY = [
   "solana",
   "hyperevm",
   "sui",
+  "near",
   "assethub",
   "moonbeam",
   "assethub_kusama",
@@ -56,6 +58,15 @@ export const getChainPriority = (key: string) => {
   return idx === -1 ? Number.POSITIVE_INFINITY : idx
 }
 
+// Routed by the sdk, as a source or as a destination
+const isRoutedChain = (key: string) =>
+  routesMap.has(key) ||
+  [...routesMap.values()].some((chainRoutes) =>
+    chainRoutes
+      .getRoutes()
+      .some((route) => route.destination.chain.key === key),
+  )
+
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],
   filter((c) => {
@@ -66,7 +77,9 @@ export const XCM_CHAINS = pipe(
       c.ecosystem === ChainEcosystem.Polkadot ||
       c.ecosystem === ChainEcosystem.Solana ||
       c.ecosystem === ChainEcosystem.Sui ||
-      c.ecosystem === ChainEcosystem.Ethereum
+      c.ecosystem === ChainEcosystem.Ethereum ||
+      // NEAR is listed once the sdk routes it, so it comes with that release
+      (c.ecosystem === ChainEcosystem.Near && isRoutedChain(c.key))
     )
   }),
   sortBy((c) => [getChainPriority(c.key), c.name]),
@@ -90,6 +103,8 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
         return chainsMap.get("solana") || null
       case SUI_PROVIDERS.includes(provider):
         return chainsMap.get("sui") || null
+      case NEAR_PROVIDERS.includes(provider):
+        return chainsMap.get("near") || null
       default:
         return chainsMap.get("assethub") || null
     }
@@ -147,6 +162,10 @@ export const getWalletModeByChain = (chain: AnyChain) => {
 
   if (chain.isSui()) {
     return WalletMode.Sui
+  }
+
+  if (chain.isNear()) {
+    return WalletMode.Near
   }
 
   return WalletMode.Default

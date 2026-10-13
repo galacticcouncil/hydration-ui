@@ -8,6 +8,7 @@ import {
   Flex,
   Grid,
   Input,
+  Tooltip,
 } from "@/components"
 
 export type AccountInputProps = Omit<
@@ -21,6 +22,9 @@ export type AccountInputProps = Omit<
   className?: string
   pasteDisabled?: boolean
   clearDisabled?: boolean
+  pasteLabel?: string
+  clearLabel?: string
+  endAdornment?: React.ReactNode
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -32,6 +36,9 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   ref,
   pasteDisabled = false,
   clearDisabled = false,
+  pasteLabel = "Paste",
+  clearLabel = "Clear",
+  endAdornment,
   ...props
 }) => {
   const handlePaste = async () => {
@@ -46,6 +53,22 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   const handleClear = () => {
     onChange("")
   }
+
+  const withTooltip = (label: string | undefined, button: React.ReactNode) =>
+    label ? (
+      <Tooltip
+        text={label}
+        size="small"
+        delayDuration={0}
+        side="bottom"
+        alignOffset={0}
+        asChild
+      >
+        {button}
+      </Tooltip>
+    ) : (
+      button
+    )
 
   return (
     <Grid
@@ -66,12 +89,31 @@ export const AccountInput: React.FC<AccountInputProps> = ({
           {...props}
         />
       </Flex>
-      {!value && !pasteDisabled && (
-        <Button icon={ArrowDownToLine} variant="ghost" onClick={handlePaste} />
-      )}
-      {value && !clearDisabled && (
-        <Button icon={Close} variant="ghost" onClick={handleClear} />
-      )}
+      <Flex align="center" gap="s">
+        {endAdornment}
+        {!value &&
+          !pasteDisabled &&
+          withTooltip(
+            pasteLabel,
+            <Button
+              icon={ArrowDownToLine}
+              variant="ghost"
+              aria-label={pasteLabel}
+              onClick={handlePaste}
+            />,
+          )}
+        {value &&
+          !clearDisabled &&
+          withTooltip(
+            clearLabel,
+            <Button
+              icon={Close}
+              variant="ghost"
+              aria-label={clearLabel}
+              onClick={handleClear}
+            />,
+          )}
+      </Flex>
     </Grid>
   )
 }
