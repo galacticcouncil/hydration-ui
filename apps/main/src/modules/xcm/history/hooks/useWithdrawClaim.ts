@@ -1,4 +1,9 @@
-import { etherscan, nearblocks, solexplorer } from "@galacticcouncil/utils"
+import {
+  etherscan,
+  getVaaHeader,
+  nearblocks,
+  solexplorer,
+} from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import {
   isEthereumSigner,
@@ -9,7 +14,6 @@ import {
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { CallType } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
-import { withdrawZec } from "@galacticcouncil/xc-swap"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,9 +25,10 @@ import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdr
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import {
   buildClaimCall,
+  getJourneyVaaRaw,
   resolveChainFromUrn,
 } from "@/modules/xcm/history/utils/claim"
-import { journeyDate } from "@/modules/xcm/history/utils/journey"
+import { parseNttTransfer } from "@/modules/xcm/history/utils/nearNtt"
 import { toDecimal } from "@/utils/formatting"
 
 import { useClaimTxOptions } from "./useClaimTxOptions"
@@ -58,7 +63,19 @@ export function useWithdrawClaim(journey: XcJourney) {
       const wallet = getWallet(account.provider)
       const signer = wallet?.signer
 
-      const result = await buildClaimCall(journey, account.rawAddress)
+      // A zcash withdrawal paid a 1Click deposit address, which the vaa names
+      // by hash only: the claim passes it in plain
+      const vaaRaw = getJourneyVaaRaw(journey)
+      const payee = vaaRaw
+        ? parseNttTransfer(getVaaHeader(vaaRaw).payload)?.to
+        : undefined
+      const withdrawal = payee ? findWithdrawal(payee) : undefined
+
+      const result = await buildClaimCall(
+        journey,
+        account.rawAddress,
+        withdrawal?.depositAddress,
+      )
 
       if (!result) {
         throw new Error("Failed to build claim call")
@@ -119,54 +136,25 @@ export function useWithdrawClaim(journey: XcJourney) {
 
       if (result.type === CallType.Near && isNearSigner(signer)) {
         const { call, chain } = result
-        const createLink = (txHash: string) => nearblocks.tx(chain.key, txHash)
+        const toastParams = { value, symbol }
 
-        let isClaimed = false
-        const outcome = await signer.signAndSend(
+        return signer.signAndSend(
           call,
           chain,
           getClaimTxOptions(chain, result.type, {
-            createLink,
+            createLink: (txHash) => nearblocks.tx(chain.key, txHash),
             ...commonCallbacks,
-            onSuccess: () => {
-              isClaimed = true
-            },
+            // Claimed into the deposit address, 1Click sends it on to Zcash
+            ...(withdrawal && {
+              onSuccess: () => removeWithdrawal(withdrawal.txHash),
+              titles: {
+                submitted: t("zecWithdrawal.toast.submitted", toastParams),
+                success: t("zecWithdrawal.toast.success", toastParams),
+                error: t("zecWithdrawal.toast.error", toastParams),
+              },
+            }),
           }),
         )
-
-        // A zcash withdrawal goes on to 1Click once the ZEC is claimed
-        const withdrawal =
-          isClaimed && asset
-            ? findWithdrawal(
-                account.rawAddress,
-                asset.amount,
-                journeyDate(journey),
-              )
-            : undefined
-        if (!asset || !withdrawal) return outcome
-
-        const { buildCall } = await withdrawZec({
-          from: account.rawAddress,
-          amount: BigInt(asset.amount),
-          recipient: withdrawal.recipient,
-        })
-        const { call: withdrawCall } = await buildCall()
-
-        const toastParams = { value, symbol }
-        await signer.signAndSend(
-          withdrawCall,
-          chain,
-          getClaimTxOptions(chain, result.type, {
-            createLink,
-            onSuccess: () => removeWithdrawal(withdrawal.txHash),
-            titles: {
-              submitted: t("zecWithdrawal.toast.submitted", toastParams),
-              success: t("zecWithdrawal.toast.success", toastParams),
-              error: t("zecWithdrawal.toast.error", toastParams),
-            },
-          }),
-        )
-        return outcome
       }
 
       throw new Error("Unsupported claim transaction type")

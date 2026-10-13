@@ -14,6 +14,9 @@ const REPORT_ERROR_KEYS = [
   "account.insufficientDeposit",
   "omni.belowMinDeposit",
   "omni.connectorUnreachable",
+  "oneClick.amountTooLow",
+  "oneClick.recipientInvalid",
+  "oneClick.quoteFailed",
 ] as const
 
 type ReportErrorKey = (typeof REPORT_ERROR_KEYS)[number]
@@ -63,6 +66,20 @@ const getHubNttAlert = (
         message: t("report.ntt.inboundLimitExceeded", params),
         severity: "warning",
       }
+    case "ntt.custodyExceeded":
+      return {
+        key: XcmLimitAlertKey.WormholeCustodyExceeded,
+        title: t("limit.wormholeCustody"),
+        message: t("report.ntt.custodyExceeded", params),
+        severity: "error",
+      }
+    case "ntt.custodyUnreachable":
+      return {
+        key: XcmLimitAlertKey.WormholeCustodyUnreachable,
+        title: t("limit.wormholeCustody"),
+        message: t("report.ntt.custodyUnreachable", params),
+        severity: "error",
+      }
     default:
       return null
   }
@@ -71,9 +88,9 @@ const getHubNttAlert = (
 /**
  * Alerts for the sdk validation report.
  *
- * `isHubMetered`: the source has no ntt manager of its own, so the sdk checks
- * the ntt limits on the hub it bridges through (Omni mints on NEAR), which the
- * wormhole limit hook does not read.
+ * `isHubMetered`: an end has no ntt manager of its own, so the sdk checks the
+ * ntt limits on NEAR, the hub it bridges through (an Omni deposit, a 1Click
+ * withdrawal), which the wormhole limit hook does not read.
  */
 export const getXcmReportAlerts = (
   report: TransferValidationReport[] | null,

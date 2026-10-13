@@ -70,6 +70,10 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         bridgeProvider,
       } = assertTransferValues(values)
 
+      // A route paying a 1Click deposit address opens it now, once per amount:
+      // every build of this amount after pays it, any other the refund account
+      await transfer.openDeposit(srcAmount)
+
       const { source } = transfer
 
       const i18nVars = {

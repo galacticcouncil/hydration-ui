@@ -138,14 +138,19 @@ export const getNearNttSources = (): NearNttSource[] => {
   })
 }
 
+/** How ntt names a NEAR account: the hash of its id. */
+export const toNearUniversal = (accountId: string): string | undefined => {
+  const near = chainsMap.get(NEAR_CHAIN_KEY)
+  return near ? Wormhole.fromChain(near).normalizeAddress(accountId) : undefined
+}
+
 /**
  * The universal address an account takes in a NEAR ntt transfer: its evm
  * address on hydration, the hash of its id on NEAR.
  */
 export const toNearNttParty = (address: string): string | undefined => {
   const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
-  const near = chainsMap.get(NEAR_CHAIN_KEY)
-  if (!hydration || !near) return
+  if (!hydration) return
 
   if (EvmAddr.isValid(address)) {
     return Wormhole.fromChain(hydration).normalizeAddress(address)
@@ -155,7 +160,7 @@ export const toNearNttParty = (address: string): string | undefined => {
     return Wormhole.fromChain(hydration).normalizeAddress(h160)
   }
   if (NearAddr.isValid(address)) {
-    return Wormhole.fromChain(near).normalizeAddress(address)
+    return toNearUniversal(address)
   }
 }
 

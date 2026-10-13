@@ -395,9 +395,13 @@ type ClaimCallResult =
       chain: EvmParachain
     }
 
+/**
+ * @param recipient - NEAR account the vaa pays, where it isn't the claimer
+ */
 export async function buildClaimCall(
   journey: XcJourney,
   claimerAddress: string,
+  recipient?: string,
 ): Promise<ClaimCallResult | undefined> {
   const vaaRaw = getJourneyVaaRaw(journey)
   const toChain = resolveChainFromUrn(journey.destination)
@@ -424,14 +428,14 @@ export async function buildClaimCall(
     }
   }
 
-  // No executor serves NEAR, so the recipient completes the transfer itself.
-  // Anyone may submit, but the vaa names the payee by hash only, so the sdk
-  // defaults the recipient to the claimer and rejects a mismatch up front.
+  // No executor serves NEAR, so a claim anyone may submit completes it. The
+  // vaa names the payee by hash only: passed in plain, the claimer by default,
+  // and the sdk rejects a mismatch up front.
   if (isNearChain(toChain)) {
     const nearClaim = new NearClaim(toChain)
     return {
       type: CallType.Near,
-      call: nearClaim.redeem(claimerAddress, vaaRaw, ntt),
+      call: nearClaim.redeem(claimerAddress, vaaRaw, ntt, recipient),
       chain: toChain,
     }
   }

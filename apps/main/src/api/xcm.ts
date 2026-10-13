@@ -19,7 +19,10 @@ import {
   Ntt,
 } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
-import { configureOneClick, createOmniClient } from "@galacticcouncil/xc-swap"
+import {
+  createOmniClient,
+  createOneClickClient,
+} from "@galacticcouncil/xc-swap"
 import {
   keepPreviousData,
   queryOptions,
@@ -65,8 +68,9 @@ export const useCrossChainConfig = () => {
         zcash.registerBalanceReader(readNoirBalance)
         // The Omni route asks this client for the deposit minimum and address
         zcash.registerOmniClient(createOmniClient())
-        // A withdrawal to Zcash is quoted by 1Click
-        configureOneClick()
+        // A withdrawal to Zcash is quoted, and its deposit address opened, by
+        // this client
+        zcash.registerOneClickClient(createOneClickClient())
       }
 
       // Wormhole carries basejump with it — basejump routes hop through the
@@ -391,6 +395,8 @@ export type XcmTransferArgs = {
   readonly destAsset: string
   readonly destChain: string
   readonly bridgeTag?: string
+  /** NEAR account a route paying a 1Click deposit address refunds to. */
+  readonly refundAddress?: string
 }
 
 const hasAssetOnChain = (assetKey: string, chainKey: string) =>
@@ -409,6 +415,7 @@ export const xcmTransferQuery = (
     destChain,
     destAsset,
     bridgeTag,
+    refundAddress,
   } = transferArgs ?? {}
 
   return queryOptions({
@@ -426,6 +433,7 @@ export const xcmTransferQuery = (
       srcChain,
       destChain,
       bridgeTag,
+      refundAddress,
     ],
     queryFn: async () => {
       if (!transferArgs) throw new Error("Invalid transfer args")
@@ -446,6 +454,7 @@ export const xcmTransferQuery = (
         dstAddress: transferArgs.destAddress,
         dstAsset,
         tag,
+        refundAddress: transferArgs.refundAddress,
       })
 
       const { balance, fee, max } = transfer.source

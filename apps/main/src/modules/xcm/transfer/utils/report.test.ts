@@ -175,24 +175,38 @@ describe("getXcmReportAlerts", () => {
   })
 
   it.each([true, false])(
-    "leaves circuit breaker and custody keys to their hooks (hub metered: %s)",
+    "leaves circuit breaker keys to their hooks (hub metered: %s)",
     (isHubMetered) => {
-      const custody: TransferValidationReport[] = [
-        { asset: "ZEC", chain: "Hydration", error: "ntt.custodyUnreachable" },
-        {
-          asset: "ZEC",
-          chain: "Hydration",
-          decimals: 8,
-          headroom: ZEC,
-          error: "ntt.custodyExceeded",
-        },
-      ]
-
-      expect(
-        getXcmReportAlerts([...circuitBreaker, ...custody], isHubMetered, t),
-      ).toEqual([])
+      expect(getXcmReportAlerts(circuitBreaker, isHubMetered, t)).toEqual([])
     },
   )
+
+  describe("custody", () => {
+    const custody: TransferValidationReport[] = [
+      { asset: "ZEC", chain: "NEAR", error: "ntt.custodyUnreachable" },
+      {
+        asset: "ZEC",
+        chain: "NEAR",
+        decimals: 8,
+        headroom: ZEC,
+        error: "ntt.custodyExceeded",
+      },
+    ]
+
+    it("leaves it to the wormhole hook on an ntt route", () => {
+      expect(getXcmReportAlerts(custody, false, t)).toEqual([])
+    })
+
+    it("blocks on the custody of the hub, which that hook doesn't read", () => {
+      expect(getXcmReportAlerts(custody, true, t)).toMatchObject([
+        {
+          key: XcmLimitAlertKey.WormholeCustodyUnreachable,
+          severity: "error",
+        },
+        { key: XcmLimitAlertKey.WormholeCustodyExceeded, severity: "error" },
+      ])
+    })
+  })
 
   it("keeps the existing report errors", () => {
     const report: TransferValidationReport[] = [

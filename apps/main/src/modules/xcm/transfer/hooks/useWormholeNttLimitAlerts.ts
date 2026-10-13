@@ -16,7 +16,6 @@ import {
   isNttMetered,
   XcmLimitAlertKey,
 } from "@/modules/xcm/transfer/utils/limits"
-import { toRouteValues } from "@/modules/xcm/transfer/utils/zecWithdrawal"
 import { toBigInt, toDecimal } from "@/utils/formatting"
 
 export const useWormholeNttLimitAlerts = (
@@ -24,10 +23,13 @@ export const useWormholeNttLimitAlerts = (
 ): XcmAlert[] => {
   const { t } = useTranslation(["xcm"])
 
-  // A withdrawal to Zcash crosses ntt to NEAR first, so NEAR's limits apply
-  const { srcChain, srcAsset, destChain, destAsset, srcAmount } = toRouteValues(
-    form.watch(),
-  )
+  const [srcChain, srcAsset, destChain, destAsset, srcAmount] = form.watch([
+    "srcChain",
+    "srcAsset",
+    "destChain",
+    "destAsset",
+    "srcAmount",
+  ])
 
   const isNttRoute =
     !!srcChain &&

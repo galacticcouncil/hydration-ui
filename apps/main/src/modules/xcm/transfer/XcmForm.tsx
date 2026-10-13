@@ -9,7 +9,7 @@ import {
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
-import { ZEC_DECIMALS } from "@galacticcouncil/xc-sdk"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
@@ -19,6 +19,7 @@ import { useShallow } from "zustand/shallow"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
+import { NEAR_CHAIN_KEY } from "@/modules/xcm/history/utils/journey"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -40,15 +41,11 @@ import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { isOneClickRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
-import {
-  isZecWithdrawal,
-  toRouteValues,
-} from "@/modules/xcm/transfer/utils/zecWithdrawal"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
-import { toBigInt } from "@/utils/formatting"
 
 export const XcmForm = () => {
   const { t } = useTranslation(["common", "xcm"])
@@ -64,6 +61,7 @@ export const XcmForm = () => {
     isLoadingSrcBalances,
     isLoadingDestBalances,
     isConnectedAccountValid,
+    selectedRoute,
   } = useXcmProvider()
 
   const { watch, handleSubmit, reset, setValue } =
@@ -92,37 +90,39 @@ export const XcmForm = () => {
 
   const queryClient = useQueryClient()
 
-  const isWithdrawal = isZecWithdrawal(srcChain, srcAsset, destChain)
+  const isOneClick = isOneClickRoute(selectedRoute)
 
   const submit = useSubmitXcmTransfer({
     onTransferSubmitted: (txHash, values, transfer) => {
-      // `values` are what was sent, to the NEAR account; the form's own
-      // destination is the Zcash address it goes on to once claimed there
-      if (isWithdrawal) {
+      // The claim on NEAR names the deposit address in plain, which the vaa
+      // carries as a hash only
+      if (transfer.deposit) {
         addWithdrawal({
           txHash,
-          nearAccount: values.destAddress,
-          amount: toBigInt(values.srcAmount, ZEC_DECIMALS).toString(),
-          recipient: destAddress,
-          submittedAt: Date.now(),
+          depositAddress: transfer.deposit.depositAddress,
+          recipient: values.destAddress,
+          deadline: transfer.deposit.deadline,
         })
       }
 
       if (account) {
+        // A 1Click withdrawal lists as its leg to NEAR, the journey that
+        // replaces this placeholder
+        const hub = transfer.deposit ? chainsMap.get(NEAR_CHAIN_KEY) : undefined
         insertOptimisticJourney(
           queryClient,
           account.address,
           txHash,
-          values,
+          hub ? { ...values, destChain: hub } : values,
           transfer,
         )
       }
 
       resetAmounts()
     },
-    onTransferError: (txHash) => {
+    onTransferError: (txHash, _values, transfer) => {
       // A transfer that failed leaves nothing to claim on NEAR
-      if (isWithdrawal) removeWithdrawal(txHash)
+      if (transfer.deposit) removeWithdrawal(txHash)
 
       if (account) {
         removeOptimisticJourney(queryClient, account.address, txHash)
@@ -198,8 +198,7 @@ export const XcmForm = () => {
   return (
     <form
       onSubmit={handleSubmit(
-        (values) =>
-          transfer && submit.mutate([toRouteValues(values), transfer]),
+        (values) => transfer && submit.mutate([values, transfer]),
       )}
     >
       <Stack gap="s" maxWidth="6xl" mx="auto">
@@ -329,7 +328,7 @@ export const XcmForm = () => {
                 assetPrice={price}
               />
             </Flex>
-            {isWithdrawal && <ZecWithdrawalNearAccount />}
+            {isOneClick && <ZecWithdrawalNearAccount />}
           </Stack>
           {availableBridgeRoutes.length > 1 && (
             <>

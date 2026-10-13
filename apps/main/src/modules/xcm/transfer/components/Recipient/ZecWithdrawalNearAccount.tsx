@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
-/** NEAR account a zcash withdrawal is sent to and claimed on. */
+/** NEAR account 1Click refunds a failed zcash withdrawal to. */
 export const ZecWithdrawalNearAccount: React.FC = () => {
   const { t } = useTranslation("xcm")
   const id = useId()

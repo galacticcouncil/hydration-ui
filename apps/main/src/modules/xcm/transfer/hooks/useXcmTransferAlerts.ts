@@ -20,10 +20,21 @@ export const useXcmTransferAlerts = (
 ): { alerts: XcmAlert[]; isLoading: boolean } => {
   const { t } = useTranslation(["xcm"])
 
-  const [srcChain, srcAsset] = form.watch(["srcChain", "srcAsset"])
+  const [srcChain, srcAsset, destChain, destAsset] = form.watch([
+    "srcChain",
+    "srcAsset",
+    "destChain",
+    "destAsset",
+  ])
 
+  // An end with no ntt manager of its own bridges through NEAR, whose limits
+  // only the report checks
   const isHubMetered =
-    !!srcChain && !!srcAsset && !Ntt.isKnown(srcChain, srcAsset)
+    !!srcChain &&
+    !!srcAsset &&
+    !!destChain &&
+    !!destAsset &&
+    (!Ntt.isKnown(srcChain, srcAsset) || !Ntt.isKnown(destChain, destAsset))
 
   const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
   const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
