@@ -94,7 +94,6 @@ export const vaultStatsQuery = (
         deficitStop,
         deferredDeployment,
         pendingDeployment,
-        underfunded,
         mainAccount,
       ] = await Promise.all([
         contract.read.totalAssets(at),
@@ -122,7 +121,6 @@ export const vaultStatsQuery = (
         safeRead("Vault.reinvestAssets", () =>
           contract.read.reinvestAssets(at),
         ),
-        safeRead("Vault.isUnderfunded", () => contract.read.isUnderfunded(at)),
         safeRead("Pool.getUserAccountData(vault)", () =>
           pool.read.getUserAccountData([vault.vaultAddress], at),
         ),
@@ -168,9 +166,6 @@ export const vaultStatsQuery = (
         maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
         withdrawalDelay,
         deficitStop,
-        // allocation stops crediting while the vault is underfunded; a rate
-        // shown as accruing would be a lie for that period
-        underfunded: underfunded === undefined ? null : underfunded,
         // Main leg in base currency (USD, 8 decimals); collateral includes the
         // synthetic, consumers strip it via its known debt ratio
         mainCollUsd:

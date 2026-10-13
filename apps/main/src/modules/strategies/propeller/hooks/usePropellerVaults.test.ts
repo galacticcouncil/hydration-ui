@@ -21,7 +21,6 @@ const stats = (
   remainingPct: 50,
   paused: false,
   depositsPaused: false,
-  underfunded: null,
   mainCollUsd: null,
   mainDebtUsd: null,
   deficitStop: false,

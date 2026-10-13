@@ -12,7 +12,6 @@ export const VAULT_ABI = [
     "function hollarDebtToken() view returns (address)",
     // keeper deposit stop; deposits revert while it or depositsPaused is set
     "function deficitStop() view returns (bool)",
-    "function isUnderfunded() view returns (bool)",
     "function withdrawalDelay() view returns (uint32)",
     "function queueUnwind() view returns (uint256)",
     "function unwindEligibleAt(uint256) view returns (uint256)",

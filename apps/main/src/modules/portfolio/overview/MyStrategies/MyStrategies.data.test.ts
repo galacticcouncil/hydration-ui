@@ -99,6 +99,7 @@ beforeEach(() => {
       vault,
       accrualPaused: false,
       apy: 6.5,
+      runRateApy: 6.5,
       price: 2500,
     })),
     isLoading: false,

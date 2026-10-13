@@ -48,7 +48,6 @@ export type PropellerVaultStats = {
   paused: boolean
   depositsPaused: boolean
   deficitStop: boolean | null
-  underfunded: boolean | null
   exchangeRate: number
   maxLtv: number | null
   mainCollUsd: number | null
@@ -101,7 +100,6 @@ export const usePropellerVaults = () => {
       paused: data.paused,
       depositsPaused: data.depositsPaused,
       deficitStop: data.deficitStop,
-      underfunded: data.underfunded,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
       mainCollUsd: data.mainCollUsd,
@@ -124,7 +122,10 @@ export const usePropellerVaults = () => {
         mainDiscountBps: data?.mainDiscountBps,
       }),
     )
-    const accrualPaused = stats?.underfunded === true
+    // deficitStop is the juicer generation's deficit signal (keeper-maintained;
+    // also blocks deposits). The prior generation's isUnderfunded() view does
+    // not exist on these vaults.
+    const accrualPaused = stats?.deficitStop === true
     const deployed = borrowDeployedFraction({
       mainCollUsd: stats?.mainCollUsd,
       mainDebtUsd: stats?.mainDebtUsd,
