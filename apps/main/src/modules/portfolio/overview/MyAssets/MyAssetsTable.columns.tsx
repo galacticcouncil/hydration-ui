@@ -32,6 +32,11 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LINKS, swapTabLink } from "@/config/navigation"
 import { AssetDetailStaking } from "@/modules/portfolio/overview/MyAssets/AssetDetailStaking"
 import { DepositToHydrationTableAction } from "@/modules/portfolio/overview/MyAssets/DepositToHydrationAction"
+import {
+  isStrategyShareAsset,
+  StrategyShareAssetCta,
+  StrategyShareAssetLabel,
+} from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
@@ -137,9 +142,12 @@ export const useMyAssetsColumns = (
         select: (row) => row.original.symbol,
         compare: naturally,
       }),
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original} />
-      },
+      cell: ({ row }) =>
+        isStrategyShareAsset(row.original.id) ? (
+          <StrategyShareAssetLabel assetId={row.original.id} />
+        ) : (
+          <AssetLabelFull asset={row.original} />
+        ),
     })
 
     const totalColumn = columnHelper.accessor("totalDisplay", {
@@ -235,6 +243,9 @@ export const useMyAssetsColumns = (
                 </DataTableExpandTrigger>
               </>
             )}
+            {isLargeDesktop && isStrategyShareAsset(row.original.id) && (
+              <StrategyShareAssetCta assetId={row.original.id} />
+            )}
             <TableRowAction onClick={() => setModal("transfer")}>
               {t("common:send")}
             </TableRowAction>
@@ -322,9 +333,12 @@ export const useMyAssetsColumns = (
       meta: {
         skeletonCell: AssetSkeletonCell,
       },
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original} withName={false} />
-      },
+      cell: ({ row }) =>
+        isStrategyShareAsset(row.original.id) ? (
+          <StrategyShareAssetLabel assetId={row.original.id} />
+        ) : (
+          <AssetLabelFull asset={row.original} withName={false} />
+        ),
     })
 
     const totalColumnMobile = columnHelper.accessor("totalDisplay", {

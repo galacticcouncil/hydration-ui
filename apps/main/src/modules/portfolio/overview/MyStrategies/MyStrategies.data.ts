@@ -13,7 +13,11 @@ import {
   type PropellerWithdrawalRow,
   usePropellerAccount,
 } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
-import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
+import {
+  usePropellerVaults,
+  vaultDepositState,
+} from "@/modules/strategies/propeller/hooks/usePropellerVaults"
+import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -43,7 +47,12 @@ export type StrategyPosition = {
   status: "active" | "withdrawing" | "supplied" | "wallet"
   hasPosition: boolean
   hasPendingWithdrawal: boolean
+  /** next step to promote on the row; a ready claim beats depositing more */
+  action: "deposit" | "claim" | null
 }
+
+// Same cutoff the assets table uses to hide dust.
+const MIN_DEPOSIT_CTA_USD = 0.01
 
 export const getJuicerRemainingCollateral = (
   row: PropellerWithdrawalRow,
@@ -94,6 +103,17 @@ export const useMyJuicerPositions = () => {
     const hasPendingWithdrawal = pendingWithdrawal.gt(0)
     const pendingYield = position?.pendingYield ?? null
     const hasPosition = (position?.shares ?? 0) > 0
+    const isWithdrawing =
+      hasPendingWithdrawal || recoveryHollar.gt(0) || recoveryPending
+    const hasClaimable = withdrawals.some(
+      (row) => getWithdrawalStateLabel(row) === "claimable",
+    )
+    const canDepositMore =
+      hasPosition &&
+      !isWithdrawing &&
+      vaultDepositState(market?.stats) === "open" &&
+      (position?.collateralBalance ?? 0) * (market?.price ?? 0) >
+        MIN_DEPOSIT_CTA_USD
     const hasPrice =
       !markets.isLoading &&
       market !== undefined &&
@@ -131,12 +151,10 @@ export const useMyJuicerPositions = () => {
         ),
         recoveryHollar: recoveryHollar.gt(0) ? recoveryHollar.toString() : null,
         recoveryPending,
-        status:
-          hasPendingWithdrawal || recoveryHollar.gt(0) || recoveryPending
-            ? "withdrawing"
-            : "active",
+        status: isWithdrawing ? "withdrawing" : "active",
         hasPosition,
         hasPendingWithdrawal,
+        action: hasClaimable ? "claim" : canDepositMore ? "deposit" : null,
       },
     ]
   })
@@ -222,6 +240,7 @@ export const useMyBilPositions = () => {
         status,
         hasPosition: true,
         hasPendingWithdrawal: false,
+        action: null,
       },
     ]
   })

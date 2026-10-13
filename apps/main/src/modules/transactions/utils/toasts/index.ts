@@ -1,4 +1,4 @@
-import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
+import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { CallType } from "@galacticcouncil/xc-core"
 import { QueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
@@ -83,11 +83,11 @@ const getToastProcessorType = (
 export const createToastProcessorFn = (
   address: string,
   queryClient: QueryClient,
-  indexerSdk: IndexerSdk,
+  neckworkClient: NeckworkClient,
   evm: PublicClient,
 ): ToastProcessorFn => {
-  const substrateProcessor = processors.substrate(queryClient, indexerSdk)
-  const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
+  const substrateProcessor = processors.substrate(queryClient, neckworkClient)
+  const evmProcessor = processors.evm(queryClient, neckworkClient, evm)
   const xcscanProcessor = processors.xcscan(address, xcScanHttpClient)
   const basejumpProcessor = processors.basejump(address, queryClient)
   const xcSwapProcessor = processors.xcSwap()

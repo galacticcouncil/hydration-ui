@@ -40,6 +40,7 @@
   "myAssets.tabs.liquidity": "Liquidity positions",
   "myAssets.tabs.bonds": "Bonds",
   "myAssets.actions.staking": "Start staking your {{ symbol }}",
+  "myAssets.actions.juicerDeposit": "Juice more {{ symbol }}",
   "myAssets.actions.depositToHydration": "Deposit to Hydration",
   "myAssets.otherChains.refresh": "Refresh balances",
   "myAssets.otherChains.error.title": "Couldn't load {{chain}} balances",

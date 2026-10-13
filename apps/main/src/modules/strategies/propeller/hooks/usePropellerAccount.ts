@@ -32,6 +32,8 @@ export type PropellerPosition = {
   apy: number | null
   /** collateral earned but not harvested, outside the balance; null if unread */
   pendingYield: number | null
+  /** the vault's collateral asset still sitting in the wallet */
+  collateralBalance: number
 }
 
 export type WithdrawalRowState = WithdrawalState
@@ -193,6 +195,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
         shares,
         sharesExact: balanceQueries[i]?.data?.sharesExact ?? "0",
         pendingYield,
+        collateralBalance: balanceQueries[i]?.data?.eth ?? 0,
         assetValue,
         usdValue: assetValue * (market?.price ?? 0),
         apy: market?.apy ?? null,
