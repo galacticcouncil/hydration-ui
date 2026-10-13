@@ -162,23 +162,25 @@ export const usePairCandleSeries = (
     refetchIntervalInBackground: false,
   })
 
+  // the candles are mainnet's, so a fork's own price must not draw a tip on
+  // them; the cache is ignored too, as other observers share this key
   const spotOptions = spotPriceQuery(rpc, chartQuoteAssetId, chartBaseAssetId)
   const { data: spot } = useQuery({
     ...spotOptions,
-    enabled: enabled && spotOptions.enabled,
+    enabled: enabled && !rpc.isFork && spotOptions.enabled,
   })
+  const liveSpot = rpc.isFork ? undefined : spot?.spotPrice
 
   const spotPrice = useMemo(() => {
-    const raw = spot?.spotPrice
-    if (raw === undefined || raw === null) return Number.NaN
+    if (liveSpot === undefined || liveSpot === null) return Number.NaN
     try {
-      const asBig = Big(raw)
+      const asBig = Big(liveSpot)
       if (asBig.lte(0)) return Number.NaN
       return Big(1).div(asBig).toNumber()
     } catch {
       return Number.NaN
     }
-  }, [spot?.spotPrice])
+  }, [liveSpot])
 
   const history = useMemo(() => {
     if (isPegged) return peggedCandles(bucket)
