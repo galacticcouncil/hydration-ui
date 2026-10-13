@@ -48,6 +48,7 @@
   "withdrawals.settledProgress": "{{ settled }} ({{ pct }}%)",
   "withdrawals.settledLabel": "Settled so far",
   "withdrawals.action.claim": "Claim",
+  "withdrawals.action.claimPartial": "Claim {{ amount }}",
   "withdrawals.claim.label": "Claim available payouts for {{symbol}} withdrawal",
   "withdrawals.claim.title": "Claim withdrawal",
   "withdrawals.claim.description": "Receive {{payouts}} in your wallet. All currently available payouts for this withdrawal are claimed together. Further amounts may become available later as settlement continues.",

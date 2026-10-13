@@ -76,9 +76,7 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
               value: t("withdrawals.waitingUnwind"),
             },
           ]
-        : status !== "claimable" &&
-            row.state === "partial" &&
-            (row.collateralOwed ?? 0) > 0
+        : row.state === "partial" && (row.collateralOwed ?? 0) > 0
           ? [
               {
                 // the chip already says Settling and the row's amount is the
@@ -119,7 +117,15 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
               claim.mutate({ vault: row.vault, requestId: row.requestId })
             }
           >
-            {t("withdrawals.action.claim")}
+            {row.state === "partial"
+              ? t("withdrawals.action.claimPartial", {
+                  amount: t("common:currency", {
+                    value: row.collateralSettled ?? 0,
+                    symbol,
+                    maximumFractionDigits: 4,
+                  }),
+                })
+              : t("withdrawals.action.claim")}
           </LoadingButton>
         ) : (
           <Chip variant={statusVariants[status]} size="small">
