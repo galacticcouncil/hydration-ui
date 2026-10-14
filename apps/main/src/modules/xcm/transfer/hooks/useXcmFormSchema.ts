@@ -71,8 +71,6 @@ const createSchema = (transfer: Transfer | null) => {
     destAddress: required,
     destAccount: z.custom<Account>((val) => isObjectType(val)).nullable(),
     bridgeProvider: z.string().nullable(),
-    // NEAR account 1Click refunds a failed zcash withdrawal to
-    nearAccount: z.string().optional(),
   })
 }
 

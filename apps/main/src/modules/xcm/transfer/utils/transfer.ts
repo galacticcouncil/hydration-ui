@@ -174,7 +174,6 @@ export const getXcmTransferArgs = (
     destAsset,
     destAddress,
     bridgeProvider,
-    nearAccount,
   } = values
   const isValidPair =
     srcChain && srcAsset
@@ -196,7 +195,6 @@ export const getXcmTransferArgs = (
     destAsset: isValidAsset ? destAsset.key : "",
     destChain: destChain?.key ?? "",
     bridgeTag: bridgeProvider ?? undefined,
-    refundAddress: nearAccount || undefined,
   }
 }
 

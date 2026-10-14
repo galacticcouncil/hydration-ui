@@ -6,11 +6,10 @@ import { isOneClickRoute } from "@/modules/xcm/transfer/utils/bridge"
 
 /**
  * Form alerts of a withdrawal paying a 1Click deposit address on NEAR: the
- * claim it waits for there, and the refund account it can't build without.
+ * claim it waits for there.
  */
 export const useZecWithdrawalAlerts = (
   route: AssetRoute | null,
-  isMissingRefundAccount: boolean,
 ): XcmAlert[] => {
   const { t } = useTranslation("xcm")
   if (!isOneClickRoute(route)) return []
@@ -21,14 +20,5 @@ export const useZecWithdrawalAlerts = (
       severity: "info",
       message: t("zecWithdrawal.alert.claim"),
     },
-    ...(isMissingRefundAccount
-      ? [
-          {
-            key: "zecWithdrawal.nearAccount",
-            severity: "error" as const,
-            message: t("zecWithdrawal.alert.nearAccount"),
-          },
-        ]
-      : []),
   ]
 }

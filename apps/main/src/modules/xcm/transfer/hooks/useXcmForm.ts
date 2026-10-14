@@ -87,7 +87,6 @@ export const useXcmForm = (
       destAddress: defaults.destAddress ?? "",
       destAccount: defaults.destAccount ?? null,
       bridgeProvider: null,
-      nearAccount: "",
     },
   })
 

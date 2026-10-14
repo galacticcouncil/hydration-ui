@@ -32,16 +32,12 @@ import {
   AmountFormField,
   ChainAssetFormField,
 } from "@/modules/xcm/transfer/components/FormField"
-import {
-  RecipientSelectButton,
-  ZecWithdrawalNearAccount,
-} from "@/modules/xcm/transfer/components/Recipient"
+import { RecipientSelectButton } from "@/modules/xcm/transfer/components/Recipient"
 import { useChainSwitch } from "@/modules/xcm/transfer/hooks/useChainSwitch"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { isOneClickRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
@@ -61,7 +57,6 @@ export const XcmForm = () => {
     isLoadingSrcBalances,
     isLoadingDestBalances,
     isConnectedAccountValid,
-    selectedRoute,
   } = useXcmProvider()
 
   const { watch, handleSubmit, reset, setValue } =
@@ -89,8 +84,6 @@ export const XcmForm = () => {
   const { data: destBalances } = useCrossChainBalance(destAddress, destChainKey)
 
   const queryClient = useQueryClient()
-
-  const isOneClick = isOneClickRoute(selectedRoute)
 
   const submit = useSubmitXcmTransfer({
     onTransferSubmitted: (txHash, values, transfer) => {
@@ -328,7 +321,6 @@ export const XcmForm = () => {
                 assetPrice={price}
               />
             </Flex>
-            {isOneClick && <ZecWithdrawalNearAccount />}
           </Stack>
           {availableBridgeRoutes.length > 1 && (
             <>

@@ -47,7 +47,7 @@ import {
   resolveBestDestRoute,
   resolveSelectedRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
-import { isNearAccount } from "@/modules/xcm/transfer/utils/zecWithdrawal"
+import { ONE_CLICK_REFUND_ACCOUNT } from "@/modules/xcm/transfer/utils/zecWithdrawal"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
@@ -230,16 +230,16 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const isDestSynced = isDestRouteSynced(bestDestRoute, destChain, destAsset)
 
-  // A route paying a 1Click deposit address can't build without the NEAR
-  // account it refunds to
-  const isMissingRefundAccount =
-    isOneClickRoute(selectedRoute) && !isNearAccount(values.nearAccount)
+  // A route paying a 1Click deposit address refunds to our NEAR multisig
+  const refundAddress = isOneClickRoute(selectedRoute)
+    ? ONE_CLICK_REFUND_ACCOUNT
+    : undefined
 
   const transferArgs = useMemo(() => {
-    if (!isDestSynced || isMissingRefundAccount) return null
+    if (!isDestSynced) return null
 
-    return getXcmTransferArgs(account, values)
-  }, [account, isDestSynced, isMissingRefundAccount, values])
+    return { ...getXcmTransferArgs(account, values), refundAddress }
+  }, [account, isDestSynced, refundAddress, values])
 
   const {
     transfer: xcmTransfer,
@@ -254,10 +254,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { alerts: transferAlerts, isLoading: isLoadingAlerts } =
     useXcmTransferAlerts(form, report, requiresBinding)
 
-  const zecWithdrawalAlerts = useZecWithdrawalAlerts(
-    selectedRoute,
-    isMissingRefundAccount,
-  )
+  const zecWithdrawalAlerts = useZecWithdrawalAlerts(selectedRoute)
   const alerts = [...transferAlerts, ...zecWithdrawalAlerts]
 
   useEffect(() => {
