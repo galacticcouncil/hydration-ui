@@ -25,10 +25,14 @@ import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdr
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import {
   buildClaimCall,
+  findNearRecipient,
   getJourneyVaaRaw,
   resolveChainFromUrn,
 } from "@/modules/xcm/history/utils/claim"
-import { parseNttTransfer } from "@/modules/xcm/history/utils/nearNtt"
+import {
+  parseNttTransfer,
+  toNearUniversal,
+} from "@/modules/xcm/history/utils/nearNtt"
 import { toDecimal } from "@/utils/formatting"
 
 import { useClaimTxOptions } from "./useClaimTxOptions"
@@ -64,17 +68,23 @@ export function useWithdrawClaim(journey: XcJourney) {
       const signer = wallet?.signer
 
       // A zcash withdrawal paid a 1Click deposit address, which the vaa names
-      // by hash only: the claim passes it in plain
+      // by hash only: the claim passes it in plain, from this browser's record
+      // or the copy its sender published on the source chain
       const vaaRaw = getJourneyVaaRaw(journey)
       const payee = vaaRaw
         ? parseNttTransfer(getVaaHeader(vaaRaw).payload)?.to
         : undefined
       const withdrawal = payee ? findWithdrawal(payee) : undefined
+      const depositAddress =
+        withdrawal?.depositAddress ??
+        (payee && payee !== toNearUniversal(account.rawAddress)
+          ? await findNearRecipient(journey)
+          : undefined)
 
       const result = await buildClaimCall(
         journey,
         account.rawAddress,
-        withdrawal?.depositAddress,
+        depositAddress,
       )
 
       if (!result) {
@@ -145,8 +155,10 @@ export function useWithdrawClaim(journey: XcJourney) {
             createLink: (txHash) => nearblocks.tx(chain.key, txHash),
             ...commonCallbacks,
             // Claimed into the deposit address, 1Click sends it on to Zcash
-            ...(withdrawal && {
-              onSuccess: () => removeWithdrawal(withdrawal.txHash),
+            ...(depositAddress && {
+              onSuccess: () => {
+                if (withdrawal) removeWithdrawal(withdrawal.txHash)
+              },
               titles: {
                 submitted: t("zecWithdrawal.toast.submitted", toastParams),
                 success: t("zecWithdrawal.toast.success", toastParams),

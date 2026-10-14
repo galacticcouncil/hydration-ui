@@ -1,7 +1,7 @@
 import { interpolationFormat } from "@galacticcouncil/utils/src/helpers/interpolation"
 import { TransferValidationReport } from "@galacticcouncil/xc-core"
 import i18next, { TFunction } from "i18next"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import xcm from "@/i18n/locales/en/xcm.json"
 import {
@@ -9,9 +9,6 @@ import {
   XcmLimitAlertKey,
 } from "@/modules/xcm/transfer/utils/limits"
 import { getXcmReportAlerts } from "@/modules/xcm/transfer/utils/report"
-
-// limits.ts reads one constant off the sdk config; the mapping needs none of it
-vi.mock("@galacticcouncil/xc-cfg", () => ({ clients: {} }))
 
 const ZEC = 10n ** 8n
 const DAY_MS = 86_400_000

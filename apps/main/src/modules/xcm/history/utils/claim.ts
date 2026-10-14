@@ -2,6 +2,7 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import {
   EvmAddr,
   getVaaHeader,
+  isAnyEvmChain,
   isAnyParachain,
   isEvmChain,
   isEvmParachain,
@@ -394,6 +395,22 @@ type ClaimCallResult =
       call: ExtendedEvmCall
       chain: EvmParachain
     }
+
+/**
+ * NEAR account a vaa pays, as its sender published it on the source chain:
+ * a 1Click withdrawal's deposit address, so any NEAR account can claim it.
+ */
+export async function findNearRecipient(
+  journey: XcJourney,
+): Promise<string | undefined> {
+  const vaaRaw = getJourneyVaaRaw(journey)
+  const toChain = resolveChainFromUrn(journey.destination)
+  const fromChain = resolveChainFromUrn(journey.origin)
+  if (!vaaRaw || !toChain || !fromChain) return undefined
+  if (!isNearChain(toChain) || !isAnyEvmChain(fromChain)) return undefined
+
+  return new NearClaim(toChain).findRecipient(vaaRaw, fromChain)
+}
 
 /**
  * @param recipient - NEAR account the vaa pays, where it isn't the claimer
