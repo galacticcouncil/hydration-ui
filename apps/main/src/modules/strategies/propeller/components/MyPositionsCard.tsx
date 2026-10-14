@@ -38,8 +38,23 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
       <CardBody>
         <Stack gap="m">
           {positions.map(
-            ({ vault, shares, assetValue, usdValue, apy, pendingYield }) => {
+            ({
+              vault,
+              shares,
+              assetValue,
+              usdValue,
+              apy,
+              accrualPaused,
+              pendingYield,
+            }) => {
               const { symbol } = getAssetWithFallback(vault.assetId)
+              // demoted: a six-decimal dust figure as a headline stat reads as
+              // broken; the accruing amount lives in the tooltip, the sublabel
+              // just says the position is earning (dust-floored)
+              const accruing =
+                pendingYield !== null && pendingYield > assetValue * 1e-6
+                  ? pendingYield
+                  : null
 
               return (
                 <PositionCard
@@ -56,43 +71,37 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                         font="secondary"
                         label={t("positions.col.amount")}
                         customValue={
-                          <Text fs="p3" fw={500} lh={1}>
-                            {t("common:approx.short")}{" "}
-                            {t("common:currency", {
-                              value: assetValue,
-                              symbol,
-                            })}
-                          </Text>
-                        }
-                        bottomLabel={t("common:currency", { value: usdValue })}
-                      />
-                      {pendingYield !== null && pendingYield > 0 && (
-                        <ValueStats
-                          wrap
-                          size="small"
-                          font="secondary"
-                          label={t("positions.col.pendingYield")}
-                          customValue={
-                            <Flex gap="xs" align="center">
-                              <Text fs="p3" fw={500} lh={1}>
-                                {t("common:currency", {
-                                  value: pendingYield,
-                                  symbol,
-                                  maximumFractionDigits: 6,
-                                })}
-                              </Text>
+                          <Flex gap="xs" align="center">
+                            <Text fs="p3" fw={500} lh={1}>
+                              {t("common:approx.short")}{" "}
+                              {t("common:currency", {
+                                value: assetValue,
+                                symbol,
+                              })}
+                            </Text>
+                            {accruing !== null && (
                               <Tooltip
-                                text={t("positions.pendingYield.tooltip", {
-                                  symbol,
+                                text={t("positions.accruingTooltip", {
+                                  amount: t("common:currency", {
+                                    value: accruing,
+                                    symbol,
+                                    maximumFractionDigits: 6,
+                                  }),
                                 })}
                               >
                                 <TooltipIcon size="1em" />
                               </Tooltip>
-                            </Flex>
-                          }
-                          bottomLabel={t("positions.col.pendingYield.note")}
-                        />
-                      )}
+                            )}
+                          </Flex>
+                        }
+                        bottomLabel={
+                          accrualPaused
+                            ? `${t("common:currency", { value: usdValue })} · ${t("positions.accrualPaused")}`
+                            : apy !== null && apy > 0
+                              ? `${t("common:currency", { value: usdValue })} · ${t("positions.earning")}`
+                              : t("common:currency", { value: usdValue })
+                        }
+                      />
                       <ValueStats
                         wrap
                         size="small"
@@ -100,12 +109,16 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                         label={t("positions.col.netApy")}
                         customValue={
                           <Text fs="p3" fw={500} lh={1}>
-                            {apy === null
+                            {accrualPaused || apy === null
                               ? "—"
                               : t("common:percent", { value: apy })}
                           </Text>
                         }
-                        bottomLabel={t("positions.col.netApy.note")}
+                        bottomLabel={
+                          accrualPaused
+                            ? t("positions.accrualPausedNote")
+                            : t("positions.col.netApy.note")
+                        }
                       />
                     </>
                   }

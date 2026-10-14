@@ -20,16 +20,17 @@ const defaultValues: WithdrawFormValues = {
 }
 
 type UseWithdrawFormParams = {
+  /** withdrawable balance in the UNDERLYING asset (shares x exchange rate) */
   maxBalance: string
   minRedeem: number
-  shareSymbol: string
+  symbol: string
   decimals: number
 }
 
 export const useWithdrawForm = ({
   maxBalance,
   minRedeem,
-  shareSymbol,
+  symbol,
   decimals,
 }: UseWithdrawFormParams) => {
   const { t } = useTranslation("propeller")
@@ -47,7 +48,7 @@ export const useWithdrawForm = ({
         refine<string>((value) => Big(value || "0").gte(minRedeem), {
           error: t("withdraw.validation.belowMin", {
             min: minRedeem,
-            shareSymbol,
+            symbol,
           }),
         }),
       ),

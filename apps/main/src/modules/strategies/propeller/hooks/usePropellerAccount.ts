@@ -29,7 +29,9 @@ export type PropellerPosition = {
   sharesExact: string
   assetValue: number
   usdValue: number
+  /** current accrual rate: strategy APY x deployed fraction, 0 while paused */
   apy: number | null
+  accrualPaused: boolean
   /** collateral earned but not harvested, outside the balance; null if unread */
   pendingYield: number | null
   /** the vault's collateral asset still sitting in the wallet */
@@ -198,7 +200,8 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
         collateralBalance: balanceQueries[i]?.data?.eth ?? 0,
         assetValue,
         usdValue: assetValue * (market?.price ?? 0),
-        apy: market?.apy ?? null,
+        apy: market?.runRateApy ?? null,
+        accrualPaused: market?.accrualPaused ?? false,
       },
     ]
   }).sort((a, b) => b.usdValue - a.usdValue)

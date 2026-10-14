@@ -21,6 +21,8 @@ const stats = (
   remainingPct: 50,
   paused: false,
   depositsPaused: false,
+  mainCollUsd: null,
+  mainDebtUsd: null,
   deficitStop: false,
   exchangeRate: 1,
   maxLtv: 0.8,
