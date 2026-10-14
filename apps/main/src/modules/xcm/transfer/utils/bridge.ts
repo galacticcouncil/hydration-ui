@@ -57,17 +57,6 @@ export const isSnowbridgeV1Route = (route: AssetRoute): boolean => {
   return tags.includes(XcmTag.SnowbridgeV1)
 }
 
-export const isOmniRoute = (route: AssetRoute | null): boolean => {
-  const tags = (route?.tags ?? []) as string[]
-  return tags.includes(XcmTag.Omni)
-}
-
-/** A withdrawal paying a 1Click deposit address, which needs a refund account. */
-export const isOneClickRoute = (route: AssetRoute | null): boolean => {
-  const tags = (route?.tags ?? []) as string[]
-  return tags.includes(XcmTag.OneClick)
-}
-
 export const isSnowbridgeV1Tag = (tag: string | null | undefined): boolean =>
   tag === XcmTag.SnowbridgeV1
 

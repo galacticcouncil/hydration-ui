@@ -3,6 +3,7 @@ import { UseFormReturn } from "react-hook-form"
 
 import {
   useCrossChainWallet,
+  useZcashRoutes,
   XcmTransferArgs,
   xcmTransferCallQuery,
   xcmTransferQuery,
@@ -10,6 +11,7 @@ import {
 } from "@/api/xcm"
 import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { findZcashRoute } from "@/modules/xcm/transfer/utils/zcash"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useXcmTransfer = (
@@ -18,6 +20,7 @@ export const useXcmTransfer = (
 ) => {
   const rpc = useRpcProvider()
   const wallet = useCrossChainWallet()
+  const zcashRoutes = useZcashRoutes()
 
   const values = form.watch()
 
@@ -26,9 +29,13 @@ export const useXcmTransfer = (
     isLoading: isLoadingTransferQuery,
     isFetching: isFetchingTransfer,
     isPlaceholderData: isTransferPlaceholder,
-  } = useQuery(xcmTransferQuery(wallet, transferArgs))
+  } = useQuery(xcmTransferQuery(wallet, transferArgs, zcashRoutes))
 
   const syncedTransfer = transfer && !isTransferPlaceholder ? transfer : null
+
+  // Building a Zcash transfer's call opens a 1Click deposit address or orders
+  // an Omni one, so it's built at submit only, never per amount typed
+  const isCallDeferred = !!findZcashRoute(zcashRoutes, transferArgs ?? {})
 
   const isLoadingTransfer =
     !!transferArgs &&
@@ -44,7 +51,7 @@ export const useXcmTransfer = (
       ),
       xcmTransferCallQuery(
         rpc,
-        syncedTransfer,
+        isCallDeferred ? null : syncedTransfer,
         values.srcAmount,
         transferArgs,
         form.formState.isValid && ENV.VITE_DRY_RUN_ENABLED,

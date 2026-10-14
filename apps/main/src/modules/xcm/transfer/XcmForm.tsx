@@ -10,6 +10,7 @@ import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { ZcashTransfer } from "@galacticcouncil/xc-swap"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
@@ -87,21 +88,24 @@ export const XcmForm = () => {
 
   const submit = useSubmitXcmTransfer({
     onTransferSubmitted: (txHash, values, transfer) => {
+      // Opened by a withdrawal to Zcash as its calls were built
+      const { deposit } = transfer as ZcashTransfer
+
       // The claim on NEAR names the deposit address in plain, which the vaa
       // carries as a hash only
-      if (transfer.deposit) {
+      if (deposit) {
         addWithdrawal({
           txHash,
-          depositAddress: transfer.deposit.depositAddress,
+          depositAddress: deposit.depositAddress,
           recipient: values.destAddress,
-          deadline: transfer.deposit.deadline,
+          deadline: deposit.deadline,
         })
       }
 
       if (account) {
         // A 1Click withdrawal lists as its leg to NEAR, the journey that
         // replaces this placeholder
-        const hub = transfer.deposit ? chainsMap.get(NEAR_CHAIN_KEY) : undefined
+        const hub = deposit ? chainsMap.get(NEAR_CHAIN_KEY) : undefined
         insertOptimisticJourney(
           queryClient,
           account.address,
@@ -115,7 +119,7 @@ export const XcmForm = () => {
     },
     onTransferError: (txHash, _values, transfer) => {
       // A transfer that failed leaves nothing to claim on NEAR
-      if (transfer.deposit) removeWithdrawal(txHash)
+      if ((transfer as ZcashTransfer).deposit) removeWithdrawal(txHash)
 
       if (account) {
         removeOptimisticJourney(queryClient, account.address, txHash)

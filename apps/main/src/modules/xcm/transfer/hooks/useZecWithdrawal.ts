@@ -1,18 +1,20 @@
-import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useTranslation } from "react-i18next"
 
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { isOneClickRoute } from "@/modules/xcm/transfer/utils/bridge"
+import {
+  ZcashRoute,
+  ZcashTransferKind,
+} from "@/modules/xcm/transfer/utils/zcash"
 
 /**
  * Form alerts of a withdrawal paying a 1Click deposit address on NEAR: the
  * claim it waits for there.
  */
 export const useZecWithdrawalAlerts = (
-  route: AssetRoute | null,
+  zcashRoute: ZcashRoute | null,
 ): XcmAlert[] => {
   const { t } = useTranslation("xcm")
-  if (!isOneClickRoute(route)) return []
+  if (zcashRoute?.kind !== ZcashTransferKind.Withdrawal) return []
 
   return [
     {
